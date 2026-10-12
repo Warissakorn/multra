@@ -141,6 +141,16 @@ Full entries in [`archive/ROADMAP-M1-implemented.md`](archive/ROADMAP-M1-impleme
 
 ---
 
+### M1.28 — OSM map background (owner request 2026-10-12)
+
+**Scope:** viewport-only raster XYZ background on the existing editor camera, fixed WGS84
+UTM reference, schema-29 persistence, asynchronous Qt Network loading, bounded caches,
+adaptive reprojection, English/Thai settings/navigation and desktop packaging.
+Contract and rows: [MAP_BACKGROUND](reference/MAP_BACKGROUND.md); plan:
+[OSM_BACKGROUND](plans/OSM_BACKGROUND.md). No automatic road import or offline archive.
+**Gate remains open:** MAP1–MAP9 automated/platform evidence and MAP10 owner alignment
+and responsiveness on a real study. This does not close M1.23 interchange or any engine gate.
+
 ## M2 — Demand, run, first numbers · **CLOSED** (gate passed, D53; closed by D143)
 
 Vehicle inputs per interval, compositions, turning proportions. Press Run, get average delay and queue per movement.

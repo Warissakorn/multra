@@ -2,7 +2,8 @@ add_library(trafficsim_shell STATIC editor_style.cpp editor_appearance.cpp edito
     editor_tables.cpp editor_diagnostics.cpp editor_demand.cpp editor_demand_preview.cpp editor_catalog.cpp demand_catalog_dialog.cpp behaviour_library_dialog.cpp editor_behaviour.cpp demand_type_rules_dialog.cpp demand_period_editor.cpp editor_input.cpp editor_decision.cpp editor_routing.cpp editor_control.cpp editor_run.cpp editor_results.cpp editor_batch.cpp editor_compare.cpp editor_storage.cpp editor_recovery.cpp editor_palette.cpp editor_creation.cpp behaviour_editor.cpp
     ../editor/canvas_feedback.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp editor_priority.cpp editor_counters.cpp editor_sections.cpp)
 target_sources(trafficsim_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
-target_link_libraries(trafficsim_shell PUBLIC trafficsim_commands Qt6::Widgets PRIVATE trafficsim_vehicle_pose trafficsim_options)
+target_sources(trafficsim_shell PRIVATE editor_map.cpp ../editor/map_provider.cpp ../editor/map_tile_client.cpp ../editor/map_layer.cpp ../editor/map_mesh.cpp ../editor/canvas_map.cpp)
+target_link_libraries(trafficsim_shell PUBLIC trafficsim_commands Qt6::Widgets Qt6::Network trafficsim_geo PRIVATE trafficsim_vehicle_pose trafficsim_options)
 # 26 sources, every one of them a Qt widgets translation unit: <QGraphicsView> alone costs
 # 2.46 s to parse here, so the target spent about a minute of CPU re-reading the same headers.
 # Only stable third-party headers go in -- a PCH over a project header makes every edit to it a
@@ -37,9 +38,15 @@ qt_add_executable(trafficsim-desktop main.cpp)
 target_link_libraries(trafficsim-desktop PRIVATE trafficsim_shell trafficsim_options)
 set_target_properties(trafficsim-desktop PROPERTIES WIN32_EXECUTABLE TRUE)
 trafficsim_runtime_data(trafficsim-desktop)
+add_dependencies(trafficsim-desktop trafficsim-proj-data)
 install(TARGETS trafficsim-desktop RUNTIME DESTINATION bin)
 add_dependencies(check trafficsim-desktop)
 if(BUILD_TESTING)
+    add_executable(trafficsim-map-ui-tests ../../tests/map_ui_tests.cpp)
+    target_link_libraries(trafficsim-map-ui-tests PRIVATE trafficsim_shell Qt6::Network Qt6::Test trafficsim_options)
+    add_test(NAME map-ui COMMAND trafficsim-map-ui-tests "${PROJECT_SOURCE_DIR}/data" "${CMAKE_BINARY_DIR}/map-preview.png")
+    set_tests_properties(map-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 90)
+    add_dependencies(check trafficsim-map-ui-tests)
     add_executable(trafficsim-station-routing-ui-tests ../../tests/station_routing_ui_tests.cpp)
     target_link_libraries(trafficsim-station-routing-ui-tests PRIVATE trafficsim_shell Qt6::Test trafficsim_options)
     add_test(NAME station-routing-ui COMMAND trafficsim-station-routing-ui-tests "${PROJECT_SOURCE_DIR}/data")

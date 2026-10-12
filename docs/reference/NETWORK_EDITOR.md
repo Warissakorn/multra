@@ -369,6 +369,17 @@ Connector; Enter edits priority, `gapTime`, `headway`. Run protects authored are
 cycle its priority, drag a dashed waiting line along its lane. Since M3.2.4c (D68) the tool also shows what the drawing implies with no Add step: grey dashed passive crossings (not enforced at Run, as in Vissim) and each merge with its derived priority; a Ctrl+right-click or `P` on its row sets one, Delete makes a crossing passive again. Branching mouths are also shown in red; a click selects them, but priority editing is unavailable because they keep the existing vehicle-order behavior. Single-stream continuation mouths are not conflicts. Crossing and merge highlights are separate bands along each driving direction, cut at the measured overlap spans (D117/D118). Their normal rail offset is 0.5 m per side, capped at 20% of local width; the ends are not shortened. Picking uses the visible bands, while grouping retains the exact measured polygons; merge bands use physical-mouth spans rather than the one-metre admission markers. P3–P4 continues on the attached Link lane, with stations belonging to that Link. Connected Crossing/Merge/Branching of the same owner pair share one row; priority edits affect Crossing/Merge together, Branching stays read-only, and newly introduced merge-order cycles refuse the whole edit. Separate sites remain separate. Nothing automatic is saved. A set area follows its overlap when a Link or Connector is edited, its lines keeping their distance, and is removed with its rule and Stop/Yield when the two roads no longer overlap (D86, one Undo step). Add crossing areas refuses a pair whose every overlap is already set. The side that gives way is hatched. The dialog's
 Control field (M3.2.5b, D63) sets Stop/Yield for the line: dashed = none, solid amber = Yield, solid red = Stop. **Queue counter tool** (`Q`, M3.2.6c, D65): Ctrl+right-click stop lines, waiting lines or places on a Link lane, Enter creates one counter (Backspace drops a line, Esc cancels); violet dotted bars. The **Queue counters** tab adds one over the selected heads, renames, deletes, and says which approach row it replaces. **Section tool** (`T`, M5.4b, D133): Ctrl+right-click a Link for the start line, then a Link downstream for the end line; each line spans every lane of its Link and is drawn as violet bars (dashed while only the start is placed; Esc drops it). The **Travel-time sections** tab renames, sets the control type LOS reads (M5.5, D134) and deletes; see [TRAVEL_TIME_SECTIONS](TRAVEL_TIME_SECTIONS.md).
 
+## OSM map background
+
+Map → Map background settings selects a provider and fixes longitude/latitude to
+anchorWorldX/anchorWorldY. Rotation is relative to UTM grid north; existing roads keep
+their geometry. Pan/zoom use the ordinary Canvas gestures. Map → Go to coordinates
+changes the camera only; Show OSM hides it without a document edit. Remove map is
+undoable. Map tiles paint below the embedded image, with visible provider credit.
+The supported view is within 100 km of the reference. No geocoding or offline
+download is supplied. See [MAP_BACKGROUND](MAP_BACKGROUND.md) for CRS, schema 29,
+network/cache behaviour and acceptance rows.
+
 ## Background image
 
 Import a local PNG/JPEG/BMP. The project embeds a PNG copy; input is limited to 24 MB,
@@ -402,7 +413,8 @@ explicit so earlier applications reject these files instead of discarding positi
 are converted on read, at the same world position. The version decides which key is read and
 what it means — a `fraction` in a schema 5 file, or a `station` in an older one, is rejected
 rather than silently reinterpreted as the other unit.
-Unknown future versions are rejected.
+Schema 29 adds optional map reference/settings; without map, the old feature-based
+schema choice and serialized bytes stand. Unknown future versions are rejected.
 
 | File kind | M0 scenario | Editor project |
 |---|---|---|
@@ -412,7 +424,7 @@ Unknown future versions are rejected.
 | Opened by | Editor (or `trafficsim-cli --scenario`) | Editor |
 | Runs | Editor, or `trafficsim-cli` | Editor after demand/catalog/runtime checks |
 
-The editor opens bare M0 authoring files and project schemas 1–28. Saving uses schema 17
+The editor opens bare M0 authoring files and project schemas 1–29. Saving uses schema 17
 by default, 18 for owned composition catalogs or embedded vehicle names, and 19 for
 composition periods or type-conditioned routing; schema 20 when a routing decision has `position`; schema 21 when the behaviour library
 or a road behaviour-type assignment is used ([DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126)); schema 22 when an evaluation period is set ([SIMULATION](SIMULATION.md#movement-evaluation-m25), D132); schema 23 when a travel-time section exists ([TRAVEL_TIME_SECTIONS](TRAVEL_TIME_SECTIONS.md), D133); schema 24 when a section has a control type ([LOS](LOS.md), D134); schema 25 when an owned behaviour is `w74` (D136); schema 26 when an input takes its volume from its decision's turning counts ([DEMAND_IMPROVEMENT](../plans/DEMAND_IMPROVEMENT.md) §7, D142); schema 27 when the evaluation period has a cool-down ([BATCH](BATCH.md) §5, D146); schema 28 when an owned behaviour carries `amberDeceleration` ([AMBER](AMBER.md), D147). From schema 21 every owned behaviour is written with its `model`, library or not (D147 found the gap). This is selected from the document's

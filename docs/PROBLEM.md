@@ -11,7 +11,7 @@
 Traffic engineers and consultants who produce **traffic impact studies** — TIA, EIA,
 intersection redesigns, signal retiming, development-access studies. Their working day is:
 
-1. Draw a road network over an aerial image.
+1. Draw a road network over an aerial image or a georeferenced OSM map background.
 2. Enter counted volumes and turning proportions per time interval.
 3. Set up priority control or signal timing.
 4. Run the microsimulation, several times, with different random seeds.

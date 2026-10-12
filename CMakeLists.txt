@@ -73,7 +73,7 @@ add_library(trafficsim_runner STATIC src/runner/batch.cpp src/runner/compare.cpp
 target_link_libraries(trafficsim_runner PUBLIC trafficsim_eval PRIVATE trafficsim_options)
 add_library(trafficsim_project STATIC src/project/load.cpp src/project/parse.cpp src/project/output.cpp
     src/project/document.cpp src/project/signal_migration.cpp src/project/definition.cpp src/project/run.cpp src/project/display.cpp src/project/diagnostics.cpp
-    src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/los_output.cpp src/project/counted_volumes.cpp)
+    src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/los_output.cpp src/project/counted_volumes.cpp src/project/map_codec.cpp)
 target_link_libraries(trafficsim_project PUBLIC trafficsim_model trafficsim_eval trafficsim_runner
     nlohmann_json::nlohmann_json PRIVATE trafficsim_options)
 
@@ -89,7 +89,7 @@ add_library(trafficsim_commands STATIC src/commands/history.cpp src/commands/net
     src/commands/split_link.cpp src/commands/connector_commands.cpp src/commands/delete_objects.cpp
     src/commands/demand_commands.cpp src/commands/catalog_commands.cpp src/commands/behaviour_commands.cpp src/commands/appearance_commands.cpp src/commands/link_geometry_commands.cpp
     src/commands/right_of_way_commands.cpp src/commands/conflict_authoring.cpp
-    src/commands/conflict_follow.cpp src/commands/conflict_group_commands.cpp)
+    src/commands/conflict_follow.cpp src/commands/conflict_group_commands.cpp src/commands/map_commands.cpp)
 target_link_libraries(trafficsim_commands PUBLIC trafficsim_project PRIVATE trafficsim_options)
 target_precompile_headers(trafficsim_commands PRIVATE <nlohmann/json.hpp>)
 
@@ -193,10 +193,10 @@ if(BUILD_TESTING)
     target_link_libraries(trafficsim-tests PRIVATE trafficsim_commands trafficsim_options)
     target_compile_definitions(trafficsim-tests PRIVATE TRAFFICSIM_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
     target_precompile_headers(trafficsim-tests PRIVATE <nlohmann/json.hpp>)
-    target_sources(trafficsim-tests PRIVATE tests/history_tests.cpp tests/rotation_tests.cpp tests/connector_surface_tests.cpp tests/lane_correspondence_tests.cpp tests/connector_mouth_sweep_tests.cpp tests/connector_lane_centre_tests.cpp tests/connector_equation_tests.cpp tests/connector_edit_motion_tests.cpp)
+    target_sources(trafficsim-tests PRIVATE tests/map_project_tests.cpp tests/history_tests.cpp tests/rotation_tests.cpp tests/connector_surface_tests.cpp tests/lane_correspondence_tests.cpp tests/connector_mouth_sweep_tests.cpp tests/connector_lane_centre_tests.cpp tests/connector_equation_tests.cpp tests/connector_edit_motion_tests.cpp)
     # One ctest test per group, so `ctest -j` spreads them; a single unfiltered run was 60 s of
     # serial wall time and repeated every named group.
-    set(TRAFFICSIM_TEST_GROUPS behaviourlibrary behaviourselection provenance discharge core stationrouting network reference project editor connectors mouths points
+    set(TRAFFICSIM_TEST_GROUPS mapproject behaviourlibrary behaviourselection provenance discharge core stationrouting network reference project editor connectors mouths points
         diagnostics demand ranges attachments authoring lifecycle history rotation fourleg movement
         routeless signals m26study m26study_merge rightofway rightofway_lifecycle rightofway_resolution
         conflict_zone conflict_chain commitment stop_control stop_control_model signal_position
@@ -235,6 +235,23 @@ if(BUILD_TESTING)
 endif()
 
 if(TRAFFICSIM_BUILD_DESKTOP)
-    find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets)
+    find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Network)
+    find_package(PROJ CONFIG REQUIRED)
+    add_library(trafficsim_geo STATIC src/geo/projection.cpp src/geo/tile_grid.cpp)
+    target_link_libraries(trafficsim_geo PUBLIC trafficsim_project PRIVATE PROJ::proj trafficsim_options)
+    if(BUILD_TESTING)
+        add_executable(trafficsim-map-geo-tests tests/map_geo_tests.cpp)
+        target_link_libraries(trafficsim-map-geo-tests PRIVATE trafficsim_geo trafficsim_options)
+        add_test(NAME map-geo COMMAND trafficsim-map-geo-tests)
+        add_dependencies(check trafficsim-map-geo-tests)
+    endif()
+    find_file(TRAFFICSIM_PROJ_DATABASE proj.db
+        HINTS ${CMAKE_PREFIX_PATH} "${PROJ_DIR}" "${PROJ_DIR}/../../../.."
+        PATH_SUFFIXES share/proj REQUIRED)
+    add_custom_target(trafficsim-proj-data ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<IF:$<BOOL:${CMAKE_CONFIGURATION_TYPES}>,$<CONFIG>/,>data/proj"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${TRAFFICSIM_PROJ_DATABASE}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<IF:$<BOOL:${CMAKE_CONFIGURATION_TYPES}>,$<CONFIG>/,>data/proj/proj.db"
+        DEPENDS trafficsim-data)
+    install(FILES "${TRAFFICSIM_PROJ_DATABASE}" DESTINATION bin/data/proj)
     add_subdirectory(src/shell)
 endif()

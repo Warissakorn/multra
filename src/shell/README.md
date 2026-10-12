@@ -1,1 +1,3 @@
 Qt Widgets desktop: the network editor window, the application's only window since M1.24 — inspector, tables, Results (single run, N seeds on one worker thread — `editor_batch.cpp`, D141 — or the open project compared with a chosen file on that worker — `editor_compare.cpp`, D149), Run/Pause/Step/Reset, seed, playback speed, open/save/recovery and English/Thai UI from data/locales/.
+
+`editor_map.cpp` supplies localized map settings, navigation and visibility actions.

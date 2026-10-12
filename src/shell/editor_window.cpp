@@ -168,7 +168,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
     buildDemandTables(); buildRouting(); buildRunControls(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildRecovery(); buildPalette();
-    resize(1440,900);buildWorkspace();
+    buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
 QAction* EditorWindow::action(const std::string& key,const QKeySequence& shortcut,const std::function<void()>& run) {
@@ -216,7 +216,7 @@ void EditorWindow::translate() {
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
     language_->setAccessibleName(text("language"));
     texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
-    error_->clear(); refresh();
+    buildMapTranslation();error_->clear(); refresh();
 }
 bool EditorWindow::execute(const std::string& name,const std::function<void(ProjectDocument&)>& change) {
     try {const bool changed=history_.execute(name,change);if(changed)clearRun();error_->clear();rejected_.clear();refresh();return changed;}
@@ -252,6 +252,7 @@ std::string EditorWindow::selectedName() const {
     return {};
 }
 void EditorWindow::refresh(bool modelChanged) {
+    refreshMapActions();
     if(modelChanged) canvas_->setDocument(&history_.document());
     setWindowTitle(text("editorTitle")+" — "+(file_.isEmpty()?text("editorUntitled"):file_)+(history_.dirty()?" *":""));
     actions_.at("editorUndo")->setEnabled(history_.canUndo());actions_.at("editorRedo")->setEnabled(history_.canRedo());

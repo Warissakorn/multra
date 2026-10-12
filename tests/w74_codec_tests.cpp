@@ -114,7 +114,7 @@ TEST(w74codec, w74_below_schema_25_and_a_future_schema_are_refused) { // BA29
         auto old = j; old["schemaVersion"] = version;
         refused(old, "UNSUPPORTED_BEHAVIOUR_MODEL", "behaviours[" + std::to_string(i) + "].model");
     }
-    auto future = j; future["schemaVersion"] = 29;
+    auto future = j; future["schemaVersion"] = 30;
     test::throws([&] { parseDocument(future); }, "EDIT_VERSION");
 }
 

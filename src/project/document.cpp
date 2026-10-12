@@ -125,7 +125,7 @@ Json documentJson(const ProjectDocument& d) {
     // M5.9: 27 only when the evaluation period has a cool-down (D146).
     const bool cooled=period && d.definition->evaluation->cooldown>0;
     // M4.2: 28 only when an owned behaviour carries amberDeceleration (D147).
-    const int schema=ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    const int schema=d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -133,9 +133,11 @@ Json documentJson(const ProjectDocument& d) {
     // library were written untagged and could not be reopened (found by M4.2, D147).
     if ((library || schema >= 21) && d.definition) addBehaviourLibraryJson(*d.definition, definition);
     if (d.definition) addEvaluationPeriodJson(*d.definition, definition);
-    return {{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
+    Json result={{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
+    if (d.map) result["map"]=mapSettingsJson(*d.map);
+    return result;
 }
 void validateDocument(const ProjectDocument& d) {
     auto issues = validateNetwork(d.network);
@@ -148,6 +150,7 @@ void validateDocument(const ProjectDocument& d) {
         !std::isfinite(b.metresPerPixel) || b.metresPerPixel <= 0 || !std::isfinite(b.opacity) ||
         b.opacity < 0 || b.opacity > 1 || b.pngBase64->size() > 32 * 1024 * 1024)
         throw std::invalid_argument("EDIT_BACKGROUND_INVALID");
+    if (d.map) validateMapSettings(*d.map);
     validateAuthoredDemand(d);
     if (d.definition) validateEvaluationPeriod(*d.definition);
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
@@ -158,7 +161,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 28) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 29) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -178,6 +181,7 @@ ProjectDocument parseDocument(const Json& j) {
         for(const auto& x:j.at("definition").at("routingDecisions"))
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
+    d.map=parseMapSettings(j,version);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < 25) rejectW74Before25(j);

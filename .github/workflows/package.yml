@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev
       - name: Configure
         run: cmake --preset release
       - name: Build
@@ -34,7 +34,7 @@ jobs:
           TrafficSim - Linux build (not a self-contained bundle)
 
           Requires Qt 6 Widgets runtime on the machine, e.g. on Ubuntu 24.04:
-              sudo apt install libqt6widgets6
+              sudo apt install libqt6widgets6t64 libqt6network6t64 libproj25
 
           Run the desktop editor:
               ./bin/trafficsim-desktop
@@ -69,7 +69,9 @@ jobs:
       - name: Install JSON headers
         # Header-only, so vcpkg has no DLL to copy beside each binary; its per-target copy step
         # (applocal) is off because parallel targets raced on it (package run 68, exit 32).
-        run: vcpkg install nlohmann-json:x64-windows
+        run: |
+          vcpkg install nlohmann-json:x64-windows proj:x64-windows
+          "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin" | Out-File $env:GITHUB_PATH -Append -Encoding utf8
       - name: Configure
         run: cmake -S . -B build/native -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_APPLOCAL_DEPS=OFF
       - name: Build
@@ -82,6 +84,7 @@ jobs:
         run: |
           cmake --install build/native --config Release --prefix dist
           Copy-Item README.md, LICENSE dist/
+          Copy-Item "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin/*.dll" dist/bin/
       - name: Bundle Qt runtime
         run: windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw dist/bin/trafficsim-desktop.exe
       - name: Write run notes

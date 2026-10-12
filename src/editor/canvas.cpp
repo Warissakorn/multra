@@ -1,4 +1,5 @@
 #include "canvas.hpp"
+#include "map_layer.hpp"
 #include "canvas_style.hpp"
 #include <QGraphicsPathItem>
 #include <QGraphicsPixmapItem>
@@ -20,6 +21,7 @@ QPainterPath path(const std::vector<Point>& points) {
 }
 }
 EditorCanvas::EditorCanvas(QWidget* parent) : QGraphicsView(parent), scene_(this) {
+    initializeMap();
     setScene(&scene_); setObjectName("editorCanvas");
     setRenderHint(QPainter::Antialiasing); setMouseTracking(true);
     // The grid is ≈3.3 ms of every Run frame repainted (Windows, 1600x1000, 2026-10-02) and
@@ -48,6 +50,7 @@ const std::vector<Point>* EditorCanvas::selectedGeometry() const {
 }
 void EditorCanvas::setDocument(const ProjectDocument* d) {
     document_ = d; resetGesture();
+    mapLayer_->setSettings(d?d->map:std::nullopt);scheduleMapUpdate();
     // Drop ids the new document no longer has, rather than clearing an otherwise valid selection.
     std::erase_if(selection_, [&](const auto& id) {
         const auto level = objectLevel(id);
@@ -166,6 +169,10 @@ void EditorCanvas::redraw() {
         for (auto p:draft_) { const double r=3/std::abs(transform().m11()); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
     }
     scene_.setSceneRect(scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000)));
+    if (document_->map) {
+        const auto& r=document_->map->reference;
+        scene_.setSceneRect(scene_.sceneRect().united(QRectF(r.anchorWorldX-100000,r.anchorWorldY-100000,200000,200000)));
+    }
     drawRunItems();viewport()->update();
 }
 void EditorCanvas::fitNetwork() {
@@ -176,6 +183,7 @@ void EditorCanvas::fitNetwork() {
 }
 void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     painter->fillRect(rect,editorDesign::role(QPalette::Base));
+    paintMap(painter,rect);
     // Two tiers, chosen from the view's level of detail: minor lines never closer than 8 px,
     // a major line every tenth. Each line is a one-device-pixel cosmetic pen centred on a
     // device pixel (+0.5), so it stays a sharp hairline at any devicePixelRatio.
@@ -196,10 +204,11 @@ void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     lines(tiers.major,editorDesign::role(QPalette::Mid),false);
 }
 bool EditorCanvas::event(QEvent* e) {
+    if (e->type()==QEvent::Resize || e->type()==QEvent::Show) {scheduleMapUpdate();updateMapOverlay();}
 #if QT_VERSION >= QT_VERSION_CHECK(6,6,0)
     // drawBackground() snaps its hairlines to device pixels, so a cache drawn at another
     // pixel ratio would blur them.
-    if (e->type()==QEvent::DevicePixelRatioChange) resetCachedContent();
+    if (e->type()==QEvent::DevicePixelRatioChange) {resetCachedContent();scheduleMapUpdate();}
 #endif
     return QGraphicsView::event(e);
 }
@@ -207,7 +216,7 @@ void EditorCanvas::wheelEvent(QWheelEvent* e) {
     clearHover();
     const auto before=mapToScene(e->position().toPoint());
     const double old=std::abs(transform().m11()), next=std::clamp(old*std::pow(1.0015,e->angleDelta().y()),0.05,100.0);
-    scale(next/old,next/old);
+    scale(next/old,next/old);scheduleMapUpdate();
     const auto after=mapToScene(e->position().toPoint());
     const auto centre=mapToScene(viewport()->rect().center()); centerOn(centre+before-after); redraw(); e->accept();
 }

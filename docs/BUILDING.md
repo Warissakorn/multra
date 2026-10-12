@@ -69,7 +69,7 @@ the signed installer, file association and clean-machine acceptance remain M7.
 
 ```bash
 sudo apt-get update
-sudo apt-get install g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev lld
+sudo apt-get install g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev lld
 cmake --preset desktop
 cmake --build --preset desktop
 ctest --preset desktop
@@ -147,3 +147,14 @@ authoring scenario such as `data/scenarios/crossing.json`. `--editor` is still a
 does nothing; M1.24 retired the separate M0 harness window. See
 [NETWORK_EDITOR.md](reference/NETWORK_EDITOR.md) for drawing, images and saving.
 The headless build includes document/history tests but does not build Qt editor tests.
+
+## OSM desktop dependencies
+
+The desktop additionally needs Qt Network and PROJ (CMake target `PROJ::proj`).
+Ubuntu: install `qt6-base-dev libproj-dev`; Windows/vcpkg: `proj:x64-windows` beside
+`nlohmann-json:x64-windows`. Add vcpkg's `installed/x64-windows/bin` to PATH for tests
+when applocal is disabled. Headless builds have no PROJ/Qt Network dependency.
+CMake copies/installs `proj.db` into `bin/data/proj`; desktop startup selects that
+packaged database. Windows packaging copies projection dependency DLLs and uses
+windeployqt for Qt Network/TLS. System Linux packages need Qt Network and libproj
+runtimes. Network tests use a local fake server and make no live OSM requests.
