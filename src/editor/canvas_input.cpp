@@ -4,10 +4,13 @@
 #include <QKeyEvent>
 #include <QFocusEvent>
 #include <QScrollBar>
+#include <QScopeGuard>
 #include <cmath>
 
 namespace trafficsim {
 void EditorCanvas::mousePressEvent(QMouseEvent* e) {
+    cursorPosition_=e->pos();cursorModifiers_=e->modifiers();
+    const auto cursorGuard=qScopeGuard([this]{refreshCursor();});
     setFocus();
     if(rotationPivot_) {if(e->button()==Qt::LeftButton)return;cancel();}
     if(creating_ && e->button()==Qt::LeftButton) {
@@ -36,7 +39,7 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
         if(gestureFrom_)draft_.front()=laneAttachment(document_->network,*gestureFrom_,true);
         redraw();return;
     }
-    if (e->button()==Qt::MiddleButton || e->button()==Qt::RightButton) { panning_=true; clearHover(); setCursor(Qt::ClosedHandCursor); panStart_=panPress_=e->pos(); redraw(); return; }
+    if (e->button()==Qt::MiddleButton || e->button()==Qt::RightButton) { panning_=true; clearHover(); panStart_=panPress_=e->pos(); redraw(); return; }
     if (e->button()!=Qt::LeftButton) return;
     auto p=world(e->pos());lastPick_=world(e->pos(),false);
     if(tool_==Tool::select)clearHighlights();
@@ -128,6 +131,10 @@ int EditorCanvas::vertexAt(QPoint position) const {
     return found;
 }
 void EditorCanvas::mouseMoveEvent(QMouseEvent* e) {
+    cursorPosition_=e->pos();cursorModifiers_=e->modifiers();
+    const auto cursorGuard=qScopeGuard([this]{refreshCursor();});
+    const auto demand=QString::fromStdString(demandObjectAt(e->pos()).second);
+    if(demand!=hoverDemandId_){hoverDemandId_=demand;viewport()->update();}
     if(cursorMoved) cursorMoved(world(e->pos(),false));
     if(decisionDrag_) {updateDecisionDrag(e->pos());return;}
     if(rotationPivot_) {updateRotation(e->pos(),e->modifiers()&Qt::ShiftModifier);return;}
@@ -183,7 +190,8 @@ void EditorCanvas::mouseMoveEvent(QMouseEvent* e) {
     updateHover(e->pos());
 }
 void EditorCanvas::mouseReleaseEvent(QMouseEvent* e) {
-    setCursor(tool_==Tool::select?Qt::ArrowCursor:Qt::CrossCursor);
+    cursorPosition_=e->pos();cursorModifiers_=e->modifiers();
+    const auto cursorGuard=qScopeGuard([this]{refreshCursor();});
     if(e->button()==Qt::LeftButton && rotationPivot_) {
         // Native platforms may coalesce the last move; commit the release angle once.
         updateRotation(e->pos(),e->modifiers()&Qt::ShiftModifier);
@@ -314,6 +322,9 @@ void EditorCanvas::removeVertex() {
     if(editGeometry) editGeometry(selected(),geometry);
 }
 void EditorCanvas::keyPressEvent(QKeyEvent* e) {
+    cursorModifiers_=e->modifiers();
+    if(e->key()==Qt::Key_Control)cursorModifiers_|=Qt::ControlModifier;
+    const auto cursorGuard=qScopeGuard([this]{refreshCursor();});
     if(e->key()==Qt::Key_Escape) {
         if(stopRequested)stopRequested();
         if(mouseGestureActive() || !draft_.empty() || connectorFrom_)cancel();else clearSelection();
@@ -363,6 +374,7 @@ bool EditorCanvas::mouseGestureActive() const {
            laneResize_ || panning_ || band_ || dragging_;
 }
 void EditorCanvas::focusOutEvent(QFocusEvent* e) {
+    cursorModifiers_={};
     if (mouseGestureActive()) cancel();
     else {clearHover();redraw();}
     QGraphicsView::focusOutEvent(e);

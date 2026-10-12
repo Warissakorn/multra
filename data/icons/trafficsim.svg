@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>TrafficSim application icon</title>
+  <rect width="256" height="256" rx="56" fill="#2F6FED"/>
+  <path d="M48 60h160v44h-58v104h-44V104H48z" fill="#fff"/>
+  <path d="M124 188v-70q0-36 36-36h24m-12-12 12 12-12 12" fill="none" stroke="#2F6FED" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

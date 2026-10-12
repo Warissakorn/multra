@@ -1,5 +1,6 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
 #include "../model/network/rotation.hpp"
 #include <QApplication>
 #include <QGraphicsPathItem>
@@ -55,8 +56,6 @@ void EditorCanvas::drawRotationPreview() {
     centre->setZValue(200009);centre->setData(0,QStringLiteral("rotation-pivot"));
     const auto at=rotatePoint(rotationStart_,pivot,rotationDegrees_);
     auto* guide=scene_.addLine(pivot.x,pivot.y,at.x,at.y,pen);guide->setZValue(200009);
-    auto* angle=scene_.addSimpleText(QString::number(rotationDegrees_,'f',1)+QChar(0x00b0));
-    angle->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    angle->setBrush(editorDesign::role(QPalette::Text));angle->setPos(pivot.x+r*2,pivot.y-r*2);angle->setZValue(200010);
+    addCanvasLabel(QString::number(rotationDegrees_,'f',1)+QChar(0x00b0),QStringLiteral("rotation-angle"),{},pivot,100,editorDesign::numericFont());
 }
 }

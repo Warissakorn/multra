@@ -299,3 +299,8 @@ OSM backgrounds use one Canvas camera. Qt Network and PROJ live outside core/eva
 headless map persistence is Qt/PROJ-free. Tiles are viewport paint, not scene items,
 and are bounded by HTTP/disk and decoded-image caches. Provider definitions live in
 `data/map-providers.json`; only map reference/settings enter schema 29.
+
+GUI presentation policies (`shell/editor_wheel_guard`, `editor_tooltip`, `editor_layout`)
+cover later dialogs. `editor/canvas_cursor` owns gesture cursors; `canvas_labels` owns
+viewport placement. Qt-free `project/route_markers` persists optional schema-30 display
+endpoints; the compiler and core never consume them. See [GUI contract](reference/GUI_PRESENTATION.md).

@@ -30,6 +30,11 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
         if(ref.linkId==id && ref.station && *ref.station>distance-.1 && *ref.station<distance+.1)
             throw std::invalid_argument("EDIT_SPLIT_ATTACHMENT");
     detail::checkSplitControls(d.network, id, distance); // M3.2.2b: refuse before changing anything
+    for(const auto& [route,marker]:d.routeEndMarkers) {
+        (void)route;
+        if(marker.objectId==id && marker.station>distance-.1 && marker.station<distance+.1)
+            throw std::invalid_argument("EDIT_ROUTE_MARKER");
+    }
     auto downstream = original;
     downstream.id = allocateId(d, "link");
     downstream.geometry = section(original.geometry, distance + 0.1, total);
@@ -45,6 +50,12 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     }
     editableLink(d, id).geometry = section(original.geometry, 0, distance - 0.1);
     d.network.links.push_back(downstream);
+    for(auto& [route,marker]:d.routeEndMarkers) {
+        (void)route;
+        if(marker.objectId==id && marker.station>=distance+.1) {
+            marker.objectId=downstream.id;marker.station-=distance+.1;
+        }
+    }
     // Stations carry across the cut by arithmetic alone: the upstream child's polyline is a
     // prefix of the original, and the downstream child starts at the far side of the span.
     for(auto& c:d.network.connectors)for(auto* ref:{&c.from,&c.to})if(ref->linkId==id) {

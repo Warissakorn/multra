@@ -1,6 +1,8 @@
 #include "canvas.hpp"
 #include "map_layer.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
+#include <QApplication>
 #include <QGraphicsPathItem>
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
@@ -23,7 +25,8 @@ QPainterPath path(const std::vector<Point>& points) {
 EditorCanvas::EditorCanvas(QWidget* parent) : QGraphicsView(parent), scene_(this) {
     initializeMap();
     setScene(&scene_); setObjectName("editorCanvas");
-    setRenderHint(QPainter::Antialiasing); setMouseTracking(true);
+    setRenderHint(QPainter::Antialiasing);setRenderHint(QPainter::TextAntialiasing);
+    scene_.setFont(QApplication::font());setMouseTracking(true);
     // The grid is ≈3.3 ms of every Run frame repainted (Windows, 1600x1000, 2026-10-02) and
     // changes only with zoom, pan, `grid` or the screen's pixel ratio; the palette is constant.
     setCacheMode(CacheBackground);
@@ -107,7 +110,7 @@ std::pair<std::string, double> EditorCanvas::hit(Point p,bool connectors) const 
     return hits.empty()?std::pair<std::string,double>{}:hits.front();
 }
 void EditorCanvas::redraw() {
-    runItems_.clear();scene_.clear();pruneConnectorCache();
+    runItems_.clear();labels_.clear();scene_.clear();pruneConnectorCache();
     if (grid != cachedGrid_) { cachedGrid_ = grid; resetCachedContent(); }
     if (!document_) return;
     const auto& bg=document_->background;
@@ -173,10 +176,13 @@ void EditorCanvas::redraw() {
         const auto& r=document_->map->reference;
         scene_.setSceneRect(scene_.sceneRect().united(QRectF(r.anchorWorldX-100000,r.anchorWorldY-100000,200000,200000)));
     }
-    drawRunItems();viewport()->update();
+    drawRunItems();refreshCursor();viewport()->update();
 }
 void EditorCanvas::fitNetwork() {
-    auto bounds=scene_.itemsBoundingRect(); if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
+    QRectF bounds;
+    for(const auto* item:scene_.items())if(!dynamic_cast<const CanvasLabelItem*>(item) && item->data(0)!="label-leader")
+        bounds=bounds.united(item->sceneBoundingRect());
+    if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
     fitInView(bounds.adjusted(-10,-10,10,10),Qt::KeepAspectRatio);
     const double scale=std::clamp(std::abs(transform().m11()),0.05,100.0);
     setTransform(QTransform::fromScale(scale,-scale)); centerOn(bounds.center()); redraw();scheduleMapUpdate();

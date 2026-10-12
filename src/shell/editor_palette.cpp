@@ -13,6 +13,7 @@
 #include <QSignalBlocker>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QHeaderView>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <initializer_list>
@@ -25,6 +26,9 @@ void EditorWindow::buildPalette() {
     layout->setSpacing(editorDesign::space1);
     palette_=new QTreeWidget(body);palette_->setObjectName("editorObjectPalette");
     palette_->setHeaderHidden(true);palette_->setRootIsDecorated(true);palette_->setIndentation(editorDesign::space3);
+    palette_->setColumnCount(2);palette_->header()->setStretchLastSection(false);
+    palette_->header()->setSectionResizeMode(0,QHeaderView::Stretch);
+    palette_->header()->setSectionResizeMode(1,QHeaderView::Fixed);palette_->setColumnWidth(1,28);
     palette_->setUniformRowHeights(true);palette_->setSelectionMode(QAbstractItemView::SingleSelection);
     palette_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);layout->addWidget(palette_,1);
     palette_->setIconSize(QSize(editorDesign::space4,editorDesign::space4));
@@ -43,6 +47,7 @@ void EditorWindow::buildPalette() {
     for(const auto& group:groups){
         auto* root=new QTreeWidgetItem(palette_);root->setData(0,Qt::UserRole,QString::fromLatin1(group.key));
         root->setFlags(Qt::ItemIsEnabled);root->setData(0,Qt::UserRole+1,true);
+        root->setFirstColumnSpanned(true);
         auto groupFont=root->font(0);editorDesign::styleGroupLabel(groupFont,true);root->setFont(0,groupFont);
         root->setForeground(0,editorDesign::role(QPalette::WindowText));
         for(const int mode:group.modes){
@@ -100,7 +105,9 @@ void EditorWindow::translatePalette() {
     const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool"};
     for(const auto& [mode,entry]:paletteItems_){
         const auto label=text(modes[mode]);const auto shortcut=entry->data(0,Qt::UserRole+2).toString();
-        entry->setText(0,label+"  "+shortcut);entry->setToolTip(0,label+" · "+shortcut);
+        entry->setText(0,label);entry->setText(1,shortcut);
+        entry->setTextAlignment(1,Qt::AlignRight|Qt::AlignVCenter);
+        entry->setToolTip(0,label+" · "+shortcut);entry->setToolTip(1,entry->toolTip(0));
         actions_.at("editorTool"+std::to_string(mode))->setText(label);
     }
     for(int index=0;index<palette_->topLevelItemCount();++index){

@@ -14,9 +14,11 @@
 #include <QTimer>
 #include "map_provider.hpp"
 class QLabel;
+class QGraphicsLineItem;
 
 namespace trafficsim {
 class MapLayer;
+class CanvasLabelItem;
 enum class MapStatus;
 class EditorCanvas : public QGraphicsView {
 public:
@@ -77,6 +79,8 @@ public:
     // have stored them. The canvas never writes to the document itself.
     std::function<void(std::vector<std::string>)> routeDraftCommitted;
     std::function<void(std::vector<std::string>,std::optional<double>)> positionedRouteCommitted;
+    std::function<void(std::vector<std::string>,std::optional<double>,std::optional<RouteEndMarker>)> markedRouteCommitted;
+    const std::optional<RouteEndMarker>& routeEndMarker() const {return routeEndMarker_;}
     std::optional<double> routeStartPosition() const { return routeStartPosition_; }
     std::function<void(const std::string&,double)> decisionMoved;
     std::function<void(std::string)> inputPlaced;
@@ -149,12 +153,24 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void wheelEvent(QWheelEvent*) override;
     void keyPressEvent(QKeyEvent*) override;
+    void keyReleaseEvent(QKeyEvent*) override;
+    void paintEvent(QPaintEvent*) override;
     void focusOutEvent(QFocusEvent*) override;
     void leaveEvent(QEvent*) override;
     void drawBackground(QPainter*, const QRectF&) override;
     bool focusNextPrevChild(bool) override;
     bool event(QEvent*) override;
 private:
+    QPoint cursorPosition_{};
+    Qt::KeyboardModifiers cursorModifiers_{};
+    QString cursorKey_,hoverDemandId_;
+    void refreshCursor();
+    struct CanvasLabelAnchor {
+        CanvasLabelItem* item;QGraphicsLineItem* leader;Point anchor;QString full;std::string id;int priority;
+    };
+    std::vector<CanvasLabelAnchor> labels_;
+    CanvasLabelItem* addCanvasLabel(QString,const QString&,const std::string&,Point,int,QFont = {});
+    void layoutCanvasLabels();
     std::unique_ptr<MapLayer> mapLayer_;
     QTimer mapViewportTimer_;
     QLabel *mapCredit_{}, *mapStatus_{};
@@ -217,6 +233,10 @@ private:
     void reject();
     std::vector<std::string> routeDraft_;
     std::optional<double> routeStartPosition_;
+    std::optional<RouteEndMarker> routeEndMarker_;
+    std::optional<RouteEndMarker> routeMarkerAt(const std::string&,QPoint) const;
+    bool routeMarkerReachable(const std::vector<std::string>&,const std::optional<RouteEndMarker>&) const;
+    void updateRoutePreview();
     struct DecisionDrag { std::string id,linkId;double position{};QPoint press;bool moved{}; };
     std::optional<DecisionDrag> decisionDrag_;
     bool startDecisionDrag(QPoint);

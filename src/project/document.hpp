@@ -2,8 +2,13 @@
 #include "json.hpp"
 #include "map_settings.hpp"
 #include "../model/demand/definition.hpp"
+#include <map>
 
 namespace trafficsim {
+struct RouteEndMarker {
+    std::string objectId;double station{};
+    bool operator==(const RouteEndMarker&) const = default;
+};
 struct BackgroundImage {
     std::shared_ptr<const std::string> pngBase64{std::make_shared<const std::string>()};
     double x{}, y{}, metresPerPixel{1}, rotation{}, opacity{0.5};
@@ -23,6 +28,8 @@ struct ProjectDocument {
     std::uint64_t nextId{1};
     std::uint64_t revision{};
     std::optional<MapSettings> map;
+    // Editor display only; routes and runtime lane chains still traverse complete objects.
+    std::map<std::string,RouteEndMarker> routeEndMarkers;
     bool operator==(const ProjectDocument&) const = default;
 };
 AuthoringDefinition parseAuthoringDefinition(const Json&);

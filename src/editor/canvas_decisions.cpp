@@ -1,5 +1,6 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
 #include <QApplication>
 #include <cmath>
 
@@ -16,10 +17,17 @@ void EditorCanvas::drawPositionedDecisions() {
             if(!bar)continue;
             auto* item=new RoadCrossbarItem(*bar,canvasStyle::active(),std::abs(transform().m11()));scene_.addItem(item);
             item->setZValue(200008);item->setData(0,QStringLiteral("decision-marker"));item->setData(1,QString::fromStdString(decision.id));
+            auto* label=addCanvasLabel(QString::fromStdString(decision.name.empty()?decision.id:decision.name),
+                QStringLiteral("decision-label"),decision.id,bar->second,30,scene_.font());
+            item->setToolTip(label->toolTip());
         }
 }
 bool EditorCanvas::startDecisionDrag(QPoint point) {
     if(!document_ || !document_->definition)return false;
+    // A displaced name selects the decision, but only its physical bar may start a drag.
+    bool physical=false;
+    for(const auto* item:items(point))if(item->data(0)=="decision-marker"){physical=true;break;}
+    if(!physical)return false;
     const auto [kind,id]=demandObjectAt(point);
     if(kind!="decision")return false;
     for(const auto& decision:document_->definition->routingDecisions)if(decision.id==id && decision.position) {

@@ -51,6 +51,9 @@ void reverseLink(ProjectDocument& d,const std::string& id) {
     if(detail::controlsNameLink(d.network,id))throw std::invalid_argument("EDIT_REFERENCED_LINK");
     // A route names this Link rather than its lanes (M1.26), so reversing the lane order does
     // not invalidate it. The Connector and head guards above still do: those hold positions.
+    for(auto& [route,marker]:d.routeEndMarkers) {
+        (void)route;if(marker.objectId==id)marker.station=polylineLength(link.geometry)-marker.station;
+    }
     std::reverse(link.geometry.begin(),link.geometry.end());
     std::reverse(link.lanes.begin(),link.lanes.end());
     std::reverse(link.boundaryMarkings.begin(),link.boundaryMarkings.end());

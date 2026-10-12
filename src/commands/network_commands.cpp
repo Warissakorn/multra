@@ -17,6 +17,7 @@ void detail::removeRoutesUsingSegments(ProjectDocument& d, const std::set<std::s
     for (const auto& r : d.definition->routes) for (const auto& segment : r.segmentIds)
         if (segments.contains(segment)) routes.insert(r.id);
     std::erase_if(d.definition->routes, [&](const auto& r) { return routes.contains(r.id); });
+    for(const auto& id:routes)d.routeEndMarkers.erase(id);
     std::erase_if(d.definition->inputs, [&](const auto& i) { return routes.contains(i.routeId); });
     pruneRoutingDecisions(*d.definition, d.network);
 }
@@ -85,10 +86,11 @@ void resizeLinkLanes(ProjectDocument& d,const std::string& id,int count,bool lea
 
 void deleteLink(ProjectDocument& d, const std::string& id) {
     const auto l = editableLink(d, id);
-    std::set<std::string> removed, attached;
+    std::set<std::string> removed{id}, attached;
     for (const auto& lane : l.lanes) removed.insert(lane.id);
     for (const auto& c : d.network.connectors) if (c.from.linkId == id || c.to.linkId == id) {
         attached.insert(c.id);
+        removed.insert(c.id);
         for(int i=0;i<std::max(c.fromLaneCount,c.toLaneCount);++i)removed.insert(connectorPathId(c,i));
     }
     detail::removeControlsOn(d, {id}, attached); // M3.2.2b: controls cascade like heads

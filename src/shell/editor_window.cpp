@@ -48,6 +48,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     language_->addItem(locales_.at("en").value("english").toString(),"en");
     language_->addItem(locales_.at("en").value("thai").toString(),"th"); language_->setCurrentIndex(language=="th"?1:0);
     applyEditorStyle(this);
+    setWindowIcon(editorApplicationIcon());
     setAnimated(false); // Docks and toolbars snap into place; the editor has no motion (D81).
     auto* central=new QWidget(this); auto* layout=new QVBoxLayout(central);
     layout->setContentsMargins(editorDesign::space1,editorDesign::space1,editorDesign::space1,editorDesign::space1);
@@ -110,7 +111,8 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         refresh(false);
         if (!canvas_->selected().empty()) properties_->setCurrentIndex(canvas_->selectedConnector()?1:0);
     };
-    canvas_->cursorMoved=[this](Point p){coordinates_->setText(QString("x %1 m   y %2 m").arg(editorDesign::formatValue(p.x,2),9).arg(editorDesign::formatValue(p.y,2),9));};
+    coordinates_->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    canvas_->cursorMoved=[this](Point p){coordinates_->setText(QStringLiteral("x: %1 m · y: %2 m").arg(editorDesign::formatValue(p.x,2),editorDesign::formatValue(p.y,2)));};
     canvas_->createLink=[this](const auto& points){
         std::string created; if(execute("editorDraw",[&](auto& d){created=addLink(d,points,count_->value(),width_->value());
             changeAppearance(d,created,objectLevel_->currentData().toInt(),objectDisplay_->currentData().toString().toStdString());})) canvas_->select(created);

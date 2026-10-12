@@ -300,11 +300,12 @@ Levels only affect display and selection; they do not change runtime conflicts.
 
 1. Draw a continuous path using links and connectors.
 2. With Routes (R), click the start road, move over connected roads to choose the path,
-   then click the destination to save one History entry. Crossbars mark start/end and a static
+   then click the destination to save one History entry. Crossbars mark the clicked start/end stations and a static
    blue tint follows the actual route spans. Passing an intermediate branch disambiguates
    equal paths. Backspace goes back; Esc, focus loss or tool/level change cancels.
    Ctrl+right-click start/append and Enter remain available. Routes still name whole Links
-   and Connectors, never new arbitrary endpoint stations. See [EDITOR_WORKFLOW](EDITOR_WORKFLOW.md).
+   and Connectors. Schema-30 destination stations are display only; simulation still
+   traverses complete objects. See [GUI presentation](GUI_PRESENTATION.md). See [EDITOR_WORKFLOW](EDITOR_WORKFLOW.md).
 3. With the Vehicle inputs tool (V), Ctrl+right-click the link traffic enters on: the dialog opens on the
    route starting there or, when none does, on **following the network from that link** with no
    route (M2.1.1). The volume is the **link total**, divided across the link's lanes (equally or
@@ -424,7 +425,7 @@ schema choice and serialized bytes stand. Unknown future versions are rejected.
 | Opened by | Editor (or `trafficsim-cli --scenario`) | Editor |
 | Runs | Editor, or `trafficsim-cli` | Editor after demand/catalog/runtime checks |
 
-The editor opens bare M0 authoring files and project schemas 1–29. Saving uses schema 17
+The editor opens bare M0 authoring files and project schemas 1–30. Saving uses schema 17
 by default, 18 for owned composition catalogs or embedded vehicle names, and 19 for
 composition periods or type-conditioned routing; schema 20 when a routing decision has `position`; schema 21 when the behaviour library
 or a road behaviour-type assignment is used ([DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126)); schema 22 when an evaluation period is set ([SIMULATION](SIMULATION.md#movement-evaluation-m25), D132); schema 23 when a travel-time section exists ([TRAVEL_TIME_SECTIONS](TRAVEL_TIME_SECTIONS.md), D133); schema 24 when a section has a control type ([LOS](LOS.md), D134); schema 25 when an owned behaviour is `w74` (D136); schema 26 when an input takes its volume from its decision's turning counts ([DEMAND_IMPROVEMENT](../plans/DEMAND_IMPROVEMENT.md) §7, D142); schema 27 when the evaluation period has a cool-down ([BATCH](BATCH.md) §5, D146); schema 28 when an owned behaviour carries `amberDeceleration` ([AMBER](AMBER.md), D147). From schema 21 every owned behaviour is written with its `model`, library or not (D147 found the gap). This is selected from the document's

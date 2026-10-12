@@ -1,4 +1,7 @@
 #include "editor_style.hpp"
+#include "editor_wheel_guard.hpp"
+#include "editor_tooltip.hpp"
+#include "editor_layout.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QPainter>
 #include <QPainterPath>
@@ -173,6 +176,7 @@ QString editorStyleSheet() {
 }
 void applyEditorStyle(QWidget* window) {
     installEditorStyle();
+    installEditorWheelGuard();installEditorTooltipPolicy();installEditorLayoutPolicy();
     window->setPalette(editorDesign::editorPalette());
     window->setStyleSheet(editorStyleSheet());
 }

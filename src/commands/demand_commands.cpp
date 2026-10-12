@@ -1,4 +1,5 @@
 #include "../project/counted_volumes.hpp"
+#include "../project/route_markers.hpp"
 #include "demand_commands.hpp"
 #include "detail.hpp"
 #include <algorithm>
@@ -49,7 +50,17 @@ std::string putRoute(ProjectDocument& d, Route value) {
     // meant the object it belongs to, so it is stored that way here rather than refused: this is
     // the same mapping a schema-7 file gets on load, and it keeps one meaning in the document.
     migrateRoutesToObjects(d.network,demand(d));
+    if(const auto marker=d.routeEndMarkers.find(id);marker!=d.routeEndMarkers.end())
+        for(const auto& route:demand(d).routes)if(route.id==id &&
+            std::find(route.segmentIds.begin(),route.segmentIds.end(),marker->second.objectId)==route.segmentIds.end()) {
+            d.routeEndMarkers.erase(marker);break;
+        }
     return id;
+}
+void putRouteEndMarker(ProjectDocument& d,const std::string& id,std::optional<RouteEndMarker> marker) {
+    const auto previous=d.routeEndMarkers;
+    if(marker)d.routeEndMarkers[id]=*marker;else d.routeEndMarkers.erase(id);
+    try {validateRouteEndMarkers(d);}catch(...) {d.routeEndMarkers=previous;throw;}
 }
 std::string putInput(ProjectDocument& d, VehicleInput value) {
     if (value.id.empty()) value.id=allocateId(d,"input");
@@ -64,6 +75,7 @@ std::string putProgram(ProjectDocument& d, SignalProgram value) {
 }
 void deleteRoute(ProjectDocument& d, const std::string& id) {
     auto& values=demand(d); remove(values.routes,id);
+    d.routeEndMarkers.erase(id);
     std::erase_if(values.inputs,[&](const auto& i){return i.routeId==id;});
     detail::pruneRoutingDecisions(values, d.network);
 }

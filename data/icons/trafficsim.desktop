@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=TrafficSim
+Comment=Traffic microsimulation network editor
+Exec=trafficsim-desktop
+Icon=trafficsim
+Terminal=false
+Categories=Science;Education;

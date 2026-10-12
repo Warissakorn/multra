@@ -9,42 +9,11 @@
 #include <cmath>
 
 namespace trafficsim {
-namespace {
-// The pointer while something is being moved: the ordinary arrow with a small hand beside it,
-// so pointing stays an arrow and only a move says "you are carrying this".
-QCursor moveCursor() {
-    static const QCursor cursor=[]{
-        constexpr int size=32,ratio=2;
-        QPixmap pixmap(size*ratio,size*ratio);pixmap.fill(Qt::transparent);pixmap.setDevicePixelRatio(ratio);
-        QPainter p(&pixmap);p.setRenderHint(QPainter::Antialiasing);
-        const QPen outline(Qt::black,1,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin);
-        QPolygonF arrow;
-        arrow<<QPointF(1,1)<<QPointF(1,17)<<QPointF(5,13)<<QPointF(8,20)<<QPointF(10.5,19)
-             <<QPointF(7.5,12)<<QPointF(13,12)<<QPointF(1,1);
-        p.setPen(outline);p.setBrush(Qt::white);p.drawPolygon(arrow);
-        // An open hand: palm, four fingers and a thumb, merged into one outline (winding fill,
-        // so the overlaps join instead of cutting holes).
-        QPainterPath hand;hand.setFillRule(Qt::WindingFill);
-        hand.addRoundedRect(QRectF(15,21,11.5,9.5),3,3);
-        const double tops[]={15.5,14,15,16.5};
-        for(int i=0;i<4;++i)hand.addRoundedRect(QRectF(15+i*2.9,tops[i],2.6,9),1.3,1.3);
-        QPainterPath thumb;thumb.addRoundedRect(QRectF(-1.3,-5,2.6,7),1.3,1.3);
-        hand.addPath(QTransform().translate(14.8,25).rotate(-40).map(thumb));
-        p.setBrush(Qt::white);p.drawPath(hand.simplified());
-        p.end();
-        return QCursor(pixmap,1,1);
-    }();
-    return cursor;
-}
-}
 bool EditorCanvas::movingBody() const {
     return (dragging_ && vertex_<0 && preview_!=original_) || groupDragging_ || copyDragging_;
 }
 bool EditorCanvas::movingGeometry() const {
     return movingBody() || (dragging_ && preview_!=original_) || (endpointDrag_ && endpointDraft_);
-}
-void EditorCanvas::showMoveCursor() {
-    if(cursor().shape()!=Qt::BitmapCursor)setCursor(moveCursor());
 }
 void EditorCanvas::clearSelectionState() {
     selection_.clear(); vertex_ = -1;
@@ -64,20 +33,16 @@ void EditorCanvas::clearHover() {
     hoverVertex_ = -1; hoverLaneKind_ = 0; hoverLaneLocation_ = -1;
     hoverSegment_.clear(); hoverHead_.reset(); connectorHover_.reset();
     if(!routeTracing_)routePreview_=routeDraft_;
-    setCursor(tool_ == Tool::select ? Qt::ArrowCursor : Qt::CrossCursor);
+    hoverDemandId_.clear();refreshCursor();
 }
 void EditorCanvas::updateHover(QPoint position) {
     std::string object, conflict, automatic, waiting;
     int vertex = -1, laneKind = 0, laneLocation = -1;
-    auto cursor = tool_ == Tool::select ? Qt::ArrowCursor : Qt::CrossCursor;
     const auto p = world(position, false);
     if (tool_ == Tool::select) {
         if (const auto h = laneHandleAt(position)) {
             laneKind = h->kind; laneLocation = h->location;
-            const double x = std::abs(h->direction.x), y = std::abs(h->direction.y);
-            cursor = x > 2 * y ? Qt::SizeHorCursor : y > 2 * x ? Qt::SizeVerCursor :
-                     h->direction.x * h->direction.y > 0 ? Qt::SizeBDiagCursor : Qt::SizeFDiagCursor;
-        } else if ((vertex = vertexAt(position)) >= 0) cursor = Qt::SizeAllCursor;
+        } else if ((vertex = vertexAt(position)) >= 0) { /* The cursor resolver owns this state. */ }
         else object = hit(p).first; // pointing stays an arrow; a move shows the hand (showMoveCursor)
     } else if (tool_ == Tool::split || tool_ == Tool::connect) {
         object = hit(p, false).first;
@@ -88,7 +53,6 @@ void EditorCanvas::updateHover(QPoint position) {
             if (!areas.empty()) conflict = areas.front();
             else automatic = automaticAt(p);
         }
-        if (!waiting.empty()) cursor = Qt::SizeAllCursor;
     } else if (tool_ == Tool::counter && counterLineAt(p)) object = hit(p).first;
     else if (tool_ == Tool::section && sectionLineAt(p)) object = hit(p).first;
     const bool changed = object != hoverObject_ || conflict != hoverConflict_ || automatic != hoverAutomatic_ ||
@@ -96,7 +60,7 @@ void EditorCanvas::updateHover(QPoint position) {
     hoverObject_ = std::move(object); hoverConflict_ = std::move(conflict);
     hoverAutomatic_ = std::move(automatic); hoverWaitingLine_ = std::move(waiting);
     hoverVertex_ = vertex; hoverLaneKind_ = laneKind; hoverLaneLocation_ = laneLocation;
-    setCursor(cursor);
+    refreshCursor();
     if (changed) redraw();
 }
 void EditorCanvas::leaveEvent(QEvent* event) {

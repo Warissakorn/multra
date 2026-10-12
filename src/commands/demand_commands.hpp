@@ -3,6 +3,7 @@
 namespace trafficsim {
 AuthoringDefinition& demand(ProjectDocument&);
 std::string putRoute(ProjectDocument&, Route); // Empty id allocates; same id replaces.
+void putRouteEndMarker(ProjectDocument&,const std::string& routeId,std::optional<RouteEndMarker>);
 std::string putInput(ProjectDocument&, VehicleInput);
 std::string putProgram(ProjectDocument&, SignalProgram);
 void deleteRoute(ProjectDocument&, const std::string&); // Cascades its inputs and decision entries.

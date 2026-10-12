@@ -7,6 +7,16 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 to do next is the duplication hard rule 3 forbids, and the copy that rots is always the one in
 the log. Rewrite this file; do not append to it.
 
+## GUI presentation review (2026-10-12, D151)
+
+The owner's eight GUI items are implemented on `codex/gui-polish-and-interaction`.
+Read [contract](reference/GUI_PRESENTATION.md) and [evidence](evidence/gui-presentation.md).
+Check the latest draft PR's Linux and Windows native jobs, then the owner's physical
+Windows look: Thai/Latin text, 125/150/200% DPI, different monitor scales, narrow
+panels/dialogs, tooltip edges, dense input/decision labels and current Link/Connector
+Ctrl+right gestures. Destination lines are display only. M1.29's appearance gate and
+all existing engine/owner gates stay open; the unchanged queue follows below.
+
 ## OSM background review (2026-10-12, D150)
 
 The current owner request adds M1.28 ([contract](reference/MAP_BACKGROUND.md),

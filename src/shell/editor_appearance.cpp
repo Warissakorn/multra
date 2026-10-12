@@ -8,7 +8,14 @@
 #include <QPainter>
 #include <QStyleFactory>
 #include <QTemporaryDir>
+static void initializeApplicationIcons() {Q_INIT_RESOURCE(app_icons);}
 namespace trafficsim {
+QIcon editorApplicationIcon() {
+    initializeApplicationIcons();QIcon icon;
+    for(int size:{16,24,32,48,64,128,256,512})
+        icon.addFile(QStringLiteral(":/icons/trafficsim-%1.png").arg(size),QSize(size,size));
+    return icon;
+}
 QFont loadEditorFont(const std::filesystem::path& data) {
     // One face for Thai, Latin and digits (its digits are tabular), in two static weights: 400
     // and 600. Static cuts, not the variable font: weight axes are not honoured on every Qt
@@ -22,7 +29,8 @@ QFont loadEditorFont(const std::filesystem::path& data) {
             if(family.isEmpty())family=QFontDatabase::applicationFontFamilies(id).front();
         }
     }
-    QFont font(family);font.setPixelSize(editorDesign::fontSizeBody);QApplication::setFont(font);
+    QFont font(family);font.setPixelSize(editorDesign::fontSizeBody);
+    font.setStyleStrategy(QFont::PreferAntialias);QApplication::setFont(font);
     return font;
 }
 void installEditorStyle() {

@@ -30,7 +30,7 @@ void EditorWindow::buildRouting() {
             table->clearSelection();table->setCurrentItem(nullptr);
         }
     };
-    canvas_->positionedRouteCommitted=[this](const auto& segments,auto position){commitDrawnRoute(segments,position);};
+    canvas_->markedRouteCommitted=[this](const auto& segments,auto position,auto marker){commitDrawnRoute(segments,position,marker);};
     canvas_->decisionMoved=[this](const auto& id,double position){
         execute("editorEditDecision",[&](auto& d){for(auto decision:demand(d).routingDecisions)if(decision.id==id){decision.position=position;putRoutingDecision(d,decision);break;}});
     };
@@ -40,6 +40,7 @@ void EditorWindow::buildRouting() {
     // The pointer tools are gestures with no dialog to explain them, so the status bar says
     // what a click will do while one of them is chosen.
     toolHint_=new QLabel(this);toolHint_->setObjectName("editorToolHint");
+    toolHint_->setTextFormat(Qt::PlainText);toolHint_->setWordWrap(true);toolHint_->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     toolHint_->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);
     statusBar()->addWidget(toolHint_,1);
     connect(tool_,&QComboBox::currentIndexChanged,this,[this]{refreshToolHint();});
@@ -51,7 +52,7 @@ void EditorWindow::refreshToolHint() {
     toolHint_->setText(index==0?text("editorSelectHelp"):index==6?text(canvas_->routeDraft().empty()?"editorRouteClickHelp":"editorRouteFinishHelp"):index==7?text("editorInputPlaceHelp"):index==8?text("editorHeadPlaceHelp"):index==10?text("editorCounterPlaceHelp"):index==11?text("editorSectionPlaceHelp"):QString{});
     toolHint_->setToolTip(toolHint_->text());
 }
-void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position) {
+void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position,std::optional<RouteEndMarker> marker) {
     if(segmentIds.empty())return;
     std::string created;
     // The same command the dialog commits through, so a route drawn by pointer and a route
@@ -66,7 +67,9 @@ void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,s
             }
             value.routes.push_back({created,1,{},std::vector<double>(value.intervals.size(),1)});
             putRoutingDecision(d,value);
-        }})) {
+        }
+        if(marker)putRouteEndMarker(d,created,marker);
+        })) {
         selectDemand(created);canvas_->setHighlightedRoute(created);
     }
 }

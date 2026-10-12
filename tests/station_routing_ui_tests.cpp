@@ -47,7 +47,9 @@ int main(int argc,char** argv) {
             require(!path->path().contains(QPointF(10,0)),"Route tint extends upstream of recognition");overlay=true;
         }
         require(overlay,"Committed Route has no overlay");
-        require(documentJson(w.history().document())["schemaVersion"]==20,"Position not persisted in schema 20");
+        require(documentJson(w.history().document())["schemaVersion"]==30,"Destination not persisted in schema 30");
+        const auto markers=w.history().document().routeEndMarkers;
+        require(markers.size()==1 && std::abs(markers.begin()->second.station-50)<1,"Destination snapped to the road end");
         click(canvas,{at,0});hover(canvas,{170,50});click(canvas,{170,50});
         require(w.history().document().definition->routingDecisions.size()==1 && decision(w).routes.size()==2,
             "Starting on the same line did not group the second route");
@@ -64,6 +66,7 @@ int main(int argc,char** argv) {
         QTest::keyClick(canvas,Qt::Key_Escape);QTest::mouseRelease(canvas->viewport(),Qt::LeftButton,{},q);
         require(decision(w).position==at,"Cancelled drag committed");
         w.saveFile(file);w.openFile(file);QApplication::processEvents();require(decision(w).position==at,"Reopen lost the station");
+        require(w.history().document().routeEndMarkers==markers,"Save/Open lost the route endpoint");
         undo(w); // Reopened history is empty: the stored document remains intact.
         require(decision(w).position==at,"Empty Undo modified the reopened station");
         std::cout<<"station routing UI ok\n";

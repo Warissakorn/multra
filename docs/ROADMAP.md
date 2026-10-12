@@ -151,6 +151,16 @@ Contract and rows: [MAP_BACKGROUND](reference/MAP_BACKGROUND.md); plan:
 **Gate remains open:** MAP1–MAP9 automated/platform evidence and MAP10 owner alignment
 and responsiveness on a real study. This does not close M1.23 interchange or any engine gate.
 
+### M1.29 — GUI presentation and interaction (D151)
+
+Owner authorized all eight GUI items together: sharp Thai/Latin/numeric text, exact
+Route display endpoints, responsive text/layout, collision-managed canvas labels,
+bounded wrapped tooltips, wheel-protected settings, initial identity and gesture
+cursors. [Contract](reference/GUI_PRESENTATION.md), [evidence](evidence/gui-presentation.md).
+Implemented on the GUI branch; automated and native CI checks precede review.
+**Appearance gate stays open:** the owner's physical Windows/DPI/multiple-monitor
+review. Schema 30 endpoints are display only, not partial simulation routing.
+
 ## M2 — Demand, run, first numbers · **CLOSED** (gate passed, D53; closed by D143)
 
 Vehicle inputs per interval, compositions, turning proportions. Press Run, get average delay and queue per movement.

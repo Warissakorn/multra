@@ -1,6 +1,8 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAbstractItemView>
+#include <QApplication>
+#include <QStyle>
 #include <QAction>
 #include <QComboBox>
 #include <QDialog>
@@ -9,6 +11,8 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QStyledItemDelegate>
+#include <QPainter>
 #include <QSize>
 #include <QVBoxLayout>
 #include <algorithm>
@@ -16,6 +20,23 @@
 
 namespace trafficsim {
 namespace {
+class CommandDelegate final : public QStyledItemDelegate {
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+    void paint(QPainter* painter,const QStyleOptionViewItem& option,const QModelIndex& index) const override {
+        QStyleOptionViewItem opt(option);initStyleOption(&opt,index);
+        const auto shortcut=index.data(Qt::UserRole+1).toString();
+        const auto title=opt.text;opt.text.clear();
+        const auto* widget=opt.widget;
+        (widget?widget->style():QApplication::style())->drawControl(QStyle::CE_ItemViewItem,&opt,painter,widget);
+        const int keyWidth=shortcut.isEmpty()?0:opt.fontMetrics.horizontalAdvance(shortcut)+16;
+        const auto textRect=option.rect.adjusted(8,0,-8,0);
+        painter->save();painter->setFont(opt.font);painter->setPen(opt.palette.color(QPalette::Text));
+        painter->drawText(textRect.adjusted(0,0,-keyWidth,0),Qt::AlignLeft|Qt::AlignVCenter,
+            opt.fontMetrics.elidedText(title,Qt::ElideRight,std::max(0,textRect.width()-keyWidth)));
+        painter->drawText(textRect,Qt::AlignRight|Qt::AlignVCenter,shortcut);painter->restore();
+    }
+};
 class CommandSearch final : public QLineEdit {
 public:
     using QLineEdit::QLineEdit;
@@ -48,6 +69,7 @@ void EditorWindow::showCommandPalette() {
     search->setPlaceholderText(text("editorCommandPaletteSearch"));
     search->setAccessibleName(text("editorCommandPaletteSearch"));layout->addWidget(search);
     auto* results=new QListWidget(&dialog);results->setObjectName("editorCommandResults");
+    results->setItemDelegate(new CommandDelegate(results));
     results->setSelectionMode(QAbstractItemView::SingleSelection);results->setUniformItemSizes(true);
     results->setMinimumHeight(280);layout->addWidget(results);
     auto emptyText=text("editorCommandPaletteEmpty");
@@ -68,7 +90,7 @@ void EditorWindow::showCommandPalette() {
             const QString title=command->text().replace('&'," ").simplified();
             const QString searchable=title+" "+QString::fromStdString(key)+" "+shortcuts;
             if(!query.isEmpty()&&!searchable.contains(query,Qt::CaseInsensitive))continue;
-            auto* item=new QListWidgetItem(title+(shortcuts.isEmpty()?QString():"    "+shortcuts),results);
+            auto* item=new QListWidgetItem(title,results);item->setData(Qt::UserRole+1,shortcuts);
             item->setData(Qt::UserRole,QString::fromStdString(key));item->setToolTip(searchable);
             item->setSizeHint(QSize(item->sizeHint().width(),editorDesign::tableRowHeight));
         }

@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_style.hpp"
 #include "path.hpp"
 #include "../geo/projection_data.hpp"
 #include "../project/load.hpp"
@@ -11,6 +12,7 @@ int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QLocale::setDefault(QLocale::c()); // Latin digits in every widget, before any is built
     QCoreApplication::setApplicationName("TrafficSim");
+    app.setWindowIcon(trafficsim::editorApplicationIcon());app.setDesktopFileName("trafficsim");
     QCoreApplication::setApplicationVersion(TRAFFICSIM_VERSION);
     QCommandLineParser parser;
     parser.addHelpOption(); parser.addVersionOption();

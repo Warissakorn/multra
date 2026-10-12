@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="160" viewBox="0 0 660 160">
+  <title>TrafficSim working-name wordmark</title>
+  <rect x="8" y="8" width="144" height="144" rx="32" fill="#2F6FED"/>
+  <path d="M35 42h90v25H92v59H67V67H35z" fill="#fff"/>
+  <path d="M77 115V75q0-20 20-20h13m-7-7 7 7-7 7" fill="none" stroke="#2F6FED" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="184" y="104" font-family="Noto Sans Thai, sans-serif" font-size="64" font-weight="600" fill="#182B49">TrafficSim</text>
+</svg>

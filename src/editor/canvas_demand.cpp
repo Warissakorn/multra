@@ -1,5 +1,7 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
+#include "../project/route_markers.hpp"
 #include <QGraphicsPathItem>
 #include <QGraphicsSimpleTextItem>
 #include <QPainterPathStroker>
@@ -9,6 +11,32 @@
 #include <cmath>
 
 namespace trafficsim {
+std::optional<RouteEndMarker> EditorCanvas::routeMarkerAt(const std::string& id,QPoint point) const {
+    if(!document_)return {};
+    const auto geometry=routeMarkerGeometry(document_->network,id);
+    if(geometry.size()<2)return {};
+    return RouteEndMarker{id,stationOfClosestPoint(geometry,world(point,false))};
+}
+bool EditorCanvas::routeMarkerReachable(const std::vector<std::string>& path,const std::optional<RouteEndMarker>& marker) const {
+    return !marker || !routeStartPosition_ || path.size()!=1 || marker->objectId!=path.front() || marker->station>=*routeStartPosition_;
+}
+void EditorCanvas::updateRoutePreview() {
+    // Moving the endpoint within one road needs no path search or road scene rebuild.
+    for(auto* item:scene_.items()) {
+        const auto tag=item->data(0).toString();
+        if(tag=="route-draft" || ((tag=="route-start" || tag=="route-end") && item->data(1).toString().isEmpty()) || tag=="demand-hover") {
+            scene_.removeItem(item);delete item;
+        }
+    }
+    if(!routeDraft_.empty())drawRouteOverlay(routePreview_.empty()?routeDraft_:routePreview_,{},true);
+    if(!hoverSegment_.empty()) {
+        const QColor colour=hoverReachable_?canvasStyle::hover():canvasStyle::error();
+        QPen pen(colour,1.5);pen.setCosmetic(true);auto fill=colour;fill.setAlpha(24);
+        auto* item=scene_.addPath(objectShape(hoverSegment_),pen,QBrush(fill));item->setZValue(200003);
+        item->setData(0,QStringLiteral("demand-hover"));item->setData(1,QString::fromStdString(hoverSegment_));item->setData(2,hoverReachable_);
+    }
+    refreshCursor();viewport()->update();
+}
 namespace {
 QPainterPath polylinePath(const std::vector<Point>& points) {
     QPainterPath path;
@@ -38,7 +66,7 @@ std::vector<std::string> EditorCanvas::routeDraftWith(const std::string& target)
 void EditorCanvas::startRouteDraft(const std::string& objectId) {
     if(!document_ || objectId.empty())return;
     if(routeLaneChains(document_->network,{objectId}).empty())return;
-    routeStartPosition_.reset();routeDraft_={objectId};routePreview_=routeDraft_;routeTracing_=true;hoverSegment_.clear();
+    routeStartPosition_.reset();routeEndMarker_.reset();routeDraft_={objectId};routePreview_=routeDraft_;routeTracing_=true;hoverSegment_.clear();
     if(routeDraftChanged)routeDraftChanged();
     redraw();
 }
@@ -49,7 +77,7 @@ std::pair<std::string,std::string> EditorCanvas::demandObjectAt(QPoint viewportP
         const auto id=item->data(1).toString().toStdString();
         if(id.empty())continue; // An unfinished Route is not an editable stored object.
         if(kind=="input-marker" || kind=="input-volume")return {"input",item->data(1).toString().toStdString()};
-        if(kind=="decision-marker")return {"decision",item->data(1).toString().toStdString()};
+        if(kind=="decision-marker" || kind=="decision-label")return {"decision",item->data(1).toString().toStdString()};
         if(kind=="route-overlay" || kind=="route-start" || kind=="route-end")route={"route",id};
     }
     return route;
@@ -74,7 +102,7 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
                     if(decision.linkId==target && decision.position &&
                        std::abs(*decision.position-*routeStartPosition_)*std::abs(transform().m11())<=10)routeStartPosition_=decision.position;
             }
-            redraw();return true;
+            routeEndMarker_=routeMarkerAt(target,e->pos());redraw();return true;
         }
         // Re-read the click: Qt can coalesce the final hover move.
         const auto base=routePreview_.empty()?routeDraft_:routePreview_;
@@ -86,12 +114,14 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
             if(chain.empty()){reject();return true;}
             candidate.insert(candidate.end(),chain.begin(),chain.end());
         }
-        if(routeLaneChains(document_->network,candidate).empty()){reject();return true;}
+        const auto marker=routeMarkerAt(target,e->pos());
+        if(routeLaneChains(document_->network,candidate).empty() || !routeMarkerReachable(candidate,marker)){reject();return true;}
+        routeEndMarker_=marker;
         routeDraft_=std::move(candidate);routePreview_.clear();commitRouteDraft();return true;
     }
     const auto chain=routeDraftWith(target);
     if(chain.empty()){reject();return true;}
-    routeTracing_=false;routeStartPosition_.reset();
+    routeTracing_=false;routeStartPosition_.reset();routeEndMarker_.reset();
     routeDraft_.insert(routeDraft_.end(),chain.begin(),chain.end());routePreview_=routeDraft_;
     if(routeDraftChanged)routeDraftChanged();
     redraw();return true;
@@ -105,7 +135,15 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
     if(tool_!=Tool::route && tool_!=Tool::input)return false;
     const auto hovered=objectAt(world(e->pos(),false));
     // Path finding and scene rebuilds happen on object changes, not on every mouse pixel.
-    if(hovered==hoverSegment_)return true;
+    if(hovered==hoverSegment_) {
+        if(routeTracing_ && !routeDraft_.empty()) {
+            const auto marker=routeMarkerAt(hovered,e->pos());
+            const auto& path=routePreview_.empty()?routeDraft_:routePreview_;
+            hoverReachable_=marker && !path.empty() && path.back()==hovered && routeMarkerReachable(path,marker);
+            routeEndMarker_=marker;updateRoutePreview();
+        }
+        return true;
+    }
     hoverSegment_=hovered;
     if(tool_==Tool::input)hoverReachable_=isLink(hovered);
     else if(routeDraft_.empty())hoverReachable_=!routeDraftWith(hovered).empty();
@@ -119,8 +157,10 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
             if(!chain.empty())candidate.insert(candidate.end(),chain.begin(),chain.end());
             else candidate.clear();
         }
-        hoverReachable_=!candidate.empty() && !routeLaneChains(document_->network,candidate).empty();
+        const auto marker=routeMarkerAt(hovered,e->pos());
+        hoverReachable_=!candidate.empty() && !routeLaneChains(document_->network,candidate).empty() && routeMarkerReachable(candidate,marker);
         if(hoverReachable_)routePreview_=std::move(candidate);
+        if(routeTracing_)routeEndMarker_=hoverReachable_?marker:std::nullopt;
     }
     redraw();return true;
 }
@@ -128,8 +168,11 @@ void EditorCanvas::commitRouteDraft() {
     if(routeDraft_.empty())return;
     const auto segments=routeTracing_ && !routePreview_.empty()?routePreview_:routeDraft_;
     const auto position=routeStartPosition_;
+    const auto marker=routeEndMarker_;
+    if(!routeMarkerReachable(segments,marker)){reject();return;}
     clearRouteDraft();
-    if(positionedRouteCommitted)positionedRouteCommitted(segments,position);
+    if(markedRouteCommitted)markedRouteCommitted(segments,position,marker);
+    else if(positionedRouteCommitted)positionedRouteCommitted(segments,position);
     else if(routeDraftCommitted)routeDraftCommitted(segments);
     redraw();
 }
@@ -137,6 +180,7 @@ void EditorCanvas::dropLastRouteSegment() {
     auto& path=routeTracing_?routePreview_:routeDraft_;
     if(path.empty())return;
     path.pop_back();
+    routeEndMarker_.reset();
     if(routeTracing_ && path.empty()){routeDraft_.clear();routeStartPosition_.reset();}
     else if(!routeTracing_)routePreview_=routeDraft_;
     hoverSegment_.clear();
@@ -144,7 +188,7 @@ void EditorCanvas::dropLastRouteSegment() {
     redraw();
 }
 void EditorCanvas::clearRouteDraft() {
-    routeDraft_.clear();routePreview_.clear();routeStartPosition_.reset();routeTracing_=false;hoverSegment_.clear();
+    routeDraft_.clear();routePreview_.clear();routeStartPosition_.reset();routeEndMarker_.reset();routeTracing_=false;hoverSegment_.clear();
     if(routeDraftChanged)routeDraftChanged();
 }
 void EditorCanvas::reject() {
@@ -209,16 +253,14 @@ void EditorCanvas::drawDemandOverlay() {
             auto* marker=new RoadCrossbarItem(bar,canvasStyle::active(),scale);
             scene_.addItem(marker);marker->setZValue(200005);
             marker->setData(0,QStringLiteral("input-marker"));marker->setData(1,QString::fromStdString(input.id));
+            marker->setToolTip(QString::fromStdString(input.id));
         }
         const auto& at=bars.back().second;
         const auto value=input.intervals.empty()?input.vehiclesPerHour:0;
         const auto text=input.intervals.empty()?editorDesign::formatValue(value,0,inputRateLabel_)
             :inputPeriodsLabel_.arg(static_cast<int>(input.intervals.size()));
-        auto* label=scene_.addSimpleText(text,editorDesign::numericFont());
-        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        label->setBrush(editorDesign::role(QPalette::Text));
-        label->setPos(at.x+editorDesign::space2/scale,at.y);label->setZValue(200006);
-        label->setData(0,QStringLiteral("input-volume"));label->setData(1,QString::fromStdString(input.id));
+        auto* label=addCanvasLabel(text,QStringLiteral("input-volume"),input.id,at,20,editorDesign::numericFont());
+        for(auto* item:scene_.items())if(item->data(0)=="input-marker" && item->data(1)==QString::fromStdString(input.id))item->setToolTip(label->toolTip());
     }
     drawPositionedDecisions();
     // M2.1.1: a routing decision placed on a Link draws as a diamond a little way along it, where
@@ -234,10 +276,9 @@ void EditorCanvas::drawDemandOverlay() {
         auto* marker=scene_.addPolygon(diamond,pen,QBrush(editorDesign::role(QPalette::Midlight)));
         marker->setZValue(200005);marker->setData(0,QStringLiteral("decision-marker"));
         marker->setData(1,QString::fromStdString(decision.id));
-        auto* label=scene_.addSimpleText(QString::fromStdString(decision.name.empty()?decision.id:decision.name));
-        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        label->setBrush(editorDesign::role(QPalette::Text));label->setPos(at.x+r,at.y-r);label->setZValue(200006);
-        label->setData(0,QStringLiteral("decision-label"));
+        auto* label=addCanvasLabel(QString::fromStdString(decision.name.empty()?decision.id:decision.name),
+            QStringLiteral("decision-label"),decision.id,at,30,scene_.font());
+        marker->setToolTip(label->toolTip());
     }
     if(document_->definition && !highlightedRoute_.empty())
         for(const auto& route:document_->definition->routes)if(route.id==highlightedRoute_)
@@ -247,13 +288,17 @@ void EditorCanvas::drawDemandOverlay() {
 void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,const std::string& id,bool preview) {
     if(segments.empty())return;
     const auto& n=document_->network;
+    auto endMarker=preview?routeEndMarker_:std::optional<RouteEndMarker>{};
+    if(!preview)if(const auto found=document_->routeEndMarkers.find(id);found!=document_->routeEndMarkers.end())endMarker=found->second;
+    auto shown=segments;
+    if(endMarker)if(const auto last=std::find(shown.begin(),shown.end(),endMarker->objectId);last!=shown.end())shown.erase(last+1,shown.end());
     auto position=preview?routeStartPosition_:std::optional<double>{};
     if(!preview && document_->definition)for(const auto& decision:document_->definition->routingDecisions)
         for(const auto& entry:decision.routes)if(entry.routeId==id && decision.position)position=decision.position;
     // Keep D96's compiled spans: tint never extends upstream of a mid-Link arrival.
     // Clip a lane-centre corridor to real road surfaces rather than inventing another road.
     QPainterPath roads;
-    for(const auto& object:segments) {
+    for(const auto& object:shown) {
         const auto level=objectLevel(object);
         if(level && levelVisible(*level))roads=roads.united(objectShape(object));
     }
@@ -262,13 +307,21 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
     for(const auto& l:n.links)for(const auto& lane:l.lanes)width=std::max(width,lane.width);
     for(const auto& c:n.connectors)for(const auto w:c.laneWidths)width=std::max(width,w);
     QPainterPathStroker stroke;stroke.setWidth(width);stroke.setCapStyle(Qt::FlatCap);
-    for(auto geometry:routeGeometries(n,segments)) {
+    for(auto geometry:routeGeometries(n,shown)) {
         if(position && !geometry.empty())for(const auto& link:n.links)if(link.id==segments.front())
             for(const auto& lane:link.lanes) {
                 const auto origin=laneGeometry(link,lane.id,n.drivingSide);
                 if(origin.empty() || std::hypot(geometry.front().x-origin.front().x,geometry.front().y-origin.front().y)>1e-7)continue;
                 geometry=polylineSpan(geometry,matchedStation(link.geometry,origin,*position),polylineLength(geometry));break;
             }
+        if(endMarker && !geometry.empty()) {
+            const auto reference=routeMarkerGeometry(n,endMarker->objectId);
+            if(reference.size()>1) {
+                const auto point=pointAlong(reference,endMarker->station);
+                const double last=stationOfClosestPoint(geometry,point);
+                if(last<=0)geometry.clear();else geometry=polylineSpan(geometry,0,last);
+            }
+        }
         corridors=corridors.united(stroke.createStroke(polylinePath(geometry)));
     }
     QColor fill=canvasStyle::active();fill.setAlpha(preview?24:40);
@@ -282,11 +335,22 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
             bar=roadCrossbar(axis,laneBoundaryGeometry(link,0,n.drivingSide),laneBoundaryGeometry(link,link.lanes.size(),n.drivingSide),
                 matchedStation(link.geometry,axis,*position),link.level);
         }
+        if(end && endMarker) {
+            for(const auto& link:n.links)if(link.id==endMarker->objectId) {
+                const auto axis=linkCentreline(link,n.drivingSide);
+                bar=roadCrossbar(axis,laneBoundaryGeometry(link,0,n.drivingSide),laneBoundaryGeometry(link,link.lanes.size(),n.drivingSide),
+                    matchedStation(link.geometry,axis,endMarker->station),link.level);
+            }
+            for(const auto& connector:n.connectors)if(connector.id==endMarker->objectId) {
+                const auto rails=cachedBoundaries(connector);const auto axis=routeMarkerGeometry(n,connector.id);
+                if(rails.size()>1)bar=roadCrossbar(axis,rails.front(),rails.back(),endMarker->station,connector.level);
+            }
+        }
         if(!bar || !levelVisible(bar->level))return;
         auto* line=new RoadCrossbarItem(*bar,canvasStyle::active(),std::abs(transform().m11()),preview && end);
         scene_.addItem(line);line->setZValue(200007);
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
     };
-    mark(segments.front(),false);mark(segments.back(),true);
+    mark(segments.front(),false);mark(endMarker?endMarker->objectId:segments.back(),true);
 }
 }

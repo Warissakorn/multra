@@ -220,6 +220,10 @@ void EditorWindow::editRoute(const std::string& id,const std::vector<std::string
     layout->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
     layout->setSpacing(editorDesign::space2);
     auto* help=new QLabel(text("editorRouteHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    if(history_.document().routeEndMarkers.contains(id)) {
+        auto* note=new QLabel(text("editorRouteMarkerNote"),&dialog);note->setWordWrap(true);
+        note->setTextFormat(Qt::PlainText);layout->addWidget(note);
+    }
     auto* list=new QListWidget(&dialog);list->setObjectName("editorRoutePath");layout->addWidget(list);
     auto* next=new QComboBox(&dialog);next->setObjectName("editorRouteNext");layout->addWidget(next);
     auto* add=new QPushButton(text("editorAppendSegment"),&dialog);add->setObjectName("editorAppendSegment");layout->addWidget(add);

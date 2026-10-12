@@ -9,6 +9,7 @@ enum class EditorIcon { document, open, save, undo, redo, fit, finish, rotate, r
     select, link, connector, route, input, signal, split, measure, image, run, pause,
     step, reset, inspector, objects, focus, grid, conflict, counter, section };
 QIcon editorIcon(EditorIcon icon);
+QIcon editorApplicationIcon();
 // The complete editor QSS: palette(role) references only, no colour literal.
 QString editorStyleSheet();
 // Registers the bundled face (400 and 600) and makes it the application font at the body size.

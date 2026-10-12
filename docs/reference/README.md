@@ -18,6 +18,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [AMBER.md](AMBER.md) | Amber stop-or-go: the continuous check, `amberDeceleration`, M0 legacy and acceptance rows (M4.2) |
 | [VEHICLE_POSE.md](VEHICLE_POSE.md) | Vehicle pose — rear axle reference and continuous lane changes |
 | [NETWORK_EDITOR.md](NETWORK_EDITOR.md) | Native network editor |
+| [GUI_PRESENTATION.md](GUI_PRESENTATION.md) | Text, layout, labels, tooltips, wheel guard, logo and gesture cursors (M1.29) |
 | [NETWORK_EDITOR_CONNECTORS.md](NETWORK_EDITOR_CONNECTORS.md) | Native network editor — Connectors |
 | [CONNECTOR_FOUR_POINT_MOUTH.md](CONNECTOR_FOUR_POINT_MOUTH.md) | Centred Connector axis and four-point mouths |
 | [EDITOR_WORKFLOW.md](EDITOR_WORKFLOW.md) | History, keyboard editing and rotation |

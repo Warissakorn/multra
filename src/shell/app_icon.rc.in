@@ -1,0 +1,2 @@
+#pragma code_page(65001)
+1 ICON DISCARDABLE "@PROJECT_SOURCE_DIR@/data/icons/trafficsim.ico"

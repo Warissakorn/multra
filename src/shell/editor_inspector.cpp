@@ -20,6 +20,8 @@
 namespace trafficsim {
 void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field) {
     auto* label=new QLabel(this);label->setWordWrap(true);label->setBuddy(field);texts_[key]=label;
+    label->setTextFormat(Qt::PlainText);label->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+    form->setLabelAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     field->setObjectName(QString::fromStdString(key));form->addRow(label,field);
     if(auto* spin=qobject_cast<QAbstractSpinBox*>(field)) {
         field->setFont(editorDesign::numericFont());field->setProperty("numeric",true);
