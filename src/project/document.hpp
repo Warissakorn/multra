@@ -1,5 +1,6 @@
 #pragma once
 #include "json.hpp"
+#include "map_settings.hpp"
 #include "../model/demand/definition.hpp"
 
 namespace trafficsim {
@@ -21,6 +22,7 @@ struct ProjectDocument {
     BackgroundImage background;
     std::uint64_t nextId{1};
     std::uint64_t revision{};
+    std::optional<MapSettings> map;
     bool operator==(const ProjectDocument&) const = default;
 };
 AuthoringDefinition parseAuthoringDefinition(const Json&);

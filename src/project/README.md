@@ -7,3 +7,5 @@ Qt-free M0 loading/output and schema-24 authoring ProjectDocument codec (reads s
 `batch_output` formats M5.2 batch reports as JSON and CSV, with the cell formats it shares with `movementCsv` in `csv_format.hpp`. `parseSeedList` (in `load`) reads `--seeds` lists. See [BATCH](../../docs/reference/BATCH.md).
 
 `behaviour_library` reads, writes and validates the M3.3.2a project-owned behaviour library (names/model tags, vehicle classes, link behaviour types, Link/Connector assignment) and the Run refusal of assigned roads until M3.3.2b. See [contract](../../docs/reference/DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126).
+
+`map_settings`/`map_codec` persist optional schema-29 reference/settings without Qt/PROJ; old map-free bytes stand.

@@ -29,13 +29,13 @@ including source waiting and acceleration; they are **not HCM control delay or L
 ## Build and run
 
 Requires a C++20 compiler, CMake 3.24+, Ninja and nlohmann/json 3.11+.
-The desktop additionally requires Qt 6.4+ Widgets (Qt Test when tests are enabled).
+The desktop additionally requires Qt 6.4+ Widgets/Network and PROJ (Qt Test when tests are enabled).
 There is no Node.js, npm, browser, Python or server dependency in the application.
 
 Ubuntu 24.04 development setup:
 
 ```bash
-sudo apt-get install g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev
+sudo apt-get install g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev
 cmake --preset desktop
 cmake --build --preset desktop
 ctest --preset desktop
@@ -129,6 +129,11 @@ levels and display types; locked recovery copies protect unsaved work.
 See [the editor guide](docs/reference/NETWORK_EDITOR.md) for controls and file semantics. M1's acceptance
 record is [`docs/plans/M1_ACCEPTANCE.md`](docs/plans/M1_ACCEPTANCE.md). Accepting the editor does not close M0
 plausibility or engine validation.
+
+Map → **Map background settings** adds an OSM background using a fixed UTM
+reference; the ordinary Canvas gestures pan/zoom it with the roads. See the
+[map contract](docs/reference/MAP_BACKGROUND.md) for study extent, accuracy and
+cache/network limits.
 
 ## License
 

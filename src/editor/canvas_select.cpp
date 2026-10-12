@@ -79,6 +79,6 @@ void EditorCanvas::frame(const std::string& id) {
         const double scale = std::clamp(std::abs(transform().m11()) * std::clamp(fit, 0.1, 10.0), 0.05, 100.0);
         setTransform(QTransform::fromScale(scale, -scale));
     }
-    centerOn(bounds.center()); redraw();
+    centerOn(bounds.center()); redraw();scheduleMapUpdate();
 }
 }

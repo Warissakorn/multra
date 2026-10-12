@@ -65,6 +65,12 @@ private:
     History history_;
     std::filesystem::path data_;
     DisplayCatalog displayCatalog_;
+    std::vector<MapProvider> mapProviders_;
+    void buildMapActions();
+    void buildMapTranslation();
+    void refreshMapActions();
+    void editMapSettings();
+    void goToMapCoordinates();
     QTreeWidget* palette_{};
     std::map<int,QTreeWidgetItem*> paletteItems_;
     QListWidget* historyList_{};

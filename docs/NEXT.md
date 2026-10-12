@@ -7,6 +7,18 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 to do next is the duplication hard rule 3 forbids, and the copy that rots is always the one in
 the log. Rewrite this file; do not append to it.
 
+## OSM background review (2026-10-12, D150)
+
+The current owner request adds M1.28 ([contract](reference/MAP_BACKGROUND.md),
+[plan](plans/OSM_BACKGROUND.md)). The first commit's five native CI jobs passed,
+including Windows desktop/core. The detailed [review](audits/OSM_REVIEW.md) corrected
+cache, viewport, anchor-range and packaged-database defects. Check CI on the latest
+review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) before merging.
+MAP10 remains the owner's check: set a reference on a real study,
+trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
+No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
+After that review, return to the unchanged queue below; M8.1 remains the default next slice.
+
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
 The owner accepted every recommendation, R1–R8 ([review](audits/ROADMAP_REVIEW-2026-10-09.md) §8,

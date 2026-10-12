@@ -46,9 +46,10 @@ unchanged. See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md).
 | `trafficsim_model` | `src/model/network/`, `src/model/demand/` | Core contracts/validation | M0 authoring model and compiler implemented; fixed-time Signal Controllers compiled to core programs (`signal_control.*`, M2.7b); authored right-of-way controls (`control.hpp`, `right_of_way.*`, M3.2.2a); lane families and lateral spans (`routeLaneFamily` in `routing.cpp`, `lane_family.cpp`, M3.2.8b) |
 | `trafficsim_eval` | `src/eval/` | Core events and states | Completed-trip diagnostic; per-movement delay/travel time and approach queues for one run (M2.5); M3.2.8c diagnostics (lane changes, segment times, stop-line discharge, arrival phases, dead-end waits); queue discharge/startup observer with type selection, shared-prefix routing, proven lateral/source passage reconstruction and rank-scoped remap invalidation; same-tick source-sink types come from core's pure `upcomingArrivals` replay |
 | `trafficsim_runner` | `src/runner/` | Core and eval only | Multi-seed batches and their seed-ordered aggregate (M5.2, [BATCH](reference/BATCH.md)); scenario comparison, alternative minus base with a Welch 95 % CI (`compare.*`, M5.8a, BATCH §7) |
-| `trafficsim_project` | `src/project/` | Model, evaluation types, runner, nlohmann/json | M0 loading/output; the schema-24 authoring codec (reads schemas 1–24); evaluation spec and report output, single-run, batch and comparison (`batch_output.*`, `comparison_output.*`, sharing `csv_format.hpp` and the LOS pack/formatting in `los_output.*`); revision run snapshots; optional captured-byte input manifests/SHA-256 |
+| `trafficsim_project` | `src/project/` | Model, evaluation types, runner, nlohmann/json | M0 loading/output; the schema-29 authoring codec (reads schemas 1–29); evaluation spec and report output, single-run, batch and comparison (`batch_output.*`, `comparison_output.*`, sharing `csv_format.hpp` and the LOS pack/formatting in `los_output.*`); revision run snapshots; optional captured-byte input manifests/SHA-256 |
 | `trafficsim_commands` | `src/commands/` | Project document | Atomic named edits, Undo/Redo, network, demand, control and appearance operations |
-| `trafficsim_shell` | `src/shell/`, `src/editor/` | Commands, Qt Widgets | The native editor — the application's only window since M1.24 |
+| `trafficsim_geo` | `src/geo/` | Project map settings, PROJ; desktop only, no Qt | Fixed WGS84 UTM reference and XYZ tile math ([MAP_BACKGROUND](reference/MAP_BACKGROUND.md)) |
+| `trafficsim_shell` | `src/shell/`, `src/editor/` | Commands, Geo, Qt Widgets/Network | The native editor — the application's only window since M1.24 |
 | `trafficsim-cli` | `tools/run_simulation.cpp` | Project/core/eval | Headless runner: single seed, JSONL export, `--project` movement report and CSV, `--seeds` batches with 95 % CI and `buildCommit`, `--compare` scenario differences (M5.8a), and the M3.2.8c diagnostic flags (`--lane-changes`, `--segment-times`, `--stop-lines`, `--arrival-phases`, `--wait-causes`), plus `--discharge` controls and captured input hashes |
 | `trafficsim-desktop` | `src/shell/main.cpp` | Shell | Native desktop entry point; opens the editor |
 
@@ -293,3 +294,8 @@ check, not a full C++ parser; review remains responsible for unconventional prep
 constructs. CMake target dependencies provide an additional compile/link boundary.
 
 No engine-abstraction layer, plugin framework or second persisted model is introduced.
+
+OSM backgrounds use one Canvas camera. Qt Network and PROJ live outside core/eval;
+headless map persistence is Qt/PROJ-free. Tiles are viewport paint, not scene items,
+and are bounded by HTTP/disk and decoded-image caches. Provider definitions live in
+`data/map-providers.json`; only map reference/settings enter schema 29.

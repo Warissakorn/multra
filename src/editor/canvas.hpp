@@ -11,12 +11,22 @@
 #include <functional>
 #include <optional>
 #include <map>
+#include <QTimer>
+#include "map_provider.hpp"
+class QLabel;
 
 namespace trafficsim {
+class MapLayer;
+enum class MapStatus;
 class EditorCanvas : public QGraphicsView {
 public:
     enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section };
     explicit EditorCanvas(QWidget* parent = nullptr);
+    ~EditorCanvas() override;
+    void setMapProviders(std::vector<MapProvider>);
+    void setMapVisible(bool);
+    void setMapStatusText(std::function<QString(MapStatus)>);
+    bool centerOnGeographic(LonLat);
     void setDisplayCatalog(DisplayCatalog catalog) { display_=std::move(catalog); redraw(); }
     void setVisibleLevel(std::optional<int> level);
     // Explicit selection from a table/inspector reveals hidden objects. Changing the
@@ -145,6 +155,16 @@ protected:
     bool focusNextPrevChild(bool) override;
     bool event(QEvent*) override;
 private:
+    std::unique_ptr<MapLayer> mapLayer_;
+    QTimer mapViewportTimer_;
+    QLabel *mapCredit_{}, *mapStatus_{};
+    bool mapVisible_{true};
+    std::function<QString(MapStatus)> mapStatusText_;
+    void initializeMap();
+    void scheduleMapUpdate();
+    void updateMapViewport();
+    void updateMapOverlay();
+    void paintMap(QPainter*,const QRectF&);
     // The grid spacing the cached background was drawn with; redraw() drops the cache when
     // `grid` no longer matches it. Zoom and pan invalidate the cache inside QGraphicsView.
     double cachedGrid_{1};

@@ -8,6 +8,60 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-12 — OSM detailed implementation review (D150)
+
+The owner asked for another detailed review. Seven focused cases failed on the
+first implementation: corrupt cache sent obsolete validators, 16-bit PNGs broke
+the decoded-byte assumption, Fit without a centre change kept old tile levels,
+date-line views became world-sized, accepted anchors exceeded Qt scrolling,
+quoted max-age received fallback freshness, and mismatched 304 ETags reused bytes.
+Each now has a passing regression. Additional source-review fixes bound 512-pixel
+wanted sets, preserve long Retry-After delays, use 64-bit candidate counts and locate
+the shipped proj.db even with a custom content directory. HTTP policy is factored
+into one helper; schema/dialog share the reachable anchor bound. Core/eval unchanged.
+The Expires/Age regression also exposed Qt 6.4's rejection of HTTP GMT timestamps;
+HTTP dates now use explicit UTC normalization, including legacy forms.
+
+Local map-ui passed, including deterministic cache policy/bootstrap/budget cases,
+both date-line hemispheres, rotation and high latitude.
+Headless full build/check passed 82/82 CTest tests. The original commit passed
+all five native CI jobs, including Windows desktop/core (run 38198105807).
+Desktop full build/check passed 120/120, architecture/file-size/docs passed, and
+installed-database projection tests passed. Latest-commit CI is recorded in PR #138; those checks
+do not close the owner's real-study alignment/responsiveness review.
+Detailed evidence: [OSM_REVIEW](audits/OSM_REVIEW.md). Pending work: [NEXT](NEXT.md).
+
+---
+
+## 2026-10-12 — OSM map background (D150, M1.28)
+
+Implemented the owner's OSM background plan: optional schema-29 map reference/settings,
+strict scalar/key/zone validation, one atomic History command and old map-free bytes.
+The desktop's Qt-free PROJ module uses one fixed WGS84 UTM CRS and translated/rotated
+anchor; the existing Canvas camera owns both map and roads. Tiles are adaptive triangle
+paint beneath image/roads, not scene items or Fit network bounds. Tile arrival repaints
+background only. Providers are data; localized Map settings/navigation/show/remove
+commands, status and visible attribution complete the UI.
+
+Qt Network supplies bounded viewport-only requests and manual QNetworkDiskCache
+freshness/validators, decoded LRU, timeout, 429/backoff, invalid-image rejection and
+cancellation. Explicit cache handling was needed because Qt's automatic cache served
+an expired undated max-age fixture without contacting the server. Local fixtures now
+pin fresh disk hits, expired ETag/304, seven-day fallback and no-store. PROJ stays out
+of headless persistence/core/eval; desktop packaging copies proj.db, Windows workflows
+install/copy projection DLLs and Qt deployment handles Network/TLS. Future-schema tests
+now use 30 rather than the newly supported 29; frozen trajectory fixtures are untouched.
+
+Verification: Linux GCC 13.3, Qt 6.4.2 and PROJ 9.4.0. Baseline native build/tests passed;
+mapproject (5 cases), map-geo and local-server/render/editor map-ui passed. Headless CLI
+build and seed-42 baseline passed without Qt/PROJ linkage; install staging contains the
+projection database. Full desktop build and `check` passed: 120/120 CTest tests, architecture, file-size
+and documentation checks. Windows CI and
+MAP10 owner alignment/responsiveness remain pending; no engine/survey gate was closed.
+Contract: [MAP_BACKGROUND](reference/MAP_BACKGROUND.md). Next review: [NEXT](NEXT.md).
+
+---
+
 ## 2026-10-10 — M5.8b scenario comparison in the editor (D149)
 
 Results → *Compare with…* runs the open project as the **base** against a chosen
@@ -415,53 +469,6 @@ delay; eight malformed packs refused; weighting by hand) and `section-ui`. Linux
 headless 71/71, desktop 103/103 offscreen. A 10-seed four-leg batch with three signalised
 sections: west through 48.3 s D, north left 57.6 s E, east through 43.0 s D; the intersection
 row 46.4 s D equals the hand-weighted mean. Windows evidence is CI's.
-
----
-
-## 2026-10-09 — M5.4 travel-time sections (D133)
-
-The quantity M5.5's LOS will read now exists. A section is `network.travelTimeSections[]`
-(schema 23 only when present): a start and an end line, each a cross-section of one Link at a
-station, spanning every lane so a lane change inside is timed once. The contract
-([TRAVEL_TIME_SECTIONS](reference/TRAVEL_TIME_SECTIONS.md)) and its rows TT1–TT11 were written
-before the code. `SectionAccumulator` (`src/eval/sections.*`, owned by `MovementAccumulator`, so
-batches get it free) interpolates each crossing between the two observed states, treats a new
-vehicle as entering at distance 0 at `enteredTime`, and times an end line crossed in the arrival
-step from the last speed. Delay is `max(0, travel − length/desiredSpeed)`, the whole-trip term
-restricted to the section; trips count by their end crossing (D132's rule). Outputs gain a
-`section` block only with a section, so every other project keeps its bytes (TT10 checks the
-four-leg report equals the section-less one). Link delete removes, split moves, reverse refuses,
-like other controls. Editor: Section tool (`T`), two Ctrl+right-clicks make one Undo step, and a
-*Travel-time sections* tab renames and deletes; en/th strings. Results-tab rows for sections wait
-for M5.6. W74 moves to schema 24.
-Evidence: group `traveltime` (11 cases — a lone vehicle at desired speed gives exactly 100/15 s
-and zero delay; a red held to 30 s gives 20.01 s against an analytic floor of 16.67 s; the
-period's equality sides; a hand-built lane change) and `section-ui`. Linux GCC 13.3: headless
-70/70, desktop 102/102 offscreen. A 10-seed batch of the four-leg project with a west-through
-section gives 48.3 ± 4.3 s against 52.8 ± 4.3 s whole-route movement delay, with the same 121
-mean vehicles: the gap is the entry acceleration the section excludes. Windows evidence is CI's.
-
----
-
-## 2026-10-09 — M5.3 evaluation period and unfinished trips (D132)
-
-Projects can now say which part of the run the results describe: `definition.evaluation
-{warmup, end?}`, schema 22 only when set. Movement rows count trips that end in the period and
-queues average its ticks; run totals stay whole-run so every vehicle is still accounted for.
-Each movement reports `unfinished` (active or pending on its routes), and batches warn when a
-movement's unfinished share passes 5 %. Owner's choices: no key means warm-up 0 (old results
-unchanged), and new editor projects start with 900 s warm-up over 4500 s. Run settings gains a
-Warm-up field, applied with duration and time step in one History step. Making the new window's
-document carry a definition exposed that a demand-less definition took the runtime Problems
-path and lost the drawing's topology rows (`tables-ui`); `runDiagnostics`/`documentDiagnostics`
-now treat a definition holding only run settings (`onlyRunSettings`) as a drawing, with `EDIT_NO_INPUTS`.
-`connector-ui` now checks its intent (lane widths keep the file's schema) instead of the literal
-17, and the behaviour-library "future schema" pin moved from 22 to 23. W74's planned schema is 23.
-Tests first: group `evaluationperiod` (9 cases; both equality sides of the window, a red wholly
-inside the warm-up, unfinished = active + pending, schema-22 refusal below 22) and a Run settings
-UI check in `signal-ui`. Linux GCC 13.3: headless 69/69 and, with Qt 6.4.2 installed locally,
-desktop 100/100 offscreen. Single-run JSON for the four projects keeps every number; the CSV
-gains only the `unfinished` column and the period line. Windows evidence is CI's. The oldest live PROGRESS entry moved whole to the archive.
 
 ---
 

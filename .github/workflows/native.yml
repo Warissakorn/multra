@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev ccache lld
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld
       - uses: actions/cache@v4
         with:
           path: .ccache
@@ -45,7 +45,9 @@ jobs:
         if: always() && matrix.preset == 'desktop'
         with:
           name: editor-interaction-linux
-          path: build/desktop/interaction-preview.png
+          path: |
+            build/desktop/interaction-preview.png
+            build/desktop/map-preview.png
   # The UI suites are platform-sensitive: they touch real user paths, locks and window
   # activation. Until 2026-09-15 they ran on Windows only in the manual packaging workflow,
   # so a Windows-only UI failure merged to main green and surfaced days later. This job
@@ -75,7 +77,9 @@ jobs:
       - name: Install JSON headers
         # Header-only, so vcpkg has no DLL to copy beside each binary; its per-target copy step
         # (applocal) is off because parallel targets raced on it (package run 68, exit 32).
-        run: vcpkg install nlohmann-json:x64-windows
+        run: |
+          vcpkg install nlohmann-json:x64-windows proj:x64-windows
+          "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin" | Out-File $env:GITHUB_PATH -Append -Encoding utf8
       - name: Install ccache
         run: choco install ccache -y --no-progress
       - uses: actions/cache@v4
@@ -100,7 +104,9 @@ jobs:
         if: always()
         with:
           name: editor-interaction-windows
-          path: build/desktop/interaction-preview.png
+          path: |
+            build/desktop/interaction-preview.png
+            build/desktop/map-preview.png
   windows-core:
     runs-on: windows-2022
     env:
