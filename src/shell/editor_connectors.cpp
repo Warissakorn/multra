@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QLineEdit>
@@ -145,8 +146,8 @@ QWidget* EditorWindow::buildConnectorInspector() {
         box.button(QMessageBox::Yes)->setText(text("editorConfirm"));box.button(QMessageBox::No)->setText(text("editorCancel"));box.setDefaultButton(QMessageBox::No);
         if (box.exec()==QMessageBox::Yes) execute("editorDeleteConnector",[&](auto& d){deleteConnector(d,id);});
     });
-    connectorHint_=new QLabel(page);connectorHint_->setObjectName("editorConnectorHint");connectorHint_->setWordWrap(true);form->addRow(connectorHint_);
-    auto* help=new QLabel(page);help->setWordWrap(true);texts_["editorConnectorHelp"]=help;form->addRow(help);
+    connectorHint_=new ReflowLabel(page);connectorHint_->setObjectName("editorConnectorHint");connectorHint_->setWordWrap(true);form->addRow(connectorHint_);
+    auto* help=new ReflowLabel(page);help->setWordWrap(true);texts_["editorConnectorHelp"]=help;form->addRow(help);
     return page;
 }
 void EditorWindow::connectorHint() {

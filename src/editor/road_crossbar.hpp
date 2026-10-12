@@ -10,7 +10,7 @@ std::optional<RoadCrossbar> roadCrossbar(const std::vector<Point>& centre,
     const std::vector<Point>& firstRail, const std::vector<Point>& secondRail,
     double station, int level,
     const std::vector<Point>& firstContinuation = {}, const std::vector<Point>& secondContinuation = {});
-std::optional<RoadCrossbar> objectCrossbar(const Network&, const std::string& id, bool end);
+std::optional<RoadCrossbar> objectCrossbar(const Network&, const std::string& id, bool end, std::optional<double> station = {});
 std::optional<RoadCrossbar> signalCrossbar(const Network&, const NetworkSignalHead&);
 // The hit region is wider than the visible cosmetic stroke, at every zoom.
 class RoadCrossbarItem : public QGraphicsLineItem {

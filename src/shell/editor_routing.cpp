@@ -30,7 +30,7 @@ void EditorWindow::buildRouting() {
             table->clearSelection();table->setCurrentItem(nullptr);
         }
     };
-    canvas_->positionedRouteCommitted=[this](const auto& segments,auto position){commitDrawnRoute(segments,position);};
+    canvas_->routeDestinationCommitted=[this](const auto& segments,auto position,auto destination){commitDrawnRoute(segments,position,destination);};
     canvas_->decisionMoved=[this](const auto& id,double position){
         execute("editorEditDecision",[&](auto& d){for(auto decision:demand(d).routingDecisions)if(decision.id==id){decision.position=position;putRoutingDecision(d,decision);break;}});
     };
@@ -51,12 +51,13 @@ void EditorWindow::refreshToolHint() {
     toolHint_->setText(index==0?text("editorSelectHelp"):index==6?text(canvas_->routeDraft().empty()?"editorRouteClickHelp":"editorRouteFinishHelp"):index==7?text("editorInputPlaceHelp"):index==8?text("editorHeadPlaceHelp"):index==10?text("editorCounterPlaceHelp"):index==11?text("editorSectionPlaceHelp"):QString{});
     toolHint_->setToolTip(toolHint_->text());
 }
-void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position) {
+void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position,std::optional<RouteDestination> destination) {
     if(segmentIds.empty())return;
     std::string created;
     // The same command the dialog commits through, so a route drawn by pointer and a route
     // typed into the dialog are the same object with the same history entry.
     if(execute("editorEditRoute",[&](auto& d){created=putRoute(d,Route{{},segmentIds});
+        if(destination)demand(d).routeDestinations[created]=*destination;
         if(position) {
             RoutingDecision value;value.linkId=segmentIds.front();value.position=position;
             for(const auto& decision:demand(d).routingDecisions)if(decision.linkId==value.linkId) {

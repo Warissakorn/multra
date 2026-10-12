@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../project/counted_volumes.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -219,7 +220,7 @@ void EditorWindow::editRoute(const std::string& id,const std::vector<std::string
     auto* layout=new QVBoxLayout(&dialog);
     layout->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
     layout->setSpacing(editorDesign::space2);
-    auto* help=new QLabel(text("editorRouteHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* help=new ReflowLabel(text("editorRouteHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
     auto* list=new QListWidget(&dialog);list->setObjectName("editorRoutePath");layout->addWidget(list);
     auto* next=new QComboBox(&dialog);next->setObjectName("editorRouteNext");layout->addWidget(next);
     auto* add=new QPushButton(text("editorAppendSegment"),&dialog);add->setObjectName("editorAppendSegment");layout->addWidget(add);

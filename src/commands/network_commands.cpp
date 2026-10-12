@@ -85,7 +85,7 @@ void resizeLinkLanes(ProjectDocument& d,const std::string& id,int count,bool lea
 
 void deleteLink(ProjectDocument& d, const std::string& id) {
     const auto l = editableLink(d, id);
-    std::set<std::string> removed, attached;
+    std::set<std::string> removed{id}, attached;
     for (const auto& lane : l.lanes) removed.insert(lane.id);
     for (const auto& c : d.network.connectors) if (c.from.linkId == id || c.to.linkId == id) {
         attached.insert(c.id);

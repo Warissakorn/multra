@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QFile>
 #include <QGraphicsPathItem>
+#include <QGraphicsLineItem>
 #include <QTemporaryDir>
 #include <QStandardPaths>
 #include <QTest>
@@ -39,7 +40,23 @@ int main(int argc,char** argv) {
         const auto before=w.history().revision();click(canvas,{40,0});
         require(canvas->routeStartPosition().has_value(),"Click did not record its station");
         const auto at=*canvas->routeStartPosition();require(std::abs(at-40)<1,"Click snapped to road start");
-        hover(canvas,{170,0});require(w.history().revision()==before,"Hover wrote to History");click(canvas,{170,0});
+        hover(canvas,{160,0});
+        QGraphicsItem* unchangedOverlay=nullptr;
+        for(auto* item:canvas->scene()->items())if(item->data(0).toString()=="route-draft")unchangedOverlay=item;
+        require(unchangedOverlay,"Route preview missing");
+        hover(canvas,{170,0});require(w.history().revision()==before,"Hover wrote to History");
+        bool sameOverlay=false,marker=false;
+        for(auto* item:canvas->scene()->items()) {
+            if(item==unchangedOverlay)sameOverlay=true;
+            if(item->data(0).toString()=="route-end") {
+                auto* line=dynamic_cast<QGraphicsLineItem*>(item);require(line,"Destination is not a crossbar");
+                marker=std::abs(line->line().center().x()-170)<1;
+            }
+        }
+        require(sameOverlay && marker,"Moving within a Link rebuilt the path or left the endpoint behind");
+        click(canvas,{175,0}); // final click can differ from the last coalesced hover
+        const auto firstRoute=decision(w).routes.front().routeId;
+        require(std::abs(w.history().document().definition->routeDestinations.at(firstRoute).station-55)<1,"Destination did not reread click");
         require(decision(w).position==at,"Committed decision lost the click station");
         require(decision(w).routes.size()==1,"Route was not linked to its decision");
         bool overlay=false;for(auto* item:canvas->scene()->items())if(item->data(0).toString()=="route-overlay") {
@@ -47,7 +64,7 @@ int main(int argc,char** argv) {
             require(!path->path().contains(QPointF(10,0)),"Route tint extends upstream of recognition");overlay=true;
         }
         require(overlay,"Committed Route has no overlay");
-        require(documentJson(w.history().document())["schemaVersion"]==20,"Position not persisted in schema 20");
+        require(documentJson(w.history().document())["schemaVersion"]==30,"Destination not persisted in schema 30");
         click(canvas,{at,0});hover(canvas,{170,50});click(canvas,{170,50});
         require(w.history().document().definition->routingDecisions.size()==1 && decision(w).routes.size()==2,
             "Starting on the same line did not group the second route");
@@ -63,7 +80,9 @@ int main(int argc,char** argv) {
         QTest::mousePress(canvas->viewport(),Qt::LeftButton,{},p);QTest::mouseMove(canvas->viewport(),q);
         QTest::keyClick(canvas,Qt::Key_Escape);QTest::mouseRelease(canvas->viewport(),Qt::LeftButton,{},q);
         require(decision(w).position==at,"Cancelled drag committed");
-        w.saveFile(file);w.openFile(file);QApplication::processEvents();require(decision(w).position==at,"Reopen lost the station");
+        const auto destinations=w.history().document().definition->routeDestinations;
+        w.saveFile(file);w.openFile(file);
+        require(w.history().document().definition->routeDestinations==destinations,"Reopen lost destination markers");QApplication::processEvents();require(decision(w).position==at,"Reopen lost the station");
         undo(w); // Reopened history is empty: the stored document remains intact.
         require(decision(w).position==at,"Empty Undo modified the reopened station");
         std::cout<<"station routing UI ok\n";

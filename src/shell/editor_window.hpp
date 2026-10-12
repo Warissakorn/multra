@@ -129,7 +129,7 @@ private:
     // Pointer authoring (M1.25): the canvas draws and gestures, the window commits. Both go
     // through the same putRoute/putInput commands the dialogs use.
     void buildRouting();
-    void commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position = {});
+    void commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position = {}, std::optional<RouteDestination> destination = {});
     void placeInputOnLink(const std::string& linkId);
     void showDemandMenu(QPoint viewportPosition);
     void syncHighlightedRoute();

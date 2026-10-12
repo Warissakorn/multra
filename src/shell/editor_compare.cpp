@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "editor_batch_cells.hpp"
 #include "editor_storage.hpp"
@@ -35,7 +36,7 @@ void EditorWindow::buildCompare(QToolBar* bar, QVBoxLayout* layout) {
     }));
     compareView_=new QWidget(layout->parentWidget()); layout->addWidget(compareView_,1);
     auto* column=new QVBoxLayout(compareView_); column->setContentsMargins(0,0,0,0); column->setSpacing(editorDesign::space1);
-    compareNote_=new QLabel(compareView_); compareNote_->setObjectName("editorCompareNote"); compareNote_->setWordWrap(true);
+    compareNote_=new ReflowLabel(compareView_); compareNote_->setObjectName("editorCompareNote"); compareNote_->setWordWrap(true);
     column->addWidget(compareNote_);
     compareMovementTable_=table(compareView_,"editorCompareMovementTable",7); column->addWidget(compareMovementTable_,3);
     compareSectionTable_=table(compareView_,"editorCompareSectionTable",7); column->addWidget(compareSectionTable_,2);

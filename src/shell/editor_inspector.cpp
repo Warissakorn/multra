@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -19,11 +20,11 @@
 
 namespace trafficsim {
 void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field) {
-    auto* label=new QLabel(this);label->setWordWrap(true);label->setBuddy(field);texts_[key]=label;
+    auto* label=new ReflowLabel(this);label->setWordWrap(true);label->setBuddy(field);texts_[key]=label;
     field->setObjectName(QString::fromStdString(key));form->addRow(label,field);
     if(auto* spin=qobject_cast<QAbstractSpinBox*>(field)) {
         field->setFont(editorDesign::numericFont());field->setProperty("numeric",true);
-        auto* hint=new QLabel(field->parentWidget());hint->setObjectName("editorRangeHint");
+        auto* hint=new ReflowLabel(field->parentWidget());hint->setObjectName("editorRangeHint");
         hint->setWordWrap(true);hint->setProperty("validationState","invalid");hint->hide();form->addRow(QString(),hint);
         if(auto* edit=field->findChild<QLineEdit*>()) {
             const auto update=[this,spin,hint,field]{
@@ -47,7 +48,7 @@ void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field
               key.find("Markings")!=std::string::npos) {
         field->setFont(editorDesign::numericFont());field->setProperty("numeric",true);
         if(key=="editorConnectorWidths")if(auto* widths=qobject_cast<QLineEdit*>(field)) {
-            auto* hint=new QLabel(field->parentWidget());hint->setObjectName("editorConnectorWidthsRange");
+            auto* hint=new ReflowLabel(field->parentWidget());hint->setObjectName("editorConnectorWidthsRange");
             hint->setWordWrap(true);hint->setProperty("validationState","invalid");hint->hide();form->addRow(QString(),hint);
             const auto validate=[this,widths,hint]{
                 const auto parts=widths->text().split(',',Qt::KeepEmptyParts);
@@ -89,7 +90,7 @@ void EditorWindow::buildInspector() {
         const auto id=canvas_->selected();
         execute("editorName",[&](auto& d){renameObject(d,id,typed);});
     });
-    selectionInfo_=new QLabel(body);selectionInfo_->setWordWrap(true);common->addRow(selectionInfo_);
+    selectionInfo_=new ReflowLabel(body);selectionInfo_->setWordWrap(true);common->addRow(selectionInfo_);
     auto* appearanceToggle=new QToolButton(body);appearanceToggle->setObjectName("editorAppearanceToggle");
     appearanceToggle->setArrowType(Qt::RightArrow);appearanceToggle->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     auto* appearanceAction=action("editorAppearance",{},[]{});appearanceAction->setCheckable(true);
@@ -120,12 +121,12 @@ void EditorWindow::buildInspector() {
     auto button=[&](const std::string& key,const std::function<void()>& callback){
         auto* b=new QToolButton(body);b->setToolButtonStyle(Qt::ToolButtonTextOnly);b->setDefaultAction(action(key,{},callback));form->addRow(b);
     };
-    auto heading=[&](const std::string& key){auto* h=new QLabel(body);h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};
+    auto heading=[&](const std::string& key){auto* h=new ReflowLabel(body);h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};
     heading("editorRoadProperties");
     count_=new QSpinBox(body);count_->setRange(1,12);count_->setValue(2);label(form,"editorLaneCount",count_);
     width_=number(0.1,20,3.5);label(form,"editorDefaultWidth",width_);
     widths_=new QLineEdit(body);label(form,"editorLaneWidths",widths_);
-    auto* widthsHint=new QLabel(body);widthsHint->setObjectName("editorLaneWidthsRange");widthsHint->setWordWrap(true);
+    auto* widthsHint=new ReflowLabel(body);widthsHint->setObjectName("editorLaneWidthsRange");widthsHint->setWordWrap(true);
     widthsHint->setProperty("validationState","invalid");form->addRow(QString(),widthsHint);widthsHint->hide();
     const auto validateWidths=[this,widthsHint]{
         const auto parts=widths_->text().split(',',Qt::KeepEmptyParts);

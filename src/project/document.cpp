@@ -3,6 +3,7 @@
 #include "behaviour_library.hpp"
 #include "evaluation_period.hpp"
 #include "counted_volumes.hpp"
+#include "route_destination.hpp"
 #include "../core/validate.hpp"
 #include "../model/network/diagnostics.hpp"
 #include <nlohmann/json.hpp>
@@ -125,14 +126,14 @@ Json documentJson(const ProjectDocument& d) {
     // M5.9: 27 only when the evaluation period has a cool-down (D146).
     const bool cooled=period && d.definition->evaluation->cooldown>0;
     // M4.2: 28 only when an owned behaviour carries amberDeceleration (D147).
-    const int schema=d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    const int schema=d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
     // tags them, not only one with a library: owned catalogs with an evaluation period (22) and no
     // library were written untagged and could not be reopened (found by M4.2, D147).
     if ((library || schema >= 21) && d.definition) addBehaviourLibraryJson(*d.definition, definition);
-    if (d.definition) addEvaluationPeriodJson(*d.definition, definition);
+    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);}
     Json result={{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
@@ -152,6 +153,7 @@ void validateDocument(const ProjectDocument& d) {
         throw std::invalid_argument("EDIT_BACKGROUND_INVALID");
     if (d.map) validateMapSettings(*d.map);
     validateAuthoredDemand(d);
+    validateRouteDestinations(d);
     if (d.definition) validateEvaluationPeriod(*d.definition);
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
 }
@@ -161,7 +163,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 29) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 30) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -191,6 +193,7 @@ ProjectDocument parseDocument(const Json& j) {
     d.network = parseNetwork(j.at("network"), version);
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
+        parseRouteDestinations(j.at("definition"),version,*d.definition);
         if (version >= 21) parseBehaviourLibrary(j.at("definition"), *d.definition);
         if (version >= 22) d.definition->evaluation = parseEvaluationPeriod(j.at("definition"));
         // M4.2 (D147): a bare M0 scenario keeps amber as red, as the CLI reads it (loadScenario).

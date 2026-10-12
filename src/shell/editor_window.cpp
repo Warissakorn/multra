@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "path.hpp"
 #include "editor_style.hpp"
@@ -52,11 +53,11 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     auto* central=new QWidget(this); auto* layout=new QVBoxLayout(central);
     layout->setContentsMargins(editorDesign::space1,editorDesign::space1,editorDesign::space1,editorDesign::space1);
     layout->setSpacing(editorDesign::space1);
-    auto* scope=new QLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope; layout->addWidget(scope);
-    scope->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);
+    auto* scope=new ReflowLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope; layout->addWidget(scope);
+    setReflowPolicy(scope,QSizePolicy::Ignored);
     canvas_=new EditorCanvas(central);canvas_->setDisplayCatalog(displayCatalog_); layout->addWidget(canvas_,1);
-    error_=new QLabel(central); error_->setObjectName("editorError"); error_->setWordWrap(true);
-    error_->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);
+    error_=new ReflowLabel(central); error_->setObjectName("editorError"); error_->setWordWrap(true);
+    setReflowPolicy(error_,QSizePolicy::Ignored);
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
     files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); history_.reset(newProjectDocument());
@@ -89,7 +90,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     auto* snap=action("editorSnap",{},[this]{canvas_->snap=actions_.at("editorSnap")->isChecked();});
     snap->setCheckable(true); snap->setChecked(true); tools->addAction(snap);
     grid_=new QDoubleSpinBox(this); grid_->setRange(0.1,100); grid_->setValue(1); grid_->setSuffix(" m"); grid_->setObjectName("editorGrid");grid_->setMaximumWidth(86); tools->addWidget(grid_);
-    coordinates_=new QLabel(this);coordinates_->setObjectName("editorCoordinates");
+    coordinates_=new ReflowLabel(this);coordinates_->setObjectName("editorCoordinates");
     coordinates_->setProperty("numeric",true);coordinates_->setFont(editorDesign::numericFont());
     statusBar()->addPermanentWidget(coordinates_);
     buildInspector();

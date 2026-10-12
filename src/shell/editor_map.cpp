@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../commands/map_commands.hpp"
 #include "../editor/map_layer.hpp"
@@ -53,7 +54,7 @@ void EditorWindow::editMapSettings() {
     const auto spin=[&](const char* key,double value,double minimum,double maximum,int decimals) {
         auto* box=new QDoubleSpinBox(&dialog);box->setObjectName(key);box->setRange(minimum,maximum);
         box->setDecimals(decimals);box->setValue(value);box->setKeyboardTracking(false);
-        auto* label=new QLabel(text(key),&dialog);label->setBuddy(box);form->addRow(label,box);return box;
+        auto* label=new ReflowLabel(text(key),&dialog);label->setBuddy(box);form->addRow(label,box);return box;
     };
     auto* provider=new QComboBox(&dialog);provider->setObjectName("editorMapProvider");
     for (const auto& p:mapProviders_)provider->addItem(p.name,QString::fromStdString(p.id));
@@ -71,8 +72,8 @@ void EditorWindow::editMapSettings() {
     auto* y=spin("editorMapWorldY",r.anchorWorldY,-mapWorldAnchorLimit,mapWorldAnchorLimit,3);
     auto* angle=spin("editorMapRotation",r.rotationDegrees,-180,180,4);
     auto* opacity=spin("editorMapOpacity",current.opacity,0,1,2);
-    auto* note=new QLabel(text("editorMapReferenceHelp"),&dialog);note->setWordWrap(true);note->setMaximumWidth(470);layout->addWidget(note);
-    auto* failure=new QLabel(&dialog);failure->setWordWrap(true);failure->setObjectName("editorMapSettingsError");layout->addWidget(failure);
+    auto* note=new ReflowLabel(text("editorMapReferenceHelp"),&dialog);note->setWordWrap(true);note->setMaximumWidth(470);layout->addWidget(note);
+    auto* failure=new ReflowLabel(&dialog);failure->setWordWrap(true);failure->setObjectName("editorMapSettingsError");layout->addWidget(failure);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     layout->addWidget(buttons);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
@@ -103,7 +104,7 @@ void EditorWindow::goToMapCoordinates() {
     };
     auto* longitude=spin("editorMapLongitude",r.anchorLongitude,-180,180);
     auto* latitude=spin("editorMapLatitude",r.anchorLatitude,-80,84);
-    auto* error=new QLabel(&dialog);error->setWordWrap(true);form->addRow(error);
+    auto* error=new ReflowLabel(&dialog);error->setWordWrap(true);form->addRow(error);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     form->addRow(buttons);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);

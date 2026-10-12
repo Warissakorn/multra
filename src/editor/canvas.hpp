@@ -77,6 +77,7 @@ public:
     // have stored them. The canvas never writes to the document itself.
     std::function<void(std::vector<std::string>)> routeDraftCommitted;
     std::function<void(std::vector<std::string>,std::optional<double>)> positionedRouteCommitted;
+    std::function<void(std::vector<std::string>,std::optional<double>,std::optional<RouteDestination>)> routeDestinationCommitted;
     std::optional<double> routeStartPosition() const { return routeStartPosition_; }
     std::function<void(const std::string&,double)> decisionMoved;
     std::function<void(std::string)> inputPlaced;
@@ -217,6 +218,9 @@ private:
     void reject();
     std::vector<std::string> routeDraft_;
     std::optional<double> routeStartPosition_;
+    std::optional<RouteDestination> routeEnd_;
+    QGraphicsLineItem* previewRouteEnd_{}; // owned by scene; cleared before each scene rebuild
+    void updateRouteEnd(const std::string& target,Point pointer);
     struct DecisionDrag { std::string id,linkId;double position{};QPoint press;bool moved{}; };
     std::optional<DecisionDrag> decisionDrag_;
     bool startDecisionDrag(QPoint);

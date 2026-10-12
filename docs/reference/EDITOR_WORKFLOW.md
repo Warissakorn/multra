@@ -115,13 +115,23 @@ Double-click adds no second commit. Other authoring tools retain D84's Ctrl+righ
 Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars with
 wider hit regions. Bars intersect the road normal with the actual lane rails. A route's
 static blue surface tint follows its compiled spans, including mid-Link arrivals; it has no
-straight rubber band, moving dashes or repeated arrows. The start/end are the existing route
-object boundaries, not new arbitrary stations. Only the selected stored route is tinted.
+straight rubber band, moving dashes or repeated arrows. A plain destination click places the end crossbar at the projected pointer station;
+hovering within the same road moves just that crossbar, without rebuilding the route.
+The click is re-read even when Qt coalesces its last move. The marker persists as
+`definition.routeDestinations[routeId] = { objectId, station }` (schema 30), with Link
+stations on the reference polyline and Connector stations on its bundle centreline.
+It is editor presentation only: runtime routes and their full compiled tint still
+extend to their existing object boundaries. Older routes and Ctrl+right/Enter keep
+boundary markers. Backspace drops the preview destination; Escape/tool/level/focus
+changes cancel it. Save/Open and Undo retain the committed point. Route deletion
+removes it; removing its road or changing the destination road drops it; reversing a Link mirrors its
+station; splitting remaps it to the appropriate child, refusing the 0.2 m cut gap.
+Shortening past a marker is rejected atomically. Only the selected stored route is tinted.
 Inputs mark the served entry lanes (separate bars across non-contiguous positive lane shares),
 with a localized rate unit; interval inputs show their number of periods instead of a misleading
 instantaneous scalar. Inputs on a hidden level are hidden. Signal bars cover only their controlled
 lane. In Edit they are neutral, with a blue selection halo; Run colours the same snapshot bars
-from the real signal program. Reset restores the authored bars. None of this paint state is saved.
+from the real signal program. Reset restores the authored bars. Marker stations are saved; cosmetic paint state is not.
 
 ## Workspace and screen space
 
@@ -140,6 +150,16 @@ Simulation, Help and Language menus retain full command names and keyboard short
   checks are always available in the Simulation menu. **F1** opens gesture/keyboard help.
 
 The unvalidated marker and complete simulation figures remain visible in focus mode.
+Wrapped labels retain height-for-width and a natural hint capped to the current page;
+fields reserve their font minimum, so narrow forms wrap and wide forms rejoin their rows.
+Explanatory text wraps automatically; intentional paragraph breaks remain.
+A wheel never changes a spin-box or closed combo value, even with focus or inside a
+later-created dialog. Above a field in a scrollable panel it scrolls that panel instead;
+keyboard/arrows and combo choices still edit, an open combo list still scrolls, and
+the canvas wheel still zooms. Tooltips use a plain-text popup no wider than 360 logical
+pixels, clamped to their owner window and screen. Thai and long unbroken names wrap;
+content taller than the window is readable by scrolling the tooltip.
+Escape/click/deactivation dismisses it.
 
 Layout examples from the Linux offscreen Qt platform:
 [English, 1360×860](../images/workspace-en.png),

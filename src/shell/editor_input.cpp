@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../project/counted_volumes.hpp"
 #include <QCheckBox>
@@ -61,7 +62,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     // only where there is one to read: a decision named here, or one placed on the chosen Link.
     auto* fromCounts=new QCheckBox(text("editorInputFromCounts"),&dialog);fromCounts->setObjectName("editorInputFromCounts");
     fromCounts->setChecked(value.volumeFromCounts);form->addRow(fromCounts);
-    auto* fromCountsTotal=new QLabel(&dialog);fromCountsTotal->setObjectName("editorInputFromCountsTotal");
+    auto* fromCountsTotal=new ReflowLabel(&dialog);fromCountsTotal->setObjectName("editorInputFromCountsTotal");
     fromCountsTotal->setWordWrap(true);form->addRow(fromCountsTotal);
     const auto chosenTarget=[&]{
         auto chosen=value;const auto key=route->currentData().toString();
@@ -101,7 +102,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     // Rule 4: say what the split is and is not. It divides the Link total equally (unless lane
     // shares are set) as an authoring convenience; the engine changes lanes only where a route
     // requires it, so the split is not a lane-choice model.
-    auto* split=new QLabel(text("editorInputSplitHelp"),&dialog);split->setObjectName("editorInputSplitHelp");
+    auto* split=new ReflowLabel(text("editorInputSplitHelp"),&dialog);split->setObjectName("editorInputSplitHelp");
     split->setWordWrap(true);form->addRow(split);
     // M1.26.1: one weight per lane the SELECTED route currently reaches. Rebuilt whenever the
     // route changes, because the lane count is the route's, not the input's. Seeded from a
@@ -114,7 +115,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     auto* sharesForm=new QFormLayout(sharesGroup);sharesForm->setContentsMargins(0,0,0,0);
     sharesForm->setHorizontalSpacing(editorDesign::space2);sharesForm->setVerticalSpacing(editorDesign::space1);
     form->addRow(sharesGroup);
-    auto* sharesHelp=new QLabel(text("editorInputShareHelp"),&dialog);sharesHelp->setObjectName("editorInputShareHelp");
+    auto* sharesHelp=new ReflowLabel(text("editorInputShareHelp"),&dialog);sharesHelp->setObjectName("editorInputShareHelp");
     sharesHelp->setWordWrap(true);form->addRow(sharesHelp);
     auto sharesDirty=std::make_shared<bool>(false);
     auto shareFields=std::make_shared<std::vector<QDoubleSpinBox*>>();
@@ -157,7 +158,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     auto* counts=new QPlainTextEdit(&dialog);counts->setObjectName("editorInputCounts");
     counts->setPlaceholderText(text("editorInputCountsPlaceholder"));counts->setMaximumHeight(110);
     form->addRow(text("editorInputCounts"),counts);
-    auto* countsHelp=new QLabel(text("editorInputCountsHelp"),&dialog);countsHelp->setWordWrap(true);
+    auto* countsHelp=new ReflowLabel(text("editorInputCountsHelp"),&dialog);countsHelp->setWordWrap(true);
     countsHelp->setObjectName("editorInputCountsHelp");form->addRow(countsHelp);
     bool irregular=false;
     // Shown as counts only when the stored intervals are what this box can write back --
@@ -176,7 +177,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
             minutes->setValue(length/60);counts->setPlainText(lines.join('\n'));
         }
     }
-    auto* irregularNote=new QLabel(text("editorDemandIrregular"),&dialog);irregularNote->setWordWrap(true);
+    auto* irregularNote=new ReflowLabel(text("editorDemandIrregular"),&dialog);irregularNote->setWordWrap(true);
     irregularNote->setVisible(irregular);form->addRow(irregularNote);
     auto countsDirty=std::make_shared<bool>(false);
     connect(counts,&QPlainTextEdit::textChanged,&dialog,[countsDirty]{*countsDirty=true;});

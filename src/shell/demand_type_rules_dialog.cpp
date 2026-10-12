@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "demand_type_rules_dialog.hpp"
 #include "../project/demand_time_types.hpp"
 #include <QCheckBox>
@@ -14,7 +15,7 @@
 namespace trafficsim {
 bool editDemandTypeRules(QWidget* parent,RoutingDecision& decision,const std::vector<VehicleType>& types,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorTypeRulesDialog");dialog.setWindowTitle(text("editorTypeRules"));
-    auto* layout=new QVBoxLayout(&dialog);auto* help=new QLabel(text("editorTypeRulesHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* layout=new QVBoxLayout(&dialog);auto* help=new ReflowLabel(text("editorTypeRulesHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
     auto* tabs=new QTabWidget(&dialog);tabs->setObjectName("editorTypeRuleTabs");layout->addWidget(tabs);
     struct Page {std::string id;QCheckBox* enabled;QTableWidget* table;};std::vector<Page> pages;
     std::vector<std::string> ids;for(const auto& rule:decision.typeRules)ids.push_back(rule.vehicleTypeId);
@@ -42,7 +43,7 @@ bool editDemandTypeRules(QWidget* parent,RoutingDecision& decision,const std::ve
         table->setEnabled(existing);QObject::connect(enabled,&QCheckBox::toggled,table,&QWidget::setEnabled);
         tabs->addTab(body,QString::fromStdString(id));pages.push_back({id,enabled,table});
     }
-    auto* error=new QLabel(&dialog);error->setObjectName("editorTypeRulesError");layout->addWidget(error);
+    auto* error=new ReflowLabel(&dialog);error->setObjectName("editorTypeRulesError");layout->addWidget(error);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);layout->addWidget(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     auto staged=decision;

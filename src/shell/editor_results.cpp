@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../core/simulation.hpp"
@@ -41,7 +42,7 @@ private:
     std::function<void()> shown_;
 };
 QLabel* noteLabel(QWidget* parent,const char* name) {
-    auto* label=new QLabel(parent); label->setObjectName(name); label->setWordWrap(true); return label;
+    auto* label=new ReflowLabel(parent); label->setObjectName(name); label->setWordWrap(true); return label;
 }
 QTableWidgetItem* figure(const std::optional<double>& value,int decimals=1) {
     auto* item=new QTableWidgetItem(value?QString::number(*value,'f',decimals):QString());

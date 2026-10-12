@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "demand_period_editor.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QDialog>
@@ -15,7 +16,7 @@ std::optional<std::vector<std::vector<double>>> editDemandPeriods(QWidget* paren
     const std::function<const char*(const std::vector<std::vector<double>>&)>& validate) {
     QDialog dialog(parent);dialog.setObjectName("editorDemandPeriodsDialog");dialog.setWindowTitle(text("editorDemandPeriods"));
     auto* layout=new QVBoxLayout(&dialog);
-    auto* help=new QLabel(text("editorDemandPeriodsHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* help=new ReflowLabel(text("editorDemandPeriodsHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
     auto* table=new QTableWidget(0,columns.size(),&dialog);table->setObjectName("editorDemandPeriodsTable");
     table->setHorizontalHeaderLabels(columns);table->horizontalHeader()->setStretchLastSection(true);layout->addWidget(table);
     const auto append=[&](const std::vector<double>& row) {
@@ -33,7 +34,7 @@ std::optional<std::vector<std::vector<double>>> editDemandPeriods(QWidget* paren
     for(const auto& row:values)append(row);
     auto* add=new QPushButton(text("editorDemandAddPeriod"),&dialog);add->setObjectName("editorDemandAddPeriod");layout->addWidget(add);
     auto* remove=new QPushButton(text("editorDemandRemovePeriod"),&dialog);remove->setObjectName("editorDemandRemovePeriod");layout->addWidget(remove);
-    auto* error=new QLabel(&dialog);error->setObjectName("editorDemandPeriodsError");error->setWordWrap(true);layout->addWidget(error);
+    auto* error=new ReflowLabel(&dialog);error->setObjectName("editorDemandPeriodsError");error->setWordWrap(true);layout->addWidget(error);
     QObject::connect(add,&QPushButton::clicked,&dialog,[&]{
         const double from=table->rowCount()?qobject_cast<QDoubleSpinBox*>(table->cellWidget(table->rowCount()-1,1))->value():0;
         std::vector<double> row(columns.size(),0);row[0]=from;row[1]=from+60;append(row);

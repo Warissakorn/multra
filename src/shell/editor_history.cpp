@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -18,7 +19,7 @@ void EditorWindow::buildHistory() {
     auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(editorDesign::space2,editorDesign::space2,editorDesign::space2,editorDesign::space2);
     layout->setSpacing(editorDesign::space1);
-    auto* help = new QLabel(body);
+    auto* help = new ReflowLabel(body);
     help->setWordWrap(true);
     texts_["editorHistoryHelp"] = help;
     layout->addWidget(help);

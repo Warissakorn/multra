@@ -356,7 +356,7 @@
   "editorResetLayout": "Reset panel layout",
   "editorShortcuts": "Keyboard and mouse shortcuts",
   "editorAppearance": "Network and appearance",
-  "editorPaletteHint": "Ctrl + right-drag to create.\nF1 for all shortcuts.",
+  "editorPaletteHint": "Ctrl + right-drag to create. F1 for all shortcuts.",
   "editorSeedLabel": "Seed",
   "editorResultsTable": "Results",
   "editorResultsMovement": "Movement",
@@ -710,5 +710,6 @@
   "EDIT_MAP_PROJECTION": "Cannot initialize or transform the map coordinates. Check the installed PROJ database.",
   "EDIT_MAP_PROVIDER": "Map provider is unavailable. Check map-providers.json.",
   "EDIT_MAP_RENDER_LIMIT": "Map reprojection exceeded the rendering limit.",
-  "EDIT_MAP_TILE": "Invalid map tile coordinates."
+  "EDIT_MAP_TILE": "Invalid map tile coordinates.",
+  "EDIT_ROUTE_DESTINATION_INVALID": "Route destination marker is invalid. Its station must remain on a road in the route. Revise or remove the route before shortening or splitting at that point."
 }

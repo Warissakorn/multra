@@ -44,11 +44,23 @@ std::string putRoute(ProjectDocument& d, Route value) {
         if (!known) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
     }
     auto& routes=demand(d).routes;
+    std::optional<std::string> previousLast;
+    for(const auto& route:routes)if(route.id==id)
+        previousLast=route.segmentIds.empty()?std::string{}:route.segmentIds.back();
     put(routes,std::move(value));
     // A route names Links and Connectors (M1.26). A caller that named a lane or a Connector path
     // meant the object it belongs to, so it is stored that way here rather than refused: this is
     // the same mapping a schema-7 file gets on load, and it keeps one meaning in the document.
     migrateRoutesToObjects(d.network,demand(d));
+    // Keep a marker while its object and destination road remain in the edited route.
+    // Appending another destination must not leave the old road's marker behind.
+    auto& ends=demand(d).routeDestinations;
+    if(const auto end=ends.find(id);end!=ends.end())
+        for(const auto& route:routes)if(route.id==id &&
+            (std::find(route.segmentIds.begin(),route.segmentIds.end(),end->second.objectId)==route.segmentIds.end() ||
+             (previousLast && (route.segmentIds.empty() || route.segmentIds.back()!=*previousLast)))) {
+            ends.erase(end);break;
+        }
     return id;
 }
 std::string putInput(ProjectDocument& d, VehicleInput value) {
@@ -64,6 +76,7 @@ std::string putProgram(ProjectDocument& d, SignalProgram value) {
 }
 void deleteRoute(ProjectDocument& d, const std::string& id) {
     auto& values=demand(d); remove(values.routes,id);
+    values.routeDestinations.erase(id);
     std::erase_if(values.inputs,[&](const auto& i){return i.routeId==id;});
     detail::pruneRoutingDecisions(values, d.network);
 }
@@ -78,6 +91,8 @@ void deleteRoutingDecision(ProjectDocument& d, const std::string& id) {
     std::erase_if(values.inputs,[&](const auto& i){return i.routingDecisionId==id;});
 }
 void detail::pruneRoutingDecisions(AuthoringDefinition& values, const Network& network) {
+    std::erase_if(values.routeDestinations,[&](const auto& entry){
+        return std::none_of(values.routes.begin(),values.routes.end(),[&](const auto& r){return r.id==entry.first;});});
     const auto linkExists=[&](const std::string& id){
         return std::any_of(network.links.begin(),network.links.end(),[&](const auto& l){return l.id==id;});};
     // A decision entry for a route that is gone goes with it, as the route's own inputs do, and

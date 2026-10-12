@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "behaviour_editor.hpp"
 #include "../core/w74.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -23,7 +24,7 @@ QDoubleSpinBox* number(QWidget* parent, const char* key, double value) {
     field->setDecimals(6); field->setValue(value); field->setFont(editorDesign::numericFont()); return field;
 }
 QLabel* note(QWidget* parent, QFormLayout* form, const QString& value, const char* object) {
-    auto* label = new QLabel(value, parent); label->setObjectName(object); label->setWordWrap(true); form->addRow(label); return label;
+    auto* label = new ReflowLabel(value, parent); label->setObjectName(object); label->setWordWrap(true); form->addRow(label); return label;
 }
 // A file value, written as the file would hold it: no thousands separator, '.' decimal.
 QString figure(double value) { return QString::number(value, 'g', 17); }
@@ -40,7 +41,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabBehaviours"));
     auto* form = new QFormLayout(&dialog);
     note(&dialog, form, q(users), "editorBehaviourUsers"); // users first: a shared edit changes all of them
-    form->addRow(text("editorColumnId"), new QLabel(q(b.id), &dialog));
+    form->addRow(text("editorColumnId"), new ReflowLabel(q(b.id), &dialog));
     auto* label = new QLineEdit(q(name), &dialog); label->setObjectName("editorBehaviourName"); form->addRow(text("editorColumnName"), label);
     auto* model = new QComboBox(&dialog); model->setObjectName("editorBehaviourModel");
     model->addItem(text("editorBehaviourModelPrototype")); model->addItem(text("editorBehaviourModelW74"));
@@ -105,7 +106,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         pages->setCurrentIndex(index); w74Help->setVisible(index == 1);
     });
     model->setCurrentIndex(b.w74 ? 1 : 0); pages->setCurrentIndex(model->currentIndex()); w74Help->setVisible(b.w74.has_value());
-    auto* error = new QLabel(&dialog); error->setObjectName("editorBehaviourEditError"); error->setWordWrap(true); form->addRow(error);
+    auto* error = new ReflowLabel(&dialog); error->setObjectName("editorBehaviourEditError"); error->setWordWrap(true); form->addRow(error);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog); form->addRow(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm")); buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);

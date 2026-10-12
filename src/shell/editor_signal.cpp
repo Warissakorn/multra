@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "signal_timing_view.hpp"
@@ -62,9 +63,9 @@ std::string EditorWindow::editController(const std::string& id) {
     auto* add=new QPushButton(text("editorAddGroup"),&dialog);add->setObjectName("editorAddGroup");
     auto* remove=new QPushButton(text("editorRemoveGroup"),&dialog);remove->setObjectName("editorRemoveGroup");
     buttonsRow->addWidget(add);buttonsRow->addWidget(remove);buttonsRow->addStretch();
-    layout->addWidget(new QLabel(text("editorTimingDiagram"),&dialog));
+    layout->addWidget(new ReflowLabel(text("editorTimingDiagram"),&dialog));
     auto* diagram=new SignalTimingView(&dialog);diagram->setStatusLabels(text("editorSignalGreen"),text("editorSignalAmber"),text("editorSignalRed"));layout->addWidget(diagram);
-    auto* status=new QLabel(&dialog);status->setObjectName("editorControllerStatus");status->setWordWrap(true);layout->addWidget(status);
+    auto* status=new ReflowLabel(&dialog);status->setObjectName("editorControllerStatus");status->setWordWrap(true);layout->addWidget(status);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);layout->addWidget(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);

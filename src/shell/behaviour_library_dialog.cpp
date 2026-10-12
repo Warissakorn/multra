@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "behaviour_library_dialog.hpp"
 #include "behaviour_editor.hpp"
 #include "../commands/behaviour_commands.hpp"
@@ -35,11 +36,11 @@ std::string usersText(const LibraryUsers& users, const CatalogText& text) {
     return (all.isEmpty() ? text("editorBehaviourUnused") : text("editorBehaviourUsedBy").arg(all.join(", "))).toStdString();
 }
 QLabel* note(QDialog& dialog, QFormLayout* form, const std::string& value, const char* object) {
-    auto* label = new QLabel(q(value), &dialog); label->setObjectName(object); label->setWordWrap(true); form->addRow(label); return label;
+    auto* label = new ReflowLabel(q(value), &dialog); label->setObjectName(object); label->setWordWrap(true); form->addRow(label); return label;
 }
 bool editClass(QWidget* parent, VehicleClass& c, const AuthoringDefinition& d, const CatalogText& text) {
     QDialog dialog(parent); dialog.setObjectName("editorClassEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabClasses"));
-    auto* form = new QFormLayout(&dialog); form->addRow(text("editorColumnId"), new QLabel(q(c.id), &dialog));
+    auto* form = new QFormLayout(&dialog); form->addRow(text("editorColumnId"), new ReflowLabel(q(c.id), &dialog));
     auto* label = new QLineEdit(q(c.name), &dialog); label->setObjectName("editorClassName"); form->addRow(text("editorColumnName"), label);
     auto* members = new QListWidget(&dialog); members->setObjectName("editorClassTypes"); form->addRow(text("editorBehaviourMembers"), members);
     for (const auto& t : d.vehicleTypes) {
@@ -69,7 +70,7 @@ QComboBox* behaviourChoice(QWidget* parent, const AuthoringDefinition& d, const 
 bool editType(QWidget* parent, LinkBehaviourType& t, const AuthoringDefinition& d, const std::string& users, const CatalogText& text) {
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourTypeEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabTypes"));
     auto* form = new QFormLayout(&dialog); note(dialog, form, users, "editorBehaviourUsers");
-    form->addRow(text("editorColumnId"), new QLabel(q(t.id), &dialog));
+    form->addRow(text("editorColumnId"), new ReflowLabel(q(t.id), &dialog));
     auto* label = new QLineEdit(q(t.name), &dialog); label->setObjectName("editorBehaviourTypeName"); form->addRow(text("editorColumnName"), label);
     auto* fallback = behaviourChoice(&dialog, d, t.defaultBehaviourId, {}); fallback->setObjectName("editorBehaviourTypeDefault");
     form->addRow(text("editorBehaviourDefault"), fallback);
@@ -120,9 +121,9 @@ template<class T> std::vector<std::string> others(const std::vector<T>& values, 
 bool editBehaviourLibrary(QWidget* parent, ProjectDocument& staged, const CatalogText& text) {
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourDialog"); dialog.setWindowTitle(text("editorBehaviourLibrary"));
     auto* layout = new QVBoxLayout(&dialog);
-    auto* help = new QLabel(text("editorBehaviourHelp"), &dialog); help->setWordWrap(true); layout->addWidget(help);
+    auto* help = new ReflowLabel(text("editorBehaviourHelp"), &dialog); help->setWordWrap(true); layout->addWidget(help);
     auto* tabs = new QTabWidget(&dialog); layout->addWidget(tabs);
-    auto* error = new QLabel(&dialog); error->setObjectName("editorBehaviourError"); error->setWordWrap(true);
+    auto* error = new ReflowLabel(&dialog); error->setObjectName("editorBehaviourError"); error->setWordWrap(true);
     const auto& d = *staged.definition;
     struct Page { QTableWidget* table{}; std::function<std::vector<std::pair<std::string, std::string>>()> rows; };
     std::vector<Page> pages;
