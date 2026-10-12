@@ -24,7 +24,7 @@ private:
     std::unique_ptr<Impl> impl_;
     GeoReference reference_;
     MetrePoint origin_;
-    double cosine_{}, sine_{};
+    double cosine_{}, sine_{}, mercatorOriginX_{};
     MetrePoint projectedToWorld(MetrePoint) const;
     MetrePoint worldToProjected(MetrePoint) const;
 };

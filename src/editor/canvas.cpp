@@ -179,7 +179,7 @@ void EditorCanvas::fitNetwork() {
     auto bounds=scene_.itemsBoundingRect(); if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
     fitInView(bounds.adjusted(-10,-10,10,10),Qt::KeepAspectRatio);
     const double scale=std::clamp(std::abs(transform().m11()),0.05,100.0);
-    setTransform(QTransform::fromScale(scale,-scale)); centerOn(bounds.center()); redraw();
+    setTransform(QTransform::fromScale(scale,-scale)); centerOn(bounds.center()); redraw();scheduleMapUpdate();
 }
 void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     painter->fillRect(rect,editorDesign::role(QPalette::Base));

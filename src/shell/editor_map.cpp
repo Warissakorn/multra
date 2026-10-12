@@ -67,8 +67,8 @@ void EditorWindow::editMapSettings() {
     const auto updateCrs=[=]{crs->setText(QString::fromStdString(utmCrs(longitude->value(),latitude->value())));};
     connect(longitude,&QDoubleSpinBox::valueChanged,&dialog,[=](double){updateCrs();});
     connect(latitude,&QDoubleSpinBox::valueChanged,&dialog,[=](double){updateCrs();});updateCrs();
-    auto* x=spin("editorMapWorldX",r.anchorWorldX,-1e9,1e9,3);
-    auto* y=spin("editorMapWorldY",r.anchorWorldY,-1e9,1e9,3);
+    auto* x=spin("editorMapWorldX",r.anchorWorldX,-mapWorldAnchorLimit,mapWorldAnchorLimit,3);
+    auto* y=spin("editorMapWorldY",r.anchorWorldY,-mapWorldAnchorLimit,mapWorldAnchorLimit,3);
     auto* angle=spin("editorMapRotation",r.rotationDegrees,-180,180,4);
     auto* opacity=spin("editorMapOpacity",current.opacity,0,1,2);
     auto* note=new QLabel(text("editorMapReferenceHelp"),&dialog);note->setWordWrap(true);note->setMaximumWidth(470);layout->addWidget(note);

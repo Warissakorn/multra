@@ -52,16 +52,25 @@ void MapLayer::setView(const QPolygonF& viewport,double scale) {
             left=std::min(left,m.x);right=std::max(right,m.x);bottom=std::min(bottom,m.y);top=std::max(top,m.y);
         }
         auto a=tileAt(provider_->id,zoom_,{left,top}),b=tileAt(provider_->id,zoom_,{right,bottom});
-        const int budget=std::min(128,64*1024*1024/(provider_->tilePixels*provider_->tilePixels*4));
+        const auto horizontal=[&]{
+            const double count=double(1<<zoom_);
+            a.x=static_cast<int>(std::floor((left+mercatorHalfWorld)/(2*mercatorHalfWorld)*count));
+            b.x=static_cast<int>(std::floor((right+mercatorHalfWorld)/(2*mercatorHalfWorld)*count));
+        };
+        horizontal();
+        const auto budget=static_cast<qint64>(MapTileClient::wantedLimit(provider_->tilePixels));
         // Zoom out if a large/high-DPI window would exceed the visible request budget.
-        while ((b.x-a.x+1)*(b.y-a.y+1)>budget && zoom_>provider_->minimumZoom) {
+        const auto countNeeded=[&]{return qint64(b.x-a.x+1)*qint64(b.y-a.y+1);};
+        while (countNeeded()>budget && zoom_>provider_->minimumZoom) {
             --zoom_;a=tileAt(provider_->id,zoom_,{left,top});b=tileAt(provider_->id,zoom_,{right,bottom});
+            horizontal();
         }
-        if ((b.x-a.x+1)*(b.y-a.y+1)>budget) throw std::invalid_argument("EDIT_MAP_RENDER_LIMIT");
+        if (countNeeded()>budget) throw std::invalid_argument("EDIT_MAP_RENDER_LIMIT");
         viewStatus_=MapStatus::ready;
         QPainterPath visible;visible.addPolygon(viewport);visible.closeSubpath();
         for (int y=a.y;y<=b.y;++y) for (int x=a.x;x<=b.x;++x) {
-            const TileKey key{provider_->id,zoom_,x,y};
+            const int count=1<<zoom_,wrappedX=(x%count+count)%count;
+            const TileKey key{provider_->id,zoom_,wrappedX,y};
             auto mesh=meshes_.find(key);
             if (mesh==meshes_.end() || mesh->second.sampledError*scale>.5)
                 meshes_[key]=buildMapMesh(*projection_,key,scale);

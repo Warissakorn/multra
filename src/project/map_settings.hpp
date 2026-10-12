@@ -4,6 +4,9 @@
 #include <string>
 
 namespace trafficsim {
+// Covers full UTM eastings/northings while keeping the desktop's signed-int
+// scroll range usable at its maximum 100 pixels/metre zoom.
+inline constexpr double mapWorldAnchorLimit=1e7;
 // WGS84 anchor fixes one project point to one geographic point. Rotation is CCW from
 // projected east/north to project x/y; no authored road is moved by this transform.
 struct GeoReference {

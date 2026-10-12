@@ -9,6 +9,8 @@ map has no second camera. This contract is for the owner's 2026-10-12 request.
 Schema 29 adds optional `map`: `providerId`, `opacity`, and `reference` containing
 `projectedCrs`, `anchorLongitude`, `anchorLatitude`, `anchorWorldX`, `anchorWorldY`
 and `rotationDegrees`. These are required finite values when map is present.
+Each world anchor component is limited to ±10,000,000 m so accepted references
+remain reachable through Qt's integer scroll range at the Canvas maximum zoom.
 WGS84 UTM EPSG:32601–32660 and EPSG:32701–32760 are supported, selected once and
 persisted. The geographic anchor must belong to that zone and hemisphere.
 Geographic input is longitude, latitude in degrees, normalized explicitly in PROJ.
@@ -47,6 +49,8 @@ checks edge/diagonal midpoints against a 0.5 physical-pixel error target, with a
 bounded subdivision count; a tile that cannot meet it is omitted and warned.
 The target is numerical rendering error at sampled points, not OSM data accuracy.
 Triangles share vertices; pixel Y inversion occurs exactly once.
+Mercator X is unwrapped around the anchor; XYZ request indices wrap at ±180°.
+Crossing the date line within a local study does not request a world-wide tile box.
 Tiles are painted in the background, never scene items or part of Fit network bounds.
 Tile arrival invalidates background paint only, not road/vehicle scene reconstruction.
 
@@ -54,9 +58,15 @@ Tile arrival invalidates background paint only, not road/vehicle scene reconstru
 
 15 s request timeout, 1 MiB encoded and 256–512 pixel tile bounds, 64 MiB decoded LRU,
 256 MiB disk cache. PNG decoding checks header dimensions before allocation.
+Decoded images use 32-bit premultiplied pixels. The wanted set is additionally
+limited by that memory budget (64 tiles at 512 pixels, 128 at 256 pixels).
 Cache obeys response freshness and validators; where freshness is absent, store a
-7-day expiry. No default no-cache headers. Failures use bounded retry/backoff;
-429 obeys Retry-After. Live OSM sends a stable TrafficSim User-Agent and shows the
+7-day expiry. Quoted max-age is accepted; duplicate/invalid explicit freshness is
+stale. Corrupt cached bytes lose their validators; a 304 with a different ETag
+cannot validate the stored image. Successful 304 validation refreshes Date/Age.
+HTTP Date/Expires/Retry-After timestamps, including GMT and legacy forms, are parsed in UTC.
+No default no-cache headers. Failures use bounded retry/backoff;
+429/503 obey Retry-After, including delays beyond one day. Live OSM sends a stable TrafficSim User-Agent and shows the
 provider's credit visibly. No bulk download, offline archive or prefetch feature.
 Live policy: https://operations.osmfoundation.org/policies/tiles/ (checked 2026-10-12).
 

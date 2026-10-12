@@ -10,8 +10,11 @@ the log. Rewrite this file; do not append to it.
 ## OSM background review (2026-10-12, D150)
 
 The current owner request adds M1.28 ([contract](reference/MAP_BACKGROUND.md),
-[plan](plans/OSM_BACKGROUND.md)). Review the OSM branch's native CI and MAP1–MAP9
-before merging. MAP10 remains the owner's check: set a reference on a real study,
+[plan](plans/OSM_BACKGROUND.md)). The first commit's five native CI jobs passed,
+including Windows desktop/core. The detailed [review](audits/OSM_REVIEW.md) corrected
+cache, viewport, anchor-range and packaged-database defects. Check CI on the latest
+review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) before merging.
+MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
 After that review, return to the unchanged queue below; M8.1 remains the default next slice.

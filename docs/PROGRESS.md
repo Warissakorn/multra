@@ -8,6 +8,31 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-12 — OSM detailed implementation review (D150)
+
+The owner asked for another detailed review. Seven focused cases failed on the
+first implementation: corrupt cache sent obsolete validators, 16-bit PNGs broke
+the decoded-byte assumption, Fit without a centre change kept old tile levels,
+date-line views became world-sized, accepted anchors exceeded Qt scrolling,
+quoted max-age received fallback freshness, and mismatched 304 ETags reused bytes.
+Each now has a passing regression. Additional source-review fixes bound 512-pixel
+wanted sets, preserve long Retry-After delays, use 64-bit candidate counts and locate
+the shipped proj.db even with a custom content directory. HTTP policy is factored
+into one helper; schema/dialog share the reachable anchor bound. Core/eval unchanged.
+The Expires/Age regression also exposed Qt 6.4's rejection of HTTP GMT timestamps;
+HTTP dates now use explicit UTC normalization, including legacy forms.
+
+Local map-ui passed, including deterministic cache policy/bootstrap/budget cases,
+both date-line hemispheres, rotation and high latitude.
+Headless full build/check passed 82/82 CTest tests. The original commit passed
+all five native CI jobs, including Windows desktop/core (run 38198105807).
+Desktop full build/check passed 120/120, architecture/file-size/docs passed, and
+installed-database projection tests passed. Latest-commit CI is recorded in PR #138; those checks
+do not close the owner's real-study alignment/responsiveness review.
+Detailed evidence: [OSM_REVIEW](audits/OSM_REVIEW.md). Pending work: [NEXT](NEXT.md).
+
+---
+
 ## 2026-10-12 — OSM map background (D150, M1.28)
 
 Implemented the owner's OSM background plan: optional schema-29 map reference/settings,

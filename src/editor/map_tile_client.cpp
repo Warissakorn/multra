@@ -1,48 +1,22 @@
 #include "map_tile_client.hpp"
+#include "map_http_cache.hpp"
 #include <QBuffer>
 #include <QImageReader>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QDateTime>
-#include <QRegularExpression>
 #include <algorithm>
 #include <memory>
 
 namespace trafficsim {
 namespace {
-using Headers=QNetworkCacheMetaData::RawHeaderList;
-QByteArray header(const Headers& headers,const QByteArray& name) {
-    for(const auto& h:headers)if(h.first.toLower()==name)return h.second;
-    return {};
-}
-QDateTime expiration(const Headers& headers) {
-    const auto now=QDateTime::currentDateTimeUtc();
-    const auto control=header(headers,"cache-control").toLower();
-    if(control.contains("no-cache") || control.contains("no-store"))return now;
-    const auto match=QRegularExpression("(?:^|[,\\s])max-age\\s*=\\s*([0-9]+)").match(QString::fromLatin1(control));
-    if(match.hasMatch()) {
-        const auto seconds=std::clamp(match.captured(1).toLongLong(),qint64(0),qint64(31536000));
-        const auto age=std::max(qint64(0),header(headers,"age").toLongLong());
-        auto result=now.addSecs(std::max(qint64(0),seconds-age));
-        const auto date=QDateTime::fromString(QString::fromLatin1(header(headers,"date")),Qt::RFC2822Date);
-        if(date.isValid())result=std::min(result,date.addSecs(seconds));
-        return result;
-    }
-    const auto expires=QDateTime::fromString(QString::fromLatin1(header(headers,"expires")),Qt::RFC2822Date);
-    if(expires.isValid())return expires;
-    return now.addDays(7); // OSM fallback only when explicit freshness is absent.
-}
+using mapHttp::header;
+using mapHttp::Headers;
 QImage decode(QByteArray bytes,int pixels) {
     if(bytes.isEmpty() || bytes.size()>1024*1024)return {};
     QBuffer buffer(&bytes);buffer.open(QIODevice::ReadOnly);QImageReader reader(&buffer,"PNG");
-    return reader.size()==QSize(pixels,pixels)?reader.read():QImage();
-}
-Headers merged(Headers cached,const Headers& response) {
-    for(const auto& h:response) {
-        cached.erase(std::remove_if(cached.begin(),cached.end(),[&](const auto& old){return old.first.toLower()==h.first.toLower();}),cached.end());
-        cached.push_back(h);
-    }
-    return cached;
+    if(reader.size()!=QSize(pixels,pixels))return {};
+    return reader.read().convertToFormat(QImage::Format_ARGB32_Premultiplied);
 }
 }
 MapTileClient::MapTileClient(const QString& directory,QObject* parent):QObject(parent) {
@@ -54,6 +28,9 @@ MapTileClient::MapTileClient(const QString& directory,QObject* parent):QObject(p
 }
 MapTileClient::~MapTileClient() { changed={};stop(); }
 void MapTileClient::setTimeout(int ms) { timeout_=std::clamp(ms,1,60000); }
+std::size_t MapTileClient::wantedLimit(int pixels) {
+    return (pixels==256 || pixels==512)?std::min(qint64(128),decodedCacheBytes/(pixels*pixels*4)):0;
+}
 void MapTileClient::setProvider(const MapProvider& p) {
     if(provider_==p)return;
     stop();provider_=p;images_.clear();imageBytes_=0;failures_.clear();blockedUntil_=0;
@@ -71,7 +48,8 @@ void MapTileClient::setWantedTiles(const std::set<TileKey>& tiles) {
         if(it->second.expiresAt>now){++it;continue;}
         imageBytes_-=it->second.image.sizeInBytes();it=images_.erase(it);
     }
-    for(const auto& key:tiles)if(wanted_.size()<128 && key.providerId==provider_.id)wanted_.insert(key);
+    const auto budget=wantedLimit(provider_.tilePixels);
+    for(const auto& key:tiles)if(wanted_.size()<budget && key.providerId==provider_.id)wanted_.insert(key);
     std::erase_if(failures_,[this](const auto& item){return !wanted_.contains(item.first);});
     for(auto it=active_.begin();it!=active_.end();) {
         if(wanted_.contains(it->first)){++it;continue;}
@@ -101,15 +79,15 @@ void MapTileClient::pump() {
         if(images_.contains(key) || active_.contains(key))continue;
         const auto failure=failures_.find(key);
         if(failure!=failures_.end() && (failure->second.attempts>=3 || now<failure->second.retryAt))continue;
-        const auto url=provider_.tileUrl(key);const auto metadata=disk_->metaData(url);
-        if(metadata.isValid() && metadata.expirationDate()>QDateTime::currentDateTimeUtc()) {
+        const auto url=provider_.tileUrl(key);auto metadata=disk_->metaData(url);
+        if(metadata.isValid()) {
             std::unique_ptr<QIODevice> cached(disk_->data(url));
             auto decoded=cached?decode(cached->read(1024*1024+1),provider_.tilePixels):QImage();
-            if(!decoded.isNull()) {
+            if(!decoded.isNull() && metadata.expirationDate()>QDateTime::currentDateTimeUtc()) {
                 imageBytes_+=decoded.sizeInBytes();images_[key]={std::move(decoded),++clock_,metadata.expirationDate().toMSecsSinceEpoch()};
                 trimImages();loaded=true;continue;
             }
-            disk_->remove(url);
+            if(decoded.isNull()) {disk_->remove(url);metadata={};}
         }
         QNetworkRequest request(url);
         request.setRawHeader("User-Agent",QByteArray("TrafficSim/")+TRAFFICSIM_VERSION+
@@ -138,18 +116,20 @@ void MapTileClient::finish(const TileKey& key,QNetworkReply* reply) {
         if(status==200)bytes=reply->read(1024*1024+1);
         else {
             const auto cachedMetadata=disk_->metaData(url);
-            headers=merged(cachedMetadata.rawHeaders(),headers);
-            std::unique_ptr<QIODevice> cached(disk_->data(url));if(cached)bytes=cached->read(1024*1024+1);
+            if(mapHttp::matchesValidation(cachedMetadata.rawHeaders(),reply->request(),headers)) {
+                headers=mapHttp::validatedHeaders(cachedMetadata.rawHeaders(),headers);
+                std::unique_ptr<QIODevice> cached(disk_->data(url));if(cached)bytes=cached->read(1024*1024+1);
+            }
         }
         decoded=decode(bytes,provider_.tilePixels);
     }
     if(!decoded.isNull()) {
-        const auto expiry=expiration(headers);
+        const auto expiry=mapHttp::expiration(headers);
         if(header(headers,"cache-control").toLower().contains("no-store"))disk_->remove(url);
         else {
             QNetworkCacheMetaData metadata;metadata.setUrl(url);metadata.setRawHeaders(headers);
             metadata.setExpirationDate(expiry);metadata.setSaveToDisk(true);
-            metadata.setLastModified(QDateTime::fromString(QString::fromLatin1(header(headers,"last-modified")),Qt::RFC2822Date));
+            metadata.setLastModified(mapHttp::httpDate(header(headers,"last-modified")));
             if(auto* target=disk_->prepare(metadata)) {
                 if(target->write(bytes)==bytes.size())disk_->insert(target);else disk_->remove(url);
             }
@@ -161,20 +141,14 @@ void MapTileClient::finish(const TileKey& key,QNetworkReply* reply) {
         if(status==200 || status==304)disk_->remove(url);
         auto& failure=failures_[key];++failure.attempts;qint64 delay=1000LL<<(failure.attempts-1);
         if(status==429 || status==503) {
-            bool ok=false;const auto value=reply->rawHeader("Retry-After");const auto seconds=value.toLongLong(&ok);
-            if(ok)delay=std::max(delay,std::clamp(seconds,qint64(0),qint64(86400))*1000);
-            else {
-                const auto date=QDateTime::fromString(QString::fromLatin1(value),Qt::RFC2822Date);
-                if(date.isValid())delay=std::max(delay,date.toMSecsSinceEpoch()-now);
-            }
-            blockedUntil_=now+delay;
+            blockedUntil_=std::max(now+delay,mapHttp::retryDeadline(reply->rawHeader("Retry-After"),now));
         }
-        failure.retryAt=now+delay;
+        failure.retryAt=std::max(now+delay,blockedUntil_);
     }
     reply->deleteLater();if(changed)changed();pump();
 }
 void MapTileClient::trimImages() {
-    while(imageBytes_>64*1024*1024 && !images_.empty()) {
+    while(imageBytes_>decodedCacheBytes && !images_.empty()) {
         const auto oldest=std::min_element(images_.begin(),images_.end(),[](const auto& a,const auto& b){return a.second.used<b.second.used;});
         imageBytes_-=oldest->second.image.sizeInBytes();images_.erase(oldest);
     }

@@ -155,6 +155,7 @@ Ubuntu: install `qt6-base-dev libproj-dev`; Windows/vcpkg: `proj:x64-windows` be
 `nlohmann-json:x64-windows`. Add vcpkg's `installed/x64-windows/bin` to PATH for tests
 when applocal is disabled. Headless builds have no PROJ/Qt Network dependency.
 CMake copies/installs `proj.db` into `bin/data/proj`; desktop startup selects that
-packaged database. Windows packaging copies projection dependency DLLs and uses
+packaged database: the database in `--data-dir/proj` when present, otherwise the executable's
+`data/proj` even with a custom content directory. Windows packaging copies dependency DLLs and uses
 windeployqt for Qt Network/TLS. System Linux packages need Qt Network and libproj
 runtimes. Network tests use a local fake server and make no live OSM requests.

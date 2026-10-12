@@ -1,4 +1,5 @@
 #include "projection.hpp"
+#include "tile_grid.hpp"
 #include <proj.h>
 #include <cmath>
 #include <numbers>
@@ -30,6 +31,7 @@ GeoProjection::GeoProjection(const GeoReference& r):impl_(std::make_unique<Impl>
     impl_->geographic=impl_->pipeline("EPSG:4326",r.projectedCrs.c_str());
     impl_->mercator=impl_->pipeline("EPSG:3857",r.projectedCrs.c_str());
     origin_=Impl::transform(impl_->geographic,PJ_FWD,{r.anchorLongitude,r.anchorLatitude});
+    mercatorOriginX_=r.anchorLongitude*mercatorHalfWorld/180;
     const double angle=r.rotationDegrees*std::numbers::pi/180;cosine_=std::cos(angle);sine_=std::sin(angle);
 }
 GeoProjection::~GeoProjection()=default;
@@ -50,7 +52,13 @@ LonLat GeoProjection::worldToGeographic(MetrePoint p) const {
     const auto q=Impl::transform(impl_->geographic,PJ_INV,worldToProjected(p));return {q.x,q.y};
 }
 MetrePoint GeoProjection::mercatorToWorld(MetrePoint p) const { return projectedToWorld(Impl::transform(impl_->mercator,PJ_FWD,p)); }
-MetrePoint GeoProjection::worldToMercator(MetrePoint p) const { return Impl::transform(impl_->mercator,PJ_INV,worldToProjected(p)); }
+MetrePoint GeoProjection::worldToMercator(MetrePoint p) const {
+    auto result=Impl::transform(impl_->mercator,PJ_INV,worldToProjected(p));
+    // A local study crossing +/-180 degrees remains a small interval, not the
+    // bounding box of the whole world. HTTP tile indices wrap in MapLayer.
+    result.x+=std::round((mercatorOriginX_-result.x)/(2*mercatorHalfWorld))*2*mercatorHalfWorld;
+    return result;
+}
 bool GeoProjection::insideStudy(MetrePoint p) const {
     return std::isfinite(p.x) && std::isfinite(p.y) && std::hypot(p.x-reference_.anchorWorldX,p.y-reference_.anchorWorldY)<=100000;
 }

@@ -1,4 +1,6 @@
 #include "../src/editor/map_layer.hpp"
+#include "../src/editor/map_http_cache.hpp"
+#include "../src/geo/projection_data.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/commands/map_commands.hpp"
 #include <QApplication>
@@ -24,6 +26,10 @@
 #include <stdexcept>
 #include <functional>
 #include <map>
+#include <cmath>
+#include <memory>
+#include <fstream>
+#include <limits>
 using namespace trafficsim;
 namespace {
 void require(bool value,const char* message) {if (!value) throw std::runtime_error(message);}
@@ -42,6 +48,7 @@ public:
     QTcpServer server;
     int requests{},conditional{},peak{};
     bool invalid{},limited{},hold{},revalidate{};
+    QByteArray responseTag{"fixture"};
     QByteArray payload{png()},extraHeaders{"Cache-Control: max-age=3600\r\nETag: \"fixture\"\r\n"};
     std::vector<QByteArray> headers;
     std::vector<QTcpSocket*> held;
@@ -57,7 +64,7 @@ public:
                     if (request.toLower().contains("if-none-match:")) ++conditional;
                     if (hold) {held.push_back(socket);peak=std::max(peak,static_cast<int>(held.size()));return;}
                     if (revalidate && request.toLower().contains("if-none-match:")) {
-                        socket->write("HTTP/1.1 304 Not Modified\r\nCache-Control: max-age=3600\r\nETag: \"fixture\"\r\nConnection: close\r\n\r\n");
+                        socket->write("HTTP/1.1 304 Not Modified\r\nCache-Control: max-age=3600\r\nETag: \""+responseTag+"\"\r\nConnection: close\r\n\r\n");
                     }
                     else if (limited) {socket->write("HTTP/1.1 429 Too Many Requests\r\nRetry-After: 2\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");}
                     else {
@@ -162,6 +169,130 @@ void layerLifecycle() {
     require(layer.status()==MapStatus::outsideStudy && layer.wantedTiles().empty(),"Out-of-study view fetched tiles");
     layer.setSettings({});require(layer.status()==MapStatus::disabled,"Removal retained map");
 }
+void corruptCache() {
+    Server server;server.revalidate=true;QTemporaryDir cache;const TileKey key{"fixture",15,25000,15000};
+    {
+        QNetworkDiskCache disk;disk.setCacheDirectory(cache.path());QNetworkCacheMetaData metadata;
+        metadata.setUrl(server.provider().tileUrl(key));metadata.setExpirationDate(QDateTime::currentDateTimeUtc().addSecs(3600));
+        metadata.setRawHeaders({{"ETag","\"fixture\""}});metadata.setSaveToDisk(true);
+        auto* writer=disk.prepare(metadata);require(writer,"Corrupt-cache setup failed");
+        writer->write("broken PNG");disk.insert(writer);
+        std::unique_ptr<QIODevice> read(disk.data(metadata.url()));require(read && read->readAll()=="broken PNG","Corrupt-cache forcing failed");
+    }
+    MapTileClient client(cache.path());client.setProvider(server.provider());client.setWantedTiles({key});
+    waitFor([&]{return !client.image(key).isNull();});
+    require(server.requests==1 && server.conditional==0,"Corrupt cache sent a validator and required an avoidable retry");
+}
+void widePng() {
+    Server server;QImage source(512,512,QImage::Format_RGBA64);source.fill(QColor(200,100,40));
+    QBuffer buffer(&server.payload);buffer.open(QIODevice::WriteOnly);require(source.save(&buffer,"PNG"),"16-bit fixture save failed");
+    QImage check;require(check.loadFromData(server.payload,"PNG") && check.depth()==64,"16-bit forcing failed");
+    auto provider=server.provider();provider.tilePixels=512;QTemporaryDir cache;MapTileClient client(cache.path());client.setProvider(provider);
+    const TileKey key{"fixture",15,25000,15000};client.setWantedTiles({key});waitFor([&]{return !client.image(key).isNull();});
+    require(client.image(key).depth()==32,"PNG depth exceeds the decoded-cache pixel budget");
+}
+void fitRefresh() {
+    Server server;auto provider=server.provider();provider.maximumZoom=22;EditorCanvas canvas;
+    canvas.resize(800,600);canvas.setMapProviders({provider});
+    canvas.setMapStatusText([](MapStatus status){return status==MapStatus::ready || status==MapStatus::disabled?QString():QString("busy");});
+    ProjectDocument document;document.map=MapSettings{};document.map->providerId="fixture";
+    document.network.links.push_back({"road",{{-10,0},{10,0}},{{"lane",3.5}}});
+    canvas.setDocument(&document);canvas.show();
+    waitFor([&]{return server.requests>0 && !canvas.findChild<QLabel*>("editorMapStatus")->isVisible();});
+    const int before=server.requests;const auto scale=canvas.transform().m11();canvas.fitNetwork();
+    require(canvas.transform().m11()>scale*2,"Fit zoom forcing failed");
+    QTest::qWait(250);require(server.requests>before,"Fit zoom kept old tile level when the centre did not move");
+}
+void dateline() {
+    Server server;QTemporaryDir cache;MapLayer layer(cache.path());layer.setProviders({server.provider()});
+    MapSettings settings;settings.providerId="fixture";
+    for(const auto& reference:std::vector<GeoReference>{{"EPSG:32660",179.9999,13,0,0,0},
+            {"EPSG:32701",-179.9999,-13,0,0,37},{"EPSG:32660",179.9999,83,0,0,23}}) {
+        settings.reference=reference;layer.setSettings(settings);
+        const QPolygonF view{{-150,150},{150,150},{150,-150},{-150,-150}};layer.setView(view,2);
+        require(layer.status()!=MapStatus::renderLimit,"Local viewport crossing the date line became a world-wide request");
+        require(!layer.wantedTiles().empty(),"Date-line view had no visible tiles");
+        waitFor([&]{return layer.status()==MapStatus::ready;});require(layer.wantedTiles().size()<=128,"Date-line tile count unbounded");
+    }
+}
+void largeAnchor() {
+    Server server;EditorCanvas canvas;canvas.resize(800,600);canvas.setMapProviders({server.provider()});
+    ProjectDocument document;document.map=MapSettings{};document.map->providerId="fixture";
+    document.map->reference.anchorWorldX=1e9;
+    bool rejected=false;try {validateDocument(document);}catch(const std::exception&){rejected=true;}
+    require(rejected,"Unreachable anchor was accepted");
+    document.map->reference.anchorWorldX=mapWorldAnchorLimit;canvas.setDocument(&document);canvas.show();QApplication::processEvents();
+    require(canvas.centerOnGeographic({99,13}),"Large-anchor navigation rejected");
+    const auto centre=canvas.mapToScene(canvas.viewport()->rect().center());
+    require(std::abs(centre.x()-mapWorldAnchorLimit)<1,"Accepted map anchor cannot be reached by the Canvas scroll range");
+}
+void quotedFreshness() {
+    Server server;server.revalidate=true;server.extraHeaders="Cache-Control: max-age=\"0\"\r\nETag: \"fixture\"\r\n";
+    QTemporaryDir cache;const TileKey key{"fixture",15,25000,15000};
+    for(int repeat=0;repeat<2;++repeat) {
+        MapTileClient client(cache.path());client.setProvider(server.provider());client.setWantedTiles({key});
+        waitFor([&]{return !client.image(key).isNull();});
+    }
+    require(server.requests==2 && server.conditional==1,"Quoted max-age used seven-day fallback");
+}
+void validatorMismatch() {
+    Server server;server.extraHeaders="Cache-Control: max-age=0\r\nETag: \"fixture\"\r\n";
+    QTemporaryDir cache;const TileKey key{"fixture",15,25000,15000};
+    {
+        MapTileClient client(cache.path());client.setProvider(server.provider());client.setWantedTiles({key});
+        waitFor([&]{return !client.image(key).isNull();});require(server.requests==1,"Validator setup failed");
+    }
+    server.revalidate=true;server.responseTag="changed";
+    server.extraHeaders="Cache-Control: max-age=3600\r\nETag: \"changed\"\r\n";
+    MapTileClient client(cache.path());client.setProvider(server.provider());client.setWantedTiles({key});
+    waitFor([&]{return !client.image(key).isNull();});
+    require(server.requests==3,"Mismatched 304 validator reused an unvalidated representation");
+}
+void cachePolicy() {
+    using namespace mapHttp;
+    const auto now=QDateTime::fromSecsSinceEpoch(1700000000,Qt::UTC);
+    require(expiration({{"Cache-Control","public, max-age=\"60\""},{"Age","20"}},now)==now.addSecs(40),"Age was ignored");
+    require(expiration({{"Cache-Control","max-age=60"},{"Cache-Control","max-age=120"}},now)==now,"Duplicate freshness accepted");
+    require(expiration({{"Cache-Control","max-age=invalid"}},now)==now,"Invalid freshness used fallback");
+    require(expiration({{"Cache-Control","no-cache, max-age=60"}},now)==now,"no-cache was reused without validation");
+    require(expiration({{"Expires","invalid"}},now)==now,"Invalid Expires used fallback");
+    require(expiration({{"Date","Tue, 14 Nov 2023 22:13:20 GMT"},{"Expires","Tue, 14 Nov 2023 22:14:20 GMT"},{"Age","20"}},now)==now.addSecs(40),"Expires freshness ignored Age");
+    const Headers cached{{"Cache-Control","max-age=60"},{"Date","Tue, 14 Nov 2023 21:00:00 GMT"},{"Age","3600"},{"ETag","\"one\""}};
+    const auto validated=validatedHeaders(cached,{},now);
+    require(header(validated,"age").isEmpty() && expiration(validated,now)==now.addSecs(60),"304 retained old response age");
+    const auto repeated=validatedHeaders(cached,{{"Cache-Control","max-age=60"},{"Cache-Control","max-age=120"}},now);
+    require(expiration(repeated,now)==now,"304 discarded duplicate cache directives");
+    QNetworkRequest request;request.setRawHeader("If-None-Match","\"one\"");
+    require(matchesValidation(cached,request,{{"ETag","W/\"one\""}}),"Matching weak validator was rejected");
+    require(!matchesValidation(cached,request,{{"ETag","\"two\""}}),"Mismatched validator was accepted");
+    require(retryDeadline("172800",1000)==172801000,"Retry-After was shortened to one day");
+    require(retryDeadline("9999999999999999999999",1000)==std::numeric_limits<qint64>::max(),"Retry-After overflowed");
+    require(retryDeadline("Wed, 15 Nov 2023 22:13:20 GMT",now.toMSecsSinceEpoch())==now.addDays(1).toMSecsSinceEpoch(),"HTTP Retry-After date was ignored");
+    const auto old=QDateTime(QDate(1994,11,6),QTime(8,49,37),Qt::UTC);
+    require(httpDate("Sunday, 06-Nov-94 08:49:37 GMT",now)==old,"RFC850 HTTP date rejected");
+    require(httpDate("Sun Nov  6 08:49:37 1994",now)==old,"asctime HTTP date rejected");
+}
+void projectionBootstrap() {
+    QTemporaryDir root;require(root.isValid(),"Projection fixture directory failed");
+    const auto base=std::filesystem::path(root.path().toStdString());
+    const auto content=base/"custom",executable=base/"installed";
+    require(!projectionDataDirectory(content,executable),"Absent projection database selected");
+    std::filesystem::create_directories(executable/"data/proj");
+    {std::ofstream db(executable/"data/proj/proj.db");db<<"fixture";}
+    require(projectionDataDirectory(content,executable)==executable/"data/proj","Custom data directory hid the installed database");
+    std::filesystem::create_directories(content/"proj");
+    {std::ofstream db(content/"proj/proj.db");db<<"override";}
+    require(projectionDataDirectory(content,executable)==content/"proj","Explicit projection data override was ignored");
+}
+void decodedBudget() {
+    Server server;QImage source(512,512,QImage::Format_RGB32);source.fill(Qt::blue);
+    QBuffer buffer(&server.payload);buffer.open(QIODevice::WriteOnly);require(source.save(&buffer,"PNG"),"Budget PNG failed");
+    auto provider=server.provider();provider.tilePixels=512;QTemporaryDir cache;MapTileClient client(cache.path());client.setProvider(provider);
+    std::set<TileKey> wanted;for(int i=0;i<80;++i)wanted.insert({"fixture",15,25000+i,15000});
+    client.setWantedTiles(wanted);waitFor([&]{return !client.pending();},10000);
+    require(server.requests==64,"512-pixel viewport exceeded decoded memory budget");
+    QTest::qWait(300);require(server.requests==64,"Decoded-cache eviction caused request churn");
+}
 void editor(const char* data,const QString& screenshot) {
     EditorWindow window(data);window.resize(1000,700);window.show();QApplication::processEvents();
     Server fixture;window.canvas()->setMapProviders({fixture.provider("osm-standard")});
@@ -201,6 +332,22 @@ void editor(const char* data,const QString& screenshot) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
-    try {tilesAndCache();render();layerLifecycle();if(argc>1)editor(argv[1],argc>2?QString::fromLocal8Bit(argv[2]):QString());std::cout<<"map UI checks passed\n";return 0;}
+    try {
+        const auto mode=argc>1?QString::fromLocal8Bit(argv[1]):QString();
+        if(mode.startsWith("--review-")) {
+            if(mode=="--review-corrupt")corruptCache();
+            else if(mode=="--review-png")widePng();
+            else if(mode=="--review-fit")fitRefresh();
+            else if(mode=="--review-wrap")dateline();
+            else if(mode=="--review-anchor")largeAnchor();
+            else if(mode=="--review-freshness")quotedFreshness();
+            else if(mode=="--review-validator")validatorMismatch();
+            else if(mode=="--review-policy")cachePolicy();
+            else if(mode=="--review-bootstrap")projectionBootstrap();
+            else if(mode=="--review-budget")decodedBudget();
+            else throw std::runtime_error("Unknown review case");
+            std::cout<<"review case passed\n";return 0;
+        }
+        tilesAndCache();cachePolicy();projectionBootstrap();decodedBudget();quotedFreshness();validatorMismatch();corruptCache();widePng();fitRefresh();dateline();largeAnchor();render();layerLifecycle();if(argc>1)editor(argv[1],argc>2?QString::fromLocal8Bit(argv[2]):QString());std::cout<<"map UI checks passed\n";return 0;}
     catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }

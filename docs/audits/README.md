@@ -6,6 +6,7 @@ and milestone status in [ROADMAP](../ROADMAP.md).
 
 | Document | Scope |
 |---|---|
+| [OSM_REVIEW.md](OSM_REVIEW.md) | OSM implementation review — 2026-10-12: regression findings, fixes and validation limits |
 | [VISSIM_PARITY.md](VISSIM_PARITY.md) | VISSIM PARITY — how the network editor differs from the surface it is modelled on |
 | [CONNECTOR_PARITY_AUDIT.md](CONNECTOR_PARITY_AUDIT.md) | Connector parity audit — 2026-09-21 |
 | [SPEC_AUDIT.md](SPEC_AUDIT.md) | Supplied specifications: implementation audit |

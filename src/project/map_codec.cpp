@@ -33,7 +33,7 @@ void validateMapSettings(const MapSettings& m) {
     if (!((epsg>=32601 && epsg<=32660) || (epsg>=32701 && epsg<=32760)) ||
         r.projectedCrs!=utmCrs(r.anchorLongitude,r.anchorLatitude) ||
         !std::isfinite(r.anchorWorldX) || !std::isfinite(r.anchorWorldY) ||
-        std::abs(r.anchorWorldX)>1e9 || std::abs(r.anchorWorldY)>1e9 ||
+        std::abs(r.anchorWorldX)>mapWorldAnchorLimit || std::abs(r.anchorWorldY)>mapWorldAnchorLimit ||
         !std::isfinite(r.rotationDegrees) || std::abs(r.rotationDegrees)>180 ||
         !std::isfinite(m.opacity) || m.opacity<0 || m.opacity>1 || m.providerId.empty() || m.providerId.size()>80 ||
         !std::all_of(m.providerId.begin(),m.providerId.end(),[](unsigned char c){

@@ -21,9 +21,11 @@ public:
     QImage image(const TileKey&);
     std::size_t pending() const;
     bool hasFailures() const;
+    static std::size_t wantedLimit(int tilePixels);
     std::function<void()> changed;
     void setTimeout(int milliseconds); // Explicit test seam, production default 15 s.
 private:
+    static constexpr qint64 decodedCacheBytes=64*1024*1024;
     struct ImageEntry { QImage image; std::uint64_t used{}; qint64 expiresAt{}; };
     struct Failure { int attempts{}; qint64 retryAt{}; };
     MapProvider provider_;

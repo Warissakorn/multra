@@ -1,10 +1,10 @@
 #include "editor_window.hpp"
 #include "path.hpp"
+#include "../geo/projection_data.hpp"
 #include "../project/load.hpp"
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QLocale>
-#include <QDir>
 #include <QMessageBox>
 
 int main(int argc, char** argv) {
@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
     try {
         const auto data = parser.isSet("data-dir") ? trafficsim::nativePath(parser.value("data-dir")) :
             trafficsim::findDataDirectory(trafficsim::nativePath(QCoreApplication::applicationFilePath()));
-        const auto projectionData=trafficsim::displayPath(data/"proj");
-        if (QDir(projectionData).exists("proj.db")) qputenv("PROJ_DATA",projectionData.toUtf8());
+        if(const auto projectionData=trafficsim::projectionDataDirectory(data,trafficsim::nativePath(QCoreApplication::applicationDirPath())))
+            qputenv("PROJ_DATA",trafficsim::displayPath(*projectionData).toUtf8());
         if (parser.value("language") != "en" && parser.value("language") != "th") throw std::invalid_argument("Unknown language");
         trafficsim::EditorWindow editor(data, parser.value("language"));
         editor.showMaximized();
