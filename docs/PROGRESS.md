@@ -18,6 +18,8 @@ first attempt put the threads in `src/runner/` and `check_architecture` refused 
 so the scheduler moved to `src/project/` and the runner is unchanged. 13.6 → 3.66 s; CSV
 byte-identical to the sequential run; new tests cover identity, progress order, cancel and a
 worker's exception. Owner check: MSVC timing on P-cores, and an editor batch staying responsive.
+Build: `trafficsim-tests` compiles at `-O1` in Release (GCC/Clang; libraries keep `-O3`):
+its 88 objects rebuild in 101.5 s instead of 151.5 s (one run each, `-j4`); same 16 warnings.
 
 ## 2026-10-13 — Route destination markers and GUI interaction fixes (D151)
 
