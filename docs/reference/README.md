@@ -6,6 +6,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 
 | Document | Scope |
 |---|---|
+| [ZONES_AND_PARKING.md](ZONES_AND_PARKING.md) | Zones, zone connectors, OD matrices and parking lots: schema 31, OD → Micro expansion, lot runtime and rows (M8 contract, not implemented) |
 | [MAP_BACKGROUND.md](MAP_BACKGROUND.md) | Schema 29, UTM reference, OSM tiles, caches, paint and acceptance rows |
 | [BATCH.md](BATCH.md) | Multi-seed batches: runs, aggregate, 95 % CI, overloaded seeds and output (M5.2); scenario comparison `--compare` (M5.8, §7) |
 | [LOS.md](LOS.md) | Level of service from section delay: the HCM pack as data, control types, approach/intersection rows (M5.5) |

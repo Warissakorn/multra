@@ -8,6 +8,20 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — M8.1 zones, OD matrices and parking lots contract (D153)
+
+Docs only, the default slice NEXT named once the D143 queue was empty. New contract
+[ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md): schema 31 Zone, ZoneConnector, OdMatrix and
+ParkingLot; OD cells compile to ordinary Poisson inputs and entry routing decisions with equal
+weight over the existing `routelessChains` paths, so the core sees no zone; the lot is the one
+core addition (`ParkingLotSpec`, `LotState`), held at the gate like a red head with Stop-style
+service, admitted only below capacity, so a full lot queues and spills back and never deletes a
+vehicle. Choices (D153): connectors at Link ends only, because inputs start only on entry Links
+and internal insertion has no contract; a lot zone's row gives destinations while departure timing
+comes from the dwell; a departing vehicle keeps its space until inserted, so a blocked exit fills
+the lot. Rows Z1–Z6, OD1–OD7, PL1–PL11 are failure-first. Owner questions (dwell source, outbound
+timing, lot trips in movement tables) are OWNER_SITTING B10. No code; checks: docs and file sizes.
+
 ## 2026-10-13 — Measured optimization pass: parallel batch seeds (D152)
 
 Baseline (Linux, GCC 13.3, 4 cores, Release): a 40-seed M2.6 batch 13.6 s, one M2.6 run
@@ -447,34 +461,6 @@ added and now fails without it. Prototype bytes unchanged. Headless 69/69, deskt
 
 ---
 
-## 2026-10-08 — W74 driver traits, BA26 (D137)
-
-Third M3.3.3a slice. `w74Traits(seed, id, driverFactor)` implements §5's splitmix64 hash and
-Irwin–Hall `zOp`; `generateArrivals` stores it on `PendingVehicle` when any behaviour is
-`w74`. Golden values match an independent Python implementation bit for bit, and GCC and
-Clang agree on 1,000 traits. A mixed run keeps every prototype draw. Writing the
-`upcomingArrivals` row exposed that its scratch state did not copy `seed`; it does now.
-`W74State` and BA24/BA25 are deferred to composition, their only writer and reader (D137).
-Checkpoints gain `w74Traits` only when present. Headless 68/68, desktop 99/99 (Linux),
-CLI seed 42 identical. See [evidence](evidence/w74-traits.md).
-
----
-
-## 2026-10-08 — W74 schema-25 codec, BA29 (D136)
-
-The second M3.3.3a slice, codec only by the owner's choice. `DriverBehaviour::w74`
-(`std::optional<W74Parameters>`) is the model tag; the W74 value types moved into
-`types.hpp` so it can hold them. `parseBehaviour` dispatches on `model`, refuses each
-model's keys on the other, and reads the 18 keys from `w74ParameterKeys()`, the same table
-the serializer and §5 range check use. Schema 22 is written only when an owned behaviour is
-`w74`; below 25 one is `UNSUPPORTED_BEHAVIOUR_MODEL`. Run refuses a `w74` behaviour a
-vehicle type or road selection uses (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`), never runs it as the
-prototype; an unused one changes nothing. The dialog shows a `w74` behaviour read-only
-except its name. Why each choice: D136. Qt was installed in this container, so desktop
-UI suites ran (Linux offscreen): headless 67/67, desktop 98/98, CLI seed 42 and shipped
-projects byte-identical. See [evidence](evidence/w74-codec.md).
-
----
 
 ## Backlog (M0, in order)
 

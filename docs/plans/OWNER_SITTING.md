@@ -67,6 +67,11 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
+10. **M8 parking-lot rules** (listed 2026-10-13, D153). [ZONES_AND_PARKING](../reference/ZONES_AND_PARKING.md)
+   §8: which cited dwell distribution ships as the default; lot departures timed by dwell with
+   destinations from the lot's OD row (D153) or Poisson outbound volumes with the lot only
+   bounding occupancy; inbound lot trips in movement delay (gate wait included) or only in the
+   lot table. M8.4 can be built on D153 as written; the dwell default waits on the answer. *Owner:*
 
 ## C — Run view (the 125 % screen)
 

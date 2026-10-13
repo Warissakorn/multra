@@ -5,6 +5,8 @@ entry behind what you are changing, not the directory.
 
 ## PROGRESS
 
+- [`PROGRESS-2026-10-08-d136-d137.md`](PROGRESS-2026-10-08-d136-d137.md) — W74 schema-25 codec and driver traits (D136, D137), moved whole 2026-10-13
+
 - [`PROGRESS-2026-10-08-09-w74-los.md`](PROGRESS-2026-10-08-09-w74-los.md) — W74 pure-function and LOS sessions, moved whole 2026-10-13
 
 - [`PROGRESS-2026-10-09-d132-d133.md`](PROGRESS-2026-10-09-d132-d133.md) — M5.3/M5.4 entries moved whole 2026-10-12

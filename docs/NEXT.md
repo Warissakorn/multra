@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the unchanged queue below; M8.1 remains the default next slice.
+After that review, return to the queue below; M8.2 is the default next slice (M8.1 delivered, D153).
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -64,17 +64,21 @@ The owner accepted every recommendation, R1–R8 ([review](audits/ROADMAP_REVIEW
 
 **The D143 queue has no session slice left** (items 1, 2's example cool-down, 3's closure and 4's
 answer are the owner's). Next, as the owner chooses: the W74 cited preset and W99 contract
-(below), or M3.4 (R7, §3 below). Without a choice, the next session starts **M8.1** (below), which
-the owner booked to follow the queue. Motorcycles wait for M5.7 (R3; the question is in
-[PROBLEM](PROBLEM.md) §8).
+(below), or M3.4 (R7, §3 below). Without a choice, the next session continues **M8** (below).
+Motorcycles wait for M5.7 (R3; the question is in [PROBLEM](PROBLEM.md) §8).
 
-**After the D143 queue — multi-level modelling (D145).** The owner booked Micro, Meso and Macro
-(four-step) levels as M8–M12 ([design](plans/MULTI_LEVEL_MODELLING.md), ROADMAP M8–M12). Items
-2–5 above are implemented, so they may start now. First session: **M8.1**, the Zone/ZoneConnector/OdMatrix/
-ParkingLot contract in `docs/reference/` and failure-first rows (a full lot queues at the gate and
-never deletes a vehicle; older files byte-identical), no code. Then M8.2 onward in the design's §5
-order. The six open questions in the design's §8 go to the owner's sitting; M10 and M11 cannot
-start their contracts before questions 1–5 are answered.
+**Multi-level modelling (D145), M8 in progress.** M8.1 is delivered (2026-10-13, D153, docs only):
+[ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md), schema 31, rows Z1–Z6, OD1–OD7, PL1–PL11.
+Next session: **M8.2** — the codec and undoable commands for Zone, ZoneConnector and OdMatrix (no
+ParkingLot yet, no expansion, no editor tool). Write tests Z1–Z6 first, failing: Z1 loads and
+saves every `data/projects/*.traffic.json`, `data/scenarios/crossing.json` and a schema-30
+project byte-identical; Z3 refuses each key below 31. Decide Z5's Link-deletion rule (refuse or
+cascade like the route cascade of D151) and write it into the row before coding. Register the new
+groups in `TRAFFICSIM_TEST_GROUPS` (D70). Then M8.3 (OD → inputs, OD1–OD7), M8.4 (lot runtime,
+PL1–PL10, the only core change), M8.5 (outputs, PL11), M8.6 (editor tools `Z`/`P`, OD table) per
+the design's §5. Owner questions: [OWNER_SITTING](plans/OWNER_SITTING.md) B7 (design §8; M10/M11
+contracts wait on 1–5) and B10 (lot rules; M8.4 may build on D153 as written, the dwell default
+waits).
 
 **Owner items** — gates, chat decisions and every desktop look — are in one sheet,
 [OWNER_SITTING](plans/OWNER_SITTING.md) (R4). After the sitting, items still open and older than

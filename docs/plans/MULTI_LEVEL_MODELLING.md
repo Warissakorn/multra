@@ -96,7 +96,7 @@ ParkingLot    { id, zone, access ZoneConnector(s), capacity, initialOccupancy,
 
 ### 3.3 Parking lots are zones with capacity (M8)
 
-A lot is the origin and destination of site trips. Runtime contract (to be written as M8.1):
+A lot is the origin and destination of site trips. Runtime contract: [ZONES_AND_PARKING](../reference/ZONES_AND_PARKING.md) (M8.1, D153). Design summary:
 an arriving vehicle enters if occupancy < capacity after the gate service; otherwise it **waits at
 the gate**, and its queue spills back through ordinary following — **a vehicle never vanishes**.
 Departures are drawn from the dwell distribution with the run's seeded RNG and leave through the

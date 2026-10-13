@@ -378,7 +378,8 @@ passes. None is started; each slice begins with its contract and acceptance rows
 
 ### M8 — Zones, OD matrices and parking lots
 
-**Open, not started.** Zone, ZoneConnector and OdMatrix shared by every level; OD expanded into
+**Open.** M8.1 contract delivered 2026-10-13 ([ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md), D153; rows Z1–Z6,
+OD1–OD7, PL1–PL11, nothing implemented); M8.2 next. Zone, ZoneConnector and OdMatrix shared by every level; OD expanded into
 Micro inputs and routes; ParkingLot as a zone with capacity, gate service and dwell time.
 **Done when:** a development-access study runs from a zone OD matrix through a capacity-limited
 lot; a full lot produces a gate queue and never deletes a vehicle; older files load
