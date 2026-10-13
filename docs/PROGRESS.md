@@ -8,6 +8,58 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — M8.3 OD matrices expand into routes and inputs (D151)
+
+The user asked for the next slice, with ultracode on. A read-only workflow came first: four readers
+mapped the code, two independent designs were written, and a critique merged them and found the
+gaps. The owner answered four open points (D151):
+- the class check reads the catalog only when a file has a matrix, and a broken composition is
+  unknown;
+- `path-<j>` numbers only the chains some lane uses;
+- a failing pair suppresses its whole cell;
+- every internal origin connector is refused.
+
+**What changed.**
+- **Search.** `routeShortestChainsBounded` (`routing.cpp`) says whether the search stopped at
+  20 steps or 4 096 partial chains. `routeShortestChains` is unchanged.
+- **Expansion.** `src/project/od_expansion.cpp` makes routes, inputs and the six §2 Run codes in
+  one walk (`expandOd`), with one path table and a memo per pair. Each lane takes the first chain
+  it drives in full, else the first where it is a kept stub. The flow splits over the lanes that
+  carry it, and `laneShares` are 1/0.
+- **Callers.** `compileDocument`, `runDiagnostics`, `documentDiagnostics` and
+  `validateAuthoredDemand` expand before anything compiles inputs or routes. Catalog and authoring
+  checks keep the authored definition.
+- **Problems rows.** A row on a generated route or input moves onto its matrix cell
+  (`remapOdRows`, in the project layer), and authoring drops it.
+- **Removed.** `OD_NOT_EXPANDED`, its rows, its locale entries and ZO3.
+
+**How it was checked.**
+- **Tests.** ZO6–ZO12 are in `tests/od_expansion_tests.cpp` and `tests/od_paths_tests.cpp`
+  (group `zones`, 12 cases).
+- **Mutations.** The code came before the tests this time, so the tests were checked by mutation
+  instead: twelve deliberate breaks, one at a time.
+  - A first harness read only stdout and reported every mutant as surviving. It was fixed.
+  - Two mutants survived the fixed harness:
+    - The dense-numbering test had its unused chain last, where the dense and the search index
+      agree; the test now puts it in the middle and catches the break.
+    - The drivability filter was redundant, since an undrivable chain has no lane family. It was
+      removed.
+- **Review.** A review workflow (three reviewers, each finding checked by a skeptic) confirmed
+  six findings, and all six are fixed with tests:
+  - a broken composition interval was not an unknown class;
+  - a dead end at exactly the depth bound read as the limit;
+  - a conflict-zone row on a generated route (`conflictZones[z] routes[i]`) was missed both by
+    the remap and by the authoring filter;
+  - the type borrow for the Problems tab also reached authored `od:` inputs;
+  - the test helper ignored rows that named a generated object by path.
+
+  A second mutation pass caught all four fixes.
+- **Results.** ctest is 118/118. The CLI's single-run, `--seeds 42,43` and `--compare` output for
+  the four shipped projects matches the `c203ea5` build: CSV byte for byte, text apart from
+  `buildCommit`. Linux only.
+
+---
+
 ## 2026-10-13 — M8.2 zones, zone connectors and OD matrices, schema 29 (D150)
 
 The session began with a continuity check after the usage limit had cut the last one short: the
@@ -426,53 +478,6 @@ the kept result at publish. D136's Run refusal and its message are gone. A first
 Stop test passed without the standstill override; the §7 case (at rest 3.3 m short) was
 added and now fails without it. Prototype bytes unchanged. Headless 69/69, desktop 100/100
 (Linux). See [evidence](evidence/w74-composition.md). Not validated.
-
----
-
-## 2026-10-08 — W74 driver traits, BA26 (D137)
-
-Third M3.3.3a slice. `w74Traits(seed, id, driverFactor)` implements §5's splitmix64 hash and
-Irwin–Hall `zOp`; `generateArrivals` stores it on `PendingVehicle` when any behaviour is
-`w74`. Golden values match an independent Python implementation bit for bit, and GCC and
-Clang agree on 1,000 traits. A mixed run keeps every prototype draw. Writing the
-`upcomingArrivals` row exposed that its scratch state did not copy `seed`; it does now.
-`W74State` and BA24/BA25 are deferred to composition, their only writer and reader (D137).
-Checkpoints gain `w74Traits` only when present. Headless 68/68, desktop 99/99 (Linux),
-CLI seed 42 identical. See [evidence](evidence/w74-traits.md).
-
----
-
-## 2026-10-08 — W74 schema-25 codec, BA29 (D136)
-
-The second M3.3.3a slice, codec only by the owner's choice. `DriverBehaviour::w74`
-(`std::optional<W74Parameters>`) is the model tag; the W74 value types moved into
-`types.hpp` so it can hold them. `parseBehaviour` dispatches on `model`, refuses each
-model's keys on the other, and reads the 18 keys from `w74ParameterKeys()`, the same table
-the serializer and §5 range check use. Schema 22 is written only when an owned behaviour is
-`w74`; below 25 one is `UNSUPPORTED_BEHAVIOUR_MODEL`. Run refuses a `w74` behaviour a
-vehicle type or road selection uses (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`), never runs it as the
-prototype; an unused one changes nothing. The dialog shows a `w74` behaviour read-only
-except its name. Why each choice: D136. Qt was installed in this container, so desktop
-UI suites ran (Linux offscreen): headless 67/67, desktop 98/98, CLI seed 42 and shipped
-projects byte-identical. See [evidence](evidence/w74-codec.md).
-
----
-
-## 2026-10-08 — W74 pure function, BA21–BA22 (D135)
-
-Review first: a clean checkout configured only after installing `nlohmann-json3-dev`
-(BUILDING lists it); headless was then 65/65. The decision record's table had blank lines
-between rows from D12 onwards, so GitHub rendered every later row as plain pipe text; the
-blank lines are removed in a separate commit, no row changed.
-
-Then the first M3.3.3a code, rows-first as NEXT ordered: `src/core/w74.hpp/.cpp` implement
-contract §3 thresholds, the §4 seven-row classification and accelerations, the §7 sign and
-the §6 bounds (type clamp, then D105) as one pure function. `Leader` gains `acceleration`,
-0 everywhere until BA28 fills it; the prototype ignores it. `tests/w74_tests.cpp` (group
-`w74`) checks every regime row against hand values and every equality side on the value
-and one ULP away; five seeded boundary mutations each fail it. Why a pure, unwired function
-first and why the bounds live inside it: D135. Headless 66/66, CLI seed 42 byte-identical;
-Linux only. See [evidence](evidence/w74-pure-function.md).
 
 ---
 

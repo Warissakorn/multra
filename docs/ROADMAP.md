@@ -368,13 +368,13 @@ passes. None is started; each slice begins with its contract and acceptance rows
 
 ### M8 — Zones, OD matrices and parking lots
 
-**Open; M8.1 contract delivered 2026-10-10 (D150); M8.2 implemented 2026-10-13** (schema 29
-codec, checks and commands, rows ZO1–ZO4; Run refuses a matrix with `OD_NOT_EXPANDED` until
-M8.3). Zone, ZoneConnector and OdMatrix
+**Open; M8.1 contract delivered 2026-10-10 (D150); M8.2 and M8.3 implemented 2026-10-13** (schema 29
+codec, checks and commands; matrices expand into routes and inputs by fewest-object chains,
+rows ZO1–ZO12; D151). Zone, ZoneConnector and OdMatrix
 shared by every level; OD expanded into Micro inputs and routes by fewest-object chains; ParkingLot
 as a zone with capacity and gate service, its exits OD demand that waits for a parked vehicle (no
 dwell time, D150). Contracts: [ZONES_AND_OD](reference/ZONES_AND_OD.md) (M8.2–M8.3),
-[PARKING_LOTS](reference/PARKING_LOTS.md) (M8.4–M8.5); M8.3, the expansion, is next.
+[PARKING_LOTS](reference/PARKING_LOTS.md) (M8.4–M8.5); M8.4, the lot runtime, is next.
 **Done when:** a development-access study runs from a zone OD matrix through a capacity-limited
 lot; a full lot produces a gate queue and never deletes a vehicle; older files load
 byte-identical; editor tools and the OD table ship in the milestone.

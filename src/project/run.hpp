@@ -9,6 +9,8 @@ class InputManifest;
 // An input whose composition is unknown or broken is left out; compositionIssues names it.
 ScenarioDefinition resolveCatalogs(const AuthoringDefinition&, const std::filesystem::path& dataDirectory, InputManifest* =nullptr);
 std::vector<Composition> loadCompositions(const std::filesystem::path& dataDirectory, InputManifest* =nullptr);
+// A composition an input can draw from: types, each once, with finite shares above 0, all known.
+bool validComposition(const Composition&, const std::vector<VehicleType>& types);
 // UNKNOWN_COMPOSITION at inputs[i].compositionId, and for a composition an input uses:
 // INVALID_SHARE (no types, or a share not positive and finite) or UNKNOWN_VEHICLE_TYPE.
 std::vector<ValidationIssue> compositionIssues(const AuthoringDefinition&, const std::filesystem::path& dataDirectory, InputManifest* =nullptr);

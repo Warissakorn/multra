@@ -4,6 +4,7 @@
 #include "demand_catalog.hpp"
 #include "demand_time_types.hpp"
 #include "counted_volumes.hpp"
+#include "od_expansion.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -320,13 +321,26 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     if (auto signals = signalControlIssues(d.network, *d.definition); !signals.empty()) throw ValidationError(std::move(signals));
     // Routeless inputs (M2.1.1) are walked here too; one whose walk fails is left out and named
     // by routelessIssues on Run, so an edit to the network is never refused because of it.
-    auto checked = expandRouteless(d.network, *d.definition, withRoutingDecisions(*d.definition));
+    // M8.3: OD matrices expand first; their Run checks are never an edit refusal (D18b), and a
+    // core issue on a generated route or input is left to Run, which names the matrix cell.
+    const auto od = withOdDemand(d.network, *d.definition, ownedOdClasses(*d.definition));
+    auto checked = expandRouteless(d.network, od, withRoutingDecisions(od));
     for (auto& input : checked.inputs)
         if (!input.compositionId.empty() && !checked.vehicleTypes.empty())
             input.vehicleTypeId = checked.vehicleTypes.front().id;
-    auto issues = validateScenario(buildScenario(d.network,checked));
+    const auto scenario = buildScenario(d.network, checked);
+    auto issues = validateScenario(scenario);
+    // Only with matrices: without one, an authored `od:` id is the author's own (ZONES_AND_OD §1).
+    const bool expanded = !d.definition->odMatrices.empty();
+    const auto generated = [&](const std::string& path) {
+        const auto ref = expanded ? generatedRef(path) : std::nullopt;
+        if (!ref) return false;
+        const auto at = [&](const auto& items) { return ref->index < items.size() && items[ref->index].id.starts_with("od:"); };
+        return ref->route ? at(scenario.routes) : at(scenario.inputs);
+    };
     // Authoring supports topology beyond M0. Catalog references are checked on Run.
     std::erase_if(issues,[&](const auto& i) {
+        if (generated(i.path)) return true;
         return i.code=="EMPTY_NETWORK" || i.code.rfind("UNSUPPORTED_",0)==0 ||
             (i.code=="UNKNOWN_VEHICLE_TYPE" && d.definition->externalVehicleTypes) ||
             (i.code=="UNKNOWN_BEHAVIOUR" && d.definition->externalBehaviours);

@@ -4,6 +4,7 @@
 #include "behaviour_library.hpp"
 #include "demand_paths.hpp"
 #include "zones_od.hpp"
+#include "od_expansion.hpp"
 #include "../core/validate.hpp"
 namespace trafficsim {
 std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::filesystem::path& data) {
@@ -11,10 +12,15 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
     // drawing's own problems are the useful list, exactly as with no definition at all.
     if (!d.definition || onlyRunSettings(*d.definition)) return documentDiagnostics(d);
     try {
+        // M8.3 (D150): matrices expand first, so the runtime rows judge what Run would compile;
+        // a row on a generated route or input is moved onto the matrix cell that made it.
+        const auto od=expandOd(d.network,*d.definition,resolvedOdClasses(*d.definition,data));
         std::vector<Diagnostic> rows;
-        addOdNotExpandedRows(*d.definition,rows); // M8.2
-        for(auto& row:runtimeDiagnostics(d.network,expandRouteless(d.network,*d.definition,resolveCatalogs(*d.definition,data))))
-            rows.push_back(std::move(row));
+        addOdRunRows(d.network,*d.definition,od,rows);
+        const auto checked=expandRouteless(d.network,od.definition,resolveCatalogs(od.definition,data));
+        auto runtime=runtimeDiagnostics(d.network,checked);
+        remapOdRows(d.network,checked,*d.definition,od,runtime);
+        for(auto& row:runtime)rows.push_back(std::move(row));
         for(const auto& issue:demandAdvisories(d.network,*d.definition))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // M2.1.1: a routeless walk that failed blocks Run; a lane a decision cannot serve advises.
@@ -34,15 +40,17 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
 RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::path& data,InputManifest* manifest) {
     validateDocument(d);
     if (!d.definition) throw std::invalid_argument("EDIT_NO_DEFINITION");
-    // M8.2 (D150): a matrix with trips is refused until M8.3 expands it, ahead of EDIT_NO_INPUTS,
-    // so a project whose only demand is a matrix is told why rather than that it has none.
-    if(auto issues=odNotExpandedIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
-    if (d.definition->inputs.empty()) throw std::invalid_argument("EDIT_NO_INPUTS");
+    // M8.3 (D150, D151): matrices become routes and inputs before anything compiles them, and a
+    // cell that cannot be served stops Run on its authored path. The catalog is read for the
+    // class check only when a matrix exists.
+    const auto od=expandOd(d.network,*d.definition,resolvedOdClasses(*d.definition,data,manifest));
+    if(!od.issues.empty())throw ValidationError(od.issues);
+    if (od.definition.inputs.empty()) throw std::invalid_argument("EDIT_NO_INPUTS");
     // An input left out for an unknown or broken composition must stop Run, not vanish from it.
     if(auto issues=compositionIssues(*d.definition,data,manifest);!issues.empty())throw ValidationError(std::move(issues));
     // Resolve once: every part of this snapshot uses the same catalog values.
     if(auto issues=routelessIssues(d.network,*d.definition).blocking;!issues.empty())throw ValidationError(std::move(issues));
-    auto definition=expandRouteless(d.network,*d.definition,resolveCatalogs(*d.definition,data,manifest));
+    auto definition=expandRouteless(d.network,od.definition,resolveCatalogs(od.definition,data,manifest));
     // M3.3.2b (D127): road assignments become per-segment selections; the library is authoring
     // data, sliced away by resolveCatalogs, so it is read from the document itself.
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);

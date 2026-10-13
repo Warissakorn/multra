@@ -357,6 +357,12 @@ std::vector<std::vector<std::string>> routeShortestChains(const Network&, const 
                                                           const std::string& target);
 std::vector<std::vector<std::string>> routeShortestChains(const Network&, const ConnectorPathTable&,
                                                           const std::string& from, const std::string& target);
+// M8.3 (D150, ZONES_AND_OD §3): the same search, telling a bound from the topology. At most 20
+// steps after `from` and 4 096 partial chains on one level; `stoppedAtLimit` is true when it ended
+// at either bound with the target unfound. The chains are not filtered for drivability.
+struct BoundedChains { std::vector<std::vector<std::string>> chains; bool stoppedAtLimit{}; };
+BoundedChains routeShortestChainsBounded(const Network&, const ConnectorPathTable&,
+                                         const std::string& from, const std::string& target);
 // One lane-level chain per lane the route actually carries: lane k of the first Link, the
 // Connector path that leaves that lane, the lane it arrives on, and so on. A lane with no path
 // onward contributes no chain, which is exactly what makes narrowing a Connector safe. Empty

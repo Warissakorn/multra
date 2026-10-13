@@ -130,6 +130,31 @@ std::vector<std::vector<std::string>> routeShortestChains(const Network& network
     }
     return {};
 }
+BoundedChains routeShortestChainsBounded(const Network& network, const ConnectorPathTable& table,
+                                         const std::string& from, const std::string& target) {
+    // M8.3 (D150): the same breadth-first walk and bounds as routeShortestChains, which stays as
+    // it is for placed decisions, but saying whether it stopped at a bound or at the topology.
+    const auto objects = routeObjects(network, table);
+    constexpr std::size_t kMaxDepth = 20, kMaxLevel = 4096;
+    std::vector<std::vector<std::string>> level{{from}};
+    for (std::size_t depth = 0; depth < kMaxDepth; ++depth) {
+        if (level.empty()) return {{}, false};
+        std::vector<std::vector<std::string>> next, found;
+        for (const auto& chain : level)
+            for (const auto& step : continuations(objects, chain)) {
+                auto extended = chain; extended.push_back(step);
+                (step == target ? found : next).push_back(std::move(extended));
+            }
+        if (!found.empty()) return {std::move(found), false};
+        if (next.size() > kMaxLevel) return {{}, true};
+        level = std::move(next);
+    }
+    // At the depth bound the search stopped at its limit only if some chain could still go on;
+    // a frontier of dead ends is the topology, not the bound.
+    const bool more = std::any_of(level.begin(), level.end(), [&](const auto& chain) {
+        return !continuations(objects, chain).empty(); });
+    return {{}, more};
+}
 std::vector<FamilyChain> routeLaneFamily(const Network& network, const std::vector<std::string>& objectIds,
                                          std::vector<std::string>* ambiguous) {
     if (objectIds.empty()) return {};

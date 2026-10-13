@@ -1,6 +1,7 @@
 #include "demand_paths.hpp"
 #include "diagnostics.hpp"
 #include "zones_od.hpp"
+#include "od_expansion.hpp"
 
 namespace trafficsim {
 namespace {
@@ -23,12 +24,6 @@ bool needsCatalog(const std::string& code) {
 bool onlyRunSettings(const AuthoringDefinition& d) {
     return d.routes.empty() && d.inputs.empty() && d.routingDecisions.empty() &&
            d.signalControllers.empty() && d.signalPrograms.empty() && !hasOdDemand(d); // M8.2
-}
-void addOdNotExpandedRows(const AuthoringDefinition& d, std::vector<Diagnostic>& rows) {
-    for (const auto& issue : odNotExpandedIssues(d)) {
-        const auto index = std::stoul(issue.path.substr(issue.path.find('[') + 1));
-        rows.push_back({issue.code, issue.path, d.odMatrices[index].id, {}, DiagnosticSeverity::runtime});
-    }
 }
 std::vector<Diagnostic> documentDiagnostics(const ProjectDocument& document) {
     std::vector<Diagnostic> result;
@@ -57,15 +52,24 @@ std::vector<Diagnostic> documentDiagnostics(const ProjectDocument& document) {
                 if (aboutTopology(row)) result.push_back(std::move(row));
             return result;
         }
-        addOdNotExpandedRows(*def, result);
+        // M8.3: the matrices expand first, judged against the classes the document carries.
+        const auto od = expandOd(document.network, *def, ownedOdClasses(*def));
+        addOdRunRows(document.network, *def, od, result);
         for(const auto& issue:demandAdvisories(document.network,*document.definition))
             result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // Inputs naming a routing decision (M2.4) name no route of their own until expanded.
-        const ScenarioDefinition definition =
-            expandRouteless(document.network, *document.definition, withRoutingDecisions(*document.definition));
+        ScenarioDefinition definition =
+            expandRouteless(document.network, od.definition, withRoutingDecisions(od.definition));
+        // A generated input drawing from a composition borrows a type here, as authoring does
+        // (validateAuthoredDemand): its types are resolved on Run, not named by the document.
+        for (auto& input : definition.inputs)
+            if (od.inputOrigin.contains(input.id) && !input.compositionId.empty() && !definition.vehicleTypes.empty())
+                input.vehicleTypeId = definition.vehicleTypes.front().id;
         const bool catalogs = !definition.vehicleTypes.empty() && !definition.behaviours.empty();
         bool withheld = false;
-        for (auto& row : runtimeDiagnostics(document.network, definition)) {
+        auto runtime = runtimeDiagnostics(document.network, definition);
+        remapOdRows(document.network, definition, *def, od, runtime);
+        for (auto& row : runtime) {
             if (!catalogs && needsCatalog(row.code)) { withheld = true; continue; }
             result.push_back(std::move(row));
         }

@@ -1,8 +1,11 @@
 # Zones and OD matrices (M8.2–M8.3)
 
-**Written 2026-10-10 (M8.1, [D150](../decisions/RECORD.md#d150)). §1, §4's commands and
-cascades, and §2's demand rule with `OD_NOT_EXPANDED` are implemented (M8.2, 2026-10-13, rows
-ZO1–ZO4); the §2 Run checks and §3's expansion are M8.3, and the editor is M8.6.** It defines the authoring objects that state demand as trips between zones, how a
+**Written 2026-10-10 (M8.1, [D150](../decisions/RECORD.md#d150)).**
+- **Implemented:**
+  - §1 and §4's commands and cascades (M8.2, 2026-10-13, rows ZO1, ZO2 and ZO4);
+  - §2's Run checks and §3's expansion (M8.3, 2026-10-13, rows ZO5–ZO12; owner answers in
+    [D151](../decisions/RECORD.md#d151)).
+- **Still to come:** the editor (M8.6). It defines the authoring objects that state demand as trips between zones, how a
 matrix expands into the inputs and routes the Micro engine already runs, and the rows that close
 M8.2 (schema, codec, commands) and M8.3 (expansion). Parking lots, which are zones with a capacity,
 are [PARKING_LOTS](PARKING_LOTS.md). The booked design is
@@ -85,17 +88,34 @@ names.
   wherever inputs do: `onlyRunSettings` (`diagnostics.cpp`), the `EDIT_NO_INPUTS` guard in
   `compileDocument` and its row in `runDiagnostics` and `documentDiagnostics`. A project whose only
   demand is a matrix therefore runs. Its locale text says "no inputs or OD matrix".
-- **Run checks, one function.** `odRunIssues(network, definition)` reports every OD failure on an
-  authored path. `compileDocument` refuses on it before expanding; `runDiagnostics` and
-  `documentDiagnostics` list it as runtime rows; `validateNetwork` and `validateAuthoredDemand`
-  never emit it, so authoring tolerates an incomplete demand as it tolerates an unconnected
-  route (D18b).
+- **Run checks, one walk.** `expandOd(network, definition, classes)` (`src/project/od_expansion.cpp`)
+  returns the expanded definition and every OD failure on an authored path from the same pass;
+  `odRunIssues` and `withOdDemand` are its two halves.
+  - `compileDocument` refuses on the issues before anything compiles.
+  - `runDiagnostics` and `documentDiagnostics` list them as runtime rows.
+  - `validateNetwork` and `validateAuthoredDemand` never emit them, so authoring tolerates an
+    incomplete demand as it tolerates an unconnected route (D18b).
+- **The classes the check knows (D151).** `classes` holds the vehicle types and the usable
+  compositions.
+  - Run reads the project's catalog (`resolvedOdClasses`), and only when the file has a matrix,
+    through the run's input manifest. A file without matrices reads nothing new.
+  - The Problems tab and authoring know only what the document carries (`ownedOdClasses`); an
+    external catalog they did not read accepts every class.
+  - A composition that cannot be used counts as unknown: no types, a share not above 0, or an
+    unknown type, in its base types or in any interval's.
+- **What a row suppresses (D151).**
+  - An `OD_UNKNOWN_CLASS` row skips its whole matrix.
+  - Any row on a cell or on one of its zones skips the whole cell, so a cell is never half
+    generated.
+  - `OD_ORIGIN_LINK_INTERNAL` is reported for every origin connector on such a Link, carrying flow
+    or not.
 - **No Problems row names a generated object.** A row carries the matrix id as its object (named,
   not selectable) or a zone or connector id, which selects through `objectIdForPath` and
-  `selectableFor`. The expansion (§3) emits nothing for a cell or connector pair that a row below
-  names, so no later check meets a broken generated input. The catalog checks (`ownedCatalogIssues`,
-  `compositionIssues`, `timeTypeIssues`) run on the authored definition before expansion. Any other
-  core issue on a generated route or input is reported on the matrix cell its id names.
+  `selectableFor`. The expansion (§3) emits nothing for a cell that a row below names, so no later
+  check meets a broken generated input. The catalog checks (`ownedCatalogIssues`,
+  `compositionIssues`, `timeTypeIssues`) run on the authored definition. Any other core issue on a
+  generated route or input is moved onto the matrix cell its id names (`remapOdRows`; a shared
+  route goes to the first cell that uses it). Authoring drops such issues, and Run reports them.
 
 | Code | Run refuses when | Path |
 |---|---|---|
@@ -105,19 +125,25 @@ names.
 | `OD_ZONE_NO_CONNECTOR` | a row (column) with a positive cell belongs to a zone with no origin (destination) connector | `odMatrices[i].zones[o]` |
 | `OD_PAIR_UNREACHABLE` | a pair of connectors with flow (§3) has no drivable chain | `odMatrices[i].trips[o][d]` |
 | `OD_PATH_SEARCH_LIMIT` | the chain search stopped at its limit, not at the topology (§3) | `odMatrices[i].trips[o][d]` |
-| `OD_NOT_EXPANDED` | M8.2 only, removed by M8.3: a matrix has a positive cell, so storing matrices before the expansion exists never drops a trip silently | `odMatrices[i]` |
 
 ## 3. Expansion into Micro inputs and routes (M8.3)
 
-One function, `withOdDemand(network, definition)`, returns the definition with the matrices
-expanded into **ordinary authored Routes and VehicleInputs**, appended after the authored ones so
-every authored `routes[i]` and `inputs[i]` path still names the same object. It runs **first** in
-all four callers: `compileDocument`, `runDiagnostics`, `documentDiagnostics` and
-`validateAuthoredDemand`. So it runs before `EDIT_NO_INPUTS`, `compositionIssues`,
-`resolveCatalogs` (routing decisions and compositions, in its existing order) and
-`expandRouteless`, and the authoring checks, the Problems tab, the demand preview and Run see the
-same inputs. The §1 structural checks run before it, on the authored definition; the cool-down is
-still added last (`run.cpp`).
+`withOdDemand(network, definition, classes)` returns the definition with the matrices expanded
+into **ordinary authored Routes and VehicleInputs**, appended after the authored ones.
+- **Indices.** Every authored `routes[i]` and `inputs[i]` path still names the same object.
+- **No double expansion.** The result carries no matrices, so expanding it again adds nothing.
+- **Without a matrix** the result is an exact copy.
+
+**Where it runs.** In all four callers (`compileDocument`, `runDiagnostics`, `documentDiagnostics`
+and `validateAuthoredDemand`), before any step that compiles inputs or routes: the
+`EDIT_NO_INPUTS` guard, `resolveCatalogs` (routing decisions and compositions, in its existing
+order), `expandRouteless` and `buildScenario`. So the Problems tab, the demand preview and Run
+see the same inputs.
+
+**What keeps the authored definition.** The catalog and authoring checks (`compositionIssues`,
+`routelessIssues`, `demandAdvisories` and the behaviour assignments) are about what the author
+typed. The §1 structural checks run before the expansion, and the cool-down is still added last
+(`run.cpp`).
 
 **Volume.** For matrix `m`, origin zone `o`, destination zone `d`, an origin connector `c` of `o` and
 a destination connector `k` of `d`:
@@ -146,8 +172,9 @@ destination:
 3. **Limits.** The search takes at most 20 steps after `c`'s Link (chains of up to 21 objects;
    Link-to-Link chains have an odd count, since Links join only through Connectors) and at most
    4 096 partial chains on one level. `stoppedAtLimit` is true when it ends at either bound with
-   the target unfound: that is `OD_PATH_SEARCH_LIMIT`, never `OD_PAIR_UNREACHABLE`, so the author
-   can tell a network too large for the rule from a disconnected one.
+   the target unfound, and at the depth bound only if some chain could still go on (a frontier of
+   dead ends is the topology). That is `OD_PATH_SEARCH_LIMIT`, never `OD_PAIR_UNREACHABLE`, so the
+   author can tell a network too large for the rule from a disconnected one.
 4. **Lanes and chains.** Each lane of `c`'s Link is assigned to the first equally short chain (in
    the search's order) that it can drive in full. A lane that can drive none is assigned to the
    first chain it can reach as a stub, and changes lanes there by the M3.2.8b rules
@@ -168,6 +195,8 @@ destination:
   zone>/<c>><k>/path-<j>`. Its `laneShares` are 1 on the lanes assigned to chain `j` and 0 on the
   others (`laneSplit` accepts 0), so each lane carries exactly the chain step 4 gave it. The §1 id
   rules make both ids injective.
+- `<j>` counts only the chains some lane uses, from 0 in the search's order (D151). A chain no
+  lane uses gets no id, so adding or removing one does not renumber the rest.
 - Order: matrices in file order, then origin by `zones` index, then destination by `zones` index,
   then origin connectors, then destination connectors, each in network order, then chains in the
   search's order.
@@ -242,13 +271,15 @@ pipeline applies unchanged:
 
 Each row first asserts that its forcing worked, then the consequence. The groups `zones` and
 `parking` join `TRAFFICSIM_TEST_GROUPS` (`CMakeLists.txt`); `zones-ui` and `parking-ui` are new Qt
-executables in `src/shell/CMakeLists.txt`. Slice: when the row must pass.
+executables in `src/shell/CMakeLists.txt`. Slice: when the row must pass. The M8.3 rows are in
+`tests/od_expansion_tests.cpp` (ZO6–ZO8) and `tests/od_paths_tests.cpp` (ZO9–ZO12), sharing
+`tests/od_fixture.hpp`.
 
 | Row | Slice | Check | Test |
 |---|---|---|---|
 | ZO1 | M8.2 | Schema-29 round trip of all three keys; an omitted share reads as 1 and is not written; a file without the keys keeps its schema and bytes after a save through the new codec; each key below 29 and any unknown key in the objects is refused with its path, through `parseDocument` and through the CLI's M0 loader | `zones` |
 | ZO2 | M8.2 | Every structural code of §1, one case each, including: an id containing `>`; an id clash with a travel-time section; overlapping same-class periods; shortening the duration below a matrix's end, and changing the time step so a matrix bound falls off the grid, each refused with `OD_PERIOD_INVALID`; an authored `od:` route accepted with no zone, then adding the first zone refused on that route's path | `zones` |
-| ZO3 | M8.2 | M8.2 behaviour: a matrix with a positive cell is refused on Run with `OD_NOT_EXPANDED` on `odMatrices[i]`, also in a project with no other input (asserted ahead of `EDIT_NO_INPUTS`); authoring accepts it. M8.3 deletes this case, the code and its locale entries | `zones` |
+| ZO3 | M8.2 | Retired by M8.3, with its code, rows and locale entries. In M8.2 a matrix with a positive cell was refused on Run with `OD_NOT_EXPANDED` on `odMatrices[i]`, ahead of `EDIT_NO_INPUTS` | — |
 | ZO4 | M8.2 | Commands and cascades of §4, each one Undo step: Link delete removes its connectors; zone delete removes its connectors; a zone named by a matrix, or by a lot, is refused; reverse refused; split keeps an origin connector on the first piece and moves a destination connector to the last; copy, duplicate and opposite carry no connector; deleting a type or composition that a matrix names is refused | `zones` |
 | ZO5 | M8.2, M8.3 | Byte-identical without matrices: the four reference fixtures (events, checkpoints, summary, trajectory digest), and single-run, `--seeds` and `--compare` CSV and JSON for the four shipped projects, before and after each slice (JSON equal apart from the `buildCommit` value) | `zones`, session `cmp` |
 | ZO6 | M8.3 | Every Run code of §2 on its authored path, including `OD_UNKNOWN_CLASS` as a Run row and not an edit refusal; the expansion emits nothing for a named tuple, and no Problems row names a generated input or route; authoring accepts each case | `zones` |
@@ -256,6 +287,6 @@ executables in `src/shell/CMakeLists.txt`. Slice: when the row must pass.
 | ZO8 | M8.3 | Hand-computed expansion: two origin and two destination connectors with unequal shares give the four `vph` values, ids and order of §3; a zero cell emits no input | `zones` |
 | ZO9 | M8.3 | `c` and `k` on one Link give a one-Link route. Two equally short chains with one lane able to drive only the second: two routes `…/path-0` and `…/path-1`, inputs with the `laneShares` and `vph` of §3 step 4. An undrivable shortest level is `OD_PAIR_UNREACHABLE` even though a longer drivable chain exists | `zones` |
 | ZO10 | M8.3 | Search limits: a pair 20 steps apart resolves; the same layout 22 steps apart is `OD_PATH_SEARCH_LIMIT`; a level of more than 4 096 partial chains is `OD_PATH_SEARCH_LIMIT`; a disconnected control is `OD_PAIR_UNREACHABLE` | `zones` |
-| ZO11 | M8.3 | A composition-class matrix expands to `…/type-<type>` inputs; a positioned decision on an OD vehicle's Link does not change its route; two matrices sharing a connector pair produce one set of generated routes | `zones` |
+| ZO11 | M8.3 | A matrix whose composition has two or more types expands to `…/type-<type>` inputs (one type keeps the plain id); a positioned decision on an OD vehicle's Link does not change its route; two matrices sharing a connector pair produce one set of generated routes | `zones` |
 | ZO12 | M8.3 | Same project and seed ⇒ same bytes with matrices | `zones` |
 | ZO13 | M8.6 | The Z tool draws a zone and adds both connector kinds; the OD table edits a cell through History; every new code and UI string exists in `en.json` and `th.json` (one test lists them all) | `zones-ui`, `project` |

@@ -11,7 +11,7 @@
 #include <regex>
 #include <set>
 using namespace trafficsim;
-// M8.2 (D150): zones, zone connectors and OD matrices, rows ZO1-ZO4 of
+// M8.2 (D150): zones, zone connectors and OD matrices, rows ZO1, ZO2 and ZO4 of
 // docs/reference/ZONES_AND_OD.md §6. Each case first asserts its forcing, then the consequence.
 namespace {
 Json fourLegJson() {
@@ -151,34 +151,6 @@ TEST(zones, zo2_every_structural_code_is_refused_on_its_path) {
     validateDocument(plain);
     refused(plain, [](ProjectDocument& x) { putZone(x, {"zone-a", "", square(0)}); }, at);
 }
-TEST(zones, zo3_a_matrix_is_refused_on_run_until_the_expansion_exists) {
-    const auto data = test::root() / "data";
-    auto d = withZones();
-    // The forcing: authoring accepts the matrix, and it has a positive cell.
-    validateDocument(d);
-    CHECK(hasOdDemand(*d.definition));
-    test::throws([&] { compileDocument(d, data); }, "odMatrices[0]");
-    test::throws([&] { compileDocument(d, data); }, "OD_NOT_EXPANDED");
-    // A project whose only demand is the matrix: OD_NOT_EXPANDED, not EDIT_NO_INPUTS.
-    auto only = d;
-    only.definition->inputs.clear(); only.definition->routingDecisions.clear();
-    validateDocument(only);
-    CHECK(!onlyRunSettings(*only.definition));
-    test::throws([&] { compileDocument(only, data); }, "OD_NOT_EXPANDED");
-    for (const auto& rows : {documentDiagnostics(only), runDiagnostics(only, data), runDiagnostics(d, data)}) {
-        const auto row = std::find_if(rows.begin(), rows.end(), [](const auto& r) { return r.code == "OD_NOT_EXPANDED"; });
-        CHECK(row != rows.end());
-        CHECK(row->path == "odMatrices[0]" && row->objectId == "od-am" && row->selectId.empty());
-        CHECK(std::none_of(rows.begin(), rows.end(), [](const auto& r) { return r.code == "EDIT_NO_INPUTS"; }));
-    }
-    // A matrix of zero cells is no demand: the project without inputs is refused as before.
-    only.definition->odMatrices[0].trips = {{0, 0}, {0, 0}};
-    CHECK(!hasOdDemand(*only.definition));
-    test::throws([&] { compileDocument(only, data); }, "EDIT_NO_INPUTS");
-    // The project still runs once the matrix is gone.
-    deleteOdMatrix(d, "od-am");
-    CHECK(compileDocument(d, data).scenario.inputs.size() > 0);
-}
 TEST(zones, zo4_commands_and_cascades_are_one_undo_step_each) {
     History h; h.reset(parseDocument(fourLegJson()));
     std::string zone, origin, destination, od;
@@ -241,12 +213,13 @@ TEST(zones, zo4_commands_and_cascades_are_one_undo_step_each) {
 TEST(zones, every_zone_and_od_code_has_english_and_thai_text) {
     std::set<std::string> codes{"EDIT_NO_INPUTS"};
     const std::regex code("\"((?:ZONE_|OD_|UNKNOWN_ZONE|EDIT_REFERENCED_ZONE)[A-Z_]*)\"");
-    for (const auto* source : {"src/model/network/zones.cpp", "src/project/zones_od.cpp", "src/commands/zone_commands.cpp"}) {
+    for (const auto* source : {"src/model/network/zones.cpp", "src/project/zones_od.cpp", "src/project/od_expansion.cpp",
+                               "src/commands/zone_commands.cpp"}) {
         std::ifstream file(test::root() / source);
         const std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         for (std::sregex_iterator it(text.begin(), text.end(), code), end; it != end; ++it) codes.insert((*it)[1]);
     }
-    CHECK(codes.size() >= 12); // the forcing: the scrape found the codes
+    CHECK(codes.size() >= 17); // the forcing: the scrape found the codes
     for (const auto* language : {"en", "th"}) {
         std::ifstream file(test::root() / "data/locales" / (std::string(language) + ".json"));
         Json locale; file >> locale;

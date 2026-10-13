@@ -49,22 +49,20 @@ the contracts, delivered 2026-10-10 (D150), docs only:**
 - [PARKING_LOTS](reference/PARKING_LOTS.md): lots as zones with capacity, a gate hold, exits that
   wait for a parked vehicle, no dwell and no random draw, schema 30; rows PL1–PL11.
 
-**M8.2 implemented 2026-10-13:**
-- schema 29 codec, structural checks and commands for Zone, ZoneConnector and OdMatrix (rows
-  ZO1–ZO4, group `zones`);
-- Run refuses a matrix with trips (`OD_NOT_EXPANDED`), so no trip is dropped;
-- byte-identical without matrices (ZO5's M8.2 half);
+**M8.2 and M8.3 implemented 2026-10-13:**
+- schema 29 codec, structural checks and commands (ZO1, ZO2, ZO4);
+- the expansion `expandOd` with its Run checks (ZO5–ZO12, D151): matrices become `od:` routes and
+  inputs by fewest-object chains, and rows on generated objects move onto their matrix cell;
+- byte-identical without matrices;
 - Linux only; Windows waits for `native.yml`.
 
-**Next session: M8.3**, the expansion (ZONES_AND_OD §2–§3, rows ZO5–ZO12, failure-first):
-- `withOdDemand`, `routeShortestChainsBounded` and the Run checks `odRunIssues`;
-- it deletes `OD_NOT_EXPANDED` (its code, rows, locale entries and ZO3);
-- ZO5 again: the four shipped projects byte-identical before and after.
+**Next session: M8.4**, the lot runtime ([PARKING_LOTS](reference/PARKING_LOTS.md), rows PL1–PL8,
+failure-first): schema 30, the gate hold, the tick order and the parked/unparked events. It builds
+on `expandOd`, which the lot's generated routes and inputs extend.
 
-Then M8.4 (lot runtime, PL1–PL8), M8.5 (outputs, PL9), and M8.6 (editor, ZO13 and PL10, and
-`selectableFor` for zones). PL11 is the M8 gate. The other open questions in the design's §8 stay
-with the owner's sitting. M10 and M11 cannot start their contracts before questions 1–5 are
-answered. Alternatively, as the owner chooses: the W74 cited preset and W99 contract (below), or M3.4 (R7, §3 below).
+Then M8.5 (outputs, PL9) and M8.6 (the editor: ZO13, PL10, and `selectableFor` for zones). PL11 is
+the M8 gate. The other open questions in the design's §8 stay with the owner's sitting. M10 and
+M11 cannot start their contracts before questions 1–5 are answered. Alternatively, as the owner chooses: the W74 cited preset and W99 contract (below), or M3.4 (R7, §3 below).
 
 **Owner items** — gates, chat decisions and every desktop look — are in one sheet,
 [OWNER_SITTING](plans/OWNER_SITTING.md) (R4). After the sitting, items still open and older than

@@ -20,9 +20,6 @@ bool hasOdDemand(const AuthoringDefinition&);
 // The §1 structural checks of the matrices and the `od:` id reservation; zones and connectors
 // are checked with the network (zoneIssues). Paths name the authored object.
 std::vector<ValidationIssue> odMatrixIssues(const ProjectDocument&);
-// M8.2 only, removed by M8.3: one OD_NOT_EXPANDED on odMatrices[i] for each matrix with a
-// positive cell, so no trip is dropped silently while the expansion does not exist.
-std::vector<ValidationIssue> odNotExpandedIssues(const AuthoringDefinition&);
 // Whether an input, a routing decision's type rule or an OD matrix names the type or composition;
 // the catalog refuses to delete one that is named.
 bool definitionNamesVehicleType(const AuthoringDefinition&, const std::string& id);

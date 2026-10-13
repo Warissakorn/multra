@@ -41,7 +41,6 @@ std::vector<Composition> loadCompositions(const std::filesystem::path& dataDirec
     } catch (const std::exception&) { throw std::runtime_error("EDIT_CATALOG_READ"); }
     return result;
 }
-namespace {
 bool validComposition(const Composition& c, const std::vector<VehicleType>& types) {
     if (c.types.empty()) return false;
     double total=0;std::set<std::string> ids;
@@ -53,6 +52,7 @@ bool validComposition(const Composition& c, const std::vector<VehicleType>& type
     }
     return std::isfinite(total) && total>0;
 }
+namespace {
 const Composition* findComposition(const std::vector<Composition>& all, const std::string& id) {
     for (const auto& c : all) if (c.id == id) return &c;
     return nullptr;

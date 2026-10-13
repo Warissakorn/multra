@@ -168,13 +168,6 @@ std::vector<ValidationIssue> odMatrixIssues(const ProjectDocument& doc) {
     }
     return issues;
 }
-std::vector<ValidationIssue> odNotExpandedIssues(const AuthoringDefinition& d) {
-    std::vector<ValidationIssue> issues;
-    for (std::size_t i = 0; i < d.odMatrices.size(); ++i) {
-        if (positive(d.odMatrices[i])) issues.push_back({"OD_NOT_EXPANDED", "odMatrices[" + std::to_string(i) + "]"});
-    }
-    return issues;
-}
 bool definitionNamesVehicleType(const AuthoringDefinition& d, const std::string& id) {
     return std::any_of(d.inputs.begin(), d.inputs.end(), [&](const auto& i) { return i.vehicleTypeId == id; }) ||
            std::any_of(d.routingDecisions.begin(), d.routingDecisions.end(), [&](const auto& x) {
