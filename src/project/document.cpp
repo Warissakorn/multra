@@ -1,4 +1,5 @@
 #include "document.hpp"
+#include "zone_codec.hpp"
 #include "demand_time_types.hpp"
 #include "behaviour_library.hpp"
 #include "evaluation_period.hpp"
@@ -126,7 +127,8 @@ Json documentJson(const ProjectDocument& d) {
     // M5.9: 27 only when the evaluation period has a cool-down (D146).
     const bool cooled=period && d.definition->evaluation->cooldown>0;
     // M4.2: 28 only when an owned behaviour carries amberDeceleration (D147).
-    const int schema=d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // M8.2: 31 only when there is a zone layer (D154).
+    const int schema=!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -138,6 +140,7 @@ Json documentJson(const ProjectDocument& d) {
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
     if (d.map) result["map"]=mapSettingsJson(*d.map);
+    addZoneLayerJson(d.zones,result);
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
@@ -156,6 +159,7 @@ void validateDocument(const ProjectDocument& d) {
     validateRouteDestinations(d);
     if (d.definition) validateEvaluationPeriod(*d.definition);
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = zoneLayerIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
 }
 ProjectDocument parseDocument(const Json& j) {
     ProjectDocument d;
@@ -163,7 +167,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 30) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 31) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -184,6 +188,7 @@ ProjectDocument parseDocument(const Json& j) {
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
     d.map=parseMapSettings(j,version);
+    d.zones=parseZoneLayer(j,version);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < 25) rejectW74Before25(j);
@@ -209,7 +214,7 @@ ProjectDocument parseDocument(const Json& j) {
     validateDocument(d);
     return d;
 }
-std::string allocateId(ProjectDocument& d, const std::string& prefix) {
+std::set<std::string> documentIds(const ProjectDocument& d) {
     std::set<std::string> used{d.network.id};
     for (const auto& l : d.network.links) { used.insert(l.id); for (const auto& lane : l.lanes) used.insert(lane.id); }
     for (const auto& c : d.network.connectors)
@@ -228,6 +233,13 @@ std::string allocateId(ProjectDocument& d, const std::string& prefix) {
         for (const auto& c : d.definition->signalControllers) used.insert(c.id);
         for (const auto& decision : d.definition->routingDecisions) used.insert(decision.id);
     }
+    return used;
+}
+std::string allocateId(ProjectDocument& d, const std::string& prefix) {
+    auto used = documentIds(d);
+    for (const auto& z : d.zones.zones) used.insert(z.id);
+    for (const auto& c : d.zones.zoneConnectors) used.insert(c.id);
+    for (const auto& m : d.zones.odMatrices) used.insert(m.id);
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");
         auto id = prefix + "-" + std::to_string(d.nextId++);

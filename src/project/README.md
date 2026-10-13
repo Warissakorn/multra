@@ -11,3 +11,4 @@ Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1â€
 `map_settings`/`map_codec` persist optional schema-29 reference/settings without Qt/PROJ; old map-free bytes stand.
 
 `route_destination` validates and persists editor-only schema-30 destination markers; compilation ignores them.
+`zone_codec` persists the optional schema-31 zone layer (zones, zone connectors, OD matrices; M8.2, D154) and its structural checks; compilation does not read it until M8.3.

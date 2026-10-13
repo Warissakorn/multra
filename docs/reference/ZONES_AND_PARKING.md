@@ -1,10 +1,13 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status: contract only, nothing implemented** (M8.1, 2026-10-13). This document fixes the
+**Status:** M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
+the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). ParkingLot, the OD
+expansion, the Run checks, outputs and editor tools are **not implemented**. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
-reasoning for the choices below is [D153](../decisions/RECORD.md#d153).
+reasoning for the choices below is [D153](../decisions/RECORD.md#d153); the check tiers and
+cascades of §6 are [D154](../decisions/RECORD.md#d154).
 
 Every result these objects produce is **not validated** (hard rule 4) and carries the marker. A
 lot's occupancy and gate queue are model outputs of an uncalibrated engine, not a parking study.
@@ -25,7 +28,7 @@ will read the same objects; nothing here may be copied into a side table for the
 
 All four are new top-level arrays of the editor document (`*.traffic.json`), each written **only
 when non-empty**. A document without them keeps its feature schema and its bytes; a key below
-schema 31 is refused on load, and an unknown field inside one fails on load (D19a). IDs share
+schema 31 is refused on load, and an unknown field inside one, or an empty array, fails on load (D19a). IDs share
 the network's global uniqueness rule.
 
 ### 2.1 Zone
@@ -201,15 +204,30 @@ Per lot, reusing the M5 report surfaces and CSV formatters, with the marker:
 
 ## 6. Validation issues
 
+**Structural tier** — refused on load and on every commit (`ValidationError`, code and path), so
+History stays atomic. Implemented by M8.2 (`zoneLayerIssues`, `src/project/zone_codec.*`).
+
+| Code | When | Path |
+|---|---|---|
+| `EDIT_ZONE_INVALID` | A malformed value, an unknown or missing field, a wrong type, or an empty array in the file | — |
+| `ZONE_ID_INVALID` | Empty id, or one that repeats any network, definition or zone-layer id | `zones[i].id`, … |
+| `ZONE_POLYGON_INVALID` | Fewer than 3 points, non-finite, or two non-adjacent edges touch | `zones[i].polygon` |
+| `ZONE_ATTRIBUTE_INVALID` | Empty name or non-finite value | `zones[i].attributes.<name>` |
+| `ZONE_CONNECTOR_UNKNOWN_REF` | Unknown zone or Link | `zoneConnectors[i].zoneId` / `.linkId` |
+| `ZONE_CONNECTOR_SHARE_INVALID` | Share not finite or ≤ 0 | `zoneConnectors[i].share` |
+| `OD_ZONE_UNKNOWN` / `OD_ZONE_REPEATED` | A `zoneIds` entry | `odMatrices[i].zoneIds[k]` |
+| `OD_CELLS_SHAPE` / `OD_CELL_INVALID` | Not square in `zoneIds` (or no zones); negative or non-finite cell | `odMatrices[i].cells` / `.cells[r][c]` |
+| `OD_PERIOD_INVALID` | `startTime < 0`, `endTime ≤ startTime` or non-finite | `odMatrices[i]` |
+| `OD_COMPOSITION_MISSING` | Empty `compositionId` | `odMatrices[i].compositionId` |
+
+**Run tier** — authoring keeps the document (as for `UNSUPPORTED_ROUTE_TOPOLOGY`); Run refuses it
+(M8.3, M8.4). These depend on topology, the run's duration or catalogs outside the document:
+
 | Code | When |
 |---|---|
-| `ZONE_POLYGON_INVALID` | Fewer than 3 points, non-finite or self-intersecting |
-| `ZONE_CONNECTOR_UNKNOWN_REF` | Unknown zone or Link |
 | `ZONE_CONNECTOR_POSITION_UNSUPPORTED` | Origin not on an entry Link, destination not on a terminal Link |
-| `ZONE_CONNECTOR_SHARE_INVALID` | Share not finite or ≤ 0 |
-| `OD_ZONE_UNKNOWN` / `OD_ZONE_REPEATED` | A `zoneIds` entry |
-| `OD_CELLS_SHAPE` / `OD_CELL_INVALID` | Not square in `zoneIds`; negative or non-finite cell |
-| `OD_PERIOD_INVALID` | Period outside `[0, duration]` or empty |
+| `OD_PERIOD_INVALID` | `endTime` beyond the run's `duration` |
+| `OD_COMPOSITION_UNKNOWN` | `compositionId` names no composition the run resolves |
 | `OD_ZONE_NO_CONNECTOR` | A positive cell whose origin lacks an origin connector or destination lacks a destination connector |
 | `OD_NO_PATH` | A positive cell with no complete path between any origin and destination Link pair |
 | `PARKING_LOT_INVALID` | Capacity, occupancy, service time or composition rule of §2.4 broken; two lots in one zone |
@@ -217,40 +235,45 @@ Per lot, reusing the M5 report surfaces and CSV formatters, with the marker:
 | `PARKING_LOT_NO_EXIT_DEMAND` | §4.4 |
 | `PARKING_DWELL_INVALID` | Unknown dwell id, or points not strictly increasing / not ending at 1 |
 
-Authoring keeps every one of these documents (as for `UNSUPPORTED_ROUTE_TOPOLOGY`); Run refuses them.
+**Cascades (D154).** Deleting a Link deletes the zone connectors on it; the zones stay. Deleting a
+Zone deletes its connectors, and is refused (`EDIT_ZONE_IN_USE`) while a matrix names it, so a
+matrix's counts are never dropped as a side effect. `splitLink` keeps origin connectors on the
+upstream piece, which keeps the Link id, and moves destination connectors to the downstream piece.
+`reverseLink` keeps them; the Run tier then reports a position that no longer fits. Duplicating
+objects does not copy zone connectors.
 
 ## 7. Acceptance rows
 
 Failure-first: each test first asserts that its forcing worked (the lot is full, the exit is
 blocked, the key is below 31), then the consequence. Test groups are planned names; each joins
-`TRAFFICSIM_TEST_GROUPS` (D70) when written.
+`TRAFFICSIM_TEST_GROUPS` (D70) when written; `zonescodec` and `zonescommands` exist since M8.2.
 
 | Row | Check | Test |
 |---|---|---|
-| Z1 | Every shipped example, the M0 fixtures and a schema-30 project load and save **byte-identical**; none gains a key or a schema bump | `zones_codec` |
-| Z2 | A document with all four objects round-trips byte-identical and saves as schema 31 | `zones_codec` |
-| Z3 | Each new key in a schema-30 file is refused on load; an unknown field inside each object fails on load | `zones_codec` |
-| Z4 | Each §6 code is reported for its case, with the offending object's path | `zones_codec` |
-| Z5 | Add/edit/delete of each object is one undoable command; deleting a Link that a connector names is refused or cascades as the route cascade does (M8.2 decides, written into this row) | `zones_commands` |
-| Z6 | A mid-link connector is kept by authoring and refused by Run with `ZONE_CONNECTOR_POSITION_UNSUPPORTED` | `zones_codec` |
-| OD1 | A 2 × 2 matrix compiles to inputs whose volumes equal cell / period · 3600 split by origin share, to 1e-9 | `od_expand` |
-| OD2 | Destination shares and equal path weights compile to the expected `RoutingChoice` weights; a 3-path pair gives ⅓ each | `od_expand` |
-| OD3 | Over 40 seeds (42–81) the observed OD counts lie within the Poisson 95 % band of every cell | `od_expand` |
-| OD4 | A positive cell with no path reports `OD_NO_PATH`; a zero cell with no path compiles | `od_expand` |
-| OD5 | A pair over the 256-path limit is refused with `ROUTELESS_TOO_MANY_PATHS` | `od_expand` |
-| OD6 | Same document and seed ⇒ byte-identical run output; reordering zones in `zoneIds` changes input ids only, not which trips run | `od_expand` |
-| OD7 | A lot zone's row creates **no** Poisson input (asserted by input count), only exit destinations | `od_expand` |
-| PL1 | **Full lot queues, never deletes.** A capacity-2 lot with dwell longer than the run and 5 arrivals: first assert `occupied = 2`; then 3 vehicles stand at or behind the gate to the end, and the §4.6 identity holds at every tick | `parking_lot` |
-| PL2 | `occupied` never exceeds `capacity` over 40 seeds of a saturated lot | `parking_lot` |
-| PL3 | The gate queue spills back past the driveway onto the street Link and blocks a through vehicle behind it (queue counter length > driveway length) | `parking_lot` |
-| PL4 | Gate service: with `gateServiceTime` 10 s an empty lot admits no earlier than 10 s after the vehicle comes to the line; 0 s gives the Stop's one-tick rest | `parking_lot` |
-| PL5 | A departure frees its space only when inserted: with the exit Link blocked (asserted), a full lot stays full and its gate queue grows | `parking_lot` |
-| PL6 | Admission order is service completion then id; the dwell draws are reproducible (same seed ⇒ same admitted/dwellEnd list) | `parking_lot` |
-| PL7 | `initialOccupancy` vehicles exist at t = 0 with the composition's types and leave by their dwell | `parking_lot` |
-| PL8 | A departing vehicle keeps its id and type, and its destination frequencies over 40 seeds match the lot row's weights within the binomial 95 % band | `parking_lot` |
-| PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged | `parking_lot` |
-| PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`); authoring keeps it | `parking_lot` |
-| PL11 | Reports (M8.5) give occupancy, gate queue, gate wait and flows that reconcile with the event stream, with the not-validated marker | `parking_outputs` |
+| Z1 | Every shipped example project loads and saves to the **same JSON**, with its schema; none gains a key. The M0 scenario loads with an empty layer | `zonescodec` |
+| Z2 | A document with zones, connectors and a matrix round-trips and saves as schema 31; clearing the layer gives back the earlier JSON (ParkingLot joins in M8.4) | `zonescodec` |
+| Z3 | Each new key in a schema-30 file is refused on load (`UNSUPPORTED_FIELD`); an extra, null, missing or mistyped field, or an empty array, is `EDIT_ZONE_INVALID` | `zonescodec` |
+| Z4 | Each structural §6 code is reported for its case with its path, and a refused commit leaves document, Undo and dirty state unchanged; a hand-edited file is refused alike | `zonescodec` |
+| Z5 | Add/replace/delete of each object is one undoable command; deleting a Link (alone or in a selection) cascades its zone connectors and Undo restores them; a Zone a matrix names is refused; `splitLink` moves a destination connector downstream; new ids never repeat zone-layer ids | `zonescommands` |
+| Z6 | A connector on a Link that is not an entry/terminal is kept by authoring (M8.2); Run refuses it with `ZONE_CONNECTOR_POSITION_UNSUPPORTED` (M8.3) | `zonescommands` |
+| OD1 | A 2 × 2 matrix compiles to inputs whose volumes equal cell / period · 3600 split by origin share, to 1e-9 | `odexpand` |
+| OD2 | Destination shares and equal path weights compile to the expected `RoutingChoice` weights; a 3-path pair gives ⅓ each | `odexpand` |
+| OD3 | Over 40 seeds (42–81) the observed OD counts lie within the Poisson 95 % band of every cell | `odexpand` |
+| OD4 | A positive cell with no path reports `OD_NO_PATH`; a zero cell with no path compiles | `odexpand` |
+| OD5 | A pair over the 256-path limit is refused with `ROUTELESS_TOO_MANY_PATHS` | `odexpand` |
+| OD6 | Same document and seed ⇒ byte-identical run output; reordering zones in `zoneIds` changes input ids only, not which trips run | `odexpand` |
+| OD7 | A lot zone's row creates **no** Poisson input (asserted by input count), only exit destinations | `odexpand` |
+| PL1 | **Full lot queues, never deletes.** A capacity-2 lot with dwell longer than the run and 5 arrivals: first assert `occupied = 2`; then 3 vehicles stand at or behind the gate to the end, and the §4.6 identity holds at every tick | `parkinglot` |
+| PL2 | `occupied` never exceeds `capacity` over 40 seeds of a saturated lot | `parkinglot` |
+| PL3 | The gate queue spills back past the driveway onto the street Link and blocks a through vehicle behind it (queue counter length > driveway length) | `parkinglot` |
+| PL4 | Gate service: with `gateServiceTime` 10 s an empty lot admits no earlier than 10 s after the vehicle comes to the line; 0 s gives the Stop's one-tick rest | `parkinglot` |
+| PL5 | A departure frees its space only when inserted: with the exit Link blocked (asserted), a full lot stays full and its gate queue grows | `parkinglot` |
+| PL6 | Admission order is service completion then id; the dwell draws are reproducible (same seed ⇒ same admitted/dwellEnd list) | `parkinglot` |
+| PL7 | `initialOccupancy` vehicles exist at t = 0 with the composition's types and leave by their dwell | `parkinglot` |
+| PL8 | A departing vehicle keeps its id and type, and its destination frequencies over 40 seeds match the lot row's weights within the binomial 95 % band | `parkinglot` |
+| PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged | `parkinglot` |
+| PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`); authoring keeps it | `parkinglot` |
+| PL11 | Reports (M8.5) give occupancy, gate queue, gate wait and flows that reconcile with the event stream, with the not-validated marker | `parkingoutputs` |
 
 The M8 gate (ROADMAP) additionally needs the editor tools and the OD table (M8.6) and a
 development-access study run end to end; no row above closes it alone.

@@ -8,6 +8,22 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — M8.2 zone layer codec and commands (D154)
+
+`ProjectDocument::zones` holds Zones, zone connectors and OD matrices (types in
+`src/model/demand/zones.hpp`, because M10/M11 compilers will read them). Three top-level arrays,
+written only when non-empty, make the file schema 31; each is `UNSUPPORTED_FIELD` below 31 and a
+malformed or empty one is `EDIT_ZONE_INVALID`. `zoneLayerIssues` is the contract's structural
+tier, run by `validateDocument` on load and every commit; topology, the period against the run
+and the composition are the Run tier, left to M8.3 (D154), because a half-drawn study is a legal
+draft. `documentIds` was split out of `allocateId` so zone ids share the uniqueness rule, and new
+ids skip zone-layer ids. Cascades: a Link delete drops its connectors, a split moves destination
+connectors downstream, a Zone a matrix names cannot be deleted. Rows Z1–Z6 were written first
+(`tests/zones_tests.cpp`, groups `zonescodec`, `zonescommands`). No editor surface yet (M8.6); the
+compiler does not read the layer, so every run is unchanged. Eight older codec tests used
+schema 31 as their "future" probe; they now use 32, as D151 moved them from 30. Headless 84/84
+(Linux, GCC 13.3); `trafficsim-cli 42` unchanged. Qt is not installed here: desktop not built.
+
 ## 2026-10-13 — M8.1 zones, OD matrices and parking lots contract (D153)
 
 Docs only, the default slice NEXT named once the D143 queue was empty. New contract
