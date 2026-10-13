@@ -20,6 +20,8 @@ byte-identical to the sequential run; new tests cover identity, progress order, 
 worker's exception. Owner check: MSVC timing on P-cores, and an editor batch staying responsive.
 Build: `trafficsim-tests` compiles at `-O1` in Release (GCC/Clang; libraries keep `-O3`):
 its 88 objects rebuild in 101.5 s instead of 151.5 s (one run each, `-j4`); same 16 warnings.
+Dropped after measuring: reusing the arrival snapshot as the tick's main one qualifies on
+5,242 of 36,000 M2.6 ticks (≈1–1.5 %, under the 2 % bar); recorded in NEXT's engine-cost note.
 
 ## 2026-10-13 — Route destination markers and GUI interaction fixes (D151)
 
