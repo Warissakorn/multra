@@ -2,6 +2,7 @@
 #include "editor_window.hpp"
 #include "editor_batch_cells.hpp"
 #include "../project/batch_output.hpp"
+#include "../project/parallel_seeds.hpp"
 #include "../project/load.hpp"
 #include "../project/los_output.hpp"
 #include <QAction>
@@ -122,7 +123,7 @@ void EditorWindow::startBatch() {
     const auto total=seeds.size(); // read before the call: the capture below moves `seeds`
     startWorker(total,false,[this,scenario=std::move(snapshot->scenario),spec=std::move(*spec),seeds=std::move(seeds)](const auto& progress)
         -> std::function<void()> {
-        auto runs=runSeeds(scenario,spec,seeds,progress);
+        auto runs=runSeedsParallel(scenario,spec,seeds,progress);
         if(runs.empty()) return {}; // cancelled
         auto report=aggregate(runs);
         auto result=std::make_shared<BatchResult>(BatchResult{std::move(report),std::move(runs)});

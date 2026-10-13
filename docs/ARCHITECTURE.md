@@ -46,7 +46,7 @@ unchanged. See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md).
 | `trafficsim_model` | `src/model/network/`, `src/model/demand/` | Core contracts/validation | M0 authoring model and compiler implemented; fixed-time Signal Controllers compiled to core programs (`signal_control.*`, M2.7b); authored right-of-way controls (`control.hpp`, `right_of_way.*`, M3.2.2a); lane families and lateral spans (`routeLaneFamily` in `routing.cpp`, `lane_family.cpp`, M3.2.8b) |
 | `trafficsim_eval` | `src/eval/` | Core events and states | Completed-trip diagnostic; per-movement delay/travel time and approach queues for one run (M2.5); M3.2.8c diagnostics (lane changes, segment times, stop-line discharge, arrival phases, dead-end waits); queue discharge/startup observer with type selection, shared-prefix routing, proven lateral/source passage reconstruction and rank-scoped remap invalidation; same-tick source-sink types come from core's pure `upcomingArrivals` replay |
 | `trafficsim_runner` | `src/runner/` | Core and eval only | Multi-seed batches and their seed-ordered aggregate (M5.2, [BATCH](reference/BATCH.md)); scenario comparison, alternative minus base with a Welch 95 % CI (`compare.*`, M5.8a, BATCH §7) |
-| `trafficsim_project` | `src/project/` | Model, evaluation types, runner, nlohmann/json | M0 loading/output; the schema-29 authoring codec (reads schemas 1–29); evaluation spec and report output, single-run, batch and comparison (`batch_output.*`, `comparison_output.*`, sharing `csv_format.hpp` and the LOS pack/formatting in `los_output.*`); revision run snapshots; optional captured-byte input manifests/SHA-256 |
+| `trafficsim_project` | `src/project/` | Model, evaluation types, runner, nlohmann/json | M0 loading/output; the schema-29 authoring codec (reads schemas 1–29); evaluation spec and report output, single-run, batch and comparison (`batch_output.*`, `comparison_output.*`, the D152 seed scheduler `parallel_seeds.*`, sharing `csv_format.hpp` and the LOS pack/formatting in `los_output.*`); revision run snapshots; optional captured-byte input manifests/SHA-256 |
 | `trafficsim_commands` | `src/commands/` | Project document | Atomic named edits, Undo/Redo, network, demand, control and appearance operations |
 | `trafficsim_geo` | `src/geo/` | Project map settings, PROJ; desktop only, no Qt | Fixed WGS84 UTM reference and XYZ tile math ([MAP_BACKGROUND](reference/MAP_BACKGROUND.md)) |
 | `trafficsim_shell` | `src/shell/`, `src/editor/` | Commands, Geo, Qt Widgets/Network | The native editor — the application's only window since M1.24 |
@@ -112,8 +112,9 @@ eight typed event structs (`RoutingEvent` appended last, D119). States retain on
 
 The desktop uses a Qt timer to schedule fixed steps. Playback time never enters the
 engine. The M0 workload runs on the UI thread; playback credit is capped per callback.
-A future worker handoff must retain snapshots and deterministic step order. First
-parallelize independent batch seeds when M5 is implemented.
+A future worker handoff must retain snapshots and deterministic step order. Independent
+batch seeds run in parallel since D152 (`project/parallel_seeds.*`; each seed is one
+single-threaded run, so results do not depend on the thread count).
 
 `EditorCanvas` is the only surface that draws a run. It reads model geometry and runtime
 snapshots and owns no edits, signals, arrival generation or simulation timer. `src/render/`

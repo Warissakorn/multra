@@ -8,6 +8,21 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — Measured optimization pass: parallel batch seeds (D152)
+
+Baseline (Linux, GCC 13.3, 4 cores, Release): a 40-seed M2.6 batch 13.6 s, one M2.6 run
+≈350 ms (callgrind: step 80 %, observe 18 %, compile ≈2 % since D140), editor redraw 2.6 ms and
+hit test 1.4 ms on 40 junctions, cold release build 363 s (test TUs 826 of 1,412 s compile CPU).
+The batch was the one large item: `runSeedsParallel` (D152) runs seeds on worker threads; the
+first attempt put the threads in `src/runner/` and `check_architecture` refused `<thread>` there,
+so the scheduler moved to `src/project/` and the runner is unchanged. 13.6 → 3.66 s; CSV
+byte-identical to the sequential run; new tests cover identity, progress order, cancel and a
+worker's exception. Owner check: MSVC timing on P-cores, and an editor batch staying responsive.
+Build: `trafficsim-tests` compiles at `-O1` in Release (GCC/Clang; libraries keep `-O3`):
+its 88 objects rebuild in 101.5 s instead of 151.5 s (one run each, `-j4`); same 16 warnings.
+Dropped after measuring: reusing the arrival snapshot as the tick's main one qualifies on
+5,242 of 36,000 M2.6 ticks (≈1–1.5 %, under the 2 % bar); recorded in NEXT's engine-cost note.
+
 ## 2026-10-13 — Route destination markers and GUI interaction fixes (D151)
 
 Implemented the owner's four GUI requests: the destination crossbar follows the

@@ -4,7 +4,7 @@ Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1â€
 
 `evaluation_period` reads, writes and validates the M5.3 evaluation period (schema 22) and its M5.9 cool-down (schema 27, D146), and builds `newProjectDocument`.
 
-`batch_output` formats M5.2 batch reports as JSON and CSV, with the cell formats it shares with `movementCsv` in `csv_format.hpp`. `parseSeedList` (in `load`) reads `--seeds` lists. See [BATCH](../../docs/reference/BATCH.md).
+`batch_output` formats M5.2 batch reports as JSON and CSV, with the cell formats it shares with `movementCsv` in `csv_format.hpp`. `parseSeedList` (in `load`) reads `--seeds` lists. `parallel_seeds` runs the runner's `runSeed` on worker threads (D152); the runner itself stays thread-free. See [BATCH](../../docs/reference/BATCH.md).
 
 `behaviour_library` reads, writes and validates the M3.3.2a project-owned behaviour library (names/model tags, vehicle classes, link behaviour types, Link/Connector assignment) and the Run refusal of assigned roads until M3.3.2b. See [contract](../../docs/reference/DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126).
 

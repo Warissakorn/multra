@@ -1,6 +1,7 @@
 #include "test.hpp"
 #include "../src/runner/batch.hpp"
 #include "../src/project/batch_output.hpp"
+#include "../src/project/parallel_seeds.hpp"
 #include "../src/project/csv_format.hpp"
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
@@ -98,6 +99,27 @@ TEST(batch, every_generated_vehicle_is_accounted_for) {
     std::size_t calls = 0;
     const auto stopped = runSeeds(f.snapshot.scenario, f.spec, {1, 2, 3}, [&](std::size_t done) { ++calls; return done < 1; });
     CHECK(calls == 1); CHECK(stopped.empty()); // a cancelled batch claims nothing
+}
+TEST(batch, threads_change_nothing_but_the_wall_time) {
+    // D152: runSeedsParallel gives the same runs in the same order inline or four at a time.
+    const auto f = fourLeg();
+    const std::vector<std::uint32_t> seeds{44, 42, 43, 45, 46};
+    const auto inline_ = runSeedsParallel(f.snapshot.scenario, f.spec, seeds, {}, 1);
+    const auto parallel = runSeedsParallel(f.snapshot.scenario, f.spec, seeds, {}, 4);
+    CHECK(inline_.size() == seeds.size()); CHECK(parallel == inline_);
+    std::vector<std::size_t> reported;
+    const auto counted = runSeedsParallel(f.snapshot.scenario, f.spec, seeds, [&](std::size_t done) { reported.push_back(done); return true; }, 4);
+    CHECK(counted == inline_); CHECK((reported == std::vector<std::size_t>{1, 2, 3, 4, 5}));
+    std::size_t calls = 0;
+    const auto stopped = runSeedsParallel(f.snapshot.scenario, f.spec, seeds, [&](std::size_t done) { ++calls; return done < 2; }, 4);
+    CHECK(calls == 2); CHECK(stopped.empty()); // never called again once it said stop
+}
+TEST(batch, a_failing_seed_on_a_worker_reaches_the_caller) {
+    const auto f = fourLeg();
+    auto broken = f.snapshot.scenario; broken.timeStep = 0;
+    // The forcing worked first: one run of this scenario throws on its own.
+    test::throws([&] { runSeed(broken, f.spec, 42); }, "");
+    test::throws([&] { runSeedsParallel(broken, f.spec, {42, 43, 44}, {}, 3); }, "");
 }
 TEST(batch, overload_flag_from_a_saturated_input) {
     // 3600 veh/h into a road held at red for the whole run: the source queue cannot drain.

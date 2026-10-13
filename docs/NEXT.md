@@ -151,9 +151,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     memoise the walk. D140 (2026-10-09) computes `connectorPaths` and each destination's chains
     once per expansion, route continuations find their tail once, and `appendStationRouting`
     reuses the expansion's `runtimeSections` (study-template validation 21.6 → 1.7 ms,
-    `trafficsim-validate-benchmark`). Still open: the repeated `routelessChains` walk itself. Then the double refs/spans build on ticks with a source candidate
-    (`simulation.cpp` arrivals vs the main snapshot, ≈40 ms) and phase 1 (≈110 ms). The
-    `MovedEvent::segmentId` string copy would need an event-interface decision.
+    `trafficsim-validate-benchmark`). Still open: the repeated `routelessChains` walk itself, then
+    phase 1 (≈110 ms). The `MovedEvent::segmentId` string copy would need an event-interface decision.
+  - 2026-10-13, Linux GCC 13.3 callgrind, one M2.6 run (3.88 G Ir): step 80 %, observe 18 %,
+    compile ≈2 % (D140 shrank it). **Do not retry** reusing the source-candidate refs/spans as
+    the main snapshot without a new measurement: only 5,242 of 36,000 ticks qualify (no arrival
+    inserted, no route decision), worth ≈1–1.5 %. Batches gain far more from D152 (seeds in parallel).
 - **Linux replay of D91–D94:** CI (`native.yml`) is the evidence.
 - **M3.2 closure rows:** a diverge acceptance-fixture row (R7; the D98 lab is a development bed,
   not evidence), then `plans/M3_ACCEPTANCE.md` §4, the rows a session can fill ([2026-10-03 review §7, S5](archive/ROADMAP-review-2026-10-03.md#7-proposed-sequence--owner-free-sessions-after-o1)).
