@@ -1,4 +1,5 @@
 #include "editor_style.hpp"
+#include "editor_interaction.hpp"
 #include "path.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
@@ -26,6 +27,7 @@ QFont loadEditorFont(const std::filesystem::path& data) {
     return font;
 }
 void installEditorStyle() {
+    installEditorInteraction();
     // Fusion on every platform: a control looks and measures the same on Windows, Linux and
     // every Qt version CI runs. The native Windows styles each draw their own sub-controls under
     // a style sheet, and they differ between Qt releases.

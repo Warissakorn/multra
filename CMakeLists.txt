@@ -73,7 +73,7 @@ add_library(trafficsim_runner STATIC src/runner/batch.cpp src/runner/compare.cpp
 target_link_libraries(trafficsim_runner PUBLIC trafficsim_eval PRIVATE trafficsim_options)
 add_library(trafficsim_project STATIC src/project/load.cpp src/project/parse.cpp src/project/output.cpp
     src/project/document.cpp src/project/signal_migration.cpp src/project/definition.cpp src/project/run.cpp src/project/display.cpp src/project/diagnostics.cpp
-    src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/los_output.cpp src/project/counted_volumes.cpp src/project/map_codec.cpp)
+    src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/los_output.cpp src/project/counted_volumes.cpp src/project/map_codec.cpp src/project/route_destination.cpp)
 target_link_libraries(trafficsim_project PUBLIC trafficsim_model trafficsim_eval trafficsim_runner
     nlohmann_json::nlohmann_json PRIVATE trafficsim_options)
 
@@ -193,7 +193,7 @@ if(BUILD_TESTING)
     target_link_libraries(trafficsim-tests PRIVATE trafficsim_commands trafficsim_options)
     target_compile_definitions(trafficsim-tests PRIVATE TRAFFICSIM_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
     target_precompile_headers(trafficsim-tests PRIVATE <nlohmann/json.hpp>)
-    target_sources(trafficsim-tests PRIVATE tests/map_project_tests.cpp tests/history_tests.cpp tests/rotation_tests.cpp tests/connector_surface_tests.cpp tests/lane_correspondence_tests.cpp tests/connector_mouth_sweep_tests.cpp tests/connector_lane_centre_tests.cpp tests/connector_equation_tests.cpp tests/connector_edit_motion_tests.cpp)
+    target_sources(trafficsim-tests PRIVATE tests/route_destination_tests.cpp tests/map_project_tests.cpp tests/history_tests.cpp tests/rotation_tests.cpp tests/connector_surface_tests.cpp tests/lane_correspondence_tests.cpp tests/connector_mouth_sweep_tests.cpp tests/connector_lane_centre_tests.cpp tests/connector_equation_tests.cpp tests/connector_edit_motion_tests.cpp)
     # One ctest test per group, so `ctest -j` spreads them; a single unfiltered run was 60 s of
     # serial wall time and repeated every named group.
     set(TRAFFICSIM_TEST_GROUPS mapproject behaviourlibrary behaviourselection provenance discharge core stationrouting network reference project editor connectors mouths points

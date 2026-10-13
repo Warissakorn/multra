@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "editor_batch_cells.hpp"
 #include "../project/batch_output.hpp"
@@ -18,7 +19,7 @@ namespace trafficsim {
 using namespace batchCells;
 void EditorWindow::buildBatch(QToolBar* bar, QVBoxLayout* layout) {
     bar->addSeparator();
-    auto* label=new QLabel(bar); texts_["editorSeedsLabel"]=label;
+    auto* label=new ReflowLabel(bar); texts_["editorSeedsLabel"]=label;
     batchSeeds_=new QLineEdit("42-51",bar); batchSeeds_->setObjectName("editorSeeds"); batchSeeds_->setMaximumWidth(120);
     batchSeeds_->setFont(editorDesign::numericFont()); batchSeeds_->setProperty("numeric",true);
     label->setBuddy(batchSeeds_); bar->addWidget(label); bar->addWidget(batchSeeds_);
@@ -30,7 +31,7 @@ void EditorWindow::buildBatch(QToolBar* bar, QVBoxLayout* layout) {
 
     batchView_=new QWidget(layout->parentWidget()); layout->addWidget(batchView_,1);
     auto* column=new QVBoxLayout(batchView_); column->setContentsMargins(0,0,0,0); column->setSpacing(editorDesign::space1);
-    batchNote_=new QLabel(batchView_); batchNote_->setObjectName("editorBatchNote"); batchNote_->setWordWrap(true);
+    batchNote_=new ReflowLabel(batchView_); batchNote_->setObjectName("editorBatchNote"); batchNote_->setWordWrap(true);
     column->addWidget(batchNote_);
     batchMovementTable_=table(batchView_,"editorBatchMovementTable",7); column->addWidget(batchMovementTable_,3);
     batchSectionTable_=table(batchView_,"editorBatchSectionTable",7); column->addWidget(batchSectionTable_,2);

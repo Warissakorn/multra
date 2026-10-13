@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -43,16 +44,16 @@ void EditorWindow::buildRunControls() {
     bar->addAction(action("editorReset",{},[this]{clearRun();prepareRun();refreshRun();}));
     runSeed_=new QLineEdit("42",bar);runSeed_->setObjectName("editorSeed");runSeed_->setMaxLength(10);runSeed_->setMaximumWidth(80);
     runSeed_->setFont(editorDesign::numericFont());runSeed_->setProperty("numeric",true);
-    auto* seedLabel=new QLabel(bar);texts_["editorSeedLabel"]=seedLabel;seedLabel->setBuddy(runSeed_);bar->addWidget(seedLabel);bar->addWidget(runSeed_);
+    auto* seedLabel=new ReflowLabel(bar);texts_["editorSeedLabel"]=seedLabel;seedLabel->setBuddy(runSeed_);bar->addWidget(seedLabel);bar->addWidget(runSeed_);
     runSpeed_=new QComboBox(bar);runSpeed_->setObjectName("editorSpeed");
     for(double n:{0.5,1.,2.,5.,10.,20.})runSpeed_->addItem(QString::number(n)+"×",n);
     runSpeed_->setCurrentIndex(1);bar->addWidget(runSpeed_);
     auto* faster=action("editorFaster",QKeySequence(Qt::Key_Plus),[this]{runSpeed_->setCurrentIndex(std::min(runSpeed_->count()-1,runSpeed_->currentIndex()+1));});
     auto* slower=action("editorSlower",QKeySequence(Qt::Key_Minus),[this]{runSpeed_->setCurrentIndex(std::max(0,runSpeed_->currentIndex()-1));});
     for(auto* a:{faster,slower}){a->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(a);}
-    runInfo_=new QLabel(centralWidget());runInfo_->setObjectName("editorRunInfo");
+    runInfo_=new ReflowLabel(centralWidget());runInfo_->setObjectName("editorRunInfo");
     runInfo_->setFont(editorDesign::numericFont());runInfo_->setProperty("numeric",true);
-    runInfo_->setWordWrap(true);runInfo_->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);
+    runInfo_->setWordWrap(true);setReflowPolicy(runInfo_,QSizePolicy::Ignored);
     qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(1,runInfo_);
     canvas_->stopRequested=[this]{pauseRun();};
     connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun();});

@@ -7,6 +7,18 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 to do next is the duplication hard rule 3 forbids, and the copy that rots is always the one in
 the log. Rewrite this file; do not append to it.
 
+## GUI interaction review (2026-10-13, D151)
+
+The owner's Routes/reflow/tooltip/wheel fixes are implemented; contract in
+[EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md). Check native CI on the GUI PR before
+merging. Owner appearance review: create a Route to the middle of a curved road,
+move the pointer within that road, save/reopen and Undo; narrow/widen Properties in
+Thai and English; hover long descriptions near each window edge; wheel over focused
+and unfocused settings in panels and dialogs. Settings must stay unchanged while
+panels scroll and canvas zoom works. The destination marker is presentation only;
+vehicles still travel the compiled Route. Existing milestone/validation gates stay open.
+After these checks return to the unchanged owner queue below.
+
 ## OSM background review (2026-10-12, D150)
 
 The current owner request adds M1.28 ([contract](reference/MAP_BACKGROUND.md),

@@ -51,10 +51,21 @@ void geometry() {
             const auto outward=edge-centre;
             require(!item.shape().contains(edge+outward*.01),"Hit target spills into the adjacent lane");
         }
+        const auto destination=objectCrossbar(d.network,a,true,45);
+        require(destination.has_value(),"No crossbar at an interior destination station");
+        const auto axis=linkCentreline(l,side);
+        const double onAxis=matchedStation(l.geometry,axis,45);
+        const auto middle=pointAlong(axis,onAxis),direction=directionAlong(axis,onAxis,false);
+        for(const auto edge:{destination->first,destination->second})
+            require(std::abs((edge.x-middle.x)*direction.x+(edge.y-middle.y)*direction.y)<1e-6,
+                "Interior destination crossbar is not normal to the curved road");
         const auto fromLane=l.lanes.front().id;
         const auto b=addLink(d,{{110,65},{180,65}},1,3.5);
         addConnector(d,{a,fromLane},{b,d.network.links.back().lanes.front().id});
         const auto path=connectorPaths(d.network,d.network.connectors.front()).front();
+        require(objectCrossbar(d.network,d.network.connectors.front().id,true,
+            polylineLength(objectGeometry(d.network,d.network.connectors.front().id))/2).has_value(),
+            "No crossbar at an interior Connector destination");
         h.lane={};h.connectorId=path.id;
         for(const double station:{0.,connectorPathLength(path)/2,connectorPathLength(path)}) {
             h.position=station;

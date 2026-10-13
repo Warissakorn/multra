@@ -144,7 +144,10 @@ use the existing deletion cascade. No preview geometry is stored, and no schema 
 `road_crossbar.*` is an editor-only presentation helper: actual rail intersections and
 cosmetic stroke/hit geometry are shared by Routes, inputs and signal heads. Run snapshots
 retain head bars by ID, so the program's colour changes on the same authored stop position.
-Route hover traces remain local until one existing route command commits; no schema/core change.
+Route hover traces remain local until one existing route command commits. Optional schema-30
+`AuthoringDefinition::routeDestinations` stores editor-only marker stations; core/runtime routes
+are unchanged. `editor_interaction` owns application-wide field-wheel protection and bounded
+plain-text tooltips. `ReflowLabel` supplies stable form hints while retaining height-for-width.
 
 `EditorCanvas` renders a const document and sends gesture callbacks. Drag previews are
 transient and one release submits one command. `EditorWindow` composes native actions,

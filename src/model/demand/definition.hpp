@@ -115,12 +115,19 @@ struct EvaluationPeriod {
     double warmup{}; std::optional<double> end; double cooldown{};
     bool operator==(const EvaluationPeriod&) const = default;
 };
+// Editor destination marker only. Link stations use its reference polyline; Connector
+// stations use objectGeometry's bundle centreline. This never truncates a runtime Route.
+struct RouteDestination {
+    std::string objectId; double station{};
+    bool operator==(const RouteDestination&) const = default;
+};
 struct AuthoringDefinition : ScenarioDefinition {
     bool externalVehicleTypes{true}, externalBehaviours{true};
     bool externalCompositions{true};
     std::vector<Composition> compositions;
     std::map<std::string,std::string> vehicleTypeNames;
     std::vector<RoutingDecision> routingDecisions; // M2.4
+    std::map<std::string,RouteDestination> routeDestinations; // schema 30, keyed by authored Route id
     std::vector<SignalController> signalControllers; // M2.7b; `signalPrograms` keeps only legacy ones
     // M3.3.2a, schema 21: owned-behaviour display names, classes and link behaviour types.
     std::map<std::string,std::string> behaviourNames;

@@ -29,6 +29,9 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     for(const auto& c:d.network.connectors)for(const auto& ref:{c.from,c.to})
         if(ref.linkId==id && ref.station && *ref.station>distance-.1 && *ref.station<distance+.1)
             throw std::invalid_argument("EDIT_SPLIT_ATTACHMENT");
+    if(d.definition)for(const auto& [route,end]:d.definition->routeDestinations)
+        if(end.objectId==id && end.station>distance-.1 && end.station<distance+.1)
+            throw std::invalid_argument("EDIT_ROUTE_DESTINATION_INVALID");
     detail::checkSplitControls(d.network, id, distance); // M3.2.2b: refuse before changing anything
     auto downstream = original;
     downstream.id = allocateId(d, "link");
@@ -60,6 +63,10 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     std::map<std::string, std::string> laneMap;
     for (const auto& [old, pair] : replacements) laneMap[old] = pair.second;
     detail::splitControls(d, id, downstream.id, distance, laneMap);
+    if(d.definition)for(auto& [route,end]:d.definition->routeDestinations)
+        if(end.objectId==id && end.station>=distance+.1) {
+            end.objectId=downstream.id;end.station-=distance+.1;
+        }
     // Reanchor external connectors, then create explicit one-to-one continuity connectors.
     changeGeometry(d, id, editableLink(d, id).geometry);
     for (const auto& lane : original.lanes) {

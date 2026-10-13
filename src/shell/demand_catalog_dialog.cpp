@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "demand_catalog_dialog.hpp"
 #include "demand_period_editor.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -30,7 +31,7 @@ void buttons(QDialog& dialog,QLayout* layout,const CatalogText& text) {
 }
 bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const std::vector<DriverBehaviour>& behaviours,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorCatalogTypeDialog");dialog.setWindowTitle(text("editorCatalogType"));
-    auto* form=new QFormLayout(&dialog);form->addRow(text("editorColumnId"),new QLabel(QString::fromStdString(type.id),&dialog));
+    auto* form=new QFormLayout(&dialog);form->addRow(text("editorColumnId"),new ReflowLabel(QString::fromStdString(type.id),&dialog));
     auto* label=new QLineEdit(QString::fromStdString(name),&dialog);label->setObjectName("editorCatalogTypeName");form->addRow(text("editorColumnName"),label);
     struct Field{const char* key;double* destination;QDoubleSpinBox* spin;};
     std::vector<Field> fields;
@@ -60,10 +61,10 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
 }
 bool editCatalogComposition(QWidget* parent,Composition& composition,const std::vector<VehicleType>& types,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorCatalogCompositionDialog");dialog.setWindowTitle(text("editorCatalogComposition"));
-    auto* layout=new QVBoxLayout(&dialog);layout->addWidget(new QLabel(QString::fromStdString(composition.id),&dialog));
+    auto* layout=new QVBoxLayout(&dialog);layout->addWidget(new ReflowLabel(QString::fromStdString(composition.id),&dialog));
     auto* name=new QLineEdit(QString::fromStdString(composition.name),&dialog);name->setObjectName("editorCatalogCompositionName");
     name->setPlaceholderText(text("editorColumnName"));layout->addWidget(name);
-    auto* help=new QLabel(text("catalogShareHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* help=new ReflowLabel(text("catalogShareHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
     auto* table=new QTableWidget(0,2,&dialog);table->setObjectName("editorCatalogCompositionShares");
     table->setHorizontalHeaderLabels({text("editorInputType"),text("catalogShare")});layout->addWidget(table);
     std::vector<QDoubleSpinBox*> shares;
@@ -75,7 +76,7 @@ bool editCatalogComposition(QWidget* parent,Composition& composition,const std::
     }
     auto staged=composition;
     auto* periods=new QPushButton(text("editorCompositionPeriods"),&dialog);periods->setObjectName("editorCompositionPeriods");layout->addWidget(periods);
-    auto* timeHelp=new QLabel(text("editorCompositionPeriodsHelp"),&dialog);timeHelp->setWordWrap(true);layout->addWidget(timeHelp);
+    auto* timeHelp=new ReflowLabel(text("editorCompositionPeriodsHelp"),&dialog);timeHelp->setWordWrap(true);layout->addWidget(timeHelp);
     QObject::connect(periods,&QPushButton::clicked,&dialog,[&]{
         QStringList columns{text("editorInputStart"),text("editorInputEnd")};for(const auto& t:types)columns<<QString::fromStdString(t.id);
         std::vector<std::vector<double>> rows;

@@ -8,6 +8,34 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — Route destination markers and GUI interaction fixes (D151)
+
+Implemented the owner's four GUI requests: the destination crossbar follows the
+pointer within a road and re-reads the final click, then persists in schema 30 as
+editor-only authoring metadata. Hover moves only the line, not the scene/path.
+Undo/Open preserve it; deletion, route editing, reversal and split handle its references.
+The deletion regression exposed a pre-existing missing Link id in the route cascade;
+removal now includes the owning Link as well as its lanes. Runtime boundaries stay unchanged.
+Wrapping labels keep height-for-width and natural hints capped to the current page,
+not the old wrapped width. Screenshot review exposed over-wide form labels and
+fields smaller than their font minimum; both now have resize/floating-dock regressions.
+A shared application filter covers later dialogs: wheel events never
+change spin-box/closed-combo values, panel wheels scroll, and canvas zoom remains.
+Tooltips are plain text, wrap Thai/unbroken names, stay inside the owner/screen, and
+scroll when long; modal ownership retains field focus and allows tooltip scrolling.
+
+Verification: restored desktop build and all 123 CTest entries passed. Three
+incomplete executables left by the interrupted build were rebuilt and rerun.
+Architecture, file-size/docs and whitespace checks passed. GCC 13.3, Qt 6.4.2
+and PROJ 9.4.0, Linux offscreen. Settings/reflow/tooltips cover
+1x/1.5x/2x. The temporary toolchain needs its explicit PROJ_DATA path; no build
+dependencies or machine paths were added to the repository. Windows CI and the
+owner's look remain open. A transient workspace rollback required reconstruction
+of the final corrections from this session before publishing; the earlier local
+commit is not available in the restored clone.
+
+---
+
 ## 2026-10-12 — OSM detailed implementation review (D150)
 
 The owner asked for another detailed review. Seven focused cases failed on the
@@ -430,45 +458,6 @@ prototype; an unused one changes nothing. The dialog shows a `w74` behaviour rea
 except its name. Why each choice: D136. Qt was installed in this container, so desktop
 UI suites ran (Linux offscreen): headless 67/67, desktop 98/98, CLI seed 42 and shipped
 projects byte-identical. See [evidence](evidence/w74-codec.md).
-
----
-
-## 2026-10-08 — W74 pure function, BA21–BA22 (D135)
-
-Review first: a clean checkout configured only after installing `nlohmann-json3-dev`
-(BUILDING lists it); headless was then 65/65. The decision record's table had blank lines
-between rows from D12 onwards, so GitHub rendered every later row as plain pipe text; the
-blank lines are removed in a separate commit, no row changed.
-
-Then the first M3.3.3a code, rows-first as NEXT ordered: `src/core/w74.hpp/.cpp` implement
-contract §3 thresholds, the §4 seven-row classification and accelerations, the §7 sign and
-the §6 bounds (type clamp, then D105) as one pure function. `Leader` gains `acceleration`,
-0 everywhere until BA28 fills it; the prototype ignores it. `tests/w74_tests.cpp` (group
-`w74`) checks every regime row against hand values and every equality side on the value
-and one ULP away; five seeded boundary mutations each fail it. Why a pure, unwired function
-first and why the bounds live inside it: D135. Headless 66/66, CLI seed 42 byte-identical;
-Linux only. See [evidence](evidence/w74-pure-function.md).
-
----
-
-## 2026-10-09 — M5.5 LOS letters from section delay (D134)
-
-Section delay now gets a letter, and only section delay. The owner chose an author-set control
-type (`signalised`/`unsignalised`, schema 24) over a derived guess, and approaches grouped by
-start Link. Bounds are content: `data/los/hcm.json` (HCM 6th edition, A–E upper bounds; equal
-takes the better letter), read only when some section has a type so other projects' manifests
-stay unchanged. `src/eval/los.*` is pure (`losLetter`, vehicle-weighted `losGroups`);
-`src/project/los_output.*` loads the pack strictly and writes the shared JSON `los` object and
-the CSV block under the line `# LOS (pack hcm) from simulated section delay, not HCM control
-delay; not validated (M6)`. Section blocks gain `controlType,los`. Batches letter the mean over
-seeds. HCM's v/c > 1 rule is not applied (no v/c is simulated); unfinished trips stay visible.
-The editor's section dialog sets the type in the same History step as the name. W74 → schema 25.
-Contract and rows L1–L7 ([LOS](reference/LOS.md)) came first. Evidence: group `los` (6 cases —
-every bound on both sides for both types; a stricter pack turns D into F on the same measured
-delay; eight malformed packs refused; weighting by hand) and `section-ui`. Linux GCC 13.3:
-headless 71/71, desktop 103/103 offscreen. A 10-seed four-leg batch with three signalised
-sections: west through 48.3 s D, north left 57.6 s E, east through 43.0 s D; the intersection
-row 46.4 s D equals the hand-weighted mean. Windows evidence is CI's.
 
 ---
 

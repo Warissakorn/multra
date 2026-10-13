@@ -356,7 +356,7 @@
   "editorResetLayout": "คืนตำแหน่งแผงเริ่มต้น",
   "editorShortcuts": "ปุ่มลัดและการใช้เมาส์",
   "editorAppearance": "โครงข่ายและการแสดงผล",
-  "editorPaletteHint": "Ctrl + ลากเมาส์ขวาเพื่อสร้าง\nF1 ดูปุ่มลัดทั้งหมด",
+  "editorPaletteHint": "Ctrl + ลากเมาส์ขวาเพื่อสร้าง · F1 ดูปุ่มลัดทั้งหมด",
   "editorSeedLabel": "ค่า seed",
   "editorResultsTable": "ผลลัพธ์",
   "editorResultsMovement": "การเคลื่อนตัว",
@@ -710,5 +710,6 @@
   "EDIT_MAP_PROJECTION": "แปลงพิกัดแผนที่ไม่ได้ ตรวจฐานข้อมูล PROJ ที่ติดตั้ง",
   "EDIT_MAP_PROVIDER": "ผู้ให้บริการแผนที่ไม่พร้อมใช้งาน ตรวจ map-providers.json",
   "EDIT_MAP_RENDER_LIMIT": "การแปลงภาพแผนที่เกินขีดจำกัดการวาด",
-  "EDIT_MAP_TILE": "พิกัดภาพแผนที่ไม่ถูกต้อง"
+  "EDIT_MAP_TILE": "พิกัดภาพแผนที่ไม่ถูกต้อง",
+  "EDIT_ROUTE_DESTINATION_INVALID": "ตำแหน่งเส้นปลายทางไม่ถูกต้อง ต้องอยู่บนถนนในเส้นทาง แก้ไขหรือลบเส้นทางก่อนย่อถนนหรือตัดถนนตรงจุดนั้น"
 }

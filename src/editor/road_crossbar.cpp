@@ -52,12 +52,12 @@ std::optional<RoadCrossbar> roadCrossbar(const std::vector<Point>& centre,
     if(!a || !b || std::hypot(a->x-b->x,a->y-b->y)<1e-9)return {};
     return RoadCrossbar{*a,*b,level};
 }
-std::optional<RoadCrossbar> objectCrossbar(const Network& n,const std::string& id,bool end) {
+std::optional<RoadCrossbar> objectCrossbar(const Network& n,const std::string& id,bool end,std::optional<double> station) {
     try {
         for(const auto& l:n.links)if(l.id==id) {
             const auto axis=linkCentreline(l,n.drivingSide);
             return roadCrossbar(axis,laneBoundaryGeometry(l,0,n.drivingSide),
-                laneBoundaryGeometry(l,l.lanes.size(),n.drivingSide),end?polylineLength(axis):0,l.level);
+                laneBoundaryGeometry(l,l.lanes.size(),n.drivingSide),station?matchedStation(l.geometry,axis,*station):end?polylineLength(axis):0,l.level);
         }
         for(const auto& c:n.connectors)if(c.id==id) {
             const auto rails=connectorBoundaries(n,c);
@@ -69,7 +69,7 @@ std::optional<RoadCrossbar> objectCrossbar(const Network& n,const std::string& i
             for(std::size_t i=0;i<rails.front().size();++i)
                 axis.push_back({(rails.front()[i].x+rails.back()[i].x)/2,(rails.front()[i].y+rails.back()[i].y)/2});
             const auto extra=attachmentRails(n,end?paths.front().to:paths.front().from,end?paths.back().to:paths.back().from);
-            return roadCrossbar(axis,rails.front(),rails.back(),end?polylineLength(axis):0,c.level,extra.first,extra.second);
+            return roadCrossbar(axis,rails.front(),rails.back(),station?matchedStation(objectGeometry(n,id),axis,*station):end?polylineLength(axis):0,c.level,extra.first,extra.second);
         }
     } catch(const std::exception&) {}
     return {};

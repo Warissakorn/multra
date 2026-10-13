@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "demand_period_editor.hpp"
 #include "demand_type_rules_dialog.hpp"
@@ -37,7 +38,7 @@ void EditorWindow::editDecision(const std::string& id) {
     layout->setSpacing(editorDesign::space2);
     auto* name=new QLineEdit(QString::fromStdString(value.name),&dialog);name->setObjectName("editorDecisionNameField");
     name->setPlaceholderText(text("editorDecisionName"));layout->addWidget(name);
-    auto* help=new QLabel(text("editorDecisionHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* help=new ReflowLabel(text("editorDecisionHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
     auto* place=new QComboBox(&dialog);place->setObjectName("editorDecisionLink");
     place->addItem(text("editorDecisionUnplaced"),QString());
     for(const auto& l:network.links)
@@ -119,14 +120,14 @@ void EditorWindow::editDecision(const std::string& id) {
     }
     connect(start,&QDoubleSpinBox::valueChanged,&dialog,[&]{countsDirty=true;});
     connect(minutes,&QDoubleSpinBox::valueChanged,&dialog,[&]{countsDirty=true;});
-    auto* irregularNote=new QLabel(text("editorDemandIrregular"),&dialog);irregularNote->setWordWrap(true);layout->addWidget(irregularNote);
+    auto* irregularNote=new ReflowLabel(text("editorDemandIrregular"),&dialog);irregularNote->setWordWrap(true);layout->addWidget(irregularNote);
     const auto protectIrregular=[&]{
         const bool irregular=!value.intervals.empty() && !regular;
         irregularNote->setVisible(irregular);start->setEnabled(!irregular);minutes->setEnabled(!irregular);
         for(const auto& row:rows)row.counts->setReadOnly(irregular);
     };protectIrregular();
     auto* typeRules=new QPushButton(text("editorTypeRules"),&dialog);typeRules->setObjectName("editorTypeRules");layout->addWidget(typeRules);
-    auto* typeHelp=new QLabel(text("editorTypeRulesTargetsHelp"),&dialog);typeHelp->setWordWrap(true);layout->addWidget(typeHelp);
+    auto* typeHelp=new ReflowLabel(text("editorTypeRulesTargetsHelp"),&dialog);typeHelp->setWordWrap(true);layout->addWidget(typeHelp);
     const auto protectTypeTargets=[&]{
         const bool locked=!value.typeRules.empty();place->setEnabled(!locked);start->setEnabled(!locked && (value.intervals.empty() || regular));minutes->setEnabled(!locked && (value.intervals.empty() || regular));
         for(const auto& row:rows){row.field->setEnabled(!locked && (row.link.empty() || (!value.linkId.empty() && row.link!=value.linkId)));row.counts->setReadOnly(locked || (!value.intervals.empty()&&!regular));}

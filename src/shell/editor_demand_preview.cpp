@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../project/demand_preview.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -14,11 +15,11 @@ void EditorWindow::showDemandPreview() {
     try{preview=previewDemand(history_.document(),data_);}catch(const std::exception& e){showError(e);return;}
     QDialog dialog(this);dialog.setObjectName("editorDemandPreviewDialog");dialog.setWindowTitle(text("editorDemandPreview"));
     auto* layout=new QVBoxLayout(&dialog);
-    auto* help=new QLabel(text("editorDemandPreviewHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
-    auto* total=new QLabel(text("editorDemandExpectedTotal").arg(preview.revision).arg(preview.expectedVehicles,0,'g',12),&dialog);
+    auto* help=new ReflowLabel(text("editorDemandPreviewHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* total=new ReflowLabel(text("editorDemandExpectedTotal").arg(preview.revision).arg(preview.expectedVehicles,0,'g',12),&dialog);
     total->setObjectName("editorDemandExpectedTotal");layout->addWidget(total);
     for(const auto& issue:preview.advisories) {
-        auto* note=new QLabel(QString::fromStdString(issue.path)+": "+text(issue.code.c_str()),&dialog);
+        auto* note=new ReflowLabel(QString::fromStdString(issue.path)+": "+text(issue.code.c_str()),&dialog);
         note->setWordWrap(true);layout->addWidget(note);
     }
     auto* table=new QTableWidget(0,10,&dialog);table->setObjectName("editorDemandPreviewTable");

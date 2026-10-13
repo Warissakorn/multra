@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/right_of_way_commands.hpp"
@@ -53,8 +54,8 @@ void EditorWindow::buildConflicts() {
     layout->addWidget(conflictTable_);
     objects_->addTab(body, QString());
     // The Run UI says what the solver protects: authored areas only (M3_PLAN §2).
-    runProtection_ = new QLabel(centralWidget()); runProtection_->setObjectName("editorRunProtection");
-    runProtection_->setWordWrap(true); runProtection_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    runProtection_ = new ReflowLabel(centralWidget()); runProtection_->setObjectName("editorRunProtection");
+    runProtection_->setWordWrap(true); setReflowPolicy(runProtection_,QSizePolicy::Ignored);
     qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(2, runProtection_);
     runProtection_->hide();
     bar->addAction(action("editorAddCrossing", {}, [this] { addCrossings(); }));
@@ -257,8 +258,8 @@ void EditorWindow::editConflict(const std::string& id) {
             if(a.kind==ConflictKind::branching)hasBranching=true;else ++pairCount;
         }
     }
-    form->addRow(new QLabel(text("editorConflictGroupEdit").arg(pairCount), &dialog));
-    if(hasBranching)form->addRow(new QLabel(text("editorConflictGroupReadOnly"),&dialog));
+    form->addRow(new ReflowLabel(text("editorConflictGroupEdit").arg(pairCount), &dialog));
+    if(hasBranching)form->addRow(new ReflowLabel(text("editorConflictGroupReadOnly"),&dialog));
     form->addRow(text("editorColumnName"), name);
     form->addRow(text("editorConflictPriority"), priority);
     form->addRow("gapTime", gap);
@@ -307,7 +308,7 @@ void EditorWindow::addCrossings() {
     auto preview = history_.document();
     std::size_t pairs = 0;
     try { pairs = addCrossingAreas(preview, sel[0], sel[1], sel[0], defaults).size(); } catch (const std::exception&) {}
-    auto* count = new QLabel(text("editorCrossingPairs").arg(pairs), &dialog); count->setObjectName("editorCrossingPairs");
+    auto* count = new ReflowLabel(text("editorCrossingPairs").arg(pairs), &dialog); count->setObjectName("editorCrossingPairs");
     form->addRow(text("editorCrossingYields"), yields);
     form->addRow(count);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);

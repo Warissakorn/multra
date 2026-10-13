@@ -4,6 +4,7 @@
 #include <QGraphicsSimpleTextItem>
 #include <QPainterPathStroker>
 #include "../project/demand_paths.hpp"
+#include "../project/route_destination.hpp"
 #include <QMouseEvent>
 #include <algorithm>
 #include <cmath>
@@ -38,7 +39,7 @@ std::vector<std::string> EditorCanvas::routeDraftWith(const std::string& target)
 void EditorCanvas::startRouteDraft(const std::string& objectId) {
     if(!document_ || objectId.empty())return;
     if(routeLaneChains(document_->network,{objectId}).empty())return;
-    routeStartPosition_.reset();routeDraft_={objectId};routePreview_=routeDraft_;routeTracing_=true;hoverSegment_.clear();
+    routeStartPosition_.reset();routeEnd_.reset();routeDraft_={objectId};routePreview_=routeDraft_;routeTracing_=true;hoverSegment_.clear();
     if(routeDraftChanged)routeDraftChanged();
     redraw();
 }
@@ -87,11 +88,15 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
             candidate.insert(candidate.end(),chain.begin(),chain.end());
         }
         if(routeLaneChains(document_->network,candidate).empty()){reject();return true;}
+        updateRouteEnd(target,world(e->pos(),false));
+        if(routeStartPosition_ && routeEnd_ && target==routeDraft_.front() && routeEnd_->station<*routeStartPosition_) {
+            reject();return true;
+        }
         routeDraft_=std::move(candidate);routePreview_.clear();commitRouteDraft();return true;
     }
     const auto chain=routeDraftWith(target);
     if(chain.empty()){reject();return true;}
-    routeTracing_=false;routeStartPosition_.reset();
+    routeTracing_=false;routeStartPosition_.reset();routeEnd_.reset();
     routeDraft_.insert(routeDraft_.end(),chain.begin(),chain.end());routePreview_=routeDraft_;
     if(routeDraftChanged)routeDraftChanged();
     redraw();return true;
@@ -105,7 +110,10 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
     if(tool_!=Tool::route && tool_!=Tool::input)return false;
     const auto hovered=objectAt(world(e->pos(),false));
     // Path finding and scene rebuilds happen on object changes, not on every mouse pixel.
-    if(hovered==hoverSegment_)return true;
+    if(hovered==hoverSegment_) {
+        if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,world(e->pos(),false));
+        return true;
+    }
     hoverSegment_=hovered;
     if(tool_==Tool::input)hoverReachable_=isLink(hovered);
     else if(routeDraft_.empty())hoverReachable_=!routeDraftWith(hovered).empty();
@@ -122,14 +130,26 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
         hoverReachable_=!candidate.empty() && !routeLaneChains(document_->network,candidate).empty();
         if(hoverReachable_)routePreview_=std::move(candidate);
     }
+    if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,world(e->pos(),false));
+    else routeEnd_.reset();
     redraw();return true;
+}
+void EditorCanvas::updateRouteEnd(const std::string& target,Point pointer) {
+    if(!document_)return;
+    const auto geometry=routeDestinationGeometry(document_->network,target);
+    if(geometry.size()<2)return;
+    routeEnd_=RouteDestination{target,stationOfClosestPoint(geometry,pointer)};
+    if(previewRouteEnd_)if(const auto bar=objectCrossbar(document_->network,target,true,routeEnd_->station))
+        previewRouteEnd_->setLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y);
 }
 void EditorCanvas::commitRouteDraft() {
     if(routeDraft_.empty())return;
     const auto segments=routeTracing_ && !routePreview_.empty()?routePreview_:routeDraft_;
     const auto position=routeStartPosition_;
+    const auto end=routeEnd_;
     clearRouteDraft();
-    if(positionedRouteCommitted)positionedRouteCommitted(segments,position);
+    if(routeDestinationCommitted)routeDestinationCommitted(segments,position,end);
+    else if(positionedRouteCommitted)positionedRouteCommitted(segments,position);
     else if(routeDraftCommitted)routeDraftCommitted(segments);
     redraw();
 }
@@ -139,12 +159,12 @@ void EditorCanvas::dropLastRouteSegment() {
     path.pop_back();
     if(routeTracing_ && path.empty()){routeDraft_.clear();routeStartPosition_.reset();}
     else if(!routeTracing_)routePreview_=routeDraft_;
-    hoverSegment_.clear();
+    routeEnd_.reset();hoverSegment_.clear();
     if(routeDraftChanged)routeDraftChanged();
     redraw();
 }
 void EditorCanvas::clearRouteDraft() {
-    routeDraft_.clear();routePreview_.clear();routeStartPosition_.reset();routeTracing_=false;hoverSegment_.clear();
+    routeDraft_.clear();routePreview_.clear();routeStartPosition_.reset();routeEnd_.reset();routeTracing_=false;hoverSegment_.clear();
     if(routeDraftChanged)routeDraftChanged();
 }
 void EditorCanvas::reject() {
@@ -247,6 +267,11 @@ void EditorCanvas::drawDemandOverlay() {
 void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,const std::string& id,bool preview) {
     if(segments.empty())return;
     const auto& n=document_->network;
+    auto destination=preview?routeEnd_:std::optional<RouteDestination>{};
+    if(!preview && document_->definition) {
+        const auto found=document_->definition->routeDestinations.find(id);
+        if(found!=document_->definition->routeDestinations.end())destination=found->second;
+    }
     auto position=preview?routeStartPosition_:std::optional<double>{};
     if(!preview && document_->definition)for(const auto& decision:document_->definition->routingDecisions)
         for(const auto& entry:decision.routes)if(entry.routeId==id && decision.position)position=decision.position;
@@ -276,7 +301,7 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
     overlay->setZValue(200004);overlay->setData(0,preview?QStringLiteral("route-draft"):QStringLiteral("route-overlay"));
     overlay->setData(1,QString::fromStdString(id));
     const auto mark=[&](const std::string& object,bool end) {
-        auto bar=objectCrossbar(n,object,end);
+        auto bar=objectCrossbar(n,object,end,end && destination?std::optional<double>(destination->station):std::nullopt);
         if(!end && position)for(const auto& link:n.links)if(link.id==object) {
             const auto axis=linkCentreline(link,n.drivingSide);
             bar=roadCrossbar(axis,laneBoundaryGeometry(link,0,n.drivingSide),laneBoundaryGeometry(link,link.lanes.size(),n.drivingSide),
@@ -285,8 +310,9 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
         if(!bar || !levelVisible(bar->level))return;
         auto* line=new RoadCrossbarItem(*bar,canvasStyle::active(),std::abs(transform().m11()),preview && end);
         scene_.addItem(line);line->setZValue(200007);
+        if(preview && end)previewRouteEnd_=line;
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
     };
-    mark(segments.front(),false);mark(segments.back(),true);
+    mark(segments.front(),false);mark(destination?destination->objectId:segments.back(),true);
 }
 }

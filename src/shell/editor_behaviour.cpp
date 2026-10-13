@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "behaviour_library_dialog.hpp"
 #include "../commands/behaviour_commands.hpp"
@@ -56,7 +57,7 @@ void EditorWindow::buildBehaviourInspector(QVBoxLayout* layout) {
         execute("editorApplyBehaviourType", [&](auto& d) { for (const auto& id : roads) assignBehaviourType(d, id, value); });
     }));
     form->addRow(apply);
-    effectiveBehaviour_ = new QLabel(this); effectiveBehaviour_->setObjectName("editorEffectiveBehaviour");
+    effectiveBehaviour_ = new ReflowLabel(this); effectiveBehaviour_->setObjectName("editorEffectiveBehaviour");
     effectiveBehaviour_->setWordWrap(true); form->addRow(effectiveBehaviour_);
 }
 void EditorWindow::refreshBehaviourInspector() {

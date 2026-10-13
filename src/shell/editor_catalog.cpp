@@ -1,3 +1,4 @@
+#include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "demand_catalog_dialog.hpp"
 #include "../commands/catalog_commands.hpp"
@@ -24,9 +25,9 @@ void EditorWindow::editDemandCatalog() {
     const CatalogText tr=[this](const char* key){return text(key);};
     QDialog dialog(this);dialog.setObjectName("editorCatalogDialog");dialog.setWindowTitle(text("editorDemandCatalog"));
     auto* layout=new QVBoxLayout(&dialog);
-    auto* help=new QLabel(text("editorCatalogHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
+    auto* help=new ReflowLabel(text("editorCatalogHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);
     auto* tabs=new QTabWidget(&dialog);layout->addWidget(tabs);
-    auto* error=new QLabel(&dialog);error->setObjectName("editorCatalogError");error->setWordWrap(true);
+    auto* error=new ReflowLabel(&dialog);error->setObjectName("editorCatalogError");error->setWordWrap(true);
     QTableWidget* typeTable=nullptr;QTableWidget* compositionTable=nullptr;
     const auto refresh=[&]{
         typeTable->setRowCount(0);compositionTable->setRowCount(0);
