@@ -3,6 +3,7 @@
 #include "behaviour_library.hpp"
 #include "evaluation_period.hpp"
 #include "counted_volumes.hpp"
+#include "zones_od.hpp"
 #include "../core/validate.hpp"
 #include "../model/network/diagnostics.hpp"
 #include <nlohmann/json.hpp>
@@ -112,6 +113,7 @@ Json documentJson(const ProjectDocument& d) {
         }
         network["travelTimeSections"] = sections;
     }
+    addZonesJson(d.network, network); // M8.2, schema 29: likewise only when there is one
     const auto& b = d.background;
     // Preserve legacy bytes; use 18 for owned catalogs and 19 for time/type rules.
     const bool positioned=d.definition && std::any_of(d.definition->routingDecisions.begin(),d.definition->routingDecisions.end(),[](const auto& x){return x.position.has_value();});
@@ -125,7 +127,8 @@ Json documentJson(const ProjectDocument& d) {
     // M5.9: 27 only when the evaluation period has a cool-down (D146).
     const bool cooled=period && d.definition->evaluation->cooldown>0;
     // M4.2: 28 only when an owned behaviour carries amberDeceleration (D147).
-    const int schema=ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // M8.2: 29 only with a zone, a zone connector or an OD matrix (D150).
+    const int schema=usesZonesOrOd(d)?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -133,6 +136,7 @@ Json documentJson(const ProjectDocument& d) {
     // library were written untagged and could not be reopened (found by M4.2, D147).
     if ((library || schema >= 21) && d.definition) addBehaviourLibraryJson(*d.definition, definition);
     if (d.definition) addEvaluationPeriodJson(*d.definition, definition);
+    if (d.definition) addOdMatrixJson(*d.definition, definition);
     return {{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
@@ -148,6 +152,7 @@ void validateDocument(const ProjectDocument& d) {
         !std::isfinite(b.metresPerPixel) || b.metresPerPixel <= 0 || !std::isfinite(b.opacity) ||
         b.opacity < 0 || b.opacity > 1 || b.pngBase64->size() > 32 * 1024 * 1024)
         throw std::invalid_argument("EDIT_BACKGROUND_INVALID");
+    if (auto issues = odMatrixIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // M8.2
     validateAuthoredDemand(d);
     if (d.definition) validateEvaluationPeriod(*d.definition);
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
@@ -158,7 +163,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 28) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 29) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -184,11 +189,14 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 26) rejectCountedVolumesBefore26(j);
     if (version < 27) rejectCooldownBefore27(j);
     if (version < 28) rejectAmberBefore28(j);
+    if (version < 29) rejectZonesAndOdBefore29(j);
     d.network = parseNetwork(j.at("network"), version);
+    if (version >= 29) parseZones(j.at("network"), d.network);
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
         if (version >= 21) parseBehaviourLibrary(j.at("definition"), *d.definition);
         if (version >= 22) d.definition->evaluation = parseEvaluationPeriod(j.at("definition"));
+        if (version >= 29) d.definition->odMatrices = parseOdMatrices(j.at("definition"));
         // M4.2 (D147): a bare M0 scenario keeps amber as red, as the CLI reads it (loadScenario).
         if (!j.contains("schemaVersion")) d.definition->provenance.legacyAmber = true;
         // Schema 7 and earlier stored a route as lanes and Connector paths. Schema 8 stores the
@@ -214,12 +222,15 @@ std::string allocateId(ProjectDocument& d, const std::string& prefix) {
     for (const auto& c : d.network.rightOfWay.stopControls) used.insert(c.id);
     for (const auto& c : d.network.queueCounters) used.insert(c.id);
     for (const auto& s : d.network.travelTimeSections) used.insert(s.id);
+    for (const auto& z : d.network.zones) used.insert(z.id);
+    for (const auto& c : d.network.zoneConnectors) used.insert(c.id);
     if (d.definition) {
         for (const auto& r : d.definition->routes) used.insert(r.id);
         for (const auto& i : d.definition->inputs) used.insert(i.id);
         for (const auto& p : d.definition->signalPrograms) used.insert(p.id);
         for (const auto& c : d.definition->signalControllers) used.insert(c.id);
         for (const auto& decision : d.definition->routingDecisions) used.insert(decision.id);
+        for (const auto& m : d.definition->odMatrices) used.insert(m.id);
     }
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");

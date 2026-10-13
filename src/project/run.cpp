@@ -3,6 +3,7 @@
 #include "diagnostics.hpp"
 #include "behaviour_library.hpp"
 #include "demand_paths.hpp"
+#include "zones_od.hpp"
 #include "../core/validate.hpp"
 namespace trafficsim {
 std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::filesystem::path& data) {
@@ -10,7 +11,10 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
     // drawing's own problems are the useful list, exactly as with no definition at all.
     if (!d.definition || onlyRunSettings(*d.definition)) return documentDiagnostics(d);
     try {
-        auto rows=runtimeDiagnostics(d.network,expandRouteless(d.network,*d.definition,resolveCatalogs(*d.definition,data)));
+        std::vector<Diagnostic> rows;
+        addOdNotExpandedRows(*d.definition,rows); // M8.2
+        for(auto& row:runtimeDiagnostics(d.network,expandRouteless(d.network,*d.definition,resolveCatalogs(*d.definition,data))))
+            rows.push_back(std::move(row));
         for(const auto& issue:demandAdvisories(d.network,*d.definition))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // M2.1.1: a routeless walk that failed blocks Run; a lane a decision cannot serve advises.
@@ -20,7 +24,7 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         // A route is not a network object, and neither is an input: the row names its path.
         for(const auto& issue:compositionIssues(*d.definition,data))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
-        if (d.definition->inputs.empty())
+        if (d.definition->inputs.empty() && !hasOdDemand(*d.definition))
             rows.push_back({"EDIT_NO_INPUTS","inputs",{},{},DiagnosticSeverity::runtime});
         return rows;
     } catch (const std::exception& e) {
@@ -30,6 +34,9 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
 RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::path& data,InputManifest* manifest) {
     validateDocument(d);
     if (!d.definition) throw std::invalid_argument("EDIT_NO_DEFINITION");
+    // M8.2 (D150): a matrix with trips is refused until M8.3 expands it, ahead of EDIT_NO_INPUTS,
+    // so a project whose only demand is a matrix is told why rather than that it has none.
+    if(auto issues=odNotExpandedIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
     if (d.definition->inputs.empty()) throw std::invalid_argument("EDIT_NO_INPUTS");
     // An input left out for an unknown or broken composition must stop Run, not vanish from it.
     if(auto issues=compositionIssues(*d.definition,data,manifest);!issues.empty())throw ValidationError(std::move(issues));

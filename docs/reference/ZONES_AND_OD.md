@@ -1,7 +1,8 @@
 # Zones and OD matrices (M8.2–M8.3)
 
-**Contract only, written 2026-10-10 (M8.1, [D150](../decisions/RECORD.md#d150)); nothing below is
-implemented.** It defines the authoring objects that state demand as trips between zones, how a
+**Written 2026-10-10 (M8.1, [D150](../decisions/RECORD.md#d150)). §1, §4's commands and
+cascades, and §2's demand rule with `OD_NOT_EXPANDED` are implemented (M8.2, 2026-10-13, rows
+ZO1–ZO4); the §2 Run checks and §3's expansion are M8.3, and the editor is M8.6.** It defines the authoring objects that state demand as trips between zones, how a
 matrix expands into the inputs and routes the Micro engine already runs, and the rows that close
 M8.2 (schema, codec, commands) and M8.3 (expansion). Parking lots, which are zones with a capacity,
 are [PARKING_LOTS](PARKING_LOTS.md). The booked design is
@@ -199,7 +200,7 @@ pipeline applies unchanged:
     (`removeControlsOn`).
   - Deleting a **zone** deletes its connectors in the same step. It is refused with
     `EDIT_REFERENCED_ZONE` while a matrix or a parking lot names the zone, so no matrix row is
-    silently dropped.
+    silently dropped. (The lot half of this rule arrives with lots, M8.4.)
   - **Reversing** a Link that carries a connector is refused with `EDIT_REFERENCED_LINK`, whose
     text is extended to name connectors (`controlsNameLink`).
   - **Splitting** a Link keeps an origin connector on the first piece and moves a destination
@@ -210,10 +211,14 @@ pipeline applies unchanged:
   - the network-wide id set in each issue function;
   - the Link cascades above;
   - `objectIdForPath` and `selectableFor` (zones, connectors), so a Problems row selects its object.
+    M8.2 adds `objectIdForPath` only, so a row names the zone or connector; `selectableFor` joins
+    in M8.6, when the canvas first draws zones and has something to select;
     A matrix row carries the matrix id as its object, named but not selectable on the canvas
     (`definitionId` maps only routes, inputs, types, behaviours and programs);
   - `deleteObjects` (the canvas Delete);
-  - a locale entry in `en.json` and `th.json` for every code above.
+  - a locale entry in `en.json` and `th.json` for every code above;
+  - the catalog's delete refusal (`definitionNamesVehicleType`, `definitionNamesComposition`,
+    `zones_od.cpp`), which the shell's catalog dialog calls.
 - **Editor (M8.6).**
   - **Zone tool `Z`** (free; `P` is cycle priority): click the polygon's points, close it, then
     click a Link's start or end to add an origin or destination connector.

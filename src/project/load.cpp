@@ -4,6 +4,7 @@
 #include "run.hpp"
 #include "demand_catalog.hpp"
 #include "demand_time_types.hpp"
+#include "zones_od.hpp"
 #include <set>
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -56,13 +57,17 @@ const Composition* findComposition(const std::vector<Composition>& all, const st
     for (const auto& c : all) if (c.id == id) return &c;
     return nullptr;
 }
+// The catalog's "used" rule: an input or (M8.2) an OD matrix names a composition.
+bool compositionUsed(const AuthoringDefinition& d) {
+    return std::any_of(d.inputs.begin(), d.inputs.end(), [](const auto& i) { return !i.compositionId.empty(); }) ||
+           std::any_of(d.odMatrices.begin(), d.odMatrices.end(), [](const auto& m) { return !m.compositionId.empty(); });
+}
 }
 std::vector<ValidationIssue> compositionIssues(const AuthoringDefinition& authored,
                                                const std::filesystem::path& dataDirectory,InputManifest* manifest) {
     std::vector<ValidationIssue> issues;
-    if (std::none_of(authored.inputs.begin(), authored.inputs.end(),
-                     [](const auto& i) { return !i.compositionId.empty(); }) && authored.externalCompositions && !hasTypeRouting(authored)) return issues;
-    const bool used=std::any_of(authored.inputs.begin(),authored.inputs.end(),[](const auto& i){return !i.compositionId.empty();});
+    const bool used=compositionUsed(authored);
+    if (!used && authored.externalCompositions && !hasTypeRouting(authored)) return issues;
     const auto resolved=resolveDemandCatalog(authored,dataDirectory,used,manifest);
     const auto& all=resolved.compositions;const auto& types=resolved.vehicleTypes;
     auto owned=authored;owned.vehicleTypes=types;owned.externalVehicleTypes=false;
@@ -113,8 +118,7 @@ DemandCatalog resolveDemandCatalog(const AuthoringDefinition& authored,const std
     return result;
 }
 ScenarioDefinition resolveCatalogs(const AuthoringDefinition& authored, const std::filesystem::path& dataDirectory,InputManifest* manifest) {
-    const auto resolved=resolveDemandCatalog(authored,dataDirectory,
-        std::any_of(authored.inputs.begin(),authored.inputs.end(),[](const auto& i){return !i.compositionId.empty();}),manifest);
+    const auto resolved=resolveDemandCatalog(authored,dataDirectory,compositionUsed(authored),manifest);
     // Legacy ordering/IDs/draw stream are frozen. Type overrides need a type before routing.
     AuthoringDefinition expanded=authored;
     if(hasTypeRouting(authored)) {
@@ -161,6 +165,8 @@ LoadedScenario loadScenario(const std::filesystem::path& file, const std::filesy
                    (value.contains("format") && value.at("format").is_string() && value.at("format") == "TrafficSim")
                 ? "SCENARIO_IS_PROJECT" : "SCENARIO_NO_DEFINITION";
         if (!code.empty()) throw std::invalid_argument(code);
+        // M8.2: an M0 file has no schema 29, so a zone or matrix key is refused, never run without its demand.
+        rejectZonesAndOdBefore29(value);
         const auto& declared = section(value, "definition");
         // An M0 scenario carries no schemaVersion, so it is read with the pre-5 meaning.
         auto network = parseNetwork(section(value, "network"), 0);

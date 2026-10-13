@@ -123,6 +123,8 @@ template<class F> void eachPath(Network& n, F visit) {
 void removeControlsOn(ProjectDocument& d, const std::set<std::string>& links, const std::set<std::string>& connectors) {
     // M5.4: a section measures between two places on roads; without either it measures nothing.
     std::erase_if(d.network.travelTimeSections, [&](const auto& s) { return links.contains(s.start.linkId) || links.contains(s.end.linkId); });
+    // M8.2: a zone connector belongs to its Link end.
+    std::erase_if(d.network.zoneConnectors, [&](const auto& c) { return links.contains(c.linkId); });
     auto& row = d.network.rightOfWay;
     if (row.empty()) { pruneQueueCounters(d, links, connectors); return; }
     std::set<std::string> lost;
@@ -169,6 +171,8 @@ bool controlsNameLink(const Network& n, const std::string& link) {
     auto copy = n;
     eachPath(copy, [&](const ControlPathRef& p, const auto&) { named = named || (p.connectorId.empty() && p.linkId == link); });
     for (const auto& s : n.travelTimeSections) named = named || s.start.linkId == link || s.end.linkId == link;
+    // M8.2: reversing would swap which end the connector attaches to.
+    for (const auto& c : n.zoneConnectors) named = named || c.linkId == link;
     return named;
 }
 void checkSplitControls(const Network& n, const std::string& link, double distance) {
@@ -209,6 +213,10 @@ void splitControls(ProjectDocument& d, const std::string& link, const std::strin
     for (auto& s : d.network.travelTimeSections)
         for (auto* l : {&s.start, &s.end})
             if (l->linkId == link && l->station >= far) { l->linkId = downstream; l->station -= far; }
+    // M8.2: an origin stays at the start, on the upstream piece that keeps the id; a destination
+    // follows the end to the downstream piece.
+    for (auto& c : d.network.zoneConnectors)
+        if (c.linkId == link && c.direction == "destination") c.linkId = downstream;
 }
 void copyControls(ProjectDocument& d, const Network& source, const std::map<std::string, std::string>& links,
                   const std::map<std::string, std::string>& lanes, const std::map<std::string, std::string>& connectors) {

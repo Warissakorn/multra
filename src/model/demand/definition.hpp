@@ -115,6 +115,14 @@ struct EvaluationPeriod {
     double warmup{}; std::optional<double> end; double cooldown{};
     bool operator==(const EvaluationPeriod&) const = default;
 };
+// M8.2, schema 29 (D150): expected trips from zones[o] to zones[d] released in [startTime, endTime),
+// for one vehicle type or one composition. Stored and validated; expanded only from M8.3.
+struct OdMatrix {
+    std::string id, name; double startTime{}, endTime{};
+    std::string vehicleTypeId, compositionId;
+    std::vector<std::string> zones; std::vector<std::vector<double>> trips;
+    bool operator==(const OdMatrix&) const = default;
+};
 struct AuthoringDefinition : ScenarioDefinition {
     bool externalVehicleTypes{true}, externalBehaviours{true};
     bool externalCompositions{true};
@@ -127,6 +135,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     std::vector<VehicleClass> vehicleClasses;
     std::vector<LinkBehaviourType> linkBehaviourTypes;
     std::optional<EvaluationPeriod> evaluation; // M5.3; absent is warm-up 0 to the end of the run
+    std::vector<OdMatrix> odMatrices; // M8.2, schema 29
     // M4.2 (D147): where the definition came from, not what it says -- never written and never
     // compared, so a save and reopen round-trips the content exactly. A bare M0 scenario (no
     // schemaVersion) sets it; its catalog behaviours then resolve without amberDeceleration, so

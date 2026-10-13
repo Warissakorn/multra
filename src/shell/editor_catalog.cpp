@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "demand_catalog_dialog.hpp"
 #include "../commands/catalog_commands.hpp"
+#include "../project/zones_od.hpp"
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QHeaderView>
@@ -58,20 +59,18 @@ void EditorWindow::editDemandCatalog() {
     };
     const auto removeType=[&]{
         const int row=typeTable->currentRow();if(row<0)return;const auto id=staged.vehicleTypes[row].id;
-        bool referenced=false;
-        if(history_.document().definition)for(const auto& i:history_.document().definition->inputs)referenced|=i.vehicleTypeId==id;
+        // Inputs, decisions' type rules and OD matrices (M8.2), then the staged compositions.
+        bool referenced=history_.document().definition && definitionNamesVehicleType(*history_.document().definition,id);
         for(const auto& c:staged.compositions) {
             for(const auto& t:c.types)referenced|=t.vehicleTypeId==id;
             for(const auto& p:c.intervals)for(const auto& t:p.types)referenced|=t.vehicleTypeId==id;
         }
-        if(history_.document().definition)for(const auto& x:history_.document().definition->routingDecisions)
-            for(const auto& rule:x.typeRules)referenced|=rule.vehicleTypeId==id;
         if(referenced){error->setText(text("EDIT_REFERENCED_VEHICLE_TYPE"));return;}
         staged.vehicleTypes.erase(staged.vehicleTypes.begin()+row);staged.vehicleTypeNames.erase(id);error->clear();refresh();
     };
     const auto removeComposition=[&]{
         const int row=compositionTable->currentRow();if(row<0)return;const auto id=staged.compositions[row].id;
-        if(history_.document().definition)for(const auto& i:history_.document().definition->inputs)if(i.compositionId==id){
+        if(history_.document().definition && definitionNamesComposition(*history_.document().definition,id)){
             error->setText(text("EDIT_REFERENCED_COMPOSITION"));return;}
         staged.compositions.erase(staged.compositions.begin()+row);error->clear();refresh();
     };

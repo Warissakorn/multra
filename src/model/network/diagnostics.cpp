@@ -46,6 +46,9 @@ std::string objectIdForPath(const Network& network, const std::string& path) {
     if (name == "rightOfWay.waitingLines") return pick(row.waitingLines);
     if (name == "rightOfWay.conflictAreas") return pick(row.conflictAreas);
     if (name == "rightOfWay.priorityRules") return pick(row.priorityRules);
+    // M8.2: named, not canvas-selectable until the canvas draws zones (M8.6).
+    if (name == "zones") return pick(network.zones);
+    if (name == "zoneConnectors") return pick(network.zoneConnectors);
     return {};
 }
 std::string selectableFor(const Network& network, const std::string& objectId) {

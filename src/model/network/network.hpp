@@ -121,6 +121,17 @@ struct NetworkSignalHead {
     bool operator==(const NetworkSignalHead&) const = default;
 };
 enum class DrivingSide { left, right };
+// M8.2 (D150, docs/reference/ZONES_AND_OD.md): where trips start and end. A zone is a drawn
+// polygon; a connector ties it to a Link's start ("origin") or end ("destination"). `direction`
+// stays text so a bad value reaches validation as ZONE_CONNECTOR_DIRECTION, not a parse error.
+struct Zone {
+    std::string id, name; std::vector<Point> polygon;
+    bool operator==(const Zone&) const = default;
+};
+struct ZoneConnector {
+    std::string id, zoneId, linkId, direction; double share{1};
+    bool operator==(const ZoneConnector&) const = default;
+};
 struct Network {
     std::string id;
     DrivingSide drivingSide{DrivingSide::left};
@@ -130,6 +141,8 @@ struct Network {
     RightOfWay rightOfWay; // M3.2.2, schema 14: authored controls (control.hpp)
     std::vector<AuthoredQueueCounter> queueCounters; // M3.2.6b, schema 16
     std::vector<TravelTimeSection> travelTimeSections; // M5.4, schema 23
+    std::vector<Zone> zones; // M8.2, schema 29
+    std::vector<ZoneConnector> zoneConnectors; // M8.2, schema 29
     bool operator==(const Network&) const = default;
 };
 // A place a Signal head can stand -- a Link lane or a Connector path -- with its polyline and

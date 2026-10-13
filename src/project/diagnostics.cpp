@@ -1,5 +1,6 @@
 #include "demand_paths.hpp"
 #include "diagnostics.hpp"
+#include "zones_od.hpp"
 
 namespace trafficsim {
 namespace {
@@ -21,7 +22,13 @@ bool needsCatalog(const std::string& code) {
 }
 bool onlyRunSettings(const AuthoringDefinition& d) {
     return d.routes.empty() && d.inputs.empty() && d.routingDecisions.empty() &&
-           d.signalControllers.empty() && d.signalPrograms.empty();
+           d.signalControllers.empty() && d.signalPrograms.empty() && !hasOdDemand(d); // M8.2
+}
+void addOdNotExpandedRows(const AuthoringDefinition& d, std::vector<Diagnostic>& rows) {
+    for (const auto& issue : odNotExpandedIssues(d)) {
+        const auto index = std::stoul(issue.path.substr(issue.path.find('[') + 1));
+        rows.push_back({issue.code, issue.path, d.odMatrices[index].id, {}, DiagnosticSeverity::runtime});
+    }
 }
 std::vector<Diagnostic> documentDiagnostics(const ProjectDocument& document) {
     std::vector<Diagnostic> result;
@@ -50,6 +57,7 @@ std::vector<Diagnostic> documentDiagnostics(const ProjectDocument& document) {
                 if (aboutTopology(row)) result.push_back(std::move(row));
             return result;
         }
+        addOdNotExpandedRows(*def, result);
         for(const auto& issue:demandAdvisories(document.network,*document.definition))
             result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // Inputs naming a routing decision (M2.4) name no route of their own until expanded.

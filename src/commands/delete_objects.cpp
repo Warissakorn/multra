@@ -1,6 +1,7 @@
 #include "network_commands.hpp"
 #include "detail.hpp"
 #include "connector_commands.hpp"
+#include "zone_commands.hpp"
 #include <algorithm>
 #include <stdexcept>
 
@@ -12,16 +13,25 @@ bool isLink(const ProjectDocument& d, const std::string& id) {
 bool isConnector(const ProjectDocument& d, const std::string& id) {
     return std::any_of(d.network.connectors.begin(), d.network.connectors.end(), [&](const auto& c) { return c.id == id; });
 }
+bool isZone(const ProjectDocument& d, const std::string& id) {
+    return std::any_of(d.network.zones.begin(), d.network.zones.end(), [&](const auto& z) { return z.id == id; });
+}
+bool isZoneConnector(const ProjectDocument& d, const std::string& id) {
+    return std::any_of(d.network.zoneConnectors.begin(), d.network.zoneConnectors.end(), [&](const auto& c) { return c.id == id; });
+}
 }
 void deleteObjects(ProjectDocument& d, const std::vector<std::string>& ids) {
     // Reject the whole selection before touching anything, so the reported code names the object
     // the user actually chose rather than whatever a partial cascade left behind.
     for (const auto& id : ids)
-        if (!isLink(d, id) && !isConnector(d, id) && std::none_of(d.network.signalHeads.begin(),d.network.signalHeads.end(),[&](const auto& h){return h.id==id;})) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
+        if (!isLink(d, id) && !isConnector(d, id) && !isZone(d, id) && !isZoneConnector(d, id) && std::none_of(d.network.signalHeads.begin(),d.network.signalHeads.end(),[&](const auto& h){return h.id==id;})) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
     // Links first: deleting one already removes its own connectors, so a connector named in the
     // same selection can legitimately be gone by the time its turn comes.
     for (const auto& id : ids) if (isLink(d, id)) deleteLink(d, id);
     for (const auto& id : ids) if (isConnector(d, id)) deleteConnector(d, id);
+    // M8.2: a Link's or a zone's cascade may already have taken a zone connector.
+    for (const auto& id : ids) if (isZone(d, id)) deleteZone(d, id);
+    for (const auto& id : ids) if (isZoneConnector(d, id)) deleteZoneConnector(d, id);
     std::erase_if(d.network.signalHeads,[&](const auto& h){return std::find(ids.begin(),ids.end(),h.id)!=ids.end();});
     detail::pruneQueueCounters(d);
 }

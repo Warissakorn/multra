@@ -8,6 +8,42 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — M8.2 zones, zone connectors and OD matrices, schema 29 (D150)
+
+The session began with a continuity check after the usage limit had cut the last one short: the
+branch was clean and in sync at `b57317f`, with both M8.1 commits pushed and nothing half-done.
+
+Then M8.2, rows first ([ZONES_AND_OD](reference/ZONES_AND_OD.md) ZO1–ZO4). `tests/zones_tests.cpp`
+(group `zones`) was written and seen failing in all five cases before the code went in.
+- **Objects and codec.** `Zone` and `ZoneConnector` live in the network and `OdMatrix` in the
+  definition. `src/project/zones_od.cpp` holds the schema 29 reader and writer: each key only when
+  non-empty, a share only when not 1, and the matrix's own key whitelist.
+  `rejectZonesAndOdBefore29` runs in `parseDocument` and in the CLI's M0 loader, and the reader's
+  upper bound is now 29. The "future schema" checks of seven older test files move from 29 to 30.
+- **Checks.** `zoneIssues` (`model/network/zones.cpp`) checks ids against every other network id;
+  `odMatrixIssues` in `validateDocument` (shape, cells, period on the grid and within the duration,
+  same-class overlap, one class, the `od:` reservation read from the content). Shortening the
+  duration or changing the step under a matrix is refused like an input.
+- **Run.** A matrix with trips counts as demand (`onlyRunSettings`, the `EDIT_NO_INPUTS` row) and
+  is refused with `OD_NOT_EXPANDED` ahead of `EDIT_NO_INPUTS`, in `compileDocument` and as a named,
+  unselectable row in both diagnostics lists. A matrix of zero cells is no demand. M8.3 removes the
+  code.
+- **Commands.** `put`/`delete` for the three kinds, each one Undo step, with ids `zone-N`, `zc-N`
+  and `od-N`. Deleting a Link takes its connectors with it. Deleting a zone takes its connectors
+  too, but is refused while a matrix names it. Reverse is refused on a Link a connector names.
+  Split keeps an origin on the first piece and moves a destination to the last. The canvas Delete
+  takes zones and connectors. The catalog refuses to delete a type or composition a matrix names,
+  through two project-level helpers the dialog now calls.
+- **Deferred, written in the contract:** `selectableFor` waits for M8.6, when the canvas first draws
+  a zone; the lot half of `EDIT_REFERENCED_ZONE` waits for M8.4.
+
+ZO5 (no matrix, no change) was checked against the build of `b57317f`. The CLI's single-run, `--seeds 42,43` and `--compare`
+output for the four shipped projects is byte-identical (CSV whole; text apart from the
+`buildCommit` value, `-dirty` on the uncommitted tree). The reference fixtures pass, and ctest is
+118/118. Linux only (GCC 13.3, Qt 6.4.2, offscreen); Windows waits for `native.yml`.
+
+---
+
 ## 2026-10-10 — M8.1 contracts: zones, OD matrices and parking lots (D150)
 
 The owner chose M8 after M5.8 merged. M8.1 is docs only: two contracts with failure-first rows,
@@ -437,27 +473,6 @@ the §6 bounds (type clamp, then D105) as one pure function. `Leader` gains `acc
 and one ULP away; five seeded boundary mutations each fail it. Why a pure, unwired function
 first and why the bounds live inside it: D135. Headless 66/66, CLI seed 42 byte-identical;
 Linux only. See [evidence](evidence/w74-pure-function.md).
-
----
-
-## 2026-10-09 — M5.5 LOS letters from section delay (D134)
-
-Section delay now gets a letter, and only section delay. The owner chose an author-set control
-type (`signalised`/`unsignalised`, schema 24) over a derived guess, and approaches grouped by
-start Link. Bounds are content: `data/los/hcm.json` (HCM 6th edition, A–E upper bounds; equal
-takes the better letter), read only when some section has a type so other projects' manifests
-stay unchanged. `src/eval/los.*` is pure (`losLetter`, vehicle-weighted `losGroups`);
-`src/project/los_output.*` loads the pack strictly and writes the shared JSON `los` object and
-the CSV block under the line `# LOS (pack hcm) from simulated section delay, not HCM control
-delay; not validated (M6)`. Section blocks gain `controlType,los`. Batches letter the mean over
-seeds. HCM's v/c > 1 rule is not applied (no v/c is simulated); unfinished trips stay visible.
-The editor's section dialog sets the type in the same History step as the name. W74 → schema 25.
-Contract and rows L1–L7 ([LOS](reference/LOS.md)) came first. Evidence: group `los` (6 cases —
-every bound on both sides for both types; a stricter pack turns D into F on the same measured
-delay; eight malformed packs refused; weighting by hand) and `section-ui`. Linux GCC 13.3:
-headless 71/71, desktop 103/103 offscreen. A 10-seed four-leg batch with three signalised
-sections: west through 48.3 s D, north left 57.6 s E, east through 43.0 s D; the intersection
-row 46.4 s D equals the hand-weighted mean. Windows evidence is CI's.
 
 ---
 
