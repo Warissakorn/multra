@@ -12,8 +12,11 @@ validated** (rule 4); LOS waits for travel-time sections ([M5_PLAN](../plans/M5_
   to `totalTicks`), so a one-seed batch's `MovementReport` equals `--project`'s exactly.
 - `LIST` is `42-51`, `1,5,9` or a mix, in the order written; at most 1000 seeds. A reversed
   range, an empty item or a repeated seed is refused before anything runs.
-- Seeds run one after another. Cancelling (through the `progress` callback) returns no runs, so
-  nothing can claim N runs it did not finish.
+- Seeds run in parallel (D152): `runSeedsParallel` in `src/project/parallel_seeds.*` runs up to one
+  seed per hardware thread (`--threads N` caps it; 1 is the runner's sequential `runSeeds`). Each
+  seed is one single-threaded run written to its own slot, so every output is byte-identical for
+  every N. `progress` is called on the calling thread, once per finished seed. Cancelling (through
+  the `progress` callback) returns no runs, so nothing can claim N runs it did not finish.
 - Per seed: `generated` (vehicles the inputs created, `nextVehicleId − 1`) =
   `completed + active + pending`, checked by test.
 

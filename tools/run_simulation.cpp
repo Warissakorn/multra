@@ -5,6 +5,7 @@
 #include "../src/project/evaluation.hpp"
 #include "../src/project/json.hpp"
 #include "../src/project/batch_output.hpp"
+#include "../src/project/parallel_seeds.hpp"
 #include "../src/project/comparison_output.hpp"
 #include "build_info.hpp"
 #include <nlohmann/json.hpp>
@@ -97,11 +98,12 @@ void warnOverloaded(const BatchReport& report, const std::string& side) {
     std::cerr << "TrafficSim: warning: " << (side.empty() ? "" : side + ": ") << report.overloadedSeeds.size()
               << " overloaded seed(s) are included in the means; see " << (side.empty() ? "" : side + ".") << "overloadedSeeds\n";
 }
-std::vector<SeedRun> runAll(const Prepared& p, const std::vector<std::uint32_t>& seeds, const std::string& label) {
-    return runSeeds(p.snapshot.scenario, p.spec, seeds, [&](std::size_t done) {
+std::vector<SeedRun> runAll(const Prepared& p, const std::vector<std::uint32_t>& seeds, const std::string& label,
+                            unsigned threads) {
+    return runSeedsParallel(p.snapshot.scenario, p.spec, seeds, [&](std::size_t done) {
         std::cerr << label << "seed " << done << "/" << seeds.size() << '\n';
         return true;
-    });
+    }, threads);
 }
 void writeCsv(const std::filesystem::path& csvFile, const std::string& text) {
     if (csvFile.empty()) return;
@@ -115,8 +117,8 @@ void stamp(Json& result) {
     result["compiler"] = TRAFFICSIM_COMPILER;
 }
 int runBatch(const std::filesystem::path& file, const std::filesystem::path& csvFile,
-             const std::filesystem::path& data, const std::vector<std::uint32_t>& seeds) {
-    const auto runs = runAll(prepare(file, data, csvFile), seeds, "");
+             const std::filesystem::path& data, const std::vector<std::uint32_t>& seeds, unsigned threads) {
+    const auto runs = runAll(prepare(file, data, csvFile), seeds, "", threads);
     const auto report = aggregate(runs);
     writeCsv(csvFile, batchCsv(report, runs));
     auto result = batchJson(report, runs);
@@ -128,11 +130,11 @@ int runBatch(const std::filesystem::path& file, const std::filesystem::path& csv
 // --compare (M5.8a, BATCH §7): both projects compiled and their windows checked before any run.
 int runComparison(const std::filesystem::path& baseFile, const std::filesystem::path& alternativeFile,
                   const std::filesystem::path& csvFile, const std::filesystem::path& data,
-                  const std::vector<std::uint32_t>& seeds) {
+                  const std::vector<std::uint32_t>& seeds, unsigned threads) {
     const auto base = prepare(baseFile, data, csvFile), alternative = prepare(alternativeFile, data, csvFile);
     requireSameEvaluationPeriod(base.spec, base.snapshot.scenario.duration, alternative.spec, alternative.snapshot.scenario.duration);
-    ComparedBatch b{baseFile.filename().string(), {}, runAll(base, seeds, "base ")};
-    ComparedBatch a{alternativeFile.filename().string(), {}, runAll(alternative, seeds, "alternative ")};
+    ComparedBatch b{baseFile.filename().string(), {}, runAll(base, seeds, "base ", threads)};
+    ComparedBatch a{alternativeFile.filename().string(), {}, runAll(alternative, seeds, "alternative ", threads)};
     b.report = aggregate(b.runs);
     a.report = aggregate(a.runs);
     const auto comparison = compareBatches(b.report, a.report);
@@ -153,6 +155,7 @@ int main(int argc, char** argv) {
         bool arrivalPhases = false, waitCauses = false;
         DischargeOptions discharge;
         double binWidth = 10;
+        unsigned threads = 0; // --threads: 0 is one per hardware thread (D152)
         std::optional<std::vector<std::uint32_t>> seeds;
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -169,6 +172,8 @@ int main(int argc, char** argv) {
                              "  Seeds with over 5% of generated vehicles still pending are flagged, not dropped.\n"
                              "--compare FILE (with --project and --seeds) runs FILE as the alternative over the same seeds\n"
                              "  and reports alternative minus base per movement, section and approach, Welch 95% CI (M5.8).\n"
+                             "--threads N (with --seeds) runs at most N seeds at once; default one per hardware thread.\n"
+                             "  Results are identical for every N (D152).\n"
                              "--lane-changes adds where lane changes happen and dead-end waits (M3.2.8c).\n"
                              "--segment-times adds each movement's mean time to every segment (M3.2.8c).\n"
                              "--stop-lines adds each signal head's stop-line discharge (M3.2.8c).\n"
@@ -188,7 +193,8 @@ int main(int argc, char** argv) {
             if (arg == "--arrival-phases") { arrivalPhases = true; continue; }
             if (arg == "--wait-causes") { waitCauses = true; continue; }
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
-                arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare") {
+                arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
+                arg == "--threads") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -201,6 +207,13 @@ int main(int argc, char** argv) {
                 else if (arg == "--project") projectFile = argv[i];
                 else if (arg == "--csv") csvFile = argv[i];
                 else if (arg == "--compare") compareFile = argv[i];
+                else if (arg == "--threads") {
+                    if (threads) throw std::invalid_argument("Specify --threads only once");
+                    const std::string value = argv[i];
+                    if (value.empty() || value.size() > 4 || value.find_first_not_of("0123456789") != std::string::npos ||
+                        (threads = static_cast<unsigned>(std::stoul(value))) == 0)
+                        throw std::invalid_argument("--threads needs a whole number from 1 to 9999");
+                }
                 else if (arg == "--phase-bin") {
                     std::size_t used = 0;
                     binWidth = std::stod(argv[i], &used);
@@ -223,6 +236,7 @@ int main(int argc, char** argv) {
         if (binWidth != 10 && !arrivalPhases) throw std::invalid_argument("--phase-bin needs --arrival-phases");
         if (!compareFile.empty() && (projectFile.empty() || !seeds))
             throw std::invalid_argument("--compare needs --project and --seeds");
+        if (threads && !seeds) throw std::invalid_argument("--threads needs --seeds");
         if (seeds) {
             if (projectFile.empty()) throw std::invalid_argument("--seeds needs --project");
             if (seedSet) throw std::invalid_argument("--seeds cannot be combined with a single seed");
@@ -232,8 +246,8 @@ int main(int argc, char** argv) {
         if (!projectFile.empty()) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
-            if (!compareFile.empty()) return runComparison(projectFile, compareFile, csvFile, data, *seeds);
-            if (seeds) return runBatch(projectFile, csvFile, data, *seeds);
+            if (!compareFile.empty()) return runComparison(projectFile, compareFile, csvFile, data, *seeds, threads);
+            if (seeds) return runBatch(projectFile, csvFile, data, *seeds, threads);
             return runProject(projectFile, csvFile, data, seed, laneChanges, segmentTimes, stopLines, arrivalPhases ? binWidth : 0, waitCauses, discharge);
         }
         if (scenarioFile.empty()) scenarioFile = data / "scenarios" / "crossing.json";

@@ -73,8 +73,11 @@ add_library(trafficsim_runner STATIC src/runner/batch.cpp src/runner/compare.cpp
 target_link_libraries(trafficsim_runner PUBLIC trafficsim_eval PRIVATE trafficsim_options)
 add_library(trafficsim_project STATIC src/project/load.cpp src/project/parse.cpp src/project/output.cpp
     src/project/document.cpp src/project/signal_migration.cpp src/project/definition.cpp src/project/run.cpp src/project/display.cpp src/project/diagnostics.cpp
-    src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/los_output.cpp src/project/counted_volumes.cpp src/project/map_codec.cpp src/project/route_destination.cpp)
-target_link_libraries(trafficsim_project PUBLIC trafficsim_model trafficsim_eval trafficsim_runner
+    src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/los_output.cpp src/project/counted_volumes.cpp src/project/map_codec.cpp src/project/route_destination.cpp
+    src/project/parallel_seeds.cpp)
+# D152: the seed scheduler's worker threads live here; runner stays thread-free (check_architecture).
+find_package(Threads REQUIRED)
+target_link_libraries(trafficsim_project PUBLIC trafficsim_model trafficsim_eval trafficsim_runner Threads::Threads
     nlohmann_json::nlohmann_json PRIVATE trafficsim_options)
 
 # nlohmann/json is a large header-only template library: 1.47 s to parse and instantiate here,

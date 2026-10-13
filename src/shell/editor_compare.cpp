@@ -3,6 +3,7 @@
 #include "editor_batch_cells.hpp"
 #include "editor_storage.hpp"
 #include "../project/batch_output.hpp"
+#include "../project/parallel_seeds.hpp"
 #include "../project/load.hpp"
 #include <QAction>
 #include <QFileDialog>
@@ -142,9 +143,9 @@ void EditorWindow::compareWithFile(const QString& file) {
         baseScenario=std::move(base->scenario),baseSpec=std::move(*baseSpec),
         alternativeScenario=std::move(alternative->scenario),alternativeSpec=std::move(*alternativeSpec)](const auto& progress)
         -> std::function<void()> {
-        auto baseRuns=runSeeds(baseScenario,baseSpec,seeds,progress);
+        auto baseRuns=runSeedsParallel(baseScenario,baseSpec,seeds,progress);
         if(baseRuns.empty()) return {}; // cancelled
-        auto alternativeRuns=runSeeds(alternativeScenario,alternativeSpec,seeds,
+        auto alternativeRuns=runSeedsParallel(alternativeScenario,alternativeSpec,seeds,
             [&](std::size_t done){ return progress(seeds.size()+done); });
         if(alternativeRuns.empty()) return {};
         auto result=std::make_shared<ComparisonResult>();
