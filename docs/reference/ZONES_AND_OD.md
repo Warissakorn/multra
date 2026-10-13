@@ -44,11 +44,12 @@ matrix states expected trips, not counts.
   file with any of them is schema 29: 29 heads the schema ternary in `documentJson`
   (`document.cpp`), and the reader's upper bound becomes 29.
 - **Refused on load** (the open document is kept):
-  - below schema 29, including an M0 file (version 0): any of the three keys, by a raw-JSON
-    `rejectZonesAndOdBefore29`, as `rejectCooldownBefore27` does (`EDIT_UNSUPPORTED_FIELD` with the
-    key's path);
-  - at 29: any other key in these objects (`knownFields`, `parse.cpp`), as for every network
-    object.
+  - below schema 29: any of the three keys, by a raw-JSON `rejectZonesAndOdBefore29`, as
+    `rejectCooldownBefore27` does (`EDIT_UNSUPPORTED_FIELD` with the key's path). It is called by
+    `parseDocument` and by the CLI's M0 loader (`loadScenario`), so an M0 file carrying a key is
+    refused there too, never silently run without its demand;
+  - at 29: any other key in a zone or connector (`knownFields`, `parse.cpp`), and in a matrix by the
+    matrix parser's own whitelist (`EDIT_UNSUPPORTED_FIELD definition.odMatrices[i].<key>`).
 
 ### Structural rules
 
@@ -70,12 +71,12 @@ document is unchanged. Paths name the authored object (`zones[i]`, `zoneConnecto
 | `OD_PERIOD_INVALID` | not `0 ≤ startTime < endTime ≤ duration`, or a bound off the time grid. Shortening the duration below a matrix's end is refused with this code, as an input's interval is |
 | `OD_PERIOD_OVERLAP` | two matrices of the same class overlap in time (they would add silently) |
 | `OD_DEMAND_CLASS` | not exactly one of `vehicleTypeId` and `compositionId`, or the one given is blank |
-| `INVALID_ID` (route, input) | in a schema-29 file, an authored route or input id starting with `od:`, the prefix §3 reserves. Older files cannot carry a matrix, so their ids are never refused |
+| `INVALID_ID` (route, input) | while the document holds any zone, zone connector or matrix, an authored route or input id starting with `od:`, the prefix §3 reserves. The rule reads the content, not the file's schema (a document has none): adding the first zone to a document with such an id is refused on that `routes[i]` or `inputs[i]`, and a document without zones is never refused |
 
-Whether the named type or composition exists is checked on Run, with the existing
-`UNKNOWN_VEHICLE_TYPE` and `UNKNOWN_COMPOSITION` on the matrix's path; `compositionIssues` and the
-catalog's "used" rule (`resolveCatalogs`) count a matrix that names a composition, and deleting a
-type or composition that a matrix names is refused like one an input names.
+Whether the named type or composition exists is a Run check (§2, `OD_UNKNOWN_CLASS`), never an
+edit refusal. The catalog's "used" rule (`resolveCatalogs`) counts a matrix that names a
+composition, and deleting a type or composition that a matrix names is refused like one an input
+names.
 
 ## 2. Demand and the Run checks
 
@@ -87,10 +88,17 @@ type or composition that a matrix names is refused like one an input names.
   authored path. `compileDocument` refuses on it before expanding; `runDiagnostics` and
   `documentDiagnostics` list it as runtime rows; `validateNetwork` and `validateAuthoredDemand`
   never emit it, so authoring tolerates an incomplete demand as it tolerates an unconnected
-  route (D18b). No Problems row ever names a generated `inputs[N]` or `routes[N]`.
+  route (D18b).
+- **No Problems row names a generated object.** A row carries the matrix id as its object (named,
+  not selectable) or a zone or connector id, which selects through `objectIdForPath` and
+  `selectableFor`. The expansion (§3) emits nothing for a cell or connector pair that a row below
+  names, so no later check meets a broken generated input. The catalog checks (`ownedCatalogIssues`,
+  `compositionIssues`, `timeTypeIssues`) run on the authored definition before expansion. Any other
+  core issue on a generated route or input is reported on the matrix cell its id names.
 
 | Code | Run refuses when | Path |
 |---|---|---|
+| `OD_UNKNOWN_CLASS` | the matrix's vehicle type or composition is not in the catalog the project uses | `odMatrices[i].vehicleTypeId` or `.compositionId` |
 | `OD_ORIGIN_LINK_INTERNAL` | an origin connector's Link has an incoming Connector: an engine source must start on a segment with no predecessor (`UNSUPPORTED_INTERNAL_INPUT`, `core/validate.cpp`) | `zoneConnectors[i]` |
 | `OD_INTRAZONAL_TRIPS` | a diagonal cell is above 0: such trips use no road in Micro and would otherwise vanish | `odMatrices[i].trips[o][o]` |
 | `OD_ZONE_NO_CONNECTOR` | a row (column) with a positive cell belongs to a zone with no origin (destination) connector | `odMatrices[i].zones[o]` |
@@ -105,9 +113,10 @@ expanded into **ordinary authored Routes and VehicleInputs**, appended after the
 every authored `routes[i]` and `inputs[i]` path still names the same object. It runs **first** in
 all four callers: `compileDocument`, `runDiagnostics`, `documentDiagnostics` and
 `validateAuthoredDemand`. So it runs before `EDIT_NO_INPUTS`, `compositionIssues`,
-`resolveCatalogs` (compositions, then routing decisions) and `expandRouteless`, and the authoring
-checks, the Problems tab, the demand preview and Run see the same inputs. The cool-down is still
-added last (`run.cpp`).
+`resolveCatalogs` (routing decisions and compositions, in its existing order) and
+`expandRouteless`, and the authoring checks, the Problems tab, the demand preview and Run see the
+same inputs. The §1 structural checks run before it, on the authored definition; the cool-down is
+still added last (`run.cpp`).
 
 **Volume.** For matrix `m`, origin zone `o`, destination zone `d`, an origin connector `c` of `o` and
 a destination connector `k` of `d`:
@@ -117,48 +126,59 @@ vph(c, k) = trips[o][d] · 3600 / (endTime − startTime) · share(c) / Σ share
                                                         · share(k) / Σ share(destination connectors of d)
 ```
 
-Each `(m, o, d, c, k)` with `vph > 0` becomes one input on `c`'s Link over `[startTime, endTime)`
-with the matrix's class. A zero cell or a pair that rounds to no flow emits nothing; there is no
-minimum.
+Each `(m, o, d, c, k)` with `vph > 0` is spread over its chains (below) as inputs on `c`'s Link
+over `[startTime, endTime)` with the matrix's class. A zero cell or zero share emits nothing; there
+is no minimum.
 
 **Path: fewest objects (D150).** Until M9 assigns paths by cost, a trip takes the chain through the
 fewest Links and Connectors, the rule a placed routing decision already uses to reach its
 destination:
 
 1. When `c` and `k` are on the same Link, the chain is that Link alone.
-2. Otherwise the chains are `routeShortestChains(network, table, c.link, k.link)`
-   (`model/network/routing.cpp`), breadth first, kept only when `routeLaneChains` gives at least
-   one single-lane chain. A level whose chains are all undrivable is the answer: the search does
-   not fall back to a longer level, so that pair is `OD_PAIR_UNREACHABLE`, as it is for a placed
-   decision.
-3. **Limits.** The search stops at 20 objects deep or 4 096 partial chains on one level. Stopping
-   at a limit is `OD_PATH_SEARCH_LIMIT`, never `OD_PAIR_UNREACHABLE`, so the author can tell a
-   network too large for the rule from a disconnected one.
-4. **Lanes.** Each lane of `c`'s Link takes the first of the equally short chains (in the search's
-   order) that it can drive in full; a lane that can drive none takes the first chain it can reach
-   as a stub and changes lanes there, by the M3.2.8b rules
-   ([M3_8_CONTRACT](M3_8_CONTRACT.md) §2). A lane with neither carries none of the pair's flow. The
-   input splits **equally over the lanes that carry it**, not over all the Link's lanes.
+2. Otherwise the chains come from `routeShortestChainsBounded(network, table, c.link, k.link)`, a
+   variant of `routeShortestChains` (`model/network/routing.cpp`) that returns
+   `{chains, stoppedAtLimit}`. The existing function and the placed decisions that call it are
+   unchanged. The search is breadth first, and a chain is kept only when `routeLaneChains` gives
+   at least one single-lane chain for it. A level whose chains are all undrivable is the answer:
+   the search does not fall back to a longer level, so that pair is `OD_PAIR_UNREACHABLE`, as it
+   is for a placed decision.
+3. **Limits.** The search takes at most 20 steps after `c`'s Link (chains of up to 21 objects;
+   Link-to-Link chains have an odd count, since Links join only through Connectors) and at most
+   4 096 partial chains on one level. `stoppedAtLimit` is true when it ends at either bound with
+   the target unfound: that is `OD_PATH_SEARCH_LIMIT`, never `OD_PAIR_UNREACHABLE`, so the author
+   can tell a network too large for the rule from a disconnected one.
+4. **Lanes and chains.** Each lane of `c`'s Link is assigned to the first equally short chain (in
+   the search's order) that it can drive in full. A lane that can drive none is assigned to the
+   first chain it can reach as a stub, and changes lanes there by the M3.2.8b rules
+   ([M3_8_CONTRACT](M3_8_CONTRACT.md) §2): `routeLaneFamily` on that chain already makes it a stub
+   member. A lane with neither carries none of the pair's flow. The pair's flow splits **equally
+   over the lanes that carry it**, not over all the Link's lanes. Chain `j` therefore gets
+   `vph(c, k) · lanes(j) / carryingLanes`, and only chains that some lane uses are generated.
 5. The route ends at the end of `k`'s Link, where the vehicle arrives. Nothing walks on past it.
 6. **No decision acts on an OD trip.** Static, placed and positioned routing decisions and their
    type rules apply to authored inputs only; an OD vehicle passing a positioned decision keeps its
    route.
 
 **Ids and order (part of the random-number contract).**
-- One generated Route per `(c.link, k.link)` pair, shared by every matrix and cell that uses it:
-  `od:route/<cLink>><kLink>`.
-- One input per `(m, o, d, c, k)`: `od:<matrix>/<origin zone>><destination zone>/<c>><k>`. The
-  §1 id rules make both injective.
+- One generated Route per used chain of a connector pair, shared by every matrix and cell that uses
+  that pair: `od:route/<c>><k>/path-<j>`. It is keyed by **connector** ids, which §1 restricts;
+  Link ids may contain `>` and would not give unique ids.
+- One input per `(m, o, d, c, k)` and used chain `j`: `od:<matrix>/<origin zone>><destination
+  zone>/<c>><k>/path-<j>`. Its `laneShares` are 1 on the lanes assigned to chain `j` and 0 on the
+  others (`laneSplit` accepts 0), so each lane carries exactly the chain step 4 gave it. The §1 id
+  rules make both ids injective.
 - Order: matrices in file order, then origin by `zones` index, then destination by `zones` index,
-  then origin connectors, then destination connectors, each in network order.
+  then origin connectors, then destination connectors, each in network order, then chains in the
+  search's order.
 - Every input draws its arrivals from the run's one random stream in canonical id order
   ([SIMULATION](SIMULATION.md#determinism-snapshots-and-events)). A file **with** a matrix may
   therefore draw differently from the same demand authored as inputs. A file without one draws
   exactly as before (DEMAND_TIME_TYPES's precedent).
 
 **Cost.** Chains are resolved through one `ConnectorPathTable` and one memo per expansion, keyed by
-`(c.link, k.link)`, as `DestinationChainMemo` does for routeless destinations (D140). Validation
-on every edit then walks each distinct pair once.
+`(c.link, k.link)` and holding the chains with their `stoppedAtLimit` flag, as
+`DestinationChainMemo` does for routeless destinations (D140). Validation on every edit then walks
+each distinct pair once.
 
 **What the expansion feeds.** The generated inputs are ordinary inputs, so the rest of the
 pipeline applies unchanged:
@@ -189,8 +209,9 @@ pipeline applies unchanged:
   - `allocateId`'s used-id set;
   - the network-wide id set in each issue function;
   - the Link cascades above;
-  - `objectIdForPath` (zones, connectors) and `definitionId` (matrices), so a Problems row selects
-    its object;
+  - `objectIdForPath` and `selectableFor` (zones, connectors), so a Problems row selects its object.
+    A matrix row carries the matrix id as its object, named but not selectable on the canvas
+    (`definitionId` maps only routes, inputs, types, behaviours and programs);
   - `deleteObjects` (the canvas Delete);
   - a locale entry in `en.json` and `th.json` for every code above.
 - **Editor (M8.6).**
@@ -214,17 +235,22 @@ pipeline applies unchanged:
 
 ## 6. Acceptance rows
 
-| Row | Check | Test |
-|---|---|---|
-| ZO1 | Schema-29 round trip of all three keys; a file without them keeps its schema and bytes after a save through the new codec; each key below 29 (including version 0) and any unknown key in the objects is refused with its path | `zones` |
-| ZO2 | Every structural code of §1, one case each, including an id containing `>`, an id clash with a travel-time section, overlapping same-class periods, and an authored `od:` route id in a schema-29 file (accepted in a schema-28 file) | `zones` |
-| ZO3 | Every Run code of §2 on its authored path; no Problems row names a generated input or route; authoring accepts each case | `zones` |
-| ZO4 | A project whose only demand is one matrix compiles and runs; a matrix of zero cells counts as no demand | `zones` |
-| ZO5 | Hand-computed expansion: two origin and two destination connectors with unequal shares give the four `vph` values, ids and order of §3; a zero cell emits no input | `zones` |
-| ZO6 | `c` and `k` on one Link give a one-Link route; two equally short chains with one lane able to drive only the second split as §3 step 4; an undrivable shortest level is `OD_PAIR_UNREACHABLE` even though a longer drivable chain exists | `zones` |
-| ZO7 | A pair 21 objects apart is `OD_PATH_SEARCH_LIMIT`, not unreachable | `zones` |
-| ZO8 | A composition-class matrix expands to `…/type-<type>` inputs; a positioned decision on an OD vehicle's Link does not change its route | `zones` |
-| ZO9 | Byte-identical without matrices: the four reference fixtures (events, checkpoints, summary, trajectory digest), and single-run, `--seeds` and `--compare` JSON and CSV for the four shipped projects, before and after M8.2 and M8.3 | `zones`, session `cmp` |
-| ZO10 | Commands and cascades of §4, each one Undo step: Link delete, zone delete with connectors, zone named by a matrix refused, reverse refused, split moves the destination connector | `zones` |
-| ZO11 | Same project and seed ⇒ same bytes with matrices; the expansion runs once per distinct `(c.link, k.link)` (memo) | `zones` |
-| ZO12 | Editor (M8.6): the Z tool draws a zone and adds both connector kinds; the OD table edits a cell through History; every new code and UI string exists in `en.json` and `th.json` | `zones-ui`, `project` |
+Each row first asserts that its forcing worked, then the consequence. The groups `zones` and
+`parking` join `TRAFFICSIM_TEST_GROUPS` (`CMakeLists.txt`); `zones-ui` and `parking-ui` are new Qt
+executables in `src/shell/CMakeLists.txt`. Slice: when the row must pass.
+
+| Row | Slice | Check | Test |
+|---|---|---|---|
+| ZO1 | M8.2 | Schema-29 round trip of all three keys; an omitted share reads as 1 and is not written; a file without the keys keeps its schema and bytes after a save through the new codec; each key below 29 and any unknown key in the objects is refused with its path, through `parseDocument` and through the CLI's M0 loader | `zones` |
+| ZO2 | M8.2 | Every structural code of §1, one case each, including: an id containing `>`; an id clash with a travel-time section; overlapping same-class periods; shortening the duration below a matrix's end, and changing the time step so a matrix bound falls off the grid, each refused with `OD_PERIOD_INVALID`; an authored `od:` route accepted with no zone, then adding the first zone refused on that route's path | `zones` |
+| ZO3 | M8.2 | M8.2 behaviour: a matrix with a positive cell is refused on Run with `OD_NOT_EXPANDED` on `odMatrices[i]`, also in a project with no other input (asserted ahead of `EDIT_NO_INPUTS`); authoring accepts it. M8.3 deletes this case, the code and its locale entries | `zones` |
+| ZO4 | M8.2 | Commands and cascades of §4, each one Undo step: Link delete removes its connectors; zone delete removes its connectors; a zone named by a matrix, or by a lot, is refused; reverse refused; split keeps an origin connector on the first piece and moves a destination connector to the last; copy, duplicate and opposite carry no connector; deleting a type or composition that a matrix names is refused | `zones` |
+| ZO5 | M8.2, M8.3 | Byte-identical without matrices: the four reference fixtures (events, checkpoints, summary, trajectory digest), and single-run, `--seeds` and `--compare` CSV and JSON for the four shipped projects, before and after each slice (JSON equal apart from the `buildCommit` value) | `zones`, session `cmp` |
+| ZO6 | M8.3 | Every Run code of §2 on its authored path, including `OD_UNKNOWN_CLASS` as a Run row and not an edit refusal; the expansion emits nothing for a named tuple, and no Problems row names a generated input or route; authoring accepts each case | `zones` |
+| ZO7 | M8.3 | A project whose only demand is one matrix compiles and runs; a matrix of zero cells counts as no demand | `zones` |
+| ZO8 | M8.3 | Hand-computed expansion: two origin and two destination connectors with unequal shares give the four `vph` values, ids and order of §3; a zero cell emits no input | `zones` |
+| ZO9 | M8.3 | `c` and `k` on one Link give a one-Link route. Two equally short chains with one lane able to drive only the second: two routes `…/path-0` and `…/path-1`, inputs with the `laneShares` and `vph` of §3 step 4. An undrivable shortest level is `OD_PAIR_UNREACHABLE` even though a longer drivable chain exists | `zones` |
+| ZO10 | M8.3 | Search limits: a pair 20 steps apart resolves; the same layout 22 steps apart is `OD_PATH_SEARCH_LIMIT`; a level of more than 4 096 partial chains is `OD_PATH_SEARCH_LIMIT`; a disconnected control is `OD_PAIR_UNREACHABLE` | `zones` |
+| ZO11 | M8.3 | A composition-class matrix expands to `…/type-<type>` inputs; a positioned decision on an OD vehicle's Link does not change its route; two matrices sharing a connector pair produce one set of generated routes | `zones` |
+| ZO12 | M8.3 | Same project and seed ⇒ same bytes with matrices | `zones` |
+| ZO13 | M8.6 | The Z tool draws a zone and adds both connector kinds; the OD table edits a cell through History; every new code and UI string exists in `en.json` and `th.json` (one test lists them all) | `zones-ui`, `project` |

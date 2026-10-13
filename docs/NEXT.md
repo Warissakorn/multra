@@ -45,15 +45,15 @@ answer are the owner's). Motorcycles wait for M5.7 (R3; the question is in
 **Multi-level modelling (D145) — M8 in progress.** The owner chose M8 next (2026-10-10). **M8.1,
 the contracts, delivered 2026-10-10 (D150), docs only:**
 - [ZONES_AND_OD](reference/ZONES_AND_OD.md): zones, zone connectors at Link ends, OD matrices,
-  schema 29, expansion by fewest-object chains; rows ZO1–ZO12.
+  schema 29, expansion by fewest-object chains; rows ZO1–ZO13, each marked with its slice.
 - [PARKING_LOTS](reference/PARKING_LOTS.md): lots as zones with capacity, a gate hold, exits that
   wait for a parked vehicle, no dwell and no random draw, schema 30; rows PL1–PL11.
 
 **Next session: M8.2**, schema 29 codec and commands for Zone, ZoneConnector and OdMatrix
-(ZONES_AND_OD §1, §4; rows ZO1, ZO2, ZO9 and ZO10 first, failure-first), with no expansion: a matrix is
-stored and validated, and Run refuses it (`OD_NOT_EXPANDED`) until M8.3, so no trip is dropped. Then M8.3 (expansion, ZO3–ZO8,
-ZO11), M8.4 (lot runtime, PL1–PL8), M8.5 (outputs, PL9), M8.6 (editor, ZO12 and PL10), and PL11 as
-the M8 gate. The other open questions in the design's §8 stay with the owner's sitting; M10 and
+(ZONES_AND_OD §1, §4; the M8.2 rows ZO1–ZO5, failure-first), with no expansion: a matrix is
+stored and validated, and Run refuses it (`OD_NOT_EXPANDED`) until M8.3, so no trip is dropped.
+Then M8.3 (expansion, ZO5–ZO12), M8.4 (lot runtime, PL1–PL8), M8.5 (outputs, PL9), M8.6 (editor,
+ZO13 and PL10), and PL11 as the M8 gate. The other open questions in the design's §8 stay with the owner's sitting; M10 and
 M11 cannot start their contracts before questions 1–5 are answered. As the owner chooses instead:
 the W74 cited preset and W99 contract (below), or M3.4 (R7, §3 below).
 

@@ -43,15 +43,21 @@ access queue fit the site ([PROBLEM](../PROBLEM.md) §2), not how long people st
 A lot governs **routes and inputs, never places**, so that other traffic at the same road has a
 rule:
 
-- Its **gated routes** are the full chains the OD expansion builds into its zone, those whose
-  destination connector belongs to the lot's zone. A stub never ends at a gate; it changes lanes
-  onto a gated route first.
-- Its **unpark inputs** are the OD inputs on its zone's origin connectors.
+- Its **gated routes** are the generated routes `od:route/<c>><k>/path-<j>` whose destination
+  connector `k` belongs to the lot's zone. In the core they are every runtime route whose id is
+  one of those or starts with it followed by `/` (the lane suffix), and that is not a stub
+  (`routeDeadEnds`). A stub never ends at a gate; it changes lanes onto a gated route first.
+- Its **unpark inputs** are the generated inputs whose origin zone is the lot's zone. In the core, every
+  runtime input whose id is one of those or starts with it followed by `/` (lane, period and type
+  suffixes).
+- `compileDocument` fills the lot table after `compileScenario`, from those prefixes.
 - Authored inputs and routes, routeless paths and other zones' trips never park and never draw
   occupancy.
 
-Run refuses (`UNSUPPORTED_PARKING_ACCESS_SHARED`, on the lot's path, through `odRunIssues`) any
-layout where a lot's traffic would share an end or a source with traffic it does not govern:
+Run refuses (`UNSUPPORTED_PARKING_ACCESS_SHARED`, reported on `parkingLots[i]`) any layout where a
+lot's traffic would share an end or a source with traffic it does not govern. The check needs the
+compiled routes, so it runs after `withOdDemand` and `expandRouteless`, in `compileDocument` and in
+`runDiagnostics`:
 - a destination connector's Link with an outgoing Connector, so through traffic would queue behind
   the gate;
 - a destination connector's Link on which any other compiled route ends (authored, routeless, or
@@ -75,19 +81,22 @@ connection it cannot make; a gated vehicle has reached where it was going):
 - On a gated route the end-of-route sink (`distance ≥ routeLength`, SIMULATION Death) never fires.
   A vehicle clamped onto the gate is a safety clamp, not an arrival.
 - A vehicle **has reached the gate** when it is below `kStoppedSpeed` with its front within
-  `stopLineReach` of the route end, the test a Stop line uses. Its gate record is written on that
-  tick (`since`) and kept until it parks; it is refreshed from the post-lane-change snapshot as
-  stop service is (`refreshStops`).
-- It is **served** once `gateServiceTime` has elapsed since `since` (an exact tick, §1). A served
-  vehicle parks as soon as there is space; until then it keeps standing at the gate and the queue
-  behind it forms by ordinary following, back along the Link and upstream.
+  `stopLineReach` of the route end, the test a Stop line uses. Its gate record is written in the
+  step that first finds it there, with `since` = that step's end tick, and kept until it parks; it
+  is refreshed from the post-lane-change snapshot as stop service is (`refreshStops`).
+- In a later step starting at tick `t`, it is **served** when `(t − since) · dt ≥
+  gateServiceTime`. With space free, it therefore parks at time `(since + gateServiceTime/dt + 1) ·
+  dt`; a service time of 0 parks in the next step. A served vehicle parks as soon as there is
+  space; until then it keeps standing at the gate and the queue behind it forms by ordinary
+  following, back along the Link and upstream.
 
 **Order within one tick** (fixed, so a run is reproducible from the contract):
 1. **Insertion**, in the existing `(scheduledTime, id)` candidate order ([SIMULATION](SIMULATION.md)
    Birth):
    - For an unpark input, the **lot test comes first**: a candidate whose lot has no parked vehicle
-     is skipped *without* using up its source segment's one attempt this tick, so a candidate behind
-     it on the same segment is still tried.
+     stays in its source queue with its sampled record, as a gap-refused candidate does. (§2 leaves
+     no other input on that source segment, so the segment's one attempt per tick matters to no
+     one else.)
    - The test reads a running occupancy, lowered by each unpark inserted earlier in the same order.
    - The insertion guard (gap, D108) follows unchanged. A candidate refused there lowers nothing.
    - An inserted unpark emits `UnparkedEvent` immediately before its `DepartedEvent`.
@@ -104,9 +113,10 @@ connection it cannot make; a gated vehicle has reached where it was going):
 - `ParkedEvent` and `UnparkedEvent`, each `{time, vehicleId, routeId, lotId}`, are appended to the
   `SimEvent` variant, so every existing index is stable. Their JSON kinds are `parked` and
   `unparked`, and SIMULATION's event table gains both rows.
-- A checkpoint gains a `lots` array (id, occupancy, gate records) **only when the scenario has a
-  lot**, so every existing checkpoint and the four reference fixtures keep their bytes (the W74
-  "only when present" precedent).
+- A checkpoint gains a `lots` array (id, occupancy, gate records in vehicle-id order) **only when
+  the scenario has a lot**, so every existing checkpoint and the four reference fixtures keep their
+  bytes (the W74 "only when present" precedent). Checkpoints are written, never read, so this is
+  output, not a restore format.
 
 **Invariants**, checked by test at every tick:
 1. `0 ≤ occupancy ≤ capacity`;
@@ -131,8 +141,10 @@ departures in their source queue. Neither creates nor removes a vehicle.
 - **Gridlock through a lot is reported, not prevented**, as for any network (SIMULATION, runtime
   scope). For example, a full lot whose gate queue blocks its own exit path: nothing parks,
   nothing leaves, nothing is deleted.
-- **A cool-down cannot empty a lot.** Outbound demand ends with the duration like all demand, so a
-  lot full at the duration stays full, and its gate queue stays unfinished.
+- **A cool-down releases no new exits.** Outbound demand ends with the duration like all demand.
+  Unparks already pending at the duration still leave during the cool-down and free their spaces
+  (BATCH §5: vehicles waiting at a source still enter), but no others follow. So a lot that is full
+  at the duration, with no unpark pending, stays full, and its gate queue stays unfinished.
 
 ## 4. Outputs (M8.5)
 
@@ -162,8 +174,11 @@ departures in their source queue. Neither creates nor removes a vehicle.
 ## 5. Editor (M8.6)
 
 - **Lot tool `G`** (`P` is cycle priority): click inside a zone with no lot to create one.
-- **Defaults.** A new lot's capacity, initial occupancy and gate service time come from the data
-  pack's defaults, not literals in code.
+- **Defaults.** A new lot's capacity, initial occupancy and gate service time come from
+  `data/evaluation/parking.json` (`defaults: {capacity, initialOccupancy, gateServiceTime}`,
+  validated as §1), not literals in code. The tool rounds the service time down to the project's
+  time grid. In a document with no definition yet, the grid check waits until a definition
+  exists.
 - **Inspector:** name, capacity, initial occupancy, gate service time.
 - **Commands:** `putParkingLot` and `deleteParkingLot`, each one Undo step. A lot names its zone,
   so deleting the zone is refused while the lot exists (ZONES_AND_OD §4).
@@ -179,14 +194,14 @@ departures in their source queue. Neither creates nor removes a vehicle.
 
 | Row | Check | Test |
 |---|---|---|
-| PL1 | Schema-30 round trip; a file without lots keeps its schema and bytes; the key below 30 and any unknown lot key refused; every code of §1 one case each, including an off-grid service time and a time-step change it refuses | `parking` |
-| PL2 | Every case of `UNSUPPORTED_PARKING_ACCESS_SHARED` on the lot's path; an authored route ending on the lot's destination Link is refused, not parked | `parking` |
-| PL3 | Hand-computed, capacity 1, initial 1, service 2 s: one unpark and one arrival in the same tick; the arrival parks that tick after service; event order unparked, departed, …, arrived, parked; occupancy series exact | `parking` |
+| PL1 | Schema-30 round trip; a file without lots keeps its schema and bytes; the key below 30 (through `parseDocument` and the CLI's M0 loader) and any unknown lot key refused; every code of §1 one case each, including an off-grid service time and a time-step change it refuses | `parking` |
+| PL2 | Every case of `UNSUPPORTED_PARKING_ACCESS_SHARED` on `parkingLots[i]`, found after expansion; an authored route ending on the lot's destination Link is refused, not parked | `parking` |
+| PL3 | Hand-computed, capacity 1, initial 1, service 2 s at a 0.5 s step: one unpark and one arrival in the same tick; the arrival parks at `(since + 4 + 1) · dt`; event order unparked, departed, …, arrived, parked; occupancy series exact | `parking` |
 | PL4 | **Full lot**: first assert the lot is full and arrivals keep coming; then the gate queue grows, no vehicle is deleted, invariants 1–4 hold at every tick, and the queue spills back onto the upstream Link | `parking` |
-| PL5 | **Empty lot**: an unpark candidate waits pending; the candidate behind it on the same source segment is still inserted that tick; `waitingForParked` counts it; the seed is overloaded when it should be | `parking` |
-| PL6 | Gate service: a vehicle stopped at the gate parks exactly `gateServiceTime` after `since` when there is space; a clamp onto the gate is a safety clamp, not an arrival | `parking` |
-| PL7 | Gridlock through a lot is reported and conserves vehicles; a cool-down leaves a full lot's gate queue unfinished | `parking` |
-| PL8 | Same project and seed ⇒ same bytes; a checkpoint with lots round-trips; without lots, the four reference fixtures, checkpoints and every CLI output are byte-identical | `parking`, session `cmp` |
-| PL9 | Outputs: interval series, summaries and wait selection with and without a cool-down; JSON and CSV only with a lot; batch Estimates; `--compare` by lot name with an unmatched lot | `parking`, `cli-compare` |
-| PL10 | Editor: the G tool creates a lot from data defaults; the Lots table equals the CLI's batch; Copy and Export are the CLI's bytes; strings exist in `en.json` and `th.json` | `parking-ui` |
+| PL5 | **Empty lot**: first assert occupancy 0 with unparks due; then each stays pending with its sampled record, emits no departure and no clamp, counts in `waitingForParked`, and the seed is overloaded when pending exceeds 5 % | `parking` |
+| PL6 | Gate service: with space free, a vehicle parks exactly at `(since + gateServiceTime/dt + 1) · dt`, and with service 0 in the step after `since`; a clamp onto the gate is a safety clamp, not an arrival | `parking` |
+| PL7 | Gridlock through a lot is reported and conserves vehicles. Cool-down: first assert no unpark is pending at the duration, then a full lot's gate queue stays unfinished; a control with one pending unpark frees exactly one space in the cool-down | `parking` |
+| PL8 | Same project and seed ⇒ same bytes, including the checkpoint's `lots`; without lots, the four reference fixtures, checkpoints and every CLI output are byte-identical (JSON apart from `buildCommit`) | `parking`, session `cmp` |
+| PL9 | Outputs: interval series, summaries and wait selection with and without a cool-down; JSON and CSV only with a lot; batch Estimates; `--compare` by lot name with an unmatched lot | `parking`, `compare` |
+| PL10 | Editor: the G tool creates a lot from the data defaults, rounding an off-grid default service time down for a 0.3 s step; the Lots table equals the CLI's batch; Copy and Export are the CLI's bytes; every new code and UI string exists in `en.json` and `th.json` (one test lists them all) | `parking-ui`, `project` |
 | PL11 | **M8 gate, end to end**: a development-access fixture in `data/projects/` whose only demand is an OD matrix through a lot over capacity runs through `--seeds` and the editor's Results, shows a gate queue on the access road, and loses no vehicle | `parking`, `parking-ui` |

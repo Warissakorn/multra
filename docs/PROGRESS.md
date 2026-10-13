@@ -12,7 +12,7 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 The owner chose M8 after M5.8 merged. M8.1 is docs only: two contracts with failure-first rows,
 no code.
-- [ZONES_AND_OD](reference/ZONES_AND_OD.md) (M8.2–M8.3, rows ZO1–ZO12): zones, zone connectors at
+- [ZONES_AND_OD](reference/ZONES_AND_OD.md) (M8.2–M8.3, rows ZO1–ZO13): zones, zone connectors at
   Link ends and OD matrices in schema 29. One function, `withOdDemand`, expands a matrix into
   ordinary routes and inputs by fewest-object chains, ahead of every other demand step.
 - [PARKING_LOTS](reference/PARKING_LOTS.md) (M8.4–M8.5, rows PL1–PL11): a lot is a zone with a
@@ -35,7 +35,15 @@ gaps. Among them:
 
 The review was stopped part way to save usage: its per-finding verifiers had confirmed 16 of 17,
 so the rest were triaged by hand and spot-checked against the code. A lean three-reviewer pass
-then read the written contracts. One gap came from the M8.2 seam itself: a matrix stored before
+then read the written contracts. Its confirmed findings were fixed in a second commit:
+- one route per chain, keyed by connector ids, with lane shares choosing each lane's chain;
+- a bounded search that reports when it stopped at its limit;
+- failing OD tuples left out of the expansion;
+- the `od:` reservation keyed on content;
+- lot routes tied to compiled ids;
+- the gate's tick arithmetic;
+- a corrected cool-down limit;
+- rows marked by slice. One gap came from the M8.2 seam itself: a matrix stored before
 its expansion would be ignored by Run, so `OD_NOT_EXPANDED` refuses it until M8.3.
 
 The design, ROADMAP, PROBLEM, ARCHITECTURE, SIMULATION (Death) and NETWORK_EDITOR (schema list)
