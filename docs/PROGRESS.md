@@ -8,6 +8,23 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-13 — M8.3 OD matrices into Micro demand (D155)
+
+`withOdDemand` (`src/project/od_demand.*`) adds every matrix to a copy of the definition as
+authored routes `od:<link>><link>` and inputs `od:<matrix>/<o>/<d>/<oc>><dc>`, at cell / period ·
+3600 times both connector shares, split equally over the fewest-object drivable chains — the rule a
+placed decision uses for a destination Link. The contract had said every complete path; that
+would weight loops like the direct road, so §3 was rewritten (D155). Placed decisions were not used:
+one per Link, and an author's own decision may sit on the same entry Link. `compileDocument` and
+`runDiagnostics` read the expanded definition, so a matrix-only study runs; `odDemandIssues` is the
+§6 Run tier (connector position, period beyond duration, unknown composition, no connector, no
+path). Locale strings for every zone/OD code, English and Thai. Rows OD1–OD6 in `odexpand`.
+OD3 first failed with seeds 42–81: 1,403 departures for 1,600 expected. The expansion was exact;
+the first xorshift32 draw of a small seed is ≈0.003, so the first input's first arrival is 5–6
+mean headways late. Not changed (frozen baselines); owner question B11, OD3 uses mixed seeds. A
+400-trip fixture through `trafficsim-cli --seeds 42-45` completed ≈394 trips per run. Headless
+85/85 (Linux, GCC 13.3); `trafficsim-cli 42` unchanged; desktop not built (no Qt here).
+
 ## 2026-10-13 — M8.2 zone layer codec and commands (D154)
 
 `ProjectDocument::zones` holds Zones, zone connectors and OD matrices (types in
@@ -433,47 +450,6 @@ keys, with no code defaults) had no entry of its own; its reasoning is in the re
 over from the W74 branch: its own `--seeds`, editor Run N seeds and evaluation period (M5.2–M5.3
 there, superseded by D131–D132 here; the editor batch is a reference for M5.6) and its Results
 tabs (discharge and clamps). The decision record's blank lines between rows are removed again.
-
----
-
-## 2026-10-08 — The extra W74 clamps traced: no W74 defect
-
-Evidence only; no engine change. `tools/w74_clamp_trace.cpp` attributes every safety clamp
-of the BA27 runs (2,053, all moving) to the obstacle setting the smallest allowance, from the
-tick's rebuilt snapshot, and records each amber onset. All 240 runs match BA27's counts; none
-is unexplained. 83–96 % are amber heads, held as red with no commitment test: W74's slower
-fixture discharge leaves a queue at 16–19 % of amber onsets (prototype under 0.1 %), so more
-onsets catch a vehicle that cannot stop. The rest are the standstill cap treating a moving
-leader as standing (D105's recorded case), met by W74's gentle emergency braking near `AX`.
-Neither rule changed (BA18); NEXT §2 holds it as an owner decision. The sweep now shares its
-document setup with the trace and stays byte-identical. See [evidence](evidence/w74-clamps.md).
-
----
-
-## 2026-10-08 — W74 timestep record, BA27, and the courtesy fixture
-
-Evidence only; no engine change. `tools/w74_discharge_sweep.cpp` runs the four-leg project,
-prototype and `w74` (fixture values in `evidence/w74-discharge-behaviour.json`: three are
-PTV's W74 defaults, fifteen are uncited), at dt 0.1/0.25/0.5, seeds 42–81, with the CLI's
-discharge spec. Its prototype arm at dt 0.1 seed 42 equals the Debug CLI in all 90 cycles,
-and a rerun is byte-identical. Mean headway rises with dt in both models, about twice as
-much for W74; W74 runs clamp more (9.4 → 14.8 per run), which NEXT now asks to trace before
-any preset. A `w74run` case checks that a winning courtesy hold stores its own state; a
-mutation keeping the leader's state fails it. See [evidence](evidence/w74-discharge.md).
-
----
-
-## 2026-10-08 — W74 composed into the tick, BA23–BA25/BA28 (D138)
-
-Fourth M3.3.3a slice: W74 now runs. `follow` dispatches by `DriverBehaviour::w74`;
-`standstillGap`/`desiredGap` replace every direct prototype-field read in the tick (source
-and D108, motion, second obstacle, lane-change checks, dead end, discretionary gain,
-waiting room, receiving space, `stopLineReach`). Leader acceleration rides on
-`OccupiedSpan` and `CourtesyHold`; static obstacles write 0. `Vehicle::w74State` comes from
-the kept result at publish. D136's Run refusal and its message are gone. A first run-level
-Stop test passed without the standstill override; the §7 case (at rest 3.3 m short) was
-added and now fails without it. Prototype bytes unchanged. Headless 69/69, desktop 100/100
-(Linux). See [evidence](evidence/w74-composition.md). Not validated.
 
 ---
 

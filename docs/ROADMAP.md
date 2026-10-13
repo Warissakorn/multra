@@ -380,7 +380,8 @@ passes. None is started; each slice begins with its contract and acceptance rows
 
 **Open.** M8.1 contract delivered 2026-10-13 ([ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md), D153; rows Z1–Z6,
 OD1–OD7, PL1–PL11). M8.2 implemented 2026-10-13 (D154: schema-31 codec and commands for Zone,
-ZoneConnector, OdMatrix; rows Z1–Z6); M8.3 next. Zone, ZoneConnector and OdMatrix shared by every level; OD expanded into
+ZoneConnector, OdMatrix; rows Z1–Z6). M8.3 implemented 2026-10-13 (D155: OD → authored routes
+and inputs, Run-tier checks; rows OD1–OD6); M8.4 next. Zone, ZoneConnector and OdMatrix shared by every level; OD expanded into
 Micro inputs and routes; ParkingLot as a zone with capacity, gate service and dwell time.
 **Done when:** a development-access study runs from a zone OD matrix through a capacity-limited
 lot; a full lot produces a gate queue and never deletes a vehicle; older files load

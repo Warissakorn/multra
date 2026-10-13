@@ -12,3 +12,4 @@ Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1â€
 
 `route_destination` validates and persists editor-only schema-30 destination markers; compilation ignores them.
 `zone_codec` persists the optional schema-31 zone layer (zones, zone connectors, OD matrices; M8.2, D154) and its structural checks; compilation does not read it until M8.3.
+`od_demand` adds the OD matrices to a copy of the definition as ordinary routes and inputs before compilation, and holds their Run-tier checks (M8.3, D155).

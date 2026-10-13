@@ -72,6 +72,12 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    destinations from the lot's OD row (D153) or Poisson outbound volumes with the lot only
    bounding occupancy; inbound lot trips in movement delay (gate wait included) or only in the
    lot table. M8.4 can be built on D153 as written; the dwell default waits on the answer. *Owner:*
+11. **Small seeds bias the first arrival** (listed 2026-10-13, D155). With seeds 42–81 the first
+   xorshift32 draw is about 0.003, so the first input (in id order) gets its first vehicle 5–6
+   mean headways late: about 800 s at 27 veh/h, a few seconds at 600 veh/h. Every study run with
+   the D88 seeds has it; a long warm-up hides most of it. Scrambling the seed before the first
+   draw (e.g. splitmix64) removes it but changes every trajectory and the four frozen TS
+   baselines. Fix it (a recorded baseline change), or keep and document? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

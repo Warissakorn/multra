@@ -1,8 +1,9 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
 **Status:** M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
-the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). ParkingLot, the OD
-expansion, the Run checks, outputs and editor tools are **not implemented**. This document fixes the
+the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
+2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
+ParkingLot, its runtime, outputs and editor tools are **not implemented**. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
@@ -90,26 +91,34 @@ their source are an owner question (§8); no default dwell file ships until it i
 
 ## 3. OD expansion for Micro (compile time)
 
-`buildScenario` expands every matrix into **ordinary core inputs and route decisions**; the core
-sees no zone. For each matrix and each cell `(o, d)` with `cells[o][d] > 0`, where zone `o` has
-no parking lot (lot rows are §4.4):
+`withOdDemand` (`src/project/od_demand.*`, D155) adds every matrix to a copy of the definition as
+**ordinary authored routes and inputs**, before compositions, the routeless walk and
+`buildScenario` run; the core sees no zone, and the document is not changed. `compileDocument`
+and the editor's run diagnostics both use it; a document without a zone layer takes the old path.
+For each matrix and each cell `(o, d)` with `cells[o][d] > 0`, where zone `o` has no parking lot
+(lot rows are §4.4):
 
 1. **Rate.** `rate = cells[o][d] / (endTime − startTime) · 3600` veh/h, Poisson, over
    `[startTime, endTime)`.
-2. **Origins.** The rate is split over `o`'s origin connectors by normalised `share`; each part is
-   one input on that connector's Link with the matrix's composition. Its lane weights are equal.
-3. **Destinations.** Each input carries an entry routing decision whose destinations are `d`'s
-   destination connectors' Links, weighted by normalised `share` (the D43 entry-Link rule then
-   spreads them over lanes and mandatory changes do the rest).
-4. **Paths.** Between an origin Link and a destination Link every complete path found by the
-   existing walk (`routelessChains` with its D140 path table) counts, **equal weight**, and with
-   the existing limits and refusals: 256 paths (`ROUTELESS_TOO_MANY_PATHS`), no revisited lane
-   (`ROUTELESS_CYCLE`). M9 replaces
-   the equal weight; nothing else in this rule changes then.
+2. **Connectors.** The rate is split over `o`'s origin connectors and `d`'s destination
+   connectors by their normalised `share` (the product of both).
+3. **Paths.** Between an origin connector's Link and a destination connector's Link the path set
+   is the **fewest-object chains** that a lane can drive (`routeShortestChains` with the
+   `routeLaneChains` filter): exactly what a placed routing decision already uses for a
+   destination Link. Each gets an **equal** part. One Link that is both origin and destination is
+   its own chain. A pair with no chain is skipped; a cell with none at all is `OD_NO_PATH`.
+   Detours longer by even one object get nothing: weighting every complete path equally would
+   send traffic round loops like the direct road. M9 replaces the equal weight; nothing else here
+   changes then.
+4. **Objects.** Each chain becomes one authored route `od:<origin Link>><destination Link>`
+   (with `/path-k` when there are several), shared by every cell that uses it, and each part one
+   input `od:<matrix>/<o>/<d>/<oc>><dc>[/path-k]` with the matrix's composition and equal lane
+   weights. `buildScenario` then expands the route per entry lane with mandatory lane changes, as
+   for any authored route. Ids contain `:`, which no allocated id does.
 
-A compiled input id is `od:<matrix>/<o>/<d>/<connector>` so movement rows and errors name their
-cell. The expansion is deterministic: matrices in document order, then row, column, connector
-order. The same document and seed give the same bytes.
+The expansion is deterministic: matrices in document order, then row, column, origin connector,
+destination connector and chain order. The same document and seed give the same bytes; reordering
+`zoneIds` (with the cells) changes nothing that runs.
 
 ## 4. Parking-lot runtime (core contract)
 
@@ -225,7 +234,7 @@ History stays atomic. Implemented by M8.2 (`zoneLayerIssues`, `src/project/zone_
 
 | Code | When |
 |---|---|
-| `ZONE_CONNECTOR_POSITION_UNSUPPORTED` | Origin not on an entry Link, destination not on a terminal Link |
+| `ZONE_CONNECTOR_POSITION_UNSUPPORTED` | Origin on a Link a Connector arrives on, destination on a Link a Connector leaves (every connector, used or not) |
 | `OD_PERIOD_INVALID` | `endTime` beyond the run's `duration` |
 | `OD_COMPOSITION_UNKNOWN` | `compositionId` names no composition the run resolves |
 | `OD_ZONE_NO_CONNECTOR` | A positive cell whose origin lacks an origin connector or destination lacks a destination connector |
@@ -255,13 +264,13 @@ blocked, the key is below 31), then the consequence. Test groups are planned nam
 | Z3 | Each new key in a schema-30 file is refused on load (`UNSUPPORTED_FIELD`); an extra, null, missing or mistyped field, or an empty array, is `EDIT_ZONE_INVALID` | `zonescodec` |
 | Z4 | Each structural §6 code is reported for its case with its path, and a refused commit leaves document, Undo and dirty state unchanged; a hand-edited file is refused alike | `zonescodec` |
 | Z5 | Add/replace/delete of each object is one undoable command; deleting a Link (alone or in a selection) cascades its zone connectors and Undo restores them; a Zone a matrix names is refused; `splitLink` moves a destination connector downstream; new ids never repeat zone-layer ids | `zonescommands` |
-| Z6 | A connector on a Link that is not an entry/terminal is kept by authoring (M8.2); Run refuses it with `ZONE_CONNECTOR_POSITION_UNSUPPORTED` (M8.3) | `zonescommands` |
-| OD1 | A 2 × 2 matrix compiles to inputs whose volumes equal cell / period · 3600 split by origin share, to 1e-9 | `odexpand` |
-| OD2 | Destination shares and equal path weights compile to the expected `RoutingChoice` weights; a 3-path pair gives ⅓ each | `odexpand` |
-| OD3 | Over 40 seeds (42–81) the observed OD counts lie within the Poisson 95 % band of every cell | `odexpand` |
+| Z6 | A connector on a Link that is not an entry/terminal is kept by authoring (M8.2); Run refuses it with `ZONE_CONNECTOR_POSITION_UNSUPPORTED` (M8.3) | `zonescommands`, `odexpand` |
+| OD1 | A 2 × 2 matrix compiles to inputs whose volumes equal cell / period · 3600 split by origin share, to 1e-9; the document is unchanged | `odexpand` |
+| OD2 | Destination connector shares split the rate (3 : 1 gives 30 and 10 of 40) | `odexpand` |
+| OD3 | Over 40 well-mixed seeds the departures of a cell lie within its Poisson 95 % band, and its origin split within the binomial band. Seeds 42–81 fail it, through the engine's first-draw bias (D155), not the expansion | `odexpand` |
 | OD4 | A positive cell with no path reports `OD_NO_PATH`; a zero cell with no path compiles | `odexpand` |
-| OD5 | A pair over the 256-path limit is refused with `ROUTELESS_TOO_MANY_PATHS` | `odexpand` |
-| OD6 | Same document and seed ⇒ byte-identical run output; reordering zones in `zoneIds` changes input ids only, not which trips run | `odexpand` |
+| OD5 | Two equal-short branches get ½ each; a detour one Link longer gets no input | `odexpand` |
+| OD6 | Same document and seed ⇒ the same event stream; reordering `zoneIds` with the cells gives the same inputs; no zone layer ⇒ the definition passes unchanged. Run-tier codes of §6 refused with their paths, and shown as runtime diagnostics | `odexpand` |
 | OD7 | A lot zone's row creates **no** Poisson input (asserted by input count), only exit destinations | `odexpand` |
 | PL1 | **Full lot queues, never deletes.** A capacity-2 lot with dwell longer than the run and 5 arrivals: first assert `occupied = 2`; then 3 vehicles stand at or behind the gate to the end, and the §4.6 identity holds at every tick | `parkinglot` |
 | PL2 | `occupied` never exceeds `capacity` over 40 seeds of a saturated lot | `parkinglot` |
