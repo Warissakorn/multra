@@ -2,6 +2,7 @@
 #include "../src/eval/arrival_phases.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 using namespace trafficsim;
 // M3.2.8c step 4: the cycle phase at which vehicles enter a segment and first stand on it.
 namespace {
@@ -86,4 +87,24 @@ TEST(movement, arrival_phase_counts_a_departure_as_entering_the_first_segment) {
     std::uint64_t early = 0;
     for (std::size_t b = 0; b < 7; ++b) early += up.enteredAt[b];
     CHECK(early == up.entered); // the input releases vehicles from 0 to 60 s only (60 s is bin 6)
+}
+TEST(movement, arrival_phase_validates_width_and_bounds_derived_bins) {
+    for (const double width : {0., -1., std::numeric_limits<double>::infinity(), std::nan("")})
+        test::throws([&] { ArrivalPhaseAccumulator phases(spec(), width); }, "finite and positive");
+    auto state = createSimulation(approach(50, {{120, SignalColor::green}}), 42);
+    for (const double width : {1e-300, 1e-6}) {
+        ArrivalPhaseAccumulator tiny(spec(), width);
+        test::throws([&] { tiny.observe(state); }, "histogram limit");
+        test::throws([&] { tiny.observe(state); }, "histogram limit"); // a failed bind retries safely
+    }
+    ArrivalPhaseAccumulator huge(spec(), 1e20);
+    huge.observe(state);
+    while (state.tick < totalTicks(*state.scenario)) {
+        state = stepSimulation(std::move(state)); huge.observe(state);
+    }
+    CHECK(!huge.report().rows.empty());
+    for (const auto& r : huge.report().rows) {
+        CHECK(r.enteredAt.size() == 1 && r.firstStopAt.size() == 1);
+        CHECK(r.enteredAt[0] == r.entered);
+    }
 }

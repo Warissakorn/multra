@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <cmath>
 
 namespace {
 using namespace trafficsim;
@@ -217,7 +218,8 @@ int main(int argc, char** argv) {
                 else if (arg == "--phase-bin") {
                     std::size_t used = 0;
                     binWidth = std::stod(argv[i], &used);
-                    if (used != std::string(argv[i]).size() || !(binWidth > 0)) throw std::invalid_argument("--phase-bin needs a positive number of seconds");
+                    if (used != std::string(argv[i]).size() || !std::isfinite(binWidth) || !(binWidth > 0))
+                        throw std::invalid_argument("--phase-bin needs a finite positive number of seconds");
                 }
                 else eventsFile = argv[i];
             } else {

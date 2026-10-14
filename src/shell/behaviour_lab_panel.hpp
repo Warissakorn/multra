@@ -12,6 +12,7 @@ class QComboBox;
 class QDoubleSpinBox;
 class QFormLayout;
 class QGroupBox;
+class QLabel;
 class QSpinBox;
 
 namespace trafficsim {
@@ -34,6 +35,8 @@ private:
     QGroupBox* group(QWidget* page, const char* titleKey, QFormLayout*& form);
     void limitCount();
     void enableForLayout();
+    void refreshAxles();
+    QLabel* axles_{};
     Text text_;
     lab::LabSettings base_; // fields not shown keep their values
     std::vector<Number> numbers_;

@@ -27,7 +27,8 @@ Point pointAt(const std::vector<RoutePart>& parts,double distance,const Geometry
 }
 }
 LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
-    const Geometry& geometry,const Equations& equations,double maxStep):trace_(vehicle.laneChangeTrace),type_(vehicle.typeIndex) {
+    const Geometry& geometry,const Equations& equations,double maxStep):trace_(vehicle.laneChangeTrace),
+    remaps_(vehicle.routeRemapTrace),destination_(vehicle.routeIndex),type_(vehicle.typeIndex) {
     if(!std::isfinite(maxStep) || maxStep<=0)throw std::invalid_argument("INVALID_VEHICLE_POSE");
     if(trace_.empty() || type_>=scenario.vehicleTypes.size())return;
     const auto& type=scenario.vehicleTypes[type_];
@@ -40,6 +41,8 @@ LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
         if(!check.pose(0,{}))return false;
         routes.emplace(id,std::move(parts));return true;
     };
+    std::vector<std::uint32_t> targets;
+    std::size_t remap = 0;
     std::vector<double> starts;double start=0;
     for(std::size_t i=0;i<trace_.size();++i) {
         const auto& c=trace_[i];
@@ -47,16 +50,33 @@ LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
             c.fromDistance<0 || c.toDistance<0 || c.speed<0 || !addRoute(c.fromRoute) || !addRoute(c.toRoute))return;
         if(i) {
             const auto& previous=trace_[i-1];
-            if(c.fromRoute!=previous.toRoute || c.fromDistance<previous.toDistance)return;
+            if(c.fromRoute!=targets.back() || c.fromDistance<previous.toDistance)return;
             start+=c.fromDistance-previous.toDistance;
         }
         const auto& from=routes.at(c.fromRoute);const auto& to=routes.at(c.toRoute);
         if(c.fromDistance>from.back().start+from.back().length || c.toDistance>to.back().start+to.back().length)return;
         starts.push_back(start);
+        auto target = c.toRoute;
+        double lastStation = c.toDistance;
+        while (remap < remaps_.size() && remaps_[remap].afterChanges == i + 1) {
+            const auto& r = remaps_[remap++];
+            if (r.fromRoute != target || !std::isfinite(r.at) || r.at < lastStation || !addRoute(r.toRoute) ||
+                (i + 1 < trace_.size() && r.at > trace_[i + 1].fromDistance)) return;
+            const auto& before = routes.at(target); const auto& after = routes.at(r.toRoute);
+            bool shared = false;
+            for (std::size_t j = 0; j < before.size() && j < after.size(); ++j) {
+                const auto& a = before[j]; const auto& b = after[j];
+                if (a.segmentId != b.segmentId || a.start != b.start || a.length != b.length) break;
+                if (r.at < a.start + a.length) { shared = true; break; }
+            }
+            if (!shared) return;
+            target = r.toRoute; lastStation = r.at;
+        }
+        targets.push_back(target);
     }
-    const auto& last=trace_.back();if(vehicle.routeIndex!=last.toRoute)return;
+    const auto& last=trace_.back();if(remap != remaps_.size() || vehicle.routeIndex!=targets.back())return;
     offset_=last.toDistance-starts.back();
-    const auto& destination=routes.at(last.toRoute);
+    const auto& destination=routes.at(destination_);
     const double end=destination.back().start+destination.back().length-offset_;
     if(end<=0 || std::ceil(end/maxStep)>500000)return; // bound derived memory/work
     const auto& source=routes.at(trace_.front().fromRoute);
@@ -72,7 +92,7 @@ LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
             const auto& c=trace_[i];
             const double f=std::clamp((travel-starts[i])/(3*std::max(c.speed,5.)),0.,1.);
             const double w=f*f*f*(10+f*(-15+6*f)); // quintic, zero first/second endpoint derivatives
-            const auto q=pointAt(routes.at(c.toRoute),c.toDistance+travel-starts[i],geometry,equations);
+            const auto q=pointAt(routes.at(targets[i]),c.toDistance+travel-starts[i],geometry,equations);
             p={p.x+w*(q.x-p.x),p.y+w*(q.y-p.y)};
         }
         return p;
@@ -93,7 +113,7 @@ LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
     };
     splitRoute(trace_.front().fromRoute,trace_.front().fromDistance);
     for(std::size_t i=0;i<trace_.size();++i) {
-        splitRoute(trace_[i].toRoute,trace_[i].toDistance-starts[i]);
+        splitRoute(targets[i],trace_[i].toDistance-starts[i]);
         breaks.push_back(starts[i]);breaks.push_back(starts[i]+3*std::max(trace_[i].speed,5.));
     }
     std::erase_if(breaks,[&](double x){return x<0 || x>end;});
@@ -116,10 +136,10 @@ LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
         Geometry{{"guide",std::move(polyline)}},Equations{},maxStep,initial->heading);
 }
 bool LaneChangePath::matches(const Vehicle& vehicle) const {
-    return type_==vehicle.typeIndex && trace_==vehicle.laneChangeTrace;
+    return type_==vehicle.typeIndex && destination_==vehicle.routeIndex && trace_==vehicle.laneChangeTrace && remaps_==vehicle.routeRemapTrace;
 }
 std::optional<AxleVehiclePose> LaneChangePath::pose(const Vehicle& vehicle) const {
-    if(!rolling_ || !matches(vehicle) || vehicle.routeIndex!=trace_.back().toRoute || !std::isfinite(vehicle.distance))return {};
+    if(!rolling_ || !matches(vehicle) || !std::isfinite(vehicle.distance))return {};
     const double x=vehicle.distance-offset_;
     if(x<0 || x>samples_.back().travel+1e-7)return {};
     auto right=std::lower_bound(samples_.begin(),samples_.end(),x,[](const Sample& s,double d){return s.travel<d;});

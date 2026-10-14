@@ -115,20 +115,53 @@ std::vector<std::vector<std::string>> routeShortestChains(const Network& network
     // The object graph is built once per search: rebuilding it per chain, through
     // routeContinuations, was 9% of an M2.6 Run.
     const auto objects = routeObjects(network, table);
-    constexpr std::size_t kMaxDepth = 20, kMaxLevel = 4096;
-    std::vector<std::vector<std::string>> level{{from}};
-    for (std::size_t depth = 0; depth < kMaxDepth && !level.empty(); ++depth) {
-        std::vector<std::vector<std::string>> next, found;
-        for (const auto& chain : level)
-            for (const auto& step : continuations(objects, chain)) {
-                auto extended = chain; extended.push_back(step);
-                (step == target ? found : next).push_back(std::move(extended));
-            }
-        if (!found.empty()) return found;
-        if (next.size() > kMaxLevel) return {};
-        level = std::move(next);
+    const auto locate = [&](const std::string& id) {
+        return static_cast<std::size_t>(std::find_if(objects.begin(), objects.end(),
+            [&](const auto& x) { return x.id == id; }) - objects.begin());
+    };
+    const auto source = locate(from), sink = locate(target), missing = objects.size();
+    if (source == missing || sink == missing) return {};
+    std::vector<std::vector<std::size_t>> next(objects.size()), previous(objects.size());
+    for (std::size_t i = 0; i < objects.size(); ++i) {
+        for (const auto& id : objects[i].next) {
+            const auto j = locate(id); if (j != missing) next[i].push_back(j);
+        }
+        std::sort(next[i].begin(), next[i].end()); // legacy continuation order
     }
-    return {};
+    std::vector<std::size_t> distance(objects.size(), missing);
+    distance[source] = 0;
+    std::deque<std::size_t> queue{source};
+    while (!queue.empty()) {
+        const auto i = queue.front(); queue.pop_front();
+        for (const auto j : next[i]) {
+            if (distance[j] == missing) { distance[j] = distance[i] + 1; queue.push_back(j); }
+            if (distance[j] == distance[i] + 1) previous[j].push_back(i);
+        }
+    }
+    if (distance[sink] == missing) return {};
+    // Keep only shortest-path edges that can reach the sink. No arbitrary path-depth cutoff.
+    std::vector<bool> reaches(objects.size()); reaches[sink] = true; queue.push_back(sink);
+    while (!queue.empty()) {
+        const auto j = queue.front(); queue.pop_front();
+        for (const auto i : previous[j]) if (!reaches[i]) { reaches[i] = true; queue.push_back(i); }
+    }
+    for (std::size_t i = 0; i < next.size(); ++i)
+        std::erase_if(next[i], [&](auto j) { return !reaches[j] || distance[j] != distance[i] + 1; });
+    std::vector<std::vector<std::string>> result;
+    std::vector<std::size_t> path{source}, cursor{0};
+    while (!path.empty()) {
+        const auto i = path.back();
+        if (i == sink) {
+            if (result.size() == 4096) throw std::length_error("ROUTE_SEARCH_LIMIT: more than 4096 shortest paths");
+            std::vector<std::string> chain;
+            for (const auto j : path) chain.push_back(objects[j].id);
+            result.push_back(std::move(chain));
+        } else if (cursor.back() < next[i].size()) {
+            const auto j = next[i][cursor.back()++]; path.push_back(j); cursor.push_back(0); continue;
+        }
+        path.pop_back(); cursor.pop_back();
+    }
+    return result;
 }
 std::vector<FamilyChain> routeLaneFamily(const Network& network, const std::vector<std::string>& objectIds,
                                          std::vector<std::string>* ambiguous) {

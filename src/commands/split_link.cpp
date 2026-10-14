@@ -32,6 +32,9 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     if(d.definition)for(const auto& [route,end]:d.definition->routeDestinations)
         if(end.objectId==id && end.station>distance-.1 && end.station<distance+.1)
             throw std::invalid_argument("EDIT_ROUTE_DESTINATION_INVALID");
+    if (d.definition) for (const auto& decision : d.definition->routingDecisions)
+        if (decision.linkId == id && decision.position && *decision.position >= distance - .1 && *decision.position < distance + .1)
+            throw std::invalid_argument("EDIT_SPLIT_CONTROL");
     detail::checkSplitControls(d.network, id, distance); // M3.2.2b: refuse before changing anything
     auto downstream = original;
     downstream.id = allocateId(d, "link");
@@ -107,6 +110,39 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
             if (s == id) ids.push_back(downstream.id);
         }
         r.segmentIds = std::move(ids);
+    }
+    if (d.definition) {
+        auto& def = *d.definition;
+        std::map<std::string, std::string> suffixes;
+        for (auto& decision : def.routingDecisions) {
+            if (decision.linkId != id || !decision.position || *decision.position < distance + .1) continue;
+            decision.linkId = downstream.id; *decision.position -= distance + .1;
+            for (auto& input : def.inputs) if (input.routingDecisionId == decision.id) {
+                input.routingDecisionId.clear(); input.linkId = id; // source stays on the original entry
+            }
+            for (auto& entry : decision.routes) {
+                if (entry.destinationLinkId == id) entry.destinationLinkId = downstream.id;
+                if (entry.routeId.empty()) continue;
+                const auto originalId = entry.routeId;
+                if (!suffixes.contains(originalId)) {
+                    const auto found = std::find_if(def.routes.begin(), def.routes.end(),
+                        [&](const auto& route) { return route.id == originalId; });
+                    if (found == def.routes.end()) continue; // validation names a missing route
+                    auto route = *found;
+                    const auto begin = std::find(route.segmentIds.begin(), route.segmentIds.end(), downstream.id);
+                    // A route that never reaches the moved station cannot start there: refuse, not empty it.
+                    if (begin == route.segmentIds.end()) throw std::invalid_argument("ROUTING_DECISION_MIXED_ORIGIN");
+                    route.segmentIds.erase(route.segmentIds.begin(), begin);
+                    route.id = allocateId(d, "route");
+                    suffixes.emplace(originalId, route.id);
+                    if (const auto marker = def.routeDestinations.find(originalId); marker != def.routeDestinations.end() &&
+                        std::find(route.segmentIds.begin(), route.segmentIds.end(), marker->second.objectId) != route.segmentIds.end())
+                        def.routeDestinations.emplace(route.id, marker->second);
+                    def.routes.push_back(std::move(route)); // original full route remains for fixed inputs
+                }
+                entry.routeId = suffixes.at(originalId);
+            }
+        }
     }
     return downstream.id;
 }

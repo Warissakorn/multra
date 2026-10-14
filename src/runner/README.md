@@ -2,3 +2,6 @@ Multi-seed batches (M5.2): `runSeed`, `runSeeds` and `aggregate` in `batch.hpp`;
 (M5.8a): `welch` and `compareBatches` in `compare.hpp`. Depends on core and
 eval only — no model, project, Qt or I/O (`check_architecture`). Formatting lives beside the
 single-run formatter in `src/project/batch_output.*` and `comparison_output.*`. Contract: [BATCH](../../docs/reference/BATCH.md).
+
+Optional cancellation predicates interrupt a seed at 32-tick checkpoints (`RunCancelled`).
+The scheduler discards cancelled batches; an absent/false predicate preserves replay.

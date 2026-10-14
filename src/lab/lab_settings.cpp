@@ -1,8 +1,19 @@
 #include "lab_settings.hpp"
 #include "../project/demand_catalog.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace trafficsim::lab {
+void rescaleAxles(VehicleType& type) {
+    if (!type.axles || !std::isfinite(type.length) || type.length <= 0) return;
+    auto& a = *type.axles;
+    if (!std::isfinite(a.wheelbase) || !std::isfinite(a.frontOverhang) || !std::isfinite(a.rearOverhang) ||
+        a.wheelbase <= 0 || a.frontOverhang < 0 || a.rearOverhang < 0) return;
+    const double total = a.wheelbase + a.frontOverhang + a.rearOverhang;
+    if (!std::isfinite(total) || total <= 0 || std::abs(total - type.length) <= 1e-12 * std::max(total, type.length)) return;
+    const double scale = type.length / total;
+    a.wheelbase *= scale; a.frontOverhang *= scale; a.rearOverhang *= scale;
+}
 namespace {
 template<class T>
 const T* find(const std::vector<T>& items, const std::string& id) {

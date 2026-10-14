@@ -8,6 +8,14 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Authorized whole-repository review fixes (D167–D174)
+
+The owner approved the nine-item review plan together. Fixed evaluation passages, journey free-flow,
+suffix display, phase bins (16 MiB budget), Lab axles, long OD searches (`OD_SKIPPED_DEMAND` advisory),
+Split routing stations and batch cancellation (workers owned by generation); corrected parking identity
+docs. The 16 MiB budget, OD advisory, worker map and Split guards were carried over from draft PR #150.
+Validation: desktop build on Linux (GCC 13.3), 138/138 CTests; Windows desktop is CI-only (D167–D174).
+
 ## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
 
 The owner asked for a varied lab network with straights and intersections, and the camera turning

@@ -4,6 +4,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/project/run.hpp"
 #include "../src/core/routing.hpp"
+#include "../src/commands/history.hpp"
 using namespace trafficsim;
 namespace {
 Scenario routingFork() {
@@ -46,6 +47,18 @@ TEST(stationrouting, recognizes_once_at_the_line_not_at_source) {
     CHECK(std::none_of(again.events.begin(),again.events.end(),[](const auto& e){return std::holds_alternative<RoutingEvent>(e);}));
     for(const auto& e:after.events)if(std::holds_alternative<RoutingEvent>(e))CHECK(eventJson(e)["kind"]=="routing");
     CHECK(checkpointJson(after)["vehicles"][0]["passedDecisions"][0]=="decision");
+}
+TEST(stationrouting, suffix_trace_is_snapshot_owned_and_does_not_change_physics) {
+    auto before = test::withVehicles(routingFork(), {{1, "a", 59.8, 15}});
+    const auto plain = stepSimulation(before);
+    before.vehicles[0].laneChangeTrace = {{1, 0, 5, 5, 10}};
+    const auto after = stepSimulation(before);
+    CHECK(after.vehicles[0].routeRemapTrace == std::vector<RouteRemapTrace>({{0, 1, 60, 1}}));
+    CHECK(before.vehicles[0].routeRemapTrace.empty());
+    CHECK(after.events == plain.events && after.randomState == plain.randomState);
+    auto stripped = after.vehicles[0]; stripped.laneChangeTrace.clear(); stripped.routeRemapTrace.clear();
+    CHECK(stripped == plain.vehicles[0]);
+    CHECK(stepSimulation(after).vehicles[0].routeRemapTrace == after.vehicles[0].routeRemapTrace);
 }
 TEST(stationrouting, uses_passage_time_and_half_open_intervals) {
     auto s=routingFork();
@@ -137,5 +150,63 @@ TEST(stationrouting, different_traces_to_one_destination_keep_their_weights) {
     for(const auto& gate:s.routeDecisions) {
         CHECK(gate.choices.size()==2);CHECK(gate.choices[0].routeId!=gate.choices[1].routeId);
         test::near(gate.choices[0].weight,3);test::near(gate.choices[1].weight,1);
+    }
+}
+TEST(stationrouting, split_moves_a_positioned_decision_and_preserves_full_routes) {
+    for (const bool destinationOnly : {false, true}) {
+        auto d = drawing();
+        d.definition->routingDecisions[0].position = 80;
+        const auto fullId = d.definition->routes.front().id;
+        const auto source = d.network.links.front().id;
+        d.definition->routeDestinations[fullId] = {source, 40}; // marker before the downstream suffix
+        VehicleInput fixed; fixed.id = "fixed"; fixed.routeId = fullId; fixed.vehicleTypeId = "car";
+        fixed.vehiclesPerHour = 100; fixed.endTime = 60; putInput(d, fixed);
+        if (destinationOnly) for (auto& entry : d.definition->routingDecisions[0].routes) {
+            for (const auto& r : d.definition->routes) if (r.id == entry.routeId) entry.destinationLinkId = r.segmentIds.back();
+            entry.routeId.clear();
+        }
+        History h; h.reset(d);
+        std::string child;
+        CHECK(h.execute("split", [&](auto& doc) { child = splitLink(doc, source, 50, false); }));
+        const auto& result = h.document(); const auto& decision = result.definition->routingDecisions[0];
+        CHECK(decision.linkId == child); test::near(*decision.position, 29.9);
+        CHECK(result.definition->inputs[0].linkId == source);
+        CHECK(result.definition->inputs[1].routeId == fullId);
+        for (const auto& r : result.definition->routes) if (r.id == fullId) {
+            CHECK(r.segmentIds[0] == source && r.segmentIds[1] == child);
+        }
+        if (!destinationOnly) for (const auto& entry : decision.routes)
+            for (const auto& r : result.definition->routes) if (r.id == entry.routeId) {
+                CHECK(r.segmentIds.front() == child);
+                if (r.id != fullId && r.segmentIds.back() == result.definition->routes.front().segmentIds.back())
+                    CHECK(!result.definition->routeDestinations.contains(r.id));
+            }
+        const auto scenario = compileDocument(result, test::root() / "data").scenario;
+        double volume = 0; for (const auto& input : scenario.inputs) volume += input.vehiclesPerHour;
+        test::near(volume, 900);
+        CHECK(!scenario.routeDecisions.empty());
+        for (const auto& gate : scenario.routeDecisions) test::near(gate.at, 80, 1e-6);
+        CHECK(parseDocument(documentJson(result)) == result);
+        h.undo(); CHECK(h.document() == d);
+    }
+}
+TEST(stationrouting, split_keeps_an_explicit_decision_input_on_its_entry_link) {
+    auto d = drawing(); const auto source = d.network.links.front().id;
+    d.definition->routingDecisions[0].position = 80;
+    auto& input = d.definition->inputs[0]; input.linkId.clear(); input.routingDecisionId = "decision";
+    const auto original = input;
+    compileDocument(d, test::root() / "data");
+    splitLink(d, source, 50, false);
+    auto expected = original; expected.routingDecisionId.clear(); expected.linkId = source;
+    CHECK(d.definition->inputs[0] == expected);
+    compileDocument(d, test::root() / "data");
+}
+TEST(stationrouting, split_refuses_a_decision_in_the_gap_atomically) {
+    auto d = drawing(); const auto source = d.network.links.front().id;
+    for (double station : {49.9, 50., 50.05}) {
+        d.definition->routingDecisions[0].position = station;
+        History h; h.reset(d); const auto before = h.document();
+        test::throws([&] { h.execute("split", [&](auto& doc) { splitLink(doc, source, 50, false); }); }, "EDIT_SPLIT_CONTROL");
+        CHECK(h.document() == before);
     }
 }

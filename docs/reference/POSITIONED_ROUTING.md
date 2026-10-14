@@ -18,6 +18,14 @@ Select and drag the decision line along its Link, or edit `position` in the deci
 dialog. Preview does not change History. Release commits once; Escape/focus/tool/level
 changes cancel. Position must be finite, nonnegative and below the Link's reference
 length. Shortening the Link beyond a stored station is rejected atomically.
+Splitting a Link retains the physical decision station. A downstream decision moves to the
+new child with its station rebased by the cut's 0.1 m far boundary. A decision at the upstream
+boundary or inside the 0.2 m continuity gap refuses the edit (`EDIT_SPLIT_CONTROL`). An explicitly
+assigned decision input becomes a routeless input on the original entry Link, preserving volume,
+periods, types and lane shares. Authored decision routes receive downstream suffix copies; their
+original full routes and fixed-route inputs remain. Destination markers copy only when their
+object belongs to the suffix. Save/reopen and Undo retain the full result (`stationrouting`).
+
 The first slice retains one decision per Link. A second point on that Link is refused;
 use its existing line or reposition it. Decisions on successive Links are supported.
 

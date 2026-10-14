@@ -87,7 +87,11 @@ std::vector<PlacedDecision> placedDecisions(const Network& network, const Connec
                 if (const auto found = memo ? memo->find(key) : DestinationChainMemo::iterator{}; memo && found != memo->end())
                     chains = found->second;
                 else {
-                    chains = reachable(routeShortestChains(network, table, decision.linkId, entry.destinationLinkId));
+                    try { chains = reachable(routeShortestChains(network, table, decision.linkId, entry.destinationLinkId)); }
+                    catch (const std::length_error&) {
+                        if (!issues) throw;
+                        report("ROUTE_SEARCH_LIMIT", at); continue;
+                    }
                     if (memo) memo->emplace(key, chains);
                 }
             } else {
@@ -161,6 +165,8 @@ RoutelessIssues routelessIssues(RoutelessWalks& walks) {
     RoutelessIssues result;
     // Reachability does not depend on the flows, so the static pass reports it once.
     const auto statics = placedDecisions(network, walks.table, d, &result.blocking, std::nullopt, {}, &walks.memo);
+    if (std::any_of(result.blocking.begin(), result.blocking.end(),
+                    [](const auto& issue) { return issue.code == "ROUTE_SEARCH_LIMIT"; })) return result;
     std::map<std::string, RoutelessResult> staticWalks;
     // The walks in the order they are reported: the static pass, then every slice untyped when
     // the flows change over time, then every slice per routed vehicle type.

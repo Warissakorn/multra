@@ -16,6 +16,8 @@ public:
 private:
     struct Sample {double travel, arc;Point front;};
     std::vector<LaneChangeTrace> trace_;
+    std::vector<RouteRemapTrace> remaps_;
+    std::uint32_t destination_{};
     std::uint32_t type_{};
     double offset_{};
     std::vector<Sample> samples_;

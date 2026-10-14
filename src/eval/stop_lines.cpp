@@ -1,6 +1,7 @@
 #include "stop_lines.hpp"
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 namespace trafficsim {
 StopLineAccumulator::StopLineAccumulator(const EvaluationSpec& spec) : beginSpeed_(spec.queue.beginSpeed) {}
@@ -19,6 +20,7 @@ void StopLineAccumulator::bind(const SimState& state) {
     }
 }
 void StopLineAccumulator::observe(const SimState& state) {
+    if (!state.scenario) return;
     bind(state);
     const double dt = state.scenario->timeStep;
     const auto standing = [&](std::size_t h) {
@@ -51,7 +53,65 @@ void StopLineAccumulator::observe(const SimState& state) {
             head.green = green;
         }
     }
-    // Who is upstream of which head now; a vehicle that was, and still exists, has crossed.
+    const auto slot = [&](const std::string& id) {
+        const auto& routes = state.scenario->routes;
+        return static_cast<std::uint32_t>(std::find_if(routes.begin(), routes.end(),
+            [&](const auto& r) { return r.id == id; }) - routes.begin());
+    };
+    auto before = previous_;
+    std::set<std::uint64_t> sources;
+    for (const auto& event : state.events) if (const auto* d = std::get_if<DepartedEvent>(&event)) {
+        before.try_emplace(d->vehicleId, Position{slot(d->routeId), 0});
+        sources.insert(d->vehicleId);
+    }
+    for (const auto& event : state.events) if (const auto* r = std::get_if<RoutingEvent>(&event)) {
+        auto p = before.find(r->vehicleId);
+        if (p != before.end() && p->second.distance == 0 && r->time == state.time - dt &&
+            p->second.route == slot(r->fromRouteId)) p->second.route = slot(r->toRouteId);
+    }
+    // A lateral coordinate jump is not longitudinal travel past the target lane's head.
+    for (const auto& event : state.events) if (const auto* c = std::get_if<LaneChangeEvent>(&event)) {
+        const auto p = before.find(c->vehicleId);
+        if (p == before.end() || p->second.route != slot(c->fromRouteId)) continue;
+        const auto target = slot(c->toRouteId);
+        const double rear = p->second.distance - state.scenario->vehicleTypes[p->second.type].length;
+        std::optional<double> mapped;
+        const auto consider = [&](const auto& spans) {
+            for (const auto& span : spans) if (span.target == target && rear >= span.fromStart - 1e-9 &&
+                                             p->second.distance <= span.fromEnd + 1e-9) {
+                const double at = mappedOnto(span, p->second.distance);
+                if (mapped && std::abs(*mapped - at) > 1e-9) return false;
+                mapped = at;
+            }
+            return true;
+        };
+        if (!consider(state.index->laneChangesOfRoute[p->second.route]) ||
+            !consider(state.index->discretionaryOfRoute[p->second.route]) || !mapped) {
+            before.erase(p); continue; // ambiguous motion cannot prove a passage
+        }
+        p->second.route = target; p->second.distance = *mapped;
+    }
+    const auto crossed = [&](std::uint64_t id, std::size_t h, std::uint32_t route, double distance) {
+        const auto p = before.find(id);
+        const double at = heads_[h].atRoute[route];
+        if (p == before.end() || std::isnan(at) || distance < at) return false;
+        double prior = heads_[h].atRoute[p->second.route];
+        if (std::isnan(prior)) prior = at; // a suffix selected before this line
+        return p->second.distance < prior || (sources.contains(id) && p->second.distance == 0 && prior == 0);
+    };
+    const auto count = [&](std::uint64_t id, std::size_t h) {
+        auto& head = heads_[h];
+        const auto was = open_.find({id, h});
+        const auto tally = was == open_.end() ? Tally{} : was->second;
+        ++head.crossed; head.red += tally.red; head.standGreen += tally.green;
+        head.held += tally.held; head.heldAny += tally.held > 0;
+        if (head.green) {
+            ++head.discharged;
+            if (head.lastCrossing >= 0) { head.gapSum += state.time - head.lastCrossing; ++head.gaps; }
+            head.lastCrossing = state.time;
+        }
+    };
+    // Source and terminal evidence also covers a whole trip between two fleet snapshots.
     std::map<std::pair<std::uint64_t, std::size_t>, Tally> now;
     for (const auto& v : state.vehicles)
         for (std::size_t h = 0; h < heads_.size(); ++h) {
@@ -63,19 +123,19 @@ void StopLineAccumulator::observe(const SimState& state) {
                 auto tally = was == open_.end() ? Tally{} : was->second;
                 if (v.speed < beginSpeed_) (heads_[h].green ? tally.green : tally.red) += dt;
                 now.emplace(key, tally);
-            } else if (was != open_.end()) {
-                auto& head = heads_[h];
-                ++head.crossed; head.red += was->second.red; head.standGreen += was->second.green;
-                head.held += was->second.held; head.heldAny += was->second.held > 0;
-                if (head.green) {
-                    ++head.discharged;
-                    if (head.lastCrossing >= 0) { head.gapSum += state.time - head.lastCrossing; ++head.gaps; }
-                    head.lastCrossing = state.time;
-                }
-            }
+            } else if (crossed(v.id, h, v.routeIndex, v.distance)) count(v.id, h);
         }
-    // A vehicle that left a head's route without crossing (arrived, or changed away) is dropped.
+    for (const auto& event : state.events) if (const auto* a = std::get_if<ArrivedEvent>(&event)) {
+        if (std::any_of(state.vehicles.begin(), state.vehicles.end(), [&](const auto& v) { return v.id == a->vehicleId; })) continue;
+        const auto route = slot(a->routeId);
+        const auto& parts = state.index->parts[route];
+        const double end = parts.back().start + parts.back().length;
+        for (std::size_t h = 0; h < heads_.size(); ++h)
+            if (crossed(a->vehicleId, h, route, end)) count(a->vehicleId, h);
+    }
     open_ = std::move(now);
+    previous_.clear();
+    for (const auto& v : state.vehicles) previous_.emplace(v.id, Position{v.routeIndex, v.distance, v.typeIndex});
 }
 StopLineReport StopLineAccumulator::report() const {
     StopLineReport r;

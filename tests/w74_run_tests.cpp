@@ -67,7 +67,8 @@ TEST(w74run, the_leaders_acceleration_reaches_the_follower_and_static_obstacles_
     // A red head 11.5 m ahead is a static obstacle: 0.5 * 16 / (7 - 11.5), with no aL term.
     auto red = s; red.signalPrograms = {{"p", 0, {{600, SignalColor::red}}}};
     red.signalHeads = {{"h", "c", 7.5, "p"}};
-    const auto& f = find(stepSimulation(placed(red, {{1, 96, 4}})), 1);
+    const auto next = stepSimulation(placed(red, {{1, 96, 4}}));
+    const auto& f = find(next, 1);
     test::near(f.acceleration, -16.0 / 9, 1e-12);
 }
 
@@ -117,7 +118,8 @@ TEST(w74run, the_hard_cap_source_rule_and_d105_hold_for_w74) { // BA28
     CHECK(clamped(state)); CHECK(find(state, 1).distance <= 101 + 1e-9); CHECK(find(state, 1).speed == 0);
     // D105: at rest within ax of a leader pulling away, no positive acceleration.
     for (const double gap : {2.0, 1.0}) {
-        const auto& v = find(stepSimulation(placed(red, {{1, 96 - gap, 0}, {2, 100, 5, 2, "truck"}})), 1);
+        const auto next = stepSimulation(placed(red, {{1, 96 - gap, 0}, {2, 100, 5, 2, "truck"}}));
+        const auto& v = find(next, 1);
         CHECK(v.acceleration <= 0); CHECK(v.speed == 0);
     }
     // Source (D108 with ax): a w74 input does not depart while the entry vehicle is within ax.

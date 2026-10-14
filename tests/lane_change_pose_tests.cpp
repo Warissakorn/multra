@@ -107,6 +107,28 @@ void overlappingAndMapping() {
     LaneChangePath bounded(s,v,geometry,{},1e-300);require(!bounded.pose(v),"Tiny step escaped memory bound");
     auto changed=v;changed.typeIndex=1;require(!first.matches(changed),"Type change retained old cache key");
 }
+void suffixRemapKeepsTheGuide() {
+    auto s = scenario(); auto g = geometry;
+    s.segments[1] = {"b", 60, {"out", "turn"}};
+    s.segments.push_back({"out", 40, {}}); s.segments.push_back({"turn", 40, {}});
+    s.routes[1].segmentIds = {"b", "out"}; s.routes.push_back({"selected", {"b", "turn"}});
+    g["b"] = {{0, 3.5}, {60, 3.5}}; g["out"] = {{60, 3.5}, {100, 3.5}};
+    g["turn"] = {{60, 3.5}, {60, 43.5}};
+    auto v = changer(); LaneChangePath before(s, v, g, {});
+    const auto prior = at(before, v, 28);
+    require(prior.front.y > 0 && prior.front.y < 3.5, "Setup: blend must still be active");
+    v.routeIndex = 3; v.distance = 28; v.routeRemapTrace = {{1, 3, 28, 1}};
+    LaneChangePath selected(s, v, g, {});
+    near(at(selected, v, 28).front, prior.front); near(at(selected, v, 28).heading, prior.heading);
+    near(at(selected, v, 80).front, {60, 23.5});
+    require(!before.matches(v), "Routing retained a stale guide cache");
+    v.laneChangeTrace.push_back({3, 2, 30, 30, 10}); v.routeIndex = 2; v.distance = 30;
+    LaneChangePath next(s, v, g, {});
+    auto old = changer(); old.routeIndex = 3; old.routeRemapTrace = {{1, 3, 28, 1}};
+    near(at(next, v, 30).front, at(selected, old, 30).front);
+    v.routeRemapTrace[0].at = 70; LaneChangePath bad(s, v, g, {});
+    require(!bad.pose(v), "Invalid suffix prefix produced a guide");
 }
-int main(){try{analyticAndSlip();curvedJoin();sourceHeadingAndConnectorPaint();overlappingAndMapping();std::cout<<"Lane-change guide tests passed\n";return 0;}
+}
+int main(){try{analyticAndSlip();curvedJoin();sourceHeadingAndConnectorPaint();overlappingAndMapping();suffixRemapKeepsTheGuide();std::cout<<"Lane-change guide tests passed\n";return 0;}
 catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

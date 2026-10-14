@@ -156,3 +156,25 @@ TEST(lab, bl15_signal_timings_retune_and_a_layout_change_restarts) {
     auto tiny = s; tiny.road.straightLength = 100;
     test::throws([&] { r.apply(tiny); }, "LAB_ROAD_INVALID");
 }
+TEST(lab, length_retune_preserves_valid_axle_proportions_and_identity) {
+    auto s = settings(); s.traffic.vehicleCount = 0;
+    auto r = run(s); steps(r, 10);
+    const auto id = r.focusId(), tick = r.state().tick;
+    const auto axles = *s.focus.type.axles;
+    auto tuned = s; tuned.focus.type.length *= 1.5;
+    CHECK(r.apply(tuned) == lab::LabRun::Applied::retuned);
+    CHECK(r.focusId() == id && r.state().tick == tick);
+    const auto actual = *r.settings().focus.type.axles;
+    test::near(actual.wheelbase, 1.5 * axles.wheelbase);
+    test::near(actual.frontOverhang, 1.5 * axles.frontOverhang);
+    test::near(actual.rearOverhang, 1.5 * axles.rearOverhang);
+    CHECK(r.apply(tuned) == lab::LabRun::Applied::unchanged);
+    auto bad = tuned; bad.focus.type.axles->wheelbase = -1;
+    const auto before = r.state(); test::throws([&] { r.apply(bad); }, "AXLE");
+    CHECK(checkpointJson(r.state()) == checkpointJson(before));
+    CHECK(r.state().scenario == before.scenario);
+    auto heavy = s.traffic.heavy; const auto original = *heavy.axles; heavy.length *= 2;
+    lab::rescaleAxles(heavy); test::near(heavy.axles->wheelbase, 2 * original.wheelbase);
+    auto nominal = s.focus.type; nominal.axles.reset(); nominal.length = 6; lab::rescaleAxles(nominal);
+    CHECK(!nominal.axles);
+}

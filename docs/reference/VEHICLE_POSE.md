@@ -63,7 +63,10 @@ The engine still remaps a vehicle to its target route at the start of one tick.
 `Vehicle.laneChangeTrace` records source/target route indices, both stations before
 motion, and speed before the remap. It is snapshot-owned, runtime-only display data;
 physics and evaluation never read it. `lastLaneChange` remains the discretionary-hold
-record. No project schema, event JSON or traffic parameter changes.
+record. A later suffix selection records `RouteRemapTrace` (old/new routes, unchanged station,
+number of preceding physical changes). The guide validates their shared physical prefix and uses
+the selected suffix, preserving the blend and rolling heading across recognition and later changes.
+No project schema, event JSON or traffic parameter changes.
 
 `LaneChangePath` reconstructs longitudinal travel `x` by undoing those station remaps.
 For each accepted change at `x0`, it blends the existing guide `G(x)` into the target
@@ -91,7 +94,8 @@ still does not change guidance. Heading keeps settling after the front reaches i
 lane rather than snapping to an independently calculated target-route heading.
 The scalar traffic station remains authoritative for occupancy and measurements.
 
-The Canvas caches each changed vehicle's journey against its entire trace/type,
+The Canvas caches each changed vehicle's journey against its entire physical and routing traces,
+current route and type,
 immutable Scenario ownership and Run-network replacement (D28). Seeking with an older
 trace rebuilds it; arrivals/reset discard it. Tick, current speed, colour and zoom do
 not key this spatial solution. The trace lasts for the vehicle's lifetime because old
@@ -111,6 +115,7 @@ Acceptance rows for this display slice:
 | P3.4 | Heading continues across joins and blend completion | Curved/polyline join, spatial convergence and no completion snap |
 | P3.5 | Cache reads every changing input and ignores zoom | Actual Canvas trace/type/network replacement, seeking, both sizes at low zoom |
 | P3.6 | Display history cannot change traffic | Trace erasure vs exact engine states/events; baseline CLI reports/CSV |
+| P3.7 | A positioned suffix selection during a blend retains position and heading, follows the selected turn, and supports a later change | Shared-prefix remap, stale cache rejection and malformed-prefix rejection (`lane-change-pose`) |
 
 ## Verification and limits
 

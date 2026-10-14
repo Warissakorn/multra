@@ -53,4 +53,7 @@ inline constexpr const char* kTrafficBehaviour = "lab-traffic-behaviour";
 // data/driver-behaviour), or the given project types when the editor passes its own catalog.
 LabSettings defaultSettings(const std::vector<VehicleType>& types, const std::vector<DriverBehaviour>& behaviours);
 LabSettings defaultSettings(const std::filesystem::path& dataDirectory);
+// Preserve valid explicit axle proportions when the lab changes body length.
+// Missing geometry retains defaults; malformed geometry is left for core validation.
+void rescaleAxles(VehicleType& type);
 }

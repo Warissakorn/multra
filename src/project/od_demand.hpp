@@ -19,5 +19,9 @@ AuthoringDefinition withOdDemand(const ProjectDocument&);
 // connectors, weighted by the lot row's cells summed over every matrix, times both connector shares,
 // divided over the chains (the same split as §3, with trips in place of rates).
 std::map<std::string, double> lotExitWeights(const ProjectDocument&, const std::string& lotZoneId);
+// Positive cells served by some connector pairs while others have no drivable path: the
+// vehicles left out. Shares stay normalized over every connector; nothing is redistributed.
+struct OdDemandGap { std::string path; double skippedVehicles{}; };
+std::vector<OdDemandGap> odDemandGaps(const ProjectDocument&);
 std::vector<ValidationIssue> odDemandIssues(const ProjectDocument&, const std::filesystem::path& dataDirectory);
 }

@@ -38,9 +38,11 @@ letter.
 At compile time each line becomes, per lane, the runtime segment and metres that
 `locateControlPoint` gives for `{linkId, laneId, station}`. A lane where that fails (a station past
 its end) contributes nothing. For each runtime route the line's **route distance** is its first
-part on any of those segments plus the position, as for queue-counter lines. A section **applies**
-to a route when both lines lie on it and the start comes first; on every other route it measures
-nothing. Rows follow authored order, one per section, with 0 vehicles when nothing applies.
+part on any of those segments plus the position, as for queue-counter lines. Start and end bind
+independently: a provisional route can cross a start before its
+positioned decision selects a suffix containing the end. If both lines lie on one route in reverse
+order, both bindings are disabled. A completed section needs an ordered start and end on the
+vehicle's actual journey. Rows follow authored order, one per section, with 0 vehicles when nothing applies.
 
 ## 3. Measurement
 
@@ -49,15 +51,15 @@ linear interpolation between the two observed states that bracket it.
 
 | Event | Rule |
 |---|---|
-| Crossing | Line distance `a` on the route before and `a'` on the route after a step. Crossed when `d < a` before and `d' ≥ a'` after; time `t + Δt·(a − d)/((a − d) + (d' − a'))`. A lane change or route decision between the two states changes the route but not the rule, because each side is measured on its own route |
+| Crossing | Line distance `a` on the route before and `a'` on the route after a step. Crossed when `d < a` before and `d' ≥ a'` after; time `t + Δt·(a − d)/((a − d) + (d' − a'))`. A proven start-of-tick lane remap first maps the prior front onto the target coordinate system; mapping alone is not a crossing. Suffix decisions preserve distance |
 | Entry | A vehicle first seen enters at distance 0 at its `enteredTime`; a line at `0 ≤ a ≤ d'` is crossed at `enteredTime + (t' − enteredTime)·a/d'` (at `enteredTime` when `d' = 0`) |
-| Exit | A vehicle that arrives (leaves the network) in a step is taken to have moved its last speed × Δt, and at least to its route's end, so an end line at the route's end is crossed inside that step; error under one time step |
-| Trip | Crossing the start opens a trip on a route the section applies to; crossing the end closes it. A vehicle crossing the start again before the end restarts its trip |
+| Exit | `ArrivedEvent` supplies the selected final route and brackets its end within the final tick. `DepartedEvent` plus `ArrivedEvent` also reconstruct a trip absent from both fleet snapshots; source-zero recognition selects the departure suffix before motion |
+| Trip | Crossing the start opens a candidate trip, retained across subsequent suffix selections; crossing the end closes it. Crossing the start again restarts it |
 | Travel time | `t_end − t_start` |
-| Free-flow time | `(a_end − a_start) / desiredSpeed` on the route the vehicle holds at the end crossing: the section length at the vehicle's own desired speed, the term the whole-trip `freeFlowTime` uses (the engine has no speed limit below it) |
+| Free-flow time | Actual longitudinal metres between the interpolated crossings / `desiredSpeed`. Proven `LaneChangeEvent` remaps use the index's unique whole-vehicle span mapping; changing route coordinates adds no metres. Display traces are never read. Ambiguous mapping discards the open measurement |
 | Delay | `max(0, travel time − free-flow time)`, as `tripDelay` |
 | Period | A trip counts when its **end** crossing is in the evaluation period (D132's rule for movements). With a cool-down (M5.9, D146, [BATCH](BATCH.md) §5) it counts when its vehicle was released in the window, whenever the end crossing falls |
-| Unfinished | Vehicles still in the network with an open trip when the report is taken; with a cool-down, window vehicles only |
+| Unfinished | Vehicles with an open trip and its end still ahead on the current route; an unselected candidate suffix alone is not unfinished. With a cool-down, window vehicles only |
 
 Rows: `name`, `vehicles`, `meanTravelTime`, `meanDelay` (null with no vehicle), `unfinished`.
 
@@ -95,3 +97,6 @@ end, with rename and delete. The canvas draws each line across the Link's full w
 | TT9 | Commands | Put/replace/delete with Undo; Link delete cascades; split moves a downstream line; reverse refused |
 | TT10 | Outputs | No-section projects' single-run and batch bytes unchanged; batch aggregates a section by hand |
 | TT11 | Editor (M5.4b) | Two Ctrl+right-clicks make one Undo step and one row; rename and delete through History; save/reopen |
+| TT12 | Unequal lane lengths | Free-flow time uses actual metres before and after remapping, not final-route line spacing (`traveltime`) |
+| TT13 | Provisional suffix | A start on an unselected route survives recognition; only a selected end contributes unfinished (`traveltime`) |
+| TT14 | Source and terminal in one tick | Section and stop-line observations count the trip once, including source-zero recognition (`movement`) |
