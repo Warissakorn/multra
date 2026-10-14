@@ -7,6 +7,20 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 to do next is the duplication hard rule 3 forbids, and the copy that rots is always the one in
 the log. Rewrite this file; do not append to it.
 
+## Behaviour Lab review (2026-10-14, D165)
+
+The owner's request — a window to tune driving behaviour on a vehicle that laps a test network —
+is implemented as M3.3.4 ([contract](reference/BEHAVIOUR_LAB.md), rows BL1–BL12) on the branch
+`claude/behaviour-lab`. Verified on Linux only (GCC 13.3, Qt 6.4.2 offscreen). **Before merging:**
+open a PR so `native.yml` runs `behaviour-lab-ui` and the core `circuit`/`lab` groups on Windows.
+**Owner's look:** Simulation → *Behaviour Lab…*; run at 1×–5×; change `additiveSafetyDistance`
+and watch the gap chart move without a reset; change lanes or `straightLength` (restarts); click
+another vehicle, then *Follow tuned vehicle*; *Apply to project*, then Undo; switch to Thai.
+Next lab slices, one per session and only on the owner's say: W74 parameters in the panel (needs
+`retuneSimulation` to allow a prototype → W74 change, so traits must exist), then lane-change fields
+(needs a lane-change wrap rule on circuits first, BEHAVIOUR_LAB §1.1). After the review, return to
+the queue below.
+
 ## GUI interaction review (2026-10-13, D151)
 
 The owner's Routes/reflow/tooltip/wheel fixes are implemented; contract in

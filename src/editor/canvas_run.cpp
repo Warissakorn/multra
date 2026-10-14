@@ -29,6 +29,9 @@ void EditorCanvas::setRunNetwork(const Network& network) {
         runGeometry_[p.id]=p.geometry;if(p.equation)runEquations_[p.id]=*p.equation;runLevels_[p.id]=c.level;runStyles_[p.id]=c.displayType;
     }
 }
+void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId) {
+    runFollow_=vehicleId;drawRunItems();
+}
 void EditorCanvas::setRunFrame(const SimState& frame) {
     // Scenarios are owned immutable snapshots, not mutable documents/revisions.
     if(frame.scenario!=runFrame_.scenario){runAxlePaths_.clear();runLaneChangePaths_.clear();}
@@ -69,9 +72,20 @@ void EditorCanvas::drawRunItems() {
     std::map<std::uint32_t,std::vector<RoutePart>> partsOf;
     const auto partsForRoute=[&](std::uint32_t route)->const std::vector<RoutePart>& {
         auto parts=partsOf.find(route);
-        if(parts==partsOf.end())parts=partsOf.emplace(route,routeParts(*runFrame_.scenario,runFrame_.scenario->routes.at(route))).first;
+        if(parts==partsOf.end()) {
+            const auto& r=runFrame_.scenario->routes.at(route);
+            auto lap=routeParts(*runFrame_.scenario,r);
+            // D165: a circuit vehicle lives in [0, 2L) (BEHAVIOUR_LAB.md §1.1); two laps of parts
+            // put its rear on the lap behind while it crosses the seam.
+            if(r.circuit && !lap.empty()) {
+                const auto count=lap.size();const double length=lap.back().start+lap.back().length;
+                for(std::size_t i=0;i<count;++i){auto p=lap[i];p.start+=length;lap.push_back(std::move(p));}
+            }
+            parts=partsOf.emplace(route,std::move(lap)).first;
+        }
         return parts->second;
     };
+    QGraphicsItem* followed=nullptr;
     for(const auto& v:runFrame_.vehicles) {
         const auto& parts=partsForRoute(v.routeIndex);
         const auto location=locateOnParts(parts,v);
@@ -113,7 +127,12 @@ void EditorCanvas::drawRunItems() {
         item->setData(3,lever); // local front-bumper coordinate, metres from rear axle
         item->setData(0,"run-vehicle");item->setData(1,QString::fromStdString(type.id));item->setData(2,QVariant::fromValue<qulonglong>(v.id));
         item->setZValue(runLevels_.at(location.segmentId)*100.+11);scene_.addItem(item);runItems_.push_back(item);
+        if(runFollow_ && *runFollow_==v.id) {
+            QPen outline(canvasStyle::selection(),2);outline.setCosmetic(true);
+            item->setPen(outline);item->setZValue(item->zValue()+0.5);followed=item;
+        }
     }
+    if(followed)centerOn(followed->sceneBoundingRect().center());
     std::erase_if(runLaneChangePaths_,[&](const auto& entry) {
         return std::none_of(runFrame_.vehicles.begin(),runFrame_.vehicles.end(),
             [&](const Vehicle& v){return v.id==entry.first;});

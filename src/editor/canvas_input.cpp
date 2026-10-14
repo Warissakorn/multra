@@ -1,5 +1,6 @@
 #include "canvas.hpp"
 #include <QMouseEvent>
+#include <QGraphicsItem>
 #include <QApplication>
 #include <QKeyEvent>
 #include <QFocusEvent>
@@ -9,6 +10,13 @@
 namespace trafficsim {
 void EditorCanvas::mousePressEvent(QMouseEvent* e) {
     setFocus();
+    // D165: the behaviour lab picks the vehicle to follow; an editor without the callback is unchanged.
+    if(runVehicleClicked && runFrame_.scenario && e->button()==Qt::LeftButton) {
+        for(auto* item:items(e->pos()))
+            if(item->data(0).toString()==QStringLiteral("run-vehicle")) {
+                runVehicleClicked(item->data(2).toULongLong());return;
+            }
+    }
     if(rotationPivot_) {if(e->button()==Qt::LeftButton)return;cancel();}
     if(creating_ && e->button()==Qt::LeftButton) {
         draft_.back()=world(e->pos());draft_.push_back(draft_.back());redraw();return;

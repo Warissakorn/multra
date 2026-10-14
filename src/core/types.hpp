@@ -13,6 +13,9 @@ namespace trafficsim {
 struct Segment { std::string id; double length{}; std::vector<std::string> next; };
 struct Route {
     std::string id; std::vector<std::string> segmentIds;
+    // D165 (BEHAVIOUR_LAB.md §1.1): the route closes on itself and its vehicles never arrive.
+    // Last, so every existing brace-initialisation keeps its meaning.
+    bool circuit{};
     bool operator==(const Route&) const = default;
 };
 // M3.3.3a W74 (docs/reference/W74.md, D129). Every key is required data (hard rule 5); there

@@ -33,6 +33,32 @@ std::map<std::string, const T*> index(const std::vector<T>& items, const std::st
 bool has(const std::vector<std::string>& values, const std::string& value) {
     return std::find(values.begin(), values.end(), value) != values.end();
 }
+// D165 (BEHAVIOUR_LAB.md §1.1): a circuit closes, and carries nothing that reads route distances
+// without a wrap rule of its own.
+template<class Add>
+void circuitIssues(const Scenario& s, const Route& route, const std::map<std::string, const Segment*>& segments,
+                   const std::string& path, Add&& add) {
+    const auto& ids = route.segmentIds;
+    const auto last = ids.empty() ? segments.end() : segments.find(ids.back());
+    if (last == segments.end() || !has(last->second->next, ids.front())) add("UNSUPPORTED_CIRCUIT", path + ".circuit");
+    const auto on = [&](const std::string& segment) { return has(ids, segment); };
+    const auto onAny = [&](const std::vector<std::string>& list) { return std::any_of(list.begin(), list.end(), on); };
+    bool decorated =
+        std::any_of(s.routeDecisions.begin(), s.routeDecisions.end(), [&](const auto& d) {
+            return d.fromRouteId == route.id || std::any_of(d.choices.begin(), d.choices.end(),
+                [&](const auto& c) { return c.routeId == route.id; }); }) ||
+        std::any_of(s.laneChanges.begin(), s.laneChanges.end(), [&](const auto& c) {
+            return c.fromRouteId == route.id || c.toRouteId == route.id; }) ||
+        std::any_of(s.routeDeadEnds.begin(), s.routeDeadEnds.end(), [&](const auto& d) { return d.routeId == route.id; }) ||
+        std::any_of(s.priorityRules.begin(), s.priorityRules.end(), [&](const auto& r) {
+            return on(r.yieldSegmentId) || on(r.conflictSegmentId); }) ||
+        std::any_of(s.conflictZones.begin(), s.conflictZones.end(), [&](const auto& z) {
+            return onAny(z.major.segmentIds) || onAny(z.minor.segmentIds); }) ||
+        std::any_of(s.parkingLots.begin(), s.parkingLots.end(), [&](const auto& lot) {
+            return has(lot.gateRouteIds, route.id) || std::any_of(lot.exits.begin(), lot.exits.end(),
+                [&](const auto& e) { return e.routeId == route.id; }); });
+    if (decorated) add("UNSUPPORTED_CIRCUIT", path + ".circuit");
+}
 }
 ValidationError::ValidationError(std::vector<ValidationIssue> value)
     : std::runtime_error(issueMessage(value)), issues(std::move(value)) {}
@@ -226,6 +252,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             }
         }
         if (!std::isfinite(routeLength)) add("INVALID_NUMBER", p);
+        if (s.routes[i].circuit) circuitIssues(s, s.routes[i], segments, "routes[" + std::to_string(i) + "]", add);
     }
     for (std::size_t i = 0; i < s.behaviours.size(); ++i) {
         const auto& b = s.behaviours[i];

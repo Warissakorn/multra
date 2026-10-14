@@ -13,6 +13,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [TRAVEL_TIME_SECTIONS.md](TRAVEL_TIME_SECTIONS.md) | Travel-time sections: lines, crossings, section delay, output and acceptance rows (M5.4) |
 | [DISCHARGE.md](DISCHARGE.md) | Lane/cycle discharge and startup diagnostics, quantization and unavailable results |
 | [DRIVING_BEHAVIOUR.md](DRIVING_BEHAVIOUR.md) | Proposed class/road behavior assignment and target capability map |
+| [BEHAVIOUR_LAB.md](BEHAVIOUR_LAB.md) | Behaviour Lab: circuit routes, live retune, vehicle placement, the lab ring and window, rows BL1–BL12 (M3.3.4) |
 | [W74.md](W74.md) | W74 car-following equations, parameters, traits, state and model switch (contract, not yet implemented) |
 | [POSITIONED_ROUTING.md](POSITIONED_ROUTING.md) | Positioned Route recognition and schema 20 |
 | [SIMULATION.md](SIMULATION.md) | Simulation core and network model |

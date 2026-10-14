@@ -25,6 +25,7 @@
 #include <functional>
 #include <vector>
 #include <QKeySequence>
+#include <QPointer>
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -43,6 +44,8 @@ class QTabWidget;
 class QTableWidget;
 class QToolBar;
 namespace trafficsim {
+namespace lab { struct FocusSettings; }
+class BehaviourLabWindow;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr);
@@ -53,6 +56,9 @@ public:
     bool autosaveActive() const { return autosaveTimer_.isActive(); }
     const History& history() const { return history_; }
     EditorCanvas* canvas() const { return canvas_; }
+    // D165: Simulation > Behaviour Lab; opens (or raises) the lab window. Null until first opened.
+    void openBehaviourLab();
+    BehaviourLabWindow* behaviourLab() const;
     void openFile(const QString& path); // Parse and validate before replacing the document.
     // Same, but reports a failure through this window's translated error surface instead of
     // throwing a bare code at a caller that has no locale to resolve it with.
@@ -110,6 +116,11 @@ private:
     void editDemandCatalog();
     // M3.3.2c (D128): driving-behaviour library dialog and Link/Connector assignment.
     void openBehaviourLibrary();
+    // D165: Simulation > Behaviour Lab, and its write-back of the tuned vehicle (editor_lab.cpp).
+    void buildBehaviourLab();
+    QString applyLabFocus(const lab::FocusSettings&);
+    QPointer<BehaviourLabWindow> lab_;
+    std::string labTypeId_, labBehaviourId_; // what Apply writes to, chosen when the lab opens
     void buildBehaviourInspector(QVBoxLayout*);
     void refreshBehaviourInspector();
     std::vector<std::string> selectedRoads() const; // selected Links and Connectors, in selection order

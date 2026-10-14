@@ -48,6 +48,22 @@ bool projectBoundary(const std::string& source) {
     }
     return true;
 }
+// D165: the behaviour lab may build documents through commands, but never knows the editor, the
+// shell or Qt -- the window draws it, so it stays testable headless.
+bool labBoundary(const std::string& source) {
+    const std::regex directive(R"(^\s*#\s*(include|include_next)\b.*)");
+    const std::regex literal(R"(^\s*#\s*include\s*([<"])([^>"\r\n]+)[>"]\s*(//.*)?$)");
+    const std::regex forbidden(R"((^|[/\\])(editor|shell|render)([/\\]|$))");
+    std::istringstream stream(source); std::string line;
+    while (std::getline(stream, line)) {
+        if (!std::regex_match(line, directive)) continue;
+        std::smatch match;
+        if (!std::regex_match(line, match, literal)) return false;
+        const std::string header = match[2];
+        if (std::regex_search(header, forbidden) || header.starts_with("Q") || header.starts_with("Qt")) return false;
+    }
+    return true;
+}
 // The batch runner (M5.2) may read the core and eval contracts, which `check` would refuse as
 // cross-directory headers; replace exactly those includes so every other rule still applies.
 std::string runnerContract(std::string source) {
@@ -70,6 +86,9 @@ int main(int argc, char** argv) {
                 "#include \"../model/network/network.hpp\""})
             if (check(runnerContract(bad), {})) { std::cerr << "Runner guard accepted: " << bad << '\n'; return 1; }
         if (!check(runnerContract("#include \"../eval/movement.hpp\"\n#include \"../core/simulation.hpp\"\n"), {})) return 1;
+        for (const auto* bad : {"#include \"../shell/editor_window.hpp\"", "#include \"../editor/canvas.hpp\"", "#include <QWidget>"})
+            if (labBoundary(bad)) { std::cerr << "Lab guard accepted: " << bad << '\n'; return 1; }
+        if (!labBoundary("#include \"../commands/demand_commands.hpp\"\n#include <cmath>")) return 1;
         return check("#include <vector>\n#include <cmath>\n", {}) ? 0 : 1;
     }
     bool valid = true;
@@ -93,6 +112,11 @@ int main(int argc, char** argv) {
         if (entry.path().extension() != ".hpp" && entry.path().extension() != ".cpp") continue;
         std::ifstream file(entry.path()); std::string source((std::istreambuf_iterator<char>(file)), {});
         if (!file || !projectBoundary(source)) { std::cerr << "Project boundary violation: " << entry.path() << '\n'; valid = false; }
+    }
+    for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::path(argv[1]) / "src/lab")) {
+        if (entry.path().extension() != ".hpp" && entry.path().extension() != ".cpp") continue;
+        std::ifstream file(entry.path()); std::string source((std::istreambuf_iterator<char>(file)), {});
+        if (!file || !labBoundary(source)) { std::cerr << "Lab boundary violation: " << entry.path() << '\n'; valid = false; }
     }
     return valid ? 0 : 1;
 }
