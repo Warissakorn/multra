@@ -159,14 +159,14 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   - 2026-10-08, MSVC Release on P-cores, M2.6 CLI run (wall median 634 → 568 ms): `observe`'s
     per-line walk and queue matching (155 → 97 ms) and publish's vehicle copy (98 → 88 ms) are
     done. Split now: compile ≈116, step ≈316, observe ≈97 ms.
-  - Next candidates, measured but not changed: **compile** walks `routelessChains` 100 times per
-    Run (≈0.9 ms each; `connectorPaths` is only 20 ms of it), because `validateDocument`,
-    `routelessIssues` and `expandRouteless` each walk every input × time/type slice — share or
-    memoise the walk. D140 (2026-10-09) computes `connectorPaths` and each destination's chains
-    once per expansion, route continuations find their tail once, and `appendStationRouting`
-    reuses the expansion's `runtimeSections` (study-template validation 21.6 → 1.7 ms,
-    `trafficsim-validate-benchmark`). Still open: the repeated `routelessChains` walk itself, then
-    phase 1 (≈110 ms). The `MovedEvent::segmentId` string copy would need an event-interface decision.
+  - **Compile** (D163, 2026-10-14, Linux GCC 13.3 RelWithDebInfo, study template):
+    `compileDocument` 45.9 → 30.2 M Ir, 6.1–6.7 → 4.0–4.1 ms; `routelessIssues` and Run's
+    `expandRouteless` share one `RoutelessWalks` (walks 76 → 52 per compile) and each compile or
+    validation builds `runtimeSections` once (7 → 2). **Owner check:** the MSVC Release
+    compile figure (≈116 ms before) on the M2.6 CLI run. Still open: `validateDocument`'s own
+    expansion is the third walk set (≈24 walks, sharing it with Run means proving its
+    `withRoutingDecisions` input equals Run's), then phase 1 (≈110 ms). The
+    `MovedEvent::segmentId` string copy would need an event-interface decision.
   - 2026-10-13, Linux GCC 13.3 callgrind, one M2.6 run (3.88 G Ir): step 80 %, observe 18 %,
     compile ≈2 % (D140 shrank it). **Do not retry** reusing the source-candidate refs/spans as
     the main snapshot without a new measurement: only 5,242 of 36,000 ticks qualify (no arrival

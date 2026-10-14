@@ -147,6 +147,10 @@ const RoutelessResult& RoutelessWalks::walk(const std::string& linkId, const std
     if (fresh) it->second = routelessChains(network, table, linkId, placed(type)[slice]);
     return it->second;
 }
+const RuntimeSections& RoutelessWalks::sections() {
+    if (!sections_) sections_ = runtimeSections(network);
+    return *sections_;
+}
 RoutelessIssues routelessIssues(const Network& network, const AuthoringDefinition& d) {
     RoutelessWalks walks(network, d); // one walk over one unchanged Network (D140)
     return routelessIssues(walks);
@@ -203,7 +207,7 @@ ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition re
     if (std::none_of(resolved.inputs.begin(), resolved.inputs.end(), [](const auto& i) { return !i.linkId.empty(); }))
         return resolved; // nothing to do, and nothing to compute: every existing project
     const bool typed=hasTypeRouting(authored);
-    const auto table = runtimeSections(network);
+    const auto& table = shared.sections();
     // Per Link: the union of every slice's paths, in order of first appearance, so one runtime
     // route serves a path in every slice; and each slice's share of each path.
     // M3.2.8b: `stub` and `family` per path, so an entry decision's destination gets its lateral

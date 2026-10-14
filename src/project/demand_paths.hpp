@@ -47,6 +47,10 @@ public:
     const std::vector<std::vector<PlacedDecision>>& placed(const std::string& vehicleTypeId);
     // The walk from linkId through slice `slice` of placed(vehicleTypeId).
     const RoutelessResult& walk(const std::string& linkId, const std::string& vehicleTypeId, std::size_t slice);
+    // runtimeSections of the Network, built on first use; `builtSections` is null until then,
+    // so a caller that must check the Network first never builds it early (compileScenario).
+    const RuntimeSections& sections();
+    const RuntimeSections* builtSections() const { return sections_ ? &*sections_ : nullptr; }
     const Network& network;
     const AuthoringDefinition& definition;
     const ConnectorPathTable table; // lazy itself: free for a project that never walks
@@ -54,6 +58,7 @@ public:
 private:
     std::vector<double> points_;
     std::vector<std::optional<double>> times_;
+    std::optional<RuntimeSections> sections_;
     std::map<std::string, std::vector<std::vector<PlacedDecision>>> placed_;
     std::map<std::tuple<std::string, std::string, std::size_t>, RoutelessResult> walks_;
 };

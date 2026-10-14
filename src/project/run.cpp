@@ -61,7 +61,7 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // data, sliced away by resolveCatalogs, so it is read from the document itself.
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);
     if(manifest)manifest->validate();
-    auto scenario=compileScenario(d.network,definition);
+    auto scenario=compileScenario(d.network,definition,walks.builtSections());
     // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.
     if(!d.zones.parkingLots.empty()) {
         compileParkingLots(d,authored,scenario,data);
