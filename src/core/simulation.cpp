@@ -429,10 +429,10 @@ SimState stepSimulation(SimState&& state, double dt) {
             events.emplace_back(MovedEvent{time, vehicle.id, location.segmentId, location.position, move.speed, move.acceleration});
         }
     }
-    for (const auto& head : scenario.signalHeads) {
-        const auto& program = detail::byId(scenario.signalPrograms, head.programId);
-        const auto color = signalColorAt(program, time);
-        if (color != signalColorAt(program, startTime)) events.emplace_back(SignalEvent{time, head.id, color});
+    // The tick's start colour is headColors[h] already; only the end colour is new.
+    for (std::size_t h = 0; h < scenario.signalHeads.size(); ++h) {
+        const auto color = signalColorAt(scenario.signalPrograms[index.programOfHead[h]], time);
+        if (color != headColors[h]) events.emplace_back(SignalEvent{time, scenario.signalHeads[h].id, color});
     }
     next.tick = tick; next.time = time;
     next.stopService = std::move(service);
