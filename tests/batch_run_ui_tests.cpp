@@ -10,6 +10,7 @@
 #include "../src/project/los_output.hpp"
 #include <QAction>
 #include <QApplication>
+#include <QTimer>
 #include <QClipboard>
 #include <QElapsedTimer>
 #include <QFile>
@@ -141,7 +142,11 @@ int main(int argc, char** argv) {
                 "A cancelled batch can be exported");
         require(refuses([&] { w.copyResults(); }), "A cancelled batch can be copied");
         require(item<QTableWidget>(w, "editorMovementTable")->isVisible(), "Cancel did not restore the single-run view");
-        seeds->setText("44"); action(w, "editorRunSeeds"); waitForBatch(w); // joins the cancelled worker first
+        seeds->setText("44");
+        QTimer heartbeat; heartbeat.setInterval(1); int beats=0;
+        QObject::connect(&heartbeat,&QTimer::timeout,[&] { ++beats; }); heartbeat.start();
+        action(w, "editorRunSeeds"); waitForBatch(w); heartbeat.stop();
+        require(beats>0,"Cancel/restart stopped the event loop"); // replacement starts without waiting for the cancelled seed
         require(w.batchResult() && w.batchResult()->report.seeds == std::vector<std::uint32_t>{44}, "A batch after a cancel failed");
         // Whatever the cancelled worker posts late is discarded, never shown as a result.
         QTest::qWait(50);

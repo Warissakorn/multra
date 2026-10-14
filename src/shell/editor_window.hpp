@@ -192,7 +192,8 @@ private:
     QLabel* batchNote_{};
     QWidget* batchView_{};
     QTableWidget *batchMovementTable_{}, *batchSectionTable_{}, *batchQueueTable_{};
-    std::thread batchThread_;
+    struct BatchWorker { std::thread thread; std::shared_ptr<std::atomic<bool>> cancel; };
+    std::map<std::uint64_t, BatchWorker> batchWorkers_;
     std::shared_ptr<std::atomic<bool>> batchCancel_;
     std::uint64_t batchGeneration_{};
     std::size_t batchDone_{}, batchTotal_{}; // batchTotal_ is non-zero while a batch runs
@@ -205,7 +206,8 @@ private:
     void cancelBatch(); // stops a running batch or comparison and discards a finished one
     // The worker both use: `job` runs on it over value copies, reports runs done through
     // `progress` (false once cancelled) and returns what installs its result on the UI thread.
-    using BatchJob = std::function<std::function<void()>(const std::function<bool(std::size_t)>& progress)>;
+    using BatchJob = std::function<std::function<void()>(const std::function<bool(std::size_t)>& progress,
+                                                              const std::function<bool()>& cancelled)>;
     void startWorker(std::size_t total, bool comparing, BatchJob job);
     void finishBatch(std::uint64_t generation, const std::function<void()>& install, const std::string& error);
     // M5.8b (BATCH §7, D149), src/shell/editor_compare.cpp: the open project as base against a

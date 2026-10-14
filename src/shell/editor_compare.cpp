@@ -141,12 +141,12 @@ void EditorWindow::compareWithFile(const QString& file) {
     const auto total=2*list->size(); // read before the call: the capture below moves the list
     startWorker(total,true,[this,names=std::move(names),seeds=std::move(*list),
         baseScenario=std::move(base->scenario),baseSpec=std::move(*baseSpec),
-        alternativeScenario=std::move(alternative->scenario),alternativeSpec=std::move(*alternativeSpec)](const auto& progress)
+        alternativeScenario=std::move(alternative->scenario),alternativeSpec=std::move(*alternativeSpec)](const auto& progress, const auto& cancelled)
         -> std::function<void()> {
-        auto baseRuns=runSeedsParallel(baseScenario,baseSpec,seeds,progress);
+        auto baseRuns=runSeedsParallel(baseScenario,baseSpec,seeds,progress,0,cancelled);
         if(baseRuns.empty()) return {}; // cancelled
         auto alternativeRuns=runSeedsParallel(alternativeScenario,alternativeSpec,seeds,
-            [&](std::size_t done){ return progress(seeds.size()+done); });
+            [&](std::size_t done){ return progress(seeds.size()+done); },0,cancelled);
         if(alternativeRuns.empty()) return {};
         auto result=std::make_shared<ComparisonResult>();
         result->base.name=names.first; result->base.report=aggregate(baseRuns); result->base.runs=std::move(baseRuns);

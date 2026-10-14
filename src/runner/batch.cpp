@@ -53,12 +53,16 @@ std::vector<std::string> movementsWithUnfinished(const BatchReport& r, double sh
     }
     return names;
 }
-SeedRun runSeed(const Scenario& scenario, const EvaluationSpec& spec, std::uint32_t seed, double maxPendingShare) {
+SeedRun runSeed(const Scenario& scenario, const EvaluationSpec& spec, std::uint32_t seed, double maxPendingShare, const std::function<bool()>& cancelled) {
+    if (cancelled && cancelled()) throw RunCancelled{};
     MovementAccumulator movements(spec);
     auto state = createSimulation(scenario, seed);
     movements.observe(state);
     const auto ticks = totalTicks(scenario);
-    while (state.tick < ticks) { state = stepSimulation(std::move(state)); movements.observe(state); }
+    while (state.tick < ticks) {
+        if (cancelled && cancelled()) throw RunCancelled{};
+        state = stepSimulation(std::move(state)); movements.observe(state);
+    }
     SeedRun run;
     run.seed = seed;
     run.report = movements.report(state);
@@ -67,12 +71,13 @@ SeedRun runSeed(const Scenario& scenario, const EvaluationSpec& spec, std::uint3
     return run;
 }
 std::vector<SeedRun> runSeeds(const Scenario& scenario, const EvaluationSpec& spec, const std::vector<std::uint32_t>& seeds,
-                              const std::function<bool(std::size_t)>& progress) {
+                              const std::function<bool(std::size_t)>& progress, const std::function<bool()>& cancelled) {
     rejectDuplicates(seeds);
     std::vector<SeedRun> runs;
     runs.reserve(seeds.size());
     for (const auto seed : seeds) {
-        runs.push_back(runSeed(scenario, spec, seed));
+        try { runs.push_back(runSeed(scenario, spec, seed, .05, cancelled)); }
+        catch (const RunCancelled&) { return {}; }
         if (progress && !progress(runs.size())) return {};
     }
     return runs;

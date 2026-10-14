@@ -8,6 +8,12 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Batch cancellation lifecycle (D167)
+
+Runner cancellation polls between ticks and discards partial batches. UI owns retiring workers
+until their generation-specific completion; replacement never joins an active seed. Headless
+sequential/parallel cancellation tests pass; restart heartbeat/Apply UI checks await native CI.
+
 ## 2026-10-14 — R7 split references (D167)
 
 Split carries stations, creates decision suffix Routes and retains full Routes for fixed inputs.

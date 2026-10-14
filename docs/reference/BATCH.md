@@ -16,9 +16,11 @@ validated** (rule 4); LOS waits for travel-time sections ([M5_PLAN](../plans/M5_
   seed per hardware thread (`--threads N` caps it; 1 is the runner's sequential `runSeeds`). Each
   seed is one single-threaded run written to its own slot, so every output is byte-identical for
   every N. `progress` is called on the calling thread, once per finished seed. Cancelling (through
-  the `progress` callback) returns no runs, so nothing can claim N runs it did not finish.
-- Per seed: `generated` (vehicles the inputs created, `nextVehicleId − 1`) =
-  `completed + active + pending`, checked by test.
+  the `progress` callback or a thread-safe cancellation predicate polled between ticks) returns no runs, so nothing can claim N runs it did not finish.
+- Per seed: `generated = nextVehicleId − 1` counts distinct identities, including initial parked
+  vehicles. Whole-run conservation is `generated = completedTrips − cumulativeAdmissions +
+  active + pending + parked` (ZONES_AND_PARKING §4.6). With no parking, admissions and parked are
+  zero. Trip completions and evaluation-window lot flows cannot be used as identity counts.
 
 ## 2. Aggregate
 
@@ -269,3 +271,7 @@ the **base** and a chosen file as the **alternative** — the roles of `--projec
 | EC5 | Cancel part way leaves no comparison; Export and Copy refuse; a late result is discarded | `compare-run-ui` |
 | EC6 | An edit, a batch and a single run each discard a finished comparison | `compare-run-ui` |
 | EC7 | With unsaved edits the CSV names the base `NAME (unsaved edits)`; a section in the alternative only is named in the note | `compare-run-ui` |
+
+Cancel/Restart owns each retiring worker until its completion callback; starting a new batch or
+comparison does not join the cancelled seed on the UI thread. Generation checks discard stale
+progress/results. Window teardown cancels all workers and joins them before its members die.

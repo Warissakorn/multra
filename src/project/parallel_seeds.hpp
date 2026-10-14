@@ -9,6 +9,8 @@ namespace trafficsim {
 // `progress` is called on the calling thread only, once per finished seed, in increasing order;
 // returning false stops the workers after the seed each is on and returns nothing. A seed that
 // throws stops the rest, and its exception reaches the caller after every worker has joined.
+// `cancelled` is polled between ticks on workers and must be safe for concurrent calls.
 std::vector<SeedRun> runSeedsParallel(const Scenario&, const EvaluationSpec&, const std::vector<std::uint32_t>& seeds,
-                                      const std::function<bool(std::size_t done)>& progress = {}, unsigned threads = 0);
+                                      const std::function<bool(std::size_t done)>& progress = {}, unsigned threads = 0,
+                                      const std::function<bool()>& cancelled = {});
 }

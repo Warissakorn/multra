@@ -10,9 +10,9 @@
 namespace trafficsim {
 std::vector<SeedRun> runSeedsParallel(const Scenario& scenario, const EvaluationSpec& spec,
                                       const std::vector<std::uint32_t>& seeds,
-                                      const std::function<bool(std::size_t)>& progress, unsigned threads) {
+                                      const std::function<bool(std::size_t)>& progress, unsigned threads, const std::function<bool()>& cancelled) {
     if (threads == 0) threads = std::max(1u, std::thread::hardware_concurrency());
-    if (threads <= 1 || seeds.size() <= 1) return runSeeds(scenario, spec, seeds, progress);
+    if (threads <= 1 || seeds.size() <= 1) return runSeeds(scenario, spec, seeds, progress, cancelled);
     {   // runSeeds' own refusal, before any thread starts.
         auto sorted = seeds;
         std::sort(sorted.begin(), sorted.end());
@@ -27,14 +27,19 @@ std::vector<SeedRun> runSeedsParallel(const Scenario& scenario, const Evaluation
     std::size_t done = 0;
     std::exception_ptr failure;
     std::atomic<std::size_t> next{0};
-    std::atomic<bool> stop{false};
+    std::atomic<bool> stop{false}, interrupted{false};
     std::vector<std::jthread> workers;
     const auto count = std::min<std::size_t>(threads, seeds.size());
     for (std::size_t t = 0; t < count; ++t)
         workers.emplace_back([&] {
             for (std::size_t i; !stop && (i = next++) < seeds.size();) {
                 try {
-                    runs[i] = runSeed(scenario, spec, seeds[i]);
+                    runs[i] = runSeed(scenario, spec, seeds[i], .05, [&] {
+                        return stop || (cancelled && cancelled());
+                    });
+                } catch (const RunCancelled&) {
+                    const std::lock_guard lock(mutex);
+                    interrupted = true; stop = true; finished.notify_one(); return;
                 } catch (...) {
                     const std::lock_guard lock(mutex);
                     if (!failure) failure = std::current_exception();
@@ -47,16 +52,16 @@ std::vector<SeedRun> runSeedsParallel(const Scenario& scenario, const Evaluation
                 finished.notify_one();
             }
         });
-    bool cancelled = false;
+    bool stopped = false;
     try {
         std::unique_lock lock(mutex);
-        for (std::size_t reported = 0; reported < seeds.size() && !cancelled;) {
-            finished.wait(lock, [&] { return done > reported || failure != nullptr; });
-            if (failure) break;
-            for (const auto now = done; reported < now && !cancelled;) {
+        for (std::size_t reported = 0; reported < seeds.size() && !stopped;) {
+            finished.wait(lock, [&] { return done > reported || failure != nullptr || interrupted; });
+            if (failure || interrupted) break;
+            for (const auto now = done; reported < now && !stopped;) {
                 ++reported;
                 lock.unlock();
-                cancelled = progress && !progress(reported);
+                stopped = progress && !progress(reported);
                 lock.lock();
             }
         }
@@ -67,7 +72,7 @@ std::vector<SeedRun> runSeedsParallel(const Scenario& scenario, const Evaluation
     stop = true;
     workers.clear(); // joins
     if (failure) std::rethrow_exception(failure);
-    if (cancelled) return {};
+    if (stopped || interrupted) return {};
     return runs;
 }
 }

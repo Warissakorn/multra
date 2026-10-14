@@ -6,6 +6,7 @@
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
+#include <atomic>
 #include <sstream>
 using namespace trafficsim;
 // M5.2. The aggregate cases pin the statistics by hand; the engine cases pin that a batch seed is
@@ -173,4 +174,19 @@ TEST(batch, tsv_of_the_batch_csv_keeps_its_marker_and_rows) {
     CHECK(tsv.find("a → b\t2\t25.00\t") != std::string::npos);
     std::istringstream lines(tsv);
     for (std::string line; std::getline(lines, line);) CHECK(line.starts_with("#") || line.find(',') == std::string::npos);
+}
+
+TEST(batch, cancellation_is_observed_inside_a_seed_and_discards_partial_runs) {
+    auto s=test::straight(); s.duration=36000;
+    EvaluationSpec spec; std::atomic<int> polls{0};
+    test::throws([&] { runSeed(s,spec,42,.05,[&] { return ++polls>5; }); },"run cancelled");
+    CHECK(polls==6);
+    for (unsigned threads : {1u,3u}) {
+        polls=0;
+        const auto runs=runSeedsParallel(s,spec,{42,43,44},{},threads,[&] { return ++polls>5; });
+        CHECK(polls>5 && runs.empty());
+    }
+    // A replacement run succeeds, and the no-cancellation path has identical results.
+    s.duration=2; s.inputs[0].endTime=2;
+    CHECK(runSeedsParallel(s,spec,{42},{},1)==runSeedsParallel(s,spec,{42},{},3));
 }
