@@ -1,4 +1,5 @@
 #include "../src/editor/lane_change_pose.hpp"
+#include "../src/core/routing.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -107,6 +108,27 @@ void overlappingAndMapping() {
     LaneChangePath bounded(s,v,geometry,{},1e-300);require(!bounded.pose(v),"Tiny step escaped memory bound");
     auto changed=v;changed.typeIndex=1;require(!first.matches(changed),"Type change retained old cache key");
 }
+void routingAfterChange() {
+    auto s=scenario(); auto g=geometry;
+    s.segments[1].next={"c"}; s.routes[2].segmentIds={"b","c"};
+    g["c"]={{100,3.5},{100,103.5}};
+    auto v=changer(); v.distance=28;
+    LaneChangePath before(s,v,g,{}); const auto prior=*before.pose(v);
+    require(prior.front.y>0 && prior.front.y<3.5,"Setup: routing must happen during the blend");
+    RouteDecision decision{"choose","b",28,{},{{"c",1,{}}}};
+    std::uint32_t random=42; std::vector<SimEvent> events;
+    applyRouteDecision(s,v,decision,0,random,events);
+    require(v.routeIndex==2 && v.laneChangeTrace.size()==2,"Routing did not change the logical route");
+    require(!before.matches(v),"Routing retained the old pose cache");
+    LaneChangePath after(s,v,g,{});
+    require(after.pose(v).has_value(),"Routing after lane change lost the vehicle pose");
+    near(after.pose(v)->front,prior.front); near(after.pose(v)->heading,prior.heading,2e-5);
+    near(at(after,v,28+1e-6).front,prior.front,2e-6);
+    near(at(after,v,130).front,{100,33.5});
+    // A later lane change can extend the same journey after its logical remap.
+    v.laneChangeTrace.push_back({2,0,60,60,10}); v.routeIndex=0; v.distance=60;
+    LaneChangePath later(s,v,g,{}); require(later.pose(v).has_value(),"Change after routing lost its pose");
 }
-int main(){try{analyticAndSlip();curvedJoin();sourceHeadingAndConnectorPaint();overlappingAndMapping();std::cout<<"Lane-change guide tests passed\n";return 0;}
+}
+int main(){try{analyticAndSlip();curvedJoin();sourceHeadingAndConnectorPaint();overlappingAndMapping();routingAfterChange();std::cout<<"Lane-change guide tests passed\n";return 0;}
 catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

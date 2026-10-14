@@ -331,6 +331,7 @@ struct LastLaneChange {
 struct LaneChangeTrace {
     std::uint32_t fromRoute{}, toRoute{};
     double fromDistance{}, toDistance{}, speed{};
+    bool routeDecision{}; // shared-prefix logical remap, no lateral blend
     bool operator==(const LaneChangeTrace&) const = default;
 };
 struct Vehicle : PendingVehicle {

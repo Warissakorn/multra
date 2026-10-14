@@ -65,14 +65,22 @@ LaneChangePath::LaneChangePath(const Scenario& scenario,const Vehicle& vehicle,
         pointAt(source,trace_.front().fromDistance,geometry,equations));
     if(!initial)return;
     const auto guide=[&](double travel) {
-        Point p=pointAt(source,trace_.front().fromDistance+travel,geometry,equations);
+        // A logical route remap substitutes the selected suffix in the ongoing guide. The
+        // shared prefix is identical; neither the blend progress nor rear rolling restarts.
+        const auto selected=[&](std::uint32_t route) {
+            for (std::size_t j=0;j<trace_.size() && starts[j]<=travel;++j)
+                if (trace_[j].routeDecision && trace_[j].fromRoute==route) route=trace_[j].toRoute;
+            return route;
+        };
+        Point p=pointAt(routes.at(selected(trace_.front().fromRoute)),trace_.front().fromDistance+travel,geometry,equations);
         // Compose blends: a second change starts at the existing guide, including
         // its derivative, rather than resetting to the centre of the engine lane.
         for(std::size_t i=0;i<trace_.size() && starts[i]<=travel;++i) {
             const auto& c=trace_[i];
+            if (c.routeDecision) continue;
             const double f=std::clamp((travel-starts[i])/(3*std::max(c.speed,5.)),0.,1.);
             const double w=f*f*f*(10+f*(-15+6*f)); // quintic, zero first/second endpoint derivatives
-            const auto q=pointAt(routes.at(c.toRoute),c.toDistance+travel-starts[i],geometry,equations);
+            const auto q=pointAt(routes.at(selected(c.toRoute)),c.toDistance+travel-starts[i],geometry,equations);
             p={p.x+w*(q.x-p.x),p.y+w*(q.y-p.y)};
         }
         return p;

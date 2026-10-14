@@ -2,6 +2,7 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/load.hpp"
 #include "../src/core/simulation.hpp"
+#include "../src/core/routing.hpp"
 #include "../src/core/routes.hpp"
 #include <QAction>
 #include <QApplication>
@@ -181,6 +182,15 @@ void overlappingCanvas(const std::filesystem::path& data) {
         canvas.setRunFrame(changed);const auto faster=poseOf(canvas,1);
         require(faster && faster->y>before->y+.5,"Changed trace reused cached guide");
     }
+    auto aliases=scenario; aliases.routes[2].segmentIds={"b1"};
+    auto routed=createSimulation(aliases,42); routed.vehicles={v};
+    canvas.setRunFrame(routed); const auto beforeRouting=poseOf(canvas,1);
+    require(beforeRouting.has_value(),"Setup: changer missing before routing");
+    RouteDecision decision{"choose","b",28,{},{{"c",1,{}}}};
+    applyRouteDecision(*routed.scenario,routed.vehicles[0],decision,routed.time,routed.randomState,routed.events);
+    canvas.setRunFrame(routed); const auto afterRouting=poseOf(canvas,1);
+    require(afterRouting && std::hypot(afterRouting->x-beforeRouting->x,afterRouting->y-beforeRouting->y)<1e-7 &&
+        std::abs(afterRouting->rotation-beforeRouting->rotation)<.002,"Routing hides or jumps the changed vehicle");
     auto rotated=n;for(auto& link:rotated.links)for(auto& p:link.geometry)p={-p.y,p.x};
     canvas.setRunFrame(frame);const auto original=poseOf(canvas,1);
     canvas.setRunNetwork(rotated);canvas.setRunFrame(frame);const auto turned=poseOf(canvas,1);

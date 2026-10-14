@@ -8,6 +8,11 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — R2 pose lifecycle (D167)
+
+Logical route remaps substitute the selected suffix without resetting the lateral blend or rear
+rolling. Headless routing/pose integration passes; actual Canvas regression added for native CI.
+
 ## 2026-10-14 — R4/R3 measurement (D167)
 
 Departure/terminal evidence covers source-sink trips within a tick. Shared-prefix starts survive

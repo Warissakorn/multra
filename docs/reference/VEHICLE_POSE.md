@@ -83,6 +83,12 @@ vanish; a second change composes with the ongoing guide, preserving its position
 initial tangent. An exhausted source route extends along its end tangent for display.
 Route geometry can still have a sharp corner; blending does not certify steerability.
 
+A positioned routing decision after a lane change appends a display-only logical remap
+(`LaneChangeTrace::routeDecision`). It substitutes the selected suffix in the ongoing guide
+without starting another lateral blend or resetting rear rolling. Shared-prefix geometry,
+blend progress and heading remain continuous; the complete trace still keys the pose cache.
+A later lane change can extend that journey. Measurement never reads this display trace.
+
 The composite guide is sampled at longitudinal steps at most 0.1 m, split at route
 boundaries, polyline vertices and blend endpoints. Its polyline arc length drives
 `RearAxlePath`, initialized with the source route's rolling heading at the first
@@ -110,6 +116,7 @@ Acceptance rows for this display slice:
 | P3.3 | Stops, seeking and repaint leave pose unchanged at the same journey station | Headless query order and actual stopped Canvas frames |
 | P3.4 | Heading continues across joins and blend completion | Curved/polyline join, spatial convergence and no completion snap |
 | P3.5 | Cache reads every changing input and ignores zoom | Actual Canvas trace/type/network replacement, seeking, both sizes at low zoom |
+| P3.7 | Lane change followed by positioned routing retains continuous pose and selected suffix | Headless routing/pose integration, then another lane change |
 | P3.6 | Display history cannot change traffic | Trace erasure vs exact engine states/events; baseline CLI reports/CSV |
 
 ## Verification and limits
