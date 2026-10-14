@@ -18,6 +18,14 @@ Select and drag the decision line along its Link, or edit `position` in the deci
 dialog. Preview does not change History. Release commits once; Escape/focus/tool/level
 changes cancel. Position must be finite, nonnegative and below the Link's reference
 length. Shortening the Link beyond a stored station is rejected atomically.
+Split carries a positioned decision after the cut to the downstream child, subtracting the
+child's original start station (`cut + 0.1 m`). A decision before the cut stays upstream.
+A station inside the open 0.2 m continuity span refuses the entire edit with
+`EDIT_SPLIT_ROUTING_DECISION`; neither moving the line nor splitting has happened. The moved decision receives cloned Route suffixes beginning on its new Link; full Routes
+remain available to fixed inputs. Destination stations follow the suffix ids; flow
+intervals and type weights keep their order. Inputs that targeted the decision become routeless
+inputs on the original Link, so their entry point does not move. Route/input references remain valid, and the whole split is one Undo. Boundary stations belong to their child.
+
 The first slice retains one decision per Link. A second point on that Link is refused;
 use its existing line or reposition it. Decisions on successive Links are supported.
 
@@ -76,6 +84,7 @@ integrated recognition remain outside this slice. No calibration or M6 claim fol
 | No selection before line; one selection when crossed; immutable replay | `stationrouting` |
 | Passage time, half-open boundary, type overrides and interval fallback | `stationrouting` |
 | Zero source station and arrivals downstream | `stationrouting` |
+| Split before/after decision, span refusal and atomic Undo/Redo | `stationrouting` |
 | Independent consecutive recognition lines | `stationrouting` |
 | Shared prefix, valid weights/stations and complete interval matrices | `stationrouting` |
 | Source totals/lane shares, clipped awareness spans, schema opt-in | `stationrouting` |

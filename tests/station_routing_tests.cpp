@@ -1,5 +1,6 @@
 #include "test.hpp"
 #include "../src/commands/demand_commands.hpp"
+#include "../src/commands/history.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/project/run.hpp"
@@ -138,4 +139,35 @@ TEST(stationrouting, different_traces_to_one_destination_keep_their_weights) {
         CHECK(gate.choices.size()==2);CHECK(gate.choices[0].routeId!=gate.choices[1].routeId);
         test::near(gate.choices[0].weight,3);test::near(gate.choices[1].weight,1);
     }
+}
+
+TEST(stationrouting, split_carries_a_positioned_decision_atomically) {
+    for (double position : {20., 80.}) {
+        auto d=drawing(); auto& decision=d.definition->routingDecisions[0]; decision.position=position;
+        const auto link=decision.linkId;
+        const auto fullRoute=decision.routes[0].routeId;
+        d.definition->inputs.push_back({"fixed",fullRoute,"car",100,0,60});
+        VehicleInput routed; routed.id="decision-in"; routed.routingDecisionId=decision.id;
+        routed.vehicleTypeId="car"; routed.vehiclesPerHour=100; routed.endTime=60;
+        d.definition->inputs.push_back(routed);
+        History h; h.reset(d); std::string child;
+        CHECK(h.execute("split", [&](auto& doc) { child=splitLink(doc,link,50,false); }));
+        const auto moved=h.document().definition->routingDecisions[0];
+        CHECK(moved.linkId==(position<50 ? link : child));
+        test::near(*moved.position,position<50 ? position : position-50.1);
+        CHECK(!compileDocument(h.document(),test::root()/"data").scenario.routeDecisions.empty());
+        const auto& def=*h.document().definition;
+        CHECK(def.inputs[1].routeId==fullRoute);
+        if(position>50) {
+            CHECK(def.inputs[2].routingDecisionId.empty() && def.inputs[2].linkId==link);
+            CHECK(moved.routes[0].routeId!=fullRoute);
+            for(const auto& route:def.routes) if(route.id==moved.routes[0].routeId) CHECK(route.segmentIds.front()==child);
+        }
+        h.undo(); CHECK(h.document().definition==d.definition); CHECK(h.document().network==d.network);
+        h.redo(); CHECK(h.document().definition->routingDecisions[0].linkId==moved.linkId);
+    }
+    auto d=drawing(); d.definition->routingDecisions[0].position=50;
+    History h; h.reset(d); const auto before=h.document();
+    test::throws([&] { h.execute("split", [&](auto& doc) { splitLink(doc,d.definition->routingDecisions[0].linkId,50,false); }); }, "EDIT_SPLIT_ROUTING_DECISION");
+    CHECK(h.document()==before && !h.canUndo());
 }

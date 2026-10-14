@@ -32,6 +32,9 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     if(d.definition)for(const auto& [route,end]:d.definition->routeDestinations)
         if(end.objectId==id && end.station>distance-.1 && end.station<distance+.1)
             throw std::invalid_argument("EDIT_ROUTE_DESTINATION_INVALID");
+    if (d.definition) for (const auto& decision : d.definition->routingDecisions)
+        if (decision.linkId == id && decision.position && *decision.position > distance-.1 && *decision.position < distance+.1)
+            throw std::invalid_argument("EDIT_SPLIT_ROUTING_DECISION");
     detail::checkSplitControls(d.network, id, distance); // M3.2.2b: refuse before changing anything
     auto downstream = original;
     downstream.id = allocateId(d, "link");
@@ -66,6 +69,15 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     if(d.definition)for(auto& [route,end]:d.definition->routeDestinations)
         if(end.objectId==id && end.station>=distance+.1) {
             end.objectId=downstream.id;end.station-=distance+.1;
+        }
+    if (d.definition) for (auto& decision : d.definition->routingDecisions)
+        if (decision.linkId == id && decision.position && *decision.position >= distance+.1) {
+            decision.linkId = downstream.id; *decision.position -= distance+.1;
+            for (auto& entry : decision.routes) if (entry.destinationLinkId == id) entry.destinationLinkId = downstream.id;
+            // An input targeting the decision entered on the original Link, not at its new station.
+            for (auto& input : d.definition->inputs) if (input.routingDecisionId == decision.id) {
+                input.routingDecisionId.clear(); input.linkId = id;
+            }
         }
     // M8.2: a zone connector sits at a Link end; the upstream piece keeps the start and the id.
     for(auto& c:d.zones.zoneConnectors)
@@ -107,6 +119,29 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
             if (s == id) ids.push_back(downstream.id);
         }
         r.segmentIds = std::move(ids);
+    }
+    // Decision routes start on their decision's Link. Keep full authored routes for fixed inputs,
+    // and clone only the downstream suffix used by the moved decision. Interval/type weights are
+    // route-order data and stay untouched; destination stations follow the new route id.
+    if (d.definition) for (auto& decision : d.definition->routingDecisions) if (decision.linkId == downstream.id) {
+        std::map<std::string,std::string> suffixes;
+        for (auto& entry : decision.routes) if (!entry.routeId.empty()) {
+            const auto old = entry.routeId;
+            if (!suffixes.contains(old)) {
+                const auto route = std::find_if(d.definition->routes.begin(),d.definition->routes.end(),
+                                               [&](const auto& r) { return r.id == old; });
+                if (route == d.definition->routes.end()) throw std::invalid_argument("UNKNOWN_ROUTE");
+                auto suffix = *route;
+                const auto start = std::find(suffix.segmentIds.begin(),suffix.segmentIds.end(),downstream.id);
+                if (start == suffix.segmentIds.end()) throw std::invalid_argument("ROUTING_DECISION_MIXED_ORIGIN");
+                suffix.segmentIds.erase(suffix.segmentIds.begin(),start);
+                suffix.id = allocateId(d,"route"); suffixes[old] = suffix.id;
+                if (const auto end=d.definition->routeDestinations.find(old);end!=d.definition->routeDestinations.end())
+                    d.definition->routeDestinations[suffix.id]=end->second;
+                d.definition->routes.push_back(std::move(suffix));
+            }
+            entry.routeId = suffixes.at(old);
+        }
     }
     return downstream.id;
 }

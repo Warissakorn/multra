@@ -8,6 +8,11 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — R7 split references (D167)
+
+Split carries stations, creates decision suffix Routes and retains full Routes for fixed inputs.
+Decision-targeted inputs keep their original entry. Span refusal, compile, Undo/Redo regressions pass.
+
 ## 2026-10-14 — R6/R8 OD and accounting (D167)
 
 Reverse graph distances replace the depth cap; bounded alternatives keep deterministic order.
