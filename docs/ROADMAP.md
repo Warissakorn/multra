@@ -305,7 +305,8 @@ lane-change lab (D98), then acceptance fixtures; prototype baselines change only
 **Status:** implemented 2026-10-14, Linux only ([contract](reference/BEHAVIOUR_LAB.md), rows
 BL1–BL12): Simulation → *Behaviour Lab…* follows one vehicle round a stadium ring it laps
 indefinitely (core circuit routes), with live retune of the prototype focus/traffic parameters and
-a restart on road or vehicle-count changes. **Gate:** the owner's look (tune a behaviour, watch it
+a restart on road or vehicle-count changes. D166 adds the default Urban circuit (straights, curves,
+signalised crossings and left turns, cross-traffic loops) and a heading-up camera. **Gate:** the owner's look (tune a behaviour, watch it
 take effect without a reset, Apply to the project and Undo) and native CI on Windows. A
 development bed: it closes no M0/M3/M6 gate and validates nothing. Later slices: W74 and the
 lane-change fields in the panel; lane changes on a circuit need a wrap rule of their own first.

@@ -8,6 +8,7 @@
 #include <map>
 
 class QCheckBox;
+class QComboBox;
 class QDoubleSpinBox;
 class QFormLayout;
 class QGroupBox;
@@ -32,12 +33,15 @@ private:
     void behaviour(QFormLayout*, std::function<DriverBehaviour&(lab::LabSettings&)> of);
     QGroupBox* group(QWidget* page, const char* titleKey, QFormLayout*& form);
     void limitCount();
+    void enableForLayout();
     Text text_;
     lab::LabSettings base_; // fields not shown keep their values
     std::vector<Number> numbers_;
     std::vector<Optional> optionals_;
     std::map<QGroupBox*, const char*> titles_;
-    QSpinBox *count_{}, *lanes_{};
+    QSpinBox *count_{}, *lanes_{}, *crossCount_{};
+    QComboBox* layout_{};
+    QDoubleSpinBox *blockDepth_{}, *allRed_{};
     QCheckBox *signal_{}, *rescale_{};
     bool loading_{};
     QString prefix_; // object names: "focus.", "traffic." or "road." and the key

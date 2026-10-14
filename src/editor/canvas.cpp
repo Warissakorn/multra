@@ -167,7 +167,7 @@ void EditorCanvas::redraw() {
     if (!draft_.empty()) {
         QPen pen(canvasStyle::active(),2,Qt::DashLine); pen.setCosmetic(true);
         scene_.addPath(path(draft_),pen)->setZValue(200008);
-        for (auto p:draft_) { const double r=3/std::abs(transform().m11()); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
+        for (auto p:draft_) { const double r=3/viewScale(); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
     }
     scene_.setSceneRect(scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000)));
     if (document_->map) {
@@ -179,7 +179,7 @@ void EditorCanvas::redraw() {
 void EditorCanvas::fitNetwork() {
     auto bounds=scene_.itemsBoundingRect(); if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
     fitInView(bounds.adjusted(-10,-10,10,10),Qt::KeepAspectRatio);
-    const double scale=std::clamp(std::abs(transform().m11()),0.05,100.0);
+    const double scale=std::clamp(viewScale(),0.05,100.0);
     setTransform(QTransform::fromScale(scale,-scale)); centerOn(bounds.center()); redraw();scheduleMapUpdate();
 }
 void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
@@ -191,8 +191,10 @@ void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     const auto tiers=editorDesign::gridTiers(grid,editorDesign::levelOfDetail(painter->worldTransform()));
     if (tiers.minor<=0) return;
     const auto device=painter->deviceTransform();
-    const auto snapX=[&](double x){return editorDesign::snapHairline(x,device.m11(),device.dx());};
-    const auto snapY=[&](double y){return editorDesign::snapHairline(y,device.m22(),device.dy());};
+    // A rotated view (the behaviour lab's heading-up camera, D166) has no pixel grid to snap to.
+    const bool rotated=std::abs(device.m12())>1e-9;
+    const auto snapX=[&](double x){return rotated?x:editorDesign::snapHairline(x,device.m11(),device.dx());};
+    const auto snapY=[&](double y){return rotated?y:editorDesign::snapHairline(y,device.m22(),device.dy());};
     const auto lines=[&](double step,const QColor& colour,bool skipMajor) {
         painter->setPen(editorDesign::hairlinePen(colour));
         const auto major=[&](double v){return std::fmod(std::abs(v)+step/2,step*10)<step;};
@@ -216,7 +218,7 @@ bool EditorCanvas::event(QEvent* e) {
 void EditorCanvas::wheelEvent(QWheelEvent* e) {
     clearHover();
     const auto before=mapToScene(e->position().toPoint());
-    const double old=std::abs(transform().m11()), next=std::clamp(old*std::pow(1.0015,e->angleDelta().y()),0.05,100.0);
+    const double old=viewScale(), next=std::clamp(old*std::pow(1.0015,e->angleDelta().y()),0.05,100.0);
     scale(next/old,next/old);scheduleMapUpdate();
     const auto after=mapToScene(e->position().toPoint());
     const auto centre=mapToScene(viewport()->rect().center()); centerOn(centre+before-after); redraw(); e->accept();

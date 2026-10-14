@@ -17,15 +17,18 @@ double lapLength(const Scenario& s, const Route& route) {
 // Whether the change needs new vehicles: the road (and so the segments) or who is on it.
 bool restartNeeded(const LabSettings& a, const LabSettings& b) {
     auto ra = a.road, rb = b.road;
-    ra.green = rb.green; ra.red = rb.red; ra.amber = rb.amber; // timings retune
+    ra.green = rb.green; ra.red = rb.red; ra.amber = rb.amber; ra.allRed = rb.allRed; // timings retune
     return !(ra == rb) || a.traffic.vehicleCount != b.traffic.vehicleCount ||
+           a.traffic.crossVehicleCount != b.traffic.crossVehicleCount ||
            a.traffic.heavyShare != b.traffic.heavyShare;
 }
 double shortestLap(const LabSettings& settings) {
     // The inner lane is the shortest. Wherever the reference line lies in the bundle, no lane's
     // curve radius is below R - lanes x width, so this never overstates the room.
     const auto& road = settings.road;
-    return 2 * road.straightLength + 2 * std::numbers::pi * (road.curveRadius - road.lanes * road.laneWidth);
+    const double inset = road.lanes * road.laneWidth;
+    if (road.layout == Layout::urban) return referenceLapLength(road) - 8 * inset; // an estimate; start() checks
+    return 2 * road.straightLength + 2 * std::numbers::pi * (road.curveRadius - inset);
 }
 }
 int maxVehicles(const LabSettings& settings) {
@@ -38,18 +41,20 @@ LabRun::LabRun(LabSettings settings, std::filesystem::path dataDirectory, std::u
     start(compile(settings_), settings_);
 }
 LabRun::Compiled LabRun::compile(const LabSettings& settings) const {
-    if (settings.traffic.vehicleCount < 0 || settings.traffic.vehicleCount + 1 > maxVehicles(settings) ||
+    if (settings.traffic.vehicleCount < 0 || settings.traffic.crossVehicleCount < 0 ||
         !(settings.traffic.heavyShare >= 0 && settings.traffic.heavyShare <= 1))
         throw std::invalid_argument("LAB_TOO_MANY_VEHICLES");
-    const auto document = buildLabDocument(settings);
+    const auto built = buildLabDocument(settings);
+    const auto& document = built.document;
     assertValidNetwork(document.network);
     // compileDocument's own steps that this document needs: the controller becomes a program and
     // the Route expands into one chain per lane. Its catalog is owned, so nothing is resolved.
     ScenarioDefinition definition = *document.definition;
     for (auto& program : signalGroupPrograms(document.definition->signalControllers))
         definition.signalPrograms.push_back(std::move(program));
-    Compiled snapshot{document, buildScenario(document.network, definition)};
-    // Every compiled lane chain of the one ring Route closes on itself. Spans between the lanes
+    Compiled snapshot{document, buildScenario(document.network, definition), {built.mainRoute}};
+    snapshot.loops.insert(snapshot.loops.end(), built.crossRoutes.begin(), built.crossRoutes.end());
+    // Every compiled lane chain of every loop closes on itself. Spans between the lanes
     // would read route distances without a wrap rule (BEHAVIOUR_LAB.md §1.1): no lane changes.
     for (auto& route : snapshot.scenario.routes) route.circuit = true;
     snapshot.scenario.laneChanges.clear();
@@ -59,28 +64,38 @@ LabRun::Compiled LabRun::compile(const LabSettings& settings) const {
 }
 void LabRun::start(Compiled compiled, const LabSettings& settings) {
     auto state = createSimulation(compiled.scenario, seed_);
-    // Lanes in route order; the focus vehicle is first on the first lane, so it has the lowest id.
     const auto& scenario = *state.scenario;
-    const auto lanes = scenario.routes.size();
-    const int traffic = settings.traffic.vehicleCount;
-    std::vector<int> perLane(lanes, 0);
-    for (int i = 0; i < traffic + 1; ++i) ++perLane[static_cast<std::size_t>(i) % lanes];
-    std::vector<int> placed(lanes, 0);
-    int heavySoFar = 0;
-    for (int i = 0; i < traffic + 1; ++i) {
-        const auto lane = static_cast<std::size_t>(i) % lanes;
-        const auto& route = scenario.routes[lane];
-        const double lap = lapLength(scenario, route);
-        // Slot j of n at L + j L / n: one lap round, every vehicle in [L, 2L) as a circuit keeps it.
-        const double distance = lap + lap * placed[lane]++ / perLane[lane];
-        std::string type = kFocusType;
-        if (i > 0) {
-            // Evenly spread heavies: vehicle k is heavy when the running share first passes a whole one.
-            const int heavyAfter = static_cast<int>(std::floor(i * settings.traffic.heavyShare + 1e-9));
-            type = heavyAfter > heavySoFar ? kHeavyType : kCarType;
-            heavySoFar = heavyAfter;
+    const double body = std::max({settings.focus.type.length, settings.traffic.car.length, settings.traffic.heavy.length});
+    const double spacing = body + std::max(settings.focus.behaviour.standstillDistance,
+                                           settings.traffic.behaviour.standstillDistance) + 1;
+    int heavySoFar = 0, trafficSoFar = 0;
+    // Loop by loop, main first, so the tuned vehicle is the first placed and has the lowest id.
+    for (std::size_t loop = 0; loop < compiled.loops.size(); ++loop) {
+        const auto& id = compiled.loops[loop];
+        std::vector<const Route*> lanes; // its compiled chains, `id` or `id/lane-k`, in canonical order
+        for (const auto& route : scenario.routes)
+            if (route.id == id || route.id.starts_with(id + "/")) lanes.push_back(&route);
+        if (lanes.empty()) throw std::logic_error("LAB_LOOP_NOT_COMPILED: " + id);
+        const int count = loop == 0 ? settings.traffic.vehicleCount + 1 : settings.traffic.crossVehicleCount;
+        std::vector<int> perLane(lanes.size(), 0), placed(lanes.size(), 0);
+        for (int i = 0; i < count; ++i) ++perLane[static_cast<std::size_t>(i) % lanes.size()];
+        for (std::size_t k = 0; k < lanes.size(); ++k)
+            if (perLane[k] > 0 && lapLength(scenario, *lanes[k]) / perLane[k] < spacing)
+                throw std::invalid_argument("LAB_TOO_MANY_VEHICLES");
+        for (int i = 0; i < count; ++i) {
+            const auto k = static_cast<std::size_t>(i) % lanes.size();
+            const double lap = lapLength(scenario, *lanes[k]);
+            // Slot j of n at L + j L / n: one lap round, every vehicle in [L, 2L) as a circuit keeps it.
+            const double distance = lap + lap * placed[k]++ / perLane[k];
+            std::string type = kFocusType;
+            if (loop > 0 || i > 0) {
+                // Evenly spread heavies: a vehicle is heavy when the running share first passes a whole one.
+                const int heavyAfter = static_cast<int>(std::floor(++trafficSoFar * settings.traffic.heavyShare + 1e-9));
+                type = heavyAfter > heavySoFar ? kHeavyType : kCarType;
+                heavySoFar = heavyAfter;
+            }
+            state = placeVehicle(std::move(state), {lanes[k]->id, type, distance, 0});
         }
-        state = placeVehicle(std::move(state), {route.id, type, distance, 0});
     }
     // Nothing above changed the run, so a refused placement keeps the current one (apply's promise).
     settings_ = settings;

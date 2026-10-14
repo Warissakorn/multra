@@ -1,4 +1,4 @@
-# Behaviour lab contract (M3.3.4, D165)
+# Behaviour lab contract (M3.3.4, D165, D166)
 
 The owner asked (2026-10-14) for a development tool to tune driving behaviour: a window
 that follows one **focus vehicle** around a purpose-built test network it can drive
@@ -68,18 +68,44 @@ lab vehicle count is exact and no source admission is involved.
 ## 2. Lab module (`src/lab/`)
 
 Qt-free; depends on core, model, project and commands. `LabSettings` (focus type and
-behaviour, other-traffic count, heavy share, speed range and behaviour, road dimensions,
-lanes, optional fixed-time signal) → `buildLabDocument` (a stadium ring built with the
-editor's commands, one route per lane) → `LabRun` (compile, mark the lab routes circuit,
-place the vehicles evenly, step, retune). Focus and traffic values retune live; a road
-change or a new vehicle count rebuilds the run from t = 0. The focus vehicle is the
+behaviour, other-traffic counts, heavy share, speed range and behaviour, the layout and its
+dimensions, lanes, signal timings) → `buildLabDocument` (built with the editor's commands; it
+names the main Route and the cross Routes) → `LabRun` (compile with `buildScenario`, mark every
+lane chain circuit, place the vehicles evenly loop by loop, step, retune). Focus, traffic and
+signal-timing values retune live; a layout, road or vehicle-count change rebuilds the run from t = 0.
+
+Two layouts (D166), chosen in the Road tab:
+
+- **Urban circuit** (default). Left-hand traffic; a block `straightLength` × `blockDepth`.
+  The tuned vehicle's loop runs anticlockwise: the south street (a long straight with two
+  straight-through signalised crossings X1a and X1b), a sweeping SE corner (`curveRadius`), the
+  east street, a **left turn** at X2, the north street, a **left turn** at X3, the west street
+  and a sweeping SW corner. Three cross-traffic loops: C1 crosses the south street at X1a
+  (northbound) and X1b (southbound); C2 runs south through X2 beside the east street, then turns
+  away; C3 runs east through X3 beside the north street, then turns away. A one-way street's
+  reference line lies `lanes × laneWidth / 2` to the left of its centreline, so two loops on one
+  street read as a two-way road.
+- **Oval**: the D165 stadium ring, with one optional signal.
+
+No loop shares a segment with another, so there is no merge and no priority rule; each
+intersection is two loops crossing under one fixed-time controller: main green `green`, then
+`amber` and `allRed`, cross green for `red − amber − 2·allRed`, cross amber, `allRed`. The four
+controllers' offsets are a quarter cycle apart. Crossing streams never share a segment, so the
+engine does not see them conflict: the signals alone keep them apart, as the four-leg fixture's
+split phasing does before conflict areas (honest only while every phase has its all-red).
+Give-way intersections need conflict zones or priority rules on circuits, which §1.1 refuses
+until a wrap rule is written. The focus vehicle is the
 `lab-focus` vehicle; `focusTelemetry` reports its speed, acceleration, desired speed, mode,
 leader gap and speed, and lap count.
 
 ## 3. Window
 
 Simulation ▸ *Behaviour Lab…* opens a non-modal window: the Run canvas with the camera
-locked on the focus vehicle (clicking another vehicle moves the focus), Run/Pause, Step,
+locked on the focus vehicle (clicking another vehicle moves the focus) and, by default,
+**heading-up** (D166): the view turns every frame so the followed body's nose points to the top
+of the screen (`setRunFollow(id, true)`); turning it off restores north-up at the same scale.
+The canvas reads its scale as `viewScale()` = hypot(m11, m12), equal to |m11| unrotated, so the
+editor's drawing is unchanged. Run/Pause, Step,
 Reset, speed and seed controls, a parameter panel (focus vehicle, other traffic, road) and
 a telemetry strip. Initial values come from the open project's resolved catalog.
 *Apply to project* writes the tuned focus behaviour back into the behaviour the project's
@@ -101,3 +127,7 @@ first vehicle type uses, as one History edit. Labels are translated; parameter n
 | BL10 | A focus `additiveSafetyDistance` retune keeps the vehicles and lengthens the focus vehicle's steady gap; a road change restarts | `lab` |
 | BL11 | Telemetry gap equals the geometric gap, also across the seam | `lab` |
 | BL12 | The window opens from the menu, keeps the focus vehicle centred, retunes without changing ids, rebuilds on a road change, and Apply adds one History revision | `behaviour-lab-ui` |
+| BL13 | The Urban circuit (default) compiles four circuit loops per lane, four controllers and a head on every lane of both approaches of each intersection | `lab` |
+| BL14 | On 1 and 2 lanes an hour keeps every vehicle without a safety clamp; the tuned vehicle laps, takes both left turns and slows below 1 m/s at a red | `lab` |
+| BL15 | A signal timing retunes in place; a cross-traffic count or layout change restarts; a block too small for its curves and boxes is refused (`LAB_ROAD_INVALID`) | `lab` |
+| BL16 | Heading-up keeps the followed vehicle pointing up and centred through the turns; off restores north-up | `behaviour-lab-ui` |

@@ -13,7 +13,7 @@ std::vector<std::pair<std::string,double>> EditorCanvas::hitObjects(Point p,bool
     struct Hit {std::string id;double station{},distance{};int level{},order{};};
     std::vector<Hit> hits;
     if(!document_)return {};
-    const double tolerance=6/std::abs(transform().m11());
+    const double tolerance=6/viewScale();
     QPainterPathStroker stroke;stroke.setWidth(tolerance*2);
     const auto contains=[&](const std::string& id) {
         const auto shape=objectShape(id);return shape.contains(QPointF(p.x,p.y)) || stroke.createStroke(shape).contains(QPointF(p.x,p.y));

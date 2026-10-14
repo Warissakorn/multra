@@ -79,6 +79,9 @@ void BehaviourLabWindow::buildToolbar() {
     bar->addSeparator();
     auto* followAction = action("labFollow", [this] { follow(followed_); });
     followAction->setCheckable(true); followAction->setChecked(true); bar->addAction(followAction);
+    // D166: the view turns so the followed vehicle always drives up the screen.
+    auto* headingUp = action("labHeadingUp", [this] { follow(followed_); });
+    headingUp->setCheckable(true); headingUp->setChecked(true); bar->addAction(headingUp);
     bar->addAction(action("labFocusVehicle", [this] { follow(run_->focusId()); }));
     bar->addSeparator();
     auto* apply = action("labApply", [this] { if (applyToProject) showMessage(applyToProject(run_->settings().focus)); });
@@ -95,6 +98,7 @@ void BehaviourLabWindow::retranslate() {
     for (const auto& [key, a] : actions_) a->setText(text_(key.c_str()));
     actions_.at("labRun")->setText(text_(timer_.isActive() ? "labPause" : "labRun"));
     actions_.at("labFollow")->setToolTip(text_("labFollowTip"));
+    actions_.at("labHeadingUp")->setToolTip(text_("labHeadingUpTip"));
     if (!applyTip_.isEmpty()) actions_.at("labApply")->setToolTip(applyTip_);
     seed_->setToolTip(text_("labSeed")); seed_->setAccessibleName(text_("labSeed"));
     speed_->setToolTip(text_("labSpeed")); speed_->setAccessibleName(text_("labSpeed"));
@@ -106,8 +110,12 @@ void BehaviourLabWindow::retranslate() {
 void BehaviourLabWindow::follow(std::optional<std::uint64_t> vehicleId) {
     followed_ = vehicleId;
     chart_->clear();
-    canvas_->setRunFollow(actions_.at("labFollow")->isChecked() ? followed_ : std::nullopt);
+    applyFollow();
     refresh();
+}
+void BehaviourLabWindow::applyFollow() {
+    const bool following = actions_.at("labFollow")->isChecked();
+    canvas_->setRunFollow(following ? followed_ : std::nullopt, following && actions_.at("labHeadingUp")->isChecked());
 }
 void BehaviourLabWindow::applyPanel() {
     debounce_.stop();
@@ -152,7 +160,7 @@ void BehaviourLabWindow::refresh() {
         if (!followed_ || std::none_of(run_->state().vehicles.begin(), run_->state().vehicles.end(),
                                        [&](const auto& v) { return v.id == *followed_; }))
             followed_ = run_->focusId();
-        canvas_->setRunFollow(actions_.at("labFollow")->isChecked() ? followed_ : std::nullopt);
+        applyFollow();
         chart_->clear();
     }
     canvas_->setRunFrame(run_->state());
@@ -165,8 +173,8 @@ void BehaviourLabWindow::refresh() {
     status_->setText(text_("labStatusFollowed").arg(t->id).arg(QString::fromStdString(type)) + "\n" +
         text_("labStatus").arg(t->time, 0, 'f', 1).arg(t->speed * 3.6, 0, 'f', 1).arg(t->desiredSpeed * 3.6, 0, 'f', 1)
             .arg(t->acceleration, 0, 'f', 2)
-            .arg(t->gap ? QString::number(*t->gap, 'f', 1) + " m" : text_("labNoLeader"))
-            .arg(t->leaderSpeed ? QString::number(*t->leaderSpeed * 3.6, 'f', 1) + " km/h" : text_("labNoLeader"))
+            .arg(t->gap ? text_("labUnitM").arg(*t->gap, 0, 'f', 1) : text_("labNoLeader"))
+            .arg(t->leaderSpeed ? text_("labUnitKmh").arg(*t->leaderSpeed * 3.6, 0, 'f', 1) : text_("labNoLeader"))
             .arg(text_(modes[static_cast<int>(t->mode)])).arg(t->laps).arg(run_->safetyClamps()));
 }
 void BehaviourLabWindow::showMessage(const QString& message) { message_->setText(message); }
@@ -176,7 +184,7 @@ void BehaviourLabWindow::showEvent(QShowEvent* e) {
     zoomed_ = true;
     // Fit the ring, then zoom in to about kViewMetres across, centred on the followed vehicle.
     canvas_->fitNetwork();
-    const double now = std::abs(canvas_->transform().m11());
+    const double now = canvas_->viewScale();
     const double wanted = canvas_->viewport()->width() / kViewMetres;
     if (now > 0 && wanted > now) canvas_->scale(wanted / now, wanted / now);
     refresh();

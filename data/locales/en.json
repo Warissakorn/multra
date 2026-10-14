@@ -824,5 +824,11 @@
   "labModebraking": "braking",
   "labChartSpeed": "Speed, desired speed and leader speed (km/h), last 60 s",
   "labChartGap": "Gap to the leader (m), last 60 s",
-  "labVehicleGone": "The followed vehicle is no longer on the ring."
+  "labVehicleGone": "The followed vehicle is no longer on the ring.",
+  "labHeadingUp": "Heading up",
+  "labHeadingUpTip": "Turn the view so the followed vehicle always drives up the screen.",
+  "labLayoutUrban": "Urban circuit (straights, curves, intersections)",
+  "labLayoutOval": "Oval ring",
+  "labUnitM": "%1 m",
+  "labUnitKmh": "%1 km/h"
 }

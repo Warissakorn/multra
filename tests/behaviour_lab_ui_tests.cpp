@@ -38,6 +38,18 @@ void requireCentred(BehaviourLabWindow& lab) {
     const auto centre = canvas->viewport()->rect().center();
     require(std::abs(at.x() - centre.x()) <= 3 && std::abs(at.y() - centre.y()) <= 3, "The followed vehicle is not centred");
 }
+// The followed body's local +x (its nose) points to the top of the screen.
+void requireHeadingUp(BehaviourLabWindow& lab) {
+    auto* canvas = lab.canvas();
+    for (auto* i : canvas->scene()->items())
+        if (i->data(0).toString() == "run-vehicle" && i->data(2).toULongLong() == *lab.followed()) {
+            const auto a = canvas->mapFromScene(i->mapToScene(QPointF(0, 0)));
+            const auto b = canvas->mapFromScene(i->mapToScene(QPointF(5, 0)));
+            require(b.y() < a.y() && std::abs(b.x() - a.x()) <= 0.1 * (a.y() - b.y()) + 1, "The followed vehicle does not point up");
+            return;
+        }
+    require(false, "The followed vehicle is not drawn");
+}
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -66,6 +78,14 @@ int main(int argc, char** argv) {
         require(lab->run().telemetry()->laps > laps, "The tuned vehicle did not complete a lap");
         requireCentred(*lab);
         require(!item<QLabel>(*lab, "labStatus")->text().isEmpty(), "No telemetry shown");
+        // D166 (BL16): heading-up, on by default, keeps the followed vehicle driving up the screen,
+        // also after the Urban circuit's left turns; off brings north back to the top.
+        requireHeadingUp(*lab);
+        for (int k = 0; k < 6; ++k) { lab->step(150); QApplication::processEvents(); requireHeadingUp(*lab); requireCentred(*lab); }
+        item<QAction>(*lab, "labHeadingUp")->trigger(); QApplication::processEvents();
+        require(lab->canvas()->transform().m12() == 0 && lab->canvas()->transform().m11() > 0, "North did not return to the top");
+        item<QAction>(*lab, "labHeadingUp")->trigger(); QApplication::processEvents();
+        requireHeadingUp(*lab);
 
         // A behaviour value retunes in place: same vehicles, same time, new value.
         const auto before = ids(*lab);
@@ -81,7 +101,7 @@ int main(int argc, char** argv) {
         item<QSpinBox>(*lab, "road.lanes")->setValue(2);
         lab->applyPanel();
         require(lab->run().state().tick == 0, "A road change did not restart the ring");
-        require(lab->run().state().scenario->routes.size() == 2, "The ring did not get a second lane");
+        require(lab->run().state().scenario->routes.size() == 8, "The four loops did not get a second lane");
         require(lab->followed() == lab->run().focusId(), "The restart lost the tuned vehicle");
 
         // Clicking another vehicle follows it.
@@ -117,6 +137,10 @@ int main(int argc, char** argv) {
         item<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
         require(lab->windowTitle() != english, "The lab did not follow the language");
         require(item<QDoubleSpinBox>(*lab, "focus.followingTime"), "Parameter field renamed");
+        if (argc >= 3) { // an overview of the whole network as well, for the owner's look
+            item<QAction>(*lab, "labFollow")->trigger(); lab->canvas()->fitNetwork(); QApplication::processEvents(); QTest::qWait(50);
+            lab->grab().save(QString(argv[2]).replace(".png", "-overview.png"));
+        }
         lab->close(); QApplication::processEvents();
         std::cout << "behaviour-lab-ui passed\n";
         return 0;

@@ -69,7 +69,7 @@ void EditorCanvas::drawZones() {
     }
     if (tool_ == Tool::zone && !zoneDraft_.empty()) {
         outline(zoneDraft_, true);
-        const double r = 3 / std::abs(transform().m11());
+        const double r = 3 / viewScale();
         QPen pen(canvasStyle::active(), 2); pen.setCosmetic(true);
         for (const auto& p : zoneDraft_) scene_.addEllipse(p.x - r, p.y - r, 2 * r, 2 * r, pen)->setZValue(200008);
     }

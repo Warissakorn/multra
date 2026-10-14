@@ -3,7 +3,12 @@
 #include "../src/lab/lab_run.hpp"
 using namespace trafficsim;
 namespace {
-lab::LabSettings settings() { return lab::defaultSettings(test::root() / "data"); }
+// The D165 rows were written on the Oval; D166's Urban circuit has rows of its own below.
+lab::LabSettings settings() {
+    auto s = lab::defaultSettings(test::root() / "data");
+    s.road.layout = lab::Layout::oval; s.road.straightLength = 300;
+    return s;
+}
 lab::LabRun run(const lab::LabSettings& s) { return lab::LabRun(s, test::root() / "data", 42); }
 void steps(lab::LabRun& r, int n) { for (int i = 0; i < n; ++i) r.step(); }
 }
@@ -85,4 +90,69 @@ TEST(lab, bl11_too_many_vehicles_are_refused_and_the_run_kept) {
     test::throws([&] { r.apply(crowded); }, "LAB_TOO_MANY_VEHICLES");
     CHECK(r.state().tick == 10);
     CHECK(r.settings() == s);
+}
+namespace {
+lab::LabSettings urban() { return lab::defaultSettings(test::root() / "data"); }
+bool entered(const SimState& s, std::uint64_t id, const std::string& prefix) {
+    for (const auto& e : s.events)
+        if (const auto* x = std::get_if<SegmentEnteredEvent>(&e); x && x->vehicleId == id && x->segmentId.starts_with(prefix)) return true;
+    return false;
+}
+}
+TEST(lab, bl13_the_urban_circuit_compiles_four_signalised_loops) {
+    auto s = urban();
+    CHECK(s.road.layout == lab::Layout::urban); // the default (D166)
+    for (const int lanes : {1, 2}) {
+        s.road.lanes = lanes;
+        const auto built = lab::buildLabDocument(s);
+        CHECK(built.crossRoutes.size() == 3);
+        CHECK(built.document.definition->signalControllers.size() == 4);
+        auto r = run(s);
+        const auto& scenario = *r.state().scenario;
+        CHECK(scenario.routes.size() == static_cast<std::size_t>(4 * lanes));
+        for (const auto& route : scenario.routes) CHECK(route.circuit);
+        // A head on every lane of both approaches of each intersection.
+        CHECK(scenario.signalHeads.size() == static_cast<std::size_t>(4 * 2 * lanes));
+        CHECK(r.state().vehicles.size() == static_cast<std::size_t>(s.traffic.vehicleCount + 1 + 3 * s.traffic.crossVehicleCount));
+    }
+}
+TEST(lab, bl14_the_tuned_vehicle_laps_turns_and_stops_at_red) {
+    for (const int lanes : {1, 2}) {
+        auto s = urban();
+        s.road.lanes = lanes;
+        auto r = run(s);
+        const auto count = r.state().vehicles.size();
+        // The X2 and X3 turns are the main loop's third and fourth Connectors.
+        const auto built = lab::buildLabDocument(s);
+        const auto& objects = built.document.definition->routes.front().segmentIds;
+        CHECK(objects.size() == 8);
+        bool turnedX2 = false, turnedX3 = false, stopped = false;
+        for (int i = 0; i < 36000; ++i) {
+            r.step();
+            turnedX2 = turnedX2 || entered(r.state(), r.focusId(), objects[5]);
+            turnedX3 = turnedX3 || entered(r.state(), r.focusId(), objects[7]);
+            // Queued behind others at a red, the prototype creeps rather than standing (~0.4 m/s).
+            stopped = stopped || (r.telemetry()->speed < 1 && r.state().time > 30);
+        }
+        CHECK(r.state().vehicles.size() == count);
+        CHECK(r.telemetry()->laps > 5);
+        CHECK(turnedX2); CHECK(turnedX3); CHECK(stopped);
+        if (r.safetyClamps() != 0) throw std::runtime_error("urban safety clamps: " + std::to_string(r.safetyClamps()));
+    }
+}
+TEST(lab, bl15_signal_timings_retune_and_a_layout_change_restarts) {
+    auto s = urban();
+    auto r = run(s);
+    steps(r, 500);
+    const auto tick = r.state().tick;
+    auto timed = s; timed.road.green = 40;
+    CHECK(r.apply(timed) == lab::LabRun::Applied::retuned);
+    CHECK(r.state().tick == tick);
+    auto crossed = timed; crossed.traffic.crossVehicleCount = 2;
+    CHECK(r.apply(crossed) == lab::LabRun::Applied::restarted);
+    auto oval = crossed; oval.road.layout = lab::Layout::oval;
+    CHECK(r.apply(oval) == lab::LabRun::Applied::restarted);
+    CHECK(r.state().scenario->routes.size() == 1);
+    auto tiny = s; tiny.road.straightLength = 100;
+    test::throws([&] { r.apply(tiny); }, "LAB_ROAD_INVALID");
 }

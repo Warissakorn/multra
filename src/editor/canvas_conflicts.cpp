@@ -72,7 +72,7 @@ std::string EditorCanvas::waitingLineAt(Point p) const {
     if (!document_) return {};
     const auto& n = document_->network;
     // Four pixels either side at any zoom, as a stop line is hit (headShape).
-    double best = 4 / std::abs(transform().m11());
+    double best = 4 / viewScale();
     std::string found;
     for (const auto& line : n.rightOfWay.waitingLines) {
         if (!levelVisible(levelOf(n, line.point.path))) continue;

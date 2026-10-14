@@ -117,7 +117,7 @@ void EditorCanvas::drawObjectFeedback(const std::string& id, const QPainterPath&
     if (!chosen) return;
     // The direction of travel rides the selection outline's long edges: a solid line with an
     // arrowhead every so many screen pixels, and one at the middle of an edge too short for two.
-    const double scale = std::abs(transform().m11()), spacing = 72 / scale;
+    const double scale = viewScale(), spacing = 72 / scale;
     for (const auto& edge : edges) {
         const double length = polylineLength(edge);
         if (!(length > 0) || !std::isfinite(length)) continue;
@@ -136,7 +136,7 @@ QPainterPath EditorCanvas::centreStroke(const std::vector<Point>& line, double p
     QPainterPath centre; centre.moveTo(line.front().x, line.front().y);
     for (std::size_t i = 1; i < line.size(); ++i) centre.lineTo(line[i].x, line[i].y);
     // A region, not an open path: QPainterPath::contains would close an open one.
-    QPainterPathStroker stroke; stroke.setWidth(pixels / std::abs(transform().m11()));
+    QPainterPathStroker stroke; stroke.setWidth(pixels / viewScale());
     stroke.setCapStyle(Qt::FlatCap); stroke.setJoinStyle(Qt::RoundJoin);
     return stroke.createStroke(centre);
 }
@@ -151,7 +151,7 @@ void EditorCanvas::drawCentreLine(const std::string& id, const std::vector<Point
     drawObjectFeedback(id, centreStroke(line, 8), z + .5, {line});
 }
 void EditorCanvas::addArrowhead(Point at, double angle, double pixels, QColor colour, double z, const QString& tag) {
-    const double r = pixels / std::abs(transform().m11());
+    const double r = pixels / viewScale();
     QPolygonF arrow;
     for (double offset : {0.0, 2.5, -2.5}) arrow << QPointF(at.x + r*std::cos(angle+offset), at.y + r*std::sin(angle+offset));
     auto* item = scene_.addPolygon(arrow, QPen(Qt::NoPen), QBrush(colour));
@@ -159,7 +159,7 @@ void EditorCanvas::addArrowhead(Point at, double angle, double pixels, QColor co
 }
 void EditorCanvas::drawGeometryHandles(const std::string& id, const std::vector<Point>& points, bool connector) {
     if (tool_ != Tool::select || selection_.size() != 1 || id != selected() || movingBody() || rotationPivot_) return;
-    const double r = 4 / std::abs(transform().m11());
+    const double r = 4 / viewScale();
     for (std::size_t i = 0; i < points.size(); ++i) {
         const bool end = connector && (i == 0 || i + 1 == points.size());
         const bool held = end ? endpointDrag_ && *endpointDrag_ == (i == 0) : dragging_ && vertex_ == static_cast<int>(i);

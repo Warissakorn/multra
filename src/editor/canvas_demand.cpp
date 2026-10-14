@@ -73,7 +73,7 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
                 routeStartPosition_=stationOfClosestPoint(link.geometry,world(e->pos(),false));
                 if(document_->definition)for(const auto& decision:document_->definition->routingDecisions)
                     if(decision.linkId==target && decision.position &&
-                       std::abs(*decision.position-*routeStartPosition_)*std::abs(transform().m11())<=10)routeStartPosition_=decision.position;
+                       std::abs(*decision.position-*routeStartPosition_)*viewScale()<=10)routeStartPosition_=decision.position;
             }
             redraw();return true;
         }
@@ -177,7 +177,7 @@ void EditorCanvas::setHighlightedRoute(std::string id) {
 }
 void EditorCanvas::drawDemandOverlay() {
     if(!document_)return;
-    const double scale=std::abs(transform().m11());
+    const double scale=viewScale();
     // Hover halo: nearestLane used to pick in silence, so the author learned where a click
     // landed only after the dialog opened.
     if((tool_==Tool::route || tool_==Tool::input) && !hoverSegment_.empty()) {
@@ -308,7 +308,7 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
                 matchedStation(link.geometry,axis,*position),link.level);
         }
         if(!bar || !levelVisible(bar->level))return;
-        auto* line=new RoadCrossbarItem(*bar,canvasStyle::active(),std::abs(transform().m11()),preview && end);
+        auto* line=new RoadCrossbarItem(*bar,canvasStyle::active(),viewScale(),preview && end);
         scene_.addItem(line);line->setZValue(200007);
         if(preview && end)previewRouteEnd_=line;
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));

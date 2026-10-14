@@ -96,7 +96,7 @@ add_library(trafficsim_commands STATIC src/commands/history.cpp src/commands/net
 target_link_libraries(trafficsim_commands PUBLIC trafficsim_project PRIVATE trafficsim_options)
 target_precompile_headers(trafficsim_commands PRIVATE <nlohmann/json.hpp>)
 # D165 behaviour lab: the ring, its run and live retune. Qt-free; the shell draws it (check_architecture).
-add_library(trafficsim_lab STATIC src/lab/lab_settings.cpp src/lab/lab_network.cpp src/lab/lab_run.cpp)
+add_library(trafficsim_lab STATIC src/lab/lab_settings.cpp src/lab/lab_network.cpp src/lab/lab_oval.cpp src/lab/lab_urban.cpp src/lab/lab_run.cpp)
 target_link_libraries(trafficsim_lab PUBLIC trafficsim_commands PRIVATE trafficsim_options)
 
 function(trafficsim_runtime_data target)

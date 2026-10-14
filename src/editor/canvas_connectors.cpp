@@ -53,7 +53,7 @@ std::optional<LaneReference> EditorCanvas::hitLanePosition(Point p, bool outgoin
     for(const auto& l:document_->network.links)if(l.id==result->linkId) {
         const auto g=laneGeometry(l,result->laneId,document_->network.drivingSide);
         const double length=polylineLength(g),picked=stationOfClosestPoint(g,p);
-        const double tolerance=4/std::abs(transform().m11()),reference=polylineLength(l.geometry);
+        const double tolerance=4/viewScale(),reference=polylineLength(l.geometry);
         // The pick is on the lane; the attachment is stored on the link that lane belongs to.
         double station=matchedStation(g,l.geometry,picked);
         if(picked<tolerance)station=0;
@@ -104,7 +104,7 @@ void EditorCanvas::pickConnector(Point p) {
     redraw();
 }
 void EditorCanvas::drawConnectors() {
-    const double radius=4/std::abs(transform().m11());
+    const double radius=4/viewScale();
     const auto primary=selected();
     for (const auto& c : document_->network.connectors) {
         if(!levelVisible(c.level))continue;

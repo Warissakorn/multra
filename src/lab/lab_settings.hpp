@@ -14,19 +14,25 @@ struct FocusSettings {
 };
 // Everyone else. Cars and heavy vehicles share one behaviour; `heavyShare` of them are heavy.
 struct TrafficSettings {
-    int vehicleCount{12};
+    int vehicleCount{12};     // on the tuned vehicle's loop
+    int crossVehicleCount{6}; // on each cross-traffic loop (Urban circuit)
     double heavyShare{0.1};
     VehicleType car, heavy;
     DriverBehaviour behaviour;
     bool operator==(const TrafficSettings&) const = default;
 };
-// A stadium ring: two straights joined by two half circles, `lanes` lanes, optionally one
-// fixed-time signal half way along the lower straight.
+// Oval: a stadium ring, two straights joined by two half circles, optionally one fixed-time signal
+// half way along the lower straight. Urban circuit (D166): a block of `straightLength` x
+// `blockDepth` with two sweeping corners, two straight-through and two left-turn signalised
+// intersections, and three cross-traffic loops (BEHAVIOUR_LAB.md §2).
+enum class Layout { oval, urban };
 struct RoadSettings {
-    double straightLength{300}, curveRadius{60}, laneWidth{3.5};
+    Layout layout{Layout::urban};
+    double straightLength{400}, curveRadius{60}, laneWidth{3.5}, blockDepth{240};
     int lanes{1};
     bool signal{};
-    double green{30}, red{30}, amber{3};
+    // Main approach green, amber and red; the cross approach is green for red - amber - 2 allRed.
+    double green{30}, red{30}, amber{3}, allRed{2};
     DrivingSide drivingSide{DrivingSide::left};
     bool operator==(const RoadSettings&) const = default;
 };
