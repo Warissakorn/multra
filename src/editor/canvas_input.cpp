@@ -19,7 +19,7 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
     // modifier is what keeps a stray click from authoring something.
     if(e->button()==Qt::RightButton && (e->modifiers()&Qt::ControlModifier)) {
         lastPick_=world(e->pos(),false);
-        if(demandPress(e) || headPress(e) || conflictPress(e) || counterPress(e) || sectionPress(e))return;
+        if(demandPress(e) || headPress(e) || conflictPress(e) || counterPress(e) || sectionPress(e) || zonePress(e))return;
         if(tool_==Tool::split) {
             const auto picked=hit(lastPick_,false);
             if(picked.first.empty())clearSelection(false);else if(splitAt)splitAt(picked.first,picked.second);
@@ -51,7 +51,7 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
     if(demandPress(e))return;
     if(headPress(e))return;
     if(conflictPress(e))return;
-    if(counterPress(e) || sectionPress(e))return;
+    if(counterPress(e) || sectionPress(e) || zonePress(e))return;
     if(tool_==Tool::select && (e->modifiers()&Qt::AltModifier)) {
         if(hit(lastPick_).first.empty())clearSelection();else startRotation(e->pos());
         return;
@@ -322,11 +322,13 @@ void EditorCanvas::keyPressEvent(QKeyEvent* e) {
     if(e->key()==Qt::Key_Return || e->key()==Qt::Key_Enter) {
         if(!routeDraft_.empty()) {commitRouteDraft();return;}
         if(!counterDraft_.empty()) {commitCounterDraft();return;}
+        if(!zoneDraft_.empty()) {commitZoneDraft();return;}
         return;
     }
     // Only while a route draft is open: Backspace belongs to the view otherwise.
     if(e->key()==Qt::Key_Backspace && !routeDraft_.empty()) { dropLastRouteSegment(); return; }
     if(e->key()==Qt::Key_Backspace && !counterDraft_.empty()) { counterDraft_.pop_back(); redraw(); return; }
+    if(e->key()==Qt::Key_Backspace && !zoneDraft_.empty()) { zoneDraft_.pop_back(); redraw(); return; }
     if(e->key()==Qt::Key_Tab && (e->modifiers()&Qt::ControlModifier) &&
        (tool_==Tool::select || tool_==Tool::conflict) && !mouseGestureActive()) {
         cycleOverlap();e->accept();return;
@@ -359,7 +361,7 @@ void EditorCanvas::keyPressEvent(QKeyEvent* e) {
     QGraphicsView::keyPressEvent(e);
 }
 bool EditorCanvas::mouseGestureActive() const {
-    return creating_ || decisionDrag_ || headDrag_ || lineDrag_ || !routeDraft_.empty() || !counterDraft_.empty() || sectionStart_ || !copyPick_.empty() || groupDrag_ || rotationPivot_ || endpointDrag_ ||
+    return creating_ || decisionDrag_ || headDrag_ || lineDrag_ || !routeDraft_.empty() || !counterDraft_.empty() || sectionStart_ || !zoneDraft_.empty() || !copyPick_.empty() || groupDrag_ || rotationPivot_ || endpointDrag_ ||
            laneResize_ || panning_ || band_ || dragging_;
 }
 void EditorCanvas::focusOutEvent(QFocusEvent* e) {

@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the queue below; M8.6 is the default next slice (M8.1–M8.5 delivered, D153–D157, D160; B11 seed mixing D159).
+After that review, return to the queue below; M8.6b is the default next slice (M8.1–M8.6a delivered, D153–D157, D160–D161; B11 seed mixing D159).
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -74,12 +74,19 @@ and the gate queue in the movement JSON/CSV, batches and checkpoints; `parked` c
 A zone-OD study with a capacity-limited lot runs and reports through `compileDocument`, the CLI
 and batches; [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
 Left before the M8 gate:
-1. **M8.6 — editor, next session.** Needs a Qt desktop build (the cloud container used for
-   M8.1–M8.5 had no Qt). Zone `Z` and lot `P` tools, zone connectors, the OD matrix table, the lot
-   dialog (Thai/English) and Undo; the lot rows in the Results tab and the run status' `parked`.
-   UI tests on Linux and Windows (`native.yml`); owner look (OWNER_SITTING C-row). It is large:
-   split it if one session cannot hold it (e.g. M8.6a zones/connectors/OD table, M8.6b lot tool,
-   dialog and Results).
+1. **M8.6b — editor: OD table, lot dialog, lot Results, next session.** M8.6a (D161) gave the Zone
+   tool (Z), the Zones tab and zone connectors ([contract](reference/ZONES_AND_PARKING.md) §9).
+   Left:
+   - an OD matrices table with a grid dialog (zones × zones, period, composition), modelled on
+     `demand_period_editor.cpp`;
+   - a lot dialog opened from the zone's row (capacity, initial occupancy and composition, gate
+     service, dwell curve rows);
+   - the Results lot table (`MovementReport::lots`) and `parked` in the run status.
+
+   Rows first in a UI test (`tests/zone_ui_tests.cpp` or a new file), Thai/English. Qt is
+   installable in the cloud container (`apt-get install qt6-base-dev libproj-dev`), so the desktop
+   suite runs here; Windows waits for `native.yml`. Owner look: sitting C8 (zones) and a new row for
+   the OD table and lot dialog.
 Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
 time intervals and compositions' intervals are not used for departures/initial types; the lot
 report has one window (no sub-interval series) and `--compare` has no lot block.
@@ -89,7 +96,7 @@ convergence defaults). B11 fixed (D159): seeds are mixed with splitmix64 before 
 `trafficsim-cli 42` is now 45 completed / 31.75870154816726 s / 1 clamp; the TS fixtures replay
 under `SeedStart::raw`, unmodified ([evidence](evidence/b11-seed-mixing.md)). **Check first:**
 the Qt test `scenario-run-ui` pins the new CLI numbers and was not run here (no Qt); confirm it
-in `native.yml` (Linux and Windows) and confirm no other UI test pinned a seed-42 trajectory.
+in `native.yml` (Windows); on Linux the whole desktop suite passed on the D159 numbers (2026-10-14).
 
 **Owner items** — gates, chat decisions and every desktop look — are in one sheet,
 [OWNER_SITTING](plans/OWNER_SITTING.md) (R4). After the sitting, items still open and older than

@@ -1,12 +1,13 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status:** M8.5 implemented 2026-10-14 (D160): the lot report of §5 in the movement report, CLI
+**Status:** M8.6a implemented 2026-10-14 (D161): the Zone tool, the Zones tab and zone connectors
+in the editor (§9). M8.5 implemented 2026-10-14 (D160): the lot report of §5 in the movement report, CLI
 JSON/CSV, checkpoints and batches (PL11). M8.4b implemented 2026-10-14 (D157): the authored ParkingLot — codec, checks,
 commands, compiler and Run tier (OD7, PL7–PL10 end to end). M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
 on hand-built scenarios. M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
 the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
 2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
-The editor tools (M8.6), including a Results view of the lot report, are **not implemented**. This document fixes the
+The OD matrix table, the lot dialog and the Results lot table (M8.6b) are **not implemented**. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
@@ -351,3 +352,33 @@ Sitting B10, answered "as recommended":
 3. **Lot trips in movement tables:** inbound lot trips stay in movement delay, ending at admission
    so gate wait is included; the lot table (§5, M8.5) reports gate wait separately.
 4. **On-street parking that blocks a lane:** after M8 (design §8 question 6, D158).
+
+## 9. Editor (M8.6a implemented, D161; M8.6b planned)
+
+- **Zone tool.**
+  - `Z` selects it (index 12, palette group *Demand*); the Zones tab opens with it.
+  - Ctrl+right-click adds a corner; Backspace drops the last; Esc cancels.
+  - Enter commits once there are three corners or more, as one Undo step (`putZone`). Fewer
+    corners, or a refused polygon, keep the draft.
+- **Canvas.**
+  - A zone is a translucent polygon under every Link, named at its centroid.
+  - A zone connector is a dashed line from the centroid to its Link's start (origin) or end
+    (destination). Items are tagged `zone` / `zone-connector`.
+- **Zones tab** (object tab 12).
+  - The zone table lists id, name, connector count and lot.
+  - *Edit zone* renames it.
+  - *Delete zone* cascades the zone's connectors in one Undo step, and is refused with the
+    localized `EDIT_ZONE_IN_USE` while a matrix or lot names it.
+  - *Add origin/destination connector* attaches the selected zone to the one Link selected on the
+    canvas.
+  - The connector table beside it lists the selected zone's connectors (direction, Link, share),
+    with *Edit* (share) and *Delete*.
+- **Placement.** Authoring accepts a connector on any Link. *Recheck* lists a misplaced one in
+  Problems as `ZONE_CONNECTOR_POSITION_UNSUPPORTED` (§6).
+- **No lot tool.** `P` is already *cycle priority*, and a lot is one per zone, so M8.6b edits it
+  from the zone's row.
+- **Rows ZE1–ZE5** live in `tests/zone_ui_tests.cpp` (ctest `zone-ui`, offscreen).
+- **M8.6b:**
+  - the OD matrix table and its grid dialog (zones × zones, period, composition);
+  - the lot dialog (capacity, initial occupancy and composition, gate service, dwell curve);
+  - the Results lot table and `parked` in the run status.

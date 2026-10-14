@@ -90,6 +90,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    raised; open the original, Results → Compare with… the copy (Seeds 42-51), Cancel part way, run
    again, Copy into Excel/Word, Export; Thai strings. Do the table and note read as alternative
    minus base, and does the pasted table land column by column? *Owner:*
+8. **M8.6a zones** (listed 2026-10-14, D161). On a copy of four-leg: press Z, Ctrl+right-click
+   four corners beside the West approach, Enter; in the Zones tab rename it, select the West
+   approach Link and add an origin connector, the East exit and add a destination connector,
+   change a share, Undo/Redo; Thai strings. Is the polygon easy to draw and the connector line
+   readable at normal zoom? *Owner:*
 
 ## D — Right-of-way on the drawing
 

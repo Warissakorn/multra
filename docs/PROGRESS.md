@@ -8,6 +8,29 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — M8.6a zones in the editor (D161)
+
+M8.6 was split (D161): this slice is the spatial part.
+- **Zone tool `Z`** (`src/editor/canvas_zones.cpp`, a new palette group *Demand*): Ctrl+right-click
+  corners, Backspace and Esc, Enter to commit as one Undo step.
+- **Zones tab** (`src/shell/editor_zones.cpp`): it renames and deletes zones, with the localized
+  `EDIT_ZONE_IN_USE` refusal and the cascade in one step. It adds origin or destination connectors
+  to the Link selected on the canvas. The connector table beside it edits shares and deletes.
+- **Canvas:** zones draw as translucent polygons under the Links, and connectors as dashed lines
+  from the centroid to the Link end.
+- **No lot tool:** `P` is taken by priority cycling, so a lot will be edited from its zone's row.
+
+`zone-ui` (rows ZE1–ZE5) failed first ("No zone table"). The runtime position check is on demand
+(*Recheck*), as for every Run-tier rule.
+
+`workspace-ui` caught two things:
+- its palette-group pin went from 3 to 4;
+- stacking the two tables squeezed the canvas below 400×250 at 1024×768, so they sit side by side.
+
+Qt 6.4.2 was installed in the cloud container. The desktop suite ran here for the first time this
+milestone: HEAD before the change 131/131, after 132/132, including `scenario-run-ui` on the D159
+numbers. Headless 90/90. Windows waits for `native.yml`.
+
 ## 2026-10-14 — M8.5 lot outputs (D160)
 
 `LotAccumulator` (`src/eval/lots.*`) reads snapshots only and is owned by `MovementAccumulator`.
@@ -445,34 +468,6 @@ Evidence (Linux, GCC, Qt 6.4.2 offscreen, Debug): `demandcounts` 8/8 (VC1–VC7,
 vehicles equal its counts for unplaced and placed decisions), `counted-volume-ui` (VC8), and the
 D46 test unchanged. CLI `42 --project` output for the four shipped projects equals `origin/main`'s
 (`c7628e8`, built in a scratch worktree) byte for byte. Native Windows CI and the owner look are owed.
-
----
-
-## 2026-10-09 — M5.6: the editor's Run seeds, Copy and Export (D141)
-
-The editor now runs the CLI's batch. **Run seeds** parses the *Seeds* field with `parseSeedList`
-(default `42-51`, O9), compiles the document on the UI thread and hands a `Scenario` and an
-`EvaluationSpec` by value to one `std::thread` that calls `runSeeds` and `aggregate`
-(`src/shell/editor_batch.cpp`). Progress and the result come back through queued
-`QMetaObject::invokeMethod` calls tagged with a generation number; `cancelBatch()` (called from
-`clearRun()`, so every edit, Undo, Open, Reset and a single Run reach it) bumps the number and sets
-the worker's cancel flag, so whatever a stale worker posts is dropped. The destructor cancels and
-joins. No mutable statics were found in `src/core`, `src/eval`, `src/model` or `src/runner`.
-
-The batch table replaces the single-run tables: movements and sections with n, mean delay, ±95 %,
-vehicles, travel time, unfinished, control type and LOS; approaches with n, mean ±95 % and max; a
-note with the marker, n, seeds, evaluation period, overloaded seeds, movements with unfinished trips
-and the LOS pack. Export writes `batchCsv`; Copy writes `csvToTsv(batchCsv(...))` (new in
-`csv_format.hpp`: comment lines kept, unquoted commas become tabs, quotes dropped), and a finished
-single run copies `movementCsv` the same way. Contract and rows EB1–EB6 in BATCH §6.
-
-Evidence (Linux, GCC, Qt 6.4.2 offscreen, Debug): `batch-run-ui` compares the editor's
-`BatchReport` with `aggregate(runSeeds(...))` on four-leg plus two signalised sections, the export
-bytes with `batchCsv` and the clipboard with its TSV; cancel, an edit, a bad list, a batch after a
-cancel and closing mid-batch are exercised; 13–14 s, three repeats stable. Its first version left an
-autosave draft (an unsaved rename outlived the 15 s timer) that blocked the next run on the recovery
-dialog; the test now saves after the edit. `check`: 108/108 tests, architecture, file sizes and
-docs clean. Native Windows CI and the owner's look are separate and still owed.
 
 ---
 
