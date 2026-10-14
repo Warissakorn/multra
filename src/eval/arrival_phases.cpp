@@ -1,6 +1,7 @@
 #include "arrival_phases.hpp"
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace trafficsim {
 namespace {
@@ -17,16 +18,24 @@ double cycleOf(const Scenario& s) {
 }
 ArrivalPhaseAccumulator::ArrivalPhaseAccumulator(const EvaluationSpec& spec, double binWidth)
     : movementOfRoute_(spec.movementOfRoute), names_(spec.movementNames), beginSpeed_(spec.queue.beginSpeed), endSpeed_(spec.queue.endSpeed),
-      binWidth_(binWidth) {}
+      binWidth_(binWidth) {
+    if (!std::isfinite(binWidth_) || binWidth_ <= 0)
+        throw std::invalid_argument("Arrival phase bin width must be finite and positive");
+}
 std::size_t ArrivalPhaseAccumulator::bin(double time) const {
-    const auto bins = static_cast<std::size_t>(std::ceil(cycle_ / binWidth_ - 1e-9));
     const auto b = static_cast<std::size_t>(std::fmod(time, cycle_) / binWidth_);
-    return b < bins ? b : bins - 1;
+    return b < bins_ ? b : bins_ - 1;
 }
 void ArrivalPhaseAccumulator::observe(const SimState& state) {
-    if (cycle_ < 0) cycle_ = cycleOf(*state.scenario);
+    if (cycle_ < 0) {
+        const double cycle = cycleOf(*state.scenario);
+        const double bins = std::max(1.0, std::ceil(cycle / binWidth_ - 1e-9));
+        if (!std::isfinite(bins) || bins > 1000000)
+            throw std::invalid_argument("Arrival phase histogram exceeds 1000000 bins");
+        bins_ = static_cast<std::size_t>(bins);
+        cycle_ = cycle; // publish only after validation; a failed bind can be retried safely
+    }
     if (cycle_ <= 0) return;
-    const auto bins = static_cast<std::size_t>(std::ceil(cycle_ / binWidth_ - 1e-9));
     for (const auto& event : state.events) {
         if (const auto* departed = std::get_if<DepartedEvent>(&event)) {
             for (const auto& route : state.scenario->routes)
@@ -40,7 +49,7 @@ void ArrivalPhaseAccumulator::observe(const SimState& state) {
             else if (trip != open_.end()) {
                 const auto row = [&](const std::string& segment) -> Row& {
                     auto& r = rows_[{m->second, segment}];
-                    if (r.enteredAt.empty()) { r.enteredAt.assign(bins, 0); r.firstStopAt.assign(bins, 0); }
+                    if (r.enteredAt.empty()) { r.enteredAt.assign(bins_, 0); r.firstStopAt.assign(bins_, 0); }
                     return r;
                 };
                 for (const auto& [segment, time] : trip->second.entered) { auto& r = row(segment); ++r.entered; ++r.enteredAt[bin(time)]; }

@@ -1,7 +1,7 @@
 #include "sections.hpp"
 #include <algorithm>
 #include <cmath>
-#include <set>
+#include <map>
 
 namespace trafficsim {
 namespace {
@@ -38,39 +38,90 @@ void SectionAccumulator::bind(const SimState& state) {
     for (std::size_t k = 0; k < sections_.size(); ++k)
         for (std::size_t r = 0; r < s.routes.size(); ++r) {
             const double a = at(sections_[k].start, r), b = at(sections_[k].end, r);
-            const bool applies = !std::isnan(a) && !std::isnan(b) && a < b;
-            start_[k].push_back(applies ? a : none); finish_[k].push_back(applies ? b : none);
+            const bool reversed = !std::isnan(a) && !std::isnan(b) && a >= b;
+            // A provisional route may contain the start and choose its end only later.
+            start_[k].push_back(reversed ? none : a); finish_[k].push_back(reversed ? none : b);
         }
 }
 bool SectionAccumulator::inPeriod(double time) const {
     constexpr double slack = 1e-9; // the period's bounds, as MovementAccumulator applies them
     return time >= warmup_ - slack && (!periodEnd_ || time <= *periodEnd_ + slack);
 }
-void SectionAccumulator::close(std::size_t k, Track& track, std::uint32_t route, double time) {
+void SectionAccumulator::close(std::size_t k, Track& track, double time, double travelled) {
     const double opened = track.open[k];
     track.open[k] = none;
     if (!inPeriod(byRelease_ ? track.scheduledTime : time)) return;
     const double travel = time - opened;
-    const double freeFlow = (finish_[k][route] - start_[k][route]) / track.desiredSpeed;
+    const double freeFlow = (travelled - track.openedAtDistance[k]) / track.desiredSpeed;
     ++count_[k]; travel_[k] += travel; delay_[k] += std::max(0.0, travel - freeFlow);
 }
 void SectionAccumulator::observe(const SimState& state) {
     if (sections_.empty() || !state.scenario) return;
     bind(state);
+    const auto slot = [&](const std::string& id) {
+        const auto& routes = state.scenario->routes;
+        return static_cast<std::uint32_t>(std::find_if(routes.begin(), routes.end(),
+            [&](const auto& r) { return r.id == id; }) - routes.begin());
+    };
+    std::map<std::uint64_t, DepartedEvent> departed;
+    std::map<std::uint64_t, const ArrivedEvent*> arrived;
+    std::map<std::uint64_t, std::vector<const LaneChangeEvent*>> changes;
+    for (const auto& event : state.events) {
+        if (const auto* d = std::get_if<DepartedEvent>(&event)) departed[d->vehicleId] = *d;
+        if (const auto* a = std::get_if<ArrivedEvent>(&event)) arrived[a->vehicleId] = a;
+        if (const auto* c = std::get_if<LaneChangeEvent>(&event)) changes[c->vehicleId].push_back(c);
+    }
+    for (const auto& event : state.events) if (const auto* r = std::get_if<RoutingEvent>(&event)) {
+        const auto d = departed.find(r->vehicleId);
+        if (d != departed.end() && r->time == d->second.time && d->second.routeId == r->fromRouteId)
+            d->second.routeId = r->toRouteId; // source-zero recognition precedes motion
+    }
+    const auto makeTrack = [&](std::uint64_t id, std::uint32_t route, double time, double desired, double scheduled) {
+        Track t{id, route, 0, 0, time, desired, std::vector<double>(sections_.size(), none), scheduled};
+        t.openedAtDistance.assign(sections_.size(), none);
+        return t;
+    };
     const auto byId = [](const Track& t, std::uint64_t id) { return t.id < id; };
     // A vehicle's step, from its last observed state (or its entry) to now, for every section.
     const auto advance = [&](Track& t, std::uint32_t route, double distance, double time, bool entry) {
-        for (std::size_t k = 0; k < sections_.size(); ++k) {
-            const double from = entry ? 0 : t.distance;
-            const double started = crossing(from, start_[k][t.route], distance, start_[k][route], t.time, time, entry);
-            if (!std::isnan(started)) t.open[k] = started;
-            const double ended = crossing(from, finish_[k][t.route], distance, finish_[k][route], t.time, time, entry);
-            if (!std::isnan(ended) && !std::isnan(t.open[k])) close(k, t, route, ended);
+        double from = entry ? 0 : t.distance;
+        auto fromRoute = t.route;
+        if (const auto c = changes.find(t.id); c != changes.end()) for (const auto* change : c->second) {
+            if (slot(change->fromRouteId) != fromRoute) continue;
+            const auto to = slot(change->toRouteId);
+            std::optional<double> mapped;
+            const auto consider = [&](const auto& spans) {
+                const double rear = from - state.scenario->vehicleTypes[t.type].length;
+                for (const auto& span : spans) if (span.target == to && rear >= span.fromStart - 1e-9 && from <= span.fromEnd + 1e-9) {
+                    const double value = mappedOnto(span, from);
+                    if (mapped && std::abs(*mapped - value) > 1e-9) return false;
+                    mapped = value;
+                }
+                return true;
+            };
+            if (!consider(state.index->laneChangesOfRoute[fromRoute]) ||
+                !consider(state.index->discretionaryOfRoute[fromRoute]) || !mapped) {
+                std::fill(t.open.begin(), t.open.end(), none); return;
+            }
+            from = *mapped; fromRoute = to; // mapping coordinates does not add travelled metres
         }
+        const double moved = std::max(0.0, distance - from);
+        for (std::size_t k = 0; k < sections_.size(); ++k) {
+            const auto passage = [&](const auto& lines) {
+                const double before = std::isnan(lines[k][fromRoute]) ? lines[k][route] : lines[k][fromRoute];
+                return crossing(from, before, distance, lines[k][route], t.time, time, entry);
+            };
+            const auto travelledAt = [&](double at) {
+                const double fraction = time > t.time ? std::clamp((at - t.time) / (time - t.time), 0.0, 1.0) : 0;
+                return t.travelled + moved * fraction;
+            };
+            const double started = passage(start_);
+            if (!std::isnan(started)) { t.open[k] = started; t.openedAtDistance[k] = travelledAt(started); }
+            const double ended = passage(finish_);
+            if (!std::isnan(ended) && !std::isnan(t.open[k])) close(k, t, ended, travelledAt(ended));
+        }
+        t.travelled += moved;
     };
-    std::set<std::uint64_t> arrived;
-    for (const auto& event : state.events)
-        if (const auto* a = std::get_if<ArrivedEvent>(&event)) arrived.insert(a->vehicleId);
     std::vector<Track> next;
     next.reserve(state.vehicles.size());
     std::vector<bool> seen(tracks_.size());
@@ -79,17 +130,27 @@ void SectionAccumulator::observe(const SimState& state) {
         const bool known = it != tracks_.end() && it->id == v.id;
         Track t;
         if (known) { seen[static_cast<std::size_t>(it - tracks_.begin())] = true; t = std::move(*it); }
-        else t = {v.id, v.routeIndex, 0, 0, v.enteredTime, v.desiredSpeed, std::vector<double>(sections_.size(), none), v.scheduledTime};
+        else t = makeTrack(v.id, v.routeIndex, v.enteredTime, v.desiredSpeed, v.scheduledTime);
+        t.type = v.typeIndex;
         advance(t, v.routeIndex, v.distance, state.time, !known);
         t.route = v.routeIndex; t.distance = v.distance; t.speed = v.speed; t.time = state.time;
         next.push_back(std::move(t));
     }
-    // A vehicle that left this step: it moved at least to its route's end, at its last speed.
+    // Terminal evidence brackets the final crossing at the selected route's end (within one tick).
     for (std::size_t i = 0; i < tracks_.size(); ++i) {
         auto& t = tracks_[i];
         if (seen[i] || !arrived.contains(t.id)) continue;
-        const double dt = state.time - t.time;
-        advance(t, t.route, std::max(routeLength_[t.route], t.distance + std::max(0.0, t.speed) * dt), state.time, false);
+        const auto route = slot(arrived.at(t.id)->routeId);
+        advance(t, route, routeLength_[route], state.time, false);
+    }
+    for (const auto& [id, arrival] : arrived) {
+        if (std::any_of(tracks_.begin(), tracks_.end(), [&](const auto& t) { return t.id == id; }) ||
+            std::any_of(next.begin(), next.end(), [&](const auto& t) { return t.id == id; })) continue;
+        const auto d = departed.find(id);
+        if (d == departed.end()) continue;
+        auto t = makeTrack(id, slot(d->second.routeId), d->second.time, d->second.desiredSpeed, d->second.scheduledTime);
+        const auto route = slot(arrival->routeId);
+        advance(t, route, routeLength_[route], arrival->time, true);
     }
     // The engine keeps its fleet in id order; a hand-built state need not.
     std::sort(next.begin(), next.end(), [](const Track& a, const Track& b) { return a.id < b.id; });
@@ -104,7 +165,8 @@ std::vector<SectionRow> SectionAccumulator::report() const {
             row.meanDelay = delay_[k] / static_cast<double>(count_[k]);
         }
         for (const auto& t : tracks_)
-            if (!std::isnan(t.open[k]) && (!byRelease_ || inPeriod(t.scheduledTime))) ++row.unfinished;
+            if (!std::isnan(t.open[k]) && !std::isnan(finish_[k][t.route]) && finish_[k][t.route] > t.distance &&
+                (!byRelease_ || inPeriod(t.scheduledTime))) ++row.unfinished;
         rows.push_back(std::move(row));
     }
     return rows;

@@ -25,6 +25,7 @@ struct ArrivalPhaseReport { double cycle{}, binWidth{}; std::vector<ArrivalPhase
 
 class ArrivalPhaseAccumulator {
 public:
+    // Width must be finite and positive; binding refuses more than 1,000,000 bins.
     explicit ArrivalPhaseAccumulator(const EvaluationSpec& spec, double binWidth = 10);
     // Once per state: after createSimulation and after every stepSimulation.
     void observe(const SimState& state);
@@ -36,6 +37,7 @@ private:
     std::map<std::string, std::size_t> movementOfRoute_;
     std::vector<std::string> names_;
     double beginSpeed_{}, endSpeed_{}, binWidth_{}, cycle_{-1};
+    std::size_t bins_{};
     std::map<std::uint64_t, Trip> open_;
     std::map<std::pair<std::size_t, std::string>, Row> rows_;
     std::uint64_t unassigned_{};

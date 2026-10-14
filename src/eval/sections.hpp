@@ -38,14 +38,17 @@ private:
         std::uint64_t id{}; std::uint32_t route{}; double distance{}, speed{}, time{}, desiredSpeed{};
         std::vector<double> open; // per section: the start crossing time, NaN when no trip is open
         double scheduledTime{}; // M5.9: when the vehicle's input released it
+        double travelled{};
+        std::vector<double> openedAtDistance;
+        std::uint32_t type{};
     };
     void bind(const SimState& state);
-    void close(std::size_t k, Track& track, std::uint32_t route, double time);
+    void close(std::size_t k, Track& track, double time, double travelled);
     bool inPeriod(double time) const;
     std::vector<SectionSpec> sections_;
     double warmup_{}; std::optional<double> periodEnd_; bool byRelease_{};
     const Scenario* bound_{};
-    // Per section, per route slot: the lines' route distances, NaN where the section does not apply.
+    // Per section, per route slot: independent line distances, NaN where a line misses the route.
     std::vector<std::vector<double>> start_, finish_;
     std::vector<double> routeLength_;
     std::vector<Track> tracks_; // sorted by vehicle id

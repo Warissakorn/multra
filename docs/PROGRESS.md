@@ -8,6 +8,14 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Authorized whole-repository review fixes (D167–D174)
+
+The owner approved the nine-item review plan together. Fixed evaluation passages and actual
+journey free-flow, suffix display continuity, phase bins, Lab axle scaling, long OD path searches,
+Split routing stations and batch cancellation; corrected parking identity documentation. New
+regressions cover each outcome. Reasons and boundaries are recorded once in D167–D174.
+Validation: GCC 13.3 full headless build and 97/97 tests passed; Linux/Windows desktop CI pending.
+
 ## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
 
 The owner asked for a varied lab network with straights and intersections, and the camera turning

@@ -7,8 +7,8 @@ namespace trafficsim {
 // crossed it: how long each stood (below the queue's beginSpeed) upstream of it during red and
 // during green, and through how many green ends it stood. Per green: how many crossed, the mean
 // gap between them, and how many were left standing at its end. Amber is not green (D36).
-// Fed by snapshots alone; it reads only SignalEvent, positions and speeds, all older than
-// M3.2.8b, so it also measures an engine from before it. Not validated.
+// Fed by snapshots: signal, source, terminal and route-recognition events, positions and speeds.
+// Terminal evidence counts vehicles that disappear before the next fleet snapshot. Not validated.
 struct StopLineRow {
     std::string headId;
     std::uint64_t crossed{}, greens{};
@@ -40,5 +40,7 @@ private:
     const Scenario* bound_{};
     std::vector<Head> heads_;
     std::map<std::pair<std::uint64_t, std::size_t>, Tally> open_; // (vehicle, head) while upstream
+    struct Position { std::uint32_t route{}; double distance{}; };
+    std::map<std::uint64_t, Position> previous_;
 };
 }
