@@ -1,6 +1,7 @@
 #include "validate.hpp"
 #include "conflicts.hpp"
 #include "lanes.hpp"
+#include "parking.hpp"
 #include "routing.hpp"
 #include "w74.hpp"
 #include <algorithm>
@@ -330,6 +331,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
     if (routes.size() == s.routes.size())
         for (auto& issue : laneChangeIssues(s)) issues.push_back(std::move(issue));
     for(auto& issue:routingIssues(s))issues.push_back(std::move(issue));
+    validateParkingLots(s, issues); // M8.4a
     return issues;
 }
 void assertValidScenario(const Scenario& scenario) {

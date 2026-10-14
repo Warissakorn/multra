@@ -8,6 +8,22 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — M8.4a parking-lot runtime in the engine (D156)
+
+M8.4 was two systems, so it was split (D156): this session the core runtime, next the authored
+ParkingLot and its compiler. `src/core/parking_types.hpp` holds `ParkingLotSpec` (gate routes,
+exits as route + queue input + weight, dwell curve, initial types by share); `SimState::lots`
+holds parked vehicles, those leaving and those at the gate. `parking.cpp` runs it through five
+hooks in `stepSimulation`: release after arrivals, `noteInserted`, admission from the snapshot,
+the phase-1 hold (the dead-end mechanism) and drive-in at publish. Arrival at the line reuses the
+Stop's test, now one function `atStopLine` in `conflicts.*`; `samplePending` was extracted from
+`generateArrivals` with the same draw order so initial occupants are drawn like arrivals. Rows
+PL1–PL7 and validation were written first on hand-built scenarios. A mutation dropping the
+capacity check at publish survived them; PL2b (two vehicles driving in side by side for one space)
+was added and kills it. Every hook returns at once without a lot and no draw is made: headless
+86/86 (Linux, GCC 13.3), `trafficsim-cli 42` unchanged, frozen baselines green. No callgrind was
+run; the lot-free cost is a few `empty()` checks per tick. Desktop not built (no Qt here).
+
 ## 2026-10-13 — M8.3 OD matrices into Micro demand (D155)
 
 `withOdDemand` (`src/project/od_demand.*`) adds every matrix to a copy of the definition as

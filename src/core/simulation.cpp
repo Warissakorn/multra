@@ -3,6 +3,7 @@
 #include "detail.hpp"
 #include "following.hpp"
 #include "lanes.hpp"
+#include "parking.hpp"
 #include "routing.hpp"
 #include "routes.hpp"
 #include "validate.hpp"
@@ -21,7 +22,7 @@ Scenario canonicalScenario(Scenario scenario) {
     for (auto& segment : scenario.segments) std::sort(segment.next.begin(), segment.next.end());
     sort(scenario.routes); sort(scenario.vehicleTypes); sort(scenario.behaviours);
     sort(scenario.inputs); sort(scenario.signalPrograms); sort(scenario.signalHeads);
-    sort(scenario.conflictZones);
+    sort(scenario.conflictZones); sort(scenario.parkingLots);
     std::sort(scenario.laneChanges.begin(), scenario.laneChanges.end(), [](const auto& a, const auto& b) {
         if (a.fromRouteId != b.fromRouteId) return a.fromRouteId < b.fromRouteId;
         return a.fromStart != b.fromStart ? a.fromStart < b.fromStart : a.toRouteId < b.toRouteId;
@@ -68,6 +69,7 @@ SimState createSimulation(const Scenario& scenario, std::uint32_t seed) {
     state.seed = seed;
     state.randomState = seed == 0 ? 0x6d2b79f5U : seed;
     detail::initializeInputs(state);
+    initializeLots(state); // M8.4a: no draw without a lot
     for (const auto& head : state.scenario->signalHeads)
         state.events.emplace_back(SignalEvent{0, head.id,
             signalColorAt(detail::byId(state.scenario->signalPrograms, head.programId), 0)});
@@ -107,6 +109,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     next.events.clear();
     const auto& startService = next.stopService;
     detail::generateArrivals(next); // At START of tick, before insertion or movement.
+    if (!next.lots.empty()) releaseDepartures(next); // M8.4a: due departures join their exit queue
     const auto tick = startTick + 1;
     const double time = static_cast<double>(tick) * dt;
     auto& events = next.events;
@@ -168,6 +171,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         appendVehicleSpans(candidateSpans, scenario, index, vehicle, inserted);
         candidateBuckets = bucketSpans(candidateSpans, scenario.segments.size());
         next.inputs[pending.inputIndex].queue.erase(next.inputs[pending.inputIndex].queue.begin());
+        if (!next.lots.empty()) noteInserted(next, vehicle.id); // a departure on the road frees its space
         // Events still carry the route's NAME: they are the run's output, read by the evaluator
         // and by every frozen fixture, and a slot would mean nothing outside this Scenario.
         events.emplace_back(DepartedEvent{startTime, vehicle.id, route.id,
@@ -185,6 +189,8 @@ SimState stepSimulation(SimState&& state, double dt) {
     if (std::is_sorted(vehicles.begin(), arrivals, byId))
         std::inplace_merge(vehicles.begin(), arrivals, vehicles.end(), byId);
     else std::sort(vehicles.begin(), vehicles.end(), byId);
+    // M8.4a: vehicles that have served a lot's gate enter it, from this snapshot, before anything moves.
+    admitAtGates(next, vehicles, startTick, startTime);
     // A station at the source is recognized before the first lane-change/motion decision.
     if(!scenario.routeDecisions.empty())for(auto& vehicle:vehicles)
         while(const auto* decision=nextRouteDecision(scenario,vehicle)) {
@@ -240,6 +246,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     struct Move { double distance{}, speed{}, acceleration{}; FollowingMode mode{}; bool clamped{}; std::optional<W74State> w74; };
     std::vector<Move> moves(vehicles.size());
     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
+    std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto& vehicle = vehicles[v];
         const auto& type = scenario.vehicleTypes[refs[v].type];
@@ -273,6 +280,13 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (const double gap = std::max(0.0, index.deadEndOfRoute[refs[v].route] - vehicle.distance); std::isfinite(gap)) {
                 allowedDistance = std::min(allowedDistance, gap);
                 if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
+            }
+        // A lot's gate holds like a dead end while the lot is full or its service is still to serve.
+        if (!gateHeld.empty())
+            if (const auto gap = gateHold(next, vehicle, refs[v].route)) {
+                gateHeld[v] = 1;
+                allowedDistance = std::min(allowedDistance, *gap);
+                if (!leader || *gap < leader->gap) leader = Leader{*gap, 0, 0};
             }
         // Holding back for a waiting changer, as behind a standing vehicle -- even when a moving
         // leader is nearer, so it is a second obstacle rather than a replacement leader (below).
@@ -391,7 +405,16 @@ SimState stepSimulation(SimState&& state, double dt) {
         const double routeLength = parts.back().start + parts.back().length;
         // A stub's dead end may be its last metre; standing there is waiting, never arriving.
         const bool stub = index.laneChanges && std::isfinite(index.deadEndOfRoute[moved.routeIndex]);
-        if (moved.distance >= routeLength && !stub) {
+        // M8.4a: a gate route never ends in the ordinary way. Driving in admits while space remains;
+        // otherwise the vehicle stays at the line -- a planned stop when held, a reported clamp when
+        // this tick's admissions filled the lot first. It is never removed.
+        if (!gateHeld.empty() && moved.distance >= routeLength && !stub && index.lotOfRoute[moved.routeIndex] != SIZE_MAX) {
+            if (gateArrival(next, moved, moved.routeIndex, time, gateHeld[v])) continue;
+            if (!gateHeld[v] && !move.clamped) events.emplace_back(SafetyClampEvent{time, moved.id});
+            if (!gateHeld[v]) { moved.speed = 0; moved.acceleration = -vehicle.speed / dt; }
+            moved.distance = routeLength;
+        }
+        if (moved.distance >= routeLength && !stub && (gateHeld.empty() || index.lotOfRoute[moved.routeIndex] == SIZE_MAX)) {
             ++next.completed;
             events.emplace_back(ArrivedEvent{time, vehicle.id, scenario.routes[moved.routeIndex].id,
                 time - vehicle.enteredTime,

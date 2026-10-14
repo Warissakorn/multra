@@ -14,4 +14,5 @@ const T& byId(const std::vector<T>& items, const std::string& id) {
 double random(std::uint32_t& state);
 void initializeInputs(SimState& state);
 void generateArrivals(SimState& state);
+PendingVehicle samplePending(SimState&, std::uint32_t input, std::uint32_t route, std::uint32_t type, double scheduledTime);
 }

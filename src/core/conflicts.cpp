@@ -123,6 +123,9 @@ std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& in
 double stopLineReach(const DriverBehaviour& b, double driverFactor) {
     return desiredGap(b, driverFactor, kStoppedSpeed) + kLineReach;
 }
+bool atStopLine(const Vehicle& vehicle, double line, const DriverBehaviour& behaviour) {
+    return vehicle.speed < kStoppedSpeed && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor);
+}
 std::vector<StopService> refreshStops(const Scenario& scenario, const ScenarioIndex& index,
                                       const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs,
                                       const std::vector<StopService>& previous, std::uint64_t tick) {
@@ -137,9 +140,7 @@ std::vector<StopService> refreshStops(const Scenario& scenario, const ScenarioIn
                 rz.waitAt - vehicle.distance >= -kPast && (!line || rz.waitAt < *line)) line = rz.waitAt;
         if (!line) continue; // no Stop ahead: passing the last line cleared its service
         if (old != previous.end() && old->vehicleId == vehicle.id && old->line == *line) { next.push_back(*old); continue; }
-        if (vehicle.speed < kStoppedSpeed &&
-            *line - vehicle.distance <= stopLineReach(scenario.behaviours[refs[v].behaviour], vehicle.driverFactor))
-            next.push_back({vehicle.id, *line, tick});
+        if (atStopLine(vehicle, *line, scenario.behaviours[refs[v].behaviour])) next.push_back({vehicle.id, *line, tick});
     }
     return next;
 }

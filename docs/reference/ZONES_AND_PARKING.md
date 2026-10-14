@@ -1,9 +1,10 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status:** M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
+**Status:** M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
+on hand-built scenarios. M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
 the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
 2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
-ParkingLot, its runtime, outputs and editor tools are **not implemented**. This document fixes the
+The authored ParkingLot (codec, compiler), outputs and editor tools are **not implemented**. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
@@ -122,58 +123,68 @@ destination connector and chain order. The same document and seed give the same 
 
 ## 4. Parking-lot runtime (core contract)
 
-The lot is the one part the core must learn. Interface first; names are binding for M8.4.
+The lot is the one part the core had to learn. **Implemented by M8.4a (D156)** in
+`src/core/parking.*` and tested on hand-built scenarios (`parkinglot`); M8.4b compiles an authored
+ParkingLot into it.
 
 ```cpp
-// src/core/types.hpp, additions (sketch; standard C++ only)
-struct DwellPoint { double seconds{}, cumulative{}; };
+// src/core/parking_types.hpp (ids, because createSimulation re-sorts routes, inputs and types)
+struct DwellPoint { double seconds{}, cumulative{}; };              // inverted cumulative curve
+struct LotExit { std::string routeId, inputId; double weight{}; };  // a way out and its queue
+struct LotType { std::string vehicleTypeId; double share{}; };
 struct ParkingLotSpec {
-    std::string id;
-    std::uint32_t capacity{}, initialOccupancy{};
+    std::string id; std::uint32_t capacity{}, initialOccupancy{};
     double gateServiceTime{};
-    std::vector<DwellPoint> dwell;              // inverted cumulative curve
-    std::vector<std::string> gateSegmentIds;    // last segment of each inbound route's lane
-    std::vector<std::size_t> exitInputs;        // compiled inputs on the exit Links (no Poisson)
-    std::vector<RoutingChoice> exitDestinations; // the lot row's shares (§4.4)
-    std::string initialCompositionId;
+    std::vector<DwellPoint> dwell;
+    std::vector<std::string> gateRouteIds;  // a vehicle on one of these ends its trip at the gate
+    std::vector<LotExit> exits;
+    std::vector<LotType> initialTypes;      // required when initialOccupancy > 0
 };
+// src/core/types.hpp: ScenarioDefinition::parkingLots; SimState::lots, parallel to it
 struct ParkedVehicle { PendingVehicle vehicle; double admitted{}, dwellEnd{}; };
-struct LotState {
-    std::vector<ParkedVehicle> parked;          // sorted by (dwellEnd, vehicle id)
-    std::uint32_t occupied{};                   // parked + departed-but-not-inserted (§4.3)
-};
-// ScenarioDefinition::parkingLots; SimState::lots, parallel to it. Empty ⇒ no lot code runs.
+struct GateArrival { std::uint64_t vehicleId{}, since{}; };   // came to the line at tick `since`
+struct LotState { std::vector<ParkedVehicle> parked;          // sorted by (dwellEnd, id)
+                  std::vector<std::uint64_t> leaving;         // released, not yet on the road
+                  std::vector<GateArrival> gate;              // sorted by (since, id)
+                  std::size_t occupied() const; };            // parked + leaving
 ```
 
-### 4.1 Arrival at the gate
+Without a lot every hook returns at once and no random number is drawn: lot-free runs are
+byte-identical (the frozen baselines, `trafficsim-cli 42` and every existing test pin it).
+`validateScenario` reports `PARKING_LOT_INVALID` with the path of the broken field: an empty or
+repeated id, capacity < 1, initial occupancy above capacity or without types, an unknown type or a
+share ≤ 0, a negative service time, a dwell curve that is empty, not strictly increasing in both
+columns or not ending at cumulative 1, no or unknown gate route, a route gating two lots, no exit,
+an exit whose route or input is unknown, whose route does not start where its input's route
+starts, or whose weight is ≤ 0.
 
-A route whose last segment is a gate segment does **not** leave the network at its end. The gate
-line is the segment end. The vehicle is held there as at a red head, and it comes to the line and
-serves exactly as a Stop does (`stopService`, SIMULATION "Serving"): below `kStoppedSpeed` within
-`stopLineReach`, then `gateServiceTime` standing (rounded up to whole ticks; 0 ⇒ the Stop's own
-one-tick rest). After service it is **admitted only if `occupied < capacity`**; otherwise it stays
-held, standing, and the vehicles behind it queue by ordinary following and spill back along the
-driveway and onto the street. Nothing else removes it.
+### 4.1 One tick
 
-**A vehicle is never deleted.** It leaves the road only by admission (it becomes a `ParkedVehicle`)
-or by reaching a non-gate route end, as today.
+1. **Release** (after this tick's arrivals are generated): each parked vehicle with
+   `dwellEnd ≤ t`, in (dwellEnd, id) order, takes an exit — one draw by weight, none when there is
+   only one — and joins that exit input's queue with its own id, type, desired speed and driver
+   factor, `scheduledTime = dwellEnd`. It moves to `leaving` and **keeps its space**.
+2. **Insertion** as for any queue (D108 guard). An inserted vehicle leaves `leaving`, freeing its
+   space. A blocked exit therefore fills the lot and queues the gate.
+3. **Admission** (from the snapshot, before anything moves): a vehicle on a gate route that has
+   come to the line — `atStopLine`, the Stop's own test (below walking pace, front within
+   `stopLineReach` of the route end) — enters `gate` at that tick. In (since, id) order, while
+   `occupied < capacity`, each one whose `gateServiceTime` (rounded up to whole ticks) has run since
+   then is admitted: removed from the road, `ArrivedEvent` (its trip ends; `completed` counts it),
+   dwell drawn (one draw, in admission order), `dwellEnd` rounded up to a tick.
+4. **Hold** (phase 1): while the lot is full, or the lot has a gate service, a gate-route vehicle is
+   held at the route end exactly like a dead end — a standing leader there. Vehicles behind queue
+   by ordinary following and spill back onto the street.
+5. **Driving in** (publish): with space and no service, a vehicle reaching the route end is
+   admitted at once, without stopping. If this tick's earlier admissions took the last space, it
+   is placed at the line at speed 0 and a `SafetyClampEvent` reports the stop (row PL2b).
 
-### 4.2 Admission order and dwell
+**A vehicle is never deleted.** A gate route never ends in the ordinary way: the vehicle leaves
+the road only by admission. Every id is always in exactly one place — the road, an input queue, a
+lot, or gone through an ordinary route end (checked every tick by PL1, PL2, PL5).
 
-Within one tick: (1) departures (§4.3) are released, (2) arrivals are inserted as today, (3) gate
-admissions run in order of service completion tick, then vehicle id, while space remains. An
-admitted vehicle's trip ends at that tick (`ArrivedEvent`), so its delay includes its gate wait;
-the wait itself is also reported (§5). Its dwell is drawn at admission from the state's PRNG, in
-admission order, so the stream is fixed. `dwellEnd = admitted + dwell`, rounded up to a tick.
-
-### 4.3 Departure
-
-When `dwellEnd ≤ t` the parked vehicle moves to the queue of one exit input, keeping its id and
-type, with `scheduledTime = dwellEnd`; its destination is drawn by §4.4. It then enters through
-the ordinary queue and D108 guard. **It keeps its space until it is inserted**: `occupied` falls
-only when it is on the exit Link. A blocked exit therefore fills the lot and queues the gate,
-which is the behaviour a study needs to see. Exit inputs are chosen by normalised connector share
-with one PRNG draw in (dwellEnd, id) order.
+Departure destinations are fixed weights on `exits`. The time-sliced lot row of §4.4 is compiled
+into those weights by M8.4b (one set per run).
 
 ### 4.4 A lot zone's own row
 
@@ -186,8 +197,9 @@ The lot column (`d = lot`) is ordinary demand: §3 generates it, and its trips e
 
 ### 4.5 Initial occupants
 
-`initialOccupancy` vehicles exist at t = 0, ids `lot:<id>/<k>`, types drawn from
-`initialCompositionId`, each with a full dwell drawn at t = 0. This overstates their stay (a car
+`initialOccupancy` vehicles exist at t = 0, numbered from 1 before any arrival, types drawn by
+`initialTypes` share (M8.4b compiles them from `initialCompositionId`), each with its desired speed
+and driver factor drawn as an arrival's and a full dwell drawn at t = 0. This overstates their stay (a car
 parked before the run has already used part of it); the bias is stated, not corrected, and a
 study controls it with warm-up.
 
@@ -272,13 +284,13 @@ blocked, the key is below 31), then the consequence. Test groups are planned nam
 | OD5 | Two equal-short branches get ½ each; a detour one Link longer gets no input | `odexpand` |
 | OD6 | Same document and seed ⇒ the same event stream; reordering `zoneIds` with the cells gives the same inputs; no zone layer ⇒ the definition passes unchanged. Run-tier codes of §6 refused with their paths, and shown as runtime diagnostics | `odexpand` |
 | OD7 | A lot zone's row creates **no** Poisson input (asserted by input count), only exit destinations | `odexpand` |
-| PL1 | **Full lot queues, never deletes.** A capacity-2 lot with dwell longer than the run and 5 arrivals: first assert `occupied = 2`; then 3 vehicles stand at or behind the gate to the end, and the §4.6 identity holds at every tick | `parkinglot` |
-| PL2 | `occupied` never exceeds `capacity` over 40 seeds of a saturated lot | `parkinglot` |
-| PL3 | The gate queue spills back past the driveway onto the street Link and blocks a through vehicle behind it (queue counter length > driveway length) | `parkinglot` |
-| PL4 | Gate service: with `gateServiceTime` 10 s an empty lot admits no earlier than 10 s after the vehicle comes to the line; 0 s gives the Stop's one-tick rest | `parkinglot` |
-| PL5 | A departure frees its space only when inserted: with the exit Link blocked (asserted), a full lot stays full and its gate queue grows | `parkinglot` |
-| PL6 | Admission order is service completion then id; the dwell draws are reproducible (same seed ⇒ same admitted/dwellEnd list) | `parkinglot` |
-| PL7 | `initialOccupancy` vehicles exist at t = 0 with the composition's types and leave by their dwell | `parkinglot` |
+| PL1 | **Full lot queues, never deletes.** A capacity-2 lot with dwell longer than the run: first assert `occupied = 2` and ≥ 5 arrivals; then every other arrival is on the road or in its queue, ≥ 3 on the road, none past the line, and every id is in exactly one place at every tick (M8.4a) | `parkinglot` |
+| PL2 | `occupied` never exceeds `capacity`, and the identity holds, over 40 well-mixed seeds of a saturated lot (M8.4a). PL2b: two vehicles driving in side by side for one space — one is admitted, the other stays at the line with one reported clamp | `parkinglot` |
+| PL3 | The gate queue spills back past a 30 m driveway onto the shared approach and a through vehicle stands behind it (M8.4a) | `parkinglot` |
+| PL4 | Gate service: with `gateServiceTime` 10 s an empty lot admits no earlier than 10 s after the vehicle comes to the line; with 0 s it drives in without stopping (M8.4a) | `parkinglot` |
+| PL5 | A departure frees its space only when inserted: with the exit blocked by a red head (asserted: a departure is still queued), every queued departure is in `leaving` and the lot stays full; unblocked, the lot keeps turning over (M8.4a) | `parkinglot` |
+| PL6 | Same seed ⇒ the same events and lot states every tick; on one lane admissions follow arrival order (M8.4a) | `parkinglot` |
+| PL7 | `initialOccupancy` vehicles exist at t = 0 with their `initialTypes`, ids 1…n, and leave by their dwell (M8.4a core; the composition is M8.4b) | `parkinglot` |
 | PL8 | A departing vehicle keeps its id and type, and its destination frequencies over 40 seeds match the lot row's weights within the binomial 95 % band | `parkinglot` |
 | PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged | `parkinglot` |
 | PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`); authoring keeps it | `parkinglot` |
