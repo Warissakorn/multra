@@ -49,6 +49,9 @@ inline constexpr const char* kFocusBehaviour = "lab-focus-behaviour";
 inline constexpr const char* kCarType = "lab-car";
 inline constexpr const char* kHeavyType = "lab-heavy";
 inline constexpr const char* kTrafficBehaviour = "lab-traffic-behaviour";
+// Changes length while scaling explicit wheelbase and overhangs by the same ratio.
+// Types without explicit axles keep their nominal geometry policy.
+void resizeVehicleLength(VehicleType&, double length);
 // Starting values: the catalog's car, heavy vehicle and their behaviours (data/vehicle-types,
 // data/driver-behaviour), or the given project types when the editor passes its own catalog.
 LabSettings defaultSettings(const std::vector<VehicleType>& types, const std::vector<DriverBehaviour>& behaviours);

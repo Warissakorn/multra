@@ -1,6 +1,7 @@
 #include "lab_settings.hpp"
 #include "../project/demand_catalog.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace trafficsim::lab {
 namespace {
@@ -17,6 +18,17 @@ DriverBehaviour behaviourOf(const VehicleType& type, const std::vector<DriverBeh
     if (prototype == behaviours.end()) throw std::invalid_argument("LAB_NO_PROTOTYPE_BEHAVIOUR");
     return *prototype;
 }
+}
+void resizeVehicleLength(VehicleType& type, double length) {
+    if (!std::isfinite(length) || length <= 0 || !std::isfinite(type.length) || type.length <= 0)
+        throw std::invalid_argument("LAB_INVALID_LENGTH");
+    if (type.axles) {
+        const double scale = length / type.length;
+        type.axles->wheelbase *= scale;
+        type.axles->frontOverhang *= scale;
+        type.axles->rearOverhang *= scale;
+    }
+    type.length = length;
 }
 LabSettings defaultSettings(const std::vector<VehicleType>& types, const std::vector<DriverBehaviour>& behaviours) {
     if (types.empty()) throw std::invalid_argument("LAB_NO_VEHICLE_TYPE");

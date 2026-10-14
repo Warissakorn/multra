@@ -97,6 +97,14 @@ int main(int argc, char** argv) {
         require(lab->run().settings().focus.behaviour.additiveSafetyDistance == safety->value(), "The retune did not apply");
         require(!item<QLabel>(*lab, "labMessage")->text().isEmpty(), "No retune message");
 
+        // Length edits keep explicit axle geometry valid in the live run and project Apply.
+        auto* length = item<QDoubleSpinBox>(*lab, "focus.length");
+        length->setValue(5.5); lab->applyPanel();
+        const auto& tunedType = lab->run().settings().focus.type;
+        require(tunedType.length == 5.5 && tunedType.axles.has_value(), "Length edit was rejected");
+        require(std::abs(tunedType.axles->wheelbase + tunedType.axles->frontOverhang +
+                         tunedType.axles->rearOverhang - 5.5) < 1e-9, "Length and axles disagree");
+
         // A road change rebuilds the ring from t = 0, and the tuned vehicle is followed again.
         item<QSpinBox>(*lab, "road.lanes")->setValue(2);
         lab->applyPanel();
@@ -121,6 +129,7 @@ int main(int argc, char** argv) {
         // Apply writes the tuned values into the project's car behaviour: one revision, one Undo.
         auto* apply = item<QAction>(*lab, "labApply");
         require(apply->isVisible() && apply->isEnabled(), "Apply is not offered");
+        const auto beforeApply = w.history().document();
         const auto revision = w.history().revision();
         apply->trigger(); QApplication::processEvents();
         require(w.history().revision() == revision + 1, "Apply did not add exactly one revision");
@@ -129,8 +138,11 @@ int main(int argc, char** argv) {
         bool written = false;
         for (const auto& t : def.vehicleTypes) if (t.id == "car")
             for (const auto& b : def.behaviours) if (b.id == t.behaviourId)
-                written = b.additiveSafetyDistance == lab->run().settings().focus.behaviour.additiveSafetyDistance;
-        require(written, "Apply did not write the tuned behaviour");
+                written = b.additiveSafetyDistance == lab->run().settings().focus.behaviour.additiveSafetyDistance &&
+                    t.length == 5.5 && t.axles == lab->run().settings().focus.type.axles;
+        require(written, "Apply did not write the tuned behaviour and geometry");
+        item<QAction>(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(w.history().document().definition == beforeApply.definition, "Apply Undo lost catalog values");
 
         // Thai relabels the open lab; parameter names stay the file's keys.
         const auto english = lab->windowTitle();

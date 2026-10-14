@@ -135,6 +135,9 @@ lab::LabSettings BehaviourLabPanel::settings() const {
     auto s = base_;
     for (const auto& n : numbers_) n.value(s) = n.spin->value();
     for (const auto& o : optionals_) o.value(s) = o.on->isChecked() ? std::optional(o.spin->value()) : std::nullopt;
+    const double length = s.focus.type.length;
+    s.focus.type.length = base_.focus.type.length;
+    lab::resizeVehicleLength(s.focus.type, length);
     s.traffic.vehicleCount = count_->value();
     s.road.lanes = lanes_->value();
     s.road.signal = signal_->isChecked();
@@ -180,5 +183,7 @@ void BehaviourLabPanel::retranslate() {
     layout_->setItemText(0, text_("labLayoutUrban"));
     layout_->setItemText(1, text_("labLayoutOval"));
     for (const auto& o : optionals_) o.on->setToolTip(text_("labOptionalSet"));
+    for (const auto& n : numbers_) if (n.spin->objectName() == "focus.length")
+        n.spin->setToolTip(text_("labLengthScalesAxles"));
 }
 }

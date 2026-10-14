@@ -156,3 +156,21 @@ TEST(lab, bl15_signal_timings_retune_and_a_layout_change_restarts) {
     auto tiny = s; tiny.road.straightLength = 100;
     test::throws([&] { r.apply(tiny); }, "LAB_ROAD_INVALID");
 }
+
+TEST(lab, length_scales_explicit_axles_without_weakening_validation) {
+    auto original = settings();
+    for (const auto& type : {original.focus.type, original.traffic.heavy}) {
+        auto s = original; s.focus.type = type;
+        const auto old = *type.axles;
+        lab::resizeVehicleLength(s.focus.type, type.length + 1);
+        const auto axles = *s.focus.type.axles;
+        test::near(axles.wheelbase / old.wheelbase, s.focus.type.length / type.length);
+        test::near(axles.wheelbase + axles.frontOverhang + axles.rearOverhang, s.focus.type.length);
+        auto r = run(original); CHECK(r.apply(s) == lab::LabRun::Applied::retuned);
+        CHECK(r.settings().focus.type == s.focus.type);
+        CHECK(r.apply(original) == lab::LabRun::Applied::retuned);
+    }
+    auto type = original.focus.type; type.axles.reset();
+    lab::resizeVehicleLength(type, 5.5); CHECK(!type.axles);
+    test::throws([&] { lab::resizeVehicleLength(type, 0); }, "LAB_INVALID_LENGTH");
+}

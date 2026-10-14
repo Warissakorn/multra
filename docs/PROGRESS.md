@@ -8,6 +8,11 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — R5 lab length (D167)
+
+One helper scales explicit axle proportions for panel edits and project Apply; core validation
+stays strict. Car/heavy retune tests pass; Apply/Undo UI regression and translated policy added.
+
 ## 2026-10-14 — R1 phase bins (D167)
 
 Finite/positive validation runs at both boundaries. Huge widths use one bin; small widths exceeding
