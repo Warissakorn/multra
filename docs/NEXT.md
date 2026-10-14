@@ -7,6 +7,15 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 to do next is the duplication hard rule 3 forbids, and the copy that rots is always the one in
 the log. Rewrite this file; do not append to it.
 
+## Code-review fixes (2026-10-14, D167)
+
+The owner approved [the review correction plan](plans/REVIEW_FIXES-2026-10-14.md).
+The working branch is `codex/review-fixes-2026-10-14`; corrections are split by system.
+Before merging, check native CI on the final PR commit (Linux headless/desktop/release and
+Windows desktop/core). Owner appearance checks: lane change followed by a routing decision;
+Lab length and Apply/Undo; Cancel/Restart while a long seed is running. Automated checks do
+not close any milestone or engineering-validation gate. After this review return to the queue below.
+
 ## Behaviour Lab review (2026-10-14, D165)
 
 The owner's request — a window to tune driving behaviour on a vehicle that laps a test network —

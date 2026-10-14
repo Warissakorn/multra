@@ -8,6 +8,17 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Review correction plan and baseline (D167)
+
+The owner approved the supplied review's full plan and requested implementation, including
+R1–R8, the Cancel/Restart risk and skipped OD demand reporting. The
+[regression map](plans/REVIEW_FIXES-2026-10-14.md) records interfaces and the selected contracts.
+Clean main `c26487c` passed 92/92 headless CTests on Linux (GCC 13.3, CMake 4.4.4,
+Ninja 1.13.2, nlohmann/json 3.12.0), with a writable TMPDIR. New tests against old code fail
+for source-sink sections, shared-prefix sections, terminal stop lines, invalid phase bins and
+routing after lane change; original CLI `inf`/`1e20` both exit −11. No frozen fixture changed.
+Older D147/Q4 progress blocks moved whole to the indexed archive to keep this file under 500 lines.
+
 ## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
 
 The owner asked for a varied lab network with straights and intersections, and the camera turning
@@ -410,68 +421,6 @@ T-junction; only `buildCommit` differs). The editor is M5.8b (NEXT).
 
 An independent review of the M6.0 sheet also ran this session, and its 25 findings were fixed in
 a separate commit. The run-cost entry of 2026-10-08 moved whole to `archive/`.
-
----
-
-## 2026-10-10 — M6.0 benchmark option sheet (Q4)
-
-Docs only, the D143 queue's item after M4.2. The [option sheet](evidence/m6-benchmark-options.md)
-prepares Q4, open since 2026-09-10, for the owner to answer by letter
-([OWNER_SITTING](plans/OWNER_SITTING.md) B9). It covers three kinds: S1 saturation flow and
-capacity, S2 delay, and U minor-movement capacity with the gap-acceptance calibration R7 moved
-to M6. Each kind has five published options, each giving its quantity, conditions and limits,
-and the command that would produce TrafficSim's comparable figure or what is missing for it. No
-TrafficSim figure was produced for it, and no tolerance is proposed, so the choice stays blind.
-
-What the sheet found for the next M6 session:
-- **Unsignalised capacity has no command yet.** The engine's rule is a gap time plus a distance
-  headway, occupancy and area reservation, so a published critical headway must be translated,
-  not copied into `gapTime`. A comparison also needs a saturated-minor project per major-flow
-  level, and a follow-up headway measured at a priority line, which `--discharge` cannot give.
-- **Effective green is not measured.** Amber ends the discharge window, so capacity needs a
-  declared green or a saturated count.
-- **Poisson generation** makes a random-arrival delay formula (Webster) the closer match, not an
-  exact one: insertion and car-following reshape the stream before the stop line. HCM's uniform
-  term alone describes arrivals the engine cannot generate.
-- **No verifiable Thai study.** No published Thai study of these quantities could be verified,
-  so a local benchmark would be the owner's own measurement.
-
-**How the citations were checked.** Agents researched them with web search, an adversarial pass
-checked them, and a third pass re-checked only the printed details. The HCM and HBS are paid and
-were not read: their values come from agency and software documentation and are marked to be
-read in the manual. Unconfirmed exhibit numbers are left out.
-
-PR #135 (M5.9, M4.2) merged, with native CI green on Linux and Windows. NEXT now points at M5.8.
-The D129 entry moved whole to `archive/`.
-
----
-
-## 2026-10-09 — M4.2 amber stop-or-go (D147)
-
-An optional behaviour `amberDeceleration` (catalog 3.0 m/s², ITE) turns amber into a continuous
-check: go when `speed² > 2·a·gap`, else stop. With it, a vehicle that cannot stop at its type's
-maximum deceleration goes on amber or red, as at a priority rule. That second rule was the owner's
-choice after the first measurement left 44 physically impossible stops at red onset. One comparison
-in the core head loop, no vehicle state. M0 scenarios (no `schemaVersion`) resolve the catalog
-without the field through a never-written, never-compared provenance flag. So the frozen TS
-fixtures, `trafficsim-cli 42` and the editor's `crossing.json` run did not move; a save and reopen
-round-trips exactly. An owned behaviour with the field is schema 28. Capturing the catalog now owns
-it, which exposed a latent defect: owned catalogs without a library were written without `model`
-at schema 22+ and could not be reopened. The writer now tags every owned behaviour from schema 21.
-
-Contract and rows AM1–AM8 in [AMBER](reference/AMBER.md); `tests/amber_tests.cpp` (group `amber`)
-plus a regression for the untagged catalogs. Four-leg over seeds 42–81: clamps 220 → 1, every
-movement's delay down 1.4–7.5 s; M2.6: clamps 844 → 35 (not classified), delay −1.1 to −12.3 s
-([evidence](evidence/m4.2-amber.md)). Changed tests, each for a stated reason:
-- The four-leg clamp diagnosis is pinned on the run with the field removed (D36), and a new row
-  pins zero clamps with it.
-- The archived M3.2.7 sweep inputs drop the field, noted in that evidence as D36-era.
-- `results-tabs-ui` uses a copy owning the D36 behaviour so its clamp page still has clamps.
-- Fixtures that test schemas 18–25 strip the field.
-- Future-schema probes move to 29.
-
-Linux only: desktop preset (Qt 6.4.2 offscreen, GCC 13.3), ctest 113/113 and `check` green.
-Windows is the PR's native CI. The BA14/BA17 and D128 entries moved whole to `archive/`.
 
 ---
 

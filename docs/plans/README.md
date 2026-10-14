@@ -6,6 +6,7 @@ the live queue. Owner observations are distinct from automated checks.
 
 | Document | Scope |
 |---|---|
+| [REVIEW_FIXES-2026-10-14.md](REVIEW_FIXES-2026-10-14.md) | Owner-approved R1–R8 correction plan and regression map (D167) |
 | [OSM_BACKGROUND.md](OSM_BACKGROUND.md) | OSM raster map implementation and delivery order (2026-10-12) |
 | [OWNER_SITTING.md](OWNER_SITTING.md) | Every item waiting on the owner, for one sitting (D143) |
 | [M1_ACCEPTANCE.md](M1_ACCEPTANCE.md) | M1 owner acceptance record |

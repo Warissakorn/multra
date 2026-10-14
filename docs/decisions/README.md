@@ -134,3 +134,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D165](RECORD.md#d165) — Behaviour Lab: circuit routes, live retune and vehicle placement in core; `src/lab/` ring; the window follows one vehicle.
 
 [D166](RECORD.md#d166) — Behaviour Lab Urban circuit (signalised crossings and turns, cross-traffic loops) and heading-up camera; `viewScale()`.
+
+[D167](RECORD.md#d167) — owner-approved review corrections: terminal observations, shared-prefix sections, pose remaps, axle scaling, shortest-search limits and worker retirement.
