@@ -54,10 +54,6 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    (R2). Book the cap as its own slice, or leave it? *Owner:*
 6. **Routing stations** (listed 2026-10-06). Continuous-time or several stations on one Link,
    beyond M2.1.3: wanted? *Owner:*
-7. **Multi-level modelling parameters** (listed 2026-10-09, D145). The six questions in
-   [MULTI_LEVEL_MODELLING](MULTI_LEVEL_MODELLING.md) §8: Meso formulation, default VDF and its
-   citation, deterrence form and trip purposes, the mode set (with PROBLEM §8), convergence
-   defaults, on-street parking in M8 or later. M10/M11 contracts wait on 1–5. *Owner:*
 8. **The example's cool-down** (listed 2026-10-09, D146). `four-leg-signalised` stays schema 17
    with no cool-down, so its batch still warns on 11 of 12 movements; 300 s clears every window
    trip ([evidence](../evidence/m5.9-cooldown.md)). Give the example a cool-down (its tests'
@@ -67,17 +63,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
-10. **M8 parking-lot rules** (listed 2026-10-13, D153). [ZONES_AND_PARKING](../reference/ZONES_AND_PARKING.md)
-   §8: which cited dwell distribution ships as the default; lot departures timed by dwell with
-   destinations from the lot's OD row (D153) or Poisson outbound volumes with the lot only
-   bounding occupancy; inbound lot trips in movement delay (gate wait included) or only in the
-   lot table. M8.4 can be built on D153 as written; the dwell default waits on the answer. *Owner:*
-11. **Small seeds bias the first arrival** (listed 2026-10-13, D155). With seeds 42–81 the first
-   xorshift32 draw is about 0.003, so the first input (in id order) gets its first vehicle 5–6
-   mean headways late: about 800 s at 27 veh/h, a few seconds at 600 veh/h. Every study run with
-   the D88 seeds has it; a long warm-up hides most of it. Scrambling the seed before the first
-   draw (e.g. splitmix64) removes it but changes every trajectory and the four frozen TS
-   baselines. Fix it (a recorded baseline change), or keep and document? *Owner:*
+
+Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
+([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
 
 ## C — Run view (the 125 % screen)
 

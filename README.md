@@ -93,8 +93,9 @@ The C++ tests compare four baseline seeds: all non-movement events and complete 
 checkpoints every 10 simulated seconds, with a 1e-7 absolute tolerance on physical values.
 Same-build C++ replay compares the full event stream exactly.
 
-Seed 42: 180 seconds, **31 completed, 0 active, 0 pending**, 0 safety clamps,
-mean completed-trip delay **29.249359418430977 s**. This is a regression fixture, not
+`trafficsim-cli 42` (D159 seeding): 180 seconds, **45 completed, 1 active, 0 pending**, 1 safety
+clamp, mean completed-trip delay **31.75870154816726 s**. The TS baselines replay under the old
+seed mapping (`SeedStart::raw`). This is a regression fixture, not
 scientific validation or a performance benchmark. See [`docs/reference/MIGRATION.md`](docs/reference/MIGRATION.md).
 
 ## Project map

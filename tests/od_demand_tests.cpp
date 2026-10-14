@@ -87,13 +87,14 @@ TEST(odexpand, od3_counts_follow_poisson_over_40_seeds) {
     const auto f = fixture();
     const auto scenario = compileDocument(f.d, test::root() / "data").scenario;
     std::map<std::string, double> departed;
-    // Well-mixed seeds, not 42-81: with a small seed the first xorshift32 draw is about 0.003, so the
-    // first input's first arrival comes 5-6 mean headways late (an existing engine property, NEXT).
-    for (std::uint32_t k = 1; k <= 40; ++k) {
-        const auto end = runSimulation(scenario, k * 2654435761u, [&](const SimEvent& event) {
+    // The D88 seeds. Before D159 (sitting B11) their first draw was about 0.003 and this needed
+    // well-mixed seeds instead.
+    for (std::uint32_t seed = 42; seed <= 81; ++seed) {
+        const auto end = runSimulation(scenario, seed, [&](const SimEvent& event) {
             if (const auto* d = std::get_if<DepartedEvent>(&event)) departed[d->routeId.substr(0, d->routeId.find('>'))] += 1;
         }, false);
-        for (const auto& in : end.inputs) CHECK(in.queue.empty()); // every generated arrival departed
+        // Every generated arrival departed, but one due in the last tick or two has had no time to.
+        for (const auto& in : end.inputs) for (const auto& p : in.queue) CHECK(p.scheduledTime > scenario.duration - 1);
     }
     CHECK(departed.size() == 2); // forcing: only the two OD routes run
     const double total = departed["od:" + f.a1] + departed["od:" + f.a2];

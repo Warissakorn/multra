@@ -32,7 +32,10 @@ Outcome run(const Scenario& scenario) {
         if (const auto* a = std::get_if<ArrivedEvent>(&e)) out.arrived[a->routeId]++;
         out.clamps += std::holds_alternative<SafetyClampEvent>(e);
     }, false);
-    out.pending = pendingCount(end);
+    // A vehicle due in the last few seconds has had no time to enter; only an older one shows a jam.
+    // (D159: seed 42 leaves one due at 3599.59 s.)
+    for (const auto& input : end.inputs)
+        for (const auto& p : input.queue) out.pending += p.scheduledTime < scenario.duration - 5;
     return out;
 }
 }

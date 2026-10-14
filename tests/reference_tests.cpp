@@ -60,7 +60,7 @@ Json digestJson(const TrajectoryDigest& digest) {
 void verify(std::uint32_t seed) {
     std::ifstream file(test::root() / "tests/reference" / ("seed-" + std::to_string(seed) + ".json"));
     CHECK(file.good()); const auto expected = Json::parse(file);
-    auto state = createSimulation(test::demo().scenario, seed);
+    auto state = createSimulation(test::demo().scenario, seed, SeedStart::raw);
     Json events = Json::array(), checkpoints = Json::array();
     SummaryAccumulator summary;
     TrajectoryDigest digest;

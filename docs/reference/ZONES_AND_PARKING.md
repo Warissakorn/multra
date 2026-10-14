@@ -86,9 +86,9 @@ Overlapping periods add, as overlapping inputs do today.
 | `gateServiceTime` | seconds | Finite, ≥ 0; default 0. Time standing at the gate before admission is possible (ticket, barrier) |
 | `dwell` | `[[minutes, cumulative], …]` | The lot's own dwell curve: minutes ≥ 0 and cumulative shares in [0, 1], both strictly increasing, the last share 1. A single point is a fixed dwell |
 
-The dwell curve is stored **on the lot** (D157): until the owner chooses a cited default (§8,
-B10) a shared catalog would have no content, so none ships. A catalog reference can be added later
-beside the inline curve. Sampling inverts the piecewise-linear curve with one draw of the run's
+The dwell curve is stored **on the lot** (D157) and is **required: no default ships** (owner,
+D158). Dwell depends on land use, so a study's own survey is its source. A catalog reference can be
+added later beside the inline curve, if a cited distribution becomes available. Sampling inverts the piecewise-linear curve with one draw of the run's
 PRNG (§4.1). Every field is always written; `capacity` and `initialOccupancy` must be JSON
 unsigned integers.
 
@@ -191,7 +191,7 @@ into those weights by M8.4b (one set per run).
 ### 4.4 A lot zone's own row
 
 For a zone with a lot, the matrix row `o = lot` sets **destinations, not timing**: departures come
-from dwell expiries (D153; the owner may revise it, B10). `withOdDemand` adds the row's routes but
+from dwell expiries (D153, confirmed by the owner in D158). `withOdDemand` adds the row's routes but
 **no input** for them (OD7). `compileParkingLots` (`src/project/parking_compile.*`, D157) then
 builds the engine's lot after `compileScenario`:
 
@@ -314,13 +314,12 @@ blocked, the key is below 31), then the consequence. Test groups are planned nam
 The M8 gate (ROADMAP) additionally needs the editor tools and the OD table (M8.6) and a
 development-access study run end to end; no row above closes it alone.
 
-## 8. Owner questions
+## 8. Owner questions (answered 2026-10-14, D158)
 
-Listed in [OWNER_SITTING](../plans/OWNER_SITTING.md) B10:
+Sitting B10, answered "as recommended":
 
-1. **Dwell default and source** — which distribution ships in `data/parking-dwell/`, cited.
-2. **Lot outbound timing** (§4.4, D153) — dwell-driven departures with destinations from the row,
-   or Poisson outbound volumes from the matrix with the lot only bounding occupancy.
-3. **Lot trips in movement tables** — keep inbound lot trips in movement delay (as now, ending at
-   admission, so gate wait is included), or report them only in the lot table.
-4. On-street parking that blocks a lane stays design §8 question 6.
+1. **Dwell default:** none ships; every lot carries its own curve (§2.4).
+2. **Lot outbound timing:** D153 stands: dwell-driven departures, destinations from the row (§4.4).
+3. **Lot trips in movement tables:** inbound lot trips stay in movement delay, ending at admission
+   so gate wait is included; the lot table (§5, M8.5) reports gate wait separately.
+4. **On-street parking that blocks a lane:** after M8 (design §8 question 6, D158).

@@ -165,8 +165,14 @@ TEST(discretionary, a_copied_state_replays_exactly) { // A52, with and without D
     }
   }
 }
-TEST(discretionary, a_steady_two_lane_stream_never_changes_back_within_three_seconds) { // A53
+// A53 stream. Without D101's hold the stream does change back within 3 s: in 24 of seeds 42-81 under
+// the pre-D159 seeding and 25 under D159's (33 and 44 repeats in about 1,000 changes). Seed 42's old
+// draws happened to have none, which this test once pinned; A53 stays failed (D102, sitting B2). What
+// holds on every seed: no clamp, and with a 3 s hold no change within 3 s.
+TEST(discretionary, a_steady_two_lane_stream_never_clamps_and_a_hold_stops_quick_changes) { // A53
+  for (const std::optional<double> hold : {std::optional<double>{}, std::optional<double>{3.0}}) {
     auto scenario = road();
+    for (auto& b : scenario.behaviours) b.discretionaryLaneChangeHoldTime = hold;
     scenario.inputs = {{"in1", "L1", "car", 1100, 0, 240}, {"in2", "L2", "car", 700, 0, 240}};
     scenario.duration = 300;
     auto s = createSimulation(scenario, 42);
@@ -184,8 +190,10 @@ TEST(discretionary, a_steady_two_lane_stream_never_changes_back_within_three_sec
         }
     }
     CHECK(changes > 0); // the forcing: the stream does change lanes by choice
-    CHECK(repeats == 0);
+    if (!hold) CHECK(repeats > 0); // forcing for the hold run: this seed has quick changes to stop
+    else CHECK(repeats == 0);
     CHECK(clamps == 0);
+  }
 }
 TEST(discretionary, the_diagnostic_sorts_repeats_within_three_seconds_by_kind) { // A53's counter
     auto scenario = road();

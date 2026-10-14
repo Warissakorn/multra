@@ -60,14 +60,18 @@ std::optional<Leader> closestVehicle(const Vehicle& vehicle, const std::vector<R
 std::uint64_t totalTicks(const Scenario& scenario) {
     return static_cast<std::uint64_t>(std::round(scenario.duration / scenario.timeStep));
 }
-SimState createSimulation(const Scenario& scenario, std::uint32_t seed) {
+SimState createSimulation(const Scenario& scenario, std::uint32_t seed, SeedStart start) {
     assertValidScenario(scenario);
     SimState state;
     state.scenario = std::make_shared<const Scenario>(canonicalScenario(scenario));
     // Built from the canonical scenario, so part order matches the sorted routes.
     state.index = std::make_shared<const ScenarioIndex>(buildScenarioIndex(*state.scenario));
     state.seed = seed;
-    state.randomState = seed == 0 ? 0x6d2b79f5U : seed;
+    // D159: one splitmix64 step (gamma, then finaliser), high half. Adding the gamma keeps this apart
+    // from W74's trait base, mix(seed). state.seed stays the user's seed.
+    state.randomState = start == SeedStart::raw
+        ? seed : static_cast<std::uint32_t>(detail::splitmix64Mix(seed + 0x9E3779B97F4A7C15ULL) >> 32);
+    if (state.randomState == 0) state.randomState = 0x6d2b79f5U; // xorshift32 never leaves zero
     detail::initializeInputs(state);
     initializeLots(state); // M8.4a: no draw without a lot
     for (const auto& head : state.scenario->signalHeads)
@@ -437,8 +441,8 @@ SimState stepSimulation(SimState&& state, double dt) {
     return next;
 }
 SimState runSimulation(const Scenario& scenario, std::uint32_t seed,
-                       const EventSink& sink, bool includeMovementEvents) {
-    auto state = createSimulation(scenario, seed);
+                       const EventSink& sink, bool includeMovementEvents, SeedStart start) {
+    auto state = createSimulation(scenario, seed, start);
     const auto emit = [&] {
         if (sink) for (const auto& event : state.events)
             if (includeMovementEvents || !std::holds_alternative<MovedEvent>(event)) sink(event);

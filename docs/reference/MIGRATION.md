@@ -28,6 +28,9 @@ fixtures in `tests/reference/` were exported from that baseline with Node/TypeSc
 They contain every non-movement event, complete vehicle and pending-input state every
 100 ticks (10 seconds in the demo), and the final completed-trip diagnostic.
 
+Since D159 these are replayed with `SeedStart::raw` (the TypeScript seed mapping); the default
+mixed seeding gives different trajectories for the same seed number ([evidence](../evidence/b11-seed-mixing.md)).
+
 | Seed | Completed trips | Mean trip delay (s) | Safety clamps |
 |---:|---:|---:|---:|
 | 0 | 35 | 25.144689692463636 | 0 |

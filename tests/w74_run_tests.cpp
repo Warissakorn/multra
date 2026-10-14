@@ -173,8 +173,11 @@ TEST(w74run, a_signalised_queue_discharges_and_an_open_platoon_never_clamps) { /
         while (state.tick < totalTicks(*state.scenario)) {
             auto order = state.vehicles;
             std::sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.distance > b.distance; });
-            std::map<std::uint64_t, double> gapOf; // gap to the vehicle ahead, one route of one segment
-            for (std::size_t i = 1; i < order.size(); ++i) gapOf[order[i].id] = order[i - 1].distance - 4 - order[i].distance;
+            std::map<std::uint64_t, double> gapOf, leaderAcceleration; // vehicle ahead, one route of one segment
+            for (std::size_t i = 1; i < order.size(); ++i) {
+                gapOf[order[i].id] = order[i - 1].distance - 4 - order[i].distance;
+                leaderAcceleration[order[i].id] = order[i - 1].acceleration;
+            }
             const auto before = state;
             state = stepSimulation(std::move(state));
             if (expectNoClamp) CHECK(!clamped(state));
@@ -185,9 +188,13 @@ TEST(w74run, a_signalised_queue_discharges_and_an_open_platoon_never_clamps) { /
                 if (v.mode == FollowingMode::following && v.acceleration > -was->speed / scenario.timeStep + 1e-9) {
                     CHECK(std::abs(std::abs(v.acceleration) - p.bNullAdd) < 1e-12 || v.acceleration == 0); ++following;
                 }
-                // At rest within ABX(0.1) of the vehicle ahead: it does not start (D105, emergency dv² term).
+                // At rest within ABX(0.1) of the vehicle ahead, the emergency dv² term brakes; only the
+                // leader's own acceleration (emergencyLeaderWeight · aL) can start it (D159 seed 42: +0.005 m/s²
+                // behind a leader pulling away at 0.69 m/s).
                 const double abx = p.ax + (p.bxAdd + p.bxMult * was->driverFactor) * std::sqrt(0.1);
-                if (was->speed == 0 && gapOf[v.id] <= abx) { CHECK(v.speed == 0); ++standingInside; }
+                if (was->speed == 0 && gapOf[v.id] <= abx) {
+                    CHECK(v.speed == 0 || leaderAcceleration[v.id] > 0); ++standingInside;
+                }
             }
         }
         return std::pair{following, standingInside};

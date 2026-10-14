@@ -1,4 +1,5 @@
 #include "w74.hpp"
+#include "detail.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -35,11 +36,7 @@ bool inRange(double v, Range range) {
 }
 }
 W74Traits w74Traits(std::uint32_t seed, std::uint64_t vehicleId, double driverFactor) {
-    const auto mix = [](std::uint64_t z) { // splitmix64 finaliser (Steele, Lea and Flood)
-        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
-        z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
-        return z ^ (z >> 31);
-    };
+    const auto mix = detail::splitmix64Mix;
     const std::uint64_t base = mix(static_cast<std::uint64_t>(seed)) ^ (vehicleId * 0x9E3779B97F4A7C15ULL);
     const auto u = [&](std::uint64_t i) { return static_cast<double>(mix(base ^ i) >> 11) * 0x1p-53; };
     double sum = 0; // Irwin-Hall over indices 3..14, added in ascending order

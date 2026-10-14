@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the queue below; M8.5 is the default next slice (M8.1–M8.4b delivered, D153–D157).
+After that review, return to the queue below; M8.5 is the default next slice (M8.1–M8.4b delivered, D153–D157; B11 seed mixing D159).
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -85,10 +85,13 @@ Left before the M8 gate:
    dialog (Thai/English), Undo; owner look (OWNER_SITTING C-row).
 Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
 time intervals and compositions' intervals are not used for departures/initial types.
-**Finding for the owner (B11):** small seeds (42–81) delay the first input's first arrival by 5–6
-mean headways (first xorshift32 draw ≈0.003). Nothing was changed in the engine.
-Owner questions: [OWNER_SITTING](plans/OWNER_SITTING.md) B7 (design §8; M10/M11 contracts wait on
-1–5), B10 (lot rules: dwell default, outbound timing, lot trips in movement tables) and B11.
+**Owner's answers 2026-10-14:** B7 and B10 as recommended (D158; M8.5's gate wait is reported
+apart from movement delay, which keeps it; the M10/M11 contracts can now be written, citing the
+convergence defaults). B11 fixed (D159): seeds are mixed with splitmix64 before the first draw;
+`trafficsim-cli 42` is now 45 completed / 31.75870154816726 s / 1 clamp; the TS fixtures replay
+under `SeedStart::raw`, unmodified ([evidence](evidence/b11-seed-mixing.md)). **Check first:**
+the Qt test `scenario-run-ui` pins the new CLI numbers and was not run here (no Qt); confirm it
+in `native.yml` (Linux and Windows) and confirm no other UI test pinned a seed-42 trajectory.
 
 **Owner items** — gates, chat decisions and every desktop look — are in one sheet,
 [OWNER_SITTING](plans/OWNER_SITTING.md) (R4). After the sitting, items still open and older than

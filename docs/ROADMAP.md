@@ -21,7 +21,7 @@ The smallest thing that is genuinely a traffic simulator, end to end. Every laye
 
 **Done when:** `trafficsim-desktop` shows vehicles accelerating, queueing at red, and discharging at green in a way a traffic engineer recognises as plausible — and CTest proves the same seed produces the same run on a fixed engine/toolchain.
 
-**Where that observation is made (M1.24):** open `data/scenarios/crossing.json` in the editor and use Run/Pause/Step/Reset there. Until M1.24 this said the same thing about a separate M0 window; that window is gone, the observation is not. The editor reads a bare M0 scenario, steps the unchanged core, and its run status shows the mean trip delay and the safety-clamp count the retired window showed. `scenario-run-ui` pins this path to the `trafficsim-cli 42` baseline — 31 completed trips exactly, mean delay 29.249359418430977 to within 1e-7 — so an engineer judging plausibility in the editor is judging the same run the CLI prints. **The gate itself is unchanged and still open:** no automated test closes it, and the plausibility judgement is the owner’s to make.
+**Where that observation is made (M1.24):** open `data/scenarios/crossing.json` in the editor and use Run/Pause/Step/Reset there. Until M1.24 this said the same thing about a separate M0 window; that window is gone, the observation is not. The editor reads a bare M0 scenario, steps the unchanged core, and its run status shows the mean trip delay and the safety-clamp count the retired window showed. `scenario-run-ui` pins this path to the `trafficsim-cli 42` baseline — 45 completed trips exactly, mean delay 31.75870154816726 to within 1e-7 (D159 seeding; 31 and 29.249359418430977 before) — so an engineer judging plausibility in the editor is judging the same run the CLI prints. **The gate itself is unchanged and still open:** no automated test closes it, and the plausibility judgement is the owner’s to make.
 
 **Explicitly not in M0:** lane changing, editing anything, saving anything, LOS, multiple seeds, priority control. The slice is about the *shape*, not the feature set.
 
@@ -383,7 +383,7 @@ OD1–OD7, PL1–PL11). M8.2 implemented 2026-10-13 (D154: schema-31 codec and c
 ZoneConnector, OdMatrix; rows Z1–Z6). M8.3 implemented 2026-10-13 (D155: OD → authored routes
 and inputs, Run-tier checks; rows OD1–OD6). M8.4 split by D156: M8.4a implemented 2026-10-14 (the engine's lot runtime,
 PL1–PL7 on hand-built scenarios); M8.4b implemented 2026-10-14 (D157: authored ParkingLot, compiler, Run checks; OD7, PL7–PL10 and
-the gate run end to end); M8.5 (lot outputs) and M8.6 (editor tools, OD table) remain before the gate. Zone, ZoneConnector and OdMatrix shared by every level; OD expanded into
+the gate run end to end); owner's B10 answers 2026-10-14 (D158: no dwell default, D153 kept, gate wait stays in movement delay and is reported apart, on-street parking after M8); M8.5 (lot outputs) and M8.6 (editor tools, OD table) remain before the gate. Zone, ZoneConnector and OdMatrix shared by every level; OD expanded into
 Micro inputs and routes; ParkingLot as a zone with capacity, gate service and dwell time.
 **Done when:** a development-access study runs from a zone OD matrix through a capacity-limited
 lot; a full lot produces a gate queue and never deletes a vehicle; older files load
@@ -401,13 +401,15 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 **Open, not started.** Macro network compile with link types and volume-delay functions as data;
 static user-equilibrium assignment; trip generation, gravity distribution with Furness
 balancing, multinomial-logit mode choice; skims, select-link, Results and Export; centreline-only
-Links in the editor. **Done when:** assignment reproduces a published test network's equilibrium
+Links in the editor. Owner's B7 answers 2026-10-14 (D158): BPR 0.15/4 default VDF (1964 manual)
+with a local override, doubly-constrained gravity with exponential deterrence and HBW/HBO/NHB,
+modes car/motorcycle/bus/truck, 0.1 % relative gap and Furness defaults (cited in the contract). **Done when:** assignment reproduces a published test network's equilibrium
 within a stated relative gap; each step passes a hand-computed fixture; parameters swap with no
 code edit.
 
 ### M11 — Meso engine
 
-**Open, not started.** Event-based link queue model (formulation is an owner decision), signals
+**Open, not started.** Link-transmission model (owner, D158), signals
 and priority as capacity, spill-back, M9's assignment loop reused. **Done when:** analytic queue
 and shockwave fixtures pass; spill-back blocks the upstream link at storage capacity; same seed
 gives the same bytes.

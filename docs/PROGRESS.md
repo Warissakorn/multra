@@ -8,6 +8,36 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Owner's B7/B10/B11 answers; seed mixing (D158, D159)
+
+The owner answered "B10 ตามแนะนำ, B11 แก้, B7 ตามแนะนำ". B7 and B10 are recorded as D158 and moved
+out of OWNER_SITTING:
+- ZONES_AND_PARKING §2.4/§8: no dwell default ships; D153 kept; gate wait stays in movement delay
+  and M8.5 reports it apart.
+- MULTI_LEVEL_MODELLING §8: LTM, BPR 0.15/4, gravity with exponential deterrence, motorcycles in the
+  mode set, 0.1 % convergence with a citation still owed.
+- ROADMAP M8, M10 and M11.
+
+B11 is this session's system (D159). `createSimulation` now seeds xorshift32 with one splitmix64 step
+of the seed; the finaliser is shared with W74 as `detail::splitmix64Mix`, and `state.seed` is
+unchanged. `SeedStart::raw` keeps the TypeScript mapping for `reference_tests.cpp` only, so the four
+frozen fixtures and the trajectory digest pass untouched. Rows SM1–SM4 (`seedmixing`) failed first.
+OD3 now passes on the D88 seeds 42–81.
+
+`trafficsim-cli 42` changed from 31 completed / 29.249359418430977 s / 0 clamps to 45 / 31.75870154816726 s
+/ 1 clamp. CTest and `scenario-run-ui` are re-pinned; the latter has not been run here (no Qt).
+
+Four tests had held only on seed 42's old draws. Each was checked over seeds 42–81, and none was
+re-pinned to a number:
+- The movement "unimpeded" delay bound.
+- The M2.6 `pending == 0` check (a vehicle due 0.4 s before the end).
+- The A53 stream test: 24 of 40 seeds repeat under the old seeding too, which is the known D102
+  failure. It now tests the hold instead.
+- W74 BA23: a vehicle at rest inside ABX can start while its leader accelerates. W74.md overstated
+  this and is corrected.
+
+[Evidence](evidence/b11-seed-mixing.md). Headless 89/89 (Linux, GCC 13.3); desktop not built.
+
 ## 2026-10-14 — M8.4b authored parking lots end to end (D157)
 
 `ParkingLot` joined the zone layer (top-level `parkingLots`, schema 31) with codec, structural
@@ -418,56 +448,6 @@ cancel and closing mid-batch are exercised; 13–14 s, three repeats stable. Its
 autosave draft (an unsaved rename outlived the 15 s timer) that blocked the next run on the recovery
 dialog; the test now saves after the edit. `check`: 108/108 tests, architecture, file sizes and
 docs clean. Native Windows CI and the owner's look are separate and still owed.
-
----
-
-## 2026-10-09 — Optimization pass: lld, D140, validate benchmark, NEXT
-
-Measured first (Linux, 4 cores, Qt offscreen): the engine (0.15–0.30 µs per vehicle-tick, linear
-to 96 crossings), the run view (~3.3 ms per Step) and redraw (3.6 ms at 40 crossings) are not
-bottlenecks and were left alone. **Link with lld when the compiler accepts it**
-(`TRAFFICSIM_LLD`, default ON, MSVC untouched): touching one source relinks some 40
-executables, and GNU ld was most of an incremental Debug build. `trafficsim-tests` links in
-4.5 s with ld and 0.57 s with lld; touching `src/shell/editor_demand.cpp` rebuilt in 31.3 s
-before and 13.0–13.5 s after, `src/model/network/routing.cpp` 28.7 s → 10.7–11.1 s. CI's Linux
-apt line installs `lld`; without it the default linker is kept silently.
-
-**D140: Connector paths once per expansion.** `History` validates every command, and validating
-the M2.6 study template took 21.6 ms against 1.0 ms for four-leg on the same network: callgrind
-put 85 % of it in `connectorPaths`, recomputed by every `routeShortestChains`, `routeLaneFamily`
-and `routelessChains` call inside one `expandRouteless`. `ConnectorPathTable` (lazy, local, never
-stored) is now built once by `expandRouteless` and `routelessIssues` and passed down; the old
-signatures build their own, so editor and compile callers are unchanged. Validation 21.6 → 5.0 ms
-(median of 15; four-leg 1.03 → 0.91 ms). `--seeds 1-3` output of all four shipped projects is
-identical apart from the build stamp; the ten-seed study batch and the engine benchmark are
-unchanged within noise (an interleaved ld/lld engine run ruled out the linker).
-`tools/validate_benchmark.cpp` (`trafficsim-validate-benchmark [project] [repetitions]`) keeps
-that number measurable; like the other benchmarks it prints and is not in `check`.
-
-**Route continuations find their tail once.** After D140, 43 % of study-template validation was
-`continuations` rescanning every route object to find the tail, once per candidate. It now finds
-it once (the last match, as before). Validation 4.97 → 2.75 ms (four-leg 0.85 → 0.72 ms); the
-editor's route hover and gesture use the same function. CLI output identical.
-
-**Destination chains once per expansion (D140's walk scope).** `placedDecisions` runs once per
-time slice × vehicle type and resolved the same `routeShortestChains(decision Link, destination)`
-each time, about 86 calls per study-template validation. A `DestinationChainMemo` beside the
-table resolves each pair once. Same-session A/B: 3.32 → 2.46 ms median (five runs of 31 each);
-four-leg unchanged (no destination decisions). CLI output identical.
-
-**`appendStationRouting` takes the expansion's `runtimeSections`.** It rebuilt the table on every
-call (≈5 per study-template validation, 23 % of the remaining instructions); `expandRouteless`
-already holds that table and passes it to `appendLaneChanges` beside it. A/B: 2.60 → 1.72 ms
-median (five runs of 31); four-leg unchanged (no positioned decisions). CLI output identical.
-Validation overall this session: 21.6 → 1.7 ms. Left: `routelessChains` still walks once per
-input × slice; at under 2 ms per edit it was not started.
-
-**NEXT.md slimmed** (31.4 → 26.8 KB, −15 %): the five 2026-10-05/06 owner-instruction sections narrated
-finished slices already recorded in ROADMAP (M2.8, M3.2.4, M3.3 status lines), PROGRESS and
-RECORD (D115–D129, D135–D139, each checked before removal). One section keeps every open item
-verbatim — the D128/D119/D116/D115–D118 Windows reviews, the Demand PR review order, W74's next
-steps, BA18, the M3.2.4e contract rule and pending native CI. §1–§5 are live owner gates and
-working notes and were not cut, so the planned −40 % was not reached.
 
 ---
 
