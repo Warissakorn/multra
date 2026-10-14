@@ -22,13 +22,21 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         // M8.3 (D155): the OD matrices are demand like any input; their own Run checks come first.
         std::vector<Diagnostic> od;
         for(const auto& issue:odDemandIssues(d,data))od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
+        if (std::any_of(od.begin(), od.end(), [](const auto& row) { return row.code == "OD_ROUTE_SEARCH_LIMIT"; }))
+            return od; // expansion is deliberately refused; retain the structured cell diagnostic
         const auto expanded=withOdDemand(d);const auto& def=expanded;
+        const auto routeless=routelessIssues(d.network,def);
+        if (std::any_of(routeless.blocking.begin(), routeless.blocking.end(),
+                        [](const auto& issue) { return issue.code == "ROUTE_SEARCH_LIMIT"; })) {
+            for (const auto& issue : routeless.blocking) od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
+            for (const auto& issue : routeless.advisory) od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
+            return od;
+        }
         auto rows=runtimeDiagnostics(d.network,expandRouteless(d.network,def,resolveCatalogs(def,data)));
         rows.insert(rows.begin(),od.begin(),od.end());
         for(const auto& issue:demandAdvisories(d.network,def))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // M2.1.1: a routeless walk that failed blocks Run; a lane a decision cannot serve advises.
-        const auto routeless=routelessIssues(d.network,def);
         for(const auto& issue:routeless.blocking)rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
         for(const auto& issue:routeless.advisory)rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // A route is not a network object, and neither is an input: the row names its path.

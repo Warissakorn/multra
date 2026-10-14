@@ -178,3 +178,50 @@ TEST(odexpand, run_tier_issues) {
     CHECK(!compileDocument(f.d, test::root() / "data").scenario.inputs.empty());
     for (const auto& row : runDiagnostics(f.d, test::root() / "data")) CHECK(row.severity != DiagnosticSeverity::runtime);
 }
+TEST(odexpand, shortest_paths_support_long_corridors) {
+    ProjectDocument d; std::vector<std::string> links;
+    for (int i = 0; i < 12; ++i) {
+        const double x = 120.0 * i;
+        links.push_back(addLink(d, {{x, 0}, {x + 100, 0}}, 1, 3.5));
+        if (i) join(d, links[i - 1], 100, links[i]);
+    }
+    const auto chains = routeShortestChains(d.network, links.front(), links.back());
+    CHECK(chains.size() == 1 && chains[0].size() == 23);
+    CHECK(routeLaneChains(d.network, chains[0]).size() == 1);
+    CHECK(routeShortestChains(d.network, links.back(), links.front()).empty());
+}
+TEST(odexpand, shortest_path_limit_is_distinct_from_no_path_and_blocks_demand) {
+    ProjectDocument d;
+    const auto source = addLink(d, {{0, 0}, {100, 0}}, 1, 3.5);
+    auto last = source;
+    for (int i = 0; i < 13; ++i) {
+        const double x = 120.0 + i * 240;
+        const auto a = addLink(d, {{x, 20}, {x + 100, 20}}, 1, 3.5);
+        const auto b = addLink(d, {{x, -20}, {x + 100, -20}}, 1, 3.5);
+        const auto merge = addLink(d, {{x + 120, 0}, {x + 220, 0}}, 1, 3.5);
+        join(d, last, 100, a); join(d, last, 100, b); join(d, a, 100, merge); join(d, b, 100, merge);
+        last = merge;
+    }
+    // Each independent diamond doubles the shortest alternatives: 8192, beyond the 4096 bound.
+    test::throws([&] { routeShortestChains(d.network, source, last); }, "ROUTE_SEARCH_LIMIT");
+    demand(d).duration = 3600;
+    putZone(d, {"o", "", {{-10, 0}, {-20, 10}, {-20, -10}}, {}});
+    putZone(d, {"x", "", {{4000, 0}, {4010, 10}, {4010, -10}}, {}});
+    putZoneConnector(d, {"oc", "o", source, ZoneDirection::origin, 1});
+    putZoneConnector(d, {"xc", "x", last, ZoneDirection::destination, 1});
+    putOdMatrix(d, {"m", 0, 3600, "car-only", {"o", "x"}, {{0, 60}, {0, 0}}});
+    const auto issues = odDemandIssues(d, test::root() / "data");
+    CHECK(std::any_of(issues.begin(), issues.end(), [](const auto& i) { return i.code == "OD_ROUTE_SEARCH_LIMIT"; }));
+    CHECK(std::none_of(issues.begin(), issues.end(), [](const auto& i) { return i.code == "OD_NO_PATH"; }));
+    test::throws([&] { withOdDemand(d); }, "OD_ROUTE_SEARCH_LIMIT");
+    refuses(d, "OD_ROUTE_SEARCH_LIMIT", "odMatrices[0].cells[0][1]");
+    d.zones = {};
+    RoutingDecision decision; decision.id = "many"; decision.linkId = source;
+    decltype(decision.routes)::value_type entry; entry.destinationLinkId = last; entry.relativeFlow = 1;
+    decision.routes.push_back(entry); putRoutingDecision(d, decision);
+    VehicleInput input; input.id = "in"; input.linkId = source; input.vehicleTypeId = "car";
+    input.vehiclesPerHour = 60; input.endTime = 3600; putInput(d, input);
+    const auto diagnostics = runDiagnostics(d, test::root() / "data");
+    CHECK(std::any_of(diagnostics.begin(), diagnostics.end(), [](const auto& r) { return r.code == "ROUTE_SEARCH_LIMIT"; }));
+    test::throws([&] { compileDocument(d, test::root() / "data"); }, "ROUTE_SEARCH_LIMIT");
+}

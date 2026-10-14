@@ -1,5 +1,6 @@
 #include "od_demand.hpp"
 #include "run.hpp"
+#include "../core/validate.hpp"
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -56,15 +57,19 @@ void walkCells(const ProjectDocument& d, ChainFinder& finder, Report report, Add
                 const auto origins = connectorsOf(layer, m.zoneIds[r], ZoneDirection::origin);
                 const auto destinations = connectorsOf(layer, m.zoneIds[c], ZoneDirection::destination);
                 if (origins.empty() || destinations.empty()) { report("OD_ZONE_NO_CONNECTOR", cellPath(i, r, c));continue; }
-                bool any = false;
+                bool any = false, limited = false;
                 for (const auto* oc : origins)
                     for (const auto* dc : destinations) {
-                        const auto& chains = finder.between(oc->linkId, dc->linkId);
-                        if (chains.empty()) continue;
-                        any = true;
-                        add(m, r, c, *oc, *dc, chains, shareSum(origins), shareSum(destinations));
+                        try {
+                            const auto& chains = finder.between(oc->linkId, dc->linkId);
+                            if (chains.empty()) continue;
+                            any = true;
+                            add(m, r, c, *oc, *dc, chains, shareSum(origins), shareSum(destinations));
+                        } catch (const std::length_error&) {
+                            limited = true; report("OD_ROUTE_SEARCH_LIMIT", cellPath(i, r, c));
+                        }
                     }
-                if (!any) report("OD_NO_PATH", cellPath(i, r, c));
+                if (!any && !limited) report("OD_NO_PATH", cellPath(i, r, c));
             }
     }
 }
@@ -78,7 +83,9 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
     // M8.4b (D157): a lot zone's row sets where its departures go, not when -- routes, no input.
     std::set<std::string> lots;
     for (const auto& lot : d.zones.parkingLots) lots.insert(lot.zoneId);
-    walkCells(d, finder, [](const auto&, const auto&) {},
+    walkCells(d, finder, [](const auto& code, const auto& path) {
+        if (std::string(code) == "OD_ROUTE_SEARCH_LIMIT") throw ValidationError({{code, path}});
+    },
         [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
             const Chains& chains, double originShares, double destinationShares) {
             const double rate = m.cells[r][c] / (m.endTime - m.startTime) * 3600 * (oc.share / originShares) *
@@ -100,7 +107,9 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
 std::map<std::string, double> lotExitWeights(const ProjectDocument& d, const std::string& lotZoneId) {
     std::map<std::string, double> weights;
     ChainFinder finder(d.network);
-    walkCells(d, finder, [](const auto&, const auto&) {},
+    walkCells(d, finder, [](const auto& code, const auto& path) {
+        if (std::string(code) == "OD_ROUTE_SEARCH_LIMIT") throw ValidationError({{code, path}});
+    },
         [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
             const Chains& chains, double originShares, double destinationShares) {
             if (m.zoneIds[r] != lotZoneId) return;
