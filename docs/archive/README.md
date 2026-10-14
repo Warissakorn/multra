@@ -184,6 +184,8 @@ entry behind what you are changing, not the directory.
 
 - [`PROGRESS-2026-10-06-station-routes.md`](PROGRESS-2026-10-06-station-routes.md) — oldest live D119 history block, moved whole 2026-10-09
 
+- [`PROGRESS-2026-10-09-roadmap-answers.md`](PROGRESS-2026-10-09-roadmap-answers.md) — oldest live D143 history block, moved whole 2026-10-14
+
 ## Other docs
 
 - [`MIGRATION-D15.md`](MIGRATION-D15.md) — former migration reference, including the original UI mapping and implementation horizon; retained 2026-10-05

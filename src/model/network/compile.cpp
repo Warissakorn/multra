@@ -6,6 +6,7 @@
 #include <map>
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <vector>
 
 namespace trafficsim {
@@ -50,12 +51,14 @@ bool routeAlreadyExpanded(const RuntimeSections& table, const std::vector<std::s
 }
 }
 Scenario buildScenario(const Network& network, const ScenarioDefinition& definition) {
+    return buildScenario(network, runtimeSections(network), definition);
+}
+Scenario buildScenario(const Network& network, const RuntimeSections& table, const ScenarioDefinition& definition) {
     Scenario scenario;
     static_cast<ScenarioDefinition&>(scenario) = definition;
     // One pass over the drawing produces the lane sections, the connector paths and where each
     // path arrives. Deriving any of it a second time here is what made an earlier version cubic,
     // and buildScenario runs on every model change.
-    const auto table = runtimeSections(network);
     for (const auto& section : table.sections)
         scenario.segments.push_back({section.id, section.end - section.start, section.next});
     for (std::size_t p = 0; p < table.paths.size(); ++p)
@@ -156,8 +159,10 @@ Scenario buildScenario(const Network& network, const ScenarioDefinition& definit
     return scenario; // All fields are owned values, independent of the editor model.
 }
 std::vector<ValidationIssue> connectorRuntimeIssues(const Network& network) {
+    return connectorRuntimeIssues(network, runtimeSections(network));
+}
+std::vector<ValidationIssue> connectorRuntimeIssues(const Network& network, const RuntimeSections& table) {
     std::vector<ValidationIssue> issues;
-    const auto table=runtimeSections(network);
     for(std::size_t i=0;i<network.connectors.size();++i) {
         const auto& c=network.connectors[i];
         const auto path="connectors["+std::to_string(i)+"]";
@@ -173,8 +178,11 @@ std::vector<ValidationIssue> connectorRuntimeIssues(const Network& network) {
 }
 std::vector<ValidationIssue> routeRuntimeIssues(const Network& network,
                                                 const ScenarioDefinition& definition) {
+    return routeRuntimeIssues(network, runtimeSections(network), definition);
+}
+std::vector<ValidationIssue> routeRuntimeIssues(const Network& network, const RuntimeSections& table,
+                                                const ScenarioDefinition& definition) {
     std::vector<ValidationIssue> issues;
-    const auto table = runtimeSections(network);
     for (std::size_t i = 0; i < definition.routes.size(); ++i) {
         const auto& route = definition.routes[i];
         if (route.segmentIds.empty() || routeAlreadyExpanded(table, route.segmentIds) ||
@@ -291,18 +299,22 @@ std::vector<ValidationIssue> connectorShapeIssues(const Network& network) {
     }
     return issues;
 }
-Scenario compileScenario(const Network& network, const ScenarioDefinition& definition) {
+Scenario compileScenario(const Network& network, const ScenarioDefinition& definition,
+                         const RuntimeSections* known) {
     // Order is load-bearing: the network pass reports UNKNOWN_LANE before laneGeometry can throw.
     assertValidNetwork(network);
-    auto issues=connectorRuntimeIssues(network);
-    for(auto& issue:routeRuntimeIssues(network,definition))
+    // One table for every check and the build: the same Network, derived once.
+    std::optional<RuntimeSections> built;
+    const auto& table = known ? *known : built.emplace(runtimeSections(network));
+    auto issues=connectorRuntimeIssues(network,table);
+    for(auto& issue:routeRuntimeIssues(network,table,definition))
         issues.push_back(std::move(issue));
     for(auto& issue:priorityDefaultsIssues(network,definition.priorityDefaults))
         issues.push_back(std::move(issue));
-    for(auto& issue:resolveRightOfWay(network,runtimeSections(network),definition.priorityDefaults).issues)
+    for(auto& issue:resolveRightOfWay(network,table,definition.priorityDefaults).issues)
         issues.push_back(std::move(issue));
     if(!issues.empty())throw ValidationError(std::move(issues));
-    auto scenario = buildScenario(network, definition);
+    auto scenario = buildScenario(network, table, definition);
     assertValidScenario(scenario);
     return scenario;
 }

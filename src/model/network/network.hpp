@@ -242,11 +242,15 @@ double attachmentStation(const Network&, const LaneReference&, bool outgoing);
 // True when this end sits exactly at the start or the end of its link, which is the only
 // case the M0 whole-lane runtime can traverse.
 bool attachedAtLinkEnd(const Network&, const LaneReference&, bool outgoing);
+struct RuntimeSections;
 std::vector<ValidationIssue> connectorRuntimeIssues(const Network&);
+// The same over runtimeSections of that Network, already built by the caller.
+std::vector<ValidationIssue> connectorRuntimeIssues(const Network&, const RuntimeSections&);
 // A route whose Links and Connectors do not join up for any lane: nothing can travel it, so Run
 // refuses it. Authoring tolerates it, because an author moving a Connector must not have the
 // document reject the edit -- the route is reported, not deleted.
 std::vector<ValidationIssue> routeRuntimeIssues(const Network&, const ScenarioDefinition&);
+std::vector<ValidationIssue> routeRuntimeIssues(const Network&, const RuntimeSections&, const ScenarioDefinition&);
 // M2.2. The periods an input releases vehicles over: its intervals, or its one scalar period.
 std::vector<VolumeInterval> inputPeriods(const VehicleInput&);
 // Sets startTime, endTime and vehiclesPerHour from `intervals` -- first start, last end, and the
@@ -425,7 +429,11 @@ std::vector<ValidationIssue> validateNetwork(const Network& network);
 void assertValidNetwork(const Network& network);
 // Unchecked assembly, for diagnostics that must not throw. Requires an already-valid network.
 Scenario buildScenario(const Network& network, const ScenarioDefinition& definition);
-Scenario compileScenario(const Network& network, const ScenarioDefinition& definition);
+Scenario buildScenario(const Network& network, const RuntimeSections& table, const ScenarioDefinition& definition);
+// `known`, when given, is runtimeSections of this Network that the caller already built; it is
+// never built ahead of the network check, which must report UNKNOWN_LANE before it can throw.
+Scenario compileScenario(const Network& network, const ScenarioDefinition& definition,
+                         const RuntimeSections* known = nullptr);
 // One lane's distance along an authored route, from its compiled chains: the route itself when it
 // expanded to one lane, else the first "/lane-k" chain that is not a stub, so a lane that ends at
 // its dead end never stands for the route. 0 when nothing compiled under the id.
