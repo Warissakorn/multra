@@ -342,6 +342,8 @@ std::vector<std::string> routeContinuations(const Network&, const std::vector<st
 std::vector<std::string> routeChainTo(const Network&, const std::vector<std::string>& authored,
                                       const std::string& target);
 // Every object chain from `from` to `target` of the shortest length, in continuation order.
+// Graph reachability has no depth cap. More than 4096 alternatives or 2 Mi object references
+// throws ROUTING_SEARCH_LIMIT (distinct from an empty, disconnected result).
 // routeChainTo refuses a tie, because a drawn route must mean one thing; a decision's destination
 // may be reached by several, since each lane of the Link follows whichever it can drive.
 std::vector<std::vector<std::string>> routeShortestChains(const Network&, const std::string& from,

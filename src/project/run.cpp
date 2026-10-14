@@ -22,6 +22,10 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         // M8.3 (D155): the OD matrices are demand like any input; their own Run checks come first.
         std::vector<Diagnostic> od;
         for(const auto& issue:odDemandIssues(d,data))od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
+        if (!od.empty()) return od; // retain precise blocking codes before an expansion can throw
+        for (const auto& gap:odDemandGaps(d))
+            od.push_back({"OD_SKIPPED_DEMAND",gap.path+" (skippedVehicles="+std::to_string(gap.skippedVehicles)+")",
+                          {},{},DiagnosticSeverity::advisory});
         const auto expanded=withOdDemand(d);const auto& def=expanded;
         auto rows=runtimeDiagnostics(d.network,expandRouteless(d.network,def,resolveCatalogs(def,data)));
         rows.insert(rows.begin(),od.begin(),od.end());

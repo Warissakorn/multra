@@ -56,15 +56,21 @@ void walkCells(const ProjectDocument& d, ChainFinder& finder, Report report, Add
                 const auto origins = connectorsOf(layer, m.zoneIds[r], ZoneDirection::origin);
                 const auto destinations = connectorsOf(layer, m.zoneIds[c], ZoneDirection::destination);
                 if (origins.empty() || destinations.empty()) { report("OD_ZONE_NO_CONNECTOR", cellPath(i, r, c));continue; }
-                bool any = false;
+                bool any = false, limited = false;
                 for (const auto* oc : origins)
                     for (const auto* dc : destinations) {
-                        const auto& chains = finder.between(oc->linkId, dc->linkId);
-                        if (chains.empty()) continue;
-                        any = true;
-                        add(m, r, c, *oc, *dc, chains, shareSum(origins), shareSum(destinations));
+                        try {
+                            const auto& chains = finder.between(oc->linkId, dc->linkId);
+                            if (chains.empty()) continue;
+                            any = true;
+                            add(m, r, c, *oc, *dc, chains, shareSum(origins), shareSum(destinations));
+                        } catch (const std::invalid_argument& e) {
+                            if (std::string(e.what()) != "ROUTING_SEARCH_LIMIT") throw;
+                            if (!limited) report("OD_PATH_SEARCH_LIMIT", cellPath(i, r, c));
+                            limited = true;
+                        }
                     }
-                if (!any) report("OD_NO_PATH", cellPath(i, r, c));
+                if (!any && !limited) report("OD_NO_PATH", cellPath(i, r, c));
             }
     }
 }
@@ -78,7 +84,9 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
     // M8.4b (D157): a lot zone's row sets where its departures go, not when -- routes, no input.
     std::set<std::string> lots;
     for (const auto& lot : d.zones.parkingLots) lots.insert(lot.zoneId);
-    walkCells(d, finder, [](const auto&, const auto&) {},
+    walkCells(d, finder, [](const auto& code, const auto&) {
+        if (std::string(code) == "OD_PATH_SEARCH_LIMIT") throw std::invalid_argument(code);
+    },
         [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
             const Chains& chains, double originShares, double destinationShares) {
             const double rate = m.cells[r][c] / (m.endTime - m.startTime) * 3600 * (oc.share / originShares) *
@@ -100,7 +108,9 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
 std::map<std::string, double> lotExitWeights(const ProjectDocument& d, const std::string& lotZoneId) {
     std::map<std::string, double> weights;
     ChainFinder finder(d.network);
-    walkCells(d, finder, [](const auto&, const auto&) {},
+    walkCells(d, finder, [](const auto& code, const auto&) {
+        if (std::string(code) == "OD_PATH_SEARCH_LIMIT") throw std::invalid_argument(code);
+    },
         [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
             const Chains& chains, double originShares, double destinationShares) {
             if (m.zoneIds[r] != lotZoneId) return;
@@ -111,6 +121,26 @@ std::map<std::string, double> lotExitWeights(const ProjectDocument& d, const std
         });
     return weights;
 }
+std::vector<OdDemandGap> odDemandGaps(const ProjectDocument& d) {
+    std::vector<OdDemandGap> gaps;
+    ChainFinder finder(d.network);
+    for (std::size_t i=0;i<d.zones.odMatrices.size();++i) {
+        const auto& m=d.zones.odMatrices[i];
+        for (std::size_t r=0;r<m.zoneIds.size();++r) for (std::size_t c=0;c<m.zoneIds.size();++c) {
+            if (!(m.cells[r][c]>0)) continue;
+            const auto origins=connectorsOf(d.zones,m.zoneIds[r],ZoneDirection::origin);
+            const auto destinations=connectorsOf(d.zones,m.zoneIds[c],ZoneDirection::destination);
+            if (origins.empty() || destinations.empty()) continue;
+            double skipped=0;
+            for (const auto* oc:origins) for (const auto* dc:destinations)
+                if (finder.between(oc->linkId,dc->linkId).empty())
+                    skipped+=m.cells[r][c]*(oc->share/shareSum(origins))*(dc->share/shareSum(destinations));
+            if (skipped>0) gaps.push_back({cellPath(i,r,c),skipped});
+        }
+    }
+    return gaps;
+}
+
 std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std::filesystem::path& data) {
     std::vector<ValidationIssue> issues;
     if (d.zones.empty()) return issues;

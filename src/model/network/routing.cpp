@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <deque>
+#include <map>
 #include <optional>
 #include <stdexcept>
 
@@ -112,23 +113,44 @@ std::vector<std::vector<std::string>> routeShortestChains(const Network& network
 }
 std::vector<std::vector<std::string>> routeShortestChains(const Network& network, const ConnectorPathTable& table,
                                                           const std::string& from, const std::string& target) {
-    // The object graph is built once per search: rebuilding it per chain, through
-    // routeContinuations, was 9% of an M2.6 Run.
+    // Reachability is linear in the object graph; alternatives are expanded only after distances
+    // are known. A long unbranched corridor never consumes an exponential chain-search budget.
     const auto objects = routeObjects(network, table);
-    constexpr std::size_t kMaxDepth = 20, kMaxLevel = 4096;
-    std::vector<std::vector<std::string>> level{{from}};
-    for (std::size_t depth = 0; depth < kMaxDepth && !level.empty(); ++depth) {
-        std::vector<std::vector<std::string>> next, found;
-        for (const auto& chain : level)
-            for (const auto& step : continuations(objects, chain)) {
-                auto extended = chain; extended.push_back(step);
-                (step == target ? found : next).push_back(std::move(extended));
-            }
-        if (!found.empty()) return found;
-        if (next.size() > kMaxLevel) return {};
-        level = std::move(next);
+    std::map<std::string, std::size_t> slots;
+    for (std::size_t i=0;i<objects.size();++i) slots[objects[i].id]=i;
+    if (!slots.contains(from) || !slots.contains(target)) return {};
+    const auto origin=slots.at(from), destination=slots.at(target), unknown=objects.size();
+    std::vector<std::vector<std::size_t>> next(objects.size()), previous(objects.size());
+    for (std::size_t i=0;i<objects.size();++i) {
+        for (const auto& id:objects[i].next) if (slots.contains(id)) next[i].push_back(slots.at(id));
+        std::sort(next[i].begin(),next[i].end()); // old continuation order is object order
+        for (auto j:next[i]) previous[j].push_back(i);
     }
-    return {};
+    std::vector<std::size_t> distance(objects.size(),unknown), order{destination};
+    distance[destination]=0;
+    for (std::size_t k=0;k<order.size();++k) for (auto i:previous[order[k]]) if (distance[i]==unknown) {
+        distance[i]=distance[order[k]]+1; order.push_back(i);
+    }
+    if (distance[origin]==unknown) return {};
+    constexpr std::size_t maxAlternatives=4096, maxObjects=2*1024*1024;
+    std::vector<std::size_t> count(objects.size()); count[destination]=1;
+    for (auto i:order) if (i!=destination) for (auto j:next[i]) if (distance[j]+1==distance[i])
+        count[i]=std::min(maxAlternatives+1,count[i]+count[j]);
+    if (count[origin]>maxAlternatives || count[origin]>maxObjects/(distance[origin]+1))
+        throw std::invalid_argument("ROUTING_SEARCH_LIMIT");
+    std::vector<std::vector<std::string>> result;
+    std::vector<std::pair<std::size_t,std::vector<std::string>>> level{{origin,{from}}};
+    while (!level.empty()) {
+        std::vector<std::pair<std::size_t,std::vector<std::string>>> carried;
+        for (const auto& [i,chain]:level) {
+            if (i==destination) { result.push_back(chain); continue; }
+            for (auto j:next[i]) if (distance[j]+1==distance[i]) {
+                auto path=chain; path.push_back(objects[j].id); carried.emplace_back(j,std::move(path));
+            }
+        }
+        level=std::move(carried);
+    }
+    return result;
 }
 std::vector<FamilyChain> routeLaneFamily(const Network& network, const std::vector<std::string>& objectIds,
                                          std::vector<std::string>* ambiguous) {

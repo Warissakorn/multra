@@ -8,6 +8,12 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — R6/R8 OD and accounting (D167)
+
+Reverse graph distances replace the depth cap; bounded alternatives keep deterministic order.
+Skipped shares report vehicle volume without redistribution. Parking identity/window regression
+passes; conservation uses whole-run admissions and includes initial identities once. `odexpand` passes.
+
 ## 2026-10-14 — R5 lab length (D167)
 
 One helper scales explicit axle proportions for panel edits and project Apply; core validation

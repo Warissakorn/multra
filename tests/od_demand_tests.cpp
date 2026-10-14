@@ -178,3 +178,68 @@ TEST(odexpand, run_tier_issues) {
     CHECK(!compileDocument(f.d, test::root() / "data").scenario.inputs.empty());
     for (const auto& row : runDiagnostics(f.d, test::root() / "data")) CHECK(row.severity != DiagnosticSeverity::runtime);
 }
+
+TEST(odexpand, long_corridor_is_reachable_without_a_depth_cap) {
+    auto f=fixture(); auto d=f.d;
+    d.network.connectors.clear(); d.network.links.clear();
+    std::vector<std::string> links;
+    for (int i=0;i<12;++i) links.push_back(addLink(d,{{i*120.,0},{i*120.+100,0}},1,3.5));
+    for (std::size_t i=1;i<links.size();++i) join(d,links[i-1],100,links[i]);
+    d.zones.zoneConnectors={{"s","site",links.front(),ZoneDirection::origin,1},
+                           {"t","town",links.back(),ZoneDirection::destination,1}};
+    validateDocument(d);
+    const auto chains=routeShortestChains(d.network,links.front(),links.back());
+    CHECK(chains.size()==1 && chains[0].size()==23);
+    CHECK(odDemandIssues(d,test::root()/"data").empty());
+    CHECK(!compileDocument(d,test::root()/"data").scenario.routes.empty());
+}
+TEST(odexpand, unreachable_pairs_report_the_omitted_volume_without_redistribution) {
+    auto f=fixture();
+    const auto lost=addLink(f.d,{{0,100},{100,100}},1,3.5);
+    f.d.zones.zoneConnectors[1].linkId=lost;
+    CHECK(odDemandIssues(f.d,test::root()/"data").empty());
+    const auto gaps=odDemandGaps(f.d); CHECK(gaps.size()==1);
+    test::near(gaps[0].skippedVehicles,40./3);
+    test::near(vph(withOdDemand(f.d),"od:am/"),40.*2/3);
+    const auto diagnostics=runDiagnostics(f.d,test::root()/"data");
+    CHECK(std::any_of(diagnostics.begin(),diagnostics.end(),[](const auto& row) {
+        return row.code=="OD_SKIPPED_DEMAND" && row.severity==DiagnosticSeverity::advisory &&
+               row.path.find("13.333333")!=std::string::npos;
+    }));
+}
+TEST(odexpand, excessive_shortest_alternatives_are_a_search_limit_not_no_path) {
+    ProjectDocument d; std::vector<std::string> previous;
+    std::string origin;
+    for (int layer=0;layer<14;++layer) {
+        std::vector<std::string> current;
+        for (int k=0;k<(layer==0 || layer==13 ? 1 : 2);++k)
+            current.push_back(addLink(d,{{layer*120.,k*40.},{layer*120.+100,k*40.}},1,3.5));
+        for (const auto& a:previous) for (const auto& b:current) join(d,a,100,b);
+        if (layer==0) origin=current[0]; previous=current;
+    }
+    // 2^12 shortest alternatives fit exactly; one extra branching layer exceeds the policy.
+    CHECK(routeShortestChains(d.network,origin,previous[0]).size()==4096);
+    const auto last=addLink(d,{{1800,0},{1900,0}},1,3.5);
+    const auto other=addLink(d,{{1560,80},{1660,80}},1,3.5);
+    for (const auto& l:d.network.links) if (l.geometry.front().x==1440) join(d,l.id,100,other);
+    join(d,previous[0],100,last); join(d,other,100,last);
+    test::throws([&] { routeShortestChains(d.network,origin,last); },"ROUTING_SEARCH_LIMIT");
+    demand(d).duration=3600;
+    putZone(d,{"o","",{{-30,0},{-20,10},{-10,0}},{}});
+    putZone(d,{"z","",{{2000,0},{2010,10},{2020,0}},{}});
+    putZoneConnector(d,{"origin","o",origin,ZoneDirection::origin,1});
+    putZoneConnector(d,{"destination","z",last,ZoneDirection::destination,1});
+    putOdMatrix(d,{"am",0,3600,"car-only",{"o","z"},{{0,40},{0,0}}});
+    const auto issues=odDemandIssues(d,test::root()/"data");
+    CHECK(std::any_of(issues.begin(),issues.end(),[](const auto& i) { return i.code=="OD_PATH_SEARCH_LIMIT"; }));
+    CHECK(std::none_of(issues.begin(),issues.end(),[](const auto& i) { return i.code=="OD_NO_PATH"; }));
+}
+
+TEST(odexpand, shortest_search_handles_cycles_and_disconnected_targets) {
+    auto f=fixture();
+    join(f.d,f.t,100,f.a1); // back edge must not turn shortest alternatives into cycle enumeration
+    const auto chains=routeShortestChains(f.d.network,f.a1,f.t);
+    CHECK(chains.size()==1 && chains[0].size()==3);
+    const auto isolated=addLink(f.d,{{500,0},{600,0}},1,3.5);
+    CHECK(routeShortestChains(f.d.network,f.a1,isolated).empty());
+}

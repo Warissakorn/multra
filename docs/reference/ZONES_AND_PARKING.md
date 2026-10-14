@@ -113,6 +113,11 @@ For each matrix and each cell `(o, d)` with `cells[o][d] > 0`, where zone `o` ha
    `routeLaneChains` filter): exactly what a placed routing decision already uses for a
    destination Link. Each gets an **equal** part. One Link that is both origin and destination is
    its own chain. A pair with no chain is skipped; a cell with none at all is `OD_NO_PATH`.
+   Reachability uses graph distances without a corridor-depth cap. More than 4096 shortest
+   alternatives or 2 Mi object references is `OD_PATH_SEARCH_LIMIT`, never `OD_NO_PATH`.
+   Unreachable connector pairs retain their original shares: `odDemandGaps` and the editor's
+   `OD_SKIPPED_DEMAND` advisory report the omitted vehicle count per cell. No implicit
+   renormalization redistributes it.
    Detours longer by even one object get nothing: weighting every complete path equally would
    send traffic round loops like the direct road. M9 replaces the equal weight; nothing else here
    changes then.
@@ -224,11 +229,14 @@ study controls it with warm-up.
 
 At every tick, for the whole run:
 
-`generated + Σ initialOccupancy = completed + Σ parked + active + pending`
+`generated = completedTrips − cumulativeAdmissions + parked + active + pending`
 
-where `completed` counts trips ended at network exits and at gates, `parked` is vehicles in lots
-(`occupied` minus those waiting in exit queues), `pending` includes exit queues. A vehicle that
-parks and leaves is one vehicle with two trips; trips are counted per trip, vehicles per identity.
+`generated = nextVehicleId − 1` counts distinct vehicle identities, including initial occupancy.
+`completedTrips` counts whole-run trips ended at network exits and at lot gates. Subtract all
+admissions since run start, including before warm-up: each admission ended a trip while retaining
+its identity in the lot. `parked` excludes released vehicles already in exit queues; `pending`
+includes those queues. A vehicle that parks and leaves is one identity with two completed trips.
+Do not add initial occupancy again or substitute evaluation-window lot flows in this equation.
 
 ## 5. Outputs (implemented M8.5, D160)
 
@@ -257,7 +265,8 @@ parks and leaves is one vehicle with two trips; trips are counted per trip, vehi
   length).
 - **Accounting:** the report's `parked` counts the vehicles in a lot that have not been released.
   A released vehicle is already pending in its exit queue. Then
-  `generated = active + pending + parked + completed − admitted`.
+  `generated = active + pending + parked + completedTrips − cumulativeAdmissions`,
+  using whole-run completed trips and admissions (§4.6), not this window's `admitted` row.
 - **Surfaces** (all written only with a lot, so other projects keep their bytes):
   - `movementJson` `lots` {validated, measure, rows} and `parked`;
   - a `movementCsv` lot block and a `parked` line;

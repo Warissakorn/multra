@@ -125,3 +125,15 @@ TEST(parkingoutputs, pl11e_batch_aggregates_lot_rows) {
     runs[1].report.lots[0].name = "other";
     test::throws([&] { aggregate(runs); }, "aggregate");
 }
+
+TEST(parkingoutputs, identities_include_initial_occupancy_and_use_whole_run_admissions) {
+    auto d=fixture(3,8,1).d; auto& lot=d.zones.parkingLots[0];
+    lot.dwell={{5,0},{10,1}}; lot.initialOccupancy=2; lot.initialCompositionId="car-only";
+    const auto o=observe(d,[](EvaluationSpec& s) { s.warmup=600; s.end=3000; });
+    CHECK(o.gateArrivals>o.report.lots[0].admitted); // warm-up excludes some reported admissions
+    CHECK(o.end.completed>o.end.nextVehicleId-1); // trips and identities have different units
+    CHECK(o.end.nextVehicleId-1 == o.report.active+o.report.pending+o.report.parked+o.end.completed-o.gateArrivals);
+    const auto snapshot=compileDocument(d,test::root()/"data");
+    const auto spec=evaluationSpec(d,snapshot,test::root()/"data");
+    CHECK(runSeed(snapshot.scenario,spec,42).generated==o.end.nextVehicleId-1);
+}
