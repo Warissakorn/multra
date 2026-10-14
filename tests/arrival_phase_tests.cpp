@@ -2,6 +2,7 @@
 #include "../src/eval/arrival_phases.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 using namespace trafficsim;
 // M3.2.8c step 4: the cycle phase at which vehicles enter a segment and first stand on it.
 namespace {
@@ -86,4 +87,21 @@ TEST(movement, arrival_phase_counts_a_departure_as_entering_the_first_segment) {
     std::uint64_t early = 0;
     for (std::size_t b = 0; b < 7; ++b) early += up.enteredAt[b];
     CHECK(early == up.entered); // the input releases vehicles from 0 to 60 s only (60 s is bin 6)
+}
+
+TEST(movement, arrival_phase_rejects_invalid_and_excessive_bins) {
+    for (double width : {0., -1., std::nan(""), std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()})
+        test::throws([&] { ArrivalPhaseAccumulator phases(spec(), width); }, "finite and positive");
+    auto state = createSimulation(approach(50, {{120, SignalColor::green}}), 42);
+    for (double width : {1e-300, 1e-6}) {
+        ArrivalPhaseAccumulator phases(spec(), width);
+        test::throws([&] { phases.observe(state); }, "histogram limit");
+    }
+    for (double width : {120., 1e20}) {
+        ArrivalPhaseAccumulator phases(spec(), width); phases.observe(state);
+        while (state.tick < totalTicks(*state.scenario)) { state=stepSimulation(state); phases.observe(state); }
+        CHECK(!phases.report().rows.empty());
+        for (const auto& r : phases.report().rows) CHECK(r.enteredAt.size()==1);
+        state=createSimulation(approach(50, {{120, SignalColor::green}}), 42);
+    }
 }

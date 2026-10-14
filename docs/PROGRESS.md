@@ -8,6 +8,11 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — R1 phase bins (D167)
+
+Finite/positive validation runs at both boundaries. Huge widths use one bin; small widths exceeding
+16 MiB fail before allocation. CLI inf now exits 1 and 1e20 exits 0; `cli-phase-bin`/`movement` pass.
+
 ## 2026-10-14 — R2 pose lifecycle (D167)
 
 Logical route remaps substitute the selected suffix without resetting the lateral blend or rear

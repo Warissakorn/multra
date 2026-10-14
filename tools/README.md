@@ -184,3 +184,7 @@ Each run verifies full copied-state replay, vehicle accounting, shared-segment b
 separation, swept crossing safety and explicit reporting of excessive braking.
 Development evidence, not an M5 runner or M6 validation; see
 [`docs/evidence/m3.2.8a-clamps.md`](../docs/evidence/m3.2.8a-clamps.md).
+
+Arrival-phase `--phase-bin` values must be finite and positive. Widths at least a cycle use one
+bin; the accumulator also validates direct callers and rejects histograms above 16 MiB across
+all movement/segment rows before allocating. `cli-phase-bin` checks errors and large widths.

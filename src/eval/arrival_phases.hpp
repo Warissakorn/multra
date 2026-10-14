@@ -39,5 +39,6 @@ private:
     std::map<std::uint64_t, Trip> open_;
     std::map<std::pair<std::size_t, std::string>, Row> rows_;
     std::uint64_t unassigned_{};
+    std::size_t bins_{};
 };
 }
