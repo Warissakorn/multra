@@ -19,12 +19,15 @@ std::string putZoneConnector(ProjectDocument& d, ZoneConnector value) {
     return put(d, d.zones.zoneConnectors, std::move(value), "zone-connector");
 }
 std::string putOdMatrix(ProjectDocument& d, OdMatrix value) { return put(d, d.zones.odMatrices, std::move(value), "od"); }
+std::string putParkingLot(ProjectDocument& d, ParkingLot value) { return put(d, d.zones.parkingLots, std::move(value), "lot"); }
 void deleteZone(ProjectDocument& d, const std::string& id) {
     for (const auto& m : d.zones.odMatrices)
         if (std::find(m.zoneIds.begin(), m.zoneIds.end(), id) != m.zoneIds.end()) throw std::invalid_argument("EDIT_ZONE_IN_USE");
+    for (const auto& lot : d.zones.parkingLots) if (lot.zoneId == id) throw std::invalid_argument("EDIT_ZONE_IN_USE");
     erase(d.zones.zones, id);
     std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.zoneId == id; });
 }
 void deleteZoneConnector(ProjectDocument& d, const std::string& id) { erase(d.zones.zoneConnectors, id); }
 void deleteOdMatrix(ProjectDocument& d, const std::string& id) { erase(d.zones.odMatrices, id); }
+void deleteParkingLot(ProjectDocument& d, const std::string& id) { erase(d.zones.parkingLots, id); }
 }

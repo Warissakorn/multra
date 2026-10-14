@@ -4,8 +4,16 @@
 #include "behaviour_library.hpp"
 #include "demand_paths.hpp"
 #include "od_demand.hpp"
+#include "parking_compile.hpp"
 #include "../core/validate.hpp"
+#include <algorithm>
 namespace trafficsim {
+namespace {
+// M8.4b: a lot parked full at t = 0 is demand of its own, with or without an input.
+bool holdsVehicles(const ProjectDocument& d) {
+    return std::any_of(d.zones.parkingLots.begin(), d.zones.parkingLots.end(), [](const auto& l) { return l.initialOccupancy > 0; });
+}
+}
 std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::filesystem::path& data) {
     // A new project carries run settings (M5.3) but no demand yet: it is still a drawing, and the
     // drawing's own problems are the useful list, exactly as with no definition at all.
@@ -26,7 +34,7 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         // A route is not a network object, and neither is an input: the row names its path.
         for(const auto& issue:compositionIssues(def,data))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
-        if (def.inputs.empty())
+        if (def.inputs.empty() && !holdsVehicles(d))
             rows.push_back({"EDIT_NO_INPUTS","inputs",{},{},DiagnosticSeverity::runtime});
         return rows;
     } catch (const std::exception& e) {
@@ -41,7 +49,7 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     if(auto issues=odDemandIssues(d,data);!issues.empty())throw ValidationError(std::move(issues));
     const auto expanded=d.zones.empty()?std::optional<AuthoringDefinition>{}:std::optional{withOdDemand(d)};
     const auto& authored=expanded?*expanded:*d.definition;
-    if (authored.inputs.empty()) throw std::invalid_argument("EDIT_NO_INPUTS");
+    if (authored.inputs.empty() && !holdsVehicles(d)) throw std::invalid_argument("EDIT_NO_INPUTS");
     // An input left out for an unknown or broken composition must stop Run, not vanish from it.
     if(auto issues=compositionIssues(authored,data,manifest);!issues.empty())throw ValidationError(std::move(issues));
     // Resolve once: every part of this snapshot uses the same catalog values.
@@ -52,6 +60,11 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);
     if(manifest)manifest->validate();
     auto scenario=compileScenario(d.network,definition);
+    // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.
+    if(!d.zones.parkingLots.empty()) {
+        compileParkingLots(d,authored,scenario,data);
+        if(auto issues=validateScenario(scenario);!issues.empty())throw ValidationError(std::move(issues));
+    }
     // M5.9 (D146): the run goes on for the cool-down after the authored duration. Inputs still end
     // by that duration, so the engine releases no new demand in it; extended only here, after every
     // expansion that reads the authored duration, and for every caller (CLI, batch, editor).

@@ -8,6 +8,23 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — M8.4b authored parking lots end to end (D157)
+
+`ParkingLot` joined the zone layer (top-level `parkingLots`, schema 31) with codec, structural
+checks (`PARKING_LOT_INVALID`, `PARKING_DWELL_INVALID`), commands and the zone-in-use refusal. The
+dwell curve is stored on the lot in minutes: no cited default exists yet (B10), so a catalog would
+be empty (D157). `withOdDemand` now adds a lot row's routes without inputs; `compileParkingLots`
+(`src/project/parking_compile.*`) runs after `compileScenario`: gate routes by the Link of their
+last segment, exits from `lotExitWeights` (row summed over matrices, connector shares, chains, then
+lanes), one 0-veh/h queue input per first segment, initial types from the composition. Run tier:
+no gate, no exit, empty row, unknown initial composition; locale strings in English and Thai.
+PL8 (a departures-only lot) exposed two over-strict rules, both relaxed and recorded: the core
+refused a lot with no gate route, and `EDIT_NO_INPUTS` refused a study whose only demand is a full
+lot. Rows OD7, PL7–PL10 and the M8 gate run (a zone-OD study fills a capacity-3 lot, queues at the
+gate and keeps every vehicle) in `parkingcodec`/`parkingproject`. A 60-trip lot study through
+`trafficsim-cli --seeds 42-44` gave inbound delay 42.6 s (gate wait included) and outbound 3.3 s.
+Headless 88/88 (Linux, GCC 13.3); `trafficsim-cli 42` unchanged; desktop not built (no Qt).
+
 ## 2026-10-14 — M8.4a parking-lot runtime in the engine (D156)
 
 M8.4 was two systems, so it was split (D156): this session the core runtime, next the authored
@@ -453,22 +470,6 @@ steps, BA18, the M3.2.4e contract rule and pending native CI. §1–§5 are live
 working notes and were not cut, so the planned −40 % was not reached.
 
 ---
-
-## 2026-10-09 — W74 replayed on top of M5: D135–D139, schema 25
-
-W74 (M3.3.3a) and M5 were built in parallel from the same `main` and both used D130–D134 and
-schema 22. By owner instruction the M5 branch is the base and the W74 slices are replayed on it:
-D130–D134 of the W74 branch are now D135–D139 everywhere (record, index, code comments,
-evidence), and `w74` is written in schema 25 (22–24 are M5's evaluation period, sections and
-control type); a file below 25 carrying `"w74"` is refused, and every "future schema" probe is 26.
-The entries below keep their original dates and test counts. D139 (the dialog editing `w74`
-keys, with no code defaults) had no entry of its own; its reasoning is in the record. Not carried
-over from the W74 branch: its own `--seeds`, editor Run N seeds and evaluation period (M5.2–M5.3
-there, superseded by D131–D132 here; the editor batch is a reference for M5.6) and its Results
-tabs (discharge and clamps). The decision record's blank lines between rows are removed again.
-
----
-
 
 ## Backlog (M0, in order)
 

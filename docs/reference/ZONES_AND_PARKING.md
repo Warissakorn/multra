@@ -1,10 +1,11 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status:** M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
+**Status:** M8.4b implemented 2026-10-14 (D157): the authored ParkingLot — codec, checks,
+commands, compiler and Run tier (OD7, PL7–PL10 end to end). M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
 on hand-built scenarios. M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
 the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
 2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
-The authored ParkingLot (codec, compiler), outputs and editor tools are **not implemented**. This document fixes the
+Lot outputs (M8.5) and the editor tools (M8.6) are **not implemented**. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
@@ -83,12 +84,13 @@ Overlapping periods add, as overlapping inputs do today.
 | `initialOccupancy` | integer | `0 ≤ initialOccupancy ≤ capacity`; default 0 |
 | `initialCompositionId` | string | Required when `initialOccupancy > 0`, refused otherwise; the types of the vehicles parked at t = 0 |
 | `gateServiceTime` | seconds | Finite, ≥ 0; default 0. Time standing at the gate before admission is possible (ticket, barrier) |
-| `dwellId` | string | A dwell distribution in `data/parking-dwell/` (content, hard rule 5), or the project's own catalog entry |
+| `dwell` | `[[minutes, cumulative], …]` | The lot's own dwell curve: minutes ≥ 0 and cumulative shares in [0, 1], both strictly increasing, the last share 1. A single point is a fixed dwell |
 
-A dwell distribution is data: `{ "id", "kind": "empirical", "points": [[minutes, cumulativeShare], …] }`,
-strictly increasing in both, last share 1. Sampling inverts the piecewise-linear cumulative
-curve with one draw of the run's PRNG. Further kinds need their own row. The default values and
-their source are an owner question (§8); no default dwell file ships until it is answered.
+The dwell curve is stored **on the lot** (D157): until the owner chooses a cited default (§8,
+B10) a shared catalog would have no content, so none ships. A catalog reference can be added later
+beside the inline curve. Sampling inverts the piecewise-linear curve with one draw of the run's
+PRNG (§4.1). Every field is always written; `capacity` and `initialOccupancy` must be JSON
+unsigned integers.
 
 ## 3. OD expansion for Micro (compile time)
 
@@ -154,7 +156,7 @@ byte-identical (the frozen baselines, `trafficsim-cli 42` and every existing tes
 `validateScenario` reports `PARKING_LOT_INVALID` with the path of the broken field: an empty or
 repeated id, capacity < 1, initial occupancy above capacity or without types, an unknown type or a
 share ≤ 0, a negative service time, a dwell curve that is empty, not strictly increasing in both
-columns or not ending at cumulative 1, no or unknown gate route, a route gating two lots, no exit,
+columns or not ending at cumulative 1, an unknown gate route, a route gating two lots (no gate route at all is legal since M8.4b), no exit,
 an exit whose route or input is unknown, whose route does not start where its input's route
 starts, or whose weight is ≤ 0.
 
@@ -189,11 +191,23 @@ into those weights by M8.4b (one set per run).
 ### 4.4 A lot zone's own row
 
 For a zone with a lot, the matrix row `o = lot` sets **destinations, not timing**: departures come
-from dwell expiries, and each departing vehicle draws its destination zone from the row's cells as
-relative weights (summed over every matrix whose period contains its `dwellEnd`; outside every
-period, over all matrices). A lot with any arrivals or initial occupants whose row is empty is
-refused on Run (`PARKING_LOT_NO_EXIT_DEMAND`). This is D153's choice; the owner may revise it.
+from dwell expiries (D153; the owner may revise it, B10). `withOdDemand` adds the row's routes but
+**no input** for them (OD7). `compileParkingLots` (`src/project/parking_compile.*`, D157) then
+builds the engine's lot after `compileScenario`:
+
+- **Weights:** the row's cells **summed over every matrix** (one set of weights per run; a
+  time-sliced row would need per-period exits, not booked), times the origin and destination
+  connector shares, divided over the chains — `lotExitWeights`, the same split as §3 with trips in
+  place of rates — and then equally over each `od:` route's runtime lanes.
+- **Gate routes:** every runtime route whose last segment is a section of one of the lot zone's
+  destination-connector Links — OD routes, their lane families and any other route ending there.
+  A lot nobody drives to has none, which is legal.
+- **Exit queues:** one 0-veh/h input `lot:<lot>/exit/<first segment>` per distinct first segment.
+- **Initial types:** the base shares of `initialCompositionId` (its time intervals are not used).
+
+A lot whose row is empty is refused on Run (`PARKING_LOT_NO_EXIT_DEMAND`): it could only fill.
 The lot column (`d = lot`) is ordinary demand: §3 generates it, and its trips end at the gate.
+A study whose only demand is a lot parked full at t = 0 runs: `EDIT_NO_INPUTS` does not apply.
 
 ### 4.5 Initial occupants
 
@@ -240,6 +254,8 @@ History stays atomic. Implemented by M8.2 (`zoneLayerIssues`, `src/project/zone_
 | `OD_CELLS_SHAPE` / `OD_CELL_INVALID` | Not square in `zoneIds` (or no zones); negative or non-finite cell | `odMatrices[i].cells` / `.cells[r][c]` |
 | `OD_PERIOD_INVALID` | `startTime < 0`, `endTime ≤ startTime` or non-finite | `odMatrices[i]` |
 | `OD_COMPOSITION_MISSING` | Empty `compositionId` | `odMatrices[i].compositionId` |
+| `PARKING_LOT_INVALID` | Unknown zone or a second lot in it, capacity < 1, initial occupancy above capacity, a composition missing with occupants or present without, a negative service time (M8.4b) | `parkingLots[i].<field>` |
+| `PARKING_DWELL_INVALID` | Empty curve, not strictly increasing in both columns, negative, or not ending at 1 | `parkingLots[i].dwell` |
 
 **Run tier** — authoring keeps the document (as for `UNSUPPORTED_ROUTE_TOPOLOGY`); Run refuses it
 (M8.3, M8.4). These depend on topology, the run's duration or catalogs outside the document:
@@ -251,14 +267,13 @@ History stays atomic. Implemented by M8.2 (`zoneLayerIssues`, `src/project/zone_
 | `OD_COMPOSITION_UNKNOWN` | `compositionId` names no composition the run resolves |
 | `OD_ZONE_NO_CONNECTOR` | A positive cell whose origin lacks an origin connector or destination lacks a destination connector |
 | `OD_NO_PATH` | A positive cell with no complete path between any origin and destination Link pair |
-| `PARKING_LOT_INVALID` | Capacity, occupancy, service time or composition rule of §2.4 broken; two lots in one zone |
+| `OD_COMPOSITION_UNKNOWN` | Also at `parkingLots[i].initialCompositionId` |
 | `PARKING_LOT_NO_GATE` / `PARKING_LOT_NO_EXIT` | The zone lacks a destination / origin connector |
 | `PARKING_LOT_NO_EXIT_DEMAND` | §4.4 |
-| `PARKING_DWELL_INVALID` | Unknown dwell id, or points not strictly increasing / not ending at 1 |
 
 **Cascades (D154).** Deleting a Link deletes the zone connectors on it; the zones stay. Deleting a
 Zone deletes its connectors, and is refused (`EDIT_ZONE_IN_USE`) while a matrix names it, so a
-matrix's counts are never dropped as a side effect. `splitLink` keeps origin connectors on the
+matrix's counts are never dropped as a side effect; likewise while a parking lot names it. `splitLink` keeps origin connectors on the
 upstream piece, which keeps the Link id, and moves destination connectors to the downstream piece.
 `reverseLink` keeps them; the Run tier then reports a position that no longer fits. Duplicating
 objects does not copy zone connectors.
@@ -283,17 +298,17 @@ blocked, the key is below 31), then the consequence. Test groups are planned nam
 | OD4 | A positive cell with no path reports `OD_NO_PATH`; a zero cell with no path compiles | `odexpand` |
 | OD5 | Two equal-short branches get ½ each; a detour one Link longer gets no input | `odexpand` |
 | OD6 | Same document and seed ⇒ the same event stream; reordering `zoneIds` with the cells gives the same inputs; no zone layer ⇒ the definition passes unchanged. Run-tier codes of §6 refused with their paths, and shown as runtime diagnostics | `odexpand` |
-| OD7 | A lot zone's row creates **no** Poisson input (asserted by input count), only exit destinations | `odexpand` |
+| OD7 | A lot zone's row creates **no** input (asserted by input count), only its routes; compiled, they are the lot's exits with one exit queue (M8.4b) | `parkingproject` |
 | PL1 | **Full lot queues, never deletes.** A capacity-2 lot with dwell longer than the run: first assert `occupied = 2` and ≥ 5 arrivals; then every other arrival is on the road or in its queue, ≥ 3 on the road, none past the line, and every id is in exactly one place at every tick (M8.4a) | `parkinglot` |
 | PL2 | `occupied` never exceeds `capacity`, and the identity holds, over 40 well-mixed seeds of a saturated lot (M8.4a). PL2b: two vehicles driving in side by side for one space — one is admitted, the other stays at the line with one reported clamp | `parkinglot` |
 | PL3 | The gate queue spills back past a 30 m driveway onto the shared approach and a through vehicle stands behind it (M8.4a) | `parkinglot` |
 | PL4 | Gate service: with `gateServiceTime` 10 s an empty lot admits no earlier than 10 s after the vehicle comes to the line; with 0 s it drives in without stopping (M8.4a) | `parkinglot` |
 | PL5 | A departure frees its space only when inserted: with the exit blocked by a red head (asserted: a departure is still queued), every queued departure is in `leaving` and the lot stays full; unblocked, the lot keeps turning over (M8.4a) | `parkinglot` |
 | PL6 | Same seed ⇒ the same events and lot states every tick; on one lane admissions follow arrival order (M8.4a) | `parkinglot` |
-| PL7 | `initialOccupancy` vehicles exist at t = 0 with their `initialTypes`, ids 1…n, and leave by their dwell (M8.4a core; the composition is M8.4b) | `parkinglot` |
-| PL8 | A departing vehicle keeps its id and type, and its destination frequencies over 40 seeds match the lot row's weights within the binomial 95 % band | `parkinglot` |
-| PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged | `parkinglot` |
-| PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`); authoring keeps it | `parkinglot` |
+| PL7 | `initialOccupancy` vehicles exist at t = 0 with their `initialTypes`, ids 1…n, and leave by their dwell (M8.4a); compiled from the composition's shares (M8.4b) | `parkinglot`, `parkingproject` |
+| PL8 | Departures' destinations over 40 well-mixed seeds (2,000 departures) match the lot row's 3 : 1 within the binomial 95 % band (M8.4b) | `parkingproject` |
+| PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged; a lot-free document compiles no lot and no `lot:` input | `parkinglot`, `parkingproject` |
+| PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`), one with no gate or no exit connector, and an unknown initial composition; authoring keeps them. Codec and structural checks for `parkingLots` as Z2–Z5 (`parkingcodec`). The M8 gate run: a zone-OD study fills a capacity-3 lot, queues at the gate and keeps every vehicle (M8.4b) | `parkingproject` |
 | PL11 | Reports (M8.5) give occupancy, gate queue, gate wait and flows that reconcile with the event stream, with the not-validated marker | `parkingoutputs` |
 
 The M8 gate (ROADMAP) additionally needs the editor tools and the OD table (M8.6) and a

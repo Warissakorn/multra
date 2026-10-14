@@ -240,6 +240,7 @@ std::string allocateId(ProjectDocument& d, const std::string& prefix) {
     for (const auto& z : d.zones.zones) used.insert(z.id);
     for (const auto& c : d.zones.zoneConnectors) used.insert(c.id);
     for (const auto& m : d.zones.odMatrices) used.insert(m.id);
+    for (const auto& l : d.zones.parkingLots) used.insert(l.id);
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");
         auto id = prefix + "-" + std::to_string(d.nextId++);

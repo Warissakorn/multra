@@ -10,6 +10,7 @@ namespace {
 constexpr const char* kZones = "zones";
 constexpr const char* kConnectors = "zoneConnectors";
 constexpr const char* kMatrices = "odMatrices";
+constexpr const char* kLots = "parkingLots";
 [[noreturn]] void invalid() { throw std::invalid_argument("EDIT_ZONE_INVALID"); }
 void exactKeys(const Json& j, std::initializer_list<const char*> keys) {
     if (!j.is_object() || j.size() != keys.size()) invalid();
@@ -47,6 +48,20 @@ OdMatrix parseMatrix(const Json& j) {
         for (const auto& cell : array(row)) m.cells.back().push_back(number(cell));
     }
     return m;
+}
+std::uint32_t count(const Json& j) {
+    if (!j.is_number_unsigned() || j.get<std::uint64_t>() > 0xffffffffULL) invalid();
+    return static_cast<std::uint32_t>(j.get<std::uint64_t>());
+}
+ParkingLot parseLot(const Json& j) {
+    exactKeys(j, {"id", "zoneId", "capacity", "initialOccupancy", "initialCompositionId", "gateServiceTime", "dwell"});
+    ParkingLot lot{text(j, "id"), text(j, "zoneId"), count(j.at("capacity")), count(j.at("initialOccupancy")),
+                   text(j, "initialCompositionId"), number(j.at("gateServiceTime")), {}};
+    for (const auto& p : array(j.at("dwell"))) {
+        if (!p.is_array() || p.size() != 2) invalid();
+        lot.dwell.push_back({number(p[0]), number(p[1])});
+    }
+    return lot;
 }
 template<class T, class F> void parseArray(const Json& document, const char* key, int schema, std::vector<T>& out, F parse) {
     if (!document.contains(key)) return;
@@ -103,12 +118,23 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
             out.push_back({{"id", m.id}, {"startTime", m.startTime}, {"endTime", m.endTime}, {"compositionId", m.compositionId},
                            {"zoneIds", m.zoneIds}, {"cells", m.cells}});
     }
+    if (!layer.parkingLots.empty()) {
+        auto& out = document[kLots] = Json::array();
+        for (const auto& lot : layer.parkingLots) {
+            Json dwell = Json::array();
+            for (const auto& p : lot.dwell) dwell.push_back({p.minutes, p.cumulative});
+            out.push_back({{"id", lot.id}, {"zoneId", lot.zoneId}, {"capacity", lot.capacity},
+                           {"initialOccupancy", lot.initialOccupancy}, {"initialCompositionId", lot.initialCompositionId},
+                           {"gateServiceTime", lot.gateServiceTime}, {"dwell", dwell}});
+        }
+    }
 }
 ZoneLayer parseZoneLayer(const Json& document, int schema) {
     ZoneLayer layer;
     parseArray(document, kZones, schema, layer.zones, parseZone);
     parseArray(document, kConnectors, schema, layer.zoneConnectors, parseConnector);
     parseArray(document, kMatrices, schema, layer.odMatrices, parseMatrix);
+    parseArray(document, kLots, schema, layer.parkingLots, parseLot);
     return layer;
 }
 std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
@@ -156,6 +182,24 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
             for (std::size_t c = 0; c < n; ++c)
                 if (!std::isfinite(m.cells[r][c]) || m.cells[r][c] < 0)
                     issues.push_back({"OD_CELL_INVALID", path + ".cells[" + std::to_string(r) + "][" + std::to_string(c) + "]"});
+    }
+    std::set<std::string> lotZones;
+    for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) {
+        const auto& lot = layer.parkingLots[i];const auto path = "parkingLots[" + std::to_string(i) + "]";
+        const auto bad = [&](const std::string& field) { issues.push_back({"PARKING_LOT_INVALID", path + "." + field}); };
+        id(lot.id, path);
+        if (!zones.contains(lot.zoneId) || !lotZones.insert(lot.zoneId).second) bad("zoneId");
+        if (lot.capacity < 1) bad("capacity");
+        if (lot.initialOccupancy > lot.capacity) bad("initialOccupancy");
+        if ((lot.initialOccupancy > 0) == lot.initialCompositionId.empty()) bad("initialCompositionId");
+        if (!std::isfinite(lot.gateServiceTime) || lot.gateServiceTime < 0) bad("gateServiceTime");
+        bool dwell = !lot.dwell.empty() && lot.dwell.back().cumulative == 1;
+        for (std::size_t k = 0; k < lot.dwell.size(); ++k) {
+            const auto& p = lot.dwell[k];
+            dwell = dwell && std::isfinite(p.minutes) && p.minutes >= 0 && std::isfinite(p.cumulative) && p.cumulative >= 0 &&
+                    (k == 0 || (p.minutes > lot.dwell[k - 1].minutes && p.cumulative > lot.dwell[k - 1].cumulative));
+        }
+        if (!dwell) issues.push_back({"PARKING_DWELL_INVALID", path + ".dwell"});
     }
     return issues;
 }

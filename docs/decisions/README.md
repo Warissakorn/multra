@@ -9,7 +9,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Product scope, stack, naming and owner gates | D145, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
-| Demand and routing | D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
+| Demand and routing | D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
 | Signals, conflicts, Stop/Yield and queues | D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
 | Following, commitment and lane changes | D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
 | UI, gestures, display and results | D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
@@ -114,3 +114,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D155](RECORD.md#d155) — M8.3 OD expansion to authored routes/inputs over fewest-object chains; Run-tier checks; first-draw PRNG bias for small seeds recorded, not changed.
 
 [D156](RECORD.md#d156) — M8.4 split; the engine's parking-lot runtime: gate hold, Stop-line arrival, drive-in without service, departures keep their space until inserted.
+
+[D157](RECORD.md#d157) — M8.4b authored lot: inline dwell curve, compiler from gate Links and the lot row, lot rows give routes only, empty row refused.

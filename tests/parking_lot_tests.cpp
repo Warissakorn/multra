@@ -241,7 +241,6 @@ TEST(parkinglot, validation) {
     rejects([](auto& s) { s.parkingLots[0].dwell = {{10, 0}, {20, 0.5}}; }, "parkingLots[0].dwell");
     rejects([](auto& s) { s.parkingLots[0].dwell = {}; }, "parkingLots[0].dwell");
     rejects([](auto& s) { s.parkingLots[0].gateRouteIds = {"nowhere"}; }, "parkingLots[0].gateRouteIds[0]");
-    rejects([](auto& s) { s.parkingLots[0].gateRouteIds = {}; }, "parkingLots[0].gateRouteIds");
     rejects([](auto& s) { s.parkingLots[0].exits = {}; }, "parkingLots[0].exits");
     rejects([](auto& s) { s.parkingLots[0].exits[0].routeId = "nowhere"; }, "parkingLots[0].exits[0]");
     rejects([](auto& s) { s.parkingLots[0].exits[0].inputId = "arrivals"; }, "parkingLots[0].exits[0]"); // other source

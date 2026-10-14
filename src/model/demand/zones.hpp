@@ -1,5 +1,6 @@
 #pragma once
 #include "../network/network.hpp"
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -28,11 +29,27 @@ struct OdMatrix {
     std::vector<std::vector<double>> cells; // row = origin; vehicle trips in the period
     bool operator==(const OdMatrix&) const = default;
 };
+// M8.4b (D157): a zone with capacity. Its destination connectors' Links are its gate, its origin
+// connectors its exits. The dwell curve is stored on the lot, cumulative over minutes, until a
+// cited default exists (owner question B10).
+struct ParkingDwellPoint {
+    double minutes{}, cumulative{};
+    bool operator==(const ParkingDwellPoint&) const = default;
+};
+struct ParkingLot {
+    std::string id, zoneId;
+    std::uint32_t capacity{1}, initialOccupancy{};
+    std::string initialCompositionId; // required exactly when initialOccupancy > 0
+    double gateServiceTime{};
+    std::vector<ParkingDwellPoint> dwell;
+    bool operator==(const ParkingLot&) const = default;
+};
 struct ZoneLayer {
     std::vector<Zone> zones;
     std::vector<ZoneConnector> zoneConnectors;
     std::vector<OdMatrix> odMatrices;
-    bool empty() const { return zones.empty() && zoneConnectors.empty() && odMatrices.empty(); }
+    std::vector<ParkingLot> parkingLots;
+    bool empty() const { return zones.empty() && zoneConnectors.empty() && odMatrices.empty() && parkingLots.empty(); }
     bool operator==(const ZoneLayer&) const = default;
 };
 }

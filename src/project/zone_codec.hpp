@@ -4,7 +4,7 @@
 
 namespace trafficsim {
 struct ProjectDocument;
-// M8.2 (D154). Three top-level arrays, each written only when non-empty, so a document without a
+// M8.2 (D154), M8.4b (D157). Four top-level arrays, each written only when non-empty, so a document without a
 // zone layer keeps its schema and bytes. Below schema 31 each key is UNSUPPORTED_FIELD; a malformed
 // value, an unknown field or an empty array is EDIT_ZONE_INVALID.
 void addZoneLayerJson(const ZoneLayer&, Json& document);

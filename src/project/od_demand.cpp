@@ -75,6 +75,9 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
     if (d.zones.empty()) return result;
     ChainFinder finder(d.network);
     std::set<std::string> routes;
+    // M8.4b (D157): a lot zone's row sets where its departures go, not when -- routes, no input.
+    std::set<std::string> lots;
+    for (const auto& lot : d.zones.parkingLots) lots.insert(lot.zoneId);
     walkCells(d, finder, [](const auto&, const auto&) {},
         [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
             const Chains& chains, double originShares, double destinationShares) {
@@ -84,6 +87,7 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
                 const auto suffix = chains.size() == 1 ? std::string{} : "/path-" + std::to_string(k + 1);
                 const auto route = "od:" + oc.linkId + ">" + dc.linkId + suffix;
                 if (routes.insert(route).second) result.routes.push_back({route, chains[k]});
+                if (lots.contains(m.zoneIds[r])) continue;
                 VehicleInput input;
                 input.id = "od:" + m.id + "/" + m.zoneIds[r] + "/" + m.zoneIds[c] + "/" + oc.id + ">" + dc.id + suffix;
                 input.routeId = route;input.vehiclesPerHour = rate;
@@ -92,6 +96,20 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
             }
         });
     return result;
+}
+std::map<std::string, double> lotExitWeights(const ProjectDocument& d, const std::string& lotZoneId) {
+    std::map<std::string, double> weights;
+    ChainFinder finder(d.network);
+    walkCells(d, finder, [](const auto&, const auto&) {},
+        [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
+            const Chains& chains, double originShares, double destinationShares) {
+            if (m.zoneIds[r] != lotZoneId) return;
+            const double w = m.cells[r][c] * (oc.share / originShares) * (dc.share / destinationShares) /
+                             static_cast<double>(chains.size());
+            for (std::size_t k = 0; k < chains.size(); ++k)
+                weights["od:" + oc.linkId + ">" + dc.linkId + (chains.size() == 1 ? std::string{} : "/path-" + std::to_string(k + 1))] += w;
+        });
+    return weights;
 }
 std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std::filesystem::path& data) {
     std::vector<ValidationIssue> issues;
@@ -109,9 +127,35 @@ std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std:
         VehicleInput input;input.id = m.id;input.compositionId = m.compositionId;input.endTime = 1;
         probe.inputs.push_back(std::move(input));
     }
-    for (const auto& issue : compositionIssues(probe, data))
-        if (issue.code == "UNKNOWN_COMPOSITION" && issue.path.starts_with("inputs["))
-            issues.push_back({"OD_COMPOSITION_UNKNOWN", "odMatrices" + issue.path.substr(6)});
+    // M8.4b: a lot's initial composition is checked the same way, after the matrices' probes.
+    std::vector<std::size_t> lotOfProbe;
+    for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) {
+        if (layer.parkingLots[i].initialCompositionId.empty()) continue;
+        VehicleInput input;input.id = layer.parkingLots[i].id;input.compositionId = layer.parkingLots[i].initialCompositionId;
+        input.endTime = 1;probe.inputs.push_back(std::move(input));lotOfProbe.push_back(i);
+    }
+    for (const auto& issue : compositionIssues(probe, data)) {
+        if (issue.code != "UNKNOWN_COMPOSITION" || !issue.path.starts_with("inputs[")) continue;
+        const auto k = std::stoul(issue.path.substr(7));
+        issues.push_back({"OD_COMPOSITION_UNKNOWN", k < layer.odMatrices.size()
+            ? "odMatrices[" + std::to_string(k) + "].compositionId"
+            : "parkingLots[" + std::to_string(lotOfProbe[k - layer.odMatrices.size()]) + "].initialCompositionId"});
+    }
+    for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) {
+        const auto& lot = layer.parkingLots[i];const auto path = "parkingLots[" + std::to_string(i) + "]";
+        if (connectorsOf(layer, lot.zoneId, ZoneDirection::destination).empty()) issues.push_back({"PARKING_LOT_NO_GATE", path});
+        if (connectorsOf(layer, lot.zoneId, ZoneDirection::origin).empty()) issues.push_back({"PARKING_LOT_NO_EXIT", path});
+        double out = 0, in = 0;
+        for (const auto& m : layer.odMatrices) {
+            const auto at = std::find(m.zoneIds.begin(), m.zoneIds.end(), lot.zoneId);
+            if (at == m.zoneIds.end()) continue;
+            const auto z = static_cast<std::size_t>(at - m.zoneIds.begin());
+            for (std::size_t k = 0; k < m.zoneIds.size(); ++k) { out += m.cells[z][k]; in += m.cells[k][z]; }
+        }
+        // Departures need somewhere to go (§4.4); a lot with an empty row could only ever fill.
+        if (out <= 0) issues.push_back({"PARKING_LOT_NO_EXIT_DEMAND", path});
+        (void)in;
+    }
     ChainFinder finder(d.network);
     walkCells(d, finder, [&](const char* code, std::string path) { issues.push_back({code, std::move(path)}); },
               [](auto&&...) {});

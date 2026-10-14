@@ -1,5 +1,5 @@
 Qt-free named document transactions and bounded snapshot Undo/Redo. History validates a candidate before publishing it; failed changes leave model/history/save state intact. Network operations support geometry, lane widths, reference-safe deletion, splitting, pockets and opposite carriageways. Connector operations provide creation, interior-point edits, retargeting, curve/straight reset and reference-safe deletion. Link/Lane changes share connector reanchoring; both deletion paths share route/input cleanup. History is in memory, not a persisted journal or plugin registry. `behaviour_commands` edits the M3.3.2a behaviour library: put, duplicate, road assignment, user lists and delete-with-replacement, each one History step.
 
-`zone_commands` puts/deletes Zones, zone connectors and OD matrices (M8.2); a Zone a matrix names cannot be deleted, and Link deletion/splitting carries zone connectors.
+`zone_commands` puts/deletes Zones, zone connectors, OD matrices (M8.2) and parking lots (M8.4b); a Zone a matrix names cannot be deleted, and Link deletion/splitting carries zone connectors.
 
 `map_commands` sets/removes the background reference atomically; it never moves network geometry.

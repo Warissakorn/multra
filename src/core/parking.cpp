@@ -174,7 +174,7 @@ void validateParkingLots(const Scenario& s, std::vector<ValidationIssue>& issues
                     (i == 0 || (d.seconds > lot.dwell[i - 1].seconds && d.cumulative > lot.dwell[i - 1].cumulative));
         }
         if (!dwell) add(p + ".dwell");
-        if (lot.gateRouteIds.empty()) add(p + ".gateRouteIds");
+        // No gate route is legal: a lot that only empties (initial occupants, nobody driving in).
         for (std::size_t j = 0; j < lot.gateRouteIds.size(); ++j)
             if (find(s.routes, lot.gateRouteIds[j]) == s.routes.end() || !gates.insert(lot.gateRouteIds[j]).second)
                 add(p + ".gateRouteIds[" + std::to_string(j) + "]");

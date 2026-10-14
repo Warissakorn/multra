@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the queue below; M8.4b is the default next slice (M8.1–M8.4a delivered, D153–D156).
+After that review, return to the queue below; M8.5 is the default next slice (M8.1–M8.4b delivered, D153–D157).
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -68,30 +68,27 @@ answer are the owner's). Next, as the owner chooses: the W74 cited preset and W9
 Motorcycles wait for M5.7 (R3; the question is in [PROBLEM](PROBLEM.md) §8).
 
 **Multi-level modelling (D145), M8 in progress.** Done: M8.1 contract (D153), M8.2 zone-layer
-codec/commands (D154), M8.3 OD → routes/inputs (D155), M8.4a the engine's parking-lot runtime
-(D156: `src/core/parking.*`, PL1–PL7 on hand-built scenarios, group `parkinglot`).
-[ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md) §4 is now the implemented rule.
-Next session: **M8.4b** — the authored ParkingLot, end to end:
-1. Codec and commands for top-level `parkingLots` (schema 31, §2.4), structural checks
-   (`PARKING_LOT_INVALID` with paths) and cascades (deleting its zone refuses or cascades — decide
-   and write into a Z-row first). Dwell catalog format under `data/parking-dwell/`, owned entries in
-   the project; **no shipped default file** until B10 — tests use a fixture dwell.
-2. Compiler in `src/project/` (beside `od_demand`): for each lot, its zone's destination
-   connectors' Links are the gate — every runtime route the OD expansion compiled ending there is a
-   gate route (all `route/lane-k` of those authored routes); its zone's origin connectors get one
-   0-veh/h exit input each, and the lot row's cells (summed over matrices, §4.4) become `LotExit`
-   weights over the OD routes from each exit to each destination; `initialTypes` from
-   `initialCompositionId`'s shares. `withOdDemand` must skip a lot zone's row (OD7).
-3. Run tier: `PARKING_LOT_NO_GATE`, `PARKING_LOT_NO_EXIT`, `PARKING_LOT_NO_EXIT_DEMAND`,
-   `PARKING_DWELL_INVALID`; locale strings (en, th).
-4. Rows OD7, PL7 (composition), PL8 (destination frequencies), PL9 (shipped projects and BA18
-   unchanged), PL10, written first. Then M8.5 (outputs, PL11; needs lot state in `checkpointJson`
-   for replay/seek, and the event or state the occupancy series is read from) and M8.6 (editor
-   tools `Z`/`P`, OD table).
+codec/commands (D154), M8.3 OD → routes/inputs (D155), M8.4a engine lot runtime (D156), M8.4b
+authored ParkingLot and its compiler (D157). A zone-OD study with a capacity-limited lot now runs
+through `compileDocument`, the CLI and batches; [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
+Left before the M8 gate:
+1. **M8.5 — lot outputs (PL11), next session.** Contract §5. Write PL11 first, group
+   `parkingoutputs`: per lot, occupancy at each evaluation interval end, peak and mean over the
+   evaluation period, gate queue (D40 queue counter at the gate line), gate wait per admitted
+   vehicle (gate `since` → admission), arrivals that waited more than a tick, in/out flows per
+   interval, and run-end counts (parked, at the gate, in the exit queue) — reconciled with the event
+   stream, with the not-validated marker, in the CLI JSON/CSV and batch aggregate. Needs: lot state
+   in `checkpointJson` (replay/seek), and an observer input for admission/departure (an event or
+   reading `SimState::lots` per tick — decide in the contract first). Also make the run summary's
+   `active`/`pending` accounting include parked vehicles so it still closes.
+2. **M8.6 — editor:** `Z` zone and `P` lot tools, zone connectors, the OD matrix table and lot
+   dialog (Thai/English), Undo; owner look (OWNER_SITTING C-row).
+Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
+time intervals and compositions' intervals are not used for departures/initial types.
 **Finding for the owner (B11):** small seeds (42–81) delay the first input's first arrival by 5–6
 mean headways (first xorshift32 draw ≈0.003). Nothing was changed in the engine.
 Owner questions: [OWNER_SITTING](plans/OWNER_SITTING.md) B7 (design §8; M10/M11 contracts wait on
-1–5), B10 (lot rules; M8.4b may build on D153/D156 as written, the dwell default waits) and B11.
+1–5), B10 (lot rules: dwell default, outbound timing, lot trips in movement tables) and B11.
 
 **Owner items** — gates, chat decisions and every desktop look — are in one sheet,
 [OWNER_SITTING](plans/OWNER_SITTING.md) (R4). After the sitting, items still open and older than

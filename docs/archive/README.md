@@ -5,6 +5,8 @@ entry behind what you are changing, not the directory.
 
 ## PROGRESS
 
+- [`PROGRESS-2026-10-09-w74-replay.md`](PROGRESS-2026-10-09-w74-replay.md) — W74 replayed on top of M5, D135–D139, schema 25, moved whole 2026-10-14
+
 - [`PROGRESS-2026-10-08-w74-clamps-timestep.md`](PROGRESS-2026-10-08-w74-clamps-timestep.md) — W74 clamp trace and timestep record (BA27), moved whole 2026-10-13
 
 - [`PROGRESS-2026-10-08-d138.md`](PROGRESS-2026-10-08-d138.md) — W74 composed into the tick, BA23–BA25/BA28 (D138), moved whole 2026-10-13
