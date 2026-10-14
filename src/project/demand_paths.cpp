@@ -118,8 +118,8 @@ Slices slices(const AuthoringDefinition& d) {
     result.times.push_back(result.points.back() + 1);
     return result;
 }
-std::size_t sliceOf(const Slices& s, double t) {
-    return static_cast<std::size_t>(std::upper_bound(s.points.begin(), s.points.end(), t) - s.points.begin());
+std::size_t sliceOf(const std::vector<double>& points, double t) {
+    return static_cast<std::size_t>(std::upper_bound(points.begin(), points.end(), t) - points.begin());
 }
 }
 std::vector<VolumeInterval> cutPeriods(const VehicleInput& input, const std::vector<double>& breakpoints) {
@@ -132,46 +132,78 @@ std::vector<VolumeInterval> cutPeriods(const VehicleInput& input, const std::vec
     }
     return pieces;
 }
+RoutelessWalks::RoutelessWalks(const Network& n, const AuthoringDefinition& d) : network(n), definition(d), table(n) {
+    auto cut = slices(d);
+    points_ = std::move(cut.points);
+    times_ = std::move(cut.times);
+}
+const std::vector<std::vector<PlacedDecision>>& RoutelessWalks::placed(const std::string& type) {
+    auto [it, fresh] = placed_.try_emplace(type);
+    if (fresh) for (const auto& t : times_) it->second.push_back(placedDecisions(network, table, definition, nullptr, t, type, &memo));
+    return it->second;
+}
+const RoutelessResult& RoutelessWalks::walk(const std::string& linkId, const std::string& type, std::size_t slice) {
+    auto [it, fresh] = walks_.try_emplace({linkId, type, slice});
+    if (fresh) it->second = routelessChains(network, table, linkId, placed(type)[slice]);
+    return it->second;
+}
 RoutelessIssues routelessIssues(const Network& network, const AuthoringDefinition& d) {
+    RoutelessWalks walks(network, d); // one walk over one unchanged Network (D140)
+    return routelessIssues(walks);
+}
+RoutelessIssues routelessIssues(RoutelessWalks& walks) {
+    const auto& network = walks.network;
+    const auto& d = walks.definition;
     RoutelessIssues result;
-    const auto cut = slices(d);
-    const ConnectorPathTable pathTable(network); // one walk over one unchanged Network (D140)
-    DestinationChainMemo memo;
     // Reachability does not depend on the flows, so the static pass reports it once.
-    std::vector<std::vector<PlacedDecision>> placed{placedDecisions(network, pathTable, d, &result.blocking, std::nullopt, {}, &memo)};
-    if (cut.times.front()) for (const auto& t : cut.times) placed.push_back(placedDecisions(network, pathTable, d, nullptr, t, {}, &memo));
+    const auto statics = placedDecisions(network, walks.table, d, &result.blocking, std::nullopt, {}, &walks.memo);
+    std::map<std::string, RoutelessResult> staticWalks;
+    // The walks in the order they are reported: the static pass, then every slice untyped when
+    // the flows change over time, then every slice per routed vehicle type.
+    const bool timed = walks.times().front().has_value();
+    std::vector<std::pair<std::string, std::size_t>> sliced;
+    if (timed) for (std::size_t s = 0; s < walks.times().size(); ++s) sliced.push_back({{}, s});
     std::set<std::string> typeIds;
     for(const auto& x:d.routingDecisions)for(const auto& rule:x.typeRules)typeIds.insert(rule.vehicleTypeId);
-    for(const auto& type:typeIds)for(const auto& t:cut.times)placed.push_back(placedDecisions(network, pathTable, d,nullptr,t,type,&memo));
-    std::map<std::string, bool> walked;
+    for(const auto& type:typeIds)for(std::size_t s=0;s<walks.times().size();++s)sliced.push_back({type,s});
     for (std::size_t i = 0; i < d.inputs.size(); ++i) {
         const auto link = routelessLink(d, d.inputs[i]);
         if (link.empty()) continue;
         const auto field = "inputs[" + std::to_string(i) + "]." + (d.inputs[i].linkId.empty() ? "routingDecisionId" : "linkId");
-        for (const auto& decisions : placed) {
-            const auto walk = routelessChains(network, pathTable, link, decisions);
+        const auto record = [&](const RoutelessResult& walk) {
             for (const auto& issue : walk.issues)
                 if (std::find(result.blocking.begin(), result.blocking.end(), ValidationIssue{issue.code, field}) == result.blocking.end())
                     result.blocking.push_back({issue.code, field});
             for (const auto& issue : walk.advisories)
                 if (std::find(result.advisory.begin(), result.advisory.end(), issue) == result.advisory.end())
                     result.advisory.push_back(issue);
+        };
+        // Without timed flows the static placement is the one slice's, so its walk is shared too.
+        if (!timed) record(walks.walk(link, {}, 0));
+        else {
+            auto [it, fresh] = staticWalks.try_emplace(link);
+            if (fresh) it->second = routelessChains(network, walks.table, link, statics);
+            record(it->second);
         }
+        for (const auto& [type, s] : sliced) record(walks.walk(link, type, s));
     }
     return result;
 }
 ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefinition& authored,
                                    ScenarioDefinition resolved) {
+    RoutelessWalks walks(network, authored); // one expansion over one unchanged Network (D140)
+    return expandRouteless(walks, std::move(resolved));
+}
+ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition resolved) {
+    const auto& network = shared.network;
+    const auto& authored = shared.definition;
     // M2.7b: every signal group becomes an ordinary core program here, the one compile step
     // every Run, diagnostic and validation already goes through, so core never sees a controller.
     for (auto& program : signalGroupPrograms(authored.signalControllers)) resolved.signalPrograms.push_back(std::move(program));
     if (std::none_of(resolved.inputs.begin(), resolved.inputs.end(), [](const auto& i) { return !i.linkId.empty(); }))
         return resolved; // nothing to do, and nothing to compute: every existing project
-    const auto cut = slices(authored);
     const bool typed=hasTypeRouting(authored);
     const auto table = runtimeSections(network);
-    const ConnectorPathTable pathTable(network); // one expansion over one unchanged Network (D140)
-    DestinationChainMemo memo;
     // Per Link: the union of every slice's paths, in order of first appearance, so one runtime
     // route serves a path in every slice; and each slice's share of each path.
     // M3.2.8b: `stub` and `family` per path, so an entry decision's destination gets its lateral
@@ -181,14 +213,11 @@ ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefini
                    std::vector<std::vector<double>> share; std::vector<bool> stub; std::vector<std::vector<FamilyTag>> families;
                    bool byDestination{}; bool failed{}; };
     std::map<std::pair<std::string,std::string>, Walks> walks;
-    std::map<std::string,std::vector<std::vector<PlacedDecision>>> placements;
     std::vector<VehicleInput> inputs;
     for (const auto& input : resolved.inputs) {
         if (input.linkId.empty()) { inputs.push_back(input); continue; }
         const auto type=typed?input.vehicleTypeId:std::string{};
-        auto [context, newType]=placements.try_emplace(type);
-        if(newType)for(const auto& t:cut.times)context->second.push_back(placedDecisions(network, pathTable, authored,nullptr,t,type,&memo));
-        const auto& placed=context->second;
+        const auto& placed=shared.placed(type);
         const auto routeId=[&](std::size_t k,std::size_t n){
             const auto base=routelessRouteId(input.linkId,k,n);
             return typed?base+"/type-"+std::to_string(type.size())+":"+type:base;
@@ -197,7 +226,7 @@ ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefini
         auto& w = it->second;
         if (fresh) {
             for (std::size_t s = 0; s < placed.size(); ++s) {
-                const auto walk = routelessChains(network, pathTable, input.linkId, placed[s]);
+                const auto& walk = shared.walk(input.linkId, type, s);
                 if (!walk.issues.empty()) { w.failed = true; break; }
                 w.byDestination = w.byDestination || walk.byDestination;
                 for (const auto& c : walk.chains) {
@@ -250,7 +279,7 @@ ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefini
         std::vector<std::size_t> everyLane(lanes);
         for (std::size_t k = 0; k < lanes; ++k) everyLane[k] = k;
         const auto split = laneSplit(everyLane, lanes, input.laneShares);
-        const auto pieces = placed.size() > 1 ? cutPeriods(input, cut.points) : std::vector<VolumeInterval>{};
+        const auto pieces = placed.size() > 1 ? cutPeriods(input, shared.points()) : std::vector<VolumeInterval>{};
         for (std::size_t k = 0; k < w.paths.size(); ++k) {
             const bool positionedEntry=std::any_of(authored.routingDecisions.begin(),authored.routingDecisions.end(),[&](const auto& x){return x.linkId==input.linkId && x.position;});
             const double lane = w.byDestination && !positionedEntry ? 1.0
@@ -267,7 +296,7 @@ ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefini
             } else { // M2.1.2: each piece of the input at its slice's share of this path
                 part.intervals.clear();
                 for (const auto& piece : pieces) {
-                    const double fraction = lane * w.share[k][sliceOf(cut, (piece.startTime + piece.endTime) / 2)]*(positionedEntry?static_cast<double>(lanes):1.);
+                    const double fraction = lane * w.share[k][sliceOf(shared.points(), (piece.startTime + piece.endTime) / 2)]*(positionedEntry?static_cast<double>(lanes):1.);
                     if (fraction > 0) part.intervals.push_back({piece.startTime, piece.endTime, piece.vehiclesPerHour * fraction});
                 }
                 if (part.intervals.empty()) continue;
