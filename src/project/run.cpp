@@ -53,13 +53,15 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // An input left out for an unknown or broken composition must stop Run, not vanish from it.
     if(auto issues=compositionIssues(authored,data,manifest);!issues.empty())throw ValidationError(std::move(issues));
     // Resolve once: every part of this snapshot uses the same catalog values.
-    if(auto issues=routelessIssues(d.network,authored).blocking;!issues.empty())throw ValidationError(std::move(issues));
-    auto definition=expandRouteless(d.network,authored,resolveCatalogs(authored,data,manifest));
+    // The check and the expansion walk the same routeless paths; walk them once.
+    RoutelessWalks walks(d.network,authored);
+    if(auto issues=routelessIssues(walks).blocking;!issues.empty())throw ValidationError(std::move(issues));
+    auto definition=expandRouteless(walks,resolveCatalogs(authored,data,manifest));
     // M3.3.2b (D127): road assignments become per-segment selections; the library is authoring
     // data, sliced away by resolveCatalogs, so it is read from the document itself.
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);
     if(manifest)manifest->validate();
-    auto scenario=compileScenario(d.network,definition);
+    auto scenario=compileScenario(d.network,definition,walks.builtSections());
     // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.
     if(!d.zones.parkingLots.empty()) {
         compileParkingLots(d,authored,scenario,data);

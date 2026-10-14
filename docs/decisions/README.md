@@ -13,7 +13,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Signals, conflicts, Stop/Yield and queues | D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
 | Following, commitment and lane changes | D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
 | UI, gestures, display and results | D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
-| Performance, checks and documentation | D164, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
+| Performance, checks and documentation | D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
 
 ## Reading a historical choice
 
@@ -126,5 +126,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D161](RECORD.md#d161) — M8.6 split; M8.6a Zone tool (Z), Zones tab, zone connectors from the canvas selection; no lot tool.
 
 [D162](RECORD.md#d162) — M8.6b OD matrices tab and grid dialog, lot dialog from the zone row, Results lot table, parked in the run status.
+
+[D163](RECORD.md#d163) — one compile shares its routeless walks (`RoutelessWalks`) and builds `runtimeSections` once; nothing kept between calls.
 
 [D164](RECORD.md#d164) — per-tick work reuses head colours, queue lines walk only crossing routes, arrivals check due time first.

@@ -320,11 +320,12 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     if (auto signals = signalControlIssues(d.network, *d.definition); !signals.empty()) throw ValidationError(std::move(signals));
     // Routeless inputs (M2.1.1) are walked here too; one whose walk fails is left out and named
     // by routelessIssues on Run, so an edit to the network is never refused because of it.
-    auto checked = expandRouteless(d.network, *d.definition, withRoutingDecisions(*d.definition));
+    RoutelessWalks walks(d.network, *d.definition);
+    auto checked = expandRouteless(walks, withRoutingDecisions(*d.definition));
     for (auto& input : checked.inputs)
         if (!input.compositionId.empty() && !checked.vehicleTypes.empty())
             input.vehicleTypeId = checked.vehicleTypes.front().id;
-    auto issues = validateScenario(buildScenario(d.network,checked));
+    auto issues = validateScenario(buildScenario(d.network,walks.sections(),checked));
     // Authoring supports topology beyond M0. Catalog references are checked on Run.
     std::erase_if(issues,[&](const auto& i) {
         return i.code=="EMPTY_NETWORK" || i.code.rfind("UNSUPPORTED_",0)==0 ||

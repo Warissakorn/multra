@@ -16,6 +16,29 @@ instructions. Three commits brought it to 3,364.2 M (−12.3 %): signal events r
 check the due time first (−64 M). Every shipped project's CLI output was byte-identical, one seed
 and seeds 42–45; headless 90/90. Not done: `closestVehicle`, `occupiedSpans`, the event string copy.
 
+## 2026-10-14 — Compile shares its routeless walks and sections (D163)
+
+The owner picked NEXT's measured compile candidate. A scratch harness timed `compileDocument`
+on the study template (Linux, GCC 13.3, RelWithDebInfo, headless), and callgrind counted where its
+45.9 M instructions went. `routelessChains` ran 76 times, but only 28 of those walks differed.
+`placedDecisions` ran 19 times with 7 distinct, and `runtimeSections` ran 7 times on one Network.
+
+Two commits:
+- **`RoutelessWalks`** carries the placed decisions and walks from `routelessIssues` to Run's
+  `expandRouteless` (45.9 → 39.4 M).
+- **One `runtimeSections` table** is shared by the expansion, `buildScenario` and
+  `compileScenario`'s checks (→ 30.2 M; wall 6.1–6.7 → 4.0–4.1 ms). `compileScenario` takes the
+  table only when the caller already built it, so `assertValidNetwork` still runs first.
+
+Validation fell ≈11 % (15.7 → 13.9 M per call). Its wall time stayed inside the clock's
+spread. The CLI output of all four shipped projects was byte-identical before and after each
+commit, both for one seed and for seeds 42–45. The comparison ignored only the `buildCommit`
+stamp. Headless 90/90 in RelWithDebInfo and Debug.
+
+Not done: sharing `validateDocument`'s own expansion with Run's. Their inputs differ
+(`withRoutingDecisions` against resolved catalogs), and proving them equal costs more than the
+≈24 walks it saves. The MSVC figure is the owner's to check.
+
 ## 2026-10-14 — M8.6b OD table, lot dialog, lot Results (D162)
 
 M8 is now code complete. A new OD matrices tab (`src/shell/editor_od.cpp`) has a grid dialog
@@ -446,35 +469,6 @@ planned rows, OWNER_SITTING B7 for the design's open parameters. Parking and reg
 left *Later*. Reasoning in [D145](decisions/RECORD.md#d145). The D124/D125 entries moved whole
 to `archive/`. Checks: `trafficsim-check-docs` and `trafficsim-check-file-sizes` built directly
 with GCC 13.3 (the headless preset lacks nlohmann/json on this machine); no engine build claimed.
-
----
-
-## 2026-10-09 — Branch audit; Results discharge and clamp pages recovered (D144)
-
-Every origin branch ahead of `main` was checked. `main` was re-rooted on 2026-09-28 (four root
-snapshots), so the 38 older branches share no history with it and git's "ahead" counts mean
-nothing; by content, every decision they name is in `main`, and the only files they hold that
-`main` lacks are the retired M0 window (D24) and an unreferenced `data/fonts/NotoSansThai.ttf`.
-PR #128 (`claude/dazzling-gates-df64jc`, closed unmerged) held the one piece of lost work:
-Results inner pages for queue discharge and safety clamps (`9b81b17`, `cbfff89`). Its W74 and
-M5 commits were already replayed or superseded. The two commits were cherry-picked onto the D142
-branch, merged by hand with M5.6 (the batch view sits in the Movements page; `startBatch` selects
-it), renumbered D135 → D144 (and a stray D134 → D139 in DRIVING_BEHAVIOUR), and `section-ui`
-now finds the Results page as the other suites do. `check`: 111/111 (Linux, Qt 6.4.2 offscreen).
-
----
-
-## 2026-10-09 — Owner's answers to the roadmap review (D143)
-
-The owner accepted every recommendation, R1–R8. Documents only, no code: D143; ROADMAP closes M2
-(gate D53, sub-milestones carried), relabels M1.26, narrows M1.22 to what `src/` lacks (checked:
-no spline/arc, extend/merge, layer locks or per-Link driving side; reversal refuses referenced
-Links), defines M1.23's CSV, moves M5.1's transit/crosswalks and scenario management beyond M5.8
-to *Later*, and adds M3.4 (the M3.2.8c remainder), M4.2 (amber) and M6.0 (benchmark sheet, which
-now owns calibrated gap acceptance). M5_PLAN gains M5.8 and M5.9 and the order after M5.7.
-PROBLEM gains §8 (motorcycles). `plans/OWNER_SITTING.md` is now the single list of owner items
-(gates, chat decisions, 22 desktop looks, each dated with a yes/no failure question); NEXT keeps
-only the session queue and points there. `check`: docs and file sizes clean.
 
 ---
 
