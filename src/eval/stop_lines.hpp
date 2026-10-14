@@ -40,7 +40,7 @@ private:
     const Scenario* bound_{};
     std::vector<Head> heads_;
     std::map<std::pair<std::uint64_t, std::size_t>, Tally> open_; // (vehicle, head) while upstream
-    struct Position { std::uint32_t route{}; double distance{}; };
+    struct Position { std::uint32_t route{}; double distance{}; std::uint32_t type{}; };
     std::map<std::uint64_t, Position> previous_;
 };
 }

@@ -5,3 +5,5 @@ C++ accumulators fed by engine states and events. `summary` is the completed-tri
 Section observers bind provisional starts independently and measure actual longitudinal metres
 through proven event/span remaps. Sections and stop lines reconstruct source/terminal trips absent
 from fleet snapshots. Arrival-phase widths are finite/positive; derived bins are bounded to 1,000,000.
+Stop-line passages also map the prior front through unique engine spans before testing motion;
+a lateral coordinate jump cannot count as a longitudinal crossing.

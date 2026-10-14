@@ -1,6 +1,7 @@
 #include "test.hpp"
 #include "../src/eval/sections.hpp"
 #include "../src/eval/stop_lines.hpp"
+#include <algorithm>
 using namespace trafficsim;
 namespace {
 void position(SimState& state, double time, std::uint32_t route, double distance) {
@@ -84,4 +85,24 @@ TEST(movement, source_line_is_counted_once_even_while_the_vehicle_waits_at_zero)
     CHECK(stops.report().rows[0].crossed == 1);
     position(state, 2, 0, 0); stops.observe(state);
     CHECK(stops.report().rows[0].crossed == 1);
+}
+TEST(movement, lane_coordinate_remap_is_not_a_stop_line_crossing) {
+    auto s = test::straight(); s.inputs.clear();
+    s.segments = {{"a", 100, {}}, {"b", 200, {}}}; s.routes = {{"ra", {"a"}}, {"rb", {"b"}}};
+    s.laneChanges = {{"ra", "rb", 0, 100, 0, 200}};
+    s.signalPrograms = {{"p", 0, {{10, SignalColor::green}}}};
+    s.signalHeads = {{"h50", "b", 50, "p"}, {"h85", "b", 85, "p"}, {"h150", "b", 150, "p"}};
+    auto state = createSimulation(s, 42); StopLineAccumulator stops(EvaluationSpec{});
+    position(state, 0, 0, 40); stops.observe(state);
+    CHECK(!state.index->discretionaryOfRoute[0].empty());
+    CHECK(mappedOnto(state.index->discretionaryOfRoute[0][0], 40) == 80); // forcing: remap is already past h50
+    position(state, 1, 1, 90); state.events = {LaneChangeEvent{0, 1, "ra", "rb"}}; stops.observe(state);
+    const auto count = [&](const char* id) {
+        const auto rows = stops.report().rows;
+        const auto it = std::find_if(rows.begin(), rows.end(), [&](const auto& row) { return row.headId == id; });
+        CHECK(it != rows.end()); return it->crossed;
+    };
+    CHECK(count("h50") == 0); CHECK(count("h85") == 1); CHECK(count("h150") == 0);
+    state.time = 2; state.vehicles.clear(); state.events = {ArrivedEvent{2, 1, "rb", 2, 0, 10}}; stops.observe(state);
+    CHECK(count("h50") == 0); CHECK(count("h85") == 1); CHECK(count("h150") == 1);
 }

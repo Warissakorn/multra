@@ -69,6 +69,28 @@ void StopLineAccumulator::observe(const SimState& state) {
         if (p != before.end() && p->second.distance == 0 && r->time == state.time - dt &&
             p->second.route == slot(r->fromRouteId)) p->second.route = slot(r->toRouteId);
     }
+    // A lateral coordinate jump is not longitudinal travel past the target lane's head.
+    for (const auto& event : state.events) if (const auto* c = std::get_if<LaneChangeEvent>(&event)) {
+        const auto p = before.find(c->vehicleId);
+        if (p == before.end() || p->second.route != slot(c->fromRouteId)) continue;
+        const auto target = slot(c->toRouteId);
+        const double rear = p->second.distance - state.scenario->vehicleTypes[p->second.type].length;
+        std::optional<double> mapped;
+        const auto consider = [&](const auto& spans) {
+            for (const auto& span : spans) if (span.target == target && rear >= span.fromStart - 1e-9 &&
+                                             p->second.distance <= span.fromEnd + 1e-9) {
+                const double at = mappedOnto(span, p->second.distance);
+                if (mapped && std::abs(*mapped - at) > 1e-9) return false;
+                mapped = at;
+            }
+            return true;
+        };
+        if (!consider(state.index->laneChangesOfRoute[p->second.route]) ||
+            !consider(state.index->discretionaryOfRoute[p->second.route]) || !mapped) {
+            before.erase(p); continue; // ambiguous motion cannot prove a passage
+        }
+        p->second.route = target; p->second.distance = *mapped;
+    }
     const auto crossed = [&](std::uint64_t id, std::size_t h, std::uint32_t route, double distance) {
         const auto p = before.find(id);
         const double at = heads_[h].atRoute[route];
@@ -113,7 +135,7 @@ void StopLineAccumulator::observe(const SimState& state) {
     }
     open_ = std::move(now);
     previous_.clear();
-    for (const auto& v : state.vehicles) previous_.emplace(v.id, Position{v.routeIndex, v.distance});
+    for (const auto& v : state.vehicles) previous_.emplace(v.id, Position{v.routeIndex, v.distance, v.typeIndex});
 }
 StopLineReport StopLineAccumulator::report() const {
     StopLineReport r;
