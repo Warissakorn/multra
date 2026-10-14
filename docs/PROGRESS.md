@@ -8,6 +8,14 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Engine per-tick work (D164)
+
+The owner chose the engine. A callgrind run of M2.6 (GCC 13.3, RelWithDebInfo) counted 3,833.9 M
+instructions. Three commits brought it to 3,364.2 M (−12.3 %): signal events reuse `headColors`
+(−94 M), queue lines walk only vehicles on crossing routes (`observe` 713 → 404 M), and arrivals
+check the due time first (−64 M). Every shipped project's CLI output was byte-identical, one seed
+and seeds 42–45; headless 90/90. Not done: `closestVehicle`, `occupiedSpans`, the event string copy.
+
 ## 2026-10-14 — M8.6b OD table, lot dialog, lot Results (D162)
 
 M8 is now code complete. A new OD matrices tab (`src/shell/editor_od.cpp`) has a grid dialog
