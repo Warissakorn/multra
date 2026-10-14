@@ -57,6 +57,11 @@ public:
     void setRunFrame(const SimState&);
     void clearRunFrame();
     std::size_t renderedVehicles() const { return runFrame_.vehicles.size(); }
+    // D165 behaviour lab: keep this vehicle at the view centre and outline it; nullopt follows none.
+    void setRunFollow(std::optional<std::uint64_t> vehicleId);
+    std::optional<std::uint64_t> runFollow() const { return runFollow_; }
+    // A left click on a run vehicle, when set; the editor leaves it unset, so its clicks are unchanged.
+    std::function<void(std::uint64_t)> runVehicleClicked;
     std::function<void()> stopRequested;
     std::function<void()> deleteRequested;
     void redraw();
@@ -290,6 +295,7 @@ private:
     std::map<std::string,RoadCrossbar> runHeadBars_;
     std::map<std::uint64_t,LaneChangePath> runLaneChangePaths_;
     SimState runFrame_;
+    std::optional<std::uint64_t> runFollow_;
     std::map<std::string,std::vector<Point>> runGeometry_;
     std::map<std::string,ConnectorEquation> runEquations_;
     std::map<std::pair<std::uint32_t,std::uint32_t>,RearAxlePath> runAxlePaths_;

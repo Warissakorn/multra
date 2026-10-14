@@ -18,6 +18,8 @@ inline std::uint64_t splitmix64Mix(std::uint64_t z) {
     return z ^ (z >> 31);
 }
 double random(std::uint32_t& state);
+// createSimulation's canonical order (sorted by id), shared with retuneSimulation (D165).
+Scenario canonical(Scenario scenario);
 void initializeInputs(SimState& state);
 void generateArrivals(SimState& state);
 PendingVehicle samplePending(SimState&, std::uint32_t input, std::uint32_t route, std::uint32_t type, double scheduledTime);

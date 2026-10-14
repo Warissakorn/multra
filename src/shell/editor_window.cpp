@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "behaviour_lab_window.hpp"
 #include "path.hpp"
 #include "editor_style.hpp"
 #include "../project/evaluation_period.hpp"
@@ -169,7 +170,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         execute("editorMoveHead",[&](auto& d){moveSignalHead(d,id,station);});
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
-    buildDemandTables(); buildRouting(); buildRunControls(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildZones(); buildOd(); buildRecovery(); buildPalette();
+    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildZones(); buildOd(); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
@@ -214,6 +215,7 @@ void EditorWindow::translate() {
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
     translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateZones(); translateOd(); translatePalette(); refreshToolHint();
+    if (lab_) lab_->retranslate();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
     language_->setAccessibleName(text("language"));

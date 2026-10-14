@@ -49,7 +49,7 @@ void EditorWindow::buildWorkspace() {
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});
     menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","","editorNetworkObjects","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorToggleMap","editorRemoveMap"});
-    menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
+    menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorBehaviourLab","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
     menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts"});
     // Menu alternatives keep widget controls reachable even at extreme toolbar widths.
     auto* languages=new QActionGroup(this);

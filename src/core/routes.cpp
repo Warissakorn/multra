@@ -56,7 +56,22 @@ std::vector<RoutePart> routeParts(const Scenario& scenario, const Route& route) 
 ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
     ScenarioIndex index;
     index.parts.reserve(scenario.routes.size());
-    for (const auto& route : scenario.routes) index.parts.push_back(routeParts(scenario, route));
+    for (const auto& route : scenario.routes) {
+        auto parts = routeParts(scenario, route);
+        // D165: a circuit's lap three times over, so every look-ahead sees across the seam and a
+        // vehicle kept in [L, 2L) has its rear on the copy behind (BEHAVIOUR_LAB.md §1.1).
+        if (route.circuit && !parts.empty()) {
+            const auto lap = parts.size();
+            const double length = parts.back().start + parts.back().length;
+            for (int copy = 1; copy < 3; ++copy)
+                for (std::size_t i = 0; i < lap; ++i) {
+                    auto part = parts[i];
+                    part.start += copy * length;
+                    parts.push_back(std::move(part));
+                }
+        }
+        index.parts.push_back(std::move(parts));
+    }
     index.programOfHead.reserve(scenario.signalHeads.size());
     for (const auto& head : scenario.signalHeads) {
         const auto& program = detail::byId(scenario.signalPrograms, head.programId);
@@ -71,6 +86,10 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
             const auto part = std::find_if(parts.begin(), parts.end(),
                 [&](const auto& item) { return item.segmentId == scenario.signalHeads[h].segmentId; });
             if (part != parts.end()) index.routeHeads[r].push_back({h, part->start});
+            // D165: a circuit meets the head once per copy of its lap.
+            if (part != parts.end() && scenario.routes[r].circuit)
+                for (auto later = std::next(part); later != parts.end(); ++later)
+                    if (later->segmentId == part->segmentId) index.routeHeads[r].push_back({h, later->start});
         }
     // Rule incidence, resolved once per scenario for the same reason heads are: the per-vehicle
     // loop must not search by id once per tick.

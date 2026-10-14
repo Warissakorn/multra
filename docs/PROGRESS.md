@@ -8,6 +8,30 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Behaviour Lab: a window for tuning driving behaviour (D165)
+
+The owner asked for a tool to develop driving behaviour: a view locked on one vehicle driving
+endlessly round a purpose-built network, and a panel for the vehicle's, the road's and the other
+traffic's parameters. Answers: opened from the editor's menu; changes apply live, keeping the
+vehicles; prototype model first. Contract and rows BL1–BL12 in
+[BEHAVIOUR_LAB](reference/BEHAVIOUR_LAB.md), written before the code.
+- **Core** (three opt-in seams, absent = byte-identical): `Route::circuit` — the index holds the lap
+  three times and a vehicle past 2L drops back L, so every look-ahead sees across the seam with no
+  new code path; `retuneSimulation` swaps a same-shape scenario under the running vehicles;
+  `placeVehicle` fills the ring at t = 0 with an exact count, drawing as an arrival does.
+- **`src/lab/`** (Qt-free): a stadium ring built with the editor's commands, compiled through
+  `buildScenario` directly — `compileDocument` refuses an input on a closed ring
+  (`UNSUPPORTED_INTERNAL_INPUT`), and the lab needs none. `LabRun::apply` retunes when only values
+  changed and restarts otherwise; telemetry reads the engine's spans as `closestVehicle` does.
+- **Window**: the Run canvas follows a vehicle (`setRunFollow`, click to switch), a three-tab panel,
+  a 60 s speed/gap chart, the unvalidated marker, and *Apply to project* as one History edit.
+- The first BL10 draft retuned `followingTime` and saw no change: the prototype's steady gap is
+  `standstill + (bx_add + bx_mult z) √v`; `followingTime` only sets how fast it is reached. The row
+  now retunes `additiveSafetyDistance`.
+Linux only (GCC 13.3, Qt 6.4.2 offscreen): desktop build, `circuit` 8/8, `lab` 5/5,
+`behaviour-lab-ui`, CLI 42 unchanged, `check` green; Windows waits for `native.yml`. The D145 entry
+moved whole to `archive/`.
+
 ## 2026-10-14 — Engine per-tick work (D164)
 
 The owner chose the engine. A callgrind run of M2.6 (GCC 13.3, RelWithDebInfo) counted 3,833.9 M
@@ -454,21 +478,6 @@ stays schema 17 (owner's choice, sitting B8). Nine CLI outputs of the committed 
 byte-identical before and after. Future-schema tests now probe 28. Linux only: desktop preset
 (Qt 6.4 offscreen, GCC 13.3), ctest and `check` green; Windows is the PR's native CI. The D126/D127
 entries moved whole to `archive/`.
-
----
-
-## 2026-10-09 — Three modelling levels designed and booked (D145)
-
-The owner asked for more capability chosen by what studies need — parking lots, dynamic
-assignment, then Micro, Meso and Macro levels, Macro as a full four-step model, after the D143
-queue. Docs only, no code: [design](plans/MULTI_LEVEL_MODELLING.md) (study → output matrix, one
-authoring network compiled to three views, shared Zone/OD demand, parking lots as zones with
-capacity, between-run dynamic assignment, pure `src/meso/` and `src/macro/` engines, subarea
-cut), ROADMAP M8–M12, PROBLEM §1–§6 amended (the assignment non-goal replaced), ARCHITECTURE
-planned rows, OWNER_SITTING B7 for the design's open parameters. Parking and regional modelling
-left *Later*. Reasoning in [D145](decisions/RECORD.md#d145). The D124/D125 entries moved whole
-to `archive/`. Checks: `trafficsim-check-docs` and `trafficsim-check-file-sizes` built directly
-with GCC 13.3 (the headless preset lacks nlohmann/json on this machine); no engine build claimed.
 
 ---
 

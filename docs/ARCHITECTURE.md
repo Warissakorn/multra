@@ -47,9 +47,10 @@ unchanged. See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md).
 | `trafficsim_eval` | `src/eval/` | Core events and states | Completed-trip diagnostic; per-movement delay/travel time and approach queues for one run (M2.5); M3.2.8c diagnostics (lane changes, segment times, stop-line discharge, arrival phases, dead-end waits); queue discharge/startup observer with type selection, shared-prefix routing, proven lateral/source passage reconstruction and rank-scoped remap invalidation; same-tick source-sink types come from core's pure `upcomingArrivals` replay |
 | `trafficsim_runner` | `src/runner/` | Core and eval only | Multi-seed batches and their seed-ordered aggregate (M5.2, [BATCH](reference/BATCH.md)); scenario comparison, alternative minus base with a Welch 95 % CI (`compare.*`, M5.8a, BATCH §7) |
 | `trafficsim_project` | `src/project/` | Model, evaluation types, runner, nlohmann/json | M0 loading/output; the schema-29 authoring codec (reads schemas 1–29); evaluation spec and report output, single-run, batch and comparison (`batch_output.*`, `comparison_output.*`, the D152 seed scheduler `parallel_seeds.*`, sharing `csv_format.hpp` and the LOS pack/formatting in `los_output.*`); revision run snapshots; optional captured-byte input manifests/SHA-256 |
+| `trafficsim_lab` | `src/lab/` | Commands, project, model, core; no Qt, editor or shell (check_architecture) | Behaviour Lab (D165, [BEHAVIOUR_LAB](reference/BEHAVIOUR_LAB.md)): `LabSettings`, the stadium ring built with the editor's commands, `LabRun` (circuit marking, vehicle placement, live retune or restart) and focus telemetry; drawn by the shell's `BehaviourLabWindow` |
 | `trafficsim_commands` | `src/commands/` | Project document | Atomic named edits, Undo/Redo, network, demand, control and appearance operations |
 | `trafficsim_geo` | `src/geo/` | Project map settings, PROJ; desktop only, no Qt | Fixed WGS84 UTM reference and XYZ tile math ([MAP_BACKGROUND](reference/MAP_BACKGROUND.md)) |
-| `trafficsim_shell` | `src/shell/`, `src/editor/` | Commands, Geo, Qt Widgets/Network | The native editor — the application's only window since M1.24 |
+| `trafficsim_shell` | `src/shell/`, `src/editor/` | Commands, Geo, Qt Widgets/Network | The native editor — the application's only editing window since M1.24; the Behaviour Lab (D165) is a second, non-modal tool window that never edits the document except through Apply |
 | `trafficsim-cli` | `tools/run_simulation.cpp` | Project/core/eval | Headless runner: single seed, JSONL export, `--project` movement report and CSV, `--seeds` batches with 95 % CI and `buildCommit`, `--compare` scenario differences (M5.8a), and the M3.2.8c diagnostic flags (`--lane-changes`, `--segment-times`, `--stop-lines`, `--arrival-phases`, `--wait-causes`), plus `--discharge` controls and captured input hashes |
 | `trafficsim-desktop` | `src/shell/main.cpp` | Shell | Native desktop entry point; opens the editor |
 
@@ -85,6 +86,10 @@ SimState stepSimulation(SimState&&);                 // D91: takes the previous 
 SimState stepSimulation(SimState&&, double dt);
 SimState runSimulation(const Scenario&, std::uint32_t seed,
                        const EventSink& sink = {}, bool includeMovementEvents = true);
+// D165 (BEHAVIOUR_LAB.md): opt-in; a scenario that never calls them runs exactly as before.
+// Route::circuit marks a route that closes on itself; its vehicles never arrive.
+SimState retuneSimulation(SimState&&, const Scenario&, const RetuneOptions& = {}); // same shape only
+SimState placeVehicle(SimState&&, const VehiclePlacement&);
 
 // model/network/network.hpp
 Scenario compileScenario(const Network&, const ScenarioDefinition&);
@@ -153,7 +158,7 @@ plain-text tooltips. `ReflowLabel` supplies stable form hints while retaining he
 `EditorCanvas` renders a const document and sends gesture callbacks. Drag previews are
 transient and one release submits one command. `EditorWindow` composes native actions,
 inspector controls, translation, save prompts and QSaveFile atomic replacement. It is
-the only window, and runs its own compiled revision. Qt stays out of
+the only editing window, and runs its own compiled revision. Qt stays out of
 project/model/core. Embedded background bytes are immutable and shared across history.
 `connectorCurve` samples the existing cubic only for the persisted drawing and its
 editable interior handles. `connectorPaths` derives driving lane centres from the resulting

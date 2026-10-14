@@ -57,6 +57,7 @@ std::optional<Leader> closestVehicle(const Vehicle& vehicle, const std::vector<R
     return nearest;
 }
 }
+Scenario detail::canonical(Scenario scenario) { return canonicalScenario(std::move(scenario)); }
 std::uint64_t totalTicks(const Scenario& scenario) {
     return static_cast<std::uint64_t>(std::round(scenario.duration / scenario.timeStep));
 }
@@ -407,6 +408,14 @@ SimState stepSimulation(SimState&& state, double dt) {
             applyRouteDecision(scenario, moved, *decision, time, next.randomState, events);
         const auto& parts=index.parts[moved.routeIndex];
         const double routeLength = parts.back().start + parts.back().length;
+        // D165: a circuit's index holds three laps; past the second the vehicle drops back one.
+        if (scenario.routes[moved.routeIndex].circuit) {
+            if (moved.distance >= 2 * routeLength / 3) moved.distance -= routeLength / 3;
+            const auto location = locateOnParts(parts, moved);
+            next.vehicles.push_back(std::move(moved));
+            events.emplace_back(MovedEvent{time, vehicle.id, location.segmentId, location.position, move.speed, move.acceleration});
+            continue;
+        }
         // A stub's dead end may be its last metre; standing there is waiting, never arriving.
         const bool stub = index.laneChanges && std::isfinite(index.deadEndOfRoute[moved.routeIndex]);
         // M8.4a: a gate route never ends in the ordinary way. Driving in admits while space remains;
