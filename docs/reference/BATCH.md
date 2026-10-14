@@ -275,3 +275,6 @@ the **base** and a chosen file as the **alternative** — the roles of `--projec
 Cancel/Restart owns each retiring worker until its completion callback; starting a new batch or
 comparison does not join the cancelled seed on the UI thread. Generation checks discard stale
 progress/results. Window teardown cancels all workers and joins them before its members die.
+
+`batch-run-ui` forces a 1e8-second seed that remains active before Cancel, reopens the normal
+project and restarts within a generous 2 s UI budget. Only the replacement result may install.

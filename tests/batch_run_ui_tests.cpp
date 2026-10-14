@@ -156,6 +156,24 @@ int main(int argc, char** argv) {
         action(w, "editorStep");
         require(!w.batchResult(), "A single run left the batch standing");
 
+        // Force a seed that cannot finish during this test. Cancel it, reopen the ordinary
+        // project and restart. A seed-boundary-only cancel plus startWorker::join would block
+        // here; a heartbeat after an ordinary short run alone would not detect that regression.
+        auto slow=document; slow.definition->duration=1e8;
+        const auto longProject=dir.filePath("long-seed.traffic.json");
+        { std::ofstream out(longProject.toStdString()); out << documentJson(slow).dump(2); }
+        w.openFile(longProject); seeds->setText("42"); action(w,"editorRunSeeds");
+        QTest::qWait(50);
+        require(w.history().document().definition->duration==1e8 && w.batchRunning() && !w.batchResult(),
+                "Forcing failed: the long seed did not remain active");
+        QElapsedTimer restart; restart.start();
+        action(w,"editorCancelSeeds"); w.openFile(project); seeds->setText("44");
+        action(w,"editorRunSeeds");
+        require(restart.elapsed()<2000,"Restart waited for the cancelled long seed on the UI thread");
+        waitForBatch(w);
+        require(w.batchResult() && w.batchResult()->report.seeds==std::vector<std::uint32_t>{44},
+                "Long-seed cancellation installed a partial or stale result");
+
         // Closing the window mid-batch must stop and join the worker, not crash.
         seeds->setText("42-51"); action(w, "editorRunSeeds");
         require(w.batchRunning(), "The closing batch did not start");

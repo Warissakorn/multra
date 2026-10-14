@@ -8,6 +8,15 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Long-seed restart regression (D167)
+
+The first heartbeat assertion also passed after a short synchronous wait. The UI fixture now
+forces a 1e8-second seed still active before cancellation, reopens the ordinary project and
+requires restart within 2 s, then verifies only seed 44 installs. Native CI verifies this path.
+Default CLI 42 remains byte-identical; four-leg seed 42 differs only in build commit metadata.
+A focused observer harness passed UBSan for terminal trips and phase-bin boundaries. ASan/LSan
+could not complete here because the sandbox exposes no process/task files under /proc.
+
 ## 2026-10-14 — Batch cancellation lifecycle (D167)
 
 Runner cancellation polls between ticks and discards partial batches. UI owns retiring workers
