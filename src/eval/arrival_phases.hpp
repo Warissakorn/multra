@@ -25,7 +25,7 @@ struct ArrivalPhaseReport { double cycle{}, binWidth{}; std::vector<ArrivalPhase
 
 class ArrivalPhaseAccumulator {
 public:
-    // Width must be finite and positive; binding refuses more than 1,000,000 bins.
+    // Width must be finite and positive; binding refuses histograms above 16 MiB across all rows.
     explicit ArrivalPhaseAccumulator(const EvaluationSpec& spec, double binWidth = 10);
     // Once per state: after createSimulation and after every stepSimulation.
     void observe(const SimState& state);

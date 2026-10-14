@@ -130,22 +130,15 @@ void EditorWindow::startBatch() {
         return [this,result]{ batch_=std::move(*result); };
     });
 }
-void EditorWindow::reapBatchWorkers() {
-    for (auto& worker : retiredBatchWorkers_)
-        if (worker.done->load() && worker.thread.joinable()) worker.thread.join();
-    std::erase_if(retiredBatchWorkers_, [](const auto& worker) { return !worker.thread.joinable(); });
-}
 void EditorWindow::startWorker(std::size_t total, bool comparing, BatchJob job) {
-    reapBatchWorkers();
-    if(batchThread_.joinable()) {
-        *batchCancel_ = true;
-        retiredBatchWorkers_.push_back({std::move(batchThread_),batchWorkerDone_,batchCancel_});
-    }
+    // A replaced worker is told to stop here and retires through its own finishBatch;
+    // starting a replacement never joins a seed on the event loop.
+    if(batchCancel_) *batchCancel_=true;
     auto cancel=std::make_shared<std::atomic<bool>>(false); batchCancel_=cancel;
-    auto done=std::make_shared<std::atomic<bool>>(false); batchWorkerDone_=done;
     const auto generation=++batchGeneration_;
     batchDone_=0; batchTotal_=total; batchComparing_=comparing;
-    batchThread_=std::thread([this,cancel,done,generation,job=std::move(job)]() mutable {
+    auto& worker=batchWorkers_[generation]; worker.cancel=cancel;
+    worker.thread=std::thread([this,cancel,generation,job=std::move(job)]() mutable {
         std::function<void()> install; std::string error;
         try{
             install=job([&](std::size_t done){
@@ -159,15 +152,16 @@ void EditorWindow::startWorker(std::size_t total, bool comparing, BatchJob job) 
         }catch(const std::exception& e){ error=e.what(); }
         job = {}; // release scenario copies on the worker before posting completion
         QMetaObject::invokeMethod(this,[this,generation,install,error]{ finishBatch(generation,install,error); },Qt::QueuedConnection);
-        *done = true;
     });
     objects_->setCurrentIndex(objects_->indexOf(resultsPage_)); resultsTabs_->setCurrentIndex(0); // the Movements tab holds the batch
     refreshRun();
 }
 void EditorWindow::finishBatch(std::uint64_t generation, const std::function<void()>& install, const std::string& error) {
-    reapBatchWorkers();
+    if(const auto worker=batchWorkers_.find(generation); worker!=batchWorkers_.end()) {
+        if(worker->second.thread.joinable()) worker->second.thread.join(); // it posted this as its last act
+        batchWorkers_.erase(worker);
+    }
     if(generation!=batchGeneration_) return; // cancelled or replaced: whatever it carries is not shown
-    if(batchThread_.joinable()) batchThread_.join(); // it posted this as its last act
     batchTotal_=0; batchDone_=0;
     if(!error.empty()) showError(std::runtime_error(error));
     else if(install) install();

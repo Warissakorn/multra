@@ -225,3 +225,26 @@ TEST(odexpand, shortest_path_limit_is_distinct_from_no_path_and_blocks_demand) {
     CHECK(std::any_of(diagnostics.begin(), diagnostics.end(), [](const auto& r) { return r.code == "ROUTE_SEARCH_LIMIT"; }));
     test::throws([&] { compileDocument(d, test::root() / "data"); }, "ROUTE_SEARCH_LIMIT");
 }
+TEST(odexpand, unreachable_pairs_report_the_omitted_volume_without_redistribution) {
+    auto f = fixture();
+    const auto lost = addLink(f.d, {{0, 100}, {100, 100}}, 1, 3.5);
+    f.d.zones.zoneConnectors[1].linkId = lost; // s2 (share 1 of 3) no longer reaches town
+    CHECK(odDemandIssues(f.d, test::root() / "data").empty());
+    const auto gaps = odDemandGaps(f.d);
+    CHECK(gaps.size() == 1 && gaps[0].path == "odMatrices[0].cells[0][1]");
+    test::near(gaps[0].skippedVehicles, 40.0 / 3, 1e-9);
+    test::near(vph(withOdDemand(f.d), "od:am/"), 40.0 * 2 / 3, 1e-9); // s1's share only, not redistributed
+    const auto rows = runDiagnostics(f.d, test::root() / "data");
+    CHECK(std::any_of(rows.begin(), rows.end(), [](const auto& r) {
+        return r.code == "OD_SKIPPED_DEMAND" && r.path == "odMatrices[0].cells[0][1]" && r.severity == DiagnosticSeverity::advisory;
+    }));
+    CHECK(odDemandGaps(fixture().d).empty());
+}
+TEST(odexpand, shortest_search_handles_cycles_and_disconnected_targets) {
+    auto f = fixture();
+    join(f.d, f.t, 100, f.a1); // a back edge must not turn shortest alternatives into cycle enumeration
+    const auto chains = routeShortestChains(f.d.network, f.a1, f.t);
+    CHECK(chains.size() == 1 && chains[0].size() == 3);
+    const auto isolated = addLink(f.d, {{500, 0}, {600, 0}}, 1, 3.5);
+    CHECK(routeShortestChains(f.d.network, f.a1, isolated).empty());
+}

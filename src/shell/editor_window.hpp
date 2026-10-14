@@ -192,15 +192,10 @@ private:
     QLabel* batchNote_{};
     QWidget* batchView_{};
     QTableWidget *batchMovementTable_{}, *batchSectionTable_{}, *batchQueueTable_{};
-    std::thread batchThread_;
+    // Every live worker by generation; each is joined by its own finishBatch, or at teardown.
+    struct BatchWorker { std::thread thread; std::shared_ptr<std::atomic<bool>> cancel; };
+    std::map<std::uint64_t, BatchWorker> batchWorkers_;
     std::shared_ptr<std::atomic<bool>> batchCancel_;
-    std::shared_ptr<std::atomic<bool>> batchWorkerDone_;
-    struct RetiredBatchWorker {
-        std::thread thread;
-        std::shared_ptr<std::atomic<bool>> done, cancel;
-    };
-    std::vector<RetiredBatchWorker> retiredBatchWorkers_;
-    void reapBatchWorkers();
     std::uint64_t batchGeneration_{};
     std::size_t batchDone_{}, batchTotal_{}; // batchTotal_ is non-zero while a batch runs
     std::optional<BatchResult> batch_;

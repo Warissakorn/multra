@@ -5,6 +5,7 @@
 #include <cmath>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 namespace trafficsim {
 namespace {
@@ -119,6 +120,30 @@ std::map<std::string, double> lotExitWeights(const ProjectDocument& d, const std
                 weights["od:" + oc.linkId + ">" + dc.linkId + (chains.size() == 1 ? std::string{} : "/path-" + std::to_string(k + 1))] += w;
         });
     return weights;
+}
+std::vector<OdDemandGap> odDemandGaps(const ProjectDocument& d) {
+    std::vector<OdDemandGap> gaps;
+    ChainFinder finder(d.network);
+    for (std::size_t i = 0; i < d.zones.odMatrices.size(); ++i) {
+        const auto& m = d.zones.odMatrices[i];
+        for (std::size_t r = 0; r < m.zoneIds.size(); ++r)
+            for (std::size_t c = 0; c < m.zoneIds.size(); ++c) {
+                if (!(m.cells[r][c] > 0)) continue;
+                const auto origins = connectorsOf(d.zones, m.zoneIds[r], ZoneDirection::origin);
+                const auto destinations = connectorsOf(d.zones, m.zoneIds[c], ZoneDirection::destination);
+                if (origins.empty() || destinations.empty()) continue; // OD_ZONE_NO_CONNECTOR
+                double skipped = 0; bool served = false;
+                for (const auto* oc : origins)
+                    for (const auto* dc : destinations) {
+                        try {
+                            if (!finder.between(oc->linkId, dc->linkId).empty()) { served = true; continue; }
+                        } catch (const std::length_error&) { served = true; continue; } // OD_ROUTE_SEARCH_LIMIT
+                        skipped += m.cells[r][c] * (oc->share / shareSum(origins)) * (dc->share / shareSum(destinations));
+                    }
+                if (served && skipped > 0) gaps.push_back({cellPath(i, r, c), skipped}); // none served: OD_NO_PATH
+            }
+    }
+    return gaps;
 }
 std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std::filesystem::path& data) {
     std::vector<ValidationIssue> issues;

@@ -453,6 +453,7 @@
   "OD_COMPOSITION_UNKNOWN": "This OD matrix names a vehicle composition that does not exist.",
   "OD_ZONE_NO_CONNECTOR": "Trips in this OD cell have nowhere to start or end: give the origin zone an origin connector and the destination zone a destination connector.",
   "OD_NO_PATH": "No road connects this OD cell's origin to its destination. Connect them, or set the cell to 0.",
+  "OD_SKIPPED_DEMAND": "Some connector pairs of this OD cell have no drivable path. Their share of the cell's vehicles is left out, not redistributed.",
   "PARKING_LOT_INVALID": "This parking lot's settings are not valid: check its zone (one lot per zone), capacity, initial occupancy and composition, and gate service time.",
   "PARKING_DWELL_INVALID": "A parking lot's dwell curve needs minutes and cumulative shares that both increase, ending at a share of 1.",
   "PARKING_LOT_NO_GATE": "This parking lot's zone has no destination connector, so no vehicle can drive into it.",

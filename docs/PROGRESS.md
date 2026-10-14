@@ -15,6 +15,11 @@ journey free-flow, suffix display continuity, phase bins, Lab axle scaling, long
 Split routing stations and batch cancellation; corrected parking identity documentation. New
 regressions cover each outcome, including stop-line remaps and worker cleanup; D167–D174.
 Validation: GCC 13.3 full headless build and 97/97 tests passed; Linux/Windows desktop CI pending.
+Then carried over the stronger parts of the parallel draft (PR #150): editor workers owned by
+generation and joined by their own completion callback; a 16 MiB arrival-phase histogram budget
+with a CLI test that checks exit code and message; the advisory `OD_SKIPPED_DEMAND` for connector
+pairs without a path; Split remapping a moved decision's destination Link and refusing, not
+emptying, a route that misses the downstream piece.
 
 ## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
 

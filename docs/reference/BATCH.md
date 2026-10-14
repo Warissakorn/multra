@@ -134,10 +134,11 @@ The editor's Results tab runs the same batch as `--seeds`, for the project open 
   New, Open, Reset, a change to either seed field, or a single Run) stops the batch: the progress callback
   returns false, the worker's result is discarded by generation number, and no table is shown.
   A batch therefore never shows, copies or exports fewer runs than its n says. Closing the window
-  cancels every current/retired worker and joins them before member/QObject teardown.
-  Cancellation is polled before setup, every 32 ticks and before reporting (`RunCancelled`). Starting
-  another batch retires the cancelled worker without joining its simulation on the UI thread;
-  completed retired workers are reaped. No partial result is installed.
+  cancels every live worker and joins them before member/QObject teardown.
+  Cancellation is polled before setup, every 32 ticks and before reporting (`RunCancelled`). Every
+  worker is owned by its generation; starting another batch cancels the previous one without
+  joining its simulation on the UI thread, and each worker is joined by its own completion
+  callback, its last act. No partial result is installed.
 - **One table at a time.** A finished batch replaces the single-run tables until it is
   invalidated as above; starting a single run discards the batch.
 - **Table.** Movements and sections: n, mean delay, ±95 % half-width, mean vehicles, mean travel

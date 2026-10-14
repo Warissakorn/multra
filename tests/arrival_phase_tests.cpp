@@ -92,9 +92,11 @@ TEST(movement, arrival_phase_validates_width_and_bounds_derived_bins) {
     for (const double width : {0., -1., std::numeric_limits<double>::infinity(), std::nan("")})
         test::throws([&] { ArrivalPhaseAccumulator phases(spec(), width); }, "finite and positive");
     auto state = createSimulation(approach(50, {{120, SignalColor::green}}), 42);
-    ArrivalPhaseAccumulator tiny(spec(), 1e-300);
-    test::throws([&] { tiny.observe(state); }, "1000000 bins");
-    test::throws([&] { tiny.observe(state); }, "1000000 bins");
+    for (const double width : {1e-300, 1e-6}) {
+        ArrivalPhaseAccumulator tiny(spec(), width);
+        test::throws([&] { tiny.observe(state); }, "histogram limit");
+        test::throws([&] { tiny.observe(state); }, "histogram limit"); // a failed bind retries safely
+    }
     ArrivalPhaseAccumulator huge(spec(), 1e20);
     huge.observe(state);
     while (state.tick < totalTicks(*state.scenario)) {

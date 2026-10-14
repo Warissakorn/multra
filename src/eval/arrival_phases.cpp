@@ -30,8 +30,13 @@ void ArrivalPhaseAccumulator::observe(const SimState& state) {
     if (cycle_ < 0) {
         const double cycle = cycleOf(*state.scenario);
         const double bins = std::max(1.0, std::ceil(cycle / binWidth_ - 1e-9));
-        if (!std::isfinite(bins) || bins > 1000000)
-            throw std::invalid_argument("Arrival phase histogram exceeds 1000000 bins");
+        // Two uint64 histograms per movement/segment row: at most 16 MiB across every row.
+        constexpr std::size_t maxCounters = 2 * 1024 * 1024;
+        const auto movements = std::max<std::size_t>(1, names_.size());
+        const auto segments = std::max<std::size_t>(1, state.scenario->segments.size());
+        const auto perRow = maxCounters / 2 / movements / segments;
+        if (!std::isfinite(bins) || bins > static_cast<double>(perRow))
+            throw std::invalid_argument("Arrival phase bins exceed the 16 MiB histogram limit");
         bins_ = static_cast<std::size_t>(bins);
         cycle_ = cycle; // publish only after validation; a failed bind can be retried safely
     }

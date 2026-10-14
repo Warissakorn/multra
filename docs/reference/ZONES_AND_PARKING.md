@@ -112,7 +112,9 @@ For each matrix and each cell `(o, d)` with `cells[o][d] > 0`, where zone `o` ha
    is the **fewest-object chains** that a lane can drive (`routeShortestChains` with the
    `routeLaneChains` filter): exactly what a placed routing decision already uses for a
    destination Link. Each gets an **equal** part. One Link that is both origin and destination is
-   its own chain. A pair with no chain is skipped; a cell with none at all is `OD_NO_PATH`.
+   its own chain. A pair with no chain is skipped, and its share of the cell is
+   left out rather than redistributed: Run lists the cell as the advisory `OD_SKIPPED_DEMAND`
+   (`odDemandGaps` gives the omitted vehicles). A cell with no chain at all is `OD_NO_PATH`.
    Detours longer by even one object get nothing: weighting every complete path equally would
    send traffic round loops like the direct road. M9 replaces the equal weight; nothing else here
    changes then.
@@ -306,6 +308,7 @@ History stays atomic. Implemented by M8.2 (`zoneLayerIssues`, `src/project/zone_
 | `OD_COMPOSITION_UNKNOWN` | `compositionId` names no composition the run resolves |
 | `OD_ZONE_NO_CONNECTOR` | A positive cell whose origin lacks an origin connector or destination lacks a destination connector |
 | `OD_NO_PATH` | A positive cell with no complete path between any origin and destination Link pair |
+| `OD_SKIPPED_DEMAND` (advisory) | A positive cell served by some connector pairs while others have no path; their share is omitted |
 | `OD_COMPOSITION_UNKNOWN` | Also at `parkingLots[i].initialCompositionId` |
 | `PARKING_LOT_NO_GATE` / `PARKING_LOT_NO_EXIT` | The zone lacks a destination / origin connector |
 | `PARKING_LOT_NO_EXIT_DEMAND` | §4.4 |

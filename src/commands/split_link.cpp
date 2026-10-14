@@ -121,6 +121,7 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
                 input.routingDecisionId.clear(); input.linkId = id; // source stays on the original entry
             }
             for (auto& entry : decision.routes) {
+                if (entry.destinationLinkId == id) entry.destinationLinkId = downstream.id;
                 if (entry.routeId.empty()) continue;
                 const auto originalId = entry.routeId;
                 if (!suffixes.contains(originalId)) {
@@ -129,6 +130,8 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
                     if (found == def.routes.end()) continue; // validation names a missing route
                     auto route = *found;
                     const auto begin = std::find(route.segmentIds.begin(), route.segmentIds.end(), downstream.id);
+                    // A route that never reaches the moved station cannot start there: refuse, not empty it.
+                    if (begin == route.segmentIds.end()) throw std::invalid_argument("ROUTING_DECISION_MIXED_ORIGIN");
                     route.segmentIds.erase(route.segmentIds.begin(), begin);
                     route.id = allocateId(d, "route");
                     suffixes.emplace(originalId, route.id);

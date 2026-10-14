@@ -24,6 +24,7 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         for(const auto& issue:odDemandIssues(d,data))od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
         if (std::any_of(od.begin(), od.end(), [](const auto& row) { return row.code == "OD_ROUTE_SEARCH_LIMIT"; }))
             return od; // expansion is deliberately refused; retain the structured cell diagnostic
+        for(const auto& gap:odDemandGaps(d))od.push_back({"OD_SKIPPED_DEMAND",gap.path,{},{},DiagnosticSeverity::advisory});
         const auto expanded=withOdDemand(d);const auto& def=expanded;
         const auto routeless=routelessIssues(d.network,def);
         if (std::any_of(routeless.blocking.begin(), routeless.blocking.end(),

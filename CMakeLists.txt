@@ -229,11 +229,11 @@ if(BUILD_TESTING)
     add_test(NAME cli-invalid-seed COMMAND trafficsim-cli 4294967296)
     set_tests_properties(cli-invalid-seed PROPERTIES WILL_FAIL TRUE)
     add_test(NAME cli-help COMMAND trafficsim-cli --help)
-    foreach(width inf nan 0 1e-300)
-        add_test(NAME cli-phase-bin-${width} COMMAND trafficsim-cli --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json" --arrival-phases --phase-bin ${width})
-        set_tests_properties(cli-phase-bin-${width} PROPERTIES WILL_FAIL TRUE)
-    endforeach()
-    add_test(NAME cli-phase-bin-large COMMAND trafficsim-cli --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json" --arrival-phases --phase-bin 1e20)
+    # Exit code and message, not WILL_FAIL: a crash must not pass as a refusal.
+    add_test(NAME cli-phase-bin COMMAND "${CMAKE_COMMAND}"
+        "-DCLI=$<TARGET_FILE:trafficsim-cli>"
+        "-DPROJECT=${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
+        -P "${PROJECT_SOURCE_DIR}/tests/phase_bin_cli.cmake")
     add_test(NAME cli-project COMMAND trafficsim-cli 42 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-project PROPERTIES PASS_REGULAR_EXPRESSION "North approach .* West exit")
     add_test(NAME cli-batch COMMAND trafficsim-cli --seeds 42-44 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
