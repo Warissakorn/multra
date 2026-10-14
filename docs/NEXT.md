@@ -7,6 +7,16 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 to do next is the duplication hard rule 3 forbids, and the copy that rots is always the one in
 the log. Rewrite this file; do not append to it.
 
+## Whole-repository review fixes (2026-10-14, D167–D174)
+
+The owner authorized all nine fixes from the review of `c26487c744dcff64b0fc86ed00d69dbe1d602f8a`.
+They are implemented on `codex/review-fixes`: evaluation passages/distance, suffix display,
+phase-bin validation, Lab axles, long OD paths, split routing stations, accounting documentation
+and batch cancellation. Before merging, inspect the PR's native CI for the exact head, including
+Linux and Windows desktop. Owner appearance checks: retune Lab length and Apply/Undo; select a
+suffix during a lane-change blend; Cancel and immediately restart a batch. Existing engineering
+and owner milestone gates stay open. Then return to the owner queue below.
+
 ## Behaviour Lab review (2026-10-14, D165)
 
 The owner's request — a window to tune driving behaviour on a vehicle that laps a test network —

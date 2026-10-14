@@ -126,6 +126,12 @@ The expansion is deterministic: matrices in document order, then row, column, or
 destination connector and chain order. The same document and seed give the same bytes; reordering
 `zoneIds` (with the cells) changes nothing that runs.
 
+Object shortest-path search uses BFS distances and a shortest-path DAG, with no 20-object
+cutoff. It enumerates at most 4096 alternatives in stable object order; exceeding that bound
+reports `OD_ROUTE_SEARCH_LIMIT` and blocks compilation, rather than reporting `OD_NO_PATH` or
+silently skipping cell demand. Destination-based routing decisions use `ROUTE_SEARCH_LIMIT`.
+The existing lane-chain post-filter and unsupported topology limits remain (`odexpand`).
+
 ## 4. Parking-lot runtime (core contract)
 
 The lot is the one part the core had to learn. **Implemented by M8.4a (D156)** in
@@ -224,9 +230,10 @@ study controls it with warm-up.
 
 At every tick, for the whole run:
 
-`generated + Σ initialOccupancy = completed + Σ parked + active + pending`
+`generated = completed + Σ parked + active + pending − admittedAllTime`
 
-where `completed` counts trips ended at network exits and at gates, `parked` is vehicles in lots
+where `generated = nextVehicleId − 1` already includes initial occupancy, `admittedAllTime`
+counts gate admissions from the start of the run, and `completed` counts trips ended at network exits and at gates, `parked` is vehicles in lots
 (`occupied` minus those waiting in exit queues), `pending` includes exit queues. A vehicle that
 parks and leaves is one vehicle with two trips; trips are counted per trip, vehicles per identity.
 
@@ -257,7 +264,9 @@ parks and leaves is one vehicle with two trips; trips are counted per trip, vehi
   length).
 - **Accounting:** the report's `parked` counts the vehicles in a lot that have not been released.
   A released vehicle is already pending in its exit queue. Then
-  `generated = active + pending + parked + completed − admitted`.
+  `generated = active + pending + parked + completed − admittedAllTime`.
+  The row's `admitted` is windowed, so it cannot audit whole-run identity when admissions are
+  excluded by warm-up or the evaluation end.
 - **Surfaces** (all written only with a lot, so other projects keep their bytes):
   - `movementJson` `lots` {validated, measure, rows} and `parked`;
   - a `movementCsv` lot block and a `parked` line;

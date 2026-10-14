@@ -17,8 +17,11 @@ validated** (rule 4); LOS waits for travel-time sections ([M5_PLAN](../plans/M5_
   seed is one single-threaded run written to its own slot, so every output is byte-identical for
   every N. `progress` is called on the calling thread, once per finished seed. Cancelling (through
   the `progress` callback) returns no runs, so nothing can claim N runs it did not finish.
-- Per seed: `generated` (vehicles the inputs created, `nextVehicleId − 1`) =
-  `completed + active + pending`, checked by test.
+- Per seed: `generated = nextVehicleId − 1` counts identities, including initial parked vehicles.
+  Without lots, `generated = completed + active + pending`. With lots,
+  `generated = completed + active + pending + parked − admittedAllTime`, checked at every tick.
+  `completed` counts trips, including gate admissions; lot-row `admitted` is windowed and cannot
+  replace all-time admissions in this identity.
 
 ## 2. Aggregate
 
@@ -131,7 +134,10 @@ The editor's Results tab runs the same batch as `--seeds`, for the project open 
   New, Open, Reset, a change to either seed field, or a single Run) stops the batch: the progress callback
   returns false, the worker's result is discarded by generation number, and no table is shown.
   A batch therefore never shows, copies or exports fewer runs than its n says. Closing the window
-  cancels and waits for the seed in progress.
+  cancels every current/retired worker and joins them before member/QObject teardown.
+  Cancellation is polled before setup, every 32 ticks and before reporting (`RunCancelled`). Starting
+  another batch retires the cancelled worker without joining its simulation on the UI thread;
+  completed retired workers are reaped. No partial result is installed.
 - **One table at a time.** A finished batch replaces the single-run tables until it is
   invalidated as above; starting a single run discards the batch.
 - **Table.** Movements and sections: n, mean delay, ±95 % half-width, mean vehicles, mean travel
@@ -156,6 +162,7 @@ The editor's Results tab runs the same batch as `--seeds`, for the project open 
 | EB4 | Cancel part way leaves no batch table; Export and Copy refuse | `batch-run-ui` |
 | EB5 | An edit after a finished batch discards it; the single-run view returns | `batch-run-ui` |
 | EB6 | A bad seed list is refused before any run | `batch-run-ui` |
+| EB7 | Cancel a multi-year seed, start a short replacement without blocking the UI heartbeat, reject stale results, then close mid-seed | `batch-cancel-ui`, `batch` |
 
 ## 7. Scenario comparison (M5.8, D148, D149)
 

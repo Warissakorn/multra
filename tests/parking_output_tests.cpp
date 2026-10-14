@@ -32,14 +32,17 @@ Observed observe(const ProjectDocument& d, const std::function<void(EvaluationSp
     std::set<std::string> gates;
     for (const auto& lot : state.scenario->parkingLots) gates.insert(lot.gateRouteIds.begin(), lot.gateRouteIds.end());
     std::set<std::uint64_t> held; // parked or released, as of the last snapshot
+    std::uint64_t completed = 0;
     const auto look = [&] {
         m.observe(state);
         for (const auto& e : state.events) {
+            completed += std::holds_alternative<ArrivedEvent>(e);
             if (const auto* a = std::get_if<ArrivedEvent>(&e); a && gates.contains(a->routeId)) {
                 ++o.gateArrivals; o.admissions.push_back(a->time);
             }
             if (const auto* dep = std::get_if<DepartedEvent>(&e)) o.released += held.contains(dep->vehicleId);
         }
+        CHECK(state.nextVehicleId - 1 == state.vehicles.size() + pendingCount(state) + parkedCount(state) + completed - o.gateArrivals);
         if (state.lots.empty()) return;
         held.clear();
         for (const auto& p : state.lots[0].parked) held.insert(p.vehicle.id);
@@ -124,4 +127,14 @@ TEST(parkingoutputs, pl11e_batch_aggregates_lot_rows) {
     CHECK(batchCsv(r, runs).find("\nlot,") != std::string::npos);
     runs[1].report.lots[0].name = "other";
     test::throws([&] { aggregate(runs); }, "aggregate");
+}
+TEST(parkingoutputs, accounting_uses_all_time_admissions_and_includes_initial_identities) {
+    auto d = shortDwell(); d.zones.parkingLots[0].initialOccupancy = 2;
+    d.zones.parkingLots[0].initialCompositionId = "car-only";
+    d.zones.parkingLots[0].dwell = {{0, 1}};
+    const auto o = observe(d, [](EvaluationSpec& spec) { spec.warmup = 600; spec.end = 3000; });
+    CHECK(o.gateArrivals > o.report.lots[0].admitted); // excluded admissions really exist
+    const auto& r = o.report;
+    CHECK(o.end.nextVehicleId - 1 == r.active + r.pending + r.parked + r.completed - o.gateArrivals);
+    CHECK(o.end.nextVehicleId - 1 != r.active + r.pending + r.parked + r.completed - r.lots[0].admitted);
 }
