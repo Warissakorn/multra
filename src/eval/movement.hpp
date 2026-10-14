@@ -81,8 +81,9 @@ private:
     SummaryAccumulator summary_;
     const Scenario* bound_{};
     std::vector<std::size_t> movementOfSlot_;  // parallel to Scenario::routes; npos = none
-    // Each counter line with its route distance on every route slot (NaN: the route misses it).
-    struct BoundLine { std::size_t counter{}; std::vector<double> atRoute; };
+    // Each counter line with its route distance on every route slot (NaN: the route misses it),
+    // and the slots that do cross it, ascending.
+    struct BoundLine { std::size_t counter{}; std::vector<double> atRoute; std::vector<std::size_t> routes; };
     std::vector<BoundLine> lines_;
     std::vector<std::uint64_t> count_;
     std::vector<double> delay_, travel_;
@@ -93,6 +94,9 @@ private:
     std::vector<std::pair<std::uint64_t, bool>> queued_;
     // One line's candidates, reused across lines and ticks so observe() allocates nothing here.
     std::vector<QueuedVehicle> behind_;
+    // The fleet's indices by route slot (a counting sort, fleet order within a slot) and one
+    // line's gathered indices, reused across ticks for the same reason.
+    std::vector<std::uint32_t> routeStart_, routeFill_, routeItems_, picked_;
     SectionAccumulator sections_;
     LotAccumulator lots_;
 };
