@@ -333,6 +333,13 @@ struct LaneChangeTrace {
     double fromDistance{}, toDistance{}, speed{};
     bool operator==(const LaneChangeTrace&) const = default;
 };
+// Display-only suffix selections made after physical lane changes. Route distance is unchanged.
+struct RouteRemapTrace {
+    std::uint32_t fromRoute{}, toRoute{};
+    double at{};
+    std::size_t afterChanges{};
+    bool operator==(const RouteRemapTrace&) const = default;
+};
 struct Vehicle : PendingVehicle {
     double enteredTime{}, distance{}, speed{}, acceleration{};
     FollowingMode mode{FollowingMode::free};
@@ -342,6 +349,7 @@ struct Vehicle : PendingVehicle {
     // W74.md §7 (D138): the previous tick's regime and sign while its front is on a w74 road;
     // written only at publish, cleared on a prototype one.
     std::optional<W74State> w74State;
+    std::vector<RouteRemapTrace> routeRemapTrace;
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

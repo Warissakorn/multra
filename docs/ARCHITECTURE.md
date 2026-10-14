@@ -69,7 +69,7 @@ not affect traffic following or reservations. Derived paths are shared per route
 cleared on Run-network replacement or a different immutable Scenario snapshot. Minimum
 visible size does not alter physical axle dimensions. Lane changes compose continuous
 front guides and use the same rolling solution; their cache keys include each vehicle's
-complete change trace/type. Between-lanes engine occupancy remains unmodelled.
+complete physical-change/routing-remap traces, selected route and type. Between-lanes engine occupancy remains unmodelled.
 See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md) for the equation, defaults, numerical budget and limits.
 
 Qt and JSON are not linked into the core. Set `TRAFFICSIM_BUILD_DESKTOP=OFF` to build

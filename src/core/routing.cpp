@@ -85,7 +85,10 @@ void applyRouteDecision(const Scenario& s,Vehicle& v,const RouteDecision& d,doub
     if(!selected)throw std::logic_error("Routing decision has no positive choice");
     const auto from=s.routes[v.routeIndex].id;
     const auto& route=detail::byId(s.routes,selected->routeId);
-    v.routeIndex=static_cast<std::uint32_t>(&route-s.routes.data());
+    const auto target=static_cast<std::uint32_t>(&route-s.routes.data());
+    if (target != v.routeIndex && !v.laneChangeTrace.empty())
+        v.routeRemapTrace.push_back({v.routeIndex,target,v.distance,v.laneChangeTrace.size()});
+    v.routeIndex=target;
     v.passedDecisions.push_back(d.id);
     events.emplace_back(RoutingEvent{time,v.id,d.id,from,route.id});
 }
