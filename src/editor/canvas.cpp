@@ -94,7 +94,7 @@ void EditorCanvas::resetGesture() {
     creating_=false;decisionDrag_.reset();headDrag_.reset();lineDrag_.reset();hoverHead_.reset();gestureFrom_.reset();rangeCorner_=0;laneResize_.reset();previewLinkCount_=0;
     draft_.clear(); preview_.clear(); original_.clear(); vertex_ = -1; band_.reset();
     connectorFrom_.reset(); connectorHover_.reset(); dragging_ = false; panning_ = false;
-    clearRouteDraft(); counterDraft_.clear(); sectionStart_.reset();
+    clearRouteDraft(); counterDraft_.clear(); sectionStart_.reset(); zoneDraft_.clear();
     if (connectorDraftChanged) connectorDraftChanged();
 }
 Point EditorCanvas::world(QPoint position, bool snapped) const {
@@ -121,6 +121,7 @@ void EditorCanvas::redraw() {
         image->setTransform(QTransform(std::cos(a)*s,std::sin(a)*s,std::sin(a)*s,-std::cos(a)*s,bg.x,bg.y));
         image->setOpacity(bg.opacity); image->setZValue(-200000);
     }
+    drawZones(); // M8.6a: below every Link
     const auto primary = selected();
     for (auto link : document_->network.links) {
         if(!levelVisible(link.level))continue;

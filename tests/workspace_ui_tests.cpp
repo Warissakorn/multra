@@ -45,7 +45,7 @@ int main(int argc,char** argv) {
         auto* objects=item<QDockWidget>(window,"editorObjectsDock");
         auto* history=item<QDockWidget>(window,"editorHistoryDock");
         require(palette->isVisible()&&inspector->isVisible()&&objects->isVisible(),"Default panels missing");
-        require(toolTree->topLevelItemCount()==3,"Tool tree categories missing");
+        require(toolTree->topLevelItemCount()==4,"Tool tree categories missing"); // M8.6a added Demand (Zones)
         require(item<QTableWidget>(window,"editorLinkTable")->verticalHeader()->defaultSectionSize()==editorDesign::tableRowHeight,"Object row density changed");
         auto* laneCount=item<QSpinBox>(window,"editorLaneCount");
         {

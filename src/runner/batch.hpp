@@ -44,6 +44,13 @@ struct BatchQueueRow {
     std::string name; Estimate meanLength, maxLength;
     bool operator==(const BatchQueueRow&) const = default;
 };
+// M8.5 (D160): a lot row's figures across seeds.
+struct BatchLotRow {
+    std::string name;
+    Estimate occupancyEnd, occupancyMean, occupancyPeak, admitted, departed, gateWaitMean, gateWaitMax,
+        waitedOverTick, endParked, endAtGate, endInExitQueue;
+    bool operator==(const BatchLotRow&) const = default;
+};
 struct BatchReport {
     std::vector<std::uint32_t> seeds, overloadedSeeds; // ascending
     std::vector<BatchMovementRow> movements;
@@ -51,6 +58,7 @@ struct BatchReport {
     std::vector<BatchSectionRow> sections; // M5.4
     std::optional<LosPack> los; // M5.5: the runs' pack
     Estimate meanDelay, completed, pending, safetyClamps;
+    std::vector<BatchLotRow> lots; // M8.5; last, so existing brace-initialisations keep meaning
     bool operator==(const BatchReport&) const = default;
 };
 // Sorts by seed first, so any permutation of the same runs gives the same report, bit for bit.

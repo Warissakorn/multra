@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the unchanged queue below; M8.1 remains the default next slice.
+After that review, return to the queue below; M8 is code complete (M8.1–M8.6b, D153–D157, D160–D162; B11 seed mixing D159); its gate is the owner's.
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -64,17 +64,31 @@ The owner accepted every recommendation, R1–R8 ([review](audits/ROADMAP_REVIEW
 
 **The D143 queue has no session slice left** (items 1, 2's example cool-down, 3's closure and 4's
 answer are the owner's). Next, as the owner chooses: the W74 cited preset and W99 contract
-(below), or M3.4 (R7, §3 below). Without a choice, the next session starts **M8.1** (below), which
-the owner booked to follow the queue. Motorcycles wait for M5.7 (R3; the question is in
-[PROBLEM](PROBLEM.md) §8).
+(below), or M3.4 (R7, §3 below). M8's code is done (below); without a choice, the next session takes the
+**W74 cited preset and W99 contract**.
+Motorcycles wait for M5.7 (R3; the question is in [PROBLEM](PROBLEM.md) §8).
 
-**After the D143 queue — multi-level modelling (D145).** The owner booked Micro, Meso and Macro
-(four-step) levels as M8–M12 ([design](plans/MULTI_LEVEL_MODELLING.md), ROADMAP M8–M12). Items
-2–5 above are implemented, so they may start now. First session: **M8.1**, the Zone/ZoneConnector/OdMatrix/
-ParkingLot contract in `docs/reference/` and failure-first rows (a full lot queues at the gate and
-never deletes a vehicle; older files byte-identical), no code. Then M8.2 onward in the design's §5
-order. The six open questions in the design's §8 go to the owner's sitting; M10 and M11 cannot
-start their contracts before questions 1–5 are answered.
+**Multi-level modelling (D145): M8 code complete.** M8.1 contract (D153), M8.2 zone-layer
+codec/commands (D154), M8.3 OD → routes/inputs (D155), M8.4a engine lot runtime (D156), M8.4b
+authored ParkingLot and compiler (D157), M8.5 lot outputs (D160), M8.6a Zone tool and Zones tab
+(D161), M8.6b OD matrices tab, lot dialog and Results lot table (D162);
+[ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
+- **The gate is the owner's:** a development-access study run end to end, and sitting C8/C9.
+- **Before merging** the branch `claude/m8.1-zones-contract` (no PR yet): open a PR, so that
+  `native.yml` runs the Windows UI suites. Linux desktop passed 133/133 locally (Qt 6.4.2,
+  offscreen).
+- **M9** (dynamic assignment) is the next multi-level milestone. Its contract needs the owner's
+  B7 answers (D158) only for M10/M11.
+Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
+time intervals and compositions' intervals are not used for departures/initial types; the lot
+report has one window (no sub-interval series) and `--compare` has no lot block.
+**Owner's answers 2026-10-14:** B7 and B10 as recommended (D158; M8.5's gate wait is reported
+apart from movement delay, which keeps it; the M10/M11 contracts can now be written, citing the
+convergence defaults). B11 fixed (D159): seeds are mixed with splitmix64 before the first draw;
+`trafficsim-cli 42` is now 45 completed / 31.75870154816726 s / 1 clamp; the TS fixtures replay
+under `SeedStart::raw`, unmodified ([evidence](evidence/b11-seed-mixing.md)). **Check first:**
+the Qt test `scenario-run-ui` pins the new CLI numbers and was not run here (no Qt); confirm it
+in `native.yml` (Windows); on Linux the whole desktop suite passed on the D159 numbers (2026-10-14).
 
 **Owner items** — gates, chat decisions and every desktop look — are in one sheet,
 [OWNER_SITTING](plans/OWNER_SITTING.md) (R4). After the sitting, items still open and older than

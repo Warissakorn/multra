@@ -97,6 +97,8 @@ void deleteLink(ProjectDocument& d, const std::string& id) {
     detail::pruneQueueCounters(d); // M3.2.6b: a counter measuring at a removed head loses that line
     std::erase_if(d.network.links, [&](const auto& link) { return link.id == id; });
     detail::removeRoutesUsingSegments(d, removed);
+    // M8.2 (D154): zone connectors follow their Link, as routes do; the zones stay.
+    std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.linkId == id; });
 }
 void changeDrivingSide(ProjectDocument& d, DrivingSide side) { d.network.drivingSide = side; anchorConnectors(d); }
 std::string oppositeLink(ProjectDocument& d, const std::string& id, double gap) {

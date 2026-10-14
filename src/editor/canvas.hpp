@@ -20,7 +20,7 @@ class MapLayer;
 enum class MapStatus;
 class EditorCanvas : public QGraphicsView {
 public:
-    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section };
+    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone };
     explicit EditorCanvas(QWidget* parent = nullptr);
     ~EditorCanvas() override;
     void setMapProviders(std::vector<MapProvider>);
@@ -125,6 +125,10 @@ public:
     // hand over a start and an end line; Esc drops a half-placed one.
     std::function<void(SectionLine start, SectionLine end)> sectionCommitted;
     const std::optional<SectionLine>& sectionStart() const { return sectionStart_; }
+    // M8.6a (D161): a zone polygon is Ctrl+right-clicked vertex by vertex; Enter hands it over once it
+    // has three, and the draft stays when the receiver refuses it (returns false).
+    std::function<bool(std::vector<Point>)> zoneCommitted;
+    const std::vector<Point>& zoneDraft() const { return zoneDraft_; }
     std::function<void(Point)> duplicateRequested;
     std::function<void(Point)> translateRequested;
     std::function<void(Point,double)> rotateRequested;
@@ -206,6 +210,10 @@ private:
     void drawCounters();
     std::optional<SectionLine> sectionStart_;
     bool sectionPress(QMouseEvent*);
+    std::vector<Point> zoneDraft_;
+    bool zonePress(QMouseEvent*);
+    void commitZoneDraft();
+    void drawZones();
     std::optional<SectionLine> sectionLineAt(Point) const;
     void drawSections();
     void drawRouteOverlay(const std::vector<std::string>&, const std::string& id, bool preview);

@@ -140,6 +140,27 @@ EvaluationSpec evaluationSpec(const ProjectDocument& document, const RunSnapshot
         if (!counter.lines.empty()) spec.counters.push_back(std::move(counter));
     }
     for (auto& c : authored) spec.counters.push_back(std::move(c));
+    // M8.5 (D160): each lot is a row, named by its zone, and its gate a queue counter -- one line at
+    // the end of every distinct last segment of its gate routes, where the gate holds traffic.
+    for (const auto& lot : document.zones.parkingLots) {
+        std::string name = lot.id;
+        for (const auto& z : document.zones.zones) if (z.id == lot.zoneId && !z.name.empty()) name = z.name;
+        spec.lots.push_back({name, lot.id});
+        QueueCounter gate{name + " gate", {}};
+        for (const auto& compiled : snapshot.scenario.parkingLots) {
+            if (compiled.id != lot.id) continue;
+            for (const auto& id : compiled.gateRouteIds)
+                for (const auto& route : snapshot.scenario.routes) {
+                    if (route.id != id || route.segmentIds.empty()) continue;
+                    for (const auto& segment : snapshot.scenario.segments)
+                        if (segment.id == route.segmentIds.back()) {
+                            const CounterLine line{segment.id, segment.length};
+                            if (std::find(gate.lines.begin(), gate.lines.end(), line) == gate.lines.end()) gate.lines.push_back(line);
+                        }
+                }
+        }
+        if (!gate.lines.empty()) spec.counters.push_back(std::move(gate));
+    }
     // M5.4 (D133): every authored section is a row, even one whose lines no longer resolve.
     for (const auto& section : network.travelTimeSections) {
         SectionSpec s{section.name.empty() ? section.id : section.name, {}, {}, {}, linkLabel(document.network, section.start.linkId)};
@@ -188,6 +209,21 @@ Json movementJson(const MovementReport& r) {
                                      {"los", losCell(row.meanDelay, row.controlType, r.los).empty() ? Json(nullptr)
                                                                                                   : Json(losCell(row.meanDelay, row.controlType, r.los))}});
         addLosJson(j, losInputs(r), r.los); // M5.5
+    }
+    if (!r.lots.empty()) { // M8.5: only with a lot, so other projects keep their bytes
+        Json rows = Json::array();
+        for (const auto& l : r.lots)
+            rows.push_back({{"lot", l.name}, {"capacity", l.capacity}, {"occupancyEnd", l.occupancyEnd},
+                            {"occupancyMean", l.occupancyMean}, {"occupancyPeak", l.occupancyPeak},
+                            {"admitted", l.admitted}, {"departed", l.departed},
+                            {"gateWaitMean", l.gateWaitMean ? Json(*l.gateWaitMean) : Json(nullptr)},
+                            {"gateWaitMax", l.gateWaitMax ? Json(*l.gateWaitMax) : Json(nullptr)},
+                            {"waitedOverTick", l.waitedOverTick}, {"endParked", l.endParked},
+                            {"endAtGate", l.endAtGate}, {"endInExitQueue", l.endInExitQueue}});
+        j["lots"] = {{"validated", false},
+                     {"measure", "simulated lot occupancy, flows and gate wait (end of gate service to admission); one run"},
+                     {"rows", rows}};
+        j["parked"] = r.parked;
     }
     return j;
 }
@@ -294,10 +330,20 @@ std::string movementCsv(const MovementReport& r) {
                 << losCell(row.meanDelay, row.controlType, r.los) << '\n';
         writeLosCsv(out, losInputs(r), r.los); // M5.5
     }
+    if (!r.lots.empty()) { // M8.5
+        out << "\nlot,capacity,occupancyEnd,occupancyMean,occupancyPeak,admitted,departed,gateWaitMean_s,gateWaitMax_s,"
+               "waitedOverTick,endParked,endAtGate,endInExitQueue\n";
+        for (const auto& l : r.lots)
+            out << csvQuoted(l.name) << ',' << l.capacity << ',' << l.occupancyEnd << ',' << csvNumber(l.occupancyMean) << ','
+                << l.occupancyPeak << ',' << l.admitted << ',' << l.departed << ',' << csvNumber(l.gateWaitMean) << ','
+                << csvNumber(l.gateWaitMax) << ',' << l.waitedOverTick << ',' << l.endParked << ',' << l.endAtGate << ','
+                << l.endInExitQueue << '\n';
+    }
     out << "\ncompleted," << r.completed << "\nnotInMovement," << r.unassigned << "\npending," << r.pending
         << "\nactive," << r.active << "\nsafetyClamps," << r.safetyClamps << "\nlaneChanges," << r.laneChanges
         << "\nevaluationPeriod_s," << csvNumber(r.warmup) << ',' << csvNumber(r.evaluationEnd) << '\n';
     if (r.cooldown) out << "cooldown_s," << csvNumber(*r.cooldown) << '\n'; // M5.9: only with one
+    if (!r.lots.empty()) out << "parked," << r.parked << '\n'; // M8.5: closes the vehicle count
     return out.str();
 }
 }

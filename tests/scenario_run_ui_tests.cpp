@@ -65,10 +65,10 @@ int main(int argc, char** argv) {
         QApplication::processEvents();
         // Same numbers CTest pins on `trafficsim-cli 42`; the engine is shared, so any drift
         // here is a UI stepping bug, not a modelling change.
-        require(w.runState().completed == 31, "Editor run differs from the CLI baseline");
+        require(w.runState().completed == 45, "Editor run differs from the CLI baseline");
         const auto summary = w.runSummary();
         require(summary.meanDelay.has_value(), "Completed trips produced no delay");
-        require(std::abs(*summary.meanDelay - 29.249359418430977) < 1e-7, "Editor summary differs from baseline");
+        require(std::abs(*summary.meanDelay - 31.75870154816726) < 1e-7, "Editor summary differs from baseline");
 
         // Assert the forcing worked before the consequence: the run must actually be finished
         // before a further Step proving it cannot advance means anything.
@@ -79,13 +79,13 @@ int main(int argc, char** argv) {
 
         // Both figures the retired window owned are on the editor's status line now.
         auto* info = item<QLabel>(w, "editorRunInfo");
-        require(info->text().contains("mean delay 29.25"), "Mean delay missing from the run status");
+        require(info->text().contains("mean delay 31.76"), "Mean delay missing from the run status");
         require(info->text().contains("safety clamps"), "Safety clamps missing from the run status");
         // M2.5: the finished run fills the Results tab from the same states, marker included.
         const auto report = w.runReport();
         require(report && !report->movements.empty(), "A finished run has no movement report");
         std::uint64_t trips = 0; for (const auto& m : report->movements) trips += m.vehicles;
-        require(trips + report->unassigned == 31, "Movement trips do not add up to the run's completed trips");
+        require(trips + report->unassigned == 45, "Movement trips do not add up to the run's completed trips");
         auto* movements = item<QTableWidget>(w, "editorMovementTable");
         // The Results tab is rebuilt only while it can be seen (a Run-view cost, 2026-10-02):
         // hidden through the whole run, it is still empty, and showing it fills it.

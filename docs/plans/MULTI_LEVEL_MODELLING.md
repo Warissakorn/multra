@@ -96,7 +96,7 @@ ParkingLot    { id, zone, access ZoneConnector(s), capacity, initialOccupancy,
 
 ### 3.3 Parking lots are zones with capacity (M8)
 
-A lot is the origin and destination of site trips. Runtime contract (to be written as M8.1):
+A lot is the origin and destination of site trips. Runtime contract: [ZONES_AND_PARKING](../reference/ZONES_AND_PARKING.md) (M8.1, D153). Design summary:
 an arriving vehicle enters if occupancy < capacity after the gate service; otherwise it **waits at
 the gate**, and its queue spills back through ordinary following — **a vehicle never vanishes**.
 Departures are drawn from the dwell distribution with the run's seeded RNG and leave through the
@@ -213,14 +213,19 @@ OD feed every level and lots answer the most common TIA question. M9 reuses Micr
 engine. M10 is the largest new code but analytically testable. M11 needs M9's loop and M10's link
 types. M12 needs all of them.
 
-## 8. Owner decisions still open
+## 8. Owner decisions (answered 2026-10-14, D158)
 
-1. Meso formulation: link-transmission model (cell/kinematic-wave based) or queue-server.
-2. Default VDF (BPR α = 0.15, β = 4 or a local function) and where its citation comes from.
-3. Deterrence function form and default trip purposes for distribution.
-4. The mode set — car, motorcycle, bus, others — decided with PROBLEM §8 (R3).
-5. Default convergence criteria: Macro relative gap, Furness tolerance, DTA iterations.
-6. Whether on-street parking that blocks a lane joins M8 or stays later.
+Sitting B7, answered "as recommended":
+
+1. **Meso formulation:** link-transmission model (kinematic-wave based), for spillback.
+2. **Default VDF:** BPR α = 0.15, β = 4, cited to Bureau of Public Roads, *Traffic Assignment
+   Manual* (1964), with a local function as an override.
+3. **Distribution:** doubly-constrained gravity model, exponential deterrence; default purposes
+   HBW, HBO, NHB.
+4. **Mode set:** car, motorcycle, bus, truck, kept consistent with PROBLEM §8 (R3).
+5. **Convergence defaults:** Macro relative gap ≤ 0.1 %, Furness tolerance ≤ 0.1 %. The M10/M11
+   contract cites a source for both, and for the DTA iteration default, before any is used.
+6. **On-street parking that blocks a lane:** after M8.
 
 ## 9. Risks
 

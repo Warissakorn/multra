@@ -5,6 +5,20 @@ entry behind what you are changing, not the directory.
 
 ## PROGRESS
 
+- [`PROGRESS-2026-10-09-d142-turning-counts.md`](PROGRESS-2026-10-09-d142-turning-counts.md) — 2026-10-09 — Volume from turning counts (D142, schema 26), moved whole 2026-10-14
+
+- [`PROGRESS-2026-10-09-m5.6-run-seeds.md`](PROGRESS-2026-10-09-m5.6-run-seeds.md) — 2026-10-09 — M5.6: the editor's Run seeds, Copy and Export (D141), moved whole 2026-10-14
+
+- [`PROGRESS-2026-10-09-optimization-pass.md`](PROGRESS-2026-10-09-optimization-pass.md) — optimization pass: lld, D140, validate benchmark, moved whole 2026-10-14
+
+- [`PROGRESS-2026-10-09-w74-replay.md`](PROGRESS-2026-10-09-w74-replay.md) — W74 replayed on top of M5, D135–D139, schema 25, moved whole 2026-10-14
+
+- [`PROGRESS-2026-10-08-w74-clamps-timestep.md`](PROGRESS-2026-10-08-w74-clamps-timestep.md) — W74 clamp trace and timestep record (BA27), moved whole 2026-10-13
+
+- [`PROGRESS-2026-10-08-d138.md`](PROGRESS-2026-10-08-d138.md) — W74 composed into the tick, BA23–BA25/BA28 (D138), moved whole 2026-10-13
+
+- [`PROGRESS-2026-10-08-d136-d137.md`](PROGRESS-2026-10-08-d136-d137.md) — W74 schema-25 codec and driver traits (D136, D137), moved whole 2026-10-13
+
 - [`PROGRESS-2026-10-08-09-w74-los.md`](PROGRESS-2026-10-08-09-w74-los.md) — W74 pure-function and LOS sessions, moved whole 2026-10-13
 
 - [`PROGRESS-2026-10-09-d132-d133.md`](PROGRESS-2026-10-09-d132-d133.md) — M5.3/M5.4 entries moved whole 2026-10-12

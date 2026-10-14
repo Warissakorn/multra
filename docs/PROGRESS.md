@@ -8,6 +8,184 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — M8.6b OD table, lot dialog, lot Results (D162)
+
+M8 is now code complete. A new OD matrices tab (`src/shell/editor_od.cpp`) has a grid dialog
+(`src/shell/od_lot_dialogs.cpp`): start, end, composition from the resolved catalog, and a
+checkable zone list. The grid keeps its values by zone id. The lot dialog opens from the zone's
+row; unchecking it deletes the lot. Both commit through `execute` as one step, so the structural
+tier refuses what the dialogs cannot explain. Results gained a *Parking lots* tab from the single
+run's report, and the run status appends the parked count.
+
+`od-lot-ui` (OL1–OL5) builds the M8.4b study with commands, types the matrix, makes the site a
+lot, runs to the end and reads the lot row. The test was written before the code but first run
+after it, so this slice has no recorded red run. It caught one wrong assumption of its own:
+History revisions are not contiguous after Undo/Redo, so "one step" is checked by one Undo.
+
+The first screenshot showed the grid's spin boxes cut off. They now have no arrows and cells
+sized to the styled widget.
+
+Desktop 133/133 on Linux (Qt 6.4.2, offscreen); headless 90/90. Windows waits for a PR's
+`native.yml`.
+
+## 2026-10-14 — M8.6a zones in the editor (D161)
+
+M8.6 was split (D161): this slice is the spatial part.
+- **Zone tool `Z`** (`src/editor/canvas_zones.cpp`, a new palette group *Demand*): Ctrl+right-click
+  corners, Backspace and Esc, Enter to commit as one Undo step.
+- **Zones tab** (`src/shell/editor_zones.cpp`): it renames and deletes zones, with the localized
+  `EDIT_ZONE_IN_USE` refusal and the cascade in one step. It adds origin or destination connectors
+  to the Link selected on the canvas. The connector table beside it edits shares and deletes.
+- **Canvas:** zones draw as translucent polygons under the Links, and connectors as dashed lines
+  from the centroid to the Link end.
+- **No lot tool:** `P` is taken by priority cycling, so a lot will be edited from its zone's row.
+
+`zone-ui` (rows ZE1–ZE5) failed first ("No zone table"). The runtime position check is on demand
+(*Recheck*), as for every Run-tier rule.
+
+`workspace-ui` caught two things:
+- its palette-group pin went from 3 to 4;
+- stacking the two tables squeezed the canvas below 400×250 at 1024×768, so they sit side by side.
+
+Qt 6.4.2 was installed in the cloud container. The desktop suite ran here for the first time this
+milestone: HEAD before the change 131/131, after 132/132, including `scenario-run-ui` on the D159
+numbers. Headless 90/90. Windows waits for `native.yml`.
+
+## 2026-10-14 — M8.5 lot outputs (D160)
+
+`LotAccumulator` (`src/eval/lots.*`) reads snapshots only and is owned by `MovementAccumulator`.
+Every M5 surface therefore carries a lot row: occupancy at the evaluation end, its mean and peak,
+admitted, departed, gate wait mean and max, waits over a tick, and run-end parked, at-gate and
+in-exit-queue counts.
+- **Gate queue:** a derived D40 counter, `<lot> gate`.
+- **Accounting:** reports gain `parked`, so `generated = active + pending + parked + completed −
+  admitted` closes.
+- **Bytes kept:** JSON and CSV blocks, batch estimates, per-seed `parked` and `checkpointJson`
+  lots appear only with a lot.
+
+PL11 (`parkingoutputs`, five tests) caught one design error. Reading departures from `leaving`
+misses a vehicle released and inserted in the same step, so departures now come from the held set
+(parked ∪ leaving). The M8.4b fixture moved to `tests/parking_fixture.hpp`.
+
+Contract §5 was amended: "per interval" is the M5 evaluation window, because no sub-interval
+surface exists. Gate wait runs from the end of gate service to admission.
+
+A 10-seed batch of the short-dwell study (capacity 3, 40 veh/h for 30 min, 5–10 min dwell) gave
+occupancy 2.92 ± 0.03, gate wait 115 ± 3 s and a gate queue max of 153 m, spilling back onto the
+approach. Three seeds are flagged overloaded by the queue at the source.
+
+Headless 90/90 (Linux, GCC 13.3); `trafficsim-cli 42` unchanged at 31.75870154816726; desktop not built.
+
+## 2026-10-14 — Owner's B7/B10/B11 answers; seed mixing (D158, D159)
+
+The owner answered "B10 ตามแนะนำ, B11 แก้, B7 ตามแนะนำ". B7 and B10 are recorded as D158 and moved
+out of OWNER_SITTING:
+- ZONES_AND_PARKING §2.4/§8: no dwell default ships; D153 kept; gate wait stays in movement delay
+  and M8.5 reports it apart.
+- MULTI_LEVEL_MODELLING §8: LTM, BPR 0.15/4, gravity with exponential deterrence, motorcycles in the
+  mode set, 0.1 % convergence with a citation still owed.
+- ROADMAP M8, M10 and M11.
+
+B11 is this session's system (D159). `createSimulation` now seeds xorshift32 with one splitmix64 step
+of the seed; the finaliser is shared with W74 as `detail::splitmix64Mix`, and `state.seed` is
+unchanged. `SeedStart::raw` keeps the TypeScript mapping for `reference_tests.cpp` only, so the four
+frozen fixtures and the trajectory digest pass untouched. Rows SM1–SM4 (`seedmixing`) failed first.
+OD3 now passes on the D88 seeds 42–81.
+
+`trafficsim-cli 42` changed from 31 completed / 29.249359418430977 s / 0 clamps to 45 / 31.75870154816726 s
+/ 1 clamp. CTest and `scenario-run-ui` are re-pinned; the latter has not been run here (no Qt).
+
+Four tests had held only on seed 42's old draws. Each was checked over seeds 42–81, and none was
+re-pinned to a number:
+- The movement "unimpeded" delay bound.
+- The M2.6 `pending == 0` check (a vehicle due 0.4 s before the end).
+- The A53 stream test: 24 of 40 seeds repeat under the old seeding too, which is the known D102
+  failure. It now tests the hold instead.
+- W74 BA23: a vehicle at rest inside ABX can start while its leader accelerates. W74.md overstated
+  this and is corrected.
+
+[Evidence](evidence/b11-seed-mixing.md). Headless 89/89 (Linux, GCC 13.3); desktop not built.
+
+## 2026-10-14 — M8.4b authored parking lots end to end (D157)
+
+`ParkingLot` joined the zone layer (top-level `parkingLots`, schema 31) with codec, structural
+checks (`PARKING_LOT_INVALID`, `PARKING_DWELL_INVALID`), commands and the zone-in-use refusal. The
+dwell curve is stored on the lot in minutes: no cited default exists yet (B10), so a catalog would
+be empty (D157). `withOdDemand` now adds a lot row's routes without inputs; `compileParkingLots`
+(`src/project/parking_compile.*`) runs after `compileScenario`: gate routes by the Link of their
+last segment, exits from `lotExitWeights` (row summed over matrices, connector shares, chains, then
+lanes), one 0-veh/h queue input per first segment, initial types from the composition. Run tier:
+no gate, no exit, empty row, unknown initial composition; locale strings in English and Thai.
+PL8 (a departures-only lot) exposed two over-strict rules, both relaxed and recorded: the core
+refused a lot with no gate route, and `EDIT_NO_INPUTS` refused a study whose only demand is a full
+lot. Rows OD7, PL7–PL10 and the M8 gate run (a zone-OD study fills a capacity-3 lot, queues at the
+gate and keeps every vehicle) in `parkingcodec`/`parkingproject`. A 60-trip lot study through
+`trafficsim-cli --seeds 42-44` gave inbound delay 42.6 s (gate wait included) and outbound 3.3 s.
+Headless 88/88 (Linux, GCC 13.3); `trafficsim-cli 42` unchanged; desktop not built (no Qt).
+
+## 2026-10-14 — M8.4a parking-lot runtime in the engine (D156)
+
+M8.4 was two systems, so it was split (D156): this session the core runtime, next the authored
+ParkingLot and its compiler. `src/core/parking_types.hpp` holds `ParkingLotSpec` (gate routes,
+exits as route + queue input + weight, dwell curve, initial types by share); `SimState::lots`
+holds parked vehicles, those leaving and those at the gate. `parking.cpp` runs it through five
+hooks in `stepSimulation`: release after arrivals, `noteInserted`, admission from the snapshot,
+the phase-1 hold (the dead-end mechanism) and drive-in at publish. Arrival at the line reuses the
+Stop's test, now one function `atStopLine` in `conflicts.*`; `samplePending` was extracted from
+`generateArrivals` with the same draw order so initial occupants are drawn like arrivals. Rows
+PL1–PL7 and validation were written first on hand-built scenarios. A mutation dropping the
+capacity check at publish survived them; PL2b (two vehicles driving in side by side for one space)
+was added and kills it. Every hook returns at once without a lot and no draw is made: headless
+86/86 (Linux, GCC 13.3), `trafficsim-cli 42` unchanged, frozen baselines green. No callgrind was
+run; the lot-free cost is a few `empty()` checks per tick. Desktop not built (no Qt here).
+
+## 2026-10-13 — M8.3 OD matrices into Micro demand (D155)
+
+`withOdDemand` (`src/project/od_demand.*`) adds every matrix to a copy of the definition as
+authored routes `od:<link>><link>` and inputs `od:<matrix>/<o>/<d>/<oc>><dc>`, at cell / period ·
+3600 times both connector shares, split equally over the fewest-object drivable chains — the rule a
+placed decision uses for a destination Link. The contract had said every complete path; that
+would weight loops like the direct road, so §3 was rewritten (D155). Placed decisions were not used:
+one per Link, and an author's own decision may sit on the same entry Link. `compileDocument` and
+`runDiagnostics` read the expanded definition, so a matrix-only study runs; `odDemandIssues` is the
+§6 Run tier (connector position, period beyond duration, unknown composition, no connector, no
+path). Locale strings for every zone/OD code, English and Thai. Rows OD1–OD6 in `odexpand`.
+OD3 first failed with seeds 42–81: 1,403 departures for 1,600 expected. The expansion was exact;
+the first xorshift32 draw of a small seed is ≈0.003, so the first input's first arrival is 5–6
+mean headways late. Not changed (frozen baselines); owner question B11, OD3 uses mixed seeds. A
+400-trip fixture through `trafficsim-cli --seeds 42-45` completed ≈394 trips per run. Headless
+85/85 (Linux, GCC 13.3); `trafficsim-cli 42` unchanged; desktop not built (no Qt here).
+
+## 2026-10-13 — M8.2 zone layer codec and commands (D154)
+
+`ProjectDocument::zones` holds Zones, zone connectors and OD matrices (types in
+`src/model/demand/zones.hpp`, because M10/M11 compilers will read them). Three top-level arrays,
+written only when non-empty, make the file schema 31; each is `UNSUPPORTED_FIELD` below 31 and a
+malformed or empty one is `EDIT_ZONE_INVALID`. `zoneLayerIssues` is the contract's structural
+tier, run by `validateDocument` on load and every commit; topology, the period against the run
+and the composition are the Run tier, left to M8.3 (D154), because a half-drawn study is a legal
+draft. `documentIds` was split out of `allocateId` so zone ids share the uniqueness rule, and new
+ids skip zone-layer ids. Cascades: a Link delete drops its connectors, a split moves destination
+connectors downstream, a Zone a matrix names cannot be deleted. Rows Z1–Z6 were written first
+(`tests/zones_tests.cpp`, groups `zonescodec`, `zonescommands`). No editor surface yet (M8.6); the
+compiler does not read the layer, so every run is unchanged. Eight older codec tests used
+schema 31 as their "future" probe; they now use 32, as D151 moved them from 30. Headless 84/84
+(Linux, GCC 13.3); `trafficsim-cli 42` unchanged. Qt is not installed here: desktop not built.
+
+## 2026-10-13 — M8.1 zones, OD matrices and parking lots contract (D153)
+
+Docs only, the default slice NEXT named once the D143 queue was empty. New contract
+[ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md): schema 31 Zone, ZoneConnector, OdMatrix and
+ParkingLot; OD cells compile to ordinary Poisson inputs and entry routing decisions with equal
+weight over the existing `routelessChains` paths, so the core sees no zone; the lot is the one
+core addition (`ParkingLotSpec`, `LotState`), held at the gate like a red head with Stop-style
+service, admitted only below capacity, so a full lot queues and spills back and never deletes a
+vehicle. Choices (D153): connectors at Link ends only, because inputs start only on entry Links
+and internal insertion has no contract; a lot zone's row gives destinations while departure timing
+comes from the dwell; a departing vehicle keeps its space until inserted, so a blocked exit fills
+the lot. Rows Z1–Z6, OD1–OD7, PL1–PL11 are failure-first. Owner questions (dwell source, outbound
+timing, lot trips in movement tables) are OWNER_SITTING B10. No code; checks: docs and file sizes.
+
 ## 2026-10-13 — Measured optimization pass: parallel batch seeds (D152)
 
 Baseline (Linux, GCC 13.3, 4 cores, Release): a 40-seed M2.6 batch 13.6 s, one M2.6 run
@@ -289,190 +467,6 @@ now owns calibrated gap acceptance). M5_PLAN gains M5.8 and M5.9 and the order a
 PROBLEM gains §8 (motorcycles). `plans/OWNER_SITTING.md` is now the single list of owner items
 (gates, chat decisions, 22 desktop looks, each dated with a yes/no failure question); NEXT keeps
 only the session queue and points there. `check`: docs and file sizes clean.
-
----
-
-## 2026-10-09 — Volume from turning counts (D142, schema 26)
-
-The owner answered ROADMAP O10's "count sheet typed once vs D46": an input may take its volume
-from its entry decision's turning counts. `VehicleInput.volumeFromCounts` is opt-in, so D46 and
-every existing file are untouched. `src/project/counted_volumes.cpp` holds the one rule:
-`countedDecision` (the decision named, or the placed one on the entry Link), `countedVolumes`
-(summed base-route counts × 3600 / length per decision interval) and `syncCountedVolumes`, called
-on read, in `putInput`/`putRoutingDecision`, in `History::execute` and at the top of
-`withRoutingDecisions`, so no path sees a stale volume. The input's intervals are not written for
-such an input. Issues `INPUT_COUNTS_NO_DECISION`, `INPUT_COUNTS_EMPTY` and
-`INPUT_COUNTS_POSITIONED` (a D119 decision is a downstream split, not a source). The input dialog
-gains the checkbox, which locks the typed volume, counts and Periods and shows the counted total;
-the input and decision rows say which feeds which. `field<bool>` now refuses a non-boolean.
-
-Evidence (Linux, GCC, Qt 6.4.2 offscreen, Debug): `demandcounts` 8/8 (VC1–VC7, each movement's
-vehicles equal its counts for unplaced and placed decisions), `counted-volume-ui` (VC8), and the
-D46 test unchanged. CLI `42 --project` output for the four shipped projects equals `origin/main`'s
-(`c7628e8`, built in a scratch worktree) byte for byte. Native Windows CI and the owner look are owed.
-
----
-
-## 2026-10-09 — M5.6: the editor's Run seeds, Copy and Export (D141)
-
-The editor now runs the CLI's batch. **Run seeds** parses the *Seeds* field with `parseSeedList`
-(default `42-51`, O9), compiles the document on the UI thread and hands a `Scenario` and an
-`EvaluationSpec` by value to one `std::thread` that calls `runSeeds` and `aggregate`
-(`src/shell/editor_batch.cpp`). Progress and the result come back through queued
-`QMetaObject::invokeMethod` calls tagged with a generation number; `cancelBatch()` (called from
-`clearRun()`, so every edit, Undo, Open, Reset and a single Run reach it) bumps the number and sets
-the worker's cancel flag, so whatever a stale worker posts is dropped. The destructor cancels and
-joins. No mutable statics were found in `src/core`, `src/eval`, `src/model` or `src/runner`.
-
-The batch table replaces the single-run tables: movements and sections with n, mean delay, ±95 %,
-vehicles, travel time, unfinished, control type and LOS; approaches with n, mean ±95 % and max; a
-note with the marker, n, seeds, evaluation period, overloaded seeds, movements with unfinished trips
-and the LOS pack. Export writes `batchCsv`; Copy writes `csvToTsv(batchCsv(...))` (new in
-`csv_format.hpp`: comment lines kept, unquoted commas become tabs, quotes dropped), and a finished
-single run copies `movementCsv` the same way. Contract and rows EB1–EB6 in BATCH §6.
-
-Evidence (Linux, GCC, Qt 6.4.2 offscreen, Debug): `batch-run-ui` compares the editor's
-`BatchReport` with `aggregate(runSeeds(...))` on four-leg plus two signalised sections, the export
-bytes with `batchCsv` and the clipboard with its TSV; cancel, an edit, a bad list, a batch after a
-cancel and closing mid-batch are exercised; 13–14 s, three repeats stable. Its first version left an
-autosave draft (an unsaved rename outlived the 15 s timer) that blocked the next run on the recovery
-dialog; the test now saves after the edit. `check`: 108/108 tests, architecture, file sizes and
-docs clean. Native Windows CI and the owner's look are separate and still owed.
-
----
-
-## 2026-10-09 — Optimization pass: lld, D140, validate benchmark, NEXT
-
-Measured first (Linux, 4 cores, Qt offscreen): the engine (0.15–0.30 µs per vehicle-tick, linear
-to 96 crossings), the run view (~3.3 ms per Step) and redraw (3.6 ms at 40 crossings) are not
-bottlenecks and were left alone. **Link with lld when the compiler accepts it**
-(`TRAFFICSIM_LLD`, default ON, MSVC untouched): touching one source relinks some 40
-executables, and GNU ld was most of an incremental Debug build. `trafficsim-tests` links in
-4.5 s with ld and 0.57 s with lld; touching `src/shell/editor_demand.cpp` rebuilt in 31.3 s
-before and 13.0–13.5 s after, `src/model/network/routing.cpp` 28.7 s → 10.7–11.1 s. CI's Linux
-apt line installs `lld`; without it the default linker is kept silently.
-
-**D140: Connector paths once per expansion.** `History` validates every command, and validating
-the M2.6 study template took 21.6 ms against 1.0 ms for four-leg on the same network: callgrind
-put 85 % of it in `connectorPaths`, recomputed by every `routeShortestChains`, `routeLaneFamily`
-and `routelessChains` call inside one `expandRouteless`. `ConnectorPathTable` (lazy, local, never
-stored) is now built once by `expandRouteless` and `routelessIssues` and passed down; the old
-signatures build their own, so editor and compile callers are unchanged. Validation 21.6 → 5.0 ms
-(median of 15; four-leg 1.03 → 0.91 ms). `--seeds 1-3` output of all four shipped projects is
-identical apart from the build stamp; the ten-seed study batch and the engine benchmark are
-unchanged within noise (an interleaved ld/lld engine run ruled out the linker).
-`tools/validate_benchmark.cpp` (`trafficsim-validate-benchmark [project] [repetitions]`) keeps
-that number measurable; like the other benchmarks it prints and is not in `check`.
-
-**Route continuations find their tail once.** After D140, 43 % of study-template validation was
-`continuations` rescanning every route object to find the tail, once per candidate. It now finds
-it once (the last match, as before). Validation 4.97 → 2.75 ms (four-leg 0.85 → 0.72 ms); the
-editor's route hover and gesture use the same function. CLI output identical.
-
-**Destination chains once per expansion (D140's walk scope).** `placedDecisions` runs once per
-time slice × vehicle type and resolved the same `routeShortestChains(decision Link, destination)`
-each time, about 86 calls per study-template validation. A `DestinationChainMemo` beside the
-table resolves each pair once. Same-session A/B: 3.32 → 2.46 ms median (five runs of 31 each);
-four-leg unchanged (no destination decisions). CLI output identical.
-
-**`appendStationRouting` takes the expansion's `runtimeSections`.** It rebuilt the table on every
-call (≈5 per study-template validation, 23 % of the remaining instructions); `expandRouteless`
-already holds that table and passes it to `appendLaneChanges` beside it. A/B: 2.60 → 1.72 ms
-median (five runs of 31); four-leg unchanged (no positioned decisions). CLI output identical.
-Validation overall this session: 21.6 → 1.7 ms. Left: `routelessChains` still walks once per
-input × slice; at under 2 ms per edit it was not started.
-
-**NEXT.md slimmed** (31.4 → 26.8 KB, −15 %): the five 2026-10-05/06 owner-instruction sections narrated
-finished slices already recorded in ROADMAP (M2.8, M3.2.4, M3.3 status lines), PROGRESS and
-RECORD (D115–D129, D135–D139, each checked before removal). One section keeps every open item
-verbatim — the D128/D119/D116/D115–D118 Windows reviews, the Demand PR review order, W74's next
-steps, BA18, the M3.2.4e contract rule and pending native CI. §1–§5 are live owner gates and
-working notes and were not cut, so the planned −40 % was not reached.
-
----
-
-## 2026-10-09 — W74 replayed on top of M5: D135–D139, schema 25
-
-W74 (M3.3.3a) and M5 were built in parallel from the same `main` and both used D130–D134 and
-schema 22. By owner instruction the M5 branch is the base and the W74 slices are replayed on it:
-D130–D134 of the W74 branch are now D135–D139 everywhere (record, index, code comments,
-evidence), and `w74` is written in schema 25 (22–24 are M5's evaluation period, sections and
-control type); a file below 25 carrying `"w74"` is refused, and every "future schema" probe is 26.
-The entries below keep their original dates and test counts. D139 (the dialog editing `w74`
-keys, with no code defaults) had no entry of its own; its reasoning is in the record. Not carried
-over from the W74 branch: its own `--seeds`, editor Run N seeds and evaluation period (M5.2–M5.3
-there, superseded by D131–D132 here; the editor batch is a reference for M5.6) and its Results
-tabs (discharge and clamps). The decision record's blank lines between rows are removed again.
-
----
-
-## 2026-10-08 — The extra W74 clamps traced: no W74 defect
-
-Evidence only; no engine change. `tools/w74_clamp_trace.cpp` attributes every safety clamp
-of the BA27 runs (2,053, all moving) to the obstacle setting the smallest allowance, from the
-tick's rebuilt snapshot, and records each amber onset. All 240 runs match BA27's counts; none
-is unexplained. 83–96 % are amber heads, held as red with no commitment test: W74's slower
-fixture discharge leaves a queue at 16–19 % of amber onsets (prototype under 0.1 %), so more
-onsets catch a vehicle that cannot stop. The rest are the standstill cap treating a moving
-leader as standing (D105's recorded case), met by W74's gentle emergency braking near `AX`.
-Neither rule changed (BA18); NEXT §2 holds it as an owner decision. The sweep now shares its
-document setup with the trace and stays byte-identical. See [evidence](evidence/w74-clamps.md).
-
----
-
-## 2026-10-08 — W74 timestep record, BA27, and the courtesy fixture
-
-Evidence only; no engine change. `tools/w74_discharge_sweep.cpp` runs the four-leg project,
-prototype and `w74` (fixture values in `evidence/w74-discharge-behaviour.json`: three are
-PTV's W74 defaults, fifteen are uncited), at dt 0.1/0.25/0.5, seeds 42–81, with the CLI's
-discharge spec. Its prototype arm at dt 0.1 seed 42 equals the Debug CLI in all 90 cycles,
-and a rerun is byte-identical. Mean headway rises with dt in both models, about twice as
-much for W74; W74 runs clamp more (9.4 → 14.8 per run), which NEXT now asks to trace before
-any preset. A `w74run` case checks that a winning courtesy hold stores its own state; a
-mutation keeping the leader's state fails it. See [evidence](evidence/w74-discharge.md).
-
----
-
-## 2026-10-08 — W74 composed into the tick, BA23–BA25/BA28 (D138)
-
-Fourth M3.3.3a slice: W74 now runs. `follow` dispatches by `DriverBehaviour::w74`;
-`standstillGap`/`desiredGap` replace every direct prototype-field read in the tick (source
-and D108, motion, second obstacle, lane-change checks, dead end, discretionary gain,
-waiting room, receiving space, `stopLineReach`). Leader acceleration rides on
-`OccupiedSpan` and `CourtesyHold`; static obstacles write 0. `Vehicle::w74State` comes from
-the kept result at publish. D136's Run refusal and its message are gone. A first run-level
-Stop test passed without the standstill override; the §7 case (at rest 3.3 m short) was
-added and now fails without it. Prototype bytes unchanged. Headless 69/69, desktop 100/100
-(Linux). See [evidence](evidence/w74-composition.md). Not validated.
-
----
-
-## 2026-10-08 — W74 driver traits, BA26 (D137)
-
-Third M3.3.3a slice. `w74Traits(seed, id, driverFactor)` implements §5's splitmix64 hash and
-Irwin–Hall `zOp`; `generateArrivals` stores it on `PendingVehicle` when any behaviour is
-`w74`. Golden values match an independent Python implementation bit for bit, and GCC and
-Clang agree on 1,000 traits. A mixed run keeps every prototype draw. Writing the
-`upcomingArrivals` row exposed that its scratch state did not copy `seed`; it does now.
-`W74State` and BA24/BA25 are deferred to composition, their only writer and reader (D137).
-Checkpoints gain `w74Traits` only when present. Headless 68/68, desktop 99/99 (Linux),
-CLI seed 42 identical. See [evidence](evidence/w74-traits.md).
-
----
-
-## 2026-10-08 — W74 schema-25 codec, BA29 (D136)
-
-The second M3.3.3a slice, codec only by the owner's choice. `DriverBehaviour::w74`
-(`std::optional<W74Parameters>`) is the model tag; the W74 value types moved into
-`types.hpp` so it can hold them. `parseBehaviour` dispatches on `model`, refuses each
-model's keys on the other, and reads the 18 keys from `w74ParameterKeys()`, the same table
-the serializer and §5 range check use. Schema 22 is written only when an owned behaviour is
-`w74`; below 25 one is `UNSUPPORTED_BEHAVIOUR_MODEL`. Run refuses a `w74` behaviour a
-vehicle type or road selection uses (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`), never runs it as the
-prototype; an unused one changes nothing. The dialog shows a `w74` behaviour read-only
-except its name. Why each choice: D136. Qt was installed in this container, so desktop
-UI suites ran (Linux offscreen): headless 67/67, desktop 98/98, CLI seed 42 and shipped
-projects byte-identical. See [evidence](evidence/w74-codec.md).
 
 ---
 

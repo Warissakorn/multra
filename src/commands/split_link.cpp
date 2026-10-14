@@ -67,6 +67,9 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
         if(end.objectId==id && end.station>=distance+.1) {
             end.objectId=downstream.id;end.station-=distance+.1;
         }
+    // M8.2: a zone connector sits at a Link end; the upstream piece keeps the start and the id.
+    for(auto& c:d.zones.zoneConnectors)
+        if(c.linkId==id && c.direction==ZoneDirection::destination)c.linkId=downstream.id;
     // Reanchor external connectors, then create explicit one-to-one continuity connectors.
     changeGeometry(d, id, editableLink(d, id).geometry);
     for (const auto& lane : original.lanes) {

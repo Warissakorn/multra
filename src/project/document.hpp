@@ -1,6 +1,8 @@
 #pragma once
+#include <set>
 #include "json.hpp"
 #include "map_settings.hpp"
+#include "../model/demand/zones.hpp"
 #include "../model/demand/definition.hpp"
 
 namespace trafficsim {
@@ -23,6 +25,7 @@ struct ProjectDocument {
     std::uint64_t nextId{1};
     std::uint64_t revision{};
     std::optional<MapSettings> map;
+    ZoneLayer zones; // M8.2, schema 31: the shared demand layer (ZONES_AND_PARKING.md)
     bool operator==(const ProjectDocument&) const = default;
 };
 AuthoringDefinition parseAuthoringDefinition(const Json&);
@@ -45,5 +48,7 @@ AuthoringDefinition withRoutingDecisions(AuthoringDefinition);
 Json documentJson(const ProjectDocument& document);
 ProjectDocument parseDocument(const Json& json);
 void validateDocument(const ProjectDocument& document); // Empty networks are valid drafts.
+// Every id the network and definition hold, which a new or zone-layer id must not repeat.
+std::set<std::string> documentIds(const ProjectDocument& document);
 std::string allocateId(ProjectDocument& document, const std::string& prefix);
 }

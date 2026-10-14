@@ -136,6 +136,7 @@ void EditorWindow::refreshRun(){
     const auto summary=runSummary_.summary();
     runInfo_->setText(text("editorRunStatus").arg(runSnapshot_->revision).arg(runState_.seed)
         .arg(runState_.time,0,'f',1).arg(runState_.vehicles.size()).arg(pendingCount(runState_)).arg(runState_.completed)
-        .arg(summary.meanDelay?QString::number(*summary.meanDelay,'f',2):text("empty")).arg(summary.safetyClamps));
+        .arg(summary.meanDelay?QString::number(*summary.meanDelay,'f',2):text("empty")).arg(summary.safetyClamps)
+        +(runState_.lots.empty()?QString():text("editorRunParked").arg(parkedCount(runState_)))); // M8.6b: closes the count
 }
 }

@@ -63,12 +63,28 @@ Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
         j["evaluationPeriod"] = {{"warmup", first.warmup}, {"end", first.evaluationEnd}};
         if (first.cooldown) j["evaluationPeriod"]["cooldown"] = *first.cooldown; // M5.9
     }
+    if (!r.lots.empty()) { // M8.5: only with a lot, so other projects keep their bytes
+        Json rows = Json::array();
+        for (const auto& l : r.lots)
+            rows.push_back({{"lot", l.name}, {"occupancyEnd", estimateJson(l.occupancyEnd)},
+                            {"occupancyMean", estimateJson(l.occupancyMean)}, {"occupancyPeak", estimateJson(l.occupancyPeak)},
+                            {"admitted", estimateJson(l.admitted)}, {"departed", estimateJson(l.departed)},
+                            {"gateWaitMean", estimateJson(l.gateWaitMean)}, {"gateWaitMax", estimateJson(l.gateWaitMax)},
+                            {"waitedOverTick", estimateJson(l.waitedOverTick)}, {"endParked", estimateJson(l.endParked)},
+                            {"endAtGate", estimateJson(l.endAtGate)}, {"endInExitQueue", estimateJson(l.endInExitQueue)}});
+        j["lots"] = {{"validated", false},
+                     {"measure", "simulated lot occupancy, flows and gate wait; mean over seeds, 95% CI of the mean"},
+                     {"rows", rows}};
+    }
     j["perSeed"] = Json::array();
-    for (const auto& run : bySeed(runs))
-        j["perSeed"].push_back({{"seed", run.seed}, {"generated", run.generated}, {"completed", run.report.completed},
-                                {"active", run.report.active}, {"pending", run.report.pending},
-                                {"safetyClamps", run.report.safetyClamps}, {"overloaded", run.overloaded},
-                                {"meanDelay", value(run.report.meanDelay)}});
+    for (const auto& run : bySeed(runs)) {
+        Json row{{"seed", run.seed}, {"generated", run.generated}, {"completed", run.report.completed},
+                 {"active", run.report.active}, {"pending", run.report.pending},
+                 {"safetyClamps", run.report.safetyClamps}, {"overloaded", run.overloaded},
+                 {"meanDelay", value(run.report.meanDelay)}};
+        if (!run.report.lots.empty()) row["parked"] = run.report.parked; // M8.5
+        j["perSeed"].push_back(std::move(row));
+    }
     return j;
 }
 std::string batchCsv(const BatchReport& r, const std::vector<SeedRun>& runs) {
@@ -107,6 +123,16 @@ std::string batchCsv(const BatchReport& r, const std::vector<SeedRun>& runs) {
                 << csvNumber(m.unfinished.mean) << ',' << m.controlType.value_or("") << ','
                 << losCell(m.meanDelay.mean, m.controlType, r.los) << '\n';
         writeLosCsv(out, losInputs(r), r.los); // M5.5
+    }
+    if (!r.lots.empty()) { // M8.5
+        out << "\nlot,n,occupancyMean,occupancyMean_ci95,occupancyPeak_mean,occupancyEnd_mean,admitted_mean,departed_mean,"
+               "gateWaitMean_s,gateWaitMean_ci95_s,gateWaitMax_mean_s,waitedOverTick_mean\n";
+        for (const auto& l : r.lots)
+            out << csvQuoted(l.name) << ',' << l.occupancyMean.n << ',' << csvNumber(l.occupancyMean.mean) << ','
+                << csvNumber(l.occupancyMean.halfWidth95) << ',' << csvNumber(l.occupancyPeak.mean) << ','
+                << csvNumber(l.occupancyEnd.mean) << ',' << csvNumber(l.admitted.mean) << ',' << csvNumber(l.departed.mean) << ','
+                << csvNumber(l.gateWaitMean.mean) << ',' << csvNumber(l.gateWaitMean.halfWidth95) << ','
+                << csvNumber(l.gateWaitMax.mean) << ',' << csvNumber(l.waitedOverTick.mean) << '\n';
     }
     out << "\nseed,generated,completed,active,pending,safetyClamps,overloaded,meanDelay_s\n";
     for (const auto& run : bySeed(runs))

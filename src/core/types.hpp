@@ -1,5 +1,6 @@
 #pragma once
 
+#include "parking_types.hpp"
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -226,6 +227,8 @@ struct ScenarioDefinition {
     // M3.3.2b, last again. Empty without an assigned road, which then runs exactly the legacy
     // type-only selection: same slots, same order of operations, same random draws.
     std::vector<SegmentBehaviour> segmentBehaviours;
+    // M8.4a, last again. Empty without a parking lot, which then runs exactly the code path it always did.
+    std::vector<ParkingLotSpec> parkingLots;
     // Value equality, so callers can tell "this edit changed nothing" without serialising.
     bool operator==(const ScenarioDefinition&) const = default;
 };
@@ -289,6 +292,8 @@ struct ScenarioIndex {
     // resolving them per input per tick -- which is what generateArrivals did once the vehicle
     // stopped carrying ids -- was the same lookup in a new place.
     std::vector<std::uint32_t> routeOfInput, typeOfInput; // parallel to Scenario::inputs
+    // M8.4a: the lot slot whose gate a route ends at, SIZE_MAX for none; empty without a lot.
+    std::vector<std::size_t> lotOfRoute;
 };
 // Scenario lookups for one vehicle, resolved once per tick instead of once per use.
 struct VehicleRefs { std::size_t route{}, type{}, behaviour{}; };
@@ -391,6 +396,25 @@ struct StopService {
     std::uint64_t vehicleId{}; double line{}; std::uint64_t since{};
     bool operator==(const StopService&) const = default;
 };
+// M8.4a (ZONES_AND_PARKING §4). A vehicle in a lot keeps its identity and type for its next trip.
+struct ParkedVehicle {
+    PendingVehicle vehicle; double admitted{}, dwellEnd{};
+    bool operator==(const ParkedVehicle&) const = default;
+};
+// A vehicle that has come to the gate line: below walking pace, front within stopLineReach.
+struct GateArrival {
+    std::uint64_t vehicleId{}, since{};
+    bool operator==(const GateArrival&) const = default;
+};
+// Parallel to Scenario::parkingLots. A released vehicle waits in its exit input's queue and is in
+// `leaving` until inserted: it holds its space until then, so a blocked exit fills the lot.
+struct LotState {
+    std::vector<ParkedVehicle> parked; // sorted by (dwellEnd, id)
+    std::vector<std::uint64_t> leaving;
+    std::vector<GateArrival> gate;     // sorted by (since, id)
+    std::size_t occupied() const { return parked.size() + leaving.size(); }
+    bool operator==(const LotState&) const = default;
+};
 struct SimState {
     // Detached at createSimulation; copies share only this immutable scenario.
     std::shared_ptr<const Scenario> scenario;
@@ -403,6 +427,7 @@ struct SimState {
     std::vector<Vehicle> vehicles;
     std::vector<SimEvent> events; // Latest step only.
     std::vector<StopService> stopService; // sorted by vehicle id; empty without a Stop zone
+    std::vector<LotState> lots;           // parallel to scenario->parkingLots
 };
 struct ValidationIssue {
     std::string code, path;

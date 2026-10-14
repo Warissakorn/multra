@@ -112,9 +112,11 @@ TEST(movement, delay_responds_to_red_time) {
     };
     const auto green = run(0), red60 = run(60);
     CHECK(green.movements[0].vehicles > 10); CHECK(red60.movements[0].vehicles == green.movements[0].vehicles);
-    // Unimpeded, a trip still carries its entry acceleration: a vehicle enters from standstill,
-    // and v/(2a) = 15/(2 x 2.5) = 3 s of it is delay against the desired-speed free-flow time.
-    CHECK(*green.movements[0].meanDelay > 2.5); CHECK(*green.movements[0].meanDelay < 4.5);
+    // Every trip carries its entry acceleration: a vehicle enters from standstill, and
+    // v/(2a) = 15/(2 x 2.5) = 3 s of it is delay against the desired-speed free-flow time. That is a
+    // floor, not the mean: at 900 veh/h Poisson platoons add following delay (green mean 3.4-12.2 s
+    // over seeds 42-81). The old `< 4.5` held only for seed 42's pre-D159 draws (4.27 s).
+    CHECK(*green.movements[0].meanDelay > 2.5);
     CHECK(*red60.movements[0].meanDelay > *green.movements[0].meanDelay + 10);
     CHECK(green.queues[0].maxLength == 0); CHECK(red60.queues[0].maxLength > 20);
     // Exact replay per seed (hard rule 2).

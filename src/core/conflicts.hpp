@@ -50,6 +50,9 @@ std::optional<double> zoneHold(const Scenario&, const ScenarioIndex&, const std:
 // How far short of a line a vehicle at walking pace is still "at" it: the gap car-following keeps
 // behind a standing obstacle at kStoppedSpeed, plus kLineReach.
 double stopLineReach(const DriverBehaviour&, double driverFactor);
+// Come to the line, in that sense: below walking pace with the front within stopLineReach. A Stop and a
+// parking lot's gate (M8.4a) use this one test.
+bool atStopLine(const Vehicle&, double line, const DriverBehaviour&);
 // Held at rest by its Stop this tick: service began but has not yet run a whole tick at zero.
 inline bool restsAtStop(const StopService* s, std::uint64_t tick) { return s && s->since + 1 >= tick; }
 std::vector<StopService> refreshStops(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,

@@ -82,6 +82,7 @@ void EditorWindow::buildResults() {
     queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,2);
     dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote")->addWidget(dischargeTable_,1);
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote")->addWidget(clampTable_,1);
+    lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote")->addWidget(lotTable_,1); // M8.6b
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -101,6 +102,10 @@ void EditorWindow::translateResults() {
     resultsTabs_->setTabText(0,text("editorResultsTabMovements"));
     resultsTabs_->setTabText(1,text("editorResultsTabDischarge"));
     resultsTabs_->setTabText(2,text("editorResultsTabClamps"));
+    resultsTabs_->setTabText(3,text("editorResultsTabLots"));
+    lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
+        text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
+        text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});
     dischargeTable_->setHorizontalHeaderLabels({text("editorDischargeHead"),text("editorDischargeLane"),
         text("editorDischargeGreens"),text("editorDischargeEstimates"),text("editorDischargeHeadway"),
         text("editorDischargeRate"),text("editorDischargeStartup"),text("editorDischargeReasons")});
@@ -114,7 +119,7 @@ void EditorWindow::refreshResults() {
     // 3,000 Steps): -11% of the Run view's time per Step, -28% of the action.
     if(!resultsPage_ || !resultsPage_->isVisible())return;
     // Only the inner tab on show is rebuilt; switching tabs refreshes the new one.
-    refreshDischarge(); refreshClamps();
+    refreshDischarge(); refreshClamps(); refreshLots();
     refreshBatch(); // M5.6/M5.8b: a running or finished batch or comparison takes the single run's place
     if(batchShown())return;
     if(!movementTable_->isVisible())return;
@@ -211,5 +216,28 @@ void EditorWindow::exportResults(const QString& file) const {
 }
 void EditorWindow::copyResults() const {
     QGuiApplication::clipboard()->setText(QString::fromStdString(csvToTsv(resultsCsv())));
+}
+// M8.6b (D162): each lot's row of the single run's report (D160); a batch keeps it in its CSV/JSON.
+void EditorWindow::refreshLots() {
+    if(!lotTable_ || !lotTable_->isVisible())return;
+    const auto report=runReport();
+    if(!report || report->lots.empty()){
+        lotTable_->setRowCount(0); lotNote_->setText(text(report?"editorLotNone":"editorResultsEmpty")); return;
+    }
+    lotTable_->setRowCount(static_cast<int>(report->lots.size()));
+    const auto count=[](std::uint64_t n){
+        auto* item=new QTableWidgetItem(QString::number(n)); editorDesign::setNumericText(item,true);
+        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter); return item;
+    };
+    for(int r=0;r<lotTable_->rowCount();++r){
+        const auto& l=report->lots[static_cast<std::size_t>(r)];
+        lotTable_->setItem(r,0,new QTableWidgetItem(QString::fromStdString(l.name)));
+        lotTable_->setItem(r,1,count(l.capacity)); lotTable_->setItem(r,2,figure(l.occupancyMean));
+        lotTable_->setItem(r,3,count(l.occupancyPeak)); lotTable_->setItem(r,4,count(l.occupancyEnd));
+        lotTable_->setItem(r,5,count(l.admitted)); lotTable_->setItem(r,6,count(l.departed));
+        lotTable_->setItem(r,7,figure(l.gateWaitMean)); lotTable_->setItem(r,8,figure(l.gateWaitMax));
+        lotTable_->setItem(r,9,count(l.waitedOverTick));
+    }
+    lotNote_->setText(text("editorLotNote").arg(report->parked));
 }
 }

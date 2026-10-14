@@ -128,6 +128,12 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
     index.w74 = std::any_of(scenario.behaviours.begin(), scenario.behaviours.end(),
                             [](const auto& b) { return b.w74.has_value(); });
     indexLaneChanges(scenario, index);
+    if (!scenario.parkingLots.empty()) { // M8.4a: which lot each gate route ends at
+        index.lotOfRoute.assign(scenario.routes.size(), SIZE_MAX);
+        for (std::size_t k = 0; k < scenario.parkingLots.size(); ++k)
+            for (const auto& id : scenario.parkingLots[k].gateRouteIds)
+                index.lotOfRoute[static_cast<std::size_t>(&detail::byId(scenario.routes, id) - scenario.routes.data())] = k;
+    }
     return index;
 }
 const std::vector<RoutePart>& partsFor(const ScenarioIndex& index, const Scenario& scenario, const Route& route) {

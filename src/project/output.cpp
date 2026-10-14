@@ -83,8 +83,24 @@ Json checkpointJson(const SimState& state) {
         inputs.push_back({{"id", scenario.inputs[i].id},
                           {"nextArrival", optionalNumber(state.inputs[i].nextArrival)}, {"queue", queue}});
     }
-    return {{"tick", state.tick}, {"randomState", state.randomState}, {"nextVehicleId", state.nextVehicleId},
-            {"completed", state.completed}, {"vehicles", vehicles}, {"inputs", inputs}};
+    Json result{{"tick", state.tick}, {"randomState", state.randomState}, {"nextVehicleId", state.nextVehicleId},
+                {"completed", state.completed}, {"vehicles", vehicles}, {"inputs", inputs}};
+    // M8.5 (D160): a parked vehicle is in no list above; only with a lot, so other checkpoints keep their bytes.
+    if (!state.lots.empty()) {
+        Json lots = Json::array();
+        for (std::size_t i = 0; i < state.lots.size(); ++i) {
+            const auto& lot = state.lots[i];
+            Json parked = Json::array(), gate = Json::array();
+            for (const auto& p : lot.parked) {
+                auto j = pendingJson(scenario, p.vehicle); j["admitted"] = p.admitted; j["dwellEnd"] = p.dwellEnd;
+                parked.push_back(std::move(j));
+            }
+            for (const auto& g : lot.gate) gate.push_back({{"vehicleId", g.vehicleId}, {"since", g.since}});
+            lots.push_back({{"id", scenario.parkingLots[i].id}, {"parked", parked}, {"leaving", lot.leaving}, {"gate", gate}});
+        }
+        result["lots"] = std::move(lots);
+    }
+    return result;
 }
 Json summaryJson(const RunSummary& summary) {
     return {{"validation", "not-yet-validated"}, {"completed", summary.completed}, {"safetyClamps", summary.safetyClamps},

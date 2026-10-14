@@ -136,7 +136,9 @@ The editor's Results tab runs the same batch as `--seeds`, for the project open 
   invalidated as above; starting a single run discards the batch.
 - **Table.** Movements and sections: n, mean delay, ±95 % half-width, mean vehicles, mean travel
   time, mean unfinished; sections add control type and LOS ([LOS](LOS.md) §4). Approaches: n,
-  mean queue ±95 %, max queue. The note names the measure, the evaluation period, the overloaded
+  mean queue ±95 %, max queue. With a parking lot (M8.5, D160) the JSON and CSV add a lot block
+  (occupancy mean ±95 %, peak, end, admitted, departed, gate wait mean ±95 % and max), the gate
+  queue appears as the approach `<lot> gate`, and the per-seed JSON adds `parked`. The note names the measure, the evaluation period, the overloaded
   seeds and the movements with unfinished trips (§3, §5), under the not-validated marker.
 - **Export** writes `batchCsv` (§4), byte for byte the CLI's `--csv` for the same project and seeds.
 - **Copy** puts the same text on the clipboard as tab-separated values (`csvToTsv`): comment

@@ -28,7 +28,8 @@ MovementAccumulator::MovementAccumulator(EvaluationSpec spec)
     : spec_(std::move(spec)), count_(spec_.movementNames.size()),
       delay_(spec_.movementNames.size()), travel_(spec_.movementNames.size()),
       queueSum_(spec_.counters.size()), queueMax_(spec_.counters.size()),
-      sections_(spec_.sections, spec_.warmup, spec_.end, spec_.cooldown.has_value()) {}
+      sections_(spec_.sections, spec_.warmup, spec_.end, spec_.cooldown.has_value()),
+      lots_(spec_.lots, spec_.warmup, spec_.end) {}
 void MovementAccumulator::bind(const SimState& state) {
     // Slots are resolved once per scenario; a run never swaps its scenario.
     if (bound_ == state.scenario.get()) return;
@@ -94,6 +95,7 @@ void MovementAccumulator::observe(const SimState& state) {
     if (!std::is_sorted(queued.begin(), queued.end(), byId)) std::sort(queued.begin(), queued.end(), byId);
     queued_ = std::move(queued);
     sections_.observe(state); // M5.4: every state, so crossings before the period are still seen
+    lots_.observe(state);     // M8.5: every state, so a gate arrival before the period is still seen
     // Hysteresis above runs every tick so the queued state is right when the period opens.
     if (!inPeriod(state.time)) return;
     // Per line, the vehicles whose route crosses it; an approach is the max over its lines.
@@ -150,6 +152,7 @@ MovementReport MovementAccumulator::report(const SimState& end) const {
     r.completed = summary.completed; r.safetyClamps = summary.safetyClamps; r.meanDelay = summary.meanDelay;
     r.laneChanges = summary.laneChanges;
     r.sections = sections_.report(); r.los = spec_.los;
+    r.lots = lots_.report(end); r.parked = parkedCount(end); // M8.5
     r.unassigned = unassigned_;
     r.pending = pendingCount(end); r.active = end.vehicles.size(); r.time = end.time;
     return r;

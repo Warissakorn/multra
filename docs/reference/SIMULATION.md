@@ -30,6 +30,8 @@ engine timestep. Pausing stops the Qt timer. The run status shows the completed-
 delay and the safety-clamp count; both are diagnostics, not HCM control delay or LOS.
 M1.24 retired the separate M0 harness window — the editor and `trafficsim-cli` are the two
 surfaces that run a scenario, and they produce the same run for the same seed.
+The seed is mixed with one splitmix64 step before xorshift32's first draw, so small seeds start
+well spread (D159); `state.seed` keeps the number the user typed.
 
 ## Public contracts
 

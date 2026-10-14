@@ -54,10 +54,6 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    (R2). Book the cap as its own slice, or leave it? *Owner:*
 6. **Routing stations** (listed 2026-10-06). Continuous-time or several stations on one Link,
    beyond M2.1.3: wanted? *Owner:*
-7. **Multi-level modelling parameters** (listed 2026-10-09, D145). The six questions in
-   [MULTI_LEVEL_MODELLING](MULTI_LEVEL_MODELLING.md) §8: Meso formulation, default VDF and its
-   citation, deterrence form and trip purposes, the mode set (with PROBLEM §8), convergence
-   defaults, on-street parking in M8 or later. M10/M11 contracts wait on 1–5. *Owner:*
 8. **The example's cool-down** (listed 2026-10-09, D146). `four-leg-signalised` stays schema 17
    with no cool-down, so its batch still warns on 11 of 12 movements; 300 s clears every window
    trip ([evidence](../evidence/m5.9-cooldown.md)). Give the example a cool-down (its tests'
@@ -67,6 +63,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
+
+Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
+([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
 
 ## C — Run view (the 125 % screen)
 
@@ -91,6 +90,16 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    raised; open the original, Results → Compare with… the copy (Seeds 42-51), Cancel part way, run
    again, Copy into Excel/Word, Export; Thai strings. Do the table and note read as alternative
    minus base, and does the pasted table land column by column? *Owner:*
+8. **M8.6a zones** (listed 2026-10-14, D161). On a copy of four-leg: press Z, Ctrl+right-click
+   four corners beside the West approach, Enter; in the Zones tab rename it, select the West
+   approach Link and add an origin connector, the East exit and add a destination connector,
+   change a share, Undo/Redo; Thai strings. Is the polygon easy to draw and the connector line
+   readable at normal zoom? *Owner:*
+9. **M8.6b OD table and lot** (listed 2026-10-14, D162). With two zones and their connectors:
+   OD matrices → Add, type a few trips, untick and re-tick a zone; Zones → Parking lot… on one
+   zone (capacity 3, a short dwell); Run to the end and open Results → Parking lots; Thai strings.
+   Does the grid read as origin rows × destination columns, and do the lot figures make sense to an
+   engineer? *Owner:*
 
 ## D — Right-of-way on the drawing
 

@@ -64,8 +64,8 @@ The loaded scenario can contain explicit `definition.vehicleTypes` and
 catalog directory is loaded in filename order. Adding the 50th vehicle type needs no
 C++ edit. The authoring fixture format is documented in `../docs/reference/SIMULATION.md`.
 
-Seed 42 outputs 31 completed trips, 0 active, 0 pending, mean delay
-29.249359418430977 seconds and 0 safety clamps after 180 simulated seconds.
+Seed 42 outputs 45 completed trips, 1 active, 0 pending, mean delay
+31.75870154816726 seconds and 1 safety clamp after 180 simulated seconds (D159 seeding).
 This is an unvalidated completed-trip diagnostic, **not HCM control delay or LOS**.
 
 | Output field | Interpretation |

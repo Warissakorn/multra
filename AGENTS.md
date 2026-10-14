@@ -156,7 +156,8 @@ tests/
   remove its unvalidated marker or accept merging paths before right-of-way is implemented.
 - The previous TypeScript application is retained in Git history, not as a second engine.
 - Native tests compare four TS baselines with a 1e-7 physical-value tolerance and exact
-  same-build replay. Never regenerate baseline fixtures to make a failing port pass.
+  same-build replay, under `SeedStart::raw` (the pre-D159 seed mapping, used nowhere else).
+  Never regenerate baseline fixtures to make a failing port pass.
 - UI text lives in `data/locales/`. Runtime catalogs are copied beside executables.
 - **A test that forces a failure must first assert that the forcing worked**, then assert the
   consequence. Order it the other way and a platform where the setup silently no-ops reports a

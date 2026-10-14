@@ -273,6 +273,7 @@ int main(int argc, char** argv) {
         result["compiler"] = TRAFFICSIM_COMPILER;
         result["seed"] = seed; result["time"] = state.time; result["active"] = state.vehicles.size();
         result["pending"] = pendingCount(state);
+        if (!state.lots.empty()) result["parked"] = parkedCount(state); // M8.5: only with a lot
         std::cout << result.dump(2) << '\n';
         return std::cout ? 0 : 1;
     } catch (const std::exception& error) {

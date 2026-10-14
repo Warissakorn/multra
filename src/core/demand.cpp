@@ -13,6 +13,25 @@ double random(std::uint32_t& state) {
     state ^= state << 5;
     return (static_cast<double>(state) + 0.5) / 4294967296.0;
 }
+// One new vehicle: its desired speed and driver factor drawn in this order, then (only with a w74
+// behaviour) its hashed traits. Arrivals and a lot's initial occupants (M8.4a) both come from here.
+PendingVehicle samplePending(SimState& state, std::uint32_t input, std::uint32_t route, std::uint32_t typeIndex,
+                             double scheduledTime) {
+    const auto& type = state.scenario->vehicleTypes[typeIndex];
+    const double desiredSpeed = type.desiredSpeed.min + random(state.randomState) *
+                               (type.desiredSpeed.max - type.desiredSpeed.min);
+    // Separate statements specify draw order; C++ operand evaluation order must
+    // never choose which draw goes to the logarithm versus cosine.
+    const double radiusDraw = random(state.randomState);
+    const double angleDraw = random(state.randomState);
+    const double gaussian = std::sqrt(-2 * std::log(radiusDraw)) *
+                            std::cos(2 * std::numbers::pi * angleDraw);
+    PendingVehicle v{state.nextVehicleId++, input, route, typeIndex, scheduledTime, desiredSpeed,
+                     std::clamp(0.5 + 0.15 * gaussian, 0.0, 1.0)};
+    // Hashed, not drawn: randomState's sequence is the same with or without W74 (D129).
+    if (state.index->w74) v.w74Traits = w74Traits(state.seed, v.id, v.driverFactor);
+    return v;
+}
 void initializeInputs(SimState& state) {
     for (const auto& input : state.scenario->inputs) {
         InputState current{std::nullopt, {}};
@@ -33,24 +52,9 @@ void generateArrivals(SimState& state) {
         // Resolved once per scenario in the index, not once per input per tick.
         const auto routeIndex = state.index->routeOfInput[i];
         const auto typeIndex = state.index->typeOfInput[i];
-        const auto& type = state.scenario->vehicleTypes[typeIndex];
         while (current.nextArrival && *current.nextArrival <= state.time) {
-            const double desiredSpeed = type.desiredSpeed.min + random(state.randomState) *
-                                       (type.desiredSpeed.max - type.desiredSpeed.min);
-            // Separate statements specify draw order; C++ operand evaluation order must
-            // never choose which draw goes to the logarithm versus cosine.
-            const double radiusDraw = random(state.randomState);
-            const double angleDraw = random(state.randomState);
-            const double gaussian = std::sqrt(-2 * std::log(radiusDraw)) *
-                                    std::cos(2 * std::numbers::pi * angleDraw);
-            current.queue.push_back({state.nextVehicleId++, static_cast<std::uint32_t>(i),
-                routeIndex, typeIndex, *current.nextArrival, desiredSpeed,
-                std::clamp(0.5 + 0.15 * gaussian, 0.0, 1.0)});
-            // Hashed, not drawn: randomState's sequence is the same with or without W74 (D129).
-            if (state.index->w74) {
-                auto& v = current.queue.back();
-                v.w74Traits = w74Traits(state.seed, v.id, v.driverFactor);
-            }
+            current.queue.push_back(samplePending(state, static_cast<std::uint32_t>(i), routeIndex, typeIndex,
+                                                  *current.nextArrival));
             const double arrival = *current.nextArrival - std::log(random(state.randomState)) *
                                                          3600 / input.vehiclesPerHour;
             current.nextArrival = arrival < input.endTime ? std::optional(arrival) : std::nullopt;
