@@ -169,7 +169,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         execute("editorMoveHead",[&](auto& d){moveSignalHead(d,id,station);});
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
-    buildDemandTables(); buildRouting(); buildRunControls(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildZones(); buildRecovery(); buildPalette();
+    buildDemandTables(); buildRouting(); buildRunControls(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildZones(); buildOd(); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
@@ -213,7 +213,7 @@ void EditorWindow::translate() {
         if(english)for(int column=0;column<table->columnCount();++column)
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
-    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateZones(); translatePalette(); refreshToolHint();
+    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateZones(); translateOd(); translatePalette(); refreshToolHint();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
     language_->setAccessibleName(text("language"));
@@ -289,6 +289,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshZones();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshZones();refreshOd();refreshDiagnostics();refreshRun();
 }
 }

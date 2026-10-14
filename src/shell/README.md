@@ -1,5 +1,5 @@
 Qt Widgets desktop: the network editor window, the application's only window since M1.24 — inspector, tables, Results (single run, N seeds on one worker thread — `editor_batch.cpp`, D141 — or the open project compared with a chosen file on that worker — `editor_compare.cpp`, D149), Run/Pause/Step/Reset, seed, playback speed, open/save/recovery and English/Thai UI from data/locales/.
 
-`editor_zones.cpp` (M8.6a, D161) is the Zones tab: zones drawn with the Zone tool (Z) in `../editor/canvas_zones.cpp`, their connectors added to the Link selected on the canvas.
+`editor_zones.cpp` (M8.6a, D161) is the Zones tab: zones drawn with the Zone tool (Z) in `../editor/canvas_zones.cpp`, their connectors added to the Link selected on the canvas. `editor_od.cpp` and `od_lot_dialogs.cpp` (M8.6b, D162) are the OD matrices tab, its grid dialog and the lot dialog; Results → Parking lots is in `editor_results.cpp`.
 
 `editor_map.cpp` supplies localized map settings, navigation and visibility actions.

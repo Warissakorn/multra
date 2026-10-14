@@ -1,13 +1,14 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status:** M8.6a implemented 2026-10-14 (D161): the Zone tool, the Zones tab and zone connectors
+**Status:** M8.6b implemented 2026-10-14 (D162): the OD matrices tab, the lot dialog and the Results
+lot table; every M8 object is now authored in the editor. M8.6a implemented 2026-10-14 (D161): the Zone tool, the Zones tab and zone connectors
 in the editor (§9). M8.5 implemented 2026-10-14 (D160): the lot report of §5 in the movement report, CLI
 JSON/CSV, checkpoints and batches (PL11). M8.4b implemented 2026-10-14 (D157): the authored ParkingLot — codec, checks,
 commands, compiler and Run tier (OD7, PL7–PL10 end to end). M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
 on hand-built scenarios. M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
 the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
 2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
-The OD matrix table, the lot dialog and the Results lot table (M8.6b) are **not implemented**. This document fixes the
+The M8 gate's development-access study and the owner's look remain. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
@@ -353,7 +354,7 @@ Sitting B10, answered "as recommended":
    so gate wait is included; the lot table (§5, M8.5) reports gate wait separately.
 4. **On-street parking that blocks a lane:** after M8 (design §8 question 6, D158).
 
-## 9. Editor (M8.6a implemented, D161; M8.6b planned)
+## 9. Editor (M8.6a implemented, D161; M8.6b implemented, D162)
 
 - **Zone tool.**
   - `Z` selects it (index 12, palette group *Demand*); the Zones tab opens with it.
@@ -378,7 +379,19 @@ Sitting B10, answered "as recommended":
 - **No lot tool.** `P` is already *cycle priority*, and a lot is one per zone, so M8.6b edits it
   from the zone's row.
 - **Rows ZE1–ZE5** live in `tests/zone_ui_tests.cpp` (ctest `zone-ui`, offscreen).
-- **M8.6b:**
-  - the OD matrix table and its grid dialog (zones × zones, period, composition);
-  - the lot dialog (capacity, initial occupancy and composition, gate service, dwell curve);
-  - the Results lot table and `parked` in the run status.
+- **OD matrices tab** (object tab 13, M8.6b).
+  - Columns: id, period, composition, zone count, total trips. *Add* (with a zone), *Edit*
+    (double-click/Enter) and *Delete*, each one step.
+  - The dialog has start/end (s), a composition from the resolved catalog and a checkable zone
+    list.
+  - It also has a zones × zones grid (row = origin) whose values are kept by zone id across
+    unchecking. It refuses an empty zone set and end ≤ start before closing.
+- **Lot dialog** (*Parking lot…* on the Zones tab, M8.6b): "this zone is a parking lot",
+  capacity, parked at start and their composition, gate service, and the dwell rows (minutes,
+  cumulative share).
+  - Unchecking deletes the lot.
+  - The structural tier refuses a bad curve or occupancy with its own code.
+- **Results → Parking lots** (M8.6b): one row per lot from the single run's report (§5), and a
+  note giving the parked count. The run status appends ` · parked N` when the scenario has lots.
+  The batch view keeps its CSV/JSON lot block; a batch lot table is not booked.
+- **Rows OL1–OL5** live in `tests/od_lot_ui_tests.cpp` (ctest `od-lot-ui`).

@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the queue below; M8.6b is the default next slice (M8.1–M8.6a delivered, D153–D157, D160–D161; B11 seed mixing D159).
+After that review, return to the queue below; M8 is code complete (M8.1–M8.6b, D153–D157, D160–D162; B11 seed mixing D159); its gate is the owner's.
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -64,29 +64,21 @@ The owner accepted every recommendation, R1–R8 ([review](audits/ROADMAP_REVIEW
 
 **The D143 queue has no session slice left** (items 1, 2's example cool-down, 3's closure and 4's
 answer are the owner's). Next, as the owner chooses: the W74 cited preset and W99 contract
-(below), or M3.4 (R7, §3 below). Without a choice, the next session continues **M8** (below).
+(below), or M3.4 (R7, §3 below). M8's code is done (below); without a choice, the next session takes the
+**W74 cited preset and W99 contract**.
 Motorcycles wait for M5.7 (R3; the question is in [PROBLEM](PROBLEM.md) §8).
 
-**Multi-level modelling (D145), M8 in progress.** Done: M8.1 contract (D153), M8.2 zone-layer
+**Multi-level modelling (D145): M8 code complete.** M8.1 contract (D153), M8.2 zone-layer
 codec/commands (D154), M8.3 OD → routes/inputs (D155), M8.4a engine lot runtime (D156), M8.4b
-authored ParkingLot and its compiler (D157), M8.5 lot outputs (D160: occupancy, flows, gate wait
-and the gate queue in the movement JSON/CSV, batches and checkpoints; `parked` closes the count).
-A zone-OD study with a capacity-limited lot runs and reports through `compileDocument`, the CLI
-and batches; [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
-Left before the M8 gate:
-1. **M8.6b — editor: OD table, lot dialog, lot Results, next session.** M8.6a (D161) gave the Zone
-   tool (Z), the Zones tab and zone connectors ([contract](reference/ZONES_AND_PARKING.md) §9).
-   Left:
-   - an OD matrices table with a grid dialog (zones × zones, period, composition), modelled on
-     `demand_period_editor.cpp`;
-   - a lot dialog opened from the zone's row (capacity, initial occupancy and composition, gate
-     service, dwell curve rows);
-   - the Results lot table (`MovementReport::lots`) and `parked` in the run status.
-
-   Rows first in a UI test (`tests/zone_ui_tests.cpp` or a new file), Thai/English. Qt is
-   installable in the cloud container (`apt-get install qt6-base-dev libproj-dev`), so the desktop
-   suite runs here; Windows waits for `native.yml`. Owner look: sitting C8 (zones) and a new row for
-   the OD table and lot dialog.
+authored ParkingLot and compiler (D157), M8.5 lot outputs (D160), M8.6a Zone tool and Zones tab
+(D161), M8.6b OD matrices tab, lot dialog and Results lot table (D162);
+[ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
+- **The gate is the owner's:** a development-access study run end to end, and sitting C8/C9.
+- **Before merging** the branch `claude/m8.1-zones-contract` (no PR yet): open a PR, so that
+  `native.yml` runs the Windows UI suites. Linux desktop passed 133/133 locally (Qt 6.4.2,
+  offscreen).
+- **M9** (dynamic assignment) is the next multi-level milestone. Its contract needs the owner's
+  B7 answers (D158) only for M10/M11.
 Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
 time intervals and compositions' intervals are not used for departures/initial types; the lot
 report has one window (no sub-interval series) and `--compare` has no lot block.

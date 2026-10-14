@@ -5,6 +5,8 @@ entry behind what you are changing, not the directory.
 
 ## PROGRESS
 
+- [`PROGRESS-2026-10-09-d142-turning-counts.md`](PROGRESS-2026-10-09-d142-turning-counts.md) — 2026-10-09 — Volume from turning counts (D142, schema 26), moved whole 2026-10-14
+
 - [`PROGRESS-2026-10-09-m5.6-run-seeds.md`](PROGRESS-2026-10-09-m5.6-run-seeds.md) — 2026-10-09 — M5.6: the editor's Run seeds, Copy and Export (D141), moved whole 2026-10-14
 
 - [`PROGRESS-2026-10-09-optimization-pass.md`](PROGRESS-2026-10-09-optimization-pass.md) — optimization pass: lld, D140, validate benchmark, moved whole 2026-10-14

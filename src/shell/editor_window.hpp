@@ -263,6 +263,19 @@ private:
     void addZoneConnector(bool origin);
     std::string selectedZone() const;
     std::string selectedZoneConnector() const;
+    // M8.6b (D162): the OD matrices tab, the lot dialog and the catalog's compositions for both.
+    QTableWidget* odTable_{};
+    std::uint64_t odRevision_{UINT64_MAX};
+    void buildOd();
+    void translateOd();
+    void refreshOd();
+    void showOd();
+    void editOd(const std::string& id); // empty: a new matrix
+    void editLot(const std::string& zoneId);
+    std::string selectedOd() const;
+    std::vector<std::pair<std::string, QString>> compositionChoices() const;
+    QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
+    void refreshLots();
     QLineEdit* runSeed_{};
     QComboBox* runSpeed_{};
     QLabel* runInfo_{};

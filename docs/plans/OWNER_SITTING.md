@@ -95,6 +95,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    approach Link and add an origin connector, the East exit and add a destination connector,
    change a share, Undo/Redo; Thai strings. Is the polygon easy to draw and the connector line
    readable at normal zoom? *Owner:*
+9. **M8.6b OD table and lot** (listed 2026-10-14, D162). With two zones and their connectors:
+   OD matrices → Add, type a few trips, untick and re-tick a zone; Zones → Parking lot… on one
+   zone (capacity 3, a short dwell); Run to the end and open Results → Parking lots; Thai strings.
+   Does the grid read as origin rows × destination columns, and do the lot figures make sense to an
+   engineer? *Owner:*
 
 ## D — Right-of-way on the drawing
 

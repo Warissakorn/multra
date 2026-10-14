@@ -8,6 +8,26 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — M8.6b OD table, lot dialog, lot Results (D162)
+
+M8 is now code complete. A new OD matrices tab (`src/shell/editor_od.cpp`) has a grid dialog
+(`src/shell/od_lot_dialogs.cpp`): start, end, composition from the resolved catalog, and a
+checkable zone list. The grid keeps its values by zone id. The lot dialog opens from the zone's
+row; unchecking it deletes the lot. Both commit through `execute` as one step, so the structural
+tier refuses what the dialogs cannot explain. Results gained a *Parking lots* tab from the single
+run's report, and the run status appends the parked count.
+
+`od-lot-ui` (OL1–OL5) builds the M8.4b study with commands, types the matrix, makes the site a
+lot, runs to the end and reads the lot row. The test was written before the code but first run
+after it, so this slice has no recorded red run. It caught one wrong assumption of its own:
+History revisions are not contiguous after Undo/Redo, so "one step" is checked by one Undo.
+
+The first screenshot showed the grid's spin boxes cut off. They now have no arrows and cells
+sized to the styled widget.
+
+Desktop 133/133 on Linux (Qt 6.4.2, offscreen); headless 90/90. Windows waits for a PR's
+`native.yml`.
+
 ## 2026-10-14 — M8.6a zones in the editor (D161)
 
 M8.6 was split (D161): this slice is the spatial part.
@@ -447,27 +467,6 @@ now owns calibrated gap acceptance). M5_PLAN gains M5.8 and M5.9 and the order a
 PROBLEM gains §8 (motorcycles). `plans/OWNER_SITTING.md` is now the single list of owner items
 (gates, chat decisions, 22 desktop looks, each dated with a yes/no failure question); NEXT keeps
 only the session queue and points there. `check`: docs and file sizes clean.
-
----
-
-## 2026-10-09 — Volume from turning counts (D142, schema 26)
-
-The owner answered ROADMAP O10's "count sheet typed once vs D46": an input may take its volume
-from its entry decision's turning counts. `VehicleInput.volumeFromCounts` is opt-in, so D46 and
-every existing file are untouched. `src/project/counted_volumes.cpp` holds the one rule:
-`countedDecision` (the decision named, or the placed one on the entry Link), `countedVolumes`
-(summed base-route counts × 3600 / length per decision interval) and `syncCountedVolumes`, called
-on read, in `putInput`/`putRoutingDecision`, in `History::execute` and at the top of
-`withRoutingDecisions`, so no path sees a stale volume. The input's intervals are not written for
-such an input. Issues `INPUT_COUNTS_NO_DECISION`, `INPUT_COUNTS_EMPTY` and
-`INPUT_COUNTS_POSITIONED` (a D119 decision is a downstream split, not a source). The input dialog
-gains the checkbox, which locks the typed volume, counts and Periods and shows the counted total;
-the input and decision rows say which feeds which. `field<bool>` now refuses a non-boolean.
-
-Evidence (Linux, GCC, Qt 6.4.2 offscreen, Debug): `demandcounts` 8/8 (VC1–VC7, each movement's
-vehicles equal its counts for unplaced and placed decisions), `counted-volume-ui` (VC8), and the
-D46 test unchanged. CLI `42 --project` output for the four shipped projects equals `origin/main`'s
-(`c7628e8`, built in a scratch worktree) byte for byte. Native Windows CI and the owner look are owed.
 
 ---
 

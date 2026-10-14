@@ -57,6 +57,7 @@ void EditorWindow::buildZones() {
         const auto id = selectedZone(); if (id.empty()) return;
         execute("editorDeleteZone", [&](auto& d) { deleteZone(d, id); }); // refused while a matrix or lot names it
     }));
+    bar->addAction(action("editorEditLot", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editLot(id); })); // M8.6b
     bar->addAction(action("editorAddOriginConnector", {}, [this] { addZoneConnector(true); }));
     bar->addAction(action("editorAddDestinationConnector", {}, [this] { addZoneConnector(false); }));
     connectorBar->addAction(action("editorEditZoneConnector", {}, [this] {
@@ -142,7 +143,7 @@ void EditorWindow::refreshZones() {
     }
     zoneRevision_ = history_.revision();
     const bool chosen = !zone.empty();
-    for (const auto* key : {"editorEditZone", "editorDeleteZone"}) actions_.at(key)->setEnabled(chosen);
+    for (const auto* key : {"editorEditZone", "editorDeleteZone", "editorEditLot"}) actions_.at(key)->setEnabled(chosen);
     // A connector needs the zone row and exactly one Link selected on the canvas.
     const auto& selection = canvas_->selection();
     const bool link = selection.size() == 1 && std::any_of(d.network.links.begin(), d.network.links.end(),
