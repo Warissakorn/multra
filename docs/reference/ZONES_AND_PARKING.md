@@ -1,11 +1,12 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status:** M8.4b implemented 2026-10-14 (D157): the authored ParkingLot — codec, checks,
+**Status:** M8.5 implemented 2026-10-14 (D160): the lot report of §5 in the movement report, CLI
+JSON/CSV, checkpoints and batches (PL11). M8.4b implemented 2026-10-14 (D157): the authored ParkingLot — codec, checks,
 commands, compiler and Run tier (OD7, PL7–PL10 end to end). M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
 on hand-built scenarios. M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
 the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
 2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
-Lot outputs (M8.5) and the editor tools (M8.6) are **not implemented**. This document fixes the
+The editor tools (M8.6), including a Results view of the lot report, are **not implemented**. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
@@ -227,15 +228,42 @@ where `completed` counts trips ended at network exits and at gates, `parked` is 
 (`occupied` minus those waiting in exit queues), `pending` includes exit queues. A vehicle that
 parks and leaves is one vehicle with two trips; trips are counted per trip, vehicles per identity.
 
-## 5. Outputs (M8.5 scope)
+## 5. Outputs (implemented M8.5, D160)
 
-Per lot, reusing the M5 report surfaces and CSV formatters, with the marker:
+`LotAccumulator` (`src/eval/lots.*`) reads snapshots only; the engine emits nothing new for it.
+`MovementAccumulator` owns one, so every M5 surface carries it. The not-validated marker applies.
 
-- occupancy at each evaluation interval end, peak and mean over the evaluation period;
-- gate queue: the D40 queue counter at the gate line (mean and max length);
-- gate wait per admitted vehicle (service completion → admission), mean and max, and the number
-  of arrivals that waited more than one tick;
-- in/out flows per interval; vehicles in the lot, in its gate queue and in its exit queue at run end.
+- **Row per lot**, named by its zone (else the lot id), with these fields:
+  - `capacity`;
+  - occupancy at the evaluation end (`occupancyEnd`, the last snapshot at or before it), and its
+    mean and peak over the window's snapshots;
+  - `admitted` (in) and `departed` (out) in the window;
+  - gate wait mean and max;
+  - `waitedOverTick`;
+  - at the report: `endParked`, `endAtGate`, `endInExitQueue`.
+- **Admission:** the `ArrivedEvent` on one of the lot's gate routes. It is a completed trip, so
+  movement delay keeps the gate wait (D158).
+- **Gate wait:** admission time − (arrival at the line + `gateServiceTime`), floored at 0. It is
+  the time spent waiting for a space after service. A vehicle that drove in without stopping
+  waits 0.
+- **Departure:** the vehicle's id drops out of the lot's parked and leaving lists together, so it
+  was inserted. That can happen in the step that released it.
+- **Window:** the M5 evaluation period `[warmup, end]` (D132). There are no sub-intervals: the M5
+  surfaces have none, and a per-interval series waits for one.
+- **Gate queue:** a derived D40 queue counter `<lot> gate`. It has one line at the end of every
+  distinct last segment of the lot's gate routes, and appears with the approaches (mean and max
+  length).
+- **Accounting:** the report's `parked` counts the vehicles in a lot that have not been released.
+  A released vehicle is already pending in its exit queue. Then
+  `generated = active + pending + parked + completed − admitted`.
+- **Surfaces** (all written only with a lot, so other projects keep their bytes):
+  - `movementJson` `lots` {validated, measure, rows} and `parked`;
+  - a `movementCsv` lot block and a `parked` line;
+  - `batchJson` `lots` with estimates, and a `batchCsv` lot block (n, means, CI);
+  - `parked` per seed in the batch JSON and in the CLI's single-run summary;
+  - `checkpointJson` `lots` (parked vehicles with `admitted`/`dwellEnd`, leaving ids, gate
+    `{vehicleId, since}`).
+- **Not booked:** a lot comparison in `--compare`.
 
 ## 6. Validation issues
 
@@ -309,7 +337,7 @@ blocked, the key is below 31), then the consequence. Test groups are planned nam
 | PL8 | Departures' destinations over 40 well-mixed seeds (2,000 departures) match the lot row's 3 : 1 within the binomial 95 % band (M8.4b) | `parkingproject` |
 | PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged; a lot-free document compiles no lot and no `lot:` input | `parkinglot`, `parkingproject` |
 | PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`), one with no gate or no exit connector, and an unknown initial composition; authoring keeps them. Codec and structural checks for `parkingLots` as Z2–Z5 (`parkingcodec`). The M8 gate run: a zone-OD study fills a capacity-3 lot, queues at the gate and keeps every vehicle (M8.4b) | `parkingproject` |
-| PL11 | Reports (M8.5) give occupancy, gate queue, gate wait and flows that reconcile with the event stream, with the not-validated marker | `parkingoutputs` |
+| PL11 | Reports (M8.5, implemented) give occupancy, gate queue, gate wait and flows that reconcile with the event stream, with the not-validated marker | `parkingoutputs` |
 
 The M8 gate (ROADMAP) additionally needs the editor tools and the OD table (M8.6) and a
 development-access study run end to end; no row above closes it alone.

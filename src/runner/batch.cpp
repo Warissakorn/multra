@@ -91,7 +91,9 @@ BatchReport aggregate(std::vector<SeedRun> runs) {
         for (std::size_t i = 0; same && i < first.queues.size(); ++i) same = run.report.queues[i].name == first.queues[i].name;
         same = same && run.report.sections.size() == first.sections.size();
         for (std::size_t i = 0; same && i < first.sections.size(); ++i) same = run.report.sections[i].name == first.sections[i].name;
-        if (!same) throw std::invalid_argument("aggregate: runs have different movements or approaches");
+        same = same && run.report.lots.size() == first.lots.size(); // M8.5
+        for (std::size_t i = 0; same && i < first.lots.size(); ++i) same = run.report.lots[i].name == first.lots[i].name;
+        if (!same) throw std::invalid_argument("aggregate: runs have different movements, approaches or lots");
     }
     const auto& first = runs.front().report;
     for (std::size_t i = 0; i < first.movements.size(); ++i) {
@@ -114,6 +116,18 @@ BatchReport aggregate(std::vector<SeedRun> runs) {
             over(runs, [&](const SeedRun& s) { return row(s).meanTravelTime; }),
             over(runs, [&](const SeedRun& s) { return std::optional<double>(static_cast<double>(row(s).unfinished)); })},
             first.sections[i].controlType, first.sections[i].approach});
+    }
+    for (std::size_t i = 0; i < first.lots.size(); ++i) { // M8.5
+        const auto count = [i](auto field) {
+            return [i, field](const SeedRun& s) { return std::optional<double>(static_cast<double>(s.report.lots[i].*field)); };
+        };
+        r.lots.push_back({first.lots[i].name, over(runs, count(&LotRow::occupancyEnd)),
+            over(runs, [i](const SeedRun& s) { return std::optional<double>(s.report.lots[i].occupancyMean); }),
+            over(runs, count(&LotRow::occupancyPeak)), over(runs, count(&LotRow::admitted)), over(runs, count(&LotRow::departed)),
+            over(runs, [i](const SeedRun& s) { return s.report.lots[i].gateWaitMean; }),
+            over(runs, [i](const SeedRun& s) { return s.report.lots[i].gateWaitMax; }),
+            over(runs, count(&LotRow::waitedOverTick)), over(runs, count(&LotRow::endParked)),
+            over(runs, count(&LotRow::endAtGate)), over(runs, count(&LotRow::endInExitQueue))});
     }
     r.los = first.los;
     r.meanDelay = over(runs, [](const SeedRun& s) { return s.report.meanDelay; });

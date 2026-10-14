@@ -8,6 +8,31 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — M8.5 lot outputs (D160)
+
+`LotAccumulator` (`src/eval/lots.*`) reads snapshots only and is owned by `MovementAccumulator`.
+Every M5 surface therefore carries a lot row: occupancy at the evaluation end, its mean and peak,
+admitted, departed, gate wait mean and max, waits over a tick, and run-end parked, at-gate and
+in-exit-queue counts.
+- **Gate queue:** a derived D40 counter, `<lot> gate`.
+- **Accounting:** reports gain `parked`, so `generated = active + pending + parked + completed −
+  admitted` closes.
+- **Bytes kept:** JSON and CSV blocks, batch estimates, per-seed `parked` and `checkpointJson`
+  lots appear only with a lot.
+
+PL11 (`parkingoutputs`, five tests) caught one design error. Reading departures from `leaving`
+misses a vehicle released and inserted in the same step, so departures now come from the held set
+(parked ∪ leaving). The M8.4b fixture moved to `tests/parking_fixture.hpp`.
+
+Contract §5 was amended: "per interval" is the M5 evaluation window, because no sub-interval
+surface exists. Gate wait runs from the end of gate service to admission.
+
+A 10-seed batch of the short-dwell study (capacity 3, 40 veh/h for 30 min, 5–10 min dwell) gave
+occupancy 2.92 ± 0.03, gate wait 115 ± 3 s and a gate queue max of 153 m, spilling back onto the
+approach. Three seeds are flagged overloaded by the queue at the source.
+
+Headless 90/90 (Linux, GCC 13.3); `trafficsim-cli 42` unchanged at 31.75870154816726; desktop not built.
+
 ## 2026-10-14 — Owner's B7/B10/B11 answers; seed mixing (D158, D159)
 
 The owner answered "B10 ตามแนะนำ, B11 แก้, B7 ตามแนะนำ". B7 and B10 are recorded as D158 and moved

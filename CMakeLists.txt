@@ -66,7 +66,7 @@ target_link_libraries(trafficsim_model PUBLIC trafficsim_core PRIVATE trafficsim
 # Run-view geometry is Qt-free and independently testable; the core never imports it.
 add_library(trafficsim_vehicle_pose STATIC src/editor/vehicle_pose.cpp src/editor/rear_axle_pose.cpp src/editor/lane_change_pose.cpp)
 target_link_libraries(trafficsim_vehicle_pose PUBLIC trafficsim_model PRIVATE trafficsim_options)
-add_library(trafficsim_eval STATIC src/eval/discharge.cpp src/eval/discharge_passage.cpp src/eval/summary.cpp src/eval/movement.cpp src/eval/sections.cpp src/eval/los.cpp src/eval/lane_changes.cpp src/eval/segment_times.cpp src/eval/stop_lines.cpp src/eval/arrival_phases.cpp src/eval/dead_end_waits.cpp)
+add_library(trafficsim_eval STATIC src/eval/discharge.cpp src/eval/discharge_passage.cpp src/eval/summary.cpp src/eval/movement.cpp src/eval/sections.cpp src/eval/los.cpp src/eval/lane_changes.cpp src/eval/segment_times.cpp src/eval/stop_lines.cpp src/eval/arrival_phases.cpp src/eval/dead_end_waits.cpp src/eval/lots.cpp)
 target_link_libraries(trafficsim_eval PUBLIC trafficsim_core PRIVATE trafficsim_options)
 # M5.2 batches: independent seeds and their aggregate. Core and eval only (check_architecture).
 add_library(trafficsim_runner STATIC src/runner/batch.cpp src/runner/compare.cpp)
@@ -199,7 +199,7 @@ if(BUILD_TESTING)
     # itself needs no -O3; the libraries it calls keep it, so the engine under test is unchanged.
     target_compile_options(trafficsim-tests PRIVATE $<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-O1>)
     target_precompile_headers(trafficsim-tests PRIVATE <nlohmann/json.hpp>)
-    target_sources(trafficsim-tests PRIVATE tests/route_destination_tests.cpp tests/map_project_tests.cpp tests/zones_tests.cpp tests/od_demand_tests.cpp tests/parking_lot_tests.cpp tests/parking_project_tests.cpp tests/seed_mixing_tests.cpp tests/history_tests.cpp tests/rotation_tests.cpp tests/connector_surface_tests.cpp tests/lane_correspondence_tests.cpp tests/connector_mouth_sweep_tests.cpp tests/connector_lane_centre_tests.cpp tests/connector_equation_tests.cpp tests/connector_edit_motion_tests.cpp)
+    target_sources(trafficsim-tests PRIVATE tests/route_destination_tests.cpp tests/map_project_tests.cpp tests/zones_tests.cpp tests/od_demand_tests.cpp tests/parking_lot_tests.cpp tests/parking_project_tests.cpp tests/parking_output_tests.cpp tests/seed_mixing_tests.cpp tests/history_tests.cpp tests/rotation_tests.cpp tests/connector_surface_tests.cpp tests/lane_correspondence_tests.cpp tests/connector_mouth_sweep_tests.cpp tests/connector_lane_centre_tests.cpp tests/connector_equation_tests.cpp tests/connector_edit_motion_tests.cpp)
     # One ctest test per group, so `ctest -j` spreads them; a single unfiltered run was 60 s of
     # serial wall time and repeated every named group.
     set(TRAFFICSIM_TEST_GROUPS mapproject behaviourlibrary behaviourselection provenance discharge core stationrouting network reference project editor connectors mouths points
@@ -208,7 +208,7 @@ if(BUILD_TESTING)
         conflict_zone conflict_chain commitment stop_control stop_control_model signal_position
         queue_counter tjunction tjunction_controlled tjunction_signal automatic_conflict conflict_geometry
         rightofway_runtime rightofway_editor lanechange lane_correspondence mouth_sweep conflict_follow
-        discretionary lanelab lane_centres equation batch compare evaluationperiod cooldown amber traveltime los w74 w74codec w74traits w74run demandcounts zonescodec zonescommands odexpand parkinglot parkingcodec parkingproject seedmixing)
+        discretionary lanelab lane_centres equation batch compare evaluationperiod cooldown amber traveltime los w74 w74codec w74traits w74run demandcounts zonescodec zonescommands odexpand parkinglot parkingcodec parkingproject parkingoutputs seedmixing)
     foreach(group ${TRAFFICSIM_TEST_GROUPS})
         add_test(NAME ${group} COMMAND trafficsim-tests ${group})
     endforeach()

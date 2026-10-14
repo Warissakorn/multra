@@ -2,6 +2,7 @@
 #include "summary.hpp"
 #include "sections.hpp"
 #include "los.hpp"
+#include "lots.hpp"
 #include <map>
 
 namespace trafficsim {
@@ -31,6 +32,7 @@ struct EvaluationSpec {
     std::optional<double> cooldown;
     std::vector<SectionSpec> sections; // M5.4 (D133), in authored order
     std::optional<LosPack> los; // M5.5 (D134): read only when a section has a control type
+    std::vector<LotSpec> lots; // M8.5 (D160): one row per lot; each gate also has a counter above
 };
 struct MovementRow {
     std::string name; std::uint64_t vehicles{};
@@ -55,6 +57,8 @@ struct MovementReport {
     std::optional<double> cooldown; // M5.9: the spec's, so output can say how the window was read
     std::vector<SectionRow> sections; // M5.4: one per authored section; empty without any
     std::optional<LosPack> los; // M5.5: the spec's pack, so output can letter the rows
+    std::vector<LotRow> lots; // M8.5: one per spec lot; empty without any
+    std::size_t parked{};     // M8.5: in a lot, not yet released (released ones are pending)
     bool operator==(const MovementReport&) const = default;
 };
 // Delay a completed trip contributes: the same term as the run summary, so movements add up.
@@ -90,5 +94,6 @@ private:
     // One line's candidates, reused across lines and ticks so observe() allocates nothing here.
     std::vector<QueuedVehicle> behind_;
     SectionAccumulator sections_;
+    LotAccumulator lots_;
 };
 }

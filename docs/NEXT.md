@@ -29,7 +29,7 @@ review commit in [PR #138](https://github.com/Warissakorn/trafficsim/pull/138) b
 MAP10 remains the owner's check: set a reference on a real study,
 trace a known road, pan/zoom, save/reopen and judge alignment/responsiveness.
 No automated check closes survey accuracy, M1.23 interchange or existing engine gates.
-After that review, return to the queue below; M8.5 is the default next slice (M8.1–M8.4b delivered, D153–D157; B11 seed mixing D159).
+After that review, return to the queue below; M8.6 is the default next slice (M8.1–M8.5 delivered, D153–D157, D160; B11 seed mixing D159).
 
 ## Queue — owner's answers to the 2026-10-09 review (D143)
 
@@ -69,22 +69,20 @@ Motorcycles wait for M5.7 (R3; the question is in [PROBLEM](PROBLEM.md) §8).
 
 **Multi-level modelling (D145), M8 in progress.** Done: M8.1 contract (D153), M8.2 zone-layer
 codec/commands (D154), M8.3 OD → routes/inputs (D155), M8.4a engine lot runtime (D156), M8.4b
-authored ParkingLot and its compiler (D157). A zone-OD study with a capacity-limited lot now runs
-through `compileDocument`, the CLI and batches; [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
+authored ParkingLot and its compiler (D157), M8.5 lot outputs (D160: occupancy, flows, gate wait
+and the gate queue in the movement JSON/CSV, batches and checkpoints; `parked` closes the count).
+A zone-OD study with a capacity-limited lot runs and reports through `compileDocument`, the CLI
+and batches; [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md).
 Left before the M8 gate:
-1. **M8.5 — lot outputs (PL11), next session.** Contract §5. Write PL11 first, group
-   `parkingoutputs`: per lot, occupancy at each evaluation interval end, peak and mean over the
-   evaluation period, gate queue (D40 queue counter at the gate line), gate wait per admitted
-   vehicle (gate `since` → admission), arrivals that waited more than a tick, in/out flows per
-   interval, and run-end counts (parked, at the gate, in the exit queue) — reconciled with the event
-   stream, with the not-validated marker, in the CLI JSON/CSV and batch aggregate. Needs: lot state
-   in `checkpointJson` (replay/seek), and an observer input for admission/departure (an event or
-   reading `SimState::lots` per tick — decide in the contract first). Also make the run summary's
-   `active`/`pending` accounting include parked vehicles so it still closes.
-2. **M8.6 — editor:** `Z` zone and `P` lot tools, zone connectors, the OD matrix table and lot
-   dialog (Thai/English), Undo; owner look (OWNER_SITTING C-row).
+1. **M8.6 — editor, next session.** Needs a Qt desktop build (the cloud container used for
+   M8.1–M8.5 had no Qt). Zone `Z` and lot `P` tools, zone connectors, the OD matrix table, the lot
+   dialog (Thai/English) and Undo; the lot rows in the Results tab and the run status' `parked`.
+   UI tests on Linux and Windows (`native.yml`); owner look (OWNER_SITTING C-row). It is large:
+   split it if one session cannot hold it (e.g. M8.6a zones/connectors/OD table, M8.6b lot tool,
+   dialog and Results).
 Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
-time intervals and compositions' intervals are not used for departures/initial types.
+time intervals and compositions' intervals are not used for departures/initial types; the lot
+report has one window (no sub-interval series) and `--compare` has no lot block.
 **Owner's answers 2026-10-14:** B7 and B10 as recommended (D158; M8.5's gate wait is reported
 apart from movement delay, which keeps it; the M10/M11 contracts can now be written, citing the
 convergence defaults). B11 fixed (D159): seeds are mixed with splitmix64 before the first draw;
