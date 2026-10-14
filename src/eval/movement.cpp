@@ -47,6 +47,8 @@ void MovementAccumulator::bind(const SimState& state) {
             for (std::size_t r = 0; r < s.routes.size(); ++r)
                 for (const auto& part : state.index->parts[r])
                     if (part.segmentId == line.segmentId) { bound.atRoute[r] = part.start + line.position; break; }
+            for (std::size_t r = 0; r < s.routes.size(); ++r)
+                if (!std::isnan(bound.atRoute[r])) bound.routes.push_back(r);
             lines_.push_back(std::move(bound));
         }
 }
@@ -74,7 +76,7 @@ void MovementAccumulator::observe(const SimState& state) {
     }
     // Queue state with hysteresis, keyed by vehicle id; vehicles that left are dropped.
     const auto byId = [](const auto& a, const auto& b) { return a.first < b.first; };
-    std::vector<bool> queuedNow(state.vehicles.size());
+    std::vector<char> queuedNow(state.vehicles.size());
     std::vector<std::pair<std::uint64_t, bool>> queued;
     queued.reserve(state.vehicles.size());
     // Both lists are in id order from the engine, so one forward walk finds every previous entry;
@@ -100,15 +102,27 @@ void MovementAccumulator::observe(const SimState& state) {
     if (!inPeriod(state.time)) return;
     // Per line, the vehicles whose route crosses it; an approach is the max over its lines.
     std::vector<double> length(spec_.counters.size());
+    // A line sees only vehicles on routes that cross it. Each line's indices are put back in fleet
+    // order, so walkQueue sorts exactly the sequence the whole-fleet scan built, ties included.
+    routeStart_.assign(s.routes.size() + 1, 0);
+    for (const auto& v : state.vehicles) ++routeStart_[v.routeIndex + 1];
+    for (std::size_t r = 0; r < s.routes.size(); ++r) routeStart_[r + 1] += routeStart_[r];
+    routeFill_.assign(routeStart_.begin(), routeStart_.end() - 1);
+    routeItems_.resize(state.vehicles.size());
+    for (std::uint32_t i = 0; i < state.vehicles.size(); ++i) routeItems_[routeFill_[state.vehicles[i].routeIndex]++] = i;
     // A front already past the line never enters the walk, and with no queued vehicle the walk
     // stops at its first one, so both are settled here without sorting.
     for (const auto& line : lines_) {
         behind_.clear();
+        picked_.clear();
+        for (const auto r : line.routes)
+            picked_.insert(picked_.end(), routeItems_.begin() + routeStart_[r], routeItems_.begin() + routeStart_[r + 1]);
+        if (line.routes.size() > 1) std::sort(picked_.begin(), picked_.end());
         bool anyQueued = false;
-        for (std::size_t i = 0; i < state.vehicles.size(); ++i) {
+        for (const auto i : picked_) {
             const auto& v = state.vehicles[i];
             const double at = line.atRoute[v.routeIndex];
-            if (std::isnan(at) || at - v.distance < 0) continue;
+            if (at - v.distance < 0) continue;
             anyQueued = anyQueued || queuedNow[i];
             behind_.push_back({at - v.distance, s.vehicleTypes[v.typeIndex].length, queuedNow[i]});
         }

@@ -8,6 +8,14 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Engine per-tick work (D164)
+
+The owner chose the engine. A callgrind run of M2.6 (GCC 13.3, RelWithDebInfo) counted 3,833.9 M
+instructions. Three commits brought it to 3,364.2 M (−12.3 %): signal events reuse `headColors`
+(−94 M), queue lines walk only vehicles on crossing routes (`observe` 713 → 404 M), and arrivals
+check the due time first (−64 M). Every shipped project's CLI output was byte-identical, one seed
+and seeds 42–45; headless 90/90. Not done: `closestVehicle`, `occupiedSpans`, the event string copy.
+
 ## 2026-10-14 — Compile shares its routeless walks and sections (D163)
 
 The owner picked NEXT's measured compile candidate. A scratch harness timed `compileDocument`
@@ -461,21 +469,6 @@ planned rows, OWNER_SITTING B7 for the design's open parameters. Parking and reg
 left *Later*. Reasoning in [D145](decisions/RECORD.md#d145). The D124/D125 entries moved whole
 to `archive/`. Checks: `trafficsim-check-docs` and `trafficsim-check-file-sizes` built directly
 with GCC 13.3 (the headless preset lacks nlohmann/json on this machine); no engine build claimed.
-
----
-
-## 2026-10-09 — Branch audit; Results discharge and clamp pages recovered (D144)
-
-Every origin branch ahead of `main` was checked. `main` was re-rooted on 2026-09-28 (four root
-snapshots), so the 38 older branches share no history with it and git's "ahead" counts mean
-nothing; by content, every decision they name is in `main`, and the only files they hold that
-`main` lacks are the retired M0 window (D24) and an unreferenced `data/fonts/NotoSansThai.ttf`.
-PR #128 (`claude/dazzling-gates-df64jc`, closed unmerged) held the one piece of lost work:
-Results inner pages for queue discharge and safety clamps (`9b81b17`, `cbfff89`). Its W74 and
-M5 commits were already replayed or superseded. The two commits were cherry-picked onto the D142
-branch, merged by hand with M5.6 (the batch view sits in the Movements page; `startBatch` selects
-it), renumbered D135 → D144 (and a stray D134 → D139 in DRIVING_BEHAVIOUR), and `section-ui`
-now finds the Results page as the other suites do. `check`: 111/111 (Linux, Qt 6.4.2 offscreen).
 
 ---
 
