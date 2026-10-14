@@ -131,10 +131,9 @@ void EditorWindow::startBatch() {
     });
 }
 void EditorWindow::reapBatchWorkers() {
-    std::erase_if(retiredBatchWorkers_, [](auto& worker) {
-        if (!worker.done->load()) return false;
-        worker.thread.join(); return true;
-    });
+    for (auto& worker : retiredBatchWorkers_)
+        if (worker.done->load() && worker.thread.joinable()) worker.thread.join();
+    std::erase_if(retiredBatchWorkers_, [](const auto& worker) { return !worker.thread.joinable(); });
 }
 void EditorWindow::startWorker(std::size_t total, bool comparing, BatchJob job) {
     reapBatchWorkers();

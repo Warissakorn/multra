@@ -13,7 +13,7 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 The owner approved the nine-item review plan together. Fixed evaluation passages and actual
 journey free-flow, suffix display continuity, phase bins, Lab axle scaling, long OD path searches,
 Split routing stations and batch cancellation; corrected parking identity documentation. New
-regressions cover each outcome, including stop-line coordinate remaps; reasons in D167–D174.
+regressions cover each outcome, including stop-line remaps and worker cleanup; D167–D174.
 Validation: GCC 13.3 full headless build and 97/97 tests passed; Linux/Windows desktop CI pending.
 
 ## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
