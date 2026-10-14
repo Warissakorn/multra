@@ -830,5 +830,9 @@
   "labLayoutUrban": "Urban circuit (straights, curves, intersections)",
   "labLayoutOval": "Oval ring",
   "labUnitM": "%1 m",
-  "labUnitKmh": "%1 km/h"
+  "labUnitKmh": "%1 km/h",
+  "labAxlesScaled": "wheelbase %1 m, frontOverhang %2 m, rearOverhang %3 m. Axle dimensions scale in proportion to length.",
+  "labAxlesDefault": "Axle dimensions use nominal defaults for the current length.",
+  "ROUTE_SEARCH_LIMIT": "More than 4096 shortest routes. Simplify destinations or author a specific route.",
+  "OD_ROUTE_SEARCH_LIMIT": "More than 4096 shortest OD routes. Simplify the origin/destination connections."
 }

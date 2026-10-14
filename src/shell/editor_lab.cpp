@@ -47,8 +47,9 @@ QString EditorWindow::applyLabFocus(const lab::FocusSettings& focus) {
         const auto behaviour = std::find_if(def.behaviours.begin(), def.behaviours.end(), [&](const auto& b) { return b.id == labBehaviourId_; });
         if (type == def.vehicleTypes.end() || behaviour == def.behaviours.end() || behaviour->w74)
             return text("labApplyUnavailable");
-        // Physical values only: the id, behaviour reference and axles stay the project's.
+        // Physical values together; identity and behaviour reference stay the project's.
         type->length = focus.type.length; type->width = focus.type.width; type->desiredSpeed = focus.type.desiredSpeed;
+        auto geometry = focus.type; lab::rescaleAxles(geometry); type->axles = geometry.axles;
         type->maxAcceleration = focus.type.maxAcceleration; type->comfortableDeceleration = focus.type.comfortableDeceleration;
         type->maxDeceleration = focus.type.maxDeceleration;
         // The prototype keys the lab edits; lane-change keys stay as they were.

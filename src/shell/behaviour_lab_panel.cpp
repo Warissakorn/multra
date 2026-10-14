@@ -6,6 +6,7 @@
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QLabel>
 #include <QScrollArea>
 #include <QSignalBlocker>
 #include <QSpinBox>
@@ -31,6 +32,8 @@ BehaviourLabPanel::BehaviourLabPanel(const lab::LabSettings& initial, Text text,
     auto* focus = page(this, "labTabFocus");
     group(focus, "labGroupType", form);
     number(form, "length", 1, 30, 0.1, 2, "m", [](L& s) -> double& { return s.focus.type.length; });
+    axles_ = new QLabel(form->parentWidget()); axles_->setObjectName("labAxleDimensions");
+    axles_->setWordWrap(true); form->addRow(axles_);
     number(form, "width", 0.5, 4, 0.1, 2, "m", [](L& s) -> double& { return s.focus.type.width; });
     number(form, "desiredSpeed.min", 0.5, 60, 0.5, 2, "m/s", [](L& s) -> double& { return s.focus.type.desiredSpeed.min; });
     number(form, "desiredSpeed.max", 0.5, 60, 0.5, 2, "m/s", [](L& s) -> double& { return s.focus.type.desiredSpeed.max; });
@@ -100,7 +103,7 @@ QDoubleSpinBox* BehaviourLabPanel::number(QFormLayout* form, const char* key, do
     spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false);
     if (*unit) spin->setSuffix(QString(" ") + unit);
     form->addRow(key, spin);
-    connect(spin, &QDoubleSpinBox::valueChanged, this, [this] { if (!loading_ && changed) changed(); });
+    connect(spin, &QDoubleSpinBox::valueChanged, this, [this] { if (!loading_) { refreshAxles(); if (changed) changed(); } });
     numbers_.push_back({spin, std::move(value)});
     return spin;
 }
@@ -125,7 +128,7 @@ void BehaviourLabPanel::behaviour(QFormLayout* form, std::function<DriverBehavio
     field("additiveSafetyDistance", &DriverBehaviour::additiveSafetyDistance, 0, 20, 0.1, "");
     field("multiplicativeSafetyDistance", &DriverBehaviour::multiplicativeSafetyDistance, 0, 20, 0.1, "");
     field("followingTime", &DriverBehaviour::followingTime, 0.1, 10, 0.1, "s");
-    field("speedThreshold", &DriverBehaviour::speedThreshold, 0, 5, 0.05, "m/s");
+    field("speedThreshold", &DriverBehaviour::speedThreshold, 0.01, 5, 0.05, "m/s");
     optional(form, "amberDeceleration", 15, "m/s²",
              [of](lab::LabSettings& s) -> std::optional<double>& { return of(s).amberDeceleration; });
     optional(form, "maxDecelerationCooperativeBraking", 15, "m/s²",
@@ -141,6 +144,7 @@ lab::LabSettings BehaviourLabPanel::settings() const {
     s.road.layout = static_cast<lab::Layout>(layout_->currentData().toInt());
     s.traffic.crossVehicleCount = crossCount_->value();
     s.rescaleDesiredSpeeds = rescale_->isChecked();
+    lab::rescaleAxles(s.focus.type);
     return s;
 }
 void BehaviourLabPanel::setSettings(const lab::LabSettings& settings) {
@@ -161,6 +165,7 @@ void BehaviourLabPanel::setSettings(const lab::LabSettings& settings) {
     limitCount();
     count_->setValue(settings.traffic.vehicleCount);
     loading_ = false;
+    refreshAxles();
 }
 // Each layout's own fields: the Urban circuit is always signalised and has a block depth and cross
 // traffic; the Oval's single signal is optional and has no all-red.
@@ -180,5 +185,15 @@ void BehaviourLabPanel::retranslate() {
     layout_->setItemText(0, text_("labLayoutUrban"));
     layout_->setItemText(1, text_("labLayoutOval"));
     for (const auto& o : optionals_) o.on->setToolTip(text_("labOptionalSet"));
+    refreshAxles();
+}
+void BehaviourLabPanel::refreshAxles() {
+    if (!axles_ || !rescale_) return; // panel construction is still filling fields
+    const auto type = settings().focus.type;
+    if (type.axles) {
+        const auto& a = *type.axles;
+        axles_->setText(text_("labAxlesScaled").arg(a.wheelbase, 0, 'f', 2)
+            .arg(a.frontOverhang, 0, 'f', 2).arg(a.rearOverhang, 0, 'f', 2));
+    } else axles_->setText(text_("labAxlesDefault"));
 }
 }

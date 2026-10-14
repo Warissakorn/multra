@@ -109,7 +109,11 @@ editor's drawing is unchanged. Run/Pause, Step,
 Reset, speed and seed controls, a parameter panel (focus vehicle, other traffic, road) and
 a telemetry strip. Initial values come from the open project's resolved catalog.
 *Apply to project* writes the tuned focus behaviour back into the behaviour the project's
-first vehicle type uses, as one History edit. Labels are translated; parameter names are not.
+first vehicle type uses, as one History edit. Body length and axle geometry are written together;
+type and behaviour IDs retain their identity. Valid explicit wheelbase/front/rear overhangs scale
+in proportion to a changed focus length (`lab::rescaleAxles`); missing geometry keeps nominal
+defaults, and malformed geometry still fails strict validation. The panel displays the resulting
+dimensions and this policy. Labels are translated; parameter names are not.
 
 ## 4. Acceptance rows
 
@@ -131,3 +135,4 @@ first vehicle type uses, as one History edit. Labels are translated; parameter n
 | BL14 | On 1 and 2 lanes an hour keeps every vehicle without a safety clamp; the tuned vehicle laps, takes both left turns and slows below 1 m/s at a red | `lab` |
 | BL15 | A signal timing retunes in place; a cross-traffic count or layout change restarts; a block too small for its curves and boxes is refused (`LAB_ROAD_INVALID`) | `lab` |
 | BL16 | Heading-up keeps the followed vehicle pointing up and centred through the turns; off restores north-up | `behaviour-lab-ui` |
+| BL17 | Length retune preserves axle proportions, vehicle IDs and time; repeated Apply is unchanged; project Apply and Undo carry body and axle geometry together | `lab`, `behaviour-lab-ui` |

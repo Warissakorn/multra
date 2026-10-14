@@ -830,5 +830,9 @@
   "labLayoutUrban": "วงจรในเมือง (ทางตรง ทางโค้ง ทางแยก)",
   "labLayoutOval": "วงแหวนรูปวงรี",
   "labUnitM": "%1 ม.",
-  "labUnitKmh": "%1 กม./ชม."
+  "labUnitKmh": "%1 กม./ชม.",
+  "labAxlesScaled": "wheelbase %1 m, frontOverhang %2 m, rearOverhang %3 m ขนาดเพลาจะปรับตามสัดส่วนของ length",
+  "labAxlesDefault": "ขนาดเพลาใช้ค่าเริ่มต้นตาม length ปัจจุบัน",
+  "ROUTE_SEARCH_LIMIT": "พบเส้นทางสั้นที่สุดเกิน 4096 เส้นทาง โปรดลดปลายทางหรือกำหนด Route โดยตรง",
+  "OD_ROUTE_SEARCH_LIMIT": "พบเส้นทาง OD สั้นที่สุดเกิน 4096 เส้นทาง โปรดลดการเชื่อมต่อของต้นทางและปลายทาง"
 }
