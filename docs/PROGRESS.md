@@ -8,6 +8,11 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — R4/R3 measurement (D167)
+
+Departure/terminal evidence covers source-sink trips within a tick. Shared-prefix starts survive
+positioned choices; only actual forward end passage closes a sample. `traveltime`/`movement` pass.
+
 ## 2026-10-14 — Review correction plan and baseline (D167)
 
 The owner approved the supplied review's full plan and requested implementation, including

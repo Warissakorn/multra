@@ -23,7 +23,7 @@ struct SectionRow {
     std::optional<std::string> controlType; std::string approach; // M5.5, from the spec
     bool operator==(const SectionRow&) const = default;
 };
-// Section crossings from SimState snapshots alone; MovementAccumulator owns one and calls it once
+// Section crossings from snapshots and departure/terminal events; MovementAccumulator owns one and calls it once
 // per observed state, after it has applied that state's events.
 class SectionAccumulator {
 public:
@@ -45,7 +45,7 @@ private:
     std::vector<SectionSpec> sections_;
     double warmup_{}; std::optional<double> periodEnd_; bool byRelease_{};
     const Scenario* bound_{};
-    // Per section, per route slot: the lines' route distances, NaN where the section does not apply.
+    // Per section/route: independently bound line distances, NaN where a line is absent.
     std::vector<std::vector<double>> start_, finish_;
     std::vector<double> routeLength_;
     std::vector<Track> tracks_; // sorted by vehicle id

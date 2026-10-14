@@ -208,3 +208,35 @@ TEST(traveltime, batches_aggregate_sections) { // TT10
     const auto none = aggregate({SeedRun{}});
     CHECK(!batchJson(none, {}).contains("sections")); CHECK(batchCsv(none, {}).find("section,") == std::string::npos);
 }
+
+TEST(traveltime, terminal_and_same_tick_trips_are_measured) {
+    auto s = road(); s.segments[0].length = 1; s.timeStep = .5;
+    s.vehicleTypes[0].maxAcceleration = 10;
+    auto state = createSimulation(s, 42);
+    PendingVehicle queued; queued.id = 1; queued.inputIndex = 0; queued.routeIndex = 0; queued.desiredSpeed = 15; queued.driverFactor = .5;
+    state.inputs[0].queue.push_back(queued); state.nextVehicleId = 2;
+    SectionAccumulator sections(section(0, 1).sections, 0, {}); sections.observe(state);
+    state = stepSimulation(state);
+    CHECK(state.completed == 1 && state.vehicles.empty()); // forcing: both endpoints in one tick
+    sections.observe(state);
+    CHECK(sections.report()[0].vehicles == 1);
+    test::near(*sections.report()[0].meanTravelTime, .5);
+    CHECK(sections.report()[0].unfinished == 0);
+    SectionAccumulator outside(section(0, 1).sections, .6, {}); outside.observe(state);
+    CHECK(outside.report()[0].vehicles == 0);
+}
+TEST(traveltime, a_shared_prefix_start_survives_positioned_routing) {
+    for (double decision : {0., 5., 40.}) for (bool turn : {false, true}) {
+        auto s = road(); s.inputs.clear();
+        s.segments = {{"road", 100, {"through", "turn"}}, {"through", 100, {}}, {"turn", 100, {}}};
+        s.routes = {{"a", {"road", "through"}}, {"b", {"road", "turn"}}};
+        s.routeDecisions = {{"choose", "a", decision, {}, {{turn ? "b" : "a", 1, {}}}}};
+        auto state = test::withVehicles(s, {{1, "a", 0, 15}});
+        EvaluationSpec spec; spec.sections = {{"turn", {{"road", 10}}, {{"turn", 90}}}};
+        const auto result = observed(state, spec);
+        CHECK(result.completed == 1);
+        CHECK(result.sections[0].vehicles == (turn ? 1 : 0));
+        CHECK(result.sections[0].unfinished == 0);
+        if (turn) test::near(*result.sections[0].meanTravelTime - *result.sections[0].meanDelay, 180. / 15);
+    }
+}

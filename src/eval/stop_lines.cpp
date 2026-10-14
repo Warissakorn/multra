@@ -74,7 +74,34 @@ void StopLineAccumulator::observe(const SimState& state) {
                 }
             }
         }
-    // A vehicle that left a head's route without crossing (arrived, or changed away) is dropped.
+    // Terminal events prove arrival at the route end even when the vehicle is gone from the
+    // active snapshot. Preserve the upstream tally; a remap onto a route missing the head is
+    // never passage. Departures also cover a source-sink trip wholly inside this tick.
+    for (const auto& event : state.events) if (const auto* a = std::get_if<ArrivedEvent>(&event)) {
+        const auto& routes = state.scenario->routes;
+        const auto route = std::find_if(routes.begin(), routes.end(), [&](const auto& r) { return r.id == a->routeId; });
+        if (route == routes.end()) continue;
+        const auto r = static_cast<std::size_t>(route - routes.begin());
+        const auto& parts = state.index->parts[r];
+        const double end = parts.back().start + parts.back().length;
+        const DepartedEvent* departure = nullptr;
+        for (const auto& e : state.events) if (const auto* d = std::get_if<DepartedEvent>(&e))
+            if (d->vehicleId == a->vehicleId && d->routeId == a->routeId) departure = d;
+        for (std::size_t h = 0; h < heads_.size(); ++h) {
+            auto& head = heads_[h];
+            const double at = head.atRoute[r];
+            const auto was = open_.find({a->vehicleId, h});
+            if (!std::isfinite(at) || at > end || (was == open_.end() && !(departure && at >= 0))) continue;
+            const auto tally = was == open_.end() ? Tally{} : was->second;
+            ++head.crossed; head.red += tally.red; head.standGreen += tally.green;
+            head.held += tally.held; head.heldAny += tally.held > 0;
+            if (head.green) {
+                ++head.discharged;
+                if (head.lastCrossing >= 0) { head.gapSum += state.time - head.lastCrossing; ++head.gaps; }
+                head.lastCrossing = state.time;
+            }
+        }
+    }
     open_ = std::move(now);
 }
 StopLineReport StopLineAccumulator::report() const {

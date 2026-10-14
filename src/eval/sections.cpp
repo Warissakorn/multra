@@ -1,7 +1,7 @@
 #include "sections.hpp"
 #include <algorithm>
 #include <cmath>
-#include <set>
+#include <map>
 
 namespace trafficsim {
 namespace {
@@ -38,7 +38,7 @@ void SectionAccumulator::bind(const SimState& state) {
     for (std::size_t k = 0; k < sections_.size(); ++k)
         for (std::size_t r = 0; r < s.routes.size(); ++r) {
             const double a = at(sections_[k].start, r), b = at(sections_[k].end, r);
-            const bool applies = !std::isnan(a) && !std::isnan(b) && a < b;
+            const bool applies = std::isnan(a) || std::isnan(b) || a < b;
             start_[k].push_back(applies ? a : none); finish_[k].push_back(applies ? b : none);
         }
 }
@@ -52,6 +52,7 @@ void SectionAccumulator::close(std::size_t k, Track& track, std::uint32_t route,
     if (!inPeriod(byRelease_ ? track.scheduledTime : time)) return;
     const double travel = time - opened;
     const double freeFlow = (finish_[k][route] - start_[k][route]) / track.desiredSpeed;
+    if (!std::isfinite(freeFlow) || freeFlow < 0) return; // no valid ordered binding on this route
     ++count_[k]; travel_[k] += travel; delay_[k] += std::max(0.0, travel - freeFlow);
 }
 void SectionAccumulator::observe(const SimState& state) {
@@ -62,15 +63,31 @@ void SectionAccumulator::observe(const SimState& state) {
     const auto advance = [&](Track& t, std::uint32_t route, double distance, double time, bool entry) {
         for (std::size_t k = 0; k < sections_.size(); ++k) {
             const double from = entry ? 0 : t.distance;
-            const double started = crossing(from, start_[k][t.route], distance, start_[k][route], t.time, time, entry);
+            // Positioned routing keeps physical prefix coordinates. A line absent from the old
+            // provisional suffix may bind on the selected route, but can only be crossed by
+            // forward motion; merely appearing behind the front never opens/closes a trip.
+            const bool routed = std::any_of(state.events.begin(), state.events.end(), [&](const auto& e) {
+                const auto* r = std::get_if<RoutingEvent>(&e); return r && r->vehicleId == t.id;
+            });
+            const double a = std::isnan(start_[k][t.route]) && routed ? start_[k][route] : start_[k][t.route];
+            const double b = std::isnan(finish_[k][t.route]) && routed ? finish_[k][route] : finish_[k][t.route];
+            const double started = crossing(from, a, distance, start_[k][route], t.time, time, entry);
             if (!std::isnan(started)) t.open[k] = started;
-            const double ended = crossing(from, finish_[k][t.route], distance, finish_[k][route], t.time, time, entry);
+            const double ended = crossing(from, b, distance, finish_[k][route], t.time, time, entry);
             if (!std::isnan(ended) && !std::isnan(t.open[k])) close(k, t, route, ended);
         }
     };
-    std::set<std::uint64_t> arrived;
-    for (const auto& event : state.events)
-        if (const auto* a = std::get_if<ArrivedEvent>(&event)) arrived.insert(a->vehicleId);
+    std::map<std::uint64_t, const ArrivedEvent*> arrived;
+    std::map<std::uint64_t, const DepartedEvent*> departed;
+    for (const auto& event : state.events) {
+        if (const auto* a = std::get_if<ArrivedEvent>(&event)) arrived[a->vehicleId] = a;
+        if (const auto* d = std::get_if<DepartedEvent>(&event)) departed[d->vehicleId] = d;
+    }
+    const auto routeSlot = [&](const std::string& id) {
+        const auto& routes = state.scenario->routes;
+        const auto it = std::find_if(routes.begin(), routes.end(), [&](const auto& r) { return r.id == id; });
+        return static_cast<std::uint32_t>(it - routes.begin());
+    };
     std::vector<Track> next;
     next.reserve(state.vehicles.size());
     std::vector<bool> seen(tracks_.size());
@@ -88,8 +105,22 @@ void SectionAccumulator::observe(const SimState& state) {
     for (std::size_t i = 0; i < tracks_.size(); ++i) {
         auto& t = tracks_[i];
         if (seen[i] || !arrived.contains(t.id)) continue;
+        const auto route = routeSlot(arrived.at(t.id)->routeId);
+        if (route >= routeLength_.size()) continue;
         const double dt = state.time - t.time;
-        advance(t, t.route, std::max(routeLength_[t.route], t.distance + std::max(0.0, t.speed) * dt), state.time, false);
+        advance(t, route, std::max(routeLength_[route], t.distance + std::max(0.0, t.speed) * dt), state.time, false);
+    }
+    // A source-sink trip can be absent from both snapshots. Its departure supplies the entry
+    // time/speed and the terminal event proves the route end, without inventing an active vehicle.
+    for (const auto& [id, a] : arrived) {
+        if (!departed.contains(id) || std::binary_search(tracks_.begin(), tracks_.end(), Track{id},
+                [](const Track& x, const Track& y) { return x.id < y.id; })) continue;
+        const auto& d = *departed.at(id);
+        const auto from = routeSlot(d.routeId), to = routeSlot(a->routeId);
+        if (from >= routeLength_.size() || to >= routeLength_.size()) continue;
+        Track t{id, from, 0, d.desiredSpeed, d.time, d.desiredSpeed,
+                std::vector<double>(sections_.size(), none), d.scheduledTime};
+        advance(t, to, routeLength_[to], a->time, true);
     }
     // The engine keeps its fleet in id order; a hand-built state need not.
     std::sort(next.begin(), next.end(), [](const Track& a, const Track& b) { return a.id < b.id; });
@@ -104,7 +135,7 @@ std::vector<SectionRow> SectionAccumulator::report() const {
             row.meanDelay = delay_[k] / static_cast<double>(count_[k]);
         }
         for (const auto& t : tracks_)
-            if (!std::isnan(t.open[k]) && (!byRelease_ || inPeriod(t.scheduledTime))) ++row.unfinished;
+            if (!std::isnan(t.open[k]) && !std::isnan(finish_[k][t.route]) && finish_[k][t.route] >= t.distance && (!byRelease_ || inPeriod(t.scheduledTime))) ++row.unfinished;
         rows.push_back(std::move(row));
     }
     return rows;

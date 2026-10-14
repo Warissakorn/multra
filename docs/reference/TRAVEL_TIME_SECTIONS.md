@@ -38,9 +38,11 @@ letter.
 At compile time each line becomes, per lane, the runtime segment and metres that
 `locateControlPoint` gives for `{linkId, laneId, station}`. A lane where that fails (a station past
 its end) contributes nothing. For each runtime route the line's **route distance** is its first
-part on any of those segments plus the position, as for queue-counter lines. A section **applies**
-to a route when both lines lie on it and the start comes first; on every other route it measures
-nothing. Rows follow authored order, one per section, with 0 vehicles when nothing applies.
+part on any of those segments plus the position, as for queue-counter lines. Bind start and end
+independently: a start on a shared prefix is recorded even when the current provisional suffix
+misses the end. A sample requires actual forward passage of both lines in order. Selecting a
+suffix never invents passage of a line behind the vehicle; a choice missing the end produces no
+sample. Same-route reversed lines remain inapplicable. Rows follow authored order.
 
 ## 3. Measurement
 
@@ -51,13 +53,13 @@ linear interpolation between the two observed states that bracket it.
 |---|---|
 | Crossing | Line distance `a` on the route before and `a'` on the route after a step. Crossed when `d < a` before and `d' ≥ a'` after; time `t + Δt·(a − d)/((a − d) + (d' − a'))`. A lane change or route decision between the two states changes the route but not the rule, because each side is measured on its own route |
 | Entry | A vehicle first seen enters at distance 0 at its `enteredTime`; a line at `0 ≤ a ≤ d'` is crossed at `enteredTime + (t' − enteredTime)·a/d'` (at `enteredTime` when `d' = 0`) |
-| Exit | A vehicle that arrives (leaves the network) in a step is taken to have moved its last speed × Δt, and at least to its route's end, so an end line at the route's end is crossed inside that step; error under one time step |
-| Trip | Crossing the start opens a trip on a route the section applies to; crossing the end closes it. A vehicle crossing the start again before the end restarts its trip |
+| Exit | Departed/Arrived events cover a trip wholly inside one tick, from departure time/distance 0 to the terminal route end. Otherwise a vehicle that arrives (leaves the network) in a step is taken to have moved its last speed × Δt, and at least to its route's end, so an end line at the route's end is crossed inside that step; error under one time step |
+| Trip | Crossing the start opens a candidate trip, retained across positioned decisions; crossing the end closes it. A vehicle crossing the start again before the end restarts its trip |
 | Travel time | `t_end − t_start` |
 | Free-flow time | `(a_end − a_start) / desiredSpeed` on the route the vehicle holds at the end crossing: the section length at the vehicle's own desired speed, the term the whole-trip `freeFlowTime` uses (the engine has no speed limit below it) |
 | Delay | `max(0, travel time − free-flow time)`, as `tripDelay` |
 | Period | A trip counts when its **end** crossing is in the evaluation period (D132's rule for movements). With a cool-down (M5.9, D146, [BATCH](BATCH.md) §5) it counts when its vehicle was released in the window, whenever the end crossing falls |
-| Unfinished | Vehicles still in the network with an open trip when the report is taken; with a cool-down, window vehicles only |
+| Unfinished | Vehicles still in the network with an open trip and an end line ahead on their current route when the report is taken; with a cool-down, window vehicles only |
 
 Rows: `name`, `vehicles`, `meanTravelTime`, `meanDelay` (null with no vehicle), `unfinished`.
 
@@ -95,3 +97,6 @@ end, with rename and delete. The canvas draws each line across the Link's full w
 | TT9 | Commands | Put/replace/delete with Undo; Link delete cascades; split moves a downstream line; reverse refused |
 | TT10 | Outputs | No-section projects' single-run and batch bytes unchanged; batch aggregates a section by hand |
 | TT11 | Editor (M5.4b) | Two Ctrl+right-clicks make one Undo step and one row; rename and delete through History; save/reopen |
+
+| TT12 | Source-sink trip within one tick, terminal stop | Departure and terminal evidence count the complete section, with the same period policy |
+| TT13 | Decision before/after section start, choice reaching/missing end | Shared-prefix start survives; only actual end passage closes a sample |

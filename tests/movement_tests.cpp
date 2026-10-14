@@ -193,3 +193,30 @@ TEST(movement, stop_line_a_short_green_leaves_vehicles_held_through_it) {
     CHECK(row.heldShare > 0 && row.meanHeld > 0 && row.meanResidual > 0);
     CHECK(row.meanStandGreen > 0 && row.meanDischarged < 10);
 }
+
+TEST(movement, stop_line_passage_at_terminal_tick_is_counted) {
+    auto s = test::straight(); s.segments[0].length = 100;
+    s.signalPrograms = {{"p", 0, {{300, SignalColor::green}}}};
+    s.signalHeads = {{"h", "road", 99.9, "p"}};
+    auto state = test::withVehicles(s, {test::vehicle(1, 98, 15)});
+    StopLineAccumulator lines(oneLane()); lines.observe(state);
+    state = stepSimulation(state); lines.observe(state);
+    state = stepSimulation(state);
+    CHECK(state.completed == 1 && state.vehicles.empty());
+    lines.observe(state);
+    CHECK(lines.report().rows[0].crossed == 1);
+    CHECK(lines.report().rows[0].meanDischarged == 1);
+}
+TEST(movement, stop_line_source_sink_within_one_tick_is_counted) {
+    auto s = test::straight(); s.segments[0].length = 1; s.timeStep = .5;
+    s.vehicleTypes[0].maxAcceleration = 10;
+    s.signalPrograms = {{"p", 0, {{300, SignalColor::green}}}};
+    s.signalHeads = {{"h", "road", .9, "p"}};
+    auto state = createSimulation(s, 42);
+    PendingVehicle queued; queued.id = 1; queued.inputIndex = 0; queued.routeIndex = 0; queued.desiredSpeed = 15; queued.driverFactor = .5;
+    state.inputs[0].queue.push_back(queued); state.nextVehicleId = 2;
+    StopLineAccumulator lines(oneLane()); lines.observe(state);
+    state = stepSimulation(state);
+    CHECK(state.completed == 1 && state.vehicles.empty());
+    lines.observe(state); CHECK(lines.report().rows[0].crossed == 1);
+}
