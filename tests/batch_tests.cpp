@@ -7,7 +7,24 @@
 #include "../src/project/run.hpp"
 #include <fstream>
 #include <sstream>
+#include <atomic>
 using namespace trafficsim;
+TEST(batch, cancellation_interrupts_inside_a_seed_and_discards_partial_batches) {
+    auto scenario = test::straight(); scenario.duration = 1e12; scenario.inputs.clear();
+    int calls = 0; bool stopped = false;
+    try { runSeed(scenario, {}, 42, .05, [&] { return ++calls == 4; }); }
+    catch (const RunCancelled&) { stopped = true; }
+    CHECK(calls == 4); CHECK(stopped);
+    calls = 0;
+    CHECK(runSeeds(scenario, {}, {42, 43}, {}, [&] { return ++calls == 4; }).empty());
+    CHECK(calls == 4);
+    std::atomic<int> parallelCalls{0};
+    const auto runs = runSeedsParallel(scenario, {}, {42, 43, 44}, {}, 2, [&] { return ++parallelCalls >= 8; });
+    CHECK(parallelCalls >= 8); CHECK(runs.empty());
+    auto shortRun = test::straight(); shortRun.duration = 10; shortRun.inputs[0].endTime = 10;
+    CHECK(runSeed(shortRun, {}, 42) == runSeed(shortRun, {}, 42, .05, [] { return false; }));
+    CHECK(runSeedsParallel(shortRun, {}, {42, 43}, {}, 2, [] { return false; }) == runSeeds(shortRun, {}, {42, 43}));
+}
 // M5.2. The aggregate cases pin the statistics by hand; the engine cases pin that a batch seed is
 // exactly today's single run, and that every generated vehicle is accounted for.
 namespace {

@@ -121,22 +121,32 @@ void EditorWindow::startBatch() {
     }
     error_->clear();
     const auto total=seeds.size(); // read before the call: the capture below moves `seeds`
-    startWorker(total,false,[this,scenario=std::move(snapshot->scenario),spec=std::move(*spec),seeds=std::move(seeds)](const auto& progress)
+    startWorker(total,false,[this,scenario=std::move(snapshot->scenario),spec=std::move(*spec),seeds=std::move(seeds)](const auto& progress, const auto& cancelled)
         -> std::function<void()> {
-        auto runs=runSeedsParallel(scenario,spec,seeds,progress);
+        auto runs=runSeedsParallel(scenario,spec,seeds,progress,0,cancelled);
         if(runs.empty()) return {}; // cancelled
         auto report=aggregate(runs);
         auto result=std::make_shared<BatchResult>(BatchResult{std::move(report),std::move(runs)});
         return [this,result]{ batch_=std::move(*result); };
     });
 }
+void EditorWindow::reapBatchWorkers() {
+    std::erase_if(retiredBatchWorkers_, [](auto& worker) {
+        if (!worker.done->load()) return false;
+        worker.thread.join(); return true;
+    });
+}
 void EditorWindow::startWorker(std::size_t total, bool comparing, BatchJob job) {
-    // The previous worker was told to stop by clearRun(); it returns after the seed it is on.
-    if(batchThread_.joinable()) batchThread_.join();
+    reapBatchWorkers();
+    if(batchThread_.joinable()) {
+        *batchCancel_ = true;
+        retiredBatchWorkers_.push_back({std::move(batchThread_),batchWorkerDone_,batchCancel_});
+    }
     auto cancel=std::make_shared<std::atomic<bool>>(false); batchCancel_=cancel;
+    auto done=std::make_shared<std::atomic<bool>>(false); batchWorkerDone_=done;
     const auto generation=++batchGeneration_;
     batchDone_=0; batchTotal_=total; batchComparing_=comparing;
-    batchThread_=std::thread([this,cancel,generation,job=std::move(job)]{
+    batchThread_=std::thread([this,cancel,done,generation,job=std::move(job)]() mutable {
         std::function<void()> install; std::string error;
         try{
             install=job([&](std::size_t done){
@@ -146,14 +156,17 @@ void EditorWindow::startWorker(std::size_t total, bool comparing, BatchJob job) 
                     batchDone_=done; refreshBatch();
                 },Qt::QueuedConnection);
                 return true;
-            });
+            }, [&] { return cancel->load(); });
         }catch(const std::exception& e){ error=e.what(); }
+        job = {}; // release scenario copies on the worker before posting completion
         QMetaObject::invokeMethod(this,[this,generation,install,error]{ finishBatch(generation,install,error); },Qt::QueuedConnection);
+        *done = true;
     });
     objects_->setCurrentIndex(objects_->indexOf(resultsPage_)); resultsTabs_->setCurrentIndex(0); // the Movements tab holds the batch
     refreshRun();
 }
 void EditorWindow::finishBatch(std::uint64_t generation, const std::function<void()>& install, const std::string& error) {
+    reapBatchWorkers();
     if(generation!=batchGeneration_) return; // cancelled or replaced: whatever it carries is not shown
     if(batchThread_.joinable()) batchThread_.join(); // it posted this as its last act
     batchTotal_=0; batchDone_=0;
