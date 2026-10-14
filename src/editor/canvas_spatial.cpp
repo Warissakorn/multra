@@ -45,7 +45,7 @@ QPainterPath EditorCanvas::objectShape(const std::string& id) const {
             }
             // QPainterPath::contains implicitly closes an open subpath. Return only a
             // thin stroked region, otherwise selection could hit an invisible polygon.
-            QPainterPathStroker stroke;stroke.setWidth(1/std::abs(transform().m11()));
+            QPainterPathStroker stroke;stroke.setWidth(1/viewScale());
             return stroke.createStroke(shape);
         }
         shape.moveTo(ring.front().x,ring.front().y);

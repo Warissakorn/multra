@@ -89,7 +89,7 @@ void EditorCanvas::finishHeadDrag(QPoint position) {
 }
 void EditorCanvas::drawHeads() {
     if(!document_ || runFrame_.scenario)return;
-    const double scale=std::abs(transform().m11());
+    const double scale=viewScale();
     const auto draw=[&](const NetworkSignalHead& head,QColor colour,bool dashed) {
         const auto bar=signalCrossbar(document_->network,head);
         if(!bar || !levelVisible(bar->level))return;
@@ -125,6 +125,6 @@ QPainterPath EditorCanvas::headShape(const NetworkSignalHead& head) const {
     if(!document_)return {};
     const auto bar=signalCrossbar(document_->network,head);
     if(!bar)return {};
-    return RoadCrossbarItem(*bar,canvasStyle::active(),std::abs(transform().m11())).shape();
+    return RoadCrossbarItem(*bar,canvasStyle::active(),viewScale()).shape();
 }
 }

@@ -49,6 +49,7 @@ private:
     void tick();
     void refresh();
     void showMessage(const QString& message);
+    void applyFollow();
     QAction* action(const char* key, std::function<void()> fn);
     Text text_;
     std::unique_ptr<lab::LabRun> run_;

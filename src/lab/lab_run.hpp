@@ -40,7 +40,8 @@ public:
     std::optional<FocusTelemetry> telemetry() const { return telemetry(focusId_); }
     std::optional<FocusTelemetry> telemetry(std::uint64_t vehicleId) const;
 private:
-    struct Compiled { ProjectDocument document; Scenario scenario; };
+    // `loops`: the authored Route ids, the tuned vehicle's first.
+    struct Compiled { ProjectDocument document; Scenario scenario; std::vector<std::string> loops; };
     Compiled compile(const LabSettings& settings) const;
     void start(Compiled compiled, const LabSettings& settings);
     LabSettings settings_;

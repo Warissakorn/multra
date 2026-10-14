@@ -8,6 +8,19 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
+
+The owner asked for a varied lab network with straights and intersections, and the camera turning
+with the vehicle. Answers: layouts as presets (Oval kept), fixed-time signals, the tuned vehicle
+turning at some intersections. The Urban circuit (now the default, `lab_urban.cpp`) is four loops
+that never share a lane — circuits refuse rules and zones and two feeders are a merge — crossing at
+four split-phase intersections; `addLoop` cuts a closed path at its intersection boxes into Links
+and Connectors. The first BL14 draft wanted the tuned vehicle at < 0.1 m/s at a red and never saw
+it: queued behind others, the prototype creeps at ≈0.4 m/s; the row now asks for < 1 m/s. An hour
+on 1 and 2 lanes has no safety clamp. Heading-up rotates the view each frame; the ~30 canvas scale
+reads became `viewScale()` (hypot(m11, m12)), identical unrotated. Rows BL13–BL16. Linux only
+(GCC 13.3, Qt 6.4.2 offscreen). The D146 entry moved whole to `archive/`.
+
 ## 2026-10-14 — Behaviour Lab: a window for tuning driving behaviour (D165)
 
 The owner asked for a tool to develop driving behaviour: a view locked on one vehicle driving
@@ -459,25 +472,6 @@ movement's delay down 1.4–7.5 s; M2.6: clamps 844 → 35 (not classified), del
 
 Linux only: desktop preset (Qt 6.4.2 offscreen, GCC 13.3), ctest 113/113 and `check` green.
 Windows is the PR's native CI. The BA14/BA17 and D128 entries moved whole to `archive/`.
-
----
-
-## 2026-10-09 — M5.9 evaluation cool-down (D146)
-
-`definition.evaluation.cooldown` (schema 27) runs the simulation that many seconds past `duration`
-with no new demand (inputs still end by it; `compileDocument` extends the compiled duration after
-every expansion, so core is untouched). With a cool-down the window selects trips by release
-(`scheduledTime` in `[warmup, end]`, `end` defaulting to `duration`) whenever they finish, in
-movement and section rows, and only window vehicles left at the end are unfinished; without one
-every D132 rule stands. New projects get 900 s; the run-settings dialog edits it in the same
-History step as the warm-up; JSON, CSV and both Results notes name it. Contract and rows CD1–CD8 in
-[BATCH](reference/BATCH.md) §5, written first; `tests/cooldown_tests.cpp` (group `cooldown`).
-On `four-leg-signalised` seeds 42–51 the warning goes from 11 of 12 movements to none at 120 s and
-every window trip finishes at 300 s ([evidence](evidence/m5.9-cooldown.md)); the example itself
-stays schema 17 (owner's choice, sitting B8). Nine CLI outputs of the committed examples are
-byte-identical before and after. Future-schema tests now probe 28. Linux only: desktop preset
-(Qt 6.4 offscreen, GCC 13.3), ctest and `check` green; Windows is the PR's native CI. The D126/D127
-entries moved whole to `archive/`.
 
 ---
 

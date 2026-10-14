@@ -16,6 +16,9 @@ open a PR so `native.yml` runs `behaviour-lab-ui` and the core `circuit`/`lab` g
 **Owner's look:** Simulation → *Behaviour Lab…*; run at 1×–5×; change `additiveSafetyDistance`
 and watch the gap chart move without a reset; change lanes or `straightLength` (restarts); click
 another vehicle, then *Follow tuned vehicle*; *Apply to project*, then Undo; switch to Thai.
+D166 (same branch): the default Urban circuit — judge the layout, the X2/X3 left turns and the
+heading-up camera (toggle *Heading up*); change `green` (live) and *layout* → Oval (restarts).
+Give-way intersections in the lab wait for a circuit wrap rule for conflict zones/priority rules.
 Next lab slices, one per session and only on the owner's say: W74 parameters in the panel (needs
 `retuneSimulation` to allow a prototype → W74 change, so traits must exist), then lane-change fields
 (needs a lane-change wrap rule on circuits first, BEHAVIOUR_LAB §1.1). After the review, return to

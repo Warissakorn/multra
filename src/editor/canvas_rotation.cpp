@@ -19,7 +19,7 @@ void EditorCanvas::startRotation(QPoint position) {
     if(!pivot)return;
     const auto p=world(position,false);
     // An angle has no stable direction at its centre. Leave the selection intact.
-    if(std::hypot(p.x-pivot->x,p.y-pivot->y)*std::abs(transform().m11())<8)return;
+    if(std::hypot(p.x-pivot->x,p.y-pivot->y)*viewScale()<8)return;
     cancel();rotationPivot_=pivot;rotationStart_=p;dragPress_=position;
     redraw();
 }
@@ -28,7 +28,7 @@ void EditorCanvas::updateRotation(QPoint position,bool angleSnap) {
     rotationDragging_=(position-dragPress_).manhattanLength()>=QApplication::startDragDistance();
     const auto pivot=*rotationPivot_,p=world(position,false);
     rotationDegrees_=0;
-    if(rotationDragging_ && std::hypot(p.x-pivot.x,p.y-pivot.y)*std::abs(transform().m11())>=8) {
+    if(rotationDragging_ && std::hypot(p.x-pivot.x,p.y-pivot.y)*viewScale()>=8) {
         const double start=std::atan2(rotationStart_.y-pivot.y,rotationStart_.x-pivot.x);
         const double finish=std::atan2(p.y-pivot.y,p.x-pivot.x);
         rotationDegrees_=std::remainder((finish-start)*180./std::numbers::pi,360.);
@@ -50,7 +50,7 @@ void EditorCanvas::drawRotationPreview() {
         item->setZValue(200008);item->setData(0,QStringLiteral("rotation-preview"));
         item->setData(1,QString::fromStdString(id));
     }
-    const double r=6/std::abs(transform().m11());
+    const double r=6/viewScale();
     auto* centre=scene_.addEllipse(pivot.x-r,pivot.y-r,2*r,2*r,pen,QBrush(editorDesign::role(QPalette::Base)));
     centre->setZValue(200009);centre->setData(0,QStringLiteral("rotation-pivot"));
     const auto at=rotatePoint(rotationStart_,pivot,rotationDegrees_);

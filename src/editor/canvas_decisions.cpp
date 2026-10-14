@@ -14,7 +14,7 @@ void EditorCanvas::drawPositionedDecisions() {
             const auto bar=roadCrossbar(axis,laneBoundaryGeometry(link,0,n.drivingSide),
                 laneBoundaryGeometry(link,link.lanes.size(),n.drivingSide),matchedStation(link.geometry,axis,position),link.level);
             if(!bar)continue;
-            auto* item=new RoadCrossbarItem(*bar,canvasStyle::active(),std::abs(transform().m11()));scene_.addItem(item);
+            auto* item=new RoadCrossbarItem(*bar,canvasStyle::active(),viewScale());scene_.addItem(item);
             item->setZValue(200008);item->setData(0,QStringLiteral("decision-marker"));item->setData(1,QString::fromStdString(decision.id));
         }
 }

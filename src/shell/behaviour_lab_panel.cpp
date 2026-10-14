@@ -2,6 +2,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../lab/lab_run.hpp"
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -46,6 +47,10 @@ BehaviourLabPanel::BehaviourLabPanel(const lab::LabSettings& initial, Text text,
     count_ = new QSpinBox(form->parentWidget()); count_->setObjectName("traffic.vehicleCount"); count_->setFont(editorDesign::numericFont());
     form->addRow("vehicleCount", count_);
     connect(count_, &QSpinBox::valueChanged, this, [this] { if (!loading_ && changed) changed(); });
+    crossCount_ = new QSpinBox(form->parentWidget()); crossCount_->setObjectName("traffic.crossVehicleCount");
+    crossCount_->setRange(0, 60); crossCount_->setFont(editorDesign::numericFont());
+    form->addRow("crossVehicleCount", crossCount_);
+    connect(crossCount_, &QSpinBox::valueChanged, this, [this] { if (!loading_ && changed) changed(); });
     number(form, "heavyShare", 0, 1, 0.05, 2, "", [](L& s) -> double& { return s.traffic.heavyShare; });
     number(form, "desiredSpeed.min", 0.5, 60, 0.5, 2, "m/s", [](L& s) -> double& { return s.traffic.car.desiredSpeed.min; });
     number(form, "desiredSpeed.max", 0.5, 60, 0.5, 2, "m/s", [](L& s) -> double& { return s.traffic.car.desiredSpeed.max; });
@@ -59,7 +64,13 @@ BehaviourLabPanel::BehaviourLabPanel(const lab::LabSettings& initial, Text text,
     prefix_ = "road.";
     auto* road = page(this, "labTabRoad");
     group(road, "labGroupRing", form);
+    layout_ = new QComboBox(form->parentWidget()); layout_->setObjectName("road.layout");
+    layout_->addItem(QString(), static_cast<int>(lab::Layout::urban));
+    layout_->addItem(QString(), static_cast<int>(lab::Layout::oval));
+    form->addRow("layout", layout_);
+    connect(layout_, &QComboBox::currentIndexChanged, this, [this] { enableForLayout(); if (!loading_ && changed) changed(); });
     number(form, "straightLength", 30, 3000, 10, 0, "m", [](L& s) -> double& { return s.road.straightLength; });
+    blockDepth_ = number(form, "blockDepth", 100, 2000, 10, 0, "m", [](L& s) -> double& { return s.road.blockDepth; });
     number(form, "curveRadius", 15, 1000, 5, 0, "m", [](L& s) -> double& { return s.road.curveRadius; });
     number(form, "laneWidth", 2.5, 5, 0.1, 2, "m", [](L& s) -> double& { return s.road.laneWidth; });
     lanes_ = new QSpinBox(form->parentWidget()); lanes_->setObjectName("road.lanes"); lanes_->setRange(1, 4);
@@ -71,6 +82,7 @@ BehaviourLabPanel::BehaviourLabPanel(const lab::LabSettings& initial, Text text,
     number(form, "green", 1, 300, 1, 0, "s", [](L& s) -> double& { return s.road.green; });
     number(form, "amber", 0, 10, 1, 0, "s", [](L& s) -> double& { return s.road.amber; });
     number(form, "red", 1, 300, 1, 0, "s", [](L& s) -> double& { return s.road.red; });
+    allRed_ = number(form, "allRed", 0, 10, 1, 0, "s", [](L& s) -> double& { return s.road.allRed; });
     qobject_cast<QVBoxLayout*>(road->layout())->addStretch();
     setSettings(initial);
     retranslate();
@@ -126,6 +138,8 @@ lab::LabSettings BehaviourLabPanel::settings() const {
     s.traffic.vehicleCount = count_->value();
     s.road.lanes = lanes_->value();
     s.road.signal = signal_->isChecked();
+    s.road.layout = static_cast<lab::Layout>(layout_->currentData().toInt());
+    s.traffic.crossVehicleCount = crossCount_->value();
     s.rescaleDesiredSpeeds = rescale_->isChecked();
     return s;
 }
@@ -140,10 +154,20 @@ void BehaviourLabPanel::setSettings(const lab::LabSettings& settings) {
     }
     lanes_->setValue(settings.road.lanes);
     signal_->setChecked(settings.road.signal);
+    layout_->setCurrentIndex(layout_->findData(static_cast<int>(settings.road.layout)));
+    crossCount_->setValue(settings.traffic.crossVehicleCount);
+    enableForLayout();
     rescale_->setChecked(settings.rescaleDesiredSpeeds);
     limitCount();
     count_->setValue(settings.traffic.vehicleCount);
     loading_ = false;
+}
+// Each layout's own fields: the Urban circuit is always signalised and has a block depth and cross
+// traffic; the Oval's single signal is optional and has no all-red.
+void BehaviourLabPanel::enableForLayout() {
+    const bool urban = layout_->currentData().toInt() == static_cast<int>(lab::Layout::urban);
+    signal_->setEnabled(!urban);
+    for (QWidget* w : std::initializer_list<QWidget*>{blockDepth_, allRed_, crossCount_}) w->setEnabled(urban);
 }
 // The ring holds only so many vehicles at t = 0; the field offers no more than that.
 void BehaviourLabPanel::limitCount() {
@@ -153,6 +177,8 @@ void BehaviourLabPanel::retranslate() {
     for (int i = 0; i < count(); ++i) setTabText(i, text_(widget(i)->objectName().toUtf8().constData()));
     for (const auto& [box, key] : titles_) box->setTitle(text_(key));
     rescale_->setText(text_("labRescale"));
+    layout_->setItemText(0, text_("labLayoutUrban"));
+    layout_->setItemText(1, text_("labLayoutOval"));
     for (const auto& o : optionals_) o.on->setToolTip(text_("labOptionalSet"));
 }
 }

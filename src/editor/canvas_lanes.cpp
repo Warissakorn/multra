@@ -34,7 +34,7 @@ std::vector<EditorCanvas::LaneHandle> EditorCanvas::laneHandles() const {
         const auto boundary=laneBoundaryGeometry(link,index,side);
         const auto anchor=pointAlong(boundary,matchedStation(link.geometry,boundary,
             ref.station.value_or(base==1?polylineLength(link.geometry):0.)));
-        const double offset=canvasStyle::laneTabDepth/2/std::abs(transform().m11());
+        const double offset=canvasStyle::laneTabDepth/2/viewScale();
         return LaneHandle{{anchor.x+direction.x*offset,anchor.y+direction.y*offset},anchor,
                           direction,lane.width,kind,count,leading?static_cast<int>(std::distance(link.lanes.begin(),first))+count:available};
     };
@@ -49,7 +49,7 @@ std::vector<EditorCanvas::LaneHandle> EditorCanvas::laneHandles() const {
                 h.maximum=12;h.location=location;
                 const auto boundary=laneBoundaryGeometry(*link,kind==8?0:link->lanes.size(),side);
                 const double railLength=polylineLength(boundary);
-                const double scale=std::abs(transform().m11());
+                const double scale=viewScale();
                 h.tabLength=std::min(canvasStyle::laneTabLength,railLength*scale/3);
                 const double inset=h.tabLength/2/scale;
                 const double station=location==0?inset:location==1?railLength/2:railLength-inset;
@@ -82,7 +82,7 @@ std::vector<EditorCanvas::LaneHandle> EditorCanvas::laneHandles() const {
         const auto& paths=cachedPaths(*connector);
         const auto& boundaries=cachedBoundaries(*connector);
         const auto widths=connectorLaneWidths(document_->network,*connector);
-        const double offset=canvasStyle::laneTabDepth/2/std::abs(transform().m11());
+        const double offset=canvasStyle::laneTabDepth/2/viewScale();
         const auto attachEnd=[&](LaneHandle& h,bool source) {
             // The non-leading tabs follow the far rail; leading tabs follow the kerb rail,
             // matching the corresponding Connector-body tab at midspan.
@@ -90,7 +90,7 @@ std::vector<EditorCanvas::LaneHandle> EditorCanvas::laneHandles() const {
             const auto& edge=leading?boundaries.front():boundaries.back();
             const auto& other=leading?boundaries.back():boundaries.front();
             const double length=polylineLength(edge);
-            const double scale=std::abs(transform().m11());
+            const double scale=viewScale();
             h.tabLength=std::min(canvasStyle::laneTabLength,length*scale/2);
             const double inset=std::min(h.tabLength/2/scale,length/2);
             const double station=source?inset:length-inset;
@@ -134,7 +134,7 @@ std::vector<EditorCanvas::LaneHandle> EditorCanvas::laneHandles() const {
     return {};
 }
 QPainterPath EditorCanvas::laneHandlePath(const LaneHandle& h,double padding) const {
-    const double scale=std::abs(transform().m11());
+    const double scale=viewScale();
     const double length=(h.tabLength>0?h.tabLength:canvasStyle::laneTabLength)/2/scale+padding;
     const double depth=canvasStyle::laneTabDepth/2/scale+padding;
     const Point tangent{-h.direction.y,h.direction.x};
@@ -150,7 +150,7 @@ QPainterPath EditorCanvas::laneHandlePath(const LaneHandle& h,double padding) co
 std::optional<EditorCanvas::LaneHandle> EditorCanvas::laneHandleAt(QPoint position) const {
     std::optional<LaneHandle> picked;double best=1e300;
     for(const auto& h:laneHandles()) {
-        if(!laneHandlePath(h,2/std::abs(transform().m11())).contains(mapToScene(position)))continue;
+        if(!laneHandlePath(h,2/viewScale()).contains(mapToScene(position)))continue;
         const auto delta=mapFromScene(h.position.x,h.position.y)-position;
         const double distance=QPoint::dotProduct(delta,delta);
         if(distance<best){best=distance;picked=h;}

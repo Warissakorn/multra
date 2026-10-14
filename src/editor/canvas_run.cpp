@@ -29,8 +29,10 @@ void EditorCanvas::setRunNetwork(const Network& network) {
         runGeometry_[p.id]=p.geometry;if(p.equation)runEquations_[p.id]=*p.equation;runLevels_[p.id]=c.level;runStyles_[p.id]=c.displayType;
     }
 }
-void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId) {
-    runFollow_=vehicleId;drawRunItems();
+void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId, bool headingUp) {
+    // Leaving heading-up returns north to the top at the same scale.
+    if(runHeadingUp_ && !headingUp){const double s=viewScale();setTransform(QTransform::fromScale(s,-s));}
+    runFollow_=vehicleId;runHeadingUp_=headingUp;drawRunItems();
 }
 void EditorCanvas::setRunFrame(const SimState& frame) {
     // Scenarios are owned immutable snapshots, not mutable documents/revisions.
@@ -60,14 +62,14 @@ void EditorCanvas::drawRunItems() {
         casing->setZValue(bar.level*100.+11.9);runItems_.push_back(casing);
         auto* item=new RoadCrossbarItem(found->second,
             color==SignalColor::red?canvasStyle::error():color==SignalColor::green?canvasStyle::ok():canvasStyle::warning(),
-            std::abs(transform().m11()));
+            viewScale());
         scene_.addItem(item);item->setZValue(found->second.level*100.+12);
         item->setData(0,QStringLiteral("run-signal"));item->setData(1,QString::fromStdString(h.id));runItems_.push_back(item);
     }
     // D97: each vehicle is its type's true length x width, front bumper at the located station.
     // Below a few pixels the size is floored so a vehicle never vanishes when zoomed far out, and
     // the windshield and cab gap appear only once the body is long enough on screen to show them.
-    const double scale=std::abs(transform().m11());
+    const double scale=viewScale();
     std::map<std::uint32_t,QPainterPath> shapes; // per type, shared by every item of that type
     std::map<std::uint32_t,std::vector<RoutePart>> partsOf;
     const auto partsForRoute=[&](std::uint32_t route)->const std::vector<RoutePart>& {
@@ -132,7 +134,16 @@ void EditorCanvas::drawRunItems() {
             item->setPen(outline);item->setZValue(item->zValue()+0.5);followed=item;
         }
     }
-    if(followed)centerOn(followed->sceneBoundingRect().center());
+    if(followed) {
+        // D166: heading-up turns the world so the followed body's +x (its nose) points to the top
+        // of the screen. Under fromScale(s,-s) world angles read anticlockwise on screen, so a
+        // world rotation by 90 - heading does it.
+        if(runHeadingUp_) {
+            const double s=viewScale();
+            setTransform(QTransform().rotate(90-followed->rotation())*QTransform::fromScale(s,-s));
+        }
+        centerOn(followed->sceneBoundingRect().center());
+    }
     std::erase_if(runLaneChangePaths_,[&](const auto& entry) {
         return std::none_of(runFrame_.vehicles.begin(),runFrame_.vehicles.end(),
             [&](const Vehicle& v){return v.id==entry.first;});
