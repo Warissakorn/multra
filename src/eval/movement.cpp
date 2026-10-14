@@ -124,7 +124,7 @@ void MovementAccumulator::observe(const SimState& state) {
             const double at = line.atRoute[v.routeIndex];
             if (at - v.distance < 0) continue;
             anyQueued = anyQueued || queuedNow[i];
-            behind_.push_back({at - v.distance, s.vehicleTypes[v.typeIndex].length, queuedNow[i]});
+            behind_.push_back({at - v.distance, s.vehicleTypes[v.typeIndex].length, queuedNow[i] != 0});
         }
         if (!anyQueued) continue;
         length[line.counter] = std::max(length[line.counter], walkQueue(behind_, spec_.queue.maxGap));
