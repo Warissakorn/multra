@@ -48,6 +48,8 @@ void generateArrivals(SimState& state) {
     // no id lookup, and the slot a released vehicle carries is this index.
     for (std::size_t i = 0; i < state.inputs.size(); ++i) {
         auto& current = state.inputs[i];
+        // Most inputs are not due on most ticks: settle that before reading anything else.
+        if (!current.nextArrival || *current.nextArrival > state.time) continue;
         const auto& input = state.scenario->inputs[i];
         // Resolved once per scenario in the index, not once per input per tick.
         const auto routeIndex = state.index->routeOfInput[i];
