@@ -19,9 +19,8 @@ silently reorder the owner's queue.
    change; never load the archive wholesale.
 4. **Run the checks below** and report unavailable tools or failed checks honestly.
 
-Two audits carry dated parts: in [VISSIM_PARITY](docs/audits/VISSIM_PARITY.md) only §1a and §2
-are current (§1, §3, §6 under-report the product); [CONNECTOR_PARITY_AUDIT](docs/audits/CONNECTOR_PARITY_AUDIT.md)
-holds the supplied spec and never-measured Vissim apart — read it before touching the Connector.
+Read [CONNECTOR_PARITY_AUDIT](docs/audits/CONNECTOR_PARITY_AUDIT.md) before touching the Connector:
+it separates the supplied spec from never-measured Vissim behaviour.
 
 TrafficSim owns a traffic microsimulation engine for engineering studies (D38). `TrafficSim` is a
 working name (D11); do not rename the repository, project or packages until the owner decides.
@@ -106,9 +105,9 @@ below, whose reasoning is D7. The ones that get broken by accident:
   and a harness that drives Qt pumps the event loop between iterations, or it times Qt's deferred
   work instead of the code (D31).
 - **Update `docs/PROGRESS.md` before committing** — what changed and the reasoning behind any
-  non-obvious decision. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`.
-  This is the memory the next session runs on. **What is next goes in
-  `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
+  non-obvious decision, in a short entry; keep about ten entries and move older ones whole to the
+  archive. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
+  next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
 
 ## Session end
 
