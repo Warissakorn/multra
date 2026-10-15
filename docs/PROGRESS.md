@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.5.0 perception contract (D179; docs only)
+
+[PERCEPTION](reference/PERCEPTION.md) is the first contract in D178's order.
+- **Two leaders.** The **physical leader** (today's unbounded search) keeps the hard cap, zone
+  admission and phase-2 caps. **Perceived leaders** (within `lookAheadDistance`, up to
+  `observedVehiclesAhead`, effective gaps less the room of the vehicles in between) feed only
+  the acceleration, so an unseen leader becomes a counted clamp, never an overlap.
+- **Mirror check.** A target-lane follower counts only within `lookBackDistance`, plus an optional
+  rear time-to-collision test. Something alongside always refuses the change.
+- **Reaction time** is an action delay: a per-vehicle FIFO of `round(τ/dt)` computed
+  accelerations. It replaces the review's ring of past snapshots, because it costs one entry per
+  vehicle per tick and needs no remapping of past positions. Hypothetical tests stay undelayed.
+- **Data.** Five optional keys; absent = today. One new schema, only when used.
+
+Rows BA30–BA38 are pending; nothing is implemented. Checked: `check` on Linux.
+
 ## 2026-10-15 — Owner's answers to B14 and B15 (D178; docs only)
 
 "B14 รับ, B15 ใช้ค่ามาตรฐานไปก่อน และจะทำการวิจัยในอนาคต". The review's order is the queue, keep-left

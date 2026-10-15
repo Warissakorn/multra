@@ -129,7 +129,7 @@ not appear as a working setting just because the catalog can store a number.
 | W99 CC0–CC9 | Planned following model; none are aliases of `followingTime` or other prototype fields |
 | Desired speed / type length and width | Existing type fields; additional distribution families and motorcycle occupation are separate work |
 | Transit acceleration CC8/CC9 | Type has scalar acceleration limits; speed-dependent model acceleration needs a contract; no transit-stop/articulation claim |
-| Look ahead/back min/max; observed vehicles | Planned bounded perception; do not limit hard collision constraints with perception |
+| Look ahead/back min/max; observed vehicles | Planned bounded perception; do not limit hard collision constraints with perception ([contract](PERCEPTION.md), D179) |
 | Temporary attention duration/probability | Planned seeded state and cadence; copied replay and emergency behavior required |
 | Smooth closeup; static-obstacle standstill gap | Planned obstacle-specific semantics; do not change ordinary vehicle buffer globally |
 | Free lane selection | D95/D101 implemented but off under D102; acceptance A53 remains failed |
