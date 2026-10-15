@@ -1,0 +1,22 @@
+{
+  "id": "w74-sumo-defaults",
+  "model": "w74",
+  "ax": 2,
+  "bxAdd": 4.5,
+  "bxMult": 0,
+  "exAdd": 1.5,
+  "exMult": 0,
+  "cxAdd": 50,
+  "cxMult": 0,
+  "opdvAdd": 1,
+  "opdvMult": 2,
+  "dMax": 150,
+  "bMaxAdd": 0.2,
+  "bMaxMult": 2.08,
+  "bMaxSpeedRoot": 7,
+  "bNullAdd": 0.52,
+  "bNullMult": 0,
+  "bMinAdd": -1,
+  "leaderAccelerationWeight": 0.5,
+  "emergencyLeaderWeight": 0.55
+}

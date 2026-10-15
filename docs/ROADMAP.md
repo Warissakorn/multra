@@ -210,7 +210,8 @@ lane-change lab (D98), then acceptance fixtures; prototype baselines change only
 tracking (D121–D125, [DISCHARGE](reference/DISCHARGE.md)); M3.3.2 library, class/road assignment,
 prototype selection and dialog (D126–D128; owner visual review open); M3.3.3a W74 contract and
 implementation, runnable in schema 25 and **not validated** (D129, D135–D139, [W74](reference/W74.md)).
-**Next:** a cited W74 preset, then the M3.3.3b W99 contract before code. Evidence:
+A cited, uncalibrated preset (SUMO's defaults, not auto-loaded) is recorded (D176,
+[evidence](evidence/w74-preset.md)). **Next:** the M3.3.3b W99 contract before code. Evidence:
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 

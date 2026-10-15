@@ -11,12 +11,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
-- `main` is `c2bacd1`; `native.yml` (Linux and Windows) passed on it (run 529, 2026-10-14). That
-  run covers the merged M8 (PR #142), Behaviour Lab (#148/#149) and review fixes (#151), including
-  the `scenario-run-ui` pin of the D159 numbers: `trafficsim-cli 42` = 45 completed /
-  31.75870154816726 s / 1 clamp.
-- D175 and the docs consistency pass merged as PR #153 (`main` `0f16623`); branch
-  `claude/exciting-cerf-9jjvck` carries the docs cleanup (archive merged into dated logs).
+- `main` is `65c627a`; `native.yml` (Linux and Windows) last passed on `c2bacd1` (run 529,
+  2026-10-14), which pins `trafficsim-cli 42` = 45 completed / 31.75870154816726 s / 1 clamp.
+- Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176,
+  [evidence](evidence/w74-preset.md)); not yet merged.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
@@ -24,11 +22,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 Without a choice from the owner, take item 1. One system per session; contract and acceptance
 rows first for engine work.
 
-1. **W74 cited preset, then the M3.3.3b W99 contract** (D120, D138). A cited, uncalibrated `w74`
-   preset in `data/driver-behaviour/` (the fixture's 15 uncited values are not a source); rerun
-   `trafficsim-w74-clamp-trace` with it; keep prototype runs byte-identical (BA18). W74 runs and
-   is **not validated**. Details: [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md) §Open
-   engineering notes.
+1. **The M3.3.3b W99 contract, before any code** (D120). Write `docs/reference/W99.md` in
+   W74.md's shape: sources (public only; SUMO's `MSCFModel_W99` and PTV's public parameter page,
+   no proprietary equivalence claimed), net-gap convention, CC0–CC9 thresholds and regimes with
+   equality sides, parameters as data with ranges, traits, state and model switch, composition
+   with the tick (dispatcher `follow`, `standstillGap`/`desiredGap`), and persistence (one new
+   schema only when a `w99` behaviour is owned). Add failure-first rows BA30+ to
+   [the delivery plan](plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and a decision.
+   No engine code in that session; prototype and W74 runs stay byte-identical.
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
@@ -58,7 +59,8 @@ rows first for engine work.
 - **Gates (A):** M0 plausibility, M3.2.7d T-junction exercise, M5.7 rehearsal.
 - **Decisions (B):** the name, D95/D101, `sharedMouth`/`level`, the M2.6 template's real data,
   the standstill cap, routing stations, the example's cool-down (D146), the M6 benchmark choice
-  (B9, before any comparable run), and Thai sources for multi-level values (B12, D175).
+  (B9, before any comparable run), Thai sources for multi-level values (B12, D175), and whether the cited `w74` preset
+  ships in the catalog with an amber value (B13, D176).
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI and

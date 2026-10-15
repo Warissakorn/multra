@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — A cited, uncalibrated `w74` preset (NEXT item 1, D176)
+
+`data/driver-behaviour/presets/w74-sumo-defaults.json` maps every one of the 18 keys from SUMO's
+`MSCFModel_Wiedemann` defaults (pinned at `79e42b50`), the file W74.md already follows. It sits
+in a subfolder because the catalog loader reads only top-level `*.json`, and an unused `w74`
+behaviour would give every vehicle traits (BA18); `tools/t_junction_sweep.hpp` now lists the
+same files the loader reads, so its archived metadata still matches. A codec test pins that the
+preset is valid and not loaded. **Evidence** ([w74-preset](evidence/w74-preset.md)): with the
+preset, four-leg discharge ≈3.44 s (fixture ≈3.11 s, prototype ≈2.05 s) and 3.2–4.7 clamps
+per run (fixture 8.2–14.2), 72–98 % at amber, which `w74` behaviours still hold as red. No
+defect, nothing calibrated. The fixture no longer reproduces BA27's hashes (D159, M4.2), so
+both were rerun on one build. Shipping it, and an amber value, are OWNER_SITTING B13.
+Checked: desktop build and full CTest (Linux, GCC 13.3), `check`, CLI seed 42 unchanged.
+
 ## 2026-10-15 — Documentation cleanup for AI reading (no behaviour change)
 
 The owner asked for docs that are organised, trimmed and efficient for an AI to read, and for

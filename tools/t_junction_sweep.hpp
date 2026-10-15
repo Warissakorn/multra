@@ -48,7 +48,9 @@ inline nlohmann::ordered_json fixtureMetadata(const std::filesystem::path& root)
                                {"vehiclesPerHour", input.vehiclesPerHour}, {"startTime", input.startTime}, {"endTime", input.endTime}});
     for (const auto* dir : {"vehicle-types", "driver-behaviour", "priority-rules", "evaluation"}) {
         std::vector<std::filesystem::path> files;
-        for (const auto& e : std::filesystem::directory_iterator(root / "data" / dir)) files.push_back(e.path());
+        // What the catalog loader reads: regular *.json directly inside (presets/ is not loaded, D176).
+        for (const auto& e : std::filesystem::directory_iterator(root / "data" / dir))
+            if (e.is_regular_file() && e.path().extension() == ".json") files.push_back(e.path());
         std::sort(files.begin(), files.end());
         for (const auto& f : files) j["catalogs"][std::string(dir) + "/" + f.filename().string()] = fnv1a(f);
     }
