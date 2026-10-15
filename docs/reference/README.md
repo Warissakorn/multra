@@ -14,6 +14,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [DISCHARGE.md](DISCHARGE.md) | Lane/cycle discharge and startup diagnostics, quantization and unavailable results |
 | [DRIVING_BEHAVIOUR.md](DRIVING_BEHAVIOUR.md) | Class/road behaviour assignment: library storage, runtime selection and editor (M3.3.2a–c) and the target capability map |
 | [BEHAVIOUR_LAB.md](BEHAVIOUR_LAB.md) | Behaviour Lab: circuit routes, live retune, vehicle placement, the lab ring and window, rows BL1–BL12 (M3.3.4) |
+| [LATERAL.md](LATERAL.md) | Two-dimensional occupancy: lateral frame, cross-sections, spans on every overlapped lane, lateral admission (M3.7.0 contract, D180; not implemented) |
 | [PERCEPTION.md](PERCEPTION.md) | Look-ahead, observed vehicles, look-back, rear time-to-collision and reaction time (M3.5.0 contract, D179; not implemented) |
 | [W74.md](W74.md) | W74 car-following equations, parameters, traits, state and model switch (runs since D138; not validated) |
 | [POSITIONED_ROUTING.md](POSITIONED_ROUTING.md) | Positioned Route recognition and schema 20 |

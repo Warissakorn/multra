@@ -64,7 +64,7 @@ BA03 has [type/window evidence](../evidence/discharge-controls.md), with future 
 BA05 has [proven-motion](../evidence/discharge-passage.md) and [source-sink identity](../evidence/discharge-identity.md)
 evidence. BA06–BA09 have [library/codec evidence](../evidence/behaviour-library.md). BA10–BA18 have
 [selection evidence](../evidence/behaviour-selection.md).
-BA19/BA20 have automated [editor evidence](../evidence/behaviour-editor.md); the owner's visual verdict stays open. BA21–BA29 are the [W74 contract](../reference/W74.md)'s rows (D129); BA21/BA22 have focused [pure-function evidence](../evidence/w74-pure-function.md) (D135), BA29 [codec evidence](../evidence/w74-codec.md) (D136), BA26 [trait evidence](../evidence/w74-traits.md) (D137), BA23–BA25/BA28 [composition evidence](../evidence/w74-composition.md) (D138), BA27 a [timestep record](../evidence/w74-discharge.md). BA30–BA38 are the [perception contract](../reference/PERCEPTION.md)'s rows (D179). All later rows are pending. P0 writing a row does not pass it. Record exact fixture/input hashes, commit, compiler/flags, commands,
+BA19/BA20 have automated [editor evidence](../evidence/behaviour-editor.md); the owner's visual verdict stays open. BA21–BA29 are the [W74 contract](../reference/W74.md)'s rows (D129); BA21/BA22 have focused [pure-function evidence](../evidence/w74-pure-function.md) (D135), BA29 [codec evidence](../evidence/w74-codec.md) (D136), BA26 [trait evidence](../evidence/w74-traits.md) (D137), BA23–BA25/BA28 [composition evidence](../evidence/w74-composition.md) (D138), BA27 a [timestep record](../evidence/w74-discharge.md). BA30–BA38 are the [perception contract](../reference/PERCEPTION.md)'s rows (D179); BA39–BA46 the [lateral contract](../reference/LATERAL.md)'s (D180). All later rows are pending. P0 writing a row does not pass it. Record exact fixture/input hashes, commit, compiler/flags, commands,
 assertions and platform in evidence when the corresponding slice lands.
 
 | Row | Fixture / forcing condition | Required outcome |
@@ -107,6 +107,14 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA36 | `reactionTime` with forced red, Stop, dead end, D108 source, zone hold, courtesy, a road boundary changing `d`, and a Lab retune | Hard cap, counted clamps, Stop service and admission unchanged; hypothetical tests undelayed; FIFO trimmed/padded as specified; a retune changing `d` refused |
 | BA37 | Codec: non-number, out-of-range and non-integer values, a key in an older schema, an unused invalid behaviour, external catalog | Atomic rejection with path; the new schema only when used; older bytes preserved |
 | BA38 | Four-leg discharge with `reactionTime` 0 / 0.5 / 1.0 s, seeds 42–81, dt 0.1 | Headway, startup lost time and clamps recorded; no bound, no calibration inference |
+| BA39 | Every [lateral](../reference/LATERAL.md) key absent (M3.7, D180) | Scenario equal to today's; CLI seed 42, frozen baselines, prototype, `w74` and perception runs byte-identical |
+| BA40 | A body overlapping the adjacent lane by just over, then exactly, `kLateralOverlap` (assert the overlap first) | Over: a span on that lane, and it is the leader of that lane's follower; at or under: no span there |
+| BA41 | Two narrow bodies side by side in one wide lane, lateral clearance above, at and below `dLat(v)` | Above: neither is the other's leader; at (touching the widened body) and below: the rear one follows; no 2D overlap at any published tick |
+| BA42 | `dLat` at 0, 25, 50 and 70 km/h | Exact interpolation; constant at and above 50 km/h |
+| BA43 | Two lateral moves into the same space in one tick; a move into a published body | The lower vehicle id is admitted, the other keeps its `lateral` with `lateralSpeed` 0; replay of a copied `SimState` exact |
+| BA44 | A target across the lane boundary with and without a `LaneChangeSpan`; a target past the carriageway edge | With a span: route remap at the crossing and `lateral` re-expressed; without: clamped inside the lane; never past the edge |
+| BA45 | Codec and compile: missing one of the three keys, out-of-range values, an older schema, an unused invalid behaviour; left- and right-hand networks | Atomic rejection with path; cross-sections and `drivingSide` compiled only when switched on; lane centres equal `laneGeometry`'s offset |
+| BA46 | Display of a body with `lateral` ≠ 0 on both driving sides | Drawn at lane centre + `lateral`; physics never reads display data |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

@@ -15,8 +15,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   2026-10-14), which pins `trafficsim-cli 42` = 45 completed / 31.75870154816726 s / 1 clamp.
 - Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
   [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
-  (D177; motorcycles are core scope), the owner's answers (D178) and the perception
-  contract (D179); not yet merged.
+  (D177; motorcycles are core scope), the owner's answers (D178), and the perception
+  (D179) and lateral (D180) contracts; not yet merged.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
@@ -25,26 +25,28 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.7.0 — the two-dimensional occupancy contract, docs only** (review §4.2, D177/D178).
-   Write `docs/reference/LATERAL.md` in [PERCEPTION](reference/PERCEPTION.md)'s shape. Core today
-   knows no width or lateral adjacency: `Segment` is `{id, length, next}`
-   (`src/core/types.hpp:13`), `OccupiedSpan` is longitudinal only (`src/core/routes.hpp:9`), the
-   type's `width` is display only, and lanes relate only through compiled lane-change spans. The
-   contract must define:
-   - what the compiler adds: lane width, lateral offset of each lane-level segment within its
-     Link's cross-section, adjacency, and `drivingSide` (D178's keep-left needs it)
-   - the vehicle's lateral offset as `SimState` data
-   - spans with lateral extent, and how leader search, `around`'s "alongside" and conflict tests
-     work on rectangles
-   - between-lanes occupancy, which M3.4's lane-change duration uses next
-   - the unset case: every vehicle centred and byte-identical (BA18)
-   - a per-tick performance budget against `trafficsim-engine-benchmark`
-
-   Also: rows BA39+ and a decision. Physical non-overlap stays separate from perception, as D179
-   does. No engine code.
-   - 1b. The M3.5 codec slice (PERCEPTION §9 step 1, BA37), then its motion slices.
-   - 1c. Then M3.4 lane-change duration on M3.7, M3.6 turning speeds, M3.4 overtaking with the
-     driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
+1. **M3.5 slice 1: the perception codec** ([PERCEPTION](reference/PERCEPTION.md) §6, §9 step 1;
+   row BA37, with BA30). This is the first code in the D178 order. Copy the `amberDeceleration`
+   pattern (D147):
+   - **Struct:** five `std::optional` fields appended last to `DriverBehaviour`
+     (`src/core/types.hpp:41`), so brace-initialisation keeps its meaning.
+   - **Key table:** one `perceptionParameterKeys()` read by every consumer below.
+   - **Parse:** read in `parseBehaviour` (`src/project/parse.cpp:300`) on both models.
+   - **Library codec:** add the keys to `parseBehaviourLibrary`'s known keys
+     (`src/project/behaviour_library.cpp:87`).
+   - **Schema gate:** `ownsPerceptionBehaviour` plus `rejectPerceptionBefore32`, beside
+     `ownsAmberBehaviour` and `rejectAmberBefore28`. Schema 32 is written only when an owned
+     behaviour uses a key, through the `schema` chain in `src/project/document.cpp:131`.
+   - **Range check:** a separate range check with paths (`observedVehiclesAhead` must be an
+     integer from 1 to 8).
+   - **Dialog:** a save from the Driving behaviours dialog (`src/shell/behaviour_editor.cpp`) must
+     keep the keys; showing them in the dialog is a later UI slice.
+   - **No motion change:** the engine reads none of the keys yet, which BA30 proves byte-identical.
+   - **Tests** go in a new `tests/perception_codec_tests.cpp`, modelled on
+     `tests/w74_codec_tests.cpp` and the amber tests.
+   - 1b. Then PERCEPTION slices 2–5, LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
+     its schema is the next number after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4
+     overtaking with the driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its

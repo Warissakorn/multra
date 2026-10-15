@@ -200,7 +200,7 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 (a change is instantaneous in the engine), `laneChangeDistance` where changes are measured late
 (D87/D89), D95's booked route (i) if discretionary changes are reopened (owner, sitting B2), and
 Vissim's cooperative lane change. Extended by the [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md)
-(D177, §3 F–G): lane-change duration with between-lanes occupancy (on M3.7.0), minimum
+(D177, §3 F–G): lane-change duration with between-lanes occupancy (on M3.7.0; [LATERAL](reference/LATERAL.md) §5, §7), minimum
 lane-change headway and safety-distance reduction, politeness, zipper merging and a blocking
 timeout, and overtaking with the driving side (keep-left/right bias, return after passing, lane
 preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
@@ -233,7 +233,8 @@ width in core, spans with lateral extent, rectangle tests for leaders, "alongsid
 and a per-tick performance budget. Then desired lateral position, speed-dependent lateral
 distance, overtaking inside a wide lane, position by turning direction and swept-body clearance.
 **Gate:** contract and failure-first rows; a lane-based scenario keeps every vehicle centred and
-replays byte-identically; no overlap in 2D at any tick.
+replays byte-identically; no overlap in 2D at any tick. **M3.7.0 contract written**
+([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46); next: its compile and codec slice.
 
 ### M3.8 — Motorcycles and lane sharing
 

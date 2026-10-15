@@ -6,6 +6,25 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.7.0 two-dimensional occupancy contract (D180; docs only)
+
+[LATERAL](reference/LATERAL.md) is the second contract in D178's order.
+- **Frame and data.** Each carriageway gets a lateral frame (positive left). Compiled
+  cross-sections take their lane centres from the one function `laneGeometry` uses, and
+  `drivingSide` moves into the Scenario.
+- **Vehicle state.** A vehicle's `lateral` is relative to its current lane centre, so routing
+  stays keyed to one lane chain.
+- **Spans.** The key choice is to emit a span on **every lane section a body overlaps**. A changer
+  or a motorcycle on a lane line then appears on both lanes, and the existing leader search,
+  `around`, zones and admission handle it without a second occupancy engine.
+- **Lateral tests.** Leader and alongside tests add a lateral overlap check with a speed-dependent
+  minimum lateral distance.
+- **Moves.** Lateral moves are admitted in vehicle-id order, as phase 2 does.
+- **Switch.** One switch (any of three keys) keeps lane-based runs byte-identical.
+
+Rows BA39–BA46 are pending. NEXT now starts code with the perception codec slice. Checked:
+`check` on Linux.
+
 ## 2026-10-15 — M3.5.0 perception contract (D179; docs only)
 
 [PERCEPTION](reference/PERCEPTION.md) is the first contract in D178's order.
@@ -120,38 +139,6 @@ it: queued behind others, the prototype creeps at ≈0.4 m/s; the row now asks f
 on 1 and 2 lanes has no safety clamp. Heading-up rotates the view each frame; the ~30 canvas scale
 reads became `viewScale()` (hypot(m11, m12)), identical unrotated. Rows BL13–BL16. Linux only
 (GCC 13.3, Qt 6.4.2 offscreen). The D146 entry moved whole to `archive/`.
-
-## 2026-10-14 — Behaviour Lab: a window for tuning driving behaviour (D165)
-
-The owner asked for a tool to develop driving behaviour: a view locked on one vehicle driving
-endlessly round a purpose-built network, and a panel for the vehicle's, the road's and the other
-traffic's parameters. Answers: opened from the editor's menu; changes apply live, keeping the
-vehicles; prototype model first. Contract and rows BL1–BL12 in
-[BEHAVIOUR_LAB](reference/BEHAVIOUR_LAB.md), written before the code.
-- **Core** (three opt-in seams, absent = byte-identical): `Route::circuit` — the index holds the lap
-  three times and a vehicle past 2L drops back L, so every look-ahead sees across the seam with no
-  new code path; `retuneSimulation` swaps a same-shape scenario under the running vehicles;
-  `placeVehicle` fills the ring at t = 0 with an exact count, drawing as an arrival does.
-- **`src/lab/`** (Qt-free): a stadium ring built with the editor's commands, compiled through
-  `buildScenario` directly — `compileDocument` refuses an input on a closed ring
-  (`UNSUPPORTED_INTERNAL_INPUT`), and the lab needs none. `LabRun::apply` retunes when only values
-  changed and restarts otherwise; telemetry reads the engine's spans as `closestVehicle` does.
-- **Window**: the Run canvas follows a vehicle (`setRunFollow`, click to switch), a three-tab panel,
-  a 60 s speed/gap chart, the unvalidated marker, and *Apply to project* as one History edit.
-- The first BL10 draft retuned `followingTime` and saw no change: the prototype's steady gap is
-  `standstill + (bx_add + bx_mult z) √v`; `followingTime` only sets how fast it is reached. The row
-  now retunes `additiveSafetyDistance`.
-Linux only (GCC 13.3, Qt 6.4.2 offscreen): desktop build, `circuit` 8/8, `lab` 5/5,
-`behaviour-lab-ui`, CLI 42 unchanged, `check` green; Windows waits for `native.yml`. The D145 entry
-moved whole to `archive/`.
-
-## 2026-10-14 — Engine per-tick work (D164)
-
-The owner chose the engine. A callgrind run of M2.6 (GCC 13.3, RelWithDebInfo) counted 3,833.9 M
-instructions. Three commits brought it to 3,364.2 M (−12.3 %): signal events reuse `headColors`
-(−94 M), queue lines walk only vehicles on crossing routes (`observe` 713 → 404 M), and arrivals
-check the due time first (−64 M). Every shipped project's CLI output was byte-identical, one seed
-and seeds 42–45; headless 90/90. Not done: `closestVehicle`, `occupiedSpans`, the event string copy.
 
 ## Older entries
 
