@@ -129,7 +129,7 @@ not appear as a working setting just because the catalog can store a number.
 | W99 CC0–CC9 | Planned following model; none are aliases of `followingTime` or other prototype fields |
 | Desired speed / type length and width | Existing type fields; additional distribution families and motorcycle occupation are separate work |
 | Transit acceleration CC8/CC9 | Type has scalar acceleration limits; speed-dependent model acceleration needs a contract; no transit-stop/articulation claim |
-| Look ahead/back min/max; observed vehicles | Planned bounded perception; do not limit hard collision constraints with perception |
+| Look ahead/back min/max; observed vehicles | Planned bounded perception; do not limit hard collision constraints with perception ([contract](PERCEPTION.md), D179) |
 | Temporary attention duration/probability | Planned seeded state and cadence; copied replay and emergency behavior required |
 | Smooth closeup; static-obstacle standstill gap | Planned obstacle-specific semantics; do not change ordinary vehicle buffer globally |
 | Free lane selection | D95/D101 implemented but off under D102; acceptance A53 remains failed |
@@ -143,8 +143,8 @@ not appear as a working setting just because the catalog can store a number.
 | Cooperative lane change; speed difference/collision time | Cooperation by changing lane is planned separately from braking |
 | Advanced merging | Existing merge arbitration is not this complete behavior model |
 | Rear lateral correction | Rear-axle display exists; physical lateral correction/occupancy not implemented |
-| Desired lateral position; adjacent-lane observation | Planned lateral/perception model |
-| Diamond queue; same-lane left/right overtaking | Planned 2D occupancy and motorcycle behavior |
+| Desired lateral position; adjacent-lane observation | Planned lateral/perception model; occupancy in [LATERAL](LATERAL.md) (D180) |
+| Diamond queue; same-lane left/right overtaking | Planned 2D occupancy and motorcycle behavior (milestones M3.5–M3.9 since D177; [review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)) |
 | Turning-direction lateral placement | Planned; must respect D119 recognition rather than read an unselected suffix |
 | Lateral distance at 0/50 km/h | Planned speed-dependent clearance; lane/type widths already exist |
 | Collision-time gain; minimum longitudinal speed | Planned lateral maneuver decision rules |

@@ -35,10 +35,14 @@ or edit evidence in place. A new measurement gets a new note.
 | [m5.9-cooldown.md](m5.9-cooldown.md) | M5.9 cool-down on `four-leg-signalised` (D146, 2026-10-09) | D146 |
 | [m6-benchmark-options.md](m6-benchmark-options.md) | M6 benchmark option sheet (M6.0, 2026-10-10) | D143, D34 |
 | [source-first-step.md](source-first-step.md) | Source first-step clearance — D108, M3.2.8a.1a | D108, D107 |
+| [perception-motion.md](perception-motion.md) | M3.5 slice 2: look-ahead and multi-anticipation evidence — 2026-10-15 | D182 |
+| [perception-lane.md](perception-lane.md) | M3.5 slice 3: look-back, rear TTC and perceived lane-change evidence — 2026-10-15 | D183 |
+| [perception-codec.md](perception-codec.md) | M3.5 slice 1: perception codec evidence — 2026-10-15 | D179, D181 |
 | [w74-clamps.md](w74-clamps.md) | M3.3.3a: where the extra W74 safety clamps come from — 2026-10-08 | — |
 | [w74-codec.md](w74-codec.md) | M3.3.3a W74 schema-25 codec evidence — 2026-10-08 | D135, D136 |
 | [w74-composition.md](w74-composition.md) | M3.3.3a W74 composition evidence — 2026-10-08 | D137, D138 |
 | [w74-discharge.md](w74-discharge.md) | M3.3.3a BA27: W74 queue-discharge timestep sensitivity — 2026-10-08 | — |
+| [w74-preset.md](w74-preset.md) | M3.3.3a: a cited, uncalibrated `w74` preset and its discharge and clamps — 2026-10-15 | D176 |
 | [w74-pure-function.md](w74-pure-function.md) | M3.3.3a W74 pure-function evidence — 2026-10-08 | D135 |
 | [w74-traits.md](w74-traits.md) | M3.3.3a W74 driver-trait evidence — 2026-10-08 | D136, D137 |
 | [windows-session-check-2026-10-02.md](windows-session-check-2026-10-02.md) | Windows session check of the owner's items — 2026-10-02 | — |

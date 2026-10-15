@@ -14,9 +14,10 @@ What was built is history: [ROADMAP](../ROADMAP.md) M2.8/M3.2.4/M3.3, PROGRESS a
 - **Driving behaviour** (D120, [plan](../plans/DRIVING_BEHAVIOUR.md), [contract](../reference/DRIVING_BEHAVIOUR.md)).
   Do not treat inverse selected-type headway as selected-type throughput (D122). W74 runs since
   D138 and is **not validated**; the [clamp trace](../evidence/w74-clamps.md) found no W74 defect.
-  Next: a cited, uncalibrated `w74` preset in `data/driver-behaviour/` (the fixture's 15 uncited
-  values are not a source; rerun `trafficsim-w74-clamp-trace` with it), then the M3.3.3b W99
-  contract before code. Keep prototype runs byte-identical (BA18).
+  The cited, uncalibrated preset is `data/driver-behaviour/presets/w74-sumo-defaults.json`
+  (D176, [evidence](../evidence/w74-preset.md): ≈3.44 s discharge, 3.2–4.7 clamps per run, most
+  at amber held as red). The [completeness review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) (D177) orders what follows:
+  perception and 2D-occupancy contracts first, W99 seventh. Keep prototype runs byte-identical (BA18).
 - **Merge admission** (M3.2.4e): its own admission contract and failure-first clearance tests
   before runtime reservations widen to the physical mouth.
 - **Demand** ([DEMAND_IMPROVEMENT](../plans/DEMAND_IMPROVEMENT.md)): further distributions,

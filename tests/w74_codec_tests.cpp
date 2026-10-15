@@ -7,6 +7,7 @@
 #include "../src/core/w74.hpp"
 #include "../src/project/behaviour_library.hpp"
 #include "../src/project/run.hpp"
+#include <fstream>
 using namespace trafficsim;
 // M3.3.3a (D136): row BA29 of docs/plans/DRIVING_BEHAVIOUR.md -- the schema-25 codec of a `w74`
 // behaviour (docs/reference/W74.md §5, §9) and the interim Run refusal of one in use.
@@ -114,7 +115,7 @@ TEST(w74codec, w74_below_schema_25_and_a_future_schema_are_refused) { // BA29
         auto old = j; old["schemaVersion"] = version;
         refused(old, "UNSUPPORTED_BEHAVIOUR_MODEL", "behaviours[" + std::to_string(i) + "].model");
     }
-    auto future = j; future["schemaVersion"] = 32;
+    auto future = j; future["schemaVersion"] = 33;
     test::throws([&] { parseDocument(future); }, "EDIT_VERSION");
 }
 
@@ -158,4 +159,18 @@ TEST(w74codec, a_w74_behaviour_in_use_runs_and_an_unused_one_changes_nothing) { 
         }
         CHECK(sawState);
     }
+}
+
+TEST(w74codec, the_cited_preset_is_valid_and_not_in_the_auto_loaded_catalog) { // D176
+    const auto data = test::root() / "data";
+    std::ifstream in(data / "driver-behaviour/presets/w74-sumo-defaults.json");
+    CHECK(in.good());
+    const auto preset = parseBehaviour(Json::parse(in));
+    CHECK(preset.w74.has_value());
+    CHECK(w74ParameterIssues(*preset.w74, "preset").empty());
+    CHECK(!preset.amberDeceleration && !preset.maxDecelerationCooperativeBraking); // not in the source
+    // BA18: an unused w74 behaviour adds traits to every vehicle, so the preset must not be loaded.
+    const auto catalog = resolveDemandCatalog(AuthoringDefinition{}, data);
+    CHECK(!catalog.behaviours.empty());
+    for (const auto& b : catalog.behaviours) { CHECK(!b.w74); CHECK(b.id != preset.id); }
 }

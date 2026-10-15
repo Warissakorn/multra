@@ -4,6 +4,7 @@
 #include "parking.hpp"
 #include "routing.hpp"
 #include "w74.hpp"
+#include "perception.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -262,6 +263,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             if (b.maxDecelerationCooperativeBraking)
                 number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
             if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
+            for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
             continue;
         }
         number(b.standstillDistance, p + ".standstillDistance");
@@ -271,6 +273,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         if (b.maxDecelerationCooperativeBraking)
             number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
         if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
+        for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every
         // vehicle on them would change back and forth each tick.

@@ -31,6 +31,13 @@ struct W74Traits {
     double zBx, zEx, zCx, zOp, zOsc;
     bool operator==(const W74Traits&) const = default;
 };
+// M3.5 perception (docs/reference/PERCEPTION.md §6, D179/D181): optional keys on either model;
+// an absent key means the pre-M3.5 behaviour. observedVehiclesAhead holds an integer.
+struct PerceptionParameters {
+    std::optional<double> lookAheadDistance, observedVehiclesAhead, lookBackDistance;
+    std::optional<double> rearTimeToCollision, reactionTime;
+    bool operator==(const PerceptionParameters&) const = default;
+};
 enum class W74Regime : std::uint8_t { free, approaching, following, emergency };
 // The previous tick's regime and the oscillation sign it used (0 outside following), §7.
 struct W74State {
@@ -60,6 +67,9 @@ struct DriverBehaviour {
     // before the line at this deceleration (m/s², positive). Absent, amber holds like red (D36).
     // After w74, so every existing brace-initialisation keeps its meaning.
     std::optional<double> amberDeceleration;
+    // M3.5 (PERCEPTION.md §6): stored and validated since D181, read by no motion yet. Last, so
+    // every existing brace-initialisation keeps its meaning.
+    PerceptionParameters perception;
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };

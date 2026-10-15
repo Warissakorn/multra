@@ -199,8 +199,61 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 **Open; carved out of M3.2.8c by D143 (R7).** Visibility at conflict areas, a between-lanes state
 (a change is instantaneous in the engine), `laneChangeDistance` where changes are measured late
 (D87/D89), D95's booked route (i) if discretionary changes are reopened (owner, sitting B2), and
-Vissim's cooperative lane change. **Gate:** contract and failure-first rows per item in the
+Vissim's cooperative lane change. Extended by the [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md)
+(D177, §3 F–G): lane-change duration with between-lanes occupancy (on M3.7.0; [LATERAL](reference/LATERAL.md) §5, §7), minimum
+lane-change headway and safety-distance reduction, politeness, zipper merging and a blocking
+timeout, and overtaking with the driving side (keep-left/right bias, return after passing, lane
+preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
+left-hand-traffic networks, held in a behaviour key (D178). **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
+
+### M3.5 — Perception, reaction and attention
+
+**Open; carved by D177** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–C, K). M3.5.0 is a
+docs-only perception contract: one bounded observation per vehicle and tick (look-ahead and
+look-back distances, observed vehicles ahead and behind), a delayed view for reaction time
+kept in `SimState`, consumed by every following model. Then: mirror checks with a second
+follower and a time-to-collision rear test, temporary lack of attention, driver classes as
+correlated hashed traits, visibility at conflict areas (from M3.4). **Gate:** contract and
+failure-first rows; with every key unset, runs are byte-identical (BA18); no fidelity claim before M6.
+**M3.5.0 contract written** ([PERCEPTION](reference/PERCEPTION.md), D179, rows BA30–BA38); next: its
+codec slice, then motion slices in the contract's §9 order. **Slice 1 (codec, schema 32) delivered** (D181,
+[evidence](evidence/perception-codec.md)); **slice 2 (look-ahead, multi-anticipation) delivered** (D182,
+[evidence](evidence/perception-motion.md)); **slice 3 (look-back, rear TTC, perceived lane-change
+tests) delivered** (D183, [evidence](evidence/perception-lane.md)); next: slice 4, reaction time.
+
+### M3.6 — Speed control: turning, curves and speed areas
+
+**Open; carved by D177** (review §3 D–E). Reduced-speed areas by type, desired-speed decisions,
+turning speed from Connector curvature, speed-dependent acceleration and grades. It delivers
+M2.1's "desired speed versus Link limits" item rather than duplicating it. **Gate:** contract and
+failure-first rows (curve speed bound, unset byte-identical); turning speeds measured in M6.
+
+### M3.7 — Lateral behaviour: two-dimensional occupancy
+
+**Open; carved by D177** (review §3 H, §4). M3.7.0 is a docs-only contract: lateral offset and
+width in core, spans with lateral extent, rectangle tests for leaders, "alongside" and conflicts,
+and a per-tick performance budget. Then desired lateral position, speed-dependent lateral
+distance, overtaking inside a wide lane, position by turning direction and swept-body clearance.
+**Gate:** contract and failure-first rows; a lane-based scenario keeps every vehicle centred and
+replays byte-identically; no overlap in 2D at any tick. **M3.7.0 contract written**
+([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46); next: its compile and codec slice.
+
+### M3.8 — Motorcycles and lane sharing
+
+**Open; core scope since D177** (answers R3/D143; review §3 I). After M3.7: a motorcycle type,
+lane sharing, filtering through standing queues, forming at the stop line, smaller accepted
+gaps, and PCU values handed to M10. Values start from cited published standards, flagged
+uncertain; the owner's later research and M6 replace them through data (D178). **Gate:** contract and failure-first rows,
+then M6 measurements of motorcycle discharge and PCU before any result is reported as more than
+not-yet-validated.
+
+### M3.9 — Intersection behaviour extensions
+
+**Open; carved by D177** (review §3 J). Seeded per-driver critical gaps and follow-up times
+(values from M6, R7), turn on red for marked movements, U-turn slots and median openings,
+anticipating a turning leader, and an amber probability model as an option beside D147 (M4.2
+is not reopened). Its place, eighth in the order, is accepted (D178). **Gate:** contract and failure-first rows per item; legacy random stream untouched.
 
 ---
 
@@ -210,7 +263,9 @@ lane-change lab (D98), then acceptance fixtures; prototype baselines change only
 tracking (D121–D125, [DISCHARGE](reference/DISCHARGE.md)); M3.3.2 library, class/road assignment,
 prototype selection and dialog (D126–D128; owner visual review open); M3.3.3a W74 contract and
 implementation, runnable in schema 25 and **not validated** (D129, D135–D139, [W74](reference/W74.md)).
-**Next:** a cited W74 preset, then the M3.3.3b W99 contract before code. Evidence:
+A cited, uncalibrated preset (SUMO's defaults, not auto-loaded) is recorded (D176,
+[evidence](evidence/w74-preset.md)). **Next:** the M3.3.3b W99 contract before code, seventh in
+the [review](audits/DRIVING_BEHAVIOUR_REVIEW.md)'s order (D177) so it consumes M3.5's observation. Evidence:
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 
@@ -361,6 +416,8 @@ Recorded so nobody starts them opportunistically:
 
 - Pedestrian and public-transport modelling, transit stops and crosswalks (from M5.1, D143;
   parking and regional/macroscopic modelling moved to M8–M12 by D145)
+- Side friction: bus/songthaew stops blocking a lane, on-street parking manoeuvres, incidents
+  and temporary lane closures (D177, review §3 L), with the transit work above
 - Activity-based demand and transit assignment beyond M10's four-step model
 - Scenario management beyond M5.8's comparison (a scenario manager, variant trees)
 - 3D presentation

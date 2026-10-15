@@ -67,9 +67,15 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    cross-section templates (Department of Highways / Department of Rural Roads), the PCU source
    (motorcycles flagged uncertain, R3) and, if a local value exists, saturation flow; HCM's
    1,900 pc/h/ln is the fallback ([workflow](MULTI_LEVEL_WORKFLOW.md) §7). Which documents? *Owner:*
+13. **The cited `w74` preset** (listed 2026-10-15, D176, [evidence](../evidence/w74-preset.md)).
+   `data/driver-behaviour/presets/w74-sumo-defaults.json` holds SUMO's defaults and is not
+   loaded into projects (an unused `w74` behaviour would add traits to every vehicle). Ship it
+   in the auto-loaded catalog, and give it an `amberDeceleration` (SUMO's car-following model
+   has none, so amber holds like red: 72–98 % of its clamps), or leave both? *Owner:*
 
 Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
-([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9).
+([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9); B14 and B15, moved out
+([D178](../decisions/RECORD.md#d178): order accepted, keep-left default, standard motorcycle values for now).
 Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
 ([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
 

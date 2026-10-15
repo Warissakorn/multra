@@ -16,6 +16,10 @@ bool ownsW74Behaviour(const ProjectDocument&);
 // 28 carrying the key in an owned behaviour is refused (EDIT_UNSUPPORTED_FIELD).
 bool ownsAmberBehaviour(const ProjectDocument&);
 void rejectAmberBefore28(const Json& document);
+// M3.5 (D181, PERCEPTION.md §6): schema 32 exactly when an owned behaviour carries a perception
+// key; a file below 32 carrying one is refused (EDIT_UNSUPPORTED_FIELD, path to the key).
+bool ownsPerceptionBehaviour(const ProjectDocument&);
+void rejectPerceptionBefore32(const Json& document);
 // Schema 21 and later: reads the library and rejects unknown keys in every owned catalog entry.
 void parseBehaviourLibrary(const Json& definition, AuthoringDefinition&);
 // Adds the schema-21 keys to an already written definition: names, the explicit model tag on

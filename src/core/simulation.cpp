@@ -4,6 +4,7 @@
 #include "following.hpp"
 #include "lanes.hpp"
 #include "parking.hpp"
+#include "perception.hpp"
 #include "routing.hpp"
 #include "routes.hpp"
 #include "validate.hpp"
@@ -263,6 +264,15 @@ SimState stepSimulation(SimState&& state, double dt) {
         if (leader && !zones.empty()) leaders[v] = VehicleLeader{leader->gap, leader->speed, leaderId};
         double allowedDistance = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) :
                                           std::numeric_limits<double>::infinity();
+        // M3.5 (PERCEPTION.md §2-§3): with a look-ahead or an observed-vehicle count, the
+        // acceleration follows the PERCEIVED leaders; the physical leader above keeps the hard cap
+        // and admission. Neither key: the physical leader, exactly as before.
+        std::vector<PerceivedLeader> perceived;
+        const auto& sight = behaviour.perception;
+        if (perceivesAhead(sight)) {
+            perceived = perceivedLeaders(vehicle, parts, spans, buckets, observedCount(sight), lookAheadRange(sight));
+            leader = perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader);
+        }
         for (const auto& routeHead : index.routeHeads[refs[v].route]) {
             const auto& head = scenario.signalHeads[routeHead.headIndex];
             const double gap = routeHead.partStart + head.position - vehicle.distance;
@@ -344,6 +354,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+        anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.

@@ -184,7 +184,7 @@ interval in which every flow is 0 (nothing counted) uses the whole-period `relat
   **Since M2.3 an input may name a composition** from `data/compositions/` instead of one vehicle
   type; resolving the catalog splits it into one input per type (`id/type-<type>`, volume ×
   normalised share), which is exact for Poisson arrivals. `heavy-vehicle` is a plausible,
-  **unvalidated** type added for it. Motorcycles are not offered: lane sharing is not modelled.
+  **unvalidated** type added for it. Motorcycles are not offered: lane sharing is not modelled (planned as M3.7/M3.8, D177).
   **Since M2.4 an input may follow a static routing decision** — relative flows over routes that
   leave one Link — and is split into one input per route (`id/route-<route>`) before everything
   else. Turning proportions are then exact in expectation; lane choice is still fixed at entry.
