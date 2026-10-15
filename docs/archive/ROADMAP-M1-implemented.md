@@ -307,7 +307,7 @@ The mouth cut on the Link's own cross-section by sliding each boundary **longitu
 own offset curve — not M1.17's lateral wedge, whose revert stands. Superseded in part by M1.19,
 which keeps the slide and changes the offsets it starts from. The full body, its measurements and
 the trade the owner took at the time were never moved here; they are in Git history
-(`bcead5d:docs/ROADMAP.md`) and [`PROGRESS-2026-09-18-flush-mouth.md`](PROGRESS-2026-09-18-flush-mouth.md).
+(`bcead5d:docs/ROADMAP.md`) and [`PROGRESS-2026-09-18-flush-mouth.md`](PROGRESS-LOG-2026-09-17--2026-09-18.md#progress-2026-09-18-flush-mouth).
 
 ---
 

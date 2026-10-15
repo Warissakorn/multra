@@ -1,0 +1,486 @@
+# PROGRESS log archive — 2026-09-17 to 2026-09-17
+
+Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
+hold status, the decision record holds the reasoning. Each section keeps its original file name as anchor.
+
+<a id="progress-2026-09-17"></a>
+## 2026-09-17
+
+Entries moved whole out of [`PROGRESS.md`](../PROGRESS.md) to keep the active log inside
+the 500-line budget (hard rule 6). Nothing here is edited or summarised — only relocated.
+Newest first, as in the active log. `Next`, the backlog, the open questions and the
+decision table all stay in `PROGRESS.md`; this file is log entries only.
+
+---
+
+### 2026-09-17 — M1.12.1: a Connector carries its own lane widths and markings
+
+The last M1 carve-out. A Connector's lane widths were read from the Links each end joins, so a
+widening taper had to be authored on the Links instead, and every interior divider was dashed with
+no choice about it. Both are now fields on the Connector, schema 6.
+
+**The boundary that mattered more than the fields.** `laneWidthOf` was a file-local helper in
+`road_boundaries.cpp`, and `compile.cpp` computed a Connector's width **a second time, its own
+way**, for `TIGHT_CONNECTOR_RADIUS`. While both derived from the same Link lanes that was merely
+duplication; the moment a width is authored it becomes a disagreement — the drawing would use the
+authored width and the radius advisory would measure the old one. `connectorLaneWidths` is now the
+one place a width is decided and both read it (hard rule 3). That refactor landed first and on its
+own, and 23/23 stayed green across it, which is what says it was behaviour-neutral.
+
+**Empty means derived, and that is the whole compatibility story.** Absent keys give an empty
+vector, so schema 6 needs no conversion on read: nothing changed meaning, unlike M1.18. **The
+old-file load test is not optional here** — a schema-5 document with a multi-lane Connector is
+loaded, compared to the in-memory original, and its boundaries measured vertex for vertex to
+1e-12. M1.18 was reverted for exactly this class of mistake, and its verification measured 120 of
+120 drawn vertices unchanged, which was true and beside the point because it never opened a file
+written by the previous build.
+
+**A defect surfaced and I did not paper over it.** The first width test asserted the authored
+5.5 m to 1e-6 on the curved fixture and read **5.529 m**. That is the miter widening the spacing
+measured along the cross-section at a bend — the same defect as the 8.698 m of a 7.000 m width
+already on record, at 0.5% instead of 24%. Loosening the tolerance would have written it down as
+correct, which is precisely what I criticised two existing tests for doing. Instead the exact
+assertion moved to a **straight** Connector fixture, where no miter is involved and it holds to
+1e-9, and the curved case became a bound naming M1.12.2 for the session that tightens it. Booked
+as **M1.12.2** with the cause identified and a "measure before changing" instruction, because it
+changes drawn geometry at every bend.
+
+**A judgement call to be honest about.** Vissim's `Lanes` tab has a per-**lane** `MarkingType`.
+Ours is per **interior divider** (`paths − 1`), with the two outer edges always solid, because
+per-lane does not map unambiguously onto `paths + 1` boundary lines and I would have been choosing
+a mapping either way. **I did not check this against Vissim.** It is recorded in `ROADMAP.md` as a
+chosen representation rather than a measured parity claim (rule 4), and it is a small change if
+the owner's Vissim behaves differently.
+
+**Two smaller decisions with reasons.** A resize that changes the path count **drops** the authored
+arrays instead of padding them — an entry the author never typed is not a width they chose, and
+the derived value is the honest fallback, the same reasoning that clears `laneBlend` on a geometry
+change. And a partial list is rejected with `EDIT_LANES`: no field would say which lanes were
+authored and which derived. Marking names are stored as `"solid"`/`"dashed"` rather than the enum's
+integers, so a human reading the project file sees words and adding a kind cannot renumber what
+older files meant.
+
+**`docs/ROADMAP.md` needed room twice** and got it the way `PROGRESS.md` and `VISSIM_PARITY.md` did:
+M1.1–M1.6 and then M1.8–M1.10 bodies moved whole into `docs/archive/ROADMAP-M1-implemented.md`,
+each keeping its heading and a status line so the sequence stays whole. Both moves diffed against
+`git show HEAD:` — no heading lost, archived bodies byte-identical, no kept body changed, no
+dangling link. Note the status line referenced M1.12.2 before its section existed for a few
+minutes; booking it in the same commit is what keeps the file internally true.
+
+**Verification:** 23/23 CTest, 125/125 unit tests, architecture and size guards green. The exact
+width holds to 1e-9 on a straight Connector; a Connector never given a width is unchanged to
+1e-12, including one loaded from a schema-5 file. Linux only — `native.yml` also runs the Qt
+suites on Windows and nothing in these sessions has been near it.
+
+---
+
+### 2026-09-17 — M1.11.1 closed: a vehicle enters at the drawn station too
+
+With M3.1 in place, the target station joins `runtimeSections`' cut list and a Connector arriving
+inside a lane body runs. M1.11.1's done-condition — "leaves **and** enters" — is met, with no
+carve-out.
+
+**Two things were not the two-line change I expected.**
+
+*An arriving vehicle continues downstream of the cut, not upstream of it.* `sectionForStation`
+resolves a station to the section that **ends** there, which is right for a signal head standing
+on a cut and wrong for a vehicle joining at one — it would have put the arrival on the 40 m of
+lane the vehicle never drives. `sectionStartingAt` is its mirror, and the two now sit next to each
+other in the header saying which is for what.
+
+*Route expansion had to learn where a route joins a lane.* An authored route `{a1, conn, b1}`
+expanded from `b1`'s **first** section, so the chain read `… conn, b1` while `conn`'s successor was
+`b1/sec-2` — `DISCONNECTED_ROUTE`, on a network that is perfectly legal. The walk now asks the
+segment it just emitted where it leads on this lane and starts there. That is also what makes the
+travelled distance right: 100 m of `a1`, the Connector, and 60 m of `b1` — not 140 m of `b1`.
+
+**Where the missing-catalog check belongs, and where I first put it.** I had
+`derivedPriorityRules` throw `EDIT_NO_PRIORITY_DEFAULTS` when the gap time was absent. Two
+existing tests failed, and they were right to: `buildScenario`'s own header calls it "unchecked
+assembly, for diagnostics that must not throw", and blocking an **edit** because a data catalog
+was not resolved is exactly the boundary D18b exists to protect. The check moved to
+`priorityDefaultsIssues`, with two callers — `compileScenario` throws on it, `runtimeDiagnostics`
+reports it — so Run and the panel cannot disagree about it. Editing, saving and Undo of such a
+Connector are untouched.
+
+**The derived rule.** One per interior target: the arriving path gives way, its stop line at its
+own downstream end, the conflict point where the upstream section ends — which is the drawn
+station. Appended to any authored rules rather than replacing them, in path order, so it is
+reproducible. Nothing is persisted: it is a function of the drawing, like the sections themselves.
+
+**Measured, not assumed.** A probe on the failing case showed the arriving vehicle reaching 182 m
+against a 180.002 m stop line by tick 20 and 236 m by tick 70 — it was crossing all along. My test
+was reading `distanceOf` **after** the loop, by which point the vehicle had finished the route and
+left the network, so it was comparing against a departed vehicle. The check now runs during the
+loop. Worth recording because the assertion looked like a product failure and was a test bug.
+
+**The negative check ran through the data file.** Setting `gapTime` and `headway` to 0.001 in
+`data/priority-rules/default.json` breaks three named assertions, the held-at-the-stop-line one
+among them. So the hold really comes from those two numbers, and the data path is live end to
+end — not a value compiled in somewhere with the file for decoration.
+
+**Verification:** 23/23 CTest, 119/119 unit tests, architecture and size guards green,
+`trafficsim-cli 42` unchanged at `meanDelay 29.249359418430977` with the not-yet-validated marker.
+The four frozen baselines are untouched. Linux only.
+
+**`docs/ROADMAP.md` is now at exactly 500 lines, the hard rule 6 limit.** The next entry needs
+room made first: the M1 block holds 21 sub-milestones, most long implemented, and archiving the
+completed bodies the way `PROGRESS.md` and `VISSIM_PARITY.md` were archived is the move. That is
+its own piece of work, not something to do while squeezing prose to fit.
+
+---
+
+### 2026-09-17 — M3.1: a merge is arbitrated by gap time and headway
+
+`validateScenario` refused any merge outright, and rightly: a place fed by two segments had no
+rule for who goes, and D13 forbids inventing one. The owner authorized implementing the necessary
+part of M3 rather than carving M1.11.1's second half out, so `PriorityRule` now supplies the rule
+— Vissim's, with the two numbers an engineer tunes.
+
+**Most of a merge already worked, which is why this is small.** `OccupiedSpan::segmentIndex` is a
+**global** index into `Scenario::segments` and spans are bucketed globally, so two vehicles on
+different routes see each other the moment they share a segment — car-following across the merge
+needed nothing. The single missing thing is seeing the major approach **before** entering it,
+which is not on the minor vehicle's own route and so is invisible to `closestVehicle`. That is one
+scan of one bucket, and the hold at the stop line is the **same clamp a red head uses**
+(`simulation.cpp`), not a second braking path beside it.
+
+**The guard is loosened by construction, never by removal.** A place fed by *n* segments is
+runnable only when at least *n*−1 of them give way to another of them — so exactly one has
+priority and the rest have somewhere to wait. Everything else still reports `UNSUPPORTED_MERGE`,
+including a rule that points at the wrong segment and one that names its own segment. Checked by
+deleting the guard instead of narrowing it: **six tests fail**, across `core`, `connectors`,
+`diagnostics` and `ranges`. That is what tells me the relaxation is the shape I intended and not
+a hole.
+
+**A stopped queue is a gap, not a block.** The first version I reasoned through would have had the
+minor approach yield to any major vehicle within the gap time — including one standing still 90 m
+back, whose time-to-conflict is finite only because the arithmetic does not care that it is not
+moving. That deadlocks the minor approach behind a queue that is never going to clear. A major
+vehicle further off than the headway and not moving does not block, and there is a test for it.
+
+**One test was vacuous and the negative check is what caught it.** The first "held at the stop
+line" assertion used a major vehicle one second from the conflict point and ran 20 ticks. With the
+clamp deleted it still passed — from 95 m at rest, two seconds is not enough to reach a stop line
+5 m away, so the assertion was true whether the feature existed or not. Rewritten with a
+thirty-second gap time and a major vehicle nine seconds out, over six seconds: now it fails first
+when the clamp is removed, and it asserts the blocking actually happened rather than assuming it.
+
+**Gap time and headway are data.** `data/priority-rules/default.json`, read by `resolveCatalogs`.
+They are read **best-effort**, not unconditionally, and that was a correction: reading them as a
+required catalog broke `catalog_overrides_and_missing_catalog_are_explicit`, which pins a real
+contract — a document carrying its own vehicle types and behaviours is portable to a machine with
+no data directory. So a missing file is not a load error; it is an error at the point of use,
+where the alternative would be a zero gap time, which is a merge nobody gives way at, invented in
+silence. `PriorityDefaults` is left zero-initialised on purpose for the same reason.
+
+**What this is not.** A deterministic threshold test: wait while any major vehicle is inside the
+headway or would arrive inside the gap time, go otherwise. Not a calibrated critical-gap
+distribution, and hard rule 4's not-yet-validated marker stays. **M3 is not closed** — conflict
+areas as editable input, priority rules as an authorable object, stop and yield control, crossing
+conflicts and signal heads anywhere on a link are all still M3's, and its done-condition about
+minor-road delay responding to gap time is not met by this. Booked as M3.1 at its number.
+
+`src/core/` gained a type and a clamp and no dependency; the four frozen baselines are untouched
+because an empty rule list changes nothing.
+
+**Verification:** 23/23 CTest, 116/116 unit tests, architecture and size guards green. Two
+deliberate negative checks each broke named assertions. Linux only.
+
+---
+
+### 2026-09-17 — M1.11.1, first half: a lane is cut where a Connector leaves its body
+
+The engine's `Segment` is a whole traversable length, so a lane was all-or-nothing: a Connector
+attached part way along one was authorable but `Run` refused it, because a vehicle turning off at
+25 m of a 100 m lane would have been charged for all 100. `runtimeSections` now cuts each lane at
+its interior attachments, and `buildScenario` compiles the pieces.
+
+**The split that decides what this milestone can actually deliver.** Checked against
+`src/core/validate.cpp:55-68` rather than assumed:
+
+- A Connector **leaving** a lane body is a diverge — `s1.next = {s2, path}`, and `s2` and `path`
+  each have one predecessor. Runnable, and now runs.
+- A Connector **arriving** on a lane body is structurally a **merge**: the section downstream of
+  the arrival has two predecessors, the upstream section and the path. `UNSUPPORTED_MERGE` fires,
+  and inventing an arrival order to resolve it is exactly what D13 forbids.
+
+So M1.11.1's done-condition ("leaves **and** enters") is half met. The owner chose to implement
+the necessary part of M3 rather than carve the merge out, so the second half follows M3.1.
+
+**What keeps the four frozen baselines valid.** `sectionId(laneId, 0)` returns `laneId` itself,
+so a lane with nothing attached to its body compiles to exactly the `Segment` it always did —
+same id, same length, same `next` vector in the same order. `polylineSpan(g, 0, length(g))`
+returns `g` itself rather than rebuilding it from two `pointAlong` calls, and an uncut lane skips
+the call entirely. Proven by breaking it on purpose: making `sectionId` always append a suffix
+fails **54 tests**, all four TypeScript baselines among them. Restored, 110 pass.
+
+**Two things I would have got wrong without reading the callers.**
+
+- `validateAuthoredDemand` runs `validateScenario(buildScenario(...))` on **every save**. Had
+  route expansion lived in `compileScenario`, saving any document with a sectioned lane would
+  have broken, because the authored route still names the whole lane. Expansion is therefore
+  inside `buildScenario`, which is also the one place all six callers go through.
+- `validate.cpp:59` requires a segment length **> 0**. A cut at a lane end, or two cuts closer
+  than epsilon, would have failed with a code that says nothing about Connectors. Hence
+  `kMinSectionLength` at 0.2 m — the span `splitLink` already uses for the same question — and a
+  degenerate cut that still blocks with an object-linked row.
+
+**Route expansion adds no new error code.** It walks a lane's sections until one whose `next`
+carries the following authored id. Running off the end leaves that id unreachable, which is
+`DISCONNECTED_ROUTE` — reported by the core guard that already owns the question rather than by a
+second check beside it.
+
+**The diagnostic that was true and is now false.** `UNSUPPORTED_CONNECTOR_POSITION` told the user
+"the current simulation core only runs end-to-start connectors". Leaving that string in place
+while the code ran them would have been a message that misstates why Run is blocked, so it is
+reworded to the narrow case it now means, and interior targets get their own
+`UNSUPPORTED_ATTACHED_TARGET` in both locales. It also had to be added to `aboutTopology` in
+`src/project/diagnostics.cpp`, or the row vanishes from a drawing with no demand authored — which
+is how the inverted test caught it.
+
+**One source of truth, four consumers.** `runtimeSections` feeds `buildScenario`, the signal-head
+rebasing, `EditorCanvas::setRunNetwork` and `NetworkView::setNetwork`. The last two key their
+geometry maps by section id, so a vehicle located on a section has geometry to be drawn at;
+`network_view` resolves with a hard `.at()` and that only stays safe because both come from the
+same table. The deliberate non-throwing fallback in `canvas_run.cpp` was left exactly as it was.
+
+**The route dialog still offers whole lanes.** A route is stored in the project file, so offering
+a derived section id would put a copy of derived data in it. `authoringSegments` collapses the
+table back to one row per lane, with the union of its sections' successors minus its own sections
+— that union is what makes the interior diverge selectable at all. The demand table's length
+column reads the **compiled** route instead, so a turn off the middle of a link reports 25 m and
+not 100.
+
+**Tests.** Six new, each with its forcing assertion first: exact 25/75 section lengths and the
+`next` order; route expansion stopping at the diverge and walking past it; the minimum-length
+block with 5 m compiling and 30.1 m against 30 blocked; a head at 60 on a lane cut at 25
+compiling to `a1/sec-2` at 35 while one at 10 stays on `a1` at 10; determinism across the
+sectioned run with the shorter route proven to differ from the whole-lane one; and the authoring
+view never yielding a `/sec-` id. The old
+`draft_and_run_diagnostics_do_not_silently_run_wrong_lane_lengths` is inverted: its source half
+runs, its target half asserts the object-linked row arrives **instead of** the generic
+`UNSUPPORTED_MERGE`, not beside it.
+
+**Verification:** 23/23 CTest, 110/110 in `trafficsim-tests`, architecture and size guards green,
+`trafficsim-cli 42` unchanged. Linux only — `native.yml` also runs the Qt suites on Windows and
+this has not been near it.
+
+---
+
+### 2026-09-17 — Documentation tidied: one archive folder, one naming rule
+
+Housekeeping only; no source file was touched. The docs tree had grown four archive files at
+the top level, named after the **day they were written** rather than the entries they hold, so
+`PROGRESS-archive.md` covered 09-14 to 09-16 while `PROGRESS-archive-2026-09-14.md` covered
+09-10 to 09-14 — overlapping ranges under names that implied the opposite. `PROGRESS.md` itself
+sat at exactly 500 lines, one line from failing hard rule 6, with a `## Log` tail of 2026-09-14
+entries that belonged in an archive.
+
+What changed:
+
+- Archives moved to `docs/archive/` and renamed for the range they **contain**:
+  `PROGRESS-2026-09-16.md` (7 entries), `PROGRESS-2026-09-14.md` (15),
+  `PROGRESS-2026-09-10--2026-09-15.md` (14), and `VISSIM_PARITY-2026-09-16.md`.
+- `PROGRESS.md`'s `## Log` tail moved into those archives whole. `PROGRESS.md` is now
+  **284 lines**, 216 of headroom, and its header lists the three archives as a table of
+  contents instead of a run-on sentence.
+- Relative links inside the moved files repointed one level up; a link sweep over every
+  `docs/**/*.md` and `CLAUDE.md` reports **no dangling targets**.
+
+**Verification:** all 36 archived entries were diffed body-for-body against `git show HEAD:`
+of the four source files — `lost: set()`, `gained: set()`, `bodies differing: []`. Nothing was
+edited or summarised, only relocated, which is what `PROGRESS.md`'s own rule requires.
+`trafficsim-check-file-sizes .` green; largest doc is now `docs/audits/VISSIM_PARITY.md` at 491.
+
+**`VISSIM_PARITY.md` split, and the order was recoverable after all.** `git log -p --follow`
+on the file dates every 2026-09-16 follow-up by the commit that introduced it: `0a4f26e` 02:42,
+`c76b4f8` 03:48, `3c0766c` 04:23, `68ddf02` 07:44, `bb85a69` 08:40, `01a87f4` 09:53,
+`e81a591` 13:39, `a6b9ec8` 18:39, `a6d060a` 19:12. Two things fall out of that list:
+
+- The existing split was **already chronologically correct** — the archived block was exactly
+  the contiguous run 08:40-13:39, and the pointer sat precisely in the gap it left. My earlier
+  note that the order "is not recoverable from the headings alone" was right about the headings
+  and wrong about the conclusion; the history had it.
+- The `second`/`third`/`fourth` ordinals start at `second` only because the numbering was
+  picked up partway through a day that already had four unnumbered follow-ups. They are not a
+  competing ordering, which is what made them look like one.
+
+So the four 2026-09-16 follow-ups before 08:40 moved into the archive whole, keeping it one
+contiguous run 02:42-13:39. `VISSIM_PARITY.md` is **403 lines** (was 491, 9 from the guard);
+the archive is 147. The archive header now records the recovered order with its commits, so
+the next session does not have to re-derive it.
+
+**Verification:** all 19 sections diffed body-for-body against `git show HEAD:` of both files —
+`lost: set()`, `gained: set()`, `bodies differing: []`. Link sweep clean; size guard green
+
+---
+
+### 2026-09-17 — M1.18 reverted: it broke opening older project files
+
+The owner tested the editor, found a Connector still wrong, and said to review the whole
+thing. Reviewing turned up a regression I had shipped an hour earlier and had not tested for.
+
+**M1.18 changed what `Connector::geometry` MEANS in the saved file** — from the first lane's
+path to the middle of the range — with no migration. Every `.traffic.json` holding a multi-lane
+Connector is then rejected on load:
+
+```
+a file drawn before M1.18: REJECTED -- DISCONNECTED_GEOMETRY: connectors[0].from
+```
+
+My verification measured that 120 of 120 drawn and driven vertices were unchanged, which was
+true and beside the point: **I never opened a file written by the previous build.** A change to
+the meaning of stored data needs a load test of the old data, and "the owner said not to worry
+about save files" is not that test — refusing to open a file is different from migrating it.
+
+Reverted whole, back to `30a212a`, which the tree now matches byte for byte. The owner chose the
+revert over adding a schema 6 migration.
+
+**What is still open, and what is not mine:**
+
+- The pinch the owner photographed is **not reproduced**. Four fixtures — a bent Connector on a
+  Link body, arrival angles 90° down to 5°, a 2→1 taper, and a save/reopen round trip — all hold
+  93–100% of the full 7.000 m. Whatever causes it is not in those shapes, and the next session
+  should ask for the project file rather than guess again, as three rounds of guessing from the
+  screenshots each went wrong.
+- **A real defect found while looking:** a 2→2 Connector through a sharp bend bulges to 8.698 m
+  of a 7.000 m width, 24% over, at one sample. Present at `30a212a`, so it predates M1.18 and is
+  its own bug — the miter blowing out where the polygon turns hard.
+- CI run 105 failed in `windows-core` **before any test ran**: vcpkg's `z-applocal` post-build
+  step raced with itself on two targets linking in the same second (`ERROR_SHARING_VIOLATION`,
+  exit 32). Not the code; `windows-desktop` and the three Linux jobs passed.
+
+M1.18 is unbooked in `ROADMAP.md` again. The owner's rule that prompted it — the midpoint of the
+opening should sit at the attachment — is still unimplemented and still correct; it needs a
+migration to land.
+
+---
+
+<a id="progress-2026-09-17-early"></a>
+## 2026-09-17, earlier entries
+
+The 2026-09-17 archive passed the 500-line budget (hard rule 6), so its three oldest entries
+moved here whole: the wedge mouth, the `NETWORK_EDITOR.md` section split and the `ROADMAP.md`
+reordering. Nothing is edited or summarised — only relocated, the same rule
+[`PROGRESS.md`](../PROGRESS.md) sets for itself. Newest first, continuing
+[`PROGRESS-2026-09-17.md`](#progress-2026-09-17), which holds the later 2026-09-17 entries.
+
+### 2026-09-17 — The mouth is a wedge cut on the Link
+
+The owner circled the joint on a Vissim screenshot — a Connector arriving on a Link **body** at
+an angle — and confirmed what to match: *ปากทางเป็นลิ่มตาม Link*. Vissim cuts a Connector's mouth
+on the cross-section of the Link it attaches to. Ours was square to the Connector.
+
+**The commit that made it square was justified with the wrong numbers.** `e6dd394` cited 1.06 m
+of a 3.50 m lane on a reverse curve, 1.96 m at 60 degrees and 0.46 m at 90. Those belong to a
+different defect — **interpolating** the cross-section through the body — fixed one commit
+earlier in `e81a591`, whose own message says of the end cut: *"only the joint ... is shorter
+through the corner, as it is in Vissim."* So the wedge had already been judged correct, and
+`e6dd394` discarded it along with the interpolation, trading it for an overlap of 0.12-0.29 m.
+
+The restoration is the pre-`e6dd394` projection, six lines: each boundary's end is placed at
+`spine.front() + from · offset`, where `from` is the Link's own cross-section direction, which
+`endCross` was still computing and throwing all of away but its sign.
+
+**A design I proposed first was wrong, and measurement said so.** I planned to *shear* each
+boundary's end along its own direction until it met the cross-section line. That lands on the
+line but not on the Link's lane edges: the mouth comes out `offset / sin θ` wide. Measured, it
+drew a 7.00 m mouth as 7.24 m at 30 degrees and 7.60 m at 120. The projection is both simpler and
+correct — measured 7.0000 m at every angle.
+
+**The guard that matters.** The cut must not creep into the body, or it rebuilds the very thing
+`e6dd394` removed. Dumped every boundary vertex across six fixtures, before and after: 90
+vertices, **36 changed, and all 36 are the two end samples — zero interior vertices moved**. The
+body test was tightened from `> 3.4 m` to `= 3.5 m at 1e-9` to hold that line, measured against
+the opposite edge's *body*, since a wedge segment is not a lane edge and measuring across one
+reads 1.3 cm short without the lane being short.
+
+**The cap I was advised to add is a no-op, so it is not there.** The concern was a wedge deeper
+than its own opening leg folding over and feeding `trimSelfIntersections`. Built it: a 14 m range
+whose first leg is 2.07 m against a 7.00 m half-width — a wedge three times deeper than its
+opening. Zero self-crossings, and the trim never touched the mouth. Recorded rather than coded.
+
+Mouth-to-lane-edge went from 4.7-17.2 cm, 0.12-0.29 m and 0.88 m to **0, to 1e-9**, and the three
+tests that asserted squareness now assert exact landing instead — tolerances replaced by
+equalities, not relaxed. Three negative checks each broke named tests: no cut at all, cutting
+every sample rather than the two ends, and dropping the sign so lane order mirrors at the mouth.
+
+One behaviour outside drawing: `canvas_spatial.cpp` builds the selection and hit-test outline from
+these boundaries, so clicking a Connector at its mouth now matches what is drawn.
+
+Booked as M1.17.
+
+---
+
+### 2026-09-17 — NETWORK_EDITOR.md: a section whose title covered a third of the file
+
+`## Connector lane ranges` ran **159 lines, 37% of the manual**, and most of it was not about
+connector lane ranges. Under that one heading sat Link lane-tab dragging, lane-edge mitering,
+road surfaces and markings, geometry handles, end-handle re-attachment, the connector polyline
+and its intermediate points, the wedge mouth, the cubic reach, attachment stations, Link splits,
+the runtime limit, and deletion cascades. A reader looking for how markings are drawn had no
+reason to open a section named after lane ranges, and would not have found it from the contents.
+
+Split into five sections named for what each one holds:
+
+| Section | Lines |
+|---|---|
+| Connector lane ranges | 43 |
+| Lane edges, road surfaces and markings | 18 |
+| Geometry and end handles | 29 |
+| Connector shape: intermediate points and the mouth | 50 |
+| Attachment stations, Link edits and deletion | 27 |
+
+**Not a rewrite.** Only four heading lines and their blank lines were inserted; the prose was
+checked byte-for-byte against `git show HEAD:` with those eight lines stripped back out, and it
+is **identical**. The split points fall on existing paragraph breaks, so reading order is
+unchanged — what changed is that the contents now tells the truth about where things are.
+433 to 441 lines, the whole cost being the headings. No anchor link anywhere in the repo
+pointed into this file, so no link broke; the sweep confirms none dangling.
+
+**Still worth a later pass, deliberately not done here:** the paragraph now opening *Geometry
+and end handles* is 22 lines and mixes the re-attachment gesture with how a Connector's
+cross-section is built — two subjects in one block. Splitting it means rewriting sentences, not
+moving lines, which is a content change and belongs in its own session with the behaviour in
+front of it.
+
+**Verification:** prose identical to HEAD, no dangling links, size guard green, 23/23 CTest.
+No source file touched.
+
+---
+
+### 2026-09-17 — ROADMAP.md put back in sequence, and two stale status lines fixed
+
+`ROADMAP.md` opens by calling itself "**a sequence**, so that any session can see where it sits".
+It was not one. The M1 sub-milestones ran in the order they were *written*, so the carve-outs
+made under rule 2 had piled up wherever the session that carved them happened to stop:
+
+```
+before: ... M1.10 M1.11 M1.12 M1.11.1 M1.13 M1.14 M1.15 M1.16 M1.17 M1.12.1
+after:  ... M1.10 M1.11 M1.11.1 M1.12 M1.12.1 M1.13 M1.14 M1.15 M1.16 M1.17
+```
+
+Both misplaced entries are the two that are **still open**, which is the worst possible thing to
+bury: M1.11.1 sat behind a done M1.12, and M1.12.1 sat last in the file behind five done
+milestones, reading like the newest work rather than unstarted work. A carve-out is now filed at
+its number, and the M1 preamble says so, so the next one lands in the right place.
+
+**Two status lines were also simply wrong.** `ROADMAP.md` said "M1.1–M1.10 implementation is
+available" and `CLAUDE.md` said M1 "covers M1.1–M1.10 ... M1.11 adds body attachments; M1.12
+fixes both lane edges" — both written before M1.13–M1.17 shipped and never updated. A session
+starting from either would have believed five milestones of work did not exist. Both now name
+M1.1–M1.17 and, separately, the two open carve-outs. Note these are *not* a duplicated status
+table: each milestone's own state still lives only in its own section, and the preamble names
+which are open without restating why.
+
+**Verification:** all 21 M1 sections diffed body-for-body against `git show HEAD:` —
+`lost: set()`, `gained: set()`, `bodies differing: none`; everything outside the M1 block
+byte-identical; line count unchanged at 434 by the reorder, 440 after the corrected preamble;
+separator count unchanged at 14. 23/23 CTest, guards green. No source file touched.
+
+A first attempt scored two false differences here, because my checker split the file only on
+`### M1` and so let M2-M7 attach to whichever section came last. The file was fine; the check
+was wrong. Bound a section comparison at both ends, not just the start.
+
+---
