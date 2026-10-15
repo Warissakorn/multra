@@ -2,9 +2,9 @@
 
 Not a schedule. A **sequence**, so that any session can see where it sits and what closes the milestone it is in.
 
-This is the single roadmap and review document. Milestone scopes and gates below remain authoritative; the dated review records evidence and proposals, not additional approvals. `NEXT.md` remains the one live session queue.
+Milestone scopes and gates below are authoritative; dated reviews record evidence and proposals, not approvals. `NEXT.md` is the one live session queue.
 
-Navigation: [M0](#m0--vertical-slice) · [M5](#m5--evaluation-and-reporting) · [M8–M12](#m8m12--multi-level-modelling-micro-meso-macro-d145) · [Reviews](#reviews): [2026-10-09](audits/ROADMAP_REVIEW-2026-10-09.md) (R1–R8) · [2026-10-03](archive/ROADMAP-review-2026-10-03.md) (O1–O10, S0–S5).
+Navigation: [M0](#m0--vertical-slice) · [M5](#m5--evaluation-and-reporting) · [M8–M12](#m8m12--multi-level-modelling-micro-meso-macro-d145) · [Reviews](#reviews): [2026-10-09](archive/ROADMAP-review-2026-10-09.md) (R1–R8) · [2026-10-03](archive/ROADMAP-review-2026-10-03.md) (O1–O10, S0–S5).
 
 **Two rules, inherited from a prior effort that broke both and paid for it:**
 
@@ -370,6 +370,6 @@ Recorded so nobody starts them opportunistically:
 
 ## Reviews
 
-Dated reviews record evidence and proposals, never approvals; the milestones above stay the
-authority. Current: [2026-10-09](audits/ROADMAP_REVIEW-2026-10-09.md) (owner questions R1–R8).
-Earlier: [2026-10-03](archive/ROADMAP-review-2026-10-03.md) (O1–O10, sessions S0–S5).
+Dated reviews record evidence and proposals, never approvals; both are answered and archived:
+[2026-10-09](archive/ROADMAP-review-2026-10-09.md) (R1–R8, answered by D143) and
+[2026-10-03](archive/ROADMAP-review-2026-10-03.md) (O1–O10, sessions S0–S5).

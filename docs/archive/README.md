@@ -39,5 +39,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 - [`ROADMAP-implemented-2026-10-15.md`](ROADMAP-implemented-2026-10-15.md) — M0.1, M1, M2, M3.2 slice table, M3.3, M5 and M8 bodies replaced by status rows in `ROADMAP.md` 2026-10-15
 - [`ROADMAP-M1-implemented.md`](ROADMAP-M1-implemented.md) — M1's implemented slices, out of `ROADMAP.md`
 - [`ROADMAP-M1.11-M3.1-implemented.md`](ROADMAP-M1.11-M3.1-implemented.md) — M1.11, M1.11.1, M1.12 and M3.1 bodies, out of `ROADMAP.md` 2026-09-29
+- [`ROADMAP-review-2026-10-09.md`](ROADMAP-review-2026-10-09.md) — the 2026-10-09 roadmap review (R1–R8, all answered by D143), out of `audits/` 2026-10-15
 - [`ROADMAP-review-2026-10-03.md`](ROADMAP-review-2026-10-03.md) — the 2026-10-03 roadmap review (O1–O10, S0–S5)
+- [`VISSIM_PARITY-2026-09-14-sections.md`](VISSIM_PARITY-2026-09-14-sections.md) — §1, §3 and §6 (the 2026-09-14 pre-completion assessment), out of `VISSIM_PARITY.md` 2026-10-15
 - [`VISSIM_PARITY-2026-09-15--2026-09-21-follow-ups.md`](VISSIM_PARITY-2026-09-15--2026-09-21-follow-ups.md), [`VISSIM_PARITY-2026-09-16.md`](VISSIM_PARITY-2026-09-16.md), [`VISSIM_PARITY-2026-09-17-wedge-mouth.md`](VISSIM_PARITY-2026-09-17-wedge-mouth.md) — dated `VISSIM_PARITY.md` follow-ups

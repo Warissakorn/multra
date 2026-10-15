@@ -1,7 +1,7 @@
 # Roadmap review — 2026-10-09
 
 A review of whether [ROADMAP](../ROADMAP.md) still fits [PROBLEM](../PROBLEM.md), six days after the
-[2026-10-03 review](../archive/ROADMAP-review-2026-10-03.md). Findings describe `fcabcef` (branch
+[2026-10-03 review](ROADMAP-review-2026-10-03.md). Findings describe `fcabcef` (branch
 `claude/optimistic-lovelace-fakdpv`: `main` at `c7628e8` plus D142). Same method as last time, by
 the owner's earlier choice: **verified factual errors are corrected; everything that needs judgement
 is a proposal for the owner** (§8, R1–R8, answerable by letter). Nothing is closed, re-ordered or
@@ -101,7 +101,7 @@ through it, and every number carries the not-yet-validated marker.
   Windows CI runs per PR, and the owner's machine is Windows.
 - **Gridlock** is still not prevented (M3.2.3c); batches flag overloaded seeds (D131) but the means
   include them by the owner's choice.
-- **Live defects** in [CONNECTOR_PARITY_AUDIT](CONNECTOR_PARITY_AUDIT.md) §3.5 (a Connector at a
+- **Live defects** in [CONNECTOR_PARITY_AUDIT](../audits/CONNECTOR_PARITY_AUDIT.md) §3.5 (a Connector at a
   lane's start or end draws but does not run) and §3.6 (a zero gap time passes validation).
 
 ## 6. Where the effort went, 2026-10-03 to 2026-10-09
