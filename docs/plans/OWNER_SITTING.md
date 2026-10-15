@@ -194,6 +194,13 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    page and does the workspace look unchanged? Linux offscreen evidence does not close this
    Windows/100/150/200% visual check. The baseline's post-Step Thai canvas is 248 px high;
    restoring >=250 in that state belongs to the later layout slice. *Owner:*
+13. **D190 quiet canvas and state language** (listed 2026-10-15). Compare
+   [before](../images/ui-states-before/workspace-th.png) and
+   [after](../images/ui-states-after/workspace-th.png) (English beside them). Rest on the empty
+   canvas, Objects panel and a conflict area: no tooltip; F1 shows the help. Hover/check toolbar
+   tools, open each menu, select palette rows and table cells with mouse and Tab. Is the active
+   tool easy to find from its underline, and keyboard focus still visible? Dock titles 13 px,
+   hints 11 px readable in Thai? Linux offscreen evidence does not close this. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

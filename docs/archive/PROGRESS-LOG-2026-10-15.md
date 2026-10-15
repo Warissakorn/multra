@@ -2,6 +2,23 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.5 slice 1: perception codec (D181)
+
+The first code in D178's order. `DriverBehaviour` gains `PerceptionParameters`: five optional
+keys from [PERCEPTION](../reference/PERCEPTION.md) §6, appended last.
+- **One key table.** `src/core/perception.hpp` has an integer flag and the §6 ranges. Parser,
+  serializer, the library's known keys and `validateScenario` all read it, on both models.
+- **Schema 32** is written only when an owned behaviour carries a key; a file below 32 that carries
+  one is refused.
+- **Dialog.** The Driving behaviours dialog's `w74` path rebuilt the behaviour from scratch, so it
+  now copies the keys and no longer drops them.
+- **No motion change.** No motion reads the keys yet: BA30 compares a four-leg seed-42 run with and
+  without them and finds them equal.
+- **Fixtures.** Nine fixtures that used 32 as the refused "future" schema now use 33.
+
+Checked on Linux: `check` 139/139, CLI seed 42 unchanged
+([evidence](../evidence/perception-codec.md)).
+
 ## 2026-10-15 — M3.7.0 two-dimensional occupancy contract (D180; docs only)
 
 [LATERAL](../reference/LATERAL.md) is the second contract in D178's order.

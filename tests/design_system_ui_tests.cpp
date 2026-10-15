@@ -149,6 +149,20 @@ void boxModel() {
             ", layout margins "+std::to_string(bar.layout()?bar.layout()->contentsMargins().top():-1)+"/"+
             std::to_string(bar.layout()?bar.layout()->contentsMargins().bottom():-1)+")");
     require(editorIcon(EditorIcon::select).actualSize(QSize(64,64),QIcon::Normal).width()>=editorDesign::iconSize,"Icon raster smaller than 16 px");
+    // The active tool: Mid fill and an accent underline, no frame, and no change of height.
+    selectAction->setCheckable(true);selectAction->setChecked(true);QApplication::processEvents();
+    require(toolButton->sizeHint().height()==editorDesign::iconSize+8,"Checked toolbar button changes height");
+    const QImage checked=const_cast<QToolButton*>(toolButton)->grab().toImage();
+    // The bar carries the stylesheet but not editorPalette(), so roles resolve on its own palette.
+    const auto accent=toolButton->palette().color(QPalette::Highlight);
+    const auto isAccent=[&](QColor c){return std::abs(c.red()-accent.red())<24&&std::abs(c.green()-accent.green())<24&&std::abs(c.blue()-accent.blue())<24;};
+    const int middle=checked.width()/2;
+    require(isAccent(checked.pixelColor(middle,checked.height()-1)),"Checked toolbar button has no accent underline");
+    require(!isAccent(checked.pixelColor(middle,0))&&!isAccent(checked.pixelColor(0,checked.height()/2)),"Checked toolbar button draws an accent frame");
+    selectAction->setChecked(false);QApplication::processEvents();
+    const QImage resting=const_cast<QToolButton*>(toolButton)->grab().toImage();
+    require(checked.pixelColor(2,checked.height()/2)!=resting.pixelColor(2,resting.height()/2),"Checked toolbar button is not filled");
+    require(!isAccent(resting.pixelColor(middle,resting.height()-1)),"Resting toolbar button draws the checked underline");
 }
 void typography() {
     const auto numeric=editorDesign::numericFont();

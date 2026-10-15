@@ -94,7 +94,8 @@ void EditorWindow::buildPalette() {
     resizeDocks({dock},{224},Qt::Horizontal);
 }
 void EditorWindow::translatePalette() {
-    canvas_->setToolTip(text("editorKeyboardHelp"));palette_->setToolTip(text("editorGestureHelp"));
+    // Help lives in the Shortcuts dialog (F1), not in a tooltip over the empty canvas or panel.
+    palette_->setAccessibleDescription(text("editorGestureHelp"));
     palette_->setAccessibleName(text("editorNetworkObjects"));
     visibleLevel_->setAccessibleName(text("editorVisibleLevel"));
     canvas_->setAccessibleDescription(text("editorKeyboardHelp"));

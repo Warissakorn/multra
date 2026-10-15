@@ -176,7 +176,7 @@ void EditorCanvas::drawConflicts() {
             QPen pen(lit?canvasStyle::selection():hover?canvasStyle::hover():tint.darker(150),lit?2.5:hover?2:1,
                      automatic?Qt::DashLine:Qt::SolidLine);pen.setCosmetic(true);
             auto* item=scene_.addPath(shape,pen,QBrush(tint,hatched?Qt::BDiagPattern:Qt::SolidPattern));
-            item->setZValue(level*100.+(automatic?(hatched?5.6:5.5):hatched?6.5:6));item->setToolTip(QString::fromStdString(key));
+            item->setZValue(level*100.+(automatic?(hatched?5.6:5.5):hatched?6.5:6));
             item->setData(0,QStringLiteral("conflict-area"));
             if(automatic && key.rfind("auto/",0)==0)item->setData(0,QStringLiteral("auto-conflict"));
             item->setData(1,QString::fromStdString(key));

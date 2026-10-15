@@ -37,7 +37,7 @@ void EditorWindow::buildWorkspace() {
     connect(focus,&QAction::toggled,this,&EditorWindow::focusCanvas);
     action("editorResetLayout",{},[this]{resetWorkspace();});
     action("editorShortcuts",QKeySequence::HelpContents,[this]{
-        QMessageBox::information(this,text("editorShortcuts"),text("editorKeyboardHelp")+"\n\n"+text("editorHelp"));
+        QMessageBox::information(this,text("editorShortcuts"),text("editorKeyboardHelp")+"\n\n"+text("editorGestureHelp")+"\n\n"+text("editorRunStatusNote"));
     });
     const auto menu=[&](const char* key,std::initializer_list<const char*> entries){
         auto* m=menuBar()->addMenu(QString());m->setObjectName(key);texts_[key]=m;

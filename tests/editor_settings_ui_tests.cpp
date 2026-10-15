@@ -97,6 +97,15 @@ void tooltips(EditorWindow& window) {
     auto* bar=canvas->verticalScrollBar();require(bar->maximum()>bar->minimum(),"Canvas has no scroll range");
     bar->setValue(bar->value()>bar->minimum()?bar->value()-50:bar->value()+50);settle();
     require(!shown->isVisible(),"Scrolling left the tooltip over moved content");
+    // Empty canvas carries no tooltip: its help is in the Shortcuts dialog, not over the work.
+    delete object;
+    require(canvas->toolTip().isEmpty() && canvas->viewport()->toolTip().isEmpty(),"Canvas background has a tooltip");
+    const QPoint empty(2,2);
+    for(auto* item:canvas->items(empty))require(item->toolTip().isEmpty(),"Canvas object at the probe carries a tooltip");
+    QHelpEvent background(QEvent::ToolTip,empty,canvas->viewport()->mapToGlobal(empty));
+    QApplication::sendEvent(canvas->viewport(),&background);settle();
+    for(auto* widget:QApplication::topLevelWidgets())
+        require(!(widget->objectName()=="editorBoundedTooltip" && widget->isVisible()),"Empty canvas showed a tooltip");
  }
 void laterDialog(EditorWindow& window) {
     QDialog dialog(&window);dialog.setModal(true);dialog.resize(280,180);

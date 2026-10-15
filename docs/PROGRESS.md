@@ -6,6 +6,28 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — Quiet canvas, hover/selected states and type roles (D190)
+
+Owner request (before slice a): no tooltip on the canvas background, a simpler and more modern
+hover/selection look, and a review of text sizes and weights. The owner chose the grey fill plus
+blue underline for the active tool and to remove the conflict-key, panel and run-note tooltips.
+
+- Tooltips removed from the empty canvas, Objects panel background, conflict areas and run
+  summary; F1 now shows keyboard help, gesture help and the run-status note (`editorHelp`,
+  which overlapped the gesture help, is gone). Accessible descriptions keep the texts.
+- One state language in `editorStyleSheet()`: hover fill, Mid when pressed/checked/selected with
+  an accent underline or left bar, accent frame only for keyboard focus; rounded menu rows.
+- Type: dock titles 13/600, hints 11/400, Lab group boxes 14/600. Menu bar and dock title
+  heights unchanged or 2 px shorter in Thai.
+- Found while capturing: child widgets drew Qt's default greys/blue, not the tokens (the window
+  palette did not reach them under the stylesheet on Qt 6.4). `applyEditorStyle` now also sets
+  the application palette. Before/after images: `docs/images/ui-states-{before,after}/`.
+- Tests: empty canvas shows no tooltip; conflict areas have none but keep their key; a checked
+  toolbar button stays 24 px with an accent underline and no frame.
+
+Linux Qt 6.4 offscreen: desktop build, CTest **148/148**, target `check` passed. Windows and
+100/150/200 % visual review is OWNER_SITTING E13.
+
 ## 2026-10-15 — UI phase 1 and stable-tab slice 0
 
 Owner requested the UI audit/spec/slice plan, then accepted the recommendation: “ทำตามแนะนำ”.
@@ -166,23 +188,6 @@ Own motion now reads two of the perception keys.
 
 Checked on Linux: `check` 140/140, CLI seed 42 unchanged
 ([evidence](evidence/perception-motion.md)).
-
-## 2026-10-15 — M3.5 slice 1: perception codec (D181)
-
-The first code in D178's order. `DriverBehaviour` gains `PerceptionParameters`: five optional
-keys from [PERCEPTION](reference/PERCEPTION.md) §6, appended last.
-- **One key table.** `src/core/perception.hpp` has an integer flag and the §6 ranges. Parser,
-  serializer, the library's known keys and `validateScenario` all read it, on both models.
-- **Schema 32** is written only when an owned behaviour carries a key; a file below 32 that carries
-  one is refused.
-- **Dialog.** The Driving behaviours dialog's `w74` path rebuilt the behaviour from scratch, so it
-  now copies the keys and no longer drops them.
-- **No motion change.** No motion reads the keys yet: BA30 compares a four-leg seed-42 run with and
-  without them and finds them equal.
-- **Fixtures.** Nine fixtures that used 32 as the refused "future" schema now use 33.
-
-Checked on Linux: `check` 139/139, CLI seed 42 unchanged
-([evidence](evidence/perception-codec.md)).
 
 ## Older entries
 
