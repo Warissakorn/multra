@@ -184,3 +184,40 @@ Each run verifies full copied-state replay, vehicle accounting, shared-segment b
 separation, swept crossing safety and explicit reporting of excessive braking.
 Development evidence, not an M5 runner or M6 validation; see
 [`docs/evidence/m3.2.8a-clamps.md`](../docs/evidence/m3.2.8a-clamps.md).
+
+## Reaction-time discharge evidence (BA38)
+
+```
+cmake --build --preset headless --target trafficsim-reaction-discharge-sweep
+./build/headless/bin/trafficsim-reaction-discharge-sweep \
+  data/projects/four-leg-signalised.traffic.json \
+  data/driver-behaviour/presets/w74-sumo-defaults.json data \
+  build/headless/compile_commands.json out/ba38-new
+```
+
+The output directory must not exist and its parent must exist. This is a developer evidence
+experiment, not part of `check`. It requires source files beside the compiler-command entry;
+CMake exports `compile_commands.json` under the Ninja presets. Roads with behaviour assignments
+and parking lots are refused: the experiment targets the unassigned four-leg fixture.
+
+- Prototype and the supplied W74 preset × `reactionTime` 0 / 0.5 / 1 s × seeds 42–81,
+  fixed dt 0.1: **240 experimental runs**. All other fields stay unchanged within each model.
+  Preset models can differ in amber handling; compare reaction times within a model.
+- **80 absent-key controls:** each zero-delay run is compared against an absent-key run on
+  every tick, including vehicles/FIFOs, queues, events, RNG and counters. Every experimental
+  run also checks up to 32 ticks of copied-state replay from the middle of the run and vehicle
+  accounting. Replay includes live FIFOs when present, reported explicitly.
+- `runs.jsonl` retains full per-seed discharge cycles, raw crossings, explicit unavailable
+  reasons/nulls, completed/active/pending counts and clamps. `cycles.csv` exports the same
+  cycle estimates; blank numbers mean unavailable. Startup lost time retains its sign.
+- `summary.json` reports per-seed means and per-head/lane mean/SD across available seed means,
+  with sample counts and unavailable reasons. Seeds have equal weight; missing values are never
+  zero. Different availability can change the population: inspect counts and matched seed rows.
+- Eight resolved `*.traffic.json` snapshots (including absent controls) retain all variant
+  settings. `metadata.json` contains their hashes, the exact-byte parsed-input manifest, compiler
+  command/flags, build commit, tool source hashes and output hashes. It is written **last** with
+  `complete=true`; a directory without that marker is an incomplete experiment.
+
+The defaults remain the existing discharge specification: whole demand-duration window,
+zero warmup, steady ranks 3–5 and startup ranks 1–2, end-of-tick timestamps and half-open greens.
+These are unvalidated sensitivity measurements, not calibrated capacity, PCU or HCM control delay.

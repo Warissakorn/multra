@@ -6,7 +6,8 @@ Designed 2026-10-15 (D179). **Slices 1–4 are implemented**: the codec (D181, s
 perceived lane-change tests (D183, [evidence](../evidence/perception-lane.md)), and the reaction-time
 action FIFO (D184, [evidence](../evidence/perception-delay.md)). Rows BA30–BA38 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA30–BA37 have
-automated evidence, while BA38 has no discharge measurement here. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
+automated evidence; BA38 has a [discharge sensitivity record](../evidence/perception-discharge.md)
+(D185) with 40 seeds per variant, without a calibration inference. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
 motivate it; D177/D178 put it first. [DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md) owns assignment and
 selection, [SIMULATION](SIMULATION.md) the tick, [W74](W74.md) and the prototype their equations.
 This file owns **what a driver observes and when it acts on it**.

@@ -11,11 +11,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
-- This session starts from merged `main` at `ff19ac5` (PR #155). Perception slices 1–3
-  (D181–D183) are merged, not waiting on the older Claude branch.
-- Branch `codex/perception-reaction-delay` adds M3.5 slice 4 (D184): the action FIFO,
-  bounds/D105 after delay, source/placement startup, road-boundary resize and retune refusal
-  when the quantised count changes. See [evidence](evidence/perception-delay.md).
+- Engine base `54f76be` (M3.5 slice 4, D184); this session adds the BA38 evidence tool
+  and the [reaction-time discharge record](evidence/perception-discharge.md) (D185).
+- The fixed experiment completed 240 runs (two models × three delays × 40 seeds), plus
+  80 tick-by-tick absent-key controls and 32-tick copied-state replay per experimental run.
+  Raw inputs/settings, source/output hashes and compiler flags are captured with the evidence.
 - Local evidence is Linux headless; no desktop or Windows verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
@@ -25,20 +25,23 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Item 1 and its follow-ons use the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.5 slice 5: the reaction-time discharge record** ([PERCEPTION](reference/PERCEPTION.md)
-   §5, §8; row BA38 in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)). Use the four-leg project,
-   `reactionTime` 0 / 0.5 / 1.0 s on the compared behaviours, seeds 42–81, dt 0.1. Record
-   headways, startup lost time, completed/unfinished trips and safety clamps; retain exact input
-   hashes, engine/compiler flags and raw outputs in a new indexed evidence note. No bound or
-   calibration inference. Keep the not-yet-validated marker. Run BA30, BA35 and BA36 as regressions;
-   the zero-delay CLI pin remains 45 completed / 31.75870154816726 s / 1 clamp.
-   - **Implemented seam:** `reactionTicks`, `resizeReactionHistory`, `delayedAction` and
-     `storeReactionAction` in `src/core/perception.*`; `Vehicle::reactionHistory` is oldest first.
-     Own motion stages the current decision and publishes the FIFO in id order. Hypothetical
-     tests read current state. A Lab retune that changes d is refused before mutation.
-   - Then LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12; its schema is the next number
-     after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4 overtaking with the driving
-     side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
+1. **M3.7 LATERAL slice 1: compile and codec** ([LATERAL](reference/LATERAL.md) §3, §9, §12,
+   D180; acceptance BA45, with BA39 in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).
+   - Read the model/core/project module READMEs, ARCHITECTURE and the contract before adding
+     types. Compile carriageway cross-sections and `drivingSide` only with the lateral switch on.
+   - Store/validate `lateralMinDistanceStanding`, `lateralMinDistanceAt50` and `maxLateralSpeed`
+     from one key table. Any present key requires all three. Reject missing, nonfinite,
+     out-of-range and unused invalid entries with their paths; no shipped values or code defaults.
+   - The next free schema is **33** (32 is perception). Write it only for an owned lateral key;
+     refuse those keys in an older schema, and preserve older files' bytes without the keys.
+   - BA45: codec, compile and both driving sides. BA39: all keys absent keeps today's Scenario
+     and the prototype/W74/perception replay, CLI seed 42 and frozen baselines unchanged.
+     Keep storage/compile support distinct from runtime occupancy; spans/predicates are slice 2.
+   - `src/core/types.hpp` is near its 500-line budget; put substantial new lateral structures in
+     their own core header rather than exceeding it. Do not add Qt/model/I/O dependencies to core.
+   - Then lateral slices 2–4 (BA40–BA44, BA46), M3.4 lane-change duration, M3.6 turning speeds,
+     M3.4 overtaking with driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9
+     (the review's §5 order, D177/D178).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its

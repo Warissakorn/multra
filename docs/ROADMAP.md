@@ -221,7 +221,9 @@ implementation follows its §9 order. **Slice 1 (codec, schema 32) delivered** (
 [evidence](evidence/perception-codec.md)); **slice 2 (look-ahead, multi-anticipation) delivered** (D182,
 [evidence](evidence/perception-motion.md)); **slice 3 (look-back, rear TTC, perceived lane-change
 tests) delivered** (D183, [evidence](evidence/perception-lane.md)); **slice 4 (reaction-time action
-FIFO) delivered** (D184, [evidence](evidence/perception-delay.md)); next: slice 5, BA38 discharge record.
+FIFO) delivered** (D184, [evidence](evidence/perception-delay.md)); **slice 5 (BA38 discharge record)
+recorded** (D185, [evidence](evidence/perception-discharge.md)). Attention, driver classes and later
+M3.5 scope remain open; this closes no owner gate.
 
 ### M3.6 — Speed control: turning, curves and speed areas
 

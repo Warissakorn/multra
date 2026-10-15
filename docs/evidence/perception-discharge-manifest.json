@@ -1,0 +1,175 @@
+{
+  "buildCommit": "54f76be5834f-dirty",
+  "compiler": "GNU-14.2.0",
+  "compilerCommand": {
+    "command": "/usr/bin/c++ -DTRAFFICSIM_COMPILER=\\\"GNU-14.2.0\\\" -DTRAFFICSIM_VERSION=\\\"0.2.0\\\" -I/workspace/trafficsim/build/headless/generated -isystem /workspace/deps/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off -Wno-missing-field-initializers -Winvalid-pch -include /workspace/trafficsim/build/headless/CMakeFiles/trafficsim-four-leg-fixture.dir/cmake_pch.hxx -o CMakeFiles/trafficsim-reaction-discharge-sweep.dir/tools/reaction_discharge_sweep.cpp.o -c /workspace/trafficsim/tools/reaction_discharge_sweep.cpp",
+    "directory": "/workspace/trafficsim/build/headless",
+    "file": "/workspace/trafficsim/tools/reaction_discharge_sweep.cpp",
+    "output": "/workspace/trafficsim/build/headless/CMakeFiles/trafficsim-reaction-discharge-sweep.dir/tools/reaction_discharge_sweep.cpp.o"
+  },
+  "complete": true,
+  "copiedReplayTicksPerRun": 32,
+  "experimentalRuns": 240,
+  "firstSeed": 42,
+  "inputManifest": {
+    "algorithm": "SHA-256",
+    "coverage": "exact bytes parsed from project, catalog and evaluation files actually read",
+    "fallbacks": [],
+    "files": [
+      {
+        "bytes": 165218,
+        "logicalPath": "build/compile_commands.json",
+        "reads": 1,
+        "sha256": "e50825e74bf50e9594ae3cf20fce4f132f2fa47bf94c407499334aa64501d72f"
+      },
+      {
+        "bytes": 76,
+        "logicalPath": "catalog/compositions/car-only.json",
+        "reads": 1,
+        "sha256": "01e212b12301f5fe6f208c60a078f2ea81ef467d1cfd30bf9e289ecc19b702dd"
+      },
+      {
+        "bytes": 147,
+        "logicalPath": "catalog/compositions/urban-mixed.json",
+        "reads": 1,
+        "sha256": "13618f4f33b0d86a8d2c53c1afa9995af9f809ef75f814009d1761fbe3669531"
+      },
+      {
+        "bytes": 255,
+        "logicalPath": "catalog/driver-behaviour/default.json",
+        "reads": 1,
+        "sha256": "5c196dbad0fcead42ef31009d201430cf3c3314b006fecffb59bc323eff3f65f"
+      },
+      {
+        "bytes": 466,
+        "logicalPath": "catalog/priority-rules/default.json",
+        "reads": 8,
+        "sha256": "133a43fa486ddbc45be23d0f62a100ddd351fabec8996ba01dc2b69ad676da51"
+      },
+      {
+        "bytes": 308,
+        "logicalPath": "catalog/vehicle-types/car.json",
+        "reads": 1,
+        "sha256": "c8d99f76ed01dec7d91866d239b40ed1e682a1f4358a9c8ca084fc4dec8d87e9"
+      },
+      {
+        "bytes": 313,
+        "logicalPath": "catalog/vehicle-types/heavy-vehicle.json",
+        "reads": 1,
+        "sha256": "158e88a84ef482b054c727900a5c91d41732dae639c5804667f8fe6d73ddaca8"
+      },
+      {
+        "bytes": 236,
+        "logicalPath": "evaluation/queue-counter.json",
+        "reads": 8,
+        "sha256": "04bff220abb06e80db644e1b94afb53f3e0af790ffe2371e06eff5f2b82a1de9"
+      },
+      {
+        "bytes": 34082,
+        "logicalPath": "project",
+        "reads": 1,
+        "sha256": "3b0eb4450904ed66ef6f698b24280f7318a6031d6423dc60e16a2ba11542c016"
+      },
+      {
+        "bytes": 384,
+        "logicalPath": "w74-preset",
+        "reads": 1,
+        "sha256": "c67bf20d93b1afe6897131a9f1241ca525a18a7d68c0fbb64dc56728f1dab859"
+      }
+    ],
+    "schemaVersion": 1
+  },
+  "label": "not yet validated; BA38 sensitivity, not calibration",
+  "lastSeed": 81,
+  "outputs": [
+    {
+      "bytes": 14551679,
+      "file": "runs.jsonl",
+      "sha256": "dc71feeb6edaf74ea8c1df72bf8a1ef81f59db0c45bc254a3d4e21b58c3e5f8c"
+    },
+    {
+      "bytes": 2207949,
+      "file": "cycles.csv",
+      "sha256": "561c832b8e6f3d1134d2c6461437489b6359e92e365f792f3c35b82fe8e3111e"
+    },
+    {
+      "bytes": 1026550,
+      "file": "summary.json",
+      "sha256": "f07eb2b428e96ba4df3c30543a4a5895b48be10d26c68834aec4cba671feb5a4"
+    }
+  ],
+  "timeStep": 0.1,
+  "toolSources": [
+    {
+      "file": "reaction_discharge_sweep.cpp",
+      "sha256": "b6d1262b8850b5694c0ed62946adcaa458950f12c68665b79ad88ff52763f08b"
+    },
+    {
+      "file": "reaction_discharge.hpp",
+      "sha256": "f4937a23416c368a1119e772785016a542d39c5f84d7c4a5f7e5a6df7ec9a5ff"
+    },
+    {
+      "file": "reaction_discharge_summary.hpp",
+      "sha256": "1f87efd9cb30137e1c1ca1acc11f54de61174e84b31cc708df1683c6a8d1bd22"
+    }
+  ],
+  "variants": [
+    {
+      "model": "prototype",
+      "name": "prototype-absent",
+      "reactionTime": null,
+      "snapshotFile": "prototype-absent.traffic.json",
+      "snapshotSha256": "446d5caf597eaac7bd052498561a1ff37926f9c3b72fbb025ef28351acbb4fc7"
+    },
+    {
+      "model": "prototype",
+      "name": "prototype-0",
+      "reactionTime": 0.0,
+      "snapshotFile": "prototype-0.traffic.json",
+      "snapshotSha256": "0c9a1554f910b8392061882e304f39b8db0f7b84c90161596100388788594d43"
+    },
+    {
+      "model": "prototype",
+      "name": "prototype-5",
+      "reactionTime": 0.5,
+      "snapshotFile": "prototype-5.traffic.json",
+      "snapshotSha256": "400063ee94bf557fccc098d5902b33889e911b5c0a94d31d8d9905c7afc221c4"
+    },
+    {
+      "model": "prototype",
+      "name": "prototype-10",
+      "reactionTime": 1.0,
+      "snapshotFile": "prototype-10.traffic.json",
+      "snapshotSha256": "747e684f2edc6d7760e714ae1dd54fda2e873e820d76a8a0511b83cfe273380f"
+    },
+    {
+      "model": "w74",
+      "name": "w74-absent",
+      "reactionTime": null,
+      "snapshotFile": "w74-absent.traffic.json",
+      "snapshotSha256": "16b199c9d25a7a7e56021921767aecdf712deb91ac4ba394b95023e25ba59988"
+    },
+    {
+      "model": "w74",
+      "name": "w74-0",
+      "reactionTime": 0.0,
+      "snapshotFile": "w74-0.traffic.json",
+      "snapshotSha256": "a0d66cda159854733c6b91e17741ac2da22f3f0ec05e6acb7417210e2e5ad80d"
+    },
+    {
+      "model": "w74",
+      "name": "w74-5",
+      "reactionTime": 0.5,
+      "snapshotFile": "w74-5.traffic.json",
+      "snapshotSha256": "8bcd80847cdfa2c181f91e5256f7597d0cb3420c49b75666c3fe596069e7379d"
+    },
+    {
+      "model": "w74",
+      "name": "w74-10",
+      "reactionTime": 1.0,
+      "snapshotFile": "w74-10.traffic.json",
+      "snapshotSha256": "ff05fea976bfcdb6bd7c3b911b94fa6c22011e2728567d49eb587049bdbc1a7f"
+    }
+  ],
+  "zeroAbsentControlRuns": 80
+}

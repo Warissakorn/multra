@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
+
+A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
+reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
+controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
+and 32 ticks of copied-state replay, including live histories in positive-delay copies.
+- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
+  provenance are retained; summaries weight seeds equally and report changing availability.
+- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
+  startup estimates remain signed. These responses are recorded, not tuned or validated.
+- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
+  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
+
+Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
+  CLI help/output protection and all existing perception/safety/reference regressions.
+[Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
+
 ## 2026-10-15 — M3.5 slice 4: reaction-time action delay (D184)
 
 Own motion now acts on a per-vehicle FIFO of earlier decisions, with d rounded from
@@ -149,23 +166,6 @@ per run (fixture 8.2–14.2), 72–98 % at amber, which `w74` behaviours still h
 defect, nothing calibrated. The fixture no longer reproduces BA27's hashes (D159, M4.2), so
 both were rerun on one build. Shipping it, and an amber value, are OWNER_SITTING B13.
 Checked: desktop build and full CTest (Linux, GCC 13.3), `check`, CLI seed 42 unchanged.
-
-## 2026-10-15 — Documentation cleanup for AI reading (no behaviour change)
-
-The owner asked for docs that are organised, trimmed and efficient for an AI to read, and for
-an analysis of whether the archive and the evidence are still needed. **Archive:** the 124
-PROGRESS files were reachable only from the archive index. They hold history; the reasoning is
-already in RECORD. They are merged verbatim, newest first, into 17 dated `PROGRESS-LOG-*` files
-(134 → 31 archive files, index 206 → 45 lines), and each keeps its former file name as an anchor.
-**Evidence:** every file is cited, either directly or through its note, and tests read the
-`m3.2.7-*` data, so nothing is deleted. A new `evidence/README.md` says to read the note, not the
-raw data. **Live docs, moved whole rather than summarised:** PROGRESS keeps its recent entries
-(498 → 91 lines); ROADMAP keeps open milestones, gates and status rows (50 → 27 KB); RECORD
-collapses the wholly superseded D3, D4, D9, D10 and D14; VISSIM_PARITY drops its 2026-09-14
-§1, §3 and §6; the answered 2026-10-09 roadmap review moves to `archive/`. Every ID, gate and
-anchor is kept. Checked: `trafficsim-check-docs` and `trafficsim-check-file-sizes` built
-standalone (Linux, GCC 13). The full CTest was not run because nlohmann/json is missing in this
-container; no code, test, data or spec file changed.
 
 ## Older entries
 
