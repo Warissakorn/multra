@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.7 slice 3a: lateral motion, admission and crossing (D189)
+
+NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zones into slice 3b.
+- **State.** `Vehicle::lateralTarget` is yT, from the lane centre and in `SimState`. Only tests
+  write it until M3.4/M3.7.1, so every product run keeps `lateral` at 0 (BA39).
+- **Motion.** `moveLaterally` (`src/core/lateral_motion.*`) runs after the tick's publish, only
+  switched on. Moves are capped at `maxLateralSpeed·dt`, kept inside the carriageway's edges and,
+  without a covering span, inside the lane. They are admitted in vehicle-id order only without 2D
+  overlap with a published or already-moved body (touching admitted).
+- **Crossing.** A centre past a covered lane line remaps the route through `recordLaneChange`, now
+  shared with the instantaneous change, and re-expresses `lateral` and the target; that tick's
+  MovedEvent names the new lane.
+
+Checked on Linux headless: `check`, CLI seed 42 unchanged, mutation checks
+([evidence](evidence/lateral-motion.md)).
+
 ## 2026-10-15 — M3.7 slice 2: lateral spans and predicates (D188)
 
 NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is unchanged.
@@ -158,22 +174,6 @@ Checked on Linux: `check` 139/139, CLI seed 42 unchanged
 
 Rows BA39–BA46 are pending. NEXT now starts code with the perception codec slice. Checked:
 `check` on Linux.
-
-## 2026-10-15 — M3.5.0 perception contract (D179; docs only)
-
-[PERCEPTION](reference/PERCEPTION.md) is the first contract in D178's order.
-- **Two leaders.** The **physical leader** (today's unbounded search) keeps the hard cap, zone
-  admission and phase-2 caps. **Perceived leaders** (within `lookAheadDistance`, up to
-  `observedVehiclesAhead`, effective gaps less the room of the vehicles in between) feed only
-  the acceleration, so an unseen leader becomes a counted clamp, never an overlap.
-- **Mirror check.** A target-lane follower counts only within `lookBackDistance`, plus an optional
-  rear time-to-collision test. Something alongside always refuses the change.
-- **Reaction time** is an action delay: a per-vehicle FIFO of `round(τ/dt)` computed
-  accelerations. It replaces the review's ring of past snapshots, because it costs one entry per
-  vehicle per tick and needs no remapping of past positions. Hypothetical tests stay undelayed.
-- **Data.** Five optional keys; absent = today. One new schema, only when used.
-
-Rows BA30–BA38 are pending; nothing is implemented. Checked: `check` on Linux.
 
 ## Older entries
 

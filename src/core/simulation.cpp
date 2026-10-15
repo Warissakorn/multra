@@ -4,6 +4,7 @@
 #include "following.hpp"
 #include "lanes.hpp"
 #include "lateral.hpp"
+#include "lateral_motion.hpp"
 #include "parking.hpp"
 #include "perception.hpp"
 #include "routing.hpp"
@@ -224,13 +225,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     if (index.laneChanges) {
         const auto changes = decideLaneChanges(scenario, index, vehicles, refs, spans, buckets, startService, startTick);
         for (const auto& change : changes) {
-            auto& vehicle = vehicles[change.vehicle];
-            events.emplace_back(LaneChangeEvent{startTime, vehicle.id, scenario.routes[vehicle.routeIndex].id,
-                                                scenario.routes[change.route].id});
-            vehicle.lastLaneChange = LastLaneChange{startTick, vehicle.routeIndex};
-            vehicle.laneChangeTrace.push_back({vehicle.routeIndex, change.route,
-                vehicle.distance, change.distance, vehicle.speed});
-            vehicle.routeIndex = change.route; vehicle.distance = change.distance;
+            recordLaneChange(scenario, vehicles[change.vehicle], change.route, change.distance, startTick, startTime, events);
         }
         if (!changes.empty()) {
             refs = resolveRefs(scenario, vehicles, index);
@@ -475,6 +470,8 @@ SimState stepSimulation(SimState&& state, double dt) {
             events.emplace_back(MovedEvent{time, vehicle.id, location.segmentId, location.position, move.speed, move.acceleration});
         }
     }
+    // LATERAL §7 (D189): sideways moves after the longitudinal step, against the published bodies.
+    if (index.lateral.on) moveLaterally(scenario, index, next.vehicles, startTick, time, dt, events);
     // The tick's start colour is headColors[h] already; only the end colour is new.
     for (std::size_t h = 0; h < scenario.signalHeads.size(); ++h) {
         const auto color = signalColorAt(scenario.signalPrograms[index.programOfHead[h]], time);

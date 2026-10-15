@@ -372,7 +372,9 @@ struct Vehicle : PendingVehicle {
     std::vector<RouteRemapTrace> routeRemapTrace;
     // PERCEPTION §5: oldest first; empty with zero delay. Written only at insertion/publish.
     std::vector<FollowingResult> reactionHistory;
-    double lateral{}, lateralSpeed{}; // LATERAL §4 (D188): body offset from its lane centre; 0 until slice 3
+    double lateral{}, lateralSpeed{}; // LATERAL §4 (D188): body offset from its lane centre, and its rate
+    // LATERAL §7 (D189): yT from the current lane's centre; only tests write it until M3.4/M3.7.1.
+    std::optional<double> lateralTarget;
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

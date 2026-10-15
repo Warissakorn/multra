@@ -1,11 +1,13 @@
 # Lateral contract: two-dimensional occupancy (M3.7.0)
 
-Designed 2026-10-15 (D180). **Slices 1–2 are implemented**: the §9 keys (schema 33), the §3
-cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)), and the §5–§6
-spans and predicates (D188, [evidence](../evidence/lateral-spans.md)). Nothing moves sideways yet:
-`lateral` stays 0 until slice 3. Rows BA39–BA46 are in
-[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA42 and
-BA45 have automated evidence, BA39 is kept in every slice, and BA43, BA44 and BA46 are pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
+Designed 2026-10-15 (D180). **Slices 1–3a are implemented**: the §9 keys (schema 33), the §3
+cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)), the §5–§6
+spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), and §7's motion, admission
+and crossing (D189, [evidence](../evidence/lateral-motion.md)). Only a test sets a lateral target
+yet, so every product run still keeps `lateral` at 0. Rows BA39–BA46 are in
+[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA45 have
+automated evidence, BA39 is kept in every slice, and BA46 is pending. Zone occupancy by span is
+slice 3b. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
 M3.4's lane-change duration, M3.7's lateral behaviour and M3.8's motorcycles.
 [PERCEPTION](PERCEPTION.md) owns what a driver observes, [SIMULATION](SIMULATION.md) owns the tick,
@@ -86,6 +88,8 @@ So the engine is lane-based, and a vehicle occupies exactly the lane its route n
 - `Vehicle` gains `lateral`, the offset in metres of the body centre from **its current lane's
   centre**, and `lateralSpeed` in m/s. Both are 0 by default, stored in `SimState` (exact replay)
   and written only at publish, in vehicle-id order.
+- `Vehicle::lateralTarget` is §7's `yT`, also from the current lane's centre and stored in
+  `SimState`. Absent by default; no product code writes it yet, only tests (D189).
 - The **body** in the carriageway frame is
   `[rear, front] × [centre + lateral − width/2, centre + lateral + width/2]`, using the type's
   existing `width`. That width becomes physical only when the switch is on.
@@ -103,7 +107,7 @@ So the engine is lane-based, and a vehicle occupies exactly the lane its route n
   The span-reading machinery then sees it with **no new code path**: `closestVehicle`'s leader
   search, PERCEPTION's search, `around`, D108 admission and the priority-rule give-way scan. **Zones
   do not read spans** (`summarizeZones`, `zoneHold`, `resolveRequests` work from route positions), so
-  zone occupancy needs its own code; it is deferred to slice 3 (D188). `courtesyHolds` ignores
+  zone occupancy needs its own code; it is deferred to slice 3b (D188). `courtesyHolds` ignores
   `own = false` spans, because its hold is applied on the holder's own route.
 - The other lane's span is the own span's `[rear, front]` mapped through the reference line (§3) and
   clamped to that segment; a body covering several own sections yields one merged span per lane.
@@ -141,23 +145,34 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   ever overlap in two dimensions at a published tick.
 - **Priority rules** read spans, so a straddler on a conflict segment holds the minor approach, without
   a lateral filter. This is conservative and stated. **Zones** stay route-based in slice 2: a straddler
-  occupies only its own route's zone until slice 3 adds a span scan (D188).
+  occupies only its own route's zone until slice 3b adds a span scan (D188).
 
 ## 7. Lateral motion and its admission
 
-- Each tick, a vehicle may have a **lateral target** `yT` (relative to its lane centre). This
-  contract sets none. M3.4's lane change and M3.7.1's desired position are the first writers.
-  Without a target, `lateral` stays where it is.
-- The proposed move is `Δ = clamp(yT − lateral, ±maxLateralSpeed · dt)`, and the body never
-  crosses the carriageway's outer edges.
-- **Admission.** After the longitudinal move, proposed lateral moves are resolved in **vehicle-id
+- Each tick, a vehicle may have a **lateral target** `yT` (`lateralTarget`, relative to its lane
+  centre). This contract sets none. M3.4's lane change and M3.7.1's desired position are the first
+  writers; until then only tests write it (D189). Without a target, or for a behaviour without the
+  keys, `lateral` stays where it is.
+- The proposed move is `Δ = clamp(yT − lateral, ±maxLateralSpeed · dt)`, read at the cross-section
+  of the vehicle's front. `yT` is first clamped so the body stays inside the carriageway's outer
+  edges, the outermost lane edges among the front's section and the neighbour sections at that
+  reference station (a Connector path: its own width there), and so the centre stays inside the
+  current lane (on the boundary at most) on each side no span covers (below). An empty range moves nothing.
+- **Admission.** Implemented in `moveLaterally` (`src/core/lateral_motion.cpp`), which runs after the
+  tick's longitudinal step has published every body. Proposed moves are resolved in **vehicle-id
   order**, as phase 2 (`resolveRequests`) does. A move is admitted only if the new body overlaps
-  no published body of this tick and no move admitted before it. A refused move keeps the previous
-  `lateral`, and its `lateralSpeed` is 0.
-- **Crossing.** When the body's centre crosses the boundary into the adjacent lane and a
-  `LaneChangeSpan` covers that station, the route remaps exactly as today's instantaneous change
-  does (`simulation.cpp:212-228`), and `lateral` is re-expressed from the new lane's centre. Without
-  a span, `yT` is clamped so the centre stays inside the current lane.
+  no published body of this tick and no move admitted before it. Here overlapping means positive area
+  in both directions: touching bodies may stand side by side, unlike §6's inclusive leader test
+  (D189). A refused move keeps the previous `lateral`, and its `lateralSpeed` is 0. `lateralSpeed`
+  is `Δ / dt` for an admitted move.
+- **Crossing.** A span **covers** a side when it leaves the vehicle's route, its from-range holds the
+  whole body (the test the instantaneous change already makes), and its target lane at the mapped
+  front is the nearest lane on that side. When the body's centre is strictly past the boundary on a
+  covered side, the route remaps through `recordLaneChange` (`lanes.cpp`), the bookkeeping today's
+  instantaneous change uses, to the mapped distance; `lateral` and `yT` are re-expressed from the new
+  lane's centre, so neither moves on the road. The vehicle's `MovedEvent` of that tick names the new lane
+  (it reports where the tick ends), and the `LaneChangeEvent` follows it. Without a span, `yT` is
+  clamped so the centre stays inside the current lane.
 - Lateral speed is a capped rate, not an acceleration-limited state, in this version. That is a
   stated simplification for M6 to test.
 
@@ -197,10 +212,10 @@ uncertain.
 | `around` / `safeAt` (`lanes.cpp:46`, `:83`) | Lateral filter; alongside per §6 |
 | `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic; `own = false` spans are skipped (D188) |
 | Priority rules (give-way scan in `stepSimulation`) | A straddler's span on the conflict segment holds the minor approach |
-| Zones (`summarizeZones`, `zoneHold`, `resolveRequests`, `src/core/conflicts.cpp`) | Slice 3: they read route positions, not spans, so occupancy by a straddler needs a span scan (D188) |
+| Zones (`summarizeZones`, `zoneHold`, `resolveRequests`, `src/core/conflicts.cpp`) | Slice 3b: they read route positions, not spans, so occupancy by a straddler needs a span scan (D188) |
 | `placeVehicle` (`retune.cpp`), Lab telemetry (`lab_run.cpp`), `dead_end_waits.cpp` | Stay one-dimensional mirrors: a placement next to a straddler is refused, and the two displays do not filter laterally (stated, D188) |
 | D108 source insertion (`simulation.cpp:160`) | A new vehicle starts centred, and its first span is checked in two dimensions |
-| Lateral admission (new, §7) | After the longitudinal step, in vehicle-id order |
+| Lateral admission (§7, `moveLaterally`) | After the longitudinal step, in vehicle-id order (D189) |
 | Editor pose (`src/editor/vehicle_pose.hpp`, `src/editor/lane_change_pose.cpp`) | Draws the body at lane centre + `lateral`. Once M3.4 lands, the display slide is replaced by the engine's own lateral path. Display never feeds physics |
 | Evaluation (queue counters, travel-time sections) | A straddling vehicle counts on its route's lane only (stated) |
 
@@ -219,7 +234,7 @@ One slice per session:
 
 1. Compile and codec: cross-sections, `drivingSide`, the keys (BA45).
 2. Spans and predicates (BA40–BA42).
-3. Lateral motion and admission (BA43, BA44).
+3. Lateral motion and admission (BA43, BA44; 3a, D189), then zone occupancy by span (3b, D188).
 4. Display (BA46).
 
 BA39 runs in every slice. M3.4's lane-change duration then sets `yT` across the boundary, and its
