@@ -22,11 +22,13 @@ TEST(lab, reducing_live_desired_speed_brakes_with_consistent_motion) {
     s.focus.type.desiredSpeed = {5, 5};
     CHECK(r.apply(s) == lab::LabRun::Applied::retuned);
     CHECK(r.focusId() == id && r.state().tick == tick);
+    CHECK(r.state().vehicles.front().speed > 14.9 && r.state().vehicles.front().desiredSpeed == 5);
     for (int i = 0; i < 100; ++i) {
         const auto before = r.state().vehicles.front();
         r.step(); const auto& after = r.state().vehicles.front();
         const double dt = r.state().scenario->timeStep;
-        CHECK(after.speed >= before.speed - s.focus.type.maxDeceleration * dt - 1e-9);
+        // Free flow above the target slows at the comfortable rate, as W74 does (D191).
+        CHECK(after.speed >= before.speed - s.focus.type.comfortableDeceleration * dt - 1e-9);
         test::near(after.speed - before.speed, after.acceleration * dt);
         // This short interval never reaches the circuit seam.
         test::near(after.distance - before.distance, before.speed * dt + .5 * after.acceleration * dt * dt);

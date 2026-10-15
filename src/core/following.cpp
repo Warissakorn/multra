@@ -8,7 +8,9 @@ namespace trafficsim {
 // Reduced Wiedemann-inspired prototype, NOT W74/W99. See docs/reference/SIMULATION.md.
 FollowingResult followingAcceleration(double speed, double desiredSpeed, double driverFactor,
     const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {
-    const double free = std::min(type.maxAcceleration, (desiredSpeed - speed) / behaviour.followingTime);
+    // Above the target (only after a live retune) free flow slows at the comfortable rate, as W74 (D191).
+    const double free = std::clamp((desiredSpeed - speed) / behaviour.followingTime,
+                                   -type.comfortableDeceleration, type.maxAcceleration);
     double acceleration = free;
     auto mode = FollowingMode::free;
     if (leader) {

@@ -14,7 +14,11 @@ The owner authorized fixes from main after the repository review; this branch st
 - Compile exact runtime-to-authored route provenance outside core; `/` in authored IDs no longer
   sends completed trips to another movement, including lane expansion and seed aggregation.
 - Live desired-speed reductions use bounded braking with consistent speed, acceleration and
-  distance in both prototype and W74. Ordinary runs retain their frozen replay.
+  distance in both prototype and W74. Ordinary runs retain their frozen replay. Review follow-up:
+  the prototype's free term `(desired − speed)/followingTime` had no floor, so a 15→5 m/s retune
+  braked at −6.7 m/s² (25→5: −13.3, past `maxDeceleration`); it is now floored at
+  `−comfortableDeceleration`, the rate W74 already used. It is never negative without a retune or
+  placement, so baselines are unchanged; both models' tests now assert the comfortable bound.
 - Reject retune demand edits atomically instead of retaining an incompatible arrival schedule.
 - Check finite, integral, in-range signal group numbers before casting to `int`, for controllers
   and heads; reject empty chains on either side of a conflict zone.
