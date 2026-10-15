@@ -24,7 +24,7 @@ slices add diagnostics and CLI settings without changing engine behavior or sche
 
 Later plan portions belong to their owning systems: signal behavior P4 to M4;
 physical-mouth/anticipation P5 to M3.2.4e/M3.2.8a.1; extended lane changes P6 to
-M3.2.8c; lateral infrastructure and motorcycle filtering P7 need numbered slices
+M3.2.8c; lateral infrastructure and motorcycle filtering P7 (now M3.7/M3.8, D177; perception M3.5, speed control M3.6, intersection extensions M3.9 — [review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)) need numbered slices
 and body-occupancy contracts before code. Presets P8 ship only after their used
 capabilities pass. Batches/export P9 belong to M5; independent calibration P10
 belongs to M6. Do not combine these into a single implementation session.

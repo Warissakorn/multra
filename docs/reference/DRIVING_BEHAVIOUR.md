@@ -144,7 +144,7 @@ not appear as a working setting just because the catalog can store a number.
 | Advanced merging | Existing merge arbitration is not this complete behavior model |
 | Rear lateral correction | Rear-axle display exists; physical lateral correction/occupancy not implemented |
 | Desired lateral position; adjacent-lane observation | Planned lateral/perception model |
-| Diamond queue; same-lane left/right overtaking | Planned 2D occupancy and motorcycle behavior |
+| Diamond queue; same-lane left/right overtaking | Planned 2D occupancy and motorcycle behavior (milestones M3.5–M3.9 since D177; [review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)) |
 | Turning-direction lateral placement | Planned; must respect D119 recognition rather than read an unselected suffix |
 | Lateral distance at 0/50 km/h | Planned speed-dependent clearance; lane/type widths already exist |
 | Collision-time gain; minimum longitudinal speed | Planned lateral maneuver decision rules |

@@ -13,29 +13,34 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 - `main` is `65c627a`; `native.yml` (Linux and Windows) last passed on `c2bacd1` (run 529,
   2026-10-14), which pins `trafficsim-cli 42` = 45 completed / 31.75870154816726 s / 1 clamp.
-- Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176,
-  [evidence](evidence/w74-preset.md)); not yet merged.
+- Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
+  [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
+  (D177; motorcycles are core scope); not yet merged.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
 
 Without a choice from the owner, take item 1. One system per session; contract and acceptance
-rows first for engine work.
+rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
+on 2026-10-15 (D177); B14 can still reorder it.
 
-1. **The M3.3.3b W99 contract, before any code** (D120). Write `docs/reference/W99.md` in
-   W74.md's shape: sources (public only; SUMO's `MSCFModel_W99` and PTV's public parameter page,
-   no proprietary equivalence claimed), net-gap convention, CC0–CC9 thresholds and regimes with
-   equality sides, parameters as data with ranges, traits, state and model switch, composition
-   with the tick (dispatcher `follow`, `standstillGap`/`desiredGap`), and persistence (one new
-   schema only when a `w99` behaviour is owned). Add failure-first rows BA30+ to
-   [the delivery plan](plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and a decision.
-   No engine code in that session; prototype and W74 runs stay byte-identical.
+1. **M3.5.0 — the perception contract, docs only.** Write `docs/reference/PERCEPTION.md`: one
+   bounded observation per vehicle and tick (look-ahead/look-back distances, observed vehicles
+   ahead and behind on own and adjacent lanes), a delayed view for reaction time as a fixed ring
+   of past snapshots in `SimState`, how `follow`, `safeAt` (`src/core/lanes.cpp:69`) and
+   `closestVehicle` (`src/core/simulation.cpp:35`) consume it, the new behaviour keys with
+   ranges (no code defaults), and the unset case equal to today (BA18). Add failure-first rows
+   (BA30+) to [the delivery plan](plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and a
+   decision. Review §6 has row sketches. No engine code.
+   - 1b. **M3.7.0 — the two-dimensional occupancy contract, docs only** (review §4.2), next session.
+   - 1c. Then M3.4 lane-change duration on it, M3.6 turning speeds, M3.4 overtaking with the
+     driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
    scope but no longer leads the order.
-3. **M3.4 lane-change refinements** (R7): discretionary changes (D95/D101, both off),
-   `laneChangeDistance`, cooperative lane change.
+3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
+   lane change. Discretionary changes (D95/D101, off) wait for M3.5's look-past (B2 route (i)).
 4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
    - vehicle turning beyond phase 3 (swept-body clearance rows first)
    - M3.2.8a.1 moving merge anticipation
@@ -59,17 +64,21 @@ rows first for engine work.
 - **Gates (A):** M0 plausibility, M3.2.7d T-junction exercise, M5.7 rehearsal.
 - **Decisions (B):** the name, D95/D101, `sharedMouth`/`level`, the M2.6 template's real data,
   the standstill cap, routing stations, the example's cool-down (D146), the M6 benchmark choice
-  (B9, before any comparable run), Thai sources for multi-level values (B12, D175), and whether the cited `w74` preset
-  ships in the catalog with an amber value (B13, D176).
+  (B9, before any comparable run), Thai sources for multi-level values (B12, D175), whether the cited `w74` preset
+  ships in the catalog with an amber value (B13, D176), the driving-behaviour order and Thai
+  defaults (B14), and motorcycle data (B15).
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI and
   E11 MAP10 OSM.
-- Motorcycles wait for M5.7 (R3; [PROBLEM](PROBLEM.md) §8).
+- Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 
 ## Known limits to keep in mind
 
+- **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): one-dimensional
+  vehicles, no lateral position, instantaneous lane changes, no reaction delay, one observed
+  vehicle ahead and behind at unbounded distance, no turning-speed reduction.
 - **M8:**
   - exit weights are one set per run (the row is summed over matrices)
   - lot rows' and compositions' time intervals are not used for departures or initial types

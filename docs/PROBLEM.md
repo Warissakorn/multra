@@ -44,6 +44,7 @@ actually analyse it, and get out the numbers the report needs:
 | **Signal heads anywhere on a link** | Mid-block crossings, staggered stop lines and pre-signals are ordinary study objects. |
 | **Wiedemann car-following** | Calibration practice and published parameter sets are expressed in W74/W99 terms. |
 | **Desired speed distributions** | Speed belongs to the vehicle and its driver, and every study dialog assumes it. |
+| **Motorcycles and lane sharing** — filtering, sharing a lane, forming at the stop line | Thai and much of Asia's counts are motorcycle-heavy; converting them to PCU hides the queue and start-up mechanics a signal study reports (D177; ROADMAP M3.7–M3.8). |
 | **Node evaluation** — delay/LOS/queue per movement | The table that goes into the report. |
 | **Multi-run averaging with confidence intervals** | A single stochastic run is not a result. |
 
@@ -146,5 +147,6 @@ Recorded here so they are decided against this page, not lost in a session queue
 
 1. **Motorcycles and lane sharing.** The intended users include Thai consultants, whose counts are
    motorcycle-heavy, and motorcycles share and filter between lanes. Nothing in §2 or the
-   engine represents that. The owner decides after the M5.7 rehearsal whether it becomes a §2 row
-   and a milestone, or a recorded non-goal in §5 (D143, R3).
+   engine represents that. **Answered 2026-10-15 (D177):** a §2 row and milestones M3.7
+   (two-dimensional occupancy) and M3.8 (motorcycles), ahead of the M5.7 rehearsal that R3 had
+   waited for.

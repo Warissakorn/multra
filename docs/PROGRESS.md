@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — Driving-behaviour completeness review (D177; docs only)
+
+The owner asked for a thorough review of driving behaviour (lateral behaviour, mirror checks,
+overtaking, everything that makes runs realistic) and chose "review plus roadmap" with
+motorcycles as core scope. [The review](audits/DRIVING_BEHAVIOUR_REVIEW.md) reads the whole of
+`src/core/` and the behaviour contracts. It finds a one-dimensional engine, one observed vehicle
+each way at unbounded distance, no reaction delay, instantaneous lane changes with a display-only
+slide, overtaking only as D95 (off), no turning speeds and no lateral position. Its gap matrix
+covers twelve areas (A–L). Lateral, lane-change duration and motorcycle work all need one
+2D-occupancy contract, and perception and reaction need one observation contract, so both
+come before W99. ROADMAP gains M3.5–M3.9 and an extended M3.4 (hard rule 8); PROBLEM §2 gains the
+motorcycle row and §8.1 is answered; NEXT follows the review's order; B14/B15 hold the owner's
+remaining calls. Checked: `check` (docs, sizes, architecture, CTest) on Linux.
+
 ## 2026-10-15 — A cited, uncalibrated `w74` preset (NEXT item 1, D176)
 
 `data/driver-behaviour/presets/w74-sumo-defaults.json` maps every one of the 18 keys from SUMO's
