@@ -3,6 +3,7 @@
 #include "simulation.hpp"
 #include "detail.hpp"
 #include "routes.hpp"
+#include "perception.hpp"
 #include "validate.hpp"
 #include <algorithm>
 #include <cmath>
@@ -27,6 +28,10 @@ bool sameShape(const Scenario& a, const Scenario& b) {
     };
     return a.timeStep == b.timeStep && a.routes == b.routes && sameInputs && sameHeads &&
            sameIds(a.vehicleTypes, b.vehicleTypes) && sameIds(a.behaviours, b.behaviours) &&
+           std::equal(a.behaviours.begin(), a.behaviours.end(), b.behaviours.begin(), b.behaviours.end(),
+               [&](const auto& x, const auto& y) {
+                   return reactionTicks(x.perception, a.timeStep) == reactionTicks(y.perception, b.timeStep);
+               }) &&
            sameIds(a.signalPrograms, b.signalPrograms) && a.priorityRules == b.priorityRules &&
            a.conflictZones == b.conflictZones && a.laneChanges == b.laneChanges &&
            a.routeDeadEnds == b.routeDeadEnds && a.routeDecisions == b.routeDecisions &&
@@ -94,6 +99,8 @@ SimState placeVehicle(SimState&& state, const VehiclePlacement& placement) {
     vehicle.enteredTime = state.time;
     vehicle.distance = placement.distance;
     vehicle.speed = placement.speed;
+    const auto& behaviour = scenario.behaviours[effectiveBehaviour(*state.index, vehicle)];
+    resizeReactionHistory(vehicle, reactionTicks(behaviour.perception, scenario.timeStep));
     state.vehicles.push_back(std::move(vehicle)); // the next id is the largest, so the order holds
     return std::move(state);
 }

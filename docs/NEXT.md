@@ -11,43 +11,37 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
-- `main` is `65c627a`; `native.yml` (Linux and Windows) last passed on `c2bacd1` (run 529,
-  2026-10-14), which pins `trafficsim-cli 42` = 45 completed / 31.75870154816726 s / 1 clamp.
-- Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
-  [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
-  (D177; motorcycles are core scope), the owner's answers (D178), and the perception
-  (D179) and lateral (D180) contracts, and perception slices 1–3 (D181,
-  D182, D183); not yet merged.
+- Engine base `54f76be` (M3.5 slice 4, D184); this session adds the BA38 evidence tool
+  and the [reaction-time discharge record](evidence/perception-discharge.md) (D185).
+- The fixed experiment completed 240 runs (two models × three delays × 40 seeds), plus
+  80 tick-by-tick absent-key controls and 32-tick copied-state replay per experimental run.
+  Raw inputs/settings, source/output hashes and compiler flags are captured with the evidence.
+- Local evidence is Linux headless; no desktop or Windows verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
 
 Without a choice from the owner, take item 1. One system per session; contract and acceptance
-rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
+rows first for engine work. Item 1 and its follow-ons use the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.5 slice 4: reaction time as an action delay** ([PERCEPTION](reference/PERCEPTION.md) §5,
-   §7; rows BA35, BA36, with BA30). Slices 1–3 (D181–D183) store the keys, give own motion the
-   perceived leaders (`perceivedLeaders`, `anticipate` in `src/core/perception.cpp`) and the
-   lane-change tests look-back and rear TTC. Now `reactionTime` τ:
-   - **FIFO.** `d = floor(τ/dt + 0.5)` ticks. `Vehicle` gains a FIFO (`std::vector`, empty when
-     `d = 0`) of `{acceleration, mode, w74 state}`, appended last so equality and replay cover it.
-     The motion loop (`src/core/simulation.cpp`, after `anticipate` and the courtesy comparison)
-     pushes the decided entry and applies the oldest. The bounds, D105, `integrate`, the
-     desired-speed cap and the hard cap then run unchanged on the applied value; the cap reads
-     the current physical leader.
-   - **Insertion** fills the FIFO with `{0, free, no state}`. A road boundary that changes `d`
-     trims or pads per §5. A Lab retune that changes `d` is refused.
-   - **Undelayed.** The hypothetical tests are not delayed: `safeAt`, courtesy, `deadEndGoverns`,
-     the gain, D108's first step and `stopLineReach`.
-   - **Identity.** With the key absent or `d = 0`, there is no FIFO and runs are byte-identical.
-     BA30's codec test then has no unread key left, so retire it into the identity tests.
-   - **Benchmark.** Interleaved, as [perception-lane](evidence/perception-lane.md) does.
-   - **Tests.** In a new `tests/perception_delay_tests.cpp`. BA35's first deceleration falls
-     exactly `d` ticks after the leader's, at dt 0.1, 0.25 and 0.5.
-   - 1b. Then PERCEPTION slice 5 (BA38 discharge record), LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
-     its schema is the next number after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4
-     overtaking with the driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
+1. **M3.7 LATERAL slice 1: compile and codec** ([LATERAL](reference/LATERAL.md) §3, §9, §12,
+   D180; acceptance BA45, with BA39 in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).
+   - Read the model/core/project module READMEs, ARCHITECTURE and the contract before adding
+     types. Compile carriageway cross-sections and `drivingSide` only with the lateral switch on.
+   - Store/validate `lateralMinDistanceStanding`, `lateralMinDistanceAt50` and `maxLateralSpeed`
+     from one key table. Any present key requires all three. Reject missing, nonfinite,
+     out-of-range and unused invalid entries with their paths; no shipped values or code defaults.
+   - The next free schema is **33** (32 is perception). Write it only for an owned lateral key;
+     refuse those keys in an older schema, and preserve older files' bytes without the keys.
+   - BA45: codec, compile and both driving sides. BA39: all keys absent keeps today's Scenario
+     and the prototype/W74/perception replay, CLI seed 42 and frozen baselines unchanged.
+     Keep storage/compile support distinct from runtime occupancy; spans/predicates are slice 2.
+   - `src/core/types.hpp` is near its 500-line budget; put substantial new lateral structures in
+     their own core header rather than exceeding it. Do not add Qt/model/I/O dependencies to core.
+   - Then lateral slices 2–4 (BA40–BA44, BA46), M3.4 lane-change duration, M3.6 turning speeds,
+     M3.4 overtaking with driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9
+     (the review's §5 order, D177/D178).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
@@ -89,8 +83,9 @@ on 2026-10-15 (D177) and accepted (D178).
 ## Known limits to keep in mind
 
 - **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): one-dimensional
-  vehicles, no lateral position, instantaneous lane changes, no reaction delay, one observed
-  vehicle ahead and behind at unbounded distance, no turning-speed reduction.
+  vehicles, no lateral position, instantaneous lane changes, no turning-speed reduction.
+  Perception limits, multi-anticipation and reaction time are optional; with no keys the old
+  single-leader, unbounded-sight, zero-delay path remains. A second rear follower is not modelled.
 - **M8:**
   - exit weights are one set per run (the row is summed over matrices)
   - lot rows' and compositions' time intervals are not used for departures or initial types

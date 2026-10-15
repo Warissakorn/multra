@@ -36,6 +36,8 @@ or edit evidence in place. A new measurement gets a new note.
 | [m6-benchmark-options.md](m6-benchmark-options.md) | M6 benchmark option sheet (M6.0, 2026-10-10) | D143, D34 |
 | [source-first-step.md](source-first-step.md) | Source first-step clearance — D108, M3.2.8a.1a | D108, D107 |
 | [perception-motion.md](perception-motion.md) | M3.5 slice 2: look-ahead and multi-anticipation evidence — 2026-10-15 | D182 |
+| [perception-discharge.md](perception-discharge.md) | M3.5 slice 5 — BA38 reaction-time discharge, raw-input manifests, paired seed/lane evidence — 2026-10-15 | D185, D184 |
+| [perception-delay.md](perception-delay.md) | M3.5 slice 4 — reaction-time FIFO, safety, replay and performance — 2026-10-15 | D184, D179 |
 | [perception-lane.md](perception-lane.md) | M3.5 slice 3: look-back, rear TTC and perceived lane-change evidence — 2026-10-15 | D183 |
 | [perception-codec.md](perception-codec.md) | M3.5 slice 1: perception codec evidence — 2026-10-15 | D179, D181 |
 | [w74-clamps.md](w74-clamps.md) | M3.3.3a: where the extra W74 safety clamps come from — 2026-10-08 | — |

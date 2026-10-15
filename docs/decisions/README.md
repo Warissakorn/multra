@@ -11,7 +11,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
 | Signals, conflicts, Stop/Yield and queues | D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
-| Following, commitment and lane changes | D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
+| Following, commitment and lane changes | D186, D185, D184, D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
 | UI, gestures, display and results | D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
 | Performance, checks and documentation | D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
 
@@ -155,3 +155,9 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D182](RECORD.md#d182) — look-ahead and multi-anticipation in own motion; physical leader keeps the cap; scan-order ties.
 
 [D183](RECORD.md#d183) — lane-change tests read the changer's perception: look-back, rear TTC, perceived leaders and gain.
+
+[D184](RECORD.md#d184) — reaction-time FIFO: delayed own action, current safety bounds, publish-only history, and atomic retune tick-count guard.
+
+[D185](RECORD.md#d185) — BA38 reaction-time discharge experiment: captured inputs, within-model controls, seed-weighted summaries and explicit unavailable samples.
+
+[D186](RECORD.md#d186) — an empty FIFO entering a delayed road is filled with the entry decision, so braking continues.

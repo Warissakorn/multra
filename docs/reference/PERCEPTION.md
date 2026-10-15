@@ -1,11 +1,13 @@
 # Perception contract: look-ahead, observed vehicles, look-back and reaction time (M3.5.0)
 
-Designed 2026-10-15 (D179). **Slices 1–3 are implemented**: the codec (D181, schema 32,
+Designed 2026-10-15 (D179). **Slices 1–4 are implemented**: the codec (D181, schema 32,
 [evidence](../evidence/perception-codec.md)), look-ahead with multi-anticipation in own motion
-(D182, [evidence](../evidence/perception-motion.md)), and look-back, rear time-to-collision and the
-perceived lane-change tests (D183, [evidence](../evidence/perception-lane.md)). Rows BA30–BA38 are in
-[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and are all
-pending except BA30–BA34 and BA37. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
+(D182, [evidence](../evidence/perception-motion.md)), look-back, rear time-to-collision and the
+perceived lane-change tests (D183, [evidence](../evidence/perception-lane.md)), and the reaction-time
+action FIFO (D184, [evidence](../evidence/perception-delay.md)). Rows BA30–BA38 are in
+[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA30–BA37 have
+automated evidence; BA38 has a [discharge sensitivity record](../evidence/perception-discharge.md)
+(D185) with 40 seeds per variant, without a calibration inference. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
 motivate it; D177/D178 put it first. [DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md) owns assignment and
 selection, [SIMULATION](SIMULATION.md) the tick, [W74](W74.md) and the prototype their equations.
 This file owns **what a driver observes and when it acts on it**.
@@ -131,7 +133,10 @@ d = floor(τ / dt + 0.5)          (ticks; d = 0 means today)
   not its action.
 - **Road boundaries** (D127 selection): the FIFO keeps its entries when the behaviour changes. If
   `d` changes, the oldest entries are dropped, or the FIFO is padded at its old end with copies of
-  its oldest entry. On a road with `d = 0` the FIFO is cleared at publish.
+  its oldest entry. On a road with `d = 0` the FIFO is cleared at publish. A vehicle arriving from
+  such a road has an empty FIFO: its first delayed tick applies that tick's own decision and fills
+  the FIFO with copies of it, so a braking driver keeps braking rather than coasting for `d` ticks
+  (D186). Only insertion fills with `{0, free, no state}`.
 - The FIFO lives in `Vehicle` (a `std::vector`, empty when `d = 0`), so copying `SimState`
   copies it and replay is exact. It is written only at publish, in vehicle-id order.
 - Timestep: `d` is quantised to ticks. The effect of dt is recorded (BA35/BA38), not bounded, as

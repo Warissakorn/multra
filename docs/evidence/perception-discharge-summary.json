@@ -1,0 +1,2202 @@
+{
+  "aggregation": "mean of available per-seed cycle means, independently per head/lane; null means unavailable",
+  "label": "not yet validated; descriptive BA38 sensitivity",
+  "lanes": [
+    {
+      "cycles": 320,
+      "headId": "head-62",
+      "headway": {
+        "mean": 2.0556706349206393,
+        "n": 40,
+        "sampleSd": 0.017671421038641954
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 2,
+        "queue_not_sustained": 37
+      },
+      "laneId": "lane-5",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.12578174603174236,
+        "n": 40,
+        "sampleSd": 0.05224367363459066
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 2,
+        "queue_not_sustained": 37
+      },
+      "validHeadwayCycles": 241,
+      "validStartupCycles": 241,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-63",
+      "headway": {
+        "mean": 2.0495972222222254,
+        "n": 40,
+        "sampleSd": 0.022541154195863493
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 35,
+        "queue_not_sustained": 55,
+        "route_or_lane_change": 21
+      },
+      "laneId": "lane-6",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.09631944444444021,
+        "n": 40,
+        "sampleSd": 0.061689786418316
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 35,
+        "queue_not_sustained": 55,
+        "route_or_lane_change": 21
+      },
+      "validHeadwayCycles": 169,
+      "validStartupCycles": 169,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-64",
+      "headway": {
+        "mean": 2.0437908496732073,
+        "n": 17,
+        "sampleSd": 0.04866593547066894
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 225,
+        "queue_not_sustained": 35
+      },
+      "laneId": "lane-7",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.07777777777777456,
+        "n": 17,
+        "sampleSd": 0.12735437095942095
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 225,
+        "queue_not_sustained": 35
+      },
+      "validHeadwayCycles": 20,
+      "validStartupCycles": 20,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-65",
+      "headway": {
+        "mean": 2.05393055555556,
+        "n": 40,
+        "sampleSd": 0.02132051917351318
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 34,
+        "partial_cycle": 40,
+        "queue_not_sustained": 39
+      },
+      "laneId": "lane-17",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.11894444444443879,
+        "n": 40,
+        "sampleSd": 0.06254353343004958
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 34,
+        "partial_cycle": 40,
+        "queue_not_sustained": 39
+      },
+      "validHeadwayCycles": 207,
+      "validStartupCycles": 207,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-66",
+      "headway": {
+        "mean": 2.050013888888894,
+        "n": 40,
+        "sampleSd": 0.022330394662807482
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 68,
+        "partial_cycle": 39,
+        "queue_not_sustained": 75,
+        "route_or_lane_change": 11
+      },
+      "laneId": "lane-18",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.10252777777777353,
+        "n": 40,
+        "sampleSd": 0.061714958889080004
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 68,
+        "partial_cycle": 39,
+        "queue_not_sustained": 75,
+        "route_or_lane_change": 11
+      },
+      "validHeadwayCycles": 127,
+      "validStartupCycles": 127,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-67",
+      "headway": {
+        "mean": 2.051851851851856,
+        "n": 18,
+        "sampleSd": 0.05012692676814281
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 231,
+        "partial_cycle": 40,
+        "queue_not_sustained": 28
+      },
+      "laneId": "lane-19",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.12314814814813503,
+        "n": 18,
+        "sampleSd": 0.11773167799237289
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 231,
+        "partial_cycle": 40,
+        "queue_not_sustained": 28
+      },
+      "validHeadwayCycles": 21,
+      "validStartupCycles": 21,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-68",
+      "headway": {
+        "mean": 2.0471527777777814,
+        "n": 40,
+        "sampleSd": 0.026565330812967827
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 88,
+        "queue_not_sustained": 60
+      },
+      "laneId": "lane-29",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.10943055555554573,
+        "n": 40,
+        "sampleSd": 0.06825476541994105
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 88,
+        "queue_not_sustained": 60
+      },
+      "validHeadwayCycles": 132,
+      "validStartupCycles": 132,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-69",
+      "headway": {
+        "mean": 2.044693486590041,
+        "n": 29,
+        "sampleSd": 0.028588018962374714
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 177,
+        "queue_not_sustained": 36,
+        "route_or_lane_change": 6
+      },
+      "laneId": "lane-30",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.09053639846742174,
+        "n": 29,
+        "sampleSd": 0.1011393954376492
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 177,
+        "queue_not_sustained": 36,
+        "route_or_lane_change": 6
+      },
+      "validHeadwayCycles": 61,
+      "validStartupCycles": 61,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-70",
+      "headway": {
+        "mean": 1.966666666666697,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-31",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.06666666666660603,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-71",
+      "headway": {
+        "mean": 2.0514861111111165,
+        "n": 40,
+        "sampleSd": 0.03452760558801075
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 126,
+        "queue_not_sustained": 47
+      },
+      "laneId": "lane-41",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.11476388888888531,
+        "n": 40,
+        "sampleSd": 0.08830424609341384
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 126,
+        "queue_not_sustained": 47
+      },
+      "validHeadwayCycles": 107,
+      "validStartupCycles": 107,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-72",
+      "headway": {
+        "mean": 2.053256704980848,
+        "n": 29,
+        "sampleSd": 0.03161989170667468
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 195,
+        "queue_not_sustained": 37,
+        "route_or_lane_change": 5
+      },
+      "laneId": "lane-42",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.10478927203065214,
+        "n": 29,
+        "sampleSd": 0.08381769471787398
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 195,
+        "queue_not_sustained": 37,
+        "route_or_lane_change": 5
+      },
+      "validHeadwayCycles": 43,
+      "validStartupCycles": 43,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-73",
+      "headway": {
+        "mean": 2.0333333333333408,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-43",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.16666666666670427,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "prototype-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-62",
+      "headway": {
+        "mean": 2.3790496031746065,
+        "n": 40,
+        "sampleSd": 0.020524755923566115
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 4,
+        "queue_not_sustained": 31
+      },
+      "laneId": "lane-5",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.4613888888889025,
+        "n": 40,
+        "sampleSd": 0.18264779849302065
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 4,
+        "queue_not_sustained": 31
+      },
+      "validHeadwayCycles": 245,
+      "validStartupCycles": 245,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-63",
+      "headway": {
+        "mean": 2.3752638888888944,
+        "n": 40,
+        "sampleSd": 0.025493852023051666
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 39,
+        "queue_not_sustained": 64,
+        "route_or_lane_change": 14
+      },
+      "laneId": "lane-6",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.4300972222222355,
+        "n": 40,
+        "sampleSd": 0.16397411408578982
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 39,
+        "queue_not_sustained": 64,
+        "route_or_lane_change": 14
+      },
+      "validHeadwayCycles": 163,
+      "validStartupCycles": 163,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-64",
+      "headway": {
+        "mean": 2.3748148148148216,
+        "n": 15,
+        "sampleSd": 0.03455860923236544
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 233,
+        "queue_not_sustained": 27
+      },
+      "laneId": "lane-7",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.45814814814815474,
+        "n": 15,
+        "sampleSd": 0.3995746562755185
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 233,
+        "queue_not_sustained": 27
+      },
+      "validHeadwayCycles": 20,
+      "validStartupCycles": 20,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-65",
+      "headway": {
+        "mean": 2.3993333333333378,
+        "n": 40,
+        "sampleSd": 0.09300471247850572
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 39,
+        "partial_cycle": 40,
+        "queue_not_sustained": 38
+      },
+      "laneId": "lane-17",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.4208750000000158,
+        "n": 40,
+        "sampleSd": 0.2057985353586017
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 39,
+        "partial_cycle": 40,
+        "queue_not_sustained": 38
+      },
+      "validHeadwayCycles": 203,
+      "validStartupCycles": 203,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-66",
+      "headway": {
+        "mean": 2.3679444444444484,
+        "n": 40,
+        "sampleSd": 0.025158629371376896
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 82,
+        "partial_cycle": 39,
+        "queue_not_sustained": 75,
+        "route_or_lane_change": 8
+      },
+      "laneId": "lane-18",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.5301944444444602,
+        "n": 40,
+        "sampleSd": 0.5833113352248868
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 82,
+        "partial_cycle": 39,
+        "queue_not_sustained": 75,
+        "route_or_lane_change": 8
+      },
+      "validHeadwayCycles": 116,
+      "validStartupCycles": 116,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-67",
+      "headway": {
+        "mean": 2.3885416666666766,
+        "n": 16,
+        "sampleSd": 0.01992462648933503
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 242,
+        "partial_cycle": 40,
+        "queue_not_sustained": 19
+      },
+      "laneId": "lane-19",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.31041666666666384,
+        "n": 16,
+        "sampleSd": 0.12078063985162853
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 242,
+        "partial_cycle": 40,
+        "queue_not_sustained": 19
+      },
+      "validHeadwayCycles": 19,
+      "validStartupCycles": 19,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-68",
+      "headway": {
+        "mean": 2.3840277777777823,
+        "n": 40,
+        "sampleSd": 0.08825618394442851
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 99,
+        "queue_not_sustained": 58
+      },
+      "laneId": "lane-29",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.43506944444446016,
+        "n": 40,
+        "sampleSd": 0.2919420674420303
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 99,
+        "queue_not_sustained": 58
+      },
+      "validHeadwayCycles": 123,
+      "validStartupCycles": 123,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-69",
+      "headway": {
+        "mean": 2.368888888888888,
+        "n": 25,
+        "sampleSd": 0.025760051376355026
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 194,
+        "queue_not_sustained": 35,
+        "route_or_lane_change": 3
+      },
+      "laneId": "lane-30",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.44522222222225527,
+        "n": 25,
+        "sampleSd": 0.15662972377672219
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 194,
+        "queue_not_sustained": 35,
+        "route_or_lane_change": 3
+      },
+      "validHeadwayCycles": 48,
+      "validStartupCycles": 48,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-70",
+      "headway": {
+        "mean": 2.400000000000015,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-31",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.19999999999996998,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-71",
+      "headway": {
+        "mean": 2.3783888888888938,
+        "n": 40,
+        "sampleSd": 0.024198058989858922
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 136,
+        "queue_not_sustained": 49
+      },
+      "laneId": "lane-41",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.36980555555557315,
+        "n": 40,
+        "sampleSd": 0.15284060091400822
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 136,
+        "queue_not_sustained": 49
+      },
+      "validHeadwayCycles": 95,
+      "validStartupCycles": 95,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-72",
+      "headway": {
+        "mean": 2.3777777777777827,
+        "n": 27,
+        "sampleSd": 0.02890860602613309
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 201,
+        "queue_not_sustained": 36,
+        "route_or_lane_change": 5
+      },
+      "laneId": "lane-42",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.38827160493828494,
+        "n": 27,
+        "sampleSd": 0.1686585623914276
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 201,
+        "queue_not_sustained": 36,
+        "route_or_lane_change": 5
+      },
+      "validHeadwayCycles": 38,
+      "validStartupCycles": 38,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-73",
+      "headway": {
+        "mean": 2.3333333333333335,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 279
+      },
+      "laneId": "lane-43",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.6333333333334012,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 279
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "prototype-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-62",
+      "headway": {
+        "mean": 2.1937698412698445,
+        "n": 40,
+        "sampleSd": 0.03572915622217919
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 2,
+        "queue_not_sustained": 33
+      },
+      "laneId": "lane-5",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.18053174603175579,
+        "n": 40,
+        "sampleSd": 0.07044349039895142
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 2,
+        "queue_not_sustained": 33
+      },
+      "validHeadwayCycles": 245,
+      "validStartupCycles": 245,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-63",
+      "headway": {
+        "mean": 2.179055555555559,
+        "n": 40,
+        "sampleSd": 0.019236453733962388
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 35,
+        "queue_not_sustained": 57,
+        "route_or_lane_change": 16
+      },
+      "laneId": "lane-6",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.2155138888888984,
+        "n": 40,
+        "sampleSd": 0.05315637003719151
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 35,
+        "queue_not_sustained": 57,
+        "route_or_lane_change": 16
+      },
+      "validHeadwayCycles": 172,
+      "validStartupCycles": 172,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-64",
+      "headway": {
+        "mean": 2.1694444444444447,
+        "n": 18,
+        "sampleSd": 0.03802733794748286
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 227,
+        "queue_not_sustained": 30
+      },
+      "laneId": "lane-7",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.2444444444444599,
+        "n": 18,
+        "sampleSd": 0.11881770515721866
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 227,
+        "queue_not_sustained": 30
+      },
+      "validHeadwayCycles": 23,
+      "validStartupCycles": 23,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-65",
+      "headway": {
+        "mean": 2.1779444444444467,
+        "n": 40,
+        "sampleSd": 0.016473332599254913
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 36,
+        "partial_cycle": 40,
+        "queue_not_sustained": 40
+      },
+      "laneId": "lane-17",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.2208194444444565,
+        "n": 40,
+        "sampleSd": 0.050518831954860025
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 36,
+        "partial_cycle": 40,
+        "queue_not_sustained": 40
+      },
+      "validHeadwayCycles": 204,
+      "validStartupCycles": 204,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-66",
+      "headway": {
+        "mean": 2.1753888888888913,
+        "n": 40,
+        "sampleSd": 0.020466697909751287
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 66,
+        "partial_cycle": 39,
+        "queue_not_sustained": 76,
+        "route_or_lane_change": 11
+      },
+      "laneId": "lane-18",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.2244305555555664,
+        "n": 40,
+        "sampleSd": 0.06113732764517415
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 66,
+        "partial_cycle": 39,
+        "queue_not_sustained": 76,
+        "route_or_lane_change": 11
+      },
+      "validHeadwayCycles": 128,
+      "validStartupCycles": 128,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-67",
+      "headway": {
+        "mean": 2.1703703703703727,
+        "n": 18,
+        "sampleSd": 0.050018152115319216
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 230,
+        "partial_cycle": 40,
+        "queue_not_sustained": 29
+      },
+      "laneId": "lane-19",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.23148148148149947,
+        "n": 18,
+        "sampleSd": 0.10769250720212177
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 230,
+        "partial_cycle": 40,
+        "queue_not_sustained": 29
+      },
+      "validHeadwayCycles": 21,
+      "validStartupCycles": 21,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-68",
+      "headway": {
+        "mean": 2.175180555555559,
+        "n": 40,
+        "sampleSd": 0.030658951582302005
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 89,
+        "queue_not_sustained": 59
+      },
+      "laneId": "lane-29",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.21684722222222802,
+        "n": 40,
+        "sampleSd": 0.07150491779199679
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 89,
+        "queue_not_sustained": 59
+      },
+      "validHeadwayCycles": 132,
+      "validStartupCycles": 132,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-69",
+      "headway": {
+        "mean": 2.1697318007662822,
+        "n": 29,
+        "sampleSd": 0.0258171654004912
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 177,
+        "queue_not_sustained": 40,
+        "route_or_lane_change": 4
+      },
+      "laneId": "lane-30",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.23524904214561512,
+        "n": 29,
+        "sampleSd": 0.08194983654669952
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 177,
+        "queue_not_sustained": 40,
+        "route_or_lane_change": 4
+      },
+      "validHeadwayCycles": 59,
+      "validStartupCycles": 59,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-70",
+      "headway": {
+        "mean": 2.1333333333333635,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-31",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.233333333333273,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-71",
+      "headway": {
+        "mean": 2.173555555555559,
+        "n": 40,
+        "sampleSd": 0.027862491905901544
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 126,
+        "queue_not_sustained": 52
+      },
+      "laneId": "lane-41",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.22713888888889883,
+        "n": 40,
+        "sampleSd": 0.07839272061321943
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 126,
+        "queue_not_sustained": 52
+      },
+      "validHeadwayCycles": 102,
+      "validStartupCycles": 102,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-72",
+      "headway": {
+        "mean": 2.175720164609057,
+        "n": 27,
+        "sampleSd": 0.02691604142884639
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 196,
+        "queue_not_sustained": 39,
+        "route_or_lane_change": 5
+      },
+      "laneId": "lane-42",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.2325102880658554,
+        "n": 27,
+        "sampleSd": 0.06864417009890454
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 196,
+        "queue_not_sustained": 39,
+        "route_or_lane_change": 5
+      },
+      "validHeadwayCycles": 40,
+      "validStartupCycles": 40,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-73",
+      "headway": {
+        "mean": 2.1666666666666665,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-43",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.16666666666666696,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "prototype-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-62",
+      "headway": {
+        "mean": 3.431944444444453,
+        "n": 40,
+        "sampleSd": 0.014443874185213404
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "queue_not_sustained": 46
+      },
+      "laneId": "lane-5",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.4231507936507988,
+        "n": 40,
+        "sampleSd": 0.3771787177238218
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "queue_not_sustained": 46
+      },
+      "validHeadwayCycles": 234,
+      "validStartupCycles": 234,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-63",
+      "headway": {
+        "mean": 3.4422539682539686,
+        "n": 40,
+        "sampleSd": 0.02265671235190303
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 18,
+        "queue_not_sustained": 51,
+        "route_or_lane_change": 40
+      },
+      "laneId": "lane-6",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.2084960317460145,
+        "n": 40,
+        "sampleSd": 0.2909512007764827
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 18,
+        "queue_not_sustained": 51,
+        "route_or_lane_change": 40
+      },
+      "validHeadwayCycles": 171,
+      "validStartupCycles": 171,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-64",
+      "headway": {
+        "mean": 3.4314814814814794,
+        "n": 18,
+        "sampleSd": 0.05992612251569389
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 228,
+        "queue_not_sustained": 31
+      },
+      "laneId": "lane-7",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.2712962962962728,
+        "n": 18,
+        "sampleSd": 0.13281831360893043
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 228,
+        "queue_not_sustained": 31
+      },
+      "validHeadwayCycles": 21,
+      "validStartupCycles": 21,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-65",
+      "headway": {
+        "mean": 3.429347222222231,
+        "n": 40,
+        "sampleSd": 0.015924544845062324
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 30,
+        "partial_cycle": 40,
+        "queue_not_sustained": 34
+      },
+      "laneId": "lane-17",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.3769444444444523,
+        "n": 40,
+        "sampleSd": 0.33981921249784086
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 30,
+        "partial_cycle": 40,
+        "queue_not_sustained": 34
+      },
+      "validHeadwayCycles": 216,
+      "validStartupCycles": 216,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-66",
+      "headway": {
+        "mean": 3.441809116809116,
+        "n": 39,
+        "sampleSd": 0.02490159905098558
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 60,
+        "partial_cycle": 34,
+        "queue_not_sustained": 81,
+        "route_or_lane_change": 18
+      },
+      "laneId": "lane-18",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.2501139601139404,
+        "n": 39,
+        "sampleSd": 0.25244152751277704
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 60,
+        "partial_cycle": 34,
+        "queue_not_sustained": 81,
+        "route_or_lane_change": 18
+      },
+      "validHeadwayCycles": 127,
+      "validStartupCycles": 127,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-67",
+      "headway": {
+        "mean": 3.4291666666666636,
+        "n": 16,
+        "sampleSd": 0.060705726131781726
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 232,
+        "partial_cycle": 40,
+        "queue_not_sustained": 29
+      },
+      "laneId": "lane-19",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.2427083333333013,
+        "n": 16,
+        "sampleSd": 0.16974586123794266
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 232,
+        "partial_cycle": 40,
+        "queue_not_sustained": 29
+      },
+      "validHeadwayCycles": 19,
+      "validStartupCycles": 19,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-68",
+      "headway": {
+        "mean": 3.438513888888894,
+        "n": 40,
+        "sampleSd": 0.01778195619542101
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 58,
+        "queue_not_sustained": 39
+      },
+      "laneId": "lane-29",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.53731944444444,
+        "n": 40,
+        "sampleSd": 0.1482015691166528
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 58,
+        "queue_not_sustained": 39
+      },
+      "validHeadwayCycles": 183,
+      "validStartupCycles": 183,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-69",
+      "headway": {
+        "mean": 3.4491379310344765,
+        "n": 29,
+        "sampleSd": 0.04651420347051259
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 168,
+        "queue_not_sustained": 43,
+        "route_or_lane_change": 1
+      },
+      "laneId": "lane-30",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.2906896551723788,
+        "n": 29,
+        "sampleSd": 0.11650041585907761
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 168,
+        "queue_not_sustained": 43,
+        "route_or_lane_change": 1
+      },
+      "validHeadwayCycles": 68,
+      "validStartupCycles": 68,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-70",
+      "headway": {
+        "mean": 3.416666666666667,
+        "n": 2,
+        "sampleSd": 0.0707106781186226
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 1
+      },
+      "laneId": "lane-31",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.3166666666667006,
+        "n": 2,
+        "sampleSd": 2.4748737341529434
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 1
+      },
+      "validHeadwayCycles": 2,
+      "validStartupCycles": 2,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-71",
+      "headway": {
+        "mean": 3.439450549450552,
+        "n": 39,
+        "sampleSd": 0.022301932056072945
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 93,
+        "queue_not_sustained": 55
+      },
+      "laneId": "lane-41",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.4782173382173245,
+        "n": 39,
+        "sampleSd": 0.275364568185278
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 93,
+        "queue_not_sustained": 55
+      },
+      "validHeadwayCycles": 132,
+      "validStartupCycles": 132,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-72",
+      "headway": {
+        "mean": 3.448518518518514,
+        "n": 30,
+        "sampleSd": 0.036355153363844546
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 190,
+        "queue_not_sustained": 42,
+        "route_or_lane_change": 1
+      },
+      "laneId": "lane-42",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.2731481481481195,
+        "n": 30,
+        "sampleSd": 0.1678507322377726
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 190,
+        "queue_not_sustained": 42,
+        "route_or_lane_change": 1
+      },
+      "validHeadwayCycles": 47,
+      "validStartupCycles": 47,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-73",
+      "headway": {
+        "mean": 3.4666666666666592,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 1
+      },
+      "laneId": "lane-43",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.3333333333332957,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 1
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "w74-0"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-62",
+      "headway": {
+        "mean": 4.017408730158732,
+        "n": 40,
+        "sampleSd": 0.021603945901475373
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "queue_not_sustained": 55
+      },
+      "laneId": "lane-5",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.943456349206371,
+        "n": 40,
+        "sampleSd": 0.7385142991248207
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "queue_not_sustained": 55
+      },
+      "validHeadwayCycles": 225,
+      "validStartupCycles": 225,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-63",
+      "headway": {
+        "mean": 4.021259920634925,
+        "n": 40,
+        "sampleSd": 0.02216318096875626
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 13,
+        "queue_not_sustained": 35,
+        "route_or_lane_change": 56
+      },
+      "laneId": "lane-6",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 1.4814444444444623,
+        "n": 40,
+        "sampleSd": 1.1315618463914205
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 13,
+        "queue_not_sustained": 35,
+        "route_or_lane_change": 56
+      },
+      "validHeadwayCycles": 176,
+      "validStartupCycles": 176,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-64",
+      "headway": {
+        "mean": 4.051851851851859,
+        "n": 18,
+        "sampleSd": 0.038300876664042145
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 243,
+        "queue_not_sustained": 18
+      },
+      "laneId": "lane-7",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.5648148148148181,
+        "n": 18,
+        "sampleSd": 1.2932945325806153
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 243,
+        "queue_not_sustained": 18
+      },
+      "validHeadwayCycles": 19,
+      "validStartupCycles": 19,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-65",
+      "headway": {
+        "mean": 4.0156125356125365,
+        "n": 39,
+        "sampleSd": 0.014316116224641445
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 41,
+        "partial_cycle": 40,
+        "queue_not_sustained": 39
+      },
+      "laneId": "lane-17",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.9406552706552944,
+        "n": 39,
+        "sampleSd": 0.60545964517298
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 41,
+        "partial_cycle": 40,
+        "queue_not_sustained": 39
+      },
+      "validHeadwayCycles": 200,
+      "validStartupCycles": 200,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-66",
+      "headway": {
+        "mean": 4.022938596491228,
+        "n": 38,
+        "sampleSd": 0.021276775274407876
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 60,
+        "partial_cycle": 31,
+        "queue_not_sustained": 67,
+        "route_or_lane_change": 32
+      },
+      "laneId": "lane-18",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 1.2932017543859962,
+        "n": 38,
+        "sampleSd": 1.2802429701555926
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 60,
+        "partial_cycle": 31,
+        "queue_not_sustained": 67,
+        "route_or_lane_change": 32
+      },
+      "validHeadwayCycles": 130,
+      "validStartupCycles": 130,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-67",
+      "headway": {
+        "mean": 4.066666666666676,
+        "n": 15,
+        "sampleSd": 0.0281718084908897
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 249,
+        "partial_cycle": 40,
+        "queue_not_sustained": 14
+      },
+      "laneId": "lane-19",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.8466666666666772,
+        "n": 15,
+        "sampleSd": 1.039348849879606
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 249,
+        "partial_cycle": 40,
+        "queue_not_sustained": 14
+      },
+      "validHeadwayCycles": 17,
+      "validStartupCycles": 17,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-68",
+      "headway": {
+        "mean": 4.056458333333335,
+        "n": 40,
+        "sampleSd": 0.014346968657476561
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 88,
+        "queue_not_sustained": 24
+      },
+      "laneId": "lane-29",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.3034583333333156,
+        "n": 40,
+        "sampleSd": 0.16908354389590052
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 88,
+        "queue_not_sustained": 24
+      },
+      "validHeadwayCycles": 168,
+      "validStartupCycles": 168,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-69",
+      "headway": {
+        "mean": 4.04463675213676,
+        "n": 26,
+        "sampleSd": 0.07705216163442354
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 170,
+        "queue_not_sustained": 37,
+        "route_or_lane_change": 1
+      },
+      "laneId": "lane-30",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.0870940170940164,
+        "n": 26,
+        "sampleSd": 0.1784243317634675
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 170,
+        "queue_not_sustained": 37,
+        "route_or_lane_change": 1
+      },
+      "validHeadwayCycles": 72,
+      "validStartupCycles": 72,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-70",
+      "headway": {
+        "mean": 4.0666666666666815,
+        "n": 1,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 1
+      },
+      "laneId": "lane-31",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.0333333333333403,
+        "n": 1,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 1
+      },
+      "validHeadwayCycles": 1,
+      "validStartupCycles": 1,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-71",
+      "headway": {
+        "mean": 4.054770044770045,
+        "n": 39,
+        "sampleSd": 0.017607969103235605
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 107,
+        "queue_not_sustained": 44
+      },
+      "laneId": "lane-41",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.24638990638988,
+        "n": 39,
+        "sampleSd": 0.19972237918270408
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 107,
+        "queue_not_sustained": 44
+      },
+      "validHeadwayCycles": 129,
+      "validStartupCycles": 129,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-72",
+      "headway": {
+        "mean": 4.058760683760692,
+        "n": 26,
+        "sampleSd": 0.04738007803776387
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 192,
+        "queue_not_sustained": 38,
+        "route_or_lane_change": 3
+      },
+      "laneId": "lane-42",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.1052777777777811,
+        "n": 26,
+        "sampleSd": 0.16399723349066886
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 192,
+        "queue_not_sustained": 38,
+        "route_or_lane_change": 3
+      },
+      "validHeadwayCycles": 47,
+      "validStartupCycles": 47,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-73",
+      "headway": {
+        "mean": null,
+        "n": 0,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-43",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": null,
+        "n": 0,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 0,
+      "validStartupCycles": 0,
+      "variant": "w74-10"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-62",
+      "headway": {
+        "mean": 3.7257519841269855,
+        "n": 40,
+        "sampleSd": 0.02353238509237831
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "queue_not_sustained": 52
+      },
+      "laneId": "lane-5",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.10948412698414829,
+        "n": 40,
+        "sampleSd": 0.6587946134081386
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "queue_not_sustained": 52
+      },
+      "validHeadwayCycles": 228,
+      "validStartupCycles": 228,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-63",
+      "headway": {
+        "mean": 3.741428571428571,
+        "n": 40,
+        "sampleSd": 0.037402672201848994
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 15,
+        "queue_not_sustained": 30,
+        "route_or_lane_change": 53
+      },
+      "laneId": "lane-6",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.34829166666663786,
+        "n": 40,
+        "sampleSd": 0.9231826387012712
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 15,
+        "queue_not_sustained": 30,
+        "route_or_lane_change": 53
+      },
+      "validHeadwayCycles": 182,
+      "validStartupCycles": 182,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-64",
+      "headway": {
+        "mean": 3.7438596491228004,
+        "n": 19,
+        "sampleSd": 0.02166704153219325
+      },
+      "headwayUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 235,
+        "queue_not_sustained": 22
+      },
+      "laneId": "lane-7",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.9535087719297756,
+        "n": 19,
+        "sampleSd": 0.8160348831234715
+      },
+      "startupUnavailableReasons": {
+        "initial_partial_cycle": 40,
+        "insufficient_crossings": 235,
+        "queue_not_sustained": 22
+      },
+      "validHeadwayCycles": 23,
+      "validStartupCycles": 23,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-65",
+      "headway": {
+        "mean": 3.7138333333333313,
+        "n": 40,
+        "sampleSd": 0.02793567657952226
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 32,
+        "partial_cycle": 40,
+        "queue_not_sustained": 42
+      },
+      "laneId": "lane-17",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": 0.4473750000000333,
+        "n": 40,
+        "sampleSd": 0.9523594264606202
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 32,
+        "partial_cycle": 40,
+        "queue_not_sustained": 42
+      },
+      "validHeadwayCycles": 206,
+      "validStartupCycles": 206,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-66",
+      "headway": {
+        "mean": 3.74569444444444,
+        "n": 40,
+        "sampleSd": 0.04068749758396682
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 56,
+        "partial_cycle": 30,
+        "queue_not_sustained": 68,
+        "route_or_lane_change": 29
+      },
+      "laneId": "lane-18",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.5962638888888485,
+        "n": 40,
+        "sampleSd": 0.9165485721002443
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 56,
+        "partial_cycle": 30,
+        "queue_not_sustained": 68,
+        "route_or_lane_change": 29
+      },
+      "validHeadwayCycles": 137,
+      "validStartupCycles": 137,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 320,
+      "headId": "head-67",
+      "headway": {
+        "mean": 3.7351851851851827,
+        "n": 18,
+        "sampleSd": 0.05741970491652418
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 236,
+        "partial_cycle": 40,
+        "queue_not_sustained": 23
+      },
+      "laneId": "lane-19",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -0.9398148148147736,
+        "n": 18,
+        "sampleSd": 0.8897223421057282
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 236,
+        "partial_cycle": 40,
+        "queue_not_sustained": 23
+      },
+      "validHeadwayCycles": 21,
+      "validStartupCycles": 21,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-68",
+      "headway": {
+        "mean": 3.7266812865497068,
+        "n": 38,
+        "sampleSd": 0.045279041940058204
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 179,
+        "queue_not_sustained": 29
+      },
+      "laneId": "lane-29",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.0805555555555308,
+        "n": 38,
+        "sampleSd": 0.6207215924190883
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 179,
+        "queue_not_sustained": 29
+      },
+      "validHeadwayCycles": 72,
+      "validStartupCycles": 72,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-69",
+      "headway": {
+        "mean": 3.7483974358974335,
+        "n": 26,
+        "sampleSd": 0.05734976657751637
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 209,
+        "queue_not_sustained": 34,
+        "route_or_lane_change": 3
+      },
+      "laneId": "lane-30",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.1775641025640629,
+        "n": 26,
+        "sampleSd": 0.10476877266865357
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 209,
+        "queue_not_sustained": 34,
+        "route_or_lane_change": 3
+      },
+      "validHeadwayCycles": 34,
+      "validStartupCycles": 34,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-70",
+      "headway": {
+        "mean": 3.7833333333333217,
+        "n": 2,
+        "sampleSd": 0.023570226039591108
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 1
+      },
+      "laneId": "lane-31",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.316666666666587,
+        "n": 2,
+        "sampleSd": 0.023570226039553426
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 277,
+        "queue_not_sustained": 1
+      },
+      "validHeadwayCycles": 2,
+      "validStartupCycles": 2,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-71",
+      "headway": {
+        "mean": 3.734137426900587,
+        "n": 38,
+        "sampleSd": 0.03765141766336813
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 174,
+        "queue_not_sustained": 41
+      },
+      "laneId": "lane-41",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.227704678362557,
+        "n": 38,
+        "sampleSd": 0.38141820796458353
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 174,
+        "queue_not_sustained": 41
+      },
+      "validHeadwayCycles": 65,
+      "validStartupCycles": 65,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-72",
+      "headway": {
+        "mean": 3.737654320987648,
+        "n": 27,
+        "sampleSd": 0.06280355218071818
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 210,
+        "queue_not_sustained": 37,
+        "route_or_lane_change": 1
+      },
+      "laneId": "lane-42",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": -1.09938271604933,
+        "n": 27,
+        "sampleSd": 0.42925799330703657
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 210,
+        "queue_not_sustained": 37,
+        "route_or_lane_change": 1
+      },
+      "validHeadwayCycles": 32,
+      "validStartupCycles": 32,
+      "variant": "w74-5"
+    },
+    {
+      "cycles": 280,
+      "headId": "head-73",
+      "headway": {
+        "mean": null,
+        "n": 0,
+        "sampleSd": null
+      },
+      "headwayUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 2
+      },
+      "laneId": "lane-43",
+      "observedSeeds": 40,
+      "startupLostTime": {
+        "mean": null,
+        "n": 0,
+        "sampleSd": null
+      },
+      "startupUnavailableReasons": {
+        "insufficient_crossings": 278,
+        "queue_not_sustained": 2
+      },
+      "validHeadwayCycles": 0,
+      "validStartupCycles": 0,
+      "variant": "w74-5"
+    }
+  ],
+  "runs": [
+    {
+      "active": {
+        "mean": 53.625,
+        "n": 40,
+        "sampleSd": 7.033573334099378
+      },
+      "completed": {
+        "mean": 453.5,
+        "n": 40,
+        "sampleSd": 21.303665267886508
+      },
+      "pending": {
+        "mean": 0.425,
+        "n": 40,
+        "sampleSd": 0.6751068291531577
+      },
+      "safetyClamps": {
+        "mean": 0.0,
+        "n": 40,
+        "sampleSd": 0.0
+      },
+      "variant": "prototype-0"
+    },
+    {
+      "active": {
+        "mean": 54.65,
+        "n": 40,
+        "sampleSd": 7.42328284555616
+      },
+      "completed": {
+        "mean": 452.225,
+        "n": 40,
+        "sampleSd": 20.8246494722244
+      },
+      "pending": {
+        "mean": 0.675,
+        "n": 40,
+        "sampleSd": 0.7970297423913427
+      },
+      "safetyClamps": {
+        "mean": 276.45,
+        "n": 40,
+        "sampleSd": 47.154927414716454
+      },
+      "variant": "prototype-10"
+    },
+    {
+      "active": {
+        "mean": 53.95,
+        "n": 40,
+        "sampleSd": 6.876008084600179
+      },
+      "completed": {
+        "mean": 453.075,
+        "n": 40,
+        "sampleSd": 21.10582311189921
+      },
+      "pending": {
+        "mean": 0.525,
+        "n": 40,
+        "sampleSd": 0.7156671622894872
+      },
+      "safetyClamps": {
+        "mean": 15.725,
+        "n": 40,
+        "sampleSd": 3.5589360265429963
+      },
+      "variant": "prototype-5"
+    },
+    {
+      "active": {
+        "mean": 99.675,
+        "n": 40,
+        "sampleSd": 12.447608152490554
+      },
+      "completed": {
+        "mean": 402.825,
+        "n": 40,
+        "sampleSd": 16.586815122182
+      },
+      "pending": {
+        "mean": 5.05,
+        "n": 40,
+        "sampleSd": 5.481671090891714
+      },
+      "safetyClamps": {
+        "mean": 3.2,
+        "n": 40,
+        "sampleSd": 1.7715703594442807
+      },
+      "variant": "w74-0"
+    },
+    {
+      "active": {
+        "mean": 137.475,
+        "n": 40,
+        "sampleSd": 13.602389495967222
+      },
+      "completed": {
+        "mean": 354.725,
+        "n": 40,
+        "sampleSd": 21.63921831376447
+      },
+      "pending": {
+        "mean": 15.35,
+        "n": 40,
+        "sampleSd": 14.510031896623303
+      },
+      "safetyClamps": {
+        "mean": 37.225,
+        "n": 40,
+        "sampleSd": 6.821863419390663
+      },
+      "variant": "w74-10"
+    },
+    {
+      "active": {
+        "mean": 121.025,
+        "n": 40,
+        "sampleSd": 13.567471468600237
+      },
+      "completed": {
+        "mean": 378.225,
+        "n": 40,
+        "sampleSd": 14.280141312235896
+      },
+      "pending": {
+        "mean": 8.3,
+        "n": 40,
+        "sampleSd": 7.186882637923208
+      },
+      "safetyClamps": {
+        "mean": 26.575,
+        "n": 40,
+        "sampleSd": 5.0173417213418885
+      },
+      "variant": "w74-5"
+    }
+  ]
+}

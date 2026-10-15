@@ -172,6 +172,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         const VehicleRefs inserted{static_cast<std::size_t>(&route - scenario.routes.data()),
                                    static_cast<std::size_t>(&type - scenario.vehicleTypes.data()),
                                    behaviourSlot};
+        resizeReactionHistory(vehicle, reactionTicks(behaviour.perception, dt));
         vehicles.push_back(vehicle);
         candidateRefs.push_back(inserted);
         appendVehicleSpans(candidateSpans, scenario, index, vehicle, inserted);
@@ -251,6 +252,8 @@ SimState stepSimulation(SimState&& state, double dt) {
     // until phase 2 has seen them all (contract §4, steps 1-3 and 6).
     struct Move { double distance{}, speed{}, acceleration{}; FollowingMode mode{}; bool clamped{}; std::optional<W74State> w74; };
     std::vector<Move> moves(vehicles.size());
+    struct Reaction { std::size_t vehicle, ticks; FollowingResult action; };
+    std::vector<Reaction> decisions; // no allocation with zero delay; published in vehicle order
     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
     std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
@@ -365,6 +368,13 @@ SimState stepSimulation(SimState&& state, double dt) {
                 held.acceleration = std::max(held.acceleration, -*behaviour.maxDecelerationCooperativeBraking);
             if (held.acceleration < following.acceleration) following = held;
         }
+        if (const auto delay = reactionTicks(sight, dt)) {
+            decisions.push_back({v, delay, following});
+            auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
+            if (yields && (!current || courtesy[v].gap < current->gap))
+                current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
+            following = delayedAction(vehicle, delay, following, type, behaviour, current);
+        }
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];
         move = {motion.distance, std::min(vehicle.desiredSpeed, motion.speed), following.acceleration, following.mode, false,
@@ -398,6 +408,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     // Phase 3: publish, in vehicle order, exactly the events one pass always emitted.
     next.vehicles.clear();
     next.vehicles.reserve(vehicles.size()); // At most one survivor per vehicle; arrivals already in.
+    std::size_t reaction = 0;
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         auto& vehicle = vehicles[v];
         const auto& oldParts = index.parts[refs[v].route];
@@ -411,7 +422,11 @@ SimState stepSimulation(SimState&& state, double dt) {
         auto moved = std::move(vehicle);
         moved.distance += move.distance; moved.speed = move.speed;
         moved.acceleration = move.acceleration; moved.mode = move.mode;
-        moved.w74State = move.w74; // cleared on a prototype road; Stop rest and caps keep the regime
+        moved.w74State = move.w74; // the applied decision; Stop rest and caps keep its regime
+        if (reaction < decisions.size() && decisions[reaction].vehicle == v) {
+            const auto& saved = decisions[reaction++];
+            storeReactionAction(moved, saved.ticks, saved.action);
+        } else moved.reactionHistory.clear();
         for (std::size_t i = 1; i < oldParts.size(); ++i)
             if (startDistance < oldParts[i].start && moved.distance >= oldParts[i].start)
                 events.emplace_back(SegmentEnteredEvent{time, moved.id, oldParts[i].segmentId});

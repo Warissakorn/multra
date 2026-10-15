@@ -12,8 +12,8 @@
 #include <functional>
 using namespace trafficsim;
 // M3.5 slice 1 (D181): rows BA37 and BA30 of docs/plans/DRIVING_BEHAVIOUR.md -- the perception
-// keys of docs/reference/PERCEPTION.md §6 are stored, validated and round-tripped; a run with the
-// keys no motion reads yet is the run without them.
+// keys of docs/reference/PERCEPTION.md §6 are stored, validated and round-tripped; zero reaction
+// delay preserves the key-absent run (BA30).
 namespace {
 const W74Parameters kP{.ax = 2, .bxAdd = 2, .bxMult = 1, .exAdd = 2, .exMult = 0.5, .cxAdd = 16,
     .cxMult = 4, .opdvAdd = 0.5, .opdvMult = 0.5, .dMax = 20, .bMaxAdd = 1, .bMaxMult = 1,
@@ -156,19 +156,20 @@ TEST(perceptioncodec, external_catalog_entries_and_the_w74_branch_keep_the_keys)
     CHECK(edited == parsed);
 }
 
-TEST(perceptioncodec, ba30_unread_keys_change_no_run) { // BA30
+TEST(perceptioncodec, ba30_zero_reaction_delay_changes_no_run) { // BA30
     const auto data = test::root() / "data";
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json");
     Json project; file >> project;
     const auto plain = compileDocument(parseDocument(project), data).scenario;
     auto keyed = plain;
-    // Look-ahead and observed vehicles move since D182 (perception_motion_tests.cpp), look-back
-    // and rear TTC change lanes since D183 (perception_lane_tests.cpp); the key nothing reads yet
-    // must still change nothing.
-    for (auto& b : keyed.behaviours) b.perception.reactionTime = 0.8;
+    // Every perception key now has a runtime consumer; a zero action delay remains neutral.
+    for (auto& b : keyed.behaviours) b.perception.reactionTime = 0;
     CHECK(keyed.behaviours != plain.behaviours); // the forcing: the keys really are there
-    const auto a = runSimulation(plain, 42), b = runSimulation(keyed, 42);
-    CHECK(!a.vehicles.empty() || a.nextVehicleId > 1);
-    CHECK(a.vehicles == b.vehicles); CHECK(a.events == b.events); CHECK(a.time == b.time);
-    CHECK(a.nextVehicleId == b.nextVehicleId);
+    auto a = createSimulation(plain, 42), b = createSimulation(keyed, 42);
+    while (a.tick < totalTicks(plain)) {
+        a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b));
+        CHECK(a.vehicles == b.vehicles); CHECK(a.events == b.events); CHECK(a.time == b.time);
+        CHECK(a.nextVehicleId == b.nextVehicleId);
+    }
+    CHECK(a.nextVehicleId > 1);
 }
