@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include <nlohmann/json.hpp>
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
         require(authoredRows(table) == 1 && w.history().document().network.rightOfWay.conflictAreas.size() == 2,
                 "Two lane pairs did not make one group with two reservations");
         require(automaticRows(table) == 1, "The automatic merge is not listed"); // the crossings are authored now
-        require(tabs->currentIndex() == 9, "The Conflict areas tab was not shown");
+        require(tabs->currentWidget() == test::tabPage(tabs,table), "The Conflict areas tab was not shown");
         require(items(w, "conflict-area") == 4 && items(w, "waiting-line") == 3, "Individual lane-pair sides and waiting lines were not drawn");
         require(table->item(0, 6)->text() == "Runs", "A complete crossing did not report that it runs");
         const auto revision = w.history().revision();
@@ -143,7 +144,7 @@ int main(int argc, char** argv) {
             if (problems->item(r, 2) && problems->item(r, 2)->text().toStdString() == second) found = r;
         require(found >= 0, "The undetermined area is not a Problems row");
         problems->selectRow(found); QApplication::processEvents();
-        require(tabs->currentIndex() == 9 && table->item(table->currentRow(), 0)->data(Qt::UserRole).toString().toStdString() == second,
+        require(tabs->currentWidget() == test::tabPage(tabs,table) && table->item(table->currentRow(), 0)->data(Qt::UserRole).toString().toStdString() == second,
                 "The Problems row did not lead to its area");
         act(w, "editorUndo")->trigger(); QApplication::processEvents();
 
@@ -154,7 +155,7 @@ int main(int argc, char** argv) {
         require(protection->isVisible() && !protection->text().isEmpty(), "The Run UI did not say what is protected");
         auto* language = w.findChild<QComboBox*>("editorLanguage");
         language->setCurrentIndex(1); QApplication::processEvents();
-        require(tabs->tabText(9) != "Conflict areas" && !tabs->tabText(9).isEmpty(), "The tab was not translated");
+        require(tabs->tabText(tabs->indexOf(test::tabPage(tabs,table))) != "Conflict areas" && !tabs->tabText(tabs->indexOf(test::tabPage(tabs,table))).isEmpty(), "The tab was not translated");
         require(act(w, "editorAddCrossing")->text() != "Add crossing areas", "The action was not translated");
         std::cout << "priority UI tests passed\n";
         return 0;

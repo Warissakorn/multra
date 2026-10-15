@@ -23,7 +23,6 @@
 // row to the Link selected on the canvas, and every edit and delete goes through History too.
 namespace trafficsim {
 namespace {
-constexpr int kZoneTab = 12; // after Travel-time sections, so every earlier tab keeps its index
 QTableWidget* zoneTable(QWidget* parent, int columns, const char* name) {
     auto* t = new QTableWidget(0, columns, parent); t->setObjectName(name);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -51,7 +50,7 @@ void EditorWindow::buildZones() {
     QToolBar *bar{}, *connectorBar{};
     column(bar, zoneTable_, 4, "editorZoneTable", 3);
     column(connectorBar, zoneConnectorTable_, 3, "editorZoneConnectorTable", 2);
-    objects_->addTab(body, QString());
+    addObjectPage(body,"editorZoneTable");
     bar->addAction(action("editorEditZone", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editZone(id); }));
     bar->addAction(action("editorDeleteZone", {}, [this] {
         const auto id = selectedZone(); if (id.empty()) return;
@@ -83,7 +82,6 @@ void EditorWindow::buildZones() {
     connect(zoneConnectorTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateZones() {
-    objects_->setTabText(kZoneTab, text("editorZoneTable"));
     zoneTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
                                            text("editorZoneLot")});
     zoneConnectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorLinksTab"), text("editorZoneConnectorShare")});
@@ -152,7 +150,7 @@ void EditorWindow::refreshZones() {
     const bool connector = !selectedZoneConnector().empty();
     for (const auto* key : {"editorEditZoneConnector", "editorDeleteZoneConnector"}) actions_.at(key)->setEnabled(connector);
 }
-void EditorWindow::showZones() { objects_->setCurrentIndex(kZoneTab); }
+void EditorWindow::showZones() { objects_->setCurrentWidget(objectPages_.at("editorZoneTable")); }
 void EditorWindow::addZoneConnector(bool origin) {
     const auto zone = selectedZone();
     const auto& selection = canvas_->selection();

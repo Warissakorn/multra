@@ -2,6 +2,25 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.7.0 two-dimensional occupancy contract (D180; docs only)
+
+[LATERAL](../reference/LATERAL.md) is the second contract in D178's order.
+- **Frame and data.** Each carriageway gets a lateral frame (positive left). Compiled
+  cross-sections take their lane centres from the one function `laneGeometry` uses, and
+  `drivingSide` moves into the Scenario.
+- **Vehicle state.** A vehicle's `lateral` is relative to its current lane centre, so routing
+  stays keyed to one lane chain.
+- **Spans.** The key choice is to emit a span on **every lane section a body overlaps**. A changer
+  or a motorcycle on a lane line then appears on both lanes, and the existing leader search,
+  `around`, zones and admission handle it without a second occupancy engine.
+- **Lateral tests.** Leader and alongside tests add a lateral overlap check with a speed-dependent
+  minimum lateral distance.
+- **Moves.** Lateral moves are admitted in vehicle-id order, as phase 2 does.
+- **Switch.** One switch (any of three keys) keeps lane-based runs byte-identical.
+
+Rows BA39–BA46 are pending. NEXT now starts code with the perception codec slice. Checked:
+`check` on Linux.
+
 ## 2026-10-15 — M3.5.0 perception contract (D179; docs only)
 
 [PERCEPTION](../reference/PERCEPTION.md) is the first contract in D178's order.

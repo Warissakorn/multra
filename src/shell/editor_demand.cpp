@@ -48,7 +48,7 @@ void EditorWindow::buildDemandTables() {
         view->setSelectionBehavior(QAbstractItemView::SelectRows);
         view->setSelectionMode(QAbstractItemView::SingleSelection);
         view->horizontalHeader()->setStretchLastSection(true); view->verticalHeader()->hide();
-        layout->addWidget(view); objects_->addTab(body,QString());
+        layout->addWidget(view); addObjectPage(body,name);
         auto* table=view;
         bar->addAction(action(add,{},[open]{open({});}));
         bar->addAction(action(edit,{},[table,open]{const auto id=selectedId(table); if(!id.empty()) open(id);}));
@@ -70,7 +70,7 @@ void EditorWindow::buildDemandTables() {
                 editProgram(id);
             else editController(id);
         },"signal");
-    // Last, so every earlier tab keeps the index the rest of the window already addresses it by.
+    // Preserve the existing presentation order; page identity does not depend on it.
     page(decisionTable_,"editorDecisionTable","editorAddDecision","editorEditDecision","editorDeleteDecision",
         [this](const auto& id){editDecision(id);},"decision");
     connect(routeTable_,&QTableWidget::itemSelectionChanged,this,[this]{syncHighlightedRoute();});
@@ -91,12 +91,10 @@ void EditorWindow::buildDemandTables() {
     action("editorRunSettings",{},[this]{editRunSettings();});
     // The toolbar belongs to the containing dock layout, not the table viewport.
     qobject_cast<QVBoxLayout*>(objects_->parentWidget()->layout())->insertWidget(0,bar);
-    bar->setVisible(objects_->currentIndex()==2);
-    connect(objects_,&QTabWidget::currentChanged,bar,[bar](int index){bar->setVisible(index==2);});
+    bar->setVisible(objects_->currentWidget()==signalTable_);
+    connect(objects_,&QTabWidget::currentChanged,bar,[this,bar](int index){bar->setVisible(objects_->widget(index)==signalTable_);});
 }
 void EditorWindow::translateDemand() {
-    const char* tabs[]={"editorRouteTable","editorInputTable","editorProgramTable","editorDecisionTable"};
-    for(int i=0;i<4;++i) objects_->setTabText(i+4,text(tabs[i]));
     decisionTable_->setHorizontalHeaderLabels({text("editorColumnId"),text("editorDecisionName"),text("editorDecisionRoutes")});
     routeTable_->setHorizontalHeaderLabels({text("editorColumnId"),text("editorRouteSegments"),text("editorColumnLength")});
     inputTable_->setHorizontalHeaderLabels({text("editorColumnId"),text("editorInputRoute"),text("editorInputVolume")});
@@ -195,7 +193,7 @@ void EditorWindow::refreshDemand() {
 void EditorWindow::selectDemand(const std::string& id) {
     for(auto* table:{routeTable_,inputTable_,programTable_,decisionTable_})
         for(int r=0;r<table->rowCount();++r)if(table->item(r,0)->data(Qt::UserRole).toString().toStdString()==id) {
-            objects_->setCurrentIndex(table==routeTable_?4:table==inputTable_?5:table==programTable_?6:7);table->selectRow(r);return;
+            objects_->setCurrentWidget(objectPages_.at(table->objectName().toStdString()));table->selectRow(r);return;
         }
 }
 void EditorWindow::deleteDemand(const std::string& kind,const std::string& id) {

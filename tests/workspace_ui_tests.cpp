@@ -1,4 +1,8 @@
 #include "../src/shell/editor_window.hpp"
+#include "tab_page_helpers.hpp"
+#include <QTabBar>
+#include <QFile>
+#include <QJsonDocument>
 #include <QFontInfo>
 #include <QFontMetricsF>
 #include "../src/editor/ui_design_tokens.hpp"
@@ -29,11 +33,98 @@ void require(bool ok,const char* message){if(!ok)throw std::runtime_error(messag
 template<class T> T* item(QObject& root,const char* name){auto* value=root.findChild<T*>(name);require(value,"Missing workspace widget");return value;}
 void settle(){QApplication::processEvents();QTest::qWait(20);}
 void trigger(EditorWindow& window,const char* name){item<QAction>(window,name)->trigger();settle();}
+// A later layout slice can move pages. First prove this fixture moved them, then verify
+// translation, tool navigation, toolbar visibility and error jumps still use page identity.
+void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
+    auto* tabs=item<QTabWidget>(window,"editorObjectTabs");
+    auto* inner=item<QTabWidget>(window,"editorResultsTabs");
+    struct Page {const char* content;const char* label;};
+    const Page pages[]={
+        {"editorLinkTable","editorLinkTable"},{"editorConnectorTable","editorConnectorTable"},
+        {"editorSignalTable","editorSignalTable"},{"editorProblemTable","editorProblemTable"},
+        {"editorRouteTable","editorRouteTable"},{"editorInputTable","editorInputTable"},
+        {"editorProgramTable","editorProgramTable"},{"editorDecisionTable","editorDecisionTable"},
+        {"editorResultsTabs","editorResultsTable"},{"editorConflictTable","editorConflictTable"},
+        {"editorCounterTable","editorCounterTable"},{"editorSectionTable","editorSectionTable"},
+        {"editorZoneTable","editorZoneTable"},{"editorOdTable","editorOdTable"}};
+    const Page results[]={{"editorMovementTable","editorResultsTabMovements"},
+        {"editorDischargeTable","editorResultsTabDischarge"},{"editorClampTable","editorResultsTabClamps"},
+        {"editorLotTable","editorResultsTabLots"}};
+    require(tabs->count()==14 && inner->count()==4,"Tab inventory changed");
+    QList<QWidget*> original,originalInner;
+    for(int i=0;i<tabs->count();++i)original<<tabs->widget(i);
+    for(int i=0;i<inner->count();++i)originalInner<<inner->widget(i);
+    for(int i=0;i<tabs->count()-1;++i)tabs->tabBar()->moveTab(tabs->count()-1,i);
+    for(int i=0;i<inner->count()-1;++i)inner->tabBar()->moveTab(inner->count()-1,i);
+    require(tabs->indexOf(original.front())==tabs->count()-1 &&
+            inner->indexOf(originalInner.front())==inner->count()-1,"Tab reorder fixture did not take effect");
+    auto* language=item<QComboBox>(window,"editorLanguage");
+    const int previousLanguage=language->currentIndex();
+    for(int lang:{1,0}) {
+        language->setCurrentIndex(lang);settle();
+        QFile file(QString::fromStdString((data/"locales"/(lang?"th.json":"en.json")).string()));
+        require(file.open(QIODevice::ReadOnly),"Locale fixture missing");
+        const auto catalog=QJsonDocument::fromJson(file.readAll()).object();
+        for(const auto& page:pages) {
+            auto* widget=test::tabPage(tabs,item<QWidget>(window,page.content));
+            require(tabs->tabText(tabs->indexOf(widget))==catalog.value(page.label).toString(),
+                    "Reordered object page translated by position");
+        }
+        for(const auto& page:results) {
+            auto* widget=test::tabPage(inner,item<QWidget>(window,page.content));
+            require(inner->tabText(inner->indexOf(widget))==catalog.value(page.label).toString(),
+                    "Reordered Results page translated by position");
+        }
+    }
+    for(const auto& target:{std::pair{9,"editorConflictTable"},std::pair{10,"editorCounterTable"},
+                            std::pair{11,"editorSectionTable"},std::pair{12,"editorZoneTable"}}) {
+        item<QComboBox>(window,"editorTool")->setCurrentIndex(target.first);settle();
+        require(tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,target.second)),
+                "Tool navigated to a positional tab");
+    }
+    auto* head=item<QAction>(window,"editorAddHead");QToolBar* headBar=nullptr;
+    for(auto* bar:window.findChildren<QToolBar*>())if(bar->actions().contains(head))headBar=bar;
+    require(headBar,"Signal-head toolbar missing");
+    tabs->setCurrentWidget(test::tabPage(tabs,item<QWidget>(window,"editorSignalTable")));settle();
+    require(headBar->isVisible(),"Reordered Signal heads lost its toolbar");
+    tabs->setCurrentWidget(test::tabPage(tabs,item<QWidget>(window,"editorLinkTable")));settle();
+    require(!headBar->isVisible(),"Signal-head toolbar leaked to another page");
+    item<QAction>(window,"editorRecheck")->trigger();settle();
+    require(tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,"editorProblemTable")),
+            "Runnability jumped to a positional tab");
+    bool compilationFails=false;
+    try{compileDocument(window.history().document(),data);}catch(const std::exception&){compilationFails=true;}
+    require(compilationFails,"Empty-network batch failure fixture unexpectedly compiled");
+    auto* seeds=item<QLineEdit>(window,"editorSeeds");seeds->setText("42-43");
+    tabs->setCurrentWidget(test::tabPage(tabs,item<QWidget>(window,"editorLinkTable")));
+    trigger(window,"editorRunSeeds");
+    require(tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,"editorProblemTable")),
+            "Failed batch compilation jumped to a positional tab");
+    window.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
+    auto* seed=item<QLineEdit>(window,"editorSeed");seed->setText("invalid");
+    require(seed->text()=="invalid","Invalid-seed failure fixture was not set");
+    tabs->setCurrentWidget(test::tabPage(tabs,item<QWidget>(window,"editorLinkTable")));
+    trigger(window,"editorStep");
+    require(tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,"editorProblemTable")),
+            "Invalid Run seed jumped to a positional tab");
+    seed->setText("42");
+    seeds->setText("42-43");trigger(window,"editorRunSeeds");
+    require(tabs->currentWidget()==test::tabPage(tabs,inner) &&
+            inner->currentWidget()==test::tabPage(inner,item<QWidget>(window,"editorMovementTable")),
+            "Batch did not reveal its reordered Results page");
+    trigger(window,"editorCancelSeeds");seeds->setText("42-51");
+    for(int i=0;i<original.size();++i)tabs->tabBar()->moveTab(tabs->indexOf(original[i]),i);
+    for(int i=0;i<originalInner.size();++i)inner->tabBar()->moveTab(inner->indexOf(originalInner[i]),i);
+    item<QComboBox>(window,"editorTool")->setCurrentIndex(0);language->setCurrentIndex(previousLanguage);
+    tabs->setCurrentWidget(original.front());inner->setCurrentWidget(originalInner.front());settle();
+}
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
+        // Keep reorder/navigation stress separate from the pristine layout baseline below.
+        {EditorWindow probe(data);probe.resize(1360,860);probe.show();settle();reorderedPages(probe,data);}
         EditorWindow window(data);window.resize(1360,860);window.show();settle();
         window.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
         auto* canvas=window.canvas();canvas->select(window.history().document().network.links.front().id);canvas->fitNetwork();settle();

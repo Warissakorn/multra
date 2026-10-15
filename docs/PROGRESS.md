@@ -6,6 +6,34 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — UI phase 1 and stable-tab slice 0
+
+Owner requested the UI audit/spec/slice plan, then accepted the recommendation: “ทำตามแนะนำ”.
+B16=A (group navigation within the existing Objects dock), B17=five tool groups; B18 logic/state
+features stay separate and deferred. [Audit](audits/UI_PRESENTATION_AUDIT.md),
+[proposal](plans/UI_PRESENTATION_SPEC.md), [slices](plans/UI_PRESENTATION_SLICES.md).
+
+- Counted 14 Objects pages and four Results pages from construction/translation code; found
+  identical Connector/Route and Rotate/Reset glyphs. Designs include both window sizes,
+  typography, monochrome shapes, HUD/LOD and Properties/table recipes, with no theme work.
+- Slice 0 registers each actual page widget against its existing translation key. Translations,
+  Show in table, Problems/error jumps, active-conflict checks, Signal-head toolbar visibility
+  and batch Results selection no longer depend on presentation positions. Updated page tests
+  resolve the actual containing widget; all tool mode/chord values and page order stay intact.
+- Failure-first: the new workspace fixture proves its tab move succeeded, then the old code
+  fails with “Reordered object page translated by position”. It checks both languages, all 18
+  page labels, tool navigation, toolbar visibility, failed Run/batch and batch page selection.
+  A separate window keeps this stress fixture from changing the original layout baseline.
+- No new D-row: no visible behaviour/token change in slice 0. The approved layout/glyph changes
+  belong to later sessions. OWNER_SITTING E12 retains Windows visual review; NEXT is slice a.
+
+Linux Qt offscreen: desktop build, CTest **148/148**, and target `check` (including **148/148**)
+pass. Before/after English, Thai and focus PNGs are byte-identical; audit §8 records the
+existing Thai post-Step 248 px viewport limitation. The prepared
+cloud toolchain uses verified Debian packages outside the checkout, the bundled font through
+local fontconfig (system same-family fonts otherwise override its tabular digits), and writable
+Qt test storage. No core/model/commands/schema, translations, tokens or numerical output changed.
+
 ## 2026-10-15 — M3.7 slice 3a: lateral motion, admission and crossing (D189)
 
 NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zones into slice 3b.
@@ -155,25 +183,6 @@ keys from [PERCEPTION](reference/PERCEPTION.md) §6, appended last.
 
 Checked on Linux: `check` 139/139, CLI seed 42 unchanged
 ([evidence](evidence/perception-codec.md)).
-
-## 2026-10-15 — M3.7.0 two-dimensional occupancy contract (D180; docs only)
-
-[LATERAL](reference/LATERAL.md) is the second contract in D178's order.
-- **Frame and data.** Each carriageway gets a lateral frame (positive left). Compiled
-  cross-sections take their lane centres from the one function `laneGeometry` uses, and
-  `drivingSide` moves into the Scenario.
-- **Vehicle state.** A vehicle's `lateral` is relative to its current lane centre, so routing
-  stays keyed to one lane chain.
-- **Spans.** The key choice is to emit a span on **every lane section a body overlaps**. A changer
-  or a motorcycle on a lane line then appears on both lanes, and the existing leader search,
-  `around`, zones and admission handle it without a second occupancy engine.
-- **Lateral tests.** Leader and alongside tests add a lateral overlap check with a speed-dependent
-  minimum lateral distance.
-- **Moves.** Lateral moves are admitted in vehicle-id order, as phase 2 does.
-- **Switch.** One switch (any of three keys) keeps lane-based runs byte-identical.
-
-Rows BA39–BA46 are pending. NEXT now starts code with the perception codec slice. Checked:
-`check` on Linux.
 
 ## Older entries
 

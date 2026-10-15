@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "ui_gestures.hpp"
 #include <nlohmann/json.hpp>
@@ -144,7 +145,7 @@ int main(int argc,char** argv) {
         item<QLineEdit>(w,"editorLaneWidths")->setText("-1, 3");action(w,"editorApplyLanes");
         require(documentJson(w.history().document())==before,"Rejected edit changed the document");
         require(!item<QLabel>(w,"editorError")->text().isEmpty(),"Rejected edit gave no message");
-        require(tabs->currentIndex()==3,"Rejected edit did not open Problems");
+        require(tabs->currentWidget()==problems,"Rejected edit did not open Problems");
         int problem=-1;
         for (int i=0;i<problems->rowCount();++i)
             if (problems->item(i,2) && problems->item(i,2)->text()==QString::fromStdString(drawn[0].lanes[0].id)) problem=i;
@@ -169,7 +170,7 @@ int main(int argc,char** argv) {
         require(item<QLabel>(w,"editorError")->text().isEmpty(),"Authoring a merge reported an error");
         tool->setCurrentIndex(0);
         action(w,"editorRecheck");
-        require(tabs->currentIndex()==3,"Recheck did not open Problems");
+        require(tabs->currentWidget()==problems,"Recheck did not open Problems");
         require(item<QLabel>(w,"editorError")->text().isEmpty(),"Runnability check reported an edit error");
         // Since M2.0.1 (D35) a merge at a lane's start is arbitrated by a derived rule, and a
         // drawing with no demand has none of the numbers that rule needs: the row names the
@@ -207,8 +208,8 @@ int main(int argc,char** argv) {
         action(w,"editorUndo");require(w.history().document()==beforeHeadCopy,"Head copy was not one undoable edit");
 
         item<QComboBox>(w,"editorLanguage")->setCurrentIndex(1);
-        for (int i=0;i<4;++i) require(!tabs->tabText(i).isEmpty(),"Untranslated object tab");
-        require(tabs->tabText(3)==QString::fromUtf8("ปัญหา"),"Thai Problems tab missing");
+        for(auto* page:{links,connectors,heads,problems}) require(!tabs->tabText(tabs->indexOf(page)).isEmpty(),"Untranslated object tab");
+        require(tabs->tabText(tabs->indexOf(problems))==QString::fromUtf8("ปัญหา"),"Thai Problems tab missing");
         for (int column=0;column<links->columnCount();++column)
             require(!links->horizontalHeaderItem(column)->text().isEmpty(),"Untranslated column header");
         require(links->horizontalHeaderItem(1)->text()==QString::fromUtf8("ชื่อ"),"Thai Name column header missing");

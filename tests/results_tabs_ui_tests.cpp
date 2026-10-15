@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 // D144: the Results tabs for queue discharge and safety clamps, on the four-leg signalised
 // project (900 s, seed 42). The discharge rows are checked against an independent
 // DischargeAccumulator over the same seed; the clamp rows against the run's own count.
@@ -67,7 +68,7 @@ int main(int argc, char** argv) {
 
         auto* objects = item<QTabWidget>(w, "editorObjectTabs");
         auto* inner = item<QTabWidget>(w, "editorResultsTabs");
-        objects->setCurrentWidget(inner->parentWidget()); inner->setCurrentIndex(1); QApplication::processEvents();
+        objects->setCurrentWidget(test::tabPage(objects,inner)); inner->setCurrentWidget(test::tabPage(inner,item<QWidget>(w,"editorDischargeTable"))); QApplication::processEvents();
         auto* discharge = item<QTableWidget>(w, "editorDischargeTable");
         require(discharge->isVisible(), "Discharge tab did not open");
         // Optional screenshots (argv[2] is a path prefix): the discharge page, then the clamps page.
@@ -92,7 +93,7 @@ int main(int argc, char** argv) {
         shot("-discharge.png");
         require(item<QLabel>(w, "editorDischargeNote")->text().startsWith("Not yet validated"), "Discharge carries no marker");
 
-        inner->setCurrentIndex(2); QApplication::processEvents();
+        inner->setCurrentWidget(test::tabPage(inner,item<QWidget>(w,"editorClampTable"))); QApplication::processEvents();
         auto* clamps = item<QTableWidget>(w, "editorClampTable");
         const auto count = w.runSummary().safetyClamps;
         require(count > 0, "Seed 42 produced no clamp: the list was not exercised");
@@ -104,11 +105,11 @@ int main(int argc, char** argv) {
         // Reset clears both lists; Thai text is present.
         item<QAction>(w, "editorReset")->trigger(); QApplication::processEvents();
         require(clamps->rowCount() == 0, "Reset left clamp rows");
-        inner->setCurrentIndex(1); QApplication::processEvents();
+        inner->setCurrentWidget(test::tabPage(inner,item<QWidget>(w,"editorDischargeTable"))); QApplication::processEvents();
         for (int r = 0; r < discharge->rowCount(); ++r)
             require(discharge->item(r, 3)->text().toInt() == 0, "Reset left discharge estimates");
         item<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
-        require(inner->tabText(1) == QString::fromUtf8("การระบายคิว"), "Discharge tab not translated");
+        require(inner->tabText(inner->indexOf(test::tabPage(inner,discharge))) == QString::fromUtf8("การระบายคิว"), "Discharge tab not translated");
         std::cout << "Results discharge and clamp tabs match the observer and the run\n";
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }

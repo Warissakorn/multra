@@ -17,7 +17,7 @@ void EditorWindow::buildDiagnostics() {
     problemTable_->horizontalHeader()->setStretchLastSection(false);
     problemTable_->horizontalHeader()->setSectionResizeMode(1,QHeaderView::Stretch);
     problemTable_->setWordWrap(false);
-    objects_->addTab(problemTable_,QString());
+    addObjectPage(problemTable_,"editorProblemTable");
     // Selecting a row is the jump. refreshDiagnostics rebuilds under a QSignalBlocker, so a
     // jump that re-renders the list cannot come back round as a second jump.
     connect(problemTable_,&QTableWidget::itemSelectionChanged,this,[this]{
@@ -30,7 +30,7 @@ void EditorWindow::buildDiagnostics() {
         diagnostics_=runDiagnostics(history_.document(),data_);
         diagnosticRevision_=history_.revision();
         refreshDiagnostics();
-        objects_->setCurrentIndex(3);
+        objects_->setCurrentWidget(problemTable_);
     });
 }
 void EditorWindow::refreshDiagnostics() {

@@ -21,7 +21,6 @@
 // and invalidates the run. What a row replaces is read from the rule evaluation applies.
 namespace trafficsim {
 namespace {
-constexpr int kCounterTab = 10; // after Conflict areas, so every earlier tab keeps its index
 QString describe(const MeasurementLine& l) {
     if (!l.point) return QString::fromStdString(l.referenceId);
     return QString("%1/%2 @ %3 m").arg(QString::fromStdString(l.point->path.linkId), QString::fromStdString(l.point->path.laneId))
@@ -38,7 +37,7 @@ void EditorWindow::buildCounters() {
     counterTable_->setSelectionMode(QAbstractItemView::SingleSelection);
     counterTable_->horizontalHeader()->setStretchLastSection(true); counterTable_->verticalHeader()->hide();
     layout->addWidget(counterTable_);
-    objects_->addTab(body, QString());
+    addObjectPage(body,"editorCounterTable");
     bar->addAction(action("editorAddCounter", {}, [this] {
         std::vector<MeasurementLine> lines;
         const auto& heads = history_.document().network.signalHeads;
@@ -59,7 +58,6 @@ void EditorWindow::buildCounters() {
     connect(counterTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateCounters() {
-    objects_->setTabText(kCounterTab, text("editorCounterTable"));
     counterTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
                                               text("editorCounterLines"), text("editorCounterReplaces")});
     counterRevision_ = UINT64_MAX;
@@ -102,7 +100,7 @@ void EditorWindow::refreshCounters() {
     const bool chosen = !selectedCounter().empty();
     for (const auto* key : {"editorEditCounter", "editorDeleteCounter"}) actions_.at(key)->setEnabled(chosen);
 }
-void EditorWindow::showCounters() { objects_->setCurrentIndex(kCounterTab); }
+void EditorWindow::showCounters() { objects_->setCurrentWidget(objectPages_.at("editorCounterTable")); }
 void EditorWindow::addCounter(std::vector<MeasurementLine> lines) {
     if (lines.empty()) return;
     std::string id;

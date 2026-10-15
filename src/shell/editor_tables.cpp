@@ -32,6 +32,12 @@ void fill(QTableWidget* view,int row,const QStringList& values,const QString& id
 }
 QString metres(double value) { return QString::number(value,'f',2); }
 }
+void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
+    objectPages_.emplace(key,page);objects_->addTab(page,QString());
+}
+void EditorWindow::translateObjectPages() {
+    for(const auto& [key,page]:objectPages_)objects_->setTabText(objects_->indexOf(page),text(key));
+}
 void EditorWindow::buildObjectTables() {
     auto* dock=new QDockWidget(this); dock->setObjectName("editorObjectsDock"); texts_["editorObjectsDock"]=dock;
     dock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetClosable);
@@ -42,7 +48,7 @@ void EditorWindow::buildObjectTables() {
     linkTable_=table(objects_,"editorLinkTable",5);
     connectorTable_=table(objects_,"editorConnectorTable",5);
     signalTable_=table(objects_,"editorSignalTable",5);
-    for (auto* view : {linkTable_,connectorTable_,signalTable_}) objects_->addTab(view,QString());
+    for (auto* view : {linkTable_,connectorTable_,signalTable_}) addObjectPage(view,view->objectName().toStdString());
     buildDiagnostics();
 
     // Selection flows one way at a time: the sync flag keeps the two views from echoing.
@@ -71,8 +77,6 @@ void EditorWindow::buildObjectTables() {
     resizeDocks({dock},{230},Qt::Vertical);
 }
 void EditorWindow::retranslateTables() {
-    const char* tabs[]={"editorLinkTable","editorConnectorTable","editorSignalTable","editorProblemTable"};
-    for (int i=0;i<4;++i) objects_->setTabText(i,text(tabs[i]));
     // Name sits next to ID, as it does in every Vissim list.
     const char* linkColumns[]={"editorColumnId","editorColumnName","editorColumnLanes","editorColumnLength","editorColumnHeads"};
     const char* connectorColumns[]={"editorColumnId","editorColumnName","editorColumnFrom","editorColumnTo","editorColumnLength"};

@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/model/network/right_of_way.hpp"
 #include <QAction>
@@ -76,7 +77,7 @@ int main(int argc, char** argv) {
         // The Section tool (T) shows its tab.
         key(w, Qt::Key_T);
         require(w.findChild<QComboBox*>("editorTool")->currentIndex() == 11, "T did not choose the Section tool");
-        require(tabs->currentIndex() == 11, "The tool did not show the Travel-time sections tab");
+        require(tabs->currentWidget() == test::tabPage(tabs,table), "The tool did not show the Travel-time sections tab");
         const auto revision = w.history().revision();
         // Empty ground is refused. The forcing first: nothing is there.
         const Point empty{from.x, from.y + 60};
@@ -141,9 +142,9 @@ int main(int argc, char** argv) {
 
         // Thai: the tab and its headers are translated.
         auto* language = w.findChild<QComboBox*>("editorLanguage");
-        const auto english = tabs->tabText(11);
+        const auto english = tabs->tabText(tabs->indexOf(test::tabPage(tabs,table)));
         language->setCurrentIndex(1); QApplication::processEvents();
-        require(!tabs->tabText(11).isEmpty() && tabs->tabText(11) != english, "The tab title is not translated");
+        require(!tabs->tabText(tabs->indexOf(test::tabPage(tabs,table))).isEmpty() && tabs->tabText(tabs->indexOf(test::tabPage(tabs,table))) != english, "The tab title is not translated");
         for (int k = 0; k < table->columnCount(); ++k)
             require(!table->horizontalHeaderItem(k)->text().isEmpty(), "A header has no Thai text");
         language->setCurrentIndex(0); QApplication::processEvents();

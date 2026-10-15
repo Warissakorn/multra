@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
@@ -154,7 +155,7 @@ int main(int argc, char** argv) {
         w.saveFile(file); w.openFile(file); QApplication::processEvents();
         require(documentJson(w.history().document()) == saved, "Save and reopen changed the zones");
         w.findChild<QComboBox*>("editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
-        require(!tabs->tabText(tabs->indexOf(zones->parentWidget())).isEmpty(), "Thai Zones tab label missing");
+        require(!tabs->tabText(tabs->indexOf(test::tabPage(tabs,zones))).isEmpty(), "Thai Zones tab label missing");
         require(!act(w, "editorAddOriginConnector")->text().isEmpty(), "Thai action label missing");
         if (argc > 2) {
             w.findChild<QComboBox*>("editorLanguage")->setCurrentIndex(0); key(w, Qt::Key_Z); QApplication::processEvents();
