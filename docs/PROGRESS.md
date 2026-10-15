@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.7 slice 2: lateral spans and predicates (D188)
+
+NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is unchanged.
+- **State.** `Vehicle` gains `lateral`/`lateralSpeed` (0 until slice 3). `ScenarioIndex` gains a
+  lateral index of each lane section's neighbours on its carriageway.
+- **Spans.** Each span carries the body's band. A body covering another lane by more than
+  `kLateralOverlap` adds a span there, mapped through the Link's reference line, since lane metres
+  differ on a bend. Cross-sections gain reference ends and are required once switched on.
+- **Predicates.** The leader search, PERCEPTION's search and `around` count a span on the
+  follower's carriageway only within its body plus `dLat(v)`. Priority rules see straddlers.
+  Courtesy skips other-lane copies.
+- **Zones deferred (owner, D188).** They read route positions, so §6's "no new code path" was wrong
+  there; slice 3 adds the span scan. LATERAL §5/§6/§10 are corrected.
+
+Checked on Linux headless: `check` 102/102, CLI seed 42 unchanged, mutation checks; switched on,
+the four-leg run costs about 8 % more ([evidence](evidence/lateral-spans.md)).
+
 ## 2026-10-15 — M3.7 slice 1: lateral codec and cross-section compile (D187)
 
 The first lateral code, NEXT item 1. Storage and compile only; no tick reads the data.
@@ -157,14 +174,6 @@ Rows BA39–BA46 are pending. NEXT now starts code with the perception codec sli
 - **Data.** Five optional keys; absent = today. One new schema, only when used.
 
 Rows BA30–BA38 are pending; nothing is implemented. Checked: `check` on Linux.
-
-## 2026-10-15 — Owner's answers to B14 and B15 (D178; docs only)
-
-"B14 รับ, B15 ใช้ค่ามาตรฐานไปก่อน และจะทำการวิจัยในอนาคต". The review's order is the queue, keep-left
-is the default bias on left-hand-traffic networks (a behaviour key), and turn-on-red/U-turns stay
-in M3.9. Motorcycle values start from cited published standards, flagged uncertain, until the
-owner's research. Recorded in RECORD, ROADMAP M3.4/M3.8/M3.9, NEXT and the review header; B14/B15
-moved out of OWNER_SITTING.
 
 ## Older entries
 

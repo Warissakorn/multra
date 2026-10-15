@@ -2,6 +2,7 @@
 #include "conflicts.hpp"
 #include "lanes.hpp"
 #include "detail.hpp"
+#include "lateral.hpp"
 #include <cstdint>
 
 namespace trafficsim {
@@ -153,6 +154,7 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
             for (const auto& id : scenario.parkingLots[k].gateRouteIds)
                 index.lotOfRoute[static_cast<std::size_t>(&detail::byId(scenario.routes, id) - scenario.routes.data())] = k;
     }
+    index.lateral = buildLateralIndex(scenario); // M3.7 (D188): off and empty without a lateral key
     return index;
 }
 const std::vector<RoutePart>& partsFor(const ScenarioIndex& index, const Scenario& scenario, const Route& route) {
@@ -179,13 +181,16 @@ std::vector<OccupiedSpan> occupiedSpans(const Scenario& scenario, const std::vec
     // couple of growth steps for the rest. The vector is rebuilt from empty every tick.
     spans.reserve(vehicles.size());
     for (std::size_t i = 0; i < vehicles.size(); ++i)
-        appendSpans(spans, index.parts[refs[i].route], vehicles[i],
-                    scenario.vehicleTypes[refs[i].type].length);
+        appendVehicleSpans(spans, scenario, index, vehicles[i], refs[i]);
     return spans;
 }
 void appendVehicleSpans(std::vector<OccupiedSpan>& spans, const Scenario& scenario,
                         const ScenarioIndex& index, const Vehicle& vehicle, const VehicleRefs& refs) {
-    appendSpans(spans, index.parts[refs.route], vehicle, scenario.vehicleTypes[refs.type].length);
+    const auto first = spans.size();
+    const auto& type = scenario.vehicleTypes[refs.type];
+    appendSpans(spans, index.parts[refs.route], vehicle, type.length);
+    // LATERAL §5 (D188): the one producer every indexed span list goes through, D108 included.
+    if (index.lateral.on) appendLateralSpans(spans, first, scenario, index.lateral, type.width, vehicle.lateral);
 }
 VehicleLocation locateVehicle(const Scenario& scenario, const Vehicle& vehicle) {
     return locate(routeParts(scenario, scenario.routes[vehicle.routeIndex]), vehicle);
@@ -214,8 +219,7 @@ std::vector<OccupiedSpan> occupiedSpans(const Scenario& scenario, const std::vec
                                         const ScenarioIndex& index) {
     std::vector<OccupiedSpan> spans;
     for (const auto& vehicle : vehicles)
-        appendSpans(spans, partsFor(index, scenario, scenario.routes[vehicle.routeIndex]), vehicle,
-                    scenario.vehicleTypes[vehicle.typeIndex].length);
+        appendVehicleSpans(spans, scenario, index, vehicle, {vehicle.routeIndex, vehicle.typeIndex, 0});
     return spans;
 }
 }

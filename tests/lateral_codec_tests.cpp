@@ -210,21 +210,13 @@ TEST(lateralcodec, cross_sections_and_driving_side_compile_only_with_the_switch_
     CHECK(!validateScenario(sideless).empty());
 }
 
-TEST(lateralcodec, ba39_keys_absent_leave_the_four_leg_scenario_and_run_unchanged) { // BA39
+TEST(lateralcodec, ba39_keys_absent_leave_the_four_leg_scenario_unchanged) { // BA39
     const auto data = test::root() / "data";
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json");
     Json project; file >> project;
     const auto scenario = compileDocument(parseDocument(project), data).scenario;
     CHECK(scenario.segmentCrossSections.empty()); CHECK(!scenario.drivingSide);
     for (const auto& b : scenario.behaviours) CHECK(!hasLateral(b.lateral));
-    // Slice 1 has no runtime reader: keys present still replay the key-absent run tick by tick.
-    // Slice 2 (spans and predicates) replaces this half with BA40-BA42.
-    auto keyed = scenario;
-    for (auto& b : keyed.behaviours) b.lateral = full();
-    auto a = createSimulation(scenario, 42), b = createSimulation(keyed, 42);
-    while (a.tick < totalTicks(scenario)) {
-        a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b));
-        CHECK(a.vehicles == b.vehicles); CHECK(a.events == b.events);
-    }
-    CHECK(a.nextVehicleId > 1);
+    CHECK(!createSimulation(scenario, 42).index->lateral.on);
+    // The switched-on run is lateral_span_tests.cpp's BA39 (D188).
 }

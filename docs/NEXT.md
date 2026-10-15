@@ -11,11 +11,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
-- M3.7 lateral slice 1 is in (D187): the three behaviour keys at schema 33, and cross-sections and
-  `drivingSide` compiled only with the switch on ([evidence](evidence/lateral-codec.md)). No tick
-  reads them yet; BA39 holds.
-- M3.5 is implemented through BA38 (D181–D186); the reaction FIFO now keeps an entry decision
-  when a vehicle enters a delayed road (D186).
+- M3.7 lateral slices 1–2 are in: the keys and compiled cross-sections (D187), then spans with a
+  lateral band, other-lane spans for a body past `kLateralOverlap`, and the `dLat` leader/alongside
+  filter (D188, [evidence](evidence/lateral-spans.md)). Nothing moves sideways yet; BA39 holds.
+- Zones still read route positions: a straddler occupies only its own route's zone (deferred by the
+  owner to slice 3, D188).
+- M3.5 is implemented through BA38 (D181–D186).
 - Local evidence is Linux headless; no desktop or Windows verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
@@ -25,21 +26,22 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Item 1 and its follow-ons use the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.7 LATERAL slice 2: spans and predicates** ([LATERAL](reference/LATERAL.md) §4–§6, §8,
-   §10, D180/D187; acceptance BA40–BA42, with BA39 in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).
-   - Read LATERAL §4–§6 and §10's consumer table, `src/core/routes.hpp` (`OccupiedSpan`), and
-     `closestVehicle`, `around`/`safeAt` and the zone functions before changing a span.
-   - Add `Vehicle::lateral` and `ScenarioIndex::lateral` (§8). With it false nothing in §4–§7 runs,
-     and BA39's byte-identity must hold (CLI seed 42, frozen baselines, perception and W74 runs).
-   - Spans gain lateral extent from `segmentCrossSections` (D187); a straddling body appears on both
-     lanes (§5). The leader/alongside/cap predicates filter laterally (§6). Courtesy logic is
-     unchanged over the new spans.
-   - `lateral_codec_tests.cpp`'s BA39 half asserts that keys present change no run; this slice
-     replaces it with BA40–BA42.
-   - Re-run `trafficsim-engine-benchmark` before and after (§11, D164: >10 % with the switch on needs a decision).
-   - Then lateral slices 3–4 (BA43, BA44, BA46), M3.4 lane-change duration, M3.6 turning speeds,
-     M3.4 overtaking with driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9
-     (the review's §5 order, D177/D178).
+1. **M3.7 LATERAL slice 3: lateral motion, admission and zones** ([LATERAL](reference/LATERAL.md)
+   §6–§7, §10, D180/D187/D188; acceptance BA43, BA44, with BA39 in
+   [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).
+   - Read LATERAL §7 and D188 first. `Vehicle::lateral`/`lateralSpeed` exist and stay 0; this slice
+     is their first writer. §7 sets no target itself: decide with the owner whether a test-only or
+     contract-level `yT` writer comes first (M3.4/M3.7.1 are the real writers).
+   - Lateral admission after the longitudinal step, in vehicle-id order (§7); a refused move keeps
+     `lateral` with `lateralSpeed` 0. Crossing remaps the route when a `LaneChangeSpan` covers it.
+   - **Zones (deferred here by the owner, D188):** `summarizeZones`, `zoneHold`, `resolveRequests`
+     read route positions; a straddler's other-lane span must occupy that lane's zone too.
+   - The hand mirrors stay one-dimensional until then: `placeVehicle`, Lab telemetry,
+     `dead_end_waits.cpp` (LATERAL §10).
+   - Re-run `trafficsim-engine-benchmark` with the switch off and time a switched-on run (§11).
+   - Then slice 4 (display, BA46), M3.4 lane-change duration, M3.6 turning speeds, M3.4 overtaking
+     with driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (the review's §5
+     order, D177/D178).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its

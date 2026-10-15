@@ -39,8 +39,10 @@ void storeReactionAction(Vehicle& vehicle, std::size_t ticks, const FollowingRes
 // closestVehicle's strict < does, so count 1 with an infinite range returns its leader. Only the
 // acceleration reads these; the hard cap and admission keep the physical leader.
 struct PerceivedLeader { Leader leader; std::uint64_t vehicleId{}; };
+struct LateralFilter; // lateral.hpp; LATERAL §6 filters the scan when the switch is on (D188)
 std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
-    const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range);
+    const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range,
+    const LateralFilter* lateral = nullptr);
 // One sighting into a nearest-first list of at most `count` distinct vehicles: a vehicle seen twice
 // keeps its smaller gap, and an equal gap goes after the ones already there (§2's tie rule).
 void notePerceived(std::vector<PerceivedLeader>& found, std::size_t count, const PerceivedLeader& seen);

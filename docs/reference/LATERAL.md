@@ -1,10 +1,11 @@
 # Lateral contract: two-dimensional occupancy (M3.7.0)
 
-Designed 2026-10-15 (D180). **Slice 1 is implemented**: the §9 keys (schema 33), the §3
-cross-sections and `drivingSide`, compiled only with the switch on (D187,
-[evidence](../evidence/lateral-codec.md)). Nothing in the tick reads them yet. Rows BA39–BA46 are in
-[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA45 has
-automated evidence, BA39 is kept in every slice, and BA40–BA44 and BA46 are pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
+Designed 2026-10-15 (D180). **Slices 1–2 are implemented**: the §9 keys (schema 33), the §3
+cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)), and the §5–§6
+spans and predicates (D188, [evidence](../evidence/lateral-spans.md)). Nothing moves sideways yet:
+`lateral` stays 0 until slice 3. Rows BA39–BA46 are in
+[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA42 and
+BA45 have automated evidence, BA39 is kept in every slice, and BA43, BA44 and BA46 are pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
 M3.4's lane-change duration, M3.7's lateral behaviour and M3.8's motorcycles.
 [PERCEPTION](PERCEPTION.md) owns what a driver observes, [SIMULATION](SIMULATION.md) owns the tick,
@@ -50,13 +51,17 @@ So the engine is lane-based, and a vehicle occupies exactly the lane its route n
 
 - **Lateral coordinate `y`** is in metres, **positive to the left of the direction of travel**,
   measured from the carriageway's reference line.
-- **Carriageway.** Every lane section of one Link shares one carriageway, with station
-  `s = linkStationStart + (position on the section)`. Each Connector lane path is its own
-  carriageway.
+- **Carriageway.** Every lane section of one Link shares one carriageway. Its shared station is the
+  Link's **reference line**: lanes are offset polylines, so on a bend their own metres differ and
+  `linkStationStart + position` names different cross-sections on different lanes. A position maps
+  linearly between the section's `referenceStart`/`referenceEnd`, the same approximation lane
+  changes make (`lane_family.cpp`, `mappedOnto`), exact on straight Links (D188). Each Connector lane
+  path is its own carriageway.
 - **Compiled data.** `Scenario` gains `segmentCrossSections`, parallel to `segments`:
 
   ```
-  SegmentCrossSection { carriageway (index), linkStationStart, centre, startWidth, endWidth }
+  SegmentCrossSection { carriageway (index), linkStationStart, centre, startWidth, endWidth,
+                        referenceStart, referenceEnd }
   ```
 
   For a lane section, `centre` is the lane-centre offset that `laneGeometry` already computes.
@@ -90,13 +95,20 @@ So the engine is lane-based, and a vehicle occupies exactly the lane its route n
 
 ## 5. Spans: occupying every lane the body covers
 
-- `OccupiedSpan` gains `left, right`, the body's lateral extent in its carriageway frame.
+- `OccupiedSpan` gains `right, left`, the body's lateral extent in its carriageway frame, and `own`,
+  false on a span emitted for another lane (D188).
 - A vehicle emits a span on **every lane-section segment its body overlaps by more than
   `kLateralOverlap = 0.01 m`**, not only on its route's segment. A changer between lanes, a car
   pushed toward a lane line or a motorcycle riding on one therefore appears on both lanes.
-  The existing per-lane machinery then sees it with **no new code path**: `closestVehicle`'s leader
-  search, `around`, zone occupancy (`summarizeZones`, `src/core/conflicts.cpp:65`) and admission.
-- `appendVehicleSpans` (`src/core/routes.cpp:186`) stays the single producer of spans. For one
+  The span-reading machinery then sees it with **no new code path**: `closestVehicle`'s leader
+  search, PERCEPTION's search, `around`, D108 admission and the priority-rule give-way scan. **Zones
+  do not read spans** (`summarizeZones`, `zoneHold`, `resolveRequests` work from route positions), so
+  zone occupancy needs its own code; it is deferred to slice 3 (D188). `courtesyHolds` ignores
+  `own = false` spans, because its hold is applied on the holder's own route.
+- The other lane's span is the own span's `[rear, front]` mapped through the reference line (§3) and
+  clamped to that segment; a body covering several own sections yields one merged span per lane.
+- `appendVehicleSpans` (`src/core/routes.cpp`) stays the single producer of spans; every indexed
+  `occupiedSpans` goes through it. For one
   vehicle it emits the own-lane spans first, then the other lanes' spans in segment-index order, so
   the bucket order that tie-breaks rely on is defined (SpanBuckets, `routes.hpp`).
 - On a Connector path, a body never spans another path in this contract. Paths that overlap
@@ -114,10 +126,12 @@ dLat(v) = lateralMinDistanceStanding
 ```
 
 Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or above it, the value is
-`lateralMinDistanceAt50`.
+`lateralMinDistanceAt50`. A behaviour without the keys, in a run another behaviour switched on, has
+`dLat = 0` (D188).
 
-- **Leader.** A span on the follower's segment counts as a leader only if its `[left, right]`
-  overlaps the follower's body widened by `dLat(v)` on each side. Exact touching counts as
+- **Leader.** A span on the follower's carriageway (the one its front is on) counts as a leader only
+  if its `[right, left]` overlaps the follower's body widened by `dLat(v)` on each side; spans on later
+  carriageways along the route are not filtered (D188). Exact touching counts as
   overlapping. Two motorcycles side by side in one lane, with clearance above `dLat`, are not each
   other's leaders. This applies to the physical leader and to PERCEPTION's perceived leaders alike.
 - **Alongside** (`around`, `src/core/lanes.cpp:46`) means longitudinal overlap together with the
@@ -125,8 +139,9 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
 - **Non-overlap.** The hard cap (`allowedDistance`, `src/core/simulation.cpp:264`) and its counted
   clamps apply to the overlapping physical leader. Together with §7's admission rule, no two bodies
   ever overlap in two dimensions at a published tick.
-- **Zones and priority rules** stay segment-based. Any span on a zone's segment occupies it, so a
-  straddling vehicle blocks both lanes' zones. This is conservative and stated.
+- **Priority rules** read spans, so a straddler on a conflict segment holds the minor approach, without
+  a lateral filter. This is conservative and stated. **Zones** stay route-based in slice 2: a straddler
+  occupies only its own route's zone until slice 3 adds a span scan (D188).
 
 ## 7. Lateral motion and its admission
 
@@ -180,8 +195,10 @@ uncertain.
 |---|---|
 | `closestVehicle` (`simulation.cpp:35`) and PERCEPTION's search | Lateral filter (§6); spans of straddling vehicles appear on both lanes |
 | `around` / `safeAt` (`lanes.cpp:46`, `:83`) | Lateral filter; alongside per §6 |
-| `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic over the new spans |
-| Zones (`summarizeZones`, `zoneHold`, `resolveRequests`, `src/core/conflicts.cpp`) | Any span on a zone segment occupies it (§6) |
+| `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic; `own = false` spans are skipped (D188) |
+| Priority rules (give-way scan in `stepSimulation`) | A straddler's span on the conflict segment holds the minor approach |
+| Zones (`summarizeZones`, `zoneHold`, `resolveRequests`, `src/core/conflicts.cpp`) | Slice 3: they read route positions, not spans, so occupancy by a straddler needs a span scan (D188) |
+| `placeVehicle` (`retune.cpp`), Lab telemetry (`lab_run.cpp`), `dead_end_waits.cpp` | Stay one-dimensional mirrors: a placement next to a straddler is refused, and the two displays do not filter laterally (stated, D188) |
 | D108 source insertion (`simulation.cpp:160`) | A new vehicle starts centred, and its first span is checked in two dimensions |
 | Lateral admission (new, §7) | After the longitudinal step, in vehicle-id order |
 | Editor pose (`src/editor/vehicle_pose.hpp`, `src/editor/lane_change_pose.cpp`) | Draws the body at lane centre + `lateral`. Once M3.4 lands, the display slide is replaced by the engine's own lateral path. Display never feeds physics |
