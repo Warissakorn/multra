@@ -1,8 +1,10 @@
 # Lateral contract: two-dimensional occupancy (M3.7.0)
 
-Designed 2026-10-15 (D180). **This is a contract only; nothing in it is implemented yet.** Rows
-BA39–BA46 are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows)
-and all of them are pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
+Designed 2026-10-15 (D180). **Slice 1 is implemented**: the §9 keys (schema 33), the §3
+cross-sections and `drivingSide`, compiled only with the switch on (D187,
+[evidence](../evidence/lateral-codec.md)). Nothing in the tick reads them yet. Rows BA39–BA46 are in
+[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA45 has
+automated evidence, BA39 is kept in every slice, and BA40–BA44 and BA46 are pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
 M3.4's lane-change duration, M3.7's lateral behaviour and M3.8's motorcycles.
 [PERCEPTION](PERCEPTION.md) owns what a driver observes, [SIMULATION](SIMULATION.md) owns the tick,
@@ -54,18 +56,25 @@ So the engine is lane-based, and a vehicle occupies exactly the lane its route n
 - **Compiled data.** `Scenario` gains `segmentCrossSections`, parallel to `segments`:
 
   ```
-  SegmentCrossSection { carriageway (index), linkStationStart, centre, width }
+  SegmentCrossSection { carriageway (index), linkStationStart, centre, startWidth, endWidth }
   ```
 
   For a lane section, `centre` is the lane-centre offset that `laneGeometry` already computes.
   The compiler and `laneGeometry` call **one shared function** for it, so the drawing and the
-  physics cannot disagree (hard rule 3). `width` is the lane's own width. For a Connector path,
-  `centre = 0`, and `width` varies linearly along the path from the from-lane's width to the
-  to-lane's.
+  physics cannot disagree (hard rule 3): `laneCentreOffset` in `geometry.cpp`. On a lane section both
+  widths are the lane's own width. For a Connector path, `centre = 0`, and the width varies linearly
+  along the path from `startWidth` to `endWidth`, the two ends `connectorLaneWidths` already gives
+  (0 at a surplus lane's tapered end). Two numbers, because one cannot vary (D187).
+  Carriageway indices are the Link's position in the Network, then `links + path index` for
+  Connector paths; only their equality is meaningful. `createSimulation` re-sorts segments by id
+  and carries each cross-section with its segment.
 - **Driving side.** `Scenario` gains `drivingSide`, compiled once from the Network. D178's
-  keep-left default and M3.8 read it, and nothing re-derives it.
+  keep-left default and M3.8 read it, and nothing re-derives it. The `DrivingSide` enum itself
+  moved into core (`lateral_types.hpp`); the model's Network uses the same type (D187).
 - These fields are compiled **only when the switch (§8) is on**. Otherwise they are empty, and a
-  compiled Scenario compares equal to today's.
+  compiled Scenario compares equal to today's. `validateScenario` refuses a compiled table that is
+  not one per segment, a non-finite station or centre, a negative or non-finite width, or a
+  `drivingSide` present without the table or absent with it (`INVALID_CROSS_SECTION`).
 
 ## 4. Vehicle state
 

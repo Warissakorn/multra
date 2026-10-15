@@ -87,6 +87,9 @@ std::vector<Point> trimSelfIntersections(const std::vector<Point>& points) {
     return result;
 }
 std::vector<Point> laneGeometry(const Link& link, const std::string& laneId, DrivingSide side) {
+    return offsetGeometry(link.geometry, laneCentreOffset(link, laneId, side));
+}
+double laneCentreOffset(const Link& link, const std::string& laneId, DrivingSide side) {
     if (side != DrivingSide::left && side != DrivingSide::right) throw std::invalid_argument("INVALID_DRIVING_SIDE");
     const auto lane = std::find_if(link.lanes.begin(), link.lanes.end(), [&](const auto& l) { return l.id == laneId; });
     if (lane == link.lanes.end()) throw std::invalid_argument("UNKNOWN_LANE");
@@ -95,8 +98,7 @@ std::vector<Point> laneGeometry(const Link& link, const std::string& laneId, Dri
         totalWidth += it->width;
         if (it < lane) before += it->width;
     }
-    const double offset = (link.laneOffset + totalWidth / 2 - before - lane->width / 2) * (side == DrivingSide::left ? 1 : -1);
-    return offsetGeometry(link.geometry,offset);
+    return (link.laneOffset + totalWidth / 2 - before - lane->width / 2) * (side == DrivingSide::left ? 1 : -1);
 }
 std::vector<Point> laneBoundaryGeometry(const Link& link,std::size_t boundary,DrivingSide side) {
     if(boundary>link.lanes.size())throw std::invalid_argument("EDIT_LANES");

@@ -5,6 +5,7 @@
 #include "routing.hpp"
 #include "w74.hpp"
 #include "perception.hpp"
+#include "lateral.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -264,6 +265,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
                 number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
             if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
             for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
+            for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
             continue;
         }
         number(b.standstillDistance, p + ".standstillDistance");
@@ -274,6 +276,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
         if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
         for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
+        for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every
         // vehicle on them would change back and forth each tick.
@@ -362,6 +365,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : laneChangeIssues(s)) issues.push_back(std::move(issue));
     for(auto& issue:routingIssues(s))issues.push_back(std::move(issue));
     validateParkingLots(s, issues); // M8.4a
+    for (auto& issue : lateralScenarioIssues(s)) issues.push_back(std::move(issue)); // M3.7, D187
     return issues;
 }
 void assertValidScenario(const Scenario& scenario) {

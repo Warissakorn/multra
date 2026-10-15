@@ -19,6 +19,15 @@ Scenario canonicalScenario(Scenario scenario) {
     const auto sort = [](auto& items) {
         std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
     };
+    if (!scenario.segmentCrossSections.empty() && scenario.segmentCrossSections.size() == scenario.segments.size()) {
+        // M3.7 (D187): cross-sections are parallel to segments, so they move with them.
+        std::vector<std::size_t> order(scenario.segments.size());
+        for (std::size_t i = 0; i < order.size(); ++i) order[i] = i;
+        std::sort(order.begin(), order.end(), [&](auto a, auto b) { return scenario.segments[a].id < scenario.segments[b].id; });
+        std::vector<SegmentCrossSection> sections;
+        for (const auto i : order) sections.push_back(scenario.segmentCrossSections[i]);
+        scenario.segmentCrossSections = std::move(sections);
+    }
     sort(scenario.segments);
     for (auto& segment : scenario.segments) std::sort(segment.next.begin(), segment.next.end());
     sort(scenario.routes); sort(scenario.vehicleTypes); sort(scenario.behaviours);

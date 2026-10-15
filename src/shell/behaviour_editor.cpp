@@ -136,6 +136,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
             ? std::optional<double>(w74Cooperative.spin->value()) : std::nullopt;
         result.amberDeceleration = w74Amber.on->isChecked() ? std::optional<double>(w74Amber.spin->value()) : std::nullopt;
         result.perception = b.perception; // M3.5 (D181): not edited here yet, never dropped
+        result.lateral = b.lateral; // M3.7 (D187): likewise
         result.w74 = parameters; staged = std::move(result); dialog.accept();
     });
     if (dialog.exec() != QDialog::Accepted) return false;

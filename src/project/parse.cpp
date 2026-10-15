@@ -2,6 +2,7 @@
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
+#include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
@@ -310,6 +311,14 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
         p.*key.member = value.get<double>();
     }
 }
+// M3.7 (LATERAL.md §9, D187): the same for the lateral keys; completeness and ranges are the validator's.
+static void readLateral(const Json& b, const std::string& path, LateralParameters& p) {
+    for (const auto& key : lateralParameterKeys()) {
+        if (!b.contains(key.name)) continue;
+        if (!b.at(key.name).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key.name}});
+        p.*key.member = b.at(key.name).get<double>();
+    }
+}
 DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
     static constexpr const char* prototypeKeys[] = {"standstillDistance", "additiveSafetyDistance",
         "multiplicativeSafetyDistance", "followingTime", "speedThreshold", "discretionaryLaneChangeThreshold",
@@ -333,7 +342,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         if (b.contains("maxDecelerationCooperativeBraking"))
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
         if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration"); // M4.2
-        readPerception(b, path, behaviour.perception);
+        readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral);
         return behaviour;
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
@@ -355,7 +364,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         behaviour.discretionaryLaneChangeHoldTime = field<double>(b, "discretionaryLaneChangeHoldTime");
     // Optional (M4.2, D147): absent, amber holds like red.
     if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration");
-    readPerception(b, path, behaviour.perception);
+    readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral);
     return behaviour;
 }
 VehicleType parseVehicleType(const Json& t) {

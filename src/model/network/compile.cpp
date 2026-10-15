@@ -2,6 +2,7 @@
 #include "connector_surface.hpp"
 #include "right_of_way.hpp"
 #include "../../core/validate.hpp"
+#include "../../core/lateral.hpp"
 #include <cmath>
 #include <map>
 #include <algorithm>
@@ -37,6 +38,28 @@ namespace {
 // A route already given in lane or section ids, rather than the Links and Connectors an author
 // names. Compiling an already-compiled Scenario has to be a no-op -- callers do it -- so such a
 // route passes through untouched instead of being reported as one no lane can travel.
+// M3.7 (LATERAL §3, D187): one cross-section per segment, in the order buildScenario emits them.
+// Only called with the lateral switch on, so a lane-based run never pays for it.
+void appendCrossSections(const Network& network, const RuntimeSections& table, Scenario& scenario) {
+    std::map<std::string, std::size_t> linkIndex, laneOfPath;
+    for (std::size_t i = 0; i < network.links.size(); ++i) linkIndex[network.links[i].id] = i;
+    for (const auto& section : table.sections) {
+        const auto& link = network.links[linkIndex.at(section.linkId)];
+        const auto lane = std::find_if(link.lanes.begin(), link.lanes.end(), [&](const auto& l) { return l.id == section.laneId; });
+        scenario.segmentCrossSections.push_back({linkIndex.at(section.linkId), section.start,
+            laneCentreOffset(link, section.laneId, network.drivingSide), lane->width, lane->width});
+    }
+    std::map<std::string, ConnectorLaneWidths> widths;
+    for (std::size_t p = 0; p < table.paths.size(); ++p) {
+        const auto& id = table.pathConnector[p];
+        if (!widths.contains(id))
+            for (const auto& c : network.connectors) if (c.id == id) widths.emplace(id, connectorLaneWidths(network, c));
+        const auto i = laneOfPath[id]++; // paths of one connector are consecutive, in lane order
+        scenario.segmentCrossSections.push_back({network.links.size() + p, 0, 0,
+            widths.at(id).source.at(i), widths.at(id).target.at(i)});
+    }
+    scenario.drivingSide = network.drivingSide;
+}
 bool routeAlreadyExpanded(const RuntimeSections& table, const std::vector<std::string>& ids) {
     if (ids.empty()) return false;
     for (const auto& id : ids) {
@@ -64,6 +87,7 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
     for (std::size_t p = 0; p < table.paths.size(); ++p)
         scenario.segments.push_back({table.paths[p].id, connectorPathLength(table.paths[p]),
                                      {table.pathNext[p]}});
+    if (lateralSwitch(scenario.behaviours)) appendCrossSections(network, table, scenario);
     // A route is authored on LINKS AND CONNECTORS, because that is the object an author places
     // and keeps editing. The runtime travels one lane, so each authored route expands here into
     // one core route per lane the drawing actually carries -- inside buildScenario, which is the

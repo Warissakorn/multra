@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lateral_types.hpp"
 #include "parking_types.hpp"
 #include <cstdint>
 #include <memory>
@@ -70,6 +71,7 @@ struct DriverBehaviour {
     // M3.5 (PERCEPTION.md §6): stored and validated since D181, read by no motion yet. Last, so
     // every existing brace-initialisation keeps its meaning.
     PerceptionParameters perception;
+    LateralParameters lateral; // M3.7 (LATERAL.md §9, D187): stored and validated only, last again
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };
@@ -248,6 +250,8 @@ struct ScenarioDefinition {
 struct Scenario : ScenarioDefinition {
     std::vector<Segment> segments;
     std::vector<SignalHead> signalHeads;
+    // M3.7 (LATERAL.md §3, D187): compiled only with the lateral switch on; empty otherwise.
+    std::vector<SegmentCrossSection> segmentCrossSections; std::optional<DrivingSide> drivingSide;
 };
 struct RoutePart { std::string segmentId; std::size_t segmentIndex{}; double start{}, length{}; };
 // Route geometry is a pure function of an immutable Scenario, so it is resolved once per run
