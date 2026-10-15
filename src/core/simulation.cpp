@@ -373,7 +373,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
             if (yields && (!current || courtesy[v].gap < current->gap))
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
-            following = delayedAction(vehicle, delay, type, behaviour, current);
+            following = delayedAction(vehicle, delay, following, type, behaviour, current);
         }
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];

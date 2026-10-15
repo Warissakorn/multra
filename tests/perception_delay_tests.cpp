@@ -151,6 +151,29 @@ TEST(perceptiondelay, ba36_road_boundary_trims_pads_and_clears_oldest_first) {
         } else CHECK(history.empty());
     }
 }
+TEST(perceptiondelay, ba36_entering_a_delayed_road_from_an_undelayed_one_keeps_braking) {
+    // D186: the empty FIFO is filled with the decision taken on entry, never with {0, free}.
+    for (const bool w74 : {false, true}) {
+        auto s = road(0, .1, w74);
+        auto downstream = s.behaviours[0]; downstream.id = "next"; downstream.perception.reactionTime = 1;
+        s.behaviours.push_back(downstream); s.segmentBehaviours = {{"b", "car", "next"}};
+        auto state = placeVehicle(createSimulation(s, 42), {"route", "car", 135, 0}); // standing leader
+        state = placeVehicle(std::move(state), {"route", "car", 99.5, 15});
+        state = stepSimulation(std::move(state)); // the crossing tick belongs to the undelayed road
+        const auto& follower = [&]() -> const Vehicle& { return state.vehicles.at(1); };
+        CHECK(follower().distance > 100); CHECK(follower().acceleration < 0);
+        CHECK(follower().reactionHistory.empty());
+        state = stepSimulation(std::move(state));
+        const auto entry = follower().acceleration;
+        CHECK(entry < 0);
+        CHECK(follower().reactionHistory.size() == 10);
+        for (const auto& a : follower().reactionHistory) CHECK(a.acceleration == entry);
+        for (int i = 0; i < 9; ++i) {
+            state = stepSimulation(std::move(state)); CHECK(follower().acceleration == entry);
+        }
+        CHECK(clamps(state) == 0);
+    }
+}
 TEST(perceptiondelay, ba36_a_retune_changing_any_delay_count_is_refused_atomically) {
     auto s = road(.31);
     auto unused = s.behaviours[0]; unused.id = "unused"; s.behaviours.push_back(unused);
@@ -267,6 +290,7 @@ TEST(perceptiondelay, ba36_courtesy_and_lane_judgements_are_undelayed_but_action
     auto delayed = plain;
     for (auto& b : delayed.behaviours) b.perception.reactionTime = 1;
     auto a = test::withVehicles(plain, placements), b = test::withVehicles(delayed, placements);
+    for (auto& v : b.vehicles) resizeReactionHistory(v, 10); // as a source inserts them (D186)
     const auto holds = [](const SimState& state) {
         const auto refs = resolveRefs(*state.scenario, state.vehicles, *state.index);
         const auto spans = occupiedSpans(*state.scenario, state.vehicles, *state.index, refs);

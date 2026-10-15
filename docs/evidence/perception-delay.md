@@ -33,7 +33,8 @@ values that quantise to the same count remain editable. Hypothetical `follow` ca
 - BA30: absent, zero and a positive value rounded to zero give identical vehicles, events,
   queues and RNG at every tick on both models. The codec's retired unread-key assertion now
   compares the four-leg project tick by tick with zero reaction time.
-- BA36: road-boundary trimming, padding and clearing; atomic retune refusal and same-count
+- BA36: road-boundary trimming, padding and clearing, and (D186) a vehicle entering a delayed road
+  from an undelayed one keeps its entry braking on both models; atomic retune refusal and same-count
   acceptance; current type bounds after a retune; delayed W74 state and mode.
 - BA36 safety: an unseen physical leader, D105 restart suppression, red and dead-end caps,
   an occupied conflict area and a same-tick swept conflict, with late clamps counted.
@@ -76,5 +77,6 @@ build/headless/bin/trafficsim-cli 42
 build/headless/bin/trafficsim-engine-benchmark 40 1800
 ```
 
-BA38's multi-seed discharge measurement is the next slice. Nothing here establishes that a
+BA38's multi-seed discharge measurement is recorded separately in
+[perception-discharge](perception-discharge.md) (D185). Nothing here establishes that a
 reaction-time value reproduces field data or Vissim.

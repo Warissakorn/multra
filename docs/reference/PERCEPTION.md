@@ -133,7 +133,10 @@ d = floor(τ / dt + 0.5)          (ticks; d = 0 means today)
   not its action.
 - **Road boundaries** (D127 selection): the FIFO keeps its entries when the behaviour changes. If
   `d` changes, the oldest entries are dropped, or the FIFO is padded at its old end with copies of
-  its oldest entry. On a road with `d = 0` the FIFO is cleared at publish.
+  its oldest entry. On a road with `d = 0` the FIFO is cleared at publish. A vehicle arriving from
+  such a road has an empty FIFO: its first delayed tick applies that tick's own decision and fills
+  the FIFO with copies of it, so a braking driver keeps braking rather than coasting for `d` ticks
+  (D186). Only insertion fills with `{0, free, no state}`.
 - The FIFO lives in `Vehicle` (a `std::vector`, empty when `d = 0`), so copying `SimState`
   copies it and replay is exact. It is written only at publish, in vehicle-id order.
 - Timestep: `d` is quantised to ticks. The effect of dt is recorded (BA35/BA38), not bounded, as

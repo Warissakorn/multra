@@ -6,6 +6,15 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
+
+Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
+had an empty FIFO that was filled with `{0, free}`, so a driver braking at its maximum coasted
+for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now applies the
+tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
+still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
+assignments in its fixture). Linux headless `check` passed.
+
 ## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
 
 A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
@@ -152,20 +161,6 @@ covers twelve areas (A–L). Lateral, lane-change duration and motorcycle work a
 come before W99. ROADMAP gains M3.5–M3.9 and an extended M3.4 (hard rule 8); PROBLEM §2 gains the
 motorcycle row and §8.1 is answered; NEXT follows the review's order; B14/B15 hold the owner's
 remaining calls. Checked: `check` (docs, sizes, architecture, CTest) on Linux.
-
-## 2026-10-15 — A cited, uncalibrated `w74` preset (NEXT item 1, D176)
-
-`data/driver-behaviour/presets/w74-sumo-defaults.json` maps every one of the 18 keys from SUMO's
-`MSCFModel_Wiedemann` defaults (pinned at `79e42b50`), the file W74.md already follows. It sits
-in a subfolder because the catalog loader reads only top-level `*.json`, and an unused `w74`
-behaviour would give every vehicle traits (BA18); `tools/t_junction_sweep.hpp` now lists the
-same files the loader reads, so its archived metadata still matches. A codec test pins that the
-preset is valid and not loaded. **Evidence** ([w74-preset](evidence/w74-preset.md)): with the
-preset, four-leg discharge ≈3.44 s (fixture ≈3.11 s, prototype ≈2.05 s) and 3.2–4.7 clamps
-per run (fixture 8.2–14.2), 72–98 % at amber, which `w74` behaviours still hold as red. No
-defect, nothing calibrated. The fixture no longer reproduces BA27's hashes (D159, M4.2), so
-both were rerun on one build. Shipping it, and an amber value, are OWNER_SITTING B13.
-Checked: desktop build and full CTest (Linux, GCC 13.3), `check`, CLI seed 42 unchanged.
 
 ## Older entries
 

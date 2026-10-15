@@ -57,20 +57,22 @@ void resizeReactionHistory(Vehicle& vehicle, std::size_t ticks) {
         history.insert(history.begin(), ticks - history.size(), oldest);
     }
 }
-FollowingResult delayedAction(const Vehicle& vehicle, std::size_t ticks, const VehicleType& type,
-    const DriverBehaviour& behaviour, std::optional<Leader> leader) {
+FollowingResult delayedAction(const Vehicle& vehicle, std::size_t ticks, const FollowingResult& decided,
+    const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {
     const auto& history = vehicle.reactionHistory;
-    // A shortened FIFO discards its oldest entries; a longer one repeats its oldest entry.
-    auto applied = history.empty() ? FollowingResult{} : history[history.size() > ticks ? history.size() - ticks : 0];
+    // A shortened FIFO discards its oldest entries; a longer one repeats its oldest entry. An empty
+    // one comes from a zero-delay road (D186): the driver carries on with what it decides now.
+    auto applied = history.empty() ? decided : history[history.size() > ticks ? history.size() - ticks : 0];
     applied.acceleration = std::clamp(applied.acceleration, -type.maxDeceleration, type.maxAcceleration);
     if (vehicle.speed == 0 && leader && leader->gap <= standstillGap(behaviour))
         applied.acceleration = std::min(0.0, applied.acceleration);
     return applied;
 }
 void storeReactionAction(Vehicle& vehicle, std::size_t ticks, const FollowingResult& decided) {
+    auto& history = vehicle.reactionHistory;
+    if (ticks > 0 && history.empty()) { history.assign(ticks, decided); return; } // D186
     resizeReactionHistory(vehicle, ticks);
     if (ticks == 0) return;
-    auto& history = vehicle.reactionHistory;
     std::rotate(history.begin(), history.begin() + 1, history.end());
     history.back() = decided;
 }
