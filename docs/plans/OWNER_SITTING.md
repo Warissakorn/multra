@@ -63,7 +63,13 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
+12. **Thai sources for the multi-level values** (listed 2026-10-15, D175). Name the editions for
+   cross-section templates (Department of Highways / Department of Rural Roads), the PCU source
+   (motorcycles flagged uncertain, R3) and, if a local value exists, saturation flow; HCM's
+   1,900 pc/h/ln is the fallback ([workflow](MULTI_LEVEL_WORKFLOW.md) §7). Which documents? *Owner:*
 
+Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
+([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9).
 Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
 ([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
 

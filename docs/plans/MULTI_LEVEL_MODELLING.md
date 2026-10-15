@@ -8,6 +8,12 @@ milestones that build it. It is a plan, not evidence. [ROADMAP](../ROADMAP.md) o
 scopes and gates (M8–M12); [NEXT](../NEXT.md) owns the queue. The new milestones start **after
 the D143 queue** (M5.9 → M4.2 → M6.0 → M5.8). Nothing here is implemented.
 
+**Amended 2026-10-15 by [D175](../decisions/RECORD.md#d175):** the
+[multi-level workflow](MULTI_LEVEL_WORKFLOW.md) — one loop from any starting level, Node and Road
+objects, StudyPeriod, run-time subarea cut and offline-first imports — wins where it disagrees
+with this document (its §11 lists the superseded parts: §3.1 centreline Links and Node, §3.6
+stored cut, §7 order).
+
 ## 1. Why three levels
 
 [PROBLEM](../PROBLEM.md) §1 describes an engineer who studies one intersection. Real impact work

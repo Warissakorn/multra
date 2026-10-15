@@ -104,8 +104,10 @@ authored ParkingLot and compiler (D157), M8.5 lot outputs (D160), M8.6a Zone too
 - **Before merging** the branch `claude/m8.1-zones-contract` (no PR yet): open a PR, so that
   `native.yml` runs the Windows UI suites. Linux desktop passed 133/133 locally (Qt 6.4.2,
   offscreen).
-- **M9** (dynamic assignment) is the next multi-level milestone. Its contract needs the owner's
-  B7 answers (D158) only for M10/M11.
+- **Next multi-level slice (D175, 2026-10-15): S0, the Node contract** — polygon, mapping of
+  Micro detail to legs/turns/conflicts/g/C, coarse values, lifecycle, merged with M5.1's
+  evaluation nodes ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Contract and rows first;
+  then S1 StudyPeriod + PCU. M9 keeps its scope but no longer leads the order.
 Known limits recorded: exit weights are one set per run (row summed over matrices); lot rows'
 time intervals and compositions' intervals are not used for departures/initial types; the lot
 report has one window (no sub-interval series) and `--compare` has no lot block.

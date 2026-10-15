@@ -387,6 +387,10 @@ Design, decisions and slices: [`plans/MULTI_LEVEL_MODELLING.md`](plans/MULTI_LEV
 One authoring network and one demand compile to three views; each engine imports nothing; every
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
 passes. None is started; each slice begins with its contract and acceptance rows.
+**Amended 2026-10-15 ([D175](decisions/RECORD.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
+stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
+Roads with cross-section templates replace centreline-only Links; M12's stored cut becomes a
+run-time cut over a study area. M9–M11 keep their engine scopes and gates; no gate moves.
 
 ### M8 — Zones, OD matrices and parking lots
 

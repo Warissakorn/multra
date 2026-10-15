@@ -8,6 +8,20 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-15 — Multi-level workflow design accepted (D175)
+
+Docs only. A design review in chat (Thai) walked how the three levels, the editor and the
+network work together, compared with Aimsun, and asked for starting at any level. Two scrutiny
+passes corrected the drafts: the D145 plan reused an M5.1 Node that does not exist, bound OdMatrix
+periods to Micro's run duration, and stored subarea cuts that go stale; per-field status flags
+duplicated what field presence already says; mid-link Micro destinations need a core contract
+(D153), so Micro keeps driveways as Links. Web checks before recording: GEH/DMRB wording
+(secondary sources, flow test added), HCM 1,900 pc/h/ln with wide local variation, UTM 47N/48N
+split at 102°E with legacy Indian 1975 datums, and motorcycle PCU varying within the green. The
+owner accepted every recommendation; [MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) records
+the design, answers and order (S0 Node first). No code, schema or test changed. The D147 entry
+moved whole to `archive/`.
+
 ## 2026-10-14 — Authorized whole-repository review fixes (D167–D174)
 
 The owner approved the nine-item review plan together. Fixed evaluation passages, journey free-flow,
@@ -453,33 +467,6 @@ PR #135 (M5.9, M4.2) merged, with native CI green on Linux and Windows. NEXT now
 The D129 entry moved whole to `archive/`.
 
 ---
-
-## 2026-10-09 — M4.2 amber stop-or-go (D147)
-
-An optional behaviour `amberDeceleration` (catalog 3.0 m/s², ITE) turns amber into a continuous
-check: go when `speed² > 2·a·gap`, else stop. With it, a vehicle that cannot stop at its type's
-maximum deceleration goes on amber or red, as at a priority rule. That second rule was the owner's
-choice after the first measurement left 44 physically impossible stops at red onset. One comparison
-in the core head loop, no vehicle state. M0 scenarios (no `schemaVersion`) resolve the catalog
-without the field through a never-written, never-compared provenance flag. So the frozen TS
-fixtures, `trafficsim-cli 42` and the editor's `crossing.json` run did not move; a save and reopen
-round-trips exactly. An owned behaviour with the field is schema 28. Capturing the catalog now owns
-it, which exposed a latent defect: owned catalogs without a library were written without `model`
-at schema 22+ and could not be reopened. The writer now tags every owned behaviour from schema 21.
-
-Contract and rows AM1–AM8 in [AMBER](reference/AMBER.md); `tests/amber_tests.cpp` (group `amber`)
-plus a regression for the untagged catalogs. Four-leg over seeds 42–81: clamps 220 → 1, every
-movement's delay down 1.4–7.5 s; M2.6: clamps 844 → 35 (not classified), delay −1.1 to −12.3 s
-([evidence](evidence/m4.2-amber.md)). Changed tests, each for a stated reason:
-- The four-leg clamp diagnosis is pinned on the run with the field removed (D36), and a new row
-  pins zero clamps with it.
-- The archived M3.2.7 sweep inputs drop the field, noted in that evidence as D36-era.
-- `results-tabs-ui` uses a copy owning the D36 behaviour so its clamp page still has clamps.
-- Fixtures that test schemas 18–25 strip the field.
-- Future-schema probes move to 29.
-
-Linux only: desktop preset (Qt 6.4.2 offscreen, GCC 13.3), ctest 113/113 and `check` green.
-Windows is the PR's native CI. The BA14/BA17 and D128 entries moved whole to `archive/`.
 
 ---
 

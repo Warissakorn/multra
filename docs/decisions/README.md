@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Product scope, stack, naming and owner gates | D145, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
@@ -137,3 +137,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D167](RECORD.md#d167) · [D168](RECORD.md#d168) · [D169](RECORD.md#d169) · [D170](RECORD.md#d170) · [D171](RECORD.md#d171) · [D172](RECORD.md#d172) · [D173](RECORD.md#d173)
 [D174](RECORD.md#d174)
+
+[D175](RECORD.md#d175) — multi-level workflow amends D145: one loop from any level, Node polygon (S0), Road + cross-section templates, StudyPeriod, run-time cut, offline first.
