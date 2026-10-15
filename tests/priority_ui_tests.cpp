@@ -91,6 +91,8 @@ int main(int argc, char** argv) {
         require(automaticRows(table) == 1, "The automatic merge is not listed"); // the crossings are authored now
         require(tabs->currentWidget() == test::tabPage(tabs,table), "The Conflict areas tab was not shown");
         require(items(w, "conflict-area") == 4 && items(w, "waiting-line") == 3, "Individual lane-pair sides and waiting lines were not drawn");
+        for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "conflict-area")
+            require(i->toolTip().isEmpty() && !i->data(1).toString().isEmpty(), "A conflict area shows its internal key as a tooltip or lost its key");
         require(table->item(0, 6)->text() == "Runs", "A complete crossing did not report that it runs");
         const auto revision = w.history().revision();
 

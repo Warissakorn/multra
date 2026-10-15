@@ -120,6 +120,10 @@ Separate delete/remove from Add/Edit and view controls with a separator and trai
 Retain confirmations, enabled rules and Undo semantics. Primary buttons and fields remain
 24 px in normal, hover, pressed, checked, focused, invalid and disabled states; toolbar 32.
 Do not alter token tests or use a border change that shifts text. No shadow or animation.
+State language (D190), the same on toolbars, buttons, menus, tabs and list/table rows: hover =
+Midlight fill only; pressed = Mid; checked/selected = Mid plus an accent marker on one edge
+(underline on buttons and tabs, left bar on rows); only keyboard focus draws an accent frame.
+No tooltip over the empty canvas or panel backgrounds; help text belongs in the F1 dialog.
 
 ## 3. Typography, values and long content
 
@@ -133,7 +137,8 @@ One family: bundled Noto Sans Thai, real 400 and 600. Pixel sizes are existing t
 | 14 | Section heading | 600 Results/dialog/Lab section headings only, not every form label |
 | 18 | Dialog/window content title | 600 command palette and major in-content title; avoid dock crowding |
 
-Use token values, not literal duplicate fonts. No Thai tracking, forced uppercase Thai or
+Dock titles are 13/600 and instruction hints (palette, status bar) 11/400 (D190); Lab group
+boxes are the 14/600 section heading. Use token values, not literal duplicate fonts. No Thai tracking, forced uppercase Thai or
 font below 11 px. Do not add 14 px headings to small-table toolbars if their height would grow.
 Thai vowels/tone marks must fit both regular and 600 cuts at 100/150/200%; a change to line-box
 metrics requires a decision and test update, not a padding guess (D103).

@@ -62,7 +62,6 @@
   "editorUntitled": "Untitled",
   "editorLength": "Centreline length: %1 m",
   "editorNoSelection": "Select a link or connector, or draw a new link.",
-  "editorHelp": "Click selects in every tool. Ctrl + right-click or Ctrl + right-drag creates or changes: choose a Network Object and Ctrl + right-drag to draw it (left-click on the way for a bend). Shift + click adds or removes, Ctrl + click adds; Ctrl + drag a selected object duplicates the selection. Delete removes objects; Ctrl + Delete removes a point.",
   "editorDeleteWarning": "Delete this link and its attached connectors, signal heads, affected routes and their vehicle inputs? Undo restores them together.",
   "editorUnsaved": "Save your changes before continuing?",
   "editorFilter": "TrafficSim projects (*.traffic.json);;All JSON (*.json)",

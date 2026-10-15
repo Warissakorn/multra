@@ -130,9 +130,9 @@ void EditorWindow::refreshRun(){
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(!batchRunning());
     if(const auto e=actions_.find("editorCancelSeeds");e!=actions_.end())e->second->setEnabled(batchRunning());
     runSeed_->setAccessibleName(text("seed"));runSpeed_->setAccessibleName(text("speed"));
-    if(!runSnapshot_){runInfo_->setText(text("editorRunReady"));runInfo_->setToolTip({});return;}
-    // All diagnostic figures wrap above the canvas; their interpretation stays in the tooltip.
-    runInfo_->setToolTip(text("editorRunStatusNote"));
+    if(!runSnapshot_){runInfo_->setText(text("editorRunReady"));runInfo_->setAccessibleDescription({});return;}
+    // All diagnostic figures wrap above the canvas; their interpretation is in the Shortcuts dialog (F1).
+    runInfo_->setAccessibleDescription(text("editorRunStatusNote"));
     const auto summary=runSummary_.summary();
     runInfo_->setText(text("editorRunStatus").arg(runSnapshot_->revision).arg(runState_.seed)
         .arg(runState_.time,0,'f',1).arg(runState_.vehicles.size()).arg(pendingCount(runState_)).arg(runState_.completed)

@@ -1,5 +1,6 @@
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
+#include <QApplication>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
@@ -83,40 +84,53 @@ QIcon editorIcon(EditorIcon icon) {
 // because Qt centres the icon in the 19 px content box with the extra pixel below/right.
 // Qt Style Sheets have no letter-spacing, transition or shadow property; tracking is set on the
 // label QFont (styleGroupLabel), and nothing here animates.
+// State language, one for every surface: hover is a Midlight fill only, pressed a Mid fill,
+// checked/selected a Mid fill plus an accent marker on one edge (bottom for buttons and tabs,
+// left for list rows; a toolbar button's 2 px underline takes its pixel from the bottom
+// padding), and only keyboard :focus draws an accent frame (a focused tab turns accent). No
+// hover, pressed or checked state changes a control's height, so nothing shifts. Weight: 600 for group and table
+// headers, dock and section titles, the command title and the Run action; everything else 400,
+// and a selected tab or menu item is never bolded (its width would jump).
 QString editorStyleSheet() {
     QString stylesheet=QStringLiteral(R"(
         QWidget { color: palette(text); font-size: @fontBodypx; }
         QMainWindow::separator { background: palette(midlight); width: @space1px; height: @space1px; border-left: 1px solid palette(mid); border-right: 1px solid palette(mid); }
         QMainWindow::separator:hover { background: palette(mid); }
         QMenuBar { background: palette(base); padding: 0 @space1px; border-bottom: 1px solid palette(mid); min-height: @controlHeightpx; }
-        QMenuBar::item { padding: @space1px @space2px; }
-        QMenuBar::item:focus, QMenu::item:focus { border: 2px solid palette(highlight); }
-        QMenuBar::item:selected, QMenu::item:selected { background: palette(mid); color: palette(text); }
+        QMenuBar::item { padding: 2px @space2px; margin: 2px 0; border-radius: @radiuspx; background: transparent; }
+        QMenuBar::item:selected, QMenu::item:selected { background: palette(midlight); color: palette(text); }
+        QMenuBar::item:pressed { background: palette(mid); }
         QMenu { background: palette(base); border: 1px solid palette(mid); padding: @space1px; }
-        QMenu::item { min-height: @controlContentpx; padding: @padYpx @space6px; }
+        QMenu::item { min-height: @controlContentpx; padding: @padYpx @space6px; border-radius: @radiuspx; }
+        QMenu::separator { height: 1px; background: palette(mid); margin: @space1px @space2px; }
         QToolBar { background: palette(base); border: 0; spacing: @space1px; padding: @space1px; }
         QToolBar::separator { background: palette(mid); width: 1px; margin: @space1px; }
         QToolButton, QPushButton { min-height: @fieldContentpx; max-height: @fieldContentpx; padding: 0 @space2px; border: 1px solid palette(dark); border-radius: @radiuspx; background: palette(button); }
         QToolBar QToolButton { min-width: @iconpx; min-height: @iconpx; border-color: transparent; background: transparent; padding: 2px 1px 1px 2px; }
-        QToolButton:hover, QPushButton:hover { background: palette(midlight); border-color: palette(window-text); }
-        QToolButton:pressed, QPushButton:pressed, QToolButton:checked { background: palette(mid); border-color: palette(highlight); }
+        QToolButton:hover, QPushButton:hover { background: palette(midlight); }
+        QToolButton:pressed, QPushButton:pressed { background: palette(mid); }
+        QToolButton:checked, QPushButton:checked { background: palette(mid); border-bottom-color: palette(highlight); }
+        QToolBar QToolButton:checked { border-color: transparent; border-bottom: 2px solid palette(highlight); padding-bottom: 0; }
         QToolButton:focus, QPushButton:focus { border: 2px solid palette(highlight); padding: 0 7px; min-height: @fieldFocuspx; max-height: @fieldFocuspx; }
         QToolBar QToolButton:focus { padding: 1px 0 0 1px; }
         QToolButton:disabled, QPushButton:disabled { color: palette(window-text); background: palette(midlight); border-color: palette(mid); }
         QToolButton#editorRunButton { background: palette(midlight); border-color: palette(highlight); color: palette(text); font-weight: 600; }
+        QToolButton#editorRunButton:hover, QToolButton#editorRunButton:pressed { background: palette(mid); }
         QDockWidget { border: 1px solid palette(mid); }
-        QDockWidget::title { background: palette(window); min-height: @controlContentpx; padding: @padYpx @space2px; color: palette(text); font-size: @fontLabelpx; font-weight: 600; }
+        QDockWidget::title { background: palette(window); min-height: @controlContentpx; padding: 1px @space2px; color: palette(text); font-size: @fontBodypx; font-weight: 600; }
+        QGroupBox { font-size: @fontSectionpx; font-weight: 600; }
+        QGroupBox QWidget { font-weight: 400; }
         QScrollArea, QTabWidget::pane { border: 0; background: palette(base); }
         QGraphicsView { background: palette(base); border: 1px solid palette(mid); }
         QGraphicsView:focus { border: 2px solid palette(highlight); }
         QTabBar::tab { min-height: @controlContentpx; padding: @padYpx @space2px; border-bottom: 1px solid transparent; color: palette(window-text); }
         QTabBar::tab:selected { color: palette(text); border-bottom: 2px solid palette(highlight); background: palette(base); }
         QTabBar::tab:hover { background: palette(midlight); }
-        QTabBar::tab:focus { border: 2px solid palette(highlight); }
+        QTabBar::tab:focus { color: palette(highlight); }
         QLineEdit, QComboBox, QAbstractSpinBox { min-height: @fieldContentpx; max-height: @fieldContentpx; background: palette(base); border: 1px solid palette(dark); border-radius: @radiuspx; padding: 0 @space2px; selection-background-color: palette(highlight); selection-color: palette(highlighted-text); }
         QAbstractSpinBox, QLineEdit[numeric="true"], QComboBox[numeric="true"] { font-size: @fontNumericpx; }
         QAbstractSpinBox, QLineEdit[numeric="true"] { qproperty-alignment: 'AlignRight | AlignVCenter'; }
-        QLineEdit:hover, QComboBox:hover, QAbstractSpinBox:hover { border-color: palette(text); }
+        QLineEdit:hover, QComboBox:hover, QAbstractSpinBox:hover { border-color: palette(window-text); }
         QLineEdit:focus, QComboBox:focus, QAbstractSpinBox:focus { border: 2px solid palette(highlight); padding: 0 7px; min-height: @fieldFocuspx; max-height: @fieldFocuspx; }
         QLineEdit:read-only { background: palette(midlight); color: palette(window-text); }
         QLineEdit:disabled, QComboBox:disabled, QAbstractSpinBox:disabled { background: palette(midlight); color: palette(window-text); border-color: palette(mid); }
@@ -137,11 +151,11 @@ QString editorStyleSheet() {
         QTreeWidget::item, QListWidget::item { min-height: @controlContentpx; padding: @padYpx @space1px; border: 1px solid transparent; }
         QTreeWidget::item:hover, QListWidget::item:hover { background: palette(midlight); }
         QTreeWidget::item:selected, QListWidget::item:selected { background: palette(mid); color: palette(text); border-left: 2px solid palette(highlight); }
-        QTreeWidget::item:focus, QListWidget::item:focus { border: 2px solid palette(highlight); padding: 1px 3px; }
+        QTreeWidget::item:focus:!selected, QListWidget::item:focus:!selected { border: 1px solid palette(highlight); }
         QTableView { background: palette(base); alternate-background-color: palette(window); border: 1px solid palette(dark); selection-background-color: palette(mid); selection-color: palette(text); gridline-color: palette(mid); }
         QTableView::item { min-height: @controlContentpx; padding: @padYpx @space1px; border-bottom: 1px solid palette(mid); }
         QTableView::item:hover { background: palette(midlight); }
-        QTableView::item:focus { border: 2px solid palette(highlight); padding: 1px 3px; }
+        QTableView::item:focus:!selected { border: 1px solid palette(highlight); }
         QHeaderView::section { min-height: @controlContentpx; background: palette(window); color: palette(text); border: 0; border-right: 1px solid palette(mid); padding: @padYpx @space2px; font-size: @fontLabelpx; font-weight: 600; }
         QLabel#editorScope { background: palette(window); color: palette(text); padding: @space1px @space2px; border-bottom: 1px solid palette(mid); }
         QLabel#editorRunInfo { background: palette(base); color: palette(text); padding: @space1px @space2px; }
@@ -149,7 +163,7 @@ QString editorStyleSheet() {
         QLabel[status="warning"] { color: palette(link-visited); }
         QLabel[status="advisory"] { color: palette(link); }
         QLabel[status="ok"] { color: palette(shadow); }
-        QLabel#editorPaletteHint, QLabel#editorToolHint { color: palette(window-text); font-size: @fontNumericpx; }
+        QLabel#editorPaletteHint, QLabel#editorToolHint { color: palette(window-text); font-size: @fontLabelpx; }
         QLabel[editorEyebrow="true"] { color: palette(window-text); font-size: @fontLabelpx; font-weight: 600; }
         QLabel#editorCommandTitle { color: palette(text); font-size: @fontTitlepx; font-weight: 600; }
         QLabel[numeric="true"] { font-size: @fontNumericpx; }
@@ -160,6 +174,7 @@ QString editorStyleSheet() {
     const std::pair<const char*,int> sizes[]={
         {"@fontLabel",editorDesign::fontSizeLabel},{"@fontNumeric",editorDesign::fontSizeNumeric},
         {"@fontBody",editorDesign::fontSizeBody},{"@fontTitle",editorDesign::fontSizeTitle},
+        {"@fontSection",editorDesign::fontSizeSection},
         {"@space1",editorDesign::space1},{"@space2",editorDesign::space2},{"@space4",editorDesign::space4},
         {"@space5",editorDesign::space5},{"@space6",editorDesign::space6},
         {"@controlHeight",editorDesign::controlHeight},{"@controlContent",editorDesign::controlHeight-2*editorDesign::controlPaddingY-2},
@@ -174,6 +189,9 @@ QString editorStyleSheet() {
 }
 void applyEditorStyle(QWidget* window) {
     installEditorStyle();
+    // Application-wide as well: with a stylesheet on the window, Qt 6.4 resolved a child's
+    // palette(role) against the default palette (Mid #b8b8b8, Highlight #308cc6), not this one.
+    QApplication::setPalette(editorDesign::editorPalette());
     window->setPalette(editorDesign::editorPalette());
     window->setStyleSheet(editorStyleSheet());
 }
