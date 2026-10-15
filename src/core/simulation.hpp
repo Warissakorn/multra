@@ -21,7 +21,8 @@ SimState runSimulation(const Scenario& scenario, std::uint32_t seed,
 std::uint64_t totalTicks(const Scenario& scenario);
 // D165 (docs/reference/BEHAVIOUR_LAB.md §1.2): the same run continued on a scenario of the same
 // shape -- the same ids in the same order, the same segments, routes and compiled tables; only
-// values (behaviours, types, head positions, programs, input rates) may differ. Vehicles, queues,
+// values (behaviours, types, head positions, programs) may differ. Inputs, including rates and
+// time windows, must remain identical so their sampled arrival schedule stays valid. Vehicles, queues,
 // RNG, tick and time are kept; the index is rebuilt. RETUNE_SHAPE_CHANGED otherwise, before anything
 // changes. A changed reaction-time tick count is also RETUNE_SHAPE_CHANGED. With
 // rescaleDesiredSpeeds a vehicle keeps its quantile in a changed desired-speed range.

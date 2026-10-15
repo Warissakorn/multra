@@ -146,7 +146,10 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(zone.gapTime, p + ".gapTime"); number(zone.headway, p + ".headway", true);
         for (const auto& [side, name] : {std::pair{&zone.major, ".major"}, std::pair{&zone.minor, ".minor"}}) {
             const auto& chain = side->segmentIds;
-            bool known = !chain.empty();
+            if (chain.empty()) {
+                add("INVALID_RANGE", p + name + ".segmentIds"); zonesValid = false; continue;
+            }
+            bool known = true;
             for (std::size_t k = 0; k < chain.size(); ++k) {
                 const auto on = segments.find(chain[k]);
                 if (on == segments.end()) { add("UNKNOWN_SEGMENT", p + name + ".segmentIds"); known = false; break; }

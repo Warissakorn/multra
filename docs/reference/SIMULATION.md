@@ -346,7 +346,9 @@ this does not introduce a between-lanes engine state.
    ([W74 §6](W74.md#6-composition-with-the-shipped-tick), D138) for a `w74` behaviour — with perceived
    leaders and multi-anticipation as [PERCEPTION](PERCEPTION.md) defines. With a nonzero reaction
    delay, queue that decision and apply the oldest through current type bounds and D105. Then
-   ballistic integration (no negative speed), with speed capped at `desiredSpeed`.
+   ballistic integration (no negative speed), with speed capped at `desiredSpeed`. If the current
+   speed is already above the target (e.g. after live retune), approach the target through bounded
+   braking instead of snapping speed; the last braking tick lands on the target (D191).
 5. A move beyond `allowedDistance` is cut to it and stops: `safety-clamp`.
 6. A vehicle resting at a Stop line is held at zero (`restsAtStop`), which is not a clamp.
 7. Phase 2, only with zones: `resolveRequests` (swept check, shared receiving space) can only
@@ -452,7 +454,7 @@ after `createSimulation` and once after every `stepSimulation`). `core/` does no
 
 - **Movement:** an authored route's (first Link, last Link) pair, named from the Links' Names,
   in authored route order. Two routes with the same pair are one movement. Every runtime route
-  (`id`, `id/lane-k`) maps through its authored id.
+  (`id`, `id/lane-k`) uses the compiler's exact authored-id mapping; `/` in an ID is opaque (D191).
 - **Delay** per movement is the mean over completed trips of the run summary's own term:
   `max(0, travelTime + departureDelay − freeFlowTime)` over the **whole route** (D39). The
   movements' trips plus `notInMovement` equal the run's completed trips.

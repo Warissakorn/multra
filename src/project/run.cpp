@@ -70,7 +70,8 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // data, sliced away by resolveCatalogs, so it is read from the document itself.
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);
     if(manifest)manifest->validate();
-    auto scenario=compileScenario(d.network,definition,walks.builtSections());
+    CompiledRouteOrigins routeOrigins;
+    auto scenario=compileScenario(d.network,definition,walks.builtSections(),&routeOrigins);
     // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.
     if(!d.zones.parkingLots.empty()) {
         compileParkingLots(d,authored,scenario,data);
@@ -80,6 +81,6 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // by that duration, so the engine releases no new demand in it; extended only here, after every
     // expansion that reads the authored duration, and for every caller (CLI, batch, editor).
     if(d.definition->evaluation)scenario.duration+=d.definition->evaluation->cooldown;
-    return {d.revision,d.network,std::move(scenario)};
+    return {d.revision,d.network,std::move(scenario),std::move(routeOrigins)};
 }
 }

@@ -11,6 +11,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
+- D191 corrects the six audit findings on main: route attribution, live speed reduction, demand
+  retune refusal, signal integer bounds, stale runtime catalogs and empty conflict chains.
+  Linux sanitizer CI is added; the UI slice below remains the next product task.
 - M3.7 lateral slices 1–3a are in: the keys and compiled cross-sections (D187); spans with a
   lateral band, other-lane spans for a body past `kLateralOverlap`, and the `dLat` leader/alongside
   filter (D188); lateral motion toward `lateralTarget`, admission in id order without 2D overlap,

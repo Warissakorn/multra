@@ -2,6 +2,7 @@
 #include "../../core/types.hpp"
 #include "control.hpp"
 #include <array>
+#include <map>
 #include <optional>
 
 namespace trafficsim {
@@ -431,12 +432,15 @@ inline constexpr double kMinSectionLength = 0.2;
 std::vector<ValidationIssue> validateNetwork(const Network& network);
 void assertValidNetwork(const Network& network);
 // Unchecked assembly, for diagnostics that must not throw. Requires an already-valid network.
-Scenario buildScenario(const Network& network, const ScenarioDefinition& definition);
-Scenario buildScenario(const Network& network, const RuntimeSections& table, const ScenarioDefinition& definition);
+// Runtime route id -> exact input route id. Ids are opaque and may themselves contain '/'.
+using CompiledRouteOrigins = std::map<std::string, std::string>;
+Scenario buildScenario(const Network& network, const ScenarioDefinition& definition, CompiledRouteOrigins* origins = nullptr);
+Scenario buildScenario(const Network& network, const RuntimeSections& table, const ScenarioDefinition& definition,
+                       CompiledRouteOrigins* origins = nullptr);
 // `known`, when given, is runtimeSections of this Network that the caller already built; it is
 // never built ahead of the network check, which must report UNKNOWN_LANE before it can throw.
 Scenario compileScenario(const Network& network, const ScenarioDefinition& definition,
-                         const RuntimeSections* known = nullptr);
+                         const RuntimeSections* known = nullptr, CompiledRouteOrigins* origins = nullptr);
 // One lane's distance along an authored route, from its compiled chains: the route itself when it
 // expanded to one lane, else the first "/lane-k" chain that is not a stub, so a lane that ends at
 // its dead end never stands for the route. 0 when nothing compiled under the id.

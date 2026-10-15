@@ -2,6 +2,24 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.5 slice 2: look-ahead and multi-anticipation (D182)
+
+Own motion now reads two of the perception keys.
+- **What a driver perceives.** `perceivedLeaders` returns up to `observedVehiclesAhead` distinct
+  vehicles within `lookAheadDistance`, nearest first.
+- **How it brakes.** Own motion takes the lowest `follow` over them, using effective gaps less the
+  room the vehicles in between need at rest. A standing car two vehicles ahead slows the follower
+  before the car in between reacts.
+- **What stays physical.** The unbounded leader still sets the hard cap, admission and D108, so an
+  unseen queue can only produce a counted clamp, never an overlap.
+- **Tie rule changed.** PERCEPTION §2 said ties go by vehicle id; it now says scan order, the rule
+  `closestVehicle` already uses. Only then is one observed vehicle with no limit exactly today's
+  leader, which the four-leg seed-42 comparison confirms.
+- **Benchmark.** Interleaved runs show about +1 % with the keys absent.
+
+Checked on Linux: `check` 140/140, CLI seed 42 unchanged
+([evidence](../evidence/perception-motion.md)).
+
 ## 2026-10-15 — M3.5 slice 1: perception codec (D181)
 
 The first code in D178's order. `DriverBehaviour` gains `PerceptionParameters`: five optional

@@ -12,6 +12,28 @@ lab::LabSettings settings() {
 lab::LabRun run(const lab::LabSettings& s) { return lab::LabRun(s, test::root() / "data", 42); }
 void steps(lab::LabRun& r, int n) { for (int i = 0; i < n; ++i) r.step(); }
 }
+TEST(lab, reducing_live_desired_speed_brakes_with_consistent_motion) {
+    auto s = settings(); s.road.signal = false;
+    s.traffic.vehicleCount = 0; s.traffic.crossVehicleCount = 0;
+    s.focus.type.desiredSpeed = {15, 15};
+    auto r = run(s); steps(r, 300);
+    const auto id = r.focusId(), tick = r.state().tick;
+    CHECK(r.telemetry()->speed > 14.9);
+    s.focus.type.desiredSpeed = {5, 5};
+    CHECK(r.apply(s) == lab::LabRun::Applied::retuned);
+    CHECK(r.focusId() == id && r.state().tick == tick);
+    for (int i = 0; i < 100; ++i) {
+        const auto before = r.state().vehicles.front();
+        r.step(); const auto& after = r.state().vehicles.front();
+        const double dt = r.state().scenario->timeStep;
+        CHECK(after.speed >= before.speed - s.focus.type.maxDeceleration * dt - 1e-9);
+        test::near(after.speed - before.speed, after.acceleration * dt);
+        // This short interval never reaches the circuit seam.
+        test::near(after.distance - before.distance, before.speed * dt + .5 * after.acceleration * dt * dt);
+    }
+    test::near(r.telemetry()->speed, 5, .01);
+    CHECK(r.safetyClamps() == 0);
+}
 TEST(lab, bl9_the_ring_compiles_and_runs_an_hour_without_a_clamp) {
     auto s = settings();
     for (const int lanes : {1, 2}) {

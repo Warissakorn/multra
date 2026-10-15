@@ -76,10 +76,11 @@ bool routeAlreadyExpanded(const RuntimeSections& table, const std::vector<std::s
     return true;
 }
 }
-Scenario buildScenario(const Network& network, const ScenarioDefinition& definition) {
-    return buildScenario(network, runtimeSections(network), definition);
+Scenario buildScenario(const Network& network, const ScenarioDefinition& definition, CompiledRouteOrigins* origins) {
+    return buildScenario(network, runtimeSections(network), definition, origins);
 }
-Scenario buildScenario(const Network& network, const RuntimeSections& table, const ScenarioDefinition& definition) {
+Scenario buildScenario(const Network& network, const RuntimeSections& table, const ScenarioDefinition& definition,
+                       CompiledRouteOrigins* origins) {
     Scenario scenario;
     static_cast<ScenarioDefinition&>(scenario) = definition;
     // One pass over the drawing produces the lane sections, the connector paths and where each
@@ -183,6 +184,12 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
     for (auto& rule : rightOfWay.rules) scenario.priorityRules.push_back(std::move(rule));
     // M3.2.3a: each runnable authored crossing, after any C++-supplied zone.
     for (auto& zone : rightOfWay.zones) scenario.conflictZones.push_back(std::move(zone));
+    if (origins) {
+        CompiledRouteOrigins mapping;
+        for (const auto& [authored, runtime] : expanded)
+            for (const auto& id : runtime) mapping.emplace(id, authored);
+        *origins = std::move(mapping);
+    }
     return scenario; // All fields are owned values, independent of the editor model.
 }
 std::vector<ValidationIssue> connectorRuntimeIssues(const Network& network) {
@@ -327,7 +334,7 @@ std::vector<ValidationIssue> connectorShapeIssues(const Network& network) {
     return issues;
 }
 Scenario compileScenario(const Network& network, const ScenarioDefinition& definition,
-                         const RuntimeSections* known) {
+                         const RuntimeSections* known, CompiledRouteOrigins* origins) {
     // Order is load-bearing: the network pass reports UNKNOWN_LANE before laneGeometry can throw.
     assertValidNetwork(network);
     // One table for every check and the build: the same Network, derived once.
@@ -341,8 +348,10 @@ Scenario compileScenario(const Network& network, const ScenarioDefinition& defin
     for(auto& issue:resolveRightOfWay(network,table,definition.priorityDefaults).issues)
         issues.push_back(std::move(issue));
     if(!issues.empty())throw ValidationError(std::move(issues));
-    auto scenario = buildScenario(network, table, definition);
+    CompiledRouteOrigins mapping;
+    auto scenario = buildScenario(network, table, definition, origins ? &mapping : nullptr);
     assertValidScenario(scenario);
+    if (origins) *origins = std::move(mapping);
     return scenario;
 }
 double authoredRouteLength(const Scenario& scenario, const std::string& routeId) {

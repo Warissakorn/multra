@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        preset: [headless, desktop, release]
+        preset: [headless, desktop, release, sanitizer]
     # ccache: a clean release build is 196 s cold and 8 s warm locally (177/177 hits, PCH
     # included). The sloppiness settings are what let the precompiled-header targets hit.
     env:

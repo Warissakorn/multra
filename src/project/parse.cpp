@@ -4,6 +4,8 @@
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
+#include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace trafficsim {
@@ -47,7 +49,8 @@ template<class T> T field(const Json& value, const char* name) {
 }
 int integer(const Json& value, const char* name) {
     const double n = field<double>(value, name);
-    if (n != static_cast<int>(n)) throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
+    if (!std::isfinite(n) || n < std::numeric_limits<int>::min() || n > std::numeric_limits<int>::max() ||
+        n != std::trunc(n)) throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
     return static_cast<int>(n);
 }
 const Json& array(const Json& value, const char* name) {
