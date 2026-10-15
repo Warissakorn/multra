@@ -26,4 +26,17 @@ bool hasPerception(const PerceptionParameters& parameters);
 struct PerceivedLeader { Leader leader; std::uint64_t vehicleId{}; };
 std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
     const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range);
+// One sighting into a nearest-first list of at most `count` distinct vehicles: a vehicle seen twice
+// keeps its smaller gap, and an equal gap goes after the ones already there (§2's tie rule).
+void notePerceived(std::vector<PerceivedLeader>& found, std::size_t count, const PerceivedLeader& seen);
+// Either forward key is set: the acceleration reads perceived leaders (§2-§4).
+bool perceivesAhead(const PerceptionParameters& parameters);
+std::size_t observedCount(const PerceptionParameters& parameters);
+double lookAheadRange(const PerceptionParameters& parameters);
+// §3: lowers `following` (already computed against perceived[0]) to the smallest acceleration
+// against each further perceived leader at its gap less the room the vehicles in between need at
+// rest; the nearer leader is kept on a tie (strict <).
+void anticipate(FollowingResult& following, const Scenario& scenario, const std::vector<Vehicle>& vehicles,
+    const std::vector<VehicleRefs>& refs, const Vehicle& vehicle, const VehicleType& type,
+    const DriverBehaviour& behaviour, const std::vector<PerceivedLeader>& perceived);
 }

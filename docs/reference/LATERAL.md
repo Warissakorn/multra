@@ -111,7 +111,7 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   overlaps the follower's body widened by `dLat(v)` on each side. Exact touching counts as
   overlapping. Two motorcycles side by side in one lane, with clearance above `dLat`, are not each
   other's leaders. This applies to the physical leader and to PERCEPTION's perceived leaders alike.
-- **Alongside** (`around`, `src/core/lanes.cpp:40`) means longitudinal overlap together with the
+- **Alongside** (`around`, `src/core/lanes.cpp:46`) means longitudinal overlap together with the
   same lateral test. It still refuses a lane change, whatever the perception keys.
 - **Non-overlap.** The hard cap (`allowedDistance`, `src/core/simulation.cpp:264`) and its counted
   clamps apply to the overlapping physical leader. Together with §7's admission rule, no two bodies
@@ -170,8 +170,8 @@ uncertain.
 | Consumer | Change when the switch is on |
 |---|---|
 | `closestVehicle` (`simulation.cpp:35`) and PERCEPTION's search | Lateral filter (§6); spans of straddling vehicles appear on both lanes |
-| `around` / `safeAt` (`lanes.cpp:40`, `:69`) | Lateral filter; alongside per §6 |
-| `courtesyHolds` (`lanes.cpp:288`) | Unchanged logic over the new spans |
+| `around` / `safeAt` (`lanes.cpp:46`, `:83`) | Lateral filter; alongside per §6 |
+| `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic over the new spans |
 | Zones (`summarizeZones`, `zoneHold`, `resolveRequests`, `src/core/conflicts.cpp`) | Any span on a zone segment occupies it (§6) |
 | D108 source insertion (`simulation.cpp:160`) | A new vehicle starts centred, and its first span is checked in two dimensions |
 | Lateral admission (new, §7) | After the longitudinal step, in vehicle-id order |

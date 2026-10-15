@@ -16,8 +16,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
   [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
   (D177; motorcycles are core scope), the owner's answers (D178), and the perception
-  (D179) and lateral (D180) contracts, and perception slices 1–2 (D181,
-  D182); not yet merged.
+  (D179) and lateral (D180) contracts, and perception slices 1–3 (D181,
+  D182, D183); not yet merged.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
@@ -26,27 +26,26 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.5 slice 3: look-back, rear time-to-collision and the perceived forward test**
-   ([PERCEPTION](reference/PERCEPTION.md) §4, §7; rows BA33, BA34, with BA30). Slice 2 (D182) gave
-   own motion `perceivedLeaders` (`src/core/perception.cpp`); this slice moves the lane-change
-   tests onto perception. All use the **changer's** behaviour keys:
-   - **Rear check.** `around` (`src/core/lanes.cpp:40`) reports a follower only if
-     `atRear − otherFront ≤ lookBackDistance`. "Alongside" stays physical, unaffected by any key.
-   - **Rear time-to-collision.** `safeAt` (`lanes.cpp:69`) adds `gap / (vF − v) ≥
-     rearTimeToCollision` for a seen, closing follower; equal is accepted.
-   - **Forward check.** `safeAt` checks the target lane with the perceived leaders (§3's minimum
-     over k). `around`'s target spans include this tick's accepted changes (`extra`), so either
-     extend `perceivedLeaders` with an extra-span list or build the list inside `around`; keep one
-     scan.
-   - **Discretionary gain** (`lanes.cpp:263`) reads perceived leaders on both lanes.
-   - **Courtesy unchanged.** `courtesyHolds` (`lanes.cpp:288`) keeps today's order.
-   - **Identity.** With the keys absent, results are byte-identical.
-   - **Benchmark.** Re-run `trafficsim-engine-benchmark 40 1800`, interleaved before and after,
-     as [perception-motion](evidence/perception-motion.md) does.
-   - **Tests.** Add them to `tests/perception_motion_tests.cpp`, or a new
-     `perception_lane_tests.cpp` if it nears 500 lines. Use the two-lane fixtures in
-     `tests/lane_fixture.hpp`.
-   - 1b. Then PERCEPTION slices 4–5, LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
+1. **M3.5 slice 4: reaction time as an action delay** ([PERCEPTION](reference/PERCEPTION.md) §5,
+   §7; rows BA35, BA36, with BA30). Slices 1–3 (D181–D183) store the keys, give own motion the
+   perceived leaders (`perceivedLeaders`, `anticipate` in `src/core/perception.cpp`) and the
+   lane-change tests look-back and rear TTC. Now `reactionTime` τ:
+   - **FIFO.** `d = floor(τ/dt + 0.5)` ticks. `Vehicle` gains a FIFO (`std::vector`, empty when
+     `d = 0`) of `{acceleration, mode, w74 state}`, appended last so equality and replay cover it.
+     The motion loop (`src/core/simulation.cpp`, after `anticipate` and the courtesy comparison)
+     pushes the decided entry and applies the oldest. The bounds, D105, `integrate`, the
+     desired-speed cap and the hard cap then run unchanged on the applied value; the cap reads
+     the current physical leader.
+   - **Insertion** fills the FIFO with `{0, free, no state}`. A road boundary that changes `d`
+     trims or pads per §5. A Lab retune that changes `d` is refused.
+   - **Undelayed.** The hypothetical tests are not delayed: `safeAt`, courtesy, `deadEndGoverns`,
+     the gain, D108's first step and `stopLineReach`.
+   - **Identity.** With the key absent or `d = 0`, there is no FIFO and runs are byte-identical.
+     BA30's codec test then has no unread key left, so retire it into the identity tests.
+   - **Benchmark.** Interleaved, as [perception-lane](evidence/perception-lane.md) does.
+   - **Tests.** In a new `tests/perception_delay_tests.cpp`. BA35's first deceleration falls
+     exactly `d` ticks after the leader's, at dt 0.1, 0.25 and 0.5.
+   - 1b. Then PERCEPTION slice 5 (BA38 discharge record), LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
      its schema is the next number after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4
      overtaking with the driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to

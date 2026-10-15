@@ -162,11 +162,10 @@ TEST(perceptioncodec, ba30_unread_keys_change_no_run) { // BA30
     Json project; file >> project;
     const auto plain = compileDocument(parseDocument(project), data).scenario;
     auto keyed = plain;
-    // Look-ahead and observed vehicles move since D182 (perception_motion_tests.cpp); the keys
-    // no motion reads yet must still change nothing.
-    for (auto& b : keyed.behaviours) {
-        b.perception.lookBackDistance = 80; b.perception.rearTimeToCollision = 1.5; b.perception.reactionTime = 0.8;
-    }
+    // Look-ahead and observed vehicles move since D182 (perception_motion_tests.cpp), look-back
+    // and rear TTC change lanes since D183 (perception_lane_tests.cpp); the key nothing reads yet
+    // must still change nothing.
+    for (auto& b : keyed.behaviours) b.perception.reactionTime = 0.8;
     CHECK(keyed.behaviours != plain.behaviours); // the forcing: the keys really are there
     const auto a = runSimulation(plain, 42), b = runSimulation(keyed, 42);
     CHECK(!a.vehicles.empty() || a.nextVehicleId > 1);

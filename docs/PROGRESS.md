@@ -6,6 +6,26 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.5 slice 3: look-back, rear TTC and perceived lane-change tests (D183)
+
+Lane changes now read the changer's perception keys (`src/core/lanes.cpp`).
+- **Mirror check.** `around` drops a target-lane follower further back than `lookBackDistance`.
+  An unseen follower no longer blocks the change. It then reacts through its own model, and the
+  hard cap keeps it behind (BA33 runs one to the end). Alongside always refuses.
+- **Rear time-to-collision.** A seen follower closing on the changer must give `gap / (vF − v) ≥
+  rearTimeToCollision`; equal accepts (BA34).
+- **Forward test and gain.** These use the perceived leaders on the target lane and §3's lowest
+  acceleration. The room check runs against the nearest seen leader, and nothing is tested when
+  none is seen. The discretionary gain reads perceived leaders on both lanes.
+- **Shared code.** `notePerceived` and `anticipate` are shared with own motion, so the tie rule and
+  the multi-anticipation loop exist once.
+- **Checks.** Mutation check: four of the six new tests fail against slice 2's `lanes.cpp`. The
+  four-leg seed-42 run with neutral key values is equal tick by tick, with lane changes in it.
+  Benchmark inside noise.
+
+Checked on Linux: `check` 141/141, CLI seed 42 unchanged
+([evidence](evidence/perception-lane.md)).
+
 ## 2026-10-15 — M3.5 slice 2: look-ahead and multi-anticipation (D182)
 
 Own motion now reads two of the perception keys.

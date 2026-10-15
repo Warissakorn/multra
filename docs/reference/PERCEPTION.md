@@ -1,10 +1,11 @@
 # Perception contract: look-ahead, observed vehicles, look-back and reaction time (M3.5.0)
 
-Designed 2026-10-15 (D179). **Slices 1–2 are implemented**: the codec (D181, schema 32,
-[evidence](../evidence/perception-codec.md)) and look-ahead with multi-anticipation in own motion
-(D182, [evidence](../evidence/perception-motion.md)). Rows BA30–BA38 are in
+Designed 2026-10-15 (D179). **Slices 1–3 are implemented**: the codec (D181, schema 32,
+[evidence](../evidence/perception-codec.md)), look-ahead with multi-anticipation in own motion
+(D182, [evidence](../evidence/perception-motion.md)), and look-back, rear time-to-collision and the
+perceived lane-change tests (D183, [evidence](../evidence/perception-lane.md)). Rows BA30–BA38 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and are all
-pending except BA30–BA32 and BA37. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
+pending except BA30–BA34 and BA37. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
 motivate it; D177/D178 put it first. [DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md) owns assignment and
 selection, [SIMULATION](SIMULATION.md) the tick, [W74](W74.md) and the prototype their equations.
 This file owns **what a driver observes and when it acts on it**.
@@ -76,10 +77,10 @@ result is exactly today's single `follow` call (`simulation.cpp:346`).
 
 ## 4. Look-back and the rear test (the mirror check)
 
-`around` (`src/core/lanes.cpp:40`) finds, on a target lane, the nearest vehicle ahead, the
+`around` (`src/core/lanes.cpp:46`) finds, on a target lane, the nearest vehicle ahead, the
 nearest behind and anything alongside. With the keys set:
 
-- **Ahead on the target lane:** the forward test of `safeAt` (`lanes.cpp:69`) uses the perceived
+- **Ahead on the target lane:** the forward test of `safeAt` (`lanes.cpp:83`) uses the perceived
   leaders there (§3, same keys), not only the nearest.
 - **Behind:** a follower is **seen** only if its front is within `lookBackDistance` of the
   changer's rear. An unseen follower does not block the change. After the change it is an
@@ -93,8 +94,12 @@ nearest behind and anything alongside. With the keys set:
   the changer within comfortable deceleration, or within `acceptedDecelerationTrailingVehicle` for
   a discretionary change) still applies to a seen follower.
 
+Two details settled by D183. The forward test's one-tick room check uses the nearest **seen**
+leader; when no leader is seen on the target lane there is no forward test, and the hard cap with
+counted clamps governs, as in §2. The time-to-collision uses the snapshot speeds of both vehicles.
+
 These rules apply to mandatory and discretionary changes alike. `courtesyHolds`
-(`lanes.cpp:288`) searches followers in the same order as today; look-back does not restrict
+(`lanes.cpp:324`) searches followers in the same order as today; look-back does not restrict
 courtesy, because courtesy is the follower's decision, not the changer's perception.
 
 Not tested here: a second follower closing fast behind a slow first one. Only the immediate
@@ -121,7 +126,7 @@ d = floor(τ / dt + 0.5)          (ticks; d = 0 means today)
   (D108) and starts after `d` ticks: start-up reaction, which lowers source and discharge rates.
   BA38 records by how much.
 - **Hypothetical evaluations are not delayed:** `safeAt` forward and rear, the courtesy and
-  cooperative tests, `deadEndGoverns` (`lanes.cpp:114`), the discretionary gain (`lanes.cpp:263`),
+  cooperative tests, `deadEndGoverns` (`lanes.cpp:138`), the discretionary gain (`lanes.cpp:301`),
   D108's first step (`simulation.cpp:168`) and `stopLineReach`. They model the driver's judgement,
   not its action.
 - **Road boundaries** (D127 selection): the FIFO keeps its entries when the behaviour changes. If
@@ -176,11 +181,11 @@ longer match. The other four keys may change on a retune.
 |---|---|---|
 | Own motion (`simulation.cpp:346`) | Perceived (§3) for the acceleration, physical for the cap | Yes (§5) |
 | Courtesy / cooperative second obstacle (`simulation.cpp:350`) | Today's hold | Yes: part of the pushed value |
-| `safeAt` forward (`lanes.cpp:78`) | Perceived on the target lane | No |
-| `safeAt` rear (`lanes.cpp:90`) | Seen follower (§4) | No |
-| `courtesyHolds` (`lanes.cpp:288`) | Today's order, not limited by look-back | No |
-| Discretionary gain (`lanes.cpp:263`) | Perceived, on both lanes | No |
-| `deadEndGoverns` (`lanes.cpp:114`) | Static, unchanged | No |
+| `safeAt` forward (`lanes.cpp:89`) | Perceived on the target lane | No |
+| `safeAt` rear (`lanes.cpp:107`) | Seen follower (§4) | No |
+| `courtesyHolds` (`lanes.cpp:324`) | Today's order, not limited by look-back | No |
+| Discretionary gain (`lanes.cpp:301`) | Perceived, on both lanes | No |
+| `deadEndGoverns` (`lanes.cpp:138`) | Static, unchanged | No |
 | D108 source first step (`simulation.cpp:160-168`) | Physical | No; the FIFO starts at insertion |
 | Zone admission and receiving space | Physical | No |
 | `upcomingArrivals` (`src/core/demand.cpp:68`) | None (generation only) | — |

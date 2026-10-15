@@ -1,6 +1,7 @@
 #include "lanes.hpp"
 #include "conflicts.hpp"
 #include "following.hpp"
+#include "perception.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -35,16 +36,27 @@ bool inConflictArea(const ScenarioIndex& index, std::size_t route, double rear, 
 }
 // Who is around [atRear, at] on a target route: the nearest vehicle ahead, the nearest behind,
 // and whether anything lies alongside. Over the snapshot's spans and any extra ones (the changes
-// already accepted this tick).
-struct Around { std::optional<Leader> leader, follower; std::uint64_t followerId{}; bool alongside{}; };
+// already accepted this tick). With the changer's forward keys (PERCEPTION.md §4), `ahead` lists
+// the perceived leaders from the same scan; with `lookBackDistance`, a follower further back than
+// it is not seen. Alongside is physical, whatever the keys.
+struct Around {
+    std::optional<Leader> leader, follower; std::uint64_t followerId{}; bool alongside{};
+    std::vector<PerceivedLeader> ahead;
+};
 Around around(const ScenarioIndex& index, std::size_t target, double at, double atRear, std::uint64_t self,
-              const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, const std::vector<OccupiedSpan>& extra) {
+              const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, const std::vector<OccupiedSpan>& extra,
+              const PerceptionParameters& sight) {
     Around a;
+    const bool perceiving = perceivesAhead(sight);
+    const std::size_t count = perceiving ? observedCount(sight) : 0;
+    const double range = perceiving ? lookAheadRange(sight) : 0;
     const auto consider = [&](const RoutePart& part, const OccupiedSpan& span) {
         if (span.vehicleId == self) return;
         const double otherFront = part.start + span.front, otherRear = part.start + span.rear;
         if (otherRear >= at) {
             if (!a.leader || otherRear - at < a.leader->gap) a.leader = Leader{otherRear - at, span.speed, span.acceleration};
+            if (perceiving && otherRear - at <= range)
+                notePerceived(a.ahead, count, {Leader{otherRear - at, span.speed, span.acceleration}, span.vehicleId});
         } else if (otherFront <= atRear) {
             if (!a.follower || atRear - otherFront < a.follower->gap) {
                 a.follower = Leader{atRear - otherFront, span.speed, span.acceleration}; a.followerId = span.vehicleId;
@@ -56,6 +68,8 @@ Around around(const ScenarioIndex& index, std::size_t target, double at, double 
             consider(part, spans[buckets.items[i]]);
         for (const auto& span : extra) if (span.segmentIndex == part.segmentIndex) consider(part, span);
     }
+    // The nearest follower is the only candidate, so dropping it past the range is §4's filter.
+    if (sight.lookBackDistance && a.follower && a.follower->gap > *sight.lookBackDistance) a.follower.reset();
     return a;
 }
 std::size_t slotOfId(const std::vector<Vehicle>& vehicles, std::uint64_t id) {
@@ -74,7 +88,18 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
     const auto& behaviour = s.behaviours[refs[v].behaviour];
     // Forward safety (rule 3), by the car-following model itself: braking it would accept,
     // and this tick's move inside the room the leader leaves, so the change never clamps.
-    if (const auto& leader = near.leader) {
+    // With forward perception keys, against the perceived leaders (§3's lowest acceleration) and
+    // the room the nearest SEEN one leaves; none seen, no forward test (the cap governs, §2).
+    if (perceivesAhead(behaviour.perception)) {
+        if (!near.ahead.empty()) {
+            const auto& leader = near.ahead.front().leader;
+            auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+            anticipate(following, s, vehicles, refs, vehicle, type, behaviour, near.ahead);
+            const double a = following.acceleration;
+            if (a < -type.comfortableDeceleration ||
+                integrate(vehicle.speed, a, s.timeStep).distance > leader.gap - standstillGap(behaviour)) return std::nullopt;
+        }
+    } else if (const auto& leader = near.leader) {
         const double a = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader).acceleration;
         if (a < -type.comfortableDeceleration ||
             integrate(vehicle.speed, a, s.timeStep).distance > leader->gap - standstillGap(behaviour)) return std::nullopt;
@@ -86,6 +111,9 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
         const auto& fType = s.vehicleTypes[refs[f].type];
         const auto& fBehaviour = s.behaviours[refs[f].behaviour];
         const auto& other = vehicles[f];
+        // §4's rear time-to-collision, for a seen follower closing on the changer; equal accepts.
+        if (const auto& ttc = behaviour.perception.rearTimeToCollision; ttc && other.speed > vehicle.speed &&
+            follower->gap / (other.speed - vehicle.speed) < *ttc) return std::nullopt;
         // Its leader would be the changer itself, with the changer's own snapshot acceleration.
         const double a = follow(other.speed, other, other.w74State, fType, fBehaviour,
                                 Leader{follower->gap, vehicle.speed, vehicle.acceleration}).acceleration;
@@ -232,7 +260,8 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             if (inConflictArea(index, change.target, atRear, at)) continue;
             // Nearest vehicle ahead of and behind the mapped place, over this tick's snapshot and
             // the changes already accepted; anything alongside refuses the change (rule 5).
-            const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved);
+            const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
+                                     s.behaviours[refs[v].behaviour].perception);
             if (!safeAt(s, vehicles, refs, v, near)) continue;
             accepted.push_back({v, static_cast<std::uint32_t>(change.target), at});
             auto placed = vehicle;
@@ -259,18 +288,25 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             static_cast<double>(tick - last->tick) * s.timeStep < *behaviour.discretionaryLaneChangeHoldTime - 1e-9) continue;
         // The incentive compares vehicles only, never signals, lines or dead ends: both routes end
         // on the same Link with the same destinations, and neither is a stub.
-        const auto acceleration = [&](const std::optional<Leader>& leader) {
-            return follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader).acceleration;
+        // With forward perception keys, against the perceived leaders on each lane (§7).
+        const auto acceleration = [&](const Around& near) {
+            if (!perceivesAhead(behaviour.perception))
+                return follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, near.leader).acceleration;
+            auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+                near.ahead.empty() ? std::nullopt : std::optional<Leader>(near.ahead.front().leader));
+            anticipate(following, s, vehicles, refs, vehicle, type, behaviour, near.ahead);
+            return following.acceleration;
         };
-        const double here = acceleration(around(index, route, front, rear, vehicle.id, spans, buckets, moved).leader);
+        const auto& sight = behaviour.perception;
+        const double here = acceleration(around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight));
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot
             if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
-            const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved);
-            const double gain = acceleration(near.leader) - here;
+            const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight);
+            const double gain = acceleration(near) - here;
             if (gain < *behaviour.discretionaryLaneChangeThreshold) continue;
             // §2's rules 3-5, plus the trailing vehicle at no worse than the CHANGER's accepted value.
             const auto trailing = safeAt(s, vehicles, refs, v, near);
