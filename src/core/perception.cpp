@@ -43,6 +43,37 @@ bool hasPerception(const PerceptionParameters& p) {
     for (const auto& k : perceptionParameterKeys()) if ((p.*k.member).has_value()) return true;
     return false;
 }
+std::size_t reactionTicks(const PerceptionParameters& p, double dt) {
+    return p.reactionTime ? static_cast<std::size_t>(std::floor(*p.reactionTime / dt + .5)) : 0;
+}
+void resizeReactionHistory(Vehicle& vehicle, std::size_t ticks) {
+    auto& history = vehicle.reactionHistory;
+    if (ticks == 0) { history.clear(); return; }
+    if (history.empty()) { history.resize(ticks); return; }
+    if (history.size() > ticks)
+        history.erase(history.begin(), history.begin() + static_cast<std::vector<FollowingResult>::difference_type>(history.size() - ticks));
+    else if (history.size() < ticks) {
+        const auto oldest = history.front();
+        history.insert(history.begin(), ticks - history.size(), oldest);
+    }
+}
+FollowingResult delayedAction(const Vehicle& vehicle, std::size_t ticks, const VehicleType& type,
+    const DriverBehaviour& behaviour, std::optional<Leader> leader) {
+    const auto& history = vehicle.reactionHistory;
+    // A shortened FIFO discards its oldest entries; a longer one repeats its oldest entry.
+    auto applied = history.empty() ? FollowingResult{} : history[history.size() > ticks ? history.size() - ticks : 0];
+    applied.acceleration = std::clamp(applied.acceleration, -type.maxDeceleration, type.maxAcceleration);
+    if (vehicle.speed == 0 && leader && leader->gap <= standstillGap(behaviour))
+        applied.acceleration = std::min(0.0, applied.acceleration);
+    return applied;
+}
+void storeReactionAction(Vehicle& vehicle, std::size_t ticks, const FollowingResult& decided) {
+    resizeReactionHistory(vehicle, ticks);
+    if (ticks == 0) return;
+    auto& history = vehicle.reactionHistory;
+    std::rotate(history.begin(), history.begin() + 1, history.end());
+    history.back() = decided;
+}
 std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
     const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range) {
     std::vector<PerceivedLeader> found;

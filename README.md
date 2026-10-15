@@ -77,7 +77,7 @@ installer — M7 owns installation.
 |---|---|---|
 | Simulation core | `src/core/simulation.hpp` | Fixed stepping, seeded arrivals, prototype or W74 car-following, fixed-time signals with amber, parking lots, conflict-area and merge right-of-way, commitment at waiting lines, mandatory lane changes with cooperative braking. Imports nothing. |
 | Network and demand model | `src/model/` | Links, lanes, Connectors, routes, inputs, routing decisions, signal controllers, conflict areas, queue counters, sections, zones, OD matrices and parking lots, compiled into core inputs |
-| Project files | `src/project/` | Strict load and save of `*.traffic.json` (reads schemas 1–31; writes 17–31 by feature) and M0 scenario JSON, validation, movement evaluation and its CSV |
+| Project files | `src/project/` | Strict load and save of `*.traffic.json` (reads schemas 1–32; writes 17–32 by feature) and M0 scenario JSON, validation, movement evaluation and its CSV |
 | Evaluation | `src/eval/` | Per-movement delay, approach queues, section delay/LOS, discharge and lot reports from one run's event stream |
 | Batches | `src/runner/` | Independent seeds in parallel, 95 % CI aggregation and scenario comparison |
 | Desktop | `src/shell/`, `src/editor/` | The Network Editor, Run view, Results tab and Behaviour Lab, in English and Thai |

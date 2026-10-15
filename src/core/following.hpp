@@ -5,8 +5,6 @@ namespace trafficsim {
 // `acceleration` is read by the w74 model only (docs/reference/W74.md §2); the prototype ignores
 // it. Until the composition slice (BA28) fills it at every construction site it stays 0 (D135).
 struct Leader { double gap{}, speed{}, acceleration{}; };
-// `w74` is the state a w74 evaluation would store (W74.md §7); empty for the prototype.
-struct FollowingResult { double acceleration{}; FollowingMode mode{}; std::optional<W74State> w74; };
 struct Motion { double speed{}, distance{}; };
 FollowingResult followingAcceleration(double speed, double desiredSpeed, double driverFactor,
     const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader = {});

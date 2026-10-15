@@ -44,7 +44,9 @@ Replaces the state's scenario with one of the **same shape** — the same ids in
 canonical order for segments, routes, vehicle types, behaviours, inputs, signal programs and
 heads, the same segment `next` lists and route segment lists — and rebuilds the index (its
 `discretionary`/`w74` flags depend on values). Anything else throws `RETUNE_SHAPE_CHANGED`
-before the state is touched; the scenario must also pass validation. Vehicles, queues, RNG
+before the state is touched; the scenario must also pass validation. A change to any behaviour's
+quantised reaction-time tick count is refused by the same check ([PERCEPTION §5](PERCEPTION.md#5-reaction-time-an-action-delay));
+a value change that keeps the count is allowed. Vehicles, queues, RNG
 state, tick, time and stop service are kept. With `rescaleDesiredSpeeds`, a vehicle whose
 type's desired-speed range changed keeps its quantile in that range; otherwise its sampled
 desired speed is kept (DRIVING_BEHAVIOUR §3: identity and draws survive).

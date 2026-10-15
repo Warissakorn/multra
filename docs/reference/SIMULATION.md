@@ -301,12 +301,13 @@ interval in which every flow is 0 (nothing counted) uses the whole-period `relat
 **What a vehicle carries** (`Vehicle`, `types.hpp`): input, route and type slots;
 `scheduledTime`, `enteredTime`; `desiredSpeed` and `driverFactor`, drawn once at generation;
 `w74Traits`, hashed at generation only when the scenario holds a `w74` behaviour ([W74 §5](W74.md#5-parameters-and-traits),
-D137; checkpoints carry it only then); `w74State`, the previous tick's W74 regime and sign while
-its front is on a `w74` road (D138, [W74 §7](W74.md#7-state-and-model-switch)); and
-`distance` along its route, `speed`, `acceleration`, `mode`. It has no lane, no x/y and no other memory
-of past decisions: `distance`, `speed`, `routeIndex` and `w74State` are read back next tick,
+D137; checkpoints carry it only then); `w74State`, the previous applied decision's W74 regime
+and sign (D138/D184, [W74 §7](W74.md#7-state-and-model-switch)); and
+`distance` along its route, `speed`, `acceleration`, `mode`. With `reactionTime`, it also carries an
+oldest-first `reactionHistory` of model decisions ([PERCEPTION §5](PERCEPTION.md#5-reaction-time-an-action-delay)).
+It has no lane or x/y. `distance`, `speed`, `routeIndex`, `w74State` and the FIFO are read next tick,
 and `acceleration` only as a W74 follower's `aL` (the prototype ignores it); `mode` is output only. Admission grants, commitment and courtesy are
-re-derived from each snapshot. The one carried table is `SimState::stopService`, outside the vehicle.
+re-derived from each snapshot. Stop service is kept separately in `SimState::stopService`.
 `driverFactor` scales only the safety distance (below and `stopLineReach`); gap acceptance,
 acceleration and lane changing are the same for every driver of a type.
 
@@ -320,7 +321,8 @@ Equality admits, including a zero-distance step at the exact standstill boundary
 check anticipates the current leader only, before lane changes/signals/conflict decisions;
 those later constraints and genuine moving-vehicle clamps remain enforced.
 Out: a `Vehicle` at `distance` 0, speed 0, and `departed`; a blocked arrival waits in its
-input's queue (departure delay). Starting from rest is the ≈3 s of entry acceleration in delay.
+input's queue (departure delay). Starting from rest adds entry-acceleration delay; with
+`reactionTime`, zero-filled FIFO entries also delay startup by d ticks. D108 itself is undelayed.
 
 Accepted changes also append a snapshot-owned `Vehicle.laneChangeTrace` containing
 both stations/routes and pre-change speed, solely for display reconstruction
@@ -341,13 +343,16 @@ this does not introduce a between-lanes engine state.
    at the changer's speed, with no cap, and its braking is bounded by
    `maxDecelerationCooperativeBraking`.
 4. `follow` behind that obstacle — the prototype's `followingAcceleration`, or W74's
-   ([W74 §6](W74.md#6-composition-with-the-shipped-tick), D138) for a `w74` behaviour — then ballistic integration (no negative
-   speed), with speed capped at `desiredSpeed`.
+   ([W74 §6](W74.md#6-composition-with-the-shipped-tick), D138) for a `w74` behaviour — with perceived
+   leaders and multi-anticipation as [PERCEPTION](PERCEPTION.md) defines. With a nonzero reaction
+   delay, queue that decision and apply the oldest through current type bounds and D105. Then
+   ballistic integration (no negative speed), with speed capped at `desiredSpeed`.
 5. A move beyond `allowedDistance` is cut to it and stops: `safety-clamp`.
 6. A vehicle resting at a Stop line is held at zero (`restsAtStop`), which is not a clamp.
 7. Phase 2, only with zones: `resolveRequests` (swept check, shared receiving space) can only
    shorten a move.
-8. Publish in id order: residual travel crosses segments, `segment-entered` and `moved`.
+8. Publish in id order: FIFO updates and the applied W74 state, residual travel across segments,
+   `segment-entered` and `moved`.
 
 Out: new `distance`, `speed`, `acceleration`, `mode` and events. Front distance never resets at
 a connector.

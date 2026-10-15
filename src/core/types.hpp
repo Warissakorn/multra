@@ -311,6 +311,11 @@ struct ScenarioIndex {
 // Scenario lookups for one vehicle, resolved once per tick instead of once per use.
 struct VehicleRefs { std::size_t route{}, type{}, behaviour{}; };
 enum class FollowingMode { free, approaching, following, braking };
+// A model decision, also the FIFO entry for PERCEPTION §5. Empty w74 on a prototype decision.
+struct FollowingResult {
+    double acceleration{}; FollowingMode mode{}; std::optional<W74State> w74;
+    bool operator==(const FollowingResult&) const = default;
+};
 struct PendingVehicle {
     std::uint64_t id{};
     // SLOTS in the canonical Scenario, not ids. A Scenario is immutable and sorted by id from
@@ -356,10 +361,12 @@ struct Vehicle : PendingVehicle {
     std::optional<LastLaneChange> lastLaneChange;
     std::vector<LaneChangeTrace> laneChangeTrace;
     std::vector<std::string> passedDecisions; // one selection per passage; routes cannot cycle
-    // W74.md §7 (D138): the previous tick's regime and sign while its front is on a w74 road;
-    // written only at publish, cleared on a prototype one.
+    // W74.md §7 / PERCEPTION §5: the previous applied decision's W74 regime and sign;
+    // written only at publish, cleared when an applied decision has no W74 state.
     std::optional<W74State> w74State;
     std::vector<RouteRemapTrace> routeRemapTrace;
+    // PERCEPTION §5: oldest first; empty with zero delay. Written only at insertion/publish.
+    std::vector<FollowingResult> reactionHistory;
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

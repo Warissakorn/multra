@@ -209,18 +209,19 @@ lane-change lab (D98), then acceptance fixtures; prototype baselines change only
 
 ### M3.5 — Perception, reaction and attention
 
-**Open; carved by D177** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–C, K). M3.5.0 is a
-docs-only perception contract: one bounded observation per vehicle and tick (look-ahead and
-look-back distances, observed vehicles ahead and behind), a delayed view for reaction time
-kept in `SimState`, consumed by every following model. Then: mirror checks with a second
+**Open; carved by D177** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–C, K). M3.5.0 has a
+perception contract: one bounded observation per vehicle and tick (look-ahead and
+look-back distances, observed vehicles ahead and behind), a reaction-time action FIFO
+kept in `SimState` (D179), consumed by every following model. Then: mirror checks with a second
 follower and a time-to-collision rear test, temporary lack of attention, driver classes as
 correlated hashed traits, visibility at conflict areas (from M3.4). **Gate:** contract and
 failure-first rows; with every key unset, runs are byte-identical (BA18); no fidelity claim before M6.
-**M3.5.0 contract written** ([PERCEPTION](reference/PERCEPTION.md), D179, rows BA30–BA38); next: its
-codec slice, then motion slices in the contract's §9 order. **Slice 1 (codec, schema 32) delivered** (D181,
+**M3.5.0 contract written** ([PERCEPTION](reference/PERCEPTION.md), D179, rows BA30–BA38);
+implementation follows its §9 order. **Slice 1 (codec, schema 32) delivered** (D181,
 [evidence](evidence/perception-codec.md)); **slice 2 (look-ahead, multi-anticipation) delivered** (D182,
 [evidence](evidence/perception-motion.md)); **slice 3 (look-back, rear TTC, perceived lane-change
-tests) delivered** (D183, [evidence](evidence/perception-lane.md)); next: slice 4, reaction time.
+tests) delivered** (D183, [evidence](evidence/perception-lane.md)); **slice 4 (reaction-time action
+FIFO) delivered** (D184, [evidence](evidence/perception-delay.md)); next: slice 5, BA38 discharge record.
 
 ### M3.6 — Speed control: turning, curves and speed areas
 

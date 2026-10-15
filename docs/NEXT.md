@@ -11,43 +11,34 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
-- `main` is `65c627a`; `native.yml` (Linux and Windows) last passed on `c2bacd1` (run 529,
-  2026-10-14), which pins `trafficsim-cli 42` = 45 completed / 31.75870154816726 s / 1 clamp.
-- Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
-  [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
-  (D177; motorcycles are core scope), the owner's answers (D178), and the perception
-  (D179) and lateral (D180) contracts, and perception slices 1–3 (D181,
-  D182, D183); not yet merged.
+- This session starts from merged `main` at `ff19ac5` (PR #155). Perception slices 1–3
+  (D181–D183) are merged, not waiting on the older Claude branch.
+- Branch `codex/perception-reaction-delay` adds M3.5 slice 4 (D184): the action FIFO,
+  bounds/D105 after delay, source/placement startup, road-boundary resize and retune refusal
+  when the quantised count changes. See [evidence](evidence/perception-delay.md).
+- Local evidence is Linux headless; no desktop or Windows verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
 
 Without a choice from the owner, take item 1. One system per session; contract and acceptance
-rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
+rows first for engine work. Item 1 and its follow-ons use the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.5 slice 4: reaction time as an action delay** ([PERCEPTION](reference/PERCEPTION.md) §5,
-   §7; rows BA35, BA36, with BA30). Slices 1–3 (D181–D183) store the keys, give own motion the
-   perceived leaders (`perceivedLeaders`, `anticipate` in `src/core/perception.cpp`) and the
-   lane-change tests look-back and rear TTC. Now `reactionTime` τ:
-   - **FIFO.** `d = floor(τ/dt + 0.5)` ticks. `Vehicle` gains a FIFO (`std::vector`, empty when
-     `d = 0`) of `{acceleration, mode, w74 state}`, appended last so equality and replay cover it.
-     The motion loop (`src/core/simulation.cpp`, after `anticipate` and the courtesy comparison)
-     pushes the decided entry and applies the oldest. The bounds, D105, `integrate`, the
-     desired-speed cap and the hard cap then run unchanged on the applied value; the cap reads
-     the current physical leader.
-   - **Insertion** fills the FIFO with `{0, free, no state}`. A road boundary that changes `d`
-     trims or pads per §5. A Lab retune that changes `d` is refused.
-   - **Undelayed.** The hypothetical tests are not delayed: `safeAt`, courtesy, `deadEndGoverns`,
-     the gain, D108's first step and `stopLineReach`.
-   - **Identity.** With the key absent or `d = 0`, there is no FIFO and runs are byte-identical.
-     BA30's codec test then has no unread key left, so retire it into the identity tests.
-   - **Benchmark.** Interleaved, as [perception-lane](evidence/perception-lane.md) does.
-   - **Tests.** In a new `tests/perception_delay_tests.cpp`. BA35's first deceleration falls
-     exactly `d` ticks after the leader's, at dt 0.1, 0.25 and 0.5.
-   - 1b. Then PERCEPTION slice 5 (BA38 discharge record), LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
-     its schema is the next number after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4
-     overtaking with the driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
+1. **M3.5 slice 5: the reaction-time discharge record** ([PERCEPTION](reference/PERCEPTION.md)
+   §5, §8; row BA38 in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)). Use the four-leg project,
+   `reactionTime` 0 / 0.5 / 1.0 s on the compared behaviours, seeds 42–81, dt 0.1. Record
+   headways, startup lost time, completed/unfinished trips and safety clamps; retain exact input
+   hashes, engine/compiler flags and raw outputs in a new indexed evidence note. No bound or
+   calibration inference. Keep the not-yet-validated marker. Run BA30, BA35 and BA36 as regressions;
+   the zero-delay CLI pin remains 45 completed / 31.75870154816726 s / 1 clamp.
+   - **Implemented seam:** `reactionTicks`, `resizeReactionHistory`, `delayedAction` and
+     `storeReactionAction` in `src/core/perception.*`; `Vehicle::reactionHistory` is oldest first.
+     Own motion stages the current decision and publishes the FIFO in id order. Hypothetical
+     tests read current state. A Lab retune that changes d is refused before mutation.
+   - Then LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12; its schema is the next number
+     after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4 overtaking with the driving
+     side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
@@ -89,8 +80,9 @@ on 2026-10-15 (D177) and accepted (D178).
 ## Known limits to keep in mind
 
 - **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): one-dimensional
-  vehicles, no lateral position, instantaneous lane changes, no reaction delay, one observed
-  vehicle ahead and behind at unbounded distance, no turning-speed reduction.
+  vehicles, no lateral position, instantaneous lane changes, no turning-speed reduction.
+  Perception limits, multi-anticipation and reaction time are optional; with no keys the old
+  single-leader, unbounded-sight, zero-delay path remains. A second rear follower is not modelled.
 - **M8:**
   - exit weights are one set per run (the row is summed over matrices)
   - lot rows' and compositions' time intervals are not used for departures or initial types

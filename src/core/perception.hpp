@@ -19,6 +19,19 @@ const std::vector<PerceptionKey>& perceptionParameterKeys();
 std::vector<ValidationIssue> perceptionParameterIssues(const PerceptionParameters& parameters, const std::string& path);
 bool hasPerception(const PerceptionParameters& parameters);
 
+// §5: nearest tick, with absent/zero meaning the original, FIFO-free motion path.
+std::size_t reactionTicks(const PerceptionParameters& parameters, double dt);
+// Resize at insertion or publish: drop oldest entries when shrinking, pad the old end with
+// copies of the oldest when growing (zero/free/no-state for an empty history).
+void resizeReactionHistory(Vehicle& vehicle, std::size_t ticks);
+// Read the oldest entry after that resize WITHOUT changing the snapshot. Reapply the current
+// type bounds and D105 against the current leader; every physical cap still runs afterwards.
+// Requires ticks > 0; the zero-delay caller keeps its current decision instead.
+FollowingResult delayedAction(const Vehicle& vehicle, std::size_t ticks, const VehicleType& type,
+    const DriverBehaviour& behaviour, std::optional<Leader> currentLeader);
+// Publish only: resize, consume the oldest action and append this tick's undelayed decision.
+void storeReactionAction(Vehicle& vehicle, std::size_t ticks, const FollowingResult& decided);
+
 // §2: the perceived leaders on the vehicle's own route -- up to `count` distinct vehicles ahead
 // whose rear gap is at most `range`, nearest first. Equal gaps keep scan order, exactly as
 // closestVehicle's strict < does, so count 1 with an infinite range returns its leader. Only the

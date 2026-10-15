@@ -23,7 +23,8 @@ std::uint64_t totalTicks(const Scenario& scenario);
 // shape -- the same ids in the same order, the same segments, routes and compiled tables; only
 // values (behaviours, types, head positions, programs, input rates) may differ. Vehicles, queues,
 // RNG, tick and time are kept; the index is rebuilt. RETUNE_SHAPE_CHANGED otherwise, before anything
-// changes. With rescaleDesiredSpeeds a vehicle keeps its quantile in a changed desired-speed range.
+// changes. A changed reaction-time tick count is also RETUNE_SHAPE_CHANGED. With
+// rescaleDesiredSpeeds a vehicle keeps its quantile in a changed desired-speed range.
 struct RetuneOptions { bool rescaleDesiredSpeeds{}; };
 SimState retuneSimulation(SimState&& state, const Scenario& scenario, const RetuneOptions& options = {});
 // D165 (§1.3): one vehicle added with the next id, its desired speed and driver factor drawn as an
