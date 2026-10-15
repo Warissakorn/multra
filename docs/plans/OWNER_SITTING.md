@@ -106,6 +106,18 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    zone (capacity 3, a short dwell); Run to the end and open Results → Parking lots; Thai strings.
    Does the grid read as origin rows × destination columns, and do the lot figures make sense to an
    engineer? *Owner:*
+10. **Behaviour Lab** (listed 2026-10-14, D165/D166). Simulation → *Behaviour Lab…*; run at 1×–5×;
+   change `additiveSafetyDistance` and watch the gap chart move without a reset; change lanes or
+   `straightLength` (restarts); click another vehicle, then *Follow tuned vehicle*; *Apply to
+   project*, then Undo; switch to Thai. On the default Urban circuit judge the layout, the X2/X3
+   left turns and the heading-up camera (toggle *Heading up*); change `green` (live) and *layout* →
+   Oval (restarts). Is it usable for tuning, and is the camera comfortable? *Owner:*
+11. **Review fixes D167–D174** (listed 2026-10-14). Retune the Lab length, Apply, Undo; select a
+   lane suffix during a lane-change blend; Cancel a batch and restart it at once. Does anything
+   look wrong or stall? *Owner:*
+12. **MSVC Release timing** (listed 2026-10-14, D163/D164). On P-cores, the M2.6 CLI run: the
+   compile figure (≈116 ms before D163) and the wall time (before D164). Record both numbers; a
+   session cannot measure this machine. *Owner:*
 
 ## D — Right-of-way on the drawing
 
@@ -151,6 +163,14 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    a second Route from the line, edit weights/time/type rules, run routeless traffic. Recognition
    at the line, Undo/Redo, line drag, save/reopen, legacy files. Is the one-timestep recognition
    boundary acceptable for a study? *Owner:*
+10. **D151 GUI interaction** (listed 2026-10-13, [EDITOR_WORKFLOW](../reference/EDITOR_WORKFLOW.md)).
+   Create a Route to the middle of a curved road, move the pointer within that road, save/reopen
+   and Undo; narrow/widen Properties in Thai and English; hover long descriptions near each window
+   edge; wheel over focused and unfocused settings in panels and dialogs. Do settings stay unchanged
+   while panels scroll and canvas zoom works? The destination marker is presentation only. *Owner:*
+11. **MAP10 OSM background** (listed 2026-10-12, D150, [MAP_BACKGROUND](../reference/MAP_BACKGROUND.md)).
+   Set a reference on a real study, trace a known road, pan/zoom, save/reopen. Are alignment and
+   responsiveness good enough for tracing? No automated check closes survey accuracy. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

@@ -8,6 +8,17 @@ move old blocks whole into `docs/archive/` if this gets long, and list each in
 
 ---
 
+## 2026-10-15 — Documentation consistency pass (no behaviour change)
+
+The owner asked for docs an AI can read efficiently. The session path (CLAUDE → AGENTS → NEXT)
+went from 470 to 262 lines: AGENTS' three reading sections became one Session path. NEXT keeps
+only live items; its notes moved verbatim (checked line by line) to
+[ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), with machine notes in BUILDING. Appearance
+checks of merged reviews moved to OWNER_SITTING C10–C12 and E10–E11. `native.yml` passed on `main`
+`c2bacd1`, retiring NEXT's CI notes. Status lines contradicting the code were corrected: W74
+runs (D138), LOS and batches exist (M5), M8 is implemented, schema 31. History, archive, evidence
+and specs are untouched.
+
 ## 2026-10-15 — Multi-level workflow design accepted (D175)
 
 Docs only. A design review in chat (Thai) walked how the three levels, the editor and the

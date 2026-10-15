@@ -3,51 +3,48 @@
 Standing orders for anyone — human or model — working in this repo. Read this first, every
 session.
 
-## Start here
+## Session path
 
-These instructions apply to the whole repository, regardless of the AI tool used.
-The user's current instruction takes priority over the standing session queue.
+These instructions apply to the whole repository, regardless of the AI tool used. The user's
+current instruction takes priority over the standing queue; without one, follow NEXT and do not
+silently reorder the owner's queue.
 
-1. Read [NEXT](docs/NEXT.md) for the live queue and pending owner reviews.
-2. Read [ARCHITECTURE](docs/ARCHITECTURE.md) and the relevant module README.
-3. Use [the task reading map](docs/README.md#read-by-task) to select the contract,
-   acceptance rows and decision history for this change. Do not load the entire archive.
-4. Run the appropriate checks below. Report unavailable tools or failed checks honestly.
+1. **[NEXT](docs/NEXT.md)** — the one live to-do.
+2. **[The task reading map](docs/README.md#read-by-task)** — the row for your change names the
+   contract, acceptance rows and code entry points. Read [ARCHITECTURE](docs/ARCHITECTURE.md)
+   before adding a system, [PROBLEM](docs/PROBLEM.md) before proposing a feature and
+   [PRINCIPLES](docs/PRINCIPLES.md) before arguing with an existing choice.
+3. **The module README** in `src/<module>/` and the decisions the contract cites. Reach into
+   PROGRESS or the [decision index](docs/decisions/README.md) only for the entry behind what you
+   change; never load the archive wholesale.
+4. **Run the checks below** and report unavailable tools or failed checks honestly.
 
-TrafficSim owns a traffic microsimulation engine for engineering studies (D38).
-Scope is in [PROBLEM](docs/PROBLEM.md). `TrafficSim` is a working name (D11);
-do not rename the repository, project or packages until the owner decides.
+Two audits carry dated parts: in [VISSIM_PARITY](docs/audits/VISSIM_PARITY.md) only §1a and §2
+are current (§1, §3, §6 under-report the product); [CONNECTOR_PARITY_AUDIT](docs/audits/CONNECTOR_PARITY_AUDIT.md)
+holds the supplied spec and never-measured Vissim apart — read it before touching the Connector.
+
+TrafficSim owns a traffic microsimulation engine for engineering studies (D38). `TrafficSim` is a
+working name (D11); do not rename the repository, project or packages until the owner decides.
 
 ## Documentation authority
 
 | Information | Maintained source |
 |---|---|
-| Next work and pending owner checks | [NEXT](docs/NEXT.md), rewritten rather than appended |
-| Milestone scope, status and closing gates | [ROADMAP](docs/ROADMAP.md) |
+| Next work | [NEXT](docs/NEXT.md), rewritten rather than appended |
+| Everything waiting on the owner | [OWNER_SITTING](docs/plans/OWNER_SITTING.md) |
+| Milestone scope, status and closing gates | [ROADMAP](docs/ROADMAP.md) — the only status ledger with NEXT |
 | Project principles and their reasoning | [PRINCIPLES](docs/PRINCIPLES.md) |
 | Module boundaries and interfaces | [ARCHITECTURE](docs/ARCHITECTURE.md) and module READMEs |
 | Behaviour and file semantics | The relevant contract in [the documentation map](docs/README.md) |
-| Session history and decisions | [PROGRESS](docs/PROGRESS.md) and [decision record/index](docs/decisions/README.md) |
+| Session history and decisions | [PROGRESS](docs/PROGRESS.md) and the [decision record/index](docs/decisions/README.md) |
+| Measurements, recipes, reverted ideas | [ENGINEERING_NOTES](docs/reference/ENGINEERING_NOTES.md) |
 | Toolchain setup | [BUILDING](docs/BUILDING.md) |
 
-README summaries are navigation, not another status ledger. Dated audits, plans and
-archive entries describe their own date. A supplied target specification is not proof
-of implementation or validation. If sources disagree, inspect the applicable decision,
-code and tests; record the discrepancy rather than silently changing an owner gate.
-
-## Read these before working
-
-| File | When |
-|---|---|
-| [`docs/PROBLEM.md`](docs/PROBLEM.md) | Before proposing any feature. Scope lives there. |
-| [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) | Before arguing with an existing choice. Rules 1–4 are correctness. |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Before adding a system. Update when the map changes. |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md) | To see which milestone this is and what closes it. |
-| [`docs/NEXT.md`](docs/NEXT.md) | **Every session, first.** The one live to-do; write the next session's work here, never into a `PROGRESS.md` entry. |
-| [`docs/PROGRESS.md`](docs/PROGRESS.md) | The session history and reasoning. Use the [decision index](docs/decisions/README.md) to find the relevant D-number; read only related entries. |
-| [`docs/audits/VISSIM_PARITY.md`](docs/audits/VISSIM_PARITY.md) | Before proposing editor UX work. **§1a and §2 are current; §1, §3 and §6 are the dated 2026-09-14 assessment and under-report the product.** |
-| [`docs/audits/CONNECTOR_PARITY_AUDIT.md`](docs/audits/CONNECTOR_PARITY_AUDIT.md) | Before touching the Connector. Holds the two benchmarks apart — the supplied target spec vs never-measured Vissim — and records the defects no test covers. |
-| [`docs/README.md`](docs/README.md) | To find any other document. The task reading map and folder indexes; index new maintained docs in the same commit. |
+READMEs are navigation, not status. Dated audits, plans and archive entries describe their own
+date. A supplied target specification is not proof of implementation or validation. If sources
+disagree, inspect the applicable decision, code and tests; record the discrepancy rather than
+silently changing an owner gate. Index every new maintained doc in its folder README in the same
+commit (`trafficsim-check-docs`).
 
 ## Stack
 
@@ -113,13 +110,6 @@ below, whose reasoning is D7. The ones that get broken by accident:
   This is the memory the next session runs on. **What is next goes in
   `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
 
-## Session start
-
-Read this file, `docs/ARCHITECTURE.md`, and `docs/NEXT.md`. Run the test command. Then follow the user's current task, or
-`NEXT.md` when no task was supplied; do not silently reorder the owner's queue. Reach into `PROGRESS.md`
-for the entry behind whatever you are changing, not as a matter of course: it is long, and
-reading all of it to find twenty lines is what moved `Next` out of it.
-
 ## Session end
 
 Stop at roughly three-quarters of context, or when the current system is done. In order:
@@ -130,7 +120,7 @@ changed, in outcomes.
 ## Layout
 
 ```
-docs/           NEXT · PROBLEM · PRINCIPLES · ARCHITECTURE · ROADMAP · PROGRESS
+docs/           NEXT · PROBLEM · PRINCIPLES · ARCHITECTURE · ROADMAP · PROGRESS · README (map)
 src/core/       simulation engine — imports nothing
 src/model/      network · demand · control data model
 src/commands/   every mutation, undoable, one registry
@@ -140,9 +130,11 @@ src/shell/      window, inspector, tables, results, layout, palette, i18n
 src/eval/       event stream → measurements
 src/runner/     multi-seed batches and scenario comparison (M5)
 src/lab/        behaviour lab: tuning ring, live run and retune (D165)
-src/report/     impact-study output (planned; README only, M5)
+src/geo/        Qt-free PROJ transforms and XYZ tile math for the OSM background (desktop only)
+src/report/     reserved for impact-study reports (README only; formatting stays in src/project/, D131)
 data/           vehicle types · behaviour presets · compositions · priority rules · levels ·
-                display types · locales · example projects (LOS thresholds planned, M5)
+                display types · vehicle appearance · LOS packs · evaluation defaults · map providers ·
+                fonts · locales · example projects and scenarios
 tools/          CLI, sweeps, benchmarks, checks
 tests/
 ```
@@ -153,8 +145,8 @@ tests/
 - Documentation is written in **English**. UI strings live in translation files only.
 - Screen vocabulary follows Vissim ("link", "connector", "conflict area"); **parameter names
   are never translated**, so users can find them in the project file.
-- Current car-following is a reduced Wiedemann-inspired prototype, not W74/W99. Never
-  remove its unvalidated marker or accept merging paths before right-of-way is implemented.
+- The default car-following is a reduced Wiedemann-inspired prototype; W74 is selectable since
+  D138; W99 does not exist. None is validated: never remove the unvalidated marker.
 - The previous TypeScript application is retained in Git history, not as a second engine.
 - Native tests compare four TS baselines with a 1e-7 physical-value tolerance and exact
   same-build replay, under `SeedStart::raw` (the pre-D159 seed mapping, used nowhere else).
@@ -168,7 +160,6 @@ tests/
   only; say so, and do not read a green Linux run as cross-platform evidence.
 - The owner authorized the full stack migration (D15); it supersedes one-system scheduling
   guidance for that migration only. Existing M0/M1 acceptance gates still apply.
-
 - The owner authorized M1.1–M1.3 together (D16). Project never imports command or Qt types; the shell owns atomic file replacement. Never equate authoring support with runtime support.
 
 ## Model invariants to check before editing

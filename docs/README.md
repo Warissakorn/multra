@@ -22,7 +22,8 @@ selects additional context; read related decisions and evidence only when needed
 | Vehicle display and turning | [VEHICLE_POSE](reference/VEHICLE_POSE.md); [SIMULATION](reference/SIMULATION.md) | `src/editor/vehicle_pose.*`, `rear_axle_pose.*`, `lane_change_pose.*` |
 | Zones, OD matrices or parking lots (M8) | [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md); [MULTI_LEVEL_MODELLING](plans/MULTI_LEVEL_MODELLING.md) as amended by [MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md); POSITIONED_ROUTING and SIMULATION above | `src/project/`, `src/model/demand/`, `src/core/` (lot runtime) |
 | Load/save or schema changes | [NETWORK_EDITOR](reference/NETWORK_EDITOR.md) save/recovery; relevant Demand/geometry contract; [MIGRATION](reference/MIGRATION.md) | `src/project/`, `tests/project_tests.cpp` |
-| Evaluation or reporting | [DISCHARGE](reference/DISCHARGE.md); [PROBLEM](PROBLEM.md); [SIMULATION](reference/SIMULATION.md); [ROADMAP](ROADMAP.md) M5/M6; [M2_PLAN](plans/M2_PLAN.md) | `src/eval/`, `src/project/evaluation.*`, `src/runner/`, `src/report/` |
+| Evaluation or reporting | [BATCH](reference/BATCH.md); [LOS](reference/LOS.md); [TRAVEL_TIME_SECTIONS](reference/TRAVEL_TIME_SECTIONS.md); [DISCHARGE](reference/DISCHARGE.md); [PROBLEM](PROBLEM.md); [SIMULATION](reference/SIMULATION.md); [ROADMAP](ROADMAP.md) M5/M6; [M2_PLAN](plans/M2_PLAN.md) | `src/eval/`, `src/project/evaluation.*`, `src/runner/`, `src/report/` |
+| Performance, measurement or a previously reverted idea | [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md) (do-not-retry list, baselines, recipes); D28 and D31 in the [decision record](decisions/RECORD.md); [BUILDING](BUILDING.md) machine notes | `tools/*_benchmark.cpp`, `src/core/`, `src/editor/` |
 | Build or portability | [BUILDING](BUILDING.md); [MIGRATION](reference/MIGRATION.md); tools README | `CMakeLists.txt`, `CMakePresets.json`, `.github/workflows/` |
 
 Resolve the document names through the indexes below. `src/report/` is a planned module
@@ -30,7 +31,7 @@ boundary; `src/runner/` holds batches (M5.2) and scenario comparison (M5.8a).
 
 ## Sources and status
 
-- NEXT owns the live queue and pending owner checks; ROADMAP owns milestone status/gates.
+- NEXT owns the live queue; OWNER_SITTING owns every owner item; ROADMAP owns milestone status/gates.
 - Contracts define behaviour; ARCHITECTURE defines boundaries; PRINCIPLES defines rules.
 - PROGRESS records sessions. The [decision index](decisions/README.md) locates their reasoning.
 - Dated reviews are evidence/proposals, not permission to change the owner's priorities.
@@ -46,7 +47,7 @@ boundary; `src/runner/` holds batches (M5.2) and scenario comparison (M5.8a).
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Modules, dependencies and contracts between them. |
 | [`BUILDING.md`](BUILDING.md) | Linux/Windows toolchains and dependency setup. |
 | [`CMakeUserPresets.windows.example.json`](CMakeUserPresets.windows.example.json) | Local Windows preset example referenced by BUILDING. |
-| [`ROADMAP.md`](ROADMAP.md) | M0–M7, milestone gates, the dated accuracy review, owner decisions O1–O10 and proposed sessions S0–S5. |
+| [`ROADMAP.md`](ROADMAP.md) | Milestones M0–M12: scope, status and closing gates; links to the dated reviews. |
 | [`PROGRESS.md`](PROGRESS.md) | Session history, newest first; links to the indexed decision record. |
 
 ## Folders
