@@ -6,6 +6,24 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.5 slice 2: look-ahead and multi-anticipation (D182)
+
+Own motion now reads two of the perception keys.
+- **What a driver perceives.** `perceivedLeaders` returns up to `observedVehiclesAhead` distinct
+  vehicles within `lookAheadDistance`, nearest first.
+- **How it brakes.** Own motion takes the lowest `follow` over them, using effective gaps less the
+  room the vehicles in between need at rest. A standing car two vehicles ahead slows the follower
+  before the car in between reacts.
+- **What stays physical.** The unbounded leader still sets the hard cap, admission and D108, so an
+  unseen queue can only produce a counted clamp, never an overlap.
+- **Tie rule changed.** PERCEPTION §2 said ties go by vehicle id; it now says scan order, the rule
+  `closestVehicle` already uses. Only then is one observed vehicle with no limit exactly today's
+  leader, which the four-leg seed-42 comparison confirms.
+- **Benchmark.** Interleaved runs show about +1 % with the keys absent.
+
+Checked on Linux: `check` 140/140, CLI seed 42 unchanged
+([evidence](evidence/perception-motion.md)).
+
 ## 2026-10-15 — M3.5 slice 1: perception codec (D181)
 
 The first code in D178's order. `DriverBehaviour` gains `PerceptionParameters`: five optional
@@ -121,20 +139,6 @@ checks of merged reviews moved to OWNER_SITTING C10–C12 and E10–E11. `native
 `c2bacd1`, retiring NEXT's CI notes. Status lines contradicting the code were corrected: W74
 runs (D138), LOS and batches exist (M5), M8 is implemented, schema 31. History, archive, evidence
 and specs are untouched.
-
-## 2026-10-15 — Multi-level workflow design accepted (D175)
-
-Docs only. A design review in chat (Thai) walked how the three levels, the editor and the
-network work together, compared with Aimsun, and asked for starting at any level. Two scrutiny
-passes corrected the drafts: the D145 plan reused an M5.1 Node that does not exist, bound OdMatrix
-periods to Micro's run duration, and stored subarea cuts that go stale; per-field status flags
-duplicated what field presence already says; mid-link Micro destinations need a core contract
-(D153), so Micro keeps driveways as Links. Web checks before recording: GEH/DMRB wording
-(secondary sources, flow test added), HCM 1,900 pc/h/ln with wide local variation, UTM 47N/48N
-split at 102°E with legacy Indian 1975 datums, and motorcycle PCU varying within the green. The
-owner accepted every recommendation; [MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) records
-the design, answers and order (S0 Node first). No code, schema or test changed. The D147 entry
-moved whole to `archive/`.
 
 ## Older entries
 

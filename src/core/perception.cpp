@@ -1,4 +1,5 @@
 #include "perception.hpp"
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -41,5 +42,37 @@ std::vector<ValidationIssue> perceptionParameterIssues(const PerceptionParameter
 bool hasPerception(const PerceptionParameters& p) {
     for (const auto& k : perceptionParameterKeys()) if ((p.*k.member).has_value()) return true;
     return false;
+}
+std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
+    const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range) {
+    std::vector<PerceivedLeader> found;
+    if (count == 0) return found;
+    for (const auto& part : parts) {
+        if (part.start + part.length < vehicle.distance) continue;
+        // Every span on this part or a later one has a gap of at least part.start - distance.
+        const double nearestHere = part.start - vehicle.distance;
+        if (nearestHere > range) break;
+        if (found.size() == count && nearestHere >= found.back().leader.gap) break;
+        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
+            const auto& span = spans[buckets.items[i]];
+            // The same skips and gap as closestVehicle (simulation.cpp).
+            if (span.vehicleId == vehicle.id || part.start + span.front < vehicle.distance - 1e-9) continue;
+            const double gap = part.start + span.rear - vehicle.distance;
+            if (gap > range) continue;
+            // One entry per vehicle (a vehicle across a section cut has a span on each part).
+            const auto same = std::find_if(found.begin(), found.end(), [&](const auto& f) { return f.vehicleId == span.vehicleId; });
+            if (same != found.end()) {
+                if (!(gap < same->leader.gap)) continue;
+                found.erase(same);
+            }
+            // After every equal gap: the first found keeps its place, as a strict < would.
+            const auto at = std::upper_bound(found.begin(), found.end(), gap,
+                                             [](double g, const auto& f) { return g < f.leader.gap; });
+            if (found.size() == count && at == found.end()) continue;
+            found.insert(at, {Leader{gap, span.speed, span.acceleration}, span.vehicleId});
+            if (found.size() > count) found.pop_back();
+        }
+    }
+    return found;
 }
 }

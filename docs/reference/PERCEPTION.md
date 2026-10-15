@@ -1,9 +1,10 @@
 # Perception contract: look-ahead, observed vehicles, look-back and reaction time (M3.5.0)
 
-Designed 2026-10-15 (D179). **Slice 1, the codec, is implemented** (D181, schema 32,
-[evidence](../evidence/perception-codec.md)); no motion reads the keys yet. Rows BA30–BA38 are in
+Designed 2026-10-15 (D179). **Slices 1–2 are implemented**: the codec (D181, schema 32,
+[evidence](../evidence/perception-codec.md)) and look-ahead with multi-anticipation in own motion
+(D182, [evidence](../evidence/perception-motion.md)). Rows BA30–BA38 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and are all
-pending except BA30 and BA37. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
+pending except BA30–BA32 and BA37. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
 motivate it; D177/D178 put it first. [DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md) owns assignment and
 selection, [SIMULATION](SIMULATION.md) the tick, [W74](W74.md) and the prototype their equations.
 This file owns **what a driver observes and when it acts on it**.
@@ -38,7 +39,7 @@ admission. This contract splits the two roles:
 | Leader | Defined as | Used by |
 |---|---|---|
 | **Physical leader** | Today's search, unchanged: the nearest vehicle ahead on the own route, unbounded | The hard cap `allowedDistance` (`simulation.cpp:264`) and its `SafetyClampEvent`; zone admission and receiving space (`VehicleLeader`); phase-2 caps; D108's source admission |
-| **Perceived leaders** | Up to `observedVehiclesAhead` vehicles ahead on the own route whose rear is within `lookAheadDistance` of the follower's front, ordered by gap ascending, ties by vehicle id | The acceleration only (§3) |
+| **Perceived leaders** | Up to `observedVehiclesAhead` vehicles ahead on the own route whose rear is within `lookAheadDistance` of the follower's front, ordered by gap ascending; equal gaps keep scan order, as `closestVehicle`'s strict `<` does, so one observed vehicle with no limit is exactly the physical leader (D182) | The acceleration only (§3) |
 
 **Perception never weakens non-overlap.** A vehicle that does not perceive its physical leader
 still cannot move into it: the cap applies, and a clamp is counted (D105). That is the intended

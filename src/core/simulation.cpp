@@ -4,6 +4,7 @@
 #include "following.hpp"
 #include "lanes.hpp"
 #include "parking.hpp"
+#include "perception.hpp"
 #include "routing.hpp"
 #include "routes.hpp"
 #include "validate.hpp"
@@ -263,6 +264,17 @@ SimState stepSimulation(SimState&& state, double dt) {
         if (leader && !zones.empty()) leaders[v] = VehicleLeader{leader->gap, leader->speed, leaderId};
         double allowedDistance = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) :
                                           std::numeric_limits<double>::infinity();
+        // M3.5 (PERCEPTION.md §2-§3): with a look-ahead or an observed-vehicle count, the
+        // acceleration follows the PERCEIVED leaders; the physical leader above keeps the hard cap
+        // and admission. Neither key: the physical leader, exactly as before.
+        std::vector<PerceivedLeader> perceived;
+        const auto& sight = behaviour.perception;
+        if (sight.lookAheadDistance || sight.observedVehiclesAhead) {
+            perceived = perceivedLeaders(vehicle, parts, spans, buckets,
+                static_cast<std::size_t>(sight.observedVehiclesAhead.value_or(1)),
+                sight.lookAheadDistance.value_or(std::numeric_limits<double>::infinity()));
+            leader = perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader);
+        }
         for (const auto& routeHead : index.routeHeads[refs[v].route]) {
             const auto& head = scenario.signalHeads[routeHead.headIndex];
             const double gap = routeHead.partStart + head.position - vehicle.distance;
@@ -344,6 +356,21 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+        // §3: each further perceived leader at its gap less the room the vehicles in between need
+        // at rest; the lowest acceleration is kept, the nearer leader on a tie (strict <).
+        double reserved = 0;
+        for (std::size_t k = 1; k < perceived.size(); ++k) {
+            // Vehicles are sorted by id, so the one in between is found as slotOfId finds it.
+            const auto between = std::lower_bound(vehicles.begin(), vehicles.end(), perceived[k - 1].vehicleId,
+                [](const Vehicle& x, std::uint64_t id) { return x.id < id; });
+            const double length = between != vehicles.end() && between->id == perceived[k - 1].vehicleId
+                ? scenario.vehicleTypes[refs[static_cast<std::size_t>(between - vehicles.begin())].type].length : 0.0;
+            reserved += length + standstillGap(behaviour);
+            const auto& ahead = perceived[k].leader;
+            auto further = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+                                  Leader{ahead.gap - reserved, ahead.speed, ahead.acceleration});
+            if (further.acceleration < following.acceleration) following = further;
+        }
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.

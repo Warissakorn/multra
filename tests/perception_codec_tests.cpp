@@ -12,8 +12,8 @@
 #include <functional>
 using namespace trafficsim;
 // M3.5 slice 1 (D181): rows BA37 and BA30 of docs/plans/DRIVING_BEHAVIOUR.md -- the perception
-// keys of docs/reference/PERCEPTION.md §6 are stored, validated and round-tripped, and read by no
-// motion yet, so a run with them is the run without them.
+// keys of docs/reference/PERCEPTION.md §6 are stored, validated and round-tripped; a run with the
+// keys no motion reads yet is the run without them.
 namespace {
 const W74Parameters kP{.ax = 2, .bxAdd = 2, .bxMult = 1, .exAdd = 2, .exMult = 0.5, .cxAdd = 16,
     .cxMult = 4, .opdvAdd = 0.5, .opdvMult = 0.5, .dMax = 20, .bMaxAdd = 1, .bMaxMult = 1,
@@ -156,13 +156,17 @@ TEST(perceptioncodec, external_catalog_entries_and_the_w74_branch_keep_the_keys)
     CHECK(edited == parsed);
 }
 
-TEST(perceptioncodec, ba30_the_keys_change_no_run_yet) { // BA30
+TEST(perceptioncodec, ba30_unread_keys_change_no_run) { // BA30
     const auto data = test::root() / "data";
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json");
     Json project; file >> project;
     const auto plain = compileDocument(parseDocument(project), data).scenario;
     auto keyed = plain;
-    for (auto& b : keyed.behaviours) b.perception = full();
+    // Look-ahead and observed vehicles move since D182 (perception_motion_tests.cpp); the keys
+    // no motion reads yet must still change nothing.
+    for (auto& b : keyed.behaviours) {
+        b.perception.lookBackDistance = 80; b.perception.rearTimeToCollision = 1.5; b.perception.reactionTime = 0.8;
+    }
     CHECK(keyed.behaviours != plain.behaviours); // the forcing: the keys really are there
     const auto a = runSimulation(plain, 42), b = runSimulation(keyed, 42);
     CHECK(!a.vehicles.empty() || a.nextVehicleId > 1);

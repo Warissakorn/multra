@@ -16,8 +16,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
   [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
   (D177; motorcycles are core scope), the owner's answers (D178), and the perception
-  (D179) and lateral (D180) contracts, and the perception codec (D181);
-  not yet merged.
+  (D179) and lateral (D180) contracts, and perception slices 1–2 (D181,
+  D182); not yet merged.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
@@ -26,22 +26,27 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.5 slice 2: look-ahead and multi-anticipation** ([PERCEPTION](reference/PERCEPTION.md) §2,
-   §3, §8; rows BA31, BA32, with BA30). The keys are already stored (D181); this slice makes own
-   motion read `lookAheadDistance` and `observedVehiclesAhead`.
-   - **Search:** extend the leader search beside `closestVehicle` (`src/core/simulation.cpp:35`).
-     One pass returns the **physical leader** (unchanged, unbounded) and up to n **perceived
-     leaders** (rear within look-ahead, ordered by gap then vehicle id), reusing its early break.
-   - **Acceleration:** own motion (`simulation.cpp:346`) takes the min over k of `follow` with
-     `gEffk = gk − Σ_{j<k}(lj + standstillGap)`. The kept k sets the mode and W74 state (ties keep
-     the smaller k).
-   - **Unchanged:** `allowedDistance` (`:264`), zone admission (`VehicleLeader`, `:262`) and D108
-     keep the physical leader.
-   - **Rest unchanged:** `safeAt`'s forward test is slice 3, with look-back.
-   - **Identity:** with both keys absent, the code path must give byte-identical results (BA30);
-     re-run `trafficsim-engine-benchmark` before and after (§8).
-   - **Tests:** `tests/perception_motion_tests.cpp`, group `perceptionmotion`.
-   - 1b. Then PERCEPTION slices 3–5, LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
+1. **M3.5 slice 3: look-back, rear time-to-collision and the perceived forward test**
+   ([PERCEPTION](reference/PERCEPTION.md) §4, §7; rows BA33, BA34, with BA30). Slice 2 (D182) gave
+   own motion `perceivedLeaders` (`src/core/perception.cpp`); this slice moves the lane-change
+   tests onto perception. All use the **changer's** behaviour keys:
+   - **Rear check.** `around` (`src/core/lanes.cpp:40`) reports a follower only if
+     `atRear − otherFront ≤ lookBackDistance`. "Alongside" stays physical, unaffected by any key.
+   - **Rear time-to-collision.** `safeAt` (`lanes.cpp:69`) adds `gap / (vF − v) ≥
+     rearTimeToCollision` for a seen, closing follower; equal is accepted.
+   - **Forward check.** `safeAt` checks the target lane with the perceived leaders (§3's minimum
+     over k). `around`'s target spans include this tick's accepted changes (`extra`), so either
+     extend `perceivedLeaders` with an extra-span list or build the list inside `around`; keep one
+     scan.
+   - **Discretionary gain** (`lanes.cpp:263`) reads perceived leaders on both lanes.
+   - **Courtesy unchanged.** `courtesyHolds` (`lanes.cpp:288`) keeps today's order.
+   - **Identity.** With the keys absent, results are byte-identical.
+   - **Benchmark.** Re-run `trafficsim-engine-benchmark 40 1800`, interleaved before and after,
+     as [perception-motion](evidence/perception-motion.md) does.
+   - **Tests.** Add them to `tests/perception_motion_tests.cpp`, or a new
+     `perception_lane_tests.cpp` if it nears 500 lines. Use the two-lane fixtures in
+     `tests/lane_fixture.hpp`.
+   - 1b. Then PERCEPTION slices 4–5, LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
      its schema is the next number after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4
      overtaking with the driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
