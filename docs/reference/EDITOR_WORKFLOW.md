@@ -159,7 +159,8 @@ keyboard/arrows and combo choices still edit, an open combo list still scrolls, 
 the canvas wheel still zooms. Tooltips use a plain-text popup no wider than 360 logical
 pixels, clamped to their owner window and screen. Thai and long unbroken names wrap;
 content taller than the window is readable by scrolling the tooltip.
-Escape/click/deactivation dismisses it.
+Escape/click/deactivation dismisses it, and so does any scroll of a panel, list or canvas
+that encloses the field it describes, since the field has then moved away from it.
 
 Layout examples from the Linux offscreen Qt platform:
 [English, 1360×860](../images/workspace-en.png),

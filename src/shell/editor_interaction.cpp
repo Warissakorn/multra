@@ -13,6 +13,7 @@
 #include <QResizeEvent>
 #include <QPointer>
 #include <QScreen>
+#include <QScrollBar>
 #include <QTextEdit>
 #include <QTextDocument>
 #include <QTimer>
@@ -20,6 +21,7 @@
 #include <QWheelEvent>
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace trafficsim {
 void setReflowPolicy(QLabel* label, QSizePolicy::Policy horizontal) {
@@ -57,7 +59,9 @@ private:
     QPointer<QTextEdit> popup_;
     QPointer<QWidget> source_;
     QTimer expiry_,leave_;
-    void hide() { if(popup_)popup_->hide();source_.clear();expiry_.stop();leave_.stop(); }
+    std::vector<QMetaObject::Connection> scrolls_; // the source's scroll areas, while a popup shows
+    void unwatch() { for(const auto& c:scrolls_)disconnect(c);scrolls_.clear(); }
+    void hide() { if(popup_)popup_->hide();source_.clear();expiry_.stop();leave_.stop();unwatch(); }
     QString tooltip(QWidget* widget,QPoint position) {
         // Item views and scene objects carry their tooltip on the item, not the viewport.
         if(auto* view=qobject_cast<QAbstractItemView*>(widget->parentWidget())) {
@@ -100,6 +104,12 @@ private:
         x=std::clamp(x,bounds.left(),bounds.right()+1-popup_->width());
         y=std::clamp(y,bounds.top(),bounds.bottom()+1-popup_->height());
         popup_->move(x,y);popup_->show();source_=source;
+        // Content scrolled under a still pointer (wheel, keys, kinetic or programmatic) moves away
+        // from the popup without any event on the source, so any scroll of an enclosing area hides it.
+        unwatch();
+        for(auto* at=source;at;at=at->parentWidget())if(auto* area=qobject_cast<QAbstractScrollArea*>(at))
+            for(auto* bar:{area->horizontalScrollBar(),area->verticalScrollBar()})
+                scrolls_.push_back(connect(bar,&QScrollBar::valueChanged,this,[this]{hide();}));
         QToolTip::hideText();leave_.stop();expiry_.start(15000);
     }
     bool eventFilter(QObject* object,QEvent* event) override {

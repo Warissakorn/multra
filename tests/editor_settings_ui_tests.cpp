@@ -90,6 +90,13 @@ void tooltips(EditorWindow& window) {
     bool found=false;for(auto* widget:QApplication::topLevelWidgets())if(auto* popup=qobject_cast<QTextEdit*>(widget))
         found=found || (popup->objectName()=="editorBoundedTooltip" && popup->isVisible() && popup->toPlainText()=="Object detail");
     require(found,"Canvas item tooltip did not use bounded popup");
+    // Scrolling the canvas under a still pointer moves the item away: the popup must not stay behind.
+    QTextEdit* shown=nullptr;for(auto* widget:QApplication::topLevelWidgets())
+        if(widget->objectName()=="editorBoundedTooltip" && widget->isVisible())shown=qobject_cast<QTextEdit*>(widget);
+    require(shown,"Canvas tooltip not visible before scrolling");
+    auto* bar=canvas->verticalScrollBar();require(bar->maximum()>bar->minimum(),"Canvas has no scroll range");
+    bar->setValue(bar->value()>bar->minimum()?bar->value()-50:bar->value()+50);settle();
+    require(!shown->isVisible(),"Scrolling left the tooltip over moved content");
  }
 void laterDialog(EditorWindow& window) {
     QDialog dialog(&window);dialog.setModal(true);dialog.resize(280,180);
