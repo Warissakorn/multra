@@ -1,8 +1,7 @@
 # ARCHITECTURE — TrafficSim
 
-**Current stack: C++20, CMake, Qt 6 Widgets.** D15 supersedes the initial TypeScript stack.
-M0 core/network functionality has been ported, with the native desktop editor and CLI.
-The traffic-engineering acceptance gate remains open. M1 editing and in-editor simulation are implemented; M1 usability was accepted by owner ruling (D49); owner M0 plausibility acceptance remains open.
+**Stack: C++20, CMake, Qt 6 Widgets** (D15 superseded the TypeScript stack). This file maps
+modules, boundaries and interfaces; milestone status and gates live only in [ROADMAP](ROADMAP.md).
 
 Project-owned Demand catalogs (schema 18) store types, behavior snapshots, composition
 weights and authoring names. `resolveDemandCatalog` supplies the UI and compiler;
@@ -276,7 +275,7 @@ M3.1 `PriorityRule`s (D59).
 | Reports | `src/report/` | Reserved for the M5.5/M5.6 LOS report table; data formatting stays in `src/project/` (D131) |
 | Meso engine | `src/meso/` | Planned (M11, D145): imports nothing; compiled from the same authoring network by `compileMesoNetwork`; seeded and deterministic like core |
 | Macro four-step model | `src/macro/` | Planned (M10, D145): imports nothing; `compileMacroNetwork` derives its graph; generation, distribution, mode choice and assignment parameters are `data/` |
-| Zones, OD and parking | `src/model/demand/` | Planned (M8, D145): Zone, ZoneConnector, OdMatrix and ParkingLot are authoring objects shared by every level; never a second editable network ([design](plans/MULTI_LEVEL_MODELLING.md)) |
+| Zones, OD and parking | `src/model/demand/`, `src/project/od_demand.*`, `src/core/parking.*` | Implemented (M8, [contract](reference/ZONES_AND_PARKING.md)): Zone, ZoneConnector, OdMatrix and ParkingLot are authoring objects shared by every level; OD compiles to ordinary inputs; never a second editable network. Node, Road and StudyPeriod are planned ([D175 workflow](plans/MULTI_LEVEL_WORKFLOW.md)) |
 
 Adding a command must never teach `project/` its implementation. The corresponding boundary check now runs with the M1 document/command implementation.
 
@@ -294,7 +293,7 @@ Adding a command must never teach `project/` its implementation. The correspondi
   (display only, D97), `data/fonts/` (the bundled UI face) and `data/projects/` (shipped example
   projects that tests and the CLI run).
 - `data/locales/`: English key source and Thai UI text, copied with runtime data.
-- LOS packs remain planned and must be jurisdiction-specific data, never compiled constants.
+- `data/los/`: LOS packs (`hcm.json`, M5.5) — jurisdiction-specific data, never compiled constants.
 
 `trafficsim-check-architecture` permits literal local headers and reviewed standard
 headers in core/eval. It rejects Qt, I/O, unordered containers, wall-clock/RNG headers,

@@ -1,8 +1,7 @@
 # Driving behaviour assignment contract
 
 Design before implementation, 2026-10-06 (D120). This contract owns the proposed
-M3.3 assignment seam, not a claim that W74/W99, motorcycles or these UI controls
-already run. §7 records what M3.3.2a implemented (storage and editing), §8 the
+M3.3 assignment seam. W74 runs since D138 (not validated); W99 and motorcycles do not. §7 records what M3.3.2a implemented (storage and editing), §8 the
 M3.3.2b runtime selection and §9 the M3.3.2c editor. [ROADMAP](../ROADMAP.md#m33--driving-behaviour-library-and-models)
 owns milestone status; [the delivery plan](../plans/DRIVING_BEHAVIOUR.md) owns
 acceptance rows. Existing [SIMULATION](SIMULATION.md),
@@ -112,13 +111,14 @@ to make a newly selected profile appear smoother.
 
 Switching following **models** is deferred until each model defines its state
 initialization/transfer and driver traits; [W74](W74.md#7-state-and-model-switch)
-defines them for `w74` (D129, not yet implemented). All future dynamic/attention/amber
+defines them for `w74` (D129; W74 runs since D138). All future dynamic/attention/amber
 state belongs in `SimState`; sampling cadence and stable processing order must
 be explicit. Copy/replay never depends on paint order or wall clock.
 
 ## 4. Parameter capability map
 
-This table describes baseline code at `07eb5cb`, not scientific validation.
+This table describes baseline code at `07eb5cb`, not scientific validation. It is not updated:
+since then M3.3.2a–c shipped the library and assignment, and W74 runs (D138, not validated).
 "Planned" means the attached target needs new contracts/implementation; it must
 not appear as a working setting just because the catalog can store a number.
 

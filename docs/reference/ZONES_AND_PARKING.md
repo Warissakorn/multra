@@ -1,16 +1,11 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
-**Status:** M8.6b implemented 2026-10-14 (D162): the OD matrices tab, the lot dialog and the Results
-lot table; every M8 object is now authored in the editor. M8.6a implemented 2026-10-14 (D161): the Zone tool, the Zones tab and zone connectors
-in the editor (§9). M8.5 implemented 2026-10-14 (D160): the lot report of §5 in the movement report, CLI
-JSON/CSV, checkpoints and batches (PL11). M8.4b implemented 2026-10-14 (D157): the authored ParkingLot — codec, checks,
-commands, compiler and Run tier (OD7, PL7–PL10 end to end). M8.4a implemented 2026-10-14 (D156): the lot runtime of §4 in the core, rows PL1–PL7
-on hand-built scenarios. M8.2 implemented 2026-10-13 (D154): the schema-31 codec, the structural checks and
-the undoable commands for Zone, ZoneConnector and OdMatrix (rows Z1–Z6). M8.3 implemented
-2026-10-13 (D155): the OD expansion of §3 and the Run tier of §6 without lots (rows OD1–OD6).
-The M8 gate's development-access study and the owner's look remain. This document fixes the
+Implemented by M8.2–M8.6b (D154–D157, D160–D162); slice history is in PROGRESS and milestone
+status in [ROADMAP](../ROADMAP.md) M8. [D175](../decisions/RECORD.md#d175) will move the matrix
+period into StudyPeriod ([workflow](../plans/MULTI_LEVEL_WORKFLOW.md)); until that slice lands,
+§2.3 is the contract. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
-M8.2–M8.6 build against. Milestone status lives in [ROADMAP](../ROADMAP.md) M8; the design
+M8.2–M8.6 build against. The design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
 reasoning for the choices below is [D153](../decisions/RECORD.md#d153); the check tiers and
 cascades of §6 are [D154](../decisions/RECORD.md#d154).

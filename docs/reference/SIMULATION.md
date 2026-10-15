@@ -1,12 +1,13 @@
 # Simulation core and network model
 
-Current engine/model reference. **Not yet validated.** This engine is a reduced,
-Wiedemann-inspired prototype, not an implementation of W74/W99 and not calibrated to
-Vissim. Mandatory lane changing exists (M3.2.8b, below). Discretionary changes (D95) and their
+Current engine/model reference. **Not yet validated.** The default following model is a reduced,
+Wiedemann-inspired prototype; W74 is selectable per behaviour since D138 ([W74](W74.md)); there is
+no W99; nothing is calibrated to Vissim. Mandatory lane changing exists (M3.2.8b, below). Discretionary changes (D95) and their
 hold (D101) are implemented but **off**: no shipped behaviour carries the fields, because A53
 fails (vehicles change back within 10 s). Derived merge priority and authored crossing/merge
 areas with Stop/Yield are implemented using deterministic thresholds and occupancy checks,
-not calibrated critical-gap behaviour. LOS is not implemented. Milestone gates are maintained
+not calibrated critical-gap behaviour. LOS letters come from section delay ([LOS](LOS.md), M5.5),
+under the same not-yet-validated marker. Milestone gates are maintained
 in [ROADMAP](../ROADMAP.md); automated checks do not establish owner or scientific validation.
 
 ## Run

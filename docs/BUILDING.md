@@ -159,3 +159,20 @@ packaged database: the database in `--data-dir/proj` when present, otherwise the
 `data/proj` even with a custom content directory. Windows packaging copies dependency DLLs and uses
 windeployqt for Qt Network/TLS. System Linux packages need Qt Network and libproj
 runtimes. Network tests use a local fake server and make no live OSM requests.
+
+## Notes from the owner's machines
+
+Moved from NEXT on 2026-10-15; dated, machine-specific.
+
+- **Build on this machine:** MSVC 14.51, Ninja and Qt 6.8.3 on D: (vcvars64, then
+  `cmake --preset desktop`) gives Windows evidence.
+  - **WSL is not installed here** (`wsl.exe -l -v`, 2026-10-03). Linux evidence comes from CI
+    (`native.yml`) or another Linux/WSL machine.
+  - On a 3.7 GB WSL machine, `ar` on `/mnt/c` failed with "Cannot allocate memory" at full
+    parallelism; use `-j 4` there. On another, a one-file edit waited 150 s (134 s linking the 101 MB Debug
+    `trafficsim-tests` on `/mnt/c`), and an unbounded `-j` hung a 3 GB WSL. The remedy: a build
+    tree on ext4 via an untracked `CMakeUserPresets.json`, `CMAKE_JOB_POOLS=link=1` with
+    `CMAKE_JOB_POOL_LINK=link`, `-j2`, and `--target` only what the change needs.
+- **Timing on this machine:** the i5-12450H is hybrid. The same Debug run is 26–29 s CPU on
+  P-cores (`ProcessorAffinity` 0xFF) and 89–104 s on E-cores (0xF00), 2026-10-04. Pin to one
+  core type before comparing. Wall time under ctest swung 24–90 s on unchanged code.

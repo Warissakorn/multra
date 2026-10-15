@@ -5,26 +5,26 @@ Widgets desktop interface**, built to the modelling surface PTV Vissim users alr
 aimed at the movement-level delay and queue output that traffic impact studies need.
 `TrafficSim` is a working name; the name is the owner's decision (D11).
 
-**Where it stands.** M1 (editor usability) was accepted by owner ruling (D49) and the M2 gate
-passed by the owner's judgment (D51–D53). **M0 plausibility is still open**, and M3 right-of-way
-and driver behaviour are under way. `trafficsim-desktop` opens the Network Editor:
-- Links, Connectors and turn pockets, drawn on an aerial image.
-- Routes, vehicle inputs, routing decisions and fixed-time signal controllers.
-- Conflict areas with priority and Stop/Yield, and queue counters.
-- Run, Pause, Step and Reset on the same canvas, then a Results tab with per-movement delay and
-  per-approach queues, exportable as CSV.
+`trafficsim-desktop` opens the Network Editor:
+- Links, Connectors and turn pockets, drawn on an aerial image or an OpenStreetMap background.
+- Routes, vehicle inputs, routing decisions, fixed-time signal controllers, conflict areas with
+  priority and Stop/Yield, queue counters and travel-time sections.
+- Zones, OD matrices and capacity-limited parking lots.
+- Run, Pause, Step and Reset on the same canvas; Results with per-movement delay, queues, section
+  LOS, multi-seed batches with 95 % confidence intervals and scenario comparison, exportable as CSV.
+- A Behaviour Lab window for tuning driving behaviour on a test circuit.
 
-The controls are in English and Thai, with a bundled Noto Sans Thai font. What is next lives in
-[`docs/NEXT.md`](docs/NEXT.md); the milestone sequence is in
-[`docs/ROADMAP.md`](docs/ROADMAP.md).
+The controls are in English and Thai, with a bundled Noto Sans Thai font. Milestone status and
+gates are in [`docs/ROADMAP.md`](docs/ROADMAP.md); what is next is in [`docs/NEXT.md`](docs/NEXT.md).
 
 The supplied Link, Connector and Network Editor target specs are retained in
 [`docs/specs/`](docs/specs/README.md), with a [code audit](docs/audits/SPEC_AUDIT.md). These documents
 are not claims of Vissim parity.
 
-**Not yet validated:** the longitudinal model is a reduced Wiedemann-inspired prototype,
-not W74/W99 or a calibrated Vissim equivalent. Diagnostics are completed-trip delay,
-including source waiting and acceleration; they are **not HCM control delay or LOS**.
+**Not yet validated:** the default longitudinal model is a reduced Wiedemann-inspired prototype;
+W74 is selectable and uncalibrated; nothing is a calibrated Vissim equivalent. Movement delay is
+completed-trip delay, including source waiting and acceleration — **not HCM control delay** — and
+LOS letters come from section delay with the same not-yet-validated marker.
 
 ## Build and run
 
@@ -75,15 +75,16 @@ installer — M7 owns installation.
 
 | Part | Entry point | Behaviour |
 |---|---|---|
-| Simulation core | `src/core/simulation.hpp` | Fixed stepping, seeded arrivals, reduced car-following, fixed-time signals, conflict-area and merge right-of-way, commitment at waiting lines, mandatory lane changes with cooperative braking. Imports nothing. |
-| Network and demand model | `src/model/` | Links, lanes, Connectors, routes, inputs, routing decisions, signal controllers, conflict areas and queue counters, compiled into core inputs |
-| Project files | `src/project/` | Strict load and save of `*.traffic.json` (reads schemas 1–30; writes 17–30 by feature) and M0 scenario JSON, validation, movement evaluation and its CSV |
-| Evaluation | `src/eval/` | Per-movement delay and per-approach queue from one run's event stream |
-| Desktop | `src/shell/`, `src/editor/` | The Network Editor, Run view and Results tab, in English and Thai |
-| CLI | `tools/run_simulation.cpp` | One seeded run of a scenario or project; summary JSON, optional events and `--csv` |
+| Simulation core | `src/core/simulation.hpp` | Fixed stepping, seeded arrivals, prototype or W74 car-following, fixed-time signals with amber, parking lots, conflict-area and merge right-of-way, commitment at waiting lines, mandatory lane changes with cooperative braking. Imports nothing. |
+| Network and demand model | `src/model/` | Links, lanes, Connectors, routes, inputs, routing decisions, signal controllers, conflict areas, queue counters, sections, zones, OD matrices and parking lots, compiled into core inputs |
+| Project files | `src/project/` | Strict load and save of `*.traffic.json` (reads schemas 1–31; writes 17–31 by feature) and M0 scenario JSON, validation, movement evaluation and its CSV |
+| Evaluation | `src/eval/` | Per-movement delay, approach queues, section delay/LOS, discharge and lot reports from one run's event stream |
+| Batches | `src/runner/` | Independent seeds in parallel, 95 % CI aggregation and scenario comparison |
+| Desktop | `src/shell/`, `src/editor/` | The Network Editor, Run view, Results tab and Behaviour Lab, in English and Thai |
+| CLI | `tools/run_simulation.cpp` | One seeded run, `--seeds` batches or `--compare` of a scenario or project; summary JSON, optional events and `--csv` |
 
-Out of scope today: multi-seed batches, confidence intervals and LOS (M5), and validation
-against field data (M6). Read [`docs/reference/SIMULATION.md`](docs/reference/SIMULATION.md) for numerical behaviour.
+Validation against field data is M6 and has not passed; every result carries the not-yet-validated
+marker. Read [`docs/reference/SIMULATION.md`](docs/reference/SIMULATION.md) for numerical behaviour.
 
 ## Migration evidence
 
@@ -111,7 +112,7 @@ selected by the documentation map.
 | [`docs/PROBLEM.md`](docs/PROBLEM.md) | Audience, scope and why this owns an engine |
 | [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) | Correctness and working rules |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Modules, dependencies and contracts |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md) | M0–M7 and acceptance gates |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Milestones M0–M12, their status and acceptance gates |
 | [`docs/PROGRESS.md`](docs/PROGRESS.md) | Session log and the decision record |
 | [`AGENTS.md`](AGENTS.md) | Shared working instructions for humans and AI tools |
 | [`CLAUDE.md`](CLAUDE.md) | Claude entry point, pointing to the shared instructions |

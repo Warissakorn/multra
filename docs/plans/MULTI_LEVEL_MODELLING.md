@@ -6,7 +6,14 @@ by what studies need from it ([D145](../decisions/RECORD.md#d145)). This documen
 what each level is for, what it must output, how it fits the existing boundaries, and the
 milestones that build it. It is a plan, not evidence. [ROADMAP](../ROADMAP.md) owns the milestone
 scopes and gates (M8–M12); [NEXT](../NEXT.md) owns the queue. The new milestones start **after
-the D143 queue** (M5.9 → M4.2 → M6.0 → M5.8). Nothing here is implemented.
+the D143 queue** (M5.9 → M4.2 → M6.0 → M5.8). M8 (zones, OD, parking lots) is implemented
+([contract](../reference/ZONES_AND_PARKING.md)); everything else here is design.
+
+**Amended 2026-10-15 by [D175](../decisions/RECORD.md#d175):** the
+[multi-level workflow](MULTI_LEVEL_WORKFLOW.md) — one loop from any starting level, Node and Road
+objects, StudyPeriod, run-time subarea cut and offline-first imports — wins where it disagrees
+with this document (its §11 lists the superseded parts: §3.1 centreline Links and Node, §3.6
+stored cut, §7 order).
 
 ## 1. Why three levels
 
