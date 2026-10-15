@@ -22,6 +22,10 @@ std::vector<LaneChange> decideLaneChanges(const Scenario&, const ScenarioIndex&,
                                           const std::vector<VehicleRefs>&, const std::vector<OccupiedSpan>&,
                                           const SpanBuckets&, const std::vector<StopService>& stopService,
                                           std::uint64_t tick);
+// Moves `vehicle` to `route` at `distance`, as a change started at `tick`: the LaneChangeEvent, the
+// D101 hold's record and the display trace. Shared by the instantaneous change and LATERAL §7's crossing.
+void recordLaneChange(const Scenario&, Vehicle& vehicle, std::uint32_t route, double distance,
+                      std::uint64_t tick, double time, std::vector<SimEvent>& events);
 // A place a vehicle holds back from so that a changer can come in ahead of it. Waiting (D71): a
 // standing obstacle that caps the move. Moving (cooperative braking, M3.2.8c): a leader at the
 // changer's speed that the vehicle brakes behind at no more than its

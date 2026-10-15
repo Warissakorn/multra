@@ -11,11 +11,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-15
 
-- M3.7 lateral slices 1–2 are in: the keys and compiled cross-sections (D187), then spans with a
+- M3.7 lateral slices 1–3a are in: the keys and compiled cross-sections (D187); spans with a
   lateral band, other-lane spans for a body past `kLateralOverlap`, and the `dLat` leader/alongside
-  filter (D188, [evidence](evidence/lateral-spans.md)). Nothing moves sideways yet; BA39 holds.
-- Zones still read route positions: a straddler occupies only its own route's zone (deferred by the
-  owner to slice 3, D188).
+  filter (D188); lateral motion toward `lateralTarget`, admission in id order without 2D overlap,
+  and crossing through a covering span (D189, [evidence](evidence/lateral-motion.md)). Only tests
+  set a target, so no product run moves sideways; BA39 holds.
+- Zones still read route positions: a straddler occupies only its own route's zone (slice 3b, owner,
+  D188/D189).
 - M3.5 is implemented through BA38 (D181–D186).
 - Local evidence is Linux headless; no desktop or Windows verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
@@ -26,22 +28,18 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Item 1 and its follow-ons use the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.7 LATERAL slice 3: lateral motion, admission and zones** ([LATERAL](reference/LATERAL.md)
-   §6–§7, §10, D180/D187/D188; acceptance BA43, BA44, with BA39 in
-   [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).
-   - Read LATERAL §7 and D188 first. `Vehicle::lateral`/`lateralSpeed` exist and stay 0; this slice
-     is their first writer. §7 sets no target itself: decide with the owner whether a test-only or
-     contract-level `yT` writer comes first (M3.4/M3.7.1 are the real writers).
-   - Lateral admission after the longitudinal step, in vehicle-id order (§7); a refused move keeps
-     `lateral` with `lateralSpeed` 0. Crossing remaps the route when a `LaneChangeSpan` covers it.
-   - **Zones (deferred here by the owner, D188):** `summarizeZones`, `zoneHold`, `resolveRequests`
-     read route positions; a straddler's other-lane span must occupy that lane's zone too.
+1. **M3.7 LATERAL slice 3b: zone occupancy by span** ([LATERAL](reference/LATERAL.md) §5, §6,
+   §10, D188/D189; BA39 kept in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).
+   - `summarizeZones`, `zoneHold` and `resolveRequests` (`src/core/conflicts.cpp`) read route
+     positions; a straddler's other-lane span (`own = false`) must occupy that lane's zone too.
+     Write the failure-first rows first (a straddler into a zone on the next lane; switch off
+     byte-identical). Tests set `lateralTarget` or `lateral` to make a straddler (D189).
    - The hand mirrors stay one-dimensional until then: `placeVehicle`, Lab telemetry,
      `dead_end_waits.cpp` (LATERAL §10).
    - Re-run `trafficsim-engine-benchmark` with the switch off and time a switched-on run (§11).
-   - Then slice 4 (display, BA46), M3.4 lane-change duration, M3.6 turning speeds, M3.4 overtaking
-     with driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (the review's §5
-     order, D177/D178).
+   - Then slice 4 (display, BA46), M3.4 lane-change duration (the first product writer of
+     `lateralTarget`), M3.6 turning speeds, M3.4 overtaking with driving side, M3.8 motorcycles,
+     M3.5 attention, M3.3.3b W99 and M3.9 (the review's §5 order, D177/D178).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its

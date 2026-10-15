@@ -125,6 +125,13 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
     return std::numeric_limits<double>::infinity();
 }
 }
+void recordLaneChange(const Scenario& s, Vehicle& vehicle, std::uint32_t route, double distance,
+                      std::uint64_t tick, double time, std::vector<SimEvent>& events) {
+    events.emplace_back(LaneChangeEvent{time, vehicle.id, s.routes[vehicle.routeIndex].id, s.routes[route].id});
+    vehicle.lastLaneChange = LastLaneChange{tick, vehicle.routeIndex};
+    vehicle.laneChangeTrace.push_back({vehicle.routeIndex, route, vehicle.distance, distance, vehicle.speed});
+    vehicle.routeIndex = route; vehicle.distance = distance;
+}
 double mappedOnto(const RouteLaneChange& c, double at) {
     const double from = c.fromEnd - c.fromStart;
     return from > 0 ? c.toStart + (at - c.fromStart) * (c.toEnd - c.toStart) / from : c.toStart;
