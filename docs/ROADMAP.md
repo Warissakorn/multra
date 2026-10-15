@@ -203,7 +203,8 @@ Vissim's cooperative lane change. Extended by the [driving-behaviour review](aud
 (D177, §3 F–G): lane-change duration with between-lanes occupancy (on M3.7.0), minimum
 lane-change headway and safety-distance reduction, politeness, zipper merging and a blocking
 timeout, and overtaking with the driving side (keep-left/right bias, return after passing, lane
-preference by type; needs `drivingSide` compiled into core). **Gate:** contract and failure-first rows per item in the
+preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
+left-hand-traffic networks, held in a behaviour key (D178). **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention
@@ -236,7 +237,8 @@ replays byte-identically; no overlap in 2D at any tick.
 
 **Open; core scope since D177** (answers R3/D143; review §3 I). After M3.7: a motorcycle type,
 lane sharing, filtering through standing queues, forming at the stop line, smaller accepted
-gaps, and PCU values handed to M10 (sources B12/B15). **Gate:** contract and failure-first rows,
+gaps, and PCU values handed to M10. Values start from cited published standards, flagged
+uncertain; the owner's later research and M6 replace them through data (D178). **Gate:** contract and failure-first rows,
 then M6 measurements of motorcycle discharge and PCU before any result is reported as more than
 not-yet-validated.
 
@@ -245,7 +247,7 @@ not-yet-validated.
 **Open; carved by D177** (review §3 J). Seeded per-driver critical gaps and follow-up times
 (values from M6, R7), turn on red for marked movements, U-turn slots and median openings,
 anticipating a turning leader, and an amber probability model as an option beside D147 (M4.2
-is not reopened). **Gate:** contract and failure-first rows per item; legacy random stream untouched.
+is not reopened). Its place, eighth in the order, is accepted (D178). **Gate:** contract and failure-first rows per item; legacy random stream untouched.
 
 ---
 

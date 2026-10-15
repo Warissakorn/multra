@@ -72,16 +72,10 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    loaded into projects (an unused `w74` behaviour would add traits to every vehicle). Ship it
    in the auto-loaded catalog, and give it an `amberDeceleration` (SUMO's car-following model
    has none, so amber holds like red: 72–98 % of its clamps), or leave both? *Owner:*
-14. **Driving-behaviour order and Thai defaults** (listed 2026-10-15, D177,
-   [review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §5, §8). Accept the order (perception and 2D
-   contracts, lane-change duration, turning speeds, overtaking, motorcycles, attention, W99,
-   intersection extensions)? Keep-left bias as the default on left-hand-traffic networks? Turn on
-   red and U-turn slots before M6, or after? *Owner:*
-15. **Motorcycle data** (listed 2026-10-15, D177). Name sources for motorcycle saturation flow,
-   PCU, filtering share and stop-line formation (with B12), or a site to count for M6. *Owner:*
 
 Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
-([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9).
+([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9); B14 and B15, moved out
+([D178](../decisions/RECORD.md#d178): order accepted, keep-left default, standard motorcycle values for now).
 Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
 ([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
 

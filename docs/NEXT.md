@@ -22,7 +22,7 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 Without a choice from the owner, take item 1. One system per session; contract and acceptance
 rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
-on 2026-10-15 (D177); B14 can still reorder it.
+on 2026-10-15 (D177) and accepted (D178).
 
 1. **M3.5.0 — the perception contract, docs only.** Write `docs/reference/PERCEPTION.md`: one
    bounded observation per vehicle and tick (look-ahead/look-back distances, observed vehicles
@@ -64,9 +64,8 @@ on 2026-10-15 (D177); B14 can still reorder it.
 - **Gates (A):** M0 plausibility, M3.2.7d T-junction exercise, M5.7 rehearsal.
 - **Decisions (B):** the name, D95/D101, `sharedMouth`/`level`, the M2.6 template's real data,
   the standstill cap, routing stations, the example's cool-down (D146), the M6 benchmark choice
-  (B9, before any comparable run), Thai sources for multi-level values (B12, D175), whether the cited `w74` preset
-  ships in the catalog with an amber value (B13, D176), the driving-behaviour order and Thai
-  defaults (B14), and motorcycle data (B15).
+  (B9, before any comparable run), Thai sources for multi-level values (B12, D175), and whether
+  the cited `w74` preset ships in the catalog with an amber value (B13, D176).
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI and

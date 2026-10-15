@@ -1,5 +1,8 @@
 # Driving-behaviour completeness review — 2026-10-15
 
+**Owner answers:** [D178](../decisions/RECORD.md#d178), the order in §5 accepted, keep-left default,
+standard motorcycle values for now; §8's B14/B15 are answered.
+
 A review, not an owner approval and not a contract. It asks how complete TrafficSim's driving
 behaviour is for the studies it exists for, area by area (perception, mirror checks, lateral
 behaviour, overtaking, motorcycles and the rest), and proposes the order in which to close
