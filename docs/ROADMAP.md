@@ -217,7 +217,8 @@ follower and a time-to-collision rear test, temporary lack of attention, driver 
 correlated hashed traits, visibility at conflict areas (from M3.4). **Gate:** contract and
 failure-first rows; with every key unset, runs are byte-identical (BA18); no fidelity claim before M6.
 **M3.5.0 contract written** ([PERCEPTION](reference/PERCEPTION.md), D179, rows BA30–BA38); next: its
-codec slice, then motion slices in the contract's §9 order.
+codec slice, then motion slices in the contract's §9 order. **Slice 1 (codec, schema 32) delivered** (D181,
+[evidence](evidence/perception-codec.md)); next: slice 2, look-ahead and multi-anticipation.
 
 ### M3.6 — Speed control: turning, curves and speed areas
 

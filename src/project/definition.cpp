@@ -1,6 +1,7 @@
 #include "demand_paths.hpp"
 #include "document.hpp"
 #include "../core/w74.hpp"
+#include "../core/perception.hpp"
 #include "demand_catalog.hpp"
 #include "demand_time_types.hpp"
 #include "counted_volumes.hpp"
@@ -115,12 +116,23 @@ Json definitionJson(const AuthoringDefinition& d) {
     }
     if (!d.externalBehaviours) {
         j["behaviours"] = Json::array();
+        // M3.5 (D181): present perception keys only; an integer key holding a whole number is
+        // written as an integer (anything else is written as is, for the reader to refuse).
+        const auto perception = [](const PerceptionParameters& p, Json& item) {
+            for (const auto& key : perceptionParameterKeys())
+                if (const auto& v = p.*key.member) {
+                    if (key.integer && std::isfinite(*v) && *v == std::floor(*v) && std::abs(*v) < 1e15)
+                        item[key.name] = static_cast<std::int64_t>(*v);
+                    else item[key.name] = *v;
+                }
+        };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model
                 Json item{{"id",b.id}};
                 for (const auto& key : w74ParameterKeys()) item[key.name] = (*b.w74).*key.member;
                 if (b.maxDecelerationCooperativeBraking) item["maxDecelerationCooperativeBraking"] = *b.maxDecelerationCooperativeBraking;
                 if (b.amberDeceleration) item["amberDeceleration"] = *b.amberDeceleration; // M4.2, schema 28
+                perception(b.perception, item);
                 j["behaviours"].push_back(std::move(item));
                 continue;
             }
@@ -132,6 +144,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.acceptedDecelerationTrailingVehicle) item["acceptedDecelerationTrailingVehicle"] = *b.acceptedDecelerationTrailingVehicle;
             if (b.discretionaryLaneChangeHoldTime) item["discretionaryLaneChangeHoldTime"] = *b.discretionaryLaneChangeHoldTime;
             if (b.amberDeceleration) item["amberDeceleration"] = *b.amberDeceleration; // M4.2, schema 28
+            perception(b.perception, item);
             j["behaviours"].push_back(std::move(item));
         }
     }

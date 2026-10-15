@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.5 slice 1: perception codec (D181)
+
+The first code in D178's order. `DriverBehaviour` gains `PerceptionParameters`: five optional
+keys from [PERCEPTION](reference/PERCEPTION.md) §6, appended last.
+- **One key table.** `src/core/perception.hpp` has an integer flag and the §6 ranges. Parser,
+  serializer, the library's known keys and `validateScenario` all read it, on both models.
+- **Schema 32** is written only when an owned behaviour carries a key; a file below 32 that carries
+  one is refused.
+- **Dialog.** The Driving behaviours dialog's `w74` path rebuilt the behaviour from scratch, so it
+  now copies the keys and no longer drops them.
+- **No motion change.** No motion reads the keys yet: BA30 compares a four-leg seed-42 run with and
+  without them and finds them equal.
+- **Fixtures.** Nine fixtures that used 32 as the refused "future" schema now use 33.
+
+Checked on Linux: `check` 139/139, CLI seed 42 unchanged
+([evidence](evidence/perception-codec.md)).
+
 ## 2026-10-15 — M3.7.0 two-dimensional occupancy contract (D180; docs only)
 
 [LATERAL](reference/LATERAL.md) is the second contract in D178's order.
@@ -118,27 +135,6 @@ split at 102°E with legacy Indian 1975 datums, and motorcycle PCU varying withi
 owner accepted every recommendation; [MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) records
 the design, answers and order (S0 Node first). No code, schema or test changed. The D147 entry
 moved whole to `archive/`.
-
-## 2026-10-14 — Authorized whole-repository review fixes (D167–D174)
-
-The owner approved the nine-item review plan together. Fixed evaluation passages, journey free-flow,
-suffix display, phase bins (16 MiB budget), Lab axles, long OD searches (`OD_SKIPPED_DEMAND` advisory),
-Split routing stations and batch cancellation (workers owned by generation); corrected parking identity
-docs. The 16 MiB budget, OD advisory, worker map and Split guards were carried over from draft PR #150.
-Validation: desktop build on Linux (GCC 13.3), 138/138 CTests; Windows desktop is CI-only (D167–D174).
-
-## 2026-10-14 — Behaviour Lab: Urban circuit and heading-up camera (D166)
-
-The owner asked for a varied lab network with straights and intersections, and the camera turning
-with the vehicle. Answers: layouts as presets (Oval kept), fixed-time signals, the tuned vehicle
-turning at some intersections. The Urban circuit (now the default, `lab_urban.cpp`) is four loops
-that never share a lane — circuits refuse rules and zones and two feeders are a merge — crossing at
-four split-phase intersections; `addLoop` cuts a closed path at its intersection boxes into Links
-and Connectors. The first BL14 draft wanted the tuned vehicle at < 0.1 m/s at a red and never saw
-it: queued behind others, the prototype creeps at ≈0.4 m/s; the row now asks for < 1 m/s. An hour
-on 1 and 2 lanes has no safety clamp. Heading-up rotates the view each frame; the ~30 canvas scale
-reads became `viewScale()` (hypot(m11, m12)), identical unrotated. Rows BL13–BL16. Linux only
-(GCC 13.3, Qt 6.4.2 offscreen). The D146 entry moved whole to `archive/`.
 
 ## Older entries
 

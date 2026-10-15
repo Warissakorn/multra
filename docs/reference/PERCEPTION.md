@@ -1,8 +1,9 @@
 # Perception contract: look-ahead, observed vehicles, look-back and reaction time (M3.5.0)
 
-Designed 2026-10-15 (D179); **contract only: nothing here is implemented.** Rows BA30–BA38 are in
+Designed 2026-10-15 (D179). **Slice 1, the codec, is implemented** (D181, schema 32,
+[evidence](../evidence/perception-codec.md)); no motion reads the keys yet. Rows BA30–BA38 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows) and are all
-pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
+pending except BA30 and BA37. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md) §3 A–B and §4.1
 motivate it; D177/D178 put it first. [DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md) owns assignment and
 selection, [SIMULATION](SIMULATION.md) the tick, [W74](W74.md) and the prototype their equations.
 This file owns **what a driver observes and when it acts on it**.
@@ -156,7 +157,7 @@ The upper bounds keep per-tick work bounded (§8). They are not behavioural clai
 (`parseBehaviourLibrary`, `src/project/behaviour_library.cpp:87`, whose unknown-key list gains
 them), the serializer and the range check. A non-number or out-of-range value is
 `INVALID_BEHAVIOUR_PARAMETER` with its path, on unused behaviours too. The schema is the next free
-number at implementation time (32 today), written **only** when an owned behaviour carries one of
+number, **32** (D181), written **only** when an owned behaviour carries one of
 these keys. Every older file keeps its version and bytes, and an older schema carrying a key is
 refused (`EDIT_UNSUPPORTED_FIELD`). External catalogs in `data/driver-behaviour/` read the keys
 without a schema.

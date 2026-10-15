@@ -1,6 +1,7 @@
 #include "json.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
+#include "../core/perception.hpp"
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
@@ -297,6 +298,18 @@ void requireKnownFields(const Json& value,std::initializer_list<const char*> key
 PriorityDefaults parsePriorityDefaults(const Json& value) {
     return {field<double>(value, "gapTime"), field<double>(value, "headway")};
 }
+// M3.5 (PERCEPTION.md §6, D181): the optional perception keys, read the same way on both models.
+// A non-number, or a non-integer where the key is an integer, is refused here; ranges are the
+// validator's (perceptionParameterIssues), so an unused behaviour is checked as well.
+static void readPerception(const Json& b, const std::string& path, PerceptionParameters& p) {
+    for (const auto& key : perceptionParameterKeys()) {
+        if (!b.contains(key.name)) continue;
+        const auto& value = b.at(key.name);
+        if (!value.is_number() || (key.integer && !value.is_number_integer()))
+            throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key.name}});
+        p.*key.member = value.get<double>();
+    }
+}
 DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
     static constexpr const char* prototypeKeys[] = {"standstillDistance", "additiveSafetyDistance",
         "multiplicativeSafetyDistance", "followingTime", "speedThreshold", "discretionaryLaneChangeThreshold",
@@ -320,6 +333,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         if (b.contains("maxDecelerationCooperativeBraking"))
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
         if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration"); // M4.2
+        readPerception(b, path, behaviour.perception);
         return behaviour;
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
@@ -341,6 +355,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         behaviour.discretionaryLaneChangeHoldTime = field<double>(b, "discretionaryLaneChangeHoldTime");
     // Optional (M4.2, D147): absent, amber holds like red.
     if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration");
+    readPerception(b, path, behaviour.perception);
     return behaviour;
 }
 VehicleType parseVehicleType(const Json& t) {

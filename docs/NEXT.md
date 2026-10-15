@@ -16,7 +16,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Branch `claude/eloquent-carson-qgorzf` adds the cited `w74` preset (D176) and the
   [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md) with milestones M3.5–M3.9
   (D177; motorcycles are core scope), the owner's answers (D178), and the perception
-  (D179) and lateral (D180) contracts; not yet merged.
+  (D179) and lateral (D180) contracts, and the perception codec (D181);
+  not yet merged.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
@@ -25,26 +26,22 @@ Without a choice from the owner, take item 1. One system per session; contract a
 rows first for engine work. Items 1–1c follow the review's order (§5), which the owner asked for
 on 2026-10-15 (D177) and accepted (D178).
 
-1. **M3.5 slice 1: the perception codec** ([PERCEPTION](reference/PERCEPTION.md) §6, §9 step 1;
-   row BA37, with BA30). This is the first code in the D178 order. Copy the `amberDeceleration`
-   pattern (D147):
-   - **Struct:** five `std::optional` fields appended last to `DriverBehaviour`
-     (`src/core/types.hpp:41`), so brace-initialisation keeps its meaning.
-   - **Key table:** one `perceptionParameterKeys()` read by every consumer below.
-   - **Parse:** read in `parseBehaviour` (`src/project/parse.cpp:300`) on both models.
-   - **Library codec:** add the keys to `parseBehaviourLibrary`'s known keys
-     (`src/project/behaviour_library.cpp:87`).
-   - **Schema gate:** `ownsPerceptionBehaviour` plus `rejectPerceptionBefore32`, beside
-     `ownsAmberBehaviour` and `rejectAmberBefore28`. Schema 32 is written only when an owned
-     behaviour uses a key, through the `schema` chain in `src/project/document.cpp:131`.
-   - **Range check:** a separate range check with paths (`observedVehiclesAhead` must be an
-     integer from 1 to 8).
-   - **Dialog:** a save from the Driving behaviours dialog (`src/shell/behaviour_editor.cpp`) must
-     keep the keys; showing them in the dialog is a later UI slice.
-   - **No motion change:** the engine reads none of the keys yet, which BA30 proves byte-identical.
-   - **Tests** go in a new `tests/perception_codec_tests.cpp`, modelled on
-     `tests/w74_codec_tests.cpp` and the amber tests.
-   - 1b. Then PERCEPTION slices 2–5, LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
+1. **M3.5 slice 2: look-ahead and multi-anticipation** ([PERCEPTION](reference/PERCEPTION.md) §2,
+   §3, §8; rows BA31, BA32, with BA30). The keys are already stored (D181); this slice makes own
+   motion read `lookAheadDistance` and `observedVehiclesAhead`.
+   - **Search:** extend the leader search beside `closestVehicle` (`src/core/simulation.cpp:35`).
+     One pass returns the **physical leader** (unchanged, unbounded) and up to n **perceived
+     leaders** (rear within look-ahead, ordered by gap then vehicle id), reusing its early break.
+   - **Acceleration:** own motion (`simulation.cpp:346`) takes the min over k of `follow` with
+     `gEffk = gk − Σ_{j<k}(lj + standstillGap)`. The kept k sets the mode and W74 state (ties keep
+     the smaller k).
+   - **Unchanged:** `allowedDistance` (`:264`), zone admission (`VehicleLeader`, `:262`) and D108
+     keep the physical leader.
+   - **Rest unchanged:** `safeAt`'s forward test is slice 3, with look-back.
+   - **Identity:** with both keys absent, the code path must give byte-identical results (BA30);
+     re-run `trafficsim-engine-benchmark` before and after (§8).
+   - **Tests:** `tests/perception_motion_tests.cpp`, group `perceptionmotion`.
+   - 1b. Then PERCEPTION slices 3–5, LATERAL slices 1–4 ([LATERAL](reference/LATERAL.md) §12;
      its schema is the next number after 32), M3.4 lane-change duration, M3.6 turning speeds, M3.4
      overtaking with the driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99, M3.9 (review §5).
 2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
