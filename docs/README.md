@@ -29,14 +29,6 @@ selects additional context; read related decisions and evidence only when needed
 Resolve the document names through the indexes below. `src/report/` is a planned module
 boundary; `src/runner/` holds batches (M5.2) and scenario comparison (M5.8a).
 
-## Sources and status
-
-- NEXT owns the live queue; OWNER_SITTING owns every owner item; ROADMAP owns milestone status/gates.
-- Contracts define behaviour; ARCHITECTURE defines boundaries; PRINCIPLES defines rules.
-- PROGRESS records sessions. The [decision index](decisions/README.md) locates their reasoning.
-- Dated reviews are evidence/proposals, not permission to change the owner's priorities.
-- Engineering docs are English. Supplied Thai specs retain their documented provenance.
-
 ## Start here, every session
 
 | File | What it is |
@@ -58,22 +50,22 @@ boundary; `src/runner/` holds batches (M5.2) and scenario comparison (M5.8a).
 | [`plans/`](plans/README.md) | Milestone plans and acceptance/gate records. |
 | [`audits/`](audits/README.md) | Dated audits and reviews. |
 | [`specs/`](specs/README.md) | Supplied Thai target specifications and their original/retained byte manifests. |
-| [`evidence/`](evidence/) | Measurement records behind decisions: sweeps, CSVs, metadata, session checks. Each is cited by a `PROGRESS.md` entry or a decision row. |
+| [`evidence/`](evidence/README.md) | Measurement notes behind decisions; read the note, not the raw CSV/JSON. |
 | [`images/`](images/) | Screenshots used by the docs. |
-| [`archive/`](archive/README.md) | Old PROGRESS, ROADMAP and VISSIM_PARITY blocks, moved out whole. Indexed newest first; nothing there is current. |
+| [`archive/`](archive/README.md) | Old PROGRESS logs, ROADMAP bodies, answered reviews and superseded rows, moved whole. Nothing there is current. |
 | [`decisions/`](decisions/README.md) | Complete decision record with stable D-number anchors and a topic index. |
 
 ## Keeping this tidy
 
-- A new maintained doc gets a row in its folder index in the same commit.
-- The tables above index docs at the root and link to the purpose folders.
-- Run `trafficsim-check-docs .` (also in `check`/CTest) for local inline Markdown links,
-  anchors and maintained-folder index coverage. Source-spec example parts are excluded.
-- `PROGRESS.md` stays under 500 lines (`trafficsim-check-file-sizes`). Move the oldest live
-  entries whole into `archive/`, and list the new file in `archive/README.md`.
-- Moving a file into `archive/` means its relative links need `../`.
-- Keep status in NEXT/ROADMAP; link to it from summaries instead of copying detailed queues.
-- A contract distinguishes implemented behaviour, planned behaviour and acceptance evidence.
-- Record the verification platform and date; automated CI does not replace owner observation.
-- Start archiving/splitting maintained docs near 450 lines, before the 500-line check fails.
-- Preserve decision IDs, milestone IDs, gates and source-spec bytes during reorganization.
+Who owns what is in [AGENTS § Documentation authority](../AGENTS.md#documentation-authority).
+
+- A new maintained doc gets a row in its folder index in the same commit; `trafficsim-check-docs .`
+  (in `check`/CTest) checks links, anchors and index coverage.
+- Every `.md` stays under 500 lines (`trafficsim-check-file-sizes`); split or archive near 450.
+- Status lives only in NEXT and ROADMAP; elsewhere link to it, do not copy it.
+- Archive by moving whole blocks: old PROGRESS entries go to the top of the newest
+  `archive/PROGRESS-LOG-*.md`; implemented ROADMAP bodies and answered reviews go to `archive/`.
+  Fix relative links (`../`) and list new files in `archive/README.md`.
+- A contract separates implemented behaviour, planned behaviour and acceptance evidence, and
+  records the verification platform and date.
+- Keep decision IDs, milestone IDs, gates and source-spec bytes intact.

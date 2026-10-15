@@ -15,7 +15,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   run covers the merged M8 (PR #142), Behaviour Lab (#148/#149) and review fixes (#151), including
   the `scenario-run-ui` pin of the D159 numbers: `trafficsim-cli 42` = 45 completed /
   31.75870154816726 s / 1 clamp.
-- Branch `claude/multi-level-workflow` (docs only: D175 and this consistency pass) has no PR yet.
+- D175 and the docs consistency pass merged as PR #153 (`main` `0f16623`); branch
+  `claude/exciting-cerf-9jjvck` carries the docs cleanup (archive merged into dated logs).
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
 ## Next session — pick one, as the user asks
