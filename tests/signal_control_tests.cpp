@@ -5,9 +5,29 @@
 #include "../src/model/demand/signal_control.hpp"
 #include "../src/project/run.hpp"
 #include <algorithm>
+#include <limits>
 using namespace trafficsim;
 // M2.7: a Signal head is its stop line, placed where it is clicked (D47), and it shows a signal
 // group of a fixed-time controller, expanded at compile time into a core program (D48).
+TEST(signals, group_numbers_are_checked_before_integer_conversion) {
+    Json network = {{"id", "n"}, {"drivingSide", "left"}, {"links", Json::array()}, {"connectors", Json::array()},
+        {"signalHeads", Json::array({{{"id", "h"}, {"lane", {{"linkId", "l"}, {"laneId", "lane"}}},
+            {"position", 0}, {"programId", ""}, {"controllerId", "c"}, {"groupNumber", 1}}})}};
+    Json value = {{"signalControllers", Json::array({{{"id", "c"}, {"name", "c"}, {"cycle", 60}, {"offset", 0},
+        {"groups", Json::array({{{"number", 1}, {"name", "g"}, {"greenStart", 0}, {"greenEnd", 30}, {"amber", 3}}})}}})}};
+    for (const double invalid : {1.5, 1e100, -1e100, static_cast<double>(std::numeric_limits<int>::max()) + 1,
+                                 static_cast<double>(std::numeric_limits<int>::min()) - 1,
+                                 std::numeric_limits<double>::infinity(), std::numeric_limits<double>::quiet_NaN()}) {
+        value["signalControllers"][0]["groups"][0]["number"] = invalid;
+        test::throws([&] { parseSignalControllers(value); }, "DUPLICATE_SIGNAL_GROUP");
+        network["signalHeads"][0]["groupNumber"] = invalid;
+        test::throws([&] { parseNetwork(network, 13); }, "DUPLICATE_SIGNAL_GROUP");
+    }
+    value["signalControllers"][0]["groups"][0]["number"] = std::numeric_limits<int>::max();
+    CHECK(parseSignalControllers(value)[0].groups[0].number == std::numeric_limits<int>::max());
+    network["signalHeads"][0]["groupNumber"] = std::numeric_limits<int>::max();
+    CHECK(parseNetwork(network, 13).signalHeads[0].groupNumber == std::numeric_limits<int>::max());
+}
 namespace {
 SignalController controller() {
     // Offset 7, one plain group, one wrapping past the cycle's end, one with no amber and one

@@ -120,17 +120,22 @@ use `-DCMAKE_PREFIX_PATH=/path/to/Qt/kit`.
 Presets use Ninja: executables are under `build/<preset>/bin/`. Visual Studio or Ninja
 Multi-Config generators add `Debug/` or `Release/` after `bin/`; use `--config Release`
 when building and `ctest -C Release` when testing. Runtime data follows that directory.
+Every build mirrors `data/` there, including removed or renamed catalog files. The generated
+destination must be inside the build tree and separate from the source. `data/proj/` is preserved
+because `trafficsim-proj-data` manages that subtree separately, including desktop builds of CLI alone.
 
 ## Checks and sanitizers
 
 ```bash
 cmake --build build/headless --target check
-cmake -S . -B build/asan -G Ninja -DTRAFFICSIM_BUILD_DESKTOP=OFF -DTRAFFICSIM_SANITIZERS=ON -DCMAKE_BUILD_TYPE=Debug
-cmake --build build/asan
-ctest --test-dir build/asan --output-on-failure
+cmake --preset sanitizer
+cmake --build --preset sanitizer
+ctest --preset sanitizer
 ```
 
-The sanitizer option applies to GCC/Clang. Tests use explicit failure checks, so
+The sanitizer option applies to GCC/Clang and runs in Linux CI. ASan, UBSan and explicit
+`float-cast-overflow` stop at the first diagnostic; out-of-range signal group numbers must be
+rejected before conversion to `int`. Tests use explicit failure checks, so
 Release builds do not disable them through `NDEBUG`. Strict floating-point flags
 disable fast-math and contraction; they do not promise bitwise identity across different
 math libraries. Preserve toolchain/version metadata for future report runs.

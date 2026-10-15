@@ -1,13 +1,54 @@
 #include "test.hpp"
 #include "../src/eval/sections.hpp"
 #include "../src/eval/stop_lines.hpp"
+#include "../src/project/evaluation.hpp"
+#include "../src/runner/batch.hpp"
+#include <nlohmann/json.hpp>
 #include <algorithm>
 using namespace trafficsim;
 namespace {
+ProjectDocument slashRoutes(int lanes) {
+    ProjectDocument d;
+    d.network.links = {{"A", {{0, 0}, {200, 0}}, {{"laneA", 3.5}}},
+                       {"B", {{0, 10}, {200, 10}}, {{"laneB", 3.5}}}};
+    if (lanes == 2) {
+        d.network.links[0].lanes.push_back({"laneA2", 3.5});
+        d.network.links[1].lanes.push_back({"laneB2", 3.5});
+    }
+    d.definition.emplace(); auto& def = *d.definition; const auto s = test::straight();
+    def.duration = 60; def.timeStep = .1;
+    def.vehicleTypes = s.vehicleTypes; def.behaviours = s.behaviours;
+    def.externalVehicleTypes = false; def.externalBehaviours = false;
+    def.routes = {{"r", {"A"}}, {"r/alt", {"B"}}};
+    def.inputs = {{"inputA", "r", "car", 300, 0, 60}, {"inputB", "r/alt", "car", 600, 0, 60}};
+    return parseDocument(Json::parse(documentJson(d).dump()));
+}
 void position(SimState& state, double time, std::uint32_t route, double distance) {
     state.time = time; state.events.clear();
     Vehicle v; v.id = 1; v.routeIndex = route; v.distance = distance; v.speed = 10; v.desiredSpeed = 20;
     state.vehicles = {v};
+}
+TEST(movement, slash_in_authored_route_ids_keeps_single_and_multi_lane_movements_separate) {
+    for (const int lanes : {1, 2}) {
+        const auto d = slashRoutes(lanes);
+        const auto snapshot = compileDocument(d, test::root() / "data");
+        const auto spec = evaluationSpec(d, snapshot, test::root() / "data");
+        CHECK(snapshot.scenario.routes.size() == static_cast<std::size_t>(2 * lanes));
+        CHECK(spec.movementNames.size() == 2);
+        for (const auto& route : snapshot.scenario.routes) {
+            const auto expected = route.segmentIds.front().starts_with("laneB") ? 1u : 0u;
+            CHECK(spec.movementOfRoute.at(route.id) == expected);
+        }
+        const auto runs = runSeeds(snapshot.scenario, spec, {42, 43});
+        for (const auto& seed : runs) {
+            CHECK(seed.report.movements.size() == 2);
+            CHECK(seed.report.movements[0].vehicles > 0 && seed.report.movements[1].vehicles > 0);
+            CHECK(seed.report.movements[0].vehicles + seed.report.movements[1].vehicles == seed.report.completed);
+        }
+        const auto batch = aggregate(runs);
+        CHECK(batch.movements.size() == 2);
+        CHECK(*batch.movements[0].vehicles.mean > 0 && *batch.movements[1].vehicles.mean > 0);
+    }
 }
 }
 TEST(traveltime, section_tracks_actual_distance_across_unequal_lane_remaps) {

@@ -53,6 +53,26 @@ bool clamped(const SimState& s) {
 }
 }
 
+TEST(w74run, a_lower_live_target_uses_bounded_braking_until_the_target_is_reached) {
+    // Both models, from 25 m/s: the prototype's free term alone would ask (5 - 25) / 1.5 m/s².
+    for (const std::string type : {"car", "carProto"}) {
+        auto s = road({"a"}, 1000);
+        auto state = placed(s, {{1, 100, 25, 0, type}});
+        for (auto& t : s.vehicleTypes) t.desiredSpeed = {5, 5};
+        state = retuneSimulation(std::move(state), s, {.rescaleDesiredSpeeds = true});
+        CHECK(state.vehicles.front().speed == 25 && state.vehicles.front().desiredSpeed == 5);
+        for (int i = 0; i < 120; ++i) {
+            const auto before = state.vehicles.front();
+            state = stepSimulation(std::move(state)); const auto& after = state.vehicles.front();
+            CHECK(after.speed >= before.speed - s.vehicleTypes[0].comfortableDeceleration * s.timeStep - 1e-9);
+            test::near(after.speed - before.speed, after.acceleration * s.timeStep);
+            test::near(after.distance - before.distance,
+                       before.speed * s.timeStep + .5 * after.acceleration * s.timeStep * s.timeStep);
+            CHECK(!clamped(state));
+        }
+        test::near(state.vehicles.front().speed, 5, .01);
+    }
+}
 TEST(w74run, the_leaders_acceleration_reaches_the_follower_and_static_obstacles_give_zero) { // BA28
     const auto s = road({"a", "b", "c", "d", "e", "f"});
     // Follower front at 96, leader rear at 106: g = 10 < SDX, dv = 2 > CLDV = 1 -> approaching:

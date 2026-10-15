@@ -48,6 +48,18 @@ std::vector<SimEvent> events(const Scenario& s, std::uint32_t seed) {
     return result;
 }
 }
+TEST(conflict_zone, both_conflict_sides_require_a_nonempty_chain) {
+    for (const bool major : {true, false}) {
+        auto s = crossing(); CHECK(validateScenario(s).empty());
+        (major ? s.conflictZones[0].major : s.conflictZones[0].minor).segmentIds.clear();
+        const auto issues = validateScenario(s);
+        const std::string path = std::string("conflictZones[0].") + (major ? "major" : "minor") + ".segmentIds";
+        CHECK(std::any_of(issues.begin(), issues.end(), [&](const auto& issue) {
+            return issue.code == "INVALID_RANGE" && issue.path == path;
+        }));
+        test::throws([&] { createSimulation(s, 42); }, "INVALID_RANGE");
+    }
+}
 TEST(conflict_zone, a09_thresholds_are_exact) {
     // Major front-to-entry distance d = 98 - (distance - 50). Headway 10, gap time 3.
     const auto blocks = [](double d, double speed) {

@@ -169,3 +169,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D189](RECORD.md#d189) — lateral slice 3a: test-only `lateralTarget`, capped moves admitted in id order without 2D overlap, crossing remaps through a covering span; zones are slice 3b.
 
 [D190](RECORD.md#d190) — no tooltip on empty canvas/panel/conflict/run summary (help in F1); hover fill, checked underline, focus-only frame; dock 13/600, hints 11, Lab sections 14; application palette.
+
+[D191](RECORD.md#d191) — audit corrections: exact route provenance, physical live speed reduction, fixed demand schedules, mirrored catalogs, checked signal integers and nonempty conflict chains.

@@ -51,6 +51,13 @@ state, tick, time and stop service are kept. With `rescaleDesiredSpeeds`, a vehi
 type's desired-speed range changed keeps its quantile in that range; otherwise its sampled
 desired speed is kept (DRIVING_BEHAVIOUR §3: identity and draws survive).
 
+Inputs must remain identical, including rates and time windows: the pending arrival schedule
+was sampled from them and is preserved. A demand edit throws `RETUNE_SHAPE_CHANGED` atomically
+rather than accepting values that the old schedule cannot represent (D191). Rescaling a desired
+speed changes the target only. A vehicle above its new target brakes on subsequent ticks, using
+comfortable deceleration capped to reach the target, or more strongly for an obstacle within
+the usual type limits; its speed, acceleration and integrated distance remain consistent.
+
 A retune is a discontinuity a reproducible run does not have: a run with retunes replays only
 when the same retunes are applied at the same ticks.
 

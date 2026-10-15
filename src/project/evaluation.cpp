@@ -91,7 +91,8 @@ EvaluationSpec evaluationSpec(const ProjectDocument& document, const RunSnapshot
             if (!route.segmentIds.empty())
                 movementOfLinks.try_emplace({route.segmentIds.front(), route.segmentIds.back()}, movementOfAuthored[route.id]);
     for (const auto& route : snapshot.scenario.routes) {
-        if (const auto it = movementOfAuthored.find(route.id.substr(0, route.id.find('/')));
+        const auto origin = snapshot.routeOrigins.find(route.id);
+        if (const auto it = movementOfAuthored.find(origin == snapshot.routeOrigins.end() ? route.id : origin->second);
             it != movementOfAuthored.end()) { spec.movementOfRoute[route.id] = it->second; continue; }
         if (route.segmentIds.empty() || stub(route.id)) continue;
         const std::pair key{linkOf(route.segmentIds.front()), linkOf(route.segmentIds.back())};

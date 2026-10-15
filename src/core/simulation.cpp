@@ -14,7 +14,6 @@
 #include <limits>
 #include <cstdint>
 #include <set>
-
 namespace trafficsim {
 namespace {
 Scenario canonicalScenario(Scenario scenario) {
@@ -381,9 +380,13 @@ SimState stepSimulation(SimState&& state, double dt) {
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
         }
+        // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
+        const bool aboveTarget = vehicle.speed > vehicle.desiredSpeed;
+        if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(
+            -type.comfortableDeceleration, (vehicle.desiredSpeed - vehicle.speed) / dt));
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];
-        move = {motion.distance, std::min(vehicle.desiredSpeed, motion.speed), following.acceleration, following.mode, false,
+        move = {motion.distance, aboveTarget ? motion.speed : std::min(vehicle.desiredSpeed, motion.speed), following.acceleration, following.mode, false,
                 following.w74};
         if (move.distance > allowedDistance) {
             move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt;

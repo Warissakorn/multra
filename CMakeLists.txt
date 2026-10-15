@@ -22,8 +22,9 @@ else()
         # warning for that was 1120 of 1151 lines and hid the ones that mean something.
         -Wno-missing-field-initializers)
     if(TRAFFICSIM_SANITIZERS)
-        target_compile_options(trafficsim_options INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
-        target_link_options(trafficsim_options INTERFACE -fsanitize=address,undefined)
+        target_compile_options(trafficsim_options INTERFACE -fsanitize=address,undefined,float-cast-overflow
+            -fno-sanitize-recover=all -fno-omit-frame-pointer)
+        target_link_options(trafficsim_options INTERFACE -fsanitize=address,undefined,float-cast-overflow)
     endif()
     # Touching one source relinks some 40 executables, and GNU ld made that most of an incremental
     # build: measured 2026-10-09, trafficsim-tests linked in 4.5 s with ld and 0.57 s with lld.
@@ -102,9 +103,13 @@ target_link_libraries(trafficsim_lab PUBLIC trafficsim_commands PRIVATE traffics
 function(trafficsim_runtime_data target)
     add_dependencies(${target} trafficsim-data)
 endfunction()
-# Recopy on every build, so catalog edits work without touching C++ or relinking.
+# Mirror on every build, including deletions. PROJ is managed by trafficsim-proj-data below.
 add_custom_target(trafficsim-data ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<IF:$<BOOL:${CMAKE_CONFIGURATION_TYPES}>,$<CONFIG>/,>data")
+    COMMAND ${CMAKE_COMMAND} "-DSOURCE_DIR=${PROJECT_SOURCE_DIR}/data"
+        "-DDESTINATION_DIR=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<IF:$<BOOL:${CMAKE_CONFIGURATION_TYPES}>,$<CONFIG>/,>data"
+        "-DBUILD_DIR=${CMAKE_BINARY_DIR}" -DPRESERVE_PATHS=proj
+        -P "${PROJECT_SOURCE_DIR}/cmake/sync_runtime_data.cmake"
+    VERBATIM)
 
 # The commit the CLI reports with batch output; regenerated on every build, rewritten only on change.
 add_custom_target(trafficsim-build-info
@@ -225,6 +230,9 @@ if(BUILD_TESTING)
     # A newly registered group must never silently disappear from CI just because the list
     # above was not updated (previously "points"): this fails on any group it does not name.
     add_test(NAME all-model-tests COMMAND trafficsim-tests --check-groups ${TRAFFICSIM_TEST_GROUPS})
+    add_test(NAME runtime-data-sync COMMAND "${CMAKE_COMMAND}" "-DTEST_ROOT=${CMAKE_BINARY_DIR}/runtime-data-sync-test"
+        "-DSYNC_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/sync_runtime_data.cmake"
+        -P "${PROJECT_SOURCE_DIR}/tests/runtime_data_sync.cmake")
     add_test(NAME architecture COMMAND trafficsim-check-architecture "${PROJECT_SOURCE_DIR}")
     add_test(NAME architecture-negative COMMAND trafficsim-check-architecture --self-test)
     add_test(NAME file-sizes COMMAND trafficsim-check-file-sizes "${PROJECT_SOURCE_DIR}")

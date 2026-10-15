@@ -17,16 +17,13 @@ bool sameIds(const std::vector<T>& a, const std::vector<T>& b) {
                       [](const T& x, const T& y) { return x.id == y.id; });
 }
 bool sameShape(const Scenario& a, const Scenario& b) {
-    const auto sameInputs = std::equal(a.inputs.begin(), a.inputs.end(), b.inputs.begin(), b.inputs.end(),
-        [](const auto& x, const auto& y) {
-            return x.id == y.id && x.routeId == y.routeId && x.vehicleTypeId == y.vehicleTypeId; });
     const auto sameHeads = std::equal(a.signalHeads.begin(), a.signalHeads.end(),
                                       b.signalHeads.begin(), b.signalHeads.end(), [](const auto& x, const auto& y) {
             return x.id == y.id && x.segmentId == y.segmentId && x.programId == y.programId; });
     const auto w74 = [](const Scenario& s) {
         return std::any_of(s.behaviours.begin(), s.behaviours.end(), [](const auto& d) { return d.w74.has_value(); });
     };
-    return a.timeStep == b.timeStep && a.routes == b.routes && sameInputs && sameHeads &&
+    return a.timeStep == b.timeStep && a.routes == b.routes && a.inputs == b.inputs && sameHeads &&
            sameIds(a.vehicleTypes, b.vehicleTypes) && sameIds(a.behaviours, b.behaviours) &&
            std::equal(a.behaviours.begin(), a.behaviours.end(), b.behaviours.begin(), b.behaviours.end(),
                [&](const auto& x, const auto& y) {

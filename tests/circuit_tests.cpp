@@ -129,6 +129,30 @@ TEST(circuit, bl7_desired_speeds_keep_their_quantile) {
     const auto& type = moved.scenario->vehicleTypes[moved.vehicles[0].typeIndex];
     test::near(moved.vehicles[0].desiredSpeed, type.desiredSpeed.min + q * (type.desiredSpeed.max - type.desiredSpeed.min));
 }
+TEST(circuit, changing_live_demand_is_refused_without_changing_the_run) {
+    for (const double rate : {0., 900.}) {
+        auto s = test::straight(); s.inputs[0].vehiclesPerHour = rate;
+        auto state = createSimulation(s, 42);
+        for (int i = 0; i < 30; ++i) state = stepSimulation(std::move(state));
+        const auto before = checkpointJson(state);
+        for (const int field : {0, 1, 2}) {
+            auto changed = s;
+            if (field == 0) changed.inputs[0].vehiclesPerHour = 3600;
+            if (field == 1) changed.inputs[0].startTime = 1;
+            if (field == 2) changed.inputs[0].endTime = 59;
+            CHECK(changed.inputs != s.inputs);
+            auto kept = state;
+            test::throws([&] { kept = retuneSimulation(std::move(kept), changed); }, "RETUNE_SHAPE_CHANGED");
+            CHECK(kept.scenario == state.scenario && kept.index == state.index);
+            CHECK(checkpointJson(kept) == before);
+            auto reference = state;
+            for (int i = 0; i < 100; ++i) {
+                kept = stepSimulation(std::move(kept)); reference = stepSimulation(std::move(reference));
+            }
+            CHECK(checkpointJson(kept) == checkpointJson(reference));
+        }
+    }
+}
 TEST(circuit, bl8_placement_is_refused_rather_than_overlapping) {
     auto state = place(createSimulation(ring(), 42), 50);
     const auto before = state;
