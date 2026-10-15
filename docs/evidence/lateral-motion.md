@@ -28,6 +28,20 @@ Mutation checks (each reverted): without the admission test, both refusal rows a
 invariant fail; an inclusive overlap fails the touching row; skipping the re-expression fails the
 crossing row; ignoring every span fails the crossing row and the invariant's forcing.
 
+`check` **103/103**. Also kept green: every other group, BA39 in `lateralspan`, and the CLI pin
+(`trafficsim-cli 42` = 45 completed / 31.75870154816726 s / 1 clamp, output byte-identical to `4c7b204`).
+
+## Performance (LATERAL §11)
+
+Release, five interleaved pairs against `4c7b204`:
+- **Switch off:** `trafficsim-engine-benchmark 40 1800`, medians **3198 ms before, 3175 ms after**,
+  inside noise.
+- **Switch on, no targets:** `trafficsim-cli --project four-leg --seeds 42-51 --threads 1` with keys
+  0.5/1.0 on every behaviour (the slice 2 data directory), whole-process wall time: medians
+  **955 ms before, 929 ms after**, inside noise. With no target the step adds one pass that clears
+  `lateralSpeed` and finds no target. No product run sets a target, so a run with moving vehicles
+  has no product workload to time yet; M3.4 re-measures with real targets.
+
 ## Not covered here
 
 - **Zones** still read route positions (slice 3b, D188/D189).
