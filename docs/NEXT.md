@@ -22,11 +22,28 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux headless; no desktop or Windows verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — pick one, as the user asks
+## Next session — UI presentation slice a
 
-Without a choice from the owner, take item 1. One system per session; contract and acceptance
-rows first for engine work. Item 1 and its follow-ons use the review's order (§5), which the owner asked for
-on 2026-10-15 (D177) and accepted (D178).
+The owner accepted the recommended direction on 2026-10-15: “ทำตามแนะนำ”. Use layout A
+(task selector within the existing Objects dock) and the five proposed palette groups.
+State/logic ideas remain separate and deferred; B16–B18 are answered, not a new waiting gate.
+
+Read the [audit](audits/UI_PRESENTATION_AUDIT.md), [specification](plans/UI_PRESENTATION_SPEC.md)
+and [slice plan](plans/UI_PRESENTATION_SLICES.md). Slice 0 replaces positional identity for
+Objects and Results pages without moving them; see PROGRESS and audit §8 for validation.
+
+**Next: slice a, icon vocabulary, as one session.** Start with the duplicate Connector/Route
+and Rotate/Reset glyph tests, retain 16 px / 1.5 px / 20-unit grid / 1×–3× raster metrics,
+and produce a monochrome contact sheet. Do not implement palette, dock, Properties or HUD
+changes in that session. Record a new D-row for visible changes, before/after English/Thai
+workspace images and an owner visual row in OWNER_SITTING §E. Full desktop/check gates apply.
+After a, follow b, c (green slice 0 prerequisite), d1, d2, e1, e2 one session each.
+No new UI decision is implied for the six deferred logic/state features.
+
+## Deferred work — preserved from the preceding NEXT
+
+The engine queue and owner-directed alternatives below are deferred during the UI slices,
+not cancelled. Resume them only at the owner's direction; ROADMAP retains every gate.
 
 1. **M3.7 LATERAL slice 3b: zone occupancy by span** ([LATERAL](reference/LATERAL.md) §5, §6,
    §10, D188/D189; BA39 kept in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)).

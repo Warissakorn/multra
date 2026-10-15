@@ -6,6 +6,7 @@ and milestone status in [ROADMAP](../ROADMAP.md).
 
 | Document | Scope |
 |---|---|
+| [UI_PRESENTATION_AUDIT.md](UI_PRESENTATION_AUDIT.md) | UI source inventory, navigation hazards and phase 1 presentation proposals — 2026-10-15 |
 | [DRIVING_BEHAVIOUR_REVIEW.md](DRIVING_BEHAVIOUR_REVIEW.md) | Driving-behaviour completeness review — 2026-10-15: gap matrix, prerequisites and recommended order (D177) |
 | [OSM_REVIEW.md](OSM_REVIEW.md) | OSM implementation review — 2026-10-12: regression findings, fixes and validation limits |
 | [VISSIM_PARITY.md](VISSIM_PARITY.md) | VISSIM PARITY — how the network editor differs from the surface it is modelled on |

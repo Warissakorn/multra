@@ -205,7 +205,7 @@ void EditorWindow::translate() {
     const char* tabs[]={"editorLinksTab","editorConnectorsTab","editorBackgroundTab"};
     for (int i=0;i<3;++i) properties_->setTabText(i,text(tabs[i]));
     side_->setItemText(0,text("editorLeft"));side_->setItemText(1,text("editorRight"));
-    retranslateTables();
+    translateObjectPages();retranslateTables();
     const bool english=language_->currentData().toString()=="en";
     for(auto* table:findChildren<QTableWidget*>()) {
         auto* header=table->horizontalHeader();header->setProperty("englishLabels",english);
@@ -246,7 +246,7 @@ void EditorWindow::showError(const std::exception& e) {
         }
     const auto translated=text(e.what()); error_->setText(translated.isEmpty()?text("editorError")+" "+QString::fromUtf8(e.what()):translated);
     refreshDiagnostics();
-    if (!rejected_.empty()) objects_->setCurrentIndex(3);
+    if (!rejected_.empty()) objects_->setCurrentWidget(problemTable_);
 }
 std::string EditorWindow::selectedName() const {
     const auto& network=history_.document().network;const auto& id=canvas_->selected();

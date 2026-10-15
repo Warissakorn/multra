@@ -18,7 +18,6 @@
 // bad matrix or lot with its own localized code and History stays atomic.
 namespace trafficsim {
 namespace {
-constexpr int kOdTab = 13; // after Zones
 }
 std::vector<std::pair<std::string, QString>> EditorWindow::compositionChoices() const {
     std::vector<std::pair<std::string, QString>> choices;
@@ -39,7 +38,7 @@ void EditorWindow::buildOd() {
     odTable_->setSelectionMode(QAbstractItemView::SingleSelection);
     odTable_->horizontalHeader()->setStretchLastSection(true); odTable_->verticalHeader()->hide();
     layout->addWidget(odTable_);
-    objects_->addTab(body, QString());
+    addObjectPage(body,"editorOdTable");
     bar->addAction(action("editorAddOdMatrix", {}, [this] { editOd({}); }));
     bar->addAction(action("editorEditOdMatrix", {}, [this] { const auto id = selectedOd(); if (!id.empty()) editOd(id); }));
     bar->addAction(action("editorDeleteOdMatrix", {}, [this] {
@@ -52,7 +51,6 @@ void EditorWindow::buildOd() {
     connect(odTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateOd() {
-    objects_->setTabText(kOdTab, text("editorOdTable"));
     odTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorOdPeriod"), text("editorOdComposition"),
                                          text("editorZoneTable"), text("editorOdTotal")});
     odRevision_ = UINT64_MAX;
@@ -90,7 +88,7 @@ void EditorWindow::refreshOd() {
     const bool chosen = !selectedOd().empty();
     for (const auto* key : {"editorEditOdMatrix", "editorDeleteOdMatrix"}) actions_.at(key)->setEnabled(chosen);
 }
-void EditorWindow::showOd() { objects_->setCurrentIndex(kOdTab); }
+void EditorWindow::showOd() { objects_->setCurrentWidget(objectPages_.at("editorOdTable")); }
 void EditorWindow::editOd(const std::string& id) {
     const auto& d = history_.document();
     OdMatrix matrix;

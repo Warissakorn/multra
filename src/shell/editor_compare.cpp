@@ -119,7 +119,7 @@ void EditorWindow::compareWithFile(const QString& file) {
         baseSpec=evaluationSpec(history_.document(),*base,data_);
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
-        showError(e);objects_->setCurrentIndex(3);return;
+        showError(e);objects_->setCurrentWidget(problemTable_);return;
     }
     const auto alternativeName=QFileInfo(file).fileName();
     std::optional<RunSnapshot> alternative; std::optional<EvaluationSpec> alternativeSpec;

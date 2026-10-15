@@ -69,20 +69,20 @@ void EditorWindow::buildResults() {
     // D144: one tab per kind of figure, each with its own statement of what it is not.
     resultsPage_=page; resultsTabs_=new QTabWidget(page); resultsTabs_->setObjectName("editorResultsTabs");
     layout->addWidget(resultsTabs_,1);
-    const auto tab=[&](QLabel*& note,const char* noteName){
+    const auto tab=[&](QLabel*& note,const char* noteName,const char* key){
         auto* body=new QWidget(resultsTabs_); auto* box=new QVBoxLayout(body);
         box->setContentsMargins(0,editorDesign::space1,0,0); box->setSpacing(editorDesign::space1);
-        note=noteLabel(body,noteName); box->addWidget(note); resultsTabs_->addTab(body,QString()); return box;
+        note=noteLabel(body,noteName); box->addWidget(note); resultPages_.emplace(key,body); resultsTabs_->addTab(body,QString()); return box;
     };
     // Side by side, so the dock's height goes to rows: twelve movements beside four approaches.
-    auto* movementsBox=tab(resultsNote_,"editorResultsNote");
+    auto* movementsBox=tab(resultsNote_,"editorResultsNote","editorResultsTabMovements");
     auto* row=new QHBoxLayout; movementsBox->addLayout(row,1);
     row->setContentsMargins(0,0,0,0);row->setSpacing(editorDesign::space1);
     movementTable_=resultTable(page,"editorMovementTable",4); row->addWidget(movementTable_,3);
     queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,2);
-    dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote")->addWidget(dischargeTable_,1);
-    clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote")->addWidget(clampTable_,1);
-    lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote")->addWidget(lotTable_,1); // M8.6b
+    dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote","editorResultsTabDischarge")->addWidget(dischargeTable_,1);
+    clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
+    lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -90,19 +90,15 @@ void EditorWindow::buildResults() {
     }
     buildBatch(bar,movementsBox); // M5.6: the N-seed table takes the single run's place
     connect(resultsTabs_,&QTabWidget::currentChanged,this,[this]{refreshResults();});
-    objects_->addTab(page,QString());
+    addObjectPage(page,"editorResultsTable");
 }
 void EditorWindow::translateResults() {
-    objects_->setTabText(8,text("editorResultsTable"));
     movementTable_->setHorizontalHeaderLabels({text("editorResultsMovement"),text("editorResultsVehicles"),
                                                text("editorResultsDelay"),text("editorResultsTravel")});
     queueTable_->setHorizontalHeaderLabels({text("editorResultsApproach"),text("editorResultsQueueMean"),
                                             text("editorResultsQueueMax")});
     translateBatch();
-    resultsTabs_->setTabText(0,text("editorResultsTabMovements"));
-    resultsTabs_->setTabText(1,text("editorResultsTabDischarge"));
-    resultsTabs_->setTabText(2,text("editorResultsTabClamps"));
-    resultsTabs_->setTabText(3,text("editorResultsTabLots"));
+    for(const auto& [key,page]:resultPages_)resultsTabs_->setTabText(resultsTabs_->indexOf(page),text(key));
     lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
         text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
         text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});

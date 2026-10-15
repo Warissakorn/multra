@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/commands/zone_commands.hpp"
 #include "../src/commands/network_commands.hpp"
@@ -164,8 +165,8 @@ int main(int argc, char** argv) {
         trigger(w, "editorUndo"); // one Undo brings it back: one step
         require(layer().odMatrices.size() == 1, "Delete was not one step");
         child<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
-        require(!objects->tabText(objects->indexOf(od->parentWidget())).isEmpty(), "Thai OD tab label missing");
-        require(!resultsTabs->tabText(resultsTabs->indexOf(lots->parentWidget())).isEmpty(), "Thai lot tab label missing");
+        require(!objects->tabText(objects->indexOf(test::tabPage(objects,od))).isEmpty(), "Thai OD tab label missing");
+        require(!resultsTabs->tabText(resultsTabs->indexOf(test::tabPage(resultsTabs,lots))).isEmpty(), "Thai lot tab label missing");
         require(!act(w, "editorEditLot")->text().isEmpty(), "Thai lot action label missing");
         const auto saved = documentJson(w.history().document());
         w.saveFile(file); w.openFile(file); QApplication::processEvents();

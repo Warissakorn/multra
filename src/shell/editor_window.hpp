@@ -323,6 +323,10 @@ private:
     QComboBox *language_{}, *tool_{}, *side_{};
     QComboBox *connectorObject_{}, *connectorFrom_{}, *connectorTo_{};
     QTabWidget *properties_{}, *objects_{};
+    // Page identity is registered once at construction; tab order is presentation only.
+    std::map<std::string,QWidget*> objectPages_, resultPages_;
+    void addObjectPage(QWidget* page,const std::string& key);
+    void translateObjectPages();
     QTableWidget *linkTable_{}, *connectorTable_{}, *signalTable_{}, *problemTable_{};
     // Diagnostics of the current revision, plus the issues of the most recent rejected edit.
     // Both are derived views; the document stays the single source of truth.

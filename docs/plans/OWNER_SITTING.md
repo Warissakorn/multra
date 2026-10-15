@@ -73,6 +73,13 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    in the auto-loaded catalog, and give it an `amberDeceleration` (SUMO's car-following model
    has none, so amber holds like red: 72–98 % of its clamps), or leave both? *Owner:*
 
+Answered 2026-10-15: **UI B16/B17**, owner: “ทำตามแนะนำ” (“follow the recommendation”).
+Proceed with layout A (task selector within the existing Objects dock) and the five proposed tool
+groups, after slice 0. B18's six logic/state ideas stay separate and deferred; the reply does not
+request those features. The [proposal](UI_PRESENTATION_SPEC.md) and
+[slice plan](UI_PRESENTATION_SLICES.md) record the chosen direction; no visible UI change is made
+by slice 0. Numbers B16–B18 are not reused.
+
 Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
 ([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9); B14 and B15, moved out
 ([D178](../decisions/RECORD.md#d178): order accepted, keep-left default, standard motorcycle values for now).
@@ -177,6 +184,16 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 11. **MAP10 OSM background** (listed 2026-10-12, D150, [MAP_BACKGROUND](../reference/MAP_BACKGROUND.md)).
    Set a reference on a real study, trace a known road, pan/zoom, save/reopen. Are alignment and
    responsiveness good enough for tracing? No automated check closes survey accuracy. *Owner:*
+
+12. **UI slice 0: unchanged workspace** (listed 2026-10-15). Compare the
+   [before](../images/ui-presentation-before/workspace-en.png) and
+   [after](../images/ui-presentation-after/workspace-en.png) English images, then the Thai
+   1024×768 images linked in [audit §8](../audits/UI_PRESENTATION_AUDIT.md#8-baseline-evidence).
+   Switch language on every Objects/Results page; select A/Q/T/Z; Show in table, Check, Run seeds,
+   Cancel; move/float/hide panels, focus and Reset. Do labels/navigation still address the same
+   page and does the workspace look unchanged? Linux offscreen evidence does not close this
+   Windows/100/150/200% visual check. The baseline's post-Step Thai canvas is 248 px high;
+   restoring >=250 in that state belongs to the later layout slice. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

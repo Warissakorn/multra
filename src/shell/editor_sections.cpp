@@ -21,7 +21,6 @@
 // delete are. M5.5 (D134): the dialog also sets the control type LOS reads, in the same step.
 namespace trafficsim {
 namespace {
-constexpr int kSectionTab = 11; // after Queue counters, so every earlier tab keeps its index
 QString describe(const Network& n, const SectionLine& l) {
     const auto link = std::find_if(n.links.begin(), n.links.end(), [&](const auto& x) { return x.id == l.linkId; });
     const auto name = link == n.links.end() || link->name.empty() ? l.linkId : link->name;
@@ -38,7 +37,7 @@ void EditorWindow::buildSections() {
     sectionTable_->setSelectionMode(QAbstractItemView::SingleSelection);
     sectionTable_->horizontalHeader()->setStretchLastSection(true); sectionTable_->verticalHeader()->hide();
     layout->addWidget(sectionTable_);
-    objects_->addTab(body, QString());
+    addObjectPage(body,"editorSectionTable");
     bar->addAction(action("editorEditSection", {}, [this] { const auto id = selectedSection(); if (!id.empty()) editSection(id); }));
     bar->addAction(action("editorDeleteSection", {}, [this] {
         const auto id = selectedSection(); if (id.empty()) return;
@@ -58,7 +57,6 @@ void EditorWindow::buildSections() {
     connect(sectionTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateSections() {
-    objects_->setTabText(kSectionTab, text("editorSectionTable"));
     sectionTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorSectionControl"),
                                               text("editorSectionStart"), text("editorSectionEnd")});
     sectionRevision_ = UINT64_MAX;
@@ -92,7 +90,7 @@ void EditorWindow::refreshSections() {
     const bool chosen = !selectedSection().empty();
     for (const auto* key : {"editorEditSection", "editorDeleteSection"}) actions_.at(key)->setEnabled(chosen);
 }
-void EditorWindow::showSections() { objects_->setCurrentIndex(kSectionTab); }
+void EditorWindow::showSections() { objects_->setCurrentWidget(objectPages_.at("editorSectionTable")); }
 void EditorWindow::editSection(const std::string& id) {
     const auto& sections = history_.document().network.travelTimeSections;
     const auto s = std::find_if(sections.begin(), sections.end(), [&](const auto& x) { return x.id == id; });

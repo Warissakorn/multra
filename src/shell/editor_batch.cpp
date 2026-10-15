@@ -117,7 +117,7 @@ void EditorWindow::startBatch() {
         spec=evaluationSpec(history_.document(),*snapshot,data_);
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
-        showError(e);objects_->setCurrentIndex(3);return;
+        showError(e);objects_->setCurrentWidget(problemTable_);return;
     }
     error_->clear();
     const auto total=seeds.size(); // read before the call: the capture below moves `seeds`
@@ -153,7 +153,7 @@ void EditorWindow::startWorker(std::size_t total, bool comparing, BatchJob job) 
         job = {}; // release scenario copies on the worker before posting completion
         QMetaObject::invokeMethod(this,[this,generation,install,error]{ finishBatch(generation,install,error); },Qt::QueuedConnection);
     });
-    objects_->setCurrentIndex(objects_->indexOf(resultsPage_)); resultsTabs_->setCurrentIndex(0); // the Movements tab holds the batch
+    objects_->setCurrentWidget(resultsPage_); resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMovements")); // the Movements tab holds the batch
     refreshRun();
 }
 void EditorWindow::finishBatch(std::uint64_t generation, const std::function<void()>& install, const std::string& error) {

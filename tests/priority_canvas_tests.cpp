@@ -1,3 +1,4 @@
+#include "tab_page_helpers.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/model/network/right_of_way.hpp"
@@ -134,7 +135,7 @@ int main(int argc, char** argv) {
         // The Conflict area tool (A): a click picks the area, Ctrl+right-click cycles, P cycles.
         QTest::keyClick(c, Qt::Key_A); QApplication::processEvents();
         require(w.findChild<QComboBox*>("editorTool")->currentIndex() == 9, "A did not choose the Conflict area tool");
-        require(tabs->currentIndex() == 9, "The tool did not show the Conflict areas tab");
+        require(tabs->currentWidget() == test::tabPage(tabs,table), "The tool did not show the Conflict areas tab");
         const auto revision = w.history().revision();
         click(w, inside);
         require(c->highlightedConflict() == first.id, "A click did not pick the area");
