@@ -20,6 +20,9 @@ void rejectAmberBefore28(const Json& document);
 // key; a file below 32 carrying one is refused (EDIT_UNSUPPORTED_FIELD, path to the key).
 bool ownsPerceptionBehaviour(const ProjectDocument&);
 void rejectPerceptionBefore32(const Json& document);
+// M3.7 (D187, LATERAL.md §9): the same for the lateral keys at schema 33.
+bool ownsLateralBehaviour(const ProjectDocument&);
+void rejectLateralBefore33(const Json& document);
 // Schema 21 and later: reads the library and rejects unknown keys in every owned catalog entry.
 void parseBehaviourLibrary(const Json& definition, AuthoringDefinition&);
 // Adds the schema-21 keys to an already written definition: names, the explicit model tag on

@@ -6,6 +6,24 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-15 — M3.7 slice 1: lateral codec and cross-section compile (D187)
+
+The first lateral code, NEXT item 1. Storage and compile only; no tick reads the data.
+- **Keys.** `LateralParameters` is its own key table (`src/core/lateral.*`): all three or none,
+  a partial set refused at its first missing key, on both models. Schema 33 is written only when an
+  owned behaviour carries one, and a file below 33 carrying one is refused.
+- **Compile.** With the switch on, `buildScenario` adds one `SegmentCrossSection` per segment and
+  `drivingSide`. Lane centres come from `laneCentreOffset`, now shared with `laneGeometry`.
+  Connector paths store start/end widths from `connectorLaneWidths`. `createSimulation` re-sorts
+  them with their segments, and validation refuses a malformed table.
+- **Contract refinements (D187).** Start/end widths replace one `width`, and `DrivingSide` moved from
+  the model into core.
+- **No change without keys (BA39)**, and none with them yet. Nine "future schema" fixtures moved
+  33 → 34.
+
+Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
+([evidence](evidence/lateral-codec.md)).
+
 ## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
 
 Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
@@ -147,20 +165,6 @@ is the default bias on left-hand-traffic networks (a behaviour key), and turn-on
 in M3.9. Motorcycle values start from cited published standards, flagged uncertain, until the
 owner's research. Recorded in RECORD, ROADMAP M3.4/M3.8/M3.9, NEXT and the review header; B14/B15
 moved out of OWNER_SITTING.
-
-## 2026-10-15 — Driving-behaviour completeness review (D177; docs only)
-
-The owner asked for a thorough review of driving behaviour (lateral behaviour, mirror checks,
-overtaking, everything that makes runs realistic) and chose "review plus roadmap" with
-motorcycles as core scope. [The review](audits/DRIVING_BEHAVIOUR_REVIEW.md) reads the whole of
-`src/core/` and the behaviour contracts. It finds a one-dimensional engine, one observed vehicle
-each way at unbounded distance, no reaction delay, instantaneous lane changes with a display-only
-slide, overtaking only as D95 (off), no turning speeds and no lateral position. Its gap matrix
-covers twelve areas (A–L). Lateral, lane-change duration and motorcycle work all need one
-2D-occupancy contract, and perception and reaction need one observation contract, so both
-come before W99. ROADMAP gains M3.5–M3.9 and an extended M3.4 (hard rule 8); PROBLEM §2 gains the
-motorcycle row and §8.1 is answered; NEXT follows the review's order; B14/B15 hold the owner's
-remaining calls. Checked: `check` (docs, sizes, architecture, CTest) on Linux.
 
 ## Older entries
 

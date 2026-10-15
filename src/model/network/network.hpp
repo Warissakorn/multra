@@ -120,7 +120,7 @@ struct NetworkSignalHead {
     std::string controllerId; int groupNumber{};
     bool operator==(const NetworkSignalHead&) const = default;
 };
-enum class DrivingSide { left, right };
+// DrivingSide lives in core (src/core/lateral_types.hpp) since M3.7 slice 1 (D187).
 struct Network {
     std::string id;
     DrivingSide drivingSide{DrivingSide::left};
@@ -148,6 +148,9 @@ double stationOfClosestPoint(const std::vector<Point>&, Point);
 std::string signalSegment(const NetworkSignalHead&);
 Point pointAlong(const std::vector<Point>& points, double distance);
 std::vector<Point> laneGeometry(const Link& link, const std::string& laneId, DrivingSide side);
+// The lane centre's offset from the reference polyline, positive to the left of travel. The ONE
+// expression laneGeometry draws with and buildScenario compiles (LATERAL §3, D187).
+double laneCentreOffset(const Link& link, const std::string& laneId, DrivingSide side);
 // Boundary 0 is before the first lane; boundary N is after the last.
 std::vector<Point> laneBoundaryGeometry(const Link&, std::size_t boundary, DrivingSide);
 std::vector<Point> offsetGeometry(const std::vector<Point>&, double offset);

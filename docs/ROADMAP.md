@@ -240,7 +240,8 @@ and a per-tick performance budget. Then desired lateral position, speed-dependen
 distance, overtaking inside a wide lane, position by turning direction and swept-body clearance.
 **Gate:** contract and failure-first rows; a lane-based scenario keeps every vehicle centred and
 replays byte-identically; no overlap in 2D at any tick. **M3.7.0 contract written**
-([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46); next: its compile and codec slice.
+([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46). **Slice 1 (compile and codec) done**
+(D187, [evidence](evidence/lateral-codec.md), BA45); next: slice 2, spans and predicates (BA40–BA42).
 
 ### M3.8 — Motorcycles and lane sharing
 

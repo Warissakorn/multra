@@ -2,6 +2,7 @@
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
+#include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <map>
@@ -92,6 +93,20 @@ void rejectPerceptionBefore32(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
+// M3.7 (D187): schema 33 exactly when an owned behaviour carries a lateral key.
+bool ownsLateralBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours && lateralSwitch(d.definition->behaviours);
+}
+void rejectLateralBefore33(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        for (const auto& key : lateralParameterKeys())
+            if (behaviours[i].is_object() && behaviours[i].contains(key.name))
+                throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
+}
 void rejectAmberBefore28(const Json& j) {
     if (!j.contains("definition") || !j.at("definition").is_object()) return;
     const auto& definition = j.at("definition");
@@ -115,9 +130,11 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
                     "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration"};
                 const auto& w74 = w74ParameterKeys();
                 const auto& perception = perceptionParameterKeys(); // M3.5, both models
+                const auto& lateral = lateralParameterKeys(); // M3.7, both models
                 if (std::none_of(std::begin(common), std::end(common), [&](const char* k) { return key == k; }) &&
                     std::none_of(w74.begin(), w74.end(), [&](const auto& k) { return key == k.name; }) &&
-                    std::none_of(perception.begin(), perception.end(), [&](const auto& k) { return key == k.name; }))
+                    std::none_of(perception.begin(), perception.end(), [&](const auto& k) { return key == k.name; }) &&
+                    std::none_of(lateral.begin(), lateral.end(), [&](const auto& k) { return key == k.name; }))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key}});
             }
             // The model is explicit from schema 21: a missing or unknown model is never read as the prototype.

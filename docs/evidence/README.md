@@ -39,6 +39,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [perception-discharge.md](perception-discharge.md) | M3.5 slice 5 — BA38 reaction-time discharge, raw-input manifests, paired seed/lane evidence — 2026-10-15 | D185, D184 |
 | [perception-delay.md](perception-delay.md) | M3.5 slice 4 — reaction-time FIFO, safety, replay and performance — 2026-10-15 | D184, D179 |
 | [perception-lane.md](perception-lane.md) | M3.5 slice 3: look-back, rear TTC and perceived lane-change evidence — 2026-10-15 | D183 |
+| [lateral-codec.md](lateral-codec.md) | M3.7 slice 1: lateral codec and cross-section compile evidence — 2026-10-15 | D180, D187 |
 | [perception-codec.md](perception-codec.md) | M3.5 slice 1: perception codec evidence — 2026-10-15 | D179, D181 |
 | [w74-clamps.md](w74-clamps.md) | M3.3.3a: where the extra W74 safety clamps come from — 2026-10-08 | — |
 | [w74-codec.md](w74-codec.md) | M3.3.3a W74 schema-25 codec evidence — 2026-10-08 | D135, D136 |
