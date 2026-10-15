@@ -10,6 +10,10 @@ struct OccupiedSpan {
     std::uint64_t vehicleId{}; std::size_t segmentIndex{};
     double rear{}, front{}, speed{};
     double acceleration{}; // the snapshot's, so a follower's Leader carries it (W74.md §2)
+    // LATERAL §5 (D188), only with the switch on: the body's extent in its carriageway's frame, and
+    // whether this span is on the vehicle's own route (false: another lane its body covers).
+    double right{}, left{};
+    bool own{true};
 };
 std::vector<RoutePart> routeParts(const Scenario& scenario, const Route& route);
 // Resolved once per run; parts[i] corresponds to scenario.routes[i].

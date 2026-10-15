@@ -241,7 +241,9 @@ distance, overtaking inside a wide lane, position by turning direction and swept
 **Gate:** contract and failure-first rows; a lane-based scenario keeps every vehicle centred and
 replays byte-identically; no overlap in 2D at any tick. **M3.7.0 contract written**
 ([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46). **Slice 1 (compile and codec) done**
-(D187, [evidence](evidence/lateral-codec.md), BA45); next: slice 2, spans and predicates (BA40–BA42).
+(D187, [evidence](evidence/lateral-codec.md), BA45); **slice 2 (spans and predicates) done** (D188,
+[evidence](evidence/lateral-spans.md), BA40–BA42); next: slice 3, lateral motion and admission
+(BA43, BA44) plus zone occupancy by span.
 
 ### M3.8 — Motorcycles and lane sharing
 

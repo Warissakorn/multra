@@ -3,6 +3,7 @@
 #include "detail.hpp"
 #include "following.hpp"
 #include "lanes.hpp"
+#include "lateral.hpp"
 #include "parking.hpp"
 #include "perception.hpp"
 #include "routing.hpp"
@@ -44,7 +45,7 @@ Scenario canonicalScenario(Scenario scenario) {
 // `id`, when asked for, receives the leader's vehicle id -- only admission needs it (M3.2.3c).
 std::optional<Leader> closestVehicle(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
                                      const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
-                                     std::uint64_t* id = nullptr) {
+                                     std::uint64_t* id = nullptr, const LateralFilter* lateral = nullptr) {
     std::optional<Leader> nearest;
     for (const auto& part : parts) {
         if (part.start + part.length < vehicle.distance) continue;
@@ -55,8 +56,7 @@ std::optional<Leader> closestVehicle(const Vehicle& vehicle, const std::vector<R
         // Only this segment's spans; the segmentId comparison the full scan did is now implicit.
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
-            if (span.vehicleId == vehicle.id ||
-                part.start + span.front < vehicle.distance - 1e-9) continue;
+            if (span.vehicleId == vehicle.id || part.start + span.front < vehicle.distance - 1e-9 || !lateralCounts(lateral, span)) continue;
             const double gap = part.start + span.rear - vehicle.distance;
             if (!nearest || gap < nearest->gap) {
                 nearest = Leader{gap, span.speed, span.acceleration};
@@ -167,8 +167,9 @@ SimState stepSimulation(SimState&& state, double dt) {
         // slot byId found before. The pending record is only read: nothing is redrawn while it waits.
         const auto behaviourSlot = effectiveBehaviour(index, vehicle);
         const auto& behaviour = scenario.behaviours[behaviourSlot];
+        const auto lateral = followerFilter(scenario, index, partsFor(index, scenario, route), vehicle.distance, type.width, vehicle.lateral, behaviour, vehicle.speed); // §6
         const auto leader = closestVehicle(vehicle, partsFor(index, scenario, route), candidateSpans,
-                                           candidateBuckets);
+                                           candidateBuckets, nullptr, &lateral);
         if (leader && leader->gap < standstillGap(behaviour)) continue;
         // D108: a positive source gap can still be smaller than the first ordinary step.
         // Keep the sampled arrival pending until that step fits the existing buffer;
@@ -271,7 +272,8 @@ SimState stepSimulation(SimState&& state, double dt) {
         const auto& behaviour = scenario.behaviours[refs[v].behaviour];
         const auto& parts = index.parts[refs[v].route];
         std::uint64_t leaderId = 0;
-        auto leader = closestVehicle(vehicle, parts, spans, buckets, zones.empty() ? nullptr : &leaderId);
+        const auto lateral = followerFilter(scenario, index, parts, vehicle.distance, type.width, vehicle.lateral, behaviour, vehicle.speed); // §6
+        auto leader = closestVehicle(vehicle, parts, spans, buckets, zones.empty() ? nullptr : &leaderId, &lateral);
         const auto vehicleLeader = leader; // receiving space is about vehicles, not stop lines
         if (leader && !zones.empty()) leaders[v] = VehicleLeader{leader->gap, leader->speed, leaderId};
         double allowedDistance = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) :
@@ -282,7 +284,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         std::vector<PerceivedLeader> perceived;
         const auto& sight = behaviour.perception;
         if (perceivesAhead(sight)) {
-            perceived = perceivedLeaders(vehicle, parts, spans, buckets, observedCount(sight), lookAheadRange(sight));
+            perceived = perceivedLeaders(vehicle, parts, spans, buckets, observedCount(sight), lookAheadRange(sight), &lateral);
             leader = perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader);
         }
         for (const auto& routeHead : index.routeHeads[refs[v].route]) {

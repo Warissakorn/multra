@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <optional>
+#include <vector>
 
 namespace trafficsim {
 // M3.7 lateral contract (docs/reference/LATERAL.md, D180/D187). Slice 1 stores and compiles these;
@@ -14,14 +15,23 @@ struct LateralParameters {
     std::optional<double> lateralMinDistanceStanding, lateralMinDistanceAt50, maxLateralSpeed;
     bool operator==(const LateralParameters&) const = default;
 };
-// §3: parallel to Scenario::segments. `carriageway` groups the lane sections of one Link (stations
-// `linkStationStart + position`); each Connector path is its own carriageway. `centre` is the lane
-// centre's offset (y, positive to the left of travel) from the carriageway's reference line, 0 on a
-// Connector path. Width runs linearly from `startWidth` to `endWidth`; they differ only on a
-// Connector path, where a surplus lane tapers to 0 (D187).
+// §3: parallel to Scenario::segments. `carriageway` groups the lane sections of one Link; each
+// Connector path is its own carriageway. `linkStationStart` is metres along the lane's own polyline.
+// `referenceStart`/`referenceEnd` are the section's ends on the Link's reference line, the one
+// station lanes share on a curve; a position maps linearly between them (D188). `centre` is the lane
+// centre's offset (y, positive to the left of travel) from the reference line, 0 on a Connector
+// path. Width runs linearly from `startWidth` to `endWidth`; they differ only on a Connector path,
+// where a surplus lane tapers to 0 (D187).
 struct SegmentCrossSection {
     std::size_t carriageway{};
     double linkStationStart{}, centre{}, startWidth{}, endWidth{};
+    double referenceStart{}, referenceEnd{};
     bool operator==(const SegmentCrossSection&) const = default;
+};
+// §5-§6 (D188): resolved once per run when the switch is on. `neighbours[s]` lists, in ascending
+// segment index, the other lane sections of segment s's carriageway whose reference ranges overlap.
+struct LateralIndex {
+    bool on{};
+    std::vector<std::vector<std::size_t>> neighbours;
 };
 }

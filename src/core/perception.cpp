@@ -1,4 +1,5 @@
 #include "perception.hpp"
+#include "lateral.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -77,7 +78,8 @@ void storeReactionAction(Vehicle& vehicle, std::size_t ticks, const FollowingRes
     history.back() = decided;
 }
 std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
-    const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range) {
+    const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, std::size_t count, double range,
+    const LateralFilter* lateral) {
     std::vector<PerceivedLeader> found;
     if (count == 0) return found;
     for (const auto& part : parts) {
@@ -89,7 +91,8 @@ std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std:
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
             // The same skips and gap as closestVehicle (simulation.cpp).
-            if (span.vehicleId == vehicle.id || part.start + span.front < vehicle.distance - 1e-9) continue;
+            if (span.vehicleId == vehicle.id || part.start + span.front < vehicle.distance - 1e-9 ||
+                !lateralCounts(lateral, span)) continue; // LATERAL §6
             const double gap = part.start + span.rear - vehicle.distance;
             if (gap > range) continue;
             notePerceived(found, count, {Leader{gap, span.speed, span.acceleration}, span.vehicleId});

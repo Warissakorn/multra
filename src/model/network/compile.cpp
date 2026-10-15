@@ -46,8 +46,11 @@ void appendCrossSections(const Network& network, const RuntimeSections& table, S
     for (const auto& section : table.sections) {
         const auto& link = network.links[linkIndex.at(section.linkId)];
         const auto lane = std::find_if(link.lanes.begin(), link.lanes.end(), [&](const auto& l) { return l.id == section.laneId; });
+        // D188: the section's ends on the reference line, as lane changes map them (lane_family.cpp).
+        const auto geometry = laneGeometry(link, section.laneId, network.drivingSide);
         scenario.segmentCrossSections.push_back({linkIndex.at(section.linkId), section.start,
-            laneCentreOffset(link, section.laneId, network.drivingSide), lane->width, lane->width});
+            laneCentreOffset(link, section.laneId, network.drivingSide), lane->width, lane->width,
+            matchedStation(geometry, link.geometry, section.start), matchedStation(geometry, link.geometry, section.end)});
     }
     std::map<std::string, ConnectorLaneWidths> widths;
     for (std::size_t p = 0; p < table.paths.size(); ++p) {
@@ -56,7 +59,7 @@ void appendCrossSections(const Network& network, const RuntimeSections& table, S
             for (const auto& c : network.connectors) if (c.id == id) widths.emplace(id, connectorLaneWidths(network, c));
         const auto i = laneOfPath[id]++; // paths of one connector are consecutive, in lane order
         scenario.segmentCrossSections.push_back({network.links.size() + p, 0, 0,
-            widths.at(id).source.at(i), widths.at(id).target.at(i)});
+            widths.at(id).source.at(i), widths.at(id).target.at(i), 0, connectorPathLength(table.paths[p])});
     }
     scenario.drivingSide = network.drivingSide;
 }

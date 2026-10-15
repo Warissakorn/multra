@@ -2,6 +2,7 @@
 #include "conflicts.hpp"
 #include "following.hpp"
 #include "perception.hpp"
+#include "lateral.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -45,13 +46,13 @@ struct Around {
 };
 Around around(const ScenarioIndex& index, std::size_t target, double at, double atRear, std::uint64_t self,
               const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets, const std::vector<OccupiedSpan>& extra,
-              const PerceptionParameters& sight) {
+              const PerceptionParameters& sight, const LateralFilter* lateral = nullptr) {
     Around a;
     const bool perceiving = perceivesAhead(sight);
     const std::size_t count = perceiving ? observedCount(sight) : 0;
     const double range = perceiving ? lookAheadRange(sight) : 0;
     const auto consider = [&](const RoutePart& part, const OccupiedSpan& span) {
-        if (span.vehicleId == self) return;
+        if (span.vehicleId == self || !lateralCounts(lateral, span)) return; // LATERAL §6: alongside in 2D
         const double otherFront = part.start + span.front, otherRear = part.start + span.rear;
         if (otherRear >= at) {
             if (!a.leader || otherRear - at < a.leader->gap) a.leader = Leader{otherRear - at, span.speed, span.acceleration};
@@ -260,8 +261,11 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             if (inConflictArea(index, change.target, atRear, at)) continue;
             // Nearest vehicle ahead of and behind the mapped place, over this tick's snapshot and
             // the changes already accepted; anything alongside refuses the change (rule 5).
+            // LATERAL §6: the changer centred on the target lane (the change is instantaneous).
+            const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0,
+                                                 s.behaviours[refs[v].behaviour], vehicle.speed);
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
-                                     s.behaviours[refs[v].behaviour].perception);
+                                     s.behaviours[refs[v].behaviour].perception, &sideways);
             if (!safeAt(s, vehicles, refs, v, near)) continue;
             accepted.push_back({v, static_cast<std::uint32_t>(change.target), at});
             auto placed = vehicle;
@@ -298,14 +302,17 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             return following.acceleration;
         };
         const auto& sight = behaviour.perception;
-        const double here = acceleration(around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight));
+        const auto own = followerFilter(s, index, index.parts[route], front, type.width, vehicle.lateral, behaviour, vehicle.speed);
+        const double here = acceleration(around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight,
+                                                &own));
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot
             if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
-            const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight);
+            const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0, behaviour, vehicle.speed);
+            const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight, &sideways);
             const double gain = acceleration(near) - here;
             if (gain < *behaviour.discretionaryLaneChangeThreshold) continue;
             // §2's rules 3-5, plus the trailing vehicle at no worse than the CHANGER's accepted value.
@@ -349,7 +356,8 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
         for (const auto& part : index.parts[change->target])
             for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
-                if (span.vehicleId != vehicle.id && part.start + span.front <= atRear)
+                // D188: a lateral copy is in this lane's frame, but a hold is applied on its own route.
+                if (span.own && span.vehicleId != vehicle.id && part.start + span.front <= atRear)
                     behind.emplace_back(atRear - (part.start + span.front), span.vehicleId);
             }
         std::sort(behind.begin(), behind.end());

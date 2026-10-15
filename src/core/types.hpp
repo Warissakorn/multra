@@ -311,6 +311,7 @@ struct ScenarioIndex {
     std::vector<std::uint32_t> routeOfInput, typeOfInput; // parallel to Scenario::inputs
     // M8.4a: the lot slot whose gate a route ends at, SIZE_MAX for none; empty without a lot.
     std::vector<std::size_t> lotOfRoute;
+    LateralIndex lateral; // M3.7 (LATERAL §5, D188): off and empty without a lateral key
 };
 // Scenario lookups for one vehicle, resolved once per tick instead of once per use.
 struct VehicleRefs { std::size_t route{}, type{}, behaviour{}; };
@@ -371,6 +372,7 @@ struct Vehicle : PendingVehicle {
     std::vector<RouteRemapTrace> routeRemapTrace;
     // PERCEPTION §5: oldest first; empty with zero delay. Written only at insertion/publish.
     std::vector<FollowingResult> reactionHistory;
+    double lateral{}, lateralSpeed{}; // LATERAL §4 (D188): body offset from its lane centre; 0 until slice 3
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

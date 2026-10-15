@@ -2,6 +2,14 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — Owner's answers to B14 and B15 (D178; docs only)
+
+"B14 รับ, B15 ใช้ค่ามาตรฐานไปก่อน และจะทำการวิจัยในอนาคต". The review's order is the queue, keep-left
+is the default bias on left-hand-traffic networks (a behaviour key), and turn-on-red/U-turns stay
+in M3.9. Motorcycle values start from cited published standards, flagged uncertain, until the
+owner's research. Recorded in RECORD, ROADMAP M3.4/M3.8/M3.9, NEXT and the review header; B14/B15
+moved out of OWNER_SITTING.
+
 ## 2026-10-15 — Driving-behaviour completeness review (D177; docs only)
 
 The owner asked for a thorough review of driving behaviour (lateral behaviour, mirror checks,
