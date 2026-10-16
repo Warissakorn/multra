@@ -6,6 +6,17 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — M3.4 lane-change duration contract (D204, docs only)
+
+The owner asked for recommendations on the contract's three open choices and took all three:
+- a change starts only if it can finish before the next conflict area on both lanes (an extension of
+  the existing "no change inside an area" rule), so no zone has to hold a straddler;
+- the D97 slide stays for switched-off runs, which still change instantaneously;
+- no new key: `maxLateralSpeed` sets the duration.
+New [LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md) with rows BA48–BA53; also found that a
+change must cross before its span's `fromEnd`, since the crossing needs a covering span (LATERAL §7).
+No code changed; `check` was run for the docs.
+
 ## 2026-10-16 — M3.7 slice 4: lateral display (D203)
 
 NEXT's next item after slice 3b. `src/editor/canvas_run.cpp`, `src/core/types.hpp`, `lateral_motion.cpp`.

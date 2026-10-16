@@ -17,7 +17,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the run view draws lane centre + `lateral`, and a lateral crossing (flagged in `LaneChangeTrace`)
   is never slid. Only tests set a lateral target, so no product run moves sideways; BA39 holds.
   M3.7's gate stays open (ROADMAP).
-- **Unmerged, stacked:** `claude/m3.7-slice-3b-zones` (D202) → `claude/m3.7-slice-4-display` (D203).
+- **Unmerged, stacked:** `claude/m3.7-slice-3b-zones` (D202) → `claude/m3.7-slice-4-display` (D203) →
+  `claude/m3.4-lane-change-duration` (D204, contract only).
   Merge or rebase them onto main first if the owner has merged either.
 - The UI presentation slices a–e2 (D192–D200) and the sitting triage (D201) are on main. E13–E21
   wait on the owner, not a session.
@@ -29,24 +30,20 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the M3.4 lane-change duration contract (no code first)
+## Next session — M3.4 lane-change duration, slice 1 (rows first)
 
-The owner chose the engine queue on 2026-10-16. A session told only to "continue" takes the next
-item below; if the owner names another item, that comes first.
-1. **Write the contract before any code** (ROADMAP M3.4, review §3 F–G, LATERAL §5/§7/§12): a lane
-   change becomes a lateral move with a duration — the first product writer of `lateralTarget`.
-   It must decide, with failure-first rows (next free row numbers in DRIVING_BEHAVIOUR §3):
-   - when a change sets `lateralTarget` to the target lane's centre and what replaces today's
-     instantaneous `decideLaneChanges` admission (the §7 admission and crossing already exist);
-   - whether a straddler must be held at the other lane's zone (D202's failure condition) and, if
-     so, the mapped incidence it needs;
-   - whether the D97 display slide is removed once changes are lateral (D203's failure condition);
-   - which behaviour keys it adds (data, never code defaults; D178 rule for presets), and what the
-     prototype baselines do (they change only by a recorded decision).
-   Then re-run LATERAL §11 with real targets in the implementing slice.
-2. Smaller M3.4 parts that need neither M3.5 nor M3.7 stay in the deferred list (item 3).
-3. After M3.4's duration: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving
-   side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
+The contract is written and its choices are the owner's (D204,
+[LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md)). A session told only to "continue" takes
+the next item below; if the owner names another item, that comes first.
+1. **Write BA48–BA53 failure-first** (DRIVING_BEHAVIOUR §3), reusing `tests/lateral_test_support.hpp`
+   (`road`, `place`, `spansOf`, `overlap2d`); two-lane roads there already compile `LaneChangeSpan`s.
+2. **Implement §3–§5** in `decideLaneChanges` (`src/core/lanes.cpp`), switched on only: set
+   `lateralTarget` instead of `recordLaneChange`, the zone and window start rules, one change at a
+   time, clear the target when centred (`lateral_motion.cpp`). `simulation.cpp` is at 500 lines and
+   `types.hpp` at 500: add no lines there.
+3. Re-run LATERAL §11 with real targets (contract §7) and record it in a new evidence file.
+4. After it: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
+   motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.

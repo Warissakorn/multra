@@ -226,7 +226,8 @@ Vissim's cooperative lane change. Extended by the [driving-behaviour review](aud
 lane-change headway and safety-distance reduction, politeness, zipper merging and a blocking
 timeout, and overtaking with the driving side (keep-left/right bias, return after passing, lane
 preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
-left-hand-traffic networks, held in a behaviour key (D178). **Gate:** contract and failure-first rows per item in the
+left-hand-traffic networks, held in a behaviour key (D178). **Lane-change duration contract written**
+([LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md), D204, rows BA48–BA53; not implemented). **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention

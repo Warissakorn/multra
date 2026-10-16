@@ -246,4 +246,4 @@ One slice per session:
 4. Display (BA46; D203).
 
 BA39 runs in every slice. M3.4's lane-change duration then sets `yT` across the boundary, and its
-changer occupies both lanes through §5.
+changer occupies both lanes through §5; its contract is [LANE_CHANGE_DURATION](LANE_CHANGE_DURATION.md) (D204).
