@@ -2,6 +2,35 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — UI slice e1: canvas HUD (D197)
+
+The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,
+`map_layer.cpp/.hpp`, `editor_map.cpp`, two keys per locale).
+- **Scale and zoom:** a bar of the largest 1/2/5×10ⁿ m that fits 160 px at `viewScale()` (64–160 px:
+  the steps are up to 2.5× apart, so 80–160 cannot always hold) and the zoom in px/m.
+- **North only when the map supplies it:** `MapLayer::worldToGeographic` (new) gives the view centre's
+  latitude; one step north mapped back and through the view transform gives the arrow, so
+  convergence, `rotationDegrees` and Lab heading-up are included. No map projection, no arrow.
+- **Never in the way:** mouse-transparent, bottom-right, above the map credit when they would meet,
+  stacked when narrow. Found while testing: `EditorCanvas::event` placed overlays before the viewport
+  resized, so after a resize the HUD (and credit) sat at the old size until the 80 ms map timer; they
+  are placed after `QGraphicsView::event` now.
+- **Tests first:** new `canvas_hud_ui_tests` (1/2/5 steps and 64–160 px at four zooms under rotation and
+  mirroring; no arrow without a georeference; 0° on the central meridian, ±30° with the rotation, the
+  ≈0.56° convergence at 101.5°E, +40° in a rotated view; `childAt` skips the HUD; clear of credit and
+  status at four sizes), also at 1.5× and 2×. Swapping in grid north fails it. `workspace_ui_tests`
+  checks the HUD inside the viewport at 1360 and 1024 in both languages. `design_system_ui_tests`'
+  empty-grid pixel check now skips the HUD's own rectangle and asserts it is there.
+- **Carved out:** run vehicle casings and an R/A/G shape cue are slice e1b (two systems, AGENTS.md).
+- **Owner E19, same day (D198):** north shows whenever there is a georeference; `MapLayer` builds the
+  projection without waiting for a tile provider. The HUD suite checks an unknown provider and a
+  hidden map (it failed on both before the change).
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
+or high-DPI verification. [HUD with a rotated georeference](../images/ui-hud-after/hud-rotated.png),
+[Thai 1024 workspace](../images/ui-hud-after/workspace-th.png).
+
 ## 2026-10-16 — UI slice d2: table and numeric presentation (D196)
 
 Every table now reads alike (`editor_style.cpp/.hpp`, `editor_interaction.cpp`, `editor_workspace.cpp`,

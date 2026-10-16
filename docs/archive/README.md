@@ -13,7 +13,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-10-16.md`](PROGRESS-LOG-2026-10-16.md) | D192–D196 | 6 |
+| [`PROGRESS-LOG-2026-10-16.md`](PROGRESS-LOG-2026-10-16.md) | D192–D197 | 7 |
 | [`PROGRESS-LOG-2026-10-15.md`](PROGRESS-LOG-2026-10-15.md) | D175–D189 | 18 |
 | [`PROGRESS-LOG-2026-10-10--2026-10-14.md`](PROGRESS-LOG-2026-10-10--2026-10-14.md) | D148–D174, M5.8a, M5.8b, M6.0, M8.1–M8.6b, M1.28, M3.3.4 | 21 |
 | [`PROGRESS-LOG-2026-10-07--2026-10-09.md`](PROGRESS-LOG-2026-10-07--2026-10-09.md) | D129, D130, D131, D135, D136, D137, D138, D139, D143, D145, D146, D147, M4.2, M5, M5.2, M5.9 | 18 |

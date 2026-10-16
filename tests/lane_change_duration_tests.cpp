@@ -1,4 +1,5 @@
 #include "lateral_test_support.hpp"
+#include "../src/core/following.hpp"
 #include <cmath>
 using namespace trafficsim;
 using namespace lateral_test;
@@ -235,4 +236,115 @@ TEST(lanechangeduration, a_change_under_way_holds_its_target_place) { // D206, w
         CHECK(byId(state, 1)->lateralTarget.has_value());
         CHECK(!byId(state, 2)->lateralTarget.has_value());
     }
+}
+
+TEST(lanechangeduration, ba54_a_changer_waits_at_the_line_while_the_target_lane_gap_is_unsafe) { // BA54
+    // A 5 m/s changer under way from the left lane, its body still in its own lane, and a 10 m/s car
+    // on the right lane 6 m behind it that passes it during the move. Wait at the line (D208): the body
+    // covers the right lane only once that is as safe as a start, so it never crosses in close behind.
+    auto r = stub(keys(0, 0));
+    auto state = place(r.s, {{r.left, 100, 5, -0.3}, {r.right, 94, 10, 0}});
+    state.vehicles[0].desiredSpeed = 5; state.vehicles[0].lateralTarget = -3.5;
+    state.vehicles[1].desiredSpeed = 10;
+    const double comfortable = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].comfortableDeceleration;
+    int clamps = 0, crossedAt = -1;
+    double hardest = 0;
+    for (int t = 0; t < 150 && crossedAt < 0; ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+        const auto* changer = byId(state, 1); const auto* car = byId(state, 2);
+        hardest = std::min(hardest, changer->acceleration);
+        if (segmentOf(state, *changer) == r.right) crossedAt = t;
+        // While the changer covers the right lane, the car is never alongside it and never in front
+        // within less than a standstill-free metre (the start test's gap, rule 3).
+        if (covers(state, 1, r.right) && segmentOf(state, *changer) == r.left)
+            CHECK(car->distance <= changer->distance - carLength(r.s) || car->distance - carLength(r.s) >= changer->distance);
+        CHECK(!overlap2d(state));
+    }
+    CHECK(crossedAt >= 0);                // it does change
+    CHECK(byId(state, 2)->distance - carLength(r.s) > byId(state, 1)->distance); // the car passed first (the forcing)
+    CHECK(clamps == 0);
+    CHECK(hardest >= -comfortable - 1e-9);
+}
+
+TEST(lanechangeduration, ba54_a_far_leader_does_not_slow_the_move) { // BA54, control
+    auto r = stub(keys(0, 0));
+    auto state = place(r.s, {{r.left, 100, 5, -0.3}, {r.right, 160, 5, 0}});
+    state.vehicles[0].desiredSpeed = 5; state.vehicles[0].lateralTarget = -3.5;
+    state.vehicles[1].desiredSpeed = 5;
+    for (int t = 0; t < 32; ++t) { // 3.2 m at 0.1 m a tick: across the line and on
+        state = stepSimulation(std::move(state));
+        CHECK(std::abs(byId(state, 1)->lateralSpeed + 1) < 1e-9);
+    }
+}
+
+TEST(lanechangeduration, ba54_a_close_leader_on_the_target_lane_holds_the_move) { // BA54
+    // A car on the right lane 1 m ahead of the changer's front at the same speed: not alongside, but
+    // too close to follow (standstill distance 2 m). The changer's body edge is at the line, so its
+    // next step would cover the right lane; it waits there instead.
+    auto r = stub(keys(0, 0));
+    const double edge = -(1.75 - r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width / 2) + 0.01;
+    auto state = place(r.s, {{r.left, 100, 5, edge}, {r.right, 101 + carLength(r.s), 5, 0}});
+    state.vehicles[0].desiredSpeed = 5; state.vehicles[0].lateralTarget = -3.5;
+    state.vehicles[1].desiredSpeed = 5;
+    CHECK(!covers(state, 1, r.right)); // the forcing: not yet over the line
+    const double standstill = standstillGap(r.s.behaviours.front());
+    CHECK(standstill > 1); // the forcing: 1 m is inside the standstill distance
+    int clamps = 0;
+    bool held = false;
+    for (int t = 0; t < 50; ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+        const auto* changer = byId(state, 1); const auto* car = byId(state, 2);
+        if (!changer || !car || segmentOf(state, *changer) == r.right) break;
+        const double gap = car->distance - carLength(r.s) - changer->distance;
+        if (gap > 0 && gap < standstill) {
+            held = held || changer->lateralSpeed == 0;
+            CHECK(!covers(state, 1, r.right));
+        }
+    }
+    CHECK(held);
+    CHECK(clamps == 0);
+}
+
+TEST(lanechangeduration, ba54_a_changer_over_the_line_steps_back_while_it_must_wait) { // BA54
+    // The body already 0.25 m over the line, a car on the right lane 1 m ahead of its front at a lower
+    // speed. Waiting over the line would let the changer drive up beside that car; it steps back into
+    // its own lane instead, and the car is never clamped.
+    auto r = stub(keys(0.5, 1.0));
+    const double over = -(1.75 - r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width / 2) - 0.25;
+    auto state = place(r.s, {{r.left, 100, 8, over}, {r.right, 101 + carLength(r.s), 6, 0}});
+    state.vehicles[0].desiredSpeed = 8; state.vehicles[0].lateralTarget = -3.5;
+    state.vehicles[1].desiredSpeed = 6;
+    CHECK(covers(state, 1, r.right)); // the forcing: over the line, with an unsafe leader there
+    int clamps = 0;
+    for (int t = 0; t < 30; ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+    }
+    CHECK(!covers(state, 1, r.right));
+    CHECK(clamps == 0);
+    CHECK(!overlap2d(state));
+}
+
+TEST(lanechangeduration, ba54_a_close_follower_on_the_target_lane_holds_the_move) { // BA54
+    // A 10 m/s car on the right lane 1 m behind a 5 m/s changer whose body edge is at the line: not
+    // alongside, but it could not follow the changer comfortably. The changer waits until the car has
+    // gone by, and the car never brakes beyond comfortable for it. Keys 0.5/1.0, so the car takes a
+    // body over the line as its leader (LATERAL §6).
+    auto r = stub(keys(0.5, 1.0));
+    const double edge = -(1.75 - r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width / 2) + 0.01;
+    auto state = place(r.s, {{r.left, 100, 5, edge}, {r.right, 99 - carLength(r.s), 10, 0}});
+    state.vehicles[0].desiredSpeed = 5; state.vehicles[0].lateralTarget = -3.5;
+    state.vehicles[1].desiredSpeed = 10;
+    const double comfortable = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].comfortableDeceleration;
+    CHECK(!covers(state, 1, r.right)); // the forcing: not yet over the line, the car behind
+    int clamps = 0;
+    for (int t = 0; t < 80; ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+        CHECK(byId(state, 2)->acceleration >= -comfortable - 1e-9);
+    }
+    CHECK(clamps == 0);
+    CHECK(byId(state, 2)->distance > byId(state, 1)->distance); // the car went by
 }

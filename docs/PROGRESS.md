@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Mid-change gap loss: waiting at the line (D208)
+
+NEXT's item. D206 left two clamps where a faster car passed a slow changer mid-move. The owner chose
+**wait at the line**: an outward lateral move that would cover another lane must pass the start's
+safety tests there (nothing alongside, the leader ahead and the follower behind accept it). A body
+already over the line steps back. `src/core/lateral_motion.cpp` (`coversSafely`); rows BA54 failed
+first ([evidence](evidence/lane-change-gap.md)).
+
+The first version, checking only the leader per segment, made things worse: 29 clamps instead of 2.
+Each cause was probed and fixed in turn: waiting over the line, a follower just behind, and a follower
+on the previous segment. The test now compares every vehicle in its own route's distances. Both
+switched-on projects run with 0 clamps and unchanged completed trips; switched-off runs and the CLI
+pin are byte-identical. `check` 163/163, Linux only.
+
 ## 2026-10-16 — Swapping pair at shared dead ends: the rear one yields (D207)
 
 NEXT's item, found by D206's runs. Two stubs side by side, each needing the other's lane, were each
@@ -167,35 +181,6 @@ Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_
 Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
 file sizes, docs and **158/158** CTest. No Windows or high-DPI verification.
 [Grayscale run](images/ui-run-after/run-grayscale.png).
-
-## 2026-10-16 — UI slice e1: canvas HUD (D197)
-
-The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,
-`map_layer.cpp/.hpp`, `editor_map.cpp`, two keys per locale).
-- **Scale and zoom:** a bar of the largest 1/2/5×10ⁿ m that fits 160 px at `viewScale()` (64–160 px:
-  the steps are up to 2.5× apart, so 80–160 cannot always hold) and the zoom in px/m.
-- **North only when the map supplies it:** `MapLayer::worldToGeographic` (new) gives the view centre's
-  latitude; one step north mapped back and through the view transform gives the arrow, so
-  convergence, `rotationDegrees` and Lab heading-up are included. No map projection, no arrow.
-- **Never in the way:** mouse-transparent, bottom-right, above the map credit when they would meet,
-  stacked when narrow. Found while testing: `EditorCanvas::event` placed overlays before the viewport
-  resized, so after a resize the HUD (and credit) sat at the old size until the 80 ms map timer; they
-  are placed after `QGraphicsView::event` now.
-- **Tests first:** new `canvas_hud_ui_tests` (1/2/5 steps and 64–160 px at four zooms under rotation and
-  mirroring; no arrow without a georeference; 0° on the central meridian, ±30° with the rotation, the
-  ≈0.56° convergence at 101.5°E, +40° in a rotated view; `childAt` skips the HUD; clear of credit and
-  status at four sizes), also at 1.5× and 2×. Swapping in grid north fails it. `workspace_ui_tests`
-  checks the HUD inside the viewport at 1360 and 1024 in both languages. `design_system_ui_tests`'
-  empty-grid pixel check now skips the HUD's own rectangle and asserts it is there.
-- **Carved out:** run vehicle casings and an R/A/G shape cue are slice e1b (two systems, AGENTS.md).
-- **Owner E19, same day (D198):** north shows whenever there is a georeference; `MapLayer` builds the
-  projection without waiting for a tile provider. The HUD suite checks an unknown provider and a
-  hidden map (it failed on both before the change).
-
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
-file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
-or high-DPI verification. [HUD with a rotated georeference](images/ui-hud-after/hud-rotated.png),
-[Thai 1024 workspace](images/ui-hud-after/workspace-th.png).
 
 ## Older entries
 

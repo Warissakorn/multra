@@ -17,8 +17,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
 - **Switched-on cost is owed:** +33 % `lane-change-lab`, +17 % `four-leg-signalised` (Release, seeds
-  42–51), above LATERAL §11's 10 %. Nothing a user runs is slower; the cut is due before any shipped
+  42–51, D206; D208 adds ≈ 6 % to the lab), above LATERAL §11's 10 %. Nothing a user runs is slower; the cut is due before any shipped
   project or preset carries lateral keys.
+- **D208: mid-change, a changer waits at the line** until the start's safety tests hold on the lane it
+  would cover (owner's choice); switched-on clamps 2 → 0.
 - **D207: a swapping pair of stubs resolves by the rear one yielding** (owner's choice). Shipped
   four-leg and M2.6 multi-seed outputs moved by ≤ 0.2 s mean delay; the CLI pin is byte-identical.
 - M3.7.0's four slices are in (D202, D203); M3.7's gate stays open (ROADMAP).
@@ -31,21 +33,20 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M3.4 mid-change clamps (rows first)
+## Next session — the switched-on engine round (measure first)
 
-D207 resolved the lane-swap deadlock ([evidence](evidence/lane-swap.md)); every lab stall is gone.
-What remains of D206's findings, in order. A session told only to "continue" takes item 1:
-1. **Mid-change clamps** (two in ten switched-on `lane-change-lab` seeds, seed 49; LANE_CHANGE_DURATION
-   §9, [evidence](evidence/lane-change-duration.md)): a faster vehicle on the target lane passes a
-   changer whose body has not reached the line; the changer then crosses 2.9 m behind it, because
-   `moveLaterally` (`src/core/lateral_motion.cpp`) admits a move by 2D overlap only. Write a
-   failure-first row (a slow changer under way, a faster car passing on the target lane), then
-   propose to the owner before coding: refuse a move that would put the body over the line within
-   the follower-safety gap of a leader there (`safeAt`'s forward test, `src/core/lanes.cpp`), versus
-   abandoning the change. It is owner-visible behaviour: contract §4/§9 first, then a decision.
-2. **The switched-on engine round** (+33 % lab, +17 % four-leg): profile `moveLaterally`'s per-tick
-   `resolveRefs`/`occupiedSpans`/`bucketSpans` rebuild; owed before any shipped project carries
-   lateral keys (D206).
+D208 resolved the mid-change clamps ([evidence](evidence/lane-change-gap.md)): both switched-on
+projects run with 0 clamps and no stalls. What remains of M3.4's lateral work, in order. A session told
+only to "continue" takes item 1:
+1. **Switched-on cost** (owed since D206, +33 % lab / +17 % four-leg; D208 adds about 6 % to the lab):
+   profile a Release switched-on `lane-change-lab` run (seeds 42–51, the `data/` copy with keys
+   0.5/1.0/1 on every behaviour), then cut the largest cost: likely `moveLaterally`'s per-tick
+   `resolveRefs`/`occupiedSpans`/`bucketSpans` rebuild and `coversSafely`'s scan over every vehicle.
+   Outputs must stay byte-identical; follow D164's recipe (callgrind, before/after, same build dir).
+2. **A straddler does not follow the other lane's leaders** (LATERAL §6 says "the follower's
+   carriageway"; `closestVehicle` searches the own lane). D208's step back hides it while waiting.
+   Rows first; the leader search lives in `src/core/simulation.cpp`, at 500 lines, so move code out
+   before adding any.
 3. After them: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
    motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
 
