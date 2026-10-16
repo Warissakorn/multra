@@ -76,7 +76,7 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         if (low > high) continue;
         const double step = *behaviour.lateral.maxLateralSpeed * dt;
         const double delta = std::clamp(std::clamp(*vehicle.lateralTarget, low, high) - vehicle.lateral, -step, step);
-        if (delta == 0) continue;
+        if (delta == 0) { if (vehicle.lateral == *vehicle.lateralTarget) vehicle.lateralTarget.reset(); continue; }
         auto placed = vehicle;
         placed.lateral += delta;
         std::vector<OccupiedSpan> body;
@@ -94,7 +94,9 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         moved.insert(moved.end(), body.begin(), body.end()); movedIds.push_back(vehicle.id);
         // Crossing: the centre strictly past a boundary only a covering span lets it reach.
         const auto& crossing = vehicle.lateral > half ? toLeft : vehicle.lateral < -half ? toRight : std::nullopt;
-        if (!crossing) continue;
+        // LANE_CHANGE_DURATION §5 (D206): centred on the target, the move is over.
+        const auto arrive = [&] { if (std::abs(*vehicle.lateralTarget - vehicle.lateral) <= 1e-9) { vehicle.lateral = *vehicle.lateralTarget; vehicle.lateralTarget.reset(); } };
+        if (!crossing) { arrive(); continue; }
         const double shift = centre - crossing->section->centre;
         vehicle.lateral += shift; *vehicle.lateralTarget += shift;
         const auto route = static_cast<std::uint32_t>(crossing->change->target);
@@ -107,6 +109,7 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
                 m->segmentId = location.segmentId; m->position = location.position;
                 break;
             }
+        arrive();
     }
 }
 }

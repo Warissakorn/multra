@@ -73,6 +73,33 @@ Around around(const ScenarioIndex& index, std::size_t target, double at, double 
     if (sight.lookBackDistance && a.follower && a.follower->gap > *sight.lookBackDistance) a.follower.reset();
     return a;
 }
+// LANE_CHANGE_DURATION §3 (D206): with the lateral switch on and a lateral rate, the target lane's
+// centre from the current one, if the move can finish before the next zone's line on both routes and
+// its centre cross the lane line inside the span window (half the front's travel during the move, not
+// counting the body's length: a changer standing at its dead end must still start). `refused` refuses
+// the start; without a rate (or the switch) the change stays instantaneous.
+struct LateralStart { bool refused{}; std::optional<double> target; };
+LateralStart lateralStart(const Scenario& s, const ScenarioIndex& index, const Vehicle& vehicle, const VehicleRefs& refs,
+                          const RouteLaneChange& change, double at) {
+    const auto& rate = s.behaviours[refs.behaviour].lateral.maxLateralSpeed;
+    if (!index.lateral.on || !rate) return {};
+    const double front = vehicle.distance;
+    const auto centre = [&](std::size_t route, double d) {
+        return s.segmentCrossSections[frontPart(index.parts[route], d).segmentIndex].centre;
+    };
+    const double target = centre(change.target, at) - centre(refs.route, front);
+    const double ahead = vehicle.speed * std::abs(target - vehicle.lateral) / *rate; // the front's travel during the move
+    const double travel = ahead + s.vehicleTypes[refs.type].length;
+    // The nearest zone line at or ahead of `from` must be at least `travel` ahead (equal starts).
+    const auto clear = [&](std::size_t route, double from) {
+        for (const auto& rz : index.routeZones[route])
+            if (const double line = rz.role == ZoneRole::minor ? rz.waitAt : rz.entryAt;
+                line >= from - 1e-9 && line - from < travel - 1e-9) return false;
+        return true;
+    };
+    if (!clear(refs.route, front) || !clear(change.target, at) || front + ahead / 2 > change.fromEnd + 1e-9) return {true, {}};
+    return {false, target};
+}
 std::size_t slotOfId(const std::vector<Vehicle>& vehicles, std::uint64_t id) {
     const auto it = std::lower_bound(vehicles.begin(), vehicles.end(), id,
                                      [](const Vehicle& v, std::uint64_t at) { return v.id < at; });
@@ -131,6 +158,11 @@ void recordLaneChange(const Scenario& s, Vehicle& vehicle, std::uint32_t route, 
     vehicle.lastLaneChange = LastLaneChange{tick, vehicle.routeIndex};
     vehicle.laneChangeTrace.push_back({vehicle.routeIndex, route, vehicle.distance, distance, vehicle.speed});
     vehicle.routeIndex = route; vehicle.distance = distance;
+}
+void applyLaneChange(const Scenario& s, Vehicle& vehicle, const LaneChange& change,
+                     std::uint64_t tick, double time, std::vector<SimEvent>& events) {
+    if (change.lateralTarget) vehicle.lateralTarget = change.lateralTarget;
+    else recordLaneChange(s, vehicle, change.route, change.distance, tick, time, events);
 }
 double mappedOnto(const RouteLaneChange& c, double at) {
     const double from = c.fromEnd - c.fromStart;
@@ -253,6 +285,10 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
                                           const std::vector<StopService>& stopService, std::uint64_t tick) {
     std::vector<LaneChange> accepted;
     std::vector<OccupiedSpan> moved; // accepted changers at their new places, this tick
+    // D206: a change under way already holds its target place, so no other change starts into it.
+    if (index.lateral.on)
+        for (std::size_t v = 0; v < vehicles.size(); ++v)
+            if (vehicles[v].lateralTarget) { auto placed = vehicles[v]; placed.lateral = *placed.lateralTarget; appendVehicleSpans(moved, s, index, placed, refs[v]); }
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto route = refs[v].route;
         if (index.remainingOfRoute[route] == 0) continue;
@@ -260,7 +296,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         const auto& type = s.vehicleTypes[refs[v].type];
         const double front = vehicle.distance, rear = front - type.length;
         if (std::any_of(stopService.begin(), stopService.end(), [&](const auto& x) { return x.vehicleId == vehicle.id; })) continue;
-        if (inConflictArea(index, route, rear, front)) continue;
+        if (inConflictArea(index, route, rear, front) || vehicle.lateralTarget) continue; // D206: one change at a time
         for (const auto& change : index.laneChangesOfRoute[route]) {
             if (index.remainingOfRoute[change.target] >= index.remainingOfRoute[route]) break;
             if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
@@ -274,7 +310,9 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
                                      s.behaviours[refs[v].behaviour].perception, &sideways);
             if (!safeAt(s, vehicles, refs, v, near)) continue;
-            accepted.push_back({v, static_cast<std::uint32_t>(change.target), at});
+            const auto start = lateralStart(s, index, vehicle, refs[v], change, at);
+            if (start.refused) continue;
+            accepted.push_back({v, static_cast<std::uint32_t>(change.target), at, start.target});
             auto placed = vehicle;
             placed.routeIndex = static_cast<std::uint32_t>(change.target); placed.distance = at;
             appendVehicleSpans(moved, s, index, placed, {change.target, refs[v].type, refs[v].behaviour});
@@ -293,7 +331,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         const auto& type = s.vehicleTypes[refs[v].type];
         const double front = vehicle.distance, rear = front - type.length;
         if (std::any_of(stopService.begin(), stopService.end(), [&](const auto& x) { return x.vehicleId == vehicle.id; })) continue;
-        if (inConflictArea(index, route, rear, front)) continue;
+        if (inConflictArea(index, route, rear, front) || vehicle.lateralTarget) continue; // D206: one change at a time
         // D101: no change by choice while the hold since this vehicle's last change runs.
         if (const auto& last = vehicle.lastLaneChange; last && behaviour.discretionaryLaneChangeHoldTime &&
             static_cast<double>(tick - last->tick) * s.timeStep < *behaviour.discretionaryLaneChangeHoldTime - 1e-9) continue;
@@ -325,7 +363,9 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             // §2's rules 3-5, plus the trailing vehicle at no worse than the CHANGER's accepted value.
             const auto trailing = safeAt(s, vehicles, refs, v, near);
             if (!trailing || *trailing < -*behaviour.acceptedDecelerationTrailingVehicle) continue;
-            if (!best || gain > bestGain) { best = LaneChange{v, static_cast<std::uint32_t>(change.target), at}; bestGain = gain; }
+            const auto start = lateralStart(s, index, vehicle, refs[v], change, at);
+            if (start.refused) continue;
+            if (!best || gain > bestGain) { best = LaneChange{v, static_cast<std::uint32_t>(change.target), at, start.target}; bestGain = gain; }
         }
         if (!best) continue;
         accepted.push_back(*best);

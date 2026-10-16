@@ -105,7 +105,8 @@ TEST(lateralspan, the_switch_needs_compiled_cross_sections) { // D188
 
 TEST(lateralspan, ba39_centred_cars_narrower_than_their_lanes_replay_the_lane_based_run) { // BA39
     // The four-leg project with its catalogs owned so the keys can be set: switched on, every car is
-    // centred and narrower than its lane, so no body reaches another lane and the run is unchanged.
+    // centred and narrower than its lane, so no body reaches another lane and the run is unchanged
+    // until the first lane change, which switched on is a lateral move (D206) and differs by design.
     const auto data = test::root() / "data";
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json");
     Json project; file >> project;
@@ -118,9 +119,13 @@ TEST(lateralspan, ba39_centred_cars_narrower_than_their_lanes_replay_the_lane_ba
     CHECK(!keyed.segmentCrossSections.empty()); // the forcing: the layer really is on
     auto a = createSimulation(plain, 42), b = createSimulation(keyed, 42);
     CHECK(b.index->lateral.on);
+    const auto changing = [](const SimState& x) {
+        return std::any_of(x.vehicles.begin(), x.vehicles.end(), [](const auto& v) { return v.lateralTarget.has_value(); }); };
     while (a.tick < totalTicks(plain)) {
         a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b));
+        if (changing(b)) break;
         CHECK(a.vehicles == b.vehicles); CHECK(a.events == b.events);
     }
     CHECK(a.nextVehicleId > 1);
+    CHECK(changing(b)); // the forcing: the project does change lanes, so the replay ran up to one
 }

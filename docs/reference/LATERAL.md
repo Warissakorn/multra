@@ -4,8 +4,9 @@ Designed 2026-10-15 (D180). **Slices 1–4 are implemented**: the §9 keys (sche
 cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)), the §5–§6
 spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), §7's motion, admission
 and crossing (D189, [evidence](../evidence/lateral-motion.md)), zone occupancy by span (D202,
-[evidence](../evidence/lateral-zones.md)) and the display (D203, [evidence](../evidence/lateral-display.md)). Only a test sets a lateral target
-yet, so every product run still keeps `lateral` at 0. Rows BA39–BA47 are in
+[evidence](../evidence/lateral-zones.md)) and the display (D203, [evidence](../evidence/lateral-display.md)). Since M3.4 slice 1 (D206) a lane
+change sets a lateral target when the switch is on; no shipped project carries the keys, so every
+shipped run still keeps `lateral` at 0. Rows BA39–BA47 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA47 have
 automated evidence and BA39 is kept in every slice. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
