@@ -74,7 +74,7 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     auto scenario=compileScenario(d.network,definition,walks.builtSections(),&routeOrigins);
     // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.
     if(!d.zones.parkingLots.empty()) {
-        compileParkingLots(d,authored,scenario,data);
+        compileParkingLots(d,authored,scenario,routeOrigins,data);
         if(auto issues=validateScenario(scenario);!issues.empty())throw ValidationError(std::move(issues));
     }
     // M5.9 (D146): the run goes on for the cool-down after the authored duration. Inputs still end

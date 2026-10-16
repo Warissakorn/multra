@@ -13,6 +13,10 @@ The owner authorized fixes from main after the repository review; this branch st
 
 - Compile exact runtime-to-authored route provenance outside core; `/` in authored IDs no longer
   sends completed trips to another movement, including lane expansion and seed aggregation.
+  Follow-up (2026-10-16): the three remaining consumers that rebuilt the relation from the id's
+  spelling now read the same map — `authoredRouteLength` (the editor's route Length, which gave
+  `r` the length of an authored `r/lane-2` listed before it), parking-lot exits and the lab's
+  loop lanes. Outputs are otherwise unchanged (CLI seed 42 and all four projects' 42–43 batches).
 - Live desired-speed reductions use bounded braking with consistent speed, acceleration and
   distance in both prototype and W74. Ordinary runs retain their frozen replay. Review follow-up:
   the prototype's free term `(desired − speed)/followingTime` had no floor, so a 15→5 m/s retune

@@ -441,8 +441,8 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
 // never built ahead of the network check, which must report UNKNOWN_LANE before it can throw.
 Scenario compileScenario(const Network& network, const ScenarioDefinition& definition,
                          const RuntimeSections* known = nullptr, CompiledRouteOrigins* origins = nullptr);
-// One lane's distance along an authored route, from its compiled chains: the route itself when it
-// expanded to one lane, else the first "/lane-k" chain that is not a stub, so a lane that ends at
-// its dead end never stands for the route. 0 when nothing compiled under the id.
-double authoredRouteLength(const Scenario& scenario, const std::string& routeId);
+// One lane's distance along an authored route, from the chains `origins` says were compiled from it
+// (buildScenario's out-param): the first that is not a stub, so a lane that ends at its dead end
+// never stands for the route. 0 when nothing compiled under the id.
+double authoredRouteLength(const Scenario& scenario, const CompiledRouteOrigins& origins, const std::string& routeId);
 }

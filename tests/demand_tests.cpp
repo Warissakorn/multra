@@ -160,7 +160,8 @@ TEST(demand, a_route_length_is_a_full_chain_not_the_first_lane_stub) {
     d.network.links={{"a",{{0,0},{100,0}},{{"a1",3.5},{"a2",3.5}}},{"b",{{120,0},{220,0}},{{"b1",3.5}}}};
     const auto turn=addConnector(d,{"a","a2",100},{"b","b1",0});
     const auto route=putRoute(d,{"",{"a",turn,"b"}});
-    const auto scenario=buildScenario(d.network,*d.definition);
+    CompiledRouteOrigins origins;
+    const auto scenario=buildScenario(d.network,*d.definition,&origins);
     // The forcing: lane 1 is compiled first and really is a stub, or the bug has nothing to hit.
     const auto first=std::find_if(scenario.routes.begin(),scenario.routes.end(),
         [&](const auto& r){return r.id.rfind(route+"/lane-",0)==0;});
@@ -170,5 +171,19 @@ TEST(demand, a_route_length_is_a_full_chain_not_the_first_lane_stub) {
                       [&](const auto& e){return e.routeId==first->id;}));
     double connector=0;
     for(const auto& s:scenario.segments)if(s.id==turn)connector=s.length;
-    test::near(authoredRouteLength(scenario,route),100+connector+100,1e-9);
+    test::near(authoredRouteLength(scenario,origins,route),100+connector+100,1e-9);
+}
+// D191: ids are opaque. An authored id that merely looks like another route's lane chain is its own
+// route, so the length comes from the compiler's provenance, never from the id's spelling.
+TEST(demand, a_route_length_never_borrows_a_route_whose_id_looks_like_its_lane) {
+    ProjectDocument d;
+    d.network.links={{"a",{{0,0},{100,0}},{{"a1",3.5}}},{"b",{{0,10},{300,10}},{{"b1",3.5}}}};
+    d.definition.emplace();
+    d.definition->routes={{"r/lane-2",{"b"}},{"r",{"a"}}};
+    CompiledRouteOrigins origins;
+    const auto scenario=buildScenario(d.network,*d.definition,&origins);
+    // The forcing: both keep their ids (one lane each) and the look-alike is compiled first.
+    CHECK(scenario.routes.size()==2&&scenario.routes[0].id=="r/lane-2"&&scenario.routes[1].id=="r");
+    test::near(authoredRouteLength(scenario,origins,"r"),100,1e-9);
+    test::near(authoredRouteLength(scenario,origins,"r/lane-2"),300,1e-9);
 }
