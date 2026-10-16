@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: cmake --build --preset release --parallel 2
       - name: Test
-        run: ctest --preset release
+        run: ctest --preset release --parallel 4
         env:
           QT_QPA_PLATFORM: offscreen
       - name: Stage install tree
@@ -77,7 +77,7 @@ jobs:
       - name: Build
         run: cmake --build build/native --config Release --parallel 2
       - name: Test
-        run: ctest --test-dir build/native -C Release --output-on-failure
+        run: ctest --test-dir build/native -C Release --output-on-failure --parallel 4
         env:
           QT_QPA_PLATFORM: offscreen
       - name: Stage install tree
