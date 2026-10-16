@@ -113,6 +113,8 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     require(tabs->currentWidget()==test::tabPage(tabs,inner) &&
             inner->currentWidget()==test::tabPage(inner,item<QWidget>(window,"editorMovementTable")),
             "Batch did not reveal its reordered Results page");
+    require(item<QComboBox>(window,"editorObjectGroup")->currentData().toString()=="editorObjectGroupResults",
+            "Batch did not reveal the Results group"); // D194
     trigger(window,"editorCancelSeeds");seeds->setText("42-51");
     for(int i=0;i<original.size();++i)tabs->tabBar()->moveTab(tabs->indexOf(original[i]),i);
     for(int i=0;i<originalInner.size();++i)inner->tabBar()->moveTab(inner->indexOf(originalInner[i]),i);

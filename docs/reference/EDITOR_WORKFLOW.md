@@ -150,7 +150,13 @@ names (D193).
 
 - **Ctrl+Shift+F** (View → Focus on network) hides docks and restores the previous layout on
   the next press, including hidden and floating panels. Opening a panel also leaves focus mode.
-- **View → Reset panel layout** restores the palette (with names), Properties and Objects docks.
+- The Objects panel shows one task group at a time, chosen in the combo left of its tabs:
+  Network (Links, Connectors), Control (Signal heads, Signal control, Conflict areas), Demand
+  (Routes, Vehicle inputs, Routing decisions, Zones, OD matrices), Measurement (Queue counters,
+  Travel-time sections), Results and Problems. A jump to a page (a tool, Show in table, a failed
+  check or run) switches to its group; Problems jumps also reopen the panel (D194).
+- **View → Reset panel layout** restores the palette (with names), Properties and Objects docks,
+  and the Objects panel's Network group.
 - **Ctrl+I**, **Ctrl+Shift+O**, **Ctrl+Shift+H** and **Ctrl+Shift+T** toggle Properties, Objects,
   History and the Network Objects palette respectively.
 - Properties keeps ID, Name and its tabs visible while each tab scrolls independently.

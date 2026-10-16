@@ -86,6 +86,7 @@ void EditorWindow::buildWorkspace() {
     for(auto* combo:{objectLevel_,objectDisplay_,side_,visibleLevel_}) {
         combo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);combo->setMinimumContentsLength(10);
     }
+    buildObjectGroups();
     for(auto* tabs:{properties_,objects_}){tabs->setDocumentMode(true);tabs->setUsesScrollButtons(true);tabs->setElideMode(Qt::ElideRight);}
     for(auto* table:findChildren<QTableWidget*>()) {
         table->setAlternatingRowColors(true);table->setShowGrid(false);
@@ -99,7 +100,7 @@ void EditorWindow::buildWorkspace() {
     setTabOrder(visibleLevel_,findChild<QToolButton*>("editorBackgroundButton"));
     setTabOrder(findChild<QToolButton*>("editorBackgroundButton"),canvas_);
     setTabOrder(canvas_,id_);setTabOrder(id_,name_);setTabOrder(name_,properties_);
-    setTabOrder(properties_,objects_);setTabOrder(objects_,linkTable_);
+    setTabOrder(properties_,objectGroup_);setTabOrder(objectGroup_,objects_);setTabOrder(objects_,linkTable_);
     setTabOrder(linkTable_,connectorTable_);setTabOrder(connectorTable_,signalTable_);
     for(auto* dock:findChildren<QDockWidget*>(QString(),Qt::FindDirectChildrenOnly))
         connect(dock,&QDockWidget::visibilityChanged,this,[this,dock](bool visible){
@@ -137,6 +138,7 @@ void EditorWindow::resetWorkspace() {
     addDockWidget(Qt::RightDockWidgetArea,history);tabifyDockWidget(inspector,history);addDockWidget(Qt::BottomDockWidgetArea,objects);
     for(auto* panel:{palette,inspector,objects})panel->show();
     history->hide();inspector->raise();
+    showObjectPage(objectPages_.at("editorLinkTable")); // the group is transient too
     resizeDocks({palette,inspector},{paletteWidth,310},Qt::Horizontal);resizeDocks({objects},{185},Qt::Vertical);
     layoutToolbars();changingWorkspace_=false;canvas_->setFocus();
 }

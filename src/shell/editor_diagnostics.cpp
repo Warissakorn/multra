@@ -30,7 +30,7 @@ void EditorWindow::buildDiagnostics() {
         diagnostics_=runDiagnostics(history_.document(),data_);
         diagnosticRevision_=history_.revision();
         refreshDiagnostics();
-        objects_->setCurrentWidget(problemTable_);
+        revealObjectPage(problemTable_);
     });
 }
 void EditorWindow::refreshDiagnostics() {

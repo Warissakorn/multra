@@ -216,6 +216,15 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    are the blank group rows acceptable dividers, and is the extra row above the tree worth it? On the
    Simulation bar, is Reset behind its separator clear, and is the 24 px Run (F5) text unclipped at
    100/150/200 % on Windows? Linux offscreen evidence does not close this. *Owner:*
+16. **D194 grouped Objects navigation** (listed 2026-10-16). Compare
+   [before](../images/ui-palette-after/workspace-en.png) and
+   [after](../images/ui-groups-after/workspace-en.png), then the
+   [English](../images/ui-groups-after/objects-demand-en.png) and
+   [Thai](../images/ui-groups-after/objects-demand-th.png) Demand group at 1024×768. Use the combo
+   left of the Objects tabs: do the six groups hold the pages you expect, and is Network the right
+   default? Press A, Q or Z, Show in table on a route, and Check runnability: does the panel switch
+   group where you look? At 100/150/200 % on Windows, is the combo text unclipped and the first tab
+   uncovered in both languages? Linux offscreen evidence does not close this. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

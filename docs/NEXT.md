@@ -11,12 +11,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slice b (D193) is in: five palette groups, a transient icons-only palette view, the Simulation
-  bar as Run/Step | Seed/speed | Reset and Delete trailing; every toolbar stays 32 px at
-  1024–1360 px in both languages. Owner review is OWNER_SITTING E15. Slice a (D192, E14) and the
-  parallel-ctest / hit-test pass are on main too; slice b replaced an earlier b1-only variant.
-- D191 corrects the six audit findings on main: route attribution, live speed reduction, demand
-  retune refusal, signal integer bounds, stale runtime catalogs and empty conflict chains.
+- UI slice c (D194) is in: the Objects dock shows one task group (Network, Control, Demand,
+  Measurement, Results, Problems) chosen in a corner combo; the group follows the current page and
+  Problems jumps reopen the dock. Canvas sizes are unchanged. Owner review is OWNER_SITTING E16.
+- Slices a (D192, E14) and b (D193, E15) are on main; E14–E16 wait on the owner, not a session.
+- D191 corrects the six audit findings on main.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
   set a target, so no product run moves sideways; BA39 holds. Zones still read route positions
   (slice 3b, deferred below).
@@ -24,31 +23,28 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice c: grouped Objects navigation (layout A)
+## Next session — UI presentation slice d1: Properties presentation
 
-The owner chose A (B16, “ทำตามแนะนำ”, 2026-10-15); slice 0 is green, so c may start. Read the
-[slice plan](plans/UI_PRESENTATION_SLICES.md) §c, [specification](plans/UI_PRESENTATION_SPEC.md) §1
-and the [audit](audits/UI_PRESENTATION_AUDIT.md) §2. Merge or rebase onto main first if slices a/b
-have merged by then.
+Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §d1, [specification](plans/UI_PRESENTATION_SPEC.md)
+§3 and §6 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §6. Merge or rebase onto main first if
+slice c has merged by then. Verify filenames against the checkout before editing.
 
-**Do, as one session** (`editor_workspace.cpp`, `editor_tables.cpp`, `editor_window.hpp`, the page
-show helpers in `editor_demand/diagnostics/priority/counters/sections/zones/od/results.cpp`, both
-locales; tests in `workspace_ui_tests.cpp`, `table_ui_tests.cpp`, `results_tabs_ui_tests.cpp` and
-the page suites):
-1. Tests first: all 14 pages reachable through their task group (Network, Control, Demand,
-   Measurement, Results, Problems) in English and Thai; a locale switch while each page is active;
-   Show in table, a failed Check/Run and Problems reveal the owning group then the page; batch,
-   comparison and Cancel still replace Results page 0 only; D161 horizontal Zones stays.
-2. A compact group selector inside the existing `editorObjectsDock` / `editorObjectTabs`, its mapping
-   registered once by page pointer and translation key (`objectPages_`), never by index. Navigation
-   state only: no document, selection or run change; no remembered expansion or presets.
-3. Accept: 1024×768 both languages with canvas ≥ 400×250 for every group, the 1360×860 ≥ 700×350
-   baseline kept, focus mode restores hidden/moved/floating panels and the current group, Reset
-   returns the default; new D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
+**Do, as one session** (`editor_inspector.cpp`, `editor_connectors.cpp`, `editor_behaviour.cpp`,
+`editor_interaction.cpp`, `editor_style.cpp` and the dialog form builders the changed groups use;
+both locales; tests in `workspace_ui_tests.cpp`, `design_system_ui_tests.cpp`,
+`editor_workflow_ui_tests.cpp` and the affected inspector/connector suites):
+1. Tests first: common label alignment at wide width and reflow at narrow width; ID/Name stay
+   pinned; the immediate-vs-Apply commit boundaries unchanged; Thai tone marks and field baselines
+   at 1/1.5/2×; invalid-range feedback and the existing wheel protection kept.
+2. Adopt the heading role map only for touched headings, no new values; long labels wrap without
+   growing the window; primary-object editing semantics unchanged. A presentation helper must not
+   change which signal (`editingFinished`/`valueChanged`) commits.
+3. Accept: 1024×768 and 1360×860 canvas minimums as in D194's suite, new D-row, before/after
+   images, OWNER_SITTING §E row, full desktop `check`.
 
-Do not touch Properties (d1), tables' numeric presentation (d2) or the canvas HUD (e1). After c:
-d1, d2, e1, e2, one session each. The icons-only palette's blank group rows and the extra toggle
-row wait on E15, not on a session.
+Do not touch tables' numeric presentation (d2), the canvas HUD (e1) or the Objects groups (c,
+waiting on E16). After d1: d2, e1, e2, one session each. The icons-only palette's blank group rows
+and the extra toggle row wait on E15, not on a session.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
@@ -104,7 +100,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E15 (slice 0, D190, D192 icons, D193 palette).
+  E11 MAP10 OSM and the UI rows E12–E16 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

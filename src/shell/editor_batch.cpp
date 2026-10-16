@@ -117,7 +117,7 @@ void EditorWindow::startBatch() {
         spec=evaluationSpec(history_.document(),*snapshot,data_);
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
-        showError(e);objects_->setCurrentWidget(problemTable_);return;
+        showError(e);revealObjectPage(problemTable_);return;
     }
     error_->clear();
     const auto total=seeds.size(); // read before the call: the capture below moves `seeds`

@@ -6,6 +6,34 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice c: grouped Objects navigation (D194)
+
+The owner's B16 choice (layout A) is in (`src/shell/editor_tables.cpp`, `editor_workspace.cpp`,
+`editor_window.hpp`, five Problems/Show-in-table jump sites, seven keys per locale).
+- **Task groups:** a combo `editorObjectGroup` as the Objects strip's top-left corner widget shows
+  Network, Control, Demand, Measurement, Results or Problems pages. `editorObjectsDock`,
+  `editorObjectTabs` and all 14 pages keep their names and order; hidden tabs use `setTabVisible`.
+- **One page identity:** the mapping is one table of registered page keys; a page in no group fails
+  construction. The group follows the current page, so every existing `setCurrentWidget` jump
+  (tools, batch, comparison, tests) reveals its group without code at the call site. Problems jumps,
+  Show in table and conflict selection use `revealObjectPage`, which also shows the dock.
+- **Transient:** choosing a group opens its leftmost page; nothing is saved; Reset returns
+  Network/Links; focus mode keeps the group.
+- **Corner width:** the tab widget places the strip from the corner's hint but never resizes the
+  corner, so the Thai combo kept the English width and covered the first tab; the combo's width
+  is now fixed to its hint on every retranslation.
+- **Tests first:** new `object_groups_ui_tests` (six groups and their pages in en/th, a jump to each
+  hidden page from another group and a locale switch on it, tool navigation, failed Run with the dock
+  hidden, focus, Reset, every group at 1360×860 and 1024×768 in both languages, no overlap with the
+  strip); `workspace_ui_tests` checks the batch shows the Results group. Two deliberate breaks
+  (no group sync, no dock reveal) and the overlap each fail the suite.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **150/150** CTest. Canvas after 100 Steps unchanged at 807×394 English and
+471×231 Thai: the selector adds no dock height. No Windows or high-DPI verification.
+[Before](images/ui-palette-after/workspace-en.png) / [after](images/ui-groups-after/workspace-en.png),
+[Demand group, Thai 1024×768](images/ui-groups-after/objects-demand-th.png).
+
 ## 2026-10-16 — UI slice b: palette groups, icons-only view and Simulation toolbar (D193)
 
 The owner's B17 choice is in (`src/shell/editor_palette.cpp`, `editor_workspace.cpp`,
@@ -214,15 +242,6 @@ The first lateral code, NEXT item 1. Storage and compile only; no tick reads the
 
 Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
 ([evidence](evidence/lateral-codec.md)).
-
-## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
-
-Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
-had an empty FIFO that was filled with `{0, free}`, so a driver braking at its maximum coasted
-for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now applies the
-tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
-still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
-assignments in its fixture). Linux headless `check` passed.
 
 ## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
 

@@ -90,7 +90,7 @@ bool EditorWindow::prepareRun() {
         error_->clear();return true;
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
-        showError(e);objects_->setCurrentWidget(problemTable_);return false;
+        showError(e);revealObjectPage(problemTable_);return false;
     }
 }
 void EditorWindow::toggleRun(){

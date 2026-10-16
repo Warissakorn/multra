@@ -113,6 +113,9 @@ behaviour remains. No new remembered preference or independent Edit/Run state va
 
 ## Slice c — grouped Objects navigation
 
+Done as [D194](../decisions/RECORD.md#d194) on 2026-10-16: layout A with the group combo as the
+page strip's corner widget, so it adds no dock height; the group follows the current page.
+
 **Depends:** green slice 0 and owner's B16 choice. Implement A unless the owner selects B;
 B first needs a concrete objectName/saveState compatibility design.
 **Files for A:** editor_workspace.cpp, editor_tables.cpp, editor_window.hpp, page show helpers

@@ -194,7 +194,7 @@ void EditorWindow::refreshDemand() {
 void EditorWindow::selectDemand(const std::string& id) {
     for(auto* table:{routeTable_,inputTable_,programTable_,decisionTable_})
         for(int r=0;r<table->rowCount();++r)if(table->item(r,0)->data(Qt::UserRole).toString().toStdString()==id) {
-            objects_->setCurrentWidget(objectPages_.at(table->objectName().toStdString()));table->selectRow(r);return;
+            revealObjectPage(objectPages_.at(table->objectName().toStdString()));table->selectRow(r);return;
         }
 }
 void EditorWindow::deleteDemand(const std::string& kind,const std::string& id) {

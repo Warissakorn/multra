@@ -2,6 +2,15 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
+
+Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
+had an empty FIFO that was filled with `{0, free}`, so a driver braking at its maximum coasted
+for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now applies the
+tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
+still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
+assignments in its fixture). Linux headless `check` passed.
+
 ## 2026-10-15 — M3.5 slice 4: reaction-time action delay (D184)
 
 Own motion now acts on a per-vehicle FIFO of earlier decisions, with d rounded from

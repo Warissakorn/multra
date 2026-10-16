@@ -220,7 +220,7 @@ bool EditorWindow::selectConflict(const std::string& id) {
         if(conflictGroupContains(g,area)){area=g.key;break;}
     for (int r = 0; r < conflictTable_->rowCount(); ++r)
         if (conflictTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == area) {
-            objects_->setCurrentWidget(objectPages_.at("editorConflictTable")); conflictTable_->selectRow(r); return true;
+            revealObjectPage(objectPages_.at("editorConflictTable")); conflictTable_->selectRow(r); return true;
         }
     return false;
 }
