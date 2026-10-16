@@ -17,9 +17,7 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the run view draws lane centre + `lateral`, and a lateral crossing (flagged in `LaneChangeTrace`)
   is never slid. Only tests set a lateral target, so no product run moves sideways; BA39 holds.
   M3.7's gate stays open (ROADMAP).
-- **Unmerged, stacked:** `claude/m3.7-slice-3b-zones` (D202) → `claude/m3.7-slice-4-display` (D203) →
-  `claude/m3.4-lane-change-duration` (D204, contract only).
-  Merge or rebase them onto main first if the owner has merged either.
+- D202–D204 are on main (PR #173, merged 2026-10-16 with `windows-desktop` red, owner's call).
 - The UI presentation slices a–e2 (D192–D200) and the sitting triage (D201) are on main. E13–E21
   wait on the owner, not a session.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
@@ -29,6 +27,17 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - M3.5 is implemented through BA38 (D181–D186).
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
+
+## First: main's `windows-desktop` job is red (since PR #170)
+
+Hard rule 7. Four UI tests fail on Windows only (Qt 6.5.3, MSVC), Linux passes them:
+- `canvas-lod-ui`: "A rotated view decides the markings differently" (D200; the rotated view at
+  exactly 3 px per lane counts different markings, likely a rounding of the rotation-safe
+  `viewScale()` at the threshold, `canvasStyle::laneMarkingsReadable`).
+- `properties-layout-ui` at 1×, 1.5× and 2×: "editorConnectorObject at 144, column at 147 /
+  Properties fields do not share one column" (D195; one field starts 3 px right of the others).
+Root-cause from the Windows CI log and its uploaded screenshots (artifact
+`editor-interaction-windows`); never relax or skip the tests. Then continue below.
 
 ## Next session — M3.4 lane-change duration, slice 1 (rows first)
 
