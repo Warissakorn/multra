@@ -40,6 +40,9 @@ int main(int argc, char** argv) {
         EditorWindow w{data}; w.resize(1400, 900); w.show(); QTest::qWait(30);
         w.openFile(QString::fromStdString((data / "projects/m2.6-study-template.traffic.json").string()));
         auto* c = w.canvas(); auto* toggle = w.findChild<QAction*>("editorToggleWireframe");
+        // The template's fit zoom is under 3 px per lane, where D200 draws no markings; this suite
+        // compares the full display with Ctrl+A, so it looks at 4 px/m.
+        c->setTransform(QTransform::fromScale(4, -4)); c->redraw();
         require(toggle && toggle->isCheckable() && !toggle->isChecked(), "No unchecked wireframe action");
         const auto& network = w.history().document().network;
         require(count(*c, "road-surface") > 0 && count(*c, "road-marking") > 0 && count(*c, "centre-line") == 0,

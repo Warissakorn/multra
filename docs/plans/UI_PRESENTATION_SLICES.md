@@ -206,6 +206,8 @@ hit paths, crossbars and snapshots unchanged; no new signal logic.
 
 ## Slice e2 — measured LOD refinement
 
+Done as [D200](../decisions/RECORD.md#d200) on 2026-10-16.
+
 **Files:** canvas.cpp, canvas_run.cpp, relevant canvas overlay files and tests; reuse existing
 viewScale/grid helpers. Read D28 before any cache proposal.
 **Tests first:** threshold-boundary rendering at <3/3 px lane width and <14/14 px vehicle

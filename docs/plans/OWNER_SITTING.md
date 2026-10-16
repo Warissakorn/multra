@@ -256,6 +256,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    vehicle's edge, and tell red (full bar), amber (thin middle) and green (open middle) apart without
    colour? Click a vehicle in the Lab: is it still picked where it was? The casing costs about 9–16 %
    of Debug paint time on Linux; does a Windows run feel slower? *Owner:*
+21. **D200 lane markings at overview zoom** (listed 2026-10-16). Zoom out until a lane is under 3 px
+   wide: lane lines and Connector edges stop drawing; roads, heads, selection and handles stay.
+   Compare [at 3 px](../images/ui-lod-after/crossing-at-3px.png) and
+   [just under](../images/ui-lod-after/crossing-under-3px.png). Do you miss anything at that zoom?
+   Does zooming out on a large network feel quicker on Windows? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

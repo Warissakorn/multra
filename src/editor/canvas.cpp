@@ -9,6 +9,7 @@
 #include <QScrollBar>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <numbers>
 
 namespace trafficsim {
@@ -143,6 +144,9 @@ void EditorCanvas::redraw() {
         const auto right=trimSelfIntersections(laneBoundaryGeometry(link,link.lanes.size(),document_->network.drivingSide));
         auto surface=path(left);for(auto it=right.rbegin();it!=right.rend();++it)surface.lineTo(q(*it));surface.closeSubpath();
         scene_.addPath(surface,QPen(Qt::NoPen),QBrush(colour))->setZValue(z+1);
+        double narrowest=std::numeric_limits<double>::infinity();
+        for(const auto& lane:link.lanes)narrowest=std::min(narrowest,lane.width);
+        if(canvasStyle::laneMarkingsReadable(narrowest,viewScale()))
         for(const auto& marking:markingStrokes(linkMarkings(link,document_->network.drivingSide))) {
             const auto pen=canvasStyle::markingPen(QColor(QString::fromStdString(appearance.laneColor)),marking.type);
             auto* mark=scene_.addPath(path(marking.geometry),pen);

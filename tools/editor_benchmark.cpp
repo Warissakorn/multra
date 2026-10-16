@@ -49,7 +49,8 @@ int main(int argc, char** argv) {
     const auto& network = document.network;
     std::cout << intersections << " intersections: " << network.links.size() << " links, "
               << network.connectors.size() << " connectors, " << network.signalHeads.size()
-              << " signal heads, " << frames << " repetitions\n";
+              << " signal heads, " << frames << " repetitions, view "
+              << canvas.viewScale() << " px/m (D200 drops lane markings under 3 px per lane)\n";
     // The pointer sits over the middle of the corridor, which is where a hover redraw happens.
     const Point pointer{200. * (intersections / 2) + 45, 0};
     row("redraw (whole scene)", millis([&] { canvas.redraw(); }, frames));

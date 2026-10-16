@@ -6,6 +6,28 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice e2: measured LOD (D200)
+
+The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
+- **Rule:** below 3 logical px per lane (narrowest lane × `viewScale()`), Link lane markings,
+  Connector edges/dividers and mouth edges are not drawn. They are 0.10 m strokes, under a tenth
+  of a pixel there. Nothing else is hidden; hits read model geometry, so picking is unchanged.
+- **Vehicles:** the 4×2.5 px floor and 14 px windshield/cab rule (D97) were already in; the new
+  tests pin both (mutating 14→13 or 2.5→2.0 fails them).
+- **Tests first:** new `canvas_lod_ui_tests` (crossing fixture at 3 px per lane and just under:
+  markings present/absent; every other tag count equal; selected Link keeps outline, arrows and
+  grips; hits equal; Ctrl+A equal either side; rotated and flipped views decide alike; vehicle
+  boundary rows). It failed before the change with “Lane markings drawn below 3 px per lane”.
+  `wireframe_ui_tests` now views the M2.6 template at 4 px/m: its fit zoom is under 3 px per lane.
+- **Measured** (Debug offscreen, three runs each): `trafficsim-editor-benchmark` at 0.08 px/m,
+  whole-scene redraw 6.6–8.1 → 3.0–4.2 ms, wireframe (untouched) 3.9–5.5 → 4.1–5.4 ms. The run-view
+  benchmark sits at 3.1 px per lane, above the threshold: no claim. Both tools now print their
+  px/m.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **159/159** CTest. No Windows or high-DPI verification.
+[At 3 px](images/ui-lod-after/crossing-at-3px.png), [just under](images/ui-lod-after/crossing-under-3px.png).
+
 ## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
 
 Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,
@@ -273,34 +295,6 @@ blue underline for the active tool and to remove the conflict-key, panel and run
 
 Linux Qt 6.4 offscreen: desktop build, CTest **148/148**, target `check` passed. Windows and
 100/150/200 % visual review is OWNER_SITTING E13.
-
-## 2026-10-15 — UI phase 1 and stable-tab slice 0
-
-Owner requested the UI audit/spec/slice plan, then accepted the recommendation: “ทำตามแนะนำ”.
-B16=A (group navigation within the existing Objects dock), B17=five tool groups; B18 logic/state
-features stay separate and deferred. [Audit](audits/UI_PRESENTATION_AUDIT.md),
-[proposal](plans/UI_PRESENTATION_SPEC.md), [slices](plans/UI_PRESENTATION_SLICES.md).
-
-- Counted 14 Objects pages and four Results pages from construction/translation code; found
-  identical Connector/Route and Rotate/Reset glyphs. Designs include both window sizes,
-  typography, monochrome shapes, HUD/LOD and Properties/table recipes, with no theme work.
-- Slice 0 registers each actual page widget against its existing translation key. Translations,
-  Show in table, Problems/error jumps, active-conflict checks, Signal-head toolbar visibility
-  and batch Results selection no longer depend on presentation positions. Updated page tests
-  resolve the actual containing widget; all tool mode/chord values and page order stay intact.
-- Failure-first: the new workspace fixture proves its tab move succeeded, then the old code
-  fails with “Reordered object page translated by position”. It checks both languages, all 18
-  page labels, tool navigation, toolbar visibility, failed Run/batch and batch page selection.
-  A separate window keeps this stress fixture from changing the original layout baseline.
-- No new D-row: no visible behaviour/token change in slice 0. The approved layout/glyph changes
-  belong to later sessions. OWNER_SITTING E12 retains Windows visual review; NEXT is slice a.
-
-Linux Qt offscreen: desktop build, CTest **148/148**, and target `check` (including **148/148**)
-pass. Before/after English, Thai and focus PNGs are byte-identical; audit §8 records the
-existing Thai post-Step 248 px viewport limitation. The prepared
-cloud toolchain uses verified Debian packages outside the checkout, the bundled font through
-local fontconfig (system same-family fonts otherwise override its tabular digits), and writable
-Qt test storage. No core/model/commands/schema, translations, tokens or numerical output changed.
 
 ## Older entries
 

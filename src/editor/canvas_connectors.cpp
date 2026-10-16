@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace trafficsim {
@@ -138,6 +139,12 @@ void EditorCanvas::drawConnectors() {
         surface.setFillRule(Qt::WindingFill);
         auto* road=scene_.addPath(surface,QPen(Qt::NoPen),QBrush(colour));road->setZValue(z+4);
         road->setData(0,QStringLiteral("road-surface"));road->setData(1,QString::fromStdString(c.id));
+        // D200: the narrowest lane the Connector carries at either end decides its markings.
+        double narrowest=std::numeric_limits<double>::infinity();
+        const auto widths=connectorLaneWidths(document_->network,preview);
+        for(const auto* end:{&widths.source,&widths.target})for(double w:*end)if(w>0)narrowest=std::min(narrowest,w);
+        const bool readable=canvasStyle::laneMarkingsReadable(narrowest,viewScale());
+        if(readable)
         for(const auto& marking:markingStrokes(drawing.markings)) {
             // An outer edge is solid; an interior divider draws its own type.
             const QColor markingColour=marking.edge?boundaryColour:
@@ -148,7 +155,7 @@ void EditorCanvas::drawConnectors() {
             item->setData(2,marking.edge?QStringLiteral("edge"):QStringLiteral("divider"));
         }
         const auto mouthEdge=[&](const std::optional<ConnectorMouth>& mouth,const char* end) {
-            if(!mouth)return;
+            if(!mouth || !readable)return;
             auto* item=scene_.addPath(path({mouth->points[2],mouth->points[3]}),
                 canvasStyle::markingPen(boundaryColour,MarkingType::solid));
             item->setZValue(z+4.5);item->setData(0,QStringLiteral("connector-mouth-edge"));

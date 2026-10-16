@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
     w.openFile(QString::fromLocal8Bit(argv[1])); QTest::qWait(50);
     auto* step = w.findChild<QAction*>("editorStep");
     if (!step) { std::cerr << "no editorStep action\n"; return 1; }
+    std::cout << "view " << w.canvas()->viewScale() << " px/m (D200 drops lane markings under 3 px per lane)\n";
     using clock = std::chrono::steady_clock;
     const auto ms = [](clock::duration d) { return std::chrono::duration<double, std::milli>(d).count(); };
     std::cout << std::setw(8) << "steps" << std::setw(10) << "vehicles" << std::setw(14) << "action ms"
