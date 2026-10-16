@@ -39,6 +39,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [perception-discharge.md](perception-discharge.md) | M3.5 slice 5 — BA38 reaction-time discharge, raw-input manifests, paired seed/lane evidence — 2026-10-15 | D185, D184 |
 | [perception-delay.md](perception-delay.md) | M3.5 slice 4 — reaction-time FIFO, safety, replay and performance — 2026-10-15 | D184, D179 |
 | [perception-lane.md](perception-lane.md) | M3.5 slice 3: look-back, rear TTC and perceived lane-change evidence — 2026-10-15 | D183 |
+| [lateral-display.md](lateral-display.md) | M3.7 slice 4: lateral display evidence — 2026-10-16 | D180, D203 |
 | [lateral-zones.md](lateral-zones.md) | M3.7 slice 3b: zone occupancy by span evidence — 2026-10-16 | D188, D202 |
 | [lateral-motion.md](lateral-motion.md) | M3.7 slice 3a: lateral motion, admission and crossing evidence — 2026-10-15 | D180, D189 |
 | [lateral-spans.md](lateral-spans.md) | M3.7 slice 2: lateral spans and predicates evidence — 2026-10-15 | D180, D188 |

@@ -1,13 +1,13 @@
 # Lateral contract: two-dimensional occupancy (M3.7.0)
 
-Designed 2026-10-15 (D180). **Slices 1–3b are implemented**: the §9 keys (schema 33), the §3
+Designed 2026-10-15 (D180). **Slices 1–4 are implemented**: the §9 keys (schema 33), the §3
 cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)), the §5–§6
 spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), §7's motion, admission
-and crossing (D189, [evidence](../evidence/lateral-motion.md)), and zone occupancy by span (D202,
-[evidence](../evidence/lateral-zones.md)). Only a test sets a lateral target
+and crossing (D189, [evidence](../evidence/lateral-motion.md)), zone occupancy by span (D202,
+[evidence](../evidence/lateral-zones.md)) and the display (D203, [evidence](../evidence/lateral-display.md)). Only a test sets a lateral target
 yet, so every product run still keeps `lateral` at 0. Rows BA39–BA47 are in
-[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA45 and
-BA47 have automated evidence, BA39 is kept in every slice, and BA46 (display, slice 4) is pending. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
+[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA47 have
+automated evidence and BA39 is kept in every slice. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
 M3.4's lane-change duration, M3.7's lateral behaviour and M3.8's motorcycles.
 [PERCEPTION](PERCEPTION.md) owns what a driver observes, [SIMULATION](SIMULATION.md) owns the tick,
@@ -224,7 +224,7 @@ uncertain.
 | `placeVehicle` (`retune.cpp`), Lab telemetry (`lab_run.cpp`), `dead_end_waits.cpp` | Stay one-dimensional mirrors: a placement next to a straddler is refused, and the two displays do not filter laterally (stated, D188) |
 | D108 source insertion (`simulation.cpp:160`) | A new vehicle starts centred, and its first span is checked in two dimensions |
 | Lateral admission (§7, `moveLaterally`) | After the longitudinal step, in vehicle-id order (D189) |
-| Editor pose (`src/editor/vehicle_pose.hpp`, `src/editor/lane_change_pose.cpp`) | Draws the body at lane centre + `lateral`. Once M3.4 lands, the display slide is replaced by the engine's own lateral path. Display never feeds physics |
+| Editor pose (`src/editor/canvas_run.cpp`, `vehicle_pose.hpp`, `lane_change_pose.cpp`) | Draws the body at lane centre + `lateral`, offset along the left normal of the body's heading (exact on straight lanes). A crossing made by §7's motion is flagged `lateral` in `LaneChangeTrace` and never slid; instantaneous changes keep the D97 slide until M3.4 replaces it with the engine's own lateral path. Display never feeds physics (D203) |
 | Evaluation (queue counters, travel-time sections) | A straddling vehicle counts on its route's lane only (stated) |
 
 ## 11. Performance budget
@@ -243,7 +243,7 @@ One slice per session:
 1. Compile and codec: cross-sections, `drivingSide`, the keys (BA45).
 2. Spans and predicates (BA40–BA42).
 3. Lateral motion and admission (BA43, BA44; 3a, D189), then zone occupancy by span (BA47; 3b, D202).
-4. Display (BA46).
+4. Display (BA46; D203).
 
 BA39 runs in every slice. M3.4's lane-change duration then sets `yT` across the boundary, and its
 changer occupies both lanes through §5.

@@ -106,7 +106,8 @@ void EditorCanvas::drawRunItems() {
         if(track==runAxlePaths_.end())track=runAxlePaths_.try_emplace(key,parts,type,runGeometry_,runEquations_).first;
         auto axlePose=track->second.pose(v.distance,pose->front);
         if(!axlePose)continue;
-        if(!v.laneChangeTrace.empty()) {
+        // D203: a crossing made by lateral motion left the body where it was, so it is never slid.
+        if(!v.laneChangeTrace.empty() && !v.laneChangeTrace.back().lateral) {
             auto changed=runLaneChangePaths_.find(v.id);
             if(changed!=runLaneChangePaths_.end() && !changed->second.matches(v)) {
                 runLaneChangePaths_.erase(changed);changed=runLaneChangePaths_.end();
@@ -116,7 +117,10 @@ void EditorCanvas::drawRunItems() {
             axlePose=changed->second.pose(v);
             if(!axlePose)continue;
         }
-        const Point at=axlePose->front,heading=axlePose->heading;
+        const Point heading=axlePose->heading;
+        // LATERAL §10 (D203): lane centre + lateral, to the left of the body's heading. Display only.
+        const double across=v.lateral/std::hypot(heading.x,heading.y);
+        const Point at{axlePose->front.x-across*heading.y,axlePose->front.y+across*heading.x};
         const auto colour=display_.vehicleColors.find(type.id);
         const auto axles=vehicleAxles(type);const double lever=axles.wheelbase+axles.frontOverhang;
         // Rear axle is local origin; even a minimum-size symbol keeps its nose at

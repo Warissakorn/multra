@@ -11,10 +11,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- **M3.7 slice 3b is done (D202,** [evidence](evidence/lateral-zones.md), BA47): with the switch
-  on, a straddler's other-lane span blocks, is anticipated by, holds and sweeps that lane's zones.
-  The straddler itself is not held at the other lane's zone (stated limit, D202). Only tests set a
-  lateral target, so no product run moves sideways; BA39 holds (CLI pin, Release CLI byte-identical).
+- **M3.7.0's four slices are in.** Slice 3b (D202, [evidence](evidence/lateral-zones.md), BA47): a
+  straddler's other-lane span blocks, is anticipated by, holds and sweeps that lane's zones; the
+  straddler itself is not held there. Slice 4 (D203, [evidence](evidence/lateral-display.md), BA46):
+  the run view draws lane centre + `lateral`, and a lateral crossing (flagged in `LaneChangeTrace`)
+  is never slid. Only tests set a lateral target, so no product run moves sideways; BA39 holds.
+  M3.7's gate stays open (ROADMAP).
+- **Unmerged, stacked:** `claude/m3.7-slice-3b-zones` (D202) → `claude/m3.7-slice-4-display` (D203).
+  Merge or rebase them onto main first if the owner has merged either.
 - The UI presentation slices a–e2 (D192–D200) and the sitting triage (D201) are on main. E13–E21
   wait on the owner, not a session.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
@@ -22,25 +26,27 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
   entry); if it fails again, capture its output before re-running.
 - M3.5 is implemented through BA38 (D181–D186).
-- Local evidence is Linux (headless for D202; offscreen Qt 6.4.2 for the UI slices); no Windows or
-  high-DPI verification is claimed.
+- Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M3.7 slice 4: display (BA46)
+## Next session — the M3.4 lane-change duration contract (no code first)
 
-The owner chose slice 3b from the engine queue on 2026-10-16. A session told only to "continue"
-takes the queue's next item below; if the owner names another item, that comes first.
-1. **Slice 4, display** ([LATERAL](reference/LATERAL.md) §10 editor-pose row, BA46 in
-   [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md)): the run view draws a body at lane centre +
-   `lateral` on both driving sides (`src/editor/vehicle_pose.hpp`, `lane_change_pose.cpp`). Write
-   BA46 first: a test-set `lateral` ≠ 0 on a left- and a right-hand network, drawn offset by exactly
-   that amount, and display never feeding physics. Read `src/editor/README.md` and D97/D199 first.
-   Qt is needed: install `qt6-base-dev libproj-dev nlohmann-json3-dev` (BUILDING) and build `desktop`.
-2. Then **M3.4 lane-change duration**, the first product writer of `lateralTarget`: its contract
-   decides whether the straddler must be held at the other lane's zone (D202's failure condition),
-   and re-runs LATERAL §11 with real targets.
-3. After that, the review's §5 order: M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
-   motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
+The owner chose the engine queue on 2026-10-16. A session told only to "continue" takes the next
+item below; if the owner names another item, that comes first.
+1. **Write the contract before any code** (ROADMAP M3.4, review §3 F–G, LATERAL §5/§7/§12): a lane
+   change becomes a lateral move with a duration — the first product writer of `lateralTarget`.
+   It must decide, with failure-first rows (next free row numbers in DRIVING_BEHAVIOUR §3):
+   - when a change sets `lateralTarget` to the target lane's centre and what replaces today's
+     instantaneous `decideLaneChanges` admission (the §7 admission and crossing already exist);
+   - whether a straddler must be held at the other lane's zone (D202's failure condition) and, if
+     so, the mapped incidence it needs;
+   - whether the D97 display slide is removed once changes are lateral (D203's failure condition);
+   - which behaviour keys it adds (data, never code defaults; D178 rule for presets), and what the
+     prototype baselines do (they change only by a recorded decision).
+   Then re-run LATERAL §11 with real targets in the implementing slice.
+2. Smaller M3.4 parts that need neither M3.5 nor M3.7 stay in the deferred list (item 3).
+3. After M3.4's duration: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving
+   side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
@@ -50,8 +56,8 @@ a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
 The owner-directed alternatives below stay queued, not cancelled; take one only at the owner's
 direction. ROADMAP retains every gate.
 
-1. **M3.7 after slice 3b:** slice 4 and M3.4 are the next session's items above. The hand mirrors
-   (`placeVehicle`, Lab telemetry, `dead_end_waits.cpp`) stay one-dimensional (LATERAL §10).
+1. **M3.7 hand mirrors:** `placeVehicle`, Lab telemetry and `dead_end_waits.cpp` stay
+   one-dimensional (LATERAL §10) until a product run moves sideways.
 2. **Multi-level S0: the Node contract** (D175; ask the owner B12's Thai sources when S1 starts, D201). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its

@@ -6,6 +6,21 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — M3.7 slice 4: lateral display (D203)
+
+NEXT's next item after slice 3b. `src/editor/canvas_run.cpp`, `src/core/types.hpp`, `lateral_motion.cpp`.
+- **Drawing:** a run body sits at lane centre + `lateral`, the front shifted along the left normal of
+  its heading. Left of travel is the engine's convention, so left- and right-hand networks need no
+  case. `lateral = 0` draws exactly as before.
+- **Found while reading:** a crossing made by lateral motion records a `LaneChangeTrace`, and the D97
+  slide would have drawn the body about a lane away from where the engine keeps it. The entry is now
+  flagged `lateral` (display only, no tick reads it) and such crossings are not slid.
+- `types.hpp` stays at 500 lines (the field shares its line). The M3.7.0 contract's four slices are
+  all in; the gate stays open (ROADMAP).
+
+Checked on Linux offscreen: `ctest --preset desktop` 161/161, `check` green, CLI pin unchanged and the
+Release CLI output byte-identical to main. No Windows or high-DPI run.
+
 ## 2026-10-16 — M3.7 slice 3b: zone occupancy by span (D202)
 
 The owner chose the head of the engine queue. `src/core/conflicts.*`, `lateral.*`, `lateral_types.hpp`.
@@ -258,6 +273,7 @@ file sizes, docs and **149/149** CTest. Workspace canvas 807×391 (English) and 
 100 Steps) before and after; the audit's 475×248 came from another font setup. No Windows or
 high-DPI verification. [Before](images/ui-icons-before/contact-sheet.png) /
 [after](images/ui-icons-after/contact-sheet.png).
+
 ## 2026-10-16 — Parallel tests, cheaper hit-testing, vcpkg cache (no decision)
 
 An /optimize pass over engine, editor, build/CI and docs (Linux, GCC 13.3, Qt 6.4 offscreen; no

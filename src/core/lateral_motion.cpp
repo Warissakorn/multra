@@ -99,6 +99,7 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         vehicle.lateral += shift; *vehicle.lateralTarget += shift;
         const auto route = static_cast<std::uint32_t>(crossing->change->target);
         recordLaneChange(s, vehicle, route, mappedOnto(*crossing->change, front), tick, time, events);
+        vehicle.laneChangeTrace.back().lateral = true; // D203: the body never left its place, so no display slide
         // The tick's MovedEvent reports where the vehicle ends the tick: on its new lane.
         for (auto e = events.rbegin(); e != events.rend(); ++e)
             if (auto* m = std::get_if<MovedEvent>(&*e); m && m->vehicleId == vehicle.id && m->time == time) {
