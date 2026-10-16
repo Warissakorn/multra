@@ -158,7 +158,7 @@ void EditorCanvas::drawConnectors() {
         // The rails run from the source end to the target end, so they carry the direction.
         std::vector<std::vector<Point>> edges;
         if(drawing.boundaries.size()>=2)edges={drawing.boundaries.front(),drawing.boundaries.back()};
-        drawObjectFeedback(c.id,drawing.outline.empty()?objectShape(c.id):surface,z+4.75,edges);
+        drawObjectFeedback(c.id,drawing.outline.empty()?connectorShape(c):surface,z+4.75,edges);
         if(c.id==primary && tool_==Tool::select && selection_.size()==1)
             drawGeometryHandles(c.id,connectorGrips(document_->network,preview),true);
     }

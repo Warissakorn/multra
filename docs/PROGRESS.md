@@ -62,6 +62,29 @@ file sizes, docs and **149/149** CTest. Workspace canvas 807×391 (English) and 
 high-DPI verification. [Before](images/ui-icons-before/contact-sheet.png) /
 [after](images/ui-icons-after/contact-sheet.png).
 
+## 2026-10-16 — Parallel tests, cheaper hit-testing, vcpkg cache (no decision)
+
+An /optimize pass over engine, editor, build/CI and docs (Linux, GCC 13.3, Qt 6.4 offscreen; no
+Windows or real-display verification). Three changes, one commit each:
+
+- **`check` and CI run ctest in parallel.** The test groups were already separate ctest tests so
+  `-j` could spread them, but `check` and every CI ctest step ran serially. `check` now passes
+  the host core count; Windows and packaging steps pass `--parallel 4`. Desktop Debug `check`
+  294 → 74 s; 7/7 parallel runs green; Windows desktop ctest 1m20 → 0m40 in CI. The sanitizer step is
+  noisy on CI (8m12 serial, 9m39 parallel, 13m18 serial in runs 554–556) but scaled 952 → 254 s
+  locally, so it runs in parallel too; `TRAFFICSIM_TEST_JOBS` overrides the job count.
+- **`hitObjects` rejects misses by padded bounds** and takes shapes from `linkShape` /
+  `connectorShape` instead of an id scan per object (it was quadratic), computing distance for hits
+  only. Release editor benchmark, 200 intersections: 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms.
+  Band selection uses the same helpers. A connector whose paths cannot be built now throws only
+  when it is hit.
+- **windows-desktop caches vcpkg binaries** (`.vcpkg-cache`): proj was rebuilt from source,
+  5m11s of every run; with the cache it takes 24 s and the
+  whole windows-desktop job about 3 min (run 556).
+
+Looked at and left: the engine (no `stepSimulation` child above 9 %, noise ±7 %), the Run view
+(already batches Steps per frame), docs (the audit's broken references were false positives).
+
 ## 2026-10-15 — Six audit correctness fixes from main (D191)
 
 The owner authorized fixes from main after the repository review; this branch starts at
@@ -202,23 +225,6 @@ for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now
 tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
 still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
 assignments in its fixture). Linux headless `check` passed.
-
-## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
-
-A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
-reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
-controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
-and 32 ticks of copied-state replay, including live histories in positive-delay copies.
-- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
-  provenance are retained; summaries weight seeds equally and report changing availability.
-- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
-  startup estimates remain signed. These responses are recorded, not tuned or validated.
-- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
-  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
-
-Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
-  CLI help/output protection and all existing perception/safety/reference regressions.
-[Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
 
 ## Older entries
 

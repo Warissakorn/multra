@@ -268,6 +268,8 @@ private:
     const ConnectorSurface& cachedSurface(const Connector&) const;
     void drawCopyPreview();
     QPainterPath objectShape(const std::string&) const;
+    QPainterPath linkShape(const Link&) const;
+    QPainterPath connectorShape(const Connector&) const;
     std::optional<std::pair<Point,int>> headPosition(const NetworkSignalHead&) const;
     struct HeadGeometry { std::vector<Point> points; double width{}; int level{}; std::optional<ConnectorEquation> equation{}; };
     std::optional<HeadGeometry> headGeometry(const NetworkSignalHead&) const;

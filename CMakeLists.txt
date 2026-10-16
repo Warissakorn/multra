@@ -183,11 +183,21 @@ add_executable(trafficsim-check-docs tools/check_docs.cpp)
 target_link_libraries(trafficsim-check-architecture PRIVATE trafficsim_options)
 target_link_libraries(trafficsim-check-file-sizes PRIVATE trafficsim_options)
 target_link_libraries(trafficsim-check-docs PRIVATE trafficsim_options)
+# ctest runs in parallel: the test groups below are separate ctest tests so that `-j` spreads
+# them. Serial, the Debug desktop suite took 253 s; with 4 jobs 68 s (Linux, 2026-10-16).
+# Sanitizer timing on hosted CI is too noisy to judge from one run: its check step took 8m12
+# serial, 9m39 parallel and 13m18 serial (runs 554-556); locally it scaled 952 -> 254 s at 4 jobs.
+include(ProcessorCount)
+ProcessorCount(TRAFFICSIM_DETECTED_JOBS)
+if(TRAFFICSIM_DETECTED_JOBS EQUAL 0)
+    set(TRAFFICSIM_DETECTED_JOBS 2)
+endif()
+set(TRAFFICSIM_TEST_JOBS "${TRAFFICSIM_DETECTED_JOBS}" CACHE STRING "ctest jobs for the check target")
 add_custom_target(check
     COMMAND $<TARGET_FILE:trafficsim-check-architecture> "${PROJECT_SOURCE_DIR}"
     COMMAND $<TARGET_FILE:trafficsim-check-file-sizes> "${PROJECT_SOURCE_DIR}"
     COMMAND $<TARGET_FILE:trafficsim-check-docs> "${PROJECT_SOURCE_DIR}"
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${TRAFFICSIM_TEST_JOBS} -C $<CONFIG>
     DEPENDS trafficsim-cli trafficsim-check-architecture trafficsim-check-file-sizes trafficsim-check-docs
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
