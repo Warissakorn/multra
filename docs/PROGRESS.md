@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Swapping pair at shared dead ends: the rear one yields (D207)
+
+NEXT's item, found by D206's runs. Two stubs side by side, each needing the other's lane, were each
+alongside the other's target place, so neither ever changed and both approaches jammed
+(lane-change-lab seed 44, switch off too). The owner chose the rule from three: **the rear one
+yields** (level: the higher id). It holds back behind the front one's target place at comfortable
+deceleration, and the existing rules then let both change. `src/core/lanes.cpp` (`yieldMutual` in
+`courtesyHolds`); `CourtesyHold::cap` carries each hold's braking limit, so `simulation.cpp` keeps 500
+lines. Rows in `tests/lane_swap_tests.cpp` failed first ([evidence](evidence/lane-swap.md)).
+
+Every lab stall is gone with the switch off and on. Shipped four-leg and M2.6 outputs move slightly
+(≤ 0.2 s mean delay), because such pairs form there too; the CLI pin is byte-identical. `check`
+163/163, Linux only.
+
 ## 2026-10-16 — M3.4 slice 1: lane-change duration (D206)
 
 NEXT's item. `src/core/lanes.*`, `lateral_motion.cpp`, one line of `simulation.cpp`. With the lateral
@@ -182,32 +196,6 @@ Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` p
 file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
 or high-DPI verification. [HUD with a rotated georeference](images/ui-hud-after/hud-rotated.png),
 [Thai 1024 workspace](images/ui-hud-after/workspace-th.png).
-
-## 2026-10-16 — UI slice d2: table and numeric presentation (D196)
-
-Every table now reads alike (`editor_style.cpp/.hpp`, `editor_interaction.cpp`, `editor_workspace.cpp`,
-`od_lot_dialogs.cpp` and the figure cells of Results, batch, comparison, Links, routes, inputs,
-conflicts and the Lab axis).
-- **Recipe at polish time:** `applyTableRecipe` gives every `QTableView` 24 px rows, alternating rows,
-  no grid and control-height minimum columns when it is polished; before, only tables alive in
-  `buildWorkspace` had it, so dialog tables kept Qt defaults. `editorCustomRows` keeps the OD/lot
-  grids' spin-box rows.
-- **Elided cells:** a cell without its own tooltip shows its full text in the bounded popup when the
-  text is wider than the cell; a cell that fits shows nothing.
-- **Figures:** cell `QString::number(x,'f',d)` calls became `formatValue(x,d)`. The default locale is
-  C, so no byte changes: the CLI report and `--csv` for `four-leg-signalised` (seeds 42–43) are
-  identical before and after, apart from the build-commit stamp.
-- **Tests first:** new `table_presentation_ui_tests` (a table built after startup and the demand
-  catalog dialog's tables carry the recipe; an elided long link name opens the popup, a fitting cell
-  does not; Link, route and movement figures identical in English and Thai and right-aligned). It
-  failed on the late table before the change; removing the elision check fails it too.
-- **Noticed:** `map-ui` failed once in the first parallel `check` ("libpng error: Not a PNG file"
-  among its output, no failure line captured); it passed alone, in a second full parallel run and
-  5/5 times under concurrent load. The bounded popup is taller than two lines need (D151 sizing).
-
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` second run passes
-architecture, file sizes, docs and **154/154** CTest. No Windows or high-DPI verification.
-[Dialog table](images/ui-tables-after/tables-dialog.png), [elided-name popup](images/ui-tables-after/tables-tooltip.png).
 
 ## Older entries
 

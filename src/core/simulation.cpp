@@ -370,7 +370,7 @@ SimState stepSimulation(SimState&& state, double dt) {
                                Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration});
             // Cooperative braking never asks for more than the behaviour's maximum (M3.2.8c).
             if (courtesy[v].moving)
-                held.acceleration = std::max(held.acceleration, -*behaviour.maxDecelerationCooperativeBraking);
+                held.acceleration = std::max(held.acceleration, -courtesy[v].cap);
             if (held.acceleration < following.acceleration) following = held;
         }
         if (const auto delay = reactionTicks(sight, dt)) {

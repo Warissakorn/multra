@@ -19,6 +19,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - **Switched-on cost is owed:** +33 % `lane-change-lab`, +17 % `four-leg-signalised` (Release, seeds
   42–51), above LATERAL §11's 10 %. Nothing a user runs is slower; the cut is due before any shipped
   project or preset carries lateral keys.
+- **D207: a swapping pair of stubs resolves by the rear one yielding** (owner's choice). Shipped
+  four-leg and M2.6 multi-seed outputs moved by ≤ 0.2 s mean delay; the CLI pin is byte-identical.
 - M3.7.0's four slices are in (D202, D203); M3.7's gate stays open (ROADMAP).
 - D205 (main's Windows-only UI reds) is on main; it is confirmed only by a green Windows run.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
@@ -29,22 +31,22 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the lane-swap deadlock at shared dead ends (rows first)
+## Next session — M3.4 mid-change clamps (rows first)
 
-Found by D206's product runs and **present with the switch off** ([evidence](evidence/lane-change-duration.md)
-§ switched-on runs): in `lane-change-lab`, two movements' stubs end at the same station on adjacent lanes,
-each heading for the other's lane. Both heads stand at 598 m of 600 m, each is "alongside" the other's
-target place (`around` in `src/core/lanes.cpp`), neither ever changes and both approaches jam
-(seed 44: 183 vehicles active, switch off). A session told only to "continue" takes it:
-1. A failure-first row on a two-lane stub pair built like `stub()` in
-   `tests/lane_change_duration_tests.cpp` (two dead ends at one station, spans crossing), switch off.
-2. Propose the rule before coding (M3_8_CONTRACT §2 is the contract): e.g. the lower id of a mutual
-   pair changes first into the other's place once its body is the only one alongside, or a swap is
-   accepted as one change of both. Owner-visible behaviour: write it into M3_8_CONTRACT first and
-   record the decision.
-3. Then, still M3.4: the mid-change clamps (two in ten switched-on lab seeds; LANE_CHANGE_DURATION §9)
-   and the switched-on engine round (profile `moveLaterally`'s per-tick refs/spans/buckets rebuild).
-4. After them: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
+D207 resolved the lane-swap deadlock ([evidence](evidence/lane-swap.md)); every lab stall is gone.
+What remains of D206's findings, in order. A session told only to "continue" takes item 1:
+1. **Mid-change clamps** (two in ten switched-on `lane-change-lab` seeds, seed 49; LANE_CHANGE_DURATION
+   §9, [evidence](evidence/lane-change-duration.md)): a faster vehicle on the target lane passes a
+   changer whose body has not reached the line; the changer then crosses 2.9 m behind it, because
+   `moveLaterally` (`src/core/lateral_motion.cpp`) admits a move by 2D overlap only. Write a
+   failure-first row (a slow changer under way, a faster car passing on the target lane), then
+   propose to the owner before coding: refuse a move that would put the body over the line within
+   the follower-safety gap of a leader there (`safeAt`'s forward test, `src/core/lanes.cpp`), versus
+   abandoning the change. It is owner-visible behaviour: contract §4/§9 first, then a decision.
+2. **The switched-on engine round** (+33 % lab, +17 % four-leg): profile `moveLaterally`'s per-tick
+   `resolveRefs`/`occupiedSpans`/`bucketSpans` rebuild; owed before any shipped project carries
+   lateral keys (D206).
+3. After them: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
    motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
@@ -62,7 +64,7 @@ direction. ROADMAP retains every gate.
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
    scope but no longer leads the order.
 3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
-   lane change (the swap deadlock above may land here). Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
+   lane change (D207 resolved swapping pairs only). Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
 4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
    - vehicle turning beyond phase 3 (swept-body clearance rows first)
    - M3.2.8a.1 moving merge anticipation, with the standstill cap (D201)

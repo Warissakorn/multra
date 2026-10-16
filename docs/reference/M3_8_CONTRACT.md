@@ -188,6 +188,18 @@ smallest cooperation rule comes with this slice.
 This is not Vissim's cooperative lane change: it has no deceleration parameter and no look-ahead,
 and a vehicle not yet stopped is not helped. Those are M3.2.8c, below.
 
+**A swapping pair: the rear one yields (owner, D207).** Two stub vehicles side by side, each needing
+the other's lane, each lie alongside the other's target place, so rule 5 refuses both for ever and
+both approaches jam at their dead ends. For a stub vehicle X, a *partner* is a stub vehicle Y lying
+alongside X's target place or less than Y's `standstillDistance` behind it, whose own target route
+runs on the lane X is on (matched by segment: the two may belong to different families). The rear
+one of the pair yields: Y if its front is behind X's mapped front, and on a level pair the higher id.
+Y treats X's target place as a moving obstacle at X's speed (a second obstacle, as above), braking
+no harder than its type's `comfortableDeceleration`. Every tick decides afresh; nothing is stored.
+Once Y is a standstill distance back, rules 1–5, the waiting hold and cooperative braking apply as
+before, and Y changes into the lane X left. It applies with and without the lateral switch (D206),
+and it never waives a safety test.
+
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 
 M3.2.8c step 5 showed that the time M3.2.8b costs is the left-turn dead-end waits

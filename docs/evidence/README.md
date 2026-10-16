@@ -40,6 +40,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [perception-delay.md](perception-delay.md) | M3.5 slice 4 — reaction-time FIFO, safety, replay and performance — 2026-10-15 | D184, D179 |
 | [perception-lane.md](perception-lane.md) | M3.5 slice 3: look-back, rear TTC and perceived lane-change evidence — 2026-10-15 | D183 |
 | [windows-ui-red.md](windows-ui-red.md) | Main's Windows-only UI reds: rounding at the lane threshold, unbreakable Thai label word — 2026-10-16 | D195, D200, D205 |
+| [lane-swap.md](lane-swap.md) | Swapping pair at shared dead ends: the rear one yields — 2026-10-16 | D207 |
 | [lane-change-duration.md](lane-change-duration.md) | M3.4 slice 1: lane-change duration evidence — 2026-10-16 | D204, D206 |
 | [lateral-display.md](lateral-display.md) | M3.7 slice 4: lateral display evidence — 2026-10-16 | D180, D203 |
 | [lateral-zones.md](lateral-zones.md) | M3.7 slice 3b: zone occupancy by span evidence — 2026-10-16 | D188, D202 |

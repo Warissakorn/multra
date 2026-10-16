@@ -2,6 +2,32 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — UI slice d2: table and numeric presentation (D196)
+
+Every table now reads alike (`editor_style.cpp/.hpp`, `editor_interaction.cpp`, `editor_workspace.cpp`,
+`od_lot_dialogs.cpp` and the figure cells of Results, batch, comparison, Links, routes, inputs,
+conflicts and the Lab axis).
+- **Recipe at polish time:** `applyTableRecipe` gives every `QTableView` 24 px rows, alternating rows,
+  no grid and control-height minimum columns when it is polished; before, only tables alive in
+  `buildWorkspace` had it, so dialog tables kept Qt defaults. `editorCustomRows` keeps the OD/lot
+  grids' spin-box rows.
+- **Elided cells:** a cell without its own tooltip shows its full text in the bounded popup when the
+  text is wider than the cell; a cell that fits shows nothing.
+- **Figures:** cell `QString::number(x,'f',d)` calls became `formatValue(x,d)`. The default locale is
+  C, so no byte changes: the CLI report and `--csv` for `four-leg-signalised` (seeds 42–43) are
+  identical before and after, apart from the build-commit stamp.
+- **Tests first:** new `table_presentation_ui_tests` (a table built after startup and the demand
+  catalog dialog's tables carry the recipe; an elided long link name opens the popup, a fitting cell
+  does not; Link, route and movement figures identical in English and Thai and right-aligned). It
+  failed on the late table before the change; removing the elision check fails it too.
+- **Noticed:** `map-ui` failed once in the first parallel `check` ("libpng error: Not a PNG file"
+  among its output, no failure line captured); it passed alone, in a second full parallel run and
+  5/5 times under concurrent load. The bounded popup is taller than two lines need (D151 sizing).
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` second run passes
+architecture, file sizes, docs and **154/154** CTest. No Windows or high-DPI verification.
+[Dialog table](../images/ui-tables-after/tables-dialog.png), [elided-name popup](../images/ui-tables-after/tables-tooltip.png).
+
 ## 2026-10-16 — UI slice d1: Properties presentation (D195)
 
 Properties forms now line up (`editor_interaction.cpp/.hpp`, `editor_inspector.cpp`,

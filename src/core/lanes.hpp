@@ -40,6 +40,7 @@ struct CourtesyHold {
     double gap{std::numeric_limits<double>::infinity()}, speed{};
     bool moving{};
     double acceleration{}; // a moving changer's; 0 for a waiting one (W74.md §2)
+    double cap{};          // a moving hold brakes no harder than this (D90's parameter, or D207's comfortable)
 };
 // Cooperation (contract §2): for each vehicle, the nearest place it holds back from; gap
 // +infinity for none. For a stub vehicle waiting at its dead end, the nearest vehicle behind its
