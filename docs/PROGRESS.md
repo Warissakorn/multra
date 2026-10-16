@@ -6,6 +6,31 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
+
+Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,
+`road_crossbar.cpp/.hpp`, `canvas_map.cpp`, `canvas.hpp`).
+- **Casings:** each run vehicle paints its fill, a 1 px cosmetic edge opposite the fill's tone
+  (`connectorBoundaryColor`) and any followed outline. Painting, not a pen, keeps `shape()` and
+  so every run-vehicle click exactly as before.
+- **Signal shapes:** red is the full bar, amber thins the middle third, green opens it. Hit shape
+  and colours are unchanged; edit-mode dashed bars still mean draft.
+- **Found from the evidence image:** `QGraphicsView` scrolls the viewport's child widgets with the
+  scene, so the HUD (and the map credit and status before it) slid with the content until the 80 ms
+  map timer; `scrollContentsBy` now re-places them at once.
+- **Tests first:** new `run_presentation_ui_tests` (a vehicle the colour of its background still
+  shows an edge ≥ 0.3 luminance, both dark and light; casing leaves `shape()` equal to the bare
+  path; the three cues have distinct ink masks with red the superset and one hit shape; after 300
+  Steps every run vehicle is cased and a click reaches `runVehicleClicked`). Removing the casing or
+  the cue fails it. `canvas_hud_ui_tests` gained a scroll row that failed before the fix.
+- **Cost:** `trafficsim-run-view-benchmark` on the M2.6 template, 600 Steps, Debug offscreen, three
+  runs each: paint 1477–1692 → 1671–2015 ms (≈ +16 %), action 523–571 → 546–622 ms (unchanged code,
+  so ≈ +7 % is noise); ≈ +9 % paint against action. Recorded in D199; not hidden.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **158/158** CTest. No Windows or high-DPI verification.
+[Grayscale run](images/ui-run-after/run-grayscale.png).
+
 ## 2026-10-16 — UI slice e1: canvas HUD (D197)
 
 The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,
@@ -276,22 +301,6 @@ existing Thai post-Step 248 px viewport limitation. The prepared
 cloud toolchain uses verified Debian packages outside the checkout, the bundled font through
 local fontconfig (system same-family fonts otherwise override its tabular digits), and writable
 Qt test storage. No core/model/commands/schema, translations, tokens or numerical output changed.
-
-## 2026-10-15 — M3.7 slice 3a: lateral motion, admission and crossing (D189)
-
-NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zones into slice 3b.
-- **State.** `Vehicle::lateralTarget` is yT, from the lane centre and in `SimState`. Only tests
-  write it until M3.4/M3.7.1, so every product run keeps `lateral` at 0 (BA39).
-- **Motion.** `moveLaterally` (`src/core/lateral_motion.*`) runs after the tick's publish, only
-  switched on. Moves are capped at `maxLateralSpeed·dt`, kept inside the carriageway's edges and,
-  without a covering span, inside the lane. They are admitted in vehicle-id order only without 2D
-  overlap with a published or already-moved body (touching admitted).
-- **Crossing.** A centre past a covered lane line remaps the route through `recordLaneChange`, now
-  shared with the instantaneous change, and re-expresses `lateral` and the target; that tick's
-  MovedEvent names the new lane.
-
-Checked on Linux headless: `check`, CLI seed 42 unchanged, mutation checks
-([evidence](evidence/lateral-motion.md)).
 
 ## Older entries
 

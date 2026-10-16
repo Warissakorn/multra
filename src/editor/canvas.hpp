@@ -169,6 +169,7 @@ protected:
     void leaveEvent(QEvent*) override;
     void drawBackground(QPainter*, const QRectF&) override;
     void drawForeground(QPainter*, const QRectF&) override;
+    void scrollContentsBy(int dx, int dy) override;
     bool focusNextPrevChild(bool) override;
     bool event(QEvent*) override;
 private:

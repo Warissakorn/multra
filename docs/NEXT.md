@@ -11,12 +11,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slice e1's HUD (D197) is in: a 1/2/5 scale bar, px/m and, with a map projection, a north
-  arrow, bottom-right and clear of the map corners. Owner review is OWNER_SITTING E19. The rest of
-  e1 (run vehicle casings, R/A/G shape cue) was carved out as slice e1b.
+- UI slice e1b (D199) is in: run vehicles have a casing painted outside their hit shape, and run
+  signal bars read red/amber/green by shape. Owner review is OWNER_SITTING E20. The owner answered
+  E19's north question (D198): north shows whenever there is a georeference.
 - Stacked, unmerged branches: `claude/ui-slice-c-object-groups` (D194) → `claude/ui-slice-d1-properties`
-  (D195) → `claude/ui-slice-d2-tables` (D196) → `claude/ui-slice-e1-hud` (D197). Slices a (D192) and
-  b (D193) are on main. E14–E19 wait on the owner, not a session.
+  (D195) → `claude/ui-slice-d2-tables` (D196) → `claude/ui-slice-e1-hud` (D197–D199). Slices a (D192)
+  and b (D193) are on main. E14–E20 wait on the owner, not a session.
+- The casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement is
+  still owed if the owner reports slowness.
 - `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
   entry); if it fails again, capture its output before re-running.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
@@ -26,25 +28,28 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice e1b: run vehicle casings and R/A/G shape cue
+## Next session — UI presentation slice e2: measured LOD refinement
 
-Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §e1b, [specification](plans/UI_PRESENTATION_SPEC.md)
-§5 (state distinctions) and the [audit](audits/UI_PRESENTATION_AUDIT.md) §5. Merge or rebase onto
+Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §e2, [specification](plans/UI_PRESENTATION_SPEC.md)
+§5 (the LOD table) and [D28](decisions/RECORD.md#d28) before any cache idea. Merge or rebase onto
 main first if the stacked UI branches have merged by then.
 
-**Do, as one session** (`src/editor/canvas_run.cpp`, `canvas_heads.cpp`, `canvas_style.hpp`,
-`vehicle_shape.cpp` only if a casing path is needed; tests in `design_system_ui_tests.cpp` and the
-run and behaviour-lab suites):
-1. Tests first: run vehicles carry a neutral edge casing readable on a local aerial-like image
-   (never live OSM) and on the plain grid; red, amber and green heads differ in shape or pattern
-   when the canvas is rendered in grayscale; vehicle poses, hit paths, crossbars and snapshots are
-   byte-for-byte unchanged; no new signal logic (the cue derives from the existing phase state).
-2. Run vehicles have no pen today (audit §5); Run signal bars already have a Base casing
-   (z +11.9/+12). Keep the per-level paint order the audit lists.
-3. Accept: new D-row, grayscale and aerial-like images, OWNER_SITTING §E row, full desktop `check`.
+**Do, as one session** (`src/editor/canvas.cpp`, `canvas_run.cpp` and the overlay files the
+thresholds touch; reuse `viewScale()` and the grid helpers in `ui_design_tokens.hpp`):
+1. Tests first, at the threshold boundaries: lane width just under and at 3 px (minor decoration
+   suppressed only below), vehicle length just under and at 14 px (windshield/cab only at or above,
+   minimum body 4×2.5 px kept); selected handles still available; Ctrl+A wireframe drawing and
+   picking unchanged; no head, counter or control hidden; results unaffected. Use object tags and
+   geometry assertions plus screenshots.
+2. Decide what "minor decoration" is from the code before suppressing anything, and write the list
+   into the D-row.
+3. Any performance claim needs before/after `trafficsim-run-view-benchmark` and
+   `trafficsim-editor-benchmark` runs on the same fixture and toolchain (D31). No new cache, spatial
+   index, GPU renderer, snapshot or gesture change.
+4. Accept: new D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
 
-Do not touch the HUD (e1, E19), Objects groups, Properties or tables (E16–E18). After e1b: e2
-(measured LOD refinement), one session.
+After e2 the UI presentation slices are done; the deferred engine queue below resumes only at the
+owner's direction.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
@@ -100,7 +105,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E19 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties, D196 tables, D197 HUD).
+  E11 MAP10 OSM and the UI rows E12–E20 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties, D196 tables, D197 HUD, D199 run casings).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

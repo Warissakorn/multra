@@ -4,6 +4,7 @@
 #include "../src/project/document.hpp"
 #include <QApplication>
 #include <QLabel>
+#include <QScrollBar>
 #include <QStandardPaths>
 #include <QTest>
 #include <cmath>
@@ -75,6 +76,18 @@ int main(int argc,char** argv) {
             require(canvas.viewport()->rect().contains(h->geometry()),"HUD outside the viewport");
             require(!h->geometry().intersects(credit->geometry()),"HUD covers the map credit");
             require(!status->isVisible()||!h->geometry().intersects(status->geometry()),"HUD covers the map status");
+        }
+        // The viewport alone can change size (a scroll bar comes or goes): the HUD follows it.
+        canvas.resize(900,600);settle();
+        canvas.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);settle();
+        require(h->geometry().right()==canvas.viewport()->width()-1-8,"HUD kept a stale viewport width");
+        canvas.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);settle();
+        // Scrolling moves a viewport's child widgets with the content; the HUD and map corners stay put
+        // at once, not after the map timer.
+        {
+            const auto before=h->pos(),creditAt=credit->pos();
+            canvas.horizontalScrollBar()->setValue(canvas.horizontalScrollBar()->value()+150);QApplication::processEvents();
+            require(h->pos()==before&&credit->pos()==creditAt,"Scrolling dragged the corner overlays");
         }
         if(argc>1) {
             canvas.resize(900,600);document.map->reference.rotationDegrees=30;canvas.setDocument(&document);settle();

@@ -251,6 +251,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    unclipped? Linux offscreen evidence does not close this. *Owner:* 2026-10-16, north without a
    map provider: “ควรแสดง” (show it), done as [D198](../decisions/RECORD.md#d198). The other
    questions are open.
+20. **D199 run casings and signal shapes** (listed 2026-10-16). Run a project over a map photo and
+   look at the [grayscale frame](../images/ui-run-after/run-grayscale.png): can you still see every
+   vehicle's edge, and tell red (full bar), amber (thin middle) and green (open middle) apart without
+   colour? Click a vehicle in the Lab: is it still picked where it was? The casing costs about 9–16 %
+   of Debug paint time on Linux; does a Windows run feel slower? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

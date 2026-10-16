@@ -193,6 +193,8 @@ report/defer it to a separate geo task rather than change src/model/core or inve
 
 ## Slice e1b — run vehicle casings and R/A/G shape cue
 
+Done as [D199](../decisions/RECORD.md#d199) on 2026-10-16.
+
 Carved out of e1 on 2026-10-16 (D197), because it is a second system.
 **Files:** canvas_run.cpp, canvas_heads.cpp, vehicle_shape.cpp only if a casing path is needed,
 canvas_style.hpp; design_system_ui_tests.cpp, behaviour-lab and run suites.

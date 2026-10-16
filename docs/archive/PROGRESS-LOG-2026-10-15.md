@@ -2,6 +2,22 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.7 slice 3a: lateral motion, admission and crossing (D189)
+
+NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zones into slice 3b.
+- **State.** `Vehicle::lateralTarget` is yT, from the lane centre and in `SimState`. Only tests
+  write it until M3.4/M3.7.1, so every product run keeps `lateral` at 0 (BA39).
+- **Motion.** `moveLaterally` (`src/core/lateral_motion.*`) runs after the tick's publish, only
+  switched on. Moves are capped at `maxLateralSpeed·dt`, kept inside the carriageway's edges and,
+  without a covering span, inside the lane. They are admitted in vehicle-id order only without 2D
+  overlap with a published or already-moved body (touching admitted).
+- **Crossing.** A centre past a covered lane line remaps the route through `recordLaneChange`, now
+  shared with the instantaneous change, and re-expresses `lateral` and the target; that tick's
+  MovedEvent names the new lane.
+
+Checked on Linux headless: `check`, CLI seed 42 unchanged, mutation checks
+([evidence](../evidence/lateral-motion.md)).
+
 ## 2026-10-15 — M3.7 slice 2: lateral spans and predicates (D188)
 
 NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is unchanged.

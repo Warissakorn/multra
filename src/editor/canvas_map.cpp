@@ -83,6 +83,10 @@ void EditorCanvas::updateHud() {
     hud_->setView(viewScale(),north);
     hud_->place(viewport()->rect(),mapCredit_ && mapCredit_->isVisible()?mapCredit_->geometry():QRect());
 }
+void EditorCanvas::scrollContentsBy(int dx,int dy) {
+    // The view scrolls the viewport's child widgets with the scene; the corner overlays stay put.
+    QGraphicsView::scrollContentsBy(dx,dy);updateMapOverlay();
+}
 void EditorCanvas::drawForeground(QPainter*,const QRectF&) {
     // A transform set without a map update (Lab heading-up frames) still refreshes the HUD, after paint.
     if (hud_ && transform()!=hudTransform_) QTimer::singleShot(0,this,[this]{updateHud();});
