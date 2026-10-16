@@ -1,0 +1,39 @@
+# Main's Windows-only UI reds: evidence — 2026-10-16
+
+Branch `claude/next-windows-ui-red`, on main `a88bf5c` (D205). Local host: Linux, GCC 13.3.0, Ninja,
+Qt 6.4.2, `QT_QPA_PLATFORM=offscreen`, `build/desktop` (Debug). The Windows side is CI's
+`windows-desktop` job (Qt 6.5.3, MSVC 14.44); the fix is **unconfirmed on Windows** until that job
+runs on this branch.
+
+## What failed
+
+Job 116958442326 (run 38896597043, main `a88bf5c`; the same four since `7a44636`, PR #170):
+
+```
+115 - canvas-lod-ui (Failed)            A rotated view decides the markings differently
+122 - properties-layout-ui (Failed)     th: editorConnectorObject at 144, column at 147
+123 - properties-layout-ui-1.5x (Failed) th: editorConnectorObject at 144, column at 147
+124 - properties-layout-ui-2x (Failed)  th: editorConnectorObject at 144, column at 147
+```
+
+## Causes
+
+| Test | Cause | Why Linux passed |
+|---|---|---|
+| `canvas-lod-ui` | At exactly `3/narrowest`, `rotate(37)` gives `viewScale() = hypot(s·cos, s·sin)` an ulp below `s`, and `w·ppm >= 3` was strict | glibc's result rounds to `s` or above |
+| `properties-layout-ui` | Qt on Windows has no libthai, so `editorMedianGap`'s Thai label "ระยะห่างถนนทิศตรงข้าม" is one word of ~123 px. `QWidgetItem` expands a label to its minimum, the row stays beside it, and the Link page's column moved to 147 while the Connector page stayed at 144 (16 + 120 + 8) | Linux breaks the Thai word (its minimum is 24 px) |
+
+## Rows (failure first, forcing asserted first)
+
+| Test | Case | Before the fix | After |
+|---|---|---|---|
+| `canvas-lod-ui` | `at·(1−1e-12)`: the forcing `narrowest·rounded < 3`, then markings readable | "A rounding of the scale hides the markings" | pass |
+| `properties-layout-ui` (1×, 1.5×, 2×) | The Link page's `editorMedianGap` label set to a run of `i` until its minimum is ≥ 123 px (forcing: between 122 and 150 px, row beside its label), then every page's column checked; the language switch restores the text and the column | "unbreakable: editorFromLaneCount at 144, column at 148" (with the clip check lifted locally) and "A Properties label is clipped" (as committed) | pass |
+
+Mutation: reverting `canvas_style.hpp` alone fails the first row; reverting `editor_interaction.*`
+alone fails the second. Both restored.
+
+## Results
+
+`ctest --test-dir build/desktop -R "canvas-lod-ui|properties-layout-ui"` 4/4. Full results are in
+the PROGRESS entry. UI only: no engine, schema or project file changed, so BA39 is untouched.

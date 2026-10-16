@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Main's Windows-only UI reds (D205)
+
+NEXT's first item. The windows-desktop job had failed four UI tests since PR #170, on Windows only. Both
+causes came from the CI log ([evidence](evidence/windows-ui-red.md)):
+- **`canvas-lod-ui`**: with a rotated view, `viewScale()` came out an ulp below exactly 3 px per lane, and
+  the threshold comparison had no margin. `laneMarkingsReadable` now allows a relative 1e-9.
+- **`properties-layout-ui`** (Thai only): Windows Qt cannot break Thai words, so the 123 px word in
+  `editorMedianGap` widened the Link page's column by 3 px and no other page's. The column is now one
+  `FormColumn` shared by every form, widened to such a word when it is under a quarter wider.
+
+Both now reproduce on Linux. Each row failed before its fix and fails again with the fix reverted.
+Checked on Linux offscreen: `check` 161/161, CLI pin byte-identical to main. Windows is confirmed only
+by this branch's CI run.
+
 ## 2026-10-16 — M3.4 lane-change duration contract (D204, docs only)
 
 The owner asked for recommendations on the contract's three open choices and took all three:
