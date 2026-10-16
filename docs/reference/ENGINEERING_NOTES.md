@@ -114,7 +114,8 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   5m54, sanitizer 8m12, headless 3m57 (run 554).
   Parallel on CI (run 555): desktop 1m23, headless 1m55, release 0m28, Windows ctest 0m40, but
   sanitizer 9m39 (ctest 465 → 524 s, each test 3–5× slower). Locally the sanitizer suite scaled
-  952 / 475 / 254 s at 1 / 2 / 4 jobs (peak 4.5 GB), so the cause is unknown; the preset is serial.
+  952 / 475 / 254 s at 1 / 2 / 4 jobs (peak 4.5 GB). A serial rerun (run 556) took 13m18, so the
+  sanitizer step's CI time is runner noise, not parallelism; all presets run in parallel.
 - **Editor hit-testing (2026-10-16, Release, offscreen):** `trafficsim-editor-benchmark 200 20`
   `hitObjects` 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms (median of 3). What is left in
   wireframe is building every centre stroke before the bounds check. `select` stays ≈22 ms at 200

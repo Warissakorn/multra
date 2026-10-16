@@ -14,16 +14,17 @@ Windows or real-display verification). Three changes, one commit each:
 - **`check` and CI run ctest in parallel.** The test groups were already separate ctest tests so
   `-j` could spread them, but `check` and every CI ctest step ran serially. `check` now passes
   the host core count; Windows and packaging steps pass `--parallel 4`. Desktop Debug `check`
-  294 → 74 s; 7/7 parallel runs green; Windows desktop ctest 1m20 → 0m40 in CI. The sanitizer
-  preset stays serial (`TRAFFICSIM_TEST_JOBS=1`): its CI ctest went 465 → 524 s in parallel,
-  though locally it scaled 952 → 254 s; revisit with more CI samples.
+  294 → 74 s; 7/7 parallel runs green; Windows desktop ctest 1m20 → 0m40 in CI. The sanitizer step is
+  noisy on CI (8m12 serial, 9m39 parallel, 13m18 serial in runs 554–556) but scaled 952 → 254 s
+  locally, so it runs in parallel too; `TRAFFICSIM_TEST_JOBS` overrides the job count.
 - **`hitObjects` rejects misses by padded bounds** and takes shapes from `linkShape` /
   `connectorShape` instead of an id scan per object (it was quadratic), computing distance for hits
   only. Release editor benchmark, 200 intersections: 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms.
   Band selection uses the same helpers. A connector whose paths cannot be built now throws only
   when it is hit.
 - **windows-desktop caches vcpkg binaries** (`.vcpkg-cache`): proj was rebuilt from source,
-  5m11s of every run.
+  5m11s of every run; with the cache it takes 24 s and the
+  whole windows-desktop job about 3 min (run 556).
 
 Looked at and left: the engine (no `stepSimulation` child above 9 %, noise ±7 %), the Run view
 (already batches Steps per frame), docs (the audit's broken references were false positives).
