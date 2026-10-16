@@ -173,6 +173,9 @@ IDs misclassified, too many rows of batch tables reducing readability.
 
 ## Slice e1 — overlay readability and HUD
 
+HUD part done as [D197](../decisions/RECORD.md#d197) on 2026-10-16: scale bar, px/m and north from
+the map projection. The casings and R/A/G cue below are slice e1b.
+
 **Files:** src/editor/canvas.hpp, canvas_map.cpp, canvas_run.cpp, canvas_feedback.cpp and a
 small canvas HUD helper if needed; src/shell map/HUD translation binding; both locales;
 workspace_ui_tests.cpp, map_ui_tests.cpp, design_system_ui_tests.cpp and relevant run/gesture
@@ -187,6 +190,17 @@ supported; attribution/validation always present; owner §E review added.
 **Risk:** wrong “north” from projection convergence, m11 scale error under rotation, casings
 obscuring road markings. If north cannot be computed from existing supported interfaces,
 report/defer it to a separate geo task rather than change src/model/core or invent accuracy.
+
+## Slice e1b — run vehicle casings and R/A/G shape cue
+
+Carved out of e1 on 2026-10-16 (D197), because it is a second system.
+**Files:** canvas_run.cpp, canvas_heads.cpp, vehicle_shape.cpp only if a casing path is needed,
+canvas_style.hpp; design_system_ui_tests.cpp, behaviour-lab and run suites.
+**Tests first:** run vehicles carry a neutral edge casing readable on a local aerial-like image and
+on the plain grid; R/A/G heads differ in shape or pattern when rendered in grayscale; vehicle poses,
+hit paths, crossbars and snapshots unchanged; no new signal logic.
+**Accept:** owner §E row with grayscale and aerial-like images; common gates.
+**Risk:** casings hiding lane markings at low zoom; a pattern too small to read at 16 px.
 
 ## Slice e2 — measured LOD refinement
 

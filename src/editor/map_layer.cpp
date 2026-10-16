@@ -99,6 +99,11 @@ void MapLayer::paint(QPainter& painter,const QRectF& exposed) {
     }
     painter.restore();
 }
+std::optional<LonLat> MapLayer::worldToGeographic(MetrePoint p) const {
+    if (!projection_ || !projection_->insideStudy(p)) return {};
+    try {return projection_->worldToGeographic(p);} catch (const std::exception&) {}
+    return {};
+}
 std::optional<MetrePoint> MapLayer::geographicToWorld(LonLat p) const {
     if (!projection_) return {};
     try {const auto world=projection_->geographicToWorld(p);if (projection_->insideStudy(world)) return world;}

@@ -6,6 +6,32 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice e1: canvas HUD (D197)
+
+The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,
+`map_layer.cpp/.hpp`, `editor_map.cpp`, two keys per locale).
+- **Scale and zoom:** a bar of the largest 1/2/5×10ⁿ m that fits 160 px at `viewScale()` (64–160 px:
+  the steps are up to 2.5× apart, so 80–160 cannot always hold) and the zoom in px/m.
+- **North only when the map supplies it:** `MapLayer::worldToGeographic` (new) gives the view centre's
+  latitude; one step north mapped back and through the view transform gives the arrow, so
+  convergence, `rotationDegrees` and Lab heading-up are included. No map projection, no arrow.
+- **Never in the way:** mouse-transparent, bottom-right, above the map credit when they would meet,
+  stacked when narrow. Found while testing: `EditorCanvas::event` placed overlays before the viewport
+  resized, so after a resize the HUD (and credit) sat at the old size until the 80 ms map timer; they
+  are placed after `QGraphicsView::event` now.
+- **Tests first:** new `canvas_hud_ui_tests` (1/2/5 steps and 64–160 px at four zooms under rotation and
+  mirroring; no arrow without a georeference; 0° on the central meridian, ±30° with the rotation, the
+  ≈0.56° convergence at 101.5°E, +40° in a rotated view; `childAt` skips the HUD; clear of credit and
+  status at four sizes), also at 1.5× and 2×. Swapping in grid north fails it. `workspace_ui_tests`
+  checks the HUD inside the viewport at 1360 and 1024 in both languages. `design_system_ui_tests`'
+  empty-grid pixel check now skips the HUD's own rectangle and asserts it is there.
+- **Carved out:** run vehicle casings and an R/A/G shape cue are slice e1b (two systems, AGENTS.md).
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
+or high-DPI verification. [HUD with a rotated georeference](images/ui-hud-after/hud-rotated.png),
+[Thai 1024 workspace](images/ui-hud-after/workspace-th.png).
+
 ## 2026-10-16 — UI slice d2: table and numeric presentation (D196)
 
 Every table now reads alike (`editor_style.cpp/.hpp`, `editor_interaction.cpp`, `editor_workspace.cpp`,
@@ -263,23 +289,6 @@ NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zo
 
 Checked on Linux headless: `check`, CLI seed 42 unchanged, mutation checks
 ([evidence](evidence/lateral-motion.md)).
-
-## 2026-10-15 — M3.7 slice 2: lateral spans and predicates (D188)
-
-NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is unchanged.
-- **State.** `Vehicle` gains `lateral`/`lateralSpeed` (0 until slice 3). `ScenarioIndex` gains a
-  lateral index of each lane section's neighbours on its carriageway.
-- **Spans.** Each span carries the body's band. A body covering another lane by more than
-  `kLateralOverlap` adds a span there, mapped through the Link's reference line, since lane metres
-  differ on a bend. Cross-sections gain reference ends and are required once switched on.
-- **Predicates.** The leader search, PERCEPTION's search and `around` count a span on the
-  follower's carriageway only within its body plus `dLat(v)`. Priority rules see straddlers.
-  Courtesy skips other-lane copies.
-- **Zones deferred (owner, D188).** They read route positions, so §6's "no new code path" was wrong
-  there; slice 3 adds the span scan. LATERAL §5/§6/§10 are corrected.
-
-Checked on Linux headless: `check` 102/102, CLI seed 42 unchanged, mutation checks; switched on,
-the four-leg run costs about 8 % more ([evidence](evidence/lateral-spans.md)).
 
 ## Older entries
 

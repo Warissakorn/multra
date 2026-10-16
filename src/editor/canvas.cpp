@@ -207,13 +207,16 @@ void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     lines(tiers.major,editorDesign::role(QPalette::Mid),false);
 }
 bool EditorCanvas::event(QEvent* e) {
+    // The scroll area lays out its viewport while handling the event, so the corner overlays are
+    // placed afterwards, against the new viewport (D197).
+    const bool handled=QGraphicsView::event(e);
     if (e->type()==QEvent::Resize || e->type()==QEvent::Show) {scheduleMapUpdate();updateMapOverlay();}
 #if QT_VERSION >= QT_VERSION_CHECK(6,6,0)
     // drawBackground() snaps its hairlines to device pixels, so a cache drawn at another
     // pixel ratio would blur them.
     if (e->type()==QEvent::DevicePixelRatioChange) {resetCachedContent();scheduleMapUpdate();}
 #endif
-    return QGraphicsView::event(e);
+    return handled;
 }
 void EditorCanvas::wheelEvent(QWheelEvent* e) {
     clearHover();

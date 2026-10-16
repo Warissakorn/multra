@@ -26,6 +26,8 @@ public:
     ~EditorCanvas() override;
     void setMapProviders(std::vector<MapProvider>);
     void setMapVisible(bool);
+    // Unit formats for the HUD's scale and zoom labels, each with one %1 (D197).
+    void setHudUnits(const QString& metres, const QString& zoom);
     void setMapStatusText(std::function<QString(MapStatus)>);
     bool centerOnGeographic(LonLat);
     void setDisplayCatalog(DisplayCatalog catalog) { display_=std::move(catalog); redraw(); }
@@ -166,12 +168,16 @@ protected:
     void focusOutEvent(QFocusEvent*) override;
     void leaveEvent(QEvent*) override;
     void drawBackground(QPainter*, const QRectF&) override;
+    void drawForeground(QPainter*, const QRectF&) override;
     bool focusNextPrevChild(bool) override;
     bool event(QEvent*) override;
 private:
     std::unique_ptr<MapLayer> mapLayer_;
     QTimer mapViewportTimer_;
     QLabel *mapCredit_{}, *mapStatus_{};
+    class CanvasHud* hud_{};
+    QTransform hudTransform_; // the transform the HUD last showed
+    void updateHud();
     bool mapVisible_{true};
     std::function<QString(MapStatus)> mapStatusText_;
     void initializeMap();

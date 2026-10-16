@@ -216,8 +216,14 @@ void gridIsCrisp() {
     EditorCanvas canvas;canvas.resize(420,300);canvas.show();QApplication::processEvents();
     const auto image=canvas.viewport()->grab().toImage().convertToFormat(QImage::Format_RGB32);
     const QSet<QRgb> allowed{editorDesign::role(QPalette::Base).rgb(),editorDesign::role(QPalette::Midlight).rgb(),editorDesign::role(QPalette::Mid).rgb()};
+    // The HUD (D197) paints its own text over the grid; the grid is judged everywhere else.
+    auto* hud=canvas.viewport()->findChild<QWidget*>("editorCanvasHud");require(hud&&hud->isVisible(),"Canvas HUD missing");
+    const double ratio=image.devicePixelRatio(); // the image is in device pixels
+    const QRectF logical(hud->geometry());
+    const auto hudRect=QRectF(logical.topLeft()*ratio,logical.size()*ratio).toAlignedRect().adjusted(-1,-1,1,1);
     int lines=0;
     for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+        if(hudRect.contains(x,y))continue;
         const auto pixel=image.pixel(x,y)|0xFF000000u;
         require(allowed.contains(pixel),"Blended grid pixel "+QColor(pixel).name().toStdString()+" at "+std::to_string(x)+","+std::to_string(y));
         lines+=pixel!=editorDesign::role(QPalette::Base).rgb();

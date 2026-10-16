@@ -241,6 +241,14 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    the full-text popup ([example](../images/ui-tables-after/tables-tooltip.png)) helpful or in the
    way, and is its height right? At 100/150/200 % on Windows, are figures right-aligned and
    unclipped? Linux offscreen evidence does not close this. *Owner:*
+19. **D197 canvas HUD** (listed 2026-10-16). Look at the bottom-right of the canvas
+   ([rotated georeference](../images/ui-hud-after/hud-rotated.png),
+   [Thai 1024](../images/ui-hud-after/workspace-th.png)). Zoom with the wheel: does the bar keep
+   round 1/2/5 m values and the px/m readout help? With a map background set, does the arrow point
+   to true north, and turn with *rotationDegrees* and the Lab's heading-up? It is hidden without a
+   map provider: is that right, or should a plain georeference show it too? Is bottom-right the
+   right corner, clear of the credit at every size? At 100/150/200 % on Windows, is the text
+   unclipped? Linux offscreen evidence does not close this. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

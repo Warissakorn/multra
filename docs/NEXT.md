@@ -11,12 +11,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slice d2 (D196) is in: every table, dialogs included, gets the 24 px / alternating / no-grid
-  recipe when polished; elided cells show their full text; cell figures go through `formatValue`.
-  Owner review is OWNER_SITTING E18.
-- Slices c (D194, E16) and d1 (D195, E17) precede it on stacked branches:
-  `claude/ui-slice-c-object-groups` → `claude/ui-slice-d1-properties` → `claude/ui-slice-d2-tables`.
-  Slices a (D192, E14) and b (D193, E15) are on main. E14–E18 wait on the owner, not a session.
+- UI slice e1's HUD (D197) is in: a 1/2/5 scale bar, px/m and, with a map projection, a north
+  arrow, bottom-right and clear of the map corners. Owner review is OWNER_SITTING E19. The rest of
+  e1 (run vehicle casings, R/A/G shape cue) was carved out as slice e1b.
+- Stacked, unmerged branches: `claude/ui-slice-c-object-groups` (D194) → `claude/ui-slice-d1-properties`
+  (D195) → `claude/ui-slice-d2-tables` (D196) → `claude/ui-slice-e1-hud` (D197). Slices a (D192) and
+  b (D193) are on main. E14–E19 wait on the owner, not a session.
 - `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
   entry); if it fails again, capture its output before re-running.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
@@ -26,30 +26,25 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice e1: overlay readability and HUD
+## Next session — UI presentation slice e1b: run vehicle casings and R/A/G shape cue
 
-Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §e1, [specification](plans/UI_PRESENTATION_SPEC.md)
-§5 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §5. Merge or rebase onto main first if the
-stacked UI branches have merged by then. Check the actual CMake target and source names before
-changing build registration.
+Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §e1b, [specification](plans/UI_PRESENTATION_SPEC.md)
+§5 (state distinctions) and the [audit](audits/UI_PRESENTATION_AUDIT.md) §5. Merge or rebase onto
+main first if the stacked UI branches have merged by then.
 
-**Do, as one session** (`src/editor/canvas.hpp`, `canvas_map.cpp`, `canvas_run.cpp`,
-`canvas_feedback.cpp` and a small canvas HUD helper if needed; the shell's map/HUD translation
-binding; both locales; tests in `workspace_ui_tests.cpp`, `map_ui_tests.cpp`,
-`design_system_ui_tests.cpp` and the relevant run/gesture suites):
-1. Tests first: the HUD scale follows the inverse view transform, its units and valid/invalid
-   georeference; rotated and negative axes; marker, status and attribution do not overlap at both
-   sizes and languages; the HUD takes no gesture hits. Backgrounds are local images or fake tiles,
-   never live OSM.
-2. Neutral high-contrast casings readable on plain and aerial-like backgrounds; state cues visible in
-   grayscale using the existing R/A/G state only (no new signal logic); signal/vehicle positions and
-   hit paths unchanged; Lab heading-up supported; attribution and the validation marker always present.
-3. If north cannot be computed from existing supported interfaces, report it and defer it to a
-   separate geo task: do not change `src/model`/`src/core` or invent accuracy.
-4. Accept: new D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
+**Do, as one session** (`src/editor/canvas_run.cpp`, `canvas_heads.cpp`, `canvas_style.hpp`,
+`vehicle_shape.cpp` only if a casing path is needed; tests in `design_system_ui_tests.cpp` and the
+run and behaviour-lab suites):
+1. Tests first: run vehicles carry a neutral edge casing readable on a local aerial-like image
+   (never live OSM) and on the plain grid; red, amber and green heads differ in shape or pattern
+   when the canvas is rendered in grayscale; vehicle poses, hit paths, crossbars and snapshots are
+   byte-for-byte unchanged; no new signal logic (the cue derives from the existing phase state).
+2. Run vehicles have no pen today (audit §5); Run signal bars already have a Base casing
+   (z +11.9/+12). Keep the per-level paint order the audit lists.
+3. Accept: new D-row, grayscale and aerial-like images, OWNER_SITTING §E row, full desktop `check`.
 
-Do not touch the Objects groups (c), Properties (d1) or tables (d2), which wait on E16–E18. After
-e1: e2 (measured LOD refinement), one session.
+Do not touch the HUD (e1, E19), Objects groups, Properties or tables (E16–E18). After e1b: e2
+(measured LOD refinement), one session.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
@@ -105,7 +100,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E18 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties, D196 tables).
+  E11 MAP10 OSM and the UI rows E12–E19 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties, D196 tables, D197 HUD).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

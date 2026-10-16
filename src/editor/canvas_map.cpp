@@ -1,5 +1,7 @@
 #include "canvas.hpp"
 #include "map_layer.hpp"
+#include "canvas_hud.hpp"
+#include <QTimer>
 #include <QLabel>
 #include <QScrollBar>
 #include <QStandardPaths>
@@ -18,6 +20,7 @@ void EditorCanvas::initializeMap() {
     mapCredit_->setAutoFillBackground(true);mapCredit_->setMargin(4);mapCredit_->hide();
     mapStatus_=new QLabel(viewport());mapStatus_->setObjectName("editorMapStatus");
     mapStatus_->setAutoFillBackground(true);mapStatus_->setMargin(4);mapStatus_->hide();
+    hud_=new CanvasHud(viewport());
     mapLayer_->changed=[this]{
         resetCachedContent();viewport()->update();updateMapOverlay();
     };
@@ -60,5 +63,28 @@ void EditorCanvas::updateMapOverlay() {
     const auto label=mapStatusText_?mapStatusText_(status):QString();
     mapStatus_->setText(label);mapStatus_->setVisible(status!=MapStatus::disabled && status!=MapStatus::ready && !label.isEmpty());
     mapStatus_->adjustSize();mapStatus_->move(8,8);mapStatus_->raise();
+    updateHud();
+}
+void EditorCanvas::setHudUnits(const QString& metres,const QString& zoom) {
+    if (hud_) {hud_->setUnits(metres,zoom);updateHud();}
+}
+void EditorCanvas::updateHud() {
+    if (!hud_ || !mapLayer_) return;
+    hudTransform_=transform();
+    // True north from the map's own projection: step north from the view centre and see where
+    // that lands on screen. Convergence, the georeference rotation and any view rotation are all in.
+    std::optional<double> north;
+    const auto centre=mapToScene(viewport()->rect().center());
+    if (const auto here=mapLayer_->worldToGeographic({centre.x(),centre.y()}))
+        if (const auto ahead=mapLayer_->geographicToWorld({here->longitude,here->latitude+1e-4})) {
+            const auto d=transform().map(QPointF(ahead->x,ahead->y))-transform().map(centre);
+            if (std::hypot(d.x(),d.y())>1e-9) north=std::atan2(d.x(),-d.y())*180/M_PI;
+        }
+    hud_->setView(viewScale(),north);
+    hud_->place(viewport()->rect(),mapCredit_ && mapCredit_->isVisible()?mapCredit_->geometry():QRect());
+}
+void EditorCanvas::drawForeground(QPainter*,const QRectF&) {
+    // A transform set without a map update (Lab heading-up frames) still refreshes the HUD, after paint.
+    if (hud_ && transform()!=hudTransform_) QTimer::singleShot(0,this,[this]{updateHud();});
 }
 }

@@ -735,6 +735,8 @@
   "editorMapOpacity": "opacity (0–1)",
   "editorMapReferenceHelp": "The geographic reference fixes one point in your drawing to the map. Rotation is relative to UTM grid north. Set it before tracing; existing roads keep their geometry.",
   "editorMapLoading": "Loading map…",
+  "editorHudMetres": "%1 m",
+  "editorHudZoom": "%1 px/m",
   "editorMapNetworkError": "Some map tiles could not load. You can keep editing.",
   "editorMapOutsideStudy": "Map navigation is limited to 100 km from the project reference. Zoom in or return to the reference.",
   "editorMapRenderLimit": "This map view cannot be drawn accurately. Zoom in or return to the reference.",
