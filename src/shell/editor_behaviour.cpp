@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "../editor/ui_design_tokens.hpp"
 #include "behaviour_library_dialog.hpp"
 #include "../commands/behaviour_commands.hpp"
 #include "../commands/demand_commands.hpp"
@@ -46,6 +47,7 @@ std::vector<std::string> EditorWindow::selectedRoads() const {
 }
 void EditorWindow::buildBehaviourInspector(QVBoxLayout* layout) {
     auto* form = new QFormLayout; form->setContentsMargins(0, 0, 0, 0); form->setRowWrapPolicy(QFormLayout::WrapLongRows);
+    form->setHorizontalSpacing(editorDesign::space2); // the shared Properties column (D195)
     layout->addLayout(form);
     behaviourType_ = new QComboBox(this); label(form, "editorBehaviourType", behaviourType_);
     // Every selected Link and Connector at once: the one property edit that acts on the selection.

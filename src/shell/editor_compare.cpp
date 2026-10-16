@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "../editor/ui_design_tokens.hpp"
 #include "editor_batch_cells.hpp"
 #include "editor_storage.hpp"
 #include "../project/batch_output.hpp"
@@ -65,7 +66,7 @@ void EditorWindow::refreshCompare() {
     const auto& c=comparison_->comparison;
     const auto& base=comparison_->base; const auto& alternative=comparison_->alternative;
     const auto& first=base.runs.front().report;
-    const auto figure=[&](const std::optional<double>& v){ return v?QString::number(*v,'f',1):text("empty"); };
+    const auto figure=[&](const std::optional<double>& v){ return v?editorDesign::formatValue(*v,1):text("empty"); };
     // Every argument in one arg() call, so a file name holding "%1" is never substituted again.
     QString note=text("editorCompareNote").arg(QString::number(c.seeds.size()),seedText(c.seeds),
         QString::fromStdString(base.name),QString::fromStdString(alternative.name),
@@ -119,7 +120,7 @@ void EditorWindow::compareWithFile(const QString& file) {
         baseSpec=evaluationSpec(history_.document(),*base,data_);
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
-        showError(e);objects_->setCurrentWidget(problemTable_);return;
+        showError(e);revealObjectPage(problemTable_);return;
     }
     const auto alternativeName=QFileInfo(file).fileName();
     std::optional<RunSnapshot> alternative; std::optional<EvaluationSpec> alternativeSpec;

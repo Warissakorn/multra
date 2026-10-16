@@ -113,6 +113,9 @@ behaviour remains. No new remembered preference or independent Edit/Run state va
 
 ## Slice c — grouped Objects navigation
 
+Done as [D194](../decisions/RECORD.md#d194) on 2026-10-16: layout A with the group combo as the
+page strip's corner widget, so it adds no dock height; the group follows the current page.
+
 **Depends:** green slice 0 and owner's B16 choice. Implement A unless the owner selects B;
 B first needs a concrete objectName/saveState compatibility design.
 **Files for A:** editor_workspace.cpp, editor_tables.cpp, editor_window.hpp, page show helpers
@@ -133,6 +136,10 @@ to shrinking text. No persistent presets or remembered expanded sections.
 
 ## Slice d1 — Properties presentation
 
+Done as [D195](../decisions/RECORD.md#d195) on 2026-10-16: one 120 px label column per group,
+all-rows wrap below two columns, the Apply divider and eyebrow headings. The dialog forms and the
+Lab were not touched.
+
 **Files:** editor_inspector.cpp, editor_connectors.cpp, editor_behaviour.cpp,
 editor_interaction.cpp, editor_style.cpp and actual dialog form builders identified by the
 changed group; both locales; workspace-ui/design-system-ui/editor-workflow-ui and affected
@@ -146,6 +153,9 @@ long labels wrap without forcing window growth; primary-object editing semantics
 helper accidentally changing editingFinished/valueChanged behaviour.
 
 ## Slice d2 — table and numeric presentation
+
+Done as [D196](../decisions/RECORD.md#d196) on 2026-10-16: the recipe at polish time, elided-cell
+popups and figures through `formatValue`; header units and table action separators were not changed.
 
 A separate session from d1 because late dialog tables and Results are a different surface.
 **Files:** editor_tables.cpp, editor_results.cpp, editor_batch_cells.hpp, editor_compare.cpp,
@@ -163,6 +173,9 @@ IDs misclassified, too many rows of batch tables reducing readability.
 
 ## Slice e1 — overlay readability and HUD
 
+HUD part done as [D197](../decisions/RECORD.md#d197) on 2026-10-16: scale bar, px/m and north from
+the map projection. The casings and R/A/G cue below are slice e1b.
+
 **Files:** src/editor/canvas.hpp, canvas_map.cpp, canvas_run.cpp, canvas_feedback.cpp and a
 small canvas HUD helper if needed; src/shell map/HUD translation binding; both locales;
 workspace_ui_tests.cpp, map_ui_tests.cpp, design_system_ui_tests.cpp and relevant run/gesture
@@ -178,7 +191,22 @@ supported; attribution/validation always present; owner §E review added.
 obscuring road markings. If north cannot be computed from existing supported interfaces,
 report/defer it to a separate geo task rather than change src/model/core or invent accuracy.
 
+## Slice e1b — run vehicle casings and R/A/G shape cue
+
+Done as [D199](../decisions/RECORD.md#d199) on 2026-10-16.
+
+Carved out of e1 on 2026-10-16 (D197), because it is a second system.
+**Files:** canvas_run.cpp, canvas_heads.cpp, vehicle_shape.cpp only if a casing path is needed,
+canvas_style.hpp; design_system_ui_tests.cpp, behaviour-lab and run suites.
+**Tests first:** run vehicles carry a neutral edge casing readable on a local aerial-like image and
+on the plain grid; R/A/G heads differ in shape or pattern when rendered in grayscale; vehicle poses,
+hit paths, crossbars and snapshots unchanged; no new signal logic.
+**Accept:** owner §E row with grayscale and aerial-like images; common gates.
+**Risk:** casings hiding lane markings at low zoom; a pattern too small to read at 16 px.
+
 ## Slice e2 — measured LOD refinement
+
+Done as [D200](../decisions/RECORD.md#d200) on 2026-10-16.
 
 **Files:** canvas.cpp, canvas_run.cpp, relevant canvas overlay files and tests; reuse existing
 viewScale/grid helpers. Read D28 before any cache proposal.

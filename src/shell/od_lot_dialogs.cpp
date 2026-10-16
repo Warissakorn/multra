@@ -27,6 +27,7 @@ QDoubleSpinBox* number(QWidget* parent, double value, double low, double high, i
 // Rows and columns big enough for the spin box each cell holds.
 void fitRows(QTableWidget* table) {
     QDoubleSpinBox probe; probe.setButtonSymbols(QAbstractSpinBox::NoButtons); probe.setFont(editorDesign::numericFont());
+    table->setProperty("editorCustomRows", true); // the table recipe keeps this height (D196)
     table->verticalHeader()->setDefaultSectionSize(probe.sizeHint().height() + 2);
     table->horizontalHeader()->setDefaultSectionSize(std::max(table->horizontalHeader()->defaultSectionSize(), probe.sizeHint().width() + 4));
 }

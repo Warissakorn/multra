@@ -47,7 +47,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    answer and before any comparable run. Which options? *Owner:*
 
 Answered 2026-10-16: **B1, B2, B3, B5, B6, B8, B12, B13**, owner: “ปิดตามข้อเสนอ” (“close as
-proposed”), [D194](../decisions/RECORD.md#d194). Keep `TrafficSim` until a release; D95/D101 stay off
+proposed”), [D201](../decisions/RECORD.md#d201). Keep `TrafficSim` until a release; D95/D101 stay off
 and reopen only by route (i) in M3.4; the `level` skip is a discrepancy with M3_CONTRACT, queued as
 a fix in NEXT; the standstill cap joins M3.2.8a.1; more routing stations wait for a study that needs
 them; `four-leg-signalised` gets a 300 s cool-down (queued in NEXT); B12 is asked when multi-level S1
@@ -76,7 +76,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 3. **Rear-axle turning, phases 1–3** (listed 2026-10-05). Car and heavy vehicle on a curved
    Connector, a short Connector and an internal Link join; lane-change guidance at low zoom. Does
    the rear axle cut inside the curve with continuous heading, a stopped changer hold its body,
-   and a second change continue the first? The D102 lane-change display (C4, merged here by D194): in
+   and a second change continue the first? The D102 lane-change display (C4, merged here by D201): in
    `data/projects/lane-change-lab.traffic.json`, Lane drop scene, does a changer ease across and
    hold when stopped? *Owner:*
 7. **D149 Compare with…** (listed 2026-10-10). Save a copy of the M2.6 template with one input
@@ -144,7 +144,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    responsiveness good enough for tracing? No automated check closes survey accuracy. *Owner:*
 
 13–15. **The current UI: D190 quiet canvas, D192 icons, D193 palette** (listed 2026-10-15/16;
-   merged by D194, E12 dropped because slices a/b changed the workspace it asked to see unchanged).
+   merged by D201, E12 dropped because slices a/b changed the workspace it asked to see unchanged).
    Compare the before/after images of [D190](../images/ui-states-after/workspace-th.png),
    [D192](../images/ui-icons-after/contact-sheet.png) and [D193](../images/ui-palette-after/workspace-en.png)
    (their *-before* folders beside them), then work in the current build at 100/150/200 % on
@@ -155,10 +155,56 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    worth it?); on the Simulation bar, is Reset behind its separator clear and Run (F5) unclipped?
    Linux offscreen evidence does not close this. *Owner:*
 
-Carved out 2026-10-16 by [D194](../decisions/RECORD.md#d194) (R4 b applied before the sitting, owner's
+16. **D194 grouped Objects navigation** (listed 2026-10-16). Compare
+   [before](../images/ui-palette-after/workspace-en.png) and
+   [after](../images/ui-groups-after/workspace-en.png), then the
+   [English](../images/ui-groups-after/objects-demand-en.png) and
+   [Thai](../images/ui-groups-after/objects-demand-th.png) Demand group at 1024×768. Use the combo
+   left of the Objects tabs: do the six groups hold the pages you expect, and is Network the right
+   default? Press A, Q or Z, Show in table on a route, and Check runnability: does the panel switch
+   group where you look? At 100/150/200 % on Windows, is the combo text unclipped and the first tab
+   uncovered in both languages? Linux offscreen evidence does not close this. *Owner:*
+17. **D195 Properties presentation** (listed 2026-10-16). Compare
+   [before](../images/ui-properties-before/properties-en-1360.png) and
+   [after](../images/ui-properties-after/properties-en-1360.png), then Thai at
+   [1024](../images/ui-properties-after/properties-th-1024.png) and a
+   [200 px floating panel](../images/ui-properties-after/properties-th-narrow.png). Are wrapped
+   labels in one 120 px column better than the old wide column? Is the divider between drivingSide
+   and the level/display Apply clear? Two open findings need your call: at 1024×768 with
+   *Network and appearance* open the top section is squeezed (it was before too); should that part
+   scroll, which unpins ID/Name? Should long Apply buttons wrap or shorten at narrow widths? At
+   100/150/200 % on Windows, is any Thai label clipped? Linux offscreen evidence does not close this. *Owner:*
+18. **D196 table presentation** (listed 2026-10-16). Open Demand catalog, Behaviour library and
+   an OD matrix: do their tables now match the Objects tables ([dialog](../images/ui-tables-after/tables-dialog.png))
+   and do the OD grids keep their taller editing rows? Rest on a cut-off name or route chain: is
+   the full-text popup ([example](../images/ui-tables-after/tables-tooltip.png)) helpful or in the
+   way, and is its height right? At 100/150/200 % on Windows, are figures right-aligned and
+   unclipped? Linux offscreen evidence does not close this. *Owner:*
+19. **D197 canvas HUD** (listed 2026-10-16). Look at the bottom-right of the canvas
+   ([rotated georeference](../images/ui-hud-after/hud-rotated.png),
+   [Thai 1024](../images/ui-hud-after/workspace-th.png)). Zoom with the wheel: does the bar keep
+   round 1/2/5 m values and the px/m readout help? With a map background set, does the arrow point
+   to true north, and turn with *rotationDegrees* and the Lab's heading-up? It is hidden without a
+   map provider: is that right, or should a plain georeference show it too? Is bottom-right the
+   right corner, clear of the credit at every size? At 100/150/200 % on Windows, is the text
+   unclipped? Linux offscreen evidence does not close this. *Owner:* 2026-10-16, north without a
+   map provider: “ควรแสดง” (show it), done as [D198](../decisions/RECORD.md#d198). The other
+   questions are open.
+20. **D199 run casings and signal shapes** (listed 2026-10-16). Run a project over a map photo and
+   look at the [grayscale frame](../images/ui-run-after/run-grayscale.png): can you still see every
+   vehicle's edge, and tell red (full bar), amber (thin middle) and green (open middle) apart without
+   colour? Click a vehicle in the Lab: is it still picked where it was? The casing costs about 9–16 %
+   of Debug paint time on Linux; does a Windows run feel slower? *Owner:*
+21. **D200 lane markings at overview zoom** (listed 2026-10-16). Zoom out until a lane is under 3 px
+   wide: lane lines and Connector edges stop drawing; roads, heads, selection and handles stay.
+   Compare [at 3 px](../images/ui-lod-after/crossing-at-3px.png) and
+   [just under](../images/ui-lod-after/crossing-under-3px.png). Do you miss anything at that zoom?
+   Does zooming out on a large network feel quicker on Windows? *Owner:*
+
+Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now
-[M1.29](../ROADMAP.md#m129--owner-looks-carved-out-of-the-sitting-d194) and
-[M3.2.10](../ROADMAP.md#m3210--owner-looks-carved-out-of-the-sitting-d194). They stay unchecked and close
+[M1.29](../ROADMAP.md#m129--owner-looks-carved-out-of-the-sitting-d201) and
+[M3.2.10](../ROADMAP.md#m3210--owner-looks-carved-out-of-the-sitting-d201). They stay unchecked and close
 nothing. Numbers are not reused.
 
 ## F — Dialogs: demand and behaviour

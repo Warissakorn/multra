@@ -19,6 +19,13 @@ inline QColor ink() { return editorDesign::role(QPalette::Dark); }
 inline constexpr double markingWidth = 0.10; // metres, including each stroke of a double line
 inline constexpr double laneTabLength = 24; // logical pixels along the road
 inline constexpr double laneTabDepth = 8;   // logical pixels outside the road
+// D200 (UI_PRESENTATION_SPEC §5): below 3 logical px a lane's 0.10 m markings are under a tenth of
+// a pixel -- unreadable -- so the road draws without them. Only lane markings and mouth edges obey
+// this; surfaces, controls, selection, handles and hits never depend on it.
+inline constexpr double minLanePixels = 3;
+inline bool laneMarkingsReadable(double laneWidthMetres, double pixelsPerMetre) {
+    return laneWidthMetres * pixelsPerMetre >= minLanePixels;
+}
 
 inline QColor connectorBoundaryColor(const QColor& surface) {
     const auto linear = [](double channel) {

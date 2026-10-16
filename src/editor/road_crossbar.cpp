@@ -1,4 +1,5 @@
 #include "road_crossbar.hpp"
+#include <QPainter>
 #include "ui_design_tokens.hpp"
 #include <QPainterPathStroker>
 #include <algorithm>
@@ -97,9 +98,9 @@ std::optional<RoadCrossbar> signalCrossbar(const Network& n,const NetworkSignalH
     } catch(const std::exception&) {}
     return {};
 }
-RoadCrossbarItem::RoadCrossbarItem(const RoadCrossbar& bar,QColor colour,double scale,bool dashed)
+RoadCrossbarItem::RoadCrossbarItem(const RoadCrossbar& bar,QColor colour,double scale,bool dashed,SignalCue cue)
     : QGraphicsLineItem(bar.first.x,bar.first.y,bar.second.x,bar.second.y),
-      hitWidth_(editorDesign::crossbarHitPixels/std::max(1e-9,std::abs(scale))) {
+      hitWidth_(editorDesign::crossbarHitPixels/std::max(1e-9,std::abs(scale))), cue_(cue) {
     QPen pen(colour,editorDesign::crossbarPixels,dashed?Qt::DashLine:Qt::SolidLine);
     pen.setCosmetic(true);pen.setCapStyle(Qt::FlatCap);setPen(pen);
 }
@@ -110,4 +111,14 @@ QPainterPath RoadCrossbarItem::shape() const {
     return stroke.createStroke(linePath);
 }
 QRectF RoadCrossbarItem::boundingRect() const { return shape().boundingRect(); }
+void RoadCrossbarItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* option,QWidget* widget) {
+    if(cue_==SignalCue::none||cue_==SignalCue::stop){QGraphicsLineItem::paint(painter,option,widget);return;}
+    const auto a=line().p1(),b=line().p2(),third=(b-a)/3;
+    painter->setPen(pen());
+    painter->drawLine(a,a+third);painter->drawLine(b-third,b);
+    if(cue_==SignalCue::caution) {
+        auto thin=pen();thin.setWidthF(std::max(1.0,pen().widthF()/2));
+        painter->setPen(thin);painter->drawLine(a+third,b-third);
+    }
+}
 }

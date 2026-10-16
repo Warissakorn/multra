@@ -1,6 +1,8 @@
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
+#include <QHeaderView>
+#include <QTableView>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
@@ -178,6 +180,7 @@ QString editorStyleSheet() {
         QLabel[status="advisory"] { color: palette(link); }
         QLabel[status="ok"] { color: palette(shadow); }
         QLabel#editorPaletteHint, QLabel#editorToolHint { color: palette(window-text); font-size: @fontLabelpx; }
+        QFrame#editorApplyDivider { color: palette(mid); }
         QLabel[editorEyebrow="true"] { color: palette(window-text); font-size: @fontLabelpx; font-weight: 600; }
         QLabel#editorCommandTitle { color: palette(text); font-size: @fontTitlepx; font-weight: 600; }
         QLabel[numeric="true"] { font-size: @fontNumericpx; }
@@ -200,6 +203,11 @@ QString editorStyleSheet() {
     for(const auto& [name,value]:sizes)stylesheet.replace(QLatin1String(name),QString::number(value));
     stylesheet.replace(QLatin1String("@glyphs"),editorGlyphDirectory());
     return stylesheet;
+}
+void applyTableRecipe(QTableView* table) {
+    table->setAlternatingRowColors(true);table->setShowGrid(false);
+    if(!table->property("editorCustomRows").toBool())table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight);
+    table->horizontalHeader()->setMinimumSectionSize(editorDesign::controlHeight);
 }
 void applyEditorStyle(QWidget* window) {
     installEditorStyle();

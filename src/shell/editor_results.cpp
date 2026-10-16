@@ -45,7 +45,7 @@ QLabel* noteLabel(QWidget* parent,const char* name) {
     auto* label=new ReflowLabel(parent); label->setObjectName(name); label->setWordWrap(true); return label;
 }
 QTableWidgetItem* figure(const std::optional<double>& value,int decimals=1) {
-    auto* item=new QTableWidgetItem(value?QString::number(*value,'f',decimals):QString());
+    auto* item=new QTableWidgetItem(value?editorDesign::formatValue(*value,decimals):QString());
     editorDesign::setNumericText(item,true);
     item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
     return item;

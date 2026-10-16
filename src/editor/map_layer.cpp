@@ -19,11 +19,10 @@ void MapLayer::setSettings(std::optional<MapSettings> settings) {
     if (settings_) {
         viewStatus_=MapStatus::unavailable;
         try {
+            // The georeference stands without tiles: north and coordinates need only the projection (D198).
+            projection_=std::make_unique<GeoProjection>(settings_->reference);
             for (const auto& p:providers_) if (p.id==settings_->providerId) {provider_=p;break;}
-            if (provider_) {
-                projection_=std::make_unique<GeoProjection>(settings_->reference);
-                client_.setProvider(*provider_);viewStatus_=MapStatus::loading;
-            }
+            if (provider_) {client_.setProvider(*provider_);viewStatus_=MapStatus::loading;}
         } catch (const std::exception&) { projection_.reset(); }
     }
     if (changed) changed();
@@ -98,6 +97,11 @@ void MapLayer::paint(QPainter& painter,const QRectF& exposed) {
         const auto image=client_.image(key);if (!image.isNull()) paintMapMesh(painter,image,mesh->second);
     }
     painter.restore();
+}
+std::optional<LonLat> MapLayer::worldToGeographic(MetrePoint p) const {
+    if (!projection_ || !projection_->insideStudy(p)) return {};
+    try {return projection_->worldToGeographic(p);} catch (const std::exception&) {}
+    return {};
 }
 std::optional<MetrePoint> MapLayer::geographicToWorld(LonLat p) const {
     if (!projection_) return {};

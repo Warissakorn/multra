@@ -11,12 +11,18 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slice b (D193) is in: five palette groups, a transient icons-only palette view, the Simulation
-  bar as Run/Step | Seed/speed | Reset and Delete trailing; every toolbar stays 32 px at
-  1024–1360 px in both languages. Owner review is OWNER_SITTING E13–15. Slice a (D192) and the
-  parallel-ctest / hit-test pass are on main too; slice b replaced an earlier b1-only variant.
-- D191 corrects the six audit findings on main: route attribution, live speed reduction, demand
-  retune refusal, signal integer bounds, stale runtime catalogs and empty conflict chains.
+- The UI presentation slices are done. The last one, e2 (D200), stops drawing lane markings and
+  Connector edges under 3 px per lane and pins the vehicle 14 px / 4×2.5 px rule. Before it came
+  e1b (D199: run casings, R/A/G shapes) and D198 (owner E19: north from any georeference).
+- Stacked, unmerged branches: `claude/ui-slice-c-object-groups` (D194) → `claude/ui-slice-d1-properties`
+  (D195) → `claude/ui-slice-d2-tables` (D196) → `claude/ui-slice-e1-hud` (D197–D199) →
+  `claude/ui-slice-e2-lod` (D200). Slices a (D192) and b (D193) are on main. E14–E21 wait on the
+  owner, not a session.
+- The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
+  is still owed if the owner reports slowness. D200 halves the editor benchmark's overview redraw
+  (Debug); neither number is a Windows or Release claim.
+- `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
+  entry); if it fails again, capture its output before re-running.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
   set a target, so no product run moves sideways; BA39 holds. Zones still read route positions
   (slice 3b, deferred below).
@@ -24,38 +30,22 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice c: grouped Objects navigation (layout A)
+## Next session — the owner chooses
 
-The owner chose A (B16, “ทำตามแนะนำ”, 2026-10-15); slice 0 is green, so c may start. Read the
-[slice plan](plans/UI_PRESENTATION_SLICES.md) §c, [specification](plans/UI_PRESENTATION_SPEC.md) §1
-and the [audit](audits/UI_PRESENTATION_AUDIT.md) §2. Merge or rebase onto main first if slices a/b
-have merged by then.
-
-**Do, as one session** (`editor_workspace.cpp`, `editor_tables.cpp`, `editor_window.hpp`, the page
-show helpers in `editor_demand/diagnostics/priority/counters/sections/zones/od/results.cpp`, both
-locales; tests in `workspace_ui_tests.cpp`, `table_ui_tests.cpp`, `results_tabs_ui_tests.cpp` and
-the page suites):
-1. Tests first: all 14 pages reachable through their task group (Network, Control, Demand,
-   Measurement, Results, Problems) in English and Thai; a locale switch while each page is active;
-   Show in table, a failed Check/Run and Problems reveal the owning group then the page; batch,
-   comparison and Cancel still replace Results page 0 only; D161 horizontal Zones stays.
-2. A compact group selector inside the existing `editorObjectsDock` / `editorObjectTabs`, its mapping
-   registered once by page pointer and translation key (`objectPages_`), never by index. Navigation
-   state only: no document, selection or run change; no remembered expansion or presets.
-3. Accept: 1024×768 both languages with canvas ≥ 400×250 for every group, the 1360×860 ≥ 700×350
-   baseline kept, focus mode restores hidden/moved/floating panels and the current group, Reset
-   returns the default; new D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
-
-Do not touch Properties (d1), tables' numeric presentation (d2) or the canvas HUD (e1). After c:
-d1, d2, e1, e2, one session each. The icons-only palette's blank group rows and the extra toggle
-row wait on the merged look E13–15, not on a session.
+The UI slices are finished, and the deferred queue below resumes only at the owner's direction
+(stated when the UI slices began). A session asked to "continue" without a choice:
+1. Merges or rebases the stacked UI branches onto main first, if the owner has merged any.
+2. Asks the owner which deferred item to take, recommending item 1 (M3.7 slice 3b), the head of
+   the engine queue, and lists the open owner rows E13–E21 that block nothing but need a look.
+3. Does not start a B18 state/logic proposal ([slices](plans/UI_PRESENTATION_SLICES.md)) without
+   the owner naming it.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
 
 ## Deferred work — preserved from the preceding NEXT
 
-The engine queue and owner-directed alternatives below are deferred during the UI slices,
+The engine queue and owner-directed alternatives below were deferred during the UI slices,
 not cancelled. Resume them only at the owner's direction; ROADMAP retains every gate.
 
 1. **M3.7 LATERAL slice 3b: zone occupancy by span** ([LATERAL](reference/LATERAL.md) §5, §6,
@@ -70,19 +60,19 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
    - Then slice 4 (display, BA46), M3.4 lane-change duration (the first product writer of
      `lateralTarget`), M3.6 turning speeds, M3.4 overtaking with driving side, M3.8 motorcycles,
      M3.5 attention, M3.3.3b W99 and M3.9 (the review's §5 order, D177/D178).
-2. **Multi-level S0: the Node contract** (D175; ask the owner B12's Thai sources when S1 starts, D194). Polygon, mapping of Micro detail to
+2. **Multi-level S0: the Node contract** (D175; ask the owner B12's Thai sources when S1 starts, D201). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
    scope but no longer leads the order.
 3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
-   lane change. Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D194).
+   lane change. Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
 4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
    - vehicle turning beyond phase 3 (swept-body clearance rows first)
-   - M3.2.8a.1 moving merge anticipation, with the standstill cap (D194)
-   - drawing `level` is not separation (D194, M3_CONTRACT §1): `automatic_conflicts.cpp` skips
+   - M3.2.8a.1 moving merge anticipation, with the standstill cap (D201)
+   - drawing `level` is not separation (D201, M3_CONTRACT §1): `automatic_conflicts.cpp` skips
      pairs on different levels; failure-first row (two crossing Links on different levels get an
      area), then remove the skip and re-check every shipped project's areas
-   - `four-leg-signalised` cool-down 300 s (D194, D146, [evidence](evidence/m5.9-cooldown.md)):
+   - `four-leg-signalised` cool-down 300 s (D201, D146, [evidence](evidence/m5.9-cooldown.md)):
      its batch warnings clear; update its tests' expected numbers by that recorded decision
    - M3.2.4e merge admission contract
    - a per-lane share gesture (D32/D71)
@@ -101,7 +91,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 
 ## Waiting on the owner (details in OWNER_SITTING)
 
-D194 (2026-10-16) closed B1–B3, B5, B6, B8, B12 and B13 as proposed and carved the oldest looks into
+D201 (2026-10-16) closed B1–B3, B5, B6, B8, B12 and B13 as proposed and carved the oldest looks into
 ROADMAP M1.29 and M3.2.10. What only the owner can answer, in order:
 
 - **A1 M0 plausibility** first: a *no* reorders the engine work (D13).
@@ -111,9 +101,10 @@ ROADMAP M1.29 and M3.2.10. What only the owner can answer, in order:
 - **Milestone closures:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8 (a
   development-access study end to end, plus C8/C9).
 - **Looks (C–F) still on the sheet:** C1–C3, C7–C12 (C12 is a timing, not a verdict), D2–D4,
-  E2, E5, E6, E8–E11, the merged UI look E13–15, F1–F3; plus the carved M1.29 and M3.2.10 looks.
+  E2, E5, E6, E8–E11, the merged UI look E13–15, E16–E21, F1–F3; plus the carved M1.29 and
+  M3.2.10 looks.
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
-- Items still open and listed more than 14 days become ROADMAP carve-outs (R4; D194 applied it once
+- Items still open and listed more than 14 days become ROADMAP carve-outs (R4; D201 applied it once
   without waiting for the sitting).
 
 ## Known limits to keep in mind

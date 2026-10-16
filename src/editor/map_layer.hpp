@@ -22,6 +22,8 @@ public:
     void setView(const QPolygonF& worldViewport,double physicalPixelsPerMetre);
     void paint(QPainter&,const QRectF& exposed);
     std::optional<MetrePoint> geographicToWorld(LonLat) const;
+    // The inverse, under the same rule: nullopt without a projection or outside the study area.
+    std::optional<LonLat> worldToGeographic(MetrePoint) const;
     MapStatus status() const;
     QString attribution() const;
     QUrl attributionUrl() const;

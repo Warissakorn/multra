@@ -6,6 +6,7 @@
 #include "../core/simulation.hpp"
 #include <QGraphicsEllipseItem>
 #include <QGraphicsPathItem>
+#include "run_vehicle_item.hpp"
 #include <QPainter>
 #include <algorithm>
 #include <cmath>
@@ -60,9 +61,10 @@ void EditorCanvas::drawRunItems() {
         outline.setCosmetic(true);outline.setCapStyle(Qt::FlatCap);
         auto* casing=scene_.addLine(bar.first.x,bar.first.y,bar.second.x,bar.second.y,outline);
         casing->setZValue(bar.level*100.+11.9);runItems_.push_back(casing);
+        // D199: the state reads from the bar's shape too, not only its hue.
         auto* item=new RoadCrossbarItem(found->second,
             color==SignalColor::red?canvasStyle::error():color==SignalColor::green?canvasStyle::ok():canvasStyle::warning(),
-            viewScale());
+            viewScale(),false,color==SignalColor::red?SignalCue::stop:color==SignalColor::green?SignalCue::go:SignalCue::caution);
         scene_.addItem(item);item->setZValue(found->second.level*100.+12);
         item->setData(0,QStringLiteral("run-signal"));item->setData(1,QString::fromStdString(h.id));runItems_.push_back(item);
     }
@@ -120,9 +122,7 @@ void EditorCanvas::drawRunItems() {
         // Rear axle is local origin; even a minimum-size symbol keeps its nose at
         // the traffic front station. Lane-change guides also satisfy the rear rolling equation.
         auto body=shape->second;body.translate(lever,0);
-        auto* item=new QGraphicsPathItem(body);
-        item->setPen(Qt::NoPen);
-        item->setBrush(QColor(QString::fromStdString(colour!=display_.vehicleColors.end()?colour->second:styleOf(location.segmentId).vehicleColor)));
+        auto* item=new RunVehicleItem(body,QColor(QString::fromStdString(colour!=display_.vehicleColors.end()?colour->second:styleOf(location.segmentId).vehicleColor)),scale);
         const double norm=std::hypot(heading.x,heading.y);
         item->setPos(at.x-lever*heading.x/norm,at.y-lever*heading.y/norm);
         item->setRotation(std::atan2(heading.y,heading.x)*180/std::numbers::pi);
