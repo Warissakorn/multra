@@ -6,6 +6,29 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Parallel tests, cheaper hit-testing, vcpkg cache (no decision)
+
+An /optimize pass over engine, editor, build/CI and docs (Linux, GCC 13.3, Qt 6.4 offscreen; no
+Windows or real-display verification). Three changes, one commit each:
+
+- **`check` and CI run ctest in parallel.** The test groups were already separate ctest tests so
+  `-j` could spread them, but `check` and every CI ctest step ran serially. `check` now passes
+  the host core count; Windows and packaging steps pass `--parallel 4`. Desktop Debug `check`
+  294 → 74 s; 7/7 parallel runs green; Windows desktop ctest 1m20 → 0m40 in CI. The sanitizer step is
+  noisy on CI (8m12 serial, 9m39 parallel, 13m18 serial in runs 554–556) but scaled 952 → 254 s
+  locally, so it runs in parallel too; `TRAFFICSIM_TEST_JOBS` overrides the job count.
+- **`hitObjects` rejects misses by padded bounds** and takes shapes from `linkShape` /
+  `connectorShape` instead of an id scan per object (it was quadratic), computing distance for hits
+  only. Release editor benchmark, 200 intersections: 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms.
+  Band selection uses the same helpers. A connector whose paths cannot be built now throws only
+  when it is hit.
+- **windows-desktop caches vcpkg binaries** (`.vcpkg-cache`): proj was rebuilt from source,
+  5m11s of every run; with the cache it takes 24 s and the
+  whole windows-desktop job about 3 min (run 556).
+
+Looked at and left: the engine (no `stepSimulation` child above 9 %, noise ±7 %), the Run view
+(already batches Steps per frame), docs (the audit's broken references were false positives).
+
 ## 2026-10-15 — Six audit correctness fixes from main (D191)
 
 The owner authorized fixes from main after the repository review; this branch starts at
@@ -181,26 +204,6 @@ new delay cases. The CLI seed-42 pin remains **45 completed / 31.75870154816726 
 Qt desktop and Windows were not verified here.
 Interleaved unassigned-scenario benchmark median: +7.08 %, inside the 10 % budget.
 See [the evidence](evidence/perception-delay.md). No owner gate is closed.
-
-## 2026-10-15 — M3.5 slice 3: look-back, rear TTC and perceived lane-change tests (D183)
-
-Lane changes now read the changer's perception keys (`src/core/lanes.cpp`).
-- **Mirror check.** `around` drops a target-lane follower further back than `lookBackDistance`.
-  An unseen follower no longer blocks the change. It then reacts through its own model, and the
-  hard cap keeps it behind (BA33 runs one to the end). Alongside always refuses.
-- **Rear time-to-collision.** A seen follower closing on the changer must give `gap / (vF − v) ≥
-  rearTimeToCollision`; equal accepts (BA34).
-- **Forward test and gain.** These use the perceived leaders on the target lane and §3's lowest
-  acceleration. The room check runs against the nearest seen leader, and nothing is tested when
-  none is seen. The discretionary gain reads perceived leaders on both lanes.
-- **Shared code.** `notePerceived` and `anticipate` are shared with own motion, so the tie rule and
-  the multi-anticipation loop exist once.
-- **Checks.** Mutation check: four of the six new tests fail against slice 2's `lanes.cpp`. The
-  four-leg seed-42 run with neutral key values is equal tick by tick, with lane changes in it.
-  Benchmark inside noise.
-
-Checked on Linux: `check` 141/141, CLI seed 42 unchanged
-([evidence](evidence/perception-lane.md)).
 
 ## Older entries
 

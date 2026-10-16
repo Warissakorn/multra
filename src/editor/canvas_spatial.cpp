@@ -13,45 +13,44 @@ std::optional<std::pair<Point,int>> EditorCanvas::headPosition(const NetworkSign
         if(path.id==head.connectorId)return std::pair{connectorPathPoint(path,head.position),c.level};
     return {};
 }
-QPainterPath EditorCanvas::objectShape(const std::string& id) const {
-    const auto polygon=[](const std::vector<Point>& a,const std::vector<Point>& b) {
-        QPainterPath shape;shape.moveTo(a.front().x,a.front().y);
-        for(const auto& p:a)shape.lineTo(p.x,p.y);
-        for(auto it=b.rbegin();it!=b.rend();++it)shape.lineTo(it->x,it->y);
-        shape.closeSubpath();return shape;
-    };
-    if(!document_)return {};
+QPainterPath EditorCanvas::linkShape(const Link& l) const {
     // Wireframe: what is drawn is what is hit, band-selected and framed -- the centre line.
+    if(wireframe_)return centreStroke(linkCentreline(l,document_->network.drivingSide),1);
+    const auto a=laneBoundaryGeometry(l,0,document_->network.drivingSide);
+    const auto b=laneBoundaryGeometry(l,l.lanes.size(),document_->network.drivingSide);
+    QPainterPath shape;shape.moveTo(a.front().x,a.front().y);
+    for(const auto& p:a)shape.lineTo(p.x,p.y);
+    for(auto it=b.rbegin();it!=b.rend();++it)shape.lineTo(it->x,it->y);
+    shape.closeSubpath();return shape;
+}
+QPainterPath EditorCanvas::connectorShape(const Connector& c) const {
     if(wireframe_) {
-        for(const auto& l:document_->network.links)if(l.id==id)
-            return centreStroke(linkCentreline(l,document_->network.drivingSide),1);
-        for(const auto& c:document_->network.connectors)if(c.id==id) {
-            try { return centreStroke(connectorCentreline(document_->network,c),1); }
-            catch(const std::exception&) { return {}; }
-        }
+        try { return centreStroke(connectorCentreline(document_->network,c),1); }
+        catch(const std::exception&) { return {}; }
     }
-    for(const auto& l:document_->network.links)if(l.id==id)
-        return polygon(laneBoundaryGeometry(l,0,document_->network.drivingSide),laneBoundaryGeometry(l,l.lanes.size(),document_->network.drivingSide));
-    for(const auto& c:document_->network.connectors)if(c.id==id) {
-        const auto& drawing=cachedSurface(c);const auto& ring=drawing.outline;
-        QPainterPath shape;
-        if(ring.empty()) {
-            // A singular mouth has no fabricated square cap, but its open rails remain
-            // selectable through hitObjects' existing stroke tolerance.
-            for(const auto& marking:drawing.markings) {
-                if(marking.geometry.empty())continue;
-                shape.moveTo(marking.geometry.front().x,marking.geometry.front().y);
-                for(std::size_t i=1;i<marking.geometry.size();++i)shape.lineTo(marking.geometry[i].x,marking.geometry[i].y);
-            }
-            // QPainterPath::contains implicitly closes an open subpath. Return only a
-            // thin stroked region, otherwise selection could hit an invisible polygon.
-            QPainterPathStroker stroke;stroke.setWidth(1/viewScale());
-            return stroke.createStroke(shape);
+    const auto& drawing=cachedSurface(c);const auto& ring=drawing.outline;
+    QPainterPath shape;
+    if(ring.empty()) {
+        // A singular mouth has no fabricated square cap, but its open rails remain
+        // selectable through hitObjects' existing stroke tolerance.
+        for(const auto& marking:drawing.markings) {
+            if(marking.geometry.empty())continue;
+            shape.moveTo(marking.geometry.front().x,marking.geometry.front().y);
+            for(std::size_t i=1;i<marking.geometry.size();++i)shape.lineTo(marking.geometry[i].x,marking.geometry[i].y);
         }
-        shape.moveTo(ring.front().x,ring.front().y);
-        for(std::size_t i=1;i<ring.size();++i)shape.lineTo(ring[i].x,ring[i].y);
-        shape.closeSubpath();shape.setFillRule(Qt::WindingFill);return shape;
+        // QPainterPath::contains implicitly closes an open subpath. Return only a
+        // thin stroked region, otherwise selection could hit an invisible polygon.
+        QPainterPathStroker stroke;stroke.setWidth(1/viewScale());
+        return stroke.createStroke(shape);
     }
+    shape.moveTo(ring.front().x,ring.front().y);
+    for(std::size_t i=1;i<ring.size();++i)shape.lineTo(ring[i].x,ring[i].y);
+    shape.closeSubpath();shape.setFillRule(Qt::WindingFill);return shape;
+}
+QPainterPath EditorCanvas::objectShape(const std::string& id) const {
+    if(!document_)return {};
+    for(const auto& l:document_->network.links)if(l.id==id)return linkShape(l);
+    for(const auto& c:document_->network.connectors)if(c.id==id)return connectorShape(c);
     for(const auto& h:document_->network.signalHeads)if(h.id==id)return headShape(h);
     return {};
 }

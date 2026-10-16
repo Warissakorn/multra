@@ -15,27 +15,30 @@ std::vector<std::pair<std::string,double>> EditorCanvas::hitObjects(Point p,bool
     if(!document_)return {};
     const double tolerance=6/viewScale();
     QPainterPathStroker stroke;stroke.setWidth(tolerance*2);
-    const auto contains=[&](const std::string& id) {
-        const auto shape=objectShape(id);return shape.contains(QPointF(p.x,p.y)) || stroke.createStroke(shape).contains(QPointF(p.x,p.y));
+    // Every mouse move lands here, so an object whose padded bounds miss the point is rejected
+    // before the stroke is built. Three tolerances cover the stroke's half-width, square cap and
+    // miter limit with room to spare; the distance is only worked out for objects that are hit.
+    const QPointF cursor(p.x,p.y);
+    const auto contains=[&](const QPainterPath& shape) {
+        const double pad=3*tolerance;
+        if(!shape.boundingRect().adjusted(-pad,-pad,pad,pad).contains(cursor))return false;
+        return shape.contains(cursor) || stroke.createStroke(shape).contains(cursor);
     };
     const auto proximity=[&](const std::vector<Point>& geometry){
         const auto point=pointAlong(geometry,stationOfClosestPoint(geometry,p));return std::hypot(point.x-p.x,point.y-p.y);
     };
-    for(const auto& l:document_->network.links)if(levelVisible(l.level)) {
+    for(const auto& l:document_->network.links)if(levelVisible(l.level) && contains(linkShape(l))) {
         double distance=1e300;
-        for(const auto& lane:l.lanes) {
-            const auto gap=proximity(laneGeometry(l,lane.id,document_->network.drivingSide));
-            distance=std::min(distance,gap);
-        }
-        if(contains(l.id))hits.push_back({l.id,stationOfClosestPoint(l.geometry,p),distance,l.level,1});
+        for(const auto& lane:l.lanes)distance=std::min(distance,proximity(laneGeometry(l,lane.id,document_->network.drivingSide)));
+        hits.push_back({l.id,stationOfClosestPoint(l.geometry,p),distance,l.level,1});
     }
-    if(connectors)for(const auto& c:document_->network.connectors)if(levelVisible(c.level)) {
+    if(connectors)for(const auto& c:document_->network.connectors)if(levelVisible(c.level) && contains(connectorShape(c))) {
         double distance=proximity(c.geometry);
         for(const auto& path:cachedPaths(c))distance=std::min(distance,proximity(path.geometry));
-        if(contains(c.id))hits.push_back({c.id,stationOfClosestPoint(c.geometry,p),distance,c.level,4});
+        hits.push_back({c.id,stationOfClosestPoint(c.geometry,p),distance,c.level,4});
     }
     if(connectors)for(const auto& h:document_->network.signalHeads)if(const auto at=headPosition(h))
-        if(levelVisible(at->second) && contains(h.id))hits.push_back({h.id,h.position,-1,at->second,10});
+        if(levelVisible(at->second) && contains(headShape(h)))hits.push_back({h.id,h.position,-1,at->second,10});
     std::stable_sort(hits.begin(),hits.end(),[](const auto& a,const auto& b){
         if(a.level!=b.level)return a.level>b.level;
         if(std::abs(a.distance-b.distance)>1e-7)return a.distance<b.distance;
