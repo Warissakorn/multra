@@ -6,6 +6,29 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice c: grouped Objects navigation (D195)
+
+Layout A as the owner chose it (B16), in `src/shell/editor_tables.cpp`, `editor_window.hpp`,
+`editor_workspace.cpp` and seven keys per locale.
+- **Selector:** `editorObjectGroup`, a 24 px combo in the top-left corner of `editorObjectTabs`,
+  so it shares the tab row and the dock gains no height. Six groups in SPEC §1 order; only the
+  chosen group's tabs are visible, in their existing order. No page moved and no object name changed.
+- **One mapping:** a page-key → group table applied by `addObjectPage`; a page without a group
+  throws at construction. Jumps still call `setCurrentWidget`; one `currentChanged` handler moves
+  the selector to the owning group, so no jump site changed.
+- **Transient:** focus mode keeps the group; Reset panel layout returns Network/Links; nothing saves it.
+- **Tests first:** new `object-groups-ui` (`tests/object_groups_ui_tests.cpp`). A probe first proves
+  a jump to a hidden page lands, then: all 14 pages through their group with the tab and group
+  labels in English and Thai, a locale switch on each page, tools 9–12, Show in table from the
+  canvas menu, Recheck, a failed batch and a failed Run → Problems, batch and Cancel on Results page 0
+  only, ≥ 700×350 / ≥ 400×250 canvases for every group, focus and Reset, and no revision, selection
+  or tick change. Before the change it failed on the missing selector.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **150/150** CTest. Canvas after 100 Steps unchanged: 807×394 English, 471×231
+Thai. No Windows or high-DPI verification. [Before](images/ui-groups-before/workspace-en.png) /
+[after](images/ui-groups-after/workspace-en.png).
+
 ## 2026-10-16 — Owner sitting triage (D194, docs only)
 
 The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
@@ -213,33 +236,6 @@ NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is
 
 Checked on Linux headless: `check` 102/102, CLI seed 42 unchanged, mutation checks; switched on,
 the four-leg run costs about 8 % more ([evidence](evidence/lateral-spans.md)).
-
-## 2026-10-15 — M3.7 slice 1: lateral codec and cross-section compile (D187)
-
-The first lateral code, NEXT item 1. Storage and compile only; no tick reads the data.
-- **Keys.** `LateralParameters` is its own key table (`src/core/lateral.*`): all three or none,
-  a partial set refused at its first missing key, on both models. Schema 33 is written only when an
-  owned behaviour carries one, and a file below 33 carrying one is refused.
-- **Compile.** With the switch on, `buildScenario` adds one `SegmentCrossSection` per segment and
-  `drivingSide`. Lane centres come from `laneCentreOffset`, now shared with `laneGeometry`.
-  Connector paths store start/end widths from `connectorLaneWidths`. `createSimulation` re-sorts
-  them with their segments, and validation refuses a malformed table.
-- **Contract refinements (D187).** Start/end widths replace one `width`, and `DrivingSide` moved from
-  the model into core.
-- **No change without keys (BA39)**, and none with them yet. Nine "future schema" fixtures moved
-  33 → 34.
-
-Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
-([evidence](evidence/lateral-codec.md)).
-
-## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
-
-Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
-had an empty FIFO that was filled with `{0, free}`, so a driver braking at its maximum coasted
-for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now applies the
-tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
-still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
-assignments in its fixture). Linux headless `check` passed.
 
 ## Older entries
 

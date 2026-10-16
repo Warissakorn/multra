@@ -330,6 +330,12 @@ private:
     std::map<std::string,QWidget*> objectPages_, resultPages_;
     void addObjectPage(QWidget* page,const std::string& key);
     void translateObjectPages();
+    // UI slice c (D195): the task group of each page, from the one table in editor_tables.cpp.
+    // The selector is navigation state only; nothing saves it.
+    std::map<QWidget*,const char*> objectGroups_;
+    QComboBox* objectGroup_{};
+    bool applyingGroup_{};
+    void showObjectGroup(QWidget* page);
     QTableWidget *linkTable_{}, *connectorTable_{}, *signalTable_{}, *problemTable_{};
     // Diagnostics of the current revision, plus the issues of the most recent rejected edit.
     // Both are derived views; the document stays the single source of truth.

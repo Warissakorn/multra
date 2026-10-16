@@ -129,6 +129,7 @@ void EditorWindow::resetWorkspace() {
     {const QSignalBlocker blocked(actions_.at("editorFocusCanvas"));actions_.at("editorFocusCanvas")->setChecked(false);}
     workspaceBeforeFocus_.clear();
     actions_.at("editorPaletteIconsOnly")->setChecked(false);translatePalette(); // the view is transient (B17)
+    {const QSignalBlocker blocked(objectGroup_);objectGroup_->setCurrentIndex(0);}showObjectGroup(linkTable_); // transient too (D195)
     const auto dock=[this](const char* name){return findChild<QDockWidget*>(name);};
     auto* palette=dock("editorPaletteDock");auto* inspector=dock("editorInspectorDock");
     auto* objects=dock("editorObjectsDock");auto* history=dock("editorHistoryDock");

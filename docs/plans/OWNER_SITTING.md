@@ -155,6 +155,14 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    worth it?); on the Simulation bar, is Reset behind its separator clear and Run (F5) unclipped?
    Linux offscreen evidence does not close this. *Owner:*
 
+16. **D195 grouped Objects navigation** (listed 2026-10-16). Compare the
+   [before](../images/ui-groups-before/workspace-en.png) and [after](../images/ui-groups-after/workspace-en.png)
+   English images and the Thai 1024×768 pair beside them. In English and Thai at 100/150/200 % on
+   Windows, choose each group in the selector left of the Objects tabs; use Show in table on a
+   vehicle input, Recheck an empty network, Run seeds, then focus mode and Reset panel layout. Do the
+   six groups read right, does each jump land in the right group, and is the selector easy to find
+   on the tab row? Linux offscreen evidence does not close this. *Owner:*
+
 Carved out 2026-10-16 by [D194](../decisions/RECORD.md#d194) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now
 [M1.29](../ROADMAP.md#m129--owner-looks-carved-out-of-the-sitting-d194) and

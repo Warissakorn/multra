@@ -113,6 +113,8 @@ behaviour remains. No new remembered preference or independent Edit/Run state va
 
 ## Slice c — grouped Objects navigation
 
+**Implemented 2026-10-16 (D195):** layout A, selector on the tab-strip row; owner look E16.
+
 **Depends:** green slice 0 and owner's B16 choice. Implement A unless the owner selects B;
 B first needs a concrete objectName/saveState compatibility design.
 **Files for A:** editor_workspace.cpp, editor_tables.cpp, editor_window.hpp, page show helpers

@@ -2,6 +2,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QApplication>
+#include <QComboBox>
 #include <QDockWidget>
 #include <QHeaderView>
 #include <QLabel>
@@ -9,6 +10,8 @@
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <algorithm>
+#include <stdexcept>
 
 namespace trafficsim {
 namespace {
@@ -31,12 +34,41 @@ void fill(QTableWidget* view,int row,const QStringList& values,const QString& id
     }
 }
 QString metres(double value) { return QString::number(value,'f',2); }
+// UI slice c (D195): every Objects page belongs to one task group, registered here once. The
+// selector lists the groups in this order; within a group, pages keep their tab order.
+const char* const objectGroupKeys[]={"editorObjectGroupNetwork","editorObjectGroupControl","editorObjectGroupDemand",
+    "editorObjectGroupMeasurement","editorObjectGroupResults","editorObjectGroupProblems"};
+const std::pair<const char*,const char*> pageGroups[]={
+    {"editorLinkTable","editorObjectGroupNetwork"},{"editorConnectorTable","editorObjectGroupNetwork"},
+    {"editorSignalTable","editorObjectGroupControl"},{"editorProgramTable","editorObjectGroupControl"},
+    {"editorConflictTable","editorObjectGroupControl"},{"editorRouteTable","editorObjectGroupDemand"},
+    {"editorInputTable","editorObjectGroupDemand"},{"editorDecisionTable","editorObjectGroupDemand"},
+    {"editorZoneTable","editorObjectGroupDemand"},{"editorOdTable","editorObjectGroupDemand"},
+    {"editorCounterTable","editorObjectGroupMeasurement"},{"editorSectionTable","editorObjectGroupMeasurement"},
+    {"editorResultsTable","editorObjectGroupResults"},{"editorProblemTable","editorObjectGroupProblems"}};
 }
 void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
-    objectPages_.emplace(key,page);objects_->addTab(page,QString());
+    const auto* entry=std::find_if(std::begin(pageGroups),std::end(pageGroups),[&](const auto& p){return key==p.first;});
+    if(entry==std::end(pageGroups))throw std::logic_error("Objects page "+key+" has no task group");
+    objectPages_.emplace(key,page);objectGroups_.emplace(page,entry->second);
+    const int index=objects_->addTab(page,QString());
+    objects_->setTabVisible(index,objectGroup_->currentData().toString()==entry->second);
+}
+// Shows the selected group's pages and opens `page`, or the group's first page. The current page
+// is set before the others are hidden, so Qt never moves it into another group on the way.
+void EditorWindow::showObjectGroup(QWidget* page) {
+    const auto group=objectGroup_->currentData().toString();
+    const auto inGroup=[&](int i){return group==objectGroups_.at(objects_->widget(i));};
+    applyingGroup_=true;
+    for(int i=0;i<objects_->count();++i)if(inGroup(i)){objects_->setTabVisible(i,true);if(!page)page=objects_->widget(i);}
+    objects_->setCurrentWidget(page);
+    for(int i=0;i<objects_->count();++i)if(!inGroup(i))objects_->setTabVisible(i,false);
+    applyingGroup_=false;
 }
 void EditorWindow::translateObjectPages() {
     for(const auto& [key,page]:objectPages_)objects_->setTabText(objects_->indexOf(page),text(key));
+    for(int i=0;i<objectGroup_->count();++i)objectGroup_->setItemText(i,text(objectGroup_->itemData(i).toString().toStdString()));
+    objectGroup_->setAccessibleName(text("editorObjectGroup"));
 }
 void EditorWindow::buildObjectTables() {
     auto* dock=new QDockWidget(this); dock->setObjectName("editorObjectsDock"); texts_["editorObjectsDock"]=dock;
@@ -45,6 +77,19 @@ void EditorWindow::buildObjectTables() {
     layout->setContentsMargins(editorDesign::space1,editorDesign::space1,editorDesign::space1,editorDesign::space1);
     layout->setSpacing(editorDesign::space1);
     objects_=new QTabWidget(body); objects_->setObjectName("editorObjectTabs"); layout->addWidget(objects_);
+    // The group selector shares the tab-strip row, so it adds no height to the bottom dock.
+    objectGroup_=new QComboBox(objects_); objectGroup_->setObjectName("editorObjectGroup");
+    objectGroup_->setFixedHeight(editorDesign::controlHeight); objectGroup_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    for(const auto* group:objectGroupKeys)objectGroup_->addItem(QString(),QString::fromLatin1(group));
+    objects_->setCornerWidget(objectGroup_,Qt::TopLeftCorner);
+    connect(objectGroup_,&QComboBox::currentIndexChanged,this,[this]{showObjectGroup(nullptr);});
+    // Every jump (Show in table, tools, Problems, Results) opens a page; its group follows here.
+    connect(objects_,&QTabWidget::currentChanged,this,[this]{
+        const auto found=objectGroups_.find(objects_->currentWidget());
+        if(applyingGroup_||found==objectGroups_.end()||objectGroup_->currentData().toString()==found->second)return;
+        {const QSignalBlocker blocked(objectGroup_);objectGroup_->setCurrentIndex(objectGroup_->findData(QString::fromLatin1(found->second)));}
+        showObjectGroup(found->first);
+    });
     linkTable_=table(objects_,"editorLinkTable",5);
     connectorTable_=table(objects_,"editorConnectorTable",5);
     signalTable_=table(objects_,"editorSignalTable",5);
