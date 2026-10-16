@@ -223,7 +223,7 @@ Proposed LOD is based on projected screen detail, not the supplied spec's undefi
 | Projected detail | Proposed paint policy |
 |---|---|
 | Lane width <3 logical px | Suppress unreadable minor decoration only; retain road/route/counter/head and selected handles |
-| Lane width >=3 px | Existing lane markings and control geometry; avoid overlapping optional name labels |
+| Lane width >=3 px | Existing lane markings and control geometry; avoid overlapping optional name labels (a 1e-9 relative rounding counts as 3 px, D205) |
 | Vehicle length <14 px | Retain existing minimum-body symbol (4×2.5 px) |
 | Vehicle length >=14 px | Existing windshield/cab detail |
 | All scales | Existing grid >=8 px minor, 10× major; essential control, selection, validation and measurement cues remain |

@@ -1,5 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/editor/vehicle_shape.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
@@ -40,6 +41,11 @@ int main(int argc,char** argv) {
         double narrowest=1e9;
         for(const auto& link:fixture["links"])for(const auto& lane:link["lanes"])narrowest=std::min(narrowest,lane["width"].get<double>());
         const double at=3/narrowest, under=at*(1-1e-3);
+        // 0. D205: a scale one rounding below the threshold (a rotated view's hypot on MSVC) is not a
+        // zoom change -- the forcing first: the rounded product really is below 3 px.
+        const double rounded=at*(1-1e-12);
+        require(narrowest*rounded<canvasStyle::minLanePixels,"Setup: the rounded scale is not below the threshold");
+        require(canvasStyle::laneMarkingsReadable(narrowest,rounded),"A rounding of the scale hides the markings");
         // 1. The markings follow the lane threshold, and only they do.
         view(canvas,QTransform::fromScale(at,-at));
         const auto full=tags(canvas);

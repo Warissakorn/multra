@@ -17,9 +17,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the run view draws lane centre + `lateral`, and a lateral crossing (flagged in `LaneChangeTrace`)
   is never slid. Only tests set a lateral target, so no product run moves sideways; BA39 holds.
   M3.7's gate stays open (ROADMAP).
-- **Unmerged, stacked:** `claude/m3.7-slice-3b-zones` (D202) → `claude/m3.7-slice-4-display` (D203) →
-  `claude/m3.4-lane-change-duration` (D204, contract only).
-  Merge or rebase them onto main first if the owner has merged either.
+- D202–D204 are on main (PR #173, merged 2026-10-16 with `windows-desktop` red, owner's call). D205
+  fixes that red ([evidence](evidence/windows-ui-red.md)): the 3 px threshold's rounding and a Thai label
+  word Windows cannot break. Until its branch's Windows run is green, D205 is not confirmed.
 - The UI presentation slices a–e2 (D192–D200) and the sitting triage (D201) are on main. E13–E21
   wait on the owner, not a session.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement

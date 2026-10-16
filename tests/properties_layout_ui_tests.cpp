@@ -1,5 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/shell/editor_interaction.hpp"
+#include "../src/editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
@@ -103,7 +104,29 @@ int main(int argc,char** argv) {
             language->setCurrentIndex(lang);window.resize(size);settle();
             aligned(window,lang?"th":"en");
         }
+        // D205: a label with no break point (Thai on Windows, where Qt has no libthai, measured 123 px)
+        // cannot wrap. A little wider than the column, its row stays beside it, and the column it widens
+        // is every form's, not only its own. The forcing first: the word is just wider than the column.
         if(!fold->isChecked())fold->trigger();
+        language->setCurrentIndex(0);window.resize(1360,860);settle();
+        auto* gapLabel=qobject_cast<QLabel*>(qobject_cast<QFormLayout*>(item<QWidget>(window,"editorMedianGap")->parentWidget()->layout())
+                                             ->labelForField(item<QWidget>(window,"editorMedianGap")));
+        require(gapLabel,"Median gap label missing");
+        // Windows' word was 3 px over; a narrow letter reaches that without overshooting into a wrap.
+        for(int n=1;gapLabel->QLabel::minimumSizeHint().width()<editorDesign::formLabelWidth+3;++n){gapLabel->setText(QString(n,QChar('i')));settle();}
+        const int word=gapLabel->QLabel::minimumSizeHint().width();
+        require(word>editorDesign::formLabelWidth+1&&word<editorDesign::formLabelWidth*5/4,"Setup: the unbreakable label is not just wider than the column");
+        require(gapLabel->width()>=word,"Setup: the unbreakable label's row wrapped instead of widening");
+        aligned(window,"unbreakable");
+        // The column narrows back while the appearance fold is closed (Windows: Thai at 1360, then English
+        // at 1024): a hidden form must not keep the old column. The forcing first: the fold is hidden.
+        fold->trigger();settle();
+        require(!item<QComboBox>(window,"editorDrivingSide")->isVisible(),"Setup: the appearance fold is still shown");
+        language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
+        require(gapLabel->QLabel::minimumSizeHint().width()<=editorDesign::formLabelWidth,"Setup: the label text was not restored");
+        aligned(window,"hidden fold");
+        fold->trigger();settle();
+        aligned(window,"restored");
         // Narrow floating panel: fields drop below their labels, nothing clips or scrolls sideways.
         dock->setFloating(true);dock->resize(200,700);settle();
         require(dock->width()<=220,"Narrow fixture did not take effect");

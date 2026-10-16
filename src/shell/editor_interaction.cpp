@@ -35,10 +35,33 @@ void setReflowPolicy(QLabel* label, QSizePolicy::Policy horizontal) {
     policy.setVerticalPolicy(QSizePolicy::Preferred);policy.setHeightForWidth(label->wordWrap());
     label->setSizePolicy(policy);label->updateGeometry();
 }
+// D205: the column is 120 px unless a label's unbreakable word (QLabel's minimum width) is wider.
+// Thai on Windows has no break points (no libthai), so "ระยะห่างถนนทิศตรงข้าม" is one 123 px word;
+// QFormLayout keeps such a row beside its label at the word's width, which moved only that form's
+// fields. Every form under the root now widens alike. A word more than a quarter wider widens no
+// other form; its own row lays out as before D205 (usually wrapped below its label).
+struct FormColumn {
+    std::vector<QPointer<ReflowLabel>> labels;
+    std::vector<QPointer<QWidget>> hosts;
+    int width=editorDesign::formLabelWidth;
+    void refresh() {
+        int next=editorDesign::formLabelWidth;
+        for(const auto& label:labels)if(label) {
+            const int word=label->QLabel::minimumSizeHint().width();
+            if(word<editorDesign::formLabelWidth*5/4)next=std::max(next,word);
+        }
+        if(next==width)return;
+        width=next;
+        for(const auto& label:labels)if(label)label->updateGeometry();
+        // A hidden form (the closed appearance fold) is not laid out on the posted request, so it would
+        // keep the old column until shown; lay it out now.
+        for(const auto& host:hosts)if(host&&!host->isVisible()&&host->layout())host->layout()->activate();
+    }
+};
 QSize ReflowLabel::sizeHint() const {
     if(!wordWrap() || textFormat()==Qt::RichText)return QLabel::sizeHint();
     auto natural=fontMetrics().size(Qt::TextExpandTabs,text());
-    if(property("editorFormLabel").toBool())natural.setWidth(editorDesign::formLabelWidth);
+    if(property("editorFormLabel").toBool())natural.setWidth(column_?column_->width:editorDesign::formLabelWidth);
     const auto padding=contentsMargins();
     auto size=natural+QSize(padding.left()+padding.right()+2*margin(),padding.top()+padding.bottom()+2*margin());
     if(auto* parent=parentWidget()) {
@@ -56,9 +79,12 @@ namespace {
 // form stacks each field under its label instead.
 class FormReflow : public QObject {
 public:
-    FormReflow(QFormLayout* form,QWidget* host):QObject(host),form_(form){host->installEventFilter(this);apply(host);}
+    FormReflow(QFormLayout* form,QWidget* host,std::shared_ptr<FormColumn> column)
+        :QObject(host),form_(form),column_(std::move(column)){host->installEventFilter(this);apply(host);}
     bool eventFilter(QObject* watched,QEvent* event) override {
         if(event->type()==QEvent::Resize)apply(static_cast<QWidget*>(watched));
+        // A label's text or font changed (a language switch): its form asks for a new layout.
+        if(event->type()==QEvent::LayoutRequest)column_->refresh();
         return false;
     }
 private:
@@ -69,15 +95,20 @@ private:
         if(form_->rowWrapPolicy()!=policy)form_->setRowWrapPolicy(policy);
     }
     QFormLayout* form_;
+    std::shared_ptr<FormColumn> column_;
 };
 }
 void alignFormLabels(QWidget* root) {
+    auto column=std::make_shared<FormColumn>();
     for(auto* form:root->findChildren<QFormLayout*>()) {
         for(int row=0;row<form->rowCount();++row)
             if(auto* cell=form->itemAt(row,QFormLayout::LabelRole))
-                if(auto* label=dynamic_cast<ReflowLabel*>(cell->widget()))label->setProperty("editorFormLabel",true);
-        if(auto* host=form->parentWidget())new FormReflow(form,host);
+                if(auto* label=dynamic_cast<ReflowLabel*>(cell->widget())) {
+                    label->setProperty("editorFormLabel",true);label->column_=column;column->labels.emplace_back(label);
+                }
+        if(auto* host=form->parentWidget()){new FormReflow(form,host,column);column->hosts.emplace_back(host);}
     }
+    column->refresh();
 }
 QSize ReflowLabel::minimumSizeHint() const {
     // A form label keeps its wrapped height: a short dock shrinks the scrolling pages, not a label.
