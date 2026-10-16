@@ -226,7 +226,8 @@ Vissim's cooperative lane change. Extended by the [driving-behaviour review](aud
 lane-change headway and safety-distance reduction, politeness, zipper merging and a blocking
 timeout, and overtaking with the driving side (keep-left/right bias, return after passing, lane
 preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
-left-hand-traffic networks, held in a behaviour key (D178). **Gate:** contract and failure-first rows per item in the
+left-hand-traffic networks, held in a behaviour key (D178). **Lane-change duration contract written**
+([LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md), D204, rows BA48–BA53; not implemented). **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention
@@ -265,8 +266,10 @@ replays byte-identically; no overlap in 2D at any tick. **M3.7.0 contract writte
 ([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46). **Slice 1 (compile and codec) done**
 (D187, [evidence](evidence/lateral-codec.md), BA45); **slice 2 (spans and predicates) done** (D188,
 [evidence](evidence/lateral-spans.md), BA40–BA42); **slice 3a (motion, admission and crossing) done**
-(D189, [evidence](evidence/lateral-motion.md), BA43, BA44; targets set only by tests); next: slice 3b,
-zone occupancy by span.
+(D189, [evidence](evidence/lateral-motion.md), BA43, BA44; targets set only by tests); **slice 3b (zone
+occupancy by span) done** (D202, [evidence](evidence/lateral-zones.md), BA47); **slice 4 (display) done** (D203,
+[evidence](evidence/lateral-display.md), BA46). The M3.7.0 contract's slices are all in; the gate stays
+open until a product writer of lateral targets (M3.4) runs and M3.7's later items are built.
 
 ### M3.8 — Motorcycles and lane sharing
 

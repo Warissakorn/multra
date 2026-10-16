@@ -350,7 +350,7 @@ struct LastLaneChange {
 // so replay/seek and a second change can reconstruct the same rolling body.
 struct LaneChangeTrace {
     std::uint32_t fromRoute{}, toRoute{};
-    double fromDistance{}, toDistance{}, speed{};
+    double fromDistance{}, toDistance{}, speed{}; bool lateral{}; // D203: a lateral crossing, never slid
     bool operator==(const LaneChangeTrace&) const = default;
 };
 // Display-only suffix selections made after physical lane changes. Route distance is unchanged.

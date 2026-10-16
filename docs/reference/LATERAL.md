@@ -1,13 +1,13 @@
 # Lateral contract: two-dimensional occupancy (M3.7.0)
 
-Designed 2026-10-15 (D180). **Slices 1–3a are implemented**: the §9 keys (schema 33), the §3
+Designed 2026-10-15 (D180). **Slices 1–4 are implemented**: the §9 keys (schema 33), the §3
 cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)), the §5–§6
-spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), and §7's motion, admission
-and crossing (D189, [evidence](../evidence/lateral-motion.md)). Only a test sets a lateral target
-yet, so every product run still keeps `lateral` at 0. Rows BA39–BA46 are in
-[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA45 have
-automated evidence, BA39 is kept in every slice, and BA46 is pending. Zone occupancy by span is
-slice 3b. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
+spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), §7's motion, admission
+and crossing (D189, [evidence](../evidence/lateral-motion.md)), zone occupancy by span (D202,
+[evidence](../evidence/lateral-zones.md)) and the display (D203, [evidence](../evidence/lateral-display.md)). Only a test sets a lateral target
+yet, so every product run still keeps `lateral` at 0. Rows BA39–BA47 are in
+[the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA47 have
+automated evidence and BA39 is kept in every slice. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
 M3.4's lane-change duration, M3.7's lateral behaviour and M3.8's motorcycles.
 [PERCEPTION](PERCEPTION.md) owns what a driver observes, [SIMULATION](SIMULATION.md) owns the tick,
@@ -106,8 +106,7 @@ So the engine is lane-based, and a vehicle occupies exactly the lane its route n
   pushed toward a lane line or a motorcycle riding on one therefore appears on both lanes.
   The span-reading machinery then sees it with **no new code path**: `closestVehicle`'s leader
   search, PERCEPTION's search, `around`, D108 admission and the priority-rule give-way scan. **Zones
-  do not read spans** (`summarizeZones`, `zoneHold`, `resolveRequests` work from route positions), so
-  zone occupancy needs its own code; it is deferred to slice 3b (D188). `courtesyHolds` ignores
+  work from route positions**, so slice 3b (D202) adds their own span scan: see §6. `courtesyHolds` ignores
   `own = false` spans, because its hold is applied on the holder's own route.
 - The other lane's span is the own span's `[rear, front]` mapped through the reference line (§3) and
   clamped to that segment; a body covering several own sections yields one merged span per lane.
@@ -144,8 +143,17 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   clamps apply to the overlapping physical leader. Together with §7's admission rule, no two bodies
   ever overlap in two dimensions at a published tick.
 - **Priority rules** read spans, so a straddler on a conflict segment holds the minor approach, without
-  a lateral filter. This is conservative and stated. **Zones** stay route-based in slice 2: a straddler
-  occupies only its own route's zone until slice 3b adds a span scan (D188).
+  a lateral filter. This is conservative and stated.
+- **Zones** (slice 3b, D202). An `own = false` span on a segment of a zone side's chain counts as the
+  other side sees a body, with no lateral filter: inside a **major** area (front past `entry`, rear
+  short of `exit`, in that segment's metres) it sets `majorInside` and `majorBlocks`; on the chain's
+  first segment short of entry it is anticipated by the same headway/gapTime test as a route
+  position; inside a **minor** area it joins `holders`, so major vehicles wait at entry; and in
+  phase 2 it sweeps a major area when its front plus the tick's move passes entry while its rear is
+  short of exit (the move mapped one to one, exact on straight Links). Stated limits: the straddler
+  itself is **not held** at the other lane's zone, because its route has no incidence there (M3.4,
+  the first product writer of targets, adds mapped incidence if it is needed); approach on segments
+  upstream of the chain is not seen.
 
 ## 7. Lateral motion and its admission
 
@@ -212,11 +220,11 @@ uncertain.
 | `around` / `safeAt` (`lanes.cpp:46`, `:83`) | Lateral filter; alongside per §6 |
 | `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic; `own = false` spans are skipped (D188) |
 | Priority rules (give-way scan in `stepSimulation`) | A straddler's span on the conflict segment holds the minor approach |
-| Zones (`summarizeZones`, `zoneHold`, `resolveRequests`, `src/core/conflicts.cpp`) | Slice 3b: they read route positions, not spans, so occupancy by a straddler needs a span scan (D188) |
+| Zones (`summarizeZones`, `resolveRequests`, `src/core/conflicts.cpp`) | A straddler's other-lane span blocks, is anticipated, holds and sweeps per §6 through `LateralIndex::zoneSides`; `zoneHold` reads that state and does not hold the straddler at the other lane's zone (D202) |
 | `placeVehicle` (`retune.cpp`), Lab telemetry (`lab_run.cpp`), `dead_end_waits.cpp` | Stay one-dimensional mirrors: a placement next to a straddler is refused, and the two displays do not filter laterally (stated, D188) |
 | D108 source insertion (`simulation.cpp:160`) | A new vehicle starts centred, and its first span is checked in two dimensions |
 | Lateral admission (§7, `moveLaterally`) | After the longitudinal step, in vehicle-id order (D189) |
-| Editor pose (`src/editor/vehicle_pose.hpp`, `src/editor/lane_change_pose.cpp`) | Draws the body at lane centre + `lateral`. Once M3.4 lands, the display slide is replaced by the engine's own lateral path. Display never feeds physics |
+| Editor pose (`src/editor/canvas_run.cpp`, `vehicle_pose.hpp`, `lane_change_pose.cpp`) | Draws the body at lane centre + `lateral`, offset along the left normal of the body's heading (exact on straight lanes). A crossing made by §7's motion is flagged `lateral` in `LaneChangeTrace` and never slid; instantaneous changes keep the D97 slide until M3.4 replaces it with the engine's own lateral path. Display never feeds physics (D203) |
 | Evaluation (queue counters, travel-time sections) | A straddling vehicle counts on its route's lane only (stated) |
 
 ## 11. Performance budget
@@ -234,8 +242,8 @@ One slice per session:
 
 1. Compile and codec: cross-sections, `drivingSide`, the keys (BA45).
 2. Spans and predicates (BA40–BA42).
-3. Lateral motion and admission (BA43, BA44; 3a, D189), then zone occupancy by span (3b, D188).
-4. Display (BA46).
+3. Lateral motion and admission (BA43, BA44; 3a, D189), then zone occupancy by span (BA47; 3b, D202).
+4. Display (BA46; D203).
 
 BA39 runs in every slice. M3.4's lane-change duration then sets `yT` across the boundary, and its
-changer occupies both lanes through §5.
+changer occupies both lanes through §5; its contract is [LANE_CHANGE_DURATION](LANE_CHANGE_DURATION.md) (D204).

@@ -107,6 +107,7 @@ TEST(lateralmotion, ba44_a_covered_crossing_remaps_the_route_and_keeps_the_body_
         if (!changed) continue;
         CHECK(!crossed); crossed = true;
         CHECK(v.routeIndex != startRoute);
+        CHECK(v.laneChangeTrace.size() == 1 && v.laneChangeTrace.back().lateral); // D203: never slid on screen
         CHECK(std::abs(v.lateral) <= 1.75 + 1e-12);          // now measured from the right lane's centre
         CHECK(std::abs(before - 0.0) < kStep + 1e-12);       // the centre was at the boundary (y = 0)
         for (const auto& e : state.events)                    // the tick's MovedEvent names the new lane

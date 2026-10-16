@@ -28,10 +28,20 @@ struct SegmentCrossSection {
     double referenceStart{}, referenceEnd{};
     bool operator==(const SegmentCrossSection&) const = default;
 };
+// Slice 3b (D202): one side of a conflict zone as it lies on one segment of its chain, in that
+// segment's metres: the area is [lo, hi] (from `entry` on the chain's first segment, to `exit` on its
+// last, the whole segment between). `first` marks the chain's first segment, where approach counts.
+struct SegmentZoneSide {
+    std::size_t zone{}; bool major{}, first{};
+    double lo{}, hi{};
+};
 // §5-§6 (D188): resolved once per run when the switch is on. `neighbours[s]` lists, in ascending
 // segment index, the other lane sections of segment s's carriageway whose reference ranges overlap.
+// `zoneSides[s]` (D202) lists the zone sides whose chain holds segment s, in zone order, major
+// first; empty without a zone.
 struct LateralIndex {
     bool on{};
     std::vector<std::vector<std::size_t>> neighbours;
+    std::vector<std::vector<SegmentZoneSide>> zoneSides;
 };
 }

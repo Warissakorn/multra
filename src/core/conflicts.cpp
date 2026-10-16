@@ -9,6 +9,17 @@ constexpr double kPast = 1e-9;          // m: a front this far beyond a line has
 constexpr double kStoppedSpeed = 0.1;   // m/s: a leader slower than this is taken as standing
 constexpr double kLineReach = 0.1;      // m: beyond the standstill distance, still "at" a Stop line
 const ZoneSide& sideOf(const ConflictZone& z, ZoneRole role) { return role == ZoneRole::major ? z.major : z.minor; }
+// One major body against its area: `d` is its front's distance short of entry (negative inside),
+// `rearInside` its rear not yet clear of the exit. Route positions and spans (D202) share it.
+void blockMajor(ZoneState& state, const ConflictZone& zone, double d, bool rearInside, double speed) {
+    if (d < 0) { if (rearInside) state.majorBlocks = state.majorInside = true; }
+    else if (d <= zone.headway) state.majorBlocks = true;
+    // Equality satisfies the time threshold (contract §4); a standing vehicle beyond the
+    // headway is a gap, not a block -- it cannot enter while a minor vehicle holds anyway.
+    else if (speed > 0 && d / speed < zone.gapTime) state.majorBlocks = true;
+}
+// LATERAL §5 (D202): the spans a body casts on lanes other than its route's, with the switch on.
+bool scansSpans(const ScenarioIndex& index) { return index.lateral.on && !index.lateral.zoneSides.empty(); }
 }
 double waitingRoom(const Scenario& scenario) {
     const auto standstill = [&](const std::string& id) {
@@ -64,6 +75,12 @@ std::vector<RouteZone> zoneIncidence(const Scenario& scenario, const std::vector
 }
 std::vector<ZoneState> summarizeZones(const Scenario& scenario, const ScenarioIndex& index,
                                       const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs) {
+    if (!scansSpans(index)) return summarizeZones(scenario, index, vehicles, refs, {});
+    return summarizeZones(scenario, index, vehicles, refs, occupiedSpans(scenario, vehicles, index, refs));
+}
+std::vector<ZoneState> summarizeZones(const Scenario& scenario, const ScenarioIndex& index,
+                                      const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs,
+                                      const std::vector<OccupiedSpan>& spans) {
     std::vector<ZoneState> zones(scenario.conflictZones.size());
     if (zones.empty()) return zones;
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
@@ -76,12 +93,20 @@ std::vector<ZoneState> summarizeZones(const Scenario& scenario, const ScenarioIn
                 if (vehicle.distance - rz.waitAt > kPast && rear < rz.exitAt) state.holders.push_back(vehicle.id);
                 continue;
             }
-            const double d = rz.entryAt - vehicle.distance; // positive: still short of the area
-            if (d < 0) { if (rear < rz.exitAt) state.majorBlocks = state.majorInside = true; }
-            else if (d <= zone.headway) state.majorBlocks = true;
-            // Equality satisfies the time threshold (contract §4); a standing vehicle beyond the
-            // headway is a gap, not a block -- it cannot enter while a minor vehicle holds anyway.
-            else if (vehicle.speed > 0 && d / vehicle.speed < zone.gapTime) state.majorBlocks = true;
+            blockMajor(state, zone, rz.entryAt - vehicle.distance, rear < rz.exitAt, vehicle.speed);
+        }
+    }
+    if (!scansSpans(index)) return zones;
+    // A straddler occupies the zone of the other lane its body covers, as the other side sees it:
+    // inside a major area it blocks, approaching on the chain's first segment it is anticipated,
+    // inside a minor area it holds. It is not itself held there (D202).
+    for (const auto& span : spans) {
+        if (span.own) continue;
+        for (const auto& side : index.lateral.zoneSides[span.segmentIndex]) {
+            auto& state = zones[side.zone];
+            const double d = side.lo - span.front;
+            if (!side.major) { if (d < 0 && span.rear < side.hi) state.holders.push_back(span.vehicleId); }
+            else if (side.first || d < 0) blockMajor(state, scenario.conflictZones[side.zone], d, span.rear < side.hi, span.speed);
         }
     }
     return zones;
@@ -146,10 +171,20 @@ std::vector<StopService> refreshStops(const Scenario& scenario, const ScenarioIn
 }
 std::vector<ZoneCap> resolveRequests(const Scenario& scenario, const ScenarioIndex& index,
                                      const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs,
-                                     const std::vector<double>& moves, const std::vector<std::optional<VehicleLeader>>& leaders) {
+                                     const std::vector<double>& moves, const std::vector<std::optional<VehicleLeader>>& leaders,
+                                     const std::vector<OccupiedSpan>& spans) {
     std::vector<ZoneCap> caps;
     if (scenario.conflictZones.empty()) return caps;
     std::vector<bool> majorSweeps(scenario.conflictZones.size(), false);
+    // D202: a straddler's span on a major chain sweeps that area too. Spans come in vehicle order, so
+    // one cursor finds each span's move; the move is mapped one to one (exact on a straight Link).
+    if (scansSpans(index))
+        for (std::size_t s = 0, v = 0; s < spans.size(); ++s) {
+            while (v + 1 < vehicles.size() && vehicles[v].id != spans[s].vehicleId) ++v;
+            if (spans[s].own || vehicles[v].id != spans[s].vehicleId) continue;
+            for (const auto& side : index.lateral.zoneSides[spans[s].segmentIndex])
+                if (side.major && spans[s].front + moves[v] > side.lo && spans[s].rear < side.hi) majorSweeps[side.zone] = true;
+        }
     // One request per vehicle crossing a line this tick: a chain shares one line, so a request
     // is made to every zone of it at once, and its receiving space is past the chain's end.
     struct Request { std::size_t vehicle; double distance, clearAt; std::vector<std::size_t> zones; };

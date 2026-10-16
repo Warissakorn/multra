@@ -2,6 +2,7 @@
 // M3.2.3a: the crossing admission runtime (docs/reference/M3_CONTRACT.md §4). Everything here reads the
 // immutable pre-step snapshot, so no vehicle's decision depends on the order vehicles are visited.
 #include "following.hpp"
+#include "routes.hpp"
 
 namespace trafficsim {
 // Every zone this route meets, in route distances (M3.2.3b). Shared by the run index and by
@@ -26,6 +27,12 @@ struct ZoneState {
     bool majorInside{};                  // the occupancy part alone: a major front past entry, rear not clear
     std::vector<std::uint64_t> holders;  // minor vehicles past the waiting line, rear not yet clear
 };
+// With the lateral switch on, a span a body casts on another lane (`own = false`, LATERAL §5) also
+// occupies that lane's zones (D202): inside a major area it blocks, on the chain's first segment short
+// of entry it is anticipated by headway and gapTime, inside a minor area it holds. `spans` is the
+// snapshot's occupiedSpans; the overload without it builds them only when the switch is on.
+std::vector<ZoneState> summarizeZones(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,
+                                      const std::vector<VehicleRefs>&, const std::vector<OccupiedSpan>& spans);
 std::vector<ZoneState> summarizeZones(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,
                                       const std::vector<VehicleRefs>&);
 // The nearest line a zone holds this vehicle at, as a distance ahead of its front; none when no
@@ -63,10 +70,12 @@ std::vector<StopService> refreshStops(const Scenario&, const ScenarioIndex&, con
 //  - a major vehicle's front reaches that zone's area within the same tick (the swept check); or
 //  - it and other requests of this tick wait on the same standing leader, which leaves room for
 //    fewer of them than asked -- lower vehicle ids are served first (receiving space, M3.2.3c).
-// `moves` is each vehicle's candidate distance, `leaders` its snapshot vehicle leader.
+// `moves` is each vehicle's candidate distance, `leaders` its snapshot vehicle leader, `spans` the
+// snapshot's occupiedSpans: a straddler's span on a major chain sweeps that area too (D202).
 struct ZoneCap { std::size_t vehicle{}; double distance{}; };
 struct VehicleLeader { double gap{}, speed{}; std::uint64_t vehicleId{}; };
 std::vector<ZoneCap> resolveRequests(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,
                                      const std::vector<VehicleRefs>&, const std::vector<double>& moves,
-                                     const std::vector<std::optional<VehicleLeader>>& leaders);
+                                     const std::vector<std::optional<VehicleLeader>>& leaders,
+                                     const std::vector<OccupiedSpan>& spans);
 }

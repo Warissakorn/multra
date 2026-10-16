@@ -215,6 +215,7 @@ int main(int argc, char** argv) {
         require(changer.has_value(), "Setup: no vehicle changed lanes on the lab");
         const auto trace=find(w.runState(),*changer)->laneChangeTrace;
         require(trace.size()==1,"Setup: expected first lane change");
+        require(!trace.front().lateral,"An instantaneous lane change is flagged as a lateral crossing (D203)");
         const double reach=3*std::max(trace.front().speed,5.);
         const auto startTick = find(w.runState(), *changer)->lastLaneChange->tick;
 
