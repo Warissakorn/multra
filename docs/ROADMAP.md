@@ -39,8 +39,8 @@ It does not close the owner's M0 plausibility gate, M1 or M7. Body in [archive](
 
 The Vissim modelling surface, natively: links are first class, connectors are real objects, junctions are not something the user places.
 
-**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open) and M1.28's gate
-(open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
+**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate
+(open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
 [CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted
 by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
 an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility remains open.
@@ -94,6 +94,16 @@ Contract and rows: [MAP_BACKGROUND](reference/MAP_BACKGROUND.md); plan:
 [OSM_BACKGROUND](plans/OSM_BACKGROUND.md). No automatic road import or offline archive.
 **Gate remains open:** MAP1–MAP9 automated/platform evidence and MAP10 owner alignment
 and responsiveness on a real study. This does not close M1.23 interchange or any engine gate.
+
+### M1.29 — Owner looks carved out of the sitting (D194)
+
+**Open, owner.** Carved 2026-10-16 from [OWNER_SITTING](plans/OWNER_SITTING.md) under R4 (b), each
+unanswered for more than 14 days; the full steps are in that sheet's history (`git log -p` on it).
+(1) D83/D84 controls and gestures: chevrons, one Thai/English baseline, 24 px fields, plain left
+click never authors, and is Ctrl+right too slow for heavy route/counter work? (2) PRs #73–#75
+interaction cleanup on curved and overlapping roads. (3) M1.19/M1.20 Connectors: none deleted by a
+Link drag unexpectedly, half a lane width as the "off the Link" distance, lanes meeting middle on
+middle. **Gate:** the owner's yes on each, at 100/150/200 % on Windows. Merged code is not a passed look.
 
 ## M2 — Demand, run, first numbers · **CLOSED** (gate passed, D53; closed by D143)
 
@@ -182,11 +192,23 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 | M3.2.8c discretionary changes (D95) and hold (D101) | Implemented and **off** (D102); remainder moved to M3.4 |
 | M3.2.9a–h lane correspondence and Connector ends (D73–D80, D106, D107) | Implemented; **owner look of D80 pending** |
 
+### M3.2.10 — Owner looks carved out of the sitting (D194)
+
+**Open, owner.** Carved 2026-10-16 from [OWNER_SITTING](plans/OWNER_SITTING.md) under R4 (b), each
+unanswered for more than 14 days. (1) D90 cooperative braking on the M2.6 East approach: do
+lane-2/3 left-turners slip into lane 1 with the vehicle behind slowing, not stopping dead? (2) D93
+downstream decision on the four-leg West pocket: changes toward the turn with no LANE_UNSERVED (CLI
+on Windows 118 : 41 : 0)? (3) D86/D72 conflict areas follow a dragged Link and go, with Yield and
+line, when it is dragged clear; Ctrl+Z restores them. (4) D80 four-point mouths at 45–179°, 1–3
+lanes, kerb/median lanes added or dropped; fixed lane-index pairing holds. **Gate:** the owner's yes
+on each. This does not close M3.2, which still closes on M3.2.7d.
+
 ---
 
 ### M3.2.8a.1 — Remaining moving merge and source-clearance clamps
 
-**Open (D105/D108, 2026-10-04).** D105 removed stationary zero-allowance false starts. **M3.2.8a.1a source first-step clearance is implemented (D108):** preserve the sampled arrival in its queue until ordinary following/integration from rest fits the snapshot leader clearance. Three current D107 source clamps disappear in 120 stress runs; 21 moving minor clamps remain. The earlier D105 geometry had different counts, retained as historical evidence. [Original diagnosis](evidence/m3.2.8a-clamps.md); [source verification](evidence/source-first-step.md).
+**Open (D105/D108, 2026-10-04).** The standstill cap that treats a moving leader as standing
+([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D194 (sitting B5). D105 removed stationary zero-allowance false starts. **M3.2.8a.1a source first-step clearance is implemented (D108):** preserve the sampled arrival in its queue until ordinary following/integration from rest fits the snapshot leader clearance. Three current D107 source clamps disappear in 120 stress runs; 21 moving minor clamps remain. The earlier D105 geometry had different counts, retained as historical evidence. [Original diagnosis](evidence/m3.2.8a-clamps.md); [source verification](evidence/source-first-step.md).
 
 **Scope:** define how a minor approaching a merge anticipates the shared leader's standstill buffer before its span appears, and how a source insertion fits its first acceleration step into a small positive clearance. Keep the 1 m derived setback (D50), buffer and maximum deceleration until an explicit new contract says otherwise; do not suppress events or relax collision checks to remove counts.
 
@@ -198,7 +220,7 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 
 **Open; carved out of M3.2.8c by D143 (R7).** Visibility at conflict areas, a between-lanes state
 (a change is instantaneous in the engine), `laneChangeDistance` where changes are measured late
-(D87/D89), D95's booked route (i) if discretionary changes are reopened (owner, sitting B2), and
+(D87/D89), D95's booked route (i), the only way discretionary changes reopen, after M3.5's look-past (D194), and
 Vissim's cooperative lane change. Extended by the [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md)
 (D177, §3 F–G): lane-change duration with between-lanes occupancy (on M3.7.0; [LATERAL](reference/LATERAL.md) §5, §7), minimum
 lane-change headway and safety-distance reduction, politeness, zipper merging and a blocking
@@ -311,7 +333,8 @@ as red, which biased every signalised delay an M5 table reports. Contract first:
 the vehicle stop at a stated deceleration before the stop line?), intergreen handling, and
 failure-first rows. It moves prototype trajectories, so frozen baselines and BA18 change only by a
 recorded decision. **Gate:** analytic amber fixtures, both outcomes; before/after over at least 40
-seeds (D88); same-build replay.
+seeds (D88); same-build replay. The cited `w74` preset stays out of the auto-loaded catalog and
+gets no `amberDeceleration` until this milestone is revisited (D194, sitting B13).
 
 ---
 

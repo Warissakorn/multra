@@ -37,41 +37,21 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 
 ## B — Decisions in chat (one line each)
 
-1. **The name (Q5)** (listed at the end of M1, D49). D11's trigger ("end of M1") is live. `Velk` is the
-   strongest recorded candidate; `Headway` and `MicroFlow Simulator` were rejected and `Veytrix`
-   set aside (D11). *Owner:*
-2. **D95/D101 discretionary lane changes** (listed 2026-10-02). Off by the owner's choice (ii).
-   A53 fails (4.85 % / 5.09 % returns within 10 s against a 1 % cap,
-   `evidence/m3.2.8c-discretionary.md`). Keep off, reopen by route (i) (look past the nearest
-   vehicle, E1/E3), or move the cap (iii)? Now part of M3.4 (R7). *Owner:*
-3. **`sharedMouth` and `level`** (listed before 2026-10-03). A different drawing `level` counts as no
-   crossing, although M3_CONTRACT says level is not separation. Keep or change? *Owner:*
 4. **The M2.6 template** (listed 2026-09-25). `data/projects/m2.6-study-template.traffic.json`
    has placeholder volumes, a guessed timing-to-approach mapping and no aerial image. Supply the
    real study's counts, timing sheet and image for M5.7 (A3)? *Owner:*
-5. **Standstill cap** (listed 2026-10-08, [W74 clamp trace](../evidence/w74-clamps.md)). The hard
-   cap treats a moving leader as standing; it clamps in every model. Amber itself is now M4.2
-   (R2). Book the cap as its own slice, or leave it? *Owner:*
-6. **Routing stations** (listed 2026-10-06). Continuous-time or several stations on one Link,
-   beyond M2.1.3: wanted? *Owner:*
-8. **The example's cool-down** (listed 2026-10-09, D146). `four-leg-signalised` stays schema 17
-   with no cool-down, so its batch still warns on 11 of 12 movements; 300 s clears every window
-   trip ([evidence](../evidence/m5.9-cooldown.md)). Give the example a cool-down (its tests'
-   expected numbers change), or keep it as the before case? *Owner:*
 9. **M6 benchmark choice (Q4)** (listed 2026-10-10, M6.0). Read the
    [option sheet](../evidence/m6-benchmark-options.md) and answer its §7 by letter: Q4's kind of
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
-12. **Thai sources for the multi-level values** (listed 2026-10-15, D175). Name the editions for
-   cross-section templates (Department of Highways / Department of Rural Roads), the PCU source
-   (motorcycles flagged uncertain, R3) and, if a local value exists, saturation flow; HCM's
-   1,900 pc/h/ln is the fallback ([workflow](MULTI_LEVEL_WORKFLOW.md) §7). Which documents? *Owner:*
-13. **The cited `w74` preset** (listed 2026-10-15, D176, [evidence](../evidence/w74-preset.md)).
-   `data/driver-behaviour/presets/w74-sumo-defaults.json` holds SUMO's defaults and is not
-   loaded into projects (an unused `w74` behaviour would add traits to every vehicle). Ship it
-   in the auto-loaded catalog, and give it an `amberDeceleration` (SUMO's car-following model
-   has none, so amber holds like red: 72–98 % of its clamps), or leave both? *Owner:*
+
+Answered 2026-10-16: **B1, B2, B3, B5, B6, B8, B12, B13**, owner: “ปิดตามข้อเสนอ” (“close as
+proposed”), [D194](../decisions/RECORD.md#d194). Keep `TrafficSim` until a release; D95/D101 stay off
+and reopen only by route (i) in M3.4; the `level` skip is a discrepancy with M3_CONTRACT, queued as
+a fix in NEXT; the standstill cap joins M3.2.8a.1; more routing stations wait for a study that needs
+them; `four-leg-signalised` gets a 300 s cool-down (queued in NEXT); B12 is asked when multi-level S1
+starts; the `w74` preset stays out of the catalog until M4.2 is revisited. Numbers are not reused.
 
 Answered 2026-10-15: **UI B16/B17**, owner: “ทำตามแนะนำ” (“follow the recommendation”).
 Proceed with layout A (task selector within the existing Objects dock) and the five proposed tool
@@ -96,15 +76,9 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 3. **Rear-axle turning, phases 1–3** (listed 2026-10-05). Car and heavy vehicle on a curved
    Connector, a short Connector and an internal Link join; lane-change guidance at low zoom. Does
    the rear axle cut inside the curve with continuous heading, a stopped changer hold its body,
-   and a second change continue the first? *Owner:*
-4. **D102 lane-change display** (listed 2026-10-02, phase 3 since 2026-10-05).
-   `data/projects/lane-change-lab.traffic.json`, Lane drop scene. Does a changer ease across and
+   and a second change continue the first? The D102 lane-change display (C4, merged here by D194): in
+   `data/projects/lane-change-lab.traffic.json`, Lane drop scene, does a changer ease across and
    hold when stopped? *Owner:*
-5. **D90 cooperative braking** (listed 2026-10-01). M2.6, East approach. Do lane-2/3
-   left-turners slip into lane 1 with the vehicle behind slowing, not stopping dead? *Owner:*
-6. **D93 downstream decision** (listed 2026-10-01). Copy of four-leg; a decision on the West
-   pocket Link (East 3, North 1), routeless West input. Do pocket vehicles change toward their
-   turn with no LANE_UNSERVED? (CLI on Windows: 118 : 41 : 0.) *Owner:*
 7. **D149 Compare with…** (listed 2026-10-10). Save a copy of the M2.6 template with one input
    raised; open the original, Results → Compare with… the copy (Seeds 42-51), Cancel part way, run
    again, Copy into Excel/Word, Export; Thai strings. Do the table and note read as alternative
@@ -134,10 +108,6 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 
 ## D — Right-of-way on the drawing
 
-1. **D86/D72 conflict areas follow the drawing** (listed 2026-09-30).
-   `t-junction-priority.traffic.json`, tool `A`. Drag Major eastbound along and across: do the
-   area and its line follow, status stay "runs", no grey copy? Drag it clear: do area, Yield and
-   line go, and Ctrl+Z restore them? Needing an area wider than the overlap is the failure. *Owner:*
 2. **D109/D110 conflict controls, Bézier coverage** (listed 2026-10-05). Curved Connector after an
    interior drag; a 3 × 3 crossing: nine lane-pair band pairs, one row, group edit/Delete, Undo;
    two separated intersections stay two rows. *Owner:*
@@ -151,24 +121,12 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 
 ## E — Drawing and gestures (100/150/200 %)
 
-1. **D83/D84 controls and gestures** (listed 2026-09-29). Chevrons, stacked spin chevrons, Thai
-   and English on one baseline, 24 px fields. Plain left click never authors; Ctrl+right draws.
-   Is Ctrl+right too slow for heavy route/counter work (D84's failure)? *Owner:*
 2. **Canvas grid** (listed 2026-10-03). At 125 %, too faint? Fix colour, not width. *Owner:*
-3. **Interaction cleanup, PRs #73–#75** (listed 2026-09-29). Curved and overlapping roads, tabs
-   at working zoom. Anything wrong by eye? *Owner:*
-4. **D80 central axis and four-point mouths** (listed 2026-09-28). Read
-   `reference/CONNECTOR_FOUR_POINT_MOUTH.md`. Both ends at 45/90/120/150/170/179°, 1–3 lanes,
-   kerb/median lanes added or dropped; grips, save/reopen, Undo. Fixed lane-index pairing holds?
-   *Owner:*
 5. **D96 route overlay** (listed 2026-10-02). Route 2-lane Link → 1-lane Connector → 2-lane Link,
    end-mounted and mid-body. Both lanes of both Links shown, nothing upstream of a mid-body
    arrival? *Owner:*
 6. **D100 Ctrl+A wireframe** (listed 2026-10-02). Is the line readable on the grid? Wanting
    vehicles on the line is the failure. *Owner:*
-7. **M1.19/M1.20 Connectors** (listed 2026-09-24 or earlier). Any Connector deleted by a Link drag
-   unexpectedly? Is half a lane width the right "off the Link" distance? Lanes meet middle on
-   middle? *Owner:*
 8. **D116 road crossbars and Route trace** (listed 2026-10-06). Curved/multi-lane roads,
    Connector-mounted heads; trace a branch, click the destination, Undo/Redo, Backspace, cancel,
    save/reopen. Signal Run bars stay at the stop position and change colour; Reset restores. *Owner:*
@@ -185,37 +143,23 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    Set a reference on a real study, trace a known road, pan/zoom, save/reopen. Are alignment and
    responsiveness good enough for tracing? No automated check closes survey accuracy. *Owner:*
 
-12. **UI slice 0: unchanged workspace** (listed 2026-10-15). Compare the
-   [before](../images/ui-presentation-before/workspace-en.png) and
-   [after](../images/ui-presentation-after/workspace-en.png) English images, then the Thai
-   1024×768 images linked in [audit §8](../audits/UI_PRESENTATION_AUDIT.md#8-baseline-evidence).
-   Switch language on every Objects/Results page; select A/Q/T/Z; Show in table, Check, Run seeds,
-   Cancel; move/float/hide panels, focus and Reset. Do labels/navigation still address the same
-   page and does the workspace look unchanged? Linux offscreen evidence does not close this
-   Windows/100/150/200% visual check. The baseline's post-Step Thai canvas is 248 px high;
-   restoring >=250 in that state belongs to the later layout slice. *Owner:*
-13. **D190 quiet canvas and state language** (listed 2026-10-15). Compare
-   [before](../images/ui-states-before/workspace-th.png) and
-   [after](../images/ui-states-after/workspace-th.png) (English beside them). Rest on the empty
-   canvas, Objects panel and a conflict area: no tooltip; F1 shows the help. Hover/check toolbar
-   tools, open each menu, select palette rows and table cells with mouse and Tab. Is the active
-   tool easy to find from its underline, and keyboard focus still visible? Dock titles 13 px,
-   hints 11 px readable in Thai? Linux offscreen evidence does not close this. *Owner:*
-14. **D192 icon vocabulary** (listed 2026-10-16). Compare the
-   [before](../images/ui-icons-before/contact-sheet.png) and
-   [after](../images/ui-icons-after/contact-sheet.png) contact sheets (16 px, 4×, 32, 48 px), then
-   the [English](../images/ui-icons-after/workspace-en.png) and [Thai](../images/ui-icons-after/workspace-th.png)
-   workspaces. At 100/150/200 % on Windows, can you tell Connect lanes from Routes, Rotate from Reset
-   and Fit from Focus without the tooltip? Do Grid and Conflict areas also need different shapes?
-   *Owner:*
-15. **D193 palette and Simulation toolbar** (listed 2026-10-16). Compare
-   [before](../images/ui-palette-before/workspace-en.png) and
-   [after](../images/ui-palette-after/workspace-en.png) (Thai 1024×768 and focus beside them), then
-   [icons only](../images/ui-palette-after/workspace-icons.png). Do the five groups read right? Use
-   the arrow above the palette and View → icons only: are the tools findable from glyph and tooltip,
-   are the blank group rows acceptable dividers, and is the extra row above the tree worth it? On the
-   Simulation bar, is Reset behind its separator clear, and is the 24 px Run (F5) text unclipped at
-   100/150/200 % on Windows? Linux offscreen evidence does not close this. *Owner:*
+13–15. **The current UI: D190 quiet canvas, D192 icons, D193 palette** (listed 2026-10-15/16;
+   merged by D194, E12 dropped because slices a/b changed the workspace it asked to see unchanged).
+   Compare the before/after images of [D190](../images/ui-states-after/workspace-th.png),
+   [D192](../images/ui-icons-after/contact-sheet.png) and [D193](../images/ui-palette-after/workspace-en.png)
+   (their *-before* folders beside them), then work in the current build at 100/150/200 % on
+   Windows, in English and Thai: rest on the empty canvas, Objects panel and a conflict area (no
+   tooltip; F1 shows the help); find the active tool from its underline and keyboard focus with Tab;
+   tell Connect lanes from Routes, Rotate from Reset and Fit from Focus without the tooltip; read the
+   five palette groups, then View → icons only (blank group rows acceptable? extra row above the tree
+   worth it?); on the Simulation bar, is Reset behind its separator clear and Run (F5) unclipped?
+   Linux offscreen evidence does not close this. *Owner:*
+
+Carved out 2026-10-16 by [D194](../decisions/RECORD.md#d194) (R4 b applied before the sitting, owner's
+choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now
+[M1.29](../ROADMAP.md#m129--owner-looks-carved-out-of-the-sitting-d194) and
+[M3.2.10](../ROADMAP.md#m3210--owner-looks-carved-out-of-the-sitting-d194). They stay unchecked and close
+nothing. Numbers are not reused.
 
 ## F — Dialogs: demand and behaviour
 

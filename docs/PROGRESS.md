@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Owner sitting triage (D194, docs only)
+
+The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
+- **Closed as proposed:** B1 (keep `TrafficSim` until a release), B2 (D95/D101 off; route (i) only,
+  in M3.4), B3, B5 (standstill cap booked in M3.2.8a.1), B6, B8, B12 (asked at multi-level S1), B13
+  (`w74` preset stays out of the catalog; noted in M4.2).
+- **B3 is a code/contract discrepancy, not a choice:** `automatic_conflicts.cpp` skips pairs whose
+  drawing `level` differs, while M3_CONTRACT §1 says level is not separation. Queued as a fix slice
+  in NEXT with a failure-first row; B8's 300 s cool-down is queued the same way. No code changed.
+- **R4 (b) applied before the sitting:** C5, C6, D1, E1, E3, E4, E7 (listed more than 14 days)
+  became ROADMAP M1.29 and M3.2.10; C4 merged into C3; E12 dropped (slices a/b changed the
+  workspace it asked to see unchanged); E13–E15 merged into one look. Nothing is closed by this.
+- What remains only the owner's: A1, B4 → A3, A2, B9, the milestone closures and the looks.
+
+Checked on Linux: `check_docs` and `check_file_sizes` (built standalone from `tools/`) pass. No
+code changed and no desktop build or CTest run was made for this entry.
+
 ## 2026-10-16 — UI slice b: palette groups, icons-only view and Simulation toolbar (D193)
 
 The owner's B17 choice is in (`src/shell/editor_palette.cpp`, `editor_workspace.cpp`,
@@ -223,23 +240,6 @@ for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now
 tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
 still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
 assignments in its fixture). Linux headless `check` passed.
-
-## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
-
-A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
-reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
-controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
-and 32 ticks of copied-state replay, including live histories in positive-delay copies.
-- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
-  provenance are retained; summaries weight seeds equally and report changing availability.
-- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
-  startup estimates remain signed. These responses are recorded, not tuned or validated.
-- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
-  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
-
-Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
-  CLI help/output protection and all existing perception/safety/reference regressions.
-[Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
 
 ## Older entries
 

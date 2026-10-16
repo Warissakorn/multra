@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Product scope, stack, naming and owner gates | D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D194, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
@@ -175,3 +175,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D192](RECORD.md#d192) — icon vocabulary: Connector road bend, Route dot-trace-arrow, Reset mirrored with an origin dot, Focus wide panel; 16 px pair tests and a contact sheet.
 
 [D193](RECORD.md#d193) — five palette groups, transient icons-only palette view, Simulation bar Run/Step | Seed/speed | Reset, Delete trailing; Run button kept at 24 px.
+
+[D194](RECORD.md#d194) — owner sitting triage: B1–B3, B5, B6, B8, B12, B13 closed as proposed; R4 (b) carve-outs M1.29 and M3.2.10; `level` skip queued as a fix.
