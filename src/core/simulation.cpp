@@ -241,7 +241,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     for (std::size_t h = 0; h < scenario.signalHeads.size(); ++h)
         headColors.push_back(signalColorAt(scenario.signalPrograms[index.programOfHead[h]], startTime));
     // Conflict zones (M3.2.3a), read from the same snapshot. Empty -- and free -- without one.
-    const auto zones = summarizeZones(scenario, index, vehicles, refs);
+    const auto zones = summarizeZones(scenario, index, vehicles, refs, spans);
     // Stop service (M3.2.5), from the same snapshot and only when some zone is a Stop.
     // Kept out of the per-vehicle loop entirely when no zone is a Stop: that loop is the engine's
     // hot path, and a branch per vehicle there measured +1% of stepSimulation.
@@ -407,7 +407,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     if (!zones.empty()) {
         std::vector<double> distances(moves.size());
         for (std::size_t v = 0; v < moves.size(); ++v) distances[v] = moves[v].distance;
-        for (const auto& cap : resolveRequests(scenario, index, vehicles, refs, distances, leaders)) {
+        for (const auto& cap : resolveRequests(scenario, index, vehicles, refs, distances, leaders, spans)) {
             auto& move = moves[cap.vehicle];
             if (move.distance <= cap.distance) continue;
             move.distance = cap.distance; move.speed = 0;

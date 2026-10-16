@@ -6,6 +6,26 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — M3.7 slice 3b: zone occupancy by span (D202)
+
+The owner chose the head of the engine queue. `src/core/conflicts.*`, `lateral.*`, `lateral_types.hpp`.
+- **What a straddler's other-lane span does to a zone** (switch on only): inside a major area it
+  blocks, on the chain's first segment it is anticipated by headway/gapTime (one `blockMajor` helper
+  shared with route positions), inside a minor area it holds, and in phase 2 it sweeps a major area.
+  `LateralIndex::zoneSides` gives each segment's zone sides once per run.
+- **Not done, on purpose:** the straddler is not held at the other lane's zone. That needs the zone
+  mapped into its own route's distances; no product writer sets targets until M3.4, so it waits for
+  M3.4's evidence rather than being built blind (D202's failure condition names it).
+- `zoneHold` code is unchanged; `summarizeZones` keeps a 4-argument overload that builds spans only
+  with the switch on, so the ten lane-based test callers did not change. `simulation.cpp` stays at
+  500 lines: the step passes its existing spans on the same lines.
+- Rows: BA47 (6 tests, `lateralzone`), each with its forcing asserted and a mutation that fails it.
+
+Checked on Linux headless: `ctest` 105/105, `check` green, CLI pin unchanged and the Release CLI
+output byte-identical to main. Release timings in the [evidence](evidence/lateral-zones.md): switch
+off inside noise; switched-on four-leg +7 % on a noisy container, below D164's 10 %. No desktop or
+Windows run.
+
 ## 2026-10-16 — Owner sitting triage (D201, docs only)
 
 The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
@@ -260,37 +280,6 @@ Windows or real-display verification). Three changes, one commit each:
 
 Looked at and left: the engine (no `stepSimulation` child above 9 %, noise ±7 %), the Run view
 (already batches Steps per frame), docs (the audit's broken references were false positives).
-
-## 2026-10-15 — Six audit correctness fixes from main (D191)
-
-The owner authorized fixes from main after the repository review; this branch starts at
-`0b45fee`. The six reproduced issues are corrected:
-
-- Compile exact runtime-to-authored route provenance outside core; `/` in authored IDs no longer
-  sends completed trips to another movement, including lane expansion and seed aggregation.
-  Follow-up (2026-10-16): the three remaining consumers that rebuilt the relation from the id's
-  spelling now read the same map — `authoredRouteLength` (the editor's route Length, which gave
-  `r` the length of an authored `r/lane-2` listed before it), parking-lot exits and the lab's
-  loop lanes. Outputs are otherwise unchanged (CLI seed 42 and all four projects' 42–43 batches).
-- Live desired-speed reductions use bounded braking with consistent speed, acceleration and
-  distance in both prototype and W74. Ordinary runs retain their frozen replay. Review follow-up:
-  the prototype's free term `(desired − speed)/followingTime` had no floor, so a 15→5 m/s retune
-  braked at −6.7 m/s² (25→5: −13.3, past `maxDeceleration`); it is now floored at
-  `−comfortableDeceleration`, the rate W74 already used. It is never negative without a retune or
-  placement, so baselines are unchanged; both models' tests now assert the comfortable bound.
-- Reject retune demand edits atomically instead of retaining an incompatible arrival schedule.
-- Check finite, integral, in-range signal group numbers before casting to `int`, for controllers
-  and heads; reject empty chains on either side of a conflict zone.
-- Mirror runtime catalog deletions and renames, preserving the separately managed PROJ database.
-  Add a guarded CMake sync test and a fail-fast headless sanitizer preset/Linux CI matrix entry.
-
-Verified locally with GCC 14.2: headless target `check`, **104/104** CTest suites passed; the six
-new regression cases passed. Four behavior regressions were observed failing before their
-fixes; the sync test also rejects the old copy-only implementation. Instrumented core smoke
-passed ASan/UBSan; instrumented parser checks rejected 14 invalid values and read four `int`
-boundaries under UBSan/float-cast-overflow. CLI seed-42 JSON is byte-identical to the
-review baseline; seed 42–43 serial/parallel batch JSON is byte-identical. Full sanitizer CI,
-desktop and Windows verification are pending; no modelling-validation gate is closed.
 
 ## Older entries
 

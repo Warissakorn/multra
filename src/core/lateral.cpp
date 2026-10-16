@@ -99,6 +99,21 @@ LateralIndex buildLateralIndex(const Scenario& s) {
                     index.neighbours[a].push_back(b); // members ascend, so this list does too
             }
     }
+    if (s.conflictZones.empty()) return index;
+    std::map<std::string, std::size_t> segmentOf;
+    for (std::size_t i = 0; i < s.segments.size(); ++i) segmentOf.emplace(s.segments[i].id, i);
+    index.zoneSides.resize(s.segments.size());
+    for (std::size_t z = 0; z < s.conflictZones.size(); ++z)
+        for (const bool major : {true, false}) {
+            const auto& side = major ? s.conflictZones[z].major : s.conflictZones[z].minor;
+            for (std::size_t k = 0; k < side.segmentIds.size(); ++k) {
+                const auto at = segmentOf.find(side.segmentIds[k]);
+                if (at == segmentOf.end()) continue; // validation refuses it; nothing to occupy
+                const double lo = k == 0 ? side.entry : 0;
+                const double hi = k + 1 == side.segmentIds.size() ? side.exit : s.segments[at->second].length;
+                index.zoneSides[at->second].push_back({z, major, k == 0, lo, hi});
+            }
+        }
     return index;
 }
 void appendLateralSpans(std::vector<OccupiedSpan>& spans, std::size_t first, const Scenario& s,

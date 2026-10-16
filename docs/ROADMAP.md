@@ -265,8 +265,8 @@ replays byte-identically; no overlap in 2D at any tick. **M3.7.0 contract writte
 ([LATERAL](reference/LATERAL.md), D180, rows BA39–BA46). **Slice 1 (compile and codec) done**
 (D187, [evidence](evidence/lateral-codec.md), BA45); **slice 2 (spans and predicates) done** (D188,
 [evidence](evidence/lateral-spans.md), BA40–BA42); **slice 3a (motion, admission and crossing) done**
-(D189, [evidence](evidence/lateral-motion.md), BA43, BA44; targets set only by tests); next: slice 3b,
-zone occupancy by span.
+(D189, [evidence](evidence/lateral-motion.md), BA43, BA44; targets set only by tests); **slice 3b (zone
+occupancy by span) done** (D202, [evidence](evidence/lateral-zones.md), BA47); next: slice 4, display (BA46).
 
 ### M3.8 — Motorcycles and lane sharing
 
