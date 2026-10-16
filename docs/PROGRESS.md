@@ -14,7 +14,9 @@ Windows or real-display verification). Three changes, one commit each:
 - **`check` and CI run ctest in parallel.** The test groups were already separate ctest tests so
   `-j` could spread them, but `check` and every CI ctest step ran serially. `check` now passes
   the host core count; Windows and packaging steps pass `--parallel 4`. Desktop Debug `check`
-  294 → 74 s; 7/7 parallel runs green. Windows UI suites in parallel are unverified until CI.
+  294 → 74 s; 7/7 parallel runs green; Windows desktop ctest 1m20 → 0m40 in CI. The sanitizer
+  preset stays serial (`TRAFFICSIM_TEST_JOBS=1`): its CI ctest went 465 → 524 s in parallel,
+  though locally it scaled 952 → 254 s; revisit with more CI samples.
 - **`hitObjects` rejects misses by padded bounds** and takes shapes from `linkShape` /
   `connectorShape` instead of an id scan per object (it was quadratic), computing distance for hits
   only. Release editor benchmark, 200 intersections: 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms.

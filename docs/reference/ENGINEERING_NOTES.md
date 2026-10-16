@@ -112,6 +112,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 - **Test wall time (2026-10-16, Linux 4 cores, desktop Debug):** `ctest` 253 s serial, 67–68 s
   at `-j4`, 58–60 s at `-j8`; `check` (now parallel) 294 → 74 s. CI check steps before: desktop
   5m54, sanitizer 8m12, headless 3m57 (run 554).
+  Parallel on CI (run 555): desktop 1m23, headless 1m55, release 0m28, Windows ctest 0m40, but
+  sanitizer 9m39 (ctest 465 → 524 s, each test 3–5× slower). Locally the sanitizer suite scaled
+  952 / 475 / 254 s at 1 / 2 / 4 jobs (peak 4.5 GB), so the cause is unknown; the preset is serial.
 - **Editor hit-testing (2026-10-16, Release, offscreen):** `trafficsim-editor-benchmark 200 20`
   `hitObjects` 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms (median of 3). What is left in
   wireframe is building every centre stroke before the bounds check. `select` stays ≈22 ms at 200
