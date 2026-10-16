@@ -27,6 +27,7 @@
 #include <QToolButton>
 #include <QTreeWidget>
 #include <iostream>
+#include <vector>
 using namespace trafficsim;
 namespace {
 void require(bool ok,const char* message){if(!ok)throw std::runtime_error(message);}
@@ -118,6 +119,64 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     item<QComboBox>(window,"editorTool")->setCurrentIndex(0);language->setCurrentIndex(previousLanguage);
     tabs->setCurrentWidget(original.front());inner->setCurrentWidget(originalInner.front());settle();
 }
+// D193 (UI slice b1): the five task groups of the palette, every mode once with its chord, titles
+// in both languages, and arrow-key traversal in group order driving the tool combo.
+void paletteGroups(EditorWindow& window) {
+    auto* tree=item<QTreeWidget>(window,"editorObjectPalette");auto* tool=item<QComboBox>(window,"editorTool");
+    struct Group {const char* key;std::vector<int> modes;};
+    const Group groups[]={{"editorPaletteGeometry",{0,1,5,2}},{"editorPaletteControl",{8,9}},
+        {"editorPaletteDemand",{6,7,12}},{"editorPaletteMeasurement",{10,11}},{"editorPaletteTools",{3,4}}};
+    const char* chords[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z"};
+    require(tree->topLevelItemCount()==5,"Palette does not have the five task groups");
+    std::vector<int> order;
+    for(int g=0;g<5;++g) {
+        auto* root=tree->topLevelItem(g);
+        require(root->data(0,Qt::UserRole).toString()==QLatin1String(groups[g].key),"Palette group out of order");
+        require(root->childCount()==static_cast<int>(groups[g].modes.size()),"Palette group holds the wrong number of tools");
+        for(int r=0;r<root->childCount();++r) {
+            const int mode=root->child(r)->data(0,Qt::UserRole).toInt();
+            require(mode==groups[g].modes[r],"Palette group holds the wrong tool");
+            require(root->child(r)->data(0,Qt::UserRole+2).toString()==QLatin1String(chords[mode]),"Palette tool lost its chord");
+            require(root->child(r)->text(0).endsWith(QLatin1String(chords[mode])),"Palette row does not show its chord");
+            order.push_back(mode);
+        }
+    }
+    auto* language=item<QComboBox>(window,"editorLanguage");const int previous=language->currentIndex();
+    for(int lang:{0,1}) {
+        language->setCurrentIndex(lang);settle();
+        for(int g=0;g<5;++g) {
+            const auto title=tree->topLevelItem(g)->text(0);
+            require(!title.isEmpty()&&!title.contains(QLatin1String("editorPalette")),"Palette group title untranslated");
+        }
+    }
+    language->setCurrentIndex(previous);settle();
+    // Choosing a tool turns the Properties or Objects page it edits; restore both with the tool.
+    auto* properties=item<QTabWidget>(window,"editorPropertyTabs");const int page=properties->currentIndex();
+    auto* objects=item<QTabWidget>(window,"editorObjectTabs");auto* objectPage=objects->currentWidget();
+    tree->setFocus();tree->setCurrentItem(tree->topLevelItem(0)->child(0));settle();
+    std::vector<int> visited{tree->currentItem()->data(0,Qt::UserRole).toInt()};
+    for(int i=0;i<40&&visited.size()<order.size();++i) {
+        QTest::keyClick(tree,Qt::Key_Down);settle();
+        auto* current=tree->currentItem();
+        if(!current||current->data(0,Qt::UserRole+1).toBool())continue;
+        const int mode=current->data(0,Qt::UserRole).toInt();
+        require(tool->currentIndex()==mode,"Arrow traversal did not select the tool");
+        if(mode!=visited.back())visited.push_back(mode);
+    }
+    require(visited==order,"Arrow keys do not visit the tools in group order");
+    tree->setCurrentItem(tree->topLevelItem(0)->child(0));properties->setCurrentIndex(page);objects->setCurrentWidget(objectPage);settle();
+}
+// Every main toolbar fits the window: no overflow chevron, no action button outside it (D193).
+void toolbarsFit(EditorWindow& window) {
+    for(auto* bar:window.findChildren<QToolBar*>(QString(),Qt::FindDirectChildrenOnly)) {
+        if(!bar->isVisible())continue;
+        auto* extension=bar->findChild<QToolButton*>("qt_toolbar_ext_button");
+        require(!extension||!extension->isVisible(),("Toolbar overflows: "+bar->objectName().toStdString()).c_str());
+        for(auto* action:bar->actions())if(auto* widget=bar->widgetForAction(action);widget&&widget->isVisible())
+            require(window.rect().contains(QRect(widget->mapTo(&window,QPoint()),widget->size())),
+                    ("Toolbar control outside the window: "+bar->objectName().toStdString()).c_str());
+    }
+}
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
@@ -136,7 +195,13 @@ int main(int argc,char** argv) {
         auto* objects=item<QDockWidget>(window,"editorObjectsDock");
         auto* history=item<QDockWidget>(window,"editorHistoryDock");
         require(palette->isVisible()&&inspector->isVisible()&&objects->isVisible(),"Default panels missing");
-        require(toolTree->topLevelItemCount()==4,"Tool tree categories missing"); // M8.6a added Demand (Zones)
+        paletteGroups(window);
+        {
+            // Delete is destructive: the trailing action of the Tools bar, behind a separator.
+            const auto actions=item<QToolBar>(window,"editorTools")->actions();
+            require(actions.size()>=2&&actions.back()==item<QAction>(window,"editorDeleteSelected")&&actions[actions.size()-2]->isSeparator(),
+                    "Delete is not separated at the end of the Tools bar");
+        }
         require(item<QTableWidget>(window,"editorLinkTable")->verticalHeader()->defaultSectionSize()==editorDesign::tableRowHeight,"Object row density changed");
         auto* laneCount=item<QSpinBox>(window,"editorLaneCount");
         {
@@ -216,6 +281,7 @@ int main(int argc,char** argv) {
             language->setCurrentIndex(lang);window.resize(1024,768);settle();
             require(window.width()<=1024&&window.height()<=768,"Localized content forced the window larger");
             require(canvas->viewport()->width()>=400&&canvas->viewport()->height()>=250,"Small-window canvas is unusable");
+            toolbarsFit(window);
             require(language->isVisible()&&window.rect().contains(QRect(language->mapTo(&window,QPoint()),language->size())),"Language selector outside window");
             require(item<QMenu>(window,"language")->actions().size()==2,"Language fallback missing");
             auto* scope=item<QLabel>(window,"editorScope");
@@ -231,7 +297,18 @@ int main(int argc,char** argv) {
         auto* info=item<QLabel>(window,"editorRunInfo");
         require(info->wordWrap()&&info->isVisible()&&window.runState().tick==100,"Run summary or stepping regressed");
         const auto tick=window.runState().tick;
-        trigger(window,"editorFocusCanvas");window.resize(1360,860);settle();trigger(window,"editorFocusCanvas");
+        trigger(window,"editorFocusCanvas");
+        {
+            // Focus keeps the Simulation group: first prove focus hid the panels.
+            require(item<QAction>(window,"editorFocusCanvas")->isChecked()&&!palette->isVisible(),"Focus did not hide the panels");
+            auto* run=item<QToolBar>(window,"editorRunToolbar");require(run->isVisible(),"Focus hid the Simulation toolbar");
+            for(const char* key:{"editorRun","editorStep","editorReset"}) {
+                auto* widget=run->widgetForAction(item<QAction>(window,key));
+                require(widget&&widget->isVisible(),"Focus hid a Simulation control");
+            }
+            toolbarsFit(window);
+        }
+        window.resize(1360,860);settle();trigger(window,"editorFocusCanvas");
         require(!window.toolBarBreak(item<QToolBar>(window,"editorRunToolbar")),"Focus restored a stale toolbar breakpoint");
         require(window.runState().tick==tick,"Layout reset the run");
         if(argc>2) {

@@ -208,6 +208,12 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    workspaces. At 100/150/200 % on Windows, can you tell Connect lanes from Routes, Rotate from Reset
    and Fit from Focus without the tooltip? Do Grid and Conflict areas also need different shapes?
    *Owner:*
+15. **D193 palette groups** (listed 2026-10-16). Compare the
+   [before](../images/ui-palette-before/workspace-en.png) and
+   [after](../images/ui-palette-after/workspace-en.png) workspaces, then the Thai
+   [after](../images/ui-palette-after/workspace-th.png). Find each tool in English and Thai, walk the
+   palette with the arrow keys, and use every chord. Is any tool in a group you would not look in?
+   Is scrolling to Measurement/Tools in Thai at 1024×768 acceptable until b2? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

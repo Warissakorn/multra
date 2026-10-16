@@ -95,6 +95,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     coordinates_->setProperty("numeric",true);coordinates_->setFont(editorDesign::numericFont());
     statusBar()->addPermanentWidget(coordinates_);
     buildInspector();
+    tools->addSeparator(); // Delete is destructive: last, apart from view and edit tools (D193)
     tools->addAction(action("editorDeleteSelected",{},[this]{deleteSelected();}));
     buildObjectTables();
     connect(language_,&QComboBox::currentIndexChanged,this,[this]{translate();});
