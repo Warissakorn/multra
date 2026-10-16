@@ -64,6 +64,10 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   gap and visibility.
 - **Split targetStanding (measurement only).** Is the target lane standing at its own red, or in
   a queue spilling back? Add it to `--wait-causes` only when a behaviour row needs it.
+- **Lateral cost (D209, [evidence](../evidence/lateral-perf.md)).** Switched on, the lab's cost was
+  `occupiedSpans`' lateral copies and `moveLaterally` rebuilding every body each tick. Build bodies
+  only near movers; skip the neighbour loop inside a precomputed clear band; keep `lateralCounts`
+  inline. Next, if lateral keys ship on a large network: `followerFilter`'s `frontPart` per vehicle.
 - **Engine cost after D90.** Linux/GCC 15.2 callgrind (2026-10-01): lane-change work ≈3%; the
   9.1% state copy is gone (D91).
   - Before any new baseline replaces 4.35G, run a **same-compiler** callgrind at `b472e05`,

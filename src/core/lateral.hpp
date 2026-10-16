@@ -47,7 +47,12 @@ void appendLateralSpans(std::vector<OccupiedSpan>& spans, std::size_t first, con
 struct LateralFilter { const Scenario* scenario{}; LateralBand band; bool on{}; };
 LateralFilter lateralFilter(const Scenario& scenario, std::size_t frontSegment, double width,
                             double lateral, const DriverBehaviour& behaviour, double speed);
-bool lateralCounts(const LateralFilter* filter, const OccupiedSpan& span);
+// Inline (D209): called for every candidate span of every leader search.
+inline bool lateralCounts(const LateralFilter* filter, const OccupiedSpan& span) {
+    if (!filter || !filter->on) return true;
+    if (filter->scenario->segmentCrossSections[span.segmentIndex].carriageway != filter->band.carriageway) return true;
+    return filter->band.right <= span.left && span.right <= filter->band.left; // bandsOverlap, inline
+}
 // The filter for a body whose front is at `front` on `parts`; off (counting everything) without the switch.
 LateralFilter followerFilter(const Scenario& scenario, const ScenarioIndex& index,
     const std::vector<RoutePart>& parts, double front, double width, double lateral,

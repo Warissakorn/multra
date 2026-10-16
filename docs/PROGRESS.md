@@ -6,6 +6,19 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Switched-on engine round (D209)
+
+NEXT's item, owed since D206. Callgrind on the switched-on lab: 24 % in `occupiedSpans` (11 % its
+lateral copies), 10.5 % in `moveLaterally`, most of it rebuilding every body for the few that move.
+Three output-preserving changes ([evidence](evidence/lateral-perf.md)):
+- `moveLaterally` builds only bodies near movers;
+- `appendLateralSpans` skips its neighbour loop inside a precomputed, conservative clear band;
+- `lateralCounts` is inline.
+
+Switched on, the lab and four-leg now cost +3.5 % and +3.0 % Ir against `5847cb9`, inside LATERAL
+§11's 10 %; lab wall time −22 % against `347fba9`. Switched off, outputs are unchanged and the run is
+6 % cheaper. Every shipped and switched-on output is byte-identical. Linux only.
+
 ## 2026-10-16 — Mid-change gap loss: waiting at the line (D208)
 
 NEXT's item. D206 left two clamps where a faster car passed a slow changer mid-move. The owner chose
@@ -156,31 +169,6 @@ The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connec
 Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
 file sizes, docs and **159/159** CTest. No Windows or high-DPI verification.
 [At 3 px](images/ui-lod-after/crossing-at-3px.png), [just under](images/ui-lod-after/crossing-under-3px.png).
-
-## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
-
-Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,
-`road_crossbar.cpp/.hpp`, `canvas_map.cpp`, `canvas.hpp`).
-- **Casings:** each run vehicle paints its fill, a 1 px cosmetic edge opposite the fill's tone
-  (`connectorBoundaryColor`) and any followed outline. Painting, not a pen, keeps `shape()` and
-  so every run-vehicle click exactly as before.
-- **Signal shapes:** red is the full bar, amber thins the middle third, green opens it. Hit shape
-  and colours are unchanged; edit-mode dashed bars still mean draft.
-- **Found from the evidence image:** `QGraphicsView` scrolls the viewport's child widgets with the
-  scene, so the HUD (and the map credit and status before it) slid with the content until the 80 ms
-  map timer; `scrollContentsBy` now re-places them at once.
-- **Tests first:** new `run_presentation_ui_tests` (a vehicle the colour of its background still
-  shows an edge ≥ 0.3 luminance, both dark and light; casing leaves `shape()` equal to the bare
-  path; the three cues have distinct ink masks with red the superset and one hit shape; after 300
-  Steps every run vehicle is cased and a click reaches `runVehicleClicked`). Removing the casing or
-  the cue fails it. `canvas_hud_ui_tests` gained a scroll row that failed before the fix.
-- **Cost:** `trafficsim-run-view-benchmark` on the M2.6 template, 600 Steps, Debug offscreen, three
-  runs each: paint 1477–1692 → 1671–2015 ms (≈ +16 %), action 523–571 → 546–622 ms (unchanged code,
-  so ≈ +7 % is noise); ≈ +9 % paint against action. Recorded in D199; not hidden.
-
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
-file sizes, docs and **158/158** CTest. No Windows or high-DPI verification.
-[Grayscale run](images/ui-run-after/run-grayscale.png).
 
 ## Older entries
 

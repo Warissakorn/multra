@@ -16,9 +16,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   corrected from switched-on runs (window without the body length; a change under way holds its target
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
-- **Switched-on cost is owed:** +33 % `lane-change-lab`, +17 % `four-leg-signalised` (Release, seeds
-  42–51, D206; D208 adds ≈ 6 % to the lab), above LATERAL §11's 10 %. Nothing a user runs is slower; the cut is due before any shipped
-  project or preset carries lateral keys.
+- **Switched-on cost is inside the budget** (D209): +3.5 % lab, +3.0 % four-leg Ir against `5847cb9`;
+  outputs byte-identical.
 - **D208: mid-change, a changer waits at the line** until the start's safety tests hold on the lane it
   would cover (owner's choice); switched-on clamps 2 → 0.
 - **D207: a swapping pair of stubs resolves by the rear one yielding** (owner's choice). Shipped
@@ -27,27 +26,24 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - D205 (main's Windows-only UI reds) is on main; it is confirmed only by a green Windows run.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
   is still owed if the owner reports slowness.
-- `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
+- `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (archived PROGRESS D196
   entry); if it fails again, capture its output before re-running.
 - M3.5 is implemented through BA38 (D181–D186).
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the switched-on engine round (measure first)
+## Next session — a straddler follows the other lane's leaders (rows first)
 
-D208 resolved the mid-change clamps ([evidence](evidence/lane-change-gap.md)): both switched-on
-projects run with 0 clamps and no stalls. What remains of M3.4's lateral work, in order. A session told
-only to "continue" takes item 1:
-1. **Switched-on cost** (owed since D206, +33 % lab / +17 % four-leg; D208 adds about 6 % to the lab):
-   profile a Release switched-on `lane-change-lab` run (seeds 42–51, the `data/` copy with keys
-   0.5/1.0/1 on every behaviour), then cut the largest cost: likely `moveLaterally`'s per-tick
-   `resolveRefs`/`occupiedSpans`/`bucketSpans` rebuild and `coversSafely`'s scan over every vehicle.
-   Outputs must stay byte-identical; follow D164's recipe (callgrind, before/after, same build dir).
-2. **A straddler does not follow the other lane's leaders** (LATERAL §6 says "the follower's
-   carriageway"; `closestVehicle` searches the own lane). D208's step back hides it while waiting.
-   Rows first; the leader search lives in `src/core/simulation.cpp`, at 500 lines, so move code out
-   before adding any.
-3. After them: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
+D209 brought the switched-on cost inside LATERAL §11 ([evidence](evidence/lateral-perf.md)). What
+remains of M3.4's lateral work, in order. A session told only to "continue" takes item 1:
+1. **A straddler does not follow the other lane's leaders.** LATERAL §6 counts a leader "on the
+   follower's carriageway", but `closestVehicle` (`src/core/simulation.cpp`) and `perceivedLeaders`
+   search only the follower's own route parts. A body over the line can drive up beside, or into, a car
+   on the lane it covers; D208's step back hides this only while a change waits. Rows first (a
+   straddler held at a lateral offset beside a slower car ahead on the next lane: it must follow it).
+   `simulation.cpp` is at 500 lines: move `closestVehicle` out (e.g. to `routes.cpp` or a new
+   `leaders.cpp`) before adding anything. Outputs of shipped (switched-off) runs must not move.
+2. After it: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
    motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);

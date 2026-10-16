@@ -2,6 +2,31 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
+
+Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,
+`road_crossbar.cpp/.hpp`, `canvas_map.cpp`, `canvas.hpp`).
+- **Casings:** each run vehicle paints its fill, a 1 px cosmetic edge opposite the fill's tone
+  (`connectorBoundaryColor`) and any followed outline. Painting, not a pen, keeps `shape()` and
+  so every run-vehicle click exactly as before.
+- **Signal shapes:** red is the full bar, amber thins the middle third, green opens it. Hit shape
+  and colours are unchanged; edit-mode dashed bars still mean draft.
+- **Found from the evidence image:** `QGraphicsView` scrolls the viewport's child widgets with the
+  scene, so the HUD (and the map credit and status before it) slid with the content until the 80 ms
+  map timer; `scrollContentsBy` now re-places them at once.
+- **Tests first:** new `run_presentation_ui_tests` (a vehicle the colour of its background still
+  shows an edge ≥ 0.3 luminance, both dark and light; casing leaves `shape()` equal to the bare
+  path; the three cues have distinct ink masks with red the superset and one hit shape; after 300
+  Steps every run vehicle is cased and a click reaches `runVehicleClicked`). Removing the casing or
+  the cue fails it. `canvas_hud_ui_tests` gained a scroll row that failed before the fix.
+- **Cost:** `trafficsim-run-view-benchmark` on the M2.6 template, 600 Steps, Debug offscreen, three
+  runs each: paint 1477–1692 → 1671–2015 ms (≈ +16 %), action 523–571 → 546–622 ms (unchanged code,
+  so ≈ +7 % is noise); ≈ +9 % paint against action. Recorded in D199; not hidden.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **158/158** CTest. No Windows or high-DPI verification.
+[Grayscale run](../images/ui-run-after/run-grayscale.png).
+
 ## 2026-10-16 — UI slice e1: canvas HUD (D197)
 
 The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,

@@ -90,7 +90,30 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
     for (auto& vehicle : vehicles) vehicle.lateralSpeed = 0;
     if (std::none_of(vehicles.begin(), vehicles.end(), [](const auto& v) { return v.lateralTarget.has_value(); })) return;
     const auto refs = resolveRefs(s, vehicles, index);
-    const auto spans = occupiedSpans(s, vehicles, index, refs);
+    // D209: only bodies that can meet a mover's are built. A mover's body and its moves stay on its own
+    // segments and their neighbours; a body reaches those from its own segments or their neighbours.
+    const auto onParts = [&](std::size_t v, auto&& f) {
+        const double front = vehicles[v].distance, rear = front - s.vehicleTypes[refs[v].type].length;
+        for (const auto& part : index.parts[refs[v].route]) {
+            if (part.start > front) break; // parts ascend
+            if (part.start + part.length >= rear) f(part.segmentIndex);
+        }
+    };
+    std::vector<char> near(s.segments.size(), 0);
+    for (std::size_t v = 0; v < vehicles.size(); ++v)
+        if (vehicles[v].lateralTarget) onParts(v, [&](std::size_t own) {
+            near[own] = 1;
+            for (const auto n : index.lateral.neighbours[own]) {
+                near[n] = 1;
+                for (const auto m : index.lateral.neighbours[n]) near[m] = 1;
+            }
+        });
+    std::vector<OccupiedSpan> spans;
+    for (std::size_t v = 0; v < vehicles.size(); ++v) {
+        bool reaches = false;
+        onParts(v, [&](std::size_t own) { reaches = reaches || near[own]; });
+        if (reaches) appendVehicleSpans(spans, s, index, vehicles[v], refs[v]);
+    }
     const auto buckets = bucketSpans(spans, s.segments.size());
     std::vector<OccupiedSpan> moved;   // admitted bodies at their new places, this tick
     std::vector<std::uint64_t> movedIds; // ascending: vehicles are in id order

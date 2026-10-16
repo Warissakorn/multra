@@ -99,6 +99,18 @@ LateralIndex buildLateralIndex(const Scenario& s) {
                     index.neighbours[a].push_back(b); // members ascend, so this list does too
             }
     }
+    index.clearLeft.assign(s.segments.size(), INFINITY);
+    index.clearRight.assign(s.segments.size(), -INFINITY);
+    for (std::size_t a = 0; a < s.segments.size(); ++a)
+        for (const auto n : index.neighbours[a]) {
+            // appendLateralSpans skips n when min(left, nR) − max(right, nL) ≤ kLateralOverlap, which
+            // left ≤ nL + kLateralOverlap guarantees, and so does right ≥ nR − kLateralOverlap.
+            const auto& other = s.segmentCrossSections[n];
+            const double half = other.startWidth / 2;
+            if (other.centre > s.segmentCrossSections[a].centre)
+                index.clearLeft[a] = std::min(index.clearLeft[a], other.centre - half + kLateralOverlap - 1e-9);
+            else index.clearRight[a] = std::max(index.clearRight[a], other.centre + half - kLateralOverlap + 1e-9);
+        }
     if (s.conflictZones.empty()) return index;
     std::map<std::string, std::size_t> segmentOf;
     for (std::size_t i = 0; i < s.segments.size(); ++i) segmentOf.emplace(s.segments[i].id, i);
@@ -126,6 +138,7 @@ void appendLateralSpans(std::vector<OccupiedSpan>& spans, std::size_t first, con
         const auto& section = s.segmentCrossSections[span.segmentIndex];
         const auto body = bodyBand(section, width, lateral);
         span.right = body.right; span.left = body.left;
+        if (body.left <= index.clearLeft[span.segmentIndex] && body.right >= index.clearRight[span.segmentIndex]) continue; // D209
         for (const auto n : index.neighbours[span.segmentIndex]) {
             const auto& other = s.segmentCrossSections[n];
             const double half = other.startWidth / 2; // lane sections have one width
@@ -139,6 +152,7 @@ void appendLateralSpans(std::vector<OccupiedSpan>& spans, std::size_t first, con
             else { at->rear = std::min(at->rear, rear); at->front = std::max(at->front, front); }
         }
     }
+    if (extras.empty()) return;
     std::sort(extras.begin(), extras.end(), [](const auto& a, const auto& b) { return a.segment < b.segment; });
     for (const auto& e : extras) {
         auto span = spans[first]; // same vehicle, speed, acceleration and band
@@ -155,10 +169,5 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
     const DriverBehaviour& behaviour, double speed) {
     if (!index.lateral.on || parts.empty()) return {};
     return lateralFilter(s, frontPart(parts, front).segmentIndex, width, lateral, behaviour, speed);
-}
-bool lateralCounts(const LateralFilter* filter, const OccupiedSpan& span) {
-    if (!filter || !filter->on) return true;
-    if (filter->scenario->segmentCrossSections[span.segmentIndex].carriageway != filter->band.carriageway) return true;
-    return bandsOverlap(filter->band.right, filter->band.left, span.right, span.left);
 }
 }
