@@ -108,7 +108,8 @@ void EditorWindow::refreshDemand() {
     routeTable_->setRowCount(0);inputTable_->setRowCount(0);programTable_->setRowCount(0);decisionTable_->setRowCount(0);
     if(history_.document().definition) {
         const auto& def=*history_.document().definition;
-        const auto scenario=buildScenario(history_.document().network,def);
+        CompiledRouteOrigins origins;
+        const auto scenario=buildScenario(history_.document().network,def,&origins);
         for(const auto& r:def.routes) {
             QStringList ids;
             for(const auto& id:r.segmentIds)ids<<QString::fromStdString(id);
@@ -116,7 +117,7 @@ void EditorWindow::refreshDemand() {
             // which is the expanded chain of sections. Summing the authored ids instead would
             // charge a route that turns off part way along a lane for the whole lane. One full
             // lane chain's distance, never a stub's (authoredRouteLength).
-            const double length=authoredRouteLength(scenario,r.id);
+            const double length=authoredRouteLength(scenario,origins,r.id);
             const int n=routeTable_->rowCount();routeTable_->insertRow(n);
             row(routeTable_,n,{QString::fromStdString(r.id),ids.join(" → "),QString::number(length,'f',2)},r.id);
         }

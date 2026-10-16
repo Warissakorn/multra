@@ -53,7 +53,8 @@ LabRun::Compiled LabRun::compile(const LabSettings& settings) const {
     ScenarioDefinition definition = *document.definition;
     for (auto& program : signalGroupPrograms(document.definition->signalControllers))
         definition.signalPrograms.push_back(std::move(program));
-    Compiled snapshot{document, buildScenario(document.network, definition), {built.mainRoute}};
+    Compiled snapshot{document, {}, {built.mainRoute}, {}};
+    snapshot.scenario = buildScenario(document.network, definition, &snapshot.origins);
     snapshot.loops.insert(snapshot.loops.end(), built.crossRoutes.begin(), built.crossRoutes.end());
     // Every compiled lane chain of every loop closes on itself. Spans between the lanes
     // would read route distances without a wrap rule (BEHAVIOUR_LAB.md §1.1): no lane changes.
@@ -73,9 +74,10 @@ void LabRun::start(Compiled compiled, const LabSettings& settings) {
     // Loop by loop, main first, so the tuned vehicle is the first placed and has the lowest id.
     for (std::size_t loop = 0; loop < compiled.loops.size(); ++loop) {
         const auto& id = compiled.loops[loop];
-        std::vector<const Route*> lanes; // its compiled chains, `id` or `id/lane-k`, in canonical order
+        std::vector<const Route*> lanes; // the chains compiled from `id` (D191), in canonical order
         for (const auto& route : scenario.routes)
-            if (route.id == id || route.id.starts_with(id + "/")) lanes.push_back(&route);
+            if (const auto o = compiled.origins.find(route.id); o != compiled.origins.end() && o->second == id)
+                lanes.push_back(&route);
         if (lanes.empty()) throw std::logic_error("LAB_LOOP_NOT_COMPILED: " + id);
         const int count = loop == 0 ? settings.traffic.vehicleCount + 1 : settings.traffic.crossVehicleCount;
         std::vector<int> perLane(lanes.size(), 0), placed(lanes.size(), 0);

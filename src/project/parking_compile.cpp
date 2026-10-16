@@ -7,7 +7,7 @@
 
 namespace trafficsim {
 void compileParkingLots(const ProjectDocument& d, const AuthoringDefinition& expanded, Scenario& scenario,
-                        const std::filesystem::path& data) {
+                        const CompiledRouteOrigins& origins, const std::filesystem::path& data) {
     const auto& layer = d.zones;
     if (layer.parkingLots.empty()) return;
     std::map<std::string, std::string> linkOfSection;
@@ -35,7 +35,7 @@ void compileParkingLots(const ProjectDocument& d, const AuthoringDefinition& exp
         for (const auto& [authored, weight] : lotExitWeights(d, lot.zoneId)) {
             std::vector<const Route*> lanes;
             for (const auto& route : scenario.routes)
-                if (route.id == authored || route.id.starts_with(authored + "/lane-")) lanes.push_back(&route);
+                if (const auto o = origins.find(route.id); o != origins.end() && o->second == authored) lanes.push_back(&route);
             for (const auto* route : lanes) {
                 const auto input = "lot:" + lot.id + "/exit/" + route->segmentIds.front();
                 if (queues.insert(input).second)
