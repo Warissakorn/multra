@@ -9,39 +9,46 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 [OWNER_SITTING](plans/OWNER_SITTING.md); dated measurements and reverted ideas live in
 [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 
-## State on 2026-10-15
+## State on 2026-10-16
 
+- UI slice a (D192) is in: Connector, Route, Reset and Focus have their own glyphs; a contact-sheet
+  mode and 16 px pair tests sit in `design_system_ui_tests`. Owner review is OWNER_SITTING E14.
 - D191 corrects the six audit findings on main: route attribution, live speed reduction, demand
   retune refusal, signal integer bounds, stale runtime catalogs and empty conflict chains.
-  Linux sanitizer CI is added; the UI slice below remains the next product task.
-- M3.7 lateral slices 1–3a are in: the keys and compiled cross-sections (D187); spans with a
-  lateral band, other-lane spans for a body past `kLateralOverlap`, and the `dLat` leader/alongside
-  filter (D188); lateral motion toward `lateralTarget`, admission in id order without 2D overlap,
-  and crossing through a covering span (D189, [evidence](evidence/lateral-motion.md)). Only tests
-  set a target, so no product run moves sideways; BA39 holds.
-- Zones still read route positions: a straddler occupies only its own route's zone (slice 3b, owner,
-  D188/D189).
+- M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
+  set a target, so no product run moves sideways; BA39 holds. Zones still read route positions
+  (slice 3b, deferred below).
 - M3.5 is implemented through BA38 (D181–D186).
-- Local evidence is Linux headless; no desktop or Windows verification is claimed.
+- Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice a
+## Next session — UI presentation slice b: palette and Simulation toolbar
 
-The owner accepted the recommended direction on 2026-10-15: “ทำตามแนะนำ”. Use layout A
-(task selector within the existing Objects dock) and the five proposed palette groups.
-State/logic ideas remain separate and deferred; B16–B18 are answered, not a new waiting gate.
+The owner accepted the recommended direction on 2026-10-15 (“ทำตามแนะนำ”): layout A and the
+five proposed palette groups (B17). State/logic ideas (B18) stay separate and deferred.
+Read [slice plan](plans/UI_PRESENTATION_SLICES.md) §b, [specification](plans/UI_PRESENTATION_SPEC.md)
+§3 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §2–§3.
 
-Read the [audit](audits/UI_PRESENTATION_AUDIT.md), [specification](plans/UI_PRESENTATION_SPEC.md)
-and [slice plan](plans/UI_PRESENTATION_SLICES.md). Slice 0 replaces positional identity for
-Objects and Results pages without moving them; see PROGRESS and audit §8 for validation.
+**Do, as one session** (`editor_palette.cpp`, `editor_workspace.cpp`, `editor_window.cpp`,
+`editor_run.cpp`, `editor_style.cpp`, both locales; tests in `workspace_ui_tests.cpp`,
+`design_system_ui_tests.cpp`, `editor_workflow_ui_tests.cpp`):
+1. Tests first: all 13 modes keep their number and chord (`S L X M K C R V H A Q T Z`, modes 0–12)
+   in both palette views; the five groups hold the intended modes (replace the current four-group
+   expectation deliberately, `editor_palette.cpp` `groups[]`); keyboard traversal, tooltip names
+   and chords, active/focus states in icon-only mode.
+2. A transient icon+name / icons-only palette toggle — no remembered state, no new setting.
+3. Group Run/Pause, Step, Reset, seed and speed on `editorRunToolbar`; keep F5, F6, Space, Esc,
+   +/− contexts; keep the group in focus mode; derive any mode label from run state.
+4. Accept: fixed control heights, no overflow at 1024 px in either language, wide single-row and
+   narrow two-row (<1180 px) toolbar behaviour; new D-row, before/after images, OWNER_SITTING §E
+   row, full desktop `check`.
 
-**Next: slice a, icon vocabulary, as one session.** Start with the duplicate Connector/Route
-and Rotate/Reset glyph tests, retain 16 px / 1.5 px / 20-unit grid / 1×–3× raster metrics,
-and produce a monochrome contact sheet. Do not implement palette, dock, Properties or HUD
-changes in that session. Record a new D-row for visible changes, before/after English/Thai
-workspace images and an owner visual row in OWNER_SITTING §E. Full desktop/check gates apply.
-After a, follow b, c (green slice 0 prerequisite), d1, d2, e1, e2 one session each.
-No new UI decision is implied for the six deferred logic/state features.
+Do not touch the Objects dock (slice c), Properties (d1), tables (d2) or the canvas HUD (e1).
+Nested Objects-page toolbars are text-only; D192 left them without glyphs on purpose — revisit
+only inside slice c or d2. After b: c (slice 0 is green), d1, d2, e1, e2, one session each.
+
+To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
+a cold Debug desktop build takes about 7 minutes on 8 cores.
 
 ## Deferred work — preserved from the preceding NEXT
 
@@ -93,8 +100,8 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
   the cited `w74` preset ships in the catalog with an amber value (B13, D176).
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
-- **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI and
-  E11 MAP10 OSM.
+- **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
+  E11 MAP10 OSM and the UI rows E12–E14 (slice 0, D190, D192 icons).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

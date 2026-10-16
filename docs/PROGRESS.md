@@ -6,6 +6,34 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice a: icon vocabulary (D192)
+
+The two source-identical glyph pairs from the UI audit are separated, and Fit/Focus no longer
+differ by the centre cross alone (`src/shell/editor_style.cpp`, `editorIcon()` only). Connector is a
+two-rail road bend with no arrow; Route is a start dot, trace and arrowhead; Reset is the mirrored
+return arrow around an origin dot (Rotate unchanged); Focus is a wide panel with a double arrow.
+Metrics, pen, roles, raster ratios, cache and every assignment are unchanged. Counter/Section and
+Link/Split were already different outlines at 16 px (shape difference 0.90 / 0.73), so they keep
+their glyphs; the contact sheet shows Grid/Conflict as another near pair for the owner's review.
+
+- **Tests first** (`tests/design_system_ui_tests.cpp`): all 30 glyphs have exactly 16/32/48 px
+  rasters and paint only WindowText (run/step: also the accent); no two 16 px ink masks are equal;
+  the five named pairs differ in ≥ 40 % of their combined ink; palette rows and Network objects
+  share `editorIcon()`'s cached QIcon. Before the redraw the suite failed on
+  "rotate and reset are the same 16 px shape" (connector/route 0, fit/focus 0.23). The floor was
+  set before measuring; the first Focus redraw measured 0.39 and the shape was changed, not the floor.
+- **Contact sheet:** `trafficsim-design-ui-tests <data> --contact-sheet <png>` renders each glyph at
+  actual 16 px, 4× without smoothing and at 32/48 px, in grey. A Rotate with a tilted body inside
+  read as "@" at 16 px and was dropped. Pixel difference is not recognition; OWNER_SITTING E14 is.
+- Nested Objects-page toolbars stay text-only: an icon there would replace or widen their labels on
+  pages slice c rearranges.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **149/149** CTest. Workspace canvas 807×391 (English) and 471×228 (Thai, after
+100 Steps) before and after; the audit's 475×248 came from another font setup. No Windows or
+high-DPI verification. [Before](images/ui-icons-before/contact-sheet.png) /
+[after](images/ui-icons-after/contact-sheet.png).
+
 ## 2026-10-15 — Six audit correctness fixes from main (D191)
 
 The owner authorized fixes from main after the repository review; this branch starts at
@@ -181,26 +209,6 @@ new delay cases. The CLI seed-42 pin remains **45 completed / 31.75870154816726 
 Qt desktop and Windows were not verified here.
 Interleaved unassigned-scenario benchmark median: +7.08 %, inside the 10 % budget.
 See [the evidence](evidence/perception-delay.md). No owner gate is closed.
-
-## 2026-10-15 — M3.5 slice 3: look-back, rear TTC and perceived lane-change tests (D183)
-
-Lane changes now read the changer's perception keys (`src/core/lanes.cpp`).
-- **Mirror check.** `around` drops a target-lane follower further back than `lookBackDistance`.
-  An unseen follower no longer blocks the change. It then reacts through its own model, and the
-  hard cap keeps it behind (BA33 runs one to the end). Alongside always refuses.
-- **Rear time-to-collision.** A seen follower closing on the changer must give `gap / (vF − v) ≥
-  rearTimeToCollision`; equal accepts (BA34).
-- **Forward test and gain.** These use the perceived leaders on the target lane and §3's lowest
-  acceleration. The room check runs against the nearest seen leader, and nothing is tested when
-  none is seen. The discretionary gain reads perceived leaders on both lanes.
-- **Shared code.** `notePerceived` and `anticipate` are shared with own motion, so the tie rule and
-  the multi-anticipation loop exist once.
-- **Checks.** Mutation check: four of the six new tests fail against slice 2's `lanes.cpp`. The
-  four-leg seed-42 run with neutral key values is equal tick by tick, with lane changes in it.
-  Benchmark inside noise.
-
-Checked on Linux: `check` 141/141, CLI seed 42 unchanged
-([evidence](evidence/perception-lane.md)).
 
 ## Older entries
 
