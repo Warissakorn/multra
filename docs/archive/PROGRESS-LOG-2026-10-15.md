@@ -2,6 +2,24 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.7 slice 1: lateral codec and cross-section compile (D187)
+
+The first lateral code, NEXT item 1. Storage and compile only; no tick reads the data.
+- **Keys.** `LateralParameters` is its own key table (`src/core/lateral.*`): all three or none,
+  a partial set refused at its first missing key, on both models. Schema 33 is written only when an
+  owned behaviour carries one, and a file below 33 carrying one is refused.
+- **Compile.** With the switch on, `buildScenario` adds one `SegmentCrossSection` per segment and
+  `drivingSide`. Lane centres come from `laneCentreOffset`, now shared with `laneGeometry`.
+  Connector paths store start/end widths from `connectorLaneWidths`. `createSimulation` re-sorts
+  them with their segments, and validation refuses a malformed table.
+- **Contract refinements (D187).** Start/end widths replace one `width`, and `DrivingSide` moved from
+  the model into core.
+- **No change without keys (BA39)**, and none with them yet. Nine "future schema" fixtures moved
+  33 → 34.
+
+Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
+([evidence](../evidence/lateral-codec.md)).
+
 ## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
 
 A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,

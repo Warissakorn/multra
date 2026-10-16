@@ -11,13 +11,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slice d1 (D195) is in: Properties forms share one 120 px label column per group, wrap
-  below two columns, and separate drivingSide from the level/display Apply. Owner review is
-  OWNER_SITTING E17, which also asks about two findings left open (the top section squeezed at
-  1024×768 with the fold open; long Apply buttons at 200 px).
-- Slice c (D194, E16) groups the Objects pages; slices a (D192, E14) and b (D193, E15) are on main.
-  c and d1 sit on branches `claude/ui-slice-c-object-groups` and `claude/ui-slice-d1-properties`
-  (d1 is stacked on c); E14–E17 wait on the owner, not a session.
+- UI slice d2 (D196) is in: every table, dialogs included, gets the 24 px / alternating / no-grid
+  recipe when polished; elided cells show their full text; cell figures go through `formatValue`.
+  Owner review is OWNER_SITTING E18.
+- Slices c (D194, E16) and d1 (D195, E17) precede it on stacked branches:
+  `claude/ui-slice-c-object-groups` → `claude/ui-slice-d1-properties` → `claude/ui-slice-d2-tables`.
+  Slices a (D192, E14) and b (D193, E15) are on main. E14–E18 wait on the owner, not a session.
+- `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
+  entry); if it fails again, capture its output before re-running.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
   set a target, so no product run moves sideways; BA39 holds. Zones still read route positions
   (slice 3b, deferred below).
@@ -25,30 +26,30 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice d2: table and numeric presentation
+## Next session — UI presentation slice e1: overlay readability and HUD
 
-Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §d2, [specification](plans/UI_PRESENTATION_SPEC.md)
-§3 and §6 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §3 and §6. Merge or rebase onto main
-first if c/d1 have merged by then. Verify filenames against the checkout before editing.
+Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §e1, [specification](plans/UI_PRESENTATION_SPEC.md)
+§5 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §5. Merge or rebase onto main first if the
+stacked UI branches have merged by then. Check the actual CMake target and source names before
+changing build registration.
 
-**Do, as one session** (`editor_tables.cpp`, `editor_results.cpp`, `editor_batch_cells.hpp`,
-`editor_compare.cpp`, `editor_counters.cpp`, `editor_sections.cpp`, `editor_zones.cpp`,
-`editor_od.cpp`, `behaviour_lab_panel.cpp`/`behaviour_lab_telemetry.cpp` and the dialog table
-builders they reach; `ui_design_tokens.hpp` only for a helper over existing values; both locales):
-1. Tests first: figures right-aligned with fixed precision through `formatValue`/`QLocale`;
-   C-locale Latin digits survive an English/Thai switch; unavailable, null and zero stay distinct;
-   full-text tooltips on elided IDs and names; 24 px rows in tables created after startup; units in
-   headers. Today `metres()` in `editor_tables.cpp`, Results figures, `editor_compare.cpp` and Lab
-   telemetry still call `QString::number` directly, and `setNumericText` sets the font only, not
-   the alignment (audit §3).
-2. CLI, export and clipboard bytes unchanged: compare a representative export before and after
-   (no new baseline fixture).
-3. Accept: results-tabs-ui, batch-run-ui, compare-run-ui, queue-counter-ui, section-ui, od-lot-ui,
-   tables-ui and behaviour-lab-ui plus the common gates; new D-row, before/after images,
-   OWNER_SITTING §E row, full desktop `check`.
+**Do, as one session** (`src/editor/canvas.hpp`, `canvas_map.cpp`, `canvas_run.cpp`,
+`canvas_feedback.cpp` and a small canvas HUD helper if needed; the shell's map/HUD translation
+binding; both locales; tests in `workspace_ui_tests.cpp`, `map_ui_tests.cpp`,
+`design_system_ui_tests.cpp` and the relevant run/gesture suites):
+1. Tests first: the HUD scale follows the inverse view transform, its units and valid/invalid
+   georeference; rotated and negative axes; marker, status and attribution do not overlap at both
+   sizes and languages; the HUD takes no gesture hits. Backgrounds are local images or fake tiles,
+   never live OSM.
+2. Neutral high-contrast casings readable on plain and aerial-like backgrounds; state cues visible in
+   grayscale using the existing R/A/G state only (no new signal logic); signal/vehicle positions and
+   hit paths unchanged; Lab heading-up supported; attribution and the validation marker always present.
+3. If north cannot be computed from existing supported interfaces, report it and defer it to a
+   separate geo task: do not change `src/model`/`src/core` or invent accuracy.
+4. Accept: new D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
 
-Do not touch Properties forms (d1, waiting on E17), the Objects groups (c, E16) or the canvas HUD
-(e1). After d2: e1 and e2, one session each.
+Do not touch the Objects groups (c), Properties (d1) or tables (d2), which wait on E16–E18. After
+e1: e2 (measured LOD refinement), one session.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
@@ -104,7 +105,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E17 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties).
+  E11 MAP10 OSM and the UI rows E12–E18 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties, D196 tables).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

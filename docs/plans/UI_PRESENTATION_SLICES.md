@@ -154,6 +154,9 @@ helper accidentally changing editingFinished/valueChanged behaviour.
 
 ## Slice d2 — table and numeric presentation
 
+Done as [D196](../decisions/RECORD.md#d196) on 2026-10-16: the recipe at polish time, elided-cell
+popups and figures through `formatValue`; header units and table action separators were not changed.
+
 A separate session from d1 because late dialog tables and Results are a different surface.
 **Files:** editor_tables.cpp, editor_results.cpp, editor_batch_cells.hpp, editor_compare.cpp,
 editor_counters.cpp, editor_sections.cpp, editor_zones.cpp, editor_od.cpp,

@@ -136,8 +136,8 @@ void EditorWindow::refreshConflicts() {
                 editable.push_back(true);
                 members.push_back({QString::fromStdString(a.name),a.priority==ConflictPriority::undetermined?text("editorConflictUndetermined"):
                     text("editorConflictGivesWay").arg(owner(a.priority==ConflictPriority::firstYields?a.first.path:a.second.path)),
-                    rule==row.priorityRules.end()?QString():QString::number(rule->gapTime,'f',1),
-                    rule==row.priorityRules.end()?QString():QString::number(rule->headway,'f',1),text("editorConflictRuns"),
+                    rule==row.priorityRules.end()?QString():editorDesign::formatValue(rule->gapTime,1),
+                    rule==row.priorityRules.end()?QString():editorDesign::formatValue(rule->headway,1),text("editorConflictRuns"),
                     !control?QString():text(*control==StopMode::stop?"editorControlStop":"editorControlYield")});
             }
             for(const auto& key:g.automaticKeys) {

@@ -1,5 +1,9 @@
 #include "editor_interaction.hpp"
 #include "../editor/ui_design_tokens.hpp"
+#include "editor_style.hpp"
+#include <QHeaderView>
+#include <QStyle>
+#include <QTableView>
 #include <QAbstractItemView>
 #include <QAbstractScrollArea>
 #include <QAbstractSpinBox>
@@ -101,6 +105,13 @@ private:
             const auto index=view->indexAt(position);
             const auto value=index.data(Qt::ToolTipRole).toString();
             if(!value.isEmpty())return value;
+            // An elided cell shows its full text (D196); a cell that fits needs no popup.
+            const auto shown=index.data(Qt::DisplayRole).toString();
+            if(index.isValid()&&!shown.isEmpty()) {
+                const auto font=index.data(Qt::FontRole).isValid()?index.data(Qt::FontRole).value<QFont>():view->font();
+                const int margin=view->style()->pixelMetric(QStyle::PM_FocusFrameHMargin,nullptr,view)+1;
+                if(QFontMetrics(font).horizontalAdvance(shown)>view->visualRect(index).width()-2*margin)return shown;
+            }
         }
         if(auto* view=qobject_cast<QGraphicsView*>(widget->parentWidget()))
             for(auto* item:view->items(position))if(!item->toolTip().isEmpty())return item->toolTip();
@@ -147,6 +158,7 @@ private:
     }
     bool eventFilter(QObject* object,QEvent* event) override {
         auto* widget=qobject_cast<QWidget*>(object);if(!widget)return false;
+        if(event->type()==QEvent::Polish)if(auto* table=qobject_cast<QTableView*>(widget))applyTableRecipe(table);
         if(popup_ && (widget==popup_ || popup_->isAncestorOf(widget))) {
             if(event->type()==QEvent::Enter || event->type()==QEvent::Wheel || event->type()==QEvent::MouseMove) {
                 leave_.stop();expiry_.start(15000);

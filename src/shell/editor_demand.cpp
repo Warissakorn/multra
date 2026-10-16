@@ -119,7 +119,7 @@ void EditorWindow::refreshDemand() {
             // lane chain's distance, never a stub's (authoredRouteLength).
             const double length=authoredRouteLength(scenario,origins,r.id);
             const int n=routeTable_->rowCount();routeTable_->insertRow(n);
-            row(routeTable_,n,{QString::fromStdString(r.id),ids.join(" → "),QString::number(length,'f',2)},r.id);
+            row(routeTable_,n,{QString::fromStdString(r.id),ids.join(" → "),editorDesign::formatValue(length,2)},r.id);
         }
         for(const auto& i:def.inputs) {
             // The authored number is the Link total. What the run receives is that total divided
@@ -146,10 +146,10 @@ void EditorWindow::refreshDemand() {
             const auto split=laneSplit(chainLanes,shareCount,i.laneShares);
             const auto lanes=split.fraction.size();
             if(lanes>1&&!split.weighted)volume+=" = "+QString::number(lanes)+QString::fromUtf8(" \u00d7 ")+
-                QString::number(i.vehiclesPerHour/static_cast<double>(lanes),'f',1);
+                editorDesign::formatValue(i.vehiclesPerHour/static_cast<double>(lanes),1);
             else if(lanes>1) {
                 QStringList perLane;
-                for(const double f:split.fraction)perLane<<QString::number(i.vehiclesPerHour*f,'f',1);
+                for(const double f:split.fraction)perLane<<editorDesign::formatValue(i.vehiclesPerHour*f,1);
                 volume+=" = "+perLane.join(" + ");
             }
             const int n=inputTable_->rowCount();inputTable_->insertRow(n);

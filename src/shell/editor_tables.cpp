@@ -32,7 +32,7 @@ void fill(QTableWidget* view,int row,const QStringList& values,const QString& id
         view->setItem(row,column,cell);
     }
 }
-QString metres(double value) { return QString::number(value,'f',2); }
+QString metres(double value) { return editorDesign::formatValue(value,2); }
 // Task groups of the Objects dock (UI slice c, B16). Pages are named by their registered key;
 // the in-group order is construction order, so no tab moves.
 const std::pair<const char*,std::vector<std::string>> objectGroups[]={

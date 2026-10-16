@@ -235,6 +235,12 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    *Network and appearance* open the top section is squeezed (it was before too); should that part
    scroll, which unpins ID/Name? Should long Apply buttons wrap or shorten at narrow widths? At
    100/150/200 % on Windows, is any Thai label clipped? Linux offscreen evidence does not close this. *Owner:*
+18. **D196 table presentation** (listed 2026-10-16). Open Demand catalog, Behaviour library and
+   an OD matrix: do their tables now match the Objects tables ([dialog](../images/ui-tables-after/tables-dialog.png))
+   and do the OD grids keep their taller editing rows? Rest on a cut-off name or route chain: is
+   the full-text popup ([example](../images/ui-tables-after/tables-tooltip.png)) helpful or in the
+   way, and is its height right? At 100/150/200 % on Windows, are figures right-aligned and
+   unclipped? Linux offscreen evidence does not close this. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

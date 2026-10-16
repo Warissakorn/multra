@@ -25,7 +25,7 @@ inline QTableWidgetItem* cell(const QString& text, bool numeric) {
     return item;
 }
 inline QTableWidgetItem* number(const std::optional<double>& value) {
-    return cell(value?QString::number(*value,'f',1):QString(),true);
+    return cell(value?editorDesign::formatValue(*value,1):QString(),true);
 }
 inline QTableWidgetItem* count(std::size_t n) { return cell(QString::number(n),true); }
 inline QString seedText(const std::vector<std::uint32_t>& seeds) {

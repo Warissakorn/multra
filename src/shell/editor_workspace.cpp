@@ -89,11 +89,6 @@ void EditorWindow::buildWorkspace() {
     }
     buildObjectGroups();
     for(auto* tabs:{properties_,objects_}){tabs->setDocumentMode(true);tabs->setUsesScrollButtons(true);tabs->setElideMode(Qt::ElideRight);}
-    for(auto* table:findChildren<QTableWidget*>()) {
-        table->setAlternatingRowColors(true);table->setShowGrid(false);
-        table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight);
-        table->horizontalHeader()->setMinimumSectionSize(editorDesign::controlHeight);
-    }
     for(auto* number:findChildren<QAbstractSpinBox*>()) {
         number->setFont(editorDesign::numericFont());number->setProperty("numeric",true);
     }

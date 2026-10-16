@@ -1,6 +1,8 @@
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
+#include <QHeaderView>
+#include <QTableView>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
@@ -201,6 +203,11 @@ QString editorStyleSheet() {
     for(const auto& [name,value]:sizes)stylesheet.replace(QLatin1String(name),QString::number(value));
     stylesheet.replace(QLatin1String("@glyphs"),editorGlyphDirectory());
     return stylesheet;
+}
+void applyTableRecipe(QTableView* table) {
+    table->setAlternatingRowColors(true);table->setShowGrid(false);
+    if(!table->property("editorCustomRows").toBool())table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight);
+    table->horizontalHeader()->setMinimumSectionSize(editorDesign::controlHeight);
 }
 void applyEditorStyle(QWidget* window) {
     installEditorStyle();
