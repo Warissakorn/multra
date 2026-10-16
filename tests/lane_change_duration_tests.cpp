@@ -308,12 +308,13 @@ TEST(lanechangeduration, ba54_a_close_leader_on_the_target_lane_holds_the_move) 
 }
 
 TEST(lanechangeduration, ba54_a_changer_over_the_line_steps_back_while_it_must_wait) { // BA54
-    // The body already 0.25 m over the line, a car on the right lane 1 m ahead of its front at a lower
-    // speed. Waiting over the line would let the changer drive up beside that car; it steps back into
-    // its own lane instead, and the car is never clamped.
+    // The body already 0.25 m over the line, a slower car on the right lane 4 m ahead of its front:
+    // following it (LATERAL §6, D210) brakes beyond comfortable, so the move must wait. It steps back
+    // into its own lane rather than wait over the line, and nobody is clamped. (Before D210 the car
+    // was 1 m ahead; a straddler that follows the lane it covers can no longer get that close.)
     auto r = stub(keys(0.5, 1.0));
     const double over = -(1.75 - r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width / 2) - 0.25;
-    auto state = place(r.s, {{r.left, 100, 8, over}, {r.right, 101 + carLength(r.s), 6, 0}});
+    auto state = place(r.s, {{r.left, 100, 8, over}, {r.right, 104 + carLength(r.s), 6, 0}});
     state.vehicles[0].desiredSpeed = 8; state.vehicles[0].lateralTarget = -3.5;
     state.vehicles[1].desiredSpeed = 6;
     CHECK(covers(state, 1, r.right)); // the forcing: over the line, with an unsafe leader there

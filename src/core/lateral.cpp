@@ -111,9 +111,13 @@ LateralIndex buildLateralIndex(const Scenario& s) {
                 index.clearLeft[a] = std::min(index.clearLeft[a], other.centre - half + kLateralOverlap - 1e-9);
             else index.clearRight[a] = std::max(index.clearRight[a], other.centre + half - kLateralOverlap + 1e-9);
         }
-    if (s.conflictZones.empty()) return index;
     std::map<std::string, std::size_t> segmentOf;
     for (std::size_t i = 0; i < s.segments.size(); ++i) segmentOf.emplace(s.segments[i].id, i);
+    index.onlyNext.assign(s.segments.size(), SIZE_MAX);
+    for (std::size_t i = 0; i < s.segments.size(); ++i)
+        if (s.segments[i].next.size() == 1)
+            if (const auto at = segmentOf.find(s.segments[i].next.front()); at != segmentOf.end()) index.onlyNext[i] = at->second;
+    if (s.conflictZones.empty()) return index;
     index.zoneSides.resize(s.segments.size());
     for (std::size_t z = 0; z < s.conflictZones.size(); ++z)
         for (const bool major : {true, false}) {
@@ -168,6 +172,20 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
     const std::vector<RoutePart>& parts, double front, double width, double lateral,
     const DriverBehaviour& behaviour, double speed) {
     if (!index.lateral.on || parts.empty()) return {};
-    return lateralFilter(s, frontPart(parts, front).segmentIndex, width, lateral, behaviour, speed);
+    const auto& part = frontPart(parts, front);
+    auto filter = lateralFilter(s, part.segmentIndex, width, lateral, behaviour, speed);
+    // D210: the other lanes the body covers at its front, with the front mapped onto each (as §5's spans).
+    const auto& section = s.segmentCrossSections[part.segmentIndex];
+    const auto body = bodyBand(section, width, lateral);
+    if (body.left <= index.lateral.clearLeft[part.segmentIndex] && body.right >= index.lateral.clearRight[part.segmentIndex]) return filter;
+    for (const auto n : index.lateral.neighbours[part.segmentIndex]) {
+        const auto& other = s.segmentCrossSections[n];
+        const double half = other.startWidth / 2;
+        if (std::min(body.left, other.centre + half) - std::max(body.right, other.centre - half) <= kLateralOverlap) continue;
+        const double length = s.segments[n].length;
+        filter.covered.push_back({n, std::clamp(mapStation(section, s.segments[part.segmentIndex].length, other, length, front - part.start), 0.0, length)});
+    }
+    if (!filter.covered.empty()) filter.onlyNext = &index.lateral.onlyNext;
+    return filter;
 }
 }

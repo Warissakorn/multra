@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — A straddler follows the other lane's leaders (D210)
+
+NEXT's item. LATERAL §6 counts leaders on the follower's carriageway, but `closestVehicle` and
+`perceivedLeaders` walked only the straddler's own route, so a body over the line drove into a slower
+car on the lane it covered. Rows BA55 failed first ([evidence](evidence/straddler-leaders.md)).
+- `closestVehicle` moved to `src/core/leaders.cpp`, so `simulation.cpp` shrank to 477 lines.
+- `followerFilter` lists the lanes the body covers at its front segment.
+- Both searches also scan those lanes, walking each through its only successor.
+
+BA54's step-back row started 1 m behind a slower car on the covered lane, which a following straddler
+can no longer reach; it now starts 4 m behind. Switched off, every output is byte-identical. Switched
+on, there are no clamps and mean delay moves by ≤ 0.29 s. Cost: +6.0 % / +4.8 % Ir against
+`5847cb9`, inside §11. `check` 164/164, Linux only.
+
 ## 2026-10-16 — Switched-on engine round (D209)
 
 NEXT's item, owed since D206. Callgrind on the switched-on lab: 24 % in `occupiedSpans` (11 % its
@@ -147,28 +161,6 @@ The owner asked which sitting items truly needed a decision, then answered “�
 
 Checked on Linux: `check_docs` and `check_file_sizes` (built standalone from `tools/`) pass. No
 code changed and no desktop build or CTest run was made for this entry.
-
-## 2026-10-16 — UI slice e2: measured LOD (D200)
-
-The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
-- **Rule:** below 3 logical px per lane (narrowest lane × `viewScale()`), Link lane markings,
-  Connector edges/dividers and mouth edges are not drawn. They are 0.10 m strokes, under a tenth
-  of a pixel there. Nothing else is hidden; hits read model geometry, so picking is unchanged.
-- **Vehicles:** the 4×2.5 px floor and 14 px windshield/cab rule (D97) were already in; the new
-  tests pin both (mutating 14→13 or 2.5→2.0 fails them).
-- **Tests first:** new `canvas_lod_ui_tests` (crossing fixture at 3 px per lane and just under:
-  markings present/absent; every other tag count equal; selected Link keeps outline, arrows and
-  grips; hits equal; Ctrl+A equal either side; rotated and flipped views decide alike; vehicle
-  boundary rows). It failed before the change with “Lane markings drawn below 3 px per lane”.
-  `wireframe_ui_tests` now views the M2.6 template at 4 px/m: its fit zoom is under 3 px per lane.
-- **Measured** (Debug offscreen, three runs each): `trafficsim-editor-benchmark` at 0.08 px/m,
-  whole-scene redraw 6.6–8.1 → 3.0–4.2 ms, wireframe (untouched) 3.9–5.5 → 4.1–5.4 ms. The run-view
-  benchmark sits at 3.1 px per lane, above the threshold: no claim. Both tools now print their
-  px/m.
-
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
-file sizes, docs and **159/159** CTest. No Windows or high-DPI verification.
-[At 3 px](images/ui-lod-after/crossing-at-3px.png), [just under](images/ui-lod-after/crossing-under-3px.png).
 
 ## Older entries
 

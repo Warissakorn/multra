@@ -138,6 +138,13 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   carriageways along the route are not filtered (D188). Exact touching counts as
   overlapping. Two motorcycles side by side in one lane, with clearance above `dLat`, are not each
   other's leaders. This applies to the physical leader and to PERCEPTION's perceived leaders alike.
+  **A straddler also searches the lanes it covers** (D210, [evidence](../evidence/straddler-leaders.md)).
+  Each other lane its body covers at its front segment by more than `kLateralOverlap` is searched
+  ahead of the body's front, mapped onto that lane as §5 maps spans, with the same filter. The search
+  walks on through that lane's only successor and stops at a fork, where the straddler has no route to
+  choose by. The nearer of the two searches is the leader; a tie keeps the own lane's. In code,
+  `followerFilter` lists the covered lanes (`LateralFilter::covered`) and `forCoveredSpans`
+  (`src/core/leaders.hpp`) scans them.
 - **Alongside** (`around`, `src/core/lanes.cpp:46`) means longitudinal overlap together with the
   same lateral test. It still refuses a lane change, whatever the perception keys.
 - **Non-overlap.** The hard cap (`allowedDistance`, `src/core/simulation.cpp:264`) and its counted
@@ -217,7 +224,7 @@ uncertain.
 
 | Consumer | Change when the switch is on |
 |---|---|
-| `closestVehicle` (`simulation.cpp:35`) and PERCEPTION's search | Lateral filter (§6); spans of straddling vehicles appear on both lanes |
+| `closestVehicle` (`leaders.cpp`) and PERCEPTION's search | Lateral filter (§6); spans of straddling vehicles appear on both lanes; a straddler also searches the lanes it covers (D210) |
 | `around` / `safeAt` (`lanes.cpp:46`, `:83`) | Lateral filter; alongside per §6 |
 | `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic; `own = false` spans are skipped (D188) |
 | Priority rules (give-way scan in `stepSimulation`) | A straddler's span on the conflict segment holds the minor approach |

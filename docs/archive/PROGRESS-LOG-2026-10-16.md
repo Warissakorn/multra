@@ -2,6 +2,28 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — UI slice e2: measured LOD (D200)
+
+The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
+- **Rule:** below 3 logical px per lane (narrowest lane × `viewScale()`), Link lane markings,
+  Connector edges/dividers and mouth edges are not drawn. They are 0.10 m strokes, under a tenth
+  of a pixel there. Nothing else is hidden; hits read model geometry, so picking is unchanged.
+- **Vehicles:** the 4×2.5 px floor and 14 px windshield/cab rule (D97) were already in; the new
+  tests pin both (mutating 14→13 or 2.5→2.0 fails them).
+- **Tests first:** new `canvas_lod_ui_tests` (crossing fixture at 3 px per lane and just under:
+  markings present/absent; every other tag count equal; selected Link keeps outline, arrows and
+  grips; hits equal; Ctrl+A equal either side; rotated and flipped views decide alike; vehicle
+  boundary rows). It failed before the change with “Lane markings drawn below 3 px per lane”.
+  `wireframe_ui_tests` now views the M2.6 template at 4 px/m: its fit zoom is under 3 px per lane.
+- **Measured** (Debug offscreen, three runs each): `trafficsim-editor-benchmark` at 0.08 px/m,
+  whole-scene redraw 6.6–8.1 → 3.0–4.2 ms, wireframe (untouched) 3.9–5.5 → 4.1–5.4 ms. The run-view
+  benchmark sits at 3.1 px per lane, above the threshold: no claim. Both tools now print their
+  px/m.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **159/159** CTest. No Windows or high-DPI verification.
+[At 3 px](../images/ui-lod-after/crossing-at-3px.png), [just under](../images/ui-lod-after/crossing-under-3px.png).
+
 ## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
 
 Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,

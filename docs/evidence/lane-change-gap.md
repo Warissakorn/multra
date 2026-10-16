@@ -15,7 +15,7 @@ target) and asserts its forcing first.
 | BA54 | A 5 m/s changer, a 10 m/s car on the target lane 6 m behind it that passes during the move | The body never covers the lane with the car alongside; the car passed first; it then changes; no clamp, no braking beyond comfortable, no 2D overlap |
 | BA54 | Body edge at the line, a car 1 m ahead on the target lane at the same speed (inside the 2 m standstill distance) | It waits (`lateralSpeed` 0) and never covers the lane; no clamp |
 | BA54 | Body edge at the line, a 10 m/s car 1 m behind on the target lane (keys 0.5/1.0, so the car takes an overhang as its leader) | The car never brakes beyond comfortable; no clamp; the car goes by |
-| BA54 | Body 0.25 m over the line, a slower car 1 m ahead there (keys 0.5/1.0) | It steps back until it no longer covers the lane; no clamp; no overlap |
+| BA54 | Body 0.25 m over the line, a slower car 1 m ahead there (keys 0.5/1.0); 4 m ahead since D210 ([straddler-leaders](straddler-leaders.md)) | It steps back until it no longer covers the lane; no clamp; no overlap |
 | BA54 | A leader 60 m ahead on the target lane | Control: the move runs at 1 m/s every tick |
 
 Mutation checks (each reverted): without the alongside test, rows 1 and 4 fail; without the
@@ -50,7 +50,6 @@ that covers a lane; it adds to D206's owed switched-on cost.
 
 ## Not covered here
 
-- A straddler still does not follow the other lane's leaders (LATERAL §6 says "the follower's
-  carriageway"; the code searches its own lane). The step back keeps it from waiting over the line,
-  but a body crossing at speed is still guided only by this start-like test.
+- A straddler did not follow the other lane's leaders; D210 closes this
+  ([straddler-leaders](straddler-leaders.md)).
 - A changer that waits past its span window keeps its target (no abandon, §9).

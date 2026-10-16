@@ -16,6 +16,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   corrected from switched-on runs (window without the body length; a change under way holds its target
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
+- **A straddler follows the lanes it covers** (D210, [evidence](evidence/straddler-leaders.md), BA55):
+  `closestVehicle` (now `src/core/leaders.cpp`) and `perceivedLeaders` also scan the lanes a body
+  covers, through each lane's only successor. Switched off byte-identical; switched on +6.0 % / +4.8 %
+  Ir against `5847cb9`, inside LATERAL §11.
 - **Switched-on cost is inside the budget** (D209): +3.5 % lab, +3.0 % four-leg Ir against `5847cb9`;
   outputs byte-identical.
 - **D208: mid-change, a changer waits at the line** until the start's safety tests hold on the lane it
@@ -32,19 +36,16 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — a straddler follows the other lane's leaders (rows first)
+## Next session — the review's §5 order: M3.6 turning speeds (rows first)
 
-D209 brought the switched-on cost inside LATERAL §11 ([evidence](evidence/lateral-perf.md)). What
-remains of M3.4's lateral work, in order. A session told only to "continue" takes item 1:
-1. **A straddler does not follow the other lane's leaders.** LATERAL §6 counts a leader "on the
-   follower's carriageway", but `closestVehicle` (`src/core/simulation.cpp`) and `perceivedLeaders`
-   search only the follower's own route parts. A body over the line can drive up beside, or into, a car
-   on the lane it covers; D208's step back hides this only while a change waits. Rows first (a
-   straddler held at a lateral offset beside a slower car ahead on the next lane: it must follow it).
-   `simulation.cpp` is at 500 lines: move `closestVehicle` out (e.g. to `routes.cpp` or a new
-   `leaders.cpp`) before adding anything. Outputs of shipped (switched-off) runs must not move.
-2. After it: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
-   motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
+The lateral lane-change items NEXT queued are done through D210 (no gate is closed). Of what they left, only a leader beyond a fork on a
+covered lane stays unseen ([evidence](evidence/straddler-leaders.md)), and no run has needed it. What
+remains, in order. A session told only to "continue" takes item 1:
+1. **M3.6 turning speeds** (ROADMAP M3.6; the [driving-behaviour review](audits/DRIVING_BEHAVIOUR_REVIEW.md)
+   §5 order, D177/D178). Read the ROADMAP entry and its contract first; write the failure-first rows
+   before code, and ask the owner any behaviour choice the contract leaves open.
+2. After it: M3.4 overtaking with driving side, M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
+   M3.9.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.

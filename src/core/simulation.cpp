@@ -4,6 +4,7 @@
 #include "following.hpp"
 #include "lanes.hpp"
 #include "lateral.hpp"
+#include "leaders.hpp"
 #include "lateral_motion.hpp"
 #include "parking.hpp"
 #include "perception.hpp"
@@ -41,30 +42,6 @@ Scenario canonicalScenario(Scenario scenario) {
     std::sort(scenario.routeDeadEnds.begin(), scenario.routeDeadEnds.end(),
               [](const auto& a, const auto& b) { return a.routeId < b.routeId; });
     return scenario;
-}
-// `id`, when asked for, receives the leader's vehicle id -- only admission needs it (M3.2.3c).
-std::optional<Leader> closestVehicle(const Vehicle& vehicle, const std::vector<RoutePart>& parts,
-                                     const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
-                                     std::uint64_t* id = nullptr, const LateralFilter* lateral = nullptr) {
-    std::optional<Leader> nearest;
-    for (const auto& part : parts) {
-        if (part.start + part.length < vehicle.distance) continue;
-        // Parts ascend by start and every span's rear is at least 0, so no span on this part or
-        // any later one can have a gap strictly below the nearest already found: stop, and the
-        // same leader is chosen as by the full scan.
-        if (nearest && part.start - vehicle.distance >= nearest->gap) break;
-        // Only this segment's spans; the segmentId comparison the full scan did is now implicit.
-        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
-            const auto& span = spans[buckets.items[i]];
-            if (span.vehicleId == vehicle.id || part.start + span.front < vehicle.distance - 1e-9 || !lateralCounts(lateral, span)) continue;
-            const double gap = part.start + span.rear - vehicle.distance;
-            if (!nearest || gap < nearest->gap) {
-                nearest = Leader{gap, span.speed, span.acceleration};
-                if (id) *id = span.vehicleId;
-            }
-        }
-    }
-    return nearest;
 }
 }
 Scenario detail::canonical(Scenario scenario) { return canonicalScenario(std::move(scenario)); }
