@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_interaction.hpp"
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -108,6 +109,7 @@ void EditorWindow::buildWorkspace() {
                 actions_.at("editorFocusCanvas")->setChecked(false);dock->show();
             }
         });
+    alignFormLabels(findChild<QDockWidget*>("editorInspectorDock")->widget()); // after every Properties page exists
     resetWorkspace();
 }
 void EditorWindow::layoutToolbars() {

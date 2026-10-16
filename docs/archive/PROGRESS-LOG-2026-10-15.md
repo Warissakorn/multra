@@ -2,6 +2,23 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
+
+A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
+reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
+controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
+and 32 ticks of copied-state replay, including live histories in positive-delay copies.
+- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
+  provenance are retained; summaries weight seeds equally and report changing availability.
+- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
+  startup estimates remain signed. These responses are recorded, not tuned or validated.
+- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
+  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
+
+Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
+  CLI help/output protection and all existing perception/safety/reference regressions.
+[Evidence and reproducible commands](../evidence/perception-discharge.md). No owner gate is closed.
+
 ## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
 
 Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`

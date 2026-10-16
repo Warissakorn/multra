@@ -225,6 +225,16 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    default? Press A, Q or Z, Show in table on a route, and Check runnability: does the panel switch
    group where you look? At 100/150/200 % on Windows, is the combo text unclipped and the first tab
    uncovered in both languages? Linux offscreen evidence does not close this. *Owner:*
+17. **D195 Properties presentation** (listed 2026-10-16). Compare
+   [before](../images/ui-properties-before/properties-en-1360.png) and
+   [after](../images/ui-properties-after/properties-en-1360.png), then Thai at
+   [1024](../images/ui-properties-after/properties-th-1024.png) and a
+   [200 px floating panel](../images/ui-properties-after/properties-th-narrow.png). Are wrapped
+   labels in one 120 px column better than the old wide column? Is the divider between drivingSide
+   and the level/display Apply clear? Two open findings need your call: at 1024×768 with
+   *Network and appearance* open the top section is squeezed (it was before too); should that part
+   scroll, which unpins ID/Name? Should long Apply buttons wrap or shorten at narrow widths? At
+   100/150/200 % on Windows, is any Thai label clipped? Linux offscreen evidence does not close this. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

@@ -11,11 +11,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slice c (D194) is in: the Objects dock shows one task group (Network, Control, Demand,
-  Measurement, Results, Problems) chosen in a corner combo; the group follows the current page and
-  Problems jumps reopen the dock. Canvas sizes are unchanged. Owner review is OWNER_SITTING E16.
-- Slices a (D192, E14) and b (D193, E15) are on main; E14–E16 wait on the owner, not a session.
-- D191 corrects the six audit findings on main.
+- UI slice d1 (D195) is in: Properties forms share one 120 px label column per group, wrap
+  below two columns, and separate drivingSide from the level/display Apply. Owner review is
+  OWNER_SITTING E17, which also asks about two findings left open (the top section squeezed at
+  1024×768 with the fold open; long Apply buttons at 200 px).
+- Slice c (D194, E16) groups the Objects pages; slices a (D192, E14) and b (D193, E15) are on main.
+  c and d1 sit on branches `claude/ui-slice-c-object-groups` and `claude/ui-slice-d1-properties`
+  (d1 is stacked on c); E14–E17 wait on the owner, not a session.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
   set a target, so no product run moves sideways; BA39 holds. Zones still read route positions
   (slice 3b, deferred below).
@@ -23,28 +25,30 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI presentation slice d1: Properties presentation
+## Next session — UI presentation slice d2: table and numeric presentation
 
-Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §d1, [specification](plans/UI_PRESENTATION_SPEC.md)
-§3 and §6 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §6. Merge or rebase onto main first if
-slice c has merged by then. Verify filenames against the checkout before editing.
+Read the [slice plan](plans/UI_PRESENTATION_SLICES.md) §d2, [specification](plans/UI_PRESENTATION_SPEC.md)
+§3 and §6 and the [audit](audits/UI_PRESENTATION_AUDIT.md) §3 and §6. Merge or rebase onto main
+first if c/d1 have merged by then. Verify filenames against the checkout before editing.
 
-**Do, as one session** (`editor_inspector.cpp`, `editor_connectors.cpp`, `editor_behaviour.cpp`,
-`editor_interaction.cpp`, `editor_style.cpp` and the dialog form builders the changed groups use;
-both locales; tests in `workspace_ui_tests.cpp`, `design_system_ui_tests.cpp`,
-`editor_workflow_ui_tests.cpp` and the affected inspector/connector suites):
-1. Tests first: common label alignment at wide width and reflow at narrow width; ID/Name stay
-   pinned; the immediate-vs-Apply commit boundaries unchanged; Thai tone marks and field baselines
-   at 1/1.5/2×; invalid-range feedback and the existing wheel protection kept.
-2. Adopt the heading role map only for touched headings, no new values; long labels wrap without
-   growing the window; primary-object editing semantics unchanged. A presentation helper must not
-   change which signal (`editingFinished`/`valueChanged`) commits.
-3. Accept: 1024×768 and 1360×860 canvas minimums as in D194's suite, new D-row, before/after
-   images, OWNER_SITTING §E row, full desktop `check`.
+**Do, as one session** (`editor_tables.cpp`, `editor_results.cpp`, `editor_batch_cells.hpp`,
+`editor_compare.cpp`, `editor_counters.cpp`, `editor_sections.cpp`, `editor_zones.cpp`,
+`editor_od.cpp`, `behaviour_lab_panel.cpp`/`behaviour_lab_telemetry.cpp` and the dialog table
+builders they reach; `ui_design_tokens.hpp` only for a helper over existing values; both locales):
+1. Tests first: figures right-aligned with fixed precision through `formatValue`/`QLocale`;
+   C-locale Latin digits survive an English/Thai switch; unavailable, null and zero stay distinct;
+   full-text tooltips on elided IDs and names; 24 px rows in tables created after startup; units in
+   headers. Today `metres()` in `editor_tables.cpp`, Results figures, `editor_compare.cpp` and Lab
+   telemetry still call `QString::number` directly, and `setNumericText` sets the font only, not
+   the alignment (audit §3).
+2. CLI, export and clipboard bytes unchanged: compare a representative export before and after
+   (no new baseline fixture).
+3. Accept: results-tabs-ui, batch-run-ui, compare-run-ui, queue-counter-ui, section-ui, od-lot-ui,
+   tables-ui and behaviour-lab-ui plus the common gates; new D-row, before/after images,
+   OWNER_SITTING §E row, full desktop `check`.
 
-Do not touch tables' numeric presentation (d2), the canvas HUD (e1) or the Objects groups (c,
-waiting on E16). After d1: d2, e1, e2, one session each. The icons-only palette's blank group rows
-and the extra toggle row wait on E15, not on a session.
+Do not touch Properties forms (d1, waiting on E17), the Objects groups (c, E16) or the canvas HUD
+(e1). After d2: e1 and e2, one session each.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
@@ -100,7 +104,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E16 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups).
+  E11 MAP10 OSM and the UI rows E12–E17 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

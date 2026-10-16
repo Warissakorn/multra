@@ -178,6 +178,7 @@ QString editorStyleSheet() {
         QLabel[status="advisory"] { color: palette(link); }
         QLabel[status="ok"] { color: palette(shadow); }
         QLabel#editorPaletteHint, QLabel#editorToolHint { color: palette(window-text); font-size: @fontLabelpx; }
+        QFrame#editorApplyDivider { color: palette(mid); }
         QLabel[editorEyebrow="true"] { color: palette(window-text); font-size: @fontLabelpx; font-weight: 600; }
         QLabel#editorCommandTitle { color: palette(text); font-size: @fontTitlepx; font-weight: 600; }
         QLabel[numeric="true"] { font-size: @fontNumericpx; }

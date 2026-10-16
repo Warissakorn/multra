@@ -160,7 +160,9 @@ names (D193).
 - **Ctrl+I**, **Ctrl+Shift+O**, **Ctrl+Shift+H** and **Ctrl+Shift+T** toggle Properties, Objects,
   History and the Network Objects palette respectively.
 - Properties keeps ID, Name and its tabs visible while each tab scrolls independently.
-  Expand **Network and appearance** for drivingSide, level and display type.
+  Expand **Network and appearance** for drivingSide, level and display type. drivingSide
+  applies at once; level and display type wait for their Apply button, below a divider. Labels
+  share one column and wrap; a narrow panel puts every field under its label (D195).
 - Signal-head table actions appear on the Signal heads tab. Run settings and runnability
   checks are always available in the Simulation menu. **F1** opens gesture/keyboard help.
 

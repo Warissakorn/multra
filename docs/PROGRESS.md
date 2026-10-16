@@ -6,6 +6,36 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice d1: Properties presentation (D195)
+
+Properties forms now line up (`editor_interaction.cpp/.hpp`, `editor_inspector.cpp`,
+`editor_connectors.cpp`, `editor_behaviour.cpp`, `editor_workspace.cpp`, one QSS rule, one token,
+five keys per locale).
+- **Cause, measured:** `ReflowLabel`'s hint was its natural width and `QFormLayout` sizes the column
+  to the widest label, so the English markings label pushed every Link field under its label, and
+  ID/Name, appearance and behaviour each had their own column ([before](images/ui-properties-before/properties-en-1360.png)).
+- **Column:** `alignFormLabels` marks the Properties form labels once; they take 120 px
+  (`formLabelWidth`), wrap inside it and keep their wrapped height as a minimum. Below two columns a
+  form switches to `WrapAllRows`: the first fixed-column build squeezed fields to slivers at 200 px.
+- **Apply divider and headings:** a rule with 8 px each side separates drivingSide (immediate) from
+  level/display (Apply); eyebrow headings Geometry, Split and opposite, Attachments, Lanes and shape,
+  Placement. Connector positions moved up beside the lane counts (row order only).
+- **Tests first:** new `properties_layout_ui_tests` (field column per group at 1360/1024 × en/th, no
+  clipped label, fields ≥ 80 px beside labels, all stacked at 200 px, only action buttons may scroll
+  sideways, divider position, drivingSide immediate / level on Apply / Name on editingFinished,
+  headings in both languages, connector row order), also at 1.5× and 2×. It failed on the markings
+  row before the change.
+- **Found, not fixed (E17):** at 1024×768 with the appearance fold open the non-scrolling top section
+  does not fit and Qt compresses it; that was so before (the Apply button overlapped) and wrapped
+  labels make it taller, so the suite checks 1024 folded. Text-only action buttons (up to 232 px)
+  still need the page's horizontal scroll at 200 px, as before.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **153/153** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
+or high-DPI verification. [After](images/ui-properties-after/properties-en-1360.png),
+[Thai 1024](images/ui-properties-after/properties-th-1024.png),
+[narrow](images/ui-properties-after/properties-th-narrow.png).
+
 ## 2026-10-16 — UI slice c: grouped Objects navigation (D194)
 
 The owner's B16 choice (layout A) is in (`src/shell/editor_tables.cpp`, `editor_workspace.cpp`,
@@ -242,23 +272,6 @@ The first lateral code, NEXT item 1. Storage and compile only; no tick reads the
 
 Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
 ([evidence](evidence/lateral-codec.md)).
-
-## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
-
-A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
-reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
-controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
-and 32 ticks of copied-state replay, including live histories in positive-delay copies.
-- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
-  provenance are retained; summaries weight seeds equally and report changing availability.
-- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
-  startup estimates remain signed. These responses are recorded, not tuned or validated.
-- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
-  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
-
-Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
-  CLI help/output protection and all existing perception/safety/reference regressions.
-[Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
 
 ## Older entries
 

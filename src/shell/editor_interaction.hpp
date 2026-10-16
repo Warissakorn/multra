@@ -14,4 +14,7 @@ public:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 };
+// Gives every ReflowLabel in a form's label column under root one fixed column width (D195),
+// so related forms start their fields at the same x and long labels wrap instead of widening it.
+void alignFormLabels(QWidget* root);
 }

@@ -136,6 +136,10 @@ to shrinking text. No persistent presets or remembered expanded sections.
 
 ## Slice d1 — Properties presentation
 
+Done as [D195](../decisions/RECORD.md#d195) on 2026-10-16: one 120 px label column per group,
+all-rows wrap below two columns, the Apply divider and eyebrow headings. The dialog forms and the
+Lab were not touched.
+
 **Files:** editor_inspector.cpp, editor_connectors.cpp, editor_behaviour.cpp,
 editor_interaction.cpp, editor_style.cpp and actual dialog form builders identified by the
 changed group; both locales; workspace-ui/design-system-ui/editor-workflow-ui and affected

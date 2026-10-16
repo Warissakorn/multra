@@ -1,9 +1,11 @@
 #include "editor_interaction.hpp"
+#include "../editor/ui_design_tokens.hpp"
 #include <QAbstractItemView>
 #include <QAbstractScrollArea>
 #include <QAbstractSpinBox>
 #include <QApplication>
 #include <QComboBox>
+#include <QFormLayout>
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QHelpEvent>
@@ -31,7 +33,8 @@ void setReflowPolicy(QLabel* label, QSizePolicy::Policy horizontal) {
 }
 QSize ReflowLabel::sizeHint() const {
     if(!wordWrap() || textFormat()==Qt::RichText)return QLabel::sizeHint();
-    const auto natural=fontMetrics().size(Qt::TextExpandTabs,text());
+    auto natural=fontMetrics().size(Qt::TextExpandTabs,text());
+    if(property("editorFormLabel").toBool())natural.setWidth(editorDesign::formLabelWidth);
     const auto padding=contentsMargins();
     auto size=natural+QSize(padding.left()+padding.right()+2*margin(),padding.top()+padding.bottom()+2*margin());
     if(auto* parent=parentWidget()) {
@@ -44,7 +47,37 @@ QSize ReflowLabel::sizeHint() const {
     size.setHeight(std::max(size.height(),QLabel::heightForWidth(size.width())));
     return size;
 }
+namespace {
+// Below two label columns a field beside its label would be squeezed to a sliver, so the whole
+// form stacks each field under its label instead.
+class FormReflow : public QObject {
+public:
+    FormReflow(QFormLayout* form,QWidget* host):QObject(host),form_(form){host->installEventFilter(this);apply(host);}
+    bool eventFilter(QObject* watched,QEvent* event) override {
+        if(event->type()==QEvent::Resize)apply(static_cast<QWidget*>(watched));
+        return false;
+    }
+private:
+    void apply(QWidget* host) {
+        const auto margins=form_->contentsMargins();
+        const int width=host->contentsRect().width()-margins.left()-margins.right();
+        const auto policy=width<2*editorDesign::formLabelWidth?QFormLayout::WrapAllRows:QFormLayout::WrapLongRows;
+        if(form_->rowWrapPolicy()!=policy)form_->setRowWrapPolicy(policy);
+    }
+    QFormLayout* form_;
+};
+}
+void alignFormLabels(QWidget* root) {
+    for(auto* form:root->findChildren<QFormLayout*>()) {
+        for(int row=0;row<form->rowCount();++row)
+            if(auto* cell=form->itemAt(row,QFormLayout::LabelRole))
+                if(auto* label=dynamic_cast<ReflowLabel*>(cell->widget()))label->setProperty("editorFormLabel",true);
+        if(auto* host=form->parentWidget())new FormReflow(form,host);
+    }
+}
 QSize ReflowLabel::minimumSizeHint() const {
+    // A form label keeps its wrapped height: a short dock shrinks the scrolling pages, not a label.
+    if(property("editorFormLabel").toBool()&&wordWrap())return {QLabel::minimumSizeHint().width(),sizeHint().height()};
     return QLabel::minimumSizeHint();
 }
 namespace {

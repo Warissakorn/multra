@@ -47,6 +47,10 @@ QWidget* EditorWindow::buildConnectorInspector() {
     form->setContentsMargins(editorDesign::space2,editorDesign::space2,editorDesign::space2,editorDesign::space2);
     form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);
     form->setRowWrapPolicy(QFormLayout::WrapLongRows);
+    const auto heading=[&](const std::string& key){
+        auto* h=new ReflowLabel(page);h->setObjectName(QString::fromStdString(key));h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);
+    };
+    heading("editorAttachmentsHeading");
     connectorObject_=new QComboBox(page);label(form,"editorConnectorObject",connectorObject_);
     connectorFrom_=new QComboBox(page);connectorTo_=new QComboBox(page);
     for (auto* box : {connectorObject_,connectorFrom_,connectorTo_}) {
@@ -57,6 +61,12 @@ QWidget* EditorWindow::buildConnectorInspector() {
     connectorFromCount_=new QSpinBox(page);connectorToCount_=new QSpinBox(page);
     connectorFromCount_->setRange(1,12);connectorToCount_->setRange(1,12);
     label(form,"editorFromLaneCount",connectorFromCount_);label(form,"editorToLaneCount",connectorToCount_);
+    connectorFromPosition_=new QDoubleSpinBox(page);connectorToPosition_=new QDoubleSpinBox(page);
+    // Metres from the link's start, like Vissim's Pos. The maximum is per link, so it is set
+    // by refreshConnectorRanges alongside the lane-count maxima.
+    for(auto* position:{connectorFromPosition_,connectorToPosition_}){position->setRange(0,1e6);position->setDecimals(3);position->setSuffix(" m");}
+    label(form,"editorFromPosition",connectorFromPosition_);label(form,"editorToPosition",connectorToPosition_);
+    heading("editorShapeHeading");
     // Vissim's Intermediate points: how many poly points shape the curve between the two
     // attachments. Changing it re-lays the Connector's own road, so a shape the author has bent
     // survives the change instead of snapping back to the default curve.
@@ -88,11 +98,6 @@ QWidget* EditorWindow::buildConnectorInspector() {
         const auto id=canvas_->selected();
         execute("editorConnectorPoints",[&](auto& d){resampleConnectorPoints(d,id,count);});
     });
-    connectorFromPosition_=new QDoubleSpinBox(page);connectorToPosition_=new QDoubleSpinBox(page);
-    // Metres from the link's start, like Vissim's Pos. The maximum is per link, so it is set
-    // by refreshConnectorRanges alongside the lane-count maxima.
-    for(auto* position:{connectorFromPosition_,connectorToPosition_}){position->setRange(0,1e6);position->setDecimals(3);position->setSuffix(" m");}
-    label(form,"editorFromPosition",connectorFromPosition_);label(form,"editorToPosition",connectorToPosition_);
     connect(connectorFrom_,&QComboBox::currentIndexChanged,this,[this]{refreshConnectorRanges();});
     connect(connectorTo_,&QComboBox::currentIndexChanged,this,[this]{refreshConnectorRanges();});
     const auto positioned=[this](bool outgoing) {
