@@ -6,6 +6,24 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — Owner sitting triage (D201, docs only)
+
+The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
+- **Closed as proposed:** B1 (keep `TrafficSim` until a release), B2 (D95/D101 off; route (i) only,
+  in M3.4), B3, B5 (standstill cap booked in M3.2.8a.1), B6, B8, B12 (asked at multi-level S1), B13
+  (`w74` preset stays out of the catalog; noted in M4.2).
+- **B3 is a code/contract discrepancy, not a choice:** `automatic_conflicts.cpp` skips pairs whose
+  drawing `level` differs, while M3_CONTRACT §1 says level is not separation. Queued as a fix slice
+  in NEXT with a failure-first row; B8's 300 s cool-down is queued the same way. No code changed.
+- **R4 (b) applied before the sitting:** C5, C6, D1, E1, E3, E4, E7 (listed more than 14 days)
+  became ROADMAP M1.29 and M3.2.10; C4 merged into C3; E12 dropped (slices a/b changed the
+  workspace it asked to see unchanged); E13–E15 merged into one look. Nothing is closed by this.
+  Numbered D201 because main took D194–D200 for the UI slices.
+- What remains only the owner's: A1, B4 → A3, A2, B9, the milestone closures and the looks.
+
+Checked on Linux: `check_docs` and `check_file_sizes` (built standalone from `tools/`) pass. No
+code changed and no desktop build or CTest run was made for this entry.
+
 ## 2026-10-16 — UI slice e2: measured LOD (D200)
 
 The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
@@ -273,28 +291,6 @@ passed ASan/UBSan; instrumented parser checks rejected 14 invalid values and rea
 boundaries under UBSan/float-cast-overflow. CLI seed-42 JSON is byte-identical to the
 review baseline; seed 42–43 serial/parallel batch JSON is byte-identical. Full sanitizer CI,
 desktop and Windows verification are pending; no modelling-validation gate is closed.
-
-## 2026-10-15 — Quiet canvas, hover/selected states and type roles (D190)
-
-Owner request (before slice a): no tooltip on the canvas background, a simpler and more modern
-hover/selection look, and a review of text sizes and weights. The owner chose the grey fill plus
-blue underline for the active tool and to remove the conflict-key, panel and run-note tooltips.
-
-- Tooltips removed from the empty canvas, Objects panel background, conflict areas and run
-  summary; F1 now shows keyboard help, gesture help and the run-status note (`editorHelp`,
-  which overlapped the gesture help, is gone). Accessible descriptions keep the texts.
-- One state language in `editorStyleSheet()`: hover fill, Mid when pressed/checked/selected with
-  an accent underline or left bar, accent frame only for keyboard focus; rounded menu rows.
-- Type: dock titles 13/600, hints 11/400, Lab group boxes 14/600. Menu bar and dock title
-  heights unchanged or 2 px shorter in Thai.
-- Found while capturing: child widgets drew Qt's default greys/blue, not the tokens (the window
-  palette did not reach them under the stylesheet on Qt 6.4). `applyEditorStyle` now also sets
-  the application palette. Before/after images: `docs/images/ui-states-{before,after}/`.
-- Tests: empty canvas shows no tooltip; conflict areas have none but keep their key; a checked
-  toolbar button stays 24 px with an accent underline and no frame.
-
-Linux Qt 6.4 offscreen: desktop build, CTest **148/148**, target `check` passed. Windows and
-100/150/200 % visual review is OWNER_SITTING E13.
 
 ## Older entries
 

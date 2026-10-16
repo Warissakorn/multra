@@ -2,6 +2,28 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — Quiet canvas, hover/selected states and type roles (D190)
+
+Owner request (before slice a): no tooltip on the canvas background, a simpler and more modern
+hover/selection look, and a review of text sizes and weights. The owner chose the grey fill plus
+blue underline for the active tool and to remove the conflict-key, panel and run-note tooltips.
+
+- Tooltips removed from the empty canvas, Objects panel background, conflict areas and run
+  summary; F1 now shows keyboard help, gesture help and the run-status note (`editorHelp`,
+  which overlapped the gesture help, is gone). Accessible descriptions keep the texts.
+- One state language in `editorStyleSheet()`: hover fill, Mid when pressed/checked/selected with
+  an accent underline or left bar, accent frame only for keyboard focus; rounded menu rows.
+- Type: dock titles 13/600, hints 11/400, Lab group boxes 14/600. Menu bar and dock title
+  heights unchanged or 2 px shorter in Thai.
+- Found while capturing: child widgets drew Qt's default greys/blue, not the tokens (the window
+  palette did not reach them under the stylesheet on Qt 6.4). `applyEditorStyle` now also sets
+  the application palette. Before/after images: `docs/images/ui-states-{before,after}/`.
+- Tests: empty canvas shows no tooltip; conflict areas have none but keep their key; a checked
+  toolbar button stays 24 px with an accent underline and no frame.
+
+Linux Qt 6.4 offscreen: desktop build, CTest **148/148**, target `check` passed. Windows and
+100/150/200 % visual review is OWNER_SITTING E13.
+
 ## 2026-10-15 — UI phase 1 and stable-tab slice 0
 
 Owner requested the UI audit/spec/slice plan, then accepted the recommendation: “ทำตามแนะนำ”.

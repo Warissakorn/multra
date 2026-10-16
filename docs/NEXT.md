@@ -36,7 +36,7 @@ The UI slices are finished, and the deferred queue below resumes only at the own
 (stated when the UI slices began). A session asked to "continue" without a choice:
 1. Merges or rebases the stacked UI branches onto main first, if the owner has merged any.
 2. Asks the owner which deferred item to take, recommending item 1 (M3.7 slice 3b), the head of
-   the engine queue, and lists the open owner rows E14–E21 that block nothing but need a look.
+   the engine queue, and lists the open owner rows E13–E21 that block nothing but need a look.
 3. Does not start a B18 state/logic proposal ([slices](plans/UI_PRESENTATION_SLICES.md)) without
    the owner naming it.
 
@@ -60,15 +60,20 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
    - Then slice 4 (display, BA46), M3.4 lane-change duration (the first product writer of
      `lateralTarget`), M3.6 turning speeds, M3.4 overtaking with driving side, M3.8 motorcycles,
      M3.5 attention, M3.3.3b W99 and M3.9 (the review's §5 order, D177/D178).
-2. **Multi-level S0: the Node contract** (D175). Polygon, mapping of Micro detail to
+2. **Multi-level S0: the Node contract** (D175; ask the owner B12's Thai sources when S1 starts, D201). Polygon, mapping of Micro detail to
    legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
    scope but no longer leads the order.
 3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
-   lane change. Discretionary changes (D95/D101, off) wait for M3.5's look-past (B2 route (i)).
+   lane change. Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
 4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
    - vehicle turning beyond phase 3 (swept-body clearance rows first)
-   - M3.2.8a.1 moving merge anticipation
+   - M3.2.8a.1 moving merge anticipation, with the standstill cap (D201)
+   - drawing `level` is not separation (D201, M3_CONTRACT §1): `automatic_conflicts.cpp` skips
+     pairs on different levels; failure-first row (two crossing Links on different levels get an
+     area), then remove the skip and re-check every shipped project's areas
+   - `four-leg-signalised` cool-down 300 s (D201, D146, [evidence](evidence/m5.9-cooldown.md)):
+     its batch warnings clear; update its tests' expected numbers by that recorded decision
    - M3.2.4e merge admission contract
    - a per-lane share gesture (D32/D71)
    - keyboard-only route and input gestures (M1.25/M1.26)
@@ -86,17 +91,21 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 
 ## Waiting on the owner (details in OWNER_SITTING)
 
-- **Gates (A):** M0 plausibility, M3.2.7d T-junction exercise, M5.7 rehearsal.
-- **Decisions (B):** the name, D95/D101, `sharedMouth`/`level`, the M2.6 template's real data,
-  the standstill cap, routing stations, the example's cool-down (D146), the M6 benchmark choice
-  (B9, before any comparable run), Thai sources for multi-level values (B12, D175), and whether
-  the cited `w74` preset ships in the catalog with an amber value (B13, D176).
-- **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
-  M8 needs a development-access study run end to end, plus C8/C9.
-- **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E21 (slice 0, D190, D192 icons, D193 palette, D194 Objects groups, D195 Properties, D196 tables, D197 HUD, D199 run casings, D200 LOD).
+D201 (2026-10-16) closed B1–B3, B5, B6, B8, B12 and B13 as proposed and carved the oldest looks into
+ROADMAP M1.29 and M3.2.10. What only the owner can answer, in order:
+
+- **A1 M0 plausibility** first: a *no* reorders the engine work (D13).
+- **B4** the real study's counts, timing sheet and image, then **A3** the M5.7 rehearsal.
+- **A2** the M3.2.7d T-junction exercise, which M3.2 closes on.
+- **B9** the M6 benchmark choice, before any comparable run.
+- **Milestone closures:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8 (a
+  development-access study end to end, plus C8/C9).
+- **Looks (C–F) still on the sheet:** C1–C3, C7–C12 (C12 is a timing, not a verdict), D2–D4,
+  E2, E5, E6, E8–E11, the merged UI look E13–15, E16–E21, F1–F3; plus the carved M1.29 and
+  M3.2.10 looks.
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
-- After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
+- Items still open and listed more than 14 days become ROADMAP carve-outs (R4; D201 applied it once
+  without waiting for the sitting).
 
 ## Known limits to keep in mind
 
