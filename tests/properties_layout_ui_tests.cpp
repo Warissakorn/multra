@@ -118,8 +118,14 @@ int main(int argc,char** argv) {
         require(word>editorDesign::formLabelWidth+1&&word<editorDesign::formLabelWidth*5/4,"Setup: the unbreakable label is not just wider than the column");
         require(gapLabel->width()>=word,"Setup: the unbreakable label's row wrapped instead of widening");
         aligned(window,"unbreakable");
+        // The column narrows back while the appearance fold is closed (Windows: Thai at 1360, then English
+        // at 1024): a hidden form must not keep the old column. The forcing first: the fold is hidden.
+        fold->trigger();settle();
+        require(!item<QComboBox>(window,"editorDrivingSide")->isVisible(),"Setup: the appearance fold is still shown");
         language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
         require(gapLabel->QLabel::minimumSizeHint().width()<=editorDesign::formLabelWidth,"Setup: the label text was not restored");
+        aligned(window,"hidden fold");
+        fold->trigger();settle();
         aligned(window,"restored");
         // Narrow floating panel: fields drop below their labels, nothing clips or scrolls sideways.
         dock->setFloating(true);dock->resize(200,700);settle();

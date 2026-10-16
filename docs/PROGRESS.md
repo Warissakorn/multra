@@ -16,7 +16,11 @@ causes came from the CI log ([evidence](evidence/windows-ui-red.md)):
   `editorMedianGap` widened the Link page's column by 3 px and no other page's. The column is now one
   `FormColumn` shared by every form, widened to such a word when it is under a quarter wider.
 
-Both now reproduce on Linux. Each row failed before its fix and fails again with the fix reverted.
+- **Round 2** (the branch's first Windows run): the threshold was confirmed, and a hidden form kept
+  the old column when the width changed back with the appearance fold closed. Hidden forms are now laid
+  out at once.
+
+All three now reproduce on Linux. Each row failed before its fix and fails again with the fix reverted.
 Checked on Linux offscreen: `check` 161/161, CLI pin byte-identical to main. Windows is confirmed only
 by this branch's CI run.
 

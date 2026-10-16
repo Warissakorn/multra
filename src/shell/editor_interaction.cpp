@@ -42,6 +42,7 @@ void setReflowPolicy(QLabel* label, QSizePolicy::Policy horizontal) {
 // other form; its own row lays out as before D205 (usually wrapped below its label).
 struct FormColumn {
     std::vector<QPointer<ReflowLabel>> labels;
+    std::vector<QPointer<QWidget>> hosts;
     int width=editorDesign::formLabelWidth;
     void refresh() {
         int next=editorDesign::formLabelWidth;
@@ -52,6 +53,9 @@ struct FormColumn {
         if(next==width)return;
         width=next;
         for(const auto& label:labels)if(label)label->updateGeometry();
+        // A hidden form (the closed appearance fold) is not laid out on the posted request, so it would
+        // keep the old column until shown; lay it out now.
+        for(const auto& host:hosts)if(host&&!host->isVisible()&&host->layout())host->layout()->activate();
     }
 };
 QSize ReflowLabel::sizeHint() const {
@@ -102,7 +106,7 @@ void alignFormLabels(QWidget* root) {
                 if(auto* label=dynamic_cast<ReflowLabel*>(cell->widget())) {
                     label->setProperty("editorFormLabel",true);label->column_=column;column->labels.emplace_back(label);
                 }
-        if(auto* host=form->parentWidget())new FormReflow(form,host,column);
+        if(auto* host=form->parentWidget()){new FormReflow(form,host,column);column->hosts.emplace_back(host);}
     }
     column->refresh();
 }
