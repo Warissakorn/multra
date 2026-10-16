@@ -182,6 +182,28 @@ void windowWorkflow(const std::filesystem::path& data,const QString& screenshot)
     require(w.history().document()==final && list->count()==1,"Reopen lost project or kept old history");
     w.close();
 }
+// Slice b regroups the Simulation toolbar; its keys keep their contexts. Space, + and - belong to
+// the canvas only, so a focused seed field still receives them as text; F5 and F6 are window-wide.
+void runKeys(const std::filesystem::path& data) {
+    EditorWindow w(data); w.resize(1360,860); w.show(); QTest::qWait(30);
+    w.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
+    QApplication::setActiveWindow(&w); auto* c=w.canvas();
+    auto* step=item<QAction>(w,"editorStep"); auto* speed=item<QComboBox>(w,"editorSpeed"); auto* seed=item<QLineEdit>(w,"editorSeed");
+    const auto press=[](QWidget* target,int key){target->setFocus(); QTest::keyClick(target,static_cast<Qt::Key>(key)); QApplication::processEvents();};
+    press(c,Qt::Key_F5); require(!step->isEnabled() && w.runState().scenario,"F5 did not start the run");
+    press(c,Qt::Key_F5); require(step->isEnabled(),"F5 did not pause the run");
+    const auto tick=w.runState().tick;
+    press(c,Qt::Key_Space); require(step->isEnabled() && w.runState().tick==tick+1,"Space on the canvas did not pause and step");
+    press(c,Qt::Key_F5); press(c,Qt::Key_Escape); require(step->isEnabled(),"Esc on the canvas did not pause");
+    const int base=speed->currentIndex();
+    press(c,Qt::Key_Plus); require(speed->currentIndex()==base+1,"+ on the canvas did not speed up");
+    press(c,Qt::Key_Minus); require(speed->currentIndex()==base,"- on the canvas did not slow down");
+    press(seed,Qt::Key_Plus); require(speed->currentIndex()==base && seed->text()=="42+","+ in the seed field changed speed");
+    seed->setText("42"); press(seed,Qt::Key_Space);
+    require(seed->text()=="42 " && !w.runState().scenario,"Space in the seed field stepped the run");
+    seed->setText("42"); press(seed,Qt::Key_F6); require(w.runState().tick==1,"F6 from the seed field did not step");
+    w.close();
+}
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
@@ -189,6 +211,7 @@ int main(int argc,char** argv) {
         require(argc>1,"Data directory required");
         canvasWorkflow();
         windowWorkflow(std::filesystem::path(argv[1]),argc>2?QString::fromUtf8(argv[2]):QString{});
+        runKeys(std::filesystem::path(argv[1]));
         std::cout<<"PASS level selection, focus cancellation, keyboard nudging and history workflow\n";
         return 0;
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }

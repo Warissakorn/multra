@@ -735,6 +735,8 @@
   "editorZoneTool": "Zones",
   "editorZonePlaceHelp": "Ctrl+right-click each corner of the zone; Enter finishes (three corners or more), Backspace removes the last corner, Esc cancels.",
   "editorPaletteDemand": "Demand",
+  "editorPaletteMeasurement": "Measurement",
+  "editorPaletteIconsOnly": "Network Objects: icons only",
   "editorZoneTable": "Zones",
   "editorZoneLot": "Parking lot",
   "editorZoneDirection": "Direction",

@@ -95,6 +95,10 @@ cache invalidation if future themes are added (theme work deferred).
 
 ## Slice b — palette and Simulation toolbar
 
+Done as [D193](../decisions/RECORD.md#d193) on 2026-10-16: five groups, the transient icons-only
+toggle, the Simulation bar order and Delete behind a separator. A b1-only variant (no toggle) was
+written in parallel and replaced by this one when both merged.
+
 **Depends:** owner B17, slice a; slice 0 recommended even though no object page moves here.
 **Files:** editor_palette.cpp, editor_workspace.cpp, editor_window.cpp, editor_run.cpp,
 editor_style.cpp; both locales; tests/workspace_ui_tests.cpp, design_system_ui_tests.cpp and

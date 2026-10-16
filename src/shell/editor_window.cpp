@@ -95,7 +95,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     coordinates_->setProperty("numeric",true);coordinates_->setFont(editorDesign::numericFont());
     statusBar()->addPermanentWidget(coordinates_);
     buildInspector();
-    tools->addAction(action("editorDeleteSelected",{},[this]{deleteSelected();}));
+    tools->addSeparator();tools->addAction(action("editorDeleteSelected",{},[this]{deleteSelected();})); // destructive, trailing
     buildObjectTables();
     connect(language_,&QComboBox::currentIndexChanged,this,[this]{translate();});
     connect(tool_,&QComboBox::currentIndexChanged,this,[this](int index){

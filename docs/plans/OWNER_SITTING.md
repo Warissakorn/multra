@@ -201,6 +201,21 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    tools, open each menu, select palette rows and table cells with mouse and Tab. Is the active
    tool easy to find from its underline, and keyboard focus still visible? Dock titles 13 px,
    hints 11 px readable in Thai? Linux offscreen evidence does not close this. *Owner:*
+14. **D192 icon vocabulary** (listed 2026-10-16). Compare the
+   [before](../images/ui-icons-before/contact-sheet.png) and
+   [after](../images/ui-icons-after/contact-sheet.png) contact sheets (16 px, 4×, 32, 48 px), then
+   the [English](../images/ui-icons-after/workspace-en.png) and [Thai](../images/ui-icons-after/workspace-th.png)
+   workspaces. At 100/150/200 % on Windows, can you tell Connect lanes from Routes, Rotate from Reset
+   and Fit from Focus without the tooltip? Do Grid and Conflict areas also need different shapes?
+   *Owner:*
+15. **D193 palette and Simulation toolbar** (listed 2026-10-16). Compare
+   [before](../images/ui-palette-before/workspace-en.png) and
+   [after](../images/ui-palette-after/workspace-en.png) (Thai 1024×768 and focus beside them), then
+   [icons only](../images/ui-palette-after/workspace-icons.png). Do the five groups read right? Use
+   the arrow above the palette and View → icons only: are the tools findable from glyph and tooltip,
+   are the blank group rows acceptable dividers, and is the extra row above the tree worth it? On the
+   Simulation bar, is Reset behind its separator clear, and is the 24 px Run (F5) text unclipped at
+   100/150/200 % on Windows? Linux offscreen evidence does not close this. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

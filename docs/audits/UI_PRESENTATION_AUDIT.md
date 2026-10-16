@@ -139,7 +139,8 @@ whereas the palette assigns all tool icons. Reuse one object glyph across existi
 keep text labels for controllers, OD and other objects until a deliberate glyph is approved.
 See the complete shape catalogue in the proposal. Distinguish source-identical evidence from
 perceptual judgement: a 16 px monochrome contact-sheet review belongs in slice a, not a claim
-that all current icons were visually recognized.
+that all current icons were visually recognized. Slice a ([D192](../decisions/RECORD.md#d192))
+separated both duplicate pairs and Fit/Focus; this section describes the 2026-10-15 baseline.
 
 ## 5. Viewport, paint order and state feedback
 

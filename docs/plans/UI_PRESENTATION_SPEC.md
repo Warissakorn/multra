@@ -158,7 +158,9 @@ one value onto multiple lines; allow horizontal scrolling when columns exceed th
 ## 4. Monochrome icon shape catalogue
 
 Retain 16 logical px, 1.5 px stroke, 20-unit drawing grid, 1×/2×/3× rasters and role colours.
-These are shape proposals; compare at actual 16 px before adopting. All 30 current enum entries:
+These are shape proposals; compare at actual 16 px before adopting. Slice a adopted connector,
+route, reset and focus as [D192](../decisions/RECORD.md#d192) records; the rest stay proposals.
+All 30 current enum entries:
 
 | Icon | Shape / intended distinction |
 |---|---|

@@ -735,6 +735,8 @@
   "editorZoneTool": "โซน",
   "editorZonePlaceHelp": "Ctrl+คลิกขวาที่มุมของโซนทีละมุม; Enter เพื่อจบ (อย่างน้อยสามมุม), Backspace ลบมุมล่าสุด, Esc ยกเลิก",
   "editorPaletteDemand": "อุปสงค์",
+  "editorPaletteMeasurement": "การวัด",
+  "editorPaletteIconsOnly": "วัตถุโครงข่าย: แสดงเฉพาะไอคอน",
   "editorZoneTable": "โซน",
   "editorZoneLot": "ลานจอดรถ",
   "editorZoneDirection": "ทิศทาง",

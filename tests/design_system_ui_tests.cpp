@@ -4,6 +4,7 @@
 #include "../src/shell/editor_style.hpp"
 #include "../src/shell/editor_window.hpp"
 #include <QAbstractAnimation>
+#include <QAction>
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -19,6 +20,9 @@
 #include <QVBoxLayout>
 #include <cmath>
 #include <QImage>
+#include <QPainter>
+#include <QTreeWidget>
+#include <algorithm>
 #include <utility>
 #include <vector>
 #include <iostream>
@@ -220,6 +224,88 @@ void gridIsCrisp() {
     }
     require(lines>0,"Grid drew nothing");
 }
+// The 30 glyphs with the names the contact sheet prints; the enum order (editor_style.hpp).
+const std::pair<EditorIcon,const char*> glyphs[]={
+    {EditorIcon::document,"document"},{EditorIcon::open,"open"},{EditorIcon::save,"save"},{EditorIcon::undo,"undo"},
+    {EditorIcon::redo,"redo"},{EditorIcon::fit,"fit"},{EditorIcon::finish,"finish"},{EditorIcon::rotate,"rotate"},
+    {EditorIcon::remove,"remove"},{EditorIcon::select,"select"},{EditorIcon::link,"link"},{EditorIcon::connector,"connector"},
+    {EditorIcon::route,"route"},{EditorIcon::input,"input"},{EditorIcon::signal,"signal"},{EditorIcon::split,"split"},
+    {EditorIcon::measure,"measure"},{EditorIcon::image,"image"},{EditorIcon::run,"run"},{EditorIcon::pause,"pause"},
+    {EditorIcon::step,"step"},{EditorIcon::reset,"reset"},{EditorIcon::inspector,"inspector"},{EditorIcon::objects,"objects"},
+    {EditorIcon::focus,"focus"},{EditorIcon::grid,"grid"},{EditorIcon::conflict,"conflict"},{EditorIcon::counter,"counter"},
+    {EditorIcon::section,"section"},{EditorIcon::zone,"zone"}};
+// The raster QIcon holds for one ratio, unscaled: at a device pixel ratio of 1, asking for 16*r px
+// returns the 16*r px pixmap that editorIcon() drew.
+QImage raster(EditorIcon icon,int ratio) {
+    const int side=editorDesign::iconSize*ratio;
+    return editorIcon(icon).pixmap(QSize(side,side)).toImage().convertToFormat(QImage::Format_ARGB32);
+}
+// Inked = alpha above a third; antialiasing fringes below that are not part of the shape.
+QVector<bool> ink(const QImage& image) {
+    QVector<bool> mask(image.width()*image.height());
+    for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x)mask[y*image.width()+x]=qAlpha(image.pixel(x,y))>85;
+    return mask;
+}
+// Share of the pair's inked pixels that only one of them inks: 0 for identical shapes, 1 for disjoint.
+double shapeDifference(EditorIcon a,EditorIcon b) {
+    const auto x=ink(raster(a,1)),y=ink(raster(b,1));
+    int either=0,one=0;
+    for(int i=0;i<x.size();++i){either+=x[i]||y[i];one+=x[i]!=y[i];}
+    return either?static_cast<double>(one)/either:0;
+}
+// Slice a's contract (UI_PRESENTATION_SLICES): metrics, roles and distinct shapes at 16 px.
+// Distinct pixels do not prove a user tells the shapes apart; the contact sheet and the owner's
+// review (OWNER_SITTING E14) do that. These rows only stop two glyphs collapsing into one.
+void iconVocabulary() {
+    const auto text=editorDesign::role(QPalette::WindowText),accent=editorDesign::accent();
+    const auto near=[](QColor c,const QColor& want){return std::abs(c.red()-want.red())<12&&std::abs(c.green()-want.green())<12&&std::abs(c.blue()-want.blue())<12;};
+    for(const auto& [icon,name]:glyphs) {
+        QList<QSize> sizes=editorIcon(icon).availableSizes();
+        std::sort(sizes.begin(),sizes.end(),[](QSize a,QSize b){return a.width()<b.width();});
+        require(sizes==QList<QSize>({QSize(16,16),QSize(32,32),QSize(48,48)}),std::string(name)+" is not rastered at exactly 16/32/48 px");
+        for(int ratio:{1,2,3}) {
+            // Antialiased 1.5 px strokes leave no fully opaque pixel at 1x, so the colour is read from
+            // every pixel at half coverage or more (Format_ARGB32 is unpremultiplied).
+            const auto image=raster(icon,ratio);int inked=0;
+            for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+                const QColor c=image.pixelColor(x,y);if(c.alpha()<128)continue;++inked;
+                const bool filled=icon==EditorIcon::run||icon==EditorIcon::step;
+                require(near(c,text)||(filled&&near(c,accent)),std::string(name)+" paints "+c.name().toStdString()+", not WindowText"+(filled?" or the accent":""));
+            }
+            require(inked>0,std::string(name)+" draws nothing at "+std::to_string(ratio)+"x");
+        }
+    }
+    for(std::size_t i=0;i<std::size(glyphs);++i)for(std::size_t j=i+1;j<std::size(glyphs);++j)
+        require(shapeDifference(glyphs[i].first,glyphs[j].first)>0,std::string(glyphs[i].second)+" and "+glyphs[j].second+" are the same 16 px shape");
+    // The audit's near pairs must differ in outline, not by one detail: at least 40% of their
+    // combined ink is one glyph's only. Measured before slice a
+    // (D192): fit/focus 0.23, counter/section 0.90, link/split 0.73, connector/route and rotate/reset 0.
+    for(const auto& [a,b]:{std::pair{EditorIcon::fit,EditorIcon::focus},{EditorIcon::counter,EditorIcon::section},{EditorIcon::link,EditorIcon::split},
+                           {EditorIcon::connector,EditorIcon::route},{EditorIcon::rotate,EditorIcon::reset}}) {
+        const double d=shapeDifference(a,b);
+        const auto name=[](EditorIcon icon){return std::string(glyphs[static_cast<int>(icon)].second);};
+        require(d>=.4,name(a)+"/"+name(b)+" differ in only "+std::to_string(d)+" of their 16 px ink");
+    }
+}
+// trafficsim-design-ui-tests <data> --contact-sheet <png>: every glyph on white, at actual 16 px,
+// at 16 px magnified 4x with no smoothing, and at the 32/48 px rasters, then reduced to grey.
+void contactSheet(const QString& path) {
+    constexpr int columns=3,cellWidth=300,cellHeight=76;
+    const int rows=(static_cast<int>(std::size(glyphs))+columns-1)/columns;
+    QImage sheet(columns*cellWidth,rows*cellHeight,QImage::Format_ARGB32);sheet.fill(Qt::white);
+    QPainter p(&sheet);p.setPen(Qt::black);
+    for(std::size_t i=0;i<std::size(glyphs);++i) {
+        const int x=static_cast<int>(i%columns)*cellWidth+8,y=static_cast<int>(i/columns)*cellHeight+6;
+        p.drawText(QRect(x,y,84,64),Qt::AlignLeft|Qt::AlignVCenter,QString::fromLatin1(glyphs[i].second));
+        const auto one=raster(glyphs[i].first,1);
+        p.drawImage(QPoint(x+84,y+24),one);
+        p.drawImage(QRect(x+108,y,64,64),one);
+        p.drawImage(QPoint(x+180,y+16),raster(glyphs[i].first,2));
+        p.drawImage(QPoint(x+220,y+8),raster(glyphs[i].first,3));
+    }
+    p.end();
+    require(sheet.convertToFormat(QImage::Format_Grayscale8).save(path),"Could not write the contact sheet to "+path.toStdString());
+}
 void window(const std::filesystem::path& data) {
     EditorWindow w{data};w.show();QApplication::processEvents();
     int buddies=0;
@@ -233,6 +319,45 @@ void window(const std::filesystem::path& data) {
     QCoreApplication::sendPostedEvents(nullptr,QEvent::DeferredDelete);
     require(w.findChildren<QAbstractAnimation*>().isEmpty(),"The editor owns an animation");
     require(w.palette().color(QPalette::Highlight)==QColor("#2F6FED"),"Window did not take the editor palette");
+    // One glyph per object on every surface: the palette rows and the actions share editorIcon()'s
+    // cached QIcon (same cacheKey), so no surface carries a copied painter path.
+    const EditorIcon tools[]={EditorIcon::select,EditorIcon::link,EditorIcon::split,EditorIcon::measure,EditorIcon::image,
+        EditorIcon::connector,EditorIcon::route,EditorIcon::input,EditorIcon::signal,EditorIcon::conflict,
+        EditorIcon::counter,EditorIcon::section,EditorIcon::zone};
+    auto* palette=w.findChild<QTreeWidget*>("editorObjectPalette");require(palette!=nullptr,"No object palette");
+    auto* iconsOnly=w.findChild<QAction*>("editorPaletteIconsOnly");require(iconsOnly&&iconsOnly->isCheckable(),"No palette view toggle");
+    auto* toggle=w.findChild<QToolButton*>("editorPaletteViewButton");require(toggle!=nullptr,"No palette view button");
+    for(const bool compact:{false,true}) {
+        if(iconsOnly->isChecked()!=compact)iconsOnly->trigger();
+        QApplication::processEvents();require(iconsOnly->isChecked()==compact,"Palette view toggle did not take effect");
+        const std::string view=compact?" (icons only)":" (names)";
+        int rows=0;
+        for(int g=0;g<palette->topLevelItemCount();++g)for(int r=0;r<palette->topLevelItem(g)->childCount();++r) {
+            const auto* item=palette->topLevelItem(g)->child(r);const int mode=item->data(0,Qt::UserRole).toInt();++rows;
+            require(mode>=0&&mode<13&&item->icon(0).cacheKey()==editorIcon(tools[mode]).cacheKey(),"Palette tool "+std::to_string(mode)+" does not reuse its glyph"+view);
+        }
+        require(rows==13,"Palette lists "+std::to_string(rows)+" tools, not 13"+view);
+        require(toggle->height()==editorDesign::controlHeight,"Palette view button height changed"+view);
+    }
+    // D190 state language in the icons-only view: the active tool is Mid with a left accent bar; a
+    // keyboard-focused row that is not the tool draws only the accent frame. Forcing first: focus.
+    QApplication::setActiveWindow(&w);palette->setFocus();QApplication::processEvents();
+    require(palette->hasFocus(),"Palette focus fixture did not take effect");
+    const auto accent=editorDesign::accent();
+    const auto near=[](QColor a,QColor b){return std::abs(a.red()-b.red())<24&&std::abs(a.green()-b.green())<24&&std::abs(a.blue()-b.blue())<24;};
+    auto* active=palette->topLevelItem(0)->child(0);palette->setCurrentItem(active);QApplication::processEvents();
+    require(active->isSelected(),"Active tool fixture not selected");
+    auto shot=palette->viewport()->grab().toImage();auto row=palette->visualItemRect(active);
+    require(near(shot.pixelColor(row.left(),row.center().y()),accent),"Icons-only active tool has no left accent bar");
+    require(near(shot.pixelColor(row.right()-3,row.center().y()),editorDesign::role(QPalette::Mid)),"Icons-only active tool is not Mid-filled");
+    auto* header=palette->topLevelItem(1);palette->setCurrentItem(header);QApplication::processEvents();
+    require(!header->isSelected()&&palette->currentItem()==header,"Focus-only fixture selected the row");
+    shot=palette->viewport()->grab().toImage();row=palette->visualItemRect(header);
+    require(near(shot.pixelColor(row.center().x(),row.top()),accent),"Icons-only keyboard focus draws no accent frame");
+    require(!near(shot.pixelColor(row.center().x(),row.center().y()),editorDesign::role(QPalette::Mid)),"Focus-only row is filled as selected");
+    iconsOnly->trigger();QApplication::processEvents();
+    auto* objects=w.findChild<QAction*>("editorNetworkObjects");
+    require(objects&&objects->icon().cacheKey()==editorIcon(EditorIcon::link).cacheKey(),"Network objects does not reuse the Link glyph");
 }
 }
 int main(int argc,char** argv) {
@@ -252,7 +377,8 @@ int main(int argc,char** argv) {
             boxModel();gridIsCrisp();
             std::cout<<"At "<<asked<<"x: box model and grid passed\n";return 0;
         }
-        palette();stylesheet();boxModel();typography();hairlines();gridTiers();gridIsCrisp();window(argv[1]);
+        if(argc>=4&&std::string(argv[2])=="--contact-sheet"){contactSheet(QString::fromLocal8Bit(argv[3]));return 0;}
+        palette();stylesheet();boxModel();typography();hairlines();gridTiers();gridIsCrisp();iconVocabulary();window(argv[1]);
         std::cout<<"Palette roles, QSS rules, 24/32 px box model, formatting, hairlines and grid tiers passed\n";return 0;
     } catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }
