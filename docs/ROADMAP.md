@@ -254,7 +254,8 @@ M3.5 scope remain open; this closes no owner gate.
 
 ### M3.6 — Speed control: turning, curves and speed areas
 
-**Open; carved by D177** (review §3 D–E). Reduced-speed areas by type, desired-speed decisions,
+**Open; carved by D177** (review §3 D–E). **Curve speed contract written** ([SPEED_CONTROL](reference/SPEED_CONTROL.md),
+D211, rows BA56–BA63; not implemented). Reduced-speed areas by type, desired-speed decisions,
 turning speed from Connector curvature, speed-dependent acceleration and grades. It delivers
 M2.1's "desired speed versus Link limits" item rather than duplicating it. **Gate:** contract and
 failure-first rows (curve speed bound, unset byte-identical); turning speeds measured in M6.

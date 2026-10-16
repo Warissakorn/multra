@@ -6,6 +6,19 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — M3.6 curve speed contract (D211, docs only)
+
+NEXT's item after D210: M3.6, which the review ranks as the cheapest large effect (turners cross
+junctions at full desired speed). The owner chose:
+- curve speed from Connector geometry first, with areas later;
+- a driver-behaviour key;
+- delay kept against the desired speed.
+
+[SPEED_CONTROL](reference/SPEED_CONTROL.md) fixes the key `curveLateralAcceleration` (schema 34,
+absent = today), the radius (the minimum polyline circumradius, the advisory's formula) and the bound
+`sqrt(a·R)`. The bound is anticipated at `comfortableDeceleration` through D191's cap. Rows BA56–BA63
+are written. No code changed; the review's rule is contract → rows → code, never combined.
+
 ## 2026-10-16 — A straddler follows the other lane's leaders (D210)
 
 NEXT's item. LATERAL §6 counts leaders on the follower's carriageway, but `closestVehicle` and
@@ -143,24 +156,6 @@ Checked on Linux headless: `ctest` 105/105, `check` green, CLI pin unchanged and
 output byte-identical to main. Release timings in the [evidence](evidence/lateral-zones.md): switch
 off inside noise; switched-on four-leg +7 % on a noisy container, below D164's 10 %. No desktop or
 Windows run.
-
-## 2026-10-16 — Owner sitting triage (D201, docs only)
-
-The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
-- **Closed as proposed:** B1 (keep `TrafficSim` until a release), B2 (D95/D101 off; route (i) only,
-  in M3.4), B3, B5 (standstill cap booked in M3.2.8a.1), B6, B8, B12 (asked at multi-level S1), B13
-  (`w74` preset stays out of the catalog; noted in M4.2).
-- **B3 is a code/contract discrepancy, not a choice:** `automatic_conflicts.cpp` skips pairs whose
-  drawing `level` differs, while M3_CONTRACT §1 says level is not separation. Queued as a fix slice
-  in NEXT with a failure-first row; B8's 300 s cool-down is queued the same way. No code changed.
-- **R4 (b) applied before the sitting:** C5, C6, D1, E1, E3, E4, E7 (listed more than 14 days)
-  became ROADMAP M1.29 and M3.2.10; C4 merged into C3; E12 dropped (slices a/b changed the
-  workspace it asked to see unchanged); E13–E15 merged into one look. Nothing is closed by this.
-  Numbered D201 because main took D194–D200 for the UI slices.
-- What remains only the owner's: A1, B4 → A3, A2, B9, the milestone closures and the looks.
-
-Checked on Linux: `check_docs` and `check_file_sizes` (built standalone from `tools/`) pass. No
-code changed and no desktop build or CTest run was made for this entry.
 
 ## Older entries
 

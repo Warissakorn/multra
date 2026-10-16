@@ -2,6 +2,24 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — Owner sitting triage (D201, docs only)
+
+The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
+- **Closed as proposed:** B1 (keep `TrafficSim` until a release), B2 (D95/D101 off; route (i) only,
+  in M3.4), B3, B5 (standstill cap booked in M3.2.8a.1), B6, B8, B12 (asked at multi-level S1), B13
+  (`w74` preset stays out of the catalog; noted in M4.2).
+- **B3 is a code/contract discrepancy, not a choice:** `automatic_conflicts.cpp` skips pairs whose
+  drawing `level` differs, while M3_CONTRACT §1 says level is not separation. Queued as a fix slice
+  in NEXT with a failure-first row; B8's 300 s cool-down is queued the same way. No code changed.
+- **R4 (b) applied before the sitting:** C5, C6, D1, E1, E3, E4, E7 (listed more than 14 days)
+  became ROADMAP M1.29 and M3.2.10; C4 merged into C3; E12 dropped (slices a/b changed the
+  workspace it asked to see unchanged); E13–E15 merged into one look. Nothing is closed by this.
+  Numbered D201 because main took D194–D200 for the UI slices.
+- What remains only the owner's: A1, B4 → A3, A2, B9, the milestone closures and the looks.
+
+Checked on Linux: `check_docs` and `check_file_sizes` (built standalone from `tools/`) pass. No
+code changed and no desktop build or CTest run was made for this entry.
+
 ## 2026-10-16 — UI slice e2: measured LOD (D200)
 
 The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
