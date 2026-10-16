@@ -41,13 +41,15 @@ void EditorWindow::buildRunControls() {
     bar->addAction(action("editorStep",QKeySequence(Qt::Key_F6),[this]{pauseRun();stepRun();}));
     auto* space=action("editorStepSpace",QKeySequence(Qt::Key_Space),[this]{pauseRun();stepRun();});
     space->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(space);
-    bar->addAction(action("editorReset",{},[this]{clearRun();prepareRun();refreshRun();}));
+    bar->addSeparator();
     runSeed_=new QLineEdit("42",bar);runSeed_->setObjectName("editorSeed");runSeed_->setMaxLength(10);runSeed_->setMaximumWidth(80);
     runSeed_->setFont(editorDesign::numericFont());runSeed_->setProperty("numeric",true);
     auto* seedLabel=new ReflowLabel(bar);texts_["editorSeedLabel"]=seedLabel;seedLabel->setBuddy(runSeed_);bar->addWidget(seedLabel);bar->addWidget(runSeed_);
     runSpeed_=new QComboBox(bar);runSpeed_->setObjectName("editorSpeed");
     for(double n:{0.5,1.,2.,5.,10.,20.})runSpeed_->addItem(QString::number(n)+"×",n);
     runSpeed_->setCurrentIndex(1);bar->addWidget(runSpeed_);
+    // Reset discards the run's progress, so it trails the group behind a separator (slice b).
+    bar->addSeparator();bar->addAction(action("editorReset",{},[this]{clearRun();prepareRun();refreshRun();}));
     auto* faster=action("editorFaster",QKeySequence(Qt::Key_Plus),[this]{runSpeed_->setCurrentIndex(std::min(runSpeed_->count()-1,runSpeed_->currentIndex()+1));});
     auto* slower=action("editorSlower",QKeySequence(Qt::Key_Minus),[this]{runSpeed_->setCurrentIndex(std::max(0,runSpeed_->currentIndex()-1));});
     for(auto* a:{faster,slower}){a->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(a);}

@@ -11,8 +11,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- UI slices a (D192, icon vocabulary) and b1 (D193, five palette groups, Delete separator, toolbar
-  fit/Focus tests) are in, on branch `claude/ui-slice-a-icons` (no PR yet). Owner reviews: E14, E15.
+- UI slice b (D193) is in: five palette groups, a transient icons-only palette view, the Simulation
+  bar as Run/Step | Seed/speed | Reset and Delete trailing; every toolbar stays 32 px at
+  1024–1360 px in both languages. Owner review is OWNER_SITTING E15. Slice a (D192, E14) and the
+  parallel-ctest / hit-test pass are on main too; slice b replaced an earlier b1-only variant.
 - D191 corrects the six audit findings on main: route attribution, live speed reduction, demand
   retune refusal, signal integer bounds, stale runtime catalogs and empty conflict chains.
 - M3.7 lateral slices 1–3a are in (D187–D189, [evidence](evidence/lateral-motion.md)). Only tests
@@ -22,33 +24,34 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux offscreen (Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — UI slice b2: icons-only palette toggle
+## Next session — UI presentation slice c: grouped Objects navigation (layout A)
 
-The user split slice b on 2026-10-16; b1 is D193. Read [slice plan](plans/UI_PRESENTATION_SLICES.md)
-§b and [specification](plans/UI_PRESENTATION_SPEC.md) §2. The goal is canvas width: the Thai
-1024×768 palette now scrolls to reach Measurement and Tools, and the Thai canvas is 471×228.
+The owner chose A (B16, “ทำตามแนะนำ”, 2026-10-15); slice 0 is green, so c may start. Read the
+[slice plan](plans/UI_PRESENTATION_SLICES.md) §c, [specification](plans/UI_PRESENTATION_SPEC.md) §1
+and the [audit](audits/UI_PRESENTATION_AUDIT.md) §2. Merge or rebase onto main first if slices a/b
+have merged by then.
 
-**Do, as one session** (`editor_palette.cpp`, `editor_workspace.cpp`, both locales;
-`workspace_ui_tests.cpp`, `design_system_ui_tests.cpp`):
-1. Decide first, with a screenshot of each option, what the narrow palette does with the bottom
-   controls: the "Visible level" eyebrow label, the `editorVisibleLevel` combo (its
-   `setMinimumContentsLength(10)` in `editor_workspace.cpp` sets the dock's minimum width) and the
-   text-only `editorBackgroundButton` (Ctrl+B and the View menu also reach it). The level filter
-   has no menu alternative, so it must stay reachable.
-2. Tests first: a checkable palette action (new key, both locales) switches icon+name ↔ icons-only;
-   in icons-only every tool row keeps its tooltip and accessible name "<name> · <chord>"; arrow
-   traversal, chords and the D190 active/focus states still work; group headers stay identifiable;
-   the toggle is not remembered (a new window starts with names); Reset layout restores names.
-   Measure the canvas viewport at 1024×768 Thai before/after.
-3. Keep `paletteItems_`, mode numbers, the hidden `editorTool` combo and the tab order
-   tree → level → background → canvas. No new setting, no saved state, no token change.
-4. D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
+**Do, as one session** (`editor_workspace.cpp`, `editor_tables.cpp`, `editor_window.hpp`, the page
+show helpers in `editor_demand/diagnostics/priority/counters/sections/zones/od/results.cpp`, both
+locales; tests in `workspace_ui_tests.cpp`, `table_ui_tests.cpp`, `results_tabs_ui_tests.cpp` and
+the page suites):
+1. Tests first: all 14 pages reachable through their task group (Network, Control, Demand,
+   Measurement, Results, Problems) in English and Thai; a locale switch while each page is active;
+   Show in table, a failed Check/Run and Problems reveal the owning group then the page; batch,
+   comparison and Cancel still replace Results page 0 only; D161 horizontal Zones stays.
+2. A compact group selector inside the existing `editorObjectsDock` / `editorObjectTabs`, its mapping
+   registered once by page pointer and translation key (`objectPages_`), never by index. Navigation
+   state only: no document, selection or run change; no remembered expansion or presets.
+3. Accept: 1024×768 both languages with canvas ≥ 400×250 for every group, the 1360×860 ≥ 700×350
+   baseline kept, focus mode restores hidden/moved/floating panels and the current group, Reset
+   returns the default; new D-row, before/after images, OWNER_SITTING §E row, full desktop `check`.
 
-Then slice c (grouped Objects navigation; slice 0 is green), d1, d2, e1, e2, one session each.
-Nested Objects-page toolbars are text-only on purpose (D192); revisit them only in c or d2.
+Do not touch Properties (d1), tables' numeric presentation (d2) or the canvas HUD (e1). After c:
+d1, d2, e1, e2, one session each. The icons-only palette's blank group rows and the extra toggle
+row wait on E15, not on a session.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
-a cold Debug desktop build takes about 7 minutes on 8 cores.
+a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
 
 ## Deferred work — preserved from the preceding NEXT
 
@@ -101,7 +104,7 @@ not cancelled. Resume them only at the owner's direction; ROADMAP retains every 
 - **Milestone closures the owner makes:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8.
   M8 needs a development-access study run end to end, plus C8/C9.
 - **Looks (C–F):** includes the new C10 Lab, C11 review fixes, C12 MSVC timing, E10 D151 GUI,
-  E11 MAP10 OSM and the UI rows E12–E15 (slice 0, D190, D192 icons, D193 palette groups).
+  E11 MAP10 OSM and the UI rows E12–E15 (slice 0, D190, D192 icons, D193 palette).
 - Motorcycles are core scope (D177); they need M3.7 first (review §5).
 - After the sitting, items still open and older than 14 days become ROADMAP carve-outs (R4).
 

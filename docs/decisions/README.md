@@ -174,4 +174,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D192](RECORD.md#d192) — icon vocabulary: Connector road bend, Route dot-trace-arrow, Reset mirrored with an origin dot, Focus wide panel; 16 px pair tests and a contact sheet.
 
-[D193](RECORD.md#d193) — palette in five task groups (Geometry, Control, Demand, Measurement, Tools), chords unchanged; Delete behind a separator; toolbar fit and Focus pinned by tests.
+[D193](RECORD.md#d193) — five palette groups, transient icons-only palette view, Simulation bar Run/Step | Seed/speed | Reset, Delete trailing; Run button kept at 24 px.

@@ -6,33 +6,32 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
-## 2026-10-16 — UI slice b1: five palette groups, Delete apart (D193)
+## 2026-10-16 — UI slice b: palette groups, icons-only view and Simulation toolbar (D193)
 
-The user split slice b on 2026-10-16: b1 (this entry) regroups the palette and pins the
-Simulation toolbar; the transient icons-only toggle is b2, because the Visible level combo and
-the Background button keep the palette wide and need their own design.
+The owner's B17 choice is in (`src/shell/editor_palette.cpp`, `editor_workspace.cpp`,
+`editor_run.cpp`, `editor_window.cpp`, one QSS rule in `editor_style.cpp`, two keys per locale).
+- **Five palette groups:** Geometry {0,1,5,2}, Control {8,9}, Demand {6,7,12}, Measurement {10,11},
+  Tools {3,4}. Mode numbers, chords and the hidden `editorTool` combo are unchanged.
+- **Icons-only view:** a checkable `editorPaletteIconsOnly` action on an arrow button above the tree
+  (and in View). Its checked state is the only record of the view: `translatePalette()` reads it,
+  nothing saves it, and Reset panel layout returns to names. Rows keep name + chord in tooltip and
+  accessible text; the level filter shrinks and the background toggle shows the image glyph.
+- **Toolbars:** Run/Pause, Step | Seed, speed | Reset on the Simulation bar; Delete selected trails
+  Drawing tools behind a separator. The Run button lost its vertical toolbar padding: text beside
+  icon made it 27 px and the Simulation bar 35 px, not 32, at every width.
+- **Tests first:** `workspace_ui_tests` (five groups; both views × both languages keep number,
+  chord, name and accessible text; chord and Down-key traversal; reset; separators; 1024/1179/
+  1180/1360 × en/th × idle/seed-focused/running/paused/focus mode: 32 px bars, 24 px fields, no
+  overflow, playback in view), `design_system_ui_tests` (shared glyphs and 24 px toggle in both views;
+  icons-only active row Mid + left bar, focus-only row frame), `editor_workflow_ui_tests` (F5, F6,
+  Space, Esc, +/− contexts; a guard that already passed). Before the change the workspace and design
+  suites failed on the missing toggle; the toolbar rows then found the 35 px bar.
 
-- **Palette** (`editor_palette.cpp` `groups[]`, owner B17): Geometry (Select, Draw link, Connect
-  lanes, Split), Control (Signal heads, Conflict areas), Demand (Routes, Vehicle inputs, Zones),
-  Measurement (Queue counters, Travel-time sections), Tools (Measure, Calibrate). Mode numbers,
-  chords, icons and the hidden `editorTool` protocol are unchanged; `editorPaletteMeasurement` is
-  new in both locales ("Measurement" / "การวัดผล").
-- **Toolbar:** a separator before the trailing Delete selected (`editor_window.cpp`). The
-  Simulation group already held Run/Pause, Step, Reset, seed and speed, and Focus already kept it,
-  so nothing else moved; tests now pin both.
-- **Tests first** (`workspace_ui_tests.cpp`): five groups in order with their modes and chords,
-  translated titles in both languages, arrow-key traversal in group order driving the tool, the
-  Delete separator, no toolbar overflow or control outside the window at 1024×768 in both
-  languages and in Focus, and Run/Step/Reset visible in Focus. Before the change the suite failed
-  on "Palette does not have the five task groups", then on the separator. The 1024 and Focus rows
-  passed before the change: they are guards, not fixes.
-- The Thai 1024×768 palette now scrolls to reach Measurement and Tools (one more group header);
-  b2's icons-only mode is the planned answer, not smaller text.
-
-Checked on Linux (Qt 6.4.2 offscreen): desktop `check` passes architecture, file sizes, docs and
-**149/149** CTest. Canvas 807×391 / 471×228 before and after
-([before](images/ui-palette-before/workspace-th.png), [after](images/ui-palette-after/workspace-th.png)).
-No Windows or high-DPI verification.
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **149/149** CTest. Canvas after 100
+Steps: 807×394 English, 471×231 Thai (was 807×391 / 471×228). No Windows or high-DPI verification.
+[Before](images/ui-palette-before/workspace-en.png) / [after](images/ui-palette-after/workspace-en.png),
+[icons only](images/ui-palette-after/workspace-icons.png).
 
 ## 2026-10-16 — UI slice a: icon vocabulary (D192)
 

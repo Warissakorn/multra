@@ -325,12 +325,37 @@ void window(const std::filesystem::path& data) {
         EditorIcon::connector,EditorIcon::route,EditorIcon::input,EditorIcon::signal,EditorIcon::conflict,
         EditorIcon::counter,EditorIcon::section,EditorIcon::zone};
     auto* palette=w.findChild<QTreeWidget*>("editorObjectPalette");require(palette!=nullptr,"No object palette");
-    int rows=0;
-    for(int g=0;g<palette->topLevelItemCount();++g)for(int r=0;r<palette->topLevelItem(g)->childCount();++r) {
-        const auto* item=palette->topLevelItem(g)->child(r);const int mode=item->data(0,Qt::UserRole).toInt();++rows;
-        require(mode>=0&&mode<13&&item->icon(0).cacheKey()==editorIcon(tools[mode]).cacheKey(),"Palette tool "+std::to_string(mode)+" does not reuse its glyph");
+    auto* iconsOnly=w.findChild<QAction*>("editorPaletteIconsOnly");require(iconsOnly&&iconsOnly->isCheckable(),"No palette view toggle");
+    auto* toggle=w.findChild<QToolButton*>("editorPaletteViewButton");require(toggle!=nullptr,"No palette view button");
+    for(const bool compact:{false,true}) {
+        if(iconsOnly->isChecked()!=compact)iconsOnly->trigger();
+        QApplication::processEvents();require(iconsOnly->isChecked()==compact,"Palette view toggle did not take effect");
+        const std::string view=compact?" (icons only)":" (names)";
+        int rows=0;
+        for(int g=0;g<palette->topLevelItemCount();++g)for(int r=0;r<palette->topLevelItem(g)->childCount();++r) {
+            const auto* item=palette->topLevelItem(g)->child(r);const int mode=item->data(0,Qt::UserRole).toInt();++rows;
+            require(mode>=0&&mode<13&&item->icon(0).cacheKey()==editorIcon(tools[mode]).cacheKey(),"Palette tool "+std::to_string(mode)+" does not reuse its glyph"+view);
+        }
+        require(rows==13,"Palette lists "+std::to_string(rows)+" tools, not 13"+view);
+        require(toggle->height()==editorDesign::controlHeight,"Palette view button height changed"+view);
     }
-    require(rows==13,"Palette lists "+std::to_string(rows)+" tools, not 13");
+    // D190 state language in the icons-only view: the active tool is Mid with a left accent bar; a
+    // keyboard-focused row that is not the tool draws only the accent frame. Forcing first: focus.
+    QApplication::setActiveWindow(&w);palette->setFocus();QApplication::processEvents();
+    require(palette->hasFocus(),"Palette focus fixture did not take effect");
+    const auto accent=editorDesign::accent();
+    const auto near=[](QColor a,QColor b){return std::abs(a.red()-b.red())<24&&std::abs(a.green()-b.green())<24&&std::abs(a.blue()-b.blue())<24;};
+    auto* active=palette->topLevelItem(0)->child(0);palette->setCurrentItem(active);QApplication::processEvents();
+    require(active->isSelected(),"Active tool fixture not selected");
+    auto shot=palette->viewport()->grab().toImage();auto row=palette->visualItemRect(active);
+    require(near(shot.pixelColor(row.left(),row.center().y()),accent),"Icons-only active tool has no left accent bar");
+    require(near(shot.pixelColor(row.right()-3,row.center().y()),editorDesign::role(QPalette::Mid)),"Icons-only active tool is not Mid-filled");
+    auto* header=palette->topLevelItem(1);palette->setCurrentItem(header);QApplication::processEvents();
+    require(!header->isSelected()&&palette->currentItem()==header,"Focus-only fixture selected the row");
+    shot=palette->viewport()->grab().toImage();row=palette->visualItemRect(header);
+    require(near(shot.pixelColor(row.center().x(),row.top()),accent),"Icons-only keyboard focus draws no accent frame");
+    require(!near(shot.pixelColor(row.center().x(),row.center().y()),editorDesign::role(QPalette::Mid)),"Focus-only row is filled as selected");
+    iconsOnly->trigger();QApplication::processEvents();
     auto* objects=w.findChild<QAction*>("editorNetworkObjects");
     require(objects&&objects->icon().cacheKey()==editorIcon(EditorIcon::link).cacheKey(),"Network objects does not reuse the Link glyph");
 }

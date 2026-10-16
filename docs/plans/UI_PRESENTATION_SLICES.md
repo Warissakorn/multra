@@ -95,9 +95,9 @@ cache invalidation if future themes are added (theme work deferred).
 
 ## Slice b — palette and Simulation toolbar
 
-Split on 2026-10-16 at the user's choice: **b1** (five groups, Delete separator, toolbar tests) is
-done as [D193](../decisions/RECORD.md#d193); **b2** is the transient icons-only toggle below, one
-session, starting from how the Visible level label/combo and Background button behave when narrow.
+Done as [D193](../decisions/RECORD.md#d193) on 2026-10-16: five groups, the transient icons-only
+toggle, the Simulation bar order and Delete behind a separator. A b1-only variant (no toggle) was
+written in parallel and replaced by this one when both merged.
 
 **Depends:** owner B17, slice a; slice 0 recommended even though no object page moves here.
 **Files:** editor_palette.cpp, editor_workspace.cpp, editor_window.cpp, editor_run.cpp,

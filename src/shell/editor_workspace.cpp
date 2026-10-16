@@ -47,7 +47,7 @@ void EditorWindow::buildWorkspace() {
     for(const auto* key:{"editorRecover","editorEmbedCatalogs"})files->removeAction(actions_.at(key));
     menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs"});
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});
-    menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","","editorNetworkObjects","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
+    menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorToggleMap","editorRemoveMap"});
     menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorBehaviourLab","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
     menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts"});
@@ -95,7 +95,7 @@ void EditorWindow::buildWorkspace() {
     for(auto* number:findChildren<QAbstractSpinBox*>()) {
         number->setFont(editorDesign::numericFont());number->setProperty("numeric",true);
     }
-    setTabOrder(palette_,visibleLevel_);
+    setTabOrder(findChild<QToolButton*>("editorPaletteViewButton"),palette_);setTabOrder(palette_,visibleLevel_);
     setTabOrder(visibleLevel_,findChild<QToolButton*>("editorBackgroundButton"));
     setTabOrder(findChild<QToolButton*>("editorBackgroundButton"),canvas_);
     setTabOrder(canvas_,id_);setTabOrder(id_,name_);setTabOrder(name_,properties_);
@@ -128,6 +128,7 @@ void EditorWindow::resetWorkspace() {
     changingWorkspace_=true;
     {const QSignalBlocker blocked(actions_.at("editorFocusCanvas"));actions_.at("editorFocusCanvas")->setChecked(false);}
     workspaceBeforeFocus_.clear();
+    actions_.at("editorPaletteIconsOnly")->setChecked(false);translatePalette(); // the view is transient (B17)
     const auto dock=[this](const char* name){return findChild<QDockWidget*>(name);};
     auto* palette=dock("editorPaletteDock");auto* inspector=dock("editorInspectorDock");
     auto* objects=dock("editorObjectsDock");auto* history=dock("editorHistoryDock");
@@ -136,7 +137,7 @@ void EditorWindow::resetWorkspace() {
     addDockWidget(Qt::RightDockWidgetArea,history);tabifyDockWidget(inspector,history);addDockWidget(Qt::BottomDockWidgetArea,objects);
     for(auto* panel:{palette,inspector,objects})panel->show();
     history->hide();inspector->raise();
-    resizeDocks({palette,inspector},{180,310},Qt::Horizontal);resizeDocks({objects},{185},Qt::Vertical);
+    resizeDocks({palette,inspector},{paletteWidth,310},Qt::Horizontal);resizeDocks({objects},{185},Qt::Vertical);
     layoutToolbars();changingWorkspace_=false;canvas_->setFocus();
 }
 }
