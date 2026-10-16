@@ -248,7 +248,9 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    to true north, and turn with *rotationDegrees* and the Lab's heading-up? It is hidden without a
    map provider: is that right, or should a plain georeference show it too? Is bottom-right the
    right corner, clear of the credit at every size? At 100/150/200 % on Windows, is the text
-   unclipped? Linux offscreen evidence does not close this. *Owner:*
+   unclipped? Linux offscreen evidence does not close this. *Owner:* 2026-10-16, north without a
+   map provider: “ควรแสดง” (show it), done as [D198](../decisions/RECORD.md#d198). The other
+   questions are open.
 
 ## F — Dialogs: demand and behaviour
 

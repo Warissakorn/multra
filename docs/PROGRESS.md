@@ -26,6 +26,9 @@ The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canva
   checks the HUD inside the viewport at 1360 and 1024 in both languages. `design_system_ui_tests`'
   empty-grid pixel check now skips the HUD's own rectangle and asserts it is there.
 - **Carved out:** run vehicle casings and an R/A/G shape cue are slice e1b (two systems, AGENTS.md).
+- **Owner E19, same day (D198):** north shows whenever there is a georeference; `MapLayer` builds the
+  projection without waiting for a tile provider. The HUD suite checks an unknown provider and a
+  hidden map (it failed on both before the change).
 
 Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
 file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows

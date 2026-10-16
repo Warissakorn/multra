@@ -58,6 +58,12 @@ int main(int argc,char** argv) {
         canvas.setTransform(QTransform().rotate(40)*QTransform::fromScale(4,-4));
         require(std::abs(std::abs(wrap(north(canvas)))-40)<0.2,"A rotated view did not turn north");
         canvas.setTransform(QTransform::fromScale(4,-4));settle();
+        // E19 (D198): any georeference gives north, with no tile provider and with the map hidden.
+        document.map->providerId="missing";canvas.setDocument(&document);
+        require(std::abs(wrap(north(canvas)))<0.2,"North needs a tile provider");
+        document.map->providerId="fixture";canvas.setDocument(&document);canvas.setMapVisible(false);
+        require(std::abs(wrap(north(canvas)))<0.2,"North hidden with the map");
+        canvas.setMapVisible(true);settle();
         // The HUD takes no gesture: the viewport sees the click.
         const auto centre=h->geometry().center();
         require(canvas.viewport()->childAt(centre)!=h,"HUD intercepts the pointer");

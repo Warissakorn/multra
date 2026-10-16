@@ -19,11 +19,10 @@ void MapLayer::setSettings(std::optional<MapSettings> settings) {
     if (settings_) {
         viewStatus_=MapStatus::unavailable;
         try {
+            // The georeference stands without tiles: north and coordinates need only the projection (D198).
+            projection_=std::make_unique<GeoProjection>(settings_->reference);
             for (const auto& p:providers_) if (p.id==settings_->providerId) {provider_=p;break;}
-            if (provider_) {
-                projection_=std::make_unique<GeoProjection>(settings_->reference);
-                client_.setProvider(*provider_);viewStatus_=MapStatus::loading;
-            }
+            if (provider_) {client_.setProvider(*provider_);viewStatus_=MapStatus::loading;}
         } catch (const std::exception&) { projection_.reset(); }
     }
     if (changed) changed();
