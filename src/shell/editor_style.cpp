@@ -129,6 +129,7 @@ QString editorStyleSheet() {
         QToolButton:disabled, QPushButton:disabled { color: palette(window-text); background: palette(midlight); border-color: palette(mid); }
         QToolButton#editorRunButton { background: palette(midlight); border-color: palette(highlight); color: palette(text); font-weight: 600; }
         QToolButton#editorRunButton:hover, QToolButton#editorRunButton:pressed { background: palette(mid); }
+        QToolBar QToolButton#editorRunButton, QToolBar QToolButton#editorRunButton:focus { padding: 0 @space2px; }
         QDockWidget { border: 1px solid palette(mid); }
         QDockWidget::title { background: palette(window); min-height: @controlContentpx; padding: 1px @space2px; color: palette(text); font-size: @fontBodypx; font-weight: 600; }
         QGroupBox { font-size: @fontSectionpx; font-weight: 600; }

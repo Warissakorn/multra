@@ -2,6 +2,24 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — M3.5 slice 4: reaction-time action delay (D184)
+
+Own motion now acts on a per-vehicle FIFO of earlier decisions, with d rounded from
+`reactionTime / dt`. The shared decision value carries acceleration, mode and W74 state;
+physical caps and current type bounds/D105 still apply to the action actually used.
+- Source insertion and Lab placement initialise zero/free/no-state startup history.
+- Road-boundary delay changes trim or pad the oldest end; zero delay clears history.
+- Retunes changing a quantised count are refused atomically, including unused behaviours.
+- Hypothetical source, courtesy and lane-change judgements remain undelayed. Delayed W74
+  state is published with its applied action, and copied histories replay exactly.
+- BA30's unread-key codec assertion is retired into a tick-by-tick zero-delay identity check.
+
+Checked on Linux headless: full Release build and `check` **97/97**, including all 16
+new delay cases. The CLI seed-42 pin remains **45 completed / 31.75870154816726 s / 1 clamp**.
+Qt desktop and Windows were not verified here.
+Interleaved unassigned-scenario benchmark median: +7.08 %, inside the 10 % budget.
+See [the evidence](../evidence/perception-delay.md). No owner gate is closed.
+
 ## 2026-10-15 — M3.5 slice 3: look-back, rear TTC and perceived lane-change tests (D183)
 
 Lane changes now read the changer's perception keys (`src/core/lanes.cpp`).

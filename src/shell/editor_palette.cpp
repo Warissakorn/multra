@@ -7,6 +7,7 @@
 #include <QDockWidget>
 #include <QFont>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
 #include <QAbstractItemView>
@@ -23,6 +24,12 @@ void EditorWindow::buildPalette() {
     auto* body=new QWidget(dock);auto* layout=new QVBoxLayout(body);
     layout->setContentsMargins(editorDesign::space2,editorDesign::space2,editorDesign::space2,editorDesign::space2);
     layout->setSpacing(editorDesign::space1);
+    // B17: a transient view toggle. Its checked state is the only record of the view; nothing saves it.
+    auto* iconsOnly=action("editorPaletteIconsOnly",{},[this]{showPaletteView();});iconsOnly->setCheckable(true);
+    auto* view=new QToolButton(body);view->setObjectName("editorPaletteViewButton");view->setDefaultAction(iconsOnly);
+    view->setToolButtonStyle(Qt::ToolButtonIconOnly);view->setArrowType(Qt::LeftArrow);
+    auto* header=new QHBoxLayout;header->setContentsMargins(0,0,0,0);header->addStretch(1);header->addWidget(view);
+    layout->addLayout(header);
     palette_=new QTreeWidget(body);palette_->setObjectName("editorObjectPalette");
     palette_->setHeaderHidden(true);palette_->setRootIsDecorated(true);palette_->setIndentation(editorDesign::space3);
     palette_->setUniformRowHeights(true);palette_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -33,8 +40,9 @@ void EditorWindow::buildPalette() {
     struct Group {const char* key;std::initializer_list<int> modes;};
     const Group groups[]={
         {"editorPaletteGeometry",{0,1,5,2}},
-        {"editorPaletteControl",{6,7,8,9,10,11}},
-        {"editorPaletteDemand",{12}},
+        {"editorPaletteControl",{8,9}},
+        {"editorPaletteDemand",{6,7,12}},
+        {"editorPaletteMeasurement",{10,11}},
         {"editorPaletteTools",{3,4}}
     };
     const char* shortcuts[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z"};
@@ -57,7 +65,7 @@ void EditorWindow::buildPalette() {
         }
     }
     visibleLevel_=new QComboBox(body);visibleLevel_->setObjectName("editorVisibleLevel");
-    auto* label=new QLabel(body);label->setProperty("editorEyebrow",true);texts_["editorVisibleLevel"]=label;layout->addWidget(label);layout->addWidget(visibleLevel_);
+    auto* label=new QLabel(body);label->setObjectName("editorVisibleLevelLabel");label->setProperty("editorEyebrow",true);texts_["editorVisibleLevel"]=label;layout->addWidget(label);layout->addWidget(visibleLevel_);
     connect(palette_,&QTreeWidget::currentItemChanged,this,[this](QTreeWidgetItem* current){
         if(!current||current->data(0,Qt::UserRole+1).toBool())return;
         tool_->setCurrentIndex(current->data(0,Qt::UserRole).toInt());
@@ -79,6 +87,7 @@ void EditorWindow::buildPalette() {
         canvas_->setBackgroundVisible(actions_.at("editorToggleBackground")->isChecked());
     });
     background->setCheckable(true);background->setChecked(true);addAction(background);
+    background->setIcon(editorIcon(EditorIcon::image)); // the background image's glyph, as on Calibrate
     auto* button=new QToolButton(body);button->setObjectName("editorBackgroundButton");button->setDefaultAction(background);
     button->setToolButtonStyle(Qt::ToolButtonTextOnly);layout->addWidget(button);
     // Vissim's Ctrl+A simple link display; a focused text field keeps Ctrl+A as select-all.
@@ -100,18 +109,26 @@ void EditorWindow::translatePalette() {
     visibleLevel_->setAccessibleName(text("editorVisibleLevel"));
     canvas_->setAccessibleDescription(text("editorKeyboardHelp"));
     const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool"};
+    // Icons only hides the words, never the name: tooltip and accessible text keep name and chord.
+    const bool compact=actions_.at("editorPaletteIconsOnly")->isChecked();
+    palette_->setRootIsDecorated(!compact);palette_->setIndentation(compact?0:editorDesign::space3);
     for(const auto& [mode,entry]:paletteItems_){
         const auto label=text(modes[mode]);const auto shortcut=entry->data(0,Qt::UserRole+2).toString();
-        entry->setText(0,label+"  "+shortcut);entry->setToolTip(0,label+" · "+shortcut);
+        entry->setText(0,compact?QString():label+"  "+shortcut);entry->setToolTip(0,label+" · "+shortcut);
+        entry->setData(0,Qt::AccessibleTextRole,label+" · "+shortcut);
         actions_.at("editorTool"+std::to_string(mode))->setText(label);
     }
     for(int index=0;index<palette_->topLevelItemCount();++index){
         auto* root=palette_->topLevelItem(index);const bool english=language_->currentData().toString()=="en";
-        auto title=text(root->data(0,Qt::UserRole).toString().toStdString());
-        if(english)title=title.toUpper();
+        const auto name=text(root->data(0,Qt::UserRole).toString().toStdString());
         auto font=root->font(0);editorDesign::styleGroupLabel(font,english);root->setFont(0,font);
-        root->setText(0,title);
+        root->setText(0,compact?QString():english?name.toUpper():name);root->setToolTip(0,compact?name:QString());
+        root->setData(0,Qt::AccessibleTextRole,name);
     }
+    if(auto* view=findChild<QToolButton*>("editorPaletteViewButton"))view->setArrowType(compact?Qt::RightArrow:Qt::LeftArrow);
+    findChild<QLabel*>("editorVisibleLevelLabel")->setVisible(!compact);
+    visibleLevel_->setMinimumContentsLength(compact?2:10);
+    findChild<QToolButton*>("editorBackgroundButton")->setToolButtonStyle(compact?Qt::ToolButtonIconOnly:Qt::ToolButtonTextOnly);
     const QSignalBlocker block(visibleLevel_);const auto selected=visibleLevel_->currentData();visibleLevel_->clear();
     visibleLevel_->addItem(text("editorAllLevels"));
     const auto lang=language_->currentData().toString().toStdString();
@@ -119,6 +136,13 @@ void EditorWindow::translatePalette() {
     if(selected.isValid() && visibleLevel_->findData(selected)<0)
         visibleLevel_->addItem(QString::number(selected.toInt()),selected);
     visibleLevel_->setCurrentIndex(selected.isValid()?visibleLevel_->findData(selected):0);
+}
+void EditorWindow::showPaletteView() {
+    translatePalette();
+    auto* dock=findChild<QDockWidget*>("editorPaletteDock");
+    if(dock->isFloating())return;
+    const bool compact=actions_.at("editorPaletteIconsOnly")->isChecked();
+    resizeDocks({dock},{compact?dock->widget()->minimumSizeHint().width():paletteWidth},Qt::Horizontal);
 }
 void EditorWindow::buildAppearance(QFormLayout* form) {
     objectLevel_=new QComboBox(this);objectDisplay_=new QComboBox(this);

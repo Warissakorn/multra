@@ -6,6 +6,33 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice b: palette groups, icons-only view and Simulation toolbar (D193)
+
+The owner's B17 choice is in (`src/shell/editor_palette.cpp`, `editor_workspace.cpp`,
+`editor_run.cpp`, `editor_window.cpp`, one QSS rule in `editor_style.cpp`, two keys per locale).
+- **Five palette groups:** Geometry {0,1,5,2}, Control {8,9}, Demand {6,7,12}, Measurement {10,11},
+  Tools {3,4}. Mode numbers, chords and the hidden `editorTool` combo are unchanged.
+- **Icons-only view:** a checkable `editorPaletteIconsOnly` action on an arrow button above the tree
+  (and in View). Its checked state is the only record of the view: `translatePalette()` reads it,
+  nothing saves it, and Reset panel layout returns to names. Rows keep name + chord in tooltip and
+  accessible text; the level filter shrinks and the background toggle shows the image glyph.
+- **Toolbars:** Run/Pause, Step | Seed, speed | Reset on the Simulation bar; Delete selected trails
+  Drawing tools behind a separator. The Run button lost its vertical toolbar padding: text beside
+  icon made it 27 px and the Simulation bar 35 px, not 32, at every width.
+- **Tests first:** `workspace_ui_tests` (five groups; both views × both languages keep number,
+  chord, name and accessible text; chord and Down-key traversal; reset; separators; 1024/1179/
+  1180/1360 × en/th × idle/seed-focused/running/paused/focus mode: 32 px bars, 24 px fields, no
+  overflow, playback in view), `design_system_ui_tests` (shared glyphs and 24 px toggle in both views;
+  icons-only active row Mid + left bar, focus-only row frame), `editor_workflow_ui_tests` (F5, F6,
+  Space, Esc, +/− contexts; a guard that already passed). Before the change the workspace and design
+  suites failed on the missing toggle; the toolbar rows then found the 35 px bar.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **149/149** CTest. Canvas after 100
+Steps: 807×394 English, 471×231 Thai (was 807×391 / 471×228). No Windows or high-DPI verification.
+[Before](images/ui-palette-before/workspace-en.png) / [after](images/ui-palette-after/workspace-en.png),
+[icons only](images/ui-palette-after/workspace-icons.png).
+
 ## 2026-10-16 — UI slice a: icon vocabulary (D192)
 
 The two source-identical glyph pairs from the UI audit are separated, and Fit/Focus no longer
@@ -191,24 +218,6 @@ and 32 ticks of copied-state replay, including live histories in positive-delay 
 Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
   CLI help/output protection and all existing perception/safety/reference regressions.
 [Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
-
-## 2026-10-15 — M3.5 slice 4: reaction-time action delay (D184)
-
-Own motion now acts on a per-vehicle FIFO of earlier decisions, with d rounded from
-`reactionTime / dt`. The shared decision value carries acceleration, mode and W74 state;
-physical caps and current type bounds/D105 still apply to the action actually used.
-- Source insertion and Lab placement initialise zero/free/no-state startup history.
-- Road-boundary delay changes trim or pad the oldest end; zero delay clears history.
-- Retunes changing a quantised count are refused atomically, including unused behaviours.
-- Hypothetical source, courtesy and lane-change judgements remain undelayed. Delayed W74
-  state is published with its applied action, and copied histories replay exactly.
-- BA30's unread-key codec assertion is retired into a tick-by-tick zero-delay identity check.
-
-Checked on Linux headless: full Release build and `check` **97/97**, including all 16
-new delay cases. The CLI seed-42 pin remains **45 completed / 31.75870154816726 s / 1 clamp**.
-Qt desktop and Windows were not verified here.
-Interleaved unassigned-scenario benchmark median: +7.08 %, inside the 10 % budget.
-See [the evidence](evidence/perception-delay.md). No owner gate is closed.
 
 ## Older entries
 

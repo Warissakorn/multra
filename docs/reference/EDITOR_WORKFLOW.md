@@ -138,10 +138,19 @@ from the real signal program. Reset restores the authored bars. Marker stations 
 The application opens maximized. The command bar uses one row on wide windows and two rows
 below 1180 logical pixels, keeping playback and language controls reachable. File, Edit, View,
 Simulation, Help and Language menus retain full command names and keyboard shortcuts.
+The Simulation bar reads Run/Pause (F5), Step (F6) | Seed, speed | Reset; Reset and Drawing
+tools' Delete selected sit last behind a separator (D193).
+
+The Network Objects palette groups the tools as Geometry (Select, Link, Connector, Split),
+Control (Signal heads, Conflict areas), Demand (Routes, Vehicle inputs, Zones), Measurement
+(Queue counters, Travel-time sections) and Tools (Measure, Calibrate); every tool keeps its
+chord. The arrow above the tree (also View → icons only) hides the names; tooltips and
+accessible names keep name and chord. The view is not saved, and Reset panel layout restores
+names (D193).
 
 - **Ctrl+Shift+F** (View → Focus on network) hides docks and restores the previous layout on
   the next press, including hidden and floating panels. Opening a panel also leaves focus mode.
-- **View → Reset panel layout** restores the palette, Properties and Objects docks.
+- **View → Reset panel layout** restores the palette (with names), Properties and Objects docks.
 - **Ctrl+I**, **Ctrl+Shift+O**, **Ctrl+Shift+H** and **Ctrl+Shift+T** toggle Properties, Objects,
   History and the Network Objects palette respectively.
 - Properties keeps ID, Name and its tabs visible while each tab scrolls independently.
