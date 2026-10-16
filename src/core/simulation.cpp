@@ -224,7 +224,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     if (index.laneChanges) {
         const auto changes = decideLaneChanges(scenario, index, vehicles, refs, spans, buckets, startService, startTick);
         for (const auto& change : changes) {
-            recordLaneChange(scenario, vehicles[change.vehicle], change.route, change.distance, startTick, startTime, events);
+            applyLaneChange(scenario, vehicles[change.vehicle], change, startTick, startTime, events);
         }
         if (!changes.empty()) {
             refs = resolveRefs(scenario, vehicles, index);

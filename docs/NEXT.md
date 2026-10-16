@@ -11,17 +11,16 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-16
 
-- **M3.7.0's four slices are in.** Slice 3b (D202, [evidence](evidence/lateral-zones.md), BA47): a
-  straddler's other-lane span blocks, is anticipated by, holds and sweeps that lane's zones; the
-  straddler itself is not held there. Slice 4 (D203, [evidence](evidence/lateral-display.md), BA46):
-  the run view draws lane centre + `lateral`, and a lateral crossing (flagged in `LaneChangeTrace`)
-  is never slid. Only tests set a lateral target, so no product run moves sideways; BA39 holds.
-  M3.7's gate stays open (ROADMAP).
-- D202–D204 are on main (PR #173, merged 2026-10-16 with `windows-desktop` red, owner's call). D205
-  fixes that red ([evidence](evidence/windows-ui-red.md)): the 3 px threshold's rounding and a Thai label
-  word Windows cannot break. Until its branch's Windows run is green, D205 is not confirmed.
-- The UI presentation slices a–e2 (D192–D200) and the sitting triage (D201) are on main. E13–E21
-  wait on the owner, not a session.
+- **M3.4 slice 1 is in** (D206, [evidence](evidence/lane-change-duration.md), BA48–BA53): with the lateral
+  switch on, a lane change is a lateral move that remaps at the crossing. Two start rules of D204 were
+  corrected from switched-on runs (window without the body length; a change under way holds its target
+  place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
+  byte-identical); BA39 holds.
+- **Switched-on cost is owed:** +33 % `lane-change-lab`, +17 % `four-leg-signalised` (Release, seeds
+  42–51), above LATERAL §11's 10 %. Nothing a user runs is slower; the cut is due before any shipped
+  project or preset carries lateral keys.
+- M3.7.0's four slices are in (D202, D203); M3.7's gate stays open (ROADMAP).
+- D205 (main's Windows-only UI reds) is on main; it is confirmed only by a green Windows run.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
   is still owed if the owner reports slowness.
 - `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
@@ -30,23 +29,26 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M3.4 lane-change duration, slice 1 (rows first)
+## Next session — the lane-swap deadlock at shared dead ends (rows first)
 
-The contract is written and its choices are the owner's (D204,
-[LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md)). A session told only to "continue" takes
-the next item below; if the owner names another item, that comes first.
-1. **Write BA48–BA53 failure-first** (DRIVING_BEHAVIOUR §3), reusing `tests/lateral_test_support.hpp`
-   (`road`, `place`, `spansOf`, `overlap2d`); two-lane roads there already compile `LaneChangeSpan`s.
-2. **Implement §3–§5** in `decideLaneChanges` (`src/core/lanes.cpp`), switched on only: set
-   `lateralTarget` instead of `recordLaneChange`, the zone and window start rules, one change at a
-   time, clear the target when centred (`lateral_motion.cpp`). `simulation.cpp` is at 500 lines and
-   `types.hpp` at 500: add no lines there.
-3. Re-run LATERAL §11 with real targets (contract §7) and record it in a new evidence file.
-4. After it: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
+Found by D206's product runs and **present with the switch off** ([evidence](evidence/lane-change-duration.md)
+§ switched-on runs): in `lane-change-lab`, two movements' stubs end at the same station on adjacent lanes,
+each heading for the other's lane. Both heads stand at 598 m of 600 m, each is "alongside" the other's
+target place (`around` in `src/core/lanes.cpp`), neither ever changes and both approaches jam
+(seed 44: 183 vehicles active, switch off). A session told only to "continue" takes it:
+1. A failure-first row on a two-lane stub pair built like `stub()` in
+   `tests/lane_change_duration_tests.cpp` (two dead ends at one station, spans crossing), switch off.
+2. Propose the rule before coding (M3_8_CONTRACT §2 is the contract): e.g. the lower id of a mutual
+   pair changes first into the other's place once its body is the only one alongside, or a swap is
+   accepted as one change of both. Owner-visible behaviour: write it into M3_8_CONTRACT first and
+   record the decision.
+3. Then, still M3.4: the mid-change clamps (two in ten switched-on lab seeds; LANE_CHANGE_DURATION §9)
+   and the switched-on engine round (profile `moveLaterally`'s per-tick refs/spans/buckets rebuild).
+4. After them: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
    motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
-a cold Debug desktop build takes about 7 minutes on 8 cores, about 15 on 4.
+a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.
 
 ## Deferred work — preserved from the preceding NEXT
 
@@ -60,7 +62,7 @@ direction. ROADMAP retains every gate.
    ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
    scope but no longer leads the order.
 3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
-   lane change. Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
+   lane change (the swap deadlock above may land here). Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
 4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
    - vehicle turning beyond phase 3 (swept-body clearance rows first)
    - M3.2.8a.1 moving merge anticipation, with the standstill cap (D201)
@@ -104,8 +106,9 @@ ROADMAP M1.29 and M3.2.10. What only the owner can answer, in order:
 
 ## Known limits to keep in mind
 
-- **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): one-dimensional
-  vehicles, no lateral position, instantaneous lane changes, no turning-speed reduction.
+- **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): shipped runs keep
+  one-dimensional vehicles and instantaneous lane changes (no shipped project carries lateral keys, D206); no
+  turning-speed reduction.
   Perception limits, multi-anticipation and reaction time are optional; with no keys the old
   single-leader, unbounded-sight, zero-delay path remains. A second rear follower is not modelled.
 - **M8:**

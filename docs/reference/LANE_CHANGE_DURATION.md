@@ -1,6 +1,7 @@
 # Lane-change duration contract (M3.4)
 
-Written 2026-10-16 (D204). **Not implemented.** The three open choices were settled by the owner on
+Written 2026-10-16 (D204). **Slice 1 implemented** (D206, [evidence](../evidence/lane-change-duration.md)),
+with D206's two corrections to §3. The three open choices were settled by the owner on
 2026-10-16 (§3 start rule, §6 display, §2 no new key). Rows BA48–BA53 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows). It builds on
 [LATERAL](LATERAL.md) (spans §5, predicates §6, motion and crossing §7) and changes only the
@@ -50,9 +51,17 @@ the discretionary incentive and hold) and then:
   inside an area: a changer therefore never straddles into a zone, and no zone has to hold a
   straddler. D202's occupancy stays as the safety net other vehicles see.
 - **It must cross inside the span window.** The crossing (LATERAL §7) needs a span that covers the
-  whole body; the change starts only if `front + travel / 2 ≤ fromEnd` of that span, so the centre
-  passes the lane line before the window closes.
+  whole body; the change starts only if `front + speed · |lateralTarget − lateral| / (2 · maxLateralSpeed)
+  ≤ fromEnd` of that span, so the centre passes the lane line before the window closes. D206: the
+  body's length is not counted here (D204 wrote `travel / 2`), or a changer standing within half its
+  length of its dead end could never start.
+- **A change under way holds its target place (D206).** Every vehicle with `lateralTarget` set is
+  counted, at its target, in the other vehicles' start tests for the whole change, not only in the
+  tick it was accepted; otherwise two changers converging on one lane from both sides both start.
 - **One change at a time.** A vehicle with `lateralTarget` set starts no other change.
+- **A behaviour without the keys changes instantaneously (D206).** With the switch on, a vehicle
+  whose behaviour carries no `maxLateralSpeed` (every key or none, LATERAL §9) cannot move sideways,
+  so its change is recorded at acceptance as with the switch off.
 - Accepted changes of one tick are decided in vehicle-id order against the snapshot and the
   changes already accepted, as today; an accepted changer's spans on both lanes join `moved`.
 
@@ -100,4 +109,6 @@ asserting its forcing before its consequence.
   zone: then hold a straddler at the other lane's zone through mapped incidence (D202).
 - Two changers wait on each other's refused moves (a lateral deadlock): then add abandoning and
   returning to the old lane.
+- Clamps from a lateral move into a lane where a vehicle has passed close ahead (seen twice in ten
+  lab seeds, [evidence](../evidence/lane-change-duration.md)): then a per-tick gap check on the move.
 - A cited source shows lane-change duration independent of lateral speed: then a separate key.

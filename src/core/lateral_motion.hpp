@@ -13,6 +13,7 @@ namespace trafficsim {
 // refused or absent move keeps `lateral` with `lateralSpeed` 0. A centre past a lane boundary that a
 // span covers remaps the route (recordLaneChange, started at `tick`), re-expresses `lateral` and the
 // target from the new lane's centre, and moves the vehicle's MovedEvent of `time` to the new lane.
+// A body centred on its target clears it (LANE_CHANGE_DURATION §5, D206).
 void moveLaterally(const Scenario& scenario, const ScenarioIndex& index, std::vector<Vehicle>& vehicles,
                    std::uint64_t tick, double time, double dt, std::vector<SimEvent>& events);
 }

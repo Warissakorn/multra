@@ -5,6 +5,7 @@
 // pre-step snapshot and decided in vehicle-id order, with no random draw, so replay is exact.
 #include "routes.hpp"
 #include <limits>
+#include <optional>
 
 namespace trafficsim {
 // Validation of the compiled spans and dead ends; called by validateScenario.
@@ -15,7 +16,9 @@ void indexLaneChanges(const Scenario&, ScenarioIndex&);
 // the best target reachable through its spans. UINT32_MAX when no chain of spans reaches a full
 // route. Shared by the index and by validation, so the two cannot disagree.
 std::vector<std::uint32_t> laneChangesRemaining(const Scenario&);
-struct LaneChange { std::size_t vehicle{}; std::uint32_t route{}; double distance{}; };
+// With `lateralTarget` (LANE_CHANGE_DURATION §3, D206), the change is a lateral move toward the
+// target lane's centre, from the current one; the route remaps later, at the crossing.
+struct LaneChange { std::size_t vehicle{}; std::uint32_t route{}; double distance{}; std::optional<double> lateralTarget; };
 // This tick's accepted changes: the mandatory ones in vehicle order, then the discretionary ones (D95). `stopService` is the previous tick's table: a
 // vehicle serving a Stop line does not change lanes, since its line is a distance on its route.
 std::vector<LaneChange> decideLaneChanges(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,
@@ -26,6 +29,9 @@ std::vector<LaneChange> decideLaneChanges(const Scenario&, const ScenarioIndex&,
 // D101 hold's record and the display trace. Shared by the instantaneous change and LATERAL §7's crossing.
 void recordLaneChange(const Scenario&, Vehicle& vehicle, std::uint32_t route, double distance,
                       std::uint64_t tick, double time, std::vector<SimEvent>& events);
+// An accepted change: a lateral one sets the vehicle's target, an instantaneous one records it now.
+void applyLaneChange(const Scenario&, Vehicle& vehicle, const LaneChange& change,
+                     std::uint64_t tick, double time, std::vector<SimEvent>& events);
 // A place a vehicle holds back from so that a changer can come in ahead of it. Waiting (D71): a
 // standing obstacle that caps the move. Moving (cooperative braking, M3.2.8c): a leader at the
 // changer's speed that the vehicle brakes behind at no more than its

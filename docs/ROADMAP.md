@@ -227,7 +227,8 @@ lane-change headway and safety-distance reduction, politeness, zipper merging an
 timeout, and overtaking with the driving side (keep-left/right bias, return after passing, lane
 preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
 left-hand-traffic networks, held in a behaviour key (D178). **Lane-change duration contract written**
-([LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md), D204, rows BA48–BA53; not implemented). **Gate:** contract and failure-first rows per item in the
+([LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md), D204, rows BA48–BA53). **Slice 1 implemented** (D206,
+[evidence](evidence/lane-change-duration.md)); its switched-on cost (+17–33 %) is owed an engine round. **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention
