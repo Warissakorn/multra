@@ -7,6 +7,7 @@
 #include <QDockWidget>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QFrame>
 #include <QLabel>
 #include <QLineEdit>
 #include <QScrollArea>
@@ -104,6 +105,10 @@ void EditorWindow::buildInspector() {
     });
     side_=new QComboBox(body);side_->addItems({"",""});label(appearanceForm,"editorDrivingSide",side_);
     connect(side_,&QComboBox::currentIndexChanged,this,[this](int index){execute("editorDrivingSide",[&](auto& d){changeDrivingSide(d,index==0?DrivingSide::left:DrivingSide::right);});});
+    // drivingSide commits on change; level and display wait for Apply, so a rule keeps them apart.
+    auto* divider=new QFrame(appearance);divider->setObjectName("editorApplyDivider");
+    divider->setFrameShape(QFrame::HLine);divider->setFrameShadow(QFrame::Plain);divider->setFixedHeight(editorDesign::space2+1);
+    appearanceForm->addRow(divider);
     buildAppearance(appearanceForm);
     buildBehaviourInspector(layout);
     properties_=new QTabWidget(body);properties_->setObjectName("editorPropertyTabs");layout->addWidget(properties_,1);
@@ -121,7 +126,7 @@ void EditorWindow::buildInspector() {
     auto button=[&](const std::string& key,const std::function<void()>& callback){
         auto* b=new QToolButton(body);b->setToolButtonStyle(Qt::ToolButtonTextOnly);b->setDefaultAction(action(key,{},callback));form->addRow(b);
     };
-    auto heading=[&](const std::string& key){auto* h=new ReflowLabel(body);h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};
+    auto heading=[&](const std::string& key){auto* h=new ReflowLabel(body);h->setObjectName(QString::fromStdString(key));h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};
     heading("editorRoadProperties");
     count_=new QSpinBox(body);count_->setRange(1,12);count_->setValue(2);label(form,"editorLaneCount",count_);
     width_=number(0.1,20,3.5);label(form,"editorDefaultWidth",width_);
@@ -157,6 +162,7 @@ void EditorWindow::buildInspector() {
             execute("editorApplyLinkMarkings",[&](auto& d){changeLinkMarkings(d,canvas_->selected(),markings);});
         } catch(const std::exception& e){showError(e);}
     });
+    heading("editorGeometryHeading");
     linkPointStation_=number(0,1000000,10,3);linkPointStation_->setSuffix(" m");
     label(form,"editorLinkPointStation",linkPointStation_);
     button("editorInsertLinkPoint",[this]{execute("editorInsertLinkPoint",[&](auto& d){
@@ -167,6 +173,7 @@ void EditorWindow::buildInspector() {
         straightenLink(d,canvas_->selected());});});
     button("editorReverseLink",[this]{execute("editorReverseLink",[&](auto& d){
         reverseLink(d,canvas_->selected());});});
+    heading("editorSplitHeading");
     split_=number(0.21,100000,30);label(form,"editorSplitDistance",split_);
     button("editorSplitHere",[this]{
         std::string id;if(execute("editorSplitHere",[&](auto& d){id=splitLink(d,canvas_->selected(),split_->value());}))canvas_->select(id);
@@ -184,6 +191,7 @@ void EditorWindow::buildInspector() {
     form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);
     form->setRowWrapPolicy(QFormLayout::WrapLongRows);addPage(imagePage);
     heading("editorBackground");button("editorImportImage",[this]{importImage();});
+    heading("editorPlacementHeading");
     bgX_=number(-1000000,1000000,0,4);label(form,"editorImageX",bgX_);
     bgY_=number(-1000000,1000000,0,4);label(form,"editorImageY",bgY_);
     bgScale_=number(0.000001,10000,1,6);label(form,"editorImageScale",bgScale_);

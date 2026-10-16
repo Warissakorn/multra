@@ -6,6 +6,166 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice e2: measured LOD (D200)
+
+The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
+- **Rule:** below 3 logical px per lane (narrowest lane × `viewScale()`), Link lane markings,
+  Connector edges/dividers and mouth edges are not drawn. They are 0.10 m strokes, under a tenth
+  of a pixel there. Nothing else is hidden; hits read model geometry, so picking is unchanged.
+- **Vehicles:** the 4×2.5 px floor and 14 px windshield/cab rule (D97) were already in; the new
+  tests pin both (mutating 14→13 or 2.5→2.0 fails them).
+- **Tests first:** new `canvas_lod_ui_tests` (crossing fixture at 3 px per lane and just under:
+  markings present/absent; every other tag count equal; selected Link keeps outline, arrows and
+  grips; hits equal; Ctrl+A equal either side; rotated and flipped views decide alike; vehicle
+  boundary rows). It failed before the change with “Lane markings drawn below 3 px per lane”.
+  `wireframe_ui_tests` now views the M2.6 template at 4 px/m: its fit zoom is under 3 px per lane.
+- **Measured** (Debug offscreen, three runs each): `trafficsim-editor-benchmark` at 0.08 px/m,
+  whole-scene redraw 6.6–8.1 → 3.0–4.2 ms, wireframe (untouched) 3.9–5.5 → 4.1–5.4 ms. The run-view
+  benchmark sits at 3.1 px per lane, above the threshold: no claim. Both tools now print their
+  px/m.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **159/159** CTest. No Windows or high-DPI verification.
+[At 3 px](images/ui-lod-after/crossing-at-3px.png), [just under](images/ui-lod-after/crossing-under-3px.png).
+
+## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
+
+Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,
+`road_crossbar.cpp/.hpp`, `canvas_map.cpp`, `canvas.hpp`).
+- **Casings:** each run vehicle paints its fill, a 1 px cosmetic edge opposite the fill's tone
+  (`connectorBoundaryColor`) and any followed outline. Painting, not a pen, keeps `shape()` and
+  so every run-vehicle click exactly as before.
+- **Signal shapes:** red is the full bar, amber thins the middle third, green opens it. Hit shape
+  and colours are unchanged; edit-mode dashed bars still mean draft.
+- **Found from the evidence image:** `QGraphicsView` scrolls the viewport's child widgets with the
+  scene, so the HUD (and the map credit and status before it) slid with the content until the 80 ms
+  map timer; `scrollContentsBy` now re-places them at once.
+- **Tests first:** new `run_presentation_ui_tests` (a vehicle the colour of its background still
+  shows an edge ≥ 0.3 luminance, both dark and light; casing leaves `shape()` equal to the bare
+  path; the three cues have distinct ink masks with red the superset and one hit shape; after 300
+  Steps every run vehicle is cased and a click reaches `runVehicleClicked`). Removing the casing or
+  the cue fails it. `canvas_hud_ui_tests` gained a scroll row that failed before the fix.
+- **Cost:** `trafficsim-run-view-benchmark` on the M2.6 template, 600 Steps, Debug offscreen, three
+  runs each: paint 1477–1692 → 1671–2015 ms (≈ +16 %), action 523–571 → 546–622 ms (unchanged code,
+  so ≈ +7 % is noise); ≈ +9 % paint against action. Recorded in D199; not hidden.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **158/158** CTest. No Windows or high-DPI verification.
+[Grayscale run](images/ui-run-after/run-grayscale.png).
+
+## 2026-10-16 — UI slice e1: canvas HUD (D197)
+
+The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,
+`map_layer.cpp/.hpp`, `editor_map.cpp`, two keys per locale).
+- **Scale and zoom:** a bar of the largest 1/2/5×10ⁿ m that fits 160 px at `viewScale()` (64–160 px:
+  the steps are up to 2.5× apart, so 80–160 cannot always hold) and the zoom in px/m.
+- **North only when the map supplies it:** `MapLayer::worldToGeographic` (new) gives the view centre's
+  latitude; one step north mapped back and through the view transform gives the arrow, so
+  convergence, `rotationDegrees` and Lab heading-up are included. No map projection, no arrow.
+- **Never in the way:** mouse-transparent, bottom-right, above the map credit when they would meet,
+  stacked when narrow. Found while testing: `EditorCanvas::event` placed overlays before the viewport
+  resized, so after a resize the HUD (and credit) sat at the old size until the 80 ms map timer; they
+  are placed after `QGraphicsView::event` now.
+- **Tests first:** new `canvas_hud_ui_tests` (1/2/5 steps and 64–160 px at four zooms under rotation and
+  mirroring; no arrow without a georeference; 0° on the central meridian, ±30° with the rotation, the
+  ≈0.56° convergence at 101.5°E, +40° in a rotated view; `childAt` skips the HUD; clear of credit and
+  status at four sizes), also at 1.5× and 2×. Swapping in grid north fails it. `workspace_ui_tests`
+  checks the HUD inside the viewport at 1360 and 1024 in both languages. `design_system_ui_tests`'
+  empty-grid pixel check now skips the HUD's own rectangle and asserts it is there.
+- **Carved out:** run vehicle casings and an R/A/G shape cue are slice e1b (two systems, AGENTS.md).
+- **Owner E19, same day (D198):** north shows whenever there is a georeference; `MapLayer` builds the
+  projection without waiting for a tile provider. The HUD suite checks an unknown provider and a
+  hidden map (it failed on both before the change).
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
+or high-DPI verification. [HUD with a rotated georeference](images/ui-hud-after/hud-rotated.png),
+[Thai 1024 workspace](images/ui-hud-after/workspace-th.png).
+
+## 2026-10-16 — UI slice d2: table and numeric presentation (D196)
+
+Every table now reads alike (`editor_style.cpp/.hpp`, `editor_interaction.cpp`, `editor_workspace.cpp`,
+`od_lot_dialogs.cpp` and the figure cells of Results, batch, comparison, Links, routes, inputs,
+conflicts and the Lab axis).
+- **Recipe at polish time:** `applyTableRecipe` gives every `QTableView` 24 px rows, alternating rows,
+  no grid and control-height minimum columns when it is polished; before, only tables alive in
+  `buildWorkspace` had it, so dialog tables kept Qt defaults. `editorCustomRows` keeps the OD/lot
+  grids' spin-box rows.
+- **Elided cells:** a cell without its own tooltip shows its full text in the bounded popup when the
+  text is wider than the cell; a cell that fits shows nothing.
+- **Figures:** cell `QString::number(x,'f',d)` calls became `formatValue(x,d)`. The default locale is
+  C, so no byte changes: the CLI report and `--csv` for `four-leg-signalised` (seeds 42–43) are
+  identical before and after, apart from the build-commit stamp.
+- **Tests first:** new `table_presentation_ui_tests` (a table built after startup and the demand
+  catalog dialog's tables carry the recipe; an elided long link name opens the popup, a fitting cell
+  does not; Link, route and movement figures identical in English and Thai and right-aligned). It
+  failed on the late table before the change; removing the elision check fails it too.
+- **Noticed:** `map-ui` failed once in the first parallel `check` ("libpng error: Not a PNG file"
+  among its output, no failure line captured); it passed alone, in a second full parallel run and
+  5/5 times under concurrent load. The bounded popup is taller than two lines need (D151 sizing).
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` second run passes
+architecture, file sizes, docs and **154/154** CTest. No Windows or high-DPI verification.
+[Dialog table](images/ui-tables-after/tables-dialog.png), [elided-name popup](images/ui-tables-after/tables-tooltip.png).
+
+## 2026-10-16 — UI slice d1: Properties presentation (D195)
+
+Properties forms now line up (`editor_interaction.cpp/.hpp`, `editor_inspector.cpp`,
+`editor_connectors.cpp`, `editor_behaviour.cpp`, `editor_workspace.cpp`, one QSS rule, one token,
+five keys per locale).
+- **Cause, measured:** `ReflowLabel`'s hint was its natural width and `QFormLayout` sizes the column
+  to the widest label, so the English markings label pushed every Link field under its label, and
+  ID/Name, appearance and behaviour each had their own column ([before](images/ui-properties-before/properties-en-1360.png)).
+- **Column:** `alignFormLabels` marks the Properties form labels once; they take 120 px
+  (`formLabelWidth`), wrap inside it and keep their wrapped height as a minimum. Below two columns a
+  form switches to `WrapAllRows`: the first fixed-column build squeezed fields to slivers at 200 px.
+- **Apply divider and headings:** a rule with 8 px each side separates drivingSide (immediate) from
+  level/display (Apply); eyebrow headings Geometry, Split and opposite, Attachments, Lanes and shape,
+  Placement. Connector positions moved up beside the lane counts (row order only).
+- **Tests first:** new `properties_layout_ui_tests` (field column per group at 1360/1024 × en/th, no
+  clipped label, fields ≥ 80 px beside labels, all stacked at 200 px, only action buttons may scroll
+  sideways, divider position, drivingSide immediate / level on Apply / Name on editingFinished,
+  headings in both languages, connector row order), also at 1.5× and 2×. It failed on the markings
+  row before the change.
+- **Found, not fixed (E17):** at 1024×768 with the appearance fold open the non-scrolling top section
+  does not fit and Qt compresses it; that was so before (the Apply button overlapped) and wrapped
+  labels make it taller, so the suite checks 1024 folded. Text-only action buttons (up to 232 px)
+  still need the page's horizontal scroll at 200 px, as before.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **153/153** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
+or high-DPI verification. [After](images/ui-properties-after/properties-en-1360.png),
+[Thai 1024](images/ui-properties-after/properties-th-1024.png),
+[narrow](images/ui-properties-after/properties-th-narrow.png).
+
+## 2026-10-16 — UI slice c: grouped Objects navigation (D194)
+
+The owner's B16 choice (layout A) is in (`src/shell/editor_tables.cpp`, `editor_workspace.cpp`,
+`editor_window.hpp`, five Problems/Show-in-table jump sites, seven keys per locale).
+- **Task groups:** a combo `editorObjectGroup` as the Objects strip's top-left corner widget shows
+  Network, Control, Demand, Measurement, Results or Problems pages. `editorObjectsDock`,
+  `editorObjectTabs` and all 14 pages keep their names and order; hidden tabs use `setTabVisible`.
+- **One page identity:** the mapping is one table of registered page keys; a page in no group fails
+  construction. The group follows the current page, so every existing `setCurrentWidget` jump
+  (tools, batch, comparison, tests) reveals its group without code at the call site. Problems jumps,
+  Show in table and conflict selection use `revealObjectPage`, which also shows the dock.
+- **Transient:** choosing a group opens its leftmost page; nothing is saved; Reset returns
+  Network/Links; focus mode keeps the group.
+- **Corner width:** the tab widget places the strip from the corner's hint but never resizes the
+  corner, so the Thai combo kept the English width and covered the first tab; the combo's width
+  is now fixed to its hint on every retranslation.
+- **Tests first:** new `object_groups_ui_tests` (six groups and their pages in en/th, a jump to each
+  hidden page from another group and a locale switch on it, tool navigation, failed Run with the dock
+  hidden, focus, Reset, every group at 1360×860 and 1024×768 in both languages, no overlap with the
+  strip); `workspace_ui_tests` checks the batch shows the Results group. Two deliberate breaks
+  (no group sync, no dock reveal) and the overlap each fail the suite.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **150/150** CTest. Canvas after 100 Steps unchanged at 807×394 English and
+471×231 Thai: the selector adds no dock height. No Windows or high-DPI verification.
+[Before](images/ui-palette-after/workspace-en.png) / [after](images/ui-groups-after/workspace-en.png),
+[Demand group, Thai 1024×768](images/ui-groups-after/objects-demand-th.png).
+
 ## 2026-10-16 — UI slice b: palette groups, icons-only view and Simulation toolbar (D193)
 
 The owner's B17 choice is in (`src/shell/editor_palette.cpp`, `editor_workspace.cpp`,
@@ -135,111 +295,6 @@ blue underline for the active tool and to remove the conflict-key, panel and run
 
 Linux Qt 6.4 offscreen: desktop build, CTest **148/148**, target `check` passed. Windows and
 100/150/200 % visual review is OWNER_SITTING E13.
-
-## 2026-10-15 — UI phase 1 and stable-tab slice 0
-
-Owner requested the UI audit/spec/slice plan, then accepted the recommendation: “ทำตามแนะนำ”.
-B16=A (group navigation within the existing Objects dock), B17=five tool groups; B18 logic/state
-features stay separate and deferred. [Audit](audits/UI_PRESENTATION_AUDIT.md),
-[proposal](plans/UI_PRESENTATION_SPEC.md), [slices](plans/UI_PRESENTATION_SLICES.md).
-
-- Counted 14 Objects pages and four Results pages from construction/translation code; found
-  identical Connector/Route and Rotate/Reset glyphs. Designs include both window sizes,
-  typography, monochrome shapes, HUD/LOD and Properties/table recipes, with no theme work.
-- Slice 0 registers each actual page widget against its existing translation key. Translations,
-  Show in table, Problems/error jumps, active-conflict checks, Signal-head toolbar visibility
-  and batch Results selection no longer depend on presentation positions. Updated page tests
-  resolve the actual containing widget; all tool mode/chord values and page order stay intact.
-- Failure-first: the new workspace fixture proves its tab move succeeded, then the old code
-  fails with “Reordered object page translated by position”. It checks both languages, all 18
-  page labels, tool navigation, toolbar visibility, failed Run/batch and batch page selection.
-  A separate window keeps this stress fixture from changing the original layout baseline.
-- No new D-row: no visible behaviour/token change in slice 0. The approved layout/glyph changes
-  belong to later sessions. OWNER_SITTING E12 retains Windows visual review; NEXT is slice a.
-
-Linux Qt offscreen: desktop build, CTest **148/148**, and target `check` (including **148/148**)
-pass. Before/after English, Thai and focus PNGs are byte-identical; audit §8 records the
-existing Thai post-Step 248 px viewport limitation. The prepared
-cloud toolchain uses verified Debian packages outside the checkout, the bundled font through
-local fontconfig (system same-family fonts otherwise override its tabular digits), and writable
-Qt test storage. No core/model/commands/schema, translations, tokens or numerical output changed.
-
-## 2026-10-15 — M3.7 slice 3a: lateral motion, admission and crossing (D189)
-
-NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zones into slice 3b.
-- **State.** `Vehicle::lateralTarget` is yT, from the lane centre and in `SimState`. Only tests
-  write it until M3.4/M3.7.1, so every product run keeps `lateral` at 0 (BA39).
-- **Motion.** `moveLaterally` (`src/core/lateral_motion.*`) runs after the tick's publish, only
-  switched on. Moves are capped at `maxLateralSpeed·dt`, kept inside the carriageway's edges and,
-  without a covering span, inside the lane. They are admitted in vehicle-id order only without 2D
-  overlap with a published or already-moved body (touching admitted).
-- **Crossing.** A centre past a covered lane line remaps the route through `recordLaneChange`, now
-  shared with the instantaneous change, and re-expresses `lateral` and the target; that tick's
-  MovedEvent names the new lane.
-
-Checked on Linux headless: `check`, CLI seed 42 unchanged, mutation checks
-([evidence](evidence/lateral-motion.md)).
-
-## 2026-10-15 — M3.7 slice 2: lateral spans and predicates (D188)
-
-NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is unchanged.
-- **State.** `Vehicle` gains `lateral`/`lateralSpeed` (0 until slice 3). `ScenarioIndex` gains a
-  lateral index of each lane section's neighbours on its carriageway.
-- **Spans.** Each span carries the body's band. A body covering another lane by more than
-  `kLateralOverlap` adds a span there, mapped through the Link's reference line, since lane metres
-  differ on a bend. Cross-sections gain reference ends and are required once switched on.
-- **Predicates.** The leader search, PERCEPTION's search and `around` count a span on the
-  follower's carriageway only within its body plus `dLat(v)`. Priority rules see straddlers.
-  Courtesy skips other-lane copies.
-- **Zones deferred (owner, D188).** They read route positions, so §6's "no new code path" was wrong
-  there; slice 3 adds the span scan. LATERAL §5/§6/§10 are corrected.
-
-Checked on Linux headless: `check` 102/102, CLI seed 42 unchanged, mutation checks; switched on,
-the four-leg run costs about 8 % more ([evidence](evidence/lateral-spans.md)).
-
-## 2026-10-15 — M3.7 slice 1: lateral codec and cross-section compile (D187)
-
-The first lateral code, NEXT item 1. Storage and compile only; no tick reads the data.
-- **Keys.** `LateralParameters` is its own key table (`src/core/lateral.*`): all three or none,
-  a partial set refused at its first missing key, on both models. Schema 33 is written only when an
-  owned behaviour carries one, and a file below 33 carrying one is refused.
-- **Compile.** With the switch on, `buildScenario` adds one `SegmentCrossSection` per segment and
-  `drivingSide`. Lane centres come from `laneCentreOffset`, now shared with `laneGeometry`.
-  Connector paths store start/end widths from `connectorLaneWidths`. `createSimulation` re-sorts
-  them with their segments, and validation refuses a malformed table.
-- **Contract refinements (D187).** Start/end widths replace one `width`, and `DrivingSide` moved from
-  the model into core.
-- **No change without keys (BA39)**, and none with them yet. Nine "future schema" fixtures moved
-  33 → 34.
-
-Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
-([evidence](evidence/lateral-codec.md)).
-
-## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
-
-Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
-had an empty FIFO that was filled with `{0, free}`, so a driver braking at its maximum coasted
-for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now applies the
-tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
-still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
-assignments in its fixture). Linux headless `check` passed.
-
-## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
-
-A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
-reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
-controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
-and 32 ticks of copied-state replay, including live histories in positive-delay copies.
-- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
-  provenance are retained; summaries weight seeds equally and report changing availability.
-- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
-  startup estimates remain signed. These responses are recorded, not tuned or validated.
-- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
-  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
-
-Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
-  CLI help/output protection and all existing perception/safety/reference regressions.
-[Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
 
 ## Older entries
 

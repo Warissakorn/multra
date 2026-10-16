@@ -2,6 +2,111 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-15 — UI phase 1 and stable-tab slice 0
+
+Owner requested the UI audit/spec/slice plan, then accepted the recommendation: “ทำตามแนะนำ”.
+B16=A (group navigation within the existing Objects dock), B17=five tool groups; B18 logic/state
+features stay separate and deferred. [Audit](../audits/UI_PRESENTATION_AUDIT.md),
+[proposal](../plans/UI_PRESENTATION_SPEC.md), [slices](../plans/UI_PRESENTATION_SLICES.md).
+
+- Counted 14 Objects pages and four Results pages from construction/translation code; found
+  identical Connector/Route and Rotate/Reset glyphs. Designs include both window sizes,
+  typography, monochrome shapes, HUD/LOD and Properties/table recipes, with no theme work.
+- Slice 0 registers each actual page widget against its existing translation key. Translations,
+  Show in table, Problems/error jumps, active-conflict checks, Signal-head toolbar visibility
+  and batch Results selection no longer depend on presentation positions. Updated page tests
+  resolve the actual containing widget; all tool mode/chord values and page order stay intact.
+- Failure-first: the new workspace fixture proves its tab move succeeded, then the old code
+  fails with “Reordered object page translated by position”. It checks both languages, all 18
+  page labels, tool navigation, toolbar visibility, failed Run/batch and batch page selection.
+  A separate window keeps this stress fixture from changing the original layout baseline.
+- No new D-row: no visible behaviour/token change in slice 0. The approved layout/glyph changes
+  belong to later sessions. OWNER_SITTING E12 retains Windows visual review; NEXT is slice a.
+
+Linux Qt offscreen: desktop build, CTest **148/148**, and target `check` (including **148/148**)
+pass. Before/after English, Thai and focus PNGs are byte-identical; audit §8 records the
+existing Thai post-Step 248 px viewport limitation. The prepared
+cloud toolchain uses verified Debian packages outside the checkout, the bundled font through
+local fontconfig (system same-family fonts otherwise override its tabular digits), and writable
+Qt test storage. No core/model/commands/schema, translations, tokens or numerical output changed.
+
+## 2026-10-15 — M3.7 slice 3a: lateral motion, admission and crossing (D189)
+
+NEXT item 1, LATERAL §7. The owner chose a test-only target writer and split zones into slice 3b.
+- **State.** `Vehicle::lateralTarget` is yT, from the lane centre and in `SimState`. Only tests
+  write it until M3.4/M3.7.1, so every product run keeps `lateral` at 0 (BA39).
+- **Motion.** `moveLaterally` (`src/core/lateral_motion.*`) runs after the tick's publish, only
+  switched on. Moves are capped at `maxLateralSpeed·dt`, kept inside the carriageway's edges and,
+  without a covering span, inside the lane. They are admitted in vehicle-id order only without 2D
+  overlap with a published or already-moved body (touching admitted).
+- **Crossing.** A centre past a covered lane line remaps the route through `recordLaneChange`, now
+  shared with the instantaneous change, and re-expresses `lateral` and the target; that tick's
+  MovedEvent names the new lane.
+
+Checked on Linux headless: `check`, CLI seed 42 unchanged, mutation checks
+([evidence](../evidence/lateral-motion.md)).
+
+## 2026-10-15 — M3.7 slice 2: lateral spans and predicates (D188)
+
+NEXT item 1, LATERAL §4–§6. Only with the switch on; every lane-based run is unchanged.
+- **State.** `Vehicle` gains `lateral`/`lateralSpeed` (0 until slice 3). `ScenarioIndex` gains a
+  lateral index of each lane section's neighbours on its carriageway.
+- **Spans.** Each span carries the body's band. A body covering another lane by more than
+  `kLateralOverlap` adds a span there, mapped through the Link's reference line, since lane metres
+  differ on a bend. Cross-sections gain reference ends and are required once switched on.
+- **Predicates.** The leader search, PERCEPTION's search and `around` count a span on the
+  follower's carriageway only within its body plus `dLat(v)`. Priority rules see straddlers.
+  Courtesy skips other-lane copies.
+- **Zones deferred (owner, D188).** They read route positions, so §6's "no new code path" was wrong
+  there; slice 3 adds the span scan. LATERAL §5/§6/§10 are corrected.
+
+Checked on Linux headless: `check` 102/102, CLI seed 42 unchanged, mutation checks; switched on,
+the four-leg run costs about 8 % more ([evidence](../evidence/lateral-spans.md)).
+
+## 2026-10-15 — M3.7 slice 1: lateral codec and cross-section compile (D187)
+
+The first lateral code, NEXT item 1. Storage and compile only; no tick reads the data.
+- **Keys.** `LateralParameters` is its own key table (`src/core/lateral.*`): all three or none,
+  a partial set refused at its first missing key, on both models. Schema 33 is written only when an
+  owned behaviour carries one, and a file below 33 carrying one is refused.
+- **Compile.** With the switch on, `buildScenario` adds one `SegmentCrossSection` per segment and
+  `drivingSide`. Lane centres come from `laneCentreOffset`, now shared with `laneGeometry`.
+  Connector paths store start/end widths from `connectorLaneWidths`. `createSimulation` re-sorts
+  them with their segments, and validation refuses a malformed table.
+- **Contract refinements (D187).** Start/end widths replace one `width`, and `DrivingSide` moved from
+  the model into core.
+- **No change without keys (BA39)**, and none with them yet. Nine "future schema" fixtures moved
+  33 → 34.
+
+Checked on Linux headless: `check` 101/101, CLI seed 42 unchanged, mutation checks
+([evidence](../evidence/lateral-codec.md)).
+
+## 2026-10-15 — M3.5 slice 5: reaction-time discharge evidence (D185)
+
+A C++ sweep measures BA38 on the four-leg project: prototype and the cited W74 preset,
+reaction time 0/0.5/1 s, dt 0.1, seeds 42–81. All 240 experimental runs and 80 absent-key
+controls completed. Zero-delay trajectories match on every tick; all runs pass accounting
+and 32 ticks of copied-state replay, including live histories in positive-delay copies.
+- Raw cycles/crossings, reasons/nulls, resolved snapshots and exact input/compiler/source/output
+  provenance are retained; summaries weight seeds equally and report changing availability.
+- Prototype flow barely changes while clamps increase sharply; W74 throughput falls. Negative
+  startup estimates remain signed. These responses are recorded, not tuned or validated.
+- Five focused tool tests cover variant isolation, identity/replay, deliberate mismatches,
+  FIFO comparison and seed weighting; CLI coverage protects existing output directories.
+
+Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
+  CLI help/output protection and all existing perception/safety/reference regressions.
+[Evidence and reproducible commands](../evidence/perception-discharge.md). No owner gate is closed.
+
+## 2026-10-15 — Reaction FIFO entering a delayed road (D186)
+
+Review of D184 found that a vehicle crossing from a zero-delay road onto a road with `d > 0`
+had an empty FIFO that was filled with `{0, free}`, so a driver braking at its maximum coasted
+for `d` ticks (reproduced at τ = 1 s: ten ticks of `a = 0`). The empty FIFO now applies the
+tick's own decision and is filled with copies of it, as §5 pads a lengthened FIFO; insertion
+still fills zeros. A BA36 regression covers both models; BA38 is unaffected (no road
+assignments in its fixture). Linux headless `check` passed.
+
 ## 2026-10-15 — M3.5 slice 4: reaction-time action delay (D184)
 
 Own motion now acts on a per-vehicle FIFO of earlier decisions, with d rounded from

@@ -34,6 +34,8 @@ inline constexpr int space1=4,space2=8,space3=12,space4=16,space5=20,space6=24;
 inline constexpr int fontSizeLabel=11,fontSizeNumeric=12,fontSizeBody=13;
 inline constexpr int fontSizeSection=14,fontSizeTitle=18;
 inline constexpr int controlHeight=24,tableRowHeight=24,toolbarHeight=32,iconSize=16;
+// Label column shared by every Properties form (D195); longer labels wrap inside it.
+inline constexpr int formLabelWidth=120;
 // Vertical padding inside a control. Not a spacing token: it is what makes a 24 px control
 // (1 border + 2 + 18 content + 2 + 1), not a gap between two things.
 inline constexpr int controlPaddingY=2;

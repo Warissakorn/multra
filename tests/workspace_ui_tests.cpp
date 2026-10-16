@@ -113,6 +113,8 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     require(tabs->currentWidget()==test::tabPage(tabs,inner) &&
             inner->currentWidget()==test::tabPage(inner,item<QWidget>(window,"editorMovementTable")),
             "Batch did not reveal its reordered Results page");
+    require(item<QComboBox>(window,"editorObjectGroup")->currentData().toString()=="editorObjectGroupResults",
+            "Batch did not reveal the Results group"); // D194
     trigger(window,"editorCancelSeeds");seeds->setText("42-51");
     for(int i=0;i<original.size();++i)tabs->tabBar()->moveTab(tabs->indexOf(original[i]),i);
     for(int i=0;i<originalInner.size();++i)inner->tabBar()->moveTab(inner->indexOf(originalInner[i]),i);
@@ -304,6 +306,10 @@ int main(int argc,char** argv) {
         revision=window.history().revision();selection=canvas->selected();
         require(!selection.empty(),"Selection baseline missing");
         require(defaultCanvas.width()>=700&&defaultCanvas.height()>=350,"Default canvas crowded out");
+        {
+            auto* hud=canvas->viewport()->findChild<QWidget*>("editorCanvasHud"); // D197
+            require(hud&&hud->isVisible()&&canvas->viewport()->rect().contains(hud->geometry()),"Canvas HUD missing from the workspace");
+        }
         const int top=item<QToolBar>(window,"editorFiles")->y();
         for(const auto* name:{"editorTools","editorRunToolbar","editorWorkspace"})
             require(item<QToolBar>(window,name)->y()==top,"Wide toolbar wrapped into another row");
@@ -332,6 +338,8 @@ int main(int argc,char** argv) {
             language->setCurrentIndex(lang);window.resize(1024,768);settle();
             require(window.width()<=1024&&window.height()<=768,"Localized content forced the window larger");
             require(canvas->viewport()->width()>=400&&canvas->viewport()->height()>=250,"Small-window canvas is unusable");
+            auto* hud=canvas->viewport()->findChild<QWidget*>("editorCanvasHud");
+            require(hud&&hud->isVisible()&&canvas->viewport()->rect().contains(hud->geometry()),"Canvas HUD outside the small viewport");
             require(language->isVisible()&&window.rect().contains(QRect(language->mapTo(&window,QPoint()),language->size())),"Language selector outside window");
             require(item<QMenu>(window,"language")->actions().size()==2,"Language fallback missing");
             auto* scope=item<QLabel>(window,"editorScope");

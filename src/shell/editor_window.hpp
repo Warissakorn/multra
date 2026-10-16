@@ -330,6 +330,13 @@ private:
     std::map<std::string,QWidget*> objectPages_, resultPages_;
     void addObjectPage(QWidget* page,const std::string& key);
     void translateObjectPages();
+    // Task groups (UI slice c): navigation only; the group always follows the current page.
+    QComboBox* objectGroup_{};
+    bool changingGroup_{};
+    void buildObjectGroups();
+    std::string objectGroupOf(const QWidget* page) const;
+    void showObjectPage(QWidget* page);
+    void revealObjectPage(QWidget* page); // also shows the Objects dock, leaving focus mode
     QTableWidget *linkTable_{}, *connectorTable_{}, *signalTable_{}, *problemTable_{};
     // Diagnostics of the current revision, plus the issues of the most recent rejected edit.
     // Both are derived views; the document stays the single source of truth.

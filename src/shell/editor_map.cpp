@@ -30,6 +30,7 @@ void EditorWindow::buildMapActions() {
     buildMapTranslation();
 }
 void EditorWindow::buildMapTranslation() {
+    canvas_->setHudUnits(text("editorHudMetres"),text("editorHudZoom"));
     canvas_->setMapStatusText([this](MapStatus status){
         switch (status) {
         case MapStatus::loading:return text("editorMapLoading");

@@ -56,7 +56,7 @@ void BehaviourLabChart::paintEvent(QPaintEvent*) {
         p.setPen(palette().text().color());
         const QRect label(area.left(), area.top() - line, area.width(), line);
         p.drawText(label, Qt::AlignLeft | Qt::AlignVCenter, title);
-        p.drawText(label, Qt::AlignRight | Qt::AlignVCenter, QString::number(top, 'f', 0));
+        p.drawText(label, Qt::AlignRight | Qt::AlignVCenter, editorDesign::formatValue(top, 0));
     };
     double topSpeed = 20, topGap = 20;
     for (const auto& s : samples_) {

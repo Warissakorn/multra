@@ -216,6 +216,51 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    are the blank group rows acceptable dividers, and is the extra row above the tree worth it? On the
    Simulation bar, is Reset behind its separator clear, and is the 24 px Run (F5) text unclipped at
    100/150/200 % on Windows? Linux offscreen evidence does not close this. *Owner:*
+16. **D194 grouped Objects navigation** (listed 2026-10-16). Compare
+   [before](../images/ui-palette-after/workspace-en.png) and
+   [after](../images/ui-groups-after/workspace-en.png), then the
+   [English](../images/ui-groups-after/objects-demand-en.png) and
+   [Thai](../images/ui-groups-after/objects-demand-th.png) Demand group at 1024×768. Use the combo
+   left of the Objects tabs: do the six groups hold the pages you expect, and is Network the right
+   default? Press A, Q or Z, Show in table on a route, and Check runnability: does the panel switch
+   group where you look? At 100/150/200 % on Windows, is the combo text unclipped and the first tab
+   uncovered in both languages? Linux offscreen evidence does not close this. *Owner:*
+17. **D195 Properties presentation** (listed 2026-10-16). Compare
+   [before](../images/ui-properties-before/properties-en-1360.png) and
+   [after](../images/ui-properties-after/properties-en-1360.png), then Thai at
+   [1024](../images/ui-properties-after/properties-th-1024.png) and a
+   [200 px floating panel](../images/ui-properties-after/properties-th-narrow.png). Are wrapped
+   labels in one 120 px column better than the old wide column? Is the divider between drivingSide
+   and the level/display Apply clear? Two open findings need your call: at 1024×768 with
+   *Network and appearance* open the top section is squeezed (it was before too); should that part
+   scroll, which unpins ID/Name? Should long Apply buttons wrap or shorten at narrow widths? At
+   100/150/200 % on Windows, is any Thai label clipped? Linux offscreen evidence does not close this. *Owner:*
+18. **D196 table presentation** (listed 2026-10-16). Open Demand catalog, Behaviour library and
+   an OD matrix: do their tables now match the Objects tables ([dialog](../images/ui-tables-after/tables-dialog.png))
+   and do the OD grids keep their taller editing rows? Rest on a cut-off name or route chain: is
+   the full-text popup ([example](../images/ui-tables-after/tables-tooltip.png)) helpful or in the
+   way, and is its height right? At 100/150/200 % on Windows, are figures right-aligned and
+   unclipped? Linux offscreen evidence does not close this. *Owner:*
+19. **D197 canvas HUD** (listed 2026-10-16). Look at the bottom-right of the canvas
+   ([rotated georeference](../images/ui-hud-after/hud-rotated.png),
+   [Thai 1024](../images/ui-hud-after/workspace-th.png)). Zoom with the wheel: does the bar keep
+   round 1/2/5 m values and the px/m readout help? With a map background set, does the arrow point
+   to true north, and turn with *rotationDegrees* and the Lab's heading-up? It is hidden without a
+   map provider: is that right, or should a plain georeference show it too? Is bottom-right the
+   right corner, clear of the credit at every size? At 100/150/200 % on Windows, is the text
+   unclipped? Linux offscreen evidence does not close this. *Owner:* 2026-10-16, north without a
+   map provider: “ควรแสดง” (show it), done as [D198](../decisions/RECORD.md#d198). The other
+   questions are open.
+20. **D199 run casings and signal shapes** (listed 2026-10-16). Run a project over a map photo and
+   look at the [grayscale frame](../images/ui-run-after/run-grayscale.png): can you still see every
+   vehicle's edge, and tell red (full bar), amber (thin middle) and green (open middle) apart without
+   colour? Click a vehicle in the Lab: is it still picked where it was? The casing costs about 9–16 %
+   of Debug paint time on Linux; does a Windows run feel slower? *Owner:*
+21. **D200 lane markings at overview zoom** (listed 2026-10-16). Zoom out until a lane is under 3 px
+   wide: lane lines and Connector edges stop drawing; roads, heads, selection and handles stay.
+   Compare [at 3 px](../images/ui-lod-after/crossing-at-3px.png) and
+   [just under](../images/ui-lod-after/crossing-under-3px.png). Do you miss anything at that zoom?
+   Does zooming out on a large network feel quicker on Windows? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

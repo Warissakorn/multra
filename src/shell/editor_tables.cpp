@@ -2,6 +2,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QApplication>
+#include <QComboBox>
 #include <QDockWidget>
 #include <QHeaderView>
 #include <QLabel>
@@ -9,6 +10,7 @@
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <stdexcept>
 
 namespace trafficsim {
 namespace {
@@ -30,13 +32,66 @@ void fill(QTableWidget* view,int row,const QStringList& values,const QString& id
         view->setItem(row,column,cell);
     }
 }
-QString metres(double value) { return QString::number(value,'f',2); }
+QString metres(double value) { return editorDesign::formatValue(value,2); }
+// Task groups of the Objects dock (UI slice c, B16). Pages are named by their registered key;
+// the in-group order is construction order, so no tab moves.
+const std::pair<const char*,std::vector<std::string>> objectGroups[]={
+    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable"}},
+    {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
+    {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorZoneTable","editorOdTable"}},
+    {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable"}},
+    {"editorObjectGroupResults",{"editorResultsTable"}},
+    {"editorObjectGroupProblems",{"editorProblemTable"}}};
 }
 void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
     objectPages_.emplace(key,page);objects_->addTab(page,QString());
 }
 void EditorWindow::translateObjectPages() {
     for(const auto& [key,page]:objectPages_)objects_->setTabText(objects_->indexOf(page),text(key));
+    if(!objectGroup_)return;
+    objectGroup_->setAccessibleName(text("editorObjectGroup"));objectGroup_->setToolTip(text("editorObjectGroup"));
+    for(int i=0;i<objectGroup_->count();++i)objectGroup_->setItemText(i,text(objectGroup_->itemData(i).toString().toStdString()));
+    // The tab widget places the strip from the corner's hint but never resizes the corner itself.
+    objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+}
+std::string EditorWindow::objectGroupOf(const QWidget* page) const {
+    for(const auto& [group,keys]:objectGroups)for(const auto& key:keys)if(objectPages_.at(key)==page)return group;
+    return {};
+}
+void EditorWindow::buildObjectGroups() {
+    // A page outside every group could never be reached, so a new page must be listed above.
+    std::size_t grouped=0;for(const auto& [group,keys]:objectGroups)for(const auto& key:keys)grouped+=objectPages_.count(key);
+    if(grouped!=objectPages_.size())throw std::logic_error("An Objects page belongs to no task group");
+    objectGroup_=new QComboBox(objects_);objectGroup_->setObjectName("editorObjectGroup");
+    objectGroup_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    for(const auto& [group,keys]:objectGroups)objectGroup_->addItem(QString(),QString::fromLatin1(group));
+    objects_->setCornerWidget(objectGroup_,Qt::TopLeftCorner);
+    connect(objectGroup_,&QComboBox::currentIndexChanged,this,[this](int index){
+        if(changingGroup_||index<0)return;
+        const auto group=objectGroup_->itemData(index).toString().toStdString();
+        QWidget* first=nullptr; // the group's leftmost page, by its current position
+        for(int i=0;i<objects_->count()&&!first;++i)if(objectGroupOf(objects_->widget(i))==group)first=objects_->widget(i);
+        showObjectPage(first);
+    });
+    connect(objects_,&QTabWidget::currentChanged,this,[this](int index){
+        if(!changingGroup_&&index>=0)showObjectPage(objects_->widget(index));
+    });
+    translateObjectPages();
+}
+void EditorWindow::showObjectPage(QWidget* page) {
+    // Show the target group before hiding the rest, so hiding never moves the current page.
+    changingGroup_=true;
+    const auto group=objectGroupOf(page);
+    for(int i=0;i<objects_->count();++i)if(objectGroupOf(objects_->widget(i))==group)objects_->setTabVisible(i,true);
+    objects_->setCurrentWidget(page);
+    for(int i=0;i<objects_->count();++i)if(objectGroupOf(objects_->widget(i))!=group)objects_->setTabVisible(i,false);
+    objectGroup_->setCurrentIndex(objectGroup_->findData(QString::fromStdString(group)));
+    changingGroup_=false;
+}
+void EditorWindow::revealObjectPage(QWidget* page) {
+    auto* dock=findChild<QDockWidget*>("editorObjectsDock");
+    dock->show();dock->raise(); // showing a panel exits focus mode (buildWorkspace)
+    objects_->setCurrentWidget(page);
 }
 void EditorWindow::buildObjectTables() {
     auto* dock=new QDockWidget(this); dock->setObjectName("editorObjectsDock"); texts_["editorObjectsDock"]=dock;

@@ -4,6 +4,7 @@
 #include <QString>
 #include <filesystem>
 class QWidget;
+class QTableView;
 namespace trafficsim {
 enum class EditorIcon { document, open, save, undo, redo, fit, finish, rotate, remove,
     select, link, connector, route, input, signal, split, measure, image, run, pause,
@@ -19,4 +20,8 @@ void installEditorStyle();
 // Where the dropdown/spin chevrons drawn from the palette live, for the style sheet's `image`.
 QString editorGlyphDirectory();
 void applyEditorStyle(QWidget* window);
+// The table recipe (D84, D196): 24 px rows, alternating rows, no grid, control-height minimum
+// columns. Applied to every table view when it is polished, dialogs and the Lab included; a table
+// whose cells hold editors sets the property editorCustomRows and keeps its own row height.
+void applyTableRecipe(QTableView* table);
 }
