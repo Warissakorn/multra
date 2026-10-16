@@ -62,6 +62,8 @@ jobs:
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_NOHASHDIR: 'true'
       CCACHE_MAXSIZE: 500M
+      # vcpkg builds proj from source: 5 min of every run (run 554) before this cache.
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}\.vcpkg-cache,readwrite
     steps:
       - uses: actions/checkout@v5
       - name: Install Qt
@@ -74,10 +76,16 @@ jobs:
           target: desktop
           arch: win64_msvc2019_64
           cache: true
+      - uses: actions/cache@v4
+        with:
+          path: .vcpkg-cache
+          key: vcpkg-windows-desktop-${{ github.sha }}
+          restore-keys: vcpkg-windows-desktop-
       - name: Install JSON headers
         # Header-only, so vcpkg has no DLL to copy beside each binary; its per-target copy step
         # (applocal) is off because parallel targets raced on it (package run 68, exit 32).
         run: |
+          New-Item -ItemType Directory -Force .vcpkg-cache | Out-Null
           vcpkg install nlohmann-json:x64-windows proj:x64-windows
           "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin" | Out-File $env:GITHUB_PATH -Append -Encoding utf8
       - name: Install ccache
