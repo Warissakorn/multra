@@ -592,6 +592,7 @@
   "editorPaletteGeometry": "Geometry",
   "editorPaletteControl": "Controls",
   "editorPaletteTools": "Tools",
+  "editorPaletteMeasurement": "Measurement",
   "editorCommandPalette": "Command palette",
   "editorCommandPaletteTitle": "Commands",
   "editorCommandPaletteSearch": "Search commands, tools, or shortcuts",

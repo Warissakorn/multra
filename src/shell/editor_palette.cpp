@@ -31,10 +31,12 @@ void EditorWindow::buildPalette() {
     palette_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     palette_->setTextElideMode(Qt::ElideRight);palette_->setMinimumWidth(0);
     struct Group {const char* key;std::initializer_list<int> modes;};
+    // Task groups (D193): mode numbers and chords never change, only where a tool is listed.
     const Group groups[]={
         {"editorPaletteGeometry",{0,1,5,2}},
-        {"editorPaletteControl",{6,7,8,9,10,11}},
-        {"editorPaletteDemand",{12}},
+        {"editorPaletteControl",{8,9}},
+        {"editorPaletteDemand",{6,7,12}},
+        {"editorPaletteMeasurement",{10,11}},
         {"editorPaletteTools",{3,4}}
     };
     const char* shortcuts[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z"};

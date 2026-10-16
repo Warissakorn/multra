@@ -201,6 +201,19 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    tools, open each menu, select palette rows and table cells with mouse and Tab. Is the active
    tool easy to find from its underline, and keyboard focus still visible? Dock titles 13 px,
    hints 11 px readable in Thai? Linux offscreen evidence does not close this. *Owner:*
+14. **D192 icon vocabulary** (listed 2026-10-16). Compare the
+   [before](../images/ui-icons-before/contact-sheet.png) and
+   [after](../images/ui-icons-after/contact-sheet.png) contact sheets (16 px, 4×, 32, 48 px), then
+   the [English](../images/ui-icons-after/workspace-en.png) and [Thai](../images/ui-icons-after/workspace-th.png)
+   workspaces. At 100/150/200 % on Windows, can you tell Connect lanes from Routes, Rotate from Reset
+   and Fit from Focus without the tooltip? Do Grid and Conflict areas also need different shapes?
+   *Owner:*
+15. **D193 palette groups** (listed 2026-10-16). Compare the
+   [before](../images/ui-palette-before/workspace-en.png) and
+   [after](../images/ui-palette-after/workspace-en.png) workspaces, then the Thai
+   [after](../images/ui-palette-after/workspace-th.png). Find each tool in English and Thai, walk the
+   palette with the arrow keys, and use every chord. Is any tool in a group you would not look in?
+   Is scrolling to Measurement/Tools in Thai at 1024×768 acceptable until b2? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

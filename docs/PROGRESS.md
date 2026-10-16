@@ -6,6 +6,61 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-16 — UI slice b1: five palette groups, Delete apart (D193)
+
+The user split slice b on 2026-10-16: b1 (this entry) regroups the palette and pins the
+Simulation toolbar; the transient icons-only toggle is b2, because the Visible level combo and
+the Background button keep the palette wide and need their own design.
+
+- **Palette** (`editor_palette.cpp` `groups[]`, owner B17): Geometry (Select, Draw link, Connect
+  lanes, Split), Control (Signal heads, Conflict areas), Demand (Routes, Vehicle inputs, Zones),
+  Measurement (Queue counters, Travel-time sections), Tools (Measure, Calibrate). Mode numbers,
+  chords, icons and the hidden `editorTool` protocol are unchanged; `editorPaletteMeasurement` is
+  new in both locales ("Measurement" / "การวัดผล").
+- **Toolbar:** a separator before the trailing Delete selected (`editor_window.cpp`). The
+  Simulation group already held Run/Pause, Step, Reset, seed and speed, and Focus already kept it,
+  so nothing else moved; tests now pin both.
+- **Tests first** (`workspace_ui_tests.cpp`): five groups in order with their modes and chords,
+  translated titles in both languages, arrow-key traversal in group order driving the tool, the
+  Delete separator, no toolbar overflow or control outside the window at 1024×768 in both
+  languages and in Focus, and Run/Step/Reset visible in Focus. Before the change the suite failed
+  on "Palette does not have the five task groups", then on the separator. The 1024 and Focus rows
+  passed before the change: they are guards, not fixes.
+- The Thai 1024×768 palette now scrolls to reach Measurement and Tools (one more group header);
+  b2's icons-only mode is the planned answer, not smaller text.
+
+Checked on Linux (Qt 6.4.2 offscreen): desktop `check` passes architecture, file sizes, docs and
+**149/149** CTest. Canvas 807×391 / 471×228 before and after
+([before](images/ui-palette-before/workspace-th.png), [after](images/ui-palette-after/workspace-th.png)).
+No Windows or high-DPI verification.
+
+## 2026-10-16 — UI slice a: icon vocabulary (D192)
+
+The two source-identical glyph pairs from the UI audit are separated, and Fit/Focus no longer
+differ by the centre cross alone (`src/shell/editor_style.cpp`, `editorIcon()` only). Connector is a
+two-rail road bend with no arrow; Route is a start dot, trace and arrowhead; Reset is the mirrored
+return arrow around an origin dot (Rotate unchanged); Focus is a wide panel with a double arrow.
+Metrics, pen, roles, raster ratios, cache and every assignment are unchanged. Counter/Section and
+Link/Split were already different outlines at 16 px (shape difference 0.90 / 0.73), so they keep
+their glyphs; the contact sheet shows Grid/Conflict as another near pair for the owner's review.
+
+- **Tests first** (`tests/design_system_ui_tests.cpp`): all 30 glyphs have exactly 16/32/48 px
+  rasters and paint only WindowText (run/step: also the accent); no two 16 px ink masks are equal;
+  the five named pairs differ in ≥ 40 % of their combined ink; palette rows and Network objects
+  share `editorIcon()`'s cached QIcon. Before the redraw the suite failed on
+  "rotate and reset are the same 16 px shape" (connector/route 0, fit/focus 0.23). The floor was
+  set before measuring; the first Focus redraw measured 0.39 and the shape was changed, not the floor.
+- **Contact sheet:** `trafficsim-design-ui-tests <data> --contact-sheet <png>` renders each glyph at
+  actual 16 px, 4× without smoothing and at 32/48 px, in grey. A Rotate with a tilted body inside
+  read as "@" at 16 px and was dropped. Pixel difference is not recognition; OWNER_SITTING E14 is.
+- Nested Objects-page toolbars stay text-only: an icon there would replace or widen their labels on
+  pages slice c rearranges.
+
+Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
+file sizes, docs and **149/149** CTest. Workspace canvas 807×391 (English) and 471×228 (Thai, after
+100 Steps) before and after; the audit's 475×248 came from another font setup. No Windows or
+high-DPI verification. [Before](images/ui-icons-before/contact-sheet.png) /
+[after](images/ui-icons-after/contact-sheet.png).
 ## 2026-10-16 — Parallel tests, cheaper hit-testing, vcpkg cache (no decision)
 
 An /optimize pass over engine, editor, build/CI and docs (Linux, GCC 13.3, Qt 6.4 offscreen; no
@@ -186,24 +241,6 @@ and 32 ticks of copied-state replay, including live histories in positive-delay 
 Linux headless `check` **100/100 passed**, including five focused evidence-tool tests,
   CLI help/output protection and all existing perception/safety/reference regressions.
 [Evidence and reproducible commands](evidence/perception-discharge.md). No owner gate is closed.
-
-## 2026-10-15 — M3.5 slice 4: reaction-time action delay (D184)
-
-Own motion now acts on a per-vehicle FIFO of earlier decisions, with d rounded from
-`reactionTime / dt`. The shared decision value carries acceleration, mode and W74 state;
-physical caps and current type bounds/D105 still apply to the action actually used.
-- Source insertion and Lab placement initialise zero/free/no-state startup history.
-- Road-boundary delay changes trim or pad the oldest end; zero delay clears history.
-- Retunes changing a quantised count are refused atomically, including unused behaviours.
-- Hypothetical source, courtesy and lane-change judgements remain undelayed. Delayed W74
-  state is published with its applied action, and copied histories replay exactly.
-- BA30's unread-key codec assertion is retired into a tick-by-tick zero-delay identity check.
-
-Checked on Linux headless: full Release build and `check` **97/97**, including all 16
-new delay cases. The CLI seed-42 pin remains **45 completed / 31.75870154816726 s / 1 clamp**.
-Qt desktop and Windows were not verified here.
-Interleaved unassigned-scenario benchmark median: +7.08 %, inside the 10 % budget.
-See [the evidence](evidence/perception-delay.md). No owner gate is closed.
 
 ## Older entries
 

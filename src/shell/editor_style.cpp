@@ -33,21 +33,34 @@ QIcon editorIcon(EditorIcon icon) {
             QPainterPath path;path.moveTo(3,7);path.cubicTo(18,1,21,16,10,17);p.drawPath(path);
             line(3,7,3,2);line(3,7,8,9);break;
         }
-        case EditorIcon::fit: case EditorIcon::focus:
+        case EditorIcon::fit:
             for(int i=0;i<4;++i){line(3,8,3,3);line(3,3,8,3);p.translate(20,0);p.rotate(90);}
-            if(icon==EditorIcon::fit){line(7,10,13,10);line(10,7,10,13);}break;
+            line(7,10,13,10);line(10,7,10,13);break;
+        // The canvas frame with the docks pushed out to both sides: not fit's corners and cross (D192).
+        case EditorIcon::focus: box(1,5,18,10);line(5,10,15,10);line(5,10,7,8);line(5,10,7,12);line(15,10,13,8);line(15,10,13,12);break;
         case EditorIcon::finish: line(3,10,8,15);line(8,15,17,5);break;
+        // Rotate turns clockwise; Reset is the mirrored return arrow around an origin dot (D192).
         case EditorIcon::rotate: case EditorIcon::reset:
-            p.drawArc(QRectF(4,4,12,12),35*16,290*16);line(16,3,16,8);line(16,8,11,8);break;
+            if(icon==EditorIcon::reset){p.translate(20,0);p.scale(-1,1);}
+            p.drawArc(QRectF(4,4,12,12),35*16,290*16);line(16,3,16,8);line(16,8,11,8);
+            if(icon==EditorIcon::reset){p.setBrush(p.pen().color());p.drawEllipse(QPointF(10,10),1.,1.);}
+            break;
         case EditorIcon::remove: line(3,5,17,5);line(7,2,13,2);box(5,5,10,13);line(8,9,8,14);line(12,9,12,14);break;
         case EditorIcon::select: {
             QPolygonF points;points<<QPointF(4,2)<<QPointF(16,10)<<QPointF(10,11)<<QPointF(7,17)<<QPointF(4,2);
             p.drawPolyline(points);break;
         }
         case EditorIcon::link: line(4,2,4,18);line(16,2,16,18);line(10,3,10,7);line(10,13,10,17);break;
-        case EditorIcon::connector: case EditorIcon::route: {
-            QPainterPath path;path.moveTo(3,17);path.cubicTo(3,6,17,14,17,3);p.drawPath(path);
-            line(13,6,17,3);line(17,3,18,8);break;
+        // Connector: two road ends joined by a curved two-rail neck, no arrow. Route: one trace from
+        // a start dot to an arrowhead, no rails (D192).
+        case EditorIcon::connector: {
+            line(1,11,5,11);line(1,16,5,16);line(11,1,11,5);line(16,1,16,5);
+            QPainterPath inner;inner.moveTo(5,11);inner.cubicTo(8,11,11,8,11,5);p.drawPath(inner);
+            QPainterPath outer;outer.moveTo(5,16);outer.cubicTo(12,16,16,12,16,5);p.drawPath(outer);break;
+        }
+        case EditorIcon::route: {
+            QPainterPath path;path.moveTo(4,16);path.cubicTo(4,7,17,14,17,3);p.drawPath(path);
+            line(13,6,17,3);line(17,3,18,8);p.setBrush(p.pen().color());p.drawEllipse(QPointF(4,16),1.5,1.5);break;
         }
         case EditorIcon::input: box(3,6,14,9);line(5,6,7,3);line(7,3,13,3);line(13,3,15,6);line(6,15,6,17);line(14,15,14,17);break;
         case EditorIcon::signal: box(6,1,8,15);p.drawEllipse(QPointF(10,5),1.,1.);p.drawEllipse(QPointF(10,11),1.,1.);line(10,16,10,19);break;
