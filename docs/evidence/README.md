@@ -49,6 +49,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [commitment-deceleration.md](commitment-deceleration.md) | B-2: commitment deceleration at give-way lines — 2026-10-17 | D218, D219 |
 | [merge-deceleration.md](merge-deceleration.md) | B-3: accepted deceleration for mandatory lane changes — 2026-10-17 | D220, D221 |
 | [speed-decisions.md](speed-decisions.md) | B-6 slice 1: desired-speed decisions — 2026-10-17 | D222, D223, D227 |
+| [lane-preference.md](lane-preference.md) | B-7: lane preference by vehicle type — 2026-10-17 | D233, D234 |
 | [stop-dwell.md](stop-dwell.md) | B-8: Stop dwell time — 2026-10-17 | D230, D231 |
 | [give-way-line-clamps.md](give-way-line-clamps.md) | Give-way line clamps traced: a slow move-off meets a closing gap — 2026-10-17 | D232, D69, D105 |
 | [speed-distribution.md](speed-distribution.md) | B-5: desired-speed distribution curve — 2026-10-17 | D228, D229 |

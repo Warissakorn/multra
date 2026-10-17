@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QAction>
 #include <QCheckBox>
+#include <QSpinBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
@@ -127,6 +128,25 @@ int main(int argc,char** argv){
         item<QAction>(w,"editorUndo")->trigger();require(carRange().curve.empty(),"Undo kept the curve");
         item<QAction>(w,"editorRedo")->trigger();require(!carRange().curve.empty(),"Redo lost the curve");
         curved(false);require(carRange().curve.empty() && carRange().min==10,"Unticking did not remove the curve");
+        // BA130 (LANE_PREFERENCE §4, D234): the kerb-lanes row writes kerbLanes; unticking removes it.
+        const auto kerbed=[&](bool on){modal([&]{item<QAction>(w,"editorDemandCatalog")->trigger();},[&](QDialog& parent){
+            select(*item<QTableWidget>(parent,"editorCatalogTypes"),"car");
+            modal([&]{item<QPushButton>(parent,"editorCatalogTypescatalogEdit")->click();},[&](QDialog& child){
+                auto* box=item<QCheckBox>(child,"editorCatalogKerbLanesOn");box->setChecked(on);
+                auto* spin=item<QSpinBox>(child,"editorCatalogKerbLanes");require(spin->isEnabled()==on,"Kerb spin not tied to its box");
+                if(on)spin->setValue(2);
+                confirm(child);
+            });
+            confirm(parent);
+        });};
+        const auto carKerb=[&]{for(const auto& t:w.history().document().definition->vehicleTypes)if(t.id=="car")return t.kerbLanes;return std::optional<int>{};};
+        const auto kerbRevision=w.history().document().revision;
+        kerbed(true);
+        require(carKerb()==2,"Kerb lanes not written");
+        require(w.history().document().revision==kerbRevision+1,"Kerb edit is not one step");
+        require(documentJson(w.history().document())["schemaVersion"]==42,"Kerb lanes not saved at schema 42");
+        item<QAction>(w,"editorUndo")->trigger();require(!carKerb(),"Undo kept kerb lanes");
+        item<QAction>(w,"editorRedo")->trigger();kerbed(false);require(!carKerb(),"Unticking did not remove kerb lanes");
         std::cout<<"catalog UI tests passed\n";
     }catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
 }

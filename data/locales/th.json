@@ -673,6 +673,7 @@
   "catalogMaxDeceleration": "maxDeceleration (m/s²)",
   "catalogBehaviour": "behaviourId",
   "catalogSpeedCurve": "เส้นการกระจายความเร็วที่ต้องการ",
+  "catalogKerbLanes": "เข้าเฉพาะช่องจราจรชิดขอบทาง",
   "catalogCurveSpeed": "ความเร็ว (m/s)",
   "catalogCurveShare": "สัดส่วนสะสม (%)",
   "catalogCurveAdd": "เพิ่มจุด",

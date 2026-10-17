@@ -1,6 +1,7 @@
 # Lane preference by vehicle type (B-7)
 
-Written 2026-10-17 (D233). This is tier B-7 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), a
+Written 2026-10-17 (D233); implemented the same day (D234,
+[evidence](../evidence/lane-preference.md)). This is tier B-7 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), a
 level-3 key under D216: a vehicle type's property, the same on every road. It is the "later slice"
 of [OVERTAKING](OVERTAKING.md) §1. Rule 4 applies: nothing here is validated, and no value ships
 (D178).
@@ -43,7 +44,11 @@ The owner chose on 2026-10-17:
   - routes expanded per lane at compile;
   - routeless (`linkId`) inputs, whose paths take the share of the lane they start on.
 
-  The editor's input table shows the same split.
+  The editor's input table shows the same split for an owned catalog's type.
+- **Not where the destination chooses the lane.** A routeless input whose entry Link carries a
+  routing decision takes each destination's lanes from that decision, so no lane split applies and
+  neither does the key. Re-weighting would change the destination shares. A route that starts on a
+  Connector is not split by Link lanes, so the key does not apply there either (D234).
 - **A zero share.** It behaves as an authored zero share does today. A route's per-lane input stays
   at 0 veh/h and generates nothing, so input ids and the random stream are unchanged. A routeless
   path with a zero share is dropped, as now.

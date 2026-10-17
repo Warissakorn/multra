@@ -6,6 +6,19 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-7 lane preference by vehicle type implemented (D234)
+
+D233's contract ([evidence](evidence/lane-preference.md)).
+- **Split:** `laneSplit` takes the type's `kerbLanes` in compile, routeless paths and the editor's
+  input table. Rows BA125–BA129 failed first against a stub that ignored it.
+- **File and editor:** schema 42, refused below; `INVALID_KERB_LANES`; a type-dialog row (failed
+  first). Codec and hooks proved by mutation.
+- **Measured:** shipped runs byte-identical. On the lane-change lab, heavy vehicles on the kerb lane
+  add 0.3–0.4 s on their movements. M2.6 does not move: its entry decisions choose lanes by
+  destination, which the contract now names. Ir −0.35 % (layout).
+
+`check` 175/175, Linux only.
+
 ## 2026-10-17 — B-7 lane preference by vehicle type contract (D233, docs only)
 
 NEXT's item ([LANE_PREFERENCE](reference/LANE_PREFERENCE.md)). Today every type gets the same
@@ -120,24 +133,6 @@ NEXT's item, contract first ([SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md)
 - No area: byte-identical, +0.77 % Ir (hooks +0.5 %), recorded.
 
 `check` 172/172, Linux only.
-
-## 2026-10-17 — B-6 slice 1: desired-speed decisions (D222, D223)
-
-NEXT's item, contract first ([SPEED_DECISIONS](reference/SPEED_DECISIONS.md),
-[evidence](evidence/speed-decisions.md)).
-- **The owner's choices:**
-  - Vissim's model: per-type ranges at a sign, with each driver keeping their place in the range;
-  - delay measured against the speed in force;
-  - decisions before reduced-speed areas (areas written as a contract only).
-- **What changed:**
-  - engine, codec at schema 38, validation, compile per lane, and commands;
-  - an editor tab: select a Link, then *Add speed decision*.
-- **Tests:** the engine and UI rows failed first; the later rows were proved by mutation.
-- **Measured** with a 30 km/h decision on the four-leg west approach: travel time +26 s but delay
-  only +4–6 s. One red-onset clamp in ten seeds is recorded, not yet traced.
-- No decision: byte-identical, hooks +0.10 % Ir.
-
-`check` 170/170, Linux only.
 
 ## Older entries
 

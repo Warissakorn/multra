@@ -28,6 +28,7 @@ PriorityDefaults parsePriorityDefaults(const Json& value);
 // EDIT_UNSUPPORTED_FIELD for any key outside `keys`, whatever the schema (M3.3.2a strict sections).
 void requireKnownFields(const Json& value, std::initializer_list<const char*> keys, const std::string& path);
 VehicleType parseVehicleType(const Json& value);
+std::optional<int> parseKerbLanes(const Json& vehicleType); // B-7 (D234): a whole number, else INVALID_KERB_LANES
 SpeedRange parseSpeedRange(const Json& range); // B-5, speed_curve.cpp
 Composition parseComposition(const Json& value);
 std::vector<RoutingDecision> parseRoutingDecisions(const Json& definition); // M2.4

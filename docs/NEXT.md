@@ -14,9 +14,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - **PR #176** carries D207–D231 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
-- **B-7 contract** (D233, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md)): `kerbLanes` on the vehicle
-  type (schema 42) splits that type's entry only over the kerb-most N lanes; mandatory changes
-  unchanged; absent = today. Implementation in progress (D234).
+- **B-7 is in** (D233, D234, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md), [evidence](evidence/lane-preference.md)):
+  `kerbLanes` on the vehicle type (schema 42) splits that type's entry only over the kerb-most N
+  lanes; mandatory changes unchanged; type-dialog row. Not where an entry routing decision chooses
+  lanes by destination (so M2.6 does not move). Shipped runs byte-identical.
 - **D232 (no code change):** D231's Stop-line clamps are give-way line clamps, not the Stop rule's
   ([evidence](evidence/give-way-line-clamps.md)). A minor vehicle creeping off its line meets a gap
   that closes while it can still stop; the braking law overshoots. The shipped Yield T-junction shows
@@ -87,12 +88,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-7 implementation, then tier B
+## Next session — tier B
 
 A session told only to "continue" takes item 1:
-1. **Implement B-7** (D233, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md)): `laneSplit` with the
-   type's `kerbLanes` in compile and routeless paths; rows BA124–BA130 failing first; schema 42; the
-   type-dialog row.
-2. Then B-4 (driver-factor spread) and B-9 (red-light running).
+1. **B-4: driver-factor spread** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md); today
+   `clamp(0.5 + 0.15·N, 0, 1)` in `demand.cpp`): contract first, ask the owner the open choices, then
+   rows that fail first. Absent must stay byte-identical, as the random stream must.
+2. Then B-9 (red-light running), the last of tier B.
 3. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
    M3.2.8a.1 contract or when the owner asks.

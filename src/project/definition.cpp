@@ -115,6 +115,7 @@ Json definitionJson(const AuthoringDefinition& d) {
                 {"maxDeceleration",t.maxDeceleration},{"behaviourId",t.behaviourId}};
             if(const auto at=d.vehicleTypeNames.find(t.id);at!=d.vehicleTypeNames.end() && !at->second.empty())item["name"]=at->second;
             if(t.axles)item["axles"]={{"wheelbase",t.axles->wheelbase},{"frontOverhang",t.axles->frontOverhang},{"rearOverhang",t.axles->rearOverhang}};
+            if(t.kerbLanes)item["kerbLanes"]=*t.kerbLanes; // B-7 (D234)
             j["vehicleTypes"].push_back(std::move(item));
         }
     }

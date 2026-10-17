@@ -83,7 +83,7 @@ struct VehicleType {
     double length{}, width{};
     SpeedRange desiredSpeed;
     double maxAcceleration{}, comfortableDeceleration{}, maxDeceleration{};
-    std::string behaviourId;
+    std::string behaviourId; std::optional<int> kerbLanes; // B-7 (LANE_PREFERENCE, D234): enters on lanes 0..N-1
     // Display kinematics only; traffic following/reservations still use length.
     std::optional<VehicleAxles> axles;
     bool operator==(const VehicleType&) const = default;

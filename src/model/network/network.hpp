@@ -391,8 +391,11 @@ std::size_t routeLaneShareCount(const Network&, const std::vector<std::string>& 
 // `weighted` says which applied: an equal split is applied as total / n, the arithmetic every
 // frozen fixture was made with, not as total * (1 / n), which can differ in the last bit.
 struct LaneSplit { bool weighted{}; std::vector<double> fraction; };
+// B-7 (docs/reference/LANE_PREFERENCE.md, D234): with `kerbLanes`, chains starting on lane N or beyond
+// get 0 and the rest are renormalised (equal when their weights sum to 0).
 LaneSplit laneSplit(const std::vector<std::size_t>& chainLanes, std::size_t shareCount,
-                    const std::vector<double>& laneShares);
+                    const std::vector<double>& laneShares, std::optional<int> kerbLanes = std::nullopt);
+std::optional<int> entryKerbLanes(const Network&, const ScenarioDefinition&, const VehicleInput&);
 // The lateral spans and dead ends between the compiled routes of ONE family (contract §2): from
 // each stub to each other chain on an adjacent lane of the same Link, over the stretch both
 // travel, in route distances. A stub's dead end is its last span end. One with no span keeps its

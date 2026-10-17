@@ -325,6 +325,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(t.comfortableDeceleration, p + ".comfortableDeceleration"); number(t.maxDeceleration, p + ".maxDeceleration");
         number(t.desiredSpeed.min, p + ".desiredSpeed.min"); number(t.desiredSpeed.max, p + ".desiredSpeed.max");
         if (t.desiredSpeed.max < t.desiredSpeed.min) add("INVALID_RANGE", p + ".desiredSpeed");
+        if (t.kerbLanes && (*t.kerbLanes < 1 || *t.kerbLanes > 16)) add("INVALID_KERB_LANES", p + ".kerbLanes"); // B-7 (D234)
         // B-5 (SPEED_DISTRIBUTION §4, D229): a curve from (min, 0) to (max, 1), speeds rising, shares not falling.
         const auto& curve = t.desiredSpeed.curve;
         if (curve.size() == 1) add("INVALID_SPEED_CURVE", p + ".desiredSpeed.curve");

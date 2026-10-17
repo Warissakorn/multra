@@ -673,6 +673,7 @@
   "catalogMaxDeceleration": "maxDeceleration (m/s²)",
   "catalogBehaviour": "behaviourId",
   "catalogSpeedCurve": "Desired-speed distribution curve",
+  "catalogKerbLanes": "Enter only on the kerb-most lanes",
   "catalogCurveSpeed": "speed (m/s)",
   "catalogCurveShare": "cumulative share (%)",
   "catalogCurveAdd": "Add point",

@@ -12,6 +12,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
@@ -75,12 +76,19 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
     auto* wheelbase=number(&dialog,"catalogWheelbase",dimensions.wheelbase);form->addRow(text("catalogWheelbase"),wheelbase);
     auto* front=number(&dialog,"catalogFrontOverhang",dimensions.frontOverhang);form->addRow(text("catalogFrontOverhang"),front);
     auto* rear=number(&dialog,"catalogRearOverhang",dimensions.rearOverhang);form->addRow(text("catalogRearOverhang"),rear);
+    // B-7 (LANE_PREFERENCE §4, D234): enters only on the kerb-most N lanes when ticked.
+    auto* kerbOn=new QCheckBox(text("catalogKerbLanes"),&dialog);kerbOn->setObjectName("editorCatalogKerbLanesOn");
+    kerbOn->setChecked(type.kerbLanes.has_value());
+    auto* kerb=new QSpinBox(&dialog);kerb->setObjectName("editorCatalogKerbLanes");kerb->setRange(1,16);kerb->setValue(type.kerbLanes.value_or(1));
+    form->addRow(kerbOn,kerb);
     const auto sync=[&]{
+        kerb->setEnabled(kerbOn->isChecked());
         for(auto* f:{wheelbase,front,rear})f->setEnabled(axles->isChecked());
         for(const auto& f:fields)if(f.destination==&staged.desiredSpeed.min || f.destination==&staged.desiredSpeed.max)f.spin->setEnabled(!curveOn->isChecked());
         for(QWidget* w:std::initializer_list<QWidget*>{curve,addRow,removeRow})w->setEnabled(curveOn->isChecked());
     };
-    QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);QObject::connect(curveOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
+    QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);QObject::connect(curveOn,&QCheckBox::toggled,&dialog,sync);
+    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
     if(dialog.exec()!=QDialog::Accepted)return false;
     for(const auto& f:fields)*f.destination=value(f.spin);
     staged.desiredSpeed.curve.clear();
@@ -90,6 +98,7 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
         if(!staged.desiredSpeed.curve.empty()){staged.desiredSpeed.min=staged.desiredSpeed.curve.front().speed;staged.desiredSpeed.max=staged.desiredSpeed.curve.back().speed;}
     }
     staged.behaviourId=behaviour->currentText().toStdString();
+    staged.kerbLanes=kerbOn->isChecked()?std::optional<int>{kerb->value()}:std::nullopt;
     staged.axles=axles->isChecked()?std::optional<VehicleAxles>{{value(wheelbase),value(front),value(rear)}}:std::nullopt;
     type=std::move(staged);name=label->text().trimmed().toStdString();return true;
 }

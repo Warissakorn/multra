@@ -3,6 +3,24 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-6 slice 1: desired-speed decisions (D222, D223)
+
+NEXT's item, contract first ([SPEED_DECISIONS](../reference/SPEED_DECISIONS.md),
+[evidence](../evidence/speed-decisions.md)).
+- **The owner's choices:**
+  - Vissim's model: per-type ranges at a sign, with each driver keeping their place in the range;
+  - delay measured against the speed in force;
+  - decisions before reduced-speed areas (areas written as a contract only).
+- **What changed:**
+  - engine, codec at schema 38, validation, compile per lane, and commands;
+  - an editor tab: select a Link, then *Add speed decision*.
+- **Tests:** the engine and UI rows failed first; the later rows were proved by mutation.
+- **Measured** with a 30 km/h decision on the four-leg west approach: travel time +26 s but delay
+  only +4–6 s. One red-onset clamp in ten seeds is recorded, not yet traced.
+- No decision: byte-identical, hooks +0.10 % Ir.
+
+`check` 170/170, Linux only.
+
 ## 2026-10-17 — B-3: accepted deceleration for mandatory lane changes (D220, D221)
 
 NEXT's item, contract first ([MERGE_DECELERATION](../reference/MERGE_DECELERATION.md),
