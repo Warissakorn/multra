@@ -2,6 +2,25 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-17 — M3.6 slice 1: curve speed (D212)
+
+NEXT's item: SPEED_CONTROL §2–§5 (D211). Rows BA56–BA63 came first; BA57, BA58 and BA62 failed
+([evidence](../evidence/curve-speed.md)).
+- `curveLateralAcceleration` is read, validated and written at schema 34. Nine codec tests that used
+  34 as the "future" schema now use 35.
+- `Segment::curvature` is compiled from the Connector polyline's minimum circumradius, in a helper
+  shared with the tight-radius advisory.
+- `speedTarget` replaces `desiredSpeed` in the tick's cap.
+
+BA58's first wording was stricter than the contract and was restated. §4 now measures `d` from where
+the front will be after the tick, because the present front lagged by a tick. Switched off, every
+output is byte-identical. Switched on, four-leg delay rises by 3–13 s per seed, which is the intended
+effect, and `speedTarget` costs 4.6 % Ir.
+
+Measuring found that D210 had cost the switched-off run 1.7 % Ir by moving `closestVehicle` out of
+line. It is inline again, with the covered scan kept out of line: 894 → 886 M against D209's 879 M.
+`check` 165/165, Linux only.
+
 ## 2026-10-16 — M3.6 curve speed contract (D211, docs only)
 
 NEXT's item after D210: M3.6, which the review ranks as the cheapest large effect (turners cross

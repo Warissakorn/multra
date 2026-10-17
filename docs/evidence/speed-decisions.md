@@ -83,12 +83,9 @@ west approach, `link-1` at 20 m. Cars get 8.33–9.72 m/s and heavy vehicles 7.5
   discharge less per green.
 - 6 fewer completed trips on average, and the mean delay goes from 46.28 to 47.79 s.
 - **One clamp appeared in seed 47.** Vehicle 58 was cruising at 8.7 m/s, braked at about −7 m/s² from
-  6.7 m short of a stop line, and was clamped as it came to rest on it.
-  - The pattern matches AMBER §1's red rule: a vehicle that went on amber but is short of the line
-    when red begins is held there if it can stop at its type's maximum.
-  - A slower vehicle meets that edge further from the line.
-  - The decision code does not brake, so it can only change when vehicles arrive. The exact
-    trigger is not traced further, and it is recorded in NEXT.
+  6.7 m short of a stop line, and was clamped as it came to rest on it. It is AMBER §1's red rule
+  meeting a slower arrival, not the decision code; see
+  [the trace](#d227-the-seed-47-red-onset-clamp).
 
 ## Performance (callgrind Ir, Release `-g`, `four-leg-signalised` seed 42, no decision)
 
@@ -103,8 +100,48 @@ west approach, `link-1` at 20 m. Cars get 8.33–9.72 m/s and heavy vehicles 7.5
 - The rest of the difference comes with the three new `Vehicle` fields, which the run copies each
   tick.
 
+## D227: the seed-47 red-onset clamp
+
+Traced on 2026-10-17, on `a6f5af6`, with uncommitted `stderr` logging in `simulation.cpp` and
+`following.cpp` behind environment variables (since removed). Same host and Debug build as above.
+
+**Vehicle 58, seed 47.** The car's speed was 8.97 m/s, from quantile 0.46.
+
+| t (s) | Head | Gap to line (m) | Speed (m/s) | What happens |
+|---|---|---|---|---|
+| 151.7–152.3 | amber | 18.9 → 13.7 | 8.78 → 8.75 | Follows a car 10.7 m ahead, which also went on amber. The line is further away than that leader, so the line never governs |
+| 152.4 | amber | 12.8 | 8.75 | `v² > 2 · 3 · gap`: goes on amber |
+| 153.1 | red | 6.68 | 8.72 | `committed` is false (needs 5.7 m/s² of 8), so it is held. The line becomes a standing leader inside the desired gap: braking mode, −7.1 m/s² |
+| 153.2–154.8 | red | 5.85 → 0.05 | 8.00 → 0.54 | The braking law (`−closing/T + (gap − desiredGap)/T²`) softens with the gap: −6.9 down to −2.1 m/s² |
+| 154.9 | red | 0.008 | 0.33 | The model's move is 0.024 m against 0.008 m allowed: **clamp**. Implied deceleration 3.3 m/s² |
+
+**Is the decision code involved?** No. It sets the desired speed once, at 20 m, and nothing on
+these ticks reads it except the free term. The same pattern appears with no decision code at all.
+
+**Seeds 42–81, four-leg** (safety clamps, by seed):
+
+| Variant | Clamps | Mean delay (s) |
+|---|---|---|
+| Shipped | none | 46.00 |
+| 30 km/h decision on `link-1` | seed 47 (vehicle 58), seed 68 (vehicle 276): both red onset | 47.82 |
+| No decision; car type 8.33–9.72 and heavy vehicle 7.5–8.33 m/s | seed 68 (vehicle 276, red onset); seed 45 (vehicle 345, behind a creeping leader, the D105 kind) | 47.99 |
+
+Seed 68's vehicle 276 met red at 9.42 m/s, 6.2 m short of the line. It braked at the maximum, then
+softly, and was clamped at 1.1 m/s, 8 cm short.
+
+**Candidate measured, not adopted.** Braking mode behind a standing leader takes at least
+`v²/(2 · gap)`:
+- the shipped 40-seed JSON stays byte-identical (only `buildCommit` differs);
+- the decision runs lose both red-onset clamps but gain one in seed 56 (vehicle 471 creeping at
+  0.002 m/s at the line);
+- the slow-type runs keep only seed 45.
+
+The new clamp, and the change to the prototype's braking law, put it outside this trace. It is
+noted in ENGINEERING_NOTES. CLI pin `trafficsim-cli 42` byte-identical to D210's baseline after the
+logging was removed.
+
 ## Not covered here
 
 - Reduced-speed areas (§7).
 - Decisions on Connectors or by lane.
-- The seed-47 red-onset clamp with slow approaches.
+- A fix for the red-onset clamp (D227 measured one candidate and did not adopt it).

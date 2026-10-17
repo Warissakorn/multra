@@ -11,9 +11,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
-- **PR #176** carries D207–D226 to `main` (#175 merged D206; `main` merged back in). Its Windows
+- **PR #176** carries D207–D227 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
+- **D227 (no code change):** D223's seed-47 red-onset clamp is AMBER §1's red rule with a slow
+  arrival; the prototype's braking softens near the line ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
+  A braking floor was measured and not adopted (ENGINEERING_NOTES).
 - **D226:** acceleration is capped while a curve or area bound holds (BA109); shipped runs
   byte-identical.
 - **B-6 slice 2 is in** (D224, D225, [SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md), [evidence](evidence/reduced-speed-areas.md)):
@@ -70,93 +73,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the red-onset clamp, then tier B
+## Next session — tier B
 
-A session told only to "continue" takes item 1 (D226 closed the curve bound's acceleration fault):
-1. **Trace D223's red-onset clamp:** four-leg with a 30 km/h decision, seed 47, vehicle 58 at
-   t = 154.9 s.
-   - If it is AMBER §1's red rule meeting slower arrivals, record it there.
-   - If the decision code takes part, fix it with a row.
-2. Then tier B in order: B-5, B-8, B-7, B-4, B-9.
-3. Small follow-ups when a study wants them:
-   - split safety clamps by road (D219);
-   - a dense merging scene for D221's keys;
-   - click placement of speed decisions and areas on the canvas;
-   - areas on Connectors (D224);
-   - D225's +0.5 % hook cost.
-4. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
-   M3.9.
-5. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
-
-To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
-a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.
-
-## Deferred work — preserved from the preceding NEXT
-
-The owner-directed alternatives below stay queued, not cancelled; take one only at the owner's
-direction. ROADMAP retains every gate.
-
-1. **M3.7 hand mirrors:** `placeVehicle`, Lab telemetry and `dead_end_waits.cpp` stay
-   one-dimensional (LATERAL §10) until a product run moves sideways.
-2. **Multi-level S0: the Node contract** (D175; ask the owner B12's Thai sources when S1 starts, D201). Polygon, mapping of Micro detail to
-   legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
-   ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
-   scope but no longer leads the order.
-3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
-   lane change (D207 resolved swapping pairs only). Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
-4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
-   - vehicle turning beyond phase 3 (swept-body clearance rows first)
-   - M3.2.8a.1 moving merge anticipation, with the standstill cap (D201)
-   - drawing `level` is not separation (D201, M3_CONTRACT §1): `automatic_conflicts.cpp` skips
-     pairs on different levels; failure-first row (two crossing Links on different levels get an
-     area), then remove the skip and re-check every shipped project's areas
-   - `four-leg-signalised` cool-down 300 s (D201, D146, [evidence](evidence/m5.9-cooldown.md)):
-     its batch warnings clear; update its tests' expected numbers by that recorded decision
-   - M3.2.4e merge admission contract
-   - a per-lane share gesture (D32/D71)
-   - keyboard-only route and input gestures (M1.25/M1.26)
-   - M3.2 closure rows (a diverge fixture row, M3_ACCEPTANCE §4)
-   - the third `validateDocument` walk set (D163)
-5. **M5.7 rehearsal — prepare only:** ready a copy of the M2.6 template for the owner's real counts
-   (sitting A3/B4) and a checklist; a session cannot close it.
-6. **Behaviour Lab next slices, only on the owner's say:**
-   - W74 parameters in the panel: needs `retuneSimulation` to allow a prototype → W74 change, so
-     traits must exist
-   - lane-change fields: need a lane-change wrap rule on circuits first (BEHAVIOUR_LAB §1.1)
-
-   Give-way intersections in the lab wait for a circuit wrap rule for conflict zones and priority
-   rules.
-
-## Waiting on the owner (details in OWNER_SITTING)
-
-D201 (2026-10-16) closed B1–B3, B5, B6, B8, B12 and B13 as proposed and carved the oldest looks into
-ROADMAP M1.29 and M3.2.10. What only the owner can answer, in order:
-
-- **A1 M0 plausibility** first: a *no* reorders the engine work (D13).
-- **B4** the real study's counts, timing sheet and image, then **A3** the M5.7 rehearsal.
-- **A2** the M3.2.7d T-junction exercise, which M3.2 closes on.
-- **B9** the M6 benchmark choice, before any comparable run.
-- **Milestone closures:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8 (a
-  development-access study end to end, plus C8/C9).
-- **Looks (C–F) still on the sheet:** C1–C3, C7–C12 (C12 is a timing, not a verdict), D2–D4,
-  E2, E5, E6, E8–E11, the merged UI look E13–15, E16–E21, F1–F3; plus the carved M1.29 and
-  M3.2.10 looks.
-- Motorcycles are core scope (D177); they need M3.7 first (review §5).
-- Items still open and listed more than 14 days become ROADMAP carve-outs (R4; D201 applied it once
-  without waiting for the sitting).
-
-## Known limits to keep in mind
-
-- **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): shipped runs keep
-  one-dimensional vehicles and instantaneous lane changes (no shipped project carries lateral keys, D206); no
-  turning-speed reduction.
-  Perception limits, multi-anticipation and reaction time are optional; with no keys the old
-  single-leader, unbounded-sight, zero-delay path remains. A second rear follower is not modelled.
-- **M8:**
-  - exit weights are one set per run (the row is summed over matrices)
-  - lot rows' and compositions' time intervals are not used for departures or initial types
-  - the lot report has one window
-  - `--compare` has no lot block
-- **Delay:** completed-trip delay includes source waiting and acceleration; it is not HCM control
-  delay. The entry-acceleration bias needs travel-time sections, not a correction factor.
-- **Before/after comparisons of one movement need ≥ 40 seeds (42–81, D88).**
+A session told only to "continue" takes tier B in order: B-5, B-8, B-7, B-4, B-9.
+1. **B-5, desired-speed distribution family** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md),
+   tier B row 5). Today it is uniform only (`demand.cpp`). Contract first: the family set, where
+   it lives (vehicle type, D216 scope 3), how D222's quantile maps through it, and the schema
+   step (40). Ask the owner which families to ship.
+2. The red-onset clamp stays recorded (D227). Reopen it only if the owner wants slow-approach
+   clamps gone; the candidate is in ENGINEERING_NOTES.

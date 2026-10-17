@@ -31,6 +31,15 @@ contract replaces that for projects. The model is a deterministic threshold, **n
   2026-10-09, after the first measurement left 44 such clamps in 40 four-leg seeds. Every other
   vehicle is held at red, and a clamp still means the engine stopped one harder than its type
   allows. Deliberate red-light running is not modelled.
+- **Slow arrivals at red onset (D227).** The red test is kinematic: a car that can stop at its
+  maximum is held. The line then becomes a standing leader inside the car's desired gap, and the
+  prototype's braking law is linear in the gap, so it softens near the line. It can end a few
+  centimetres short of a full stop, at well below 1 m/s, and that last tick is counted as a clamp,
+  though the implied deceleration (about 3 m/s²) is under the maximum. Shipped speeds do not reach
+  this edge: four-leg seeds 42–81 have no clamp. With 30 km/h cars (a decision or the type's range)
+  a car meets red 6–7 m short of the line, and 1–2 such clamps appear in 40 seeds. A kinematic
+  floor on that braking was measured and not adopted
+  ([ENGINEERING_NOTES](ENGINEERING_NOTES.md#do-not-retry-without-a-new-measurement)).
 - **Intergreen.** A fixed-time Signal Controller expands each group to green, amber, red (M2.7b), so
   the all-red time is the red after amber. An amber anywhere in a program follows the rule above; a
   red → amber → green program keeps its standing queue, because a standing vehicle stops. An

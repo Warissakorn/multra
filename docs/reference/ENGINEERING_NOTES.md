@@ -135,6 +135,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 
 ## Do not retry without a new measurement
 
+- **A kinematic floor on prototype braking behind a standing leader (D227, 2026-10-17, `a6f5af6`):**
+  in braking mode with `leader.speed == 0`, take at least `v²/(2 · gap)`. Over four-leg seeds 42–81
+  the shipped JSON stayed byte-identical. With 30 km/h cars it removed the two red-onset clamps
+  (seeds 47, 68) but added a creep clamp in seed 56 (0.002 m/s at the line). It changes the
+  prototype's braking law, so it would need its own rows and the owner's choice.
+
 - **Removing the M3.2.8b courtesy (D71):** without cooperation M2.6 was 61.6 s with a 404 s wait.
 - **`comfortableDeceleration` for commitment (D69):** it clamped the major road.
 - **The Run view "slowing down" over a run (2026-10-02):** this is the vehicle count warming up,

@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — D223's red-onset clamp traced (D227, no code change)
+
+NEXT's item ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
+- **Cause:** AMBER §1's red rule meeting a slow arrival. Vehicle 58 went on amber, was 6.7 m short
+  at red, could stop at its maximum and was held. The prototype's braking softens near the line,
+  so the last tick overshot by 1.6 cm at 0.33 m/s.
+- **Not the decision code:** it is idle on those ticks, and slow car types with no decision clamp
+  the same way (seed 68). Shipped speeds give no clamp in seeds 42–81.
+- **Candidate:** a `v²/(2·gap)` braking floor removed both red-onset clamps but added a creep clamp
+  (seed 56). Not adopted; noted in ENGINEERING_NOTES.
+- AMBER §1 gains the note. The CLI pin is byte-identical; no code changed.
+
+`check` 172/172, Linux only.
+
 ## 2026-10-17 — Acceleration capped under the curve bound (D226)
 
 NEXT's item ([evidence](evidence/curve-speed.md#d226-acceleration-capped-while-the-bound-holds)).
@@ -154,25 +168,6 @@ settable.
 - The inventory found that D212 had left a real bug: the behaviour editor's W74 save dropped
   `curveLateralAcceleration`. The UI test failed first and the one-line fix is in. `check` passes,
   Linux only.
-
-## 2026-10-17 — M3.6 slice 1: curve speed (D212)
-
-NEXT's item: SPEED_CONTROL §2–§5 (D211). Rows BA56–BA63 came first; BA57, BA58 and BA62 failed
-([evidence](evidence/curve-speed.md)).
-- `curveLateralAcceleration` is read, validated and written at schema 34. Nine codec tests that used
-  34 as the "future" schema now use 35.
-- `Segment::curvature` is compiled from the Connector polyline's minimum circumradius, in a helper
-  shared with the tight-radius advisory.
-- `speedTarget` replaces `desiredSpeed` in the tick's cap.
-
-BA58's first wording was stricter than the contract and was restated. §4 now measures `d` from where
-the front will be after the tick, because the present front lagged by a tick. Switched off, every
-output is byte-identical. Switched on, four-leg delay rises by 3–13 s per seed, which is the intended
-effect, and `speedTarget` costs 4.6 % Ir.
-
-Measuring found that D210 had cost the switched-off run 1.7 % Ir by moving `closestVehicle` out of
-line. It is inline again, with the covered scan kept out of line: 894 → 886 M against D209's 879 M.
-`check` 165/165, Linux only.
 
 ## Older entries
 
