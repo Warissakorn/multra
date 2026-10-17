@@ -1,6 +1,7 @@
 # Desired-speed distribution curve (B-5)
 
-Written 2026-10-17 (D228). This is tier B-5 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md),
+Written 2026-10-17 (D228); implemented the same day (D229,
+[evidence](../evidence/speed-distribution.md)). This is tier B-5 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md),
 settings level 3 under D216: a property of a vehicle type, the same on every road. It extends the
 type's desired-speed range, which ROADMAP M2.1 lists as "distributions". Rule 4 applies: nothing here
 is validated, and no curve ships.

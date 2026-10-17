@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <QApplication>
 #include <QAction>
+#include <QCheckBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
@@ -101,6 +102,31 @@ int main(int argc,char** argv){
         item<QAction>(w,"editorUndo")->trigger();require(w.history().document().definition->externalCompositions,"Undo did not restore external ownership");
         item<QAction>(w,"editorRedo")->trigger();require(documentJson(w.history().document())==before,"Redo lost catalog values");
         w.saveFile(path);w.openFile(path);require(documentJson(w.history().document())==before,"Catalog save/reopen failed");
+        // BA116 (SPEED_DISTRIBUTION §4, D229): the curve box writes the table and its ends as min/max.
+        const auto curved=[&](bool on){modal([&]{item<QAction>(w,"editorDemandCatalog")->trigger();},[&](QDialog& parent){
+            select(*item<QTableWidget>(parent,"editorCatalogTypes"),"car");
+            modal([&]{item<QPushButton>(parent,"editorCatalogTypescatalogEdit")->click();},[&](QDialog& child){
+                auto* box=item<QCheckBox>(child,"editorCatalogSpeedCurveOn");box->setChecked(on);
+                require(item<QDoubleSpinBox>(child,"catalogSpeedMin")->isEnabled()==!on,"Min box not tied to the curve box");
+                if(on){
+                    auto* table=item<QTableWidget>(child,"editorCatalogSpeedCurve");require(table->rowCount()==2,"Curve does not start at min and max");
+                    table->setCurrentCell(0,0);item<QPushButton>(child,"editorCatalogSpeedCurveAdd")->click();require(table->rowCount()==3,"Add point failed");
+                    const double cells[3][2]{{10,0},{12,80},{16,100}};
+                    for(int r=0;r<3;++r)for(int c=0;c<2;++c)table->item(r,c)->setText(QString::number(cells[r][c]));
+                }
+                confirm(child);
+            });
+            confirm(parent);
+        });};
+        const auto carRange=[&]{for(const auto& t:w.history().document().definition->vehicleTypes)if(t.id=="car")return t.desiredSpeed;return SpeedRange{};};
+        const auto plainRevision=w.history().document().revision;
+        curved(true);
+        require(carRange()==SpeedRange{10,16,{{10,0},{12,.8},{16,1}}},"Curve not written with its ends");
+        require(w.history().document().revision==plainRevision+1,"Curve edit is not one step");
+        require(documentJson(w.history().document())["schemaVersion"]==40,"Curve not saved at schema 40");
+        item<QAction>(w,"editorUndo")->trigger();require(carRange().curve.empty(),"Undo kept the curve");
+        item<QAction>(w,"editorRedo")->trigger();require(!carRange().curve.empty(),"Redo lost the curve");
+        curved(false);require(carRange().curve.empty() && carRange().min==10,"Unticking did not remove the curve");
         std::cout<<"catalog UI tests passed\n";
     }catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
 }

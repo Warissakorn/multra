@@ -323,6 +323,18 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(t.comfortableDeceleration, p + ".comfortableDeceleration"); number(t.maxDeceleration, p + ".maxDeceleration");
         number(t.desiredSpeed.min, p + ".desiredSpeed.min"); number(t.desiredSpeed.max, p + ".desiredSpeed.max");
         if (t.desiredSpeed.max < t.desiredSpeed.min) add("INVALID_RANGE", p + ".desiredSpeed");
+        // B-5 (SPEED_DISTRIBUTION §4, D229): a curve from (min, 0) to (max, 1), speeds rising, shares not falling.
+        const auto& curve = t.desiredSpeed.curve;
+        if (curve.size() == 1) add("INVALID_SPEED_CURVE", p + ".desiredSpeed.curve");
+        for (std::size_t k = 0; k < curve.size() && curve.size() > 1; ++k) {
+            const auto& c = curve[k];
+            const bool first = k == 0, last = k + 1 == curve.size();
+            if (!std::isfinite(c.speed) || !std::isfinite(c.share) || c.share < 0 || c.share > 1 ||
+                (!first && (!(c.speed > curve[k - 1].speed) || c.share < curve[k - 1].share)) ||
+                (first && (c.speed != t.desiredSpeed.min || c.share != 0)) ||
+                (last && (c.speed != t.desiredSpeed.max || c.share != 1)))
+                add("INVALID_SPEED_CURVE", p + ".desiredSpeed.curve[" + std::to_string(k) + "]");
+        }
         if (t.maxDeceleration < t.comfortableDeceleration) add("INVALID_RANGE", p + ".maxDeceleration");
         if (!behaviours.contains(t.behaviourId)) add("UNKNOWN_BEHAVIOUR", p + ".behaviourId");
     }

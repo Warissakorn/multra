@@ -1,5 +1,6 @@
 #include "detail.hpp"
 #include "routes.hpp"
+#include "speed_distribution.hpp"
 #include "simulation.hpp"
 #include "w74.hpp"
 #include <cmath>
@@ -18,8 +19,7 @@ double random(std::uint32_t& state) {
 PendingVehicle samplePending(SimState& state, std::uint32_t input, std::uint32_t route, std::uint32_t typeIndex,
                              double scheduledTime) {
     const auto& type = state.scenario->vehicleTypes[typeIndex];
-    const double desiredSpeed = type.desiredSpeed.min + random(state.randomState) *
-                               (type.desiredSpeed.max - type.desiredSpeed.min);
+    const double desiredSpeed = speedAt(type.desiredSpeed, random(state.randomState)); // B-5 (D229)
     // Separate statements specify draw order; C++ operand evaluation order must
     // never choose which draw goes to the logarithm versus cosine.
     const double radiusDraw = random(state.randomState);

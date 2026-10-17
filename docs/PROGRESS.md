@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-5 desired-speed distribution curve implemented (D229)
+
+D228's contract ([evidence](evidence/speed-distribution.md)).
+- **Engine:** `speedAt`/`shareOf` in `speed_distribution.hpp`, the old uniform formulas without a
+  curve; used by the draw, `quantileOf` and D191's rescale. Rows BA112–BA115 failed first against a
+  stub; BA110/BA111 pin today's draw.
+- **File and editor:** schema 40, refused below; `INVALID_SPEED_CURVE`; the type dialog's curve box
+  and point table (BA116 failed first); the Lab moves a curve with min/max. Codec hooks proved by
+  mutation.
+- **Measured:** shipped runs byte-identical; a 50 km/h-centred car curve on four-leg moved mean delay
+  46.00 → 45.40 s (inside the noise); +0.06 % Ir.
+
+`check` 173/173, Linux only.
+
 ## 2026-10-17 — B-5 desired-speed distribution contract (D228, docs only)
 
 NEXT's item after D227, read against ROADMAP M2.1 ("distributions") and tier B
@@ -153,14 +167,6 @@ The owner asked to continue, and to design which settings are project-wide and w
   and per vehicle. The more local level wins.
 
 `check` 166/166, Linux only.
-
-## 2026-10-17 — B19 decided on the owner's delegation (D214, docs only)
-
-The owner answered B19 with "ช่วยตัดสินใจ" ("help decide"). D213's tiers stand, except that the
-50 km/h lateral reference moves to fixed: no study needs it, and Vissim fixes it too. Tier B is ranked
-by its effect on Thai study outputs: kerb bias, commitment deceleration, merge deceleration, speed
-limits, speed distributions, Stop seconds, lane preference by type, driver-factor spread, then
-red-light running ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) §3). No code changed.
 
 ## Older entries
 

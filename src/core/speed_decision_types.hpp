@@ -3,6 +3,17 @@
 #include <vector>
 
 namespace trafficsim {
+// B-5 (docs/reference/SPEED_DISTRIBUTION.md, D229): a vehicle type's desired-speed range, with an
+// optional piecewise-linear cumulative curve from (min, 0) to (max, 1). Empty: uniform, as always.
+struct SpeedPoint {
+    double speed{}, share{};
+    bool operator==(const SpeedPoint&) const = default;
+};
+struct SpeedRange {
+    double min{}, max{};
+    std::vector<SpeedPoint> curve;
+    bool operator==(const SpeedRange&) const = default;
+};
 // B-6 (docs/reference/SPEED_DECISIONS.md, D223): a desired-speed decision as the engine runs it.
 // The project compiles each authored decision into one entry per lane section its station falls
 // on, sharing the id; ids, not slots, because createSimulation re-sorts segments and types.

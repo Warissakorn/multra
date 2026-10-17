@@ -123,7 +123,8 @@ sub-milestones and do not reopen M2. Gate text and slice bodies: [archive](archi
 
 **Open.** Vehicle-owned desired speed versus Link limits, distributions, inheritance, road classes,
 lane types/restrictions, partial/dynamic routing decisions. Persistence must not imply runtime
-support. **Gate:** validated distributions and references, deterministic sampling, old seed
+support. A desired-speed distribution curve on the vehicle type is implemented (B-5, D229,
+[SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md)); it is not validated. **Gate:** validated distributions and references, deterministic sampling, old seed
 fixtures unchanged with defaults, observable runtime effects for every exposed parameter.
 
 #### M2.1.3 — Recognition at an authored station · **In progress** (D119)

@@ -74,7 +74,6 @@ struct DriverBehaviour {
     std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle; // m/s²: D212, D215, D219, D221
     bool operator==(const DriverBehaviour&) const = default;
 };
-struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };
 struct VehicleAxles {
     double wheelbase{}, frontOverhang{}, rearOverhang{};
     bool operator==(const VehicleAxles&) const = default;

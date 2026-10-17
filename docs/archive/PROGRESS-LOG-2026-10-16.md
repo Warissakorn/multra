@@ -2,6 +2,14 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-17 — B19 decided on the owner's delegation (D214, docs only)
+
+The owner answered B19 with "ช่วยตัดสินใจ" ("help decide"). D213's tiers stand, except that the
+50 km/h lateral reference moves to fixed: no study needs it, and Vissim fixes it too. Tier B is ranked
+by its effect on Thai study outputs: kerb bias, commitment deceleration, merge deceleration, speed
+limits, speed distributions, Stop seconds, lane preference by type, driver-factor spread, then
+red-light running ([BEHAVIOUR_PARAMETERS](../reference/BEHAVIOUR_PARAMETERS.md) §3). No code changed.
+
 ## 2026-10-17 — Behaviour configurability and the keep-to-kerb contract (D213)
 
 NEXT's item, M3.4 overtaking with the driving side. The owner chose an asymmetric bias, with

@@ -1,4 +1,5 @@
 #include "speed_decision.hpp"
+#include "speed_distribution.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -40,8 +41,7 @@ void passSpeedDecisions(const ScenarioIndex& index, const VehicleType& type, std
 }
 double quantileOf(const Vehicle& v, const VehicleType& type) {
     if (v.desiredQuantile >= 0) return v.desiredQuantile;
-    const double span = type.desiredSpeed.max - type.desiredSpeed.min; // as D191's rescale
-    return span > 0 ? std::clamp((v.desiredSpeed - type.desiredSpeed.min) / span, 0.0, 1.0) : 0.5;
+    return shareOf(type.desiredSpeed, v.desiredSpeed); // the curve's share (B-5, D229)
 }
 double freeFlowTime(const Vehicle& v, double routeLength) {
     if (v.desiredQuantile < 0) return routeLength / v.desiredSpeed;

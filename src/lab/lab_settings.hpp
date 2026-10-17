@@ -56,4 +56,6 @@ LabSettings defaultSettings(const std::filesystem::path& dataDirectory);
 // Preserve valid explicit axle proportions when the lab changes body length.
 // Missing geometry retains defaults; malformed geometry is left for core validation.
 void rescaleAxles(VehicleType& type);
+// B-5 (SPEED_DISTRIBUTION §3): the Lab edits min/max only, so a type's curve follows them.
+void fitSpeedCurves(LabSettings& settings);
 }

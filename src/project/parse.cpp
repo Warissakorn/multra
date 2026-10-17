@@ -381,7 +381,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
 VehicleType parseVehicleType(const Json& t) {
     const auto& range = member(t, "desiredSpeed");
     VehicleType type{field<std::string>(t, "id"), field<double>(t, "length"), field<double>(t, "width"),
-        {field<double>(range, "min"), field<double>(range, "max")}, field<double>(t, "maxAcceleration"),
+        parseSpeedRange(range), field<double>(t, "maxAcceleration"),
         field<double>(t, "comfortableDeceleration"), field<double>(t, "maxDeceleration"), field<std::string>(t, "behaviourId")};
     if(t.contains("axles")) {
         const auto& a=member(t,"axles");

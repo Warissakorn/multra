@@ -8,6 +8,7 @@
 #include "counted_volumes.hpp"
 #include "speed_decisions.hpp"
 #include "speed_areas.hpp"
+#include "speed_curve.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -109,7 +110,7 @@ Json definitionJson(const AuthoringDefinition& d) {
         j["vehicleTypes"] = Json::array();
         for (const auto& t : d.vehicleTypes) {
             Json item{{"id",t.id},{"length",t.length},{"width",t.width},
-                {"desiredSpeed",{{"min",t.desiredSpeed.min},{"max",t.desiredSpeed.max}}},
+                {"desiredSpeed",speedRangeJson(t.desiredSpeed)},
                 {"maxAcceleration",t.maxAcceleration},{"comfortableDeceleration",t.comfortableDeceleration},
                 {"maxDeceleration",t.maxDeceleration},{"behaviourId",t.behaviourId}};
             if(const auto at=d.vehicleTypeNames.find(t.id);at!=d.vehicleTypeNames.end() && !at->second.empty())item["name"]=at->second;
