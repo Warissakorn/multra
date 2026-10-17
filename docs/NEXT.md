@@ -9,8 +9,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 [OWNER_SITTING](plans/OWNER_SITTING.md); dated measurements and reverted ideas live in
 [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 
-## State on 2026-10-16
+## State on 2026-10-17
 
+- **Behaviour-key exposure is in** (D217, [evidence](evidence/behaviour-key-exposure.md)): perception,
+  lateral (one box) and curve are off-until-ticked rows in the behaviour editor and the Lab panel;
+  Lab *Apply* writes them back. The D95 keys and kerb bias stay out of the Lab (circuit clears lane
+  changes).
 - **M3.4 slice 1 is in** (D206, [evidence](evidence/lane-change-duration.md), BA48–BA53): with the lateral
   switch on, a lane change is a lateral move that remaps at the crossing. Two start rules of D204 were
   corrected from switched-on runs (window without the body length; a change under way holds its target
@@ -48,18 +52,15 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the behaviour-key exposure slice
+## Next session — B-2, the commitment deceleration contract
 
 A session told only to "continue" takes item 1:
-1. **Exposure slice** (the owner's wish; BEHAVIOUR_PARAMETERS §5–§6). Every optional level-4 key is an
-   off-until-ticked row in the behaviour editor (perception 5, lateral 3 as one all-or-none group, and
-   curve), and in the Behaviour Lab panel where a run can use it (curve, perception, lateral; not the
-   D95 keys or the kerb bias, which wait on the circuit lane-change wrap rule). UI rows first, in
-   `behaviour-library-ui` and the Lab UI test; Apply writes the keys back; a hidden key is never
-   dropped (the D213 lesson).
-2. Tier B in BEHAVIOUR_PARAMETERS §3's order (D214), each contract-first: **B-2 the give-way/amber
-   commitment deceleration** next, as a level-4 behaviour key (D216). Then B-3, B-6, B-5, B-8, B-7,
-   B-4, B-9.
+1. **B-2 contract** (BEHAVIOUR_PARAMETERS §3, rank 2; a level-4 behaviour key under D216). Today the
+   give-way and amber "cannot stop, so go" decisions use the type's `maxDeceleration`
+   (`conflicts.hpp` `committed`). Write the contract first: the key's name and range, its relation
+   to `amberDeceleration` (D147), absent means byte-identical, the schema step, failure-first rows,
+   and the editor and Lab rows (D217's pattern). Ask the owner any real choice before code.
+2. Then tier B in order: B-3, B-6, B-5, B-8, B-7, B-4, B-9.
 3. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
    M3.9.
 4. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.

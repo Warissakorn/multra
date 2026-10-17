@@ -11,6 +11,9 @@
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <algorithm>
+#include <string_view>
+#include <tuple>
 
 namespace trafficsim {
 namespace {
@@ -107,17 +110,18 @@ QDoubleSpinBox* BehaviourLabPanel::number(QFormLayout* form, const char* key, do
     numbers_.push_back({spin, std::move(value)});
     return spin;
 }
-void BehaviourLabPanel::optional(QFormLayout* form, const char* key, double max, const char* unit,
-                                 std::function<std::optional<double>&(lab::LabSettings&)> value) {
+QCheckBox* BehaviourLabPanel::optional(QFormLayout* form, const char* key, double min, double max, int decimals, const char* unit,
+                                       std::function<std::optional<double>&(lab::LabSettings&)> value) {
     auto* on = new QCheckBox(key, form->parentWidget()); on->setObjectName(prefix_ + key + "Set");
     auto* spin = new QDoubleSpinBox(form->parentWidget());
-    spin->setObjectName(prefix_ + key); spin->setRange(0.1, max); spin->setSingleStep(0.1); spin->setDecimals(2);
-    spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false); spin->setSuffix(QString(" ") + unit);
+    spin->setObjectName(prefix_ + key); spin->setRange(min, max); spin->setSingleStep(decimals ? 0.1 : 1); spin->setDecimals(decimals);
+    spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false); if (*unit) spin->setSuffix(QString(" ") + unit);
     form->addRow(on, spin);
     connect(on, &QCheckBox::toggled, spin, &QWidget::setEnabled);
     connect(on, &QCheckBox::toggled, this, [this] { if (!loading_ && changed) changed(); });
     connect(spin, &QDoubleSpinBox::valueChanged, this, [this] { if (!loading_ && changed) changed(); });
     optionals_.push_back({on, spin, std::move(value)});
+    return on;
 }
 void BehaviourLabPanel::behaviour(QFormLayout* form, std::function<DriverBehaviour&(lab::LabSettings&)> of) {
     // The prototype's own keys (core/following.cpp); W74 and the lane-change keys are later slices.
@@ -129,15 +133,50 @@ void BehaviourLabPanel::behaviour(QFormLayout* form, std::function<DriverBehavio
     field("multiplicativeSafetyDistance", &DriverBehaviour::multiplicativeSafetyDistance, 0, 20, 0.1, "");
     field("followingTime", &DriverBehaviour::followingTime, 0.1, 10, 0.1, "s");
     field("speedThreshold", &DriverBehaviour::speedThreshold, 0.01, 5, 0.05, "m/s");
-    optional(form, "amberDeceleration", 15, "m/s²",
+    optional(form, "amberDeceleration", 0.1, 15, 2, "m/s²",
              [of](lab::LabSettings& s) -> std::optional<double>& { return of(s).amberDeceleration; });
-    optional(form, "maxDecelerationCooperativeBraking", 15, "m/s²",
+    optional(form, "maxDecelerationCooperativeBraking", 0.1, 15, 2, "m/s²",
              [of](lab::LabSettings& s) -> std::optional<double>& { return of(s).maxDecelerationCooperativeBraking; });
+    // D217: perception, lateral and curve; a lab run uses each (lab_tests d217). Ranges sit inside
+    // PERCEPTION §6 and LATERAL §9; the D95 keys wait on the circuit's lane-change wrap rule.
+    using P = PerceptionParameters;
+    const auto perceive = [&](const char* key, std::optional<double> P::* member, double min, double max, int decimals, const char* unit) {
+        optional(form, key, min, max, decimals, unit,
+                 [of, member](lab::LabSettings& s) -> std::optional<double>& { return of(s).perception.*member; });
+    };
+    perceive("lookAheadDistance", &P::lookAheadDistance, 1, 1000, 0, "m");
+    perceive("observedVehiclesAhead", &P::observedVehiclesAhead, 1, 8, 0, "");
+    perceive("lookBackDistance", &P::lookBackDistance, 1, 1000, 0, "m");
+    perceive("rearTimeToCollision", &P::rearTimeToCollision, 0.1, 20, 1, "s");
+    perceive("reactionTime", &P::reactionTime, 0, 2, 1, "s");
+    auto* on = new QCheckBox("lateral", form->parentWidget()); on->setObjectName(prefix_ + "lateralSet"); form->addRow(on);
+    connect(on, &QCheckBox::toggled, this, [this] { if (!loading_ && changed) changed(); });
+    Group lateral{on, {}, [of](lab::LabSettings& s) {
+        auto& l = of(s).lateral; return std::vector<std::optional<double>*>{&l.lateralMinDistanceStanding, &l.lateralMinDistanceAt50, &l.maxLateralSpeed};
+    }};
+    for (const auto& [key, min, max] : std::vector<std::tuple<const char*, double, double>>{
+             {"lateralMinDistanceStanding", 0, 5}, {"lateralMinDistanceAt50", 0, 5}, {"maxLateralSpeed", 0.1, 3}}) {
+        auto* spin = new QDoubleSpinBox(form->parentWidget());
+        spin->setObjectName(prefix_ + key); spin->setRange(min, max); spin->setSingleStep(0.1); spin->setDecimals(2);
+        spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false);
+        spin->setSuffix(std::string_view(key) == "maxLateralSpeed" ? " m/s" : " m");
+        form->addRow(key, spin);
+        connect(on, &QCheckBox::toggled, spin, &QWidget::setEnabled);
+        connect(spin, &QDoubleSpinBox::valueChanged, this, [this] { if (!loading_ && changed) changed(); });
+        lateral.spins.push_back(spin);
+    }
+    groups_.push_back(std::move(lateral));
+    curves_.push_back(optional(form, "curveLateralAcceleration", 0.1, 10, 2, "m/s²",
+                               [of](lab::LabSettings& s) -> std::optional<double>& { return of(s).curveLateralAcceleration; }));
 }
 lab::LabSettings BehaviourLabPanel::settings() const {
     auto s = base_;
     for (const auto& n : numbers_) n.value(s) = n.spin->value();
     for (const auto& o : optionals_) o.value(s) = o.on->isChecked() ? std::optional(o.spin->value()) : std::nullopt;
+    for (const auto& g : groups_) {
+        const auto values = g.values(s);
+        for (std::size_t k = 0; k < values.size(); ++k) *values[k] = g.on->isChecked() ? std::optional(g.spins[k]->value()) : std::nullopt;
+    }
     s.traffic.vehicleCount = count_->value();
     s.road.lanes = lanes_->value();
     s.road.signal = signal_->isChecked();
@@ -155,6 +194,12 @@ void BehaviourLabPanel::setSettings(const lab::LabSettings& settings) {
     for (const auto& o : optionals_) {
         o.on->setChecked(o.value(s).has_value()); o.spin->setEnabled(o.value(s).has_value());
         if (o.value(s)) o.spin->setValue(*o.value(s));
+    }
+    for (const auto& g : groups_) {
+        const auto values = g.values(s);
+        const bool on = std::any_of(values.begin(), values.end(), [](const auto* v) { return v->has_value(); });
+        g.on->setChecked(on);
+        for (std::size_t k = 0; k < values.size(); ++k) { g.spins[k]->setEnabled(on); if (*values[k]) g.spins[k]->setValue(**values[k]); }
     }
     lanes_->setValue(settings.road.lanes);
     signal_->setChecked(settings.road.signal);
@@ -185,6 +230,7 @@ void BehaviourLabPanel::retranslate() {
     layout_->setItemText(0, text_("labLayoutUrban"));
     layout_->setItemText(1, text_("labLayoutOval"));
     for (const auto& o : optionals_) o.on->setToolTip(text_("labOptionalSet"));
+    for (auto* on : curves_) on->setToolTip(text_("labCurveNote"));
     refreshAxles();
 }
 void BehaviourLabPanel::refreshAxles() {

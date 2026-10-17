@@ -3,6 +3,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
+#include "../src/core/lateral.hpp"
 #include "../src/editor/canvas.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -65,7 +66,18 @@ void buildLibrary(QDialog& d) {
             item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
         item<QDoubleSpinBox>(e, "discretionaryLaneChangeThreshold")->setValue(0.5);
         item<QDoubleSpinBox>(e, "acceptedDecelerationTrailingVehicle")->setValue(1);
-        item<QDoubleSpinBox>(e, "kerbLaneBias")->setValue(1.5); confirm(e);
+        item<QDoubleSpinBox>(e, "kerbLaneBias")->setValue(1.5);
+        // D217: the keys for either model are rows too, off until ticked; lateral is one group.
+        for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "lookBackDistance", "rearTimeToCollision",
+                                "reactionTime", "lateral", "curveLateralAcceleration"})
+            require(!item<QCheckBox>(e, (std::string(key) + "Set").c_str())->isChecked(), "Either-model row missing or pre-set");
+        for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "reactionTime", "lateral", "curveLateralAcceleration"})
+            item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
+        for (const auto& [key, value] : std::vector<std::pair<const char*, double>>{{"lookAheadDistance", 150},
+                 {"observedVehiclesAhead", 2}, {"reactionTime", .5}, {"lateralMinDistanceStanding", .5},
+                 {"lateralMinDistanceAt50", 1}, {"maxLateralSpeed", 1}, {"curveLateralAcceleration", 3}})
+            item<QDoubleSpinBox>(e, key)->setValue(value);
+        confirm(e);
     });
     modal([&] { click(d, "editorVehicleClasses", "catalogAdd"); }, [](QDialog& e) {
         item<QLineEdit>(e, "editorClassName")->setText("Heavy");
@@ -120,6 +132,10 @@ int main(int argc, char** argv) {
         require(def.behaviours.size() == 2 && def.behaviourNames.at(std::string(kDefault) + "-copy") == "Slow", "Behaviour copy lost");
         require(def.behaviours[1].amberDeceleration == 2.5 && def.behaviours[0].amberDeceleration == 3, "Amber deceleration not edited");
         require(def.behaviours[1].kerbLaneBias == 1.5 && !def.behaviours[0].kerbLaneBias, "Kerb bias not edited (D215)");
+        PerceptionParameters perceived; perceived.lookAheadDistance = 150; perceived.observedVehiclesAhead = 2; perceived.reactionTime = .5;
+        require(def.behaviours[1].perception == perceived && def.behaviours[0].perception == PerceptionParameters{}, "Perception not edited (D217)");
+        require(def.behaviours[1].lateral == LateralParameters{.5, 1., 1.} && !hasLateral(def.behaviours[0].lateral), "Lateral not edited (D217)");
+        require(def.behaviours[1].curveLateralAcceleration == 3 && !def.behaviours[0].curveLateralAcceleration, "Curve not edited (D217)");
         require(def.vehicleClasses.size() == 1 && def.linkBehaviourTypes.size() == 1, "Class or behaviour type lost");
         require(def.linkBehaviourTypes[0].overrides.size() == 1, "Override lost");
         item<QAction>(w, "editorUndo")->trigger();
@@ -173,7 +189,7 @@ int main(int argc, char** argv) {
         auto withW74 = w.history().document();
         DriverBehaviour w74{"w74-set"};
         w74.w74 = W74Parameters{2, 2, 1, 2, .5, 16, 4, .5, .5, 20, 1, 1, 3, .25, .5, -1, .5, .25};
-        w74.curveLateralAcceleration = 2.5; // M3.6 (D212): not edited here, so it must survive a save
+        w74.curveLateralAcceleration = 2.5; w74.perception.reactionTime = .4; // shown and edited for either model (D217)
         putBehaviour(withW74, w74, ""); validateDocument(withW74);
         QFile g(path); require(g.open(QIODevice::WriteOnly), "Fixture write failed");
         g.write(QByteArray::fromStdString(documentJson(withW74).dump())); g.close(); w.openFile(path);
@@ -192,16 +208,27 @@ int main(int argc, char** argv) {
                 item<QLineEdit>(e, "exAdd")->setText("0.5"); confirm(e);
                 require(e.isVisible(), "Out-of-range w74 value accepted");
                 require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("behaviour.exAdd"), "Range error not shown");
+                require(item<QCheckBox>(e, "curveLateralAccelerationSet")->isChecked() && item<QDoubleSpinBox>(e, "curveLateralAcceleration")->value() == 2.5
+                        && item<QCheckBox>(e, "reactionTimeSet")->isChecked() && item<QDoubleSpinBox>(e, "reactionTime")->value() == .4
+                        && !item<QCheckBox>(e, "lateralSet")->isChecked(), "w74 either-model keys not shown (D217)");
+                item<QDoubleSpinBox>(e, "curveLateralAcceleration")->setValue(2);
                 item<QLineEdit>(e, "exAdd")->setText("1.25");
                 item<QLineEdit>(e, "editorBehaviourName")->setText("Urban W74"); confirm(e);
             });
         });
         require(behaviour("w74-set").w74 && behaviour("w74-set").w74->exAdd == 1.25, "w74 key not edited");
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
-        require(behaviour("w74-set").curveLateralAcceleration == 2.5, "curve key dropped by the w74 save (D213)");
+        require(behaviour("w74-set").curveLateralAcceleration == 2 && behaviour("w74-set").perception.reactionTime == .4,
+                "w74 either-model keys not saved (D213, D217)");
         // 35 for the kerb bias the edited prototype copy carries (M3.4, D215), above the w74
         // behaviour's curve key (34, D212): the schema is the newest feature the file holds.
         require(documentJson(w.history().document())["schemaVersion"] == 35, "w74 file not schema 35");
+        library([](QDialog& d) {
+            modal([&] { click(d, "editorBehaviours", "catalogEdit", "w74-set"); }, [](QDialog& e) {
+                item<QCheckBox>(e, "reactionTimeSet")->setChecked(false); confirm(e);
+            });
+        });
+        require(!behaviour("w74-set").perception.reactionTime && behaviour("w74-set").curveLateralAcceleration == 2, "Unticking kept the key (D217)");
         // Prototype -> W74: the fields start empty (no code defaults); an empty one is refused.
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {

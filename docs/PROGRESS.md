@@ -6,6 +6,21 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — Behaviour-key exposure (D217)
+
+The owner's wish, and NEXT's item: every driving-behaviour key the engine already accepts can now be
+edited in the program ([evidence](evidence/behaviour-key-exposure.md)).
+- **Behaviour editor:** perception (5), lateral (one box for its three keys) and the curve key are
+  off-until-ticked rows for either model. Before, they were only kept.
+- **Behaviour Lab panel:** the same rows for both behaviours; *Apply to project* writes them back.
+  The D95 keys and kerb bias stay out, because the circuit clears lane changes.
+- **Tests:** both UI rows failed first. A Lab row shows that each group runs on the circuit with no
+  clamp, also when ticked mid-run. The curve acts on curved Connectors only (Urban left turns, Oval
+  joins), and a tooltip says so.
+- No engine, codec or data change.
+
+`check` 166/166, Linux only.
+
 ## 2026-10-17 — Keep-to-kerb slice 1 and the settings scope (D215, D216)
 
 The owner asked to continue, and to design which settings are project-wide and which are local.
@@ -131,25 +146,6 @@ lines. Rows in `tests/lane_swap_tests.cpp` failed first ([evidence](evidence/lan
 Every lab stall is gone with the switch off and on. Shipped four-leg and M2.6 outputs move slightly
 (≤ 0.2 s mean delay), because such pairs form there too; the CLI pin is byte-identical. `check`
 163/163, Linux only.
-
-## 2026-10-16 — M3.4 slice 1: lane-change duration (D206)
-
-NEXT's item. `src/core/lanes.*`, `lateral_motion.cpp`, one line of `simulation.cpp`. With the lateral
-switch on, an accepted lane change now sets `lateralTarget`; the body moves at `maxLateralSpeed`,
-the route remaps at the crossing and the target clears on arrival. Rows BA48–BA53 failed first
-([evidence](evidence/lane-change-duration.md)).
-
-Switched-on product runs exposed two flaws in the start rules as D204 wrote them; both are fixed:
-- the span-window rule counted the body's length, so a changer standing near its dead end never
-  started (four-leg seed 42 jammed);
-- a change under way was invisible to other starts, so two changers converged on one lane 5 cm
-  apart. It now holds its target place for the whole change.
-
-Still open, recorded in NEXT: a swap deadlock at shared dead ends that predates this slice
-(lane-change-lab seed 44, switch off too); two mid-change clamps in ten lab seeds; and the
-switched-on cost (+33 % lab, +17 % four-leg, Release), owed an engine round before any shipped
-project carries lateral keys. Switched off: `check` 162/162, CLI pin byte-identical, benchmark
-unchanged. Linux only.
 
 ## Older entries
 

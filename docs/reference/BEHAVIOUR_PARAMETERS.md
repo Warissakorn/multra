@@ -81,13 +81,12 @@ give-way delay first. Item numbers are stable labels, not ranks.
 | Prototype 5, D90, amber | yes | yes |
 | W74 18 | yes | no (needs a prototype → W74 retune) |
 | D95/D101, kerb bias | yes | no (needs the circuit lane-change wrap rule) |
-| Perception, lateral, curve | kept, not edited | no |
+| Perception 5, lateral 3 (one box), curve | yes, for either model (D217) | yes (D217); the curve acts on curved Connectors only |
 | Type fields | catalog dialog | focus type only |
 
-**Proposed exposure slice (owner's wish, 2026-10-17):**
-- One slice exposes every optional behaviour key, in the editor and in the Lab panel, as optional
-  rows that stay off until ticked. That covers perception, lateral, curve and, once D213 is in,
-  kerb bias.
+**Exposure slice, done (D217, [evidence](../evidence/behaviour-key-exposure.md)):**
+- Every optional behaviour key is a row that stays off until ticked, both in the editor and, where a
+  Lab run can use it, in the Lab panel.
 - Discretionary keys and kerb bias in the Lab still wait on the circuit lane-change wrap rule.
 - A key a run cannot use yet is never shown as working
   ([DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md) §4).
@@ -117,4 +116,4 @@ catalog default.
   - level 2–4 values in the catalog, behaviour and type dialogs and the Behaviour Lab;
   - level 5 values on the object in the editor.
 
-  The exposure slice (§5) adds the missing behaviour rows at level 4.
+  The exposure slice (§5, D217) added the missing behaviour rows at level 4.

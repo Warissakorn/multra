@@ -117,6 +117,10 @@ The canvas reads its scale as `viewScale()` = hypot(m11, m12), equal to |m11| un
 editor's drawing is unchanged. Run/Pause, Step,
 Reset, speed and seed controls, a parameter panel (focus vehicle, other traffic, road) and
 a telemetry strip. Initial values come from the open project's resolved catalog.
+Each behaviour has the prototype keys, amber and D90 and, since D217, the perception keys, the
+lateral keys (one box sets all three) and `curveLateralAcceleration`. Each optional row stays off
+until ticked. The curve acts on curved Connectors only: the Urban left turns and the Oval's joins.
+The D95 keys and kerb bias are not offered, because the circuit clears lane changes (§1.1).
 *Apply to project* writes the tuned focus behaviour back into the behaviour the project's
 first vehicle type uses, as one History edit. Body length and axle geometry are written together;
 type and behaviour IDs retain their identity. Valid explicit wheelbase/front/rear overhangs scale

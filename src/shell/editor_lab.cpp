@@ -52,12 +52,14 @@ QString EditorWindow::applyLabFocus(const lab::FocusSettings& focus) {
         auto geometry = focus.type; lab::rescaleAxles(geometry); type->axles = geometry.axles;
         type->maxAcceleration = focus.type.maxAcceleration; type->comfortableDeceleration = focus.type.comfortableDeceleration;
         type->maxDeceleration = focus.type.maxDeceleration;
-        // The prototype keys the lab edits; lane-change keys stay as they were.
+        // The keys the lab edits; the lane-change keys and kerb bias stay as they were.
         const auto& b = focus.behaviour;
         behaviour->standstillDistance = b.standstillDistance; behaviour->additiveSafetyDistance = b.additiveSafetyDistance;
         behaviour->multiplicativeSafetyDistance = b.multiplicativeSafetyDistance; behaviour->followingTime = b.followingTime;
         behaviour->speedThreshold = b.speedThreshold; behaviour->amberDeceleration = b.amberDeceleration;
         behaviour->maxDecelerationCooperativeBraking = b.maxDecelerationCooperativeBraking;
+        behaviour->perception = b.perception; behaviour->lateral = b.lateral; // D217
+        behaviour->curveLateralAcceleration = b.curveLateralAcceleration;
     } catch (const std::exception& e) { showError(e); return text("labRejected").arg(QString::fromStdString(e.what())); }
     if (!execute("editorBehaviourLab", [&](auto& d) { d.definition = staged.definition; }))
         return text("labRejected").arg(error_->text());

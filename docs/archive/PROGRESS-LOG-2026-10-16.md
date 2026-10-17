@@ -2,6 +2,25 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — M3.4 slice 1: lane-change duration (D206)
+
+NEXT's item. `src/core/lanes.*`, `lateral_motion.cpp`, one line of `simulation.cpp`. With the lateral
+switch on, an accepted lane change now sets `lateralTarget`; the body moves at `maxLateralSpeed`,
+the route remaps at the crossing and the target clears on arrival. Rows BA48–BA53 failed first
+([evidence](../evidence/lane-change-duration.md)).
+
+Switched-on product runs exposed two flaws in the start rules as D204 wrote them; both are fixed:
+- the span-window rule counted the body's length, so a changer standing near its dead end never
+  started (four-leg seed 42 jammed);
+- a change under way was invisible to other starts, so two changers converged on one lane 5 cm
+  apart. It now holds its target place for the whole change.
+
+Still open, recorded in NEXT: a swap deadlock at shared dead ends that predates this slice
+(lane-change-lab seed 44, switch off too); two mid-change clamps in ten lab seeds; and the
+switched-on cost (+33 % lab, +17 % four-leg, Release), owed an engine round before any shipped
+project carries lateral keys. Switched off: `check` 162/162, CLI pin byte-identical, benchmark
+unchanged. Linux only.
+
 ## 2026-10-16 — Main's Windows-only UI reds (D205)
 
 NEXT's first item. The windows-desktop job had failed four UI tests since PR #170, on Windows only. Both
