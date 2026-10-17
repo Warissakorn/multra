@@ -17,6 +17,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [LATERAL.md](LATERAL.md) | Two-dimensional occupancy: lateral frame, cross-sections, spans on every overlapped lane, lateral admission, zones and display (M3.7.0 contract, D180; slices 1–4 implemented, D187–D189, D202, D203) |
 | [BEHAVIOUR_PARAMETERS.md](BEHAVIOUR_PARAMETERS.md) | Every value that shapes driving behaviour: settable now, should become settable, kept fixed (D213, D214), and each setting's scope, project-wide or local (D216) |
 | [COMMITMENT.md](COMMITMENT.md) | Commitment deceleration at give-way lines: `commitmentDeceleration`, the lower of it and the type maximum, rows BA72–BA78 (B-2 contract, D218; implemented, D219) |
+| [MERGE_DECELERATION.md](MERGE_DECELERATION.md) | Accepted deceleration for mandatory lane changes: own and trailing keys, rows BA79–BA85 (B-3 contract, D220; implemented, D221) |
 | [OVERTAKING.md](OVERTAKING.md) | Keep to the kerb lane: `kerbLaneBias`, return/pass/undertake gains, rows BA64–BA71 (M3.4 contract, D213; slice 1 implemented, D215) |
 | [SPEED_CONTROL.md](SPEED_CONTROL.md) | Curve speed on Connectors: the behaviour key, the radius, the anticipated bound, rows BA56–BA63 (M3.6 contract, D211; slice 1 implemented, D212) |
 | [LANE_CHANGE_DURATION.md](LANE_CHANGE_DURATION.md) | Lane changes as lateral moves: start rule before conflict areas, crossing, end, display, rows BA48–BA53 (M3.4 contract, D204; slice 1 implemented, D206) |

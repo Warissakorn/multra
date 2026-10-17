@@ -6,6 +6,24 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-3: accepted deceleration for mandatory lane changes (D220, D221)
+
+NEXT's item, contract first ([MERGE_DECELERATION](reference/MERGE_DECELERATION.md),
+[evidence](evidence/merge-deceleration.md)).
+- **The owner's choices:** two keys, as Vissim has (`mandatoryDecelerationOwn`,
+  `mandatoryDecelerationTrailingVehicle`), and the trailing one is read from the changer's behaviour.
+- **What changed:**
+  - mandatory changes only; the room condition still prevents clamps;
+  - schema 37 and two editor rows.
+- **Tests:** four rows failed first, and two mutations are caught. The third mutation showed the
+  contract's `min(key, maxDeceleration)` could never matter, because following already clamps there,
+  so it was removed.
+- **Measured** in the shipped projects: the keys barely move anything (delays by ≤ 0.16 s, no
+  clamps, the lab's one 2.5 s dead-end wait gone), because their demand rarely meets a refused
+  change. Keys absent: byte-identical, +0.002 % Ir.
+
+`check` 168/168, Linux only.
+
 ## 2026-10-17 — B-2: commitment deceleration at give-way lines (D218, D219)
 
 NEXT's item, contract first ([COMMITMENT](reference/COMMITMENT.md),
@@ -139,20 +157,6 @@ Three output-preserving changes ([evidence](evidence/lateral-perf.md)):
 Switched on, the lab and four-leg now cost +3.5 % and +3.0 % Ir against `5847cb9`, inside LATERAL
 §11's 10 %; lab wall time −22 % against `347fba9`. Switched off, outputs are unchanged and the run is
 6 % cheaper. Every shipped and switched-on output is byte-identical. Linux only.
-
-## 2026-10-16 — Mid-change gap loss: waiting at the line (D208)
-
-NEXT's item. D206 left two clamps where a faster car passed a slow changer mid-move. The owner chose
-**wait at the line**: an outward lateral move that would cover another lane must pass the start's
-safety tests there (nothing alongside, the leader ahead and the follower behind accept it). A body
-already over the line steps back. `src/core/lateral_motion.cpp` (`coversSafely`); rows BA54 failed
-first ([evidence](evidence/lane-change-gap.md)).
-
-The first version, checking only the leader per segment, made things worse: 29 clamps instead of 2.
-Each cause was probed and fixed in turn: waiting over the line, a follower just behind, and a follower
-on the previous segment. The test now compares every vehicle in its own route's distances. Both
-switched-on projects run with 0 clamps and unchanged completed trips; switched-off runs and the CLI
-pin are byte-identical. `check` 163/163, Linux only.
 
 ## Older entries
 

@@ -94,6 +94,22 @@ void rejectPerceptionBefore32(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
+// B-3 (D221): schema 37 exactly when an owned behaviour carries a mandatory deceleration key.
+bool ownsMandatoryBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) {
+            return b.mandatoryDecelerationOwn.has_value() || b.mandatoryDecelerationTrailingVehicle.has_value(); });
+}
+void rejectMandatoryBefore37(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        for (const char* key : {"mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle"})
+            if (behaviours[i].is_object() && behaviours[i].contains(key))
+                throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
+}
 // B-2 (D219): schema 36 exactly when an owned behaviour carries the commitment deceleration.
 bool ownsCommitmentBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
@@ -170,7 +186,8 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
                     "additiveSafetyDistance", "multiplicativeSafetyDistance", "followingTime", "speedThreshold",
                     "maxDecelerationCooperativeBraking", "discretionaryLaneChangeThreshold",
                     "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration",
-                    "curveLateralAcceleration", "kerbLaneBias", "commitmentDeceleration"}; // M3.6, M3.4 (D215), B-2 (D219), both models
+                    "curveLateralAcceleration", "kerbLaneBias", "commitmentDeceleration", "mandatoryDecelerationOwn",
+                    "mandatoryDecelerationTrailingVehicle"}; // M3.6, M3.4 (D215), B-2 (D219), B-3 (D221), both models
                 const auto& w74 = w74ParameterKeys();
                 const auto& perception = perceptionParameterKeys(); // M3.5, both models
                 const auto& lateral = lateralParameterKeys(); // M3.7, both models

@@ -35,6 +35,7 @@ no per-country branch anywhere in code.
 | Discretionary changes | `discretionaryLaneChangeThreshold`, `acceptedDecelerationTrailingVehicle`, `discretionaryLaneChangeHoldTime` (D95/D101, off in shipped data) | behaviour keys | yes |
 | Kerb-lane bias | `kerbLaneBias` (D215; needs the D95 pair) | behaviour key | yes |
 | Amber | `amberDeceleration` (D147) | behaviour key | yes |
+| Mandatory lane changes | `mandatoryDecelerationOwn`, `mandatoryDecelerationTrailingVehicle` (D221; the trailing one is the changer's) | behaviour keys | yes |
 | Give-way commitment | `commitmentDeceleration` (D219; the lower of it and the type's `maxDeceleration`, give-way lines only) | behaviour key | yes |
 | Perception | `lookAheadDistance`, `observedVehiclesAhead`, `lookBackDistance`, `rearTimeToCollision`, `reactionTime` | behaviour keys | partly |
 | Lateral | `lateralMinDistanceStanding`, `lateralMinDistanceAt50`, `maxLateralSpeed` | behaviour keys (all or none) | yes (motorcycles) |
@@ -54,7 +55,7 @@ give-way delay first. Item numbers are stable labels, not ranks.
 |---|---|---|---|---|---|
 | 1 | B-1 | Kerb-lane bias: return to the kerb lane, pass on the passing side | **done:** `kerbLaneBias` (D215) | Keep-left/right rules differ by country (D178) | [OVERTAKING](OVERTAKING.md) (D213, D215) |
 | 2 | B-2 | Give-way commitment deceleration ("cannot stop, so go") | **done:** `commitmentDeceleration` (D219), give-way lines only (owner); the red head keeps the type's maximum | Sets minor-approach capacity at every priority junction; assertiveness differs by country | [COMMITMENT](COMMITMENT.md) (D218, D219) |
-| 3 | B-3 | Accepted deceleration for mandatory changes (own and the follower's) | the type's `comfortableDeceleration` (`lanes.cpp` `safeAt`) | Sets merging and weaving capacity (Thai merging is tighter) | contract first |
+| 3 | B-3 | Accepted deceleration for mandatory changes (own and the follower's) | **done:** `mandatoryDecelerationOwn` / `mandatoryDecelerationTrailingVehicle` (D221) | Sets merging and weaving capacity (Thai merging is tighter) | [MERGE_DECELERATION](MERGE_DECELERATION.md) (D220, D221) |
 | 4 | B-6 | Road speed limits, reduced-speed areas, desired-speed decisions | none | Corridor travel times; limits and compliance differ by country | SPEED_CONTROL §1 |
 | 5 | B-5 | Desired-speed distribution family | uniform only (`demand.cpp`) | Speed spread and platooning; field distributions are rarely uniform (M2.1) | contract first |
 | 6 | B-8 | Stop-sign service time in seconds | one tick (`conflicts.hpp`) | Also a correctness fix: the result must not depend on `timeStep`; a real stop lasts about 1–3 s | contract first |
@@ -82,7 +83,7 @@ give-way delay first. Item numbers are stable labels, not ranks.
 | Prototype 5, D90, amber | yes | yes |
 | W74 18 | yes | no (needs a prototype → W74 retune) |
 | D95/D101, kerb bias | yes | no (needs the circuit lane-change wrap rule) |
-| Perception 5, lateral 3 (one box), curve, commitment (D219) | yes, for either model (D217) | yes (D217) except commitment (no give-way line in the circuits); the curve acts on curved Connectors only |
+| Perception 5, lateral 3 (one box), curve, commitment (D219), mandatory decelerations (D221) | yes, for either model (D217) | yes (D217) except commitment (no give-way line in the circuits) and mandatory decelerations (no lane changes); the curve acts on curved Connectors only |
 | Type fields | catalog dialog | focus type only |
 
 **Exposure slice, done (D217, [evidence](../evidence/behaviour-key-exposure.md)):**
@@ -104,7 +105,7 @@ catalog default.
 | 1. Project | One value for the whole project; never local | `timeStep`, duration, seeds, `drivingSide`, evaluation settings | One clock keeps runs deterministic; mixed driving sides are not modelled; a study compares whole runs |
 | 2. Catalog default | Project-wide default, overridden below | priority `gapTime`/`headway` defaults; each vehicle type's default behaviour | A sensible start that every object or road may override |
 | 3. Vehicle type | Per class (car, heavy vehicle, motorcycle, …) | dimensions, accelerations and decelerations, desired-speed range; **to come:** desired-speed family (B-5), lane preference by type (B-7) | Physical and legal properties of a class, the same on every road |
-| 4. Driver behaviour | Per behaviour, so **local by road** through the per Link/Connector behaviour assignment (M3.3.2b) | the car-following keys, D90, D95/D101, `kerbLaneBias`, `amberDeceleration`, perception, lateral, `curveLateralAcceleration`, `commitmentDeceleration` (B-2); **to come:** merge deceleration (B-3), driver-factor spread (B-4), Stop service seconds (B-8), red-light running (B-9) | How people drive, which changes with place (urban, rural, a busy junction); the existing assignment already makes every key local |
+| 4. Driver behaviour | Per behaviour, so **local by road** through the per Link/Connector behaviour assignment (M3.3.2b) | the car-following keys, D90, D95/D101, `kerbLaneBias`, `amberDeceleration`, perception, lateral, `curveLateralAcceleration`, `commitmentDeceleration` (B-2), the mandatory decelerations (B-3); **to come:** driver-factor spread (B-4), Stop service seconds (B-8), red-light running (B-9) | How people drive, which changes with place (urban, rural, a busy junction); the existing assignment already makes every key local |
 | 5. Network object | Per rule, zone, signal, Connector or area | priority rule and zone `gapTime`/`headway` and Stop/Yield; signal programs; Connector curvature (from the drawing); **to come:** road speed limits and reduced-speed areas (B-6) | Properties of a place, not of a driver |
 | 6. Per vehicle | Drawn per vehicle, never set directly | `desiredSpeed`, `driverFactor`, W74 traits | Heterogeneity; set through the distributions at levels 3–4 |
 

@@ -132,6 +132,8 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.curveLateralAcceleration) item["curveLateralAcceleration"] = *b.curveLateralAcceleration; // M3.6 (D212)
             if (b.kerbLaneBias) item["kerbLaneBias"] = *b.kerbLaneBias; // M3.4 (D215)
             if (b.commitmentDeceleration) item["commitmentDeceleration"] = *b.commitmentDeceleration; // B-2 (D219)
+            if (b.mandatoryDecelerationOwn) item["mandatoryDecelerationOwn"] = *b.mandatoryDecelerationOwn; // B-3 (D221)
+            if (b.mandatoryDecelerationTrailingVehicle) item["mandatoryDecelerationTrailingVehicle"] = *b.mandatoryDecelerationTrailingVehicle;
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model

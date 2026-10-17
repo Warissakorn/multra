@@ -149,6 +149,8 @@ accepting `maxDeceleration` for other drivers costs. The move-fits test was adde
 first measurement: without it, a change 2 m behind a faster leader passed the acceleration test
 and was clamped the next tick, because the move is capped at the gap less the standstill
 distance whatever the model asks.
+Since D221 a behaviour may carry `mandatoryDecelerationOwn` and `mandatoryDecelerationTrailingVehicle`;
+a mandatory change then uses them in place of the comfortable values ([MERGE_DECELERATION](MERGE_DECELERATION.md)).
 
 **Same tick.** Candidates are decided in vehicle-id order. A later candidate is also tested
 against the new positions of those already accepted this tick. A vehicle that changed away

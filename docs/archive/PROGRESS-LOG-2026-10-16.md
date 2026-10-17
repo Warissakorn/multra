@@ -2,6 +2,20 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — Mid-change gap loss: waiting at the line (D208)
+
+NEXT's item. D206 left two clamps where a faster car passed a slow changer mid-move. The owner chose
+**wait at the line**: an outward lateral move that would cover another lane must pass the start's
+safety tests there (nothing alongside, the leader ahead and the follower behind accept it). A body
+already over the line steps back. `src/core/lateral_motion.cpp` (`coversSafely`); rows BA54 failed
+first ([evidence](../evidence/lane-change-gap.md)).
+
+The first version, checking only the leader per segment, made things worse: 29 clamps instead of 2.
+Each cause was probed and fixed in turn: waiting over the line, a follower just behind, and a follower
+on the previous segment. The test now compares every vehicle in its own route's distances. Both
+switched-on projects run with 0 clamps and unchanged completed trips; switched-off runs and the CLI
+pin are byte-identical. `check` 163/163, Linux only.
+
 ## 2026-10-16 — Swapping pair at shared dead ends: the rear one yields (D207)
 
 NEXT's item, found by D206's runs. Two stubs side by side, each needing the other's lane, were each

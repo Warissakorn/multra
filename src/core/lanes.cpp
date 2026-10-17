@@ -108,12 +108,19 @@ std::size_t slotOfId(const std::vector<Vehicle>& vehicles, std::uint64_t id) {
 // Rules 3-5 at a mapped place, for both kinds of change: nothing alongside, and the car-following
 // model itself accepts the change ahead and behind. Safe: the follower's acceleration behind the
 // changer (+infinity without one), for a discretionary change's stricter test. Unsafe: nullopt.
+// B-3 (MERGE_DECELERATION.md, D221): a mandatory change brakes up to the changer's own key, and asks
+// its follower up to the changer's trailing key. Following never asks more than the braking type's
+// maximum, so a key above it acts as that maximum.
 std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs,
-                             std::size_t v, const Around& near) {
+                             std::size_t v, const Around& near, bool mandatory = false) {
     if (near.alongside) return std::nullopt;
     const auto& vehicle = vehicles[v];
     const auto& type = s.vehicleTypes[refs[v].type];
     const auto& behaviour = s.behaviours[refs[v].behaviour];
+    const auto limit = [&](const std::optional<double>& key, const VehicleType& braking) {
+        return mandatory && key ? *key : braking.comfortableDeceleration;
+    };
+    const double own = limit(behaviour.mandatoryDecelerationOwn, type);
     // Forward safety (rule 3), by the car-following model itself: braking it would accept,
     // and this tick's move inside the room the leader leaves, so the change never clamps.
     // With forward perception keys, against the perceived leaders (§3's lowest acceleration) and
@@ -124,12 +131,12 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
             auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
             anticipate(following, s, vehicles, refs, vehicle, type, behaviour, near.ahead);
             const double a = following.acceleration;
-            if (a < -type.comfortableDeceleration ||
+            if (a < -own ||
                 integrate(vehicle.speed, a, s.timeStep).distance > leader.gap - standstillGap(behaviour)) return std::nullopt;
         }
     } else if (const auto& leader = near.leader) {
         const double a = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader).acceleration;
-        if (a < -type.comfortableDeceleration ||
+        if (a < -own ||
             integrate(vehicle.speed, a, s.timeStep).distance > leader->gap - standstillGap(behaviour)) return std::nullopt;
     }
     // Rearward safety (rule 4): the follower's own reaction to the changer ahead of it.
@@ -145,7 +152,7 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
         // Its leader would be the changer itself, with the changer's own snapshot acceleration.
         const double a = follow(other.speed, other, other.w74State, fType, fBehaviour,
                                 Leader{follower->gap, vehicle.speed, vehicle.acceleration}).acceleration;
-        if (a < -fType.comfortableDeceleration ||
+        if (a < -limit(behaviour.mandatoryDecelerationTrailingVehicle, fType) ||
             integrate(other.speed, a, s.timeStep).distance > follower->gap - standstillGap(fBehaviour)) return std::nullopt;
         return a;
     }
@@ -279,6 +286,13 @@ std::vector<ValidationIssue> laneChangeIssues(const Scenario& s) {
             issues.push_back({"LANE_CHANGE_DEAD_END_UNREACHABLE", "routeDeadEnds[" + std::to_string(i) + "]"});
     return issues;
 }
+std::vector<ValidationIssue> mandatoryParameterIssues(const DriverBehaviour& b, const std::string& path) {
+    std::vector<ValidationIssue> issues; // MERGE_DECELERATION §2: each (0, 15]
+    for (const auto& [key, value] : {std::pair{"mandatoryDecelerationOwn", b.mandatoryDecelerationOwn},
+                                     std::pair{"mandatoryDecelerationTrailingVehicle", b.mandatoryDecelerationTrailingVehicle}})
+        if (value && !(std::isfinite(*value) && *value > 0 && *value <= 15)) issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", path + "." + key});
+    return issues;
+}
 std::vector<ValidationIssue> kerbParameterIssues(const DriverBehaviour& b, const std::string& path) {
     if (!b.kerbLaneBias) return {};
     const double bias = *b.kerbLaneBias;
@@ -345,7 +359,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
                                                  s.behaviours[refs[v].behaviour], vehicle.speed);
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
                                      s.behaviours[refs[v].behaviour].perception, &sideways);
-            if (!safeAt(s, vehicles, refs, v, near)) continue;
+            if (!safeAt(s, vehicles, refs, v, near, true)) continue;
             const auto start = lateralStart(s, index, vehicle, refs[v], change, at);
             if (start.refused) continue;
             accepted.push_back({v, static_cast<std::uint32_t>(change.target), at, start.target});

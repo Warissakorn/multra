@@ -314,11 +314,11 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
         p.*key.member = value.get<double>();
     }
 }
-// M3.6 curve (D212), M3.4 kerb bias (D215), B-2 commitment (D219): one optional number each, the same way; ranges are the validator's.
-static void readOptional(const Json& b, const std::string& path, const char* key, std::optional<double>& value) {
-    if (!b.contains(key)) return;
-    if (!b.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key}});
-    value = b.at(key).get<double>();
+// One optional number each (curve D212, kerb D215, commitment D219, mandatory D221); ranges are the validator's.
+static void readOptionals(const Json& b, const std::string& path, DriverBehaviour& d) {
+    for (const auto& [key, value] : {std::pair{"curveLateralAcceleration", &d.curveLateralAcceleration}, std::pair{"kerbLaneBias", &d.kerbLaneBias}, std::pair{"commitmentDeceleration", &d.commitmentDeceleration}, std::pair{"mandatoryDecelerationOwn", &d.mandatoryDecelerationOwn}, std::pair{"mandatoryDecelerationTrailingVehicle", &d.mandatoryDecelerationTrailingVehicle}})
+        if (b.contains(key) && !b.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key}});
+        else if (b.contains(key)) *value = b.at(key).get<double>();
 }
 // M3.7 (LATERAL.md §9, D187): the same for the lateral keys; completeness and ranges are the validator's.
 static void readLateral(const Json& b, const std::string& path, LateralParameters& p) {
@@ -351,8 +351,8 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         if (b.contains("maxDecelerationCooperativeBraking"))
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
         if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration"); // M4.2
-        readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral); readOptional(b, path, "curveLateralAcceleration", behaviour.curveLateralAcceleration);
-        readOptional(b, path, "kerbLaneBias", behaviour.kerbLaneBias); readOptional(b, path, "commitmentDeceleration", behaviour.commitmentDeceleration);
+        readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral);
+        readOptionals(b, path, behaviour);
         return behaviour;
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
@@ -374,8 +374,8 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         behaviour.discretionaryLaneChangeHoldTime = field<double>(b, "discretionaryLaneChangeHoldTime");
     // Optional (M4.2, D147): absent, amber holds like red.
     if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration");
-    readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral); readOptional(b, path, "curveLateralAcceleration", behaviour.curveLateralAcceleration);
-    readOptional(b, path, "kerbLaneBias", behaviour.kerbLaneBias); readOptional(b, path, "commitmentDeceleration", behaviour.commitmentDeceleration);
+    readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral);
+    readOptionals(b, path, behaviour);
     return behaviour;
 }
 VehicleType parseVehicleType(const Json& t) {

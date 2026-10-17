@@ -11,6 +11,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
+- **B-3 is in** (D220, D221, [MERGE_DECELERATION](reference/MERGE_DECELERATION.md), [evidence](evidence/merge-deceleration.md)):
+  `mandatoryDecelerationOwn` / `mandatoryDecelerationTrailingVehicle` (schema 37) in the mandatory
+  safety tests; editor rows. Shipped projects barely move; no value ships.
 - **B-2 is in** (D218, D219, [COMMITMENT](reference/COMMITMENT.md), [evidence](evidence/commitment-deceleration.md)):
   `commitmentDeceleration` (schema 36) at give-way lines, the lower of it and the type maximum; editor
   row. A low value raises clamps (D69's risk), so no value ships; clamps are not yet split by road.
@@ -55,18 +58,21 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-3, the merge deceleration contract
+## Next session — B-6, road speed limits
 
 A session told only to "continue" takes item 1:
-1. **B-3 contract** (BEHAVIOUR_PARAMETERS §3, rank 3; a level-4 behaviour key under D216). Today a
-   mandatory lane change accepts a gap by the type's `comfortableDeceleration`, for itself and for
-   the follower (`lanes.cpp` `safeAt`). Write the contract first, as COMMITMENT does: key or keys,
-   range, absent means byte-identical, schema 37, failure-first rows, editor row (and Lab row only
-   if the circuit can use it, which it cannot while it clears lane changes). Ask the owner any real
-   choice before code.
-2. Then tier B in order: B-6, B-5, B-8, B-7, B-4, B-9.
-3. A small follow-up whenever a study wants D219's key: split safety clamps by road (major or minor)
-   in the report.
+1. **B-6 contract** (BEHAVIOUR_PARAMETERS §3, rank 4): road speed limits, reduced-speed areas and
+   desired-speed decisions. They are level-5 network objects under D216, not behaviour keys, so the
+   contract is SPEED_CONTROL's next section (§1 already lists them as later slices). Decide with the
+   owner:
+   - how a limit maps to a vehicle's desired speed (a per-type desired-speed distribution at the
+     sign, as Vissim does, or a cap);
+   - whether compliance spread belongs here or with B-5.
+
+   Contract first, then rows, the editor object and the codec step.
+2. Then tier B in order: B-5, B-8, B-7, B-4, B-9.
+3. Small follow-ups when a study wants them: split safety clamps by road (D219); a dense merging
+   scene for D221's keys.
 4. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
    M3.9.
 5. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.

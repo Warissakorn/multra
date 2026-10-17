@@ -25,6 +25,8 @@ bool ownsLateralBehaviour(const ProjectDocument&);
 void rejectLateralBefore33(const Json& document);
 bool ownsCurveBehaviour(const ProjectDocument&);
 void rejectCurveBefore34(const Json& document);
+bool ownsMandatoryBehaviour(const ProjectDocument&); // B-3 (D221): schema 37
+void rejectMandatoryBefore37(const Json& document);
 bool ownsCommitmentBehaviour(const ProjectDocument&); // B-2 (D219): schema 36
 void rejectCommitmentBefore36(const Json& document);
 bool ownsKerbBehaviour(const ProjectDocument&);
