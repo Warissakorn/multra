@@ -27,7 +27,7 @@ than the nearest vehicle, is now in: perceived leaders feed the incentive (D183)
 a higher cost.
 
 **Out of scope:**
-- lane preference by vehicle type (a later slice, owner; tier B-7);
+- lane preference by vehicle type (a later slice, owner; tier B-7, now [LANE_PREFERENCE](LANE_PREFERENCE.md), D233);
 - overtaking-lane bans;
 - cooperative lane change;
 - politeness toward other drivers (MOBIL's `p`).

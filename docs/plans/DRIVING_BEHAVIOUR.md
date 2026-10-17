@@ -192,6 +192,13 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA121 | Blocked gap longer than the dwell | Still held; no further dwell once it opens |
 | BA122 | Behaviour by road | The minor approach's behaviour sets the dwell |
 | BA123 | Codec at schema 41 and editor row | Round-trips; faults at their paths; 40 refused |
+| BA124 | No `kerbLanes` key ([LANE_PREFERENCE](../reference/LANE_PREFERENCE.md), D233) | Splits and shipped outputs byte-identical |
+| BA125 | `kerbLanes: 1` on 2 and 3 lanes | The type enters on lane 0; other types keep the equal split |
+| BA126 | `kerbLanes: 2` on 3 lanes | ½, ½, 0 |
+| BA127 | Authored `laneShares` | Renormalised over allowed lanes; all-zero → equal |
+| BA128 | Route needing a far lane | Enters on the kerb lane, changes as a stub, arrives |
+| BA129 | Routeless input | Same rule on its paths |
+| BA130 | Codec at schema 42 and dialog row | Round-trips; faults at their paths; 41 refused |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

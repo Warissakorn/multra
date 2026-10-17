@@ -3,6 +3,24 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-3: accepted deceleration for mandatory lane changes (D220, D221)
+
+NEXT's item, contract first ([MERGE_DECELERATION](../reference/MERGE_DECELERATION.md),
+[evidence](../evidence/merge-deceleration.md)).
+- **The owner's choices:** two keys, as Vissim has (`mandatoryDecelerationOwn`,
+  `mandatoryDecelerationTrailingVehicle`), and the trailing one is read from the changer's behaviour.
+- **What changed:**
+  - mandatory changes only; the room condition still prevents clamps;
+  - schema 37 and two editor rows.
+- **Tests:** four rows failed first, and two mutations are caught. The third mutation showed the
+  contract's `min(key, maxDeceleration)` could never matter, because following already clamps there,
+  so it was removed.
+- **Measured** in the shipped projects: the keys barely move anything (delays by ≤ 0.16 s, no
+  clamps, the lab's one 2.5 s dead-end wait gone), because their demand rarely meets a refused
+  change. Keys absent: byte-identical, +0.002 % Ir.
+
+`check` 168/168, Linux only.
+
 ## 2026-10-17 — B-2: commitment deceleration at give-way lines (D218, D219)
 
 NEXT's item, contract first ([COMMITMENT](../reference/COMMITMENT.md),

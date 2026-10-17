@@ -14,6 +14,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - **PR #176** carries D207–D231 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
+- **B-7 contract** (D233, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md)): `kerbLanes` on the vehicle
+  type (schema 42) splits that type's entry only over the kerb-most N lanes; mandatory changes
+  unchanged; absent = today. Implementation in progress (D234).
 - **D232 (no code change):** D231's Stop-line clamps are give-way line clamps, not the Stop rule's
   ([evidence](evidence/give-way-line-clamps.md)). A minor vehicle creeping off its line meets a gap
   that closes while it can still stop; the braking law overshoots. The shipped Yield T-junction shows
@@ -84,12 +87,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — tier B
+## Next session — B-7 implementation, then tier B
 
 A session told only to "continue" takes item 1:
-1. **B-7: lane preference by vehicle type** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md)):
-   write its contract first, ask the owner the open choices, then rows that fail first.
+1. **Implement B-7** (D233, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md)): `laneSplit` with the
+   type's `kerbLanes` in compile and routeless paths; rows BA124–BA130 failing first; schema 42; the
+   type-dialog row.
 2. Then B-4 (driver-factor spread) and B-9 (red-light running).
 3. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
-   M3.2.8a.1 contract or when the owner asks. The options are in their evidence; D227's measured
-   candidate is in ENGINEERING_NOTES.
+   M3.2.8a.1 contract or when the owner asks.

@@ -6,6 +6,14 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-7 lane preference by vehicle type contract (D233, docs only)
+
+NEXT's item ([LANE_PREFERENCE](reference/LANE_PREFERENCE.md)). Today every type gets the same
+per-lane entry split, so heavy vehicles spread across all lanes.
+- **The owner's choices:** entry lane by type, on the vehicle type, the kerb-most N lanes.
+- **The contract:** `kerbLanes` (1–16) at schema 42 renormalises the split over lanes 0 to N−1;
+  mandatory changes and D95 unchanged; rows BA124–BA130.
+
 ## 2026-10-17 — Give-way line clamps traced (D232, no code change)
 
 NEXT's item ([evidence](evidence/give-way-line-clamps.md)). D231's Stop-line clamps are not the
@@ -130,24 +138,6 @@ NEXT's item, contract first ([SPEED_DECISIONS](reference/SPEED_DECISIONS.md),
 - No decision: byte-identical, hooks +0.10 % Ir.
 
 `check` 170/170, Linux only.
-
-## 2026-10-17 — B-3: accepted deceleration for mandatory lane changes (D220, D221)
-
-NEXT's item, contract first ([MERGE_DECELERATION](reference/MERGE_DECELERATION.md),
-[evidence](evidence/merge-deceleration.md)).
-- **The owner's choices:** two keys, as Vissim has (`mandatoryDecelerationOwn`,
-  `mandatoryDecelerationTrailingVehicle`), and the trailing one is read from the changer's behaviour.
-- **What changed:**
-  - mandatory changes only; the room condition still prevents clamps;
-  - schema 37 and two editor rows.
-- **Tests:** four rows failed first, and two mutations are caught. The third mutation showed the
-  contract's `min(key, maxDeceleration)` could never matter, because following already clamps there,
-  so it was removed.
-- **Measured** in the shipped projects: the keys barely move anything (delays by ≤ 0.16 s, no
-  clamps, the lab's one 2.5 s dead-end wait gone), because their demand rarely meets a refused
-  change. Keys absent: byte-identical, +0.002 % Ir.
-
-`check` 168/168, Linux only.
 
 ## Older entries
 
