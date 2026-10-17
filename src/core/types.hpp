@@ -71,7 +71,7 @@ struct DriverBehaviour {
     std::optional<double> amberDeceleration;
     PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
-    std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle; // m/s²: D212, D215, D219, D221
+    std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles {
@@ -427,7 +427,7 @@ using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
 // It has served the line once a whole tick has run since then. Kept only while the line is ahead
 // of or under the vehicle, so passing a line clears it; a new run starts with none.
 struct StopService {
-    std::uint64_t vehicleId{}; double line{}; std::uint64_t since{};
+    std::uint64_t vehicleId{}; double line{}; std::uint64_t since{}, ticks{1}; // ticks: whole ticks of rest (B-8, D231)
     bool operator==(const StopService&) const = default;
 };
 // M8.4a (ZONES_AND_PARKING §4). A vehicle in a lot keeps its identity and type for its next trip.

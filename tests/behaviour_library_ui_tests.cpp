@@ -70,15 +70,15 @@ void buildLibrary(QDialog& d) {
         // D217: the keys for either model are rows too, off until ticked; lateral is one group.
         for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "lookBackDistance", "rearTimeToCollision",
                                 "reactionTime", "lateral", "curveLateralAcceleration", "commitmentDeceleration",
-                                "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle"})
+                                "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime"})
             require(!item<QCheckBox>(e, (std::string(key) + "Set").c_str())->isChecked(), "Either-model row missing or pre-set");
         for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "reactionTime", "lateral", "curveLateralAcceleration",
-                                "commitmentDeceleration", "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle"})
+                                "commitmentDeceleration", "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime"})
             item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
         for (const auto& [key, value] : std::vector<std::pair<const char*, double>>{{"lookAheadDistance", 150},
                  {"observedVehiclesAhead", 2}, {"reactionTime", .5}, {"lateralMinDistanceStanding", .5},
                  {"lateralMinDistanceAt50", 1}, {"maxLateralSpeed", 1}, {"curveLateralAcceleration", 3}, {"commitmentDeceleration", 4},
-                 {"mandatoryDecelerationOwn", 3}, {"mandatoryDecelerationTrailingVehicle", 5}})
+                 {"mandatoryDecelerationOwn", 3}, {"mandatoryDecelerationTrailingVehicle", 5}, {"stopDwellTime", 2.5}})
             item<QDoubleSpinBox>(e, key)->setValue(value);
         confirm(e);
     });
@@ -142,6 +142,7 @@ int main(int argc, char** argv) {
         require(def.behaviours[1].commitmentDeceleration == 4 && !def.behaviours[0].commitmentDeceleration, "Commitment not edited (D219)");
         require(def.behaviours[1].mandatoryDecelerationOwn == 3 && def.behaviours[1].mandatoryDecelerationTrailingVehicle == 5 &&
                 !def.behaviours[0].mandatoryDecelerationOwn && !def.behaviours[0].mandatoryDecelerationTrailingVehicle, "Mandatory keys not edited (D221)");
+        require(def.behaviours[1].stopDwellTime == 2.5 && !def.behaviours[0].stopDwellTime, "Stop dwell not edited (D231)");
         require(def.vehicleClasses.size() == 1 && def.linkBehaviourTypes.size() == 1, "Class or behaviour type lost");
         require(def.linkBehaviourTypes[0].overrides.size() == 1, "Override lost");
         item<QAction>(w, "editorUndo")->trigger();
@@ -226,9 +227,9 @@ int main(int argc, char** argv) {
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
         require(behaviour("w74-set").curveLateralAcceleration == 2 && behaviour("w74-set").perception.reactionTime == .4,
                 "w74 either-model keys not saved (D213, D217)");
-        // 37 for the mandatory deceleration keys the edited prototype copy carries (B-3, D221), above
-        // its commitment (36, D219) and kerb bias (35, D215): the newest feature the file holds.
-        require(documentJson(w.history().document())["schemaVersion"] == 37, "w74 file not schema 37");
+        // 41 for the Stop dwell the edited prototype copy carries (B-8, D231), above its mandatory
+        // deceleration keys (37, D221), commitment (36) and kerb bias (35): the newest feature the file holds.
+        require(documentJson(w.history().document())["schemaVersion"] == 41, "w74 file not schema 41");
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", "w74-set"); }, [](QDialog& e) {
                 item<QCheckBox>(e, "reactionTimeSet")->setChecked(false); confirm(e);

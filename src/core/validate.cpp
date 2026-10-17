@@ -275,6 +275,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
             for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
             for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
+            for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
@@ -289,6 +290,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
         for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
         for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
+        for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every

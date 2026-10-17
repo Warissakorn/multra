@@ -11,11 +11,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
-- **PR #176** carries D207–D230 to `main` (#175 merged D206; `main` merged back in). Its Windows
+- **PR #176** carries D207–D231 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
-- **B-8 contract written** (D230, [STOP_DWELL](reference/STOP_DWELL.md)): `stopDwellTime` on the
-  driver behaviour, schema 41, rows BA117–BA123; implementation next.
+- **B-8 is in** (D230, D231, [STOP_DWELL](reference/STOP_DWELL.md), [evidence](evidence/stop-dwell.md)):
+  `stopDwellTime` on the driver behaviour (schema 41) rests a vehicle at a Stop line for whole ticks
+  of at least that time; absent = today's one tick. Shipped runs byte-identical; +0.25–0.41 % Ir.
 - **B-5 is in** (D228, D229, [SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md), [evidence](evidence/speed-distribution.md)):
   an optional piecewise cumulative desired-speed curve on the vehicle type (schema 40), the same draw,
   the share as the quantile decisions and areas map linearly; type-dialog curve box; Lab fit. Shipped
@@ -79,11 +80,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-8 implementation, then tier B
+## Next session — Stop-line clamps, then tier B
 
 A session told only to "continue" takes item 1:
-1. **Implement [STOP_DWELL](reference/STOP_DWELL.md)** (rows BA117–BA123): engine rows first against
-   `ticks` fixed at 1, then codec at schema 41, then the behaviour-dialog row.
-2. Then B-7 (lane preference by type), B-4 (driver-factor spread), B-9 (red-light running).
-3. The red-onset clamp stays recorded (D227). Reopen it only if the owner wants slow-approach
-   clamps gone; the candidate is in ENGINEERING_NOTES.
+1. **Trace the Stop-line clamps** ([evidence](evidence/stop-dwell.md#shipped-runs)): on a copy of
+   `t-junction-priority` with both controls set to `stop`, seeds 42–81 give 8 clamps at dt 0.1
+   without any key (15 with a 2 s dwell), all on minor routes at their Stop lines while the vehicle
+   holds Stop service. Find which cap fires (phase 1 or the phase-2 swept/receiving check); fix it
+   with a row if it is the Stop rule's.
+2. Then tier B: B-7 (lane preference by type), B-4 (driver-factor spread), B-9 (red-light running).
+3. The red-onset clamp stays recorded (D227); the candidate is in ENGINEERING_NOTES.

@@ -6,6 +6,19 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-8 Stop dwell time implemented (D231)
+
+D230's contract ([evidence](evidence/stop-dwell.md)).
+- **Engine:** the Stop service entry records whole ticks of rest from the vehicle's behaviour when it
+  comes to the line; one without the key. Rows BA118–BA123 failed first against a one-tick stub.
+- **File and editor:** schema 41, refused below; validation on both models; a behaviour-dialog row
+  (failed first). Codec hooks proved by mutation.
+- **Measured:** shipped runs byte-identical. On a T-junction copy with Stop controls, a 2 s dwell
+  raised minor delay by 13–18 s. Every clamp there sits at a Stop line, with or without the key
+  (traced next). +0.25 % Ir on four-leg, +0.41 % on the Stop copy.
+
+`check` 174/174, Linux only.
+
 ## 2026-10-17 — B-8 Stop dwell time contract (D230, docs only)
 
 NEXT's item ([STOP_DWELL](reference/STOP_DWELL.md)). Today a Stop rests a vehicle for 1–2 ticks,
@@ -145,21 +158,6 @@ NEXT's item, contract first ([COMMITMENT](reference/COMMITMENT.md),
   No value ships. Key absent: byte-identical, +0.04 % Ir.
 
 `check` 167/167, Linux only.
-
-## 2026-10-17 — Behaviour-key exposure (D217)
-
-The owner's wish, and NEXT's item: every driving-behaviour key the engine already accepts can now be
-edited in the program ([evidence](evidence/behaviour-key-exposure.md)).
-- **Behaviour editor:** perception (5), lateral (one box for its three keys) and the curve key are
-  off-until-ticked rows for either model. Before, they were only kept.
-- **Behaviour Lab panel:** the same rows for both behaviours; *Apply to project* writes them back.
-  The D95 keys and kerb bias stay out, because the circuit clears lane changes.
-- **Tests:** both UI rows failed first. A Lab row shows that each group runs on the circuit with no
-  clamp, also when ticked mid-run. The curve acts on curved Connectors only (Urban left turns, Oval
-  joins), and a tooltip says so.
-- No engine, codec or data change.
-
-`check` 166/166, Linux only.
 
 ## Older entries
 

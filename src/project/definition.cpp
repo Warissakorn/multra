@@ -137,6 +137,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.commitmentDeceleration) item["commitmentDeceleration"] = *b.commitmentDeceleration; // B-2 (D219)
             if (b.mandatoryDecelerationOwn) item["mandatoryDecelerationOwn"] = *b.mandatoryDecelerationOwn; // B-3 (D221)
             if (b.mandatoryDecelerationTrailingVehicle) item["mandatoryDecelerationTrailingVehicle"] = *b.mandatoryDecelerationTrailingVehicle;
+            if (b.stopDwellTime) item["stopDwellTime"] = *b.stopDwellTime; // B-8 (D231)
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model

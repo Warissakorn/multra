@@ -69,7 +69,11 @@ double stopLineReach(const DriverBehaviour&, double driverFactor);
 // parking lot's gate (M8.4a) use this one test.
 bool atStopLine(const Vehicle&, double line, const DriverBehaviour&);
 // Held at rest by its Stop this tick: service began but has not yet run a whole tick at zero.
-inline bool restsAtStop(const StopService* s, std::uint64_t tick) { return s && s->since + 1 >= tick; }
+inline bool restsAtStop(const StopService* s, std::uint64_t tick) { return s && s->since + s->ticks >= tick; }
+// B-8 (docs/reference/STOP_DWELL.md, D231): the whole ticks of rest after coming to the line; one without
+// stopDwellTime, as always.
+std::uint64_t stopDwellTicks(const DriverBehaviour&, double timeStep);
+std::vector<ValidationIssue> stopDwellIssues(const DriverBehaviour&, const std::string& path);
 std::vector<StopService> refreshStops(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,
                                       const std::vector<VehicleRefs>&, const std::vector<StopService>& previous,
                                       std::uint64_t tick);

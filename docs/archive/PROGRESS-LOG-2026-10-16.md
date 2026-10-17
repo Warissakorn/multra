@@ -2,6 +2,21 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-17 — Behaviour-key exposure (D217)
+
+The owner's wish, and NEXT's item: every driving-behaviour key the engine already accepts can now be
+edited in the program ([evidence](../evidence/behaviour-key-exposure.md)).
+- **Behaviour editor:** perception (5), lateral (one box for its three keys) and the curve key are
+  off-until-ticked rows for either model. Before, they were only kept.
+- **Behaviour Lab panel:** the same rows for both behaviours; *Apply to project* writes them back.
+  The D95 keys and kerb bias stay out, because the circuit clears lane changes.
+- **Tests:** both UI rows failed first. A Lab row shows that each group runs on the circuit with no
+  clamp, also when ticked mid-run. The curve acts on curved Connectors only (Urban left turns, Oval
+  joins), and a tooltip says so.
+- No engine, codec or data change.
+
+`check` 166/166, Linux only.
+
 ## 2026-10-17 — Keep-to-kerb slice 1 and the settings scope (D215, D216)
 
 The owner asked to continue, and to design which settings are project-wide and which are local.

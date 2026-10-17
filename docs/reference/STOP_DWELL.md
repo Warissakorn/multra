@@ -1,6 +1,7 @@
 # Stop dwell time (B-8)
 
-Written 2026-10-17 (D230). This is tier B-8 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), a
+Written 2026-10-17 (D230); implemented the same day (D231,
+[evidence](../evidence/stop-dwell.md)). This is tier B-8 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), a
 level-4 key under D216: driver behaviour, local by road. It extends the Stop rule in
 [SIMULATION](SIMULATION.md) (M3.2.5a, D62). Rule 4 applies: nothing here is validated, and no value
 ships (D178).
@@ -49,8 +50,8 @@ The owner chose on 2026-10-17:
 ## 4. Editor
 
 The behaviour dialog gains an off-until-ticked row for `stopDwellTime` among the keys either model
-carries, beside `commitmentDeceleration`. Its label is translated into Thai. Editing it is one Undo
-step with the library.
+carries, beside `commitmentDeceleration`. Like its neighbours, it is labelled with the key name.
+Editing it is one Undo step with the library.
 
 ## 5. What stays out
 
