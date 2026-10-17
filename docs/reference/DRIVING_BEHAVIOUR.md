@@ -117,6 +117,9 @@ be explicit. Copy/replay never depends on paint order or wall clock.
 
 ## 4. Parameter capability map
 
+Every value the engine reads today, with what should become settable, is in
+[BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md) (D213).
+
 This table describes baseline code at `07eb5cb`, not scientific validation. It is not updated:
 since then M3.3.2a–c shipped the library and assignment, and W74 runs (D138, not validated).
 "Planned" means the attached target needs new contracts/implementation; it must

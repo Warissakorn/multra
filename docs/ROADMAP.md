@@ -231,7 +231,8 @@ left-hand-traffic networks, held in a behaviour key (D178). **Lane-change durati
 [evidence](evidence/lane-change-duration.md)); its switched-on cost is back inside LATERAL §11's budget (+3.0–3.5 % Ir against `5847cb9`, D209,
 [evidence](evidence/lateral-perf.md)). A swapping pair of stubs now resolves by the rear one yielding (D207,
 [evidence](evidence/lane-swap.md)); a mid-change body waits at the line (D208) and follows the lanes it covers
-(D210, [evidence](evidence/straddler-leaders.md), BA55); Vissim's cooperative lane change stays open. **Gate:** contract and failure-first rows per item in the
+(D210, [evidence](evidence/straddler-leaders.md), BA55); **keep-to-kerb contract written** ([OVERTAKING](reference/OVERTAKING.md),
+D213, BA64–BA71; not implemented); Vissim's cooperative lane change stays open. **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention

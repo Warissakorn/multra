@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — Behaviour configurability and the keep-to-kerb contract (D213)
+
+NEXT's item, M3.4 overtaking with the driving side. The owner chose an asymmetric bias, with
+undertaking allowed but costlier and lane preference by type later. They then widened the question:
+driving behaviour should be configurable for other countries, with judgement on what should be
+settable.
+- [BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) puts every value that shapes behaviour
+  into a tier: settable now (A), should become an optional key (B, ten items), or kept fixed (C).
+  Regions are catalog data. This is a proposal (OWNER_SITTING B19).
+- [OVERTAKING](reference/OVERTAKING.md) defines `kerbLaneBias`. A return needs `g ≥ T − β`; passing
+  and undertaking need `g ≥ T + β`. The kerb side comes from the lane index. Rows BA64–BA71 are
+  written; no engine code changed.
+- The inventory found that D212 had left a real bug: the behaviour editor's W74 save dropped
+  `curveLateralAcceleration`. The UI test failed first and the one-line fix is in. `check` passes,
+  Linux only.
+
 ## 2026-10-17 — M3.6 slice 1: curve speed (D212)
 
 NEXT's item: SPEED_CONTROL §2–§5 (D211). Rows BA56–BA63 came first; BA57, BA58 and BA62 failed
@@ -140,21 +156,6 @@ The owner asked for recommendations on the contract's three open choices and too
 New [LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md) with rows BA48–BA53; also found that a
 change must cross before its span's `fromEnd`, since the crossing needs a covering span (LATERAL §7).
 No code changed; `check` was run for the docs.
-
-## 2026-10-16 — M3.7 slice 4: lateral display (D203)
-
-NEXT's next item after slice 3b. `src/editor/canvas_run.cpp`, `src/core/types.hpp`, `lateral_motion.cpp`.
-- **Drawing:** a run body sits at lane centre + `lateral`, the front shifted along the left normal of
-  its heading. Left of travel is the engine's convention, so left- and right-hand networks need no
-  case. `lateral = 0` draws exactly as before.
-- **Found while reading:** a crossing made by lateral motion records a `LaneChangeTrace`, and the D97
-  slide would have drawn the body about a lane away from where the engine keeps it. The entry is now
-  flagged `lateral` (display only, no tick reads it) and such crossings are not slid.
-- `types.hpp` stays at 500 lines (the field shares its line). The M3.7.0 contract's four slices are
-  all in; the gate stays open (ROADMAP).
-
-Checked on Linux offscreen: `ctest --preset desktop` 161/161, `check` green, CLI pin unchanged and the
-Release CLI output byte-identical to main. No Windows or high-DPI run.
 
 ## Older entries
 

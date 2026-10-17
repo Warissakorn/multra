@@ -2,6 +2,21 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — M3.7 slice 4: lateral display (D203)
+
+NEXT's next item after slice 3b. `src/editor/canvas_run.cpp`, `src/core/types.hpp`, `lateral_motion.cpp`.
+- **Drawing:** a run body sits at lane centre + `lateral`, the front shifted along the left normal of
+  its heading. Left of travel is the engine's convention, so left- and right-hand networks need no
+  case. `lateral = 0` draws exactly as before.
+- **Found while reading:** a crossing made by lateral motion records a `LaneChangeTrace`, and the D97
+  slide would have drawn the body about a lane away from where the engine keeps it. The entry is now
+  flagged `lateral` (display only, no tick reads it) and such crossings are not slid.
+- `types.hpp` stays at 500 lines (the field shares its line). The M3.7.0 contract's four slices are
+  all in; the gate stays open (ROADMAP).
+
+Checked on Linux offscreen: `ctest --preset desktop` 161/161, `check` green, CLI pin unchanged and the
+Release CLI output byte-identical to main. No Windows or high-DPI run.
+
 ## 2026-10-16 — M3.7 slice 3b: zone occupancy by span (D202)
 
 The owner chose the head of the engine queue. `src/core/conflicts.*`, `lateral.*`, `lateral_types.hpp`.

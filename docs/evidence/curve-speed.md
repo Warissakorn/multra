@@ -88,6 +88,15 @@ Switched-on lateral cost improves too: `lane-change-lab` 1662 → 1648 M (+5.1 %
 Starting `speedTarget`'s scan at the front part with `frontPart`'s binary search cost more than it
 saved on these short routes (52 M instead of 45 M), so it was reverted.
 
+## Follow-up (D213): the behaviour editor kept dropping the key
+
+The behaviour editor's W74 save rebuilt the behaviour from its id. It copied perception and lateral
+but not `curveLateralAcceleration`, so editing a W74 behaviour silently removed the key. The
+`behaviour-library-ui` test's W74 fixture now carries the key at 2.5 and asserts that it survives the
+edit, and that the file is schema 34. It failed ("curve key dropped by the w74 save") before the
+one-line fix in `src/shell/behaviour_editor.cpp`. The prototype save copies the whole behaviour, so
+it was not affected.
+
 ## Not covered here
 
 - No Link curvature, reduced-speed areas, desired-speed decisions, speed-dependent acceleration or

@@ -165,6 +165,7 @@ int main(int argc, char** argv) {
         auto withW74 = w.history().document();
         DriverBehaviour w74{"w74-set"};
         w74.w74 = W74Parameters{2, 2, 1, 2, .5, 16, 4, .5, .5, 20, 1, 1, 3, .25, .5, -1, .5, .25};
+        w74.curveLateralAcceleration = 2.5; // M3.6 (D212): not edited here, so it must survive a save
         putBehaviour(withW74, w74, ""); validateDocument(withW74);
         QFile g(path); require(g.open(QIODevice::WriteOnly), "Fixture write failed");
         g.write(QByteArray::fromStdString(documentJson(withW74).dump())); g.close(); w.openFile(path);
@@ -189,9 +190,10 @@ int main(int argc, char** argv) {
         });
         require(behaviour("w74-set").w74 && behaviour("w74-set").w74->exAdd == 1.25, "w74 key not edited");
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
-        // 25 for the w74 behaviour, raised to 28 because the captured catalog behaviour carries
-        // amberDeceleration (M4.2, D147): the schema is the newest feature the file holds.
-        require(documentJson(w.history().document())["schemaVersion"] == 28, "w74 file not schema 28");
+        require(behaviour("w74-set").curveLateralAcceleration == 2.5, "curve key dropped by the w74 save (D213)");
+        // 34 for the curve key the w74 behaviour carries (M3.6, D212): the schema is the newest
+        // feature the file holds.
+        require(documentJson(w.history().document())["schemaVersion"] == 34, "w74 file not schema 34");
         // Prototype -> W74: the fields start empty (no code defaults); an empty one is refused.
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
