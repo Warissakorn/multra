@@ -271,6 +271,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
             for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
             for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
+            for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
             continue;
         }
         number(b.standstillDistance, p + ".standstillDistance");
@@ -296,6 +297,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             add("INCOMPLETE_DISCRETIONARY_BEHAVIOUR", p + ".acceptedDecelerationTrailingVehicle");
         if (!b.discretionaryLaneChangeThreshold && b.acceptedDecelerationTrailingVehicle)
             add("INCOMPLETE_DISCRETIONARY_BEHAVIOUR", p + ".discretionaryLaneChangeThreshold");
+        for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
     }
     for (std::size_t i = 0; i < s.vehicleTypes.size(); ++i) {
         const auto& t = s.vehicleTypes[i];

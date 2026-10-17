@@ -10,6 +10,8 @@
 namespace trafficsim {
 // Validation of the compiled spans and dead ends; called by validateScenario.
 std::vector<ValidationIssue> laneChangeIssues(const Scenario&);
+// OVERTAKING §2 (D215): kerbLaneBias outside (0, 5], or without D95's threshold, at `path`.kerbLaneBias.
+std::vector<ValidationIssue> kerbParameterIssues(const DriverBehaviour& behaviour, const std::string& path);
 // Fills the index's lane-change fields. Needs `index.parts` already built.
 void indexLaneChanges(const Scenario&, ScenarioIndex&);
 // How many changes each route still needs: 0 for a route without a dead end, else one more than

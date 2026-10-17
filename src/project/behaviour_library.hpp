@@ -25,6 +25,8 @@ bool ownsLateralBehaviour(const ProjectDocument&);
 void rejectLateralBefore33(const Json& document);
 bool ownsCurveBehaviour(const ProjectDocument&);
 void rejectCurveBefore34(const Json& document);
+bool ownsKerbBehaviour(const ProjectDocument&);
+void rejectKerbBefore35(const Json& document);
 // Schema 21 and later: reads the library and rejects unknown keys in every owned catalog entry.
 void parseBehaviourLibrary(const Json& definition, AuthoringDefinition&);
 // Adds the schema-21 keys to an already written definition: names, the explicit model tag on

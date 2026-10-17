@@ -58,7 +58,14 @@ void buildLibrary(QDialog& d) {
         // AM8 (M4.2, D147): the captured catalog's amber deceleration is shown and edited like any optional key.
         require(item<QCheckBox>(e, "amberDecelerationSet")->isChecked() && item<QDoubleSpinBox>(e, "amberDeceleration")->value() == 3,
                 "Captured amber deceleration not shown");
-        item<QDoubleSpinBox>(e, "amberDeceleration")->setValue(2.5); confirm(e);
+        item<QDoubleSpinBox>(e, "amberDeceleration")->setValue(2.5);
+        // D215: the kerb bias is an optional row beside the D95 keys it needs.
+        require(!item<QCheckBox>(e, "kerbLaneBiasSet")->isChecked(), "Kerb bias row missing or pre-set");
+        for (const char* key : {"discretionaryLaneChangeThreshold", "acceptedDecelerationTrailingVehicle", "kerbLaneBias"})
+            item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
+        item<QDoubleSpinBox>(e, "discretionaryLaneChangeThreshold")->setValue(0.5);
+        item<QDoubleSpinBox>(e, "acceptedDecelerationTrailingVehicle")->setValue(1);
+        item<QDoubleSpinBox>(e, "kerbLaneBias")->setValue(1.5); confirm(e);
     });
     modal([&] { click(d, "editorVehicleClasses", "catalogAdd"); }, [](QDialog& e) {
         item<QLineEdit>(e, "editorClassName")->setText("Heavy");
@@ -112,6 +119,7 @@ int main(int argc, char** argv) {
         require(!def.externalBehaviours && !def.externalVehicleTypes, "Catalogs were not captured");
         require(def.behaviours.size() == 2 && def.behaviourNames.at(std::string(kDefault) + "-copy") == "Slow", "Behaviour copy lost");
         require(def.behaviours[1].amberDeceleration == 2.5 && def.behaviours[0].amberDeceleration == 3, "Amber deceleration not edited");
+        require(def.behaviours[1].kerbLaneBias == 1.5 && !def.behaviours[0].kerbLaneBias, "Kerb bias not edited (D215)");
         require(def.vehicleClasses.size() == 1 && def.linkBehaviourTypes.size() == 1, "Class or behaviour type lost");
         require(def.linkBehaviourTypes[0].overrides.size() == 1, "Override lost");
         item<QAction>(w, "editorUndo")->trigger();
@@ -191,9 +199,9 @@ int main(int argc, char** argv) {
         require(behaviour("w74-set").w74 && behaviour("w74-set").w74->exAdd == 1.25, "w74 key not edited");
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
         require(behaviour("w74-set").curveLateralAcceleration == 2.5, "curve key dropped by the w74 save (D213)");
-        // 34 for the curve key the w74 behaviour carries (M3.6, D212): the schema is the newest
-        // feature the file holds.
-        require(documentJson(w.history().document())["schemaVersion"] == 34, "w74 file not schema 34");
+        // 35 for the kerb bias the edited prototype copy carries (M3.4, D215), above the w74
+        // behaviour's curve key (34, D212): the schema is the newest feature the file holds.
+        require(documentJson(w.history().document())["schemaVersion"] == 35, "w74 file not schema 35");
         // Prototype -> W74: the fields start empty (no code defaults); an empty one is refused.
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {

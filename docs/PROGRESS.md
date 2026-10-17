@@ -6,6 +6,21 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — Keep-to-kerb slice 1 and the settings scope (D215, D216)
+
+The owner asked to continue, and to design which settings are project-wide and which are local.
+- **D215** implements OVERTAKING ([evidence](evidence/kerb-bias.md)).
+  - What changed: `kerbLaneBias` (schema 35); `towardKerb` compiled from lane indices; returns need
+    `T − β`, passing and undertaking `T + β`; an optional row in the behaviour editor.
+  - Tests: six rows failed first, and both mutations are caught. Shipped outputs are byte-identical.
+  - A53 measured with the bias still fails: repeats are 3.3–7.2 % up to β 2, and above that nobody
+    passes. No D95 value ships.
+- **D216** adds BEHAVIOUR_PARAMETERS §6, with six scope levels: project, catalog default, vehicle
+  type, driver behaviour (local by road through the existing behaviour assignment), network object,
+  and per vehicle. The more local level wins.
+
+`check` 166/166, Linux only.
+
 ## 2026-10-17 — B19 decided on the owner's delegation (D214, docs only)
 
 The owner answered B19 with "ช่วยตัดสินใจ" ("help decide"). D213's tiers stand, except that the
@@ -135,24 +150,6 @@ Still open, recorded in NEXT: a swap deadlock at shared dead ends that predates 
 switched-on cost (+33 % lab, +17 % four-leg, Release), owed an engine round before any shipped
 project carries lateral keys. Switched off: `check` 162/162, CLI pin byte-identical, benchmark
 unchanged. Linux only.
-
-## 2026-10-16 — Main's Windows-only UI reds (D205)
-
-NEXT's first item. The windows-desktop job had failed four UI tests since PR #170, on Windows only. Both
-causes came from the CI log ([evidence](evidence/windows-ui-red.md)):
-- **`canvas-lod-ui`**: with a rotated view, `viewScale()` came out an ulp below exactly 3 px per lane, and
-  the threshold comparison had no margin. `laneMarkingsReadable` now allows a relative 1e-9.
-- **`properties-layout-ui`** (Thai only): Windows Qt cannot break Thai words, so the 123 px word in
-  `editorMedianGap` widened the Link page's column by 3 px and no other page's. The column is now one
-  `FormColumn` shared by every form, widened to such a word when it is under a quarter wider.
-
-- **Round 2** (the branch's first Windows run): the threshold was confirmed, and a hidden form kept
-  the old column when the width changed back with the appearance fold closed. Hidden forms are now laid
-  out at once.
-
-All three now reproduce on Linux. Each row failed before its fix and fails again with the fix reverted.
-Checked on Linux offscreen: `check` 161/161, CLI pin byte-identical to main. Windows is confirmed only
-by this branch's CI run.
 
 ## Older entries
 

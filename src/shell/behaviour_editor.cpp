@@ -59,7 +59,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         prototype.maxDecelerationCooperativeBraking = b.maxDecelerationCooperativeBraking;
         prototype.amberDeceleration = b.amberDeceleration;
         prototype.discretionaryLaneChangeThreshold = prototype.acceptedDecelerationTrailingVehicle =
-            prototype.discretionaryLaneChangeHoldTime = std::nullopt;
+            prototype.discretionaryLaneChangeHoldTime = prototype.kerbLaneBias = std::nullopt;
     }
     // Prototype page: the five keys and the optional ones (absent: not used, contract §4).
     auto* prototypePage = new QWidget(pages); auto* prototypeForm = new QFormLayout(prototypePage);
@@ -78,6 +78,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
              {"discretionaryLaneChangeThreshold", &prototype.discretionaryLaneChangeThreshold},
              {"acceptedDecelerationTrailingVehicle", &prototype.acceptedDecelerationTrailingVehicle},
              {"discretionaryLaneChangeHoldTime", &prototype.discretionaryLaneChangeHoldTime},
+             {"kerbLaneBias", &prototype.kerbLaneBias}, // M3.4 (D215): needs the two above
              {"amberDeceleration", &prototype.amberDeceleration}}) // M4.2 (D147)
         optionals.push_back(optional(prototypePage, prototypeForm, key, value));
     pages->addWidget(prototypePage);
@@ -118,6 +119,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
             staged.discretionaryLaneChangeThreshold = prototype.discretionaryLaneChangeThreshold;
             staged.acceptedDecelerationTrailingVehicle = prototype.acceptedDecelerationTrailingVehicle;
             staged.discretionaryLaneChangeHoldTime = prototype.discretionaryLaneChangeHoldTime;
+            staged.kerbLaneBias = prototype.kerbLaneBias;
             staged.amberDeceleration = prototype.amberDeceleration;
             staged.w74.reset(); dialog.accept(); return;
         }

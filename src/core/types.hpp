@@ -70,7 +70,7 @@ struct DriverBehaviour {
     std::optional<double> amberDeceleration;
     PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
-    std::optional<double> curveLateralAcceleration; // M3.6 (SPEED_CONTROL.md §2, D212), m/s²
+    std::optional<double> curveLateralAcceleration, kerbLaneBias; // m/s²: M3.6 curves (D212), M3.4 kerb (OVERTAKING.md, D215)
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };
@@ -186,7 +186,7 @@ struct ConflictZone {
 // distances only, never a lane.
 struct LaneChangeSpan {
     std::string fromRouteId, toRouteId;
-    double fromStart{}, fromEnd{}, toStart{}, toEnd{};
+    double fromStart{}, fromEnd{}, toStart{}, toEnd{}; bool towardKerb{}; // D215: onto a lower lane index
     bool operator==(const LaneChangeSpan&) const = default;
 };
 // A route that cannot reach its movement's end on its own lane (a stub): a vehicle on it is held
@@ -274,7 +274,7 @@ struct RouteZone {
     bool joinsInside{}; // met the chain after its first segment
 };
 // A lateral span as the run uses it: the target route's slot and the same four distances.
-struct RouteLaneChange { std::size_t target{}; double fromStart{}, fromEnd{}, toStart{}, toEnd{}; };
+struct RouteLaneChange { std::size_t target{}; double fromStart{}, fromEnd{}, toStart{}, toEnd{}; bool towardKerb{}; };
 struct ScenarioIndex {
     std::vector<std::vector<RoutePart>> parts;
     // M3.2.8b, parallel to Scenario::routes. `remainingOfRoute` is how many changes a vehicle on the

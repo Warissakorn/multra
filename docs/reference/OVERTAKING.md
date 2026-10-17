@@ -1,6 +1,7 @@
 # Overtaking contract: keep to the kerb lane (M3.4)
 
-Written 2026-10-17 (D213). **Contract only: nothing here is implemented.** The owner settled three
+Written 2026-10-17 (D213). **Slice 1 implemented** (D215, [evidence](../evidence/kerb-bias.md)); A53 still fails,
+so no D95 value ships (§5). The owner settled three
 choices on 2026-10-17:
 - an asymmetric bias rule;
 - undertaking is allowed but costs more;
@@ -51,6 +52,9 @@ Lane 0 is the kerb lane on both driving sides (`connector_paths.cpp`; `laneCentr
 the offset by `drivingSide`). Each discretionary `LaneChangeSpan` gains a compiled `towardKerb`
 flag: the target lane's index is lower than the source's (`lane_family.cpp` `spansBetween`, which
 already requires adjacent indices).
+
+A span in a hand-written scenario file has no lane index, so its `towardKerb` defaults to false and
+the bias treats every move on it as outward.
 
 The lane index therefore already carries the driving side. The rule needs neither the lateral switch
 nor `Scenario::drivingSide`, and D178's "compiled from drivingSide" holds through the compile (hard

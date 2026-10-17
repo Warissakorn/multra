@@ -130,6 +130,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             for (const auto& key : lateralParameterKeys()) // M3.7 (D187)
                 if (const auto& v = b.lateral.*key.member) item[key.name] = *v;
             if (b.curveLateralAcceleration) item["curveLateralAcceleration"] = *b.curveLateralAcceleration; // M3.6 (D212)
+            if (b.kerbLaneBias) item["kerbLaneBias"] = *b.kerbLaneBias; // M3.4 (D215)
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model

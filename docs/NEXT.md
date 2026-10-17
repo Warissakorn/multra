@@ -16,6 +16,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   corrected from switched-on runs (window without the body length; a change under way holds its target
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
+- **Keep-to-kerb slice 1 is in** (D215, [evidence](evidence/kerb-bias.md)): `kerbLaneBias` (schema 35)
+  with the D95 pair. A53 still fails with any bias, so D95 stays off in shipped data.
+- **Settings scope designed** (D216, BEHAVIOUR_PARAMETERS §6): project, catalog default, vehicle type,
+  driver behaviour (local by road), network object, per vehicle.
 - **D213 (docs only):** [BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) proposes which
   behaviour values are settable now, should become optional keys, or stay fixed; decided on the
   owner's delegation with tier B ordered (D214). The [OVERTAKING](reference/OVERTAKING.md) keep-to-kerb contract is written
@@ -44,25 +48,20 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — implement keep-to-kerb, D213 slice 1 (rows first)
+## Next session — the behaviour-key exposure slice
 
 A session told only to "continue" takes item 1:
-1. **Implement [OVERTAKING](reference/OVERTAKING.md) §2–§4.** BA65 and BA67 must fail first. Then:
-   - `towardKerb` from the lane indices in `lane_family.cpp`. `types.hpp` is at 499 of 500 lines, so
-     put the field on an existing line;
-   - the rule in `lanes.cpp`'s discretionary pass;
-   - the validator and the codec at schema 35;
-   - one optional row in the behaviour editor.
-
-   BA64 must hold, byte-identical. Measure A53 with a bias (BA69) and record it; ship no value.
-2. **The behaviour-key exposure slice** (the owner's wish, BEHAVIOUR_PARAMETERS §5). Every optional
-   key goes in the behaviour editor and the Lab panel as off-until-ticked rows: perception, lateral,
-   curve and kerb bias. Discretionary keys and kerb bias in the Lab wait on the circuit lane-change
-   wrap rule.
-3. Tier-B items in BEHAVIOUR_PARAMETERS §3's order (D214), each contract-first: next after kerb bias is
-   B-2, the give-way/amber commitment deceleration.
-   After those comes the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b
-   W99 and M3.9.
+1. **Exposure slice** (the owner's wish; BEHAVIOUR_PARAMETERS §5–§6). Every optional level-4 key is an
+   off-until-ticked row in the behaviour editor (perception 5, lateral 3 as one all-or-none group, and
+   curve), and in the Behaviour Lab panel where a run can use it (curve, perception, lateral; not the
+   D95 keys or the kerb bias, which wait on the circuit lane-change wrap rule). UI rows first, in
+   `behaviour-library-ui` and the Lab UI test; Apply writes the keys back; a hidden key is never
+   dropped (the D213 lesson).
+2. Tier B in BEHAVIOUR_PARAMETERS §3's order (D214), each contract-first: **B-2 the give-way/amber
+   commitment deceleration** next, as a level-4 behaviour key (D216). Then B-3, B-6, B-5, B-8, B-7,
+   B-4, B-9.
+3. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
+   M3.9.
 4. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);

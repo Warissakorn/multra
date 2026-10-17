@@ -279,6 +279,13 @@ std::vector<ValidationIssue> laneChangeIssues(const Scenario& s) {
             issues.push_back({"LANE_CHANGE_DEAD_END_UNREACHABLE", "routeDeadEnds[" + std::to_string(i) + "]"});
     return issues;
 }
+std::vector<ValidationIssue> kerbParameterIssues(const DriverBehaviour& b, const std::string& path) {
+    if (!b.kerbLaneBias) return {};
+    const double bias = *b.kerbLaneBias;
+    if (!(std::isfinite(bias) && bias > 0 && bias <= 5)) return {{"INVALID_BEHAVIOUR_PARAMETER", path + ".kerbLaneBias"}};
+    if (!b.discretionaryLaneChangeThreshold) return {{"INCOMPLETE_DISCRETIONARY_BEHAVIOUR", path + ".kerbLaneBias"}};
+    return {};
+}
 void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     index.laneChanges = !s.laneChanges.empty();
     index.laneChangesOfRoute.assign(s.routes.size(), {});
@@ -291,7 +298,7 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     for (const auto& span : s.laneChanges) {
         const auto from = slotOf(s, span.fromRouteId), to = slotOf(s, span.toRouteId);
         if (from >= s.routes.size() || to >= s.routes.size()) continue;
-        const RouteLaneChange change{to, span.fromStart, span.fromEnd, span.toStart, span.toEnd};
+        const RouteLaneChange change{to, span.fromStart, span.fromEnd, span.toStart, span.toEnd, span.towardKerb};
         // Full to full is a discretionary span (D95); the mandatory paths never see one.
         if (!std::isfinite(index.deadEndOfRoute[from]) && !std::isfinite(index.deadEndOfRoute[to])) {
             index.discretionaryOfRoute[from].push_back(change); anyDiscretionary = true;
@@ -377,8 +384,12 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         };
         const auto& sight = behaviour.perception;
         const auto own = followerFilter(s, index, index.parts[route], front, type.width, vehicle.lateral, behaviour, vehicle.speed);
-        const double here = acceleration(around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight,
-                                                &own));
+        const auto hereNear = around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight, &own);
+        const double here = acceleration(hereNear);
+        // D215 (OVERTAKING §4): with a kerb bias, a return toward the kerb while free on its own lane
+        // needs the threshold less the bias; passing and undertaking need it plus the bias.
+        const bool free = behaviour.kerbLaneBias &&
+            follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, hereNear.leader).mode == FollowingMode::free;
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot
@@ -388,7 +399,8 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0, behaviour, vehicle.speed);
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight, &sideways);
             const double gain = acceleration(near) - here;
-            if (gain < *behaviour.discretionaryLaneChangeThreshold) continue;
+            const double bias = behaviour.kerbLaneBias.value_or(0);
+            if (gain < *behaviour.discretionaryLaneChangeThreshold + (change.towardKerb && free ? -bias : bias)) continue;
             // §2's rules 3-5, plus the trailing vehicle at no worse than the CHANGER's accepted value.
             const auto trailing = safeAt(s, vehicles, refs, v, near);
             if (!trailing || *trailing < -*behaviour.acceptedDecelerationTrailingVehicle) continue;
