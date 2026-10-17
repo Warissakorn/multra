@@ -2,6 +2,22 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-17 — Behaviour configurability and the keep-to-kerb contract (D213)
+
+NEXT's item, M3.4 overtaking with the driving side. The owner chose an asymmetric bias, with
+undertaking allowed but costlier and lane preference by type later. They then widened the question:
+driving behaviour should be configurable for other countries, with judgement on what should be
+settable.
+- [BEHAVIOUR_PARAMETERS](../reference/BEHAVIOUR_PARAMETERS.md) puts every value that shapes behaviour
+  into a tier: settable now (A), should become an optional key (B, ten items), or kept fixed (C).
+  Regions are catalog data. This is a proposal (OWNER_SITTING B19).
+- [OVERTAKING](../reference/OVERTAKING.md) defines `kerbLaneBias`. A return needs `g ≥ T − β`; passing
+  and undertaking need `g ≥ T + β`. The kerb side comes from the lane index. Rows BA64–BA71 are
+  written; no engine code changed.
+- The inventory found that D212 had left a real bug: the behaviour editor's W74 save dropped
+  `curveLateralAcceleration`. The UI test failed first and the one-line fix is in. `check` passes,
+  Linux only.
+
 ## 2026-10-17 — M3.6 slice 1: curve speed (D212)
 
 NEXT's item: SPEED_CONTROL §2–§5 (D211). Rows BA56–BA63 came first; BA57, BA58 and BA62 failed

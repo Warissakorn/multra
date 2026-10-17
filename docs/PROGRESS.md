@@ -6,6 +6,15 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-5 desired-speed distribution contract (D228, docs only)
+
+NEXT's item after D227, read against ROADMAP M2.1 ("distributions") and tier B
+([SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md)).
+- **The owner's choices:** a piecewise-linear cumulative curve (Vissim's form), decisions and areas
+  still linear on the driver's share, set on the vehicle type.
+- **The contract:** optional `desiredSpeed.curve` at schema 40, ends equal to `min`/`max`; the same
+  single draw inverted through it, so files without a curve stay byte-identical; rows BA110–BA116.
+
 ## 2026-10-17 — D223's red-onset clamp traced (D227, no code change)
 
 NEXT's item ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
@@ -152,22 +161,6 @@ The owner answered B19 with "ช่วยตัดสินใจ" ("help decide
 by its effect on Thai study outputs: kerb bias, commitment deceleration, merge deceleration, speed
 limits, speed distributions, Stop seconds, lane preference by type, driver-factor spread, then
 red-light running ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) §3). No code changed.
-
-## 2026-10-17 — Behaviour configurability and the keep-to-kerb contract (D213)
-
-NEXT's item, M3.4 overtaking with the driving side. The owner chose an asymmetric bias, with
-undertaking allowed but costlier and lane preference by type later. They then widened the question:
-driving behaviour should be configurable for other countries, with judgement on what should be
-settable.
-- [BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) puts every value that shapes behaviour
-  into a tier: settable now (A), should become an optional key (B, ten items), or kept fixed (C).
-  Regions are catalog data. This is a proposal (OWNER_SITTING B19).
-- [OVERTAKING](reference/OVERTAKING.md) defines `kerbLaneBias`. A return needs `g ≥ T − β`; passing
-  and undertaking need `g ≥ T + β`. The kerb side comes from the lane index. Rows BA64–BA71 are
-  written; no engine code changed.
-- The inventory found that D212 had left a real bug: the behaviour editor's W74 save dropped
-  `curveLateralAcceleration`. The UI test failed first and the one-line fix is in. `check` passes,
-  Linux only.
 
 ## Older entries
 

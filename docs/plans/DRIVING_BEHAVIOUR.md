@@ -178,6 +178,13 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA107 | Codec at schema 39 | Round-trips; faults at their paths; overlap refused; 38 refused |
 | BA108 | Commands | Prune, split with lanes, reverse and lane-drop guards |
 | BA109 | A vehicle held by the curve bound ([SPEED_CONTROL §4](../reference/SPEED_CONTROL.md), D226) | Each tick adds at most the trapezoid of its speeds |
+| BA110 | No desired-speed curve ([SPEED_DISTRIBUTION](../reference/SPEED_DISTRIBUTION.md), D228) | Draws as `min + u·(max − min)`; shipped outputs byte-identical |
+| BA111 | Two-point curve | Bit-identical to no curve |
+| BA112 | Three-point curve | Empirical share at the middle point within 0.01; random stream unchanged |
+| BA113 | Curve and a decision | The share is mapped linearly into the decision's range |
+| BA114 | Live retune of a curved range | Each vehicle keeps its share |
+| BA115 | Codec at schema 40 | Round-trips; faults at their paths; 39 refused |
+| BA116 | Type dialog | Curve written with its ends; untick removes; one Undo step |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

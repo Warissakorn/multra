@@ -11,9 +11,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
-- **PR #176** carries D207–D227 to `main` (#175 merged D206; `main` merged back in). Its Windows
+- **PR #176** carries D207–D228 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
+- **B-5 contract written** (D228, [SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md)): a piecewise
+  cumulative desired-speed curve on the vehicle type, schema 40, rows BA110–BA116; implementation next.
 - **D227 (no code change):** D223's seed-47 red-onset clamp is AMBER §1's red rule with a slow
   arrival; the prototype's braking softens near the line ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
   A braking floor was measured and not adopted (ENGINEERING_NOTES).
@@ -73,12 +75,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — tier B
+## Next session — B-5 implementation, then tier B
 
-A session told only to "continue" takes tier B in order: B-5, B-8, B-7, B-4, B-9.
-1. **B-5, desired-speed distribution family** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md),
-   tier B row 5). Today it is uniform only (`demand.cpp`). Contract first: the family set, where
-   it lives (vehicle type, D216 scope 3), how D222's quantile maps through it, and the schema
-   step (40). Ask the owner which families to ship.
-2. The red-onset clamp stays recorded (D227). Reopen it only if the owner wants slow-approach
+A session told only to "continue" takes item 1:
+1. **Implement [SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md)** (rows BA110–BA116), in its §6 order:
+   engine rows first against a stub, then codec at schema 40, then the type dialog.
+2. Then tier B in order: B-8 (stop-sign service time), B-7, B-4, B-9.
+3. The red-onset clamp stays recorded (D227). Reopen it only if the owner wants slow-approach
    clamps gone; the candidate is in ENGINEERING_NOTES.
