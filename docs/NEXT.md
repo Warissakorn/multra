@@ -16,9 +16,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   corrected from switched-on runs (window without the body length; a change under way holds its target
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
-- **M3.6 curve speed contract is written** (D211, [SPEED_CONTROL](reference/SPEED_CONTROL.md),
-  BA56–BA63, docs only): the behaviour key `curveLateralAcceleration`, the Connector radius and the
-  bound `sqrt(a·R)`, anticipated at comfortable deceleration. Nothing is implemented.
+- **M3.6 slice 1 is in** (D212, [evidence](evidence/curve-speed.md), BA56–BA63): with
+  `curveLateralAcceleration` on a behaviour (schema 34), vehicles slow for a Connector's curve to
+  `sqrt(a·R)`, anticipated at comfortable deceleration. No value ships (D178), so every shipped run is
+  byte-identical. D212 also recovered D210's switched-off cost (`closestVehicle` inline again).
 - **A straddler follows the lanes it covers** (D210, [evidence](evidence/straddler-leaders.md), BA55):
   `closestVehicle` (now `src/core/leaders.cpp`) and `perceivedLeaders` also scan the lanes a body
   covers, through each lane's only successor. Switched off byte-identical; switched on +6.0 % / +4.8 %
@@ -39,21 +40,19 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M3.6 slice 1: curve speed (rows first)
+## Next session — M3.4 overtaking with driving side (contract first)
 
-Implement [SPEED_CONTROL](reference/SPEED_CONTROL.md) §2–§5 (D211). A session told only to "continue"
+M3.6 slice 1 is in (D212). What remains of the review's §5 order. A session told only to "continue"
 takes item 1:
-1. **Rows first.** BA57 must fail first, on a 90° Connector of about 15 m radius; assert the compiled
-   radius before anything else. Then:
-   - the codec, with schema 34 (BA63);
-   - the shared circumradius helper (`connectorShapeIssues` keeps its result);
-   - the radius vector compiled only while the switch is on;
-   - the bound in a new `src/core/speed_control.cpp`, called from the cap in `simulation.cpp` (477 of
-     500 lines).
-   BA56 must hold, byte-identical. Measure Ir on four-leg-signalised switched on (§7, ≤ 5 %).
-2. After it, the rest of the review's §5 order: M3.4 overtaking with driving side, M3.8 motorcycles,
-   M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178). The later M3.6 slices (areas, decisions, Links,
-   acceleration, grades) each start with a contract section.
+1. **M3.4 overtaking with driving side** (ROADMAP M3.4; review §3 F, D177/D178): keep-left bias on
+   left-hand-traffic networks in a behaviour key. It needs `drivingSide` in core, which is compiled
+   only with the lateral switch today (LATERAL §3). Write its contract and failure-first rows first,
+   as D204/D211 did, and ask the owner any behaviour choice it leaves open.
+2. After it: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and M3.9. The later M3.6 slices (areas,
+   decisions, Link curvature, acceleration, grades) each start with a contract section
+   (SPEED_CONTROL §1).
+3. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209 has no
+   single source in the profile; find it before more engine work lands on it.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.

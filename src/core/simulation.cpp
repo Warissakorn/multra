@@ -10,6 +10,7 @@
 #include "perception.hpp"
 #include "routing.hpp"
 #include "routes.hpp"
+#include "speed_control.hpp"
 #include "validate.hpp"
 #include <cmath>
 #include <limits>
@@ -358,12 +359,13 @@ SimState stepSimulation(SimState&& state, double dt) {
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
         }
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
-        const bool aboveTarget = vehicle.speed > vehicle.desiredSpeed;
+        const double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
+        const bool aboveTarget = vehicle.speed > target;
         if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(
-            -type.comfortableDeceleration, (vehicle.desiredSpeed - vehicle.speed) / dt));
+            -type.comfortableDeceleration, (target - vehicle.speed) / dt));
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];
-        move = {motion.distance, aboveTarget ? motion.speed : std::min(vehicle.desiredSpeed, motion.speed), following.acceleration, following.mode, false,
+        move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false,
                 following.w74};
         if (move.distance > allowedDistance) {
             move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt;

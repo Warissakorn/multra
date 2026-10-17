@@ -43,6 +43,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [lateral-perf.md](lateral-perf.md) | Switched-on engine round: lateral cost back inside LATERAL §11 — 2026-10-16 | D206, D209 |
 | [lane-change-gap.md](lane-change-gap.md) | Mid-change gap loss: waiting at the line — 2026-10-16 | D208 |
 | [straddler-leaders.md](straddler-leaders.md) | A straddler follows the other lane's leaders — 2026-10-16 | D210 |
+| [curve-speed.md](curve-speed.md) | M3.6 slice 1: curve speed — 2026-10-17 | D211, D212 |
 | [lane-swap.md](lane-swap.md) | Swapping pair at shared dead ends: the rear one yields — 2026-10-16 | D207 |
 | [lane-change-duration.md](lane-change-duration.md) | M3.4 slice 1: lane-change duration evidence — 2026-10-16 | D204, D206 |
 | [lateral-display.md](lateral-display.md) | M3.7 slice 4: lateral display evidence — 2026-10-16 | D180, D203 |

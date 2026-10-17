@@ -2,6 +2,26 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — M3.7 slice 3b: zone occupancy by span (D202)
+
+The owner chose the head of the engine queue. `src/core/conflicts.*`, `lateral.*`, `lateral_types.hpp`.
+- **What a straddler's other-lane span does to a zone** (switch on only): inside a major area it
+  blocks, on the chain's first segment it is anticipated by headway/gapTime (one `blockMajor` helper
+  shared with route positions), inside a minor area it holds, and in phase 2 it sweeps a major area.
+  `LateralIndex::zoneSides` gives each segment's zone sides once per run.
+- **Not done, on purpose:** the straddler is not held at the other lane's zone. That needs the zone
+  mapped into its own route's distances; no product writer sets targets until M3.4, so it waits for
+  M3.4's evidence rather than being built blind (D202's failure condition names it).
+- `zoneHold` code is unchanged; `summarizeZones` keeps a 4-argument overload that builds spans only
+  with the switch on, so the ten lane-based test callers did not change. `simulation.cpp` stays at
+  500 lines: the step passes its existing spans on the same lines.
+- Rows: BA47 (6 tests, `lateralzone`), each with its forcing asserted and a mutation that fails it.
+
+Checked on Linux headless: `ctest` 105/105, `check` green, CLI pin unchanged and the Release CLI
+output byte-identical to main. Release timings in the [evidence](../evidence/lateral-zones.md): switch
+off inside noise; switched-on four-leg +7 % on a noisy container, below D164's 10 %. No desktop or
+Windows run.
+
 ## 2026-10-16 — Owner sitting triage (D201, docs only)
 
 The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.

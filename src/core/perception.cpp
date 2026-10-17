@@ -91,7 +91,7 @@ std::vector<PerceivedLeader> perceivedLeaders(const Vehicle& vehicle, const std:
         if (found.size() == count && nearestHere >= found.back().leader.gap) break;
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
-            // The same skips and gap as closestVehicle (leaders.cpp).
+            // The same skips and gap as closestVehicle (leaders.hpp).
             if (span.vehicleId == vehicle.id || part.start + span.front < vehicle.distance - 1e-9 ||
                 !lateralCounts(lateral, span)) continue; // LATERAL §6
             const double gap = part.start + span.rear - vehicle.distance;

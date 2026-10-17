@@ -76,6 +76,10 @@ Wall time compares five interleaved pairs, both binaries from one build director
 - `lane-change-lab`: 1813 → 1901 ms (+4.9 %).
 - `four-leg-signalised`: 1211 → 1232 ms, within noise; the ranges overlap.
 
+**Switched off, not measured here:** moving `closestVehicle` out of line cost the switched-off
+four-leg run 1.7 % Ir (879 → 894 M), against LATERAL §11. D212 found it and recovered most of it
+([curve-speed](curve-speed.md), "Performance").
+
 ## Not covered here
 
 - The walk along the covered lane follows a segment's only successor. At a fork it stops, because

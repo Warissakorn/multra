@@ -273,6 +273,9 @@ std::vector<ValidationIssue> priorityDefaultsIssues(const Network&, const Priori
 // Advisory only, and deliberately not part of connectorRuntimeIssues, which blocks Run: a turn
 // tighter than the Connector's own half-width is undrivable but still a legal drawing.
 std::vector<ValidationIssue> connectorShapeIssues(const Network&);
+// The smallest circumradius over consecutive vertex triples (infinite when every triple is
+// collinear or there are fewer than three): TIGHT_CONNECTOR_RADIUS's measure and M3.6's (D212).
+double minimumCircumradius(const std::vector<Point>& polyline);
 // The default shape between two lane attachments: the two attachments and
 // kDefaultIntermediatePoints intermediate points along the arc-like cubic that joins them,
 // aligned with each lane's local travel direction. A Connector is drawn straight between its

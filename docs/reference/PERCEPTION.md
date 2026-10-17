@@ -35,7 +35,7 @@ validated, and the not-yet-validated marker stays.
 
 ## 2. Two leaders, never confused
 
-Today one search (`closestVehicle`, `src/core/leaders.cpp`) returns the nearest vehicle
+Today one search (`closestVehicle`, `src/core/leaders.hpp`) returns the nearest vehicle
 ahead at any distance, and the same leader feeds the acceleration, the hard cap and zone
 admission. This contract splits the two roles:
 

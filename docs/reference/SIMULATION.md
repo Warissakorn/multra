@@ -346,9 +346,9 @@ this does not introduce a between-lanes engine state.
    ([W74 §6](W74.md#6-composition-with-the-shipped-tick), D138) for a `w74` behaviour — with perceived
    leaders and multi-anticipation as [PERCEPTION](PERCEPTION.md) defines. With a nonzero reaction
    delay, queue that decision and apply the oldest through current type bounds and D105. Then
-   ballistic integration (no negative speed), with speed capped at `desiredSpeed`. If the current
-   speed is above the target (after a live retune), brake toward it at `comfortableDeceleration` in
-   free flow, both models, instead of snapping speed; the last tick lands on the target (D191).
+   ballistic integration (no negative speed), speed capped at the target (`desiredSpeed`, or the lower
+   curve bound of [SPEED_CONTROL](SPEED_CONTROL.md) §4, D212). Above it, brake toward it at
+   `comfortableDeceleration` in free flow, both models; the last tick lands on the target (D191).
 5. A move beyond `allowedDistance` is cut to it and stops: `safety-clamp`.
 6. A vehicle resting at a Stop line is held at zero (`restsAtStop`), which is not a clamp.
 7. Phase 2, only with zones: `resolveRequests` (swept check, shared receiving space) can only

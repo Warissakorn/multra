@@ -314,6 +314,13 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
         p.*key.member = value.get<double>();
     }
 }
+// M3.6 (SPEED_CONTROL.md §2, D212): the curve key, the same way; its range is the validator's.
+static void readCurve(const Json& b, const std::string& path, DriverBehaviour& behaviour) {
+    if (!b.contains("curveLateralAcceleration")) return;
+    if (!b.at("curveLateralAcceleration").is_number())
+        throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + ".curveLateralAcceleration"}});
+    behaviour.curveLateralAcceleration = b.at("curveLateralAcceleration").get<double>();
+}
 // M3.7 (LATERAL.md §9, D187): the same for the lateral keys; completeness and ranges are the validator's.
 static void readLateral(const Json& b, const std::string& path, LateralParameters& p) {
     for (const auto& key : lateralParameterKeys()) {
@@ -345,7 +352,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         if (b.contains("maxDecelerationCooperativeBraking"))
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
         if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration"); // M4.2
-        readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral);
+        readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral); readCurve(b, path, behaviour);
         return behaviour;
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
@@ -367,7 +374,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         behaviour.discretionaryLaneChangeHoldTime = field<double>(b, "discretionaryLaneChangeHoldTime");
     // Optional (M4.2, D147): absent, amber holds like red.
     if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration");
-    readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral);
+    readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral); readCurve(b, path, behaviour);
     return behaviour;
 }
 VehicleType parseVehicleType(const Json& t) {

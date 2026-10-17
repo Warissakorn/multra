@@ -11,7 +11,7 @@
 
 namespace trafficsim {
 // Runtime contract: metres, seconds, m/s and m/s². No UI or file-format types.
-struct Segment { std::string id; double length{}; std::vector<std::string> next; };
+struct Segment { std::string id; double length{}; std::vector<std::string> next; double curvature{}; }; // 1/m (D212): 0 straight
 struct Route {
     std::string id; std::vector<std::string> segmentIds;
     // D165 (BEHAVIOUR_LAB.md §1.1): the route closes on itself and its vehicles never arrive.
@@ -68,10 +68,9 @@ struct DriverBehaviour {
     // before the line at this deceleration (m/s², positive). Absent, amber holds like red (D36).
     // After w74, so every existing brace-initialisation keeps its meaning.
     std::optional<double> amberDeceleration;
-    // M3.5 (PERCEPTION.md §6): stored and validated since D181, read by no motion yet. Last, so
-    // every existing brace-initialisation keeps its meaning.
-    PerceptionParameters perception;
-    LateralParameters lateral; // M3.7 (LATERAL.md §9, D187): stored and validated only, last again
+    PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
+    LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
+    std::optional<double> curveLateralAcceleration; // M3.6 (SPEED_CONTROL.md §2, D212), m/s²
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };

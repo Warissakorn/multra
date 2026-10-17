@@ -224,7 +224,7 @@ uncertain.
 
 | Consumer | Change when the switch is on |
 |---|---|
-| `closestVehicle` (`leaders.cpp`) and PERCEPTION's search | Lateral filter (§6); spans of straddling vehicles appear on both lanes; a straddler also searches the lanes it covers (D210) |
+| `closestVehicle` (`leaders.hpp`) and PERCEPTION's search | Lateral filter (§6); spans of straddling vehicles appear on both lanes; a straddler also searches the lanes it covers (D210) |
 | `around` / `safeAt` (`lanes.cpp:46`, `:83`) | Lateral filter; alongside per §6 |
 | `courtesyHolds` (`lanes.cpp:324`) | Unchanged logic; `own = false` spans are skipped (D188) |
 | Priority rules (give-way scan in `stepSimulation`) | A straddler's span on the conflict segment holds the minor approach |

@@ -1,6 +1,7 @@
 # Speed control contract: curve speed (M3.6)
 
-Written 2026-10-16 (D211). **Contract only: nothing here is implemented.** The owner settled three
+Written 2026-10-16 (D211). **Slice 1 implemented** (D212, [evidence](../evidence/curve-speed.md)), with §3's
+storage and §4's distance corrected by it. The owner settled three
 choices on 2026-10-16:
 - curve speed from Connector geometry comes first, and reduced-speed areas later (§1);
 - the lateral acceleration is a driver-behaviour key (§2);
@@ -57,13 +58,14 @@ there.
 ## 3. The radius
 
 - It is compiled per Connector lane-path segment, **only while the switch is on**, in the same way
-  `segmentCrossSections` are compiled only for the lateral layer. It is stored in a new `Scenario`
-  vector parallel to `segments`: absent or empty when the switch is off, and infinite for Link lane
-  sections in this slice.
+  `segmentCrossSections` are compiled only for the lateral layer. It is stored as **curvature**
+  `Segment::curvature` = 1/R (D212: a field cannot fall out of step with the segment list, and 0 needs
+  no infinity). It is 0 (no bound) when the switch is off, for Link lane sections in this slice, and
+  for a straight path.
 - A path's radius is **the minimum circumradius over consecutive vertex triples of its compiled
   polyline** (`connectorPaths`). The formula is `|ab|·|bd|·|ad| / (4·area)`, the same as the
   `TIGHT_CONNECTOR_RADIUS` advisory in `connectorShapeIssues` (`src/model/network/compile.cpp`), so
-  there is one radius definition (hard rule 3). It lives in one shared helper.
+  there is one radius definition (hard rule 3): `minimumCircumradius` (`network.hpp`).
   - A collinear triple (area ≤ 1e-12) gives an infinite radius.
   - A path with fewer than three vertices has no bound.
 - **Stated simplification.** Vertices on a circular arc give its true radius. For any other shape, the
@@ -78,7 +80,9 @@ there.
 - A vehicle's speed target is **`target = min(desiredSpeed, bound)`**. `bound` is the minimum, over
   the segments with a finite radius ahead on its own route parts (the one its front is on included),
   of `sqrt(vC² + 2 · b · d)`, where:
-  - `d` is the distance from its front to that segment's start, 0 once its front is on it;
+  - `d` is the distance to that segment's start from **where the front will be after this tick at
+    its current speed** (`front + speed·dt`), 0 once that place is on it (D212: measured from the
+    front's present place, a capped vehicle lags the profile by a tick and enters above `vC`);
   - `b` is its type's `comfortableDeceleration`.
 
   A vehicle that keeps to the target therefore reaches every curve at or below the curve's speed,
@@ -106,7 +110,7 @@ there.
 
 | Site | Change |
 |---|---|
-| `simulation.cpp` cap (the `aboveTarget` lines) | Reads `target` instead of `desiredSpeed`. The file is at 477 of 500 lines, so the bound lives in a new `src/core/speed_control.cpp` and the call adds one line |
+| `simulation.cpp` cap (the `aboveTarget` lines) | Reads `target` instead of `desiredSpeed`; `speedTarget` (`src/core/speed_control.cpp`) is called only when the behaviour carries the key |
 | `src/model/network/compile.cpp` | Compiles the radius vector while some behaviour carries the key; the shared circumradius helper is also used by `connectorShapeIssues` |
 | Codec: `parse.cpp`, `definition.cpp`, `behaviour_library.cpp`; `document.cpp` schema chain | The key; schema 34 |
 | `freeFlowTime`, sections, discharge, outputs | None (§5) |

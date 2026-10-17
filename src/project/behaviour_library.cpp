@@ -3,6 +3,7 @@
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
+#include "../core/speed_control.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <map>
@@ -93,6 +94,19 @@ void rejectPerceptionBefore32(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
+// M3.6 (D212): schema 34 exactly when an owned behaviour carries the curve key.
+bool ownsCurveBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours && curveSwitch(d.definition->behaviours);
+}
+void rejectCurveBefore34(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("curveLateralAcceleration"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".curveLateralAcceleration"}});
+}
 // M3.7 (D187): schema 33 exactly when an owned behaviour carries a lateral key.
 bool ownsLateralBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours && lateralSwitch(d.definition->behaviours);
@@ -127,7 +141,8 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
                 static constexpr const char* common[] = {"id", "name", "model", "standstillDistance",
                     "additiveSafetyDistance", "multiplicativeSafetyDistance", "followingTime", "speedThreshold",
                     "maxDecelerationCooperativeBraking", "discretionaryLaneChangeThreshold",
-                    "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration"};
+                    "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration",
+                    "curveLateralAcceleration"}; // M3.6, both models
                 const auto& w74 = w74ParameterKeys();
                 const auto& perception = perceptionParameterKeys(); // M3.5, both models
                 const auto& lateral = lateralParameterKeys(); // M3.7, both models
