@@ -80,6 +80,7 @@ Json checkpointJson(const SimState& state) {
             j["desiredQuantile"] = vehicle.desiredQuantile;
             j["freeFlowSoFar"] = vehicle.freeFlowSoFar; j["freeFlowFrom"] = vehicle.freeFlowFrom;
         }
+        if (vehicle.areaSpeed > 0) j["areaSpeed"] = vehicle.areaSpeed; // B-6 §7 (D225): only inside an area
         vehicles.push_back(std::move(j));
     }
     for (std::size_t i = 0; i < state.inputs.size(); ++i) {

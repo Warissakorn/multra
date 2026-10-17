@@ -38,7 +38,7 @@ QString metres(double value) { return editorDesign::formatValue(value,2); }
 const std::pair<const char*,std::vector<std::string>> objectGroups[]={
     {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable"}},
     {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
-    {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorZoneTable","editorOdTable"}},
+    {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable"}},
     {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable"}},
     {"editorObjectGroupResults",{"editorResultsTable"}},
     {"editorObjectGroupProblems",{"editorProblemTable"}}};

@@ -7,6 +7,7 @@
 #include "demand_time_types.hpp"
 #include "counted_volumes.hpp"
 #include "speed_decisions.hpp"
+#include "speed_areas.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -341,6 +342,7 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     // here it borrows an embedded type, if the document carries any.
     if (auto decisions = routingDecisionIssues(*d.definition); !decisions.empty()) throw ValidationError(std::move(decisions));
     if (auto speeds = speedDecisionSpecIssues(d.network, *d.definition); !speeds.empty()) throw ValidationError(std::move(speeds)); // B-6
+    if (auto areas = speedAreaSpecIssues(d.network, *d.definition); !areas.empty()) throw ValidationError(std::move(areas)); // B-6 §7
     if (auto signals = signalControlIssues(d.network, *d.definition); !signals.empty()) throw ValidationError(std::move(signals));
     // Routeless inputs (M2.1.1) are walked here too; one whose walk fails is left out and named
     // by routelessIssues on Run, so an edit to the network is never refused because of it.

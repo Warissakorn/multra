@@ -47,6 +47,8 @@ void checkRemovedLanes(const ProjectDocument& d,const std::set<std::string>& rem
     }
     for (const auto& h : d.network.signalHeads)
         if (removed.contains(h.lane.laneId)) throw std::invalid_argument("EDIT_REFERENCED_LANE");
+    if (d.definition) for (const auto& area : d.definition->reducedSpeedAreas) // B-6 §7: a lane an area names
+        for (const auto& lane : area.laneIds) if (removed.contains(lane)) throw std::invalid_argument("EDIT_REFERENCED_LANE");
     for (const auto& c : d.network.queueCounters) // M3.2.6b: a measurement point holds its lane as a head does
         for (const auto& l : c.lines)
             if (l.point && removed.contains(l.point->path.connectorId.empty() ? l.point->path.laneId : std::string{}))

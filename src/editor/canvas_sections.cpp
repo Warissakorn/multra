@@ -2,6 +2,9 @@
 #include "canvas_style.hpp"
 #include "../model/network/right_of_way.hpp"
 #include <QGraphicsLineItem>
+#include <QGraphicsPathItem>
+#include <QPainterPath>
+#include <algorithm>
 #include <QMouseEvent>
 #include <QPen>
 
@@ -63,6 +66,25 @@ void EditorCanvas::drawSections() {
                     auto* item = scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);
                     item->setZValue(link.level * 100. + 11.6);
                     item->setData(0, QStringLiteral("speed-decision")); item->setData(1, QString::fromStdString(d.id));
+                }
+            }
+    // B-6 §7 (D225): each reduced-speed area shaded along each lane it covers, over its stretch.
+    if (document_->definition)
+        for (const auto& a : document_->definition->reducedSpeedAreas)
+            for (const auto& link : n.links) {
+                if (link.id != a.linkId || !levelVisible(link.level)) continue;
+                for (const auto& lane : link.lanes) {
+                    if (!a.laneIds.empty() && std::find(a.laneIds.begin(), a.laneIds.end(), lane.id) == a.laneIds.end()) continue;
+                    const auto centre = laneGeometry(link, lane.id, n.drivingSide);
+                    const auto span = polylineSpan(centre, matchedStation(link.geometry, centre, a.from), matchedStation(link.geometry, centre, a.to));
+                    if (span.size() < 2) continue;
+                    QPainterPath path(QPointF(span.front().x, span.front().y));
+                    for (std::size_t i = 1; i < span.size(); ++i) path.lineTo(span[i].x, span[i].y);
+                    auto colour = canvasStyle::advisory(); colour.setAlpha(70);
+                    QPen pen(colour, lane.width * 0.8); pen.setCapStyle(Qt::FlatCap); pen.setJoinStyle(Qt::RoundJoin);
+                    auto* item = scene_.addPath(path, pen);
+                    item->setZValue(link.level * 100. + 11.5);
+                    item->setData(0, QStringLiteral("speed-area")); item->setData(1, QString::fromStdString(a.id));
                 }
             }
     if (tool_ == Tool::section && sectionStart_) mark(*sectionStart_, {}, "start", true);

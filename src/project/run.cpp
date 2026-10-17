@@ -1,5 +1,6 @@
 #include "run.hpp"
 #include "speed_decisions.hpp"
+#include "speed_areas.hpp"
 #include "input_manifest.hpp"
 #include "diagnostics.hpp"
 #include "behaviour_library.hpp"
@@ -74,6 +75,7 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     CompiledRouteOrigins routeOrigins;
     auto scenario=compileScenario(d.network,definition,walks.builtSections(),&routeOrigins);
     scenario.speedDecisions=compileSpeedDecisions(d.network,authored); // B-6 (D223)
+    scenario.reducedSpeedAreas=compileSpeedAreas(d.network,authored); // B-6 §7 (D225)
     // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.
     if(!d.zones.parkingLots.empty()) {
         compileParkingLots(d,authored,scenario,routeOrigins,data);

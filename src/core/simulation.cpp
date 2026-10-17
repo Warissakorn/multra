@@ -12,6 +12,7 @@
 #include "routes.hpp"
 #include "speed_control.hpp"
 #include "speed_decision.hpp"
+#include "speed_area.hpp"
 #include "validate.hpp"
 #include <cmath>
 #include <limits>
@@ -90,6 +91,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         throw std::invalid_argument("state.inputs must be parallel to scenario.inputs");
     if (state.tick >= totalTicks(*state.scenario)) return std::move(state);
     const auto& scenario = *state.scenario;
+    const bool speedAreas = !scenario.reducedSpeedAreas.empty(); // B-6 §7 (D225): read once, not per vehicle
     // States built by createSimulation always carry an index; tolerate a hand-built one.
     const auto indexOwner = state.index ? state.index
                                         : std::make_shared<const ScenarioIndex>(buildScenarioIndex(scenario));
@@ -360,10 +362,17 @@ SimState stepSimulation(SimState&& state, double dt) {
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
         }
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
-        const double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
+        double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
+        double braking = type.comfortableDeceleration;
+        if (speedAreas) [[unlikely]] { // B-6 §7 (D225): a binding area brakes at its own deceleration and,
+            // since the model still wants its desired speed, also caps acceleration at the area speed.
+            const auto area = areaTarget(index, type, refs[v].route, vehicle, target, dt);
+            target = area.target; braking = area.deceleration;
+            if (area.binds && vehicle.speed <= target) following.acceleration = std::min(following.acceleration, (target - vehicle.speed) / dt);
+        }
         const bool aboveTarget = vehicle.speed > target;
         if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(
-            -type.comfortableDeceleration, (target - vehicle.speed) / dt));
+            -braking, (target - vehicle.speed) / dt));
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];
         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false,
@@ -412,6 +421,8 @@ SimState stepSimulation(SimState&& state, double dt) {
         moved.distance += move.distance; moved.speed = move.speed;
         if (!scenario.speedDecisions.empty()) // B-6 (D223)
             passSpeedDecisions(index, scenario.vehicleTypes[moved.typeIndex], refs[v].route, startDistance, moved.distance, moved);
+        if (speedAreas) [[unlikely]] // B-6 §7 (D225)
+            passSpeedAreas(index, scenario.vehicleTypes[moved.typeIndex], refs[v].route, startDistance, moved.distance, moved);
         moved.acceleration = move.acceleration; moved.mode = move.mode;
         moved.w74State = move.w74; // the applied decision; Stop rest and caps keep its regime
         if (reaction < decisions.size() && decisions[reaction].vehicle == v) {

@@ -2,6 +2,20 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — A straddler follows the other lane's leaders (D210)
+
+NEXT's item. LATERAL §6 counts leaders on the follower's carriageway, but `closestVehicle` and
+`perceivedLeaders` walked only the straddler's own route, so a body over the line drove into a slower
+car on the lane it covered. Rows BA55 failed first ([evidence](../evidence/straddler-leaders.md)).
+- `closestVehicle` moved to `src/core/leaders.cpp`, so `simulation.cpp` shrank to 477 lines.
+- `followerFilter` lists the lanes the body covers at its front segment.
+- Both searches also scan those lanes, walking each through its only successor.
+
+BA54's step-back row started 1 m behind a slower car on the covered lane, which a following straddler
+can no longer reach; it now starts 4 m behind. Switched off, every output is byte-identical. Switched
+on, there are no clamps and mean delay moves by ≤ 0.29 s. Cost: +6.0 % / +4.8 % Ir against
+`5847cb9`, inside §11. `check` 164/164, Linux only.
+
 ## 2026-10-16 — Switched-on engine round (D209)
 
 NEXT's item, owed since D206. Callgrind on the switched-on lab: 24 % in `occupiedSpans` (11 % its

@@ -245,7 +245,7 @@ struct ScenarioDefinition {
 };
 struct Scenario : ScenarioDefinition {
     std::vector<Segment> segments;
-    std::vector<SignalHead> signalHeads; std::vector<SpeedDecision> speedDecisions; // B-6 (D223): compiled per lane
+    std::vector<SignalHead> signalHeads; std::vector<SpeedDecision> speedDecisions; std::vector<ReducedSpeedArea> reducedSpeedAreas; // B-6 (D223, D225): compiled per lane
     // M3.7 (LATERAL.md §3, D187): compiled only with the lateral switch on; empty otherwise.
     std::vector<SegmentCrossSection> segmentCrossSections; std::optional<DrivingSide> drivingSide;
 };
@@ -288,7 +288,7 @@ struct ScenarioIndex {
     bool stopZones{};                                // any zone is a Stop: only then is service tracked
     std::vector<std::size_t> programOfHead;          // parallel to Scenario::signalHeads
     std::vector<std::vector<RouteHead>> routeHeads;  // parallel to Scenario::routes, in signalHeads order
-    std::vector<std::vector<RouteSpeedDecision>> routeSpeedDecisions; // the same, by route distance (B-6, D223)
+    std::vector<std::vector<RouteSpeedDecision>> routeSpeedDecisions; std::vector<std::vector<RouteSpeedArea>> routeSpeedAreas; // by route distance (B-6, D223, D225)
     std::vector<std::vector<RouteRule>> routeRules;  // parallel to Scenario::routes, in priorityRules order
     // The segment index each rule watches, so the per-tick scan is a bucket lookup and never a
     // search by id. SIZE_MAX when the rule names a segment that does not exist; validation
@@ -371,9 +371,9 @@ struct Vehicle : PendingVehicle {
     std::vector<FollowingResult> reactionHistory;
     double lateral{}, lateralSpeed{}; // LATERAL §4 (D188): body offset from its lane centre, and its rate
     std::optional<double> lateralTarget; // LATERAL §7 (D189): yT from the current lane's centre
-    // B-6 (SPEED_DECISIONS §3-§4, D223): quantile kept once a decision is passed (-1 before), and the
-    // piecewise free-flow time so far up to route distance freeFlowFrom.
-    double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{};
+    // B-6 (SPEED_DECISIONS §3-§4, §7, D223/D225): quantile kept once a decision or area is met (-1 before),
+    // the piecewise free-flow time so far up to route distance freeFlowFrom, and the area speed (0: none).
+    double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{}, areaSpeed{};
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

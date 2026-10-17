@@ -274,6 +274,12 @@ private:
     void buildSpeedDecisions(); void translateSpeedDecisions(); void refreshSpeedDecisions();
     void editSpeedDecision(const std::string& id, const std::string& linkId); // new on linkId when id is empty
     std::string selectedSpeedDecision() const;
+    // B-6 §7 (D225): the reduced-speed areas tab, same pattern.
+    QTableWidget* speedAreaTable_{};
+    std::uint64_t speedAreaRevision_{UINT64_MAX};
+    void buildSpeedAreas(); void translateSpeedAreas(); void refreshSpeedAreas();
+    void editSpeedArea(const std::string& id, const std::string& linkId); // new on linkId when id is empty
+    std::string selectedSpeedArea() const;
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
     QTableWidget *zoneTable_{}, *zoneConnectorTable_{};
     std::uint64_t zoneRevision_{UINT64_MAX}; std::string zoneConnectorsOf_;

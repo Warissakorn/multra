@@ -6,6 +6,7 @@
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
 #include "speed_decisions.hpp"
+#include "speed_areas.hpp"
 #include "../core/validate.hpp"
 #include "../model/network/diagnostics.hpp"
 #include <nlohmann/json.hpp>
@@ -133,14 +134,15 @@ Json documentJson(const ProjectDocument& d) {
     // M3.7: 33 only when an owned behaviour carries a lateral key (D187).
     // M3.6: 34 only when an owned behaviour carries curveLateralAcceleration (D212).
     // M3.4: 35 only when an owned behaviour carries kerbLaneBias (D215); B-2: 36 for commitmentDeceleration (D219); B-3: 37 (D221).
-    const int schema=d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225).
+    const int schema=d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
     // tags them, not only one with a library: owned catalogs with an evaluation period (22) and no
     // library were written untagged and could not be reopened (found by M4.2, D147).
     if ((library || schema >= 21) && d.definition) addBehaviourLibraryJson(*d.definition, definition);
-    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);addSpeedDecisionsJson(*d.definition,definition);}
+    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);addSpeedDecisionsJson(*d.definition,definition);addSpeedAreasJson(*d.definition,definition);}
     Json result={{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
@@ -172,7 +174,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 38) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 39) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -211,6 +213,7 @@ ProjectDocument parseDocument(const Json& j) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
         parseRouteDestinations(j.at("definition"),version,*d.definition);
         parseSpeedDecisions(j.at("definition"),version,*d.definition); // B-6, schema 38
+        parseSpeedAreas(j.at("definition"),version,*d.definition); // B-6 §7, schema 39
         if (version >= 21) parseBehaviourLibrary(j.at("definition"), *d.definition);
         if (version >= 22) d.definition->evaluation = parseEvaluationPeriod(j.at("definition"));
         // M4.2 (D147): a bare M0 scenario keeps amber as red, as the CLI reads it (loadScenario).

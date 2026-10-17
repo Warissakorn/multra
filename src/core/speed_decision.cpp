@@ -32,18 +32,20 @@ void passSpeedDecisions(const ScenarioIndex& index, const VehicleType& type, std
         if (d.at >= to) break;
         const double min = d.min[v.typeIndex], max = d.max[v.typeIndex];
         if (!(min <= max)) continue; // the type is not listed
-        if (v.desiredQuantile < 0) { // the first passage: its place in its type's range (as D191's rescale)
-            const double span = type.desiredSpeed.max - type.desiredSpeed.min;
-            v.desiredQuantile = span > 0 ? std::clamp((v.desiredSpeed - type.desiredSpeed.min) / span, 0.0, 1.0) : 0.5;
-        }
-        v.freeFlowSoFar += (d.at - v.freeFlowFrom) / v.desiredSpeed;
+        v.desiredQuantile = quantileOf(v, type); // the first passage keeps it
+        v.freeFlowSoFar += (d.at - v.freeFlowFrom) / speedInForce(v);
         v.freeFlowFrom = d.at;
         v.desiredSpeed = min + v.desiredQuantile * (max - min);
     }
 }
+double quantileOf(const Vehicle& v, const VehicleType& type) {
+    if (v.desiredQuantile >= 0) return v.desiredQuantile;
+    const double span = type.desiredSpeed.max - type.desiredSpeed.min; // as D191's rescale
+    return span > 0 ? std::clamp((v.desiredSpeed - type.desiredSpeed.min) / span, 0.0, 1.0) : 0.5;
+}
 double freeFlowTime(const Vehicle& v, double routeLength) {
     if (v.desiredQuantile < 0) return routeLength / v.desiredSpeed;
-    return v.freeFlowSoFar + (routeLength - v.freeFlowFrom) / v.desiredSpeed;
+    return v.freeFlowSoFar + (routeLength - v.freeFlowFrom) / speedInForce(v);
 }
 std::vector<ValidationIssue> speedDecisionIssues(const Scenario& s) {
     std::vector<ValidationIssue> issues;

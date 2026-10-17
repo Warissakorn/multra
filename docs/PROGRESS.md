@@ -6,6 +6,30 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-6 slice 2: reduced-speed areas (D224, D225)
+
+NEXT's item, contract first ([SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md),
+[evidence](evidence/reduced-speed-areas.md)). PR #176 opened for D206–D223 first.
+- **The owner's choices:**
+  - the anticipation deceleration is a per-area value, else comfortable;
+  - delay inside an area is not counted;
+  - an area can be limited to chosen lanes, named by lane id.
+- **What changed:**
+  - engine: `min(desired, area)` inside an area, anticipated before it, with an acceleration cap
+    while the area binds;
+  - area pieces in the free flow;
+  - codec at schema 39, validation (including overlap), compile per lane section;
+  - commands, including a lane-drop guard and the lane-id map on split;
+  - an editor tab: select a Link, then *Add reduced-speed area*, with lane boxes.
+- **Tests:** every engine row but BA97 and BA102 failed first. The rows also caught three faults in
+  the first implementation; one of them, the missing acceleration cap, also affects D212's curve
+  bound (listed in NEXT). Every codec and command mutation is caught.
+- **Measured** with a 30 km/h area on the four-leg west approach: on one lane it slows only that
+  lane's movement, by +8.6 s travel time and +1.9 s delay. No clamps.
+- No area: byte-identical, +0.77 % Ir (hooks +0.5 %), recorded.
+
+`check` 172/172, Linux only.
+
 ## 2026-10-17 — B-6 slice 1: desired-speed decisions (D222, D223)
 
 NEXT's item, contract first ([SPEED_DECISIONS](reference/SPEED_DECISIONS.md),
@@ -148,20 +172,6 @@ junctions at full desired speed). The owner chose:
 absent = today), the radius (the minimum polyline circumradius, the advisory's formula) and the bound
 `sqrt(a·R)`. The bound is anticipated at `comfortableDeceleration` through D191's cap. Rows BA56–BA63
 are written. No code changed; the review's rule is contract → rows → code, never combined.
-
-## 2026-10-16 — A straddler follows the other lane's leaders (D210)
-
-NEXT's item. LATERAL §6 counts leaders on the follower's carriageway, but `closestVehicle` and
-`perceivedLeaders` walked only the straddler's own route, so a body over the line drove into a slower
-car on the lane it covered. Rows BA55 failed first ([evidence](evidence/straddler-leaders.md)).
-- `closestVehicle` moved to `src/core/leaders.cpp`, so `simulation.cpp` shrank to 477 lines.
-- `followerFilter` lists the lanes the body covers at its front segment.
-- Both searches also scan those lanes, walking each through its only successor.
-
-BA54's step-back row started 1 m behind a slower car on the covered lane, which a following straddler
-can no longer reach; it now starts 4 m behind. Switched off, every output is byte-identical. Switched
-on, there are no clamps and mean delay moves by ≤ 0.29 s. Cost: +6.0 % / +4.8 % Ir against
-`5847cb9`, inside §11. `check` 164/164, Linux only.
 
 ## Older entries
 

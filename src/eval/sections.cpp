@@ -23,7 +23,7 @@ void SectionAccumulator::bind(const SimState& state) {
     if (bound_ == state.scenario.get()) return;
     bound_ = state.scenario.get();
     const auto& s = *state.scenario;
-    piecewise_ = !s.speedDecisions.empty();
+    piecewise_ = !s.speedDecisions.empty() || !s.reducedSpeedAreas.empty();
     const auto& parts = state.index->parts;
     routeLength_.assign(s.routes.size(), 0);
     for (std::size_t r = 0; r < s.routes.size(); ++r)
@@ -138,7 +138,7 @@ void SectionAccumulator::observe(const SimState& state) {
         else t = makeTrack(v.id, v.routeIndex, v.enteredTime, v.desiredSpeed, v.scheduledTime);
         t.type = v.typeIndex;
         advance(t, v.routeIndex, v.distance, state.time, !known);
-        if (piecewise_) t.desiredSpeed = v.desiredSpeed; // the speed in force from here on
+        if (piecewise_) t.desiredSpeed = v.areaSpeed > 0 && v.areaSpeed < v.desiredSpeed ? v.areaSpeed : v.desiredSpeed; // in force (§4, §7.3)
         t.route = v.routeIndex; t.distance = v.distance; t.speed = v.speed; t.time = state.time;
         next.push_back(std::move(t));
     }

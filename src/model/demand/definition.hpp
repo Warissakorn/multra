@@ -128,6 +128,14 @@ struct SpeedDecisionSpec {
     std::vector<TypeSpeed> speeds;
     bool operator==(const SpeedDecisionSpec&) const = default;
 };
+// B-6 §7 (D225, schema 39): a reduced-speed area over [from, to) of a Link's reference polyline, on
+// the named lanes of that Link (empty: every lane); deceleration absent means the type's comfortable one.
+struct ReducedSpeedAreaSpec {
+    std::string id, name, linkId; double from{}, to{};
+    std::vector<std::string> laneIds; std::optional<double> deceleration;
+    std::vector<TypeSpeed> speeds;
+    bool operator==(const ReducedSpeedAreaSpec&) const = default;
+};
 struct AuthoringDefinition : ScenarioDefinition {
     bool externalVehicleTypes{true}, externalBehaviours{true};
     bool externalCompositions{true};
@@ -135,6 +143,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     std::map<std::string,std::string> vehicleTypeNames;
     std::vector<RoutingDecision> routingDecisions; // M2.4
     std::vector<SpeedDecisionSpec> speedDecisions; // B-6, schema 38
+    std::vector<ReducedSpeedAreaSpec> reducedSpeedAreas; // B-6 §7, schema 39
     std::map<std::string,RouteDestination> routeDestinations; // schema 30, keyed by authored Route id
     std::vector<SignalController> signalControllers; // M2.7b; `signalPrograms` keeps only legacy ones
     // M3.3.2a, schema 21: owned-behaviour display names, classes and link behaviour types.

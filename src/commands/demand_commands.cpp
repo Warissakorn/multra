@@ -95,6 +95,11 @@ std::string putSpeedDecision(ProjectDocument& d, SpeedDecisionSpec value) {
     const auto id=value.id; put(demand(d).speedDecisions,std::move(value)); return id;
 }
 void deleteSpeedDecision(ProjectDocument& d, const std::string& id) { remove(demand(d).speedDecisions,id); }
+std::string putReducedSpeedArea(ProjectDocument& d, ReducedSpeedAreaSpec value) {
+    if (value.id.empty()) value.id=allocateId(d,"area");
+    const auto id=value.id; put(demand(d).reducedSpeedAreas,std::move(value)); return id;
+}
+void deleteReducedSpeedArea(ProjectDocument& d, const std::string& id) { remove(demand(d).reducedSpeedAreas,id); }
 void detail::pruneRoutingDecisions(AuthoringDefinition& values, const Network& network) {
     std::erase_if(values.routeDestinations,[&](const auto& entry){
         return std::none_of(values.routes.begin(),values.routes.end(),[&](const auto& r){return r.id==entry.first;});});
@@ -123,6 +128,7 @@ void detail::pruneRoutingDecisions(AuthoringDefinition& values, const Network& n
     for (const auto& decision : values.routingDecisions) if (gone(decision)) emptied.push_back(decision.id);
     std::erase_if(values.routingDecisions,gone);
     std::erase_if(values.speedDecisions,[&](const auto& x){return !linkExists(x.linkId);}); // B-6: it sat on the Link
+    std::erase_if(values.reducedSpeedAreas,[&](const auto& x){return !linkExists(x.linkId);}); // B-6 §7, likewise
     // A routeless input enters on its Link; with the Link gone it enters nowhere.
     std::erase_if(values.inputs,[&](const auto& i){return !i.linkId.empty() && !linkExists(i.linkId);});
     std::erase_if(values.inputs,[&](const auto& i){
