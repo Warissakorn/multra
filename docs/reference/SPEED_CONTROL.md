@@ -7,7 +7,7 @@ choices on 2026-10-16:
 - the lateral acceleration is a driver-behaviour key (§2);
 - delay stays measured against the desired speed (§5).
 
-Rows BA56–BA63 are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows).
+Rows BA56–BA63, and BA109 (D226), are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows).
 Rule 4 applies: nothing here is validated, and the marker stays.
 
 ## 1. Scope and sources
@@ -94,6 +94,13 @@ Desired-speed decisions and reduced-speed areas have their own contract,
   above the target, free flow brakes toward it at no more than `comfortableDeceleration`; at or
   below it, speed is capped at it. The rule is the same in both models, with no new braking mode.
   The model's own free term still reads `desiredSpeed`; the cap bounds it.
+- **Acceleration (D226).** While the target is below the desired speed and the vehicle is at or below
+  it, acceleration is also capped at what reaches the target in one tick.
+  - Before D226 only the speed was clamped, and the distance was still integrated with the model's
+    acceleration toward `desiredSpeed`. A held vehicle then gained `½·a·dt²` more each tick than its
+    speed allows.
+  - Row BA109 (the BA57 fixture): each tick adds at most the trapezoid of its two speeds.
+  - Reduced-speed areas use the same line (SPEED_DECISIONS §7.2).
 - The look-ahead stops at the first segment whose start lies so far ahead that no curve beyond it
   could bound the vehicle: where `sqrt(2 · b · d)` already reaches the desired speed, because then
   `sqrt(vC² + 2 · b · d)` does too, even for `vC = 0`.

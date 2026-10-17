@@ -218,3 +218,16 @@ TEST(curvespeed, ba63_the_key_round_trips_at_schema_34_and_is_refused_otherwise)
     }
     compileDocument(turn(10).d, data); // the upper bound is inside
 }
+TEST(curvespeed, ba109_a_held_vehicle_moves_no_further_than_its_speed) { // BA109 (D226)
+    const auto s = compiled(turn(3));
+    auto state = start(s, {{40, 13.9, 13.9}});
+    const double curve = std::sqrt(3 * (1 / state.scenario->segments[pathSlot(state)].curvature));
+    const auto t = run(state, 1);
+    int held = 0;
+    for (std::size_t k = 0; k < t.speed[0].size(); ++k) held += t.onPath[0][k] && std::abs(t.speed[0][k] - curve) < kEps;
+    CHECK(held > 10); // the forcing: the bound holds the car at the curve speed on the turn
+    // The distance a tick adds is the trapezoid of its speeds: a speed held at the bound while the
+    // model still accelerates toward the desired speed must not add metres beyond it.
+    for (std::size_t k = 1; k < t.speed[0].size(); ++k)
+        CHECK(t.distance[0][k] - t.distance[0][k - 1] <= (t.speed[0][k - 1] + t.speed[0][k]) / 2 * s.timeStep + 1e-9);
+}

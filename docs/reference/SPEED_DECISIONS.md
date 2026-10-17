@@ -155,11 +155,10 @@ refused with `EDIT_UNSUPPORTED_FIELD`.
     minimum.
   - When an area sets the target, the braking cap uses that area's `b` instead of comfortable
     deceleration.
-  - **Acceleration.** The following model still aims for the full desired speed. So, while an area
-    binds and the vehicle is at or below the target, acceleration is also capped at what reaches the
-    target in one tick. Without this cap, speed would be clamped to the target but the distance would
-    be integrated with the model's acceleration, so the vehicle would cover more ground than its
-    speed allows. Row BA105 caught that: the vehicle crossed the section about 2.5 % fast.
+  - **Acceleration.** While an area binds and the vehicle is at or below the target, acceleration is
+    capped at what reaches the target in one tick. This is the shared rule of SPEED_CONTROL §4
+    (D226). D225 introduced it for areas after row BA105 caught the vehicle crossing the section
+    about 2.5 % fast. D226 extended it to the curve bound.
 - **Lanes:**
   - Each lane has its own route, so a vehicle on an uncovered lane is unaffected.
   - A vehicle that changes into a covered lane mid-area takes the area at once and brakes under the

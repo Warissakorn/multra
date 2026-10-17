@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — Acceleration capped under the curve bound (D226)
+
+NEXT's item ([evidence](evidence/curve-speed.md#d226-acceleration-capped-while-the-bound-holds)).
+D225 found that a speed target below the desired speed clamped only the speed, so the distance ran
+`½·a·dt²` a tick ahead. D212's curve bound had the same gap.
+- **Row BA109** (the BA57 fixture: each tick adds at most the trapezoid of its speeds) failed first.
+- **One line in `simulation.cpp`** now caps acceleration for any bound below the desired speed, curve
+  or area. It replaces D225's area-only line.
+- **No key, no area:** byte-identical, and the Ir is identical too.
+- **Key on:** delay moves by ≤ 0.04 s; t-junction clamps 3 → 1.
+
+`check` 172/172, Linux only. CI on PR #176: the sanitizer failure (BA85's dangling reference) is
+fixed. The Windows `properties-layout-ui` failure is also red on `main`.
+
 ## 2026-10-17 — B-6 slice 2: reduced-speed areas (D224, D225)
 
 NEXT's item, contract first ([SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md),
@@ -159,19 +173,6 @@ effect, and `speedTarget` costs 4.6 % Ir.
 Measuring found that D210 had cost the switched-off run 1.7 % Ir by moving `closestVehicle` out of
 line. It is inline again, with the covered scan kept out of line: 894 → 886 M against D209's 879 M.
 `check` 165/165, Linux only.
-
-## 2026-10-16 — M3.6 curve speed contract (D211, docs only)
-
-NEXT's item after D210: M3.6, which the review ranks as the cheapest large effect (turners cross
-junctions at full desired speed). The owner chose:
-- curve speed from Connector geometry first, with areas later;
-- a driver-behaviour key;
-- delay kept against the desired speed.
-
-[SPEED_CONTROL](reference/SPEED_CONTROL.md) fixes the key `curveLateralAcceleration` (schema 34,
-absent = today), the radius (the minimum polyline circumradius, the advisory's formula) and the bound
-`sqrt(a·R)`. The bound is anticipated at `comfortableDeceleration` through D191's cap. Rows BA56–BA63
-are written. No code changed; the review's rule is contract → rows → code, never combined.
 
 ## Older entries
 

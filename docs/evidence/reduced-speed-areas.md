@@ -129,5 +129,6 @@ All three builds used the same build directory.
 ## Not covered here
 
 - Areas on Connectors (§9).
-- The same acceleration fault in the curve bound (D212); it is listed in NEXT.
+- The curve bound (D212) had the same acceleration fault. D226 fixed it with the same line
+  ([curve evidence](curve-speed.md#d226-acceleration-capped-while-the-bound-holds)).
 - Click placement on the canvas: Add uses the selected Link and a dialog, as D223 does.

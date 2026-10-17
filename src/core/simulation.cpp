@@ -364,12 +364,14 @@ SimState stepSimulation(SimState&& state, double dt) {
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
         double braking = type.comfortableDeceleration;
-        if (speedAreas) [[unlikely]] { // B-6 §7 (D225): a binding area brakes at its own deceleration and,
-            // since the model still wants its desired speed, also caps acceleration at the area speed.
+        if (speedAreas) [[unlikely]] { // B-6 §7 (D225): a binding area brakes at its own deceleration
             const auto area = areaTarget(index, type, refs[v].route, vehicle, target, dt);
             target = area.target; braking = area.deceleration;
-            if (area.binds && vehicle.speed <= target) following.acceleration = std::min(following.acceleration, (target - vehicle.speed) / dt);
         }
+        // D226: under a curve or area bound the model still wants its desired speed, so acceleration is
+        // capped at reaching the target; else the speed is clamped but the distance is not.
+        if (target < vehicle.desiredSpeed && vehicle.speed <= target)
+            following.acceleration = std::min(following.acceleration, (target - vehicle.speed) / dt);
         const bool aboveTarget = vehicle.speed > target;
         if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(
             -braking, (target - vehicle.speed) / dt));

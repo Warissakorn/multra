@@ -97,6 +97,39 @@ edit, and that the file is schema 34. It failed ("curve key dropped by the w74 s
 one-line fix in `src/shell/behaviour_editor.cpp`. The prototype save copies the whole behaviour, so
 it was not affected.
 
+## D226: acceleration capped while the bound holds
+
+D225 found that a speed target below the desired speed clamped only the speed. The distance was still
+integrated with the model's acceleration toward the desired speed. The curve bound had the same gap.
+
+**Row BA109,** written first (`ba109_a_held_vehicle_moves_no_further_than_its_speed`), uses the BA57
+fixture:
+- the forcing: more than 10 ticks are held at `vC` on the turn;
+- every tick adds at most `(v_prev + v_new)/2 · dt + 1e-9`.
+
+It failed before the change.
+
+**The change:** `simulation.cpp` caps acceleration at `(target − speed)/dt` whenever the target is
+below the desired speed and the vehicle is at or below it. One line now serves both the curve and the
+area bound (it replaces D225's area-only line). BA109 passes, and so do `curvespeed`, `speedarea` and
+`speeddecision`.
+
+**With no key and no area, everything is byte-identical:** `trafficsim-cli 42`, the four shipped
+projects at seeds 42–51, and D225's every-lane area run. The switched-off Ir on `four-leg-signalised`
+seed 42 is 893,732,485 before and after, exactly; the binaries differ, but the instruction count does
+not.
+
+**With the curve key on** (scratchpad `data-curve`, key 3), seeds 42–51:
+
+| Project | Mean delay (s) | Completed (mean) | Clamps |
+|---|---|---|---|
+| `four-leg-signalised` | 54.17 → 54.21 | 447.5 → 447.3 | 0 → 0 |
+| `t-junction-priority` | 7.52 → 7.54 | 272.3 → 272.3 | 3 → 1 (seeds 42, 47 gone; 50 stays) |
+
+Turners now cover the turn at the speed they report, which is slightly slower than before, so delay
+rises by a few hundredths of a second. The two clamps that disappeared are the priority-rule clamps
+listed above. Arrival times at the give-way lines moved, and that changed where those clamps fall.
+
 ## Not covered here
 
 - No Link curvature, reduced-speed areas, desired-speed decisions, speed-dependent acceleration or

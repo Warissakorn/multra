@@ -2,6 +2,19 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — M3.6 curve speed contract (D211, docs only)
+
+NEXT's item after D210: M3.6, which the review ranks as the cheapest large effect (turners cross
+junctions at full desired speed). The owner chose:
+- curve speed from Connector geometry first, with areas later;
+- a driver-behaviour key;
+- delay kept against the desired speed.
+
+[SPEED_CONTROL](../reference/SPEED_CONTROL.md) fixes the key `curveLateralAcceleration` (schema 34,
+absent = today), the radius (the minimum polyline circumradius, the advisory's formula) and the bound
+`sqrt(a·R)`. The bound is anticipated at `comfortableDeceleration` through D191's cap. Rows BA56–BA63
+are written. No code changed; the review's rule is contract → rows → code, never combined.
+
 ## 2026-10-16 — A straddler follows the other lane's leaders (D210)
 
 NEXT's item. LATERAL §6 counts leaders on the follower's carriageway, but `closestVehicle` and

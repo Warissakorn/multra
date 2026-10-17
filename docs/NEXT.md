@@ -11,8 +11,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
-- **PR #176** carries D206–D223 to `main` (the earlier #175 was closed unmerged); this branch keeps
-  pushing into it.
+- **PR #176** carries D207–D226 to `main` (#175 merged D206; `main` merged back in). Its Windows
+  `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
+  BA85's dangling reference, fixed.
+- **D226:** acceleration is capped while a curve or area bound holds (BA109); shipped runs
+  byte-identical.
 - **B-6 slice 2 is in** (D224, D225, [SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md), [evidence](evidence/reduced-speed-areas.md)):
   reduced-speed areas (schema 39) over a Link stretch, by lane id, anticipated at a per-area
   deceleration; delay not counted inside; editor tab with lane boxes. No area byte-identical; +0.77 %
@@ -67,31 +70,23 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the curve bound's acceleration cap, then the red-onset clamp
+## Next session — the red-onset clamp, then tier B
 
-A session told only to "continue" takes item 1:
-1. **D212's curve bound shares D225's distance fault.** When the curve target binds, speed is clamped
-   to it, but the distance is still integrated with the model's acceleration, so the vehicle covers
-   slightly more ground than its speed allows. D225 caps acceleration for areas
-   (`simulation.cpp`, the `area.binds` line). Steps:
-   - write a failure-first curve row: a lone car on a curve, distance against the integral of speed;
-   - apply the same cap when the curve binds;
-   - rerun the curve evidence, switched on. Shipped runs carry no curve key, so they stay
-     byte-identical.
-2. **Trace D223's red-onset clamp:** four-leg with a 30 km/h decision, seed 47, vehicle 58 at
+A session told only to "continue" takes item 1 (D226 closed the curve bound's acceleration fault):
+1. **Trace D223's red-onset clamp:** four-leg with a 30 km/h decision, seed 47, vehicle 58 at
    t = 154.9 s.
    - If it is AMBER §1's red rule meeting slower arrivals, record it there.
    - If the decision code takes part, fix it with a row.
-3. Then tier B in order: B-5, B-8, B-7, B-4, B-9.
-4. Small follow-ups when a study wants them:
+2. Then tier B in order: B-5, B-8, B-7, B-4, B-9.
+3. Small follow-ups when a study wants them:
    - split safety clamps by road (D219);
    - a dense merging scene for D221's keys;
    - click placement of speed decisions and areas on the canvas;
    - areas on Connectors (D224);
    - D225's +0.5 % hook cost.
-5. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
+4. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
    M3.9.
-6. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
+5. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.
