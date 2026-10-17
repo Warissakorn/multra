@@ -283,8 +283,8 @@ interval in which every flow is 0 (nothing counted) uses the whole-period `relat
     its front within `stopLineReach`. That is the gap car-following keeps behind a standing obstacle
     at that pace, plus 0.1 m.
   - The reduced model only approaches zero behind a line, ever slower. So the Stop finishes the
-    stop: the vehicle rests at zero speed for the tick it came to the line and one whole tick more.
-    This is ordinary braking of at most 1 m/s², not a safety clamp.
+    stop: the vehicle rests at zero speed for the tick it came to the line and one whole tick more
+    (a behaviour's `stopDwellTime` lengthens it, [STOP_DWELL](STOP_DWELL.md)). Not a clamp.
   - Service is kept per vehicle in `SimState::stopService`. It survives waiting for a gap or a red
     head, is cleared once the vehicle passes the line, and a new run starts with none.
   - A queued vehicle stands a vehicle length back, so it has not come to the line.

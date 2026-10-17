@@ -185,6 +185,13 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA114 | Live retune of a curved range | Each vehicle keeps its share |
 | BA115 | Codec at schema 40 | Round-trips; faults at their paths; 39 refused |
 | BA116 | Type dialog | Curve written with its ends; untick removes; one Undo step |
+| BA117 | No Stop dwell key ([STOP_DWELL](../reference/STOP_DWELL.md), D230) | Rests the tick plus one; shipped outputs byte-identical |
+| BA118 | 2 s at dt 0.1 | Rests 20 whole ticks, then crosses |
+| BA119 | 2 s at dt 0.1, 0.25, 0.5 | Same dwell within one tick |
+| BA120 | Below one tick | Rests one tick |
+| BA121 | Blocked gap longer than the dwell | Still held; no further dwell once it opens |
+| BA122 | Behaviour by road | The minor approach's behaviour sets the dwell |
+| BA123 | Codec at schema 41 and editor row | Round-trips; faults at their paths; 40 refused |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

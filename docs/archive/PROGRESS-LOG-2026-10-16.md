@@ -2,6 +2,21 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-17 — Keep-to-kerb slice 1 and the settings scope (D215, D216)
+
+The owner asked to continue, and to design which settings are project-wide and which are local.
+- **D215** implements OVERTAKING ([evidence](../evidence/kerb-bias.md)).
+  - What changed: `kerbLaneBias` (schema 35); `towardKerb` compiled from lane indices; returns need
+    `T − β`, passing and undertaking `T + β`; an optional row in the behaviour editor.
+  - Tests: six rows failed first, and both mutations are caught. Shipped outputs are byte-identical.
+  - A53 measured with the bias still fails: repeats are 3.3–7.2 % up to β 2, and above that nobody
+    passes. No D95 value ships.
+- **D216** adds BEHAVIOUR_PARAMETERS §6, with six scope levels: project, catalog default, vehicle
+  type, driver behaviour (local by road through the existing behaviour assignment), network object,
+  and per vehicle. The more local level wins.
+
+`check` 166/166, Linux only.
+
 ## 2026-10-17 — B19 decided on the owner's delegation (D214, docs only)
 
 The owner answered B19 with "ช่วยตัดสินใจ" ("help decide"). D213's tiers stand, except that the

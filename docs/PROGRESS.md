@@ -6,6 +6,14 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-8 Stop dwell time contract (D230, docs only)
+
+NEXT's item ([STOP_DWELL](reference/STOP_DWELL.md)). Today a Stop rests a vehicle for 1–2 ticks,
+so its effect depends on the time step.
+- **The owner's choices:** a driver-behaviour key, absent = today (byte-identical), fixed seconds.
+- **The contract:** `stopDwellTime` (s) at schema 41; the rest becomes whole ticks of at least
+  that time, recorded when the vehicle comes to the line; rows BA117–BA123.
+
 ## 2026-10-17 — B-5 desired-speed distribution curve implemented (D229)
 
 D228's contract ([evidence](evidence/speed-distribution.md)).
@@ -150,21 +158,6 @@ edited in the program ([evidence](evidence/behaviour-key-exposure.md)).
   clamp, also when ticked mid-run. The curve acts on curved Connectors only (Urban left turns, Oval
   joins), and a tooltip says so.
 - No engine, codec or data change.
-
-`check` 166/166, Linux only.
-
-## 2026-10-17 — Keep-to-kerb slice 1 and the settings scope (D215, D216)
-
-The owner asked to continue, and to design which settings are project-wide and which are local.
-- **D215** implements OVERTAKING ([evidence](evidence/kerb-bias.md)).
-  - What changed: `kerbLaneBias` (schema 35); `towardKerb` compiled from lane indices; returns need
-    `T − β`, passing and undertaking `T + β`; an optional row in the behaviour editor.
-  - Tests: six rows failed first, and both mutations are caught. Shipped outputs are byte-identical.
-  - A53 measured with the bias still fails: repeats are 3.3–7.2 % up to β 2, and above that nobody
-    passes. No D95 value ships.
-- **D216** adds BEHAVIOUR_PARAMETERS §6, with six scope levels: project, catalog default, vehicle
-  type, driver behaviour (local by road through the existing behaviour assignment), network object,
-  and per vehicle. The more local level wins.
 
 `check` 166/166, Linux only.
 

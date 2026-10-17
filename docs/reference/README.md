@@ -20,6 +20,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [MERGE_DECELERATION.md](MERGE_DECELERATION.md) | Accepted deceleration for mandatory lane changes: own and trailing keys, rows BA79–BA85 (B-3 contract, D220; implemented, D221) |
 | [SPEED_DECISIONS.md](SPEED_DECISIONS.md) | Desired-speed decisions (per-type ranges at a Link station, quantile kept, delay against the speed in force) and reduced-speed areas (temporary per-type speed over a Link stretch, by lane); rows BA86–BA108 (B-6, D222, D224; implemented, D223, D225) |
 | [SPEED_DISTRIBUTION.md](SPEED_DISTRIBUTION.md) | Desired-speed distribution curve on a vehicle type: piecewise-linear cumulative points, the same draw, the share as quantile, schema 40, rows BA110–BA116 (B-5 contract, D228; implemented, D229) |
+| [STOP_DWELL.md](STOP_DWELL.md) | Stop dwell time: `stopDwellTime` on the driver behaviour, rest in whole ticks of at least that time, absent = today, schema 41, rows BA117–BA123 (B-8 contract, D230) |
 | [OVERTAKING.md](OVERTAKING.md) | Keep to the kerb lane: `kerbLaneBias`, return/pass/undertake gains, rows BA64–BA71 (M3.4 contract, D213; slice 1 implemented, D215) |
 | [SPEED_CONTROL.md](SPEED_CONTROL.md) | Curve speed on Connectors: the behaviour key, the radius, the anticipated bound, rows BA56–BA63 (M3.6 contract, D211; slice 1 implemented, D212) |
 | [LANE_CHANGE_DURATION.md](LANE_CHANGE_DURATION.md) | Lane changes as lateral moves: start rule before conflict areas, crossing, end, display, rows BA48–BA53 (M3.4 contract, D204; slice 1 implemented, D206) |

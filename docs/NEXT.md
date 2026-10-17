@@ -11,9 +11,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
-- **PR #176** carries D207–D229 to `main` (#175 merged D206; `main` merged back in). Its Windows
+- **PR #176** carries D207–D230 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
+- **B-8 contract written** (D230, [STOP_DWELL](reference/STOP_DWELL.md)): `stopDwellTime` on the
+  driver behaviour, schema 41, rows BA117–BA123; implementation next.
 - **B-5 is in** (D228, D229, [SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md), [evidence](evidence/speed-distribution.md)):
   an optional piecewise cumulative desired-speed curve on the vehicle type (schema 40), the same draw,
   the share as the quantile decisions and areas map linearly; type-dialog curve box; Lab fit. Shipped
@@ -77,13 +79,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — tier B
+## Next session — B-8 implementation, then tier B
 
 A session told only to "continue" takes item 1:
-1. **B-8, stop-sign service time** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) tier B
-   rank 6). Today a Stop is served in one tick (`conflicts.hpp`), so its effect depends on `timeStep`;
-   a real stop lasts about 1–3 s. Contract first: where the value lives (behaviour key or the Stop
-   rule), the default that keeps shipped runs byte-identical, and rows. Ask the owner for the scope.
+1. **Implement [STOP_DWELL](reference/STOP_DWELL.md)** (rows BA117–BA123): engine rows first against
+   `ticks` fixed at 1, then codec at schema 41, then the behaviour-dialog row.
 2. Then B-7 (lane preference by type), B-4 (driver-factor spread), B-9 (red-light running).
 3. The red-onset clamp stays recorded (D227). Reopen it only if the owner wants slow-approach
    clamps gone; the candidate is in ENGINEERING_NOTES.
