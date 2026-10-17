@@ -6,6 +6,17 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — Give-way line clamps traced (D232, no code change)
+
+NEXT's item ([evidence](evidence/give-way-line-clamps.md)). D231's Stop-line clamps are not the
+Stop rule's: the shipped Yield `t-junction-priority` clamps the same way (6 at seeds 42–81).
+- **What fires:** phase 1, on a minor vehicle creeping off its line at walking pace when a major
+  vehicle comes inside the zone's headway or gap time. It can still stop at its maximum, so it is
+  not committed (D69) and is held again at the line. The braking law overshoots by millimetres to
+  centimetres. A few standing cases at dt 0.5 are the standstill cap (D201 B5).
+- **Booked:** these are M3.2.8a.1's moving minor clamps. Its gate wants a contract and rows before
+  any motion change, and each option moves shipped output, so nothing was changed.
+
 ## 2026-10-17 — B-8 Stop dwell time implemented (D231)
 
 D230's contract ([evidence](evidence/stop-dwell.md)).
@@ -137,27 +148,6 @@ NEXT's item, contract first ([MERGE_DECELERATION](reference/MERGE_DECELERATION.m
   change. Keys absent: byte-identical, +0.002 % Ir.
 
 `check` 168/168, Linux only.
-
-## 2026-10-17 — B-2: commitment deceleration at give-way lines (D218, D219)
-
-NEXT's item, contract first ([COMMITMENT](reference/COMMITMENT.md),
-[evidence](evidence/commitment-deceleration.md)).
-- **The owner's choices:**
-  - the key applies at give-way lines only, and the red head keeps the type's maximum (red-light
-    running is B-9);
-  - the lower of the key and the type's `maxDeceleration` wins.
-- **What changed:**
-  - `commitmentDeceleration` (schema 36, either model) in the give-way commitment test;
-  - an editor row; no Lab row, because the circuits have no give-way line.
-- **Tests:** five rows failed first, and three mutations are caught. The first scene clamped even
-  without the key, so a sweep chose an 8 m scene.
-- **Measured** with the key on every behaviour:
-  - T-junction delay falls from 6.45 to 5.65 s at 2 m/s², while clamps rise from 0.2 to 0.8 per seed;
-  - M2.6 clamps rise from 1.1 to 8.3, as D69 warned.
-
-  No value ships. Key absent: byte-identical, +0.04 % Ir.
-
-`check` 167/167, Linux only.
 
 ## Older entries
 

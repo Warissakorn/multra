@@ -50,6 +50,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [merge-deceleration.md](merge-deceleration.md) | B-3: accepted deceleration for mandatory lane changes — 2026-10-17 | D220, D221 |
 | [speed-decisions.md](speed-decisions.md) | B-6 slice 1: desired-speed decisions — 2026-10-17 | D222, D223, D227 |
 | [stop-dwell.md](stop-dwell.md) | B-8: Stop dwell time — 2026-10-17 | D230, D231 |
+| [give-way-line-clamps.md](give-way-line-clamps.md) | Give-way line clamps traced: a slow move-off meets a closing gap — 2026-10-17 | D232, D69, D105 |
 | [speed-distribution.md](speed-distribution.md) | B-5: desired-speed distribution curve — 2026-10-17 | D228, D229 |
 | [reduced-speed-areas.md](reduced-speed-areas.md) | B-6 slice 2: reduced-speed areas — 2026-10-17 | D224, D225 |
 | [lane-swap.md](lane-swap.md) | Swapping pair at shared dead ends: the rear one yields — 2026-10-16 | D207 |

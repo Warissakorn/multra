@@ -14,6 +14,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - **PR #176** carries D207–D231 to `main` (#175 merged D206; `main` merged back in). Its Windows
   `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
   BA85's dangling reference, fixed.
+- **D232 (no code change):** D231's Stop-line clamps are give-way line clamps, not the Stop rule's
+  ([evidence](evidence/give-way-line-clamps.md)). A minor vehicle creeping off its line meets a gap
+  that closes while it can still stop; the braking law overshoots. The shipped Yield T-junction shows
+  6 at seeds 42–81. Booked in M3.2.8a.1 (contract and rows first; each option moves shipped output).
 - **B-8 is in** (D230, D231, [STOP_DWELL](reference/STOP_DWELL.md), [evidence](evidence/stop-dwell.md)):
   `stopDwellTime` on the driver behaviour (schema 41) rests a vehicle at a Stop line for whole ticks
   of at least that time; absent = today's one tick. Shipped runs byte-identical; +0.25–0.41 % Ir.
@@ -80,13 +84,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — Stop-line clamps, then tier B
+## Next session — tier B
 
 A session told only to "continue" takes item 1:
-1. **Trace the Stop-line clamps** ([evidence](evidence/stop-dwell.md#shipped-runs)): on a copy of
-   `t-junction-priority` with both controls set to `stop`, seeds 42–81 give 8 clamps at dt 0.1
-   without any key (15 with a 2 s dwell), all on minor routes at their Stop lines while the vehicle
-   holds Stop service. Find which cap fires (phase 1 or the phase-2 swept/receiving check); fix it
-   with a row if it is the Stop rule's.
-2. Then tier B: B-7 (lane preference by type), B-4 (driver-factor spread), B-9 (red-light running).
-3. The red-onset clamp stays recorded (D227); the candidate is in ENGINEERING_NOTES.
+1. **B-7: lane preference by vehicle type** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md)):
+   write its contract first, ask the owner the open choices, then rows that fail first.
+2. Then B-4 (driver-factor spread) and B-9 (red-light running).
+3. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
+   M3.2.8a.1 contract or when the owner asks. The options are in their evidence; D227's measured
+   candidate is in ENGINEERING_NOTES.

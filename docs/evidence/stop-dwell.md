@@ -104,4 +104,4 @@ Four-leg has no Stop, so its cost is not the Stop rule. It is the larger `Driver
 ## Not covered here
 
 - A dwell set on each Stop line, or a range per driver (STOP_DWELL §5).
-- The cause of the Stop-line clamps above.
+- The cause of the Stop-line clamps above: traced in [give-way-line-clamps](give-way-line-clamps.md) (D232).

@@ -48,6 +48,7 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   Preserve the buffer, D50 setback, maximum deceleration and genuine emergency reporting.
   Post-entry lane changes can introduce a new leader; the source guard does not cover that.
   Do not claim clamp-free or close M0/M3 owner observations.
+  D232 traced the zone-line cases: [give-way line clamps](../evidence/give-way-line-clamps.md).
 - **Per-lane shares (D32; one weight per entry-Link lane since D71).** No canvas gesture sets one.
   The input table row shows set weights since 2026-10-03 (`laneSplit`).
 - **Keyboard-only equivalents** of the route and vehicle-input gestures (M1.25/M1.26).
