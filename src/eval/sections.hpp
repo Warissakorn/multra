@@ -41,13 +41,16 @@ private:
         double travelled{};
         std::vector<double> openedAtDistance;
         std::uint32_t type{};
+        // B-6 (SPEED_DECISIONS §4, D223): free-flow seconds at `travelled`, at the speed in force.
+        double freeFlowAt{}; std::vector<double> openedAtFreeFlow;
     };
     void bind(const SimState& state);
-    void close(std::size_t k, Track& track, double time, double travelled);
+    void close(std::size_t k, Track& track, double time, double travelled, double freeFlowAt);
     bool inPeriod(double time) const;
     std::vector<SectionSpec> sections_;
     double warmup_{}; std::optional<double> periodEnd_; bool byRelease_{};
     const Scenario* bound_{};
+    bool piecewise_{}; // the bound scenario has speed decisions
     // Per section, per route slot: independent line distances, NaN where a line misses the route.
     std::vector<std::vector<double>> start_, finish_;
     std::vector<double> routeLength_;

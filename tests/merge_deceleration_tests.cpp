@@ -206,6 +206,6 @@ TEST(mergedecel, ba85_the_keys_round_trip_at_schema_37_and_are_refused_before) {
         const auto& reopened = parseDocument(edge).definition->behaviours.front();
         CHECK((own ? reopened.mandatoryDecelerationOwn : reopened.mandatoryDecelerationTrailingVehicle) == 15);
     }
-    auto newer = documentJson(document({3, 5})); newer["schemaVersion"] = 38;
+    auto newer = documentJson(document({3, 5})); newer["schemaVersion"] = 39;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
 }

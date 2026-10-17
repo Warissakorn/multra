@@ -51,6 +51,20 @@ void EditorCanvas::drawSections() {
         }
     };
     for (const auto& s : n.travelTimeSections) { mark(s.start, s.id, "start", false); mark(s.end, s.id, "end", false); }
+    // B-6 (D223): each desired-speed decision across every lane of its Link, dotted to tell it apart.
+    if (document_->definition)
+        for (const auto& d : document_->definition->speedDecisions)
+            for (const auto& link : n.links) {
+                if (link.id != d.linkId || !levelVisible(link.level)) continue;
+                for (const auto& lane : link.lanes) {
+                    const auto bar = waitingLineBar(n, {{link.id, lane.id, {}, {}, {}}, d.station});
+                    if (!bar) continue;
+                    QPen pen(canvasStyle::advisory(), 3, Qt::DotLine); pen.setCosmetic(true); pen.setCapStyle(Qt::FlatCap);
+                    auto* item = scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);
+                    item->setZValue(link.level * 100. + 11.6);
+                    item->setData(0, QStringLiteral("speed-decision")); item->setData(1, QString::fromStdString(d.id));
+                }
+            }
     if (tool_ == Tool::section && sectionStart_) mark(*sectionStart_, {}, "start", true);
 }
 }

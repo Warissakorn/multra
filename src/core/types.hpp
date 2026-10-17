@@ -2,6 +2,7 @@
 
 #include "lateral_types.hpp"
 #include "parking_types.hpp"
+#include "speed_decision_types.hpp"
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -223,18 +224,14 @@ struct ScenarioDefinition {
     // Ordered last so every existing brace-initialisation of a definition keeps meaning what it
     // says. Empty is the normal state: a scenario with no merge needs no rule.
     std::vector<PriorityRule> priorityRules;
-    // The two numbers a rule DERIVED from the drawing is given, read from data/priority-rules/ by
-    // the project layer. Content, not code (hard rule 5). Left at zero here on purpose: a zero
-    // gap time is an uncontrolled merge, so deriving a rule without loading these is refused
-    // rather than silently allowed.
+    // The two numbers a DERIVED rule is given, read from data/priority-rules/ (content, hard rule 5).
+    // Zero on purpose: a zero gap time is an uncontrolled merge, so deriving one unloaded is refused.
     PriorityDefaults priorityDefaults;
     // Last again, for the same reason. Empty for every scenario without an authored crossing,
     // which then runs exactly the code path it always did.
     std::vector<ConflictZone> conflictZones;
-    // M3.2.8b, last again. COMPILED, never authored and never in a project file: the compile step
-    // that expands routes into lane chains fills these alongside them (buildScenario for authored
-    // routes, expandRouteless for routeless paths). Empty for every scenario without a stub,
-    // which then runs exactly the code path it always did.
+    // M3.2.8b, last again. COMPILED, never authored: the step that expands routes into lane chains
+    // fills these (buildScenario, expandRouteless). Empty without a stub: the old code path exactly.
     std::vector<LaneChangeSpan> laneChanges;
     std::vector<RouteDeadEnd> routeDeadEnds;
     std::vector<RouteDecision> routeDecisions;
@@ -248,7 +245,7 @@ struct ScenarioDefinition {
 };
 struct Scenario : ScenarioDefinition {
     std::vector<Segment> segments;
-    std::vector<SignalHead> signalHeads;
+    std::vector<SignalHead> signalHeads; std::vector<SpeedDecision> speedDecisions; // B-6 (D223): compiled per lane
     // M3.7 (LATERAL.md §3, D187): compiled only with the lateral switch on; empty otherwise.
     std::vector<SegmentCrossSection> segmentCrossSections; std::optional<DrivingSide> drivingSide;
 };
@@ -291,6 +288,7 @@ struct ScenarioIndex {
     bool stopZones{};                                // any zone is a Stop: only then is service tracked
     std::vector<std::size_t> programOfHead;          // parallel to Scenario::signalHeads
     std::vector<std::vector<RouteHead>> routeHeads;  // parallel to Scenario::routes, in signalHeads order
+    std::vector<std::vector<RouteSpeedDecision>> routeSpeedDecisions; // the same, by route distance (B-6, D223)
     std::vector<std::vector<RouteRule>> routeRules;  // parallel to Scenario::routes, in priorityRules order
     // The segment index each rule watches, so the per-tick scan is a bucket lookup and never a
     // search by id. SIZE_MAX when the rule names a segment that does not exist; validation
@@ -372,8 +370,10 @@ struct Vehicle : PendingVehicle {
     // PERCEPTION §5: oldest first; empty with zero delay. Written only at insertion/publish.
     std::vector<FollowingResult> reactionHistory;
     double lateral{}, lateralSpeed{}; // LATERAL §4 (D188): body offset from its lane centre, and its rate
-    // LATERAL §7 (D189): yT from the current lane's centre; only tests write it until M3.4/M3.7.1.
-    std::optional<double> lateralTarget;
+    std::optional<double> lateralTarget; // LATERAL §7 (D189): yT from the current lane's centre
+    // B-6 (SPEED_DECISIONS §3-§4, D223): quantile kept once a decision is passed (-1 before), and the
+    // piecewise free-flow time so far up to route distance freeFlowFrom.
+    double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{};
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

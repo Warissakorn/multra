@@ -193,6 +193,7 @@ void recordLaneChange(const Scenario& s, Vehicle& vehicle, std::uint32_t route, 
     events.emplace_back(LaneChangeEvent{time, vehicle.id, s.routes[vehicle.routeIndex].id, s.routes[route].id});
     vehicle.lastLaneChange = LastLaneChange{tick, vehicle.routeIndex};
     vehicle.laneChangeTrace.push_back({vehicle.routeIndex, route, vehicle.distance, distance, vehicle.speed});
+    if (vehicle.desiredQuantile >= 0) vehicle.freeFlowFrom += distance - vehicle.distance; // SPEED_DECISIONS §4 (D223)
     vehicle.routeIndex = route; vehicle.distance = distance;
 }
 void applyLaneChange(const Scenario& s, Vehicle& vehicle, const LaneChange& change,

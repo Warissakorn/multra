@@ -1,4 +1,5 @@
 #include "routes.hpp"
+#include "speed_decision.hpp"
 #include "conflicts.hpp"
 #include "lanes.hpp"
 #include "detail.hpp"
@@ -92,6 +93,7 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
                 for (auto later = std::next(part); later != parts.end(); ++later)
                     if (later->segmentId == part->segmentId) index.routeHeads[r].push_back({h, later->start});
         }
+    indexSpeedDecisions(scenario, index); // B-6 (D223)
     // Rule incidence, resolved once per scenario for the same reason heads are: the per-vehicle
     // loop must not search by id once per tick.
     index.conflictSegmentOfRule.reserve(scenario.priorityRules.size());

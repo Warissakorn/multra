@@ -11,6 +11,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
+- **B-6 slice 1 is in** (D222, D223, [SPEED_DECISIONS](reference/SPEED_DECISIONS.md), [evidence](evidence/speed-decisions.md)):
+  desired-speed decisions (schema 38), quantile kept, delay against the speed in force; editor tab via the
+  selected Link. Reduced-speed areas are a contract only (§7).
 - **B-3 is in** (D220, D221, [MERGE_DECELERATION](reference/MERGE_DECELERATION.md), [evidence](evidence/merge-deceleration.md)):
   `mandatoryDecelerationOwn` / `mandatoryDecelerationTrailingVehicle` (schema 37) in the mandatory
   safety tests; editor rows. Shipped projects barely move; no value ships.
@@ -58,24 +61,25 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-6, road speed limits
+## Next session — reduced-speed areas (SPEED_DECISIONS §7)
 
 A session told only to "continue" takes item 1:
-1. **B-6 contract** (BEHAVIOUR_PARAMETERS §3, rank 4): road speed limits, reduced-speed areas and
-   desired-speed decisions. They are level-5 network objects under D216, not behaviour keys, so the
-   contract is SPEED_CONTROL's next section (§1 already lists them as later slices). Decide with the
-   owner:
-   - how a limit maps to a vehicle's desired speed (a per-type desired-speed distribution at the
-     sign, as Vissim does, or a cap);
-   - whether compliance spread belongs here or with B-5.
+1. **Reduced-speed areas.** Ask the owner §7's three questions first:
+   - which deceleration anticipates an area: a behaviour key, a per-area value, or the type's
+     comfortable one;
+   - whether delay inside an area counts;
+   - whether an area applies by lane.
 
-   Contract first, then rows, the editor object and the codec step.
-2. Then tier B in order: B-5, B-8, B-7, B-4, B-9.
-3. Small follow-ups when a study wants them: split safety clamps by road (D219); a dense merging
-   scene for D221's keys.
-4. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
+   Then rows, engine, codec (schema 39), editor (D223's pattern).
+2. **Trace D223's red-onset clamp** (four-leg with a 30 km/h decision, seed 47, vehicle 58 at
+   t = 154.9 s). If it is AMBER §1's red rule meeting slower arrivals, record it there. If the
+   decision code takes part, fix it with a row.
+3. Then tier B in order: B-5, B-8, B-7, B-4, B-9.
+4. Small follow-ups when a study wants them: split safety clamps by road (D219); a dense merging
+   scene for D221's keys; click placement of speed decisions on the canvas.
+5. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
    M3.9.
-5. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
+6. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.

@@ -268,6 +268,12 @@ private:
     void showSections();
     void editSection(const std::string& id);
     std::string selectedSection() const;
+    // B-6 (D223), src/shell/editor_speed_decisions.cpp: the Speed decisions tab and its dialog.
+    QTableWidget* speedDecisionTable_{};
+    std::uint64_t speedDecisionRevision_{UINT64_MAX};
+    void buildSpeedDecisions(); void translateSpeedDecisions(); void refreshSpeedDecisions();
+    void editSpeedDecision(const std::string& id, const std::string& linkId); // new on linkId when id is empty
+    std::string selectedSpeedDecision() const;
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
     QTableWidget *zoneTable_{}, *zoneConnectorTable_{};
     std::uint64_t zoneRevision_{UINT64_MAX}; std::string zoneConnectorsOf_;

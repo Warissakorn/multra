@@ -2,6 +2,19 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — Switched-on engine round (D209)
+
+NEXT's item, owed since D206. Callgrind on the switched-on lab: 24 % in `occupiedSpans` (11 % its
+lateral copies), 10.5 % in `moveLaterally`, most of it rebuilding every body for the few that move.
+Three output-preserving changes ([evidence](../evidence/lateral-perf.md)):
+- `moveLaterally` builds only bodies near movers;
+- `appendLateralSpans` skips its neighbour loop inside a precomputed, conservative clear band;
+- `lateralCounts` is inline.
+
+Switched on, the lab and four-leg now cost +3.5 % and +3.0 % Ir against `5847cb9`, inside LATERAL
+§11's 10 %; lab wall time −22 % against `347fba9`. Switched off, outputs are unchanged and the run is
+6 % cheaper. Every shipped and switched-on output is byte-identical. Linux only.
+
 ## 2026-10-16 — Mid-change gap loss: waiting at the line (D208)
 
 NEXT's item. D206 left two clamps where a faster car passed a slow changer mid-move. The owner chose

@@ -7,6 +7,7 @@
 #include "perception.hpp"
 #include "lateral.hpp"
 #include "speed_control.hpp"
+#include "speed_decision.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -378,6 +379,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
     for(auto& issue:routingIssues(s))issues.push_back(std::move(issue));
     validateParkingLots(s, issues); // M8.4a
     for (auto& issue : lateralScenarioIssues(s)) issues.push_back(std::move(issue)); // M3.7, D187
+    for (auto& issue : speedDecisionIssues(s)) issues.push_back(std::move(issue)); // B-6, D223
     return issues;
 }
 void assertValidScenario(const Scenario& scenario) {

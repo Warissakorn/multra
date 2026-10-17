@@ -28,6 +28,9 @@ nor `Connector` carries a speed, and the core `Segment` carries no geometry
 before the curve. M2.1's "desired speed versus Link limits" is delivered by M3.6 and not duplicated
 there.
 
+Desired-speed decisions and reduced-speed areas have their own contract,
+[SPEED_DECISIONS](SPEED_DECISIONS.md) (B-6, D222).
+
 **Out of scope**, each a later M3.6 slice with its own contract section written first:
 - reduced-speed areas by vehicle type;
 - desired-speed decisions (speed-limit changes);

@@ -1,5 +1,6 @@
 #include "parking.hpp"
 #include "conflicts.hpp"
+#include "speed_decision.hpp"
 #include "detail.hpp"
 #include "routes.hpp"
 #include <algorithm>
@@ -42,7 +43,7 @@ void arrive(SimState& state, const Vehicle& vehicle, std::size_t route, double t
     const double length = routeLength(*state.index, route);
     ++state.completed;
     state.events.emplace_back(ArrivedEvent{time, vehicle.id, state.scenario->routes[route].id,
-        time - vehicle.enteredTime, vehicle.enteredTime - vehicle.scheduledTime, length / vehicle.desiredSpeed});
+        time - vehicle.enteredTime, vehicle.enteredTime - vehicle.scheduledTime, freeFlowTime(vehicle, length)});
 }
 std::size_t lotOf(const SimState& state, std::size_t route) {
     return state.index->lotOfRoute.empty() ? SIZE_MAX : state.index->lotOfRoute[route];

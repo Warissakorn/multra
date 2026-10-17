@@ -75,6 +75,11 @@ Json checkpointJson(const SimState& state) {
             static constexpr const char* regimes[] = {"free", "approaching", "following", "emergency"};
             j["w74State"] = {{"regime", regimes[static_cast<int>(w->regime)]}, {"sign", w->sign}};
         }
+        // B-6 (SPEED_DECISIONS §5, D223): only once a decision was passed, so other checkpoints keep their bytes.
+        if (vehicle.desiredQuantile >= 0) {
+            j["desiredQuantile"] = vehicle.desiredQuantile;
+            j["freeFlowSoFar"] = vehicle.freeFlowSoFar; j["freeFlowFrom"] = vehicle.freeFlowFrom;
+        }
         vehicles.push_back(std::move(j));
     }
     for (std::size_t i = 0; i < state.inputs.size(); ++i) {

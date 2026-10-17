@@ -121,12 +121,20 @@ struct RouteDestination {
     std::string objectId; double station{};
     bool operator==(const RouteDestination&) const = default;
 };
+// B-6 (docs/reference/SPEED_DECISIONS.md §2, D223, schema 38): a desired-speed decision across every
+// lane of a Link, at a station on its reference polyline.
+struct SpeedDecisionSpec {
+    std::string id, name, linkId; double station{};
+    std::vector<TypeSpeed> speeds;
+    bool operator==(const SpeedDecisionSpec&) const = default;
+};
 struct AuthoringDefinition : ScenarioDefinition {
     bool externalVehicleTypes{true}, externalBehaviours{true};
     bool externalCompositions{true};
     std::vector<Composition> compositions;
     std::map<std::string,std::string> vehicleTypeNames;
     std::vector<RoutingDecision> routingDecisions; // M2.4
+    std::vector<SpeedDecisionSpec> speedDecisions; // B-6, schema 38
     std::map<std::string,RouteDestination> routeDestinations; // schema 30, keyed by authored Route id
     std::vector<SignalController> signalControllers; // M2.7b; `signalPrograms` keeps only legacy ones
     // M3.3.2a, schema 21: owned-behaviour display names, classes and link behaviour types.

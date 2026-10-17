@@ -23,6 +23,7 @@ void SectionAccumulator::bind(const SimState& state) {
     if (bound_ == state.scenario.get()) return;
     bound_ = state.scenario.get();
     const auto& s = *state.scenario;
+    piecewise_ = !s.speedDecisions.empty();
     const auto& parts = state.index->parts;
     routeLength_.assign(s.routes.size(), 0);
     for (std::size_t r = 0; r < s.routes.size(); ++r)
@@ -47,12 +48,13 @@ bool SectionAccumulator::inPeriod(double time) const {
     constexpr double slack = 1e-9; // the period's bounds, as MovementAccumulator applies them
     return time >= warmup_ - slack && (!periodEnd_ || time <= *periodEnd_ + slack);
 }
-void SectionAccumulator::close(std::size_t k, Track& track, double time, double travelled) {
+void SectionAccumulator::close(std::size_t k, Track& track, double time, double travelled, double freeFlowAt) {
     const double opened = track.open[k];
     track.open[k] = none;
     if (!inPeriod(byRelease_ ? track.scheduledTime : time)) return;
     const double travel = time - opened;
-    const double freeFlow = (travelled - track.openedAtDistance[k]) / track.desiredSpeed;
+    const double freeFlow = piecewise_ ? freeFlowAt - track.openedAtFreeFlow[k]
+                                       : (travelled - track.openedAtDistance[k]) / track.desiredSpeed;
     ++count_[k]; travel_[k] += travel; delay_[k] += std::max(0.0, travel - freeFlow);
 }
 void SectionAccumulator::observe(const SimState& state) {
@@ -78,7 +80,7 @@ void SectionAccumulator::observe(const SimState& state) {
     }
     const auto makeTrack = [&](std::uint64_t id, std::uint32_t route, double time, double desired, double scheduled) {
         Track t{id, route, 0, 0, time, desired, std::vector<double>(sections_.size(), none), scheduled};
-        t.openedAtDistance.assign(sections_.size(), none);
+        t.openedAtDistance.assign(sections_.size(), none); t.openedAtFreeFlow.assign(sections_.size(), none);
         return t;
     };
     const auto byId = [](const Track& t, std::uint64_t id) { return t.id < id; };
@@ -115,12 +117,15 @@ void SectionAccumulator::observe(const SimState& state) {
                 const double fraction = time > t.time ? std::clamp((at - t.time) / (time - t.time), 0.0, 1.0) : 0;
                 return t.travelled + moved * fraction;
             };
+            const auto freeFlowAt = [&](double travelled) { return t.freeFlowAt + (travelled - t.travelled) / t.desiredSpeed; };
             const double started = passage(start_);
-            if (!std::isnan(started)) { t.open[k] = started; t.openedAtDistance[k] = travelledAt(started); }
+            if (!std::isnan(started)) {
+                t.open[k] = started; t.openedAtDistance[k] = travelledAt(started); t.openedAtFreeFlow[k] = freeFlowAt(t.openedAtDistance[k]);
+            }
             const double ended = passage(finish_);
-            if (!std::isnan(ended) && !std::isnan(t.open[k])) close(k, t, ended, travelledAt(ended));
+            if (!std::isnan(ended) && !std::isnan(t.open[k])) close(k, t, ended, travelledAt(ended), freeFlowAt(travelledAt(ended)));
         }
-        t.travelled += moved;
+        t.travelled += moved; t.freeFlowAt += moved / t.desiredSpeed;
     };
     std::vector<Track> next;
     next.reserve(state.vehicles.size());
@@ -133,6 +138,7 @@ void SectionAccumulator::observe(const SimState& state) {
         else t = makeTrack(v.id, v.routeIndex, v.enteredTime, v.desiredSpeed, v.scheduledTime);
         t.type = v.typeIndex;
         advance(t, v.routeIndex, v.distance, state.time, !known);
+        if (piecewise_) t.desiredSpeed = v.desiredSpeed; // the speed in force from here on
         t.route = v.routeIndex; t.distance = v.distance; t.speed = v.speed; t.time = state.time;
         next.push_back(std::move(t));
     }

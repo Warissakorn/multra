@@ -48,6 +48,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [behaviour-key-exposure.md](behaviour-key-exposure.md) | Behaviour-key exposure: every level-4 key editable — 2026-10-17 | D217 |
 | [commitment-deceleration.md](commitment-deceleration.md) | B-2: commitment deceleration at give-way lines — 2026-10-17 | D218, D219 |
 | [merge-deceleration.md](merge-deceleration.md) | B-3: accepted deceleration for mandatory lane changes — 2026-10-17 | D220, D221 |
+| [speed-decisions.md](speed-decisions.md) | B-6 slice 1: desired-speed decisions — 2026-10-17 | D222, D223 |
 | [lane-swap.md](lane-swap.md) | Swapping pair at shared dead ends: the rear one yields — 2026-10-16 | D207 |
 | [lane-change-duration.md](lane-change-duration.md) | M3.4 slice 1: lane-change duration evidence — 2026-10-16 | D204, D206 |
 | [lateral-display.md](lateral-display.md) | M3.7 slice 4: lateral display evidence — 2026-10-16 | D180, D203 |

@@ -11,6 +11,7 @@
 #include "routing.hpp"
 #include "routes.hpp"
 #include "speed_control.hpp"
+#include "speed_decision.hpp"
 #include "validate.hpp"
 #include <cmath>
 #include <limits>
@@ -409,6 +410,8 @@ SimState stepSimulation(SimState&& state, double dt) {
         const double startDistance = vehicle.distance;
         auto moved = std::move(vehicle);
         moved.distance += move.distance; moved.speed = move.speed;
+        if (!scenario.speedDecisions.empty()) // B-6 (D223)
+            passSpeedDecisions(index, scenario.vehicleTypes[moved.typeIndex], refs[v].route, startDistance, moved.distance, moved);
         moved.acceleration = move.acceleration; moved.mode = move.mode;
         moved.w74State = move.w74; // the applied decision; Stop rest and caps keep its regime
         if (reaction < decisions.size() && decisions[reaction].vehicle == v) {
@@ -445,7 +448,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             ++next.completed;
             events.emplace_back(ArrivedEvent{time, vehicle.id, scenario.routes[moved.routeIndex].id,
                 time - vehicle.enteredTime,
-                vehicle.enteredTime - vehicle.scheduledTime, routeLength / vehicle.desiredSpeed});
+                vehicle.enteredTime - vehicle.scheduledTime, freeFlowTime(moved, routeLength)});
         } else {
             const auto location = locateOnParts(parts, moved);
             next.vehicles.push_back(std::move(moved));

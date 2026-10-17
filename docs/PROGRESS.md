@@ -6,6 +6,24 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-6 slice 1: desired-speed decisions (D222, D223)
+
+NEXT's item, contract first ([SPEED_DECISIONS](reference/SPEED_DECISIONS.md),
+[evidence](evidence/speed-decisions.md)).
+- **The owner's choices:**
+  - Vissim's model: per-type ranges at a sign, with each driver keeping their place in the range;
+  - delay measured against the speed in force;
+  - decisions before reduced-speed areas (areas written as a contract only).
+- **What changed:**
+  - engine, codec at schema 38, validation, compile per lane, and commands;
+  - an editor tab: select a Link, then *Add speed decision*.
+- **Tests:** the engine and UI rows failed first; the later rows were proved by mutation.
+- **Measured** with a 30 km/h decision on the four-leg west approach: travel time +26 s but delay
+  only +4–6 s. One red-onset clamp in ten seeds is recorded, not yet traced.
+- No decision: byte-identical, hooks +0.10 % Ir.
+
+`check` 170/170, Linux only.
+
 ## 2026-10-17 — B-3: accepted deceleration for mandatory lane changes (D220, D221)
 
 NEXT's item, contract first ([MERGE_DECELERATION](reference/MERGE_DECELERATION.md),
@@ -144,19 +162,6 @@ BA54's step-back row started 1 m behind a slower car on the covered lane, which 
 can no longer reach; it now starts 4 m behind. Switched off, every output is byte-identical. Switched
 on, there are no clamps and mean delay moves by ≤ 0.29 s. Cost: +6.0 % / +4.8 % Ir against
 `5847cb9`, inside §11. `check` 164/164, Linux only.
-
-## 2026-10-16 — Switched-on engine round (D209)
-
-NEXT's item, owed since D206. Callgrind on the switched-on lab: 24 % in `occupiedSpans` (11 % its
-lateral copies), 10.5 % in `moveLaterally`, most of it rebuilding every body for the few that move.
-Three output-preserving changes ([evidence](evidence/lateral-perf.md)):
-- `moveLaterally` builds only bodies near movers;
-- `appendLateralSpans` skips its neighbour loop inside a precomputed, conservative clear band;
-- `lateralCounts` is inline.
-
-Switched on, the lab and four-leg now cost +3.5 % and +3.0 % Ir against `5847cb9`, inside LATERAL
-§11's 10 %; lab wall time −22 % against `347fba9`. Switched off, outputs are unchanged and the run is
-6 % cheaper. Every shipped and switched-on output is byte-identical. Linux only.
 
 ## Older entries
 
