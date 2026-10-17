@@ -11,6 +11,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-17
 
+- **B-2 is in** (D218, D219, [COMMITMENT](reference/COMMITMENT.md), [evidence](evidence/commitment-deceleration.md)):
+  `commitmentDeceleration` (schema 36) at give-way lines, the lower of it and the type maximum; editor
+  row. A low value raises clamps (D69's risk), so no value ships; clamps are not yet split by road.
 - **Behaviour-key exposure is in** (D217, [evidence](evidence/behaviour-key-exposure.md)): perception,
   lateral (one box) and curve are off-until-ticked rows in the behaviour editor and the Lab panel;
   Lab *Apply* writes them back. The D95 keys and kerb bias stay out of the Lab (circuit clears lane
@@ -52,18 +55,21 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-2, the commitment deceleration contract
+## Next session — B-3, the merge deceleration contract
 
 A session told only to "continue" takes item 1:
-1. **B-2 contract** (BEHAVIOUR_PARAMETERS §3, rank 2; a level-4 behaviour key under D216). Today the
-   give-way and amber "cannot stop, so go" decisions use the type's `maxDeceleration`
-   (`conflicts.hpp` `committed`). Write the contract first: the key's name and range, its relation
-   to `amberDeceleration` (D147), absent means byte-identical, the schema step, failure-first rows,
-   and the editor and Lab rows (D217's pattern). Ask the owner any real choice before code.
-2. Then tier B in order: B-3, B-6, B-5, B-8, B-7, B-4, B-9.
-3. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
+1. **B-3 contract** (BEHAVIOUR_PARAMETERS §3, rank 3; a level-4 behaviour key under D216). Today a
+   mandatory lane change accepts a gap by the type's `comfortableDeceleration`, for itself and for
+   the follower (`lanes.cpp` `safeAt`). Write the contract first, as COMMITMENT does: key or keys,
+   range, absent means byte-identical, schema 37, failure-first rows, editor row (and Lab row only
+   if the circuit can use it, which it cannot while it clears lane changes). Ask the owner any real
+   choice before code.
+2. Then tier B in order: B-6, B-5, B-8, B-7, B-4, B-9.
+3. A small follow-up whenever a study wants D219's key: split safety clamps by road (major or minor)
+   in the report.
+4. After those, the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b W99 and
    M3.9.
-4. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
+5. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
 
 To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
 a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.

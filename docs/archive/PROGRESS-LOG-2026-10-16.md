@@ -2,6 +2,20 @@
 
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
+## 2026-10-16 — Swapping pair at shared dead ends: the rear one yields (D207)
+
+NEXT's item, found by D206's runs. Two stubs side by side, each needing the other's lane, were each
+alongside the other's target place, so neither ever changed and both approaches jammed
+(lane-change-lab seed 44, switch off too). The owner chose the rule from three: **the rear one
+yields** (level: the higher id). It holds back behind the front one's target place at comfortable
+deceleration, and the existing rules then let both change. `src/core/lanes.cpp` (`yieldMutual` in
+`courtesyHolds`); `CourtesyHold::cap` carries each hold's braking limit, so `simulation.cpp` keeps 500
+lines. Rows in `tests/lane_swap_tests.cpp` failed first ([evidence](../evidence/lane-swap.md)).
+
+Every lab stall is gone with the switch off and on. Shipped four-leg and M2.6 outputs move slightly
+(≤ 0.2 s mean delay), because such pairs form there too; the CLI pin is byte-identical. `check`
+163/163, Linux only.
+
 ## 2026-10-16 — M3.4 slice 1: lane-change duration (D206)
 
 NEXT's item. `src/core/lanes.*`, `lateral_motion.cpp`, one line of `simulation.cpp`. With the lateral

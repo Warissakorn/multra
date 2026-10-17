@@ -132,7 +132,7 @@ std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& in
             const bool exitTaken = leader && leader->speed < kStoppedSpeed &&
                 vehicle.distance + leader->gap - rz.clearAt < type.length + standstillGap(behaviour);
             // A driver who cannot stop at the line goes, unless the area is physically taken.
-            const bool blocked = committed(vehicle.speed, std::max(0.0, gap), type) ? state.majorInside : state.majorBlocks;
+            const bool blocked = committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : state.majorBlocks;
             if (!unserved && !blocked && !exitTaken) continue;
         } else {
             gap = rz.entryAt - vehicle.distance;
@@ -144,6 +144,12 @@ std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& in
         if (!hold || gap < *hold) hold = gap;
     }
     return hold;
+}
+std::vector<ValidationIssue> commitmentParameterIssues(const DriverBehaviour& b, const std::string& path) {
+    if (!b.commitmentDeceleration) return {};
+    const double d = *b.commitmentDeceleration; // COMMITMENT §2: (0, 15]
+    if (std::isfinite(d) && d > 0 && d <= 15) return {};
+    return {{"INVALID_BEHAVIOUR_PARAMETER", path + ".commitmentDeceleration"}};
 }
 double stopLineReach(const DriverBehaviour& b, double driverFactor) {
     return desiredGap(b, driverFactor, kStoppedSpeed) + kLineReach;

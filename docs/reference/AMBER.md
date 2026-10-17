@@ -13,7 +13,7 @@ contract replaces that for projects. The model is a deterministic threshold, **n
 |---|---|---|
 | Green | No hold | No hold |
 | Amber | Held at the line, as red (D36) | **Goes** when `speed² > 2 · amberDeceleration · gap`, where `gap ≥ 0` is the distance from the front to the line, or when it cannot stop at all (below); otherwise held at the line |
-| Red | Held at the line | Held at the line, unless it **cannot stop at all**: `speed² > 2 · maxDeceleration · gap` with the vehicle type's maximum, the commitment rule priority rules already use (M3.2.8a) |
+| Red | Held at the line | Held at the line, unless it **cannot stop at all**: `speed² > 2 · maxDeceleration · gap` with the vehicle type's maximum, the commitment rule priority rules already use (M3.2.8a). `commitmentDeceleration` (D219) never applies here |
 
 - **Continuous check.** The test runs on every tick the head is amber. It needs no state on the
   vehicle, and is the default of Vissim's "Continuous check" in spirit, though not its

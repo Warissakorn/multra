@@ -46,6 +46,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [curve-speed.md](curve-speed.md) | M3.6 slice 1: curve speed — 2026-10-17 | D211, D212, D213 |
 | [kerb-bias.md](kerb-bias.md) | M3.4 keep to the kerb lane, slice 1 — 2026-10-17 | D213, D215 |
 | [behaviour-key-exposure.md](behaviour-key-exposure.md) | Behaviour-key exposure: every level-4 key editable — 2026-10-17 | D217 |
+| [commitment-deceleration.md](commitment-deceleration.md) | B-2: commitment deceleration at give-way lines — 2026-10-17 | D218, D219 |
 | [lane-swap.md](lane-swap.md) | Swapping pair at shared dead ends: the rear one yields — 2026-10-16 | D207 |
 | [lane-change-duration.md](lane-change-duration.md) | M3.4 slice 1: lane-change duration evidence — 2026-10-16 | D204, D206 |
 | [lateral-display.md](lateral-display.md) | M3.7 slice 4: lateral display evidence — 2026-10-16 | D180, D203 |

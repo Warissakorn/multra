@@ -6,6 +6,27 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B-2: commitment deceleration at give-way lines (D218, D219)
+
+NEXT's item, contract first ([COMMITMENT](reference/COMMITMENT.md),
+[evidence](evidence/commitment-deceleration.md)).
+- **The owner's choices:**
+  - the key applies at give-way lines only, and the red head keeps the type's maximum (red-light
+    running is B-9);
+  - the lower of the key and the type's `maxDeceleration` wins.
+- **What changed:**
+  - `commitmentDeceleration` (schema 36, either model) in the give-way commitment test;
+  - an editor row; no Lab row, because the circuits have no give-way line.
+- **Tests:** five rows failed first, and three mutations are caught. The first scene clamped even
+  without the key, so a sweep chose an 8 m scene.
+- **Measured** with the key on every behaviour:
+  - T-junction delay falls from 6.45 to 5.65 s at 2 m/s², while clamps rise from 0.2 to 0.8 per seed;
+  - M2.6 clamps rise from 1.1 to 8.3, as D69 warned.
+
+  No value ships. Key absent: byte-identical, +0.04 % Ir.
+
+`check` 167/167, Linux only.
+
 ## 2026-10-17 — Behaviour-key exposure (D217)
 
 The owner's wish, and NEXT's item: every driving-behaviour key the engine already accepts can now be
@@ -132,20 +153,6 @@ Each cause was probed and fixed in turn: waiting over the line, a follower just 
 on the previous segment. The test now compares every vehicle in its own route's distances. Both
 switched-on projects run with 0 clamps and unchanged completed trips; switched-off runs and the CLI
 pin are byte-identical. `check` 163/163, Linux only.
-
-## 2026-10-16 — Swapping pair at shared dead ends: the rear one yields (D207)
-
-NEXT's item, found by D206's runs. Two stubs side by side, each needing the other's lane, were each
-alongside the other's target place, so neither ever changed and both approaches jammed
-(lane-change-lab seed 44, switch off too). The owner chose the rule from three: **the rear one
-yields** (level: the higher id). It holds back behind the front one's target place at comfortable
-deceleration, and the existing rules then let both change. `src/core/lanes.cpp` (`yieldMutual` in
-`courtesyHolds`); `CourtesyHold::cap` carries each hold's braking limit, so `simulation.cpp` keeps 500
-lines. Rows in `tests/lane_swap_tests.cpp` failed first ([evidence](evidence/lane-swap.md)).
-
-Every lab stall is gone with the switch off and on. Shipped four-leg and M2.6 outputs move slightly
-(≤ 0.2 s mean delay), because such pairs form there too; the CLI pin is byte-identical. `check`
-163/163, Linux only.
 
 ## Older entries
 

@@ -32,6 +32,8 @@ A vehicle short of a line it must give way at is **committed** to that line when
   about 2 s ahead of a major vehicle. It clamped the major road at the T-junction and at an M2.6
   merge, which breaks this section's gate. The owner then chose `maxDeceleration`
   (`docs/evidence/m3.2.8a-commitment.md`).
+- **Since D219** a behaviour may carry `commitmentDeceleration`, and the lower of it and the type's
+  maximum is used here ([COMMITMENT](COMMITMENT.md)). Absent, this section is unchanged.
 
 Commitment is read off positions and speeds and is **never stored**. `SimState` does not change,
 so a copied state replays exactly (A25). A committed vehicle that a leader slows until it can stop

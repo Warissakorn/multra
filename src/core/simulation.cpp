@@ -308,7 +308,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             const auto conflict = index.conflictSegmentOfRule[routeRule.ruleIndex];
             if (conflict == SIZE_MAX) continue; // Rejected by validation; never read out of bounds.
             // M3.2.8a: a driver who cannot stop at the line goes unless the point is occupied.
-            const bool goes = committed(vehicle.speed, std::max(0.0, gap), type);
+            const bool goes = committed(vehicle.speed, std::max(0.0, gap), type, behaviour); // B-2 (D219)
             bool giveWay = false;
             for (auto i = buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];

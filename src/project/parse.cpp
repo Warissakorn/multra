@@ -314,7 +314,7 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
         p.*key.member = value.get<double>();
     }
 }
-// M3.6 curve (D212) and M3.4 kerb bias (D215): one optional number each, the same way; ranges are the validator's.
+// M3.6 curve (D212), M3.4 kerb bias (D215), B-2 commitment (D219): one optional number each, the same way; ranges are the validator's.
 static void readOptional(const Json& b, const std::string& path, const char* key, std::optional<double>& value) {
     if (!b.contains(key)) return;
     if (!b.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key}});
@@ -352,7 +352,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
         if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration"); // M4.2
         readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral); readOptional(b, path, "curveLateralAcceleration", behaviour.curveLateralAcceleration);
-        readOptional(b, path, "kerbLaneBias", behaviour.kerbLaneBias);
+        readOptional(b, path, "kerbLaneBias", behaviour.kerbLaneBias); readOptional(b, path, "commitmentDeceleration", behaviour.commitmentDeceleration);
         return behaviour;
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
@@ -375,7 +375,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
     // Optional (M4.2, D147): absent, amber holds like red.
     if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration");
     readPerception(b, path, behaviour.perception); readLateral(b, path, behaviour.lateral); readOptional(b, path, "curveLateralAcceleration", behaviour.curveLateralAcceleration);
-    readOptional(b, path, "kerbLaneBias", behaviour.kerbLaneBias);
+    readOptional(b, path, "kerbLaneBias", behaviour.kerbLaneBias); readOptional(b, path, "commitmentDeceleration", behaviour.commitmentDeceleration);
     return behaviour;
 }
 VehicleType parseVehicleType(const Json& t) {

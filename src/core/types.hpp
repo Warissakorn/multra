@@ -70,7 +70,7 @@ struct DriverBehaviour {
     std::optional<double> amberDeceleration;
     PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
-    std::optional<double> curveLateralAcceleration, kerbLaneBias; // m/s²: M3.6 curves (D212), M3.4 kerb (OVERTAKING.md, D215)
+    std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration; // m/s²: curves (D212), kerb (D215), give-way commitment (COMMITMENT.md, D219)
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };

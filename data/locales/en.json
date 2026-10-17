@@ -706,7 +706,7 @@
   "editorBehaviourModelPrototype": "Prototype",
   "editorBehaviourModelW74": "W74 (Wiedemann 74)",
   "editorBehaviourW74Help": "Every W74 key needs a value; none is filled in for you. Values are not calibrated: a study needs a cited source for each.",
-  "editorBehaviourEitherModel": "For either model: perception, lateral distances (the three together) and curve speed. Unticked keys are not used.",
+  "editorBehaviourEitherModel": "For either model: perception, lateral distances (the three together), curve speed and the give-way commitment deceleration. Unticked keys are not used.",
   "editorBehaviourW74Missing": "Enter a number for %1.",
   "editorBehaviourReplacement": "Replace references with",
   "editorBehaviourMembers": "Vehicle types",

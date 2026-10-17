@@ -109,7 +109,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         pages->setCurrentIndex(index); w74Help->setVisible(index == 1);
     });
     model->setCurrentIndex(b.w74 ? 1 : 0); pages->setCurrentIndex(model->currentIndex()); w74Help->setVisible(b.w74.has_value());
-    // D217: keys either model may carry (perception, lateral, curve), from `b` itself. Lateral is
+    // D217: keys either model may carry (perception, lateral, curve, commitment), from `b` itself. Lateral is
     // all or none (LATERAL §9), so one box sets its three keys.
     note(&dialog, form, text("editorBehaviourEitherModel"), "editorBehaviourEitherModel");
     auto either = b;
@@ -127,9 +127,11 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         form->addRow(key.name, spin); lateralKeys.push_back({&key, spin});
     }
     shared.push_back(optional(&dialog, form, "curveLateralAcceleration", &either.curveLateralAcceleration));
+    shared.push_back(optional(&dialog, form, "commitmentDeceleration", &either.commitmentDeceleration)); // B-2 (D219)
     const auto keepShared = [&](DriverBehaviour& to) {
         for (const auto& o : shared) *o.value = o.on->isChecked() ? std::optional<double>(o.spin->value()) : std::nullopt;
         to.perception = either.perception; to.curveLateralAcceleration = either.curveLateralAcceleration;
+        to.commitmentDeceleration = either.commitmentDeceleration;
         to.lateral = {};
         if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();
     };

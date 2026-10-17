@@ -21,6 +21,14 @@ double waitingRoom(const Scenario&);
 inline bool committed(double speed, double gap, const VehicleType& type) {
     return speed * speed > 2 * type.maxDeceleration * gap;
 }
+// B-2 (docs/reference/COMMITMENT.md, D219): at a give-way line the behaviour's
+// commitmentDeceleration, when set, replaces the maximum; the lower of the two wins. Signal heads
+// keep the type-only test (owner).
+inline bool committed(double speed, double gap, const VehicleType& type, const DriverBehaviour& behaviour) {
+    const double deceleration = std::min(behaviour.commitmentDeceleration.value_or(type.maxDeceleration), type.maxDeceleration);
+    return speed * speed > 2 * deceleration * gap;
+}
+std::vector<ValidationIssue> commitmentParameterIssues(const DriverBehaviour&, const std::string& path);
 // One zone as the snapshot sees it at the start of a tick.
 struct ZoneState {
     bool majorBlocks{};                  // a major vehicle is inside, within headway, or within gapTime

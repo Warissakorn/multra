@@ -272,6 +272,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
             for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
             for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
+            for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
             continue;
         }
         number(b.standstillDistance, p + ".standstillDistance");
@@ -284,6 +285,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
         for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
         for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
+        for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every
         // vehicle on them would change back and forth each tick.

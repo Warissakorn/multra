@@ -69,13 +69,14 @@ void buildLibrary(QDialog& d) {
         item<QDoubleSpinBox>(e, "kerbLaneBias")->setValue(1.5);
         // D217: the keys for either model are rows too, off until ticked; lateral is one group.
         for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "lookBackDistance", "rearTimeToCollision",
-                                "reactionTime", "lateral", "curveLateralAcceleration"})
+                                "reactionTime", "lateral", "curveLateralAcceleration", "commitmentDeceleration"})
             require(!item<QCheckBox>(e, (std::string(key) + "Set").c_str())->isChecked(), "Either-model row missing or pre-set");
-        for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "reactionTime", "lateral", "curveLateralAcceleration"})
+        for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "reactionTime", "lateral", "curveLateralAcceleration",
+                                "commitmentDeceleration"})
             item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
         for (const auto& [key, value] : std::vector<std::pair<const char*, double>>{{"lookAheadDistance", 150},
                  {"observedVehiclesAhead", 2}, {"reactionTime", .5}, {"lateralMinDistanceStanding", .5},
-                 {"lateralMinDistanceAt50", 1}, {"maxLateralSpeed", 1}, {"curveLateralAcceleration", 3}})
+                 {"lateralMinDistanceAt50", 1}, {"maxLateralSpeed", 1}, {"curveLateralAcceleration", 3}, {"commitmentDeceleration", 4}})
             item<QDoubleSpinBox>(e, key)->setValue(value);
         confirm(e);
     });
@@ -136,6 +137,7 @@ int main(int argc, char** argv) {
         require(def.behaviours[1].perception == perceived && def.behaviours[0].perception == PerceptionParameters{}, "Perception not edited (D217)");
         require(def.behaviours[1].lateral == LateralParameters{.5, 1., 1.} && !hasLateral(def.behaviours[0].lateral), "Lateral not edited (D217)");
         require(def.behaviours[1].curveLateralAcceleration == 3 && !def.behaviours[0].curveLateralAcceleration, "Curve not edited (D217)");
+        require(def.behaviours[1].commitmentDeceleration == 4 && !def.behaviours[0].commitmentDeceleration, "Commitment not edited (D219)");
         require(def.vehicleClasses.size() == 1 && def.linkBehaviourTypes.size() == 1, "Class or behaviour type lost");
         require(def.linkBehaviourTypes[0].overrides.size() == 1, "Override lost");
         item<QAction>(w, "editorUndo")->trigger();
@@ -220,9 +222,9 @@ int main(int argc, char** argv) {
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
         require(behaviour("w74-set").curveLateralAcceleration == 2 && behaviour("w74-set").perception.reactionTime == .4,
                 "w74 either-model keys not saved (D213, D217)");
-        // 35 for the kerb bias the edited prototype copy carries (M3.4, D215), above the w74
-        // behaviour's curve key (34, D212): the schema is the newest feature the file holds.
-        require(documentJson(w.history().document())["schemaVersion"] == 35, "w74 file not schema 35");
+        // 36 for the commitment deceleration the edited prototype copy carries (B-2, D219), above its
+        // kerb bias (35, D215) and the w74 curve key (34, D212): the newest feature the file holds.
+        require(documentJson(w.history().document())["schemaVersion"] == 36, "w74 file not schema 36");
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", "w74-set"); }, [](QDialog& e) {
                 item<QCheckBox>(e, "reactionTimeSet")->setChecked(false); confirm(e);
