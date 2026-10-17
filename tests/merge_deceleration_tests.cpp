@@ -203,7 +203,8 @@ TEST(mergedecel, ba85_the_keys_round_trip_at_schema_37_and_are_refused_before) {
             CHECK(refused(doc, "INVALID_BEHAVIOUR_PARAMETER"));
         }
         auto edge = j; edge["definition"]["behaviours"][0][key] = 15;
-        const auto& reopened = parseDocument(edge).definition->behaviours.front();
+        const auto parsed = parseDocument(edge); // kept: a reference into the temporary dangled (ASan)
+        const auto& reopened = parsed.definition->behaviours.front();
         CHECK((own ? reopened.mandatoryDecelerationOwn : reopened.mandatoryDecelerationTrailingVehicle) == 15);
     }
     auto newer = documentJson(document({3, 5})); newer["schemaVersion"] = 40;
