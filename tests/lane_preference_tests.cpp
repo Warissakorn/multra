@@ -28,7 +28,9 @@ VehicleInput& input(ProjectDocument& d, const std::string& id) {
 // Each core input's volume, by id.
 std::map<std::string, double> volumes(const ProjectDocument& d) {
     std::map<std::string, double> v;
-    for (const auto& i : compileDocument(d, test::root() / "data").scenario.inputs) v[i.id] = i.vehiclesPerHour;
+    // Held in a local: windows-core failed every compile row while the loop ran over a temporary's member.
+    const auto snapshot = compileDocument(d, test::root() / "data");
+    for (const auto& i : snapshot.scenario.inputs) v[i.id] = i.vehiclesPerHour;
     return v;
 }
 void near(const std::map<std::string, double>& v, const std::string& id, double expected) { test::near(v.at(id), expected, 1e-9); }

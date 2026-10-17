@@ -48,6 +48,11 @@ It then checks:
 
 `check` **175/175**: 174 tests plus the new `lanepref`.
 
+**First Windows run.** `windows-core` failed BA124–BA129: the compiled lab had three inputs or
+fewer, even without the key. The rows' helper looped directly over a member of a temporary
+`compileDocument` result, which MSVC appears not to keep alive. It now holds the snapshot in a local
+first, as the other tests do. Linux was green either way. Not verified on Windows until the next CI run.
+
 `parse.cpp` reached 502 lines on the first `check`. The reader's declaration moved to `json.hpp`,
 and its call shares the `return` line.
 
