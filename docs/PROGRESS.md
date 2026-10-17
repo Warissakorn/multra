@@ -6,6 +6,14 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-17 — B19 decided on the owner's delegation (D214, docs only)
+
+The owner answered B19 with "ช่วยตัดสินใจ" ("help decide"). D213's tiers stand, except that the
+50 km/h lateral reference moves to fixed: no study needs it, and Vissim fixes it too. Tier B is ranked
+by its effect on Thai study outputs: kerb bias, commitment deceleration, merge deceleration, speed
+limits, speed distributions, Stop seconds, lane preference by type, driver-factor spread, then
+red-light running ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) §3). No code changed.
+
 ## 2026-10-17 — Behaviour configurability and the keep-to-kerb contract (D213)
 
 NEXT's item, M3.4 overtaking with the driving side. The owner chose an asymmetric bias, with
@@ -145,17 +153,6 @@ causes came from the CI log ([evidence](evidence/windows-ui-red.md)):
 All three now reproduce on Linux. Each row failed before its fix and fails again with the fix reverted.
 Checked on Linux offscreen: `check` 161/161, CLI pin byte-identical to main. Windows is confirmed only
 by this branch's CI run.
-
-## 2026-10-16 — M3.4 lane-change duration contract (D204, docs only)
-
-The owner asked for recommendations on the contract's three open choices and took all three:
-- a change starts only if it can finish before the next conflict area on both lanes (an extension of
-  the existing "no change inside an area" rule), so no zone has to hold a straddler;
-- the D97 slide stays for switched-off runs, which still change instantaneously;
-- no new key: `maxLateralSpeed` sets the duration.
-New [LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md) with rows BA48–BA53; also found that a
-change must cross before its span's `fromEnd`, since the crossing needs a covering span (LATERAL §7).
-No code changed; `check` was run for the docs.
 
 ## Older entries
 

@@ -17,8 +17,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
 - **D213 (docs only):** [BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) proposes which
-  behaviour values are settable now, should become optional keys, or stay fixed (owner to confirm,
-  OWNER_SITTING B19). The [OVERTAKING](reference/OVERTAKING.md) keep-to-kerb contract is written
+  behaviour values are settable now, should become optional keys, or stay fixed; decided on the
+  owner's delegation with tier B ordered (D214). The [OVERTAKING](reference/OVERTAKING.md) keep-to-kerb contract is written
   (BA64–BA71, not implemented). The behaviour editor's W74 save now keeps the curve key.
 - **M3.6 slice 1 is in** (D212, [evidence](evidence/curve-speed.md), BA56–BA63): with
   `curveLateralAcceleration` on a behaviour (schema 34), vehicles slow for a Connector's curve to
@@ -59,7 +59,8 @@ A session told only to "continue" takes item 1:
    key goes in the behaviour editor and the Lab panel as off-until-ticked rows: perception, lateral,
    curve and kerb bias. Discretionary keys and kerb bias in the Lab wait on the circuit lane-change
    wrap rule.
-3. Tier-B items in BEHAVIOUR_PARAMETERS §3's order, each contract-first, once the owner answers B19.
+3. Tier-B items in BEHAVIOUR_PARAMETERS §3's order (D214), each contract-first: next after kerb bias is
+   B-2, the give-way/amber commitment deceleration.
    After those comes the rest of the review's §5 order: M3.8 motorcycles, M3.5 attention, M3.3.3b
    W99 and M3.9.
 4. If a session has room: D212's residual +0.85 % switched-off Ir on four-leg against D209.
