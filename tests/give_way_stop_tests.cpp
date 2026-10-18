@@ -87,8 +87,9 @@ TEST(givewaystop, ba150_a_stop_beyond_the_maximum_is_still_a_clamp) { // BA150
 }
 TEST(givewaystop, ba151_a_nearer_vehicle_leader_keeps_its_cap) { // BA151
     // A standing car whose standstill buffer leaves 1 cm, nearer than the 2 cm line: its cap binds.
-    const auto& car = crossing().vehicleTypes.front();
-    const double standstill = crossing().behaviours.front().standstillDistance;
-    const auto o = run(creeping(crossing(), 0.02, 0.5, {{3, "minorRoute", 89.98 + 0.01 + standstill + car.length, 0}}), 1);
+    // Held in a local: a reference into a temporary scenario dangled (ASan, D240).
+    const auto scenario = crossing();
+    const double length = scenario.vehicleTypes.front().length, standstill = scenario.behaviours.front().standstillDistance;
+    const auto o = run(creeping(scenario, 0.02, 0.5, {{3, "minorRoute", 89.98 + 0.01 + standstill + length, 0}}), 1);
     CHECK(o.clamps == 1);
 }

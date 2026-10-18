@@ -42,6 +42,10 @@ The placement was found by a scan over gaps of 1–40 cm and speeds of 0.2–2 m
 
 `check` **178/178**: 177 tests plus the new `givewaystop`.
 
+**First sanitizer run.** CI `linux (sanitizer)` failed BA151 on `b81635f` with heap-use-after-free.
+The row held a reference into the temporary scenario that `crossing()` returned. The row now keeps
+the scenario in a local; the engine was not involved. Linux Debug had passed by chance.
+
 ## Shipped runs
 
 **Byte-identical** against D210's and D225's baselines, as the contract requires (no give-way line

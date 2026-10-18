@@ -15,6 +15,8 @@ D239's contract ([evidence](evidence/give-way-stop.md)).
   Every other shipped output is byte-identical. The 11 replaced ticks braked at 2.5–7.4 m/s². Ir
   +0.11–0.15 %.
 - **Correction:** D232's "none at seeds 42–51" was wrong (seed 46 has 2).
+- **Sanitizer:** CI ASan caught BA151 reading a reference into a temporary scenario; the row now
+  holds it in a local.
 
 `check` 178/178, Linux only.
 
