@@ -389,7 +389,7 @@ new state, gap relaxation or commitment change is introduced.
 
 
 `driverFactor` is a clipped normal draw with mean 0.5 and standard deviation 0.15, sampled
-once per vehicle. The distance shape is inspired by the
+once per vehicle; the type's behaviour may set another deviation ([DRIVER_FACTOR](DRIVER_FACTOR.md), B-4). The distance shape is inspired by the
 [PTV Wiedemann 74 parameter documentation](https://cgi.ptvgroup.com/vision-help/VISSIM_2025_ENG/Content/4_BasisdatenSim/FahrverhaltensparameterFolgeverh_Wied74.htm).
 Unlike that model, this prototype does not smear standstill distance or use its full
 perception thresholds. Its free/approaching/following/braking regime thresholds and

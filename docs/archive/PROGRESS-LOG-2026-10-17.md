@@ -3,6 +3,30 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-6 slice 2: reduced-speed areas (D224, D225)
+
+NEXT's item, contract first ([SPEED_DECISIONS §7](../reference/SPEED_DECISIONS.md),
+[evidence](../evidence/reduced-speed-areas.md)). PR #176 opened for D206–D223 first.
+- **The owner's choices:**
+  - the anticipation deceleration is a per-area value, else comfortable;
+  - delay inside an area is not counted;
+  - an area can be limited to chosen lanes, named by lane id.
+- **What changed:**
+  - engine: `min(desired, area)` inside an area, anticipated before it, with an acceleration cap
+    while the area binds;
+  - area pieces in the free flow;
+  - codec at schema 39, validation (including overlap), compile per lane section;
+  - commands, including a lane-drop guard and the lane-id map on split;
+  - an editor tab: select a Link, then *Add reduced-speed area*, with lane boxes.
+- **Tests:** every engine row but BA97 and BA102 failed first. The rows also caught three faults in
+  the first implementation; one of them, the missing acceleration cap, also affects D212's curve
+  bound (listed in NEXT). Every codec and command mutation is caught.
+- **Measured** with a 30 km/h area on the four-leg west approach: on one lane it slows only that
+  lane's movement, by +8.6 s travel time and +1.9 s delay. No clamps.
+- No area: byte-identical, +0.77 % Ir (hooks +0.5 %), recorded.
+
+`check` 172/172, Linux only.
+
 ## 2026-10-17 — B-6 slice 1: desired-speed decisions (D222, D223)
 
 NEXT's item, contract first ([SPEED_DECISIONS](../reference/SPEED_DECISIONS.md),

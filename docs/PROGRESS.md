@@ -6,6 +6,15 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — B-4 driver-factor spread contract (D235, docs only)
+
+NEXT's item ([DRIVER_FACTOR](reference/DRIVER_FACTOR.md)). Today every driver's factor is drawn
+with a fixed spread of 0.15.
+- **The owner's choices:** on the driver behaviour, from the type's own behaviour when the vehicle
+  is made; the standard deviation only (the mean would repeat `additiveSafetyDistance`).
+- **The contract:** `driverFactorSpread` in [0, 0.5] at schema 43; the same two draws, so the random
+  stream is unchanged; drawn once, never redrawn by road; rows BA131–BA137.
+
 ## 2026-10-17 — B-7 lane preference by vehicle type implemented (D234)
 
 D233's contract ([evidence](evidence/lane-preference.md)).
@@ -109,30 +118,6 @@ D225 found that a speed target below the desired speed clamped only the speed, s
 
 `check` 172/172, Linux only. CI on PR #176: the sanitizer failure (BA85's dangling reference) is
 fixed. The Windows `properties-layout-ui` failure is also red on `main`.
-
-## 2026-10-17 — B-6 slice 2: reduced-speed areas (D224, D225)
-
-NEXT's item, contract first ([SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md),
-[evidence](evidence/reduced-speed-areas.md)). PR #176 opened for D206–D223 first.
-- **The owner's choices:**
-  - the anticipation deceleration is a per-area value, else comfortable;
-  - delay inside an area is not counted;
-  - an area can be limited to chosen lanes, named by lane id.
-- **What changed:**
-  - engine: `min(desired, area)` inside an area, anticipated before it, with an acceleration cap
-    while the area binds;
-  - area pieces in the free flow;
-  - codec at schema 39, validation (including overlap), compile per lane section;
-  - commands, including a lane-drop guard and the lane-id map on split;
-  - an editor tab: select a Link, then *Add reduced-speed area*, with lane boxes.
-- **Tests:** every engine row but BA97 and BA102 failed first. The rows also caught three faults in
-  the first implementation; one of them, the missing acceleration cap, also affects D212's curve
-  bound (listed in NEXT). Every codec and command mutation is caught.
-- **Measured** with a 30 km/h area on the four-leg west approach: on one lane it slows only that
-  lane's movement, by +8.6 s travel time and +1.9 s delay. No clamps.
-- No area: byte-identical, +0.77 % Ir (hooks +0.5 %), recorded.
-
-`check` 172/172, Linux only.
 
 ## Older entries
 

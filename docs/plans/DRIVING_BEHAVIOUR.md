@@ -199,6 +199,13 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA128 | Route needing a far lane | Enters on the kerb lane, changes as a stub, arrives |
 | BA129 | Routeless input | Same rule on its paths |
 | BA130 | Codec at schema 42 and dialog row | Round-trips; faults at their paths; 41 refused |
+| BA131 | No `driverFactorSpread` key ([DRIVER_FACTOR](../reference/DRIVER_FACTOR.md), D235) | Factors and shipped outputs byte-identical |
+| BA132 | Spread 0 | Every factor 0.5; arrivals and desired speeds unchanged |
+| BA133 | Spread 0.3 | Sample deviation near 0.3, mean near 0.5, inside [0, 1] |
+| BA134 | Spread 0.15 | Byte-identical to no key |
+| BA135 | Key on one type's behaviour only | The other type keeps 0.15 |
+| BA136 | Segment behaviour with another spread | The factor is not redrawn |
+| BA137 | Codec at schema 43 and dialog row | Round-trips; faults at their paths; 42 refused |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

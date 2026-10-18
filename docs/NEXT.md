@@ -9,11 +9,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 [OWNER_SITTING](plans/OWNER_SITTING.md); dated measurements and reverted ideas live in
 [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 
-## State on 2026-10-17
+## State on 2026-10-18
 
-- **PR #176** carries D207–D231 to `main` (#175 merged D206; `main` merged back in). Its Windows
-  `properties-layout-ui` failure is also red on `main` (D205's open item); the sanitizer failure was
-  BA85's dangling reference, fixed.
+- **PR #177** carries D207–D234 to `main` (#176 was closed). CI is green except Windows
+  `properties-layout-ui`, which is also red on `main` (D205's open item).
+- **B-4 contract** (D235, [DRIVER_FACTOR](reference/DRIVER_FACTOR.md)): `driverFactorSpread` on the
+  driver behaviour (schema 43) sets the factor's standard deviation, read from the type's own
+  behaviour when a vehicle is made; absent = 0.15; the random stream is unchanged. Implementation in
+  progress (D236).
 - **B-7 is in** (D233, D234, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md), [evidence](evidence/lane-preference.md)):
   `kerbLanes` on the vehicle type (schema 42) splits that type's entry only over the kerb-most N
   lanes; mandatory changes unchanged; type-dialog row. Not where an entry routing decision chooses
@@ -88,12 +91,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — tier B
+## Next session — B-4 implementation, then B-9
 
 A session told only to "continue" takes item 1:
-1. **B-4: driver-factor spread** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md); today
-   `clamp(0.5 + 0.15·N, 0, 1)` in `demand.cpp`): contract first, ask the owner the open choices, then
-   rows that fail first. Absent must stay byte-identical, as the random stream must.
-2. Then B-9 (red-light running), the last of tier B.
+1. **Implement B-4** (D235, [DRIVER_FACTOR](reference/DRIVER_FACTOR.md)): the spread in
+   `samplePending`; rows BA131–BA137 failing first; schema 43; the behaviour-dialog row.
+2. Then B-9 (red-light running), the last of tier B: contract first, ask the owner.
 3. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
    M3.2.8a.1 contract or when the owner asks.
