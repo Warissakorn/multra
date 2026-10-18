@@ -17,6 +17,7 @@
 #include <QTabWidget>
 #include <QTabBar>
 #include <QTest>
+#include <QTextBoundaryFinder>
 #include <QToolButton>
 #include <algorithm>
 #include <filesystem>
@@ -159,6 +160,13 @@ int main(int argc,char** argv) {
         require(dock->width()<=220,"Narrow fixture did not take effect");
         for(int lang:{0,1}) {
             language->setCurrentIndex(lang);settle();
+            // D245: Qt finds Thai line breaks through libthai. Without it (Windows CI before D245) a Thai sentence
+            // breaks only at its spaces: the effective-behaviour text asked 257 px and held the panel at 273 px.
+            if(lang==1) {
+                QTextBoundaryFinder breaks(QTextBoundaryFinder::Line,QString::fromUtf8("คลังพฤติกรรมแก้ไขแคตตาล็อกของโปรเจกต์เอง"));
+                int inner=0;while(breaks.toNextBoundary()>0&&breaks.position()<breaks.string().size())++inner;
+                require(inner>0,"Qt has no Thai line breaking here (libthai not found, or LIBTHAI_DICTDIR wrong)");
+            }
             // D244: a wrapped text above the pages asks only for its longest word; on Windows the effective-behaviour
             // text asked 257 px and held the panel at 273 px, so the top forms kept two columns.
             for(auto* text:dock->widget()->findChildren<QLabel*>())

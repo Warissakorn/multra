@@ -11,22 +11,19 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-18
 
-- **PR #177** carries D207–D244 to `main` (#176 was closed).
-- **D244:** on Windows the wrapped effective-behaviour text asked for a 257 px minimum and held the
-  narrow Properties panel at 273 px. `ReflowLabel` now asks only for its longest word, but
-  Windows still showed 257 on `2596b8e` and the word check did not fire, so the source is still
-  open. The narrow check prints each widget's hint, set minimum, width, policy and text; read that
-  output on the next run.
-- **D243:** the text buttons above the Properties pages elide (the owner's choice). It did **not**
-  fix Windows `properties-layout-ui`: the top forms' host is still 273 px there. The narrow check
-  now prints the dock, body and tab widths and the six widest top widgets. Read that output from
-  the next `windows-desktop` run, then fix the widget it names
-  ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
-- **D242:** Windows `properties-layout-ui` ("A narrow form kept a field beside its label", red on
-  `main` too) is fixed on Linux evidence. A scrolled Properties form now stacks by the width its
-  viewport shows ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
-  It is confirmed only by a green `windows-desktop` run; if that run fails, the test now names the
-  form and widths.
+- **PR #177** carries D207–D245 to `main` (#176 was closed). The owner wants it merged once every
+  CI job is green.
+- **D245:** Windows `properties-layout-ui` (red on `main` too) failed because Qt there had no
+  libthai. A Thai sentence broke only at its spaces, so the effective-behaviour text asked for
+  257 px and held the narrow Properties panel at 273 px.
+  - CI and the Windows package now ship MSYS2's libthai as `thai.dll`, with its dictionary (the
+    owner's choice), and the editor finds the dictionary in `data/libthai`.
+  - The narrow check first asserts a Thai line break, with a clear message.
+  - It is confirmed only by a green `windows-desktop` run
+    ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
+- **D242–D244** (forms reflow by their viewport, top buttons elide, a wrapped text asks only for its
+  word) were not the Windows cause. They stay as robustness fixes, and the narrow check's
+  diagnostic stays; it prints only on failure.
 - **D241 (no code change):** M2.6's clamps added by red running are traced
   ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). Only seeds 51 and 73 change, and
   none of the added clamps is a red-head hold:

@@ -228,3 +228,59 @@ The diagnostic now prints, for each of the six widest widgets:
 - the hint and the set minimum, separately;
 - the width and the horizontal policy;
 - for a label, Qt's own value, the wrap flag, the format and the text.
+
+## Round 6: Thai had no line breaks on Windows (D245) — 2026-10-18
+
+**Windows diagnostic.** On `5b0faf5` (job 117680403240), in all three scales:
+
+```text
+257 QLabel editorEffectiveBehaviour (hint 257, set 0, width 257, policy 5, QLabel 257, wrap 1, format 2,
+    text "คลังพฤติกรรมแก้ไขแคตตาล็อกของโปรเจกต์เอง ให้คัดลอกประเภทรถและพฤติกรรมเข้าโปรเจกต…")
+```
+
+Nothing sets a minimum width (`set 0`); the 257 is Qt's own value for the text. The failing check is
+the **Thai** pass of the narrow loop. Round 5 had compared it with the English text, so "the text
+itself is the same" there was wrong.
+
+**Cause.** Thai is written without spaces between words. Qt finds Thai line breaks through libthai,
+which it loads at run time (`QLibrary("thai", 0)`, with `th_brk_find_breaks`). On Windows, Qt 6.5
+looks only for `thai.dll`, and the CI runner has none. Without it, a Thai sentence breaks only at its
+spaces, so its first 41-letter run is one word. D205 had already met this on a form label.
+
+**Linux reproduction.** A probe measured the same text in a word-wrapped `QLabel` on Qt 6.4.2:
+
+| libthai | Minimum width | Line breaks |
+|---|---|---|
+| present | 60 px | 17 |
+| moved aside | 268 px | 2 |
+
+Without libthai, Linux gives the Windows figure (257 px there; the fonts differ). This also explains
+rounds 3–5:
+- D242, D243 and D244 did not change Windows.
+- D244's word check, which splits at spaces, saw the 257 px run as one word and did not fire.
+
+Many Thai strings in `th.json` have unspaced runs of 60–78 letters, so every Windows user of the Thai
+interface had this, not only the test.
+
+**The owner's choice.** Ship libthai with Windows, rather than breaking words anywhere.
+
+**Fix.**
+- **CI.** `windows-desktop` and the package job install MSYS2's `mingw-w64-ucrt-x86_64-libthai`. They
+  copy `libthai-0.dll` as `thai.dll`, with `libdatrie-1.dll` and the `thbrk.tri` dictionary, into a
+  folder on `PATH`, and set `LIBTHAI_DICTDIR` to it. vcpkg has no libthai port.
+- **Package.** The Windows package ships `thai.dll` and `libdatrie-1.dll` in `bin/`, the dictionary
+  in `bin/data/libthai/`, and both LGPL licences in `licenses/`.
+- **Editor.** At start-up, `main.cpp` sets `LIBTHAI_DICTDIR` to `data/libthai` beside the executable,
+  when that holds `thbrk.tri` and the variable is unset. This mirrors `PROJ_DATA`.
+
+**Rows** (1×, 1.5×, 2×). In the Thai pass of the narrow fixture, Qt must find a line break inside
+"คลังพฤติกรรมแก้ไขแคตตาล็อกของโปรเจกต์เอง". Otherwise it fails with "Qt has no Thai line breaking here
+(libthai not found, or LIBTHAI_DICTDIR wrong)".
+- It passes on Linux, where libthai is present.
+- **Mutation:** the same check on an unbroken Latin string fails with that message.
+- Its failing evidence is the probe above, plus the Windows run, where the same text gave 257 px.
+
+D242–D244 stay: each is a correct robustness fix, and none is the Windows cause.
+
+Unconfirmed on Windows until `windows-desktop` runs. The step prints the DLLs that `thai.dll` and
+`libdatrie-1.dll` import, in case one is missing.

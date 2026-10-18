@@ -3,6 +3,15 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — B-4 driver-factor spread contract (D235, docs only)
+
+NEXT's item ([DRIVER_FACTOR](../reference/DRIVER_FACTOR.md)). Today every driver's factor is drawn
+with a fixed spread of 0.15.
+- **The owner's choices:** on the driver behaviour, from the type's own behaviour when the vehicle
+  is made; the standard deviation only (the mean would repeat `additiveSafetyDistance`).
+- **The contract:** `driverFactorSpread` in [0, 0.5] at schema 43; the same two draws, so the random
+  stream is unchanged; drawn once, never redrawn by road; rows BA131–BA137.
+
 ## 2026-10-17 — B-7 lane preference by vehicle type implemented (D234)
 
 D233's contract ([evidence](../evidence/lane-preference.md)).

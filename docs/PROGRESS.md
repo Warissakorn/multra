@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
+
+The Windows diagnostic showed that the 257 px text was Thai ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
+- **Cause:** Qt finds Thai line breaks through libthai, which it loads at run time as `thai.dll`. The
+  Windows runner had none, so a Thai sentence broke only at its spaces. A Linux probe gives 60 px
+  with libthai and 268 px without it. That is why D242–D244 did not change Windows.
+- **The owner's choice:** ship libthai with Windows.
+- **Fix:**
+  - CI and the package install MSYS2's libthai, as `thai.dll` with `libdatrie-1.dll` and `thbrk.tri`;
+  - the package ships them, with their LGPL licences;
+  - the editor points `LIBTHAI_DICTDIR` at `data/libthai` beside the executable.
+- **Tests:** the Thai pass of the narrow fixture requires a line break inside a Thai sentence. A
+  mutation to an unbroken Latin string is caught.
+
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+
 ## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
 
 The Windows diagnostic named the widget ([evidence](evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).
@@ -125,15 +141,6 @@ D235's contract ([evidence](evidence/driver-factor-spread.md)).
   half-width on all four projects; clamps rise with a wide spread. Ir ±0.015 %.
 
 `check` 176/176, Linux only.
-
-## 2026-10-18 — B-4 driver-factor spread contract (D235, docs only)
-
-NEXT's item ([DRIVER_FACTOR](reference/DRIVER_FACTOR.md)). Today every driver's factor is drawn
-with a fixed spread of 0.15.
-- **The owner's choices:** on the driver behaviour, from the type's own behaviour when the vehicle
-  is made; the standard deviation only (the mean would repeat `additiveSafetyDistance`).
-- **The contract:** `driverFactorSpread` in [0, 0.5] at schema 43; the same two draws, so the random
-  stream is unchanged; drawn once, never redrawn by road; rows BA131–BA137.
 
 ## Older entries
 
