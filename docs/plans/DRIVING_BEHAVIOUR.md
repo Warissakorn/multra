@@ -214,6 +214,12 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA143 | The random stream | Unchanged with the keys |
 | BA144 | Behaviour by road | Only heads under a behaviour with the keys |
 | BA145 | Codec at schema 44, outputs, dialog rows | Round-trips; pair and ranges at their paths; 43 refused; `redRunning` only with the keys |
+| BA146 | Braking to a held line, no clamp today ([GIVE_WAY_STOP](../reference/GIVE_WAY_STOP.md), D239) | Trajectory unchanged |
+| BA147 | Yield line closes on a creeping minor | Stops at the line, no clamp, ≤ maximum |
+| BA148 | Priority-rule line | The same |
+| BA149 | Stop zone | The same |
+| BA150 | Stop beyond the maximum | Still clamped |
+| BA151 | Nearer standing vehicle leader | Unchanged |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

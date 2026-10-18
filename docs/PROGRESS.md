@@ -6,6 +6,15 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — Give-way line stop contract (D239, docs only)
+
+The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)
+([GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)).
+- **The owner's choice:** brake to stop at the line.
+- **The contract:** only on a tick that today clamps at a binding give-way line, and only when the
+  stop fits the type's maximum, the vehicle brakes at `v²/(2·gap)` and no clamp is reported.
+  Everything else stays byte-identical. Rows BA146–BA151.
+
 ## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
 
 D237's contract ([evidence](evidence/red-running.md)).
@@ -105,20 +114,6 @@ so its effect depends on the time step.
 - **The owner's choices:** a driver-behaviour key, absent = today (byte-identical), fixed seconds.
 - **The contract:** `stopDwellTime` (s) at schema 41; the rest becomes whole ticks of at least
   that time, recorded when the vehicle comes to the line; rows BA117–BA123.
-
-## 2026-10-17 — B-5 desired-speed distribution curve implemented (D229)
-
-D228's contract ([evidence](evidence/speed-distribution.md)).
-- **Engine:** `speedAt`/`shareOf` in `speed_distribution.hpp`, the old uniform formulas without a
-  curve; used by the draw, `quantileOf` and D191's rescale. Rows BA112–BA115 failed first against a
-  stub; BA110/BA111 pin today's draw.
-- **File and editor:** schema 40, refused below; `INVALID_SPEED_CURVE`; the type dialog's curve box
-  and point table (BA116 failed first); the Lab moves a curve with min/max. Codec hooks proved by
-  mutation.
-- **Measured:** shipped runs byte-identical; a 50 km/h-centred car curve on four-leg moved mean delay
-  46.00 → 45.40 s (inside the noise); +0.06 % Ir.
-
-`check` 173/173, Linux only.
 
 ## Older entries
 

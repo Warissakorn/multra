@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-5 desired-speed distribution curve implemented (D229)
+
+D228's contract ([evidence](../evidence/speed-distribution.md)).
+- **Engine:** `speedAt`/`shareOf` in `speed_distribution.hpp`, the old uniform formulas without a
+  curve; used by the draw, `quantileOf` and D191's rescale. Rows BA112–BA115 failed first against a
+  stub; BA110/BA111 pin today's draw.
+- **File and editor:** schema 40, refused below; `INVALID_SPEED_CURVE`; the type dialog's curve box
+  and point table (BA116 failed first); the Lab moves a curve with min/max. Codec hooks proved by
+  mutation.
+- **Measured:** shipped runs byte-identical; a 50 km/h-centred car curve on four-leg moved mean delay
+  46.00 → 45.40 s (inside the noise); +0.06 % Ir.
+
+`check` 173/173, Linux only.
+
 ## 2026-10-17 — B-5 desired-speed distribution contract (D228, docs only)
 
 NEXT's item after D227, read against ROADMAP M2.1 ("distributions") and tier B

@@ -85,3 +85,5 @@ forbids suppressing the events. The changes considered need the owner, and none 
 - ignore the anticipation part once a vehicle has started from its line.
 
 Each would move the shipped `t-junction-priority` output, so this is recorded rather than changed.
+The owner later chose the second, limited to ticks that clamp today (D239,
+[GIVE_WAY_STOP](../reference/GIVE_WAY_STOP.md)).
