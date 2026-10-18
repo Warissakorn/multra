@@ -165,5 +165,19 @@ Before the fix: "A long top-group button widened the narrow panel" (the dock wen
 | No `Preferred` policy | the same |
 | The minimum width the full text | the same |
 
-Unconfirmed on Windows until `windows-desktop` runs. If another top-group widget is still wider than
-the panel there, the diagnostic names its form and host width. UI only.
+UI only.
+
+**Windows result: not the cause.** `windows-desktop` on `cd1954f` (job 117661026863) failed with
+exactly the same lines (host 273 px, viewport −1). The toggle was not what held the panel on Windows;
+the eliding buttons stay as the owner's choice, but they did not fix the check.
+
+Ruled out on Linux: a two-column form whose rows may wrap does not need label plus field (a 130 px
+field minimum left the body's minimum at 169 px). The 273 px is 8 + 123 + 8 + 126 + 8, the label
+column plus the remaining field width, so it does not name its source. When a narrow check fails,
+`aligned` now also prints:
+- the dock's width and minimum;
+- the body's width and minimum hint;
+- the tab widget's and tab bar's hints;
+- the six widest visible widgets above the pages.
+
+The next Windows run names the widget that holds the panel.

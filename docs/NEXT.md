@@ -12,8 +12,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 ## State on 2026-10-18
 
 - **PR #177** carries D207–D243 to `main` (#176 was closed).
-- **D243:** the text buttons above the Properties pages elide, so the floating panel can narrow to
-  200 px. On Windows the appearance toggle had held it at about 273 px (D242's diagnostic).
+- **D243:** the text buttons above the Properties pages elide (the owner's choice). It did **not**
+  fix Windows `properties-layout-ui`: the top forms' host is still 273 px there. The narrow check
+  now prints the dock, body and tab widths and the six widest top widgets. Read that output from
+  the next `windows-desktop` run, then fix the widget it names
+  ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
 - **D242:** Windows `properties-layout-ui` ("A narrow form kept a field beside its label", red on
   `main` too) is fixed on Linux evidence. A scrolled Properties form now stacks by the width its
   viewport shows ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).

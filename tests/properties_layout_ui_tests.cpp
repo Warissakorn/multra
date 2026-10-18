@@ -14,8 +14,10 @@
 #include <QScrollBar>
 #include <QStandardPaths>
 #include <QTabWidget>
+#include <QTabBar>
 #include <QTest>
 #include <QToolButton>
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <vector>
@@ -73,6 +75,16 @@ void aligned(EditorWindow& window,const char* where,bool beside=true) {
                     else if(std::abs(field.left()-x)>1){std::cerr<<where<<": "<<p.field->objectName().toStdString()<<" at "<<field.left()<<", column at "<<x<<'\n';require(false,"Properties fields do not share one column");}
                 }
             }
+        }
+        if(!beside&&rows>0) { // D243: on Windows the panel stayed wider than its narrow fixture; name what holds it
+            auto* dock=item<QDockWidget>(window,"editorInspectorDock");
+            std::cerr<<where<<": dock "<<dock->width()<<" (minimum "<<dock->minimumWidth()<<"), body "<<body->width()<<" (hint "<<body->minimumSizeHint().width()
+                     <<"), tabs hint "<<tabs->minimumSizeHint().width()<<", tab bar hint "<<tabs->tabBar()->minimumSizeHint().width()<<'\n';
+            std::vector<std::pair<int,QWidget*>> widest;
+            for(auto* w:body->findChildren<QWidget*>())if(w->isVisible()&&!tabs->isAncestorOf(w))widest.push_back({std::max(w->minimumSizeHint().width(),w->minimumWidth()),w});
+            std::sort(widest.begin(),widest.end(),[](const auto& a,const auto& b){return a.first>b.first;});
+            for(std::size_t i=0;i<widest.size()&&i<6;++i)
+                std::cerr<<"  "<<widest[i].first<<" "<<widest[i].second->metaObject()->className()<<" "<<widest[i].second->objectName().toStdString()<<'\n';
         }
         require(beside?rows>0:rows==0,beside?"No Properties row sits beside its label":"A narrow form kept a field beside its label");
     }

@@ -17,7 +17,9 @@ D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-u
 - **Tests:** a long-toggle row failed first (the dock went to 299 px), and three mutations are
   caught.
 
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+`check` 178/178, Linux only. **Windows result:** the same failure (host 273 px), so the toggle was
+not the cause there. The narrow check now prints the dock, body and tab widths and the widest top
+widgets, so the next Windows run names the culprit.
 
 ## 2026-10-18 — Windows narrow Properties forms (D242)
 
