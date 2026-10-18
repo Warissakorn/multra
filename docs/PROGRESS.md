@@ -6,6 +6,19 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — B-4 driver-factor spread implemented (D236)
+
+D235's contract ([evidence](evidence/driver-factor-spread.md)).
+- **Draw:** `samplePending` takes the standard deviation from the type's own behaviour, 0.15 without
+  the key; the random stream is unchanged. Rows BA132, BA133, BA135 and BA136 failed first against
+  the 0.15 stub.
+- **File and editor:** schema 43, refused below; `INVALID_BEHAVIOUR_PARAMETER` on both models; a
+  behaviour-dialog row. Codec, validation and the row proved by mutation.
+- **Measured:** shipped runs byte-identical. Spreads of 0, 0.3 and 0.5 leave mean delay inside its
+  half-width on all four projects; clamps rise with a wide spread. Ir ±0.015 %.
+
+`check` 176/176, Linux only.
+
 ## 2026-10-18 — B-4 driver-factor spread contract (D235, docs only)
 
 NEXT's item ([DRIVER_FACTOR](reference/DRIVER_FACTOR.md)). Today every driver's factor is drawn
@@ -104,20 +117,6 @@ NEXT's item ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-c
 - AMBER §1 gains the note. The CLI pin is byte-identical; no code changed.
 
 `check` 172/172, Linux only.
-
-## 2026-10-17 — Acceleration capped under the curve bound (D226)
-
-NEXT's item ([evidence](evidence/curve-speed.md#d226-acceleration-capped-while-the-bound-holds)).
-D225 found that a speed target below the desired speed clamped only the speed, so the distance ran
-`½·a·dt²` a tick ahead. D212's curve bound had the same gap.
-- **Row BA109** (the BA57 fixture: each tick adds at most the trapezoid of its speeds) failed first.
-- **One line in `simulation.cpp`** now caps acceleration for any bound below the desired speed, curve
-  or area. It replaces D225's area-only line.
-- **No key, no area:** byte-identical, and the Ir is identical too.
-- **Key on:** delay moves by ≤ 0.04 s; t-junction clamps 3 → 1.
-
-`check` 172/172, Linux only. CI on PR #176: the sanitizer failure (BA85's dangling reference) is
-fixed. The Windows `properties-layout-ui` failure is also red on `main`.
 
 ## Older entries
 

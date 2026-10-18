@@ -314,9 +314,9 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
         p.*key.member = value.get<double>();
     }
 }
-// One optional number each (curve D212, kerb D215, commitment D219, mandatory D221, Stop dwell D231); ranges are the validator's.
+// One optional number each (curve D212, kerb D215, commitment D219, mandatory D221, Stop dwell D231, spread D236); ranges are the validator's.
 static void readOptionals(const Json& b, const std::string& path, DriverBehaviour& d) {
-    for (const auto& [key, value] : {std::pair{"curveLateralAcceleration", &d.curveLateralAcceleration}, std::pair{"kerbLaneBias", &d.kerbLaneBias}, std::pair{"commitmentDeceleration", &d.commitmentDeceleration}, std::pair{"mandatoryDecelerationOwn", &d.mandatoryDecelerationOwn}, std::pair{"mandatoryDecelerationTrailingVehicle", &d.mandatoryDecelerationTrailingVehicle}, std::pair{"stopDwellTime", &d.stopDwellTime}})
+    for (const auto& [key, value] : {std::pair{"curveLateralAcceleration", &d.curveLateralAcceleration}, std::pair{"kerbLaneBias", &d.kerbLaneBias}, std::pair{"commitmentDeceleration", &d.commitmentDeceleration}, std::pair{"mandatoryDecelerationOwn", &d.mandatoryDecelerationOwn}, std::pair{"mandatoryDecelerationTrailingVehicle", &d.mandatoryDecelerationTrailingVehicle}, std::pair{"stopDwellTime", &d.stopDwellTime}, std::pair{"driverFactorSpread", &d.driverFactorSpread}})
         if (b.contains(key) && !b.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key}});
         else if (b.contains(key)) *value = b.at(key).get<double>();
 }

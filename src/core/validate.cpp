@@ -22,6 +22,11 @@ std::string issueMessage(const std::vector<ValidationIssue>& issues) {
     for (const auto& issue : issues) message += issue.code + ": " + issue.path + '\n';
     return message;
 }
+// B-4 (DRIVER_FACTOR §2, D236): [0, 0.5].
+void spreadIssues(const DriverBehaviour& b, const std::string& p, std::vector<ValidationIssue>& issues) {
+    if (b.driverFactorSpread && !(std::isfinite(*b.driverFactorSpread) && *b.driverFactorSpread >= 0 && *b.driverFactorSpread <= 0.5))
+        issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", p + ".driverFactorSpread"});
+}
 bool blank(const std::string& id) { return id.find_first_not_of(" \t\r\n") == std::string::npos; }
 template<class T>
 std::map<std::string, const T*> index(const std::vector<T>& items, const std::string& path,
@@ -276,6 +281,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
             for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
             for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
+            spreadIssues(b, p, issues); // B-4 (D236)
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
@@ -291,6 +297,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
         for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
         for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
+        spreadIssues(b, p, issues); // B-4 (D236)
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every

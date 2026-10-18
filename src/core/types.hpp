@@ -72,6 +72,7 @@ struct DriverBehaviour {
     PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
     std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
+    std::optional<double> driverFactorSpread; // B-4 (DRIVER_FACTOR, D236): the factor's standard deviation, 0.15 without it
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles {

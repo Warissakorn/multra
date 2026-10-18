@@ -132,13 +132,14 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
     shared.push_back(optional(&dialog, form, "mandatoryDecelerationOwn", &either.mandatoryDecelerationOwn)); // B-3 (D221)
     shared.push_back(optional(&dialog, form, "mandatoryDecelerationTrailingVehicle", &either.mandatoryDecelerationTrailingVehicle));
     shared.push_back(optional(&dialog, form, "stopDwellTime", &either.stopDwellTime)); // B-8 (D231)
+    shared.push_back(optional(&dialog, form, "driverFactorSpread", &either.driverFactorSpread)); // B-4 (D236)
     const auto keepShared = [&](DriverBehaviour& to) {
         for (const auto& o : shared) *o.value = o.on->isChecked() ? std::optional<double>(o.spin->value()) : std::nullopt;
         to.perception = either.perception; to.curveLateralAcceleration = either.curveLateralAcceleration;
         to.commitmentDeceleration = either.commitmentDeceleration;
         to.mandatoryDecelerationOwn = either.mandatoryDecelerationOwn;
         to.mandatoryDecelerationTrailingVehicle = either.mandatoryDecelerationTrailingVehicle;
-        to.stopDwellTime = either.stopDwellTime;
+        to.stopDwellTime = either.stopDwellTime; to.driverFactorSpread = either.driverFactorSpread;
         to.lateral = {};
         if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();
     };

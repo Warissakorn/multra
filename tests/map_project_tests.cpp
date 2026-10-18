@@ -15,7 +15,7 @@ TEST(mapproject, legacy_roundtrip_and_schema) {
     setMapSettings(legacy,{});CHECK(documentJson(legacy).dump()==before);
     auto wrong=encoded;wrong["schemaVersion"]=28;
     test::throws([&]{parseDocument(wrong);},"UNSUPPORTED_FIELD: map");
-    wrong=encoded;wrong["schemaVersion"]=43;test::throws([&]{parseDocument(wrong);},"EDIT_VERSION");
+    wrong=encoded;wrong["schemaVersion"]=44;test::throws([&]{parseDocument(wrong);},"EDIT_VERSION");
 }
 TEST(mapproject, invalid_settings_are_atomic) {
     History history;const auto before=history.document();MapSettings settings;

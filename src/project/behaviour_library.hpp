@@ -29,6 +29,8 @@ bool ownsMandatoryBehaviour(const ProjectDocument&); // B-3 (D221): schema 37
 void rejectMandatoryBefore37(const Json& document);
 bool ownsStopDwellBehaviour(const ProjectDocument&); // B-8 (D231): schema 41
 void rejectStopDwellBefore41(const Json& document);
+bool ownsDriverFactorSpread(const ProjectDocument&); // B-4 (D236): schema 43
+void rejectDriverFactorSpreadBefore43(const Json& document);
 bool ownsCommitmentBehaviour(const ProjectDocument&); // B-2 (D219): schema 36
 void rejectCommitmentBefore36(const Json& document);
 bool ownsKerbBehaviour(const ProjectDocument&);

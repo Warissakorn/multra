@@ -94,6 +94,20 @@ void rejectPerceptionBefore32(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
+// B-4 (D236): schema 43 exactly when an owned behaviour carries driverFactorSpread.
+bool ownsDriverFactorSpread(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.driverFactorSpread.has_value(); });
+}
+void rejectDriverFactorSpreadBefore43(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("driverFactorSpread"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".driverFactorSpread"}});
+}
 // B-8 (D231): schema 41 exactly when an owned behaviour carries stopDwellTime.
 bool ownsStopDwellBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
@@ -201,7 +215,7 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
                     "maxDecelerationCooperativeBraking", "discretionaryLaneChangeThreshold",
                     "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration",
                     "curveLateralAcceleration", "kerbLaneBias", "commitmentDeceleration", "mandatoryDecelerationOwn",
-                    "mandatoryDecelerationTrailingVehicle", "stopDwellTime"}; // M3.6, M3.4 (D215), B-2 (D219), B-3 (D221), B-8 (D231), both models
+                    "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread"}; // M3.6, M3.4 (D215), B-2 (D219), B-3 (D221), B-8 (D231), B-4 (D236), both models
                 const auto& w74 = w74ParameterKeys();
                 const auto& perception = perceptionParameterKeys(); // M3.5, both models
                 const auto& lateral = lateralParameterKeys(); // M3.7, both models

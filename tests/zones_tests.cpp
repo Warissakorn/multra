@@ -65,7 +65,7 @@ TEST(zonescodec, z3_refused_below_31_and_malformed) {
         for (const auto* other:{"zones","zoneConnectors","odMatrices"}) if (std::string(other)!=key) old.erase(other);
         test::throws([&]{parseDocument(old);},std::string("UNSUPPORTED_FIELD: ")+key);
     }
-    auto future=saved;future["schemaVersion"]=43;test::throws([&]{parseDocument(future);},"EDIT_VERSION");
+    auto future=saved;future["schemaVersion"]=44;test::throws([&]{parseDocument(future);},"EDIT_VERSION");
     const std::vector<std::pair<const char*,const char*>> fields{{"zones","name"},{"zones","polygon"},{"zones","attributes"},
         {"zoneConnectors","share"},{"zoneConnectors","direction"},{"odMatrices","cells"},{"odMatrices","startTime"}};
     for (const auto& [array,field]:fields) {

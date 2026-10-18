@@ -1,6 +1,7 @@
 # Driver-factor spread (B-4)
 
-Written 2026-10-18 (D235). This is tier B-4 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), a
+Written 2026-10-18 (D235); implemented the same day (D236,
+[evidence](../evidence/driver-factor-spread.md)). This is tier B-4 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), a
 level-4 key under D216: a driver-behaviour key. It is read once, when a vehicle is made, so it does
 not change along the vehicle's path (§3). It sets the spread of the per-vehicle `driverFactor`
 ([SIMULATION](SIMULATION.md), "Following"). Rule 4 applies: nothing here is validated, and no value
