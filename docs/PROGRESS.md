@@ -6,6 +6,24 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — Red running closed (D248); M3.2.8a.1's clamps traced and options measured (D249)
+
+- **D248 (docs only):** the owner kept `redRunningTime` as an upper bound and a runner's committed
+  crossing counted. RED_RUNNING now says that with `amberDeceleration` a run almost always starts at
+  red onset.
+- **D249 (docs only, [MERGE_CLAMPS](reference/MERGE_CLAMPS.md), [evidence](evidence/merge-clamps.md)):**
+  - **Trace:** temporary probes traced all 41 shipped clamps (M2.6, seeds 42–81) to four causes:
+    - 20: a minor creeping at its line, 1 m from the join, beside a major entering the shared lane;
+    - 9: a minor that pulled out as committed;
+    - 8: a major catching a minor still on its connector;
+    - 4: a creep at a red head.
+  - **Options:** seven, each a reverted prototype. B+M+Q removes 24 of the 41, with delay, trips,
+    overlaps (0), the CLI pin and the TS reference rows unchanged. An unscoped red-head stop fails
+    2 TS rows. A 3 m setback and "held is not committed" make things worse.
+  - **No engine code is committed;** the owner chooses.
+
+`check` 178/178 on the committed tree, Linux only.
+
 ## 2026-10-18 — Red running: the owner's answers to D241 (D246, D247)
 
 NEXT's first candidate. The owner chose all three recommended options
@@ -140,17 +158,6 @@ D237's contract ([evidence](evidence/red-running.md)).
   (layout).
 
 `check` 177/177, Linux only.
-
-## 2026-10-18 — B-9 red-light running contract (D237, docs only)
-
-NEXT's item, the last of tier B ([RED_RUNNING](reference/RED_RUNNING.md)). Today red holds
-every vehicle that can still stop.
-- **The owner's choices:** only in the first T seconds of red and only while moving; a fixed share
-  of drivers decided once per vehicle by a hash; no new interaction with crossing traffic, but each
-  run is counted.
-- **The contract:** `redRunningShare` and `redRunningTime` as a pair at schema 44; W74's hash at
-  index 15; a `red-running` event and a `redRunning` count written only with the keys; rows
-  BA138–BA145.
 
 ## Older entries
 

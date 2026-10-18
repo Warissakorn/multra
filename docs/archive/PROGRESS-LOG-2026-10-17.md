@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — B-9 red-light running contract (D237, docs only)
+
+NEXT's item, the last of tier B ([RED_RUNNING](../reference/RED_RUNNING.md)). Today red holds
+every vehicle that can still stop.
+- **The owner's choices:** only in the first T seconds of red and only while moving; a fixed share
+  of drivers decided once per vehicle by a hash; no new interaction with crossing traffic, but each
+  run is counted.
+- **The contract:** `redRunningShare` and `redRunningTime` as a pair at schema 44; W74's hash at
+  index 15; a `red-running` event and a `redRunning` count written only with the keys; rows
+  BA138–BA145.
+
 ## 2026-10-18 — B-4 driver-factor spread implemented (D236)
 
 D235's contract ([evidence](../evidence/driver-factor-spread.md)).
