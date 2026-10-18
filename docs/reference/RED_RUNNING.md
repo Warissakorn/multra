@@ -50,7 +50,9 @@ The owner chose on 2026-10-18:
 - **Otherwise the red rule is unchanged,** including commitment. Amber is unchanged.
 - **Every tick.** The test runs on each tick, like the amber check. A runner still short of the line
   when the window ends is held again, as any vehicle is. Without `amberDeceleration`, a hold that
-  then cannot be met gives a safety clamp, as today.
+  then cannot be met gives a safety clamp, as today. With it, a runner that can no longer stop goes
+  as committed. That crossing is not this rule's exemption, so it writes no event. D241 traced both
+  cases on M2.6 ([evidence](../evidence/red-running.md#d241-the-added-m26-clamps)).
 - **`redElapsed`.** The time since the head last turned red, at the start of the tick. Consecutive
   red phases in a program count as one red, measured across the cycle boundary.
 - **The event.** On the tick when a vehicle exempted by this rule moves its front past the head's

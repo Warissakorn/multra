@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-8 Stop dwell time implemented (D231)
+
+D230's contract ([evidence](../evidence/stop-dwell.md)).
+- **Engine:** the Stop service entry records whole ticks of rest from the vehicle's behaviour when it
+  comes to the line; one without the key. Rows BA118–BA123 failed first against a one-tick stub.
+- **File and editor:** schema 41, refused below; validation on both models; a behaviour-dialog row
+  (failed first). Codec hooks proved by mutation.
+- **Measured:** shipped runs byte-identical. On a T-junction copy with Stop controls, a 2 s dwell
+  raised minor delay by 13–18 s. Every clamp there sits at a Stop line, with or without the key
+  (traced next). +0.25 % Ir on four-leg, +0.41 % on the Stop copy.
+
+`check` 174/174, Linux only.
+
 ## 2026-10-17 — B-8 Stop dwell time contract (D230, docs only)
 
 NEXT's item ([STOP_DWELL](../reference/STOP_DWELL.md)). Today a Stop rests a vehicle for 1–2 ticks,

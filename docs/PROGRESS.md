@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — M2.6's red-running clamps traced (D241, no code change)
+
+NEXT's item 1 ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). A temporary probe
+was never committed.
+- **Where:** only seed 51 (3 → 5 at 2 s and 3 s) and seed 73 (0 → 1 at 3 s) change.
+- **None is a red-head hold.** Every added clamp is bound by a vehicle leader:
+  - Seed 51: a runner released at red onset, after braking for amber, meets the green flow at a
+    derived merge rule. It is let go 0.55 m behind a leader and hits the standstill cap (D105,
+    D201 B5); its follower clamps behind it.
+  - Seed 73: a runner held again when the 3 s window ends stops at 6 m/s², and its follower needs
+    10.6 m/s².
+- **Found:** at 2 s the seed-51 runner crosses after the window as committed under
+  `amberDeceleration`, so no event is counted. RED_RUNNING §3 now says so. Three §3 behaviours are
+  listed as owner choices.
+
+`check` 178/178, Linux only. CLI 42 byte-identical after the probe was reverted.
+
 ## 2026-10-18 — Give-way line stop implemented (D240)
 
 D239's contract ([evidence](evidence/give-way-stop.md)).
@@ -107,19 +124,6 @@ Stop rule's: the shipped Yield `t-junction-priority` clamps the same way (6 at s
   centimetres. A few standing cases at dt 0.5 are the standstill cap (D201 B5).
 - **Booked:** these are M3.2.8a.1's moving minor clamps. Its gate wants a contract and rows before
   any motion change, and each option moves shipped output, so nothing was changed.
-
-## 2026-10-17 — B-8 Stop dwell time implemented (D231)
-
-D230's contract ([evidence](evidence/stop-dwell.md)).
-- **Engine:** the Stop service entry records whole ticks of rest from the vehicle's behaviour when it
-  comes to the line; one without the key. Rows BA118–BA123 failed first against a one-tick stub.
-- **File and editor:** schema 41, refused below; validation on both models; a behaviour-dialog row
-  (failed first). Codec hooks proved by mutation.
-- **Measured:** shipped runs byte-identical. On a T-junction copy with Stop controls, a 2 s dwell
-  raised minor delay by 13–18 s. Every clamp there sits at a Stop line, with or without the key
-  (traced next). +0.25 % Ir on four-leg, +0.41 % on the Stop copy.
-
-`check` 174/174, Linux only.
 
 ## Older entries
 

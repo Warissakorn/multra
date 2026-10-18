@@ -11,8 +11,17 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-18
 
-- **PR #177** carries D207–D240 to `main` (#176 was closed). CI is green except Windows
+- **PR #177** carries D207–D241 to `main` (#176 was closed). CI is green except Windows
   `properties-layout-ui`, which is also red on `main` (D205's open item).
+- **D241 (no code change):** M2.6's clamps added by red running are traced
+  ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). Only seeds 51 and 73 change, and
+  none of the added clamps is a red-head hold:
+  - a runner released after braking for amber meets the green flow at a merge, then hits the
+    standstill cap (D105, D201 B5), and its follower clamps behind it;
+  - a runner held again at the end of a 3 s window stops at 6 m/s², and its follower needs
+    10.6 m/s².
+
+  A run that crosses after the window as committed (under `amberDeceleration`) writes no event.
 - **Give-way line stop is in** (D239, D240, [GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md), [evidence](evidence/give-way-stop.md)):
   on a tick that would clamp at a binding give-way line, a stop within the type's maximum brakes to
   the line instead. The shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays
@@ -105,10 +114,18 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ROADMAP names no single next item for a session told only to "continue", so the session asks the
 owner first. The candidates, easiest first:
-1. **Trace M2.6's added clamps under red running** (D238, up to 3 in 40 runs at a 3 s window).
-   Trace only.
+1. **Red running, D241's three behaviours** (RED_RUNNING §3). Each is the owner's choice, and none
+   ships, since no shipped behaviour carries the keys:
+   - should a runner that was braking for amber at the head start again at red onset?
+   - should a crossing after the window, let through by commitment, still count as a run?
+   - should the window end only for a runner that can still stop gently, rather than re-holding it
+     close to the line?
+
+   A contract and rows come first.
 2. **The remaining M3.2.8a.1 cases:** the moving merge clamps behind a shared leader's standstill
-   buffer (D105) and the standstill cap (D201 B5). Each needs a contract and the owner's choice.
+   buffer (D105) and the standstill cap (D201 B5). D241's seed-51 clamps, and the three shipped
+   clamps it traced at that seed, are of this kind. Each needs a contract and the owner's choice.
 3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
 
-M2.8 has only owner checks left. Without an answer, the session takes item 1.
+M2.8 has only owner checks left. Without an answer, the session asks again rather than choosing a
+rule change.
