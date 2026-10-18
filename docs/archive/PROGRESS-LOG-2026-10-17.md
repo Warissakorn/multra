@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-7 lane preference by vehicle type implemented (D234)
+
+D233's contract ([evidence](../evidence/lane-preference.md)).
+- **Split:** `laneSplit` takes the type's `kerbLanes` in compile, routeless paths and the editor's
+  input table. Rows BA125–BA129 failed first against a stub that ignored it.
+- **File and editor:** schema 42, refused below; `INVALID_KERB_LANES`; a type-dialog row (failed
+  first). Codec and hooks proved by mutation.
+- **Measured:** shipped runs byte-identical. On the lane-change lab, heavy vehicles on the kerb lane
+  add 0.3–0.4 s on their movements. M2.6 does not move: its entry decisions choose lanes by
+  destination, which the contract now names. Ir −0.35 % (layout).
+
+`check` 175/175, Linux only.
+
 ## 2026-10-17 — B-7 lane preference by vehicle type contract (D233, docs only)
 
 NEXT's item ([LANE_PREFERENCE](../reference/LANE_PREFERENCE.md)). Today every type gets the same

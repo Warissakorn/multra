@@ -10,6 +10,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <QLineEdit>
+#include <QRegularExpression>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QStandardPaths>
@@ -150,7 +151,19 @@ int main(int argc,char** argv) {
         dock->setFloating(true);dock->resize(200,700);settle();
         require(dock->width()<=220,"Narrow fixture did not take effect");
         for(int lang:{0,1}) {
-            language->setCurrentIndex(lang);settle();aligned(window,"narrow",false);
+            language->setCurrentIndex(lang);settle();
+            // D244: a wrapped text above the pages asks only for its longest word; on Windows the effective-behaviour
+            // text asked 257 px and held the panel at 273 px, so the top forms kept two columns.
+            for(auto* text:dock->widget()->findChildren<QLabel*>())
+                if(text->isVisible()&&text->wordWrap()&&!item<QTabWidget>(window,"editorPropertyTabs")->isAncestorOf(text)&&!text->property("editorFormLabel").toBool()) {
+                    int word=0;for(const auto& part:text->text().split(QRegularExpression("\\s+"),Qt::SkipEmptyParts))word=std::max(word,text->fontMetrics().horizontalAdvance(part));
+                    if(text->minimumSizeHint().width()>word+8) {
+                        std::cerr<<text->objectName().toStdString()<<": minimum "<<text->minimumSizeHint().width()<<", QLabel "<<text->QLabel::minimumSizeHint().width()
+                                 <<", set "<<text->minimumWidth()<<", longest word "<<word<<'\n';
+                        require(false,"A wrapped Properties text asks for more than its longest word");
+                    }
+                }
+            aligned(window,"narrow",false);
             auto* tabs=item<QTabWidget>(window,"editorPropertyTabs");
             for(int t=0;t<tabs->count();++t) {
                 tabs->setCurrentIndex(t);settle();

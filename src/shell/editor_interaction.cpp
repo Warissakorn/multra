@@ -140,7 +140,15 @@ void ElidingToolButton::paintEvent(QPaintEvent*) {
 QSize ReflowLabel::minimumSizeHint() const {
     // A form label keeps its wrapped height: a short dock shrinks the scrolling pages, not a label.
     if(property("editorFormLabel").toBool()&&wordWrap())return {QLabel::minimumSizeHint().width(),sizeHint().height()};
-    return QLabel::minimumSizeHint();
+    auto hint=QLabel::minimumSizeHint();
+    // D244: a wrapped text needs only its longest word. On Windows QLabel asked 257 px for the effective-behaviour
+    // text (Linux: its 69 px word), which held the floating Properties panel too wide to stack its forms.
+    if(wordWrap()&&!text().isEmpty()&&(textFormat()==Qt::PlainText||(textFormat()==Qt::AutoText&&!Qt::mightBeRichText(text())))) {
+        const auto pad=contentsMargins();
+        const int word=fontMetrics().boundingRect(QRect(0,0,1,1<<20),Qt::TextWordWrap|Qt::TextExpandTabs,text()).width();
+        hint.setWidth(std::min(hint.width(),word+pad.left()+pad.right()+2*margin()+std::max(0,indent())));
+    }
+    return hint;
 }
 namespace {
 class EditorInteraction : public QObject {

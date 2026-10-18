@@ -6,6 +6,18 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
+
+The Windows diagnostic named the widget ([evidence](evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).
+- **Cause:** `editorEffectiveBehaviour` asked for a 257 px minimum on Windows (Qt 6.5.3), against
+  69 px on Linux. That held the floating panel at 273 px, so the top forms never stacked.
+- **Fix:** `ReflowLabel`'s wrapped minimum is its longest word, never more than Qt's.
+- **Tests:** a check that every wrapped top text asks for no more than its word (plus 8 px). It
+  passes on Linux before and after; the evidence that it fails is the Windows run. Inflating Qt's
+  value fails without the cap and passes with it.
+
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+
 ## 2026-10-18 — Top Properties buttons elide (D243)
 
 D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
@@ -122,19 +134,6 @@ with a fixed spread of 0.15.
   is made; the standard deviation only (the mean would repeat `additiveSafetyDistance`).
 - **The contract:** `driverFactorSpread` in [0, 0.5] at schema 43; the same two draws, so the random
   stream is unchanged; drawn once, never redrawn by road; rows BA131–BA137.
-
-## 2026-10-17 — B-7 lane preference by vehicle type implemented (D234)
-
-D233's contract ([evidence](evidence/lane-preference.md)).
-- **Split:** `laneSplit` takes the type's `kerbLanes` in compile, routeless paths and the editor's
-  input table. Rows BA125–BA129 failed first against a stub that ignored it.
-- **File and editor:** schema 42, refused below; `INVALID_KERB_LANES`; a type-dialog row (failed
-  first). Codec and hooks proved by mutation.
-- **Measured:** shipped runs byte-identical. On the lane-change lab, heavy vehicles on the kerb lane
-  add 0.3–0.4 s on their movements. M2.6 does not move: its entry decisions choose lanes by
-  destination, which the contract now names. Ir −0.35 % (layout).
-
-`check` 175/175, Linux only.
 
 ## Older entries
 

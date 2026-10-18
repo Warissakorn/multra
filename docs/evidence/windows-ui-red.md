@@ -181,3 +181,40 @@ column plus the remaining field width, so it does not name its source. When a na
 - the six widest visible widgets above the pages.
 
 The next Windows run names the widget that holds the panel.
+
+## Round 5: a wrapped text's minimum held the panel (D244) — 2026-10-18
+
+The diagnostic from `5c40b8e` named the widget (job 117667101947, identical at 1×, 1.5× and 2×):
+
+```
+narrow: dock 273 (minimum 273), body 273 (hint 273), tabs hint 153, tab bar hint 149
+  257 QLabel editorEffectiveBehaviour
+  98 QWidget
+```
+
+**Cause.** `editorEffectiveBehaviour` is the word-wrapped text under the behaviour type. On Windows
+(Qt 6.5.3) it asked for a 257 px minimum. On Linux, Qt 6.4.2 asks for its longest word, 69 px, and
+Qt 6.8 (PySide6, also on Linux) asks for 63 px. The text itself is the same. That one minimum held
+the body at 273 px and the floating dock at 273 px, wide enough for two columns, so the top forms
+never stacked. The `<= 220` check had passed only because it was read before Windows applied the
+window's minimum.
+
+Nothing in the editor sets that label's minimum width. Margin, indent, a frame, text selection and
+rich text each left Qt's value at the longest word plus extras on Linux. The Windows path that gives
+257 was not reproduced.
+
+**Fix.** `ReflowLabel::minimumSizeHint` for a wrapped plain text is now its longest word: the width
+`QFontMetrics::boundingRect` gives at a 1 px wrap width, plus its margins and indent. It is never
+more than Qt's own value. Form labels keep their column rule (D205).
+
+**Rows** (1×, 1.5×, 2×). In the narrow fixture, in both languages, every visible wrapped text above
+the pages must ask for no more than its longest space-separated word plus 8 px. On failure it prints
+its minimum, Qt's value, any set minimum and the word.
+
+- On Linux it passes before and after: Qt already gives the word here, so the row cannot fail first
+  locally. Its failing evidence is the Windows run above (257 against a word of about 70 px).
+- **Emulation:** with Qt's value inflated by 300 px for every wrapped text, the build passes with
+  the cap. Without the cap it fails, and the Linux panel cannot narrow at all ("Narrow fixture did
+  not take effect").
+
+Unconfirmed on Windows until `windows-desktop` runs. UI only.
