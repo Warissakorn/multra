@@ -207,7 +207,7 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA136 | Segment behaviour with another spread | The factor is not redrawn |
 | BA137 | Codec at schema 43 and dialog row | Round-trips; faults at their paths; 42 refused |
 | BA138 | No red-running keys ([RED_RUNNING](../reference/RED_RUNNING.md), D237) | Red holds as AMBER §1; shipped outputs byte-identical |
-| BA139 | Runner meets red onset, time 2 s | Not held, crosses, one event; held without the keys |
+| BA139 | Runner meets red onset unable to stop gently, time 2 s (amended by D246) | Not held, crosses, one event; held without the keys |
 | BA140 | Runner arrives after the window | Held |
 | BA141 | Runner standing at red onset | Stays until green |
 | BA142 | The runner draw | About the share; the same id, the same answer |
@@ -220,6 +220,12 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA149 | Stop zone | The same |
 | BA150 | Stop beyond the maximum | Still clamped |
 | BA151 | Nearer standing vehicle leader | Unchanged |
+| BA152 | Runner that can stop at `amberDeceleration` at red onset ([RED_RUNNING](../reference/RED_RUNNING.md) §3, D246) | Held; one that cannot is let through |
+| BA153 | No `amberDeceleration` | The type's `comfortableDeceleration` decides |
+| BA154 | Let through, short of the line when the window ends | Not held again; crosses; one event |
+| BA155 | Let through, then standing behind a leader | Held until green; no event |
+| BA156 | Green before the crossing | No event; release state cleared; empty without the keys |
+| BA157 | A second red head on the route | Decided afresh there |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.
