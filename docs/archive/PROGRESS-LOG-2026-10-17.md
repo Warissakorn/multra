@@ -3,6 +3,14 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-7 lane preference by vehicle type contract (D233, docs only)
+
+NEXT's item ([LANE_PREFERENCE](../reference/LANE_PREFERENCE.md)). Today every type gets the same
+per-lane entry split, so heavy vehicles spread across all lanes.
+- **The owner's choices:** entry lane by type, on the vehicle type, the kerb-most N lanes.
+- **The contract:** `kerbLanes` (1–16) at schema 42 renormalises the split over lanes 0 to N−1;
+  mandatory changes and D95 unchanged; rows BA124–BA130.
+
 ## 2026-10-17 — Give-way line clamps traced (D232, no code change)
 
 NEXT's item ([evidence](../evidence/give-way-line-clamps.md)). D231's Stop-line clamps are not the

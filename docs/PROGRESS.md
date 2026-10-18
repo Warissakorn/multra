@@ -6,6 +6,19 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — Top Properties buttons elide (D243)
+
+D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
+- **Cause:** the top forms' host was 273 px with no viewport. The appearance toggle's unwrappable
+  text set the floating panel's minimum width (Linux 218 px, Windows about 273).
+- **The owner's choice:** buttons shrink and elide with "…".
+- **Fix:** `ElidingToolButton` (full-text size, ellipsis minimum, `Preferred` policy, elided
+  paint) for the toggle, Apply behaviour type and Apply display.
+- **Tests:** a long-toggle row failed first (the dock went to 299 px), and three mutations are
+  caught.
+
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+
 ## 2026-10-18 — Windows narrow Properties forms (D242)
 
 The owner asked to fix CI ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
@@ -120,14 +133,6 @@ D233's contract ([evidence](evidence/lane-preference.md)).
   destination, which the contract now names. Ir −0.35 % (layout).
 
 `check` 175/175, Linux only.
-
-## 2026-10-17 — B-7 lane preference by vehicle type contract (D233, docs only)
-
-NEXT's item ([LANE_PREFERENCE](reference/LANE_PREFERENCE.md)). Today every type gets the same
-per-lane entry split, so heavy vehicles spread across all lanes.
-- **The owner's choices:** entry lane by type, on the vehicle type, the kerb-most N lanes.
-- **The contract:** `kerbLanes` (1–16) at schema 42 renormalises the split over lanes 0 to N−1;
-  mandatory changes and D95 unchanged; rows BA124–BA130.
 
 ## Older entries
 

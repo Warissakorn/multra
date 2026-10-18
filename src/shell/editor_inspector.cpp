@@ -92,7 +92,7 @@ void EditorWindow::buildInspector() {
         execute("editorName",[&](auto& d){renameObject(d,id,typed);});
     });
     selectionInfo_=new ReflowLabel(body);selectionInfo_->setWordWrap(true);common->addRow(selectionInfo_);
-    auto* appearanceToggle=new QToolButton(body);appearanceToggle->setObjectName("editorAppearanceToggle");
+    auto* appearanceToggle=new ElidingToolButton(body);appearanceToggle->setObjectName("editorAppearanceToggle");
     appearanceToggle->setArrowType(Qt::RightArrow);appearanceToggle->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     auto* appearanceAction=action("editorAppearance",{},[]{});appearanceAction->setCheckable(true);
     appearanceToggle->setDefaultAction(appearanceAction);layout->addWidget(appearanceToggle);

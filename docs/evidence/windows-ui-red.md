@@ -117,3 +117,53 @@ the next run says why.
 | The viewport not watched | "A viewport wide enough for two columns kept the Link form stacked" |
 
 UI only: no engine, schema or project file changed.
+
+## Round 4: a top-group button held the panel wide (D243) — 2026-10-18
+
+On `f10fdc7` (D242), `windows-desktop` still failed the same three tests. This time D242's
+diagnostic named the cause (job 117653333216):
+
+```
+narrow: editorId beside its label; label x 8 w 123, field x 139 w 126, host 273, policy 1, viewport -1
+narrow: editorDrivingSide beside its label; ... host 257, policy 1, viewport -1
+```
+
+These are the top group's forms (ID/Name/Behaviour and the appearance fold), not a scrolled page.
+Their host, the dock body, was 273 px wide in the "200 px" floating panel.
+
+**Cause.** Nothing above the tab pages scrolls. On Linux the floating dock's minimum width is the
+body's: 218 px, set by `editorAppearanceToggle`, a text button that cannot wrap (202 px, plus 16 px of
+margins). That is why the narrow fixture got 218, not 200. On Windows the same button is wider, so
+the panel's minimum and the body's width were about 273 px. That is more than two columns, so the
+forms correctly kept their rows beside their labels. D242's `dock->width() <= 220` check passed only
+because it was read straight after `resize(200)`. Most likely Windows applied the window's minimum
+size afterwards.
+
+**Fix.** `ElidingToolButton` (`editor_interaction.*`):
+- it asks for its full text (`sizeHint`), but its minimum width is the text replaced by an ellipsis;
+- its horizontal policy is `Preferred`, where `QToolButton`'s is `Fixed`;
+- it paints the text elided when narrower, and the action's tooltip keeps the whole text.
+
+The three text buttons above the pages use it: the appearance toggle, Apply behaviour type and
+Apply display. Buttons inside the scrolled pages keep their behaviour (E17). On Linux the body's
+minimum in English falls from 218 to 169 px, so the narrow fixture is now really 200 px.
+
+**Row** (1×, 1.5×, 2×). In the narrow fixture, `editorAppearance`'s text grows until the toggle
+asks for two columns plus 40 px. The dock is resized to 200 px. Then:
+- the dock must stay at or under 220 px;
+- the toggle must be narrower than its full text;
+- no top row may sit beside its label;
+- the language switch restores the text.
+
+Before the fix: "A long top-group button widened the narrow panel" (the dock went to 299 px).
+
+**Mutations,** each restored:
+
+| Mutation | Caught by |
+|---|---|
+| The toggle a plain `QToolButton` | "A long top-group button widened the narrow panel" |
+| No `Preferred` policy | the same |
+| The minimum width the full text | the same |
+
+Unconfirmed on Windows until `windows-desktop` runs. If another top-group widget is still wider than
+the panel there, the diagnostic names its form and host width. UI only.

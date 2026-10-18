@@ -171,6 +171,20 @@ int main(int argc,char** argv) {
             language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
             require(page->widget()->minimumSizeHint().width()<twoColumns,"Setup: the button text was not restored");
         }
+        // D243, the Windows run: the appearance toggle's text, which cannot wrap, is wider there, so the floating
+        // panel could not narrow below about 289 px and its top forms kept two columns (the D242 diagnostic:
+        // host 273 px, no viewport). A long text now elides instead. The forcing first: the text alone is that wide.
+        {
+            language->setCurrentIndex(0);settle();
+            auto* toggle=item<QToolButton>(window,"editorAppearanceToggle");auto* appearance=item<QAction>(window,"editorAppearance");
+            for(int n=1;toggle->sizeHint().width()<2*editorDesign::formLabelWidth+40;++n){appearance->setText(QString(n,QChar('M')));settle();}
+            dock->resize(200,700);settle();
+            require(dock->width()<=220,"A long top-group button widened the narrow panel");
+            require(toggle->width()<toggle->sizeHint().width(),"The long toggle text did not shrink to the panel");
+            aligned(window,"long toggle",false);
+            language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
+            require(toggle->sizeHint().width()<2*editorDesign::formLabelWidth,"Setup: the toggle text was not restored");
+        }
         dock->setFloating(false);language->setCurrentIndex(0);window.resize(1360,860);settle();
         // Immediate settings and Apply sections stay apart, divided, and keep their commit triggers.
         auto* side=item<QComboBox>(window,"editorDrivingSide");auto* level=item<QComboBox>(window,"editorObjectLevel");

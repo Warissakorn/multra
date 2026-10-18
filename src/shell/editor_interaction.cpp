@@ -3,6 +3,8 @@
 #include "editor_style.hpp"
 #include <QHeaderView>
 #include <QStyle>
+#include <QStyleOptionToolButton>
+#include <QStylePainter>
 #include <QTableView>
 #include <QAbstractItemView>
 #include <QAbstractScrollArea>
@@ -119,6 +121,21 @@ void alignFormLabels(QWidget* root) {
         if(auto* host=form->parentWidget()){new FormReflow(form,host,column);column->hosts.emplace_back(host);}
     }
     column->refresh();
+}
+ElidingToolButton::ElidingToolButton(QWidget* parent):QToolButton(parent) {
+    auto policy=sizePolicy();policy.setHorizontalPolicy(QSizePolicy::Preferred);setSizePolicy(policy); // QToolButton's is Fixed
+}
+QSize ElidingToolButton::minimumSizeHint() const {
+    QStyleOptionToolButton option;initStyleOption(&option);
+    const auto full=sizeHint();const auto metrics=fontMetrics();
+    return {full.width()-metrics.horizontalAdvance(option.text)+metrics.horizontalAdvance(QStringLiteral("\u2026")),full.height()};
+}
+void ElidingToolButton::paintEvent(QPaintEvent*) {
+    QStylePainter painter(this);QStyleOptionToolButton option;initStyleOption(&option);
+    const auto metrics=fontMetrics();const int text=metrics.horizontalAdvance(option.text);
+    const int room=width()-(sizeHint().width()-text); // the width left for text after icon and padding
+    if(room<text)option.text=metrics.elidedText(option.text,Qt::ElideRight,std::max(0,room));
+    painter.drawComplexControl(QStyle::CC_ToolButton,option);
 }
 QSize ReflowLabel::minimumSizeHint() const {
     // A form label keeps its wrapped height: a short dock shrinks the scrolling pages, not a label.
