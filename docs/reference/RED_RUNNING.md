@@ -32,6 +32,11 @@ After D241's trace, the owner chose on 2026-10-18 (D246):
 - **Every crossing the rule started is counted,** including one that falls after the window (D241's
   seed 51 at 2 s).
 
+After D247's measurements, the owner kept both on 2026-10-18 (D248):
+- **The window stays an upper bound.** It is not widened to drivers who could stop gently.
+- **A runner's committed crossing still counts.** It is not removed when commitment would also
+  have let the vehicle through.
+
 ## 2. The keys
 
 - **`redRunningShare`** is the share of drivers who may run, in (0, 1].
@@ -74,6 +79,12 @@ After D241's trace, the owner chose on 2026-10-18 (D246):
   held again when the window ends: the window bounds only the start of a run. Before D246 a runner
   short of the line at the window's end was held again, and D241 traced the clamps that caused on
   M2.6 ([evidence](../evidence/red-running.md#d241-the-added-m26-clamps)).
+  - **What the window means in practice (D247, D248).** A vehicle sees a red head from any
+    distance, so one that meets red after onset has usually been stopping gently since amber. With
+    `amberDeceleration`, a run therefore almost always starts at red onset, by a driver who went on
+    amber; on the shipped projects the 1, 2 and 3 s windows give identical outputs
+    ([evidence](../evidence/red-running.md#d247-the-owners-answers-to-d241-2026-10-18)). Do not
+    calibrate `redRunningTime` expecting it to scale the count.
 - **The state.** `SimState::redReleases` lists the (vehicle, head) pairs let through on the last
   tick, sorted by vehicle id and, within a vehicle, in its route's head order. It is empty
   without the keys.
@@ -82,6 +93,8 @@ After D241's trace, the owner chose on 2026-10-18 (D246):
 - **The event.** On the tick when a vehicle that this rule let through moves its front past that
   head's line, the run emits `RedRunningEvent{time, vehicleId, headId}`, at most once per vehicle
   and head. Because the decision holds, a crossing after the window is counted too (D246).
+  - The rule is tested before commitment, so a runner's crossing counts even when commitment would
+    also have let it through. A non-runner's committed crossing is not a run (D248).
   - The event stream writes it as kind `red-running`.
   - The run summary counts it as `redRunning`.
   - Batch JSON, the per-seed rows and the CSV carry `redRunning` only when a behaviour of the run
@@ -102,6 +115,8 @@ refused on confirm with the pair's issue. Editing is one Undo step with the libr
 - Starting from standstill on red, and running at amber (amber has its own rule).
 - A share by vehicle type, or one that changes with the time of day.
 - Calibration: rates by country are for a study to set.
+- A camera-style count of every entry on red, whatever lets the vehicle through. That is a
+  measure for `src/eval/`, to add when a study needs it (D248).
 
 ## 6. Rows (BA138–BA145, BA152–BA157)
 

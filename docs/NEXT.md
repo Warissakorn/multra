@@ -19,6 +19,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   - its crossing is counted even after the window.
 
   Shipped outputs are byte-identical. With a 5 % share, M2.6's clamps return to the no-key 41.
+- **D248:** the owner kept the window as an upper bound and the count as it is; the contract now
+  says so.
 - **Finding (D247):** on the shipped projects the window no longer changes anything. The 1, 2 and 3 s
   copies give identical outputs. Every run starts at, or 0.3 s after, red onset. The reading (not probed
   further): a vehicle meeting red later has been stopping gently since amber, so only one that went on
@@ -118,19 +120,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ROADMAP names no single next item for a session told only to "continue", so the session asks the
 owner first. The candidates, easiest first:
-1. **Red running after D247.** Two owner choices; no shipped behaviour carries the keys, so neither
-   moves shipped output:
-   - should `redRunningTime` matter with `amberDeceleration`? Today a run starts only at red onset,
-     by a vehicle that went on amber. A wider rule would let, for example, a share of drivers who
-     could stop gently start a run inside the window. That would partly undo D246's first answer;
-   - should a crossing that commitment (AMBER §1) would have let through anyway still count as a
-     run? Today a runner's does and a non-runner's does not.
-
-   A contract and rows come first.
-2. **The remaining M3.2.8a.1 cases:** the moving merge clamps behind a shared leader's standstill
+1. **The remaining M3.2.8a.1 cases:** the moving merge clamps behind a shared leader's standstill
    buffer (D105) and the standstill cap (D201 B5). The three shipped M2.6 clamps at seed 51 are of
    this kind. Each needs a contract and the owner's choice.
-3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
+2. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
 
 M2.8 has only owner checks left. Without an answer, the session asks again rather than choosing a
 rule change.
