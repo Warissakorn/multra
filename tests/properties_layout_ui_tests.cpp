@@ -1,6 +1,7 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/shell/editor_interaction.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
+#include <QAbstractScrollArea>
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
@@ -61,6 +62,12 @@ void aligned(EditorWindow& window,const char* where,bool beside=true) {
                     const auto field=QRect(p.field->mapTo(body,QPoint()),p.field->size());
                     if(field.top()>=label.bottom())continue; // wrapped below its label
                     ++rows;
+                    if(!beside) { // D242: Windows is the only host where this has failed, so name what stayed beside
+                        auto* host=form->parentWidget();auto* scroll=qobject_cast<QAbstractScrollArea*>(host->parentWidget()?host->parentWidget()->parentWidget():nullptr);
+                        std::cerr<<where<<": "<<p.field->objectName().toStdString()<<" beside its label; label x "<<label.left()<<" w "<<label.width()
+                                 <<", field x "<<field.left()<<" w "<<field.width()<<", host "<<host->width()<<", policy "<<form->rowWrapPolicy()
+                                 <<", viewport "<<(scroll?scroll->viewport()->width():-1)<<'\n';
+                    }
                     require(field.width()>=80,"A field beside its label is squeezed");
                     if(x<0)x=field.left();
                     else if(std::abs(field.left()-x)>1){std::cerr<<where<<": "<<p.field->objectName().toStdString()<<" at "<<field.left()<<", column at "<<x<<'\n';require(false,"Properties fields do not share one column");}
@@ -143,6 +150,26 @@ int main(int argc,char** argv) {
                         require(w->minimumSizeHint().width()<=page->viewport()->width(),"A narrow Properties label or field is wider than its page");
             }
             tabs->setCurrentIndex(0);settle();
+        }
+        // D242: on Windows a page's widest action button made the Link page wide enough for two columns
+        // (Linux: 248 px, 8 px short of it), so its form kept rows beside their labels in a 188 px viewport.
+        // The forcing first: a longer button text makes the page that wide.
+        {
+            language->setCurrentIndex(0);settle();
+            auto* addPoint=item<QAction>(window,"editorAddLinkPoint");
+            auto* page=qobject_cast<QScrollArea*>(item<QTabWidget>(window,"editorPropertyTabs")->widget(0));
+            const auto margins=page->widget()->layout()->contentsMargins();
+            const int twoColumns=2*editorDesign::formLabelWidth+margins.left()+margins.right();
+            for(int n=1;page->widget()->minimumSizeHint().width()<twoColumns+40;++n){addPoint->setText(QString(n,QChar('M')));settle();}
+            // Only the viewport narrows: from about 290 px, two columns' worth, to 188, with the page at its minimum.
+            dock->resize(300,700);settle();const int before=page->widget()->width();
+            require(page->viewport()->width()>=twoColumns&&before>page->viewport()->width(),"Setup: the wide viewport does not show two columns");
+            require(linkForm->rowWrapPolicy()==QFormLayout::WrapLongRows,"A viewport wide enough for two columns kept the Link form stacked");
+            dock->resize(200,700);settle();
+            require(page->widget()->width()==before&&page->widget()->width()>page->viewport()->width(),"Setup: the Link page is not wider than its viewport");
+            aligned(window,"wide page",false);
+            language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
+            require(page->widget()->minimumSizeHint().width()<twoColumns,"Setup: the button text was not restored");
         }
         dock->setFloating(false);language->setCurrentIndex(0);window.resize(1360,860);settle();
         // Immediate settings and Apply sections stay apart, divided, and keep their commit triggers.

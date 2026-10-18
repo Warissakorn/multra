@@ -76,25 +76,35 @@ QSize ReflowLabel::sizeHint() const {
 }
 namespace {
 // Below two label columns a field beside its label would be squeezed to a sliver, so the whole
-// form stacks each field under its label instead.
+// form stacks each field under its label instead. D242: a scrolled page is never narrower than its
+// widest action button, which cannot wrap (Windows' made the Link page two columns wide in a 188 px
+// panel), so the width that counts is what its scroll area shows.
 class FormReflow : public QObject {
 public:
     FormReflow(QFormLayout* form,QWidget* host,std::shared_ptr<FormColumn> column)
-        :QObject(host),form_(form),column_(std::move(column)){host->installEventFilter(this);apply(host);}
+        :QObject(host),form_(form),host_(host),column_(std::move(column)) {
+        for(auto* w=host->parentWidget();w;w=w->parentWidget())
+            if(auto* scroll=qobject_cast<QAbstractScrollArea*>(w);scroll&&scroll->viewport()->isAncestorOf(host)){viewport_=scroll->viewport();break;}
+        host->installEventFilter(this);if(viewport_)viewport_->installEventFilter(this);apply();
+    }
     bool eventFilter(QObject* watched,QEvent* event) override {
-        if(event->type()==QEvent::Resize)apply(static_cast<QWidget*>(watched));
+        if(event->type()==QEvent::Resize)apply();
         // A label's text or font changed (a language switch): its form asks for a new layout.
-        if(event->type()==QEvent::LayoutRequest)column_->refresh();
+        if(event->type()==QEvent::LayoutRequest&&watched==host_)column_->refresh();
         return false;
     }
 private:
-    void apply(QWidget* host) {
+    void apply() {
         const auto margins=form_->contentsMargins();
-        const int width=host->contentsRect().width()-margins.left()-margins.right();
+        int shown=host_->contentsRect().width();
+        if(viewport_)shown=std::min(shown,viewport_->width());
+        const int width=shown-margins.left()-margins.right();
         const auto policy=width<2*editorDesign::formLabelWidth?QFormLayout::WrapAllRows:QFormLayout::WrapLongRows;
         if(form_->rowWrapPolicy()!=policy)form_->setRowWrapPolicy(policy);
     }
     QFormLayout* form_;
+    QWidget* host_;
+    QPointer<QWidget> viewport_;
     std::shared_ptr<FormColumn> column_;
 };
 }

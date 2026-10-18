@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — Give-way line clamps traced (D232, no code change)
+
+NEXT's item ([evidence](../evidence/give-way-line-clamps.md)). D231's Stop-line clamps are not the
+Stop rule's: the shipped Yield `t-junction-priority` clamps the same way (6 at seeds 42–81).
+- **What fires:** phase 1, on a minor vehicle creeping off its line at walking pace when a major
+  vehicle comes inside the zone's headway or gap time. It can still stop at its maximum, so it is
+  not committed (D69) and is held again at the line. The braking law overshoots by millimetres to
+  centimetres. A few standing cases at dt 0.5 are the standstill cap (D201 B5).
+- **Booked:** these are M3.2.8a.1's moving minor clamps. Its gate wants a contract and rows before
+  any motion change, and each option moves shipped output, so nothing was changed.
+
 ## 2026-10-17 — B-8 Stop dwell time implemented (D231)
 
 D230's contract ([evidence](../evidence/stop-dwell.md)).

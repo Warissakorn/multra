@@ -11,8 +11,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-18
 
-- **PR #177** carries D207–D241 to `main` (#176 was closed). CI is green except Windows
-  `properties-layout-ui`, which is also red on `main` (D205's open item).
+- **PR #177** carries D207–D242 to `main` (#176 was closed).
+- **D242:** Windows `properties-layout-ui` ("A narrow form kept a field beside its label", red on
+  `main` too) is fixed on Linux evidence. A scrolled Properties form now stacks by the width its
+  viewport shows ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
+  It is confirmed only by a green `windows-desktop` run; if that run fails, the test now names the
+  form and widths.
 - **D241 (no code change):** M2.6's clamps added by red running are traced
   ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). Only seeds 51 and 73 change, and
   none of the added clamps is a red-head hold:

@@ -56,3 +56,64 @@ once. The third row above reproduces this on Linux.
 
 `ctest --test-dir build/desktop -R "canvas-lod-ui|properties-layout-ui"` 4/4. Full results are in
 the PROGRESS entry. UI only: no engine, schema or project file changed, so BA39 is untouched.
+
+## Round 3: a narrow form kept a row beside its label (D242) — 2026-10-18
+
+Branch `claude/m3.4-lane-change-duration-slice1`, on `a80c64f`. Same local host. **Unconfirmed on
+Windows** until `windows-desktop` runs on the pushed head.
+
+**What failed.** After D205, `properties-layout-ui` (1×, 1.5×, 2×) gets further on Windows and fails
+the narrow floating-panel check:
+
+```
+A narrow form kept a field beside its label
+```
+
+It fails the same way on main `b066624` (run 38924644741, job 117052970818) and on PR #177's heads
+(for example job 117641915295 on `a80c64f`). The message did not say which form.
+
+**Cause.** `FormReflow` stacks a form (`WrapAllRows`) when its host is narrower than two label
+columns (240 px). The three tab pages are hosts inside a `QScrollArea` with `widgetResizable`, so a
+page is never narrower than its widest child. Text-only action buttons cannot wrap (OWNER_SITTING
+E17). Measured on Linux in the 200 px floating dock:
+
+| Language | Page | Page width | Viewport | Widest child |
+|---|---|---|---|---|
+| English | Link | 248 | 188 | 232 (an action button) |
+| English | Connector | 223 | 188 | 207 |
+| English | Image | 188 | 188 | 168 |
+| Thai | Link | 196 | 188 | 180 |
+| Thai | Connector | 204 | 188 | 188 |
+| Thai | Image | 188 | 188 | 149 |
+
+The English Link page's form gets 248 − 16 = 232 px, 8 px short of two columns. A Windows button
+only a little wider (its font and style) reaches 240, so the form kept its rows beside their labels
+in a 188 px viewport. Linux stayed under the threshold and passed.
+
+**Fix.** The width that decides the policy is the visible one: the host's contents width, or the
+enclosing scroll area's viewport width, whichever is less. `FormReflow` also watches that viewport,
+because a page at its minimum width does not resize when only the viewport does. The top group (the
+dock body, not scrolled) is unchanged.
+
+**Rows** (`tests/properties_layout_ui_tests.cpp`, 1×, 1.5×, 2×). In the narrow fixture,
+`editorAddLinkPoint`'s text grows until the Link page's minimum is two columns plus 40 px. The dock
+then goes to 300 px and back to 200; the forcing asserts the page keeps its width while only the
+viewport narrows.
+
+| Check | Before the fix | After |
+|---|---|---|
+| At 300 px the Link form shows two columns | — | pass |
+| At 200 px no row sits beside its label ("wide page") | "A narrow form kept a field beside its label", with the new diagnostic naming seven Link fields at host 267 px, viewport 188 px | pass |
+
+`aligned` now prints, for a row that stays beside its label in a narrow check, the field, both x
+positions and widths, the host width, the wrap policy and the viewport width. If Windows still fails,
+the next run says why.
+
+**Mutations,** each restored:
+
+| Mutation | Caught by |
+|---|---|
+| The viewport width not used | "A narrow form kept a field beside its label" |
+| The viewport not watched | "A viewport wide enough for two columns kept the Link form stacked" |
+
+UI only: no engine, schema or project file changed.
