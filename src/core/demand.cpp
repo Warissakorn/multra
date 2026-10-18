@@ -1,5 +1,6 @@
 #include "detail.hpp"
 #include "routes.hpp"
+#include "speed_distribution.hpp"
 #include "simulation.hpp"
 #include "w74.hpp"
 #include <cmath>
@@ -18,16 +19,17 @@ double random(std::uint32_t& state) {
 PendingVehicle samplePending(SimState& state, std::uint32_t input, std::uint32_t route, std::uint32_t typeIndex,
                              double scheduledTime) {
     const auto& type = state.scenario->vehicleTypes[typeIndex];
-    const double desiredSpeed = type.desiredSpeed.min + random(state.randomState) *
-                               (type.desiredSpeed.max - type.desiredSpeed.min);
+    const double desiredSpeed = speedAt(type.desiredSpeed, random(state.randomState)); // B-5 (D229)
     // Separate statements specify draw order; C++ operand evaluation order must
     // never choose which draw goes to the logarithm versus cosine.
     const double radiusDraw = random(state.randomState);
     const double angleDraw = random(state.randomState);
     const double gaussian = std::sqrt(-2 * std::log(radiusDraw)) *
                             std::cos(2 * std::numbers::pi * angleDraw);
+    // B-4 (D236): the spread of the type's own behaviour, never the road's; 0.15 without the key.
+    const auto& spread = state.scenario->behaviours[state.index->behaviourOfType[typeIndex]].driverFactorSpread;
     PendingVehicle v{state.nextVehicleId++, input, route, typeIndex, scheduledTime, desiredSpeed,
-                     std::clamp(0.5 + 0.15 * gaussian, 0.0, 1.0)};
+                     std::clamp(0.5 + spread.value_or(0.15) * gaussian, 0.0, 1.0)};
     // Hashed, not drawn: randomState's sequence is the same with or without W74 (D129).
     if (state.index->w74) v.w74Traits = w74Traits(state.seed, v.id, v.driverFactor);
     return v;

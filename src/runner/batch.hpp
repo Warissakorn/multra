@@ -64,6 +64,7 @@ struct BatchReport {
     std::optional<LosPack> los; // M5.5: the runs' pack
     Estimate meanDelay, completed, pending, safetyClamps;
     std::vector<BatchLotRow> lots; // M8.5; last, so existing brace-initialisations keep meaning
+    std::optional<Estimate> redRunning; // B-9 (D238): only when the runs carry the keys
     bool operator==(const BatchReport&) const = default;
 };
 // Sorts by seed first, so any permutation of the same runs gives the same report, bit for bit.

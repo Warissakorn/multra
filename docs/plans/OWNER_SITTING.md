@@ -46,6 +46,11 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
 
+Answered 2026-10-17: **B19**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
+[D214](../decisions/RECORD.md#d214): the [tiers](../reference/BEHAVIOUR_PARAMETERS.md) stand, the 50 km/h
+lateral reference moves to fixed, and tier B is ordered by effect on Thai study outputs (kerb bias,
+commitment deceleration, merge deceleration, speed limits, …). Numbers are not reused.
+
 Answered 2026-10-16: **B1, B2, B3, B5, B6, B8, B12, B13**, owner: “ปิดตามข้อเสนอ” (“close as
 proposed”), [D201](../decisions/RECORD.md#d201). Keep `TrafficSim` until a release; D95/D101 stay off
 and reopen only by route (i) in M3.4; the `level` skip is a discrepancy with M3_CONTRACT, queued as

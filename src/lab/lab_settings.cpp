@@ -1,5 +1,6 @@
 #include "lab_settings.hpp"
 #include "../project/demand_catalog.hpp"
+#include "../core/speed_distribution.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -13,6 +14,9 @@ void rescaleAxles(VehicleType& type) {
     if (!std::isfinite(total) || total <= 0 || std::abs(total - type.length) <= 1e-12 * std::max(total, type.length)) return;
     const double scale = type.length / total;
     a.wheelbase *= scale; a.frontOverhang *= scale; a.rearOverhang *= scale;
+}
+void fitSpeedCurves(LabSettings& s) {
+    for (auto* type : {&s.focus.type, &s.traffic.car, &s.traffic.heavy}) fitCurve(type->desiredSpeed);
 }
 namespace {
 template<class T>

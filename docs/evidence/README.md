@@ -39,7 +39,25 @@ or edit evidence in place. A new measurement gets a new note.
 | [perception-discharge.md](perception-discharge.md) | M3.5 slice 5 — BA38 reaction-time discharge, raw-input manifests, paired seed/lane evidence — 2026-10-15 | D185, D184 |
 | [perception-delay.md](perception-delay.md) | M3.5 slice 4 — reaction-time FIFO, safety, replay and performance — 2026-10-15 | D184, D179 |
 | [perception-lane.md](perception-lane.md) | M3.5 slice 3: look-back, rear TTC and perceived lane-change evidence — 2026-10-15 | D183 |
-| [windows-ui-red.md](windows-ui-red.md) | Main's Windows-only UI reds: rounding at the lane threshold, unbreakable Thai label word — 2026-10-16 | D195, D200, D205 |
+| [windows-ui-red.md](windows-ui-red.md) | Main's Windows-only UI reds: rounding at the lane threshold, unbreakable Thai label word — 2026-10-16; a scrolled page wider than its panel a top button, a wrapped text's minimum, and Thai without libthai — 2026-10-18 | D195, D200, D205, D242, D243, D244, D245 |
+| [lateral-perf.md](lateral-perf.md) | Switched-on engine round: lateral cost back inside LATERAL §11 — 2026-10-16 | D206, D209 |
+| [lane-change-gap.md](lane-change-gap.md) | Mid-change gap loss: waiting at the line — 2026-10-16 | D208 |
+| [straddler-leaders.md](straddler-leaders.md) | A straddler follows the other lane's leaders — 2026-10-16 | D210 |
+| [curve-speed.md](curve-speed.md) | M3.6 slice 1: curve speed — 2026-10-17 | D211, D212, D213, D226 |
+| [kerb-bias.md](kerb-bias.md) | M3.4 keep to the kerb lane, slice 1 — 2026-10-17 | D213, D215 |
+| [behaviour-key-exposure.md](behaviour-key-exposure.md) | Behaviour-key exposure: every level-4 key editable — 2026-10-17 | D217 |
+| [commitment-deceleration.md](commitment-deceleration.md) | B-2: commitment deceleration at give-way lines — 2026-10-17 | D218, D219 |
+| [merge-deceleration.md](merge-deceleration.md) | B-3: accepted deceleration for mandatory lane changes — 2026-10-17 | D220, D221 |
+| [speed-decisions.md](speed-decisions.md) | B-6 slice 1: desired-speed decisions — 2026-10-17 | D222, D223, D227 |
+| [give-way-stop.md](give-way-stop.md) | A feasible stop at a give-way line (M3.2.8a.1 slice) — 2026-10-18 | D239, D240 |
+| [red-running.md](red-running.md) | B-9: red-light running share — 2026-10-18; M2.6's added clamps traced | D237, D238, D241 |
+| [driver-factor-spread.md](driver-factor-spread.md) | B-4: driver-factor spread — 2026-10-18 | D235, D236 |
+| [lane-preference.md](lane-preference.md) | B-7: lane preference by vehicle type — 2026-10-17 | D233, D234 |
+| [stop-dwell.md](stop-dwell.md) | B-8: Stop dwell time — 2026-10-17 | D230, D231 |
+| [give-way-line-clamps.md](give-way-line-clamps.md) | Give-way line clamps traced: a slow move-off meets a closing gap — 2026-10-17 | D232, D69, D105 |
+| [speed-distribution.md](speed-distribution.md) | B-5: desired-speed distribution curve — 2026-10-17 | D228, D229 |
+| [reduced-speed-areas.md](reduced-speed-areas.md) | B-6 slice 2: reduced-speed areas — 2026-10-17 | D224, D225 |
+| [lane-swap.md](lane-swap.md) | Swapping pair at shared dead ends: the rear one yields — 2026-10-16 | D207 |
 | [lane-change-duration.md](lane-change-duration.md) | M3.4 slice 1: lane-change duration evidence — 2026-10-16 | D204, D206 |
 | [lateral-display.md](lateral-display.md) | M3.7 slice 4: lateral display evidence — 2026-10-16 | D180, D203 |
 | [lateral-zones.md](lateral-zones.md) | M3.7 slice 3b: zone occupancy by span evidence — 2026-10-16 | D188, D202 |

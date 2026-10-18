@@ -6,6 +6,10 @@
 #include "w74.hpp"
 #include "perception.hpp"
 #include "lateral.hpp"
+#include "speed_control.hpp"
+#include "speed_decision.hpp"
+#include "speed_area.hpp"
+#include "red_running.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -18,6 +22,11 @@ std::string issueMessage(const std::vector<ValidationIssue>& issues) {
     std::string message;
     for (const auto& issue : issues) message += issue.code + ": " + issue.path + '\n';
     return message;
+}
+// B-4 (DRIVER_FACTOR §2, D236): [0, 0.5].
+void spreadIssues(const DriverBehaviour& b, const std::string& p, std::vector<ValidationIssue>& issues) {
+    if (b.driverFactorSpread && !(std::isfinite(*b.driverFactorSpread) && *b.driverFactorSpread >= 0 && *b.driverFactorSpread <= 0.5))
+        issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", p + ".driverFactorSpread"});
 }
 bool blank(const std::string& id) { return id.find_first_not_of(" \t\r\n") == std::string::npos; }
 template<class T>
@@ -269,6 +278,13 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
             for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
             for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
+            for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
+            for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
+            for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
+            for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
+            spreadIssues(b, p, issues); // B-4 (D236)
+            for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
+            for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
         number(b.standstillDistance, p + ".standstillDistance");
@@ -280,6 +296,12 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
         for (auto& issue : perceptionParameterIssues(b.perception, p)) issues.push_back(std::move(issue)); // M3.5
         for (auto& issue : lateralParameterIssues(b.lateral, p)) issues.push_back(std::move(issue)); // M3.7
+        for (auto& issue : curveParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.6
+        for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
+        for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
+        spreadIssues(b, p, issues); // B-4 (D236)
+        for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
+        for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every
         // vehicle on them would change back and forth each tick.
@@ -293,6 +315,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             add("INCOMPLETE_DISCRETIONARY_BEHAVIOUR", p + ".acceptedDecelerationTrailingVehicle");
         if (!b.discretionaryLaneChangeThreshold && b.acceptedDecelerationTrailingVehicle)
             add("INCOMPLETE_DISCRETIONARY_BEHAVIOUR", p + ".discretionaryLaneChangeThreshold");
+        for (auto& issue : kerbParameterIssues(b, p)) issues.push_back(std::move(issue)); // M3.4 (D215)
     }
     for (std::size_t i = 0; i < s.vehicleTypes.size(); ++i) {
         const auto& t = s.vehicleTypes[i];
@@ -312,6 +335,19 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(t.comfortableDeceleration, p + ".comfortableDeceleration"); number(t.maxDeceleration, p + ".maxDeceleration");
         number(t.desiredSpeed.min, p + ".desiredSpeed.min"); number(t.desiredSpeed.max, p + ".desiredSpeed.max");
         if (t.desiredSpeed.max < t.desiredSpeed.min) add("INVALID_RANGE", p + ".desiredSpeed");
+        if (t.kerbLanes && (*t.kerbLanes < 1 || *t.kerbLanes > 16)) add("INVALID_KERB_LANES", p + ".kerbLanes"); // B-7 (D234)
+        // B-5 (SPEED_DISTRIBUTION §4, D229): a curve from (min, 0) to (max, 1), speeds rising, shares not falling.
+        const auto& curve = t.desiredSpeed.curve;
+        if (curve.size() == 1) add("INVALID_SPEED_CURVE", p + ".desiredSpeed.curve");
+        for (std::size_t k = 0; k < curve.size() && curve.size() > 1; ++k) {
+            const auto& c = curve[k];
+            const bool first = k == 0, last = k + 1 == curve.size();
+            if (!std::isfinite(c.speed) || !std::isfinite(c.share) || c.share < 0 || c.share > 1 ||
+                (!first && (!(c.speed > curve[k - 1].speed) || c.share < curve[k - 1].share)) ||
+                (first && (c.speed != t.desiredSpeed.min || c.share != 0)) ||
+                (last && (c.speed != t.desiredSpeed.max || c.share != 1)))
+                add("INVALID_SPEED_CURVE", p + ".desiredSpeed.curve[" + std::to_string(k) + "]");
+        }
         if (t.maxDeceleration < t.comfortableDeceleration) add("INVALID_RANGE", p + ".maxDeceleration");
         if (!behaviours.contains(t.behaviourId)) add("UNKNOWN_BEHAVIOUR", p + ".behaviourId");
     }
@@ -369,6 +405,8 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
     for(auto& issue:routingIssues(s))issues.push_back(std::move(issue));
     validateParkingLots(s, issues); // M8.4a
     for (auto& issue : lateralScenarioIssues(s)) issues.push_back(std::move(issue)); // M3.7, D187
+    for (auto& issue : speedDecisionIssues(s)) issues.push_back(std::move(issue)); // B-6, D223
+    for (auto& issue : speedAreaIssues(s)) issues.push_back(std::move(issue)); // B-6 §7, D225
     return issues;
 }
 void assertValidScenario(const Scenario& scenario) {

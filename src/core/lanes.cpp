@@ -108,12 +108,19 @@ std::size_t slotOfId(const std::vector<Vehicle>& vehicles, std::uint64_t id) {
 // Rules 3-5 at a mapped place, for both kinds of change: nothing alongside, and the car-following
 // model itself accepts the change ahead and behind. Safe: the follower's acceleration behind the
 // changer (+infinity without one), for a discretionary change's stricter test. Unsafe: nullopt.
+// B-3 (MERGE_DECELERATION.md, D221): a mandatory change brakes up to the changer's own key, and asks
+// its follower up to the changer's trailing key. Following never asks more than the braking type's
+// maximum, so a key above it acts as that maximum.
 std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs,
-                             std::size_t v, const Around& near) {
+                             std::size_t v, const Around& near, bool mandatory = false) {
     if (near.alongside) return std::nullopt;
     const auto& vehicle = vehicles[v];
     const auto& type = s.vehicleTypes[refs[v].type];
     const auto& behaviour = s.behaviours[refs[v].behaviour];
+    const auto limit = [&](const std::optional<double>& key, const VehicleType& braking) {
+        return mandatory && key ? *key : braking.comfortableDeceleration;
+    };
+    const double own = limit(behaviour.mandatoryDecelerationOwn, type);
     // Forward safety (rule 3), by the car-following model itself: braking it would accept,
     // and this tick's move inside the room the leader leaves, so the change never clamps.
     // With forward perception keys, against the perceived leaders (§3's lowest acceleration) and
@@ -124,12 +131,12 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
             auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
             anticipate(following, s, vehicles, refs, vehicle, type, behaviour, near.ahead);
             const double a = following.acceleration;
-            if (a < -type.comfortableDeceleration ||
+            if (a < -own ||
                 integrate(vehicle.speed, a, s.timeStep).distance > leader.gap - standstillGap(behaviour)) return std::nullopt;
         }
     } else if (const auto& leader = near.leader) {
         const double a = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader).acceleration;
-        if (a < -type.comfortableDeceleration ||
+        if (a < -own ||
             integrate(vehicle.speed, a, s.timeStep).distance > leader->gap - standstillGap(behaviour)) return std::nullopt;
     }
     // Rearward safety (rule 4): the follower's own reaction to the changer ahead of it.
@@ -145,11 +152,40 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
         // Its leader would be the changer itself, with the changer's own snapshot acceleration.
         const double a = follow(other.speed, other, other.w74State, fType, fBehaviour,
                                 Leader{follower->gap, vehicle.speed, vehicle.acceleration}).acceleration;
-        if (a < -fType.comfortableDeceleration ||
+        if (a < -limit(behaviour.mandatoryDecelerationTrailingVehicle, fType) ||
             integrate(other.speed, a, s.timeStep).distance > follower->gap - standstillGap(fBehaviour)) return std::nullopt;
         return a;
     }
     return std::numeric_limits<double>::infinity();
+}
+// D207 (M3_8_CONTRACT §2, "Cooperation"): stub vehicle `x`'s mutual partner -- a stub alongside or
+// just behind x's target place that needs the lane x is on -- holds back behind that place when it is
+// the rear one of the pair (level: the higher id), braking no harder than comfortably. Otherwise each
+// lies alongside the other's target place and neither ever changes.
+void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
+                 const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                 std::size_t x, const RouteLaneChange& change, std::vector<CourtesyHold>& holds) {
+    const auto& front = vehicles[x];
+    const double at = mappedOnto(change, front.distance), atRear = at - s.vehicleTypes[refs[x].type].length;
+    const auto lane = frontPart(index.parts[refs[x].route], front.distance).segmentIndex;
+    for (const auto& part : index.parts[change.target])
+        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
+            const auto& span = spans[buckets.items[i]];
+            const auto y = span.own && span.vehicleId != front.id ? slotOfId(vehicles, span.vehicleId) : vehicles.size();
+            if (y == vehicles.size()) continue;
+            const double yFront = part.start + span.front, yRear = part.start + span.rear;
+            if (yRear >= at || yFront <= atRear - standstillGap(s.behaviours[refs[y].behaviour])) continue;
+            if (yFront > at || (yFront == at && vehicles[y].id < front.id)) continue; // y is the front one
+            const auto& other = vehicles[y];
+            const auto* theirs = laneChangeTargetOf(index, refs[y].route, other.distance,
+                                                    other.distance - s.vehicleTypes[refs[y].type].length);
+            if (!theirs) continue;
+            const auto& to = index.parts[theirs->target];
+            if (std::none_of(to.begin(), to.end(), [&](const auto& p) { return p.segmentIndex == lane; })) continue;
+            const CourtesyHold hold{atRear - yFront, front.speed, true, front.acceleration,
+                                    s.vehicleTypes[refs[y].type].comfortableDeceleration};
+            if (hold.gap < holds[y].gap) holds[y] = hold;
+        }
 }
 }
 void recordLaneChange(const Scenario& s, Vehicle& vehicle, std::uint32_t route, double distance,
@@ -157,6 +193,7 @@ void recordLaneChange(const Scenario& s, Vehicle& vehicle, std::uint32_t route, 
     events.emplace_back(LaneChangeEvent{time, vehicle.id, s.routes[vehicle.routeIndex].id, s.routes[route].id});
     vehicle.lastLaneChange = LastLaneChange{tick, vehicle.routeIndex};
     vehicle.laneChangeTrace.push_back({vehicle.routeIndex, route, vehicle.distance, distance, vehicle.speed});
+    if (vehicle.desiredQuantile >= 0) vehicle.freeFlowFrom += distance - vehicle.distance; // SPEED_DECISIONS §4 (D223)
     vehicle.routeIndex = route; vehicle.distance = distance;
 }
 void applyLaneChange(const Scenario& s, Vehicle& vehicle, const LaneChange& change,
@@ -250,6 +287,20 @@ std::vector<ValidationIssue> laneChangeIssues(const Scenario& s) {
             issues.push_back({"LANE_CHANGE_DEAD_END_UNREACHABLE", "routeDeadEnds[" + std::to_string(i) + "]"});
     return issues;
 }
+std::vector<ValidationIssue> mandatoryParameterIssues(const DriverBehaviour& b, const std::string& path) {
+    std::vector<ValidationIssue> issues; // MERGE_DECELERATION §2: each (0, 15]
+    for (const auto& [key, value] : {std::pair{"mandatoryDecelerationOwn", b.mandatoryDecelerationOwn},
+                                     std::pair{"mandatoryDecelerationTrailingVehicle", b.mandatoryDecelerationTrailingVehicle}})
+        if (value && !(std::isfinite(*value) && *value > 0 && *value <= 15)) issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", path + "." + key});
+    return issues;
+}
+std::vector<ValidationIssue> kerbParameterIssues(const DriverBehaviour& b, const std::string& path) {
+    if (!b.kerbLaneBias) return {};
+    const double bias = *b.kerbLaneBias;
+    if (!(std::isfinite(bias) && bias > 0 && bias <= 5)) return {{"INVALID_BEHAVIOUR_PARAMETER", path + ".kerbLaneBias"}};
+    if (!b.discretionaryLaneChangeThreshold) return {{"INCOMPLETE_DISCRETIONARY_BEHAVIOUR", path + ".kerbLaneBias"}};
+    return {};
+}
 void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     index.laneChanges = !s.laneChanges.empty();
     index.laneChangesOfRoute.assign(s.routes.size(), {});
@@ -262,7 +313,7 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     for (const auto& span : s.laneChanges) {
         const auto from = slotOf(s, span.fromRouteId), to = slotOf(s, span.toRouteId);
         if (from >= s.routes.size() || to >= s.routes.size()) continue;
-        const RouteLaneChange change{to, span.fromStart, span.fromEnd, span.toStart, span.toEnd};
+        const RouteLaneChange change{to, span.fromStart, span.fromEnd, span.toStart, span.toEnd, span.towardKerb};
         // Full to full is a discretionary span (D95); the mandatory paths never see one.
         if (!std::isfinite(index.deadEndOfRoute[from]) && !std::isfinite(index.deadEndOfRoute[to])) {
             index.discretionaryOfRoute[from].push_back(change); anyDiscretionary = true;
@@ -309,7 +360,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
                                                  s.behaviours[refs[v].behaviour], vehicle.speed);
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
                                      s.behaviours[refs[v].behaviour].perception, &sideways);
-            if (!safeAt(s, vehicles, refs, v, near)) continue;
+            if (!safeAt(s, vehicles, refs, v, near, true)) continue;
             const auto start = lateralStart(s, index, vehicle, refs[v], change, at);
             if (start.refused) continue;
             accepted.push_back({v, static_cast<std::uint32_t>(change.target), at, start.target});
@@ -348,8 +399,12 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         };
         const auto& sight = behaviour.perception;
         const auto own = followerFilter(s, index, index.parts[route], front, type.width, vehicle.lateral, behaviour, vehicle.speed);
-        const double here = acceleration(around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight,
-                                                &own));
+        const auto hereNear = around(index, route, front, rear, vehicle.id, spans, buckets, moved, sight, &own);
+        const double here = acceleration(hereNear);
+        // D215 (OVERTAKING §4): with a kerb bias, a return toward the kerb while free on its own lane
+        // needs the threshold less the bias; passing and undertaking need it plus the bias.
+        const bool free = behaviour.kerbLaneBias &&
+            follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, hereNear.leader).mode == FollowingMode::free;
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot
@@ -359,7 +414,8 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0, behaviour, vehicle.speed);
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight, &sideways);
             const double gain = acceleration(near) - here;
-            if (gain < *behaviour.discretionaryLaneChangeThreshold) continue;
+            const double bias = behaviour.kerbLaneBias.value_or(0);
+            if (gain < *behaviour.discretionaryLaneChangeThreshold + (change.towardKerb && free ? -bias : bias)) continue;
             // §2's rules 3-5, plus the trailing vehicle at no worse than the CHANGER's accepted value.
             const auto trailing = safeAt(s, vehicles, refs, v, near);
             if (!trailing || *trailing < -*behaviour.acceptedDecelerationTrailingVehicle) continue;
@@ -388,6 +444,8 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
         const auto& vehicle = vehicles[v];
         const auto& type = s.vehicleTypes[refs[v].type];
         const auto& behaviour = s.behaviours[refs[v].behaviour];
+        if (const auto* mine = laneChangeTargetOf(index, route, vehicle.distance, vehicle.distance - type.length))
+            yieldMutual(s, index, vehicles, refs, spans, buckets, v, *mine, holds);
         const bool waiting = waitingAtDeadEnd(index, route, vehicle, behaviour);
         if (!waiting) {
             // Cooperative braking: only inside the look-ahead, once its dead end, taken as a
@@ -428,7 +486,7 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
                 if (!fBehaviour.maxDecelerationCooperativeBraking) continue;
                 const double closing = other.speed - vehicle.speed;
                 if (closing > 0 && closing * closing > 2 * *fBehaviour.maxDecelerationCooperativeBraking * room) continue;
-                hold = {gap, vehicle.speed, true, vehicle.acceleration};
+                hold = {gap, vehicle.speed, true, vehicle.acceleration, *fBehaviour.maxDecelerationCooperativeBraking};
             }
             // The nearest place counts; at equal gaps a waiting changer's standing one wins.
             if (hold.gap < holds[f].gap || (hold.gap == holds[f].gap && holds[f].moving)) holds[f] = hold;

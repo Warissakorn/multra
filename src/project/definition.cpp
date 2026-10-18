@@ -6,6 +6,9 @@
 #include "demand_catalog.hpp"
 #include "demand_time_types.hpp"
 #include "counted_volumes.hpp"
+#include "speed_decisions.hpp"
+#include "speed_areas.hpp"
+#include "speed_curve.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -107,11 +110,12 @@ Json definitionJson(const AuthoringDefinition& d) {
         j["vehicleTypes"] = Json::array();
         for (const auto& t : d.vehicleTypes) {
             Json item{{"id",t.id},{"length",t.length},{"width",t.width},
-                {"desiredSpeed",{{"min",t.desiredSpeed.min},{"max",t.desiredSpeed.max}}},
+                {"desiredSpeed",speedRangeJson(t.desiredSpeed)},
                 {"maxAcceleration",t.maxAcceleration},{"comfortableDeceleration",t.comfortableDeceleration},
                 {"maxDeceleration",t.maxDeceleration},{"behaviourId",t.behaviourId}};
             if(const auto at=d.vehicleTypeNames.find(t.id);at!=d.vehicleTypeNames.end() && !at->second.empty())item["name"]=at->second;
             if(t.axles)item["axles"]={{"wheelbase",t.axles->wheelbase},{"frontOverhang",t.axles->frontOverhang},{"rearOverhang",t.axles->rearOverhang}};
+            if(t.kerbLanes)item["kerbLanes"]=*t.kerbLanes; // B-7 (D234)
             j["vehicleTypes"].push_back(std::move(item));
         }
     }
@@ -129,6 +133,15 @@ Json definitionJson(const AuthoringDefinition& d) {
                 }
             for (const auto& key : lateralParameterKeys()) // M3.7 (D187)
                 if (const auto& v = b.lateral.*key.member) item[key.name] = *v;
+            if (b.curveLateralAcceleration) item["curveLateralAcceleration"] = *b.curveLateralAcceleration; // M3.6 (D212)
+            if (b.kerbLaneBias) item["kerbLaneBias"] = *b.kerbLaneBias; // M3.4 (D215)
+            if (b.commitmentDeceleration) item["commitmentDeceleration"] = *b.commitmentDeceleration; // B-2 (D219)
+            if (b.mandatoryDecelerationOwn) item["mandatoryDecelerationOwn"] = *b.mandatoryDecelerationOwn; // B-3 (D221)
+            if (b.mandatoryDecelerationTrailingVehicle) item["mandatoryDecelerationTrailingVehicle"] = *b.mandatoryDecelerationTrailingVehicle;
+            if (b.stopDwellTime) item["stopDwellTime"] = *b.stopDwellTime; // B-8 (D231)
+            if (b.driverFactorSpread) item["driverFactorSpread"] = *b.driverFactorSpread; // B-4 (D236)
+            if (b.redRunningShare) item["redRunningShare"] = *b.redRunningShare; // B-9 (D238)
+            if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model
@@ -334,6 +347,8 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     // checked against the catalog on Run, exactly as external vehicle types are. For the checks
     // here it borrows an embedded type, if the document carries any.
     if (auto decisions = routingDecisionIssues(*d.definition); !decisions.empty()) throw ValidationError(std::move(decisions));
+    if (auto speeds = speedDecisionSpecIssues(d.network, *d.definition); !speeds.empty()) throw ValidationError(std::move(speeds)); // B-6
+    if (auto areas = speedAreaSpecIssues(d.network, *d.definition); !areas.empty()) throw ValidationError(std::move(areas)); // B-6 §7
     if (auto signals = signalControlIssues(d.network, *d.definition); !signals.empty()) throw ValidationError(std::move(signals));
     // Routeless inputs (M2.1.1) are walked here too; one whose walk fails is left out and named
     // by routelessIssues on Run, so an edit to the network is never refused because of it.

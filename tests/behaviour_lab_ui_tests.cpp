@@ -105,6 +105,19 @@ int main(int argc, char** argv) {
         require(std::abs(tunedType.axles->wheelbase + tunedType.axles->frontOverhang + tunedType.axles->rearOverhang - tunedType.length) < 1e-9,
                 "Length tuning left invalid axle geometry");
         require(!item<QLabel>(*lab, "labAxleDimensions")->text().isEmpty(), "Axle policy is not visible");
+        // D217: perception, lateral and curve are rows for both behaviours, off until ticked.
+        for (const char* side : {"focus.", "traffic."})
+            for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "lookBackDistance", "rearTimeToCollision",
+                                    "reactionTime", "lateral", "curveLateralAcceleration"})
+                require(!item<QCheckBox>(*lab, (std::string(side) + key + "Set").c_str())->isChecked(), "Lab key row missing or pre-set");
+        require(lab->panel()->settings() == lab->run().settings(), "An unticked row changed the settings");
+        item<QCheckBox>(*lab, "focus.curveLateralAccelerationSet")->setChecked(true);
+        item<QDoubleSpinBox>(*lab, "focus.curveLateralAcceleration")->setValue(3);
+        item<QCheckBox>(*lab, "focus.observedVehiclesAheadSet")->setChecked(true);
+        item<QDoubleSpinBox>(*lab, "focus.observedVehiclesAhead")->setValue(2);
+        lab->applyPanel();
+        const auto& tuned = lab->run().settings().focus.behaviour;
+        require(tuned.curveLateralAcceleration == 3 && tuned.perception.observedVehiclesAhead == 2, "Lab keys not applied (D217)");
 
         // A road change rebuilds the ring from t = 0, and the tuned vehicle is followed again.
         item<QSpinBox>(*lab, "road.lanes")->setValue(2);
@@ -141,6 +154,9 @@ int main(int argc, char** argv) {
             for (const auto& b : def.behaviours) if (b.id == t.behaviourId)
                 written = b.additiveSafetyDistance == lab->run().settings().focus.behaviour.additiveSafetyDistance;
         require(written, "Apply did not write the tuned behaviour");
+        for (const auto& t : def.vehicleTypes) if (t.id == "car")
+            for (const auto& b : def.behaviours) if (b.id == t.behaviourId)
+                require(b.curveLateralAcceleration == 3 && b.perception.observedVehiclesAhead == 2, "Apply dropped the lab keys (D217)");
         for (const auto& t : def.vehicleTypes) if (t.id == "car")
             require(t.length == tunedType.length && t.axles == tunedType.axles, "Apply did not write body and axles together");
         item<QAction>(w, "editorUndo")->trigger(); QApplication::processEvents();

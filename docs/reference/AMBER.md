@@ -13,7 +13,7 @@ contract replaces that for projects. The model is a deterministic threshold, **n
 |---|---|---|
 | Green | No hold | No hold |
 | Amber | Held at the line, as red (D36) | **Goes** when `speed² > 2 · amberDeceleration · gap`, where `gap ≥ 0` is the distance from the front to the line, or when it cannot stop at all (below); otherwise held at the line |
-| Red | Held at the line | Held at the line, unless it **cannot stop at all**: `speed² > 2 · maxDeceleration · gap` with the vehicle type's maximum, the commitment rule priority rules already use (M3.2.8a) |
+| Red | Held at the line | Held at the line, unless it **cannot stop at all**: `speed² > 2 · maxDeceleration · gap` with the vehicle type's maximum, the commitment rule priority rules already use (M3.2.8a). `commitmentDeceleration` (D219) never applies here |
 
 - **Continuous check.** The test runs on every tick the head is amber. It needs no state on the
   vehicle, and is the default of Vissim's "Continuous check" in spirit, though not its
@@ -30,7 +30,16 @@ contract replaces that for projects. The model is a deterministic threshold, **n
   forced that impossible stop and reported a safety clamp; the owner chose commitment on
   2026-10-09, after the first measurement left 44 such clamps in 40 four-leg seeds. Every other
   vehicle is held at red, and a clamp still means the engine stopped one harder than its type
-  allows. Deliberate red-light running is not modelled.
+  allows. Deliberate red-light running is a separate, optional rule ([RED_RUNNING](RED_RUNNING.md), B-9).
+- **Slow arrivals at red onset (D227).** The red test is kinematic: a car that can stop at its
+  maximum is held. The line then becomes a standing leader inside the car's desired gap, and the
+  prototype's braking law is linear in the gap, so it softens near the line. It can end a few
+  centimetres short of a full stop, at well below 1 m/s, and that last tick is counted as a clamp,
+  though the implied deceleration (about 3 m/s²) is under the maximum. Shipped speeds do not reach
+  this edge: four-leg seeds 42–81 have no clamp. With 30 km/h cars (a decision or the type's range)
+  a car meets red 6–7 m short of the line, and 1–2 such clamps appear in 40 seeds. A kinematic
+  floor on that braking was measured and not adopted
+  ([ENGINEERING_NOTES](ENGINEERING_NOTES.md#do-not-retry-without-a-new-measurement)).
 - **Intergreen.** A fixed-time Signal Controller expands each group to green, amber, red (M2.7b), so
   the all-red time is the red after amber. An amber anywhere in a program follows the rule above; a
   red → amber → green program keeps its standing queue, because a standing vehicle stops. An

@@ -56,3 +56,231 @@ once. The third row above reproduces this on Linux.
 
 `ctest --test-dir build/desktop -R "canvas-lod-ui|properties-layout-ui"` 4/4. Full results are in
 the PROGRESS entry. UI only: no engine, schema or project file changed, so BA39 is untouched.
+
+## Round 3: a narrow form kept a row beside its label (D242) — 2026-10-18
+
+Branch `claude/m3.4-lane-change-duration-slice1`, on `a80c64f`. Same local host. **Unconfirmed on
+Windows** until `windows-desktop` runs on the pushed head.
+
+**What failed.** After D205, `properties-layout-ui` (1×, 1.5×, 2×) gets further on Windows and fails
+the narrow floating-panel check:
+
+```
+A narrow form kept a field beside its label
+```
+
+It fails the same way on main `b066624` (run 38924644741, job 117052970818) and on PR #177's heads
+(for example job 117641915295 on `a80c64f`). The message did not say which form.
+
+**Cause.** `FormReflow` stacks a form (`WrapAllRows`) when its host is narrower than two label
+columns (240 px). The three tab pages are hosts inside a `QScrollArea` with `widgetResizable`, so a
+page is never narrower than its widest child. Text-only action buttons cannot wrap (OWNER_SITTING
+E17). Measured on Linux in the 200 px floating dock:
+
+| Language | Page | Page width | Viewport | Widest child |
+|---|---|---|---|---|
+| English | Link | 248 | 188 | 232 (an action button) |
+| English | Connector | 223 | 188 | 207 |
+| English | Image | 188 | 188 | 168 |
+| Thai | Link | 196 | 188 | 180 |
+| Thai | Connector | 204 | 188 | 188 |
+| Thai | Image | 188 | 188 | 149 |
+
+The English Link page's form gets 248 − 16 = 232 px, 8 px short of two columns. A Windows button
+only a little wider (its font and style) reaches 240, so the form kept its rows beside their labels
+in a 188 px viewport. Linux stayed under the threshold and passed.
+
+**Fix.** The width that decides the policy is the visible one: the host's contents width, or the
+enclosing scroll area's viewport width, whichever is less. `FormReflow` also watches that viewport,
+because a page at its minimum width does not resize when only the viewport does. The top group (the
+dock body, not scrolled) is unchanged.
+
+**Rows** (`tests/properties_layout_ui_tests.cpp`, 1×, 1.5×, 2×). In the narrow fixture,
+`editorAddLinkPoint`'s text grows until the Link page's minimum is two columns plus 40 px. The dock
+then goes to 300 px and back to 200; the forcing asserts the page keeps its width while only the
+viewport narrows.
+
+| Check | Before the fix | After |
+|---|---|---|
+| At 300 px the Link form shows two columns | — | pass |
+| At 200 px no row sits beside its label ("wide page") | "A narrow form kept a field beside its label", with the new diagnostic naming seven Link fields at host 267 px, viewport 188 px | pass |
+
+`aligned` now prints, for a row that stays beside its label in a narrow check, the field, both x
+positions and widths, the host width, the wrap policy and the viewport width. If Windows still fails,
+the next run says why.
+
+**Mutations,** each restored:
+
+| Mutation | Caught by |
+|---|---|
+| The viewport width not used | "A narrow form kept a field beside its label" |
+| The viewport not watched | "A viewport wide enough for two columns kept the Link form stacked" |
+
+UI only: no engine, schema or project file changed.
+
+## Round 4: a top-group button held the panel wide (D243) — 2026-10-18
+
+On `f10fdc7` (D242), `windows-desktop` still failed the same three tests. This time D242's
+diagnostic named the cause (job 117653333216):
+
+```
+narrow: editorId beside its label; label x 8 w 123, field x 139 w 126, host 273, policy 1, viewport -1
+narrow: editorDrivingSide beside its label; ... host 257, policy 1, viewport -1
+```
+
+These are the top group's forms (ID/Name/Behaviour and the appearance fold), not a scrolled page.
+Their host, the dock body, was 273 px wide in the "200 px" floating panel.
+
+**Cause.** Nothing above the tab pages scrolls. On Linux the floating dock's minimum width is the
+body's: 218 px, set by `editorAppearanceToggle`, a text button that cannot wrap (202 px, plus 16 px of
+margins). That is why the narrow fixture got 218, not 200. On Windows the same button is wider, so
+the panel's minimum and the body's width were about 273 px. That is more than two columns, so the
+forms correctly kept their rows beside their labels. D242's `dock->width() <= 220` check passed only
+because it was read straight after `resize(200)`. Most likely Windows applied the window's minimum
+size afterwards.
+
+**Fix.** `ElidingToolButton` (`editor_interaction.*`):
+- it asks for its full text (`sizeHint`), but its minimum width is the text replaced by an ellipsis;
+- its horizontal policy is `Preferred`, where `QToolButton`'s is `Fixed`;
+- it paints the text elided when narrower, and the action's tooltip keeps the whole text.
+
+The three text buttons above the pages use it: the appearance toggle, Apply behaviour type and
+Apply display. Buttons inside the scrolled pages keep their behaviour (E17). On Linux the body's
+minimum in English falls from 218 to 169 px, so the narrow fixture is now really 200 px.
+
+**Row** (1×, 1.5×, 2×). In the narrow fixture, `editorAppearance`'s text grows until the toggle
+asks for two columns plus 40 px. The dock is resized to 200 px. Then:
+- the dock must stay at or under 220 px;
+- the toggle must be narrower than its full text;
+- no top row may sit beside its label;
+- the language switch restores the text.
+
+Before the fix: "A long top-group button widened the narrow panel" (the dock went to 299 px).
+
+**Mutations,** each restored:
+
+| Mutation | Caught by |
+|---|---|
+| The toggle a plain `QToolButton` | "A long top-group button widened the narrow panel" |
+| No `Preferred` policy | the same |
+| The minimum width the full text | the same |
+
+UI only.
+
+**Windows result: not the cause.** `windows-desktop` on `cd1954f` (job 117661026863) failed with
+exactly the same lines (host 273 px, viewport −1). The toggle was not what held the panel on Windows;
+the eliding buttons stay as the owner's choice, but they did not fix the check.
+
+Ruled out on Linux: a two-column form whose rows may wrap does not need label plus field (a 130 px
+field minimum left the body's minimum at 169 px). The 273 px is 8 + 123 + 8 + 126 + 8, the label
+column plus the remaining field width, so it does not name its source. When a narrow check fails,
+`aligned` now also prints:
+- the dock's width and minimum;
+- the body's width and minimum hint;
+- the tab widget's and tab bar's hints;
+- the six widest visible widgets above the pages.
+
+The next Windows run names the widget that holds the panel.
+
+## Round 5: a wrapped text's minimum held the panel (D244) — 2026-10-18
+
+The diagnostic from `5c40b8e` named the widget (job 117667101947, identical at 1×, 1.5× and 2×):
+
+```
+narrow: dock 273 (minimum 273), body 273 (hint 273), tabs hint 153, tab bar hint 149
+  257 QLabel editorEffectiveBehaviour
+  98 QWidget
+```
+
+**Cause.** `editorEffectiveBehaviour` is the word-wrapped text under the behaviour type. On Windows
+(Qt 6.5.3) it asked for a 257 px minimum. On Linux, Qt 6.4.2 asks for its longest word, 69 px, and
+Qt 6.8 (PySide6, also on Linux) asks for 63 px. The text itself is the same. That one minimum held
+the body at 273 px and the floating dock at 273 px, wide enough for two columns, so the top forms
+never stacked. The `<= 220` check had passed only because it was read before Windows applied the
+window's minimum.
+
+Nothing in the editor sets that label's minimum width. Margin, indent, a frame, text selection and
+rich text each left Qt's value at the longest word plus extras on Linux. The Windows path that gives
+257 was not reproduced.
+
+**Fix.** `ReflowLabel::minimumSizeHint` for a wrapped plain text is now its longest word: the width
+`QFontMetrics::boundingRect` gives at a 1 px wrap width, plus its margins and indent. It is never
+more than Qt's own value. Form labels keep their column rule (D205).
+
+**Rows** (1×, 1.5×, 2×). In the narrow fixture, in both languages, every visible wrapped text above
+the pages must ask for no more than its longest space-separated word plus 8 px. On failure it prints
+its minimum, Qt's value, any set minimum and the word.
+
+- On Linux it passes before and after: Qt already gives the word here, so the row cannot fail first
+  locally. Its failing evidence is the Windows run above (257 against a word of about 70 px).
+- **Emulation:** with Qt's value inflated by 300 px for every wrapped text, the build passes with
+  the cap. Without the cap it fails, and the Linux panel cannot narrow at all ("Narrow fixture did
+  not take effect").
+
+UI only.
+
+**Windows result.** On `2596b8e` (job 117674376871) the lines are identical: 257 for the label,
+host 273 px. The new word check did **not** fire. So the label's own `minimumSizeHint` is now within
+its word, and the 257 in the diagnostic, which prints the larger of the hint and `minimumWidth()`,
+comes from somewhere else. No code or style sheet sets a minimum width on it.
+
+The diagnostic now prints, for each of the six widest widgets:
+- the hint and the set minimum, separately;
+- the width and the horizontal policy;
+- for a label, Qt's own value, the wrap flag, the format and the text.
+
+## Round 6: Thai had no line breaks on Windows (D245) — 2026-10-18
+
+**Windows diagnostic.** On `5b0faf5` (job 117680403240), in all three scales:
+
+```text
+257 QLabel editorEffectiveBehaviour (hint 257, set 0, width 257, policy 5, QLabel 257, wrap 1, format 2,
+    text "คลังพฤติกรรมแก้ไขแคตตาล็อกของโปรเจกต์เอง ให้คัดลอกประเภทรถและพฤติกรรมเข้าโปรเจกต…")
+```
+
+Nothing sets a minimum width (`set 0`); the 257 is Qt's own value for the text. The failing check is
+the **Thai** pass of the narrow loop. Round 5 had compared it with the English text, so "the text
+itself is the same" there was wrong.
+
+**Cause.** Thai is written without spaces between words. Qt finds Thai line breaks through libthai,
+which it loads at run time (`QLibrary("thai", 0)`, with `th_brk_find_breaks`). On Windows, Qt 6.5
+looks only for `thai.dll`, and the CI runner has none. Without it, a Thai sentence breaks only at its
+spaces, so its first 41-letter run is one word. D205 had already met this on a form label.
+
+**Linux reproduction.** A probe measured the same text in a word-wrapped `QLabel` on Qt 6.4.2:
+
+| libthai | Minimum width | Line breaks |
+|---|---|---|
+| present | 60 px | 17 |
+| moved aside | 268 px | 2 |
+
+Without libthai, Linux gives the Windows figure (257 px there; the fonts differ). This also explains
+rounds 3–5:
+- D242, D243 and D244 did not change Windows.
+- D244's word check, which splits at spaces, saw the 257 px run as one word and did not fire.
+
+Many Thai strings in `th.json` have unspaced runs of 60–78 letters, so every Windows user of the Thai
+interface had this, not only the test.
+
+**The owner's choice.** Ship libthai with Windows, rather than breaking words anywhere.
+
+**Fix.**
+- **CI.** `windows-desktop` and the package job install MSYS2's `mingw-w64-ucrt-x86_64-libthai`. They
+  copy `libthai-0.dll` as `thai.dll`, with `libdatrie-1.dll` and the `thbrk.tri` dictionary, into a
+  folder on `PATH`, and set `LIBTHAI_DICTDIR` to it. vcpkg has no libthai port.
+- **Package.** The Windows package ships `thai.dll` and `libdatrie-1.dll` in `bin/`, the dictionary
+  in `bin/data/libthai/`, and both LGPL licences in `licenses/`.
+- **Editor.** At start-up, `main.cpp` sets `LIBTHAI_DICTDIR` to `data/libthai` beside the executable,
+  when that holds `thbrk.tri` and the variable is unset. This mirrors `PROJ_DATA`.
+
+**Rows** (1×, 1.5×, 2×). In the Thai pass of the narrow fixture, Qt must find a line break inside
+"คลังพฤติกรรมแก้ไขแคตตาล็อกของโปรเจกต์เอง". Otherwise it fails with "Qt has no Thai line breaking here
+(libthai not found, or LIBTHAI_DICTDIR wrong)".
+- It passes on Linux, where libthai is present.
+- **Mutation:** the same check on an unbroken Latin string fails with that message.
+- Its failing evidence is the probe above, plus the Windows run, where the same text gave 257 px.
+
+D242–D244 stay: each is a correct robustness fix, and none is the Windows cause.
+
+Unconfirmed on Windows until `windows-desktop` runs. The step prints the DLLs that `thai.dll` and
+`libdatrie-1.dll` import, in case one is missing.

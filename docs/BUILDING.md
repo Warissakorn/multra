@@ -62,6 +62,15 @@ cmake --build --preset release
 C:/Qt/6.8.3/msvc2022_64/bin/windeployqt.exe --release build/release/bin/trafficsim-desktop.exe
 ```
 
+**Thai line breaks (D245).** Qt loads libthai at run time, as `thai.dll` only, to find Thai line
+breaks. Without it a Thai sentence breaks only at its spaces, and `properties-layout-ui` fails with
+"Qt has no Thai line breaking here". The fix, as `native.yml`'s "Install Thai line breaking" step does it:
+1. Install MSYS2's `mingw-w64-ucrt-x86_64-libthai`.
+2. Copy `libthai-0.dll` as `thai.dll`, with `libdatrie-1.dll`, into a folder on `PATH`.
+3. Set `LIBTHAI_DICTDIR` to the folder holding `thbrk.tri`.
+
+The editor finds the dictionary by itself in `bin/data/libthai/`, where the package puts it.
+
 Keep `bin/data/` beside the executable. This is a developer deployment folder;
 the signed installer, file association and clean-machine acceptance remain M7.
 

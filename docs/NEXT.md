@@ -9,113 +9,134 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 [OWNER_SITTING](plans/OWNER_SITTING.md); dated measurements and reverted ideas live in
 [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 
-## State on 2026-10-16
+## State on 2026-10-18
 
+- **PR #177** carries D207–D245 to `main` (#176 was closed). The owner wants it merged once every
+  CI job is green.
+- **D245:** Windows `properties-layout-ui` (red on `main` too) failed because Qt there had no
+  libthai. A Thai sentence broke only at its spaces, so the effective-behaviour text asked for
+  257 px and held the narrow Properties panel at 273 px.
+  - CI and the Windows package now ship MSYS2's libthai as `thai.dll`, with its dictionary (the
+    owner's choice), and the editor finds the dictionary in `data/libthai`.
+  - The narrow check first asserts a Thai line break, with a clear message.
+  - It is confirmed only by a green `windows-desktop` run
+    ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
+- **D242–D244** (forms reflow by their viewport, top buttons elide, a wrapped text asks only for its
+  word) were not the Windows cause. They stay as robustness fixes, and the narrow check's
+  diagnostic stays; it prints only on failure.
+- **D241 (no code change):** M2.6's clamps added by red running are traced
+  ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). Only seeds 51 and 73 change, and
+  none of the added clamps is a red-head hold:
+  - a runner released after braking for amber meets the green flow at a merge, then hits the
+    standstill cap (D105, D201 B5), and its follower clamps behind it;
+  - a runner held again at the end of a 3 s window stops at 6 m/s², and its follower needs
+    10.6 m/s².
+
+  A run that crosses after the window as committed (under `amberDeceleration`) writes no event.
+- **Give-way line stop is in** (D239, D240, [GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md), [evidence](evidence/give-way-stop.md)):
+  on a tick that would clamp at a binding give-way line, a stop within the type's maximum brakes to
+  the line instead. The shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays
+  unchanged; every other shipped output is byte-identical.
+- **Tier B is complete.** **B-9 is in** (D237, D238, [RED_RUNNING](reference/RED_RUNNING.md), [evidence](evidence/red-running.md)):
+  `redRunningShare` and `redRunningTime` on the driver behaviour (schema 44); a hashed share of
+  drivers pass red only in its first seconds while moving; a counted `red-running` event; two
+  dialog rows. Shipped runs byte-identical. No crossing traffic reacts (no conflict areas at the
+  shipped signals).
+- **B-4 is in** (D235, D236, [DRIVER_FACTOR](reference/DRIVER_FACTOR.md), [evidence](evidence/driver-factor-spread.md)):
+  `driverFactorSpread` on the driver behaviour (schema 43) sets the factor's standard deviation,
+  read from the type's own behaviour when a vehicle is made; absent = 0.15; the random stream is
+  unchanged; behaviour-dialog row. Shipped runs byte-identical. Mean delay does not move with the
+  spread; a wide spread adds clamps.
+- **B-7 is in** (D233, D234, [LANE_PREFERENCE](reference/LANE_PREFERENCE.md), [evidence](evidence/lane-preference.md)):
+  `kerbLanes` on the vehicle type (schema 42) splits that type's entry only over the kerb-most N
+  lanes; mandatory changes unchanged; type-dialog row. Not where an entry routing decision chooses
+  lanes by destination (so M2.6 does not move). Shipped runs byte-identical.
+- **D232 (no code change):** D231's Stop-line clamps are give-way line clamps, not the Stop rule's
+  ([evidence](evidence/give-way-line-clamps.md)). A minor vehicle creeping off its line meets a gap
+  that closes while it can still stop; the braking law overshoots. The shipped Yield T-junction shows
+  6 at seeds 42–81. Booked in M3.2.8a.1 (contract and rows first; each option moves shipped output).
+- **B-8 is in** (D230, D231, [STOP_DWELL](reference/STOP_DWELL.md), [evidence](evidence/stop-dwell.md)):
+  `stopDwellTime` on the driver behaviour (schema 41) rests a vehicle at a Stop line for whole ticks
+  of at least that time; absent = today's one tick. Shipped runs byte-identical; +0.25–0.41 % Ir.
+- **B-5 is in** (D228, D229, [SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md), [evidence](evidence/speed-distribution.md)):
+  an optional piecewise cumulative desired-speed curve on the vehicle type (schema 40), the same draw,
+  the share as the quantile decisions and areas map linearly; type-dialog curve box; Lab fit. Shipped
+  runs byte-identical, +0.06 % Ir.
+- **D227 (no code change):** D223's seed-47 red-onset clamp is AMBER §1's red rule with a slow
+  arrival; the prototype's braking softens near the line ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
+  A braking floor was measured and not adopted (ENGINEERING_NOTES).
+- **D226:** acceleration is capped while a curve or area bound holds (BA109); shipped runs
+  byte-identical.
+- **B-6 slice 2 is in** (D224, D225, [SPEED_DECISIONS §7](reference/SPEED_DECISIONS.md), [evidence](evidence/reduced-speed-areas.md)):
+  reduced-speed areas (schema 39) over a Link stretch, by lane id, anticipated at a per-area
+  deceleration; delay not counted inside; editor tab with lane boxes. No area byte-identical; +0.77 %
+  Ir recorded (the hooks resisted three rewrites).
+- **B-6 slice 1 is in** (D222, D223, [SPEED_DECISIONS](reference/SPEED_DECISIONS.md), [evidence](evidence/speed-decisions.md)):
+  desired-speed decisions (schema 38), quantile kept, delay against the speed in force; editor tab via the
+  selected Link. Reduced-speed areas are a contract only (§7).
+- **B-3 is in** (D220, D221, [MERGE_DECELERATION](reference/MERGE_DECELERATION.md), [evidence](evidence/merge-deceleration.md)):
+  `mandatoryDecelerationOwn` / `mandatoryDecelerationTrailingVehicle` (schema 37) in the mandatory
+  safety tests; editor rows. Shipped projects barely move; no value ships.
+- **B-2 is in** (D218, D219, [COMMITMENT](reference/COMMITMENT.md), [evidence](evidence/commitment-deceleration.md)):
+  `commitmentDeceleration` (schema 36) at give-way lines, the lower of it and the type maximum; editor
+  row. A low value raises clamps (D69's risk), so no value ships; clamps are not yet split by road.
+- **Behaviour-key exposure is in** (D217, [evidence](evidence/behaviour-key-exposure.md)): perception,
+  lateral (one box) and curve are off-until-ticked rows in the behaviour editor and the Lab panel;
+  Lab *Apply* writes them back. The D95 keys and kerb bias stay out of the Lab (circuit clears lane
+  changes).
 - **M3.4 slice 1 is in** (D206, [evidence](evidence/lane-change-duration.md), BA48–BA53): with the lateral
   switch on, a lane change is a lateral move that remaps at the crossing. Two start rules of D204 were
   corrected from switched-on runs (window without the body length; a change under way holds its target
   place). No shipped project carries lateral keys, so every shipped run is unchanged (CLI pin
   byte-identical); BA39 holds.
-- **Switched-on cost is owed:** +33 % `lane-change-lab`, +17 % `four-leg-signalised` (Release, seeds
-  42–51), above LATERAL §11's 10 %. Nothing a user runs is slower; the cut is due before any shipped
-  project or preset carries lateral keys.
+- **Keep-to-kerb slice 1 is in** (D215, [evidence](evidence/kerb-bias.md)): `kerbLaneBias` (schema 35)
+  with the D95 pair. A53 still fails with any bias, so D95 stays off in shipped data.
+- **Settings scope designed** (D216, BEHAVIOUR_PARAMETERS §6): project, catalog default, vehicle type,
+  driver behaviour (local by road), network object, per vehicle.
+- **D213 (docs only):** [BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md) proposes which
+  behaviour values are settable now, should become optional keys, or stay fixed; decided on the
+  owner's delegation with tier B ordered (D214). The [OVERTAKING](reference/OVERTAKING.md) keep-to-kerb contract is written
+  (BA64–BA71, not implemented). The behaviour editor's W74 save now keeps the curve key.
+- **M3.6 slice 1 is in** (D212, [evidence](evidence/curve-speed.md), BA56–BA63): with
+  `curveLateralAcceleration` on a behaviour (schema 34), vehicles slow for a Connector's curve to
+  `sqrt(a·R)`, anticipated at comfortable deceleration. No value ships (D178), so every shipped run is
+  byte-identical. D212 also recovered D210's switched-off cost (`closestVehicle` inline again).
+- **A straddler follows the lanes it covers** (D210, [evidence](evidence/straddler-leaders.md), BA55):
+  `closestVehicle` (now `src/core/leaders.cpp`) and `perceivedLeaders` also scan the lanes a body
+  covers, through each lane's only successor. Switched off byte-identical; switched on +6.0 % / +4.8 %
+  Ir against `5847cb9`, inside LATERAL §11.
+- **Switched-on cost is inside the budget** (D209): +3.5 % lab, +3.0 % four-leg Ir against `5847cb9`;
+  outputs byte-identical.
+- **D208: mid-change, a changer waits at the line** until the start's safety tests hold on the lane it
+  would cover (owner's choice); switched-on clamps 2 → 0.
+- **D207: a swapping pair of stubs resolves by the rear one yielding** (owner's choice). Shipped
+  four-leg and M2.6 multi-seed outputs moved by ≤ 0.2 s mean delay; the CLI pin is byte-identical.
 - M3.7.0's four slices are in (D202, D203); M3.7's gate stays open (ROADMAP).
 - D205 (main's Windows-only UI reds) is on main; it is confirmed only by a green Windows run.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
   is still owed if the owner reports slowness.
-- `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (PROGRESS D196
+- `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (archived PROGRESS D196
   entry); if it fails again, capture its output before re-running.
 - M3.5 is implemented through BA38 (D181–D186).
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the lane-swap deadlock at shared dead ends (rows first)
+## Next session — ask the owner
 
-Found by D206's product runs and **present with the switch off** ([evidence](evidence/lane-change-duration.md)
-§ switched-on runs): in `lane-change-lab`, two movements' stubs end at the same station on adjacent lanes,
-each heading for the other's lane. Both heads stand at 598 m of 600 m, each is "alongside" the other's
-target place (`around` in `src/core/lanes.cpp`), neither ever changes and both approaches jam
-(seed 44: 183 vehicles active, switch off). A session told only to "continue" takes it:
-1. A failure-first row on a two-lane stub pair built like `stub()` in
-   `tests/lane_change_duration_tests.cpp` (two dead ends at one station, spans crossing), switch off.
-2. Propose the rule before coding (M3_8_CONTRACT §2 is the contract): e.g. the lower id of a mutual
-   pair changes first into the other's place once its body is the only one alongside, or a swap is
-   accepted as one change of both. Owner-visible behaviour: write it into M3_8_CONTRACT first and
-   record the decision.
-3. Then, still M3.4: the mid-change clamps (two in ten switched-on lab seeds; LANE_CHANGE_DURATION §9)
-   and the switched-on engine round (profile `moveLaterally`'s per-tick refs/spans/buckets rebuild).
-4. After them: the review's §5 order — M3.6 turning speeds, M3.4 overtaking with driving side, M3.8
-   motorcycles, M3.5 attention, M3.3.3b W99 and M3.9 (D177/D178).
+ROADMAP names no single next item for a session told only to "continue", so the session asks the
+owner first. The candidates, easiest first:
+1. **Red running, D241's three behaviours** (RED_RUNNING §3). Each is the owner's choice, and none
+   ships, since no shipped behaviour carries the keys:
+   - should a runner that was braking for amber at the head start again at red onset?
+   - should a crossing after the window, let through by commitment, still count as a run?
+   - should the window end only for a runner that can still stop gently, rather than re-holding it
+     close to the line?
 
-To build here: Ubuntu 24.04 needs `qt6-base-dev libproj-dev nlohmann-json3-dev lld` (BUILDING);
-a cold Debug desktop build takes about 7 minutes on 8 cores, 30+ on 4.
+   A contract and rows come first.
+2. **The remaining M3.2.8a.1 cases:** the moving merge clamps behind a shared leader's standstill
+   buffer (D105) and the standstill cap (D201 B5). D241's seed-51 clamps, and the three shipped
+   clamps it traced at that seed, are of this kind. Each needs a contract and the owner's choice.
+3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
 
-## Deferred work — preserved from the preceding NEXT
-
-The owner-directed alternatives below stay queued, not cancelled; take one only at the owner's
-direction. ROADMAP retains every gate.
-
-1. **M3.7 hand mirrors:** `placeVehicle`, Lab telemetry and `dead_end_waits.cpp` stay
-   one-dimensional (LATERAL §10) until a product run moves sideways.
-2. **Multi-level S0: the Node contract** (D175; ask the owner B12's Thai sources when S1 starts, D201). Polygon, mapping of Micro detail to
-   legs/turns/conflicts/g/C, coarse values and lifecycle, merged with M5.1's evaluation nodes
-   ([workflow](plans/MULTI_LEVEL_WORKFLOW.md) §3, §10). Then S1 StudyPeriod + PCU. M9 keeps its
-   scope but no longer leads the order.
-3. **M3.4 parts that need neither M3.5 nor M3.7** (R7): `laneChangeDistance`, cooperative
-   lane change (the swap deadlock above may land here). Discretionary changes (D95/D101, off) reopen only by route (i) after M3.5's look-past (D201).
-4. **Smaller engine or editor slices** — each has its context in ENGINEERING_NOTES §Session work:
-   - vehicle turning beyond phase 3 (swept-body clearance rows first)
-   - M3.2.8a.1 moving merge anticipation, with the standstill cap (D201)
-   - drawing `level` is not separation (D201, M3_CONTRACT §1): `automatic_conflicts.cpp` skips
-     pairs on different levels; failure-first row (two crossing Links on different levels get an
-     area), then remove the skip and re-check every shipped project's areas
-   - `four-leg-signalised` cool-down 300 s (D201, D146, [evidence](evidence/m5.9-cooldown.md)):
-     its batch warnings clear; update its tests' expected numbers by that recorded decision
-   - M3.2.4e merge admission contract
-   - a per-lane share gesture (D32/D71)
-   - keyboard-only route and input gestures (M1.25/M1.26)
-   - M3.2 closure rows (a diverge fixture row, M3_ACCEPTANCE §4)
-   - the third `validateDocument` walk set (D163)
-5. **M5.7 rehearsal — prepare only:** ready a copy of the M2.6 template for the owner's real counts
-   (sitting A3/B4) and a checklist; a session cannot close it.
-6. **Behaviour Lab next slices, only on the owner's say:**
-   - W74 parameters in the panel: needs `retuneSimulation` to allow a prototype → W74 change, so
-     traits must exist
-   - lane-change fields: need a lane-change wrap rule on circuits first (BEHAVIOUR_LAB §1.1)
-
-   Give-way intersections in the lab wait for a circuit wrap rule for conflict zones and priority
-   rules.
-
-## Waiting on the owner (details in OWNER_SITTING)
-
-D201 (2026-10-16) closed B1–B3, B5, B6, B8, B12 and B13 as proposed and carved the oldest looks into
-ROADMAP M1.29 and M3.2.10. What only the owner can answer, in order:
-
-- **A1 M0 plausibility** first: a *no* reorders the engine work (D13).
-- **B4** the real study's counts, timing sheet and image, then **A3** the M5.7 rehearsal.
-- **A2** the M3.2.7d T-junction exercise, which M3.2 closes on.
-- **B9** the M6 benchmark choice, before any comparable run.
-- **Milestone closures:** M4.2 amber (D147), M5 (M5.8 look C7 included) and M8 (a
-  development-access study end to end, plus C8/C9).
-- **Looks (C–F) still on the sheet:** C1–C3, C7–C12 (C12 is a timing, not a verdict), D2–D4,
-  E2, E5, E6, E8–E11, the merged UI look E13–15, E16–E21, F1–F3; plus the carved M1.29 and
-  M3.2.10 looks.
-- Motorcycles are core scope (D177); they need M3.7 first (review §5).
-- Items still open and listed more than 14 days become ROADMAP carve-outs (R4; D201 applied it once
-  without waiting for the sitting).
-
-## Known limits to keep in mind
-
-- **Driving behaviour** ([review](audits/DRIVING_BEHAVIOUR_REVIEW.md) §2): shipped runs keep
-  one-dimensional vehicles and instantaneous lane changes (no shipped project carries lateral keys, D206); no
-  turning-speed reduction.
-  Perception limits, multi-anticipation and reaction time are optional; with no keys the old
-  single-leader, unbounded-sight, zero-delay path remains. A second rear follower is not modelled.
-- **M8:**
-  - exit weights are one set per run (the row is summed over matrices)
-  - lot rows' and compositions' time intervals are not used for departures or initial types
-  - the lot report has one window
-  - `--compare` has no lot block
-- **Delay:** completed-trip delay includes source waiting and acceleration; it is not HCM control
-  delay. The entry-acceleration bias needs travel-time sections, not a correction factor.
-- **Before/after comparisons of one movement need ≥ 40 seeds (42–81, D88).**
+M2.8 has only owner checks left. Without an answer, the session asks again rather than choosing a
+rule change.

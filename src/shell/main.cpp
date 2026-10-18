@@ -6,6 +6,7 @@
 #include <QCommandLineParser>
 #include <QLocale>
 #include <QMessageBox>
+#include <filesystem>
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -26,6 +27,10 @@ int main(int argc, char** argv) {
             trafficsim::findDataDirectory(trafficsim::nativePath(QCoreApplication::applicationFilePath()));
         if(const auto projectionData=trafficsim::projectionDataDirectory(data,trafficsim::nativePath(QCoreApplication::applicationDirPath())))
             qputenv("PROJ_DATA",trafficsim::displayPath(*projectionData).toUtf8());
+        // D245: Qt breaks Thai lines through libthai; the Windows build ships thai.dll and its dictionary.
+        const auto thai=trafficsim::nativePath(QCoreApplication::applicationDirPath())/"data/libthai";std::error_code missing;
+        if(qEnvironmentVariableIsEmpty("LIBTHAI_DICTDIR")&&std::filesystem::is_regular_file(thai/"thbrk.tri",missing))
+            qputenv("LIBTHAI_DICTDIR",trafficsim::displayPath(thai).toUtf8());
         if (parser.value("language") != "en" && parser.value("language") != "th") throw std::invalid_argument("Unknown language");
         trafficsim::EditorWindow editor(data, parser.value("language"));
         editor.showMaximized();

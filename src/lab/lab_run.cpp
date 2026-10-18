@@ -38,7 +38,7 @@ int maxVehicles(const LabSettings& settings) {
 }
 LabRun::LabRun(LabSettings settings, std::filesystem::path dataDirectory, std::uint32_t seed)
     : settings_(std::move(settings)), data_(std::move(dataDirectory)), seed_(seed) {
-    rescaleAxles(settings_.focus.type);
+    rescaleAxles(settings_.focus.type); fitSpeedCurves(settings_);
     start(compile(settings_), settings_);
 }
 LabRun::Compiled LabRun::compile(const LabSettings& settings) const {
@@ -111,7 +111,7 @@ void LabRun::start(Compiled compiled, const LabSettings& settings) {
 }
 LabRun::Applied LabRun::apply(const LabSettings& requested) {
     auto settings = requested;
-    rescaleAxles(settings.focus.type);
+    rescaleAxles(settings.focus.type); fitSpeedCurves(settings);
     if (settings == settings_) return Applied::unchanged;
     auto compiled = compile(settings); // throws before anything changes
     const bool fresh = restartNeeded(settings_, settings);

@@ -77,6 +77,15 @@ the discretionary incentive and hold) and then:
   `lateral` (D189, D203); `lateral` and `lateralTarget` are re-expressed from the new lane.
 - **A refused move waits:** `lateral` is kept and `lateralSpeed` is 0; the change is neither
   restarted nor abandoned in this version (§9).
+- **Waiting at the line (owner, D208).** A move outward from the own lane's centre that would put the
+  body (further) over a lane line must also pass the start's safety tests on the lane it would cover
+  (M3_8_CONTRACT §2 rules 3–5): no vehicle of that lane alongside the body, and the car-following
+  model accepts the nearest leader ahead of it and the nearest follower behind it with the changer as
+  leader. Each vehicle whose route runs on the covered segment is compared in its own route's
+  distances, so the test sees across segment ends. Refused, the changer keeps driving in its own
+  lane; a body already over the line steps back toward its centre by up to one step, so it never
+  waits straddling the line (a straddler does not follow the other lane's leaders, LATERAL §6).
+  Moves back toward the own centre, and moves after the crossing, are never tested.
 - Longitudinal motion during the change follows the vehicle's own route as today; a change does
   not alter the dead-end or cooperation logic (D71, D90).
 
@@ -110,5 +119,7 @@ asserting its forcing before its consequence.
 - Two changers wait on each other's refused moves (a lateral deadlock): then add abandoning and
   returning to the old lane.
 - Clamps from a lateral move into a lane where a vehicle has passed close ahead (seen twice in ten
-  lab seeds, [evidence](../evidence/lane-change-duration.md)): then a per-tick gap check on the move.
+  lab seeds, [evidence](../evidence/lane-change-duration.md)): resolved by §4's waiting at the line
+  (D208, [evidence](../evidence/lane-change-gap.md)). Reopen if a changer waits so long it misses its
+  window: then abandoning.
 - A cited source shows lane-change duration independent of lateral speed: then a separate key.

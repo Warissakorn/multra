@@ -3,6 +3,7 @@
 #include "right_of_way.hpp"
 #include "../../core/validate.hpp"
 #include "../../core/lateral.hpp"
+#include "../../core/speed_control.hpp"
 #include <cmath>
 #include <map>
 #include <algorithm>
@@ -12,7 +13,7 @@
 
 namespace trafficsim {
 LaneSplit laneSplit(const std::vector<std::size_t>& chainLanes, std::size_t shareCount,
-                    const std::vector<double>& laneShares) {
+                    const std::vector<double>& laneShares, std::optional<int> kerbLanes) {
     LaneSplit split;
     double authoredSum=0;
     for(double weight:laneShares) {
@@ -32,7 +33,26 @@ LaneSplit laneSplit(const std::vector<std::size_t>& chainLanes, std::size_t shar
         throw ValidationError({{"INVALID_SHARE","laneShares"}});
     for (const auto k : chainLanes)
         split.fraction.push_back(split.weighted ? laneShares[k] / sum : 1.0 / static_cast<double>(chainLanes.size()));
+    if (!kerbLanes) return split;
+    const auto allowed = [&](std::size_t k) { return k < static_cast<std::size_t>(*kerbLanes); };
+    const auto kept = std::count_if(chainLanes.begin(), chainLanes.end(), allowed);
+    if (kept == 0 || kept == static_cast<std::ptrdiff_t>(chainLanes.size())) return split;
+    double keptSum = 0;
+    for (std::size_t c = 0; c < chainLanes.size(); ++c) if (allowed(chainLanes[c])) keptSum += split.fraction[c];
+    for (std::size_t c = 0; c < chainLanes.size(); ++c)
+        split.fraction[c] = !allowed(chainLanes[c]) ? 0 : keptSum > 0 ? split.fraction[c] / keptSum : 1.0 / static_cast<double>(kept);
+    split.weighted = true;
     return split;
+}
+// B-7 (D234): the input's type limit, when its route starts on a Link (lane 0 is the kerb lane).
+std::optional<int> entryKerbLanes(const Network& network, const ScenarioDefinition& definition, const VehicleInput& input) {
+    const auto type = std::find_if(definition.vehicleTypes.begin(), definition.vehicleTypes.end(),
+                                   [&](const auto& t) { return t.id == input.vehicleTypeId; });
+    if (type == definition.vehicleTypes.end() || !type->kerbLanes) return std::nullopt;
+    const auto route = std::find_if(definition.routes.begin(), definition.routes.end(), [&](const auto& r) { return r.id == input.routeId; });
+    if (route != definition.routes.end() && !route->segmentIds.empty() && std::none_of(network.links.begin(), network.links.end(), [&](const auto& l) { return l.id == route->segmentIds.front(); }))
+        return std::nullopt;
+    return type->kerbLanes;
 }
 namespace {
 // A route already given in lane or section ids, rather than the Links and Connectors an author
@@ -88,9 +108,11 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
     // and buildScenario runs on every model change.
     for (const auto& section : table.sections)
         scenario.segments.push_back({section.id, section.end - section.start, section.next});
+    // M3.6 (SPEED_CONTROL §3, D212): a path's curvature only while some behaviour reads it.
+    const bool curves = curveSwitch(scenario.behaviours);
     for (std::size_t p = 0; p < table.paths.size(); ++p)
         scenario.segments.push_back({table.paths[p].id, connectorPathLength(table.paths[p]),
-                                     {table.pathNext[p]}});
+                                     {table.pathNext[p]}, curves ? 1 / minimumCircumradius(table.paths[p].geometry) : 0});
     if (lateralSwitch(scenario.behaviours)) appendCrossSections(network, table, scenario);
     // A route is authored on LINKS AND CONNECTORS, because that is the object an author places
     // and keeps editing. The runtime travels one lane, so each authored route expands here into
@@ -148,7 +170,7 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
         const auto& lane = laneOf[input.routeId];
         // laneShares are weights, one per lane of the route's first Link (M3.2.8b), and `lane`
         // says which each chain starts on (laneSplit has the stale-size fallback).
-        const auto split = laneSplit(lane, laneCount[input.routeId], input.laneShares);
+        const auto split = laneSplit(lane, laneCount[input.routeId], input.laneShares, entryKerbLanes(network, scenario, input));
         // One core input per period (M2.2), then per lane. A Poisson stream restarted at each
         // period boundary is still Poisson, so splitting by period changes no statistics -- and
         // one period keeps the plain id, which is what keeps every existing run byte-identical.
@@ -296,6 +318,16 @@ std::vector<ValidationIssue> priorityDefaultsIssues(const Network& network,
     }
     return issues;
 }
+double minimumCircumradius(const std::vector<Point>& line) {
+    double radius=std::numeric_limits<double>::infinity();
+    for(std::size_t j=1;j+1<line.size();++j) {
+        const auto a=line[j-1],b=line[j],d=line[j+1];
+        const double ab=std::hypot(b.x-a.x,b.y-a.y),bd=std::hypot(d.x-b.x,d.y-b.y),ad=std::hypot(d.x-a.x,d.y-a.y);
+        const double area=std::abs((b.x-a.x)*(d.y-a.y)-(b.y-a.y)*(d.x-a.x))/2;
+        if(area>1e-12)radius=std::min(radius,ab*bd*ad/(4*area));
+    }
+    return radius;
+}
 std::vector<ValidationIssue> connectorShapeIssues(const Network& network) {
     std::vector<ValidationIssue> issues;
     for(std::size_t i=0;i<network.connectors.size();++i) {
@@ -323,12 +355,7 @@ std::vector<ValidationIssue> connectorShapeIssues(const Network& network) {
             else if(cross>1e-12)radius=std::min(radius,speed*speed*speed/cross);
         }
         // Check the actual lane path, including corners introduced by interior edits.
-        for(const auto& path:paths)for(std::size_t j=1;j+1<path.geometry.size();++j) {
-            const auto a=path.geometry[j-1],b=path.geometry[j],d=path.geometry[j+1];
-            const double ab=std::hypot(b.x-a.x,b.y-a.y),bd=std::hypot(d.x-b.x,d.y-b.y),ad=std::hypot(d.x-a.x,d.y-a.y);
-            const double area=std::abs((b.x-a.x)*(d.y-a.y)-(b.y-a.y)*(d.x-a.x))/2;
-            if(area>1e-12)radius=std::min(radius,ab*bd*ad/(4*area));
-        }
+        for(const auto& path:paths)radius=std::min(radius,minimumCircumradius(path.geometry));
         if(width>0 && radius<width/2)issues.push_back({"TIGHT_CONNECTOR_RADIUS","connectors["+std::to_string(i)+"]"});
     }
     return issues;

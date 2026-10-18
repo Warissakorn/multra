@@ -10,6 +10,10 @@
 namespace trafficsim {
 // Validation of the compiled spans and dead ends; called by validateScenario.
 std::vector<ValidationIssue> laneChangeIssues(const Scenario&);
+// OVERTAKING §2 (D215): kerbLaneBias outside (0, 5], or without D95's threshold, at `path`.kerbLaneBias.
+std::vector<ValidationIssue> kerbParameterIssues(const DriverBehaviour& behaviour, const std::string& path);
+// B-3 (MERGE_DECELERATION.md §2, D221): each mandatory deceleration key in (0, 15].
+std::vector<ValidationIssue> mandatoryParameterIssues(const DriverBehaviour& behaviour, const std::string& path);
 // Fills the index's lane-change fields. Needs `index.parts` already built.
 void indexLaneChanges(const Scenario&, ScenarioIndex&);
 // How many changes each route still needs: 0 for a route without a dead end, else one more than
@@ -40,6 +44,7 @@ struct CourtesyHold {
     double gap{std::numeric_limits<double>::infinity()}, speed{};
     bool moving{};
     double acceleration{}; // a moving changer's; 0 for a waiting one (W74.md §2)
+    double cap{};          // a moving hold brakes no harder than this (D90's parameter, or D207's comfortable)
 };
 // Cooperation (contract §2): for each vehicle, the nearest place it holds back from; gap
 // +infinity for none. For a stub vehicle waiting at its dead end, the nearest vehicle behind its

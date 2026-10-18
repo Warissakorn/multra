@@ -283,8 +283,8 @@ interval in which every flow is 0 (nothing counted) uses the whole-period `relat
     its front within `stopLineReach`. That is the gap car-following keeps behind a standing obstacle
     at that pace, plus 0.1 m.
   - The reduced model only approaches zero behind a line, ever slower. So the Stop finishes the
-    stop: the vehicle rests at zero speed for the tick it came to the line and one whole tick more.
-    This is ordinary braking of at most 1 m/s², not a safety clamp.
+    stop: the vehicle rests at zero speed for the tick it came to the line and one whole tick more
+    (a behaviour's `stopDwellTime` lengthens it, [STOP_DWELL](STOP_DWELL.md)). Not a clamp.
   - Service is kept per vehicle in `SimState::stopService`. It survives waiting for a gap or a red
     head, is cleared once the vehicle passes the line, and a new run starts with none.
   - A queued vehicle stands a vehicle length back, so it has not come to the line.
@@ -346,9 +346,9 @@ this does not introduce a between-lanes engine state.
    ([W74 §6](W74.md#6-composition-with-the-shipped-tick), D138) for a `w74` behaviour — with perceived
    leaders and multi-anticipation as [PERCEPTION](PERCEPTION.md) defines. With a nonzero reaction
    delay, queue that decision and apply the oldest through current type bounds and D105. Then
-   ballistic integration (no negative speed), with speed capped at `desiredSpeed`. If the current
-   speed is above the target (after a live retune), brake toward it at `comfortableDeceleration` in
-   free flow, both models, instead of snapping speed; the last tick lands on the target (D191).
+   ballistic integration (no negative speed), speed capped at the target (`desiredSpeed`, or the lower
+   curve bound of [SPEED_CONTROL](SPEED_CONTROL.md) §4, D212). Above it, brake toward it at
+   `comfortableDeceleration` in free flow, both models; the last tick lands on the target (D191).
 5. A move beyond `allowedDistance` is cut to it and stops: `safety-clamp`.
 6. A vehicle resting at a Stop line is held at zero (`restsAtStop`), which is not a clamp.
 7. Phase 2, only with zones: `resolveRequests` (swept check, shared receiving space) can only
@@ -389,7 +389,7 @@ new state, gap relaxation or commitment change is introduced.
 
 
 `driverFactor` is a clipped normal draw with mean 0.5 and standard deviation 0.15, sampled
-once per vehicle. The distance shape is inspired by the
+once per vehicle; the type's behaviour may set another deviation ([DRIVER_FACTOR](DRIVER_FACTOR.md), B-4). The distance shape is inspired by the
 [PTV Wiedemann 74 parameter documentation](https://cgi.ptvgroup.com/vision-help/VISSIM_2025_ENG/Content/4_BasisdatenSim/FahrverhaltensparameterFolgeverh_Wied74.htm).
 Unlike that model, this prototype does not smear standstill distance or use its full
 perception thresholds. Its free/approaching/following/braking regime thresholds and

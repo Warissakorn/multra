@@ -32,6 +32,8 @@ A vehicle short of a line it must give way at is **committed** to that line when
   about 2 s ahead of a major vehicle. It clamped the major road at the T-junction and at an M2.6
   merge, which breaks this section's gate. The owner then chose `maxDeceleration`
   (`docs/evidence/m3.2.8a-commitment.md`).
+- **Since D219** a behaviour may carry `commitmentDeceleration`, and the lower of it and the type's
+  maximum is used here ([COMMITMENT](COMMITMENT.md)). Absent, this section is unchanged.
 
 Commitment is read off positions and speeds and is **never stored**. `SimState` does not change,
 so a copied state replays exactly (A25). A committed vehicle that a leader slows until it can stop
@@ -147,6 +149,8 @@ accepting `maxDeceleration` for other drivers costs. The move-fits test was adde
 first measurement: without it, a change 2 m behind a faster leader passed the acceleration test
 and was clamped the next tick, because the move is capped at the gap less the standstill
 distance whatever the model asks.
+Since D221 a behaviour may carry `mandatoryDecelerationOwn` and `mandatoryDecelerationTrailingVehicle`;
+a mandatory change then uses them in place of the comfortable values ([MERGE_DECELERATION](MERGE_DECELERATION.md)).
 
 **Same tick.** Candidates are decided in vehicle-id order. A later candidate is also tested
 against the new positions of those already accepted this tick. A vehicle that changed away
@@ -187,6 +191,18 @@ smallest cooperation rule comes with this slice.
 
 This is not Vissim's cooperative lane change: it has no deceleration parameter and no look-ahead,
 and a vehicle not yet stopped is not helped. Those are M3.2.8c, below.
+
+**A swapping pair: the rear one yields (owner, D207).** Two stub vehicles side by side, each needing
+the other's lane, each lie alongside the other's target place, so rule 5 refuses both for ever and
+both approaches jam at their dead ends. For a stub vehicle X, a *partner* is a stub vehicle Y lying
+alongside X's target place or less than Y's `standstillDistance` behind it, whose own target route
+runs on the lane X is on (matched by segment: the two may belong to different families). The rear
+one of the pair yields: Y if its front is behind X's mapped front, and on a level pair the higher id.
+Y treats X's target place as a moving obstacle at X's speed (a second obstacle, as above), braking
+no harder than its type's `comfortableDeceleration`. Every tick decides afresh; nothing is stored.
+Once Y is a standstill distance back, rules 1–5, the waiting hold and cooperative braking apply as
+before, and Y changes into the lane X left. It applies with and without the lateral switch (D206),
+and it never waives a safety test.
 
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 

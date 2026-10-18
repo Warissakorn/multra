@@ -3,6 +3,7 @@
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
+#include "../core/speed_control.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <map>
@@ -93,6 +94,107 @@ void rejectPerceptionBefore32(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
+// B-9 (D238): schema 44 exactly when an owned behaviour carries a red-running key.
+bool ownsRedRunning(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) {
+            return b.redRunningShare.has_value() || b.redRunningTime.has_value(); });
+}
+void rejectRedRunningBefore44(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        for (const char* key : {"redRunningShare", "redRunningTime"})
+            if (behaviours[i].is_object() && behaviours[i].contains(key))
+                throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
+}
+// B-4 (D236): schema 43 exactly when an owned behaviour carries driverFactorSpread.
+bool ownsDriverFactorSpread(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.driverFactorSpread.has_value(); });
+}
+void rejectDriverFactorSpreadBefore43(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("driverFactorSpread"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".driverFactorSpread"}});
+}
+// B-8 (D231): schema 41 exactly when an owned behaviour carries stopDwellTime.
+bool ownsStopDwellBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.stopDwellTime.has_value(); });
+}
+void rejectStopDwellBefore41(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("stopDwellTime"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".stopDwellTime"}});
+}
+// B-3 (D221): schema 37 exactly when an owned behaviour carries a mandatory deceleration key.
+bool ownsMandatoryBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) {
+            return b.mandatoryDecelerationOwn.has_value() || b.mandatoryDecelerationTrailingVehicle.has_value(); });
+}
+void rejectMandatoryBefore37(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        for (const char* key : {"mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle"})
+            if (behaviours[i].is_object() && behaviours[i].contains(key))
+                throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
+}
+// B-2 (D219): schema 36 exactly when an owned behaviour carries the commitment deceleration.
+bool ownsCommitmentBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.commitmentDeceleration.has_value(); });
+}
+void rejectCommitmentBefore36(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("commitmentDeceleration"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".commitmentDeceleration"}});
+}
+// M3.4 (D215): schema 35 exactly when an owned behaviour carries the kerb bias.
+bool ownsKerbBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.kerbLaneBias.has_value(); });
+}
+void rejectKerbBefore35(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("kerbLaneBias"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".kerbLaneBias"}});
+}
+// M3.6 (D212): schema 34 exactly when an owned behaviour carries the curve key.
+bool ownsCurveBehaviour(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours && curveSwitch(d.definition->behaviours);
+}
+void rejectCurveBefore34(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("curveLateralAcceleration"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".curveLateralAcceleration"}});
+}
 // M3.7 (D187): schema 33 exactly when an owned behaviour carries a lateral key.
 bool ownsLateralBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours && lateralSwitch(d.definition->behaviours);
@@ -127,7 +229,9 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
                 static constexpr const char* common[] = {"id", "name", "model", "standstillDistance",
                     "additiveSafetyDistance", "multiplicativeSafetyDistance", "followingTime", "speedThreshold",
                     "maxDecelerationCooperativeBraking", "discretionaryLaneChangeThreshold",
-                    "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration"};
+                    "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration",
+                    "curveLateralAcceleration", "kerbLaneBias", "commitmentDeceleration", "mandatoryDecelerationOwn",
+                    "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"}; // M3.6, M3.4 (D215), B-2 (D219), B-3 (D221), B-8 (D231), B-4 (D236), B-9 (D238), both models
                 const auto& w74 = w74ParameterKeys();
                 const auto& perception = perceptionParameterKeys(); // M3.5, both models
                 const auto& lateral = lateralParameterKeys(); // M3.7, both models
@@ -148,7 +252,7 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         const auto& types = list(j, "vehicleTypes");
         for (std::size_t i = 0; i < types.size(); ++i)
             requireKnownFields(types[i], {"id", "name", "length", "width", "desiredSpeed", "maxAcceleration",
-                "comfortableDeceleration", "maxDeceleration", "behaviourId", "axles"}, at("vehicleTypes", i));
+                "comfortableDeceleration", "maxDeceleration", "behaviourId", "axles", "kerbLanes"}, at("vehicleTypes", i));
     }
     if (j.contains("vehicleClasses")) {
         const auto& classes = list(j, "vehicleClasses");

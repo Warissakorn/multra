@@ -21,6 +21,20 @@ double waitingRoom(const Scenario&);
 inline bool committed(double speed, double gap, const VehicleType& type) {
     return speed * speed > 2 * type.maxDeceleration * gap;
 }
+// B-2 (docs/reference/COMMITMENT.md, D219): at a give-way line the behaviour's
+// commitmentDeceleration, when set, replaces the maximum; the lower of the two wins. Signal heads
+// keep the type-only test (owner).
+// M3.2.8a.1 (GIVE_WAY_STOP §2, D240): the braking that stops a moving vehicle exactly at a give-way
+// line `gap` ahead, when it fits the type's maximum; otherwise none, and the caller clamps as before.
+inline std::optional<double> stopAtLine(double speed, double gap, const VehicleType& type) {
+    if (speed <= 0 || gap <= 0 || speed * speed > 2 * type.maxDeceleration * gap) return std::nullopt;
+    return -(speed * speed) / (2 * gap);
+}
+inline bool committed(double speed, double gap, const VehicleType& type, const DriverBehaviour& behaviour) {
+    const double deceleration = std::min(behaviour.commitmentDeceleration.value_or(type.maxDeceleration), type.maxDeceleration);
+    return speed * speed > 2 * deceleration * gap;
+}
+std::vector<ValidationIssue> commitmentParameterIssues(const DriverBehaviour&, const std::string& path);
 // One zone as the snapshot sees it at the start of a tick.
 struct ZoneState {
     bool majorBlocks{};                  // a major vehicle is inside, within headway, or within gapTime
@@ -61,7 +75,11 @@ double stopLineReach(const DriverBehaviour&, double driverFactor);
 // parking lot's gate (M8.4a) use this one test.
 bool atStopLine(const Vehicle&, double line, const DriverBehaviour&);
 // Held at rest by its Stop this tick: service began but has not yet run a whole tick at zero.
-inline bool restsAtStop(const StopService* s, std::uint64_t tick) { return s && s->since + 1 >= tick; }
+inline bool restsAtStop(const StopService* s, std::uint64_t tick) { return s && s->since + s->ticks >= tick; }
+// B-8 (docs/reference/STOP_DWELL.md, D231): the whole ticks of rest after coming to the line; one without
+// stopDwellTime, as always.
+std::uint64_t stopDwellTicks(const DriverBehaviour&, double timeStep);
+std::vector<ValidationIssue> stopDwellIssues(const DriverBehaviour&, const std::string& path);
 std::vector<StopService> refreshStops(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&,
                                       const std::vector<VehicleRefs>&, const std::vector<StopService>& previous,
                                       std::uint64_t tick);

@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_interaction.hpp"
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -147,7 +148,7 @@ void EditorWindow::showPaletteView() {
 void EditorWindow::buildAppearance(QFormLayout* form) {
     objectLevel_=new QComboBox(this);objectDisplay_=new QComboBox(this);
     label(form,"editorObjectLevel",objectLevel_);label(form,"editorDisplayType",objectDisplay_);
-    auto* apply=new QToolButton(this);apply->setDefaultAction(action("editorApplyDisplay",{},[this]{
+    auto* apply=new ElidingToolButton(this);apply->setDefaultAction(action("editorApplyDisplay",{},[this]{
         execute("editorApplyDisplay",[&](auto& d){changeAppearance(d,canvas_->selected(),objectLevel_->currentData().toInt(),objectDisplay_->currentData().toString().toStdString());});
     }));form->addRow(apply);
 }

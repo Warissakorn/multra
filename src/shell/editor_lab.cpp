@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "behaviour_lab_window.hpp"
 #include "../project/demand_catalog.hpp"
+#include "../core/speed_distribution.hpp"
 #include <QAction>
 #include <QLabel>
 #include <algorithm>
@@ -49,15 +50,18 @@ QString EditorWindow::applyLabFocus(const lab::FocusSettings& focus) {
             return text("labApplyUnavailable");
         // Physical values together; identity and behaviour reference stay the project's.
         type->length = focus.type.length; type->width = focus.type.width; type->desiredSpeed = focus.type.desiredSpeed;
+        fitCurve(type->desiredSpeed); // B-5: the curve follows an edited min/max
         auto geometry = focus.type; lab::rescaleAxles(geometry); type->axles = geometry.axles;
         type->maxAcceleration = focus.type.maxAcceleration; type->comfortableDeceleration = focus.type.comfortableDeceleration;
         type->maxDeceleration = focus.type.maxDeceleration;
-        // The prototype keys the lab edits; lane-change keys stay as they were.
+        // The keys the lab edits; the lane-change keys and kerb bias stay as they were.
         const auto& b = focus.behaviour;
         behaviour->standstillDistance = b.standstillDistance; behaviour->additiveSafetyDistance = b.additiveSafetyDistance;
         behaviour->multiplicativeSafetyDistance = b.multiplicativeSafetyDistance; behaviour->followingTime = b.followingTime;
         behaviour->speedThreshold = b.speedThreshold; behaviour->amberDeceleration = b.amberDeceleration;
         behaviour->maxDecelerationCooperativeBraking = b.maxDecelerationCooperativeBraking;
+        behaviour->perception = b.perception; behaviour->lateral = b.lateral; // D217
+        behaviour->curveLateralAcceleration = b.curveLateralAcceleration;
     } catch (const std::exception& e) { showError(e); return text("labRejected").arg(QString::fromStdString(e.what())); }
     if (!execute("editorBehaviourLab", [&](auto& d) { d.definition = staged.definition; }))
         return text("labRejected").arg(error_->text());

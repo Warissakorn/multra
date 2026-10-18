@@ -9,6 +9,11 @@ void deleteRoute(ProjectDocument&, const std::string&); // Cascades its inputs a
 // M2.4. Empty id allocates; same id replaces. Validated with the rest of the demand on commit.
 std::string putRoutingDecision(ProjectDocument&, RoutingDecision);
 void deleteRoutingDecision(ProjectDocument&, const std::string&); // Cascades its inputs.
+// B-6 (SPEED_DECISIONS §6, D223): a desired-speed decision; it goes with its Link.
+std::string putSpeedDecision(ProjectDocument&, SpeedDecisionSpec);
+void deleteSpeedDecision(ProjectDocument&, const std::string&);
+std::string putReducedSpeedArea(ProjectDocument&, ReducedSpeedAreaSpec); // B-6 §7 (D225)
+void deleteReducedSpeedArea(ProjectDocument&, const std::string&);
 void deleteInput(ProjectDocument&, const std::string&);
 void deleteProgram(ProjectDocument&, const std::string&); // Reject referenced programs.
 // M2.7b. Empty id allocates; same id replaces. Removing a group a head still shows is refused

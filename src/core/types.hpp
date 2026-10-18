@@ -2,6 +2,7 @@
 
 #include "lateral_types.hpp"
 #include "parking_types.hpp"
+#include "speed_decision_types.hpp"
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -11,7 +12,7 @@
 
 namespace trafficsim {
 // Runtime contract: metres, seconds, m/s and m/s². No UI or file-format types.
-struct Segment { std::string id; double length{}; std::vector<std::string> next; };
+struct Segment { std::string id; double length{}; std::vector<std::string> next; double curvature{}; }; // 1/m (D212): 0 straight
 struct Route {
     std::string id; std::vector<std::string> segmentIds;
     // D165 (BEHAVIOUR_LAB.md §1.1): the route closes on itself and its vehicles never arrive.
@@ -68,13 +69,12 @@ struct DriverBehaviour {
     // before the line at this deceleration (m/s², positive). Absent, amber holds like red (D36).
     // After w74, so every existing brace-initialisation keeps its meaning.
     std::optional<double> amberDeceleration;
-    // M3.5 (PERCEPTION.md §6): stored and validated since D181, read by no motion yet. Last, so
-    // every existing brace-initialisation keeps its meaning.
-    PerceptionParameters perception;
-    LateralParameters lateral; // M3.7 (LATERAL.md §9, D187): stored and validated only, last again
+    PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
+    LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
+    std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
+    std::optional<double> driverFactorSpread, redRunningShare, redRunningTime; // B-4 (DRIVER_FACTOR, D236): the factor's deviation; B-9 (RED_RUNNING, D238): a pair
     bool operator==(const DriverBehaviour&) const = default;
 };
-struct SpeedRange { double min{}, max{}; bool operator==(const SpeedRange&) const = default; };
 struct VehicleAxles {
     double wheelbase{}, frontOverhang{}, rearOverhang{};
     bool operator==(const VehicleAxles&) const = default;
@@ -84,7 +84,7 @@ struct VehicleType {
     double length{}, width{};
     SpeedRange desiredSpeed;
     double maxAcceleration{}, comfortableDeceleration{}, maxDeceleration{};
-    std::string behaviourId;
+    std::string behaviourId; std::optional<int> kerbLanes; // B-7 (LANE_PREFERENCE, D234): enters on lanes 0..N-1
     // Display kinematics only; traffic following/reservations still use length.
     std::optional<VehicleAxles> axles;
     bool operator==(const VehicleType&) const = default;
@@ -187,7 +187,7 @@ struct ConflictZone {
 // distances only, never a lane.
 struct LaneChangeSpan {
     std::string fromRouteId, toRouteId;
-    double fromStart{}, fromEnd{}, toStart{}, toEnd{};
+    double fromStart{}, fromEnd{}, toStart{}, toEnd{}; bool towardKerb{}; // D215: onto a lower lane index
     bool operator==(const LaneChangeSpan&) const = default;
 };
 // A route that cannot reach its movement's end on its own lane (a stub): a vehicle on it is held
@@ -224,18 +224,14 @@ struct ScenarioDefinition {
     // Ordered last so every existing brace-initialisation of a definition keeps meaning what it
     // says. Empty is the normal state: a scenario with no merge needs no rule.
     std::vector<PriorityRule> priorityRules;
-    // The two numbers a rule DERIVED from the drawing is given, read from data/priority-rules/ by
-    // the project layer. Content, not code (hard rule 5). Left at zero here on purpose: a zero
-    // gap time is an uncontrolled merge, so deriving a rule without loading these is refused
-    // rather than silently allowed.
+    // The two numbers a DERIVED rule is given, read from data/priority-rules/ (content, hard rule 5).
+    // Zero on purpose: a zero gap time is an uncontrolled merge, so deriving one unloaded is refused.
     PriorityDefaults priorityDefaults;
     // Last again, for the same reason. Empty for every scenario without an authored crossing,
     // which then runs exactly the code path it always did.
     std::vector<ConflictZone> conflictZones;
-    // M3.2.8b, last again. COMPILED, never authored and never in a project file: the compile step
-    // that expands routes into lane chains fills these alongside them (buildScenario for authored
-    // routes, expandRouteless for routeless paths). Empty for every scenario without a stub,
-    // which then runs exactly the code path it always did.
+    // M3.2.8b, last again. COMPILED, never authored: the step that expands routes into lane chains
+    // fills these (buildScenario, expandRouteless). Empty without a stub: the old code path exactly.
     std::vector<LaneChangeSpan> laneChanges;
     std::vector<RouteDeadEnd> routeDeadEnds;
     std::vector<RouteDecision> routeDecisions;
@@ -249,7 +245,7 @@ struct ScenarioDefinition {
 };
 struct Scenario : ScenarioDefinition {
     std::vector<Segment> segments;
-    std::vector<SignalHead> signalHeads;
+    std::vector<SignalHead> signalHeads; std::vector<SpeedDecision> speedDecisions; std::vector<ReducedSpeedArea> reducedSpeedAreas; // B-6 (D223, D225): compiled per lane
     // M3.7 (LATERAL.md §3, D187): compiled only with the lateral switch on; empty otherwise.
     std::vector<SegmentCrossSection> segmentCrossSections; std::optional<DrivingSide> drivingSide;
 };
@@ -275,7 +271,7 @@ struct RouteZone {
     bool joinsInside{}; // met the chain after its first segment
 };
 // A lateral span as the run uses it: the target route's slot and the same four distances.
-struct RouteLaneChange { std::size_t target{}; double fromStart{}, fromEnd{}, toStart{}, toEnd{}; };
+struct RouteLaneChange { std::size_t target{}; double fromStart{}, fromEnd{}, toStart{}, toEnd{}; bool towardKerb{}; };
 struct ScenarioIndex {
     std::vector<std::vector<RoutePart>> parts;
     // M3.2.8b, parallel to Scenario::routes. `remainingOfRoute` is how many changes a vehicle on the
@@ -292,6 +288,7 @@ struct ScenarioIndex {
     bool stopZones{};                                // any zone is a Stop: only then is service tracked
     std::vector<std::size_t> programOfHead;          // parallel to Scenario::signalHeads
     std::vector<std::vector<RouteHead>> routeHeads;  // parallel to Scenario::routes, in signalHeads order
+    std::vector<std::vector<RouteSpeedDecision>> routeSpeedDecisions; std::vector<std::vector<RouteSpeedArea>> routeSpeedAreas; // by route distance (B-6, D223, D225)
     std::vector<std::vector<RouteRule>> routeRules;  // parallel to Scenario::routes, in priorityRules order
     // The segment index each rule watches, so the per-tick scan is a bucket lookup and never a
     // search by id. SIZE_MAX when the rule names a segment that does not exist; validation
@@ -373,8 +370,10 @@ struct Vehicle : PendingVehicle {
     // PERCEPTION §5: oldest first; empty with zero delay. Written only at insertion/publish.
     std::vector<FollowingResult> reactionHistory;
     double lateral{}, lateralSpeed{}; // LATERAL §4 (D188): body offset from its lane centre, and its rate
-    // LATERAL §7 (D189): yT from the current lane's centre; only tests write it until M3.4/M3.7.1.
-    std::optional<double> lateralTarget;
+    std::optional<double> lateralTarget; // LATERAL §7 (D189): yT from the current lane's centre
+    // B-6 (SPEED_DECISIONS §3-§4, §7, D223/D225): quantile kept once a decision or area is met (-1 before),
+    // the piecewise free-flow time so far up to route distance freeFlowFrom, and the area speed (0: none).
+    double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{}, areaSpeed{};
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it
@@ -421,15 +420,16 @@ struct RoutingEvent {
     double time{}; std::uint64_t vehicleId{}; std::string decisionId, fromRouteId, toRouteId;
     bool operator==(const RoutingEvent&) const = default;
 };
+struct RedRunningEvent { double time{}; std::uint64_t vehicleId{}; std::string headId; bool operator==(const RedRunningEvent&) const = default; }; // B-9 (D238)
 // New event alternatives append so every existing index stays stable.
 using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
-                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent>;
+                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent>;
 // M3.2.5: one vehicle's service at a Stop line (contract §5). `line` is the route distance of the
 // next Stop line it has not passed; `since` the tick whose start first found it standing there.
 // It has served the line once a whole tick has run since then. Kept only while the line is ahead
 // of or under the vehicle, so passing a line clears it; a new run starts with none.
 struct StopService {
-    std::uint64_t vehicleId{}; double line{}; std::uint64_t since{};
+    std::uint64_t vehicleId{}; double line{}; std::uint64_t since{}, ticks{1}; // ticks: whole ticks of rest (B-8, D231)
     bool operator==(const StopService&) const = default;
 };
 // M8.4a (ZONES_AND_PARKING §4). A vehicle in a lot keeps its identity and type for its next trip.

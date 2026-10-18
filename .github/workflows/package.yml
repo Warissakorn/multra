@@ -72,6 +72,17 @@ jobs:
         run: |
           vcpkg install nlohmann-json:x64-windows proj:x64-windows
           "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin" | Out-File $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Install Thai line breaking
+        # Qt 6.5 finds Thai line breaks through libthai, loaded at run time as thai.dll, as in the
+        # native workflow (D245). The build ships it; the editor points libthai at data/libthai.
+        run: |
+          C:\msys64\usr\bin\pacman.exe -Sy --noconfirm --needed mingw-w64-ucrt-x86_64-libthai
+          $thai = "$env:GITHUB_WORKSPACE\libthai"
+          New-Item -ItemType Directory -Force $thai | Out-Null
+          Copy-Item C:\msys64\ucrt64\bin\libthai-0.dll "$thai\thai.dll"
+          Copy-Item C:\msys64\ucrt64\bin\libdatrie-1.dll, C:\msys64\ucrt64\share\libthai\thbrk.tri $thai
+          $thai | Out-File $env:GITHUB_PATH -Append -Encoding utf8
+          "LIBTHAI_DICTDIR=$thai" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Configure
         run: cmake -S . -B build/native -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_APPLOCAL_DEPS=OFF
       - name: Build
@@ -85,6 +96,13 @@ jobs:
           cmake --install build/native --config Release --prefix dist
           Copy-Item README.md, LICENSE dist/
           Copy-Item "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin/*.dll" dist/bin/
+          Copy-Item libthai/thai.dll, libthai/libdatrie-1.dll dist/bin/
+          New-Item -ItemType Directory -Force dist/bin/data/libthai, dist/licenses | Out-Null
+          Copy-Item libthai/thbrk.tri dist/bin/data/libthai/
+          # libthai and libdatrie are LGPL-2.1, linked at run time; their licences go with them.
+          foreach ($name in 'libthai', 'libdatrie') {
+            if (Test-Path "C:/msys64/ucrt64/share/licenses/$name") { Copy-Item -Recurse "C:/msys64/ucrt64/share/licenses/$name" dist/licenses/ }
+          }
       - name: Bundle Qt runtime
         run: windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw dist/bin/trafficsim-desktop.exe
       - name: Write run notes

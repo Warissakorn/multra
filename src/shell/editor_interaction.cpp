@@ -3,6 +3,8 @@
 #include "editor_style.hpp"
 #include <QHeaderView>
 #include <QStyle>
+#include <QStyleOptionToolButton>
+#include <QStylePainter>
 #include <QTableView>
 #include <QAbstractItemView>
 #include <QAbstractScrollArea>
@@ -76,25 +78,35 @@ QSize ReflowLabel::sizeHint() const {
 }
 namespace {
 // Below two label columns a field beside its label would be squeezed to a sliver, so the whole
-// form stacks each field under its label instead.
+// form stacks each field under its label instead. D242: a scrolled page is never narrower than its
+// widest action button, which cannot wrap (Windows' made the Link page two columns wide in a 188 px
+// panel), so the width that counts is what its scroll area shows.
 class FormReflow : public QObject {
 public:
     FormReflow(QFormLayout* form,QWidget* host,std::shared_ptr<FormColumn> column)
-        :QObject(host),form_(form),column_(std::move(column)){host->installEventFilter(this);apply(host);}
+        :QObject(host),form_(form),host_(host),column_(std::move(column)) {
+        for(auto* w=host->parentWidget();w;w=w->parentWidget())
+            if(auto* scroll=qobject_cast<QAbstractScrollArea*>(w);scroll&&scroll->viewport()->isAncestorOf(host)){viewport_=scroll->viewport();break;}
+        host->installEventFilter(this);if(viewport_)viewport_->installEventFilter(this);apply();
+    }
     bool eventFilter(QObject* watched,QEvent* event) override {
-        if(event->type()==QEvent::Resize)apply(static_cast<QWidget*>(watched));
+        if(event->type()==QEvent::Resize)apply();
         // A label's text or font changed (a language switch): its form asks for a new layout.
-        if(event->type()==QEvent::LayoutRequest)column_->refresh();
+        if(event->type()==QEvent::LayoutRequest&&watched==host_)column_->refresh();
         return false;
     }
 private:
-    void apply(QWidget* host) {
+    void apply() {
         const auto margins=form_->contentsMargins();
-        const int width=host->contentsRect().width()-margins.left()-margins.right();
+        int shown=host_->contentsRect().width();
+        if(viewport_)shown=std::min(shown,viewport_->width());
+        const int width=shown-margins.left()-margins.right();
         const auto policy=width<2*editorDesign::formLabelWidth?QFormLayout::WrapAllRows:QFormLayout::WrapLongRows;
         if(form_->rowWrapPolicy()!=policy)form_->setRowWrapPolicy(policy);
     }
     QFormLayout* form_;
+    QWidget* host_;
+    QPointer<QWidget> viewport_;
     std::shared_ptr<FormColumn> column_;
 };
 }
@@ -110,10 +122,33 @@ void alignFormLabels(QWidget* root) {
     }
     column->refresh();
 }
+ElidingToolButton::ElidingToolButton(QWidget* parent):QToolButton(parent) {
+    auto policy=sizePolicy();policy.setHorizontalPolicy(QSizePolicy::Preferred);setSizePolicy(policy); // QToolButton's is Fixed
+}
+QSize ElidingToolButton::minimumSizeHint() const {
+    QStyleOptionToolButton option;initStyleOption(&option);
+    const auto full=sizeHint();const auto metrics=fontMetrics();
+    return {full.width()-metrics.horizontalAdvance(option.text)+metrics.horizontalAdvance(QStringLiteral("\u2026")),full.height()};
+}
+void ElidingToolButton::paintEvent(QPaintEvent*) {
+    QStylePainter painter(this);QStyleOptionToolButton option;initStyleOption(&option);
+    const auto metrics=fontMetrics();const int text=metrics.horizontalAdvance(option.text);
+    const int room=width()-(sizeHint().width()-text); // the width left for text after icon and padding
+    if(room<text)option.text=metrics.elidedText(option.text,Qt::ElideRight,std::max(0,room));
+    painter.drawComplexControl(QStyle::CC_ToolButton,option);
+}
 QSize ReflowLabel::minimumSizeHint() const {
     // A form label keeps its wrapped height: a short dock shrinks the scrolling pages, not a label.
     if(property("editorFormLabel").toBool()&&wordWrap())return {QLabel::minimumSizeHint().width(),sizeHint().height()};
-    return QLabel::minimumSizeHint();
+    auto hint=QLabel::minimumSizeHint();
+    // D244: a wrapped text needs only its longest word. On Windows QLabel asked 257 px for the effective-behaviour
+    // text (Linux: its 69 px word), which held the floating Properties panel too wide to stack its forms.
+    if(wordWrap()&&!text().isEmpty()&&(textFormat()==Qt::PlainText||(textFormat()==Qt::AutoText&&!Qt::mightBeRichText(text())))) {
+        const auto pad=contentsMargins();
+        const int word=fontMetrics().boundingRect(QRect(0,0,1,1<<20),Qt::TextWordWrap|Qt::TextExpandTabs,text()).width();
+        hint.setWidth(std::min(hint.width(),word+pad.left()+pad.right()+2*margin()+std::max(0,indent())));
+    }
+    return hint;
 }
 namespace {
 class EditorInteraction : public QObject {

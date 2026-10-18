@@ -288,7 +288,7 @@ ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition re
         // the fraction of the lane it starts on.
         std::vector<std::size_t> everyLane(lanes);
         for (std::size_t k = 0; k < lanes; ++k) everyLane[k] = k;
-        const auto split = laneSplit(everyLane, lanes, input.laneShares);
+        const auto split = laneSplit(everyLane, lanes, input.laneShares, entryKerbLanes(network, resolved, input)); // B-7 (D234)
         const auto pieces = placed.size() > 1 ? cutPeriods(input, shared.points()) : std::vector<VolumeInterval>{};
         for (std::size_t k = 0; k < w.paths.size(); ++k) {
             const bool positionedEntry=std::any_of(authored.routingDecisions.begin(),authored.routingDecisions.end(),[&](const auto& x){return x.linkId==input.linkId && x.position;});

@@ -27,10 +27,12 @@ public:
 private:
     struct Number { QDoubleSpinBox* spin; std::function<double&(lab::LabSettings&)> value; };
     struct Optional { QCheckBox* on; QDoubleSpinBox* spin; std::function<std::optional<double>&(lab::LabSettings&)> value; };
+    // D217: keys set all or none (lateral): one box, a spin per key.
+    struct Group { QCheckBox* on; std::vector<QDoubleSpinBox*> spins; std::function<std::vector<std::optional<double>*>(lab::LabSettings&)> values; };
     QDoubleSpinBox* number(QFormLayout*, const char* key, double min, double max, double step, int decimals,
                            const char* unit, std::function<double&(lab::LabSettings&)> value);
-    void optional(QFormLayout*, const char* key, double max, const char* unit,
-                  std::function<std::optional<double>&(lab::LabSettings&)> value);
+    QCheckBox* optional(QFormLayout*, const char* key, double min, double max, int decimals, const char* unit,
+                        std::function<std::optional<double>&(lab::LabSettings&)> value);
     void behaviour(QFormLayout*, std::function<DriverBehaviour&(lab::LabSettings&)> of);
     QGroupBox* group(QWidget* page, const char* titleKey, QFormLayout*& form);
     void limitCount();
@@ -41,6 +43,8 @@ private:
     lab::LabSettings base_; // fields not shown keep their values
     std::vector<Number> numbers_;
     std::vector<Optional> optionals_;
+    std::vector<Group> groups_;
+    std::vector<QCheckBox*> curves_; // their tooltip says where the key acts
     std::map<QGroupBox*, const char*> titles_;
     QSpinBox *count_{}, *lanes_{}, *crossCount_{};
     QComboBox* layout_{};

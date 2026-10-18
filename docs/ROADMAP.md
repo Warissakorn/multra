@@ -123,7 +123,8 @@ sub-milestones and do not reopen M2. Gate text and slice bodies: [archive](archi
 
 **Open.** Vehicle-owned desired speed versus Link limits, distributions, inheritance, road classes,
 lane types/restrictions, partial/dynamic routing decisions. Persistence must not imply runtime
-support. **Gate:** validated distributions and references, deterministic sampling, old seed
+support. A desired-speed distribution curve on the vehicle type is implemented (B-5, D229,
+[SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md)); it is not validated. **Gate:** validated distributions and references, deterministic sampling, old seed
 fixtures unchanged with defaults, observable runtime effects for every exposed parameter.
 
 #### M2.1.3 — Recognition at an authored station · **In progress** (D119)
@@ -208,7 +209,7 @@ on each. This does not close M3.2, which still closes on M3.2.7d.
 ### M3.2.8a.1 — Remaining moving merge and source-clearance clamps
 
 **Open (D105/D108, 2026-10-04).** The standstill cap that treats a moving leader as standing
-([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D201 (sitting B5). D105 removed stationary zero-allowance false starts. **M3.2.8a.1a source first-step clearance is implemented (D108):** preserve the sampled arrival in its queue until ordinary following/integration from rest fits the snapshot leader clearance. Three current D107 source clamps disappear in 120 stress runs; 21 moving minor clamps remain. The earlier D105 geometry had different counts, retained as historical evidence. [Original diagnosis](evidence/m3.2.8a-clamps.md); [source verification](evidence/source-first-step.md).
+([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D201 (sitting B5). D105 removed stationary zero-allowance false starts. **M3.2.8a.1a source first-step clearance is implemented (D108):** preserve the sampled arrival in its queue until ordinary following/integration from rest fits the snapshot leader clearance. Three current D107 source clamps disappear in 120 stress runs; 21 moving minor clamps remain. The earlier D105 geometry had different counts, retained as historical evidence. **D232** traced the moving cases at zone waiting lines: a minor vehicle creeping off its line meets a gap that closes while it can still stop, and the braking law overshoots; the shipped Yield T-junction shows 6 at seeds 42–81 ([trace](evidence/give-way-line-clamps.md)). **D239** contracts the owner's choice: a stop that fits the type's maximum brakes to the line instead of clamping, only on a tick that clamps today ([GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)). **D240** implements it: the shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays unchanged; every other shipped output is byte-identical ([evidence](evidence/give-way-stop.md)). [Original diagnosis](evidence/m3.2.8a-clamps.md); [source verification](evidence/source-first-step.md).
 
 **Scope:** define how a minor approaching a merge anticipates the shared leader's standstill buffer before its span appears, and how a source insertion fits its first acceleration step into a small positive clearance. Keep the 1 m derived setback (D50), buffer and maximum deceleration until an explicit new contract says otherwise; do not suppress events or relax collision checks to remove counts.
 
@@ -228,7 +229,11 @@ timeout, and overtaking with the driving side (keep-left/right bias, return afte
 preference by type; needs `drivingSide` compiled into core). Keep-left is the default bias on
 left-hand-traffic networks, held in a behaviour key (D178). **Lane-change duration contract written**
 ([LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md), D204, rows BA48–BA53). **Slice 1 implemented** (D206,
-[evidence](evidence/lane-change-duration.md)); its switched-on cost (+17–33 %) is owed an engine round. **Gate:** contract and failure-first rows per item in the
+[evidence](evidence/lane-change-duration.md)); its switched-on cost is back inside LATERAL §11's budget (+3.0–3.5 % Ir against `5847cb9`, D209,
+[evidence](evidence/lateral-perf.md)). A swapping pair of stubs now resolves by the rear one yielding (D207,
+[evidence](evidence/lane-swap.md)); a mid-change body waits at the line (D208) and follows the lanes it covers
+(D210, [evidence](evidence/straddler-leaders.md), BA55); **keep-to-kerb contract written** ([OVERTAKING](reference/OVERTAKING.md),
+D213, BA64–BA71) and **slice 1 implemented** (D215, [evidence](evidence/kerb-bias.md); A53 still fails, no D95 value ships); Vissim's cooperative lane change stays open. **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention
@@ -251,7 +256,8 @@ M3.5 scope remain open; this closes no owner gate.
 
 ### M3.6 — Speed control: turning, curves and speed areas
 
-**Open; carved by D177** (review §3 D–E). Reduced-speed areas by type, desired-speed decisions,
+**Open; carved by D177** (review §3 D–E). **Curve speed contract written** ([SPEED_CONTROL](reference/SPEED_CONTROL.md),
+D211, rows BA56–BA63); **slice 1 implemented** (D212, [evidence](evidence/curve-speed.md)); no value ships (D178). Reduced-speed areas by type, desired-speed decisions,
 turning speed from Connector curvature, speed-dependent acceleration and grades. It delivers
 M2.1's "desired speed versus Link limits" item rather than duplicating it. **Gate:** contract and
 failure-first rows (curve speed bound, unset byte-identical); turning speeds measured in M6.

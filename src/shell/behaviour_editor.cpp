@@ -1,5 +1,7 @@
 #include "editor_interaction.hpp"
 #include "behaviour_editor.hpp"
+#include "../core/lateral.hpp"
+#include "../core/perception.hpp"
 #include "../core/w74.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QCheckBox>
@@ -59,7 +61,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         prototype.maxDecelerationCooperativeBraking = b.maxDecelerationCooperativeBraking;
         prototype.amberDeceleration = b.amberDeceleration;
         prototype.discretionaryLaneChangeThreshold = prototype.acceptedDecelerationTrailingVehicle =
-            prototype.discretionaryLaneChangeHoldTime = std::nullopt;
+            prototype.discretionaryLaneChangeHoldTime = prototype.kerbLaneBias = std::nullopt;
     }
     // Prototype page: the five keys and the optional ones (absent: not used, contract §4).
     auto* prototypePage = new QWidget(pages); auto* prototypeForm = new QFormLayout(prototypePage);
@@ -78,6 +80,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
              {"discretionaryLaneChangeThreshold", &prototype.discretionaryLaneChangeThreshold},
              {"acceptedDecelerationTrailingVehicle", &prototype.acceptedDecelerationTrailingVehicle},
              {"discretionaryLaneChangeHoldTime", &prototype.discretionaryLaneChangeHoldTime},
+             {"kerbLaneBias", &prototype.kerbLaneBias}, // M3.4 (D215): needs the two above
              {"amberDeceleration", &prototype.amberDeceleration}}) // M4.2 (D147)
         optionals.push_back(optional(prototypePage, prototypeForm, key, value));
     pages->addWidget(prototypePage);
@@ -106,6 +109,43 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         pages->setCurrentIndex(index); w74Help->setVisible(index == 1);
     });
     model->setCurrentIndex(b.w74 ? 1 : 0); pages->setCurrentIndex(model->currentIndex()); w74Help->setVisible(b.w74.has_value());
+    // D217: keys either model may carry (perception, lateral, curve, commitment, mandatory
+    // lane-change decelerations), from `b` itself. Lateral is all or none (LATERAL §9), so one box
+    // sets its three keys.
+    note(&dialog, form, text("editorBehaviourEitherModel"), "editorBehaviourEitherModel");
+    auto either = b;
+    std::vector<Optional> shared;
+    for (const auto& key : perceptionParameterKeys()) {
+        shared.push_back(optional(&dialog, form, key.name, &(either.perception.*key.member)));
+        if (key.integer) shared.back().spin->setDecimals(0);
+    }
+    auto* lateral = new QCheckBox("lateral", &dialog); lateral->setObjectName("lateralSet"); lateral->setChecked(hasLateral(b.lateral));
+    form->addRow(lateral);
+    std::vector<std::pair<const LateralKey*, QDoubleSpinBox*>> lateralKeys;
+    for (const auto& key : lateralParameterKeys()) {
+        auto* spin = number(&dialog, key.name, (b.lateral.*key.member).value_or(0)); spin->setEnabled(lateral->isChecked());
+        QObject::connect(lateral, &QCheckBox::toggled, spin, &QWidget::setEnabled);
+        form->addRow(key.name, spin); lateralKeys.push_back({&key, spin});
+    }
+    shared.push_back(optional(&dialog, form, "curveLateralAcceleration", &either.curveLateralAcceleration));
+    shared.push_back(optional(&dialog, form, "commitmentDeceleration", &either.commitmentDeceleration)); // B-2 (D219)
+    shared.push_back(optional(&dialog, form, "mandatoryDecelerationOwn", &either.mandatoryDecelerationOwn)); // B-3 (D221)
+    shared.push_back(optional(&dialog, form, "mandatoryDecelerationTrailingVehicle", &either.mandatoryDecelerationTrailingVehicle));
+    shared.push_back(optional(&dialog, form, "stopDwellTime", &either.stopDwellTime)); // B-8 (D231)
+    shared.push_back(optional(&dialog, form, "driverFactorSpread", &either.driverFactorSpread)); // B-4 (D236)
+    shared.push_back(optional(&dialog, form, "redRunningShare", &either.redRunningShare)); // B-9 (D238)
+    shared.push_back(optional(&dialog, form, "redRunningTime", &either.redRunningTime));
+    const auto keepShared = [&](DriverBehaviour& to) {
+        for (const auto& o : shared) *o.value = o.on->isChecked() ? std::optional<double>(o.spin->value()) : std::nullopt;
+        to.perception = either.perception; to.curveLateralAcceleration = either.curveLateralAcceleration;
+        to.commitmentDeceleration = either.commitmentDeceleration;
+        to.mandatoryDecelerationOwn = either.mandatoryDecelerationOwn;
+        to.mandatoryDecelerationTrailingVehicle = either.mandatoryDecelerationTrailingVehicle;
+        to.stopDwellTime = either.stopDwellTime; to.driverFactorSpread = either.driverFactorSpread;
+        to.redRunningShare = either.redRunningShare; to.redRunningTime = either.redRunningTime;
+        to.lateral = {};
+        if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();
+    };
     auto* error = new ReflowLabel(&dialog); error->setObjectName("editorBehaviourEditError"); error->setWordWrap(true); form->addRow(error);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog); form->addRow(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm")); buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
@@ -118,8 +158,9 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
             staged.discretionaryLaneChangeThreshold = prototype.discretionaryLaneChangeThreshold;
             staged.acceptedDecelerationTrailingVehicle = prototype.acceptedDecelerationTrailingVehicle;
             staged.discretionaryLaneChangeHoldTime = prototype.discretionaryLaneChangeHoldTime;
+            staged.kerbLaneBias = prototype.kerbLaneBias;
             staged.amberDeceleration = prototype.amberDeceleration;
-            staged.w74.reset(); dialog.accept(); return;
+            staged.w74.reset(); keepShared(staged); dialog.accept(); return;
         }
         // A w74 behaviour: all 18 keys, in range; its prototype fields are unused and not written.
         W74Parameters parameters;
@@ -135,8 +176,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         result.maxDecelerationCooperativeBraking = w74Cooperative.on->isChecked()
             ? std::optional<double>(w74Cooperative.spin->value()) : std::nullopt;
         result.amberDeceleration = w74Amber.on->isChecked() ? std::optional<double>(w74Amber.spin->value()) : std::nullopt;
-        result.perception = b.perception; // M3.5 (D181): not edited here yet, never dropped
-        result.lateral = b.lateral; // M3.7 (D187): likewise
+        keepShared(result); // D217 (D213: rebuilt from the id, so nothing else may be dropped)
         result.w74 = parameters; staged = std::move(result); dialog.accept();
     });
     if (dialog.exec() != QDialog::Accepted) return false;

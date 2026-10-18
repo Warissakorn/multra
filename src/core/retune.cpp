@@ -4,6 +4,7 @@
 #include "detail.hpp"
 #include "routes.hpp"
 #include "perception.hpp"
+#include "speed_distribution.hpp"
 #include "validate.hpp"
 #include <algorithm>
 #include <cmath>
@@ -38,9 +39,7 @@ bool sameShape(const Scenario& a, const Scenario& b) {
                       [](const auto& x, const auto& y) { return x.id == y.id && x.length == y.length && x.next == y.next; });
 }
 double rescaled(double speed, const SpeedRange& from, const SpeedRange& to) {
-    const double span = from.max - from.min;
-    const double quantile = span > 0 ? std::clamp((speed - from.min) / span, 0.0, 1.0) : 0.5;
-    return to.min + quantile * (to.max - to.min);
+    return speedAt(to, shareOf(from, speed)); // the share is kept (B-5, D229)
 }
 }
 SimState retuneSimulation(SimState&& state, const Scenario& scenario, const RetuneOptions& options) {

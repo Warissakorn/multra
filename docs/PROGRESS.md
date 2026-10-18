@@ -6,208 +6,141 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
-## 2026-10-16 — M3.4 slice 1: lane-change duration (D206)
+## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
 
-NEXT's item. `src/core/lanes.*`, `lateral_motion.cpp`, one line of `simulation.cpp`. With the lateral
-switch on, an accepted lane change now sets `lateralTarget`; the body moves at `maxLateralSpeed`,
-the route remaps at the crossing and the target clears on arrival. Rows BA48–BA53 failed first
-([evidence](evidence/lane-change-duration.md)).
+The Windows diagnostic showed that the 257 px text was Thai ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
+- **Cause:** Qt finds Thai line breaks through libthai, which it loads at run time as `thai.dll`. The
+  Windows runner had none, so a Thai sentence broke only at its spaces. A Linux probe gives 60 px
+  with libthai and 268 px without it. That is why D242–D244 did not change Windows.
+- **The owner's choice:** ship libthai with Windows.
+- **Fix:**
+  - CI and the package install MSYS2's libthai, as `thai.dll` with `libdatrie-1.dll` and `thbrk.tri`;
+  - the package ships them, with their LGPL licences;
+  - the editor points `LIBTHAI_DICTDIR` at `data/libthai` beside the executable.
+- **Tests:** the Thai pass of the narrow fixture requires a line break inside a Thai sentence. A
+  mutation to an unbroken Latin string is caught.
 
-Switched-on product runs exposed two flaws in the start rules as D204 wrote them; both are fixed:
-- the span-window rule counted the body's length, so a changer standing near its dead end never
-  started (four-leg seed 42 jammed);
-- a change under way was invisible to other starts, so two changers converged on one lane 5 cm
-  apart. It now holds its target place for the whole change.
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
 
-Still open, recorded in NEXT: a swap deadlock at shared dead ends that predates this slice
-(lane-change-lab seed 44, switch off too); two mid-change clamps in ten lab seeds; and the
-switched-on cost (+33 % lab, +17 % four-leg, Release), owed an engine round before any shipped
-project carries lateral keys. Switched off: `check` 162/162, CLI pin byte-identical, benchmark
-unchanged. Linux only.
+## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
 
-## 2026-10-16 — Main's Windows-only UI reds (D205)
+The Windows diagnostic named the widget ([evidence](evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).
+- **Cause:** `editorEffectiveBehaviour` asked for a 257 px minimum on Windows (Qt 6.5.3), against
+  69 px on Linux. That held the floating panel at 273 px, so the top forms never stacked.
+- **Fix:** `ReflowLabel`'s wrapped minimum is its longest word, never more than Qt's.
+- **Tests:** a check that every wrapped top text asks for no more than its word (plus 8 px). It
+  passes on Linux before and after; the evidence that it fails is the Windows run. Inflating Qt's
+  value fails without the cap and passes with it.
 
-NEXT's first item. The windows-desktop job had failed four UI tests since PR #170, on Windows only. Both
-causes came from the CI log ([evidence](evidence/windows-ui-red.md)):
-- **`canvas-lod-ui`**: with a rotated view, `viewScale()` came out an ulp below exactly 3 px per lane, and
-  the threshold comparison had no margin. `laneMarkingsReadable` now allows a relative 1e-9.
-- **`properties-layout-ui`** (Thai only): Windows Qt cannot break Thai words, so the 123 px word in
-  `editorMedianGap` widened the Link page's column by 3 px and no other page's. The column is now one
-  `FormColumn` shared by every form, widened to such a word when it is under a quarter wider.
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
 
-- **Round 2** (the branch's first Windows run): the threshold was confirmed, and a hidden form kept
-  the old column when the width changed back with the appearance fold closed. Hidden forms are now laid
-  out at once.
+## 2026-10-18 — Top Properties buttons elide (D243)
 
-All three now reproduce on Linux. Each row failed before its fix and fails again with the fix reverted.
-Checked on Linux offscreen: `check` 161/161, CLI pin byte-identical to main. Windows is confirmed only
-by this branch's CI run.
+D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
+- **Cause:** the top forms' host was 273 px with no viewport. The appearance toggle's unwrappable
+  text set the floating panel's minimum width (Linux 218 px, Windows about 273).
+- **The owner's choice:** buttons shrink and elide with "…".
+- **Fix:** `ElidingToolButton` (full-text size, ellipsis minimum, `Preferred` policy, elided
+  paint) for the toggle, Apply behaviour type and Apply display.
+- **Tests:** a long-toggle row failed first (the dock went to 299 px), and three mutations are
+  caught.
 
-## 2026-10-16 — M3.4 lane-change duration contract (D204, docs only)
+`check` 178/178, Linux only. **Windows result:** the same failure (host 273 px), so the toggle was
+not the cause there. The narrow check now prints the dock, body and tab widths and the widest top
+widgets, so the next Windows run names the culprit.
 
-The owner asked for recommendations on the contract's three open choices and took all three:
-- a change starts only if it can finish before the next conflict area on both lanes (an extension of
-  the existing "no change inside an area" rule), so no zone has to hold a straddler;
-- the D97 slide stays for switched-off runs, which still change instantaneously;
-- no new key: `maxLateralSpeed` sets the duration.
-New [LANE_CHANGE_DURATION](reference/LANE_CHANGE_DURATION.md) with rows BA48–BA53; also found that a
-change must cross before its span's `fromEnd`, since the crossing needs a covering span (LATERAL §7).
-No code changed; `check` was run for the docs.
+## 2026-10-18 — Windows narrow Properties forms (D242)
 
-## 2026-10-16 — M3.7 slice 4: lateral display (D203)
+The owner asked to fix CI ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
+- **Failure:** `windows-desktop` failed `properties-layout-ui` (1×, 1.5×, 2×) with "A narrow form
+  kept a field beside its label", on main too.
+- **Cause:** a scrolled page is never narrower than its widest action button. On Linux the English
+  Link page is 248 px in the 200 px dock, 8 px short of two columns. A slightly wider Windows button
+  reaches them, so the form kept rows beside their labels.
+- **Fix:** `FormReflow` decides by the visible width (the scroll viewport's when that is less) and
+  watches the viewport.
+- **Tests:** the new row failed first with Windows' message, and both mutations are caught. A row
+  still beside its label in a narrow check now prints its form and widths.
 
-NEXT's next item after slice 3b. `src/editor/canvas_run.cpp`, `src/core/types.hpp`, `lateral_motion.cpp`.
-- **Drawing:** a run body sits at lane centre + `lateral`, the front shifted along the left normal of
-  its heading. Left of travel is the engine's convention, so left- and right-hand networks need no
-  case. `lateral = 0` draws exactly as before.
-- **Found while reading:** a crossing made by lateral motion records a `LaneChangeTrace`, and the D97
-  slide would have drawn the body about a lane away from where the engine keeps it. The entry is now
-  flagged `lateral` (display only, no tick reads it) and such crossings are not slid.
-- `types.hpp` stays at 500 lines (the field shares its line). The M3.7.0 contract's four slices are
-  all in; the gate stays open (ROADMAP).
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
 
-Checked on Linux offscreen: `ctest --preset desktop` 161/161, `check` green, CLI pin unchanged and the
-Release CLI output byte-identical to main. No Windows or high-DPI run.
+## 2026-10-18 — M2.6's red-running clamps traced (D241, no code change)
 
-## 2026-10-16 — M3.7 slice 3b: zone occupancy by span (D202)
+NEXT's item 1 ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). A temporary probe
+was never committed.
+- **Where:** only seed 51 (3 → 5 at 2 s and 3 s) and seed 73 (0 → 1 at 3 s) change.
+- **None is a red-head hold.** Every added clamp is bound by a vehicle leader:
+  - Seed 51: a runner released at red onset, after braking for amber, meets the green flow at a
+    derived merge rule. It is let go 0.55 m behind a leader and hits the standstill cap (D105,
+    D201 B5); its follower clamps behind it.
+  - Seed 73: a runner held again when the 3 s window ends stops at 6 m/s², and its follower needs
+    10.6 m/s².
+- **Found:** at 2 s the seed-51 runner crosses after the window as committed under
+  `amberDeceleration`, so no event is counted. RED_RUNNING §3 now says so. Three §3 behaviours are
+  listed as owner choices.
 
-The owner chose the head of the engine queue. `src/core/conflicts.*`, `lateral.*`, `lateral_types.hpp`.
-- **What a straddler's other-lane span does to a zone** (switch on only): inside a major area it
-  blocks, on the chain's first segment it is anticipated by headway/gapTime (one `blockMajor` helper
-  shared with route positions), inside a minor area it holds, and in phase 2 it sweeps a major area.
-  `LateralIndex::zoneSides` gives each segment's zone sides once per run.
-- **Not done, on purpose:** the straddler is not held at the other lane's zone. That needs the zone
-  mapped into its own route's distances; no product writer sets targets until M3.4, so it waits for
-  M3.4's evidence rather than being built blind (D202's failure condition names it).
-- `zoneHold` code is unchanged; `summarizeZones` keeps a 4-argument overload that builds spans only
-  with the switch on, so the ten lane-based test callers did not change. `simulation.cpp` stays at
-  500 lines: the step passes its existing spans on the same lines.
-- Rows: BA47 (6 tests, `lateralzone`), each with its forcing asserted and a mutation that fails it.
+`check` 178/178, Linux only. CLI 42 byte-identical after the probe was reverted.
 
-Checked on Linux headless: `ctest` 105/105, `check` green, CLI pin unchanged and the Release CLI
-output byte-identical to main. Release timings in the [evidence](evidence/lateral-zones.md): switch
-off inside noise; switched-on four-leg +7 % on a noisy container, below D164's 10 %. No desktop or
-Windows run.
+## 2026-10-18 — Give-way line stop implemented (D240)
 
-## 2026-10-16 — Owner sitting triage (D201, docs only)
+D239's contract ([evidence](evidence/give-way-stop.md)).
+- **Rule:** on a tick that would clamp at a binding give-way line, a stop within the type's maximum
+  brakes at `v²/(2·gap)` instead. BA147–BA149 failed first; the guards were proved by mutation.
+- **Measured:** the shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays unchanged.
+  Every other shipped output is byte-identical. The 11 replaced ticks braked at 2.5–7.4 m/s². Ir
+  +0.11–0.15 %.
+- **Correction:** D232's "none at seeds 42–51" was wrong (seed 46 has 2).
+- **Sanitizer:** CI ASan caught BA151 reading a reference into a temporary scenario; the row now
+  holds it in a local.
 
-The owner asked which sitting items truly needed a decision, then answered “ปิดตามข้อเสนอ”.
-- **Closed as proposed:** B1 (keep `TrafficSim` until a release), B2 (D95/D101 off; route (i) only,
-  in M3.4), B3, B5 (standstill cap booked in M3.2.8a.1), B6, B8, B12 (asked at multi-level S1), B13
-  (`w74` preset stays out of the catalog; noted in M4.2).
-- **B3 is a code/contract discrepancy, not a choice:** `automatic_conflicts.cpp` skips pairs whose
-  drawing `level` differs, while M3_CONTRACT §1 says level is not separation. Queued as a fix slice
-  in NEXT with a failure-first row; B8's 300 s cool-down is queued the same way. No code changed.
-- **R4 (b) applied before the sitting:** C5, C6, D1, E1, E3, E4, E7 (listed more than 14 days)
-  became ROADMAP M1.29 and M3.2.10; C4 merged into C3; E12 dropped (slices a/b changed the
-  workspace it asked to see unchanged); E13–E15 merged into one look. Nothing is closed by this.
-  Numbered D201 because main took D194–D200 for the UI slices.
-- What remains only the owner's: A1, B4 → A3, A2, B9, the milestone closures and the looks.
+`check` 178/178, Linux only.
 
-Checked on Linux: `check_docs` and `check_file_sizes` (built standalone from `tools/`) pass. No
-code changed and no desktop build or CTest run was made for this entry.
+## 2026-10-18 — Give-way line stop contract (D239, docs only)
 
-## 2026-10-16 — UI slice e2: measured LOD (D200)
+The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)
+([GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)).
+- **The owner's choice:** brake to stop at the line.
+- **The contract:** only on a tick that today clamps at a binding give-way line, and only when the
+  stop fits the type's maximum, the vehicle brakes at `v²/(2·gap)` and no clamp is reported.
+  Everything else stays byte-identical. Rows BA146–BA151.
 
-The last UI presentation slice (`canvas_style.hpp`, `canvas.cpp`, `canvas_connectors.cpp`).
-- **Rule:** below 3 logical px per lane (narrowest lane × `viewScale()`), Link lane markings,
-  Connector edges/dividers and mouth edges are not drawn. They are 0.10 m strokes, under a tenth
-  of a pixel there. Nothing else is hidden; hits read model geometry, so picking is unchanged.
-- **Vehicles:** the 4×2.5 px floor and 14 px windshield/cab rule (D97) were already in; the new
-  tests pin both (mutating 14→13 or 2.5→2.0 fails them).
-- **Tests first:** new `canvas_lod_ui_tests` (crossing fixture at 3 px per lane and just under:
-  markings present/absent; every other tag count equal; selected Link keeps outline, arrows and
-  grips; hits equal; Ctrl+A equal either side; rotated and flipped views decide alike; vehicle
-  boundary rows). It failed before the change with “Lane markings drawn below 3 px per lane”.
-  `wireframe_ui_tests` now views the M2.6 template at 4 px/m: its fit zoom is under 3 px per lane.
-- **Measured** (Debug offscreen, three runs each): `trafficsim-editor-benchmark` at 0.08 px/m,
-  whole-scene redraw 6.6–8.1 → 3.0–4.2 ms, wireframe (untouched) 3.9–5.5 → 4.1–5.4 ms. The run-view
-  benchmark sits at 3.1 px per lane, above the threshold: no claim. Both tools now print their
-  px/m.
+## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
 
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
-file sizes, docs and **159/159** CTest. No Windows or high-DPI verification.
-[At 3 px](images/ui-lod-after/crossing-at-3px.png), [just under](images/ui-lod-after/crossing-under-3px.png).
+D237's contract ([evidence](evidence/red-running.md)).
+- **Rule:** a hashed share of drivers pass a red head in its first seconds while moving; a
+  `red-running` event when they pass the line; `redRunning` in reports only with the keys. BA139
+  and BA144 failed first against a step that ignored the keys.
+- **File and editor:** schema 44, refused below; the pair and ranges validated on both models; two
+  behaviour-dialog rows. Every hook proved by mutation.
+- **Measured:** shipped runs byte-identical. At a 5 % share runs are rare and rise steeply with the
+  window (four-leg 2, 8, 24 in 40 runs for 1–3 s); delay falls within its half-width. Ir −0.44 %
+  (layout).
 
-## 2026-10-16 — UI slice e1b: run casings and signal shapes (D199)
+`check` 177/177, Linux only.
 
-Run frames read without colour (`src/editor/run_vehicle_item.cpp/.hpp`, `canvas_run.cpp`,
-`road_crossbar.cpp/.hpp`, `canvas_map.cpp`, `canvas.hpp`).
-- **Casings:** each run vehicle paints its fill, a 1 px cosmetic edge opposite the fill's tone
-  (`connectorBoundaryColor`) and any followed outline. Painting, not a pen, keeps `shape()` and
-  so every run-vehicle click exactly as before.
-- **Signal shapes:** red is the full bar, amber thins the middle third, green opens it. Hit shape
-  and colours are unchanged; edit-mode dashed bars still mean draft.
-- **Found from the evidence image:** `QGraphicsView` scrolls the viewport's child widgets with the
-  scene, so the HUD (and the map credit and status before it) slid with the content until the 80 ms
-  map timer; `scrollContentsBy` now re-places them at once.
-- **Tests first:** new `run_presentation_ui_tests` (a vehicle the colour of its background still
-  shows an edge ≥ 0.3 luminance, both dark and light; casing leaves `shape()` equal to the bare
-  path; the three cues have distinct ink masks with red the superset and one hit shape; after 300
-  Steps every run vehicle is cased and a click reaches `runVehicleClicked`). Removing the casing or
-  the cue fails it. `canvas_hud_ui_tests` gained a scroll row that failed before the fix.
-- **Cost:** `trafficsim-run-view-benchmark` on the M2.6 template, 600 Steps, Debug offscreen, three
-  runs each: paint 1477–1692 → 1671–2015 ms (≈ +16 %), action 523–571 → 546–622 ms (unchanged code,
-  so ≈ +7 % is noise); ≈ +9 % paint against action. Recorded in D199; not hidden.
+## 2026-10-18 — B-9 red-light running contract (D237, docs only)
 
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
-file sizes, docs and **158/158** CTest. No Windows or high-DPI verification.
-[Grayscale run](images/ui-run-after/run-grayscale.png).
+NEXT's item, the last of tier B ([RED_RUNNING](reference/RED_RUNNING.md)). Today red holds
+every vehicle that can still stop.
+- **The owner's choices:** only in the first T seconds of red and only while moving; a fixed share
+  of drivers decided once per vehicle by a hash; no new interaction with crossing traffic, but each
+  run is counted.
+- **The contract:** `redRunningShare` and `redRunningTime` as a pair at schema 44; W74's hash at
+  index 15; a `red-running` event and a `redRunning` count written only with the keys; rows
+  BA138–BA145.
 
-## 2026-10-16 — UI slice e1: canvas HUD (D197)
+## 2026-10-18 — B-4 driver-factor spread implemented (D236)
 
-The canvas has a HUD (`src/editor/canvas_hud.cpp/.hpp`, `canvas_map.cpp`, `canvas.cpp/.hpp`,
-`map_layer.cpp/.hpp`, `editor_map.cpp`, two keys per locale).
-- **Scale and zoom:** a bar of the largest 1/2/5×10ⁿ m that fits 160 px at `viewScale()` (64–160 px:
-  the steps are up to 2.5× apart, so 80–160 cannot always hold) and the zoom in px/m.
-- **North only when the map supplies it:** `MapLayer::worldToGeographic` (new) gives the view centre's
-  latitude; one step north mapped back and through the view transform gives the arrow, so
-  convergence, `rotationDegrees` and Lab heading-up are included. No map projection, no arrow.
-- **Never in the way:** mouse-transparent, bottom-right, above the map credit when they would meet,
-  stacked when narrow. Found while testing: `EditorCanvas::event` placed overlays before the viewport
-  resized, so after a resize the HUD (and credit) sat at the old size until the 80 ms map timer; they
-  are placed after `QGraphicsView::event` now.
-- **Tests first:** new `canvas_hud_ui_tests` (1/2/5 steps and 64–160 px at four zooms under rotation and
-  mirroring; no arrow without a georeference; 0° on the central meridian, ±30° with the rotation, the
-  ≈0.56° convergence at 101.5°E, +40° in a rotated view; `childAt` skips the HUD; clear of credit and
-  status at four sizes), also at 1.5× and 2×. Swapping in grid north fails it. `workspace_ui_tests`
-  checks the HUD inside the viewport at 1360 and 1024 in both languages. `design_system_ui_tests`'
-  empty-grid pixel check now skips the HUD's own rectangle and asserts it is there.
-- **Carved out:** run vehicle casings and an R/A/G shape cue are slice e1b (two systems, AGENTS.md).
-- **Owner E19, same day (D198):** north shows whenever there is a georeference; `MapLayer` builds the
-  projection without waiting for a tile provider. The HUD suite checks an unknown provider and a
-  hidden map (it failed on both before the change).
+D235's contract ([evidence](evidence/driver-factor-spread.md)).
+- **Draw:** `samplePending` takes the standard deviation from the type's own behaviour, 0.15 without
+  the key; the random stream is unchanged. Rows BA132, BA133, BA135 and BA136 failed first against
+  the 0.15 stub.
+- **File and editor:** schema 43, refused below; `INVALID_BEHAVIOUR_PARAMETER` on both models; a
+  behaviour-dialog row. Codec, validation and the row proved by mutation.
+- **Measured:** shipped runs byte-identical. Spreads of 0, 0.3 and 0.5 leave mean delay inside its
+  half-width on all four projects; clamps rise with a wide spread. Ir ±0.015 %.
 
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
-file sizes, docs and **157/157** CTest; workspace canvas unchanged at 807×394 / 471×231. No Windows
-or high-DPI verification. [HUD with a rotated georeference](images/ui-hud-after/hud-rotated.png),
-[Thai 1024 workspace](images/ui-hud-after/workspace-th.png).
-
-## 2026-10-16 — UI slice d2: table and numeric presentation (D196)
-
-Every table now reads alike (`editor_style.cpp/.hpp`, `editor_interaction.cpp`, `editor_workspace.cpp`,
-`od_lot_dialogs.cpp` and the figure cells of Results, batch, comparison, Links, routes, inputs,
-conflicts and the Lab axis).
-- **Recipe at polish time:** `applyTableRecipe` gives every `QTableView` 24 px rows, alternating rows,
-  no grid and control-height minimum columns when it is polished; before, only tables alive in
-  `buildWorkspace` had it, so dialog tables kept Qt defaults. `editorCustomRows` keeps the OD/lot
-  grids' spin-box rows.
-- **Elided cells:** a cell without its own tooltip shows its full text in the bounded popup when the
-  text is wider than the cell; a cell that fits shows nothing.
-- **Figures:** cell `QString::number(x,'f',d)` calls became `formatValue(x,d)`. The default locale is
-  C, so no byte changes: the CLI report and `--csv` for `four-leg-signalised` (seeds 42–43) are
-  identical before and after, apart from the build-commit stamp.
-- **Tests first:** new `table_presentation_ui_tests` (a table built after startup and the demand
-  catalog dialog's tables carry the recipe; an elided long link name opens the popup, a fitting cell
-  does not; Link, route and movement figures identical in English and Thai and right-aligned). It
-  failed on the late table before the change; removing the elision check fails it too.
-- **Noticed:** `map-ui` failed once in the first parallel `check` ("libpng error: Not a PNG file"
-  among its output, no failure line captured); it passed alone, in a second full parallel run and
-  5/5 times under concurrent load. The bounded popup is taller than two lines need (D151 sizing).
-
-Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` second run passes
-architecture, file sizes, docs and **154/154** CTest. No Windows or high-DPI verification.
-[Dialog table](images/ui-tables-after/tables-dialog.png), [elided-name popup](images/ui-tables-after/tables-tooltip.png).
+`check` 176/176, Linux only.
 
 ## Older entries
 

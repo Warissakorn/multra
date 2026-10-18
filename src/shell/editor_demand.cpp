@@ -143,7 +143,8 @@ void EditorWindow::refreshDemand() {
                 for(const auto& x:def.routingDecisions)if(x.linkId==i.linkId)chainLanes.clear();
             }
             auto volume=QString::number(i.vehiclesPerHour);
-            const auto split=laneSplit(chainLanes,shareCount,i.laneShares);
+            // B-7 (D234): an owned type's kerbLanes limit, as the compiler applies it.
+            const auto split=laneSplit(chainLanes,shareCount,i.laneShares,entryKerbLanes(history_.document().network,def,i));
             const auto lanes=split.fraction.size();
             if(lanes>1&&!split.weighted)volume+=" = "+QString::number(lanes)+QString::fromUtf8(" \u00d7 ")+
                 editorDesign::formatValue(i.vehiclesPerHour/static_cast<double>(lanes),1);

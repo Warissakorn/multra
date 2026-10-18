@@ -44,10 +44,21 @@ void appendLateralSpans(std::vector<OccupiedSpan>& spans, std::size_t first, con
                         const LateralIndex& index, double width, double lateral);
 // §6: the follower's band on its front segment, widened by dLat. A span on that carriageway counts
 // as a leader (or as alongside) only if it overlaps; spans on other carriageways always count.
-struct LateralFilter { const Scenario* scenario{}; LateralBand band; bool on{}; };
+// `covered` (D210, set by followerFilter): each other lane the body covers at its front, with the
+// front's place on it; the leader searches also look ahead there (leaders.hpp).
+struct CoveredLane { std::size_t segment{}; double front{}; };
+struct LateralFilter {
+    const Scenario* scenario{}; LateralBand band; bool on{};
+    std::vector<CoveredLane> covered; const std::vector<std::size_t>* onlyNext{};
+};
 LateralFilter lateralFilter(const Scenario& scenario, std::size_t frontSegment, double width,
                             double lateral, const DriverBehaviour& behaviour, double speed);
-bool lateralCounts(const LateralFilter* filter, const OccupiedSpan& span);
+// Inline (D209): called for every candidate span of every leader search.
+inline bool lateralCounts(const LateralFilter* filter, const OccupiedSpan& span) {
+    if (!filter || !filter->on) return true;
+    if (filter->scenario->segmentCrossSections[span.segmentIndex].carriageway != filter->band.carriageway) return true;
+    return filter->band.right <= span.left && span.right <= filter->band.left; // bandsOverlap, inline
+}
 // The filter for a body whose front is at `front` on `parts`; off (counting everything) without the switch.
 LateralFilter followerFilter(const Scenario& scenario, const ScenarioIndex& index,
     const std::vector<RoutePart>& parts, double front, double width, double lateral,

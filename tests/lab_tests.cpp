@@ -202,3 +202,36 @@ TEST(lab, length_retune_preserves_valid_axle_proportions_and_identity) {
     auto nominal = s.focus.type; nominal.axles.reset(); nominal.length = 6; lab::rescaleAxles(nominal);
     CHECK(!nominal.axles);
 }
+// D217: the panel shows a key only where a lab run can use it (BEHAVIOUR_PARAMETERS §5).
+TEST(lab, d217_curve_perception_and_lateral_keys_run_on_the_circuit) {
+    auto curved = urban(); curved.focus.behaviour.curveLateralAcceleration = 3;
+    auto oval = settings(); oval.focus.behaviour.curveLateralAcceleration = 3;
+    // The curve acts on Connectors only (SPEED_CONTROL §3): the Urban circuit's two tight left
+    // turns, and the Oval's 4 m joins where they meet its arcs. The Links' own arcs carry none.
+    const auto bends = [](const lab::LabRun& r) {
+        std::vector<double> lengths; for (const auto& g : r.state().scenario->segments) if (g.curvature > 0) lengths.push_back(g.length);
+        return lengths;
+    };
+    const auto turns = bends(run(curved)), joins = bends(run(oval));
+    CHECK(turns.size() == 2); CHECK(joins.size() == 4);
+    for (const double length : joins) CHECK(length < 4.1);
+    auto perceiving = urban(); perceiving.road.lanes = 2;
+    perceiving.focus.behaviour.perception.observedVehiclesAhead = 2;
+    perceiving.focus.behaviour.perception.lookAheadDistance = 150;
+    auto lateral = urban(); lateral.road.lanes = 2;
+    lateral.traffic.behaviour.lateral = lateral.focus.behaviour.lateral = {0.5, 1.0, 1};
+    for (const auto* s : {&curved, &perceiving, &lateral}) {
+        auto r = run(*s);
+        CHECK(!r.state().scenario->segmentCrossSections.empty() == (s == &lateral));
+        steps(r, 12000);
+        CHECK(r.telemetry()->laps >= 1);
+        if (r.safetyClamps() != 0) throw std::runtime_error("d217 safety clamps: " + std::to_string(r.safetyClamps()));
+    }
+    // Ticked in the panel mid-run: each key reaches the running scenario, and the run carries on.
+    auto r = run(perceiving); steps(r, 600);
+    auto all = lateral; all.focus.behaviour.curveLateralAcceleration = 3; all.focus.behaviour.perception.reactionTime = .5;
+    CHECK(r.apply(all) != lab::LabRun::Applied::unchanged);
+    CHECK(!r.state().scenario->segmentCrossSections.empty());
+    steps(r, 3000);
+    CHECK(r.safetyClamps() == 0);
+}

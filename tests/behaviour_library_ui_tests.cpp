@@ -3,6 +3,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
+#include "../src/core/lateral.hpp"
 #include "../src/editor/canvas.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -58,7 +59,28 @@ void buildLibrary(QDialog& d) {
         // AM8 (M4.2, D147): the captured catalog's amber deceleration is shown and edited like any optional key.
         require(item<QCheckBox>(e, "amberDecelerationSet")->isChecked() && item<QDoubleSpinBox>(e, "amberDeceleration")->value() == 3,
                 "Captured amber deceleration not shown");
-        item<QDoubleSpinBox>(e, "amberDeceleration")->setValue(2.5); confirm(e);
+        item<QDoubleSpinBox>(e, "amberDeceleration")->setValue(2.5);
+        // D215: the kerb bias is an optional row beside the D95 keys it needs.
+        require(!item<QCheckBox>(e, "kerbLaneBiasSet")->isChecked(), "Kerb bias row missing or pre-set");
+        for (const char* key : {"discretionaryLaneChangeThreshold", "acceptedDecelerationTrailingVehicle", "kerbLaneBias"})
+            item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
+        item<QDoubleSpinBox>(e, "discretionaryLaneChangeThreshold")->setValue(0.5);
+        item<QDoubleSpinBox>(e, "acceptedDecelerationTrailingVehicle")->setValue(1);
+        item<QDoubleSpinBox>(e, "kerbLaneBias")->setValue(1.5);
+        // D217: the keys for either model are rows too, off until ticked; lateral is one group.
+        for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "lookBackDistance", "rearTimeToCollision",
+                                "reactionTime", "lateral", "curveLateralAcceleration", "commitmentDeceleration",
+                                "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"})
+            require(!item<QCheckBox>(e, (std::string(key) + "Set").c_str())->isChecked(), "Either-model row missing or pre-set");
+        for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "reactionTime", "lateral", "curveLateralAcceleration",
+                                "commitmentDeceleration", "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"})
+            item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
+        for (const auto& [key, value] : std::vector<std::pair<const char*, double>>{{"lookAheadDistance", 150},
+                 {"observedVehiclesAhead", 2}, {"reactionTime", .5}, {"lateralMinDistanceStanding", .5},
+                 {"lateralMinDistanceAt50", 1}, {"maxLateralSpeed", 1}, {"curveLateralAcceleration", 3}, {"commitmentDeceleration", 4},
+                 {"mandatoryDecelerationOwn", 3}, {"mandatoryDecelerationTrailingVehicle", 5}, {"stopDwellTime", 2.5}, {"driverFactorSpread", .3}, {"redRunningShare", .05}, {"redRunningTime", 2}})
+            item<QDoubleSpinBox>(e, key)->setValue(value);
+        confirm(e);
     });
     modal([&] { click(d, "editorVehicleClasses", "catalogAdd"); }, [](QDialog& e) {
         item<QLineEdit>(e, "editorClassName")->setText("Heavy");
@@ -112,6 +134,17 @@ int main(int argc, char** argv) {
         require(!def.externalBehaviours && !def.externalVehicleTypes, "Catalogs were not captured");
         require(def.behaviours.size() == 2 && def.behaviourNames.at(std::string(kDefault) + "-copy") == "Slow", "Behaviour copy lost");
         require(def.behaviours[1].amberDeceleration == 2.5 && def.behaviours[0].amberDeceleration == 3, "Amber deceleration not edited");
+        require(def.behaviours[1].kerbLaneBias == 1.5 && !def.behaviours[0].kerbLaneBias, "Kerb bias not edited (D215)");
+        PerceptionParameters perceived; perceived.lookAheadDistance = 150; perceived.observedVehiclesAhead = 2; perceived.reactionTime = .5;
+        require(def.behaviours[1].perception == perceived && def.behaviours[0].perception == PerceptionParameters{}, "Perception not edited (D217)");
+        require(def.behaviours[1].lateral == LateralParameters{.5, 1., 1.} && !hasLateral(def.behaviours[0].lateral), "Lateral not edited (D217)");
+        require(def.behaviours[1].curveLateralAcceleration == 3 && !def.behaviours[0].curveLateralAcceleration, "Curve not edited (D217)");
+        require(def.behaviours[1].commitmentDeceleration == 4 && !def.behaviours[0].commitmentDeceleration, "Commitment not edited (D219)");
+        require(def.behaviours[1].mandatoryDecelerationOwn == 3 && def.behaviours[1].mandatoryDecelerationTrailingVehicle == 5 &&
+                !def.behaviours[0].mandatoryDecelerationOwn && !def.behaviours[0].mandatoryDecelerationTrailingVehicle, "Mandatory keys not edited (D221)");
+        require(def.behaviours[1].stopDwellTime == 2.5 && !def.behaviours[0].stopDwellTime, "Stop dwell not edited (D231)");
+        require(def.behaviours[1].driverFactorSpread == .3 && !def.behaviours[0].driverFactorSpread, "Driver-factor spread not edited (D236)");
+        require(def.behaviours[1].redRunningShare == .05 && def.behaviours[1].redRunningTime == 2 && !def.behaviours[0].redRunningShare, "Red running not edited (D238)");
         require(def.vehicleClasses.size() == 1 && def.linkBehaviourTypes.size() == 1, "Class or behaviour type lost");
         require(def.linkBehaviourTypes[0].overrides.size() == 1, "Override lost");
         item<QAction>(w, "editorUndo")->trigger();
@@ -165,6 +198,7 @@ int main(int argc, char** argv) {
         auto withW74 = w.history().document();
         DriverBehaviour w74{"w74-set"};
         w74.w74 = W74Parameters{2, 2, 1, 2, .5, 16, 4, .5, .5, 20, 1, 1, 3, .25, .5, -1, .5, .25};
+        w74.curveLateralAcceleration = 2.5; w74.perception.reactionTime = .4; // shown and edited for either model (D217)
         putBehaviour(withW74, w74, ""); validateDocument(withW74);
         QFile g(path); require(g.open(QIODevice::WriteOnly), "Fixture write failed");
         g.write(QByteArray::fromStdString(documentJson(withW74).dump())); g.close(); w.openFile(path);
@@ -183,15 +217,27 @@ int main(int argc, char** argv) {
                 item<QLineEdit>(e, "exAdd")->setText("0.5"); confirm(e);
                 require(e.isVisible(), "Out-of-range w74 value accepted");
                 require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("behaviour.exAdd"), "Range error not shown");
+                require(item<QCheckBox>(e, "curveLateralAccelerationSet")->isChecked() && item<QDoubleSpinBox>(e, "curveLateralAcceleration")->value() == 2.5
+                        && item<QCheckBox>(e, "reactionTimeSet")->isChecked() && item<QDoubleSpinBox>(e, "reactionTime")->value() == .4
+                        && !item<QCheckBox>(e, "lateralSet")->isChecked(), "w74 either-model keys not shown (D217)");
+                item<QDoubleSpinBox>(e, "curveLateralAcceleration")->setValue(2);
                 item<QLineEdit>(e, "exAdd")->setText("1.25");
                 item<QLineEdit>(e, "editorBehaviourName")->setText("Urban W74"); confirm(e);
             });
         });
         require(behaviour("w74-set").w74 && behaviour("w74-set").w74->exAdd == 1.25, "w74 key not edited");
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
-        // 25 for the w74 behaviour, raised to 28 because the captured catalog behaviour carries
-        // amberDeceleration (M4.2, D147): the schema is the newest feature the file holds.
-        require(documentJson(w.history().document())["schemaVersion"] == 28, "w74 file not schema 28");
+        require(behaviour("w74-set").curveLateralAcceleration == 2 && behaviour("w74-set").perception.reactionTime == .4,
+                "w74 either-model keys not saved (D213, D217)");
+        // 44 for the red-running pair the edited prototype copy carries (B-9, D238), above its spread (43),
+        // Stop dwell (41, D231), mandatory deceleration keys (37), commitment (36) and kerb bias (35).
+        require(documentJson(w.history().document())["schemaVersion"] == 44, "w74 file not schema 44");
+        library([](QDialog& d) {
+            modal([&] { click(d, "editorBehaviours", "catalogEdit", "w74-set"); }, [](QDialog& e) {
+                item<QCheckBox>(e, "reactionTimeSet")->setChecked(false); confirm(e);
+            });
+        });
+        require(!behaviour("w74-set").perception.reactionTime && behaviour("w74-set").curveLateralAcceleration == 2, "Unticking kept the key (D217)");
         // Prototype -> W74: the fields start empty (no code defaults); an empty one is refused.
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {

@@ -79,7 +79,8 @@ public:
                                   a.at + matchedStation(reference, la.geometry, r0) - a.section->start,
                                   a.at + matchedStation(reference, la.geometry, r1) - a.section->start,
                                   b.at + matchedStation(reference, lb.geometry, r0) - b.section->start,
-                                  b.at + matchedStation(reference, lb.geometry, r1) - b.section->start});
+                                  b.at + matchedStation(reference, lb.geometry, r1) - b.section->start,
+                                  lb.index < la.index}); // D215: lane 0 is the kerb lane on both driving sides
             }
         // Pieces that continue each other on both routes -- a section cut on either lane -- are
         // one span, so a vehicle straddling the cut is still wholly inside one.

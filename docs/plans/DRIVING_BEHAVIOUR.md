@@ -64,7 +64,7 @@ BA03 has [type/window evidence](../evidence/discharge-controls.md), with future 
 BA05 has [proven-motion](../evidence/discharge-passage.md) and [source-sink identity](../evidence/discharge-identity.md)
 evidence. BA06–BA09 have [library/codec evidence](../evidence/behaviour-library.md). BA10–BA18 have
 [selection evidence](../evidence/behaviour-selection.md).
-BA19/BA20 have automated [editor evidence](../evidence/behaviour-editor.md); the owner's visual verdict stays open. BA21–BA29 are the [W74 contract](../reference/W74.md)'s rows (D129); BA21/BA22 have focused [pure-function evidence](../evidence/w74-pure-function.md) (D135), BA29 [codec evidence](../evidence/w74-codec.md) (D136), BA26 [trait evidence](../evidence/w74-traits.md) (D137), BA23–BA25/BA28 [composition evidence](../evidence/w74-composition.md) (D138), BA27 a [timestep record](../evidence/w74-discharge.md). BA30–BA38 are the [perception contract](../reference/PERCEPTION.md)'s rows (D179), BA30 and BA37 with [codec evidence](../evidence/perception-codec.md) (D181), BA31 and BA32 with [motion evidence](../evidence/perception-motion.md) (D182), BA33 and BA34 with [lane-change evidence](../evidence/perception-lane.md) (D183), BA35 and BA36 with [action-delay evidence](../evidence/perception-delay.md) (D184), BA38 with [reaction-time discharge evidence](../evidence/perception-discharge.md) (D185); BA39–BA46 the [lateral contract](../reference/LATERAL.md)'s (D180), BA45 with [codec and compile evidence](../evidence/lateral-codec.md) and BA39 kept in it (D187), BA40–BA42 with [span and predicate evidence](../evidence/lateral-spans.md) (D188), BA43–BA44 with [motion evidence](../evidence/lateral-motion.md) (D189), BA46 with [display evidence](../evidence/lateral-display.md) (D203), BA47 with [zone evidence](../evidence/lateral-zones.md) (D202); BA48–BA53 the [lane-change duration contract](../reference/LANE_CHANGE_DURATION.md)'s (D204), with [duration evidence](../evidence/lane-change-duration.md) (D206). All later rows are pending. P0 writing a row does not pass it. Record exact fixture/input hashes, commit, compiler/flags, commands,
+BA19/BA20 have automated [editor evidence](../evidence/behaviour-editor.md); the owner's visual verdict stays open. BA21–BA29 are the [W74 contract](../reference/W74.md)'s rows (D129); BA21/BA22 have focused [pure-function evidence](../evidence/w74-pure-function.md) (D135), BA29 [codec evidence](../evidence/w74-codec.md) (D136), BA26 [trait evidence](../evidence/w74-traits.md) (D137), BA23–BA25/BA28 [composition evidence](../evidence/w74-composition.md) (D138), BA27 a [timestep record](../evidence/w74-discharge.md). BA30–BA38 are the [perception contract](../reference/PERCEPTION.md)'s rows (D179), BA30 and BA37 with [codec evidence](../evidence/perception-codec.md) (D181), BA31 and BA32 with [motion evidence](../evidence/perception-motion.md) (D182), BA33 and BA34 with [lane-change evidence](../evidence/perception-lane.md) (D183), BA35 and BA36 with [action-delay evidence](../evidence/perception-delay.md) (D184), BA38 with [reaction-time discharge evidence](../evidence/perception-discharge.md) (D185); BA39–BA46 the [lateral contract](../reference/LATERAL.md)'s (D180), BA45 with [codec and compile evidence](../evidence/lateral-codec.md) and BA39 kept in it (D187), BA40–BA42 with [span and predicate evidence](../evidence/lateral-spans.md) (D188), BA43–BA44 with [motion evidence](../evidence/lateral-motion.md) (D189), BA46 with [display evidence](../evidence/lateral-display.md) (D203), BA47 with [zone evidence](../evidence/lateral-zones.md) (D202); BA48–BA53 the [lane-change duration contract](../reference/LANE_CHANGE_DURATION.md)'s (D204), with [duration evidence](../evidence/lane-change-duration.md) (D206); BA54 with [gap evidence](../evidence/lane-change-gap.md) (D208); BA55 with [straddler evidence](../evidence/straddler-leaders.md) (D210); BA56–BA63 the [speed-control contract](../reference/SPEED_CONTROL.md)'s (D211), with [curve-speed evidence](../evidence/curve-speed.md) (D212); BA64–BA71 the [overtaking contract](../reference/OVERTAKING.md)'s (D213), with [kerb-bias evidence](../evidence/kerb-bias.md) (D215; BA69 records A53 still failing); BA72–BA78 the [commitment contract](../reference/COMMITMENT.md)'s (D218), with [commitment evidence](../evidence/commitment-deceleration.md) (D219); BA79–BA85 the [merge-deceleration contract](../reference/MERGE_DECELERATION.md)'s (D220), with [merge evidence](../evidence/merge-deceleration.md) (D221); BA86–BA96 the [speed-decision contract](../reference/SPEED_DECISIONS.md)'s (D222), with [speed-decision evidence](../evidence/speed-decisions.md) (D223); BA97–BA108 its reduced-speed area rows (D224), with [area evidence](../evidence/reduced-speed-areas.md) (D225); BA109 the shared acceleration cap (D226), with [curve evidence](../evidence/curve-speed.md) (D226). All later rows are pending. P0 writing a row does not pass it. Record exact fixture/input hashes, commit, compiler/flags, commands,
 assertions and platform in evidence when the corresponding slice lands.
 
 | Row | Fixture / forcing condition | Required outcome |
@@ -122,6 +122,104 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA51 | The next zone's line just under, then at, `travel` ahead on either route | Under: the change does not start; at: it starts; it never straddles into a zone |
 | BA52 | A change whose crossing would fall past the span's `fromEnd` | It does not start; a vehicle with `lateralTarget` set starts no second change |
 | BA53 | The target lane's space taken mid-change | The move is refused, `lateralSpeed` 0, `lateral` kept; it resumes when free; display draws the engine position (D203) |
+| BA54 | Mid-change, a vehicle on the target lane alongside, close ahead or close behind; a body already over the line with one ahead (D208) | The body does not cover that lane until rules 3–5 hold there; over the line, it steps back; no clamp, no braking beyond comfortable, no 2D overlap; a far leader does not slow the move |
+| BA55 | A body over a lane line, held there, with a slower car ahead on the lane it covers; the same car past that lane's segment end; with perceived leaders (D210) | It follows that car: no 2D overlap, no clamp; a centred body passes it |
+| BA56 | `curveLateralAcceleration` absent from every behaviour ([SPEED_CONTROL](../reference/SPEED_CONTROL.md) §2, D211) | CLI seed 42, the frozen baselines and all four shipped projects (seeds 42–51) byte-identical; the compiled scenario carries no radii |
+| BA57 | A 90° Connector of about 15 m radius (assert the compiled radius first), key 3 m/s² (`vC` ≈ 6.7 m/s), desired speed 13.9 m/s | Speed on that segment never exceeds `vC` + 1e-6 |
+| BA58 | The same fixture, approaching from the Link | At or below `vC` on entry; never brakes beyond `comfortableDeceleration` for the curve; no clamp |
+| BA59 | A straight Connector (collinear vertices) | No bound: travel time equals the key-absent run |
+| BA60 | A radius whose `vC` exceeds the desired speed | Nothing changes against the key-absent run |
+| BA61 | A follower behind a turner slowing for the curve; a leader slower than the bound | The follower follows with no clamp; the slower leader still governs |
+| BA62 | BA57 with the W74 model | The same bound holds |
+| BA63 | Codec: the key at schema 34; out of range; carried under schema 33; absent | Round-trips; `INVALID_BEHAVIOUR_PARAMETER` at the key's path; `EDIT_UNSUPPORTED_FIELD`; the document keeps its schema |
+| BA64 | `kerbLaneBias` absent everywhere ([OVERTAKING](../reference/OVERTAKING.md) §2, D213) | Byte-identical; every discretionary test unchanged |
+| BA65 | Left-hand traffic, two lanes, D95 keys and a bias; a free car on the passing lane, the kerb lane free (assert free mode first) | It returns to the kerb (left) lane |
+| BA66 | BA65 on right-hand traffic | It returns to the right lane |
+| BA67 | A car behind a slow heavy vehicle on the kerb lane | It passes on the passing side and returns after passing once D101's hold has run; no clamp |
+| BA68 | A car held on the passing lane by a slower car, the kerb lane free | It undertakes only when `g ≥ T + β`: not just below, yes just above |
+| BA69 | The lane-change lab's overtaking sweep with D95 keys and a bias | The flip-back rate is recorded against A53's 1 % cap (a measurement, not a pass) |
+| BA70 | Codec: the key at schema 35; out of range; carried under schema 34 | Round-trips; `INVALID_BEHAVIOUR_PARAMETER`; `EDIT_UNSUPPORTED_FIELD` |
+| BA71 | The bias without the D95 pair | `INCOMPLETE_DISCRETIONARY_BEHAVIOUR` at its path |
+| BA72 | `commitmentDeceleration` absent ([COMMITMENT](../reference/COMMITMENT.md), D218) | Byte-identical; the `commitment` group unchanged |
+| BA73 | Merge rule: minor 8 m short at 10 m/s, major 2.5 s off, key 4 | Held without the key, goes first with it; no clamp |
+| BA74 | BA73 at an authored crossing zone | The same |
+| BA75 | Key above the type's `maxDeceleration` (heavy vehicle, car) | Every tick equals the key-absent run |
+| BA76 | Red head with `amberDeceleration` and key 2 | Every tick equals the key-absent run |
+| BA77 | BA73 with a W74 behaviour | The same hold and go |
+| BA78 | Codec at schema 36 | Round-trips; 35 → `EDIT_UNSUPPORTED_FIELD`; out of range → `INVALID_BEHAVIOUR_PARAMETER` |
+| BA79 | Mandatory deceleration keys absent ([MERGE_DECELERATION](../reference/MERGE_DECELERATION.md), D220) | Byte-identical; `lanechange` and `discretionary` unchanged |
+| BA80 | A changer that would brake between comfortable and the own key | Refused without, accepted with; no clamp |
+| BA81 | A follower that would brake between comfortable and the trailing key | Accepted with the key on the changer's behaviour, refused with it on the follower's only |
+| BA82 | Each key at 15 | Every tick equals the key at `maxDeceleration` |
+| BA83 | A discretionary scene with both keys | Every tick equals the scene without them |
+| BA84 | BA80 with W74 | The same |
+| BA85 | Codec at schema 37 | Round-trips; 36 → `EDIT_UNSUPPORTED_FIELD`; out of range → `INVALID_BEHAVIOUR_PARAMETER` |
+| BA86 | No speed decision ([SPEED_DECISIONS](../reference/SPEED_DECISIONS.md), D222) | Byte-identical runs, outputs, checkpoints |
+| BA87 | Quantiles 0.2 / 0.8 pass `{car: 8–12}` | 8.8 / 11.2 |
+| BA88 | A type not listed | Unchanged |
+| BA89 | Lower and higher ranges | Comfortable braking, no clamp; accelerates |
+| BA90 | Lane change before / after the station | Applied once |
+| BA91 | Two decisions | The second replaces the first; quantile kept |
+| BA92 | Lone car through a slower decision | Piecewise free-flow time |
+| BA93 | Travel-time section on that road | Delay < 0.5 s |
+| BA94 | Checkpoint after a decision | Replays exactly |
+| BA95 | Codec at schema 38 | Round-trips; faults at their paths; 37 refused |
+| BA96 | Commands | Prune, split, reverse guard |
+| BA97 | No reduced-speed area ([SPEED_DECISIONS §7](../reference/SPEED_DECISIONS.md), D224) | Byte-identical; no `areaSpeed` in checkpoints |
+| BA98 | Inside an area | `min + q (max − min)`; desired speed untouched |
+| BA99 | Anticipation | Area speed reached by its start at its deceleration (else comfortable), no clamp |
+| BA100 | Leaving | Desired speed restored |
+| BA101 | By lane | Uncovered lane unaffected; lane change in applies, out releases |
+| BA102 | Type not listed | Unaffected |
+| BA103 | Decision inside an area | Minimum binds; quantile shared |
+| BA104 | Lone car through an area | Piecewise free-flow time with the area piece |
+| BA105 | Travel-time section inside an area | Delay < 0.5 s |
+| BA106 | Checkpoint inside an area | `areaSpeed` carried; replays exactly |
+| BA107 | Codec at schema 39 | Round-trips; faults at their paths; overlap refused; 38 refused |
+| BA108 | Commands | Prune, split with lanes, reverse and lane-drop guards |
+| BA109 | A vehicle held by the curve bound ([SPEED_CONTROL §4](../reference/SPEED_CONTROL.md), D226) | Each tick adds at most the trapezoid of its speeds |
+| BA110 | No desired-speed curve ([SPEED_DISTRIBUTION](../reference/SPEED_DISTRIBUTION.md), D228) | Draws as `min + u·(max − min)`; shipped outputs byte-identical |
+| BA111 | Two-point curve | Bit-identical to no curve |
+| BA112 | Three-point curve | Empirical share at the middle point within 0.01; random stream unchanged |
+| BA113 | Curve and a decision | The share is mapped linearly into the decision's range |
+| BA114 | Live retune of a curved range | Each vehicle keeps its share |
+| BA115 | Codec at schema 40 | Round-trips; faults at their paths; 39 refused |
+| BA116 | Type dialog | Curve written with its ends; untick removes; one Undo step |
+| BA117 | No Stop dwell key ([STOP_DWELL](../reference/STOP_DWELL.md), D230) | Rests the tick plus one; shipped outputs byte-identical |
+| BA118 | 2 s at dt 0.1 | Rests 20 whole ticks, then crosses |
+| BA119 | 2 s at dt 0.1, 0.25, 0.5 | Same dwell within one tick |
+| BA120 | Below one tick | Rests one tick |
+| BA121 | Blocked gap longer than the dwell | Still held; no further dwell once it opens |
+| BA122 | Behaviour by road | The minor approach's behaviour sets the dwell |
+| BA123 | Codec at schema 41 and editor row | Round-trips; faults at their paths; 40 refused |
+| BA124 | No `kerbLanes` key ([LANE_PREFERENCE](../reference/LANE_PREFERENCE.md), D233) | Splits and shipped outputs byte-identical |
+| BA125 | `kerbLanes: 1` on 2 and 3 lanes | The type enters on lane 0; other types keep the equal split |
+| BA126 | `kerbLanes: 2` on 3 lanes | ½, ½, 0 |
+| BA127 | Authored `laneShares` | Renormalised over allowed lanes; all-zero → equal |
+| BA128 | Route needing a far lane | Enters on the kerb lane, changes as a stub, arrives |
+| BA129 | Routeless input | Same rule on its paths |
+| BA130 | Codec at schema 42 and dialog row | Round-trips; faults at their paths; 41 refused |
+| BA131 | No `driverFactorSpread` key ([DRIVER_FACTOR](../reference/DRIVER_FACTOR.md), D235) | Factors and shipped outputs byte-identical |
+| BA132 | Spread 0 | Every factor 0.5; arrivals and desired speeds unchanged |
+| BA133 | Spread 0.3 | Sample deviation near 0.3, mean near 0.5, inside [0, 1] |
+| BA134 | Spread 0.15 | Byte-identical to no key |
+| BA135 | Key on one type's behaviour only | The other type keeps 0.15 |
+| BA136 | Segment behaviour with another spread | The factor is not redrawn |
+| BA137 | Codec at schema 43 and dialog row | Round-trips; faults at their paths; 42 refused |
+| BA138 | No red-running keys ([RED_RUNNING](../reference/RED_RUNNING.md), D237) | Red holds as AMBER §1; shipped outputs byte-identical |
+| BA139 | Runner meets red onset, time 2 s | Not held, crosses, one event; held without the keys |
+| BA140 | Runner arrives after the window | Held |
+| BA141 | Runner standing at red onset | Stays until green |
+| BA142 | The runner draw | About the share; the same id, the same answer |
+| BA143 | The random stream | Unchanged with the keys |
+| BA144 | Behaviour by road | Only heads under a behaviour with the keys |
+| BA145 | Codec at schema 44, outputs, dialog rows | Round-trips; pair and ranges at their paths; 43 refused; `redRunning` only with the keys |
+| BA146 | Braking to a held line, no clamp today ([GIVE_WAY_STOP](../reference/GIVE_WAY_STOP.md), D239) | Trajectory unchanged |
+| BA147 | Yield line closes on a creeping minor | Stops at the line, no clamp, ≤ maximum |
+| BA148 | Priority-rule line | The same |
+| BA149 | Stop zone | The same |
+| BA150 | Stop beyond the maximum | Still clamped |
+| BA151 | Nearer standing vehicle leader | Unchanged |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

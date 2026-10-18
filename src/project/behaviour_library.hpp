@@ -23,6 +23,20 @@ void rejectPerceptionBefore32(const Json& document);
 // M3.7 (D187, LATERAL.md §9): the same for the lateral keys at schema 33.
 bool ownsLateralBehaviour(const ProjectDocument&);
 void rejectLateralBefore33(const Json& document);
+bool ownsCurveBehaviour(const ProjectDocument&);
+void rejectCurveBefore34(const Json& document);
+bool ownsMandatoryBehaviour(const ProjectDocument&); // B-3 (D221): schema 37
+void rejectMandatoryBefore37(const Json& document);
+bool ownsStopDwellBehaviour(const ProjectDocument&); // B-8 (D231): schema 41
+void rejectStopDwellBefore41(const Json& document);
+bool ownsDriverFactorSpread(const ProjectDocument&); // B-4 (D236): schema 43
+void rejectDriverFactorSpreadBefore43(const Json& document);
+bool ownsRedRunning(const ProjectDocument&); // B-9 (D238): schema 44
+void rejectRedRunningBefore44(const Json& document);
+bool ownsCommitmentBehaviour(const ProjectDocument&); // B-2 (D219): schema 36
+void rejectCommitmentBefore36(const Json& document);
+bool ownsKerbBehaviour(const ProjectDocument&);
+void rejectKerbBefore35(const Json& document);
 // Schema 21 and later: reads the library and rejects unknown keys in every owned catalog entry.
 void parseBehaviourLibrary(const Json& definition, AuthoringDefinition&);
 // Adds the schema-21 keys to an already written definition: names, the explicit model tag on

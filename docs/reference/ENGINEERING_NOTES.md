@@ -48,6 +48,7 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   Preserve the buffer, D50 setback, maximum deceleration and genuine emergency reporting.
   Post-entry lane changes can introduce a new leader; the source guard does not cover that.
   Do not claim clamp-free or close M0/M3 owner observations.
+  D232 traced the zone-line cases: [give-way line clamps](../evidence/give-way-line-clamps.md).
 - **Per-lane shares (D32; one weight per entry-Link lane since D71).** No canvas gesture sets one.
   The input table row shows set weights since 2026-10-03 (`laneSplit`).
 - **Keyboard-only equivalents** of the route and vehicle-input gestures (M1.25/M1.26).
@@ -64,6 +65,10 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   gap and visibility.
 - **Split targetStanding (measurement only).** Is the target lane standing at its own red, or in
   a queue spilling back? Add it to `--wait-causes` only when a behaviour row needs it.
+- **Lateral cost (D209, [evidence](../evidence/lateral-perf.md)).** Switched on, the lab's cost was
+  `occupiedSpans`' lateral copies and `moveLaterally` rebuilding every body each tick. Build bodies
+  only near movers; skip the neighbour loop inside a precomputed clear band; keep `lateralCounts`
+  inline. Next, if lateral keys ship on a large network: `followerFilter`'s `frontPart` per vehicle.
 - **Engine cost after D90.** Linux/GCC 15.2 callgrind (2026-10-01): lane-change work ≈3%; the
   9.1% state copy is gone (D91).
   - Before any new baseline replaces 4.35G, run a **same-compiler** callgrind at `b472e05`,
@@ -130,6 +135,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 
 
 ## Do not retry without a new measurement
+
+- **A kinematic floor on prototype braking behind a standing leader (D227, 2026-10-17, `a6f5af6`):**
+  in braking mode with `leader.speed == 0`, take at least `v²/(2 · gap)`. Over four-leg seeds 42–81
+  the shipped JSON stayed byte-identical. With 30 km/h cars it removed the two red-onset clamps
+  (seeds 47, 68) but added a creep clamp in seed 56 (0.002 m/s at the line). It changes the
+  prototype's braking law, so it would need its own rows and the owner's choice.
 
 - **Removing the M3.2.8b courtesy (D71):** without cooperation M2.6 was 61.6 s with a 404 s wait.
 - **`comfortableDeceleration` for commitment (D69):** it clamped the major road.

@@ -88,6 +88,21 @@ jobs:
           New-Item -ItemType Directory -Force .vcpkg-cache | Out-Null
           vcpkg install nlohmann-json:x64-windows proj:x64-windows
           "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin" | Out-File $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Install Thai line breaking
+        # Qt 6.5 finds Thai line breaks through libthai, loaded at run time as thai.dll. Without it a
+        # Thai sentence breaks only at its spaces and held the narrow Properties panel at 273 px (D245).
+        # vcpkg has no libthai port; the runner's MSYS2 has one. Its libdatrie keeps its own name.
+        run: |
+          C:\msys64\usr\bin\pacman.exe -Sy --noconfirm --needed mingw-w64-ucrt-x86_64-libthai
+          $thai = "$env:GITHUB_WORKSPACE\libthai"
+          New-Item -ItemType Directory -Force $thai | Out-Null
+          Copy-Item C:\msys64\ucrt64\bin\libthai-0.dll "$thai\thai.dll"
+          Copy-Item C:\msys64\ucrt64\bin\libdatrie-1.dll, C:\msys64\ucrt64\share\libthai\thbrk.tri $thai
+          if (Get-Command objdump -ErrorAction SilentlyContinue) {
+            foreach ($dll in 'thai.dll', 'libdatrie-1.dll') { objdump -p "$thai\$dll" | Select-String 'DLL Name' }
+          }
+          $thai | Out-File $env:GITHUB_PATH -Append -Encoding utf8
+          "LIBTHAI_DICTDIR=$thai" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Install ccache
         run: choco install ccache -y --no-progress
       - uses: actions/cache@v4

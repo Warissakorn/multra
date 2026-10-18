@@ -9,10 +9,10 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Product scope, stack, naming and owner gates | D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
-| Demand and routing | D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
-| Signals, conflicts, Stop/Yield and queues | D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
-| Following, commitment and lane changes | D206, D204, D203, D202, D189, D188, D187, D186, D185, D184, D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
-| UI, gestures, display and results | D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
+| Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
+| Signals, conflicts, Stop/Yield and queues | D241, D240, D239, D238, D237, D232, D231, D230, D227, D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
+| Following, commitment and lane changes | D241, D240, D239, D238, D237, D236, D235, D234, D233, D232, D231, D230, D229, D228, D227, D226, D225, D224, D223, D222, D221, D220, D219, D218, D217, D216, D215, D214, D213, D212, D211, D210, D209, D208, D207, D206, D204, D203, D202, D189, D188, D187, D186, D185, D184, D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
+| UI, gestures, display and results | D245, D244, D243, D242, D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
 | Performance, checks and documentation | D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
 
 ## Reading a historical choice
@@ -201,3 +201,80 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D205](RECORD.md#d205) — Windows-only UI reds: the 3 px lane threshold allows a 1e-9 rounding; the Properties label column is shared by every form and widens to an unbreakable word up to a quarter wider.
 
 [D206](RECORD.md#d206) — M3.4 slice 1: switched on, an accepted lane change sets `lateralTarget` and remaps at the crossing; window rule without the body length; a change under way holds its target place; no rate, instantaneous; switched-on cost owed an engine round.
+
+[D207](RECORD.md#d207) — a swapping pair of stubs at shared dead ends: the rear one (level: the higher id) holds back behind the front one's target place, at comfortable deceleration; shipped multi-lane outputs change.
+
+[D208](RECORD.md#d208) — mid-change: a lateral move that would cover another lane waits at the line until rules 3–5 hold there, in route distances; a body over the line steps back.
+
+[D209](RECORD.md#d209) — switched-on engine round: bodies only near movers, a precomputed clear band for lateral copies, `lateralCounts` inline; byte-identical, +3.0–3.5 % Ir against `5847cb9`.
+
+[D210](RECORD.md#d210) — a straddler also follows the leaders on the lanes its body covers, walking each through its only successor; `closestVehicle` moves to `leaders.cpp`; switched-off byte-identical.
+
+[D211](RECORD.md#d211) — M3.6 curve speed contract (docs only): behaviour key `curveLateralAcceleration`, radius from the Connector polyline, bound `sqrt(a·R)` anticipated at comfortable deceleration; delay against desired speed.
+
+[D212](RECORD.md#d212) — M3.6 slice 1: curve speed implemented (schema 34, `Segment::curvature`, `speedTarget` in the cap); `closestVehicle` inline again, recovering D210's switched-off cost.
+
+[D213](RECORD.md#d213) — behaviour configurability tiers (BEHAVIOUR_PARAMETERS) and the keep-to-kerb contract (OVERTAKING, `kerbLaneBias`, docs only); the editor's W74 save keeps the curve key.
+
+[D214](RECORD.md#d214) — B19 decided on the owner's delegation: D213's tiers stand (50 km/h lateral reference fixed); tier B ordered by effect on Thai study outputs.
+
+[D215](RECORD.md#d215) — keep-to-kerb slice 1: `kerbLaneBias` (schema 35), `towardKerb` from lane indices, return at `T − β`; A53 still fails, no D95 value ships.
+
+[D216](RECORD.md#d216) — settings scope: project, catalog default, vehicle type, driver behaviour (local by road), network object, per vehicle; the more local wins.
+
+[D217](RECORD.md#d217) — behaviour-key exposure: perception, lateral (one box) and curve are rows in the behaviour editor and the Lab panel; Lab Apply writes them back.
+
+[D218](RECORD.md#d218) — commitment deceleration contract (COMMITMENT, B-2): `commitmentDeceleration` at give-way lines only, the lower of it and the type's maximum.
+
+[D219](RECORD.md#d219) — commitment deceleration implemented (schema 36, editor row); a low value lowers T-junction delay and raises clamps, so no value ships.
+
+[D220](RECORD.md#d220) — mandatory lane-change deceleration contract (MERGE_DECELERATION, B-3): own and trailing keys, the trailing one read from the changer.
+
+[D221](RECORD.md#d221) — mandatory lane-change deceleration implemented (schema 37, editor rows); the explicit maximum cap dropped as dead code; shipped projects barely move.
+
+[D222](RECORD.md#d222) — desired-speed decision contract (SPEED_DECISIONS, B-6): per-type ranges at a Link station, quantile kept, delay against the speed in force; reduced-speed areas contract only.
+
+[D223](RECORD.md#d223) — desired-speed decisions implemented (schema 38, editor tab via selected Link); no decision byte-identical; one red-onset clamp recorded.
+
+[D224](RECORD.md#d224) — reduced-speed area contract (SPEED_DECISIONS §7): per-type temporary speed over a Link stretch, by lane id, anticipated at a per-area deceleration; delay not counted inside.
+
+[D225](RECORD.md#d225) — reduced-speed areas implemented (schema 39, editor tab with lane boxes); no area byte-identical; +0.77 % Ir recorded.
+
+[D226](RECORD.md#d226) — acceleration capped while a curve or area bound holds (row BA109); shipped runs byte-identical, same Ir.
+
+[D227](RECORD.md#d227) — D223's red-onset clamp traced: AMBER §1's red rule with a slow arrival and the prototype's soft final braking, not the decision code; a braking floor measured, not adopted.
+
+[D228](RECORD.md#d228) — desired-speed distribution curve contract (SPEED_DISTRIBUTION, B-5): piecewise cumulative points on the vehicle type, same draw, the share as quantile, schema 40.
+
+[D229](RECORD.md#d229) — desired-speed distribution curve implemented (schema 40, type dialog, Lab fit); shipped runs byte-identical, +0.06 % Ir.
+
+[D230](RECORD.md#d230) — Stop dwell time contract (STOP_DWELL, B-8): `stopDwellTime` on the driver behaviour, whole ticks of at least that time, absent = today, schema 41.
+
+[D231](RECORD.md#d231) — Stop dwell time implemented (schema 41, behaviour-dialog row); shipped runs byte-identical, +0.25–0.41 % Ir; Stop-line clamps recorded.
+
+[D232](RECORD.md#d232) — D231's Stop-line clamps traced (no code change): a slow move-off meets a closing gap at any give-way line; booked in M3.2.8a.1.
+
+[D233](RECORD.md#d233) — lane preference by vehicle type contract (LANE_PREFERENCE, B-7): `kerbLanes` on the type, entry on the kerb-most N lanes, schema 42.
+
+[D234](RECORD.md#d234) — lane preference by vehicle type implemented (schema 42, type-dialog row); shipped runs byte-identical; not at destination-chosen entries.
+
+[D235](RECORD.md#d235) — driver-factor spread contract (DRIVER_FACTOR, B-4): `driverFactorSpread` on the behaviour, the standard deviation of the factor, schema 43.
+
+[D236](RECORD.md#d236) — driver-factor spread implemented (schema 43, behaviour-dialog row); shipped runs byte-identical; mean delay unmoved, clamps rise with a wide spread.
+
+[D237](RECORD.md#d237) — red-light running contract (RED_RUNNING, B-9): a share of drivers may run in the first seconds of red while moving; counted, schema 44.
+
+[D238](RECORD.md#d238) — red-light running implemented (schema 44, two dialog rows, a counted event); shipped runs byte-identical; tier B complete.
+
+[D239](RECORD.md#d239) — give-way line stop contract (GIVE_WAY_STOP, M3.2.8a.1): a feasible stop at a just-closed give-way line brakes to the line instead of clamping.
+
+[D240](RECORD.md#d240) — give-way line stop implemented: the shipped Yield T-junction's 6 clamps go with delays unchanged; other outputs byte-identical.
+
+[D241](RECORD.md#d241) — M2.6's red-running clamps traced (no code change): a merge clamp reached through a run, and a follower behind a runner held again; none is a red-head hold.
+
+[D242](RECORD.md#d242) — a Properties form stacks by the width its scroll area shows, not its page's (Windows' wide action button kept narrow rows beside their labels).
+
+[D243](RECORD.md#d243) — text buttons above the Properties pages elide to an ellipsis, so an unwrappable label no longer holds the floating panel wide (Windows' toggle did).
+
+[D244](RECORD.md#d244) — a wrapped Properties text asks only for its longest word; on Windows the effective-behaviour text asked 257 px and held the narrow panel at 273 px.
+[D245](RECORD.md#d245) — Windows ships libthai (`thai.dll`, `libdatrie-1.dll`, `thbrk.tri`): without it Qt broke a Thai sentence only at its spaces, which held the narrow panel at 273 px.

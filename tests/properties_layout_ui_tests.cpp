@@ -1,6 +1,7 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/shell/editor_interaction.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
+#include <QAbstractScrollArea>
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
@@ -9,12 +10,16 @@
 #include <QFrame>
 #include <QLabel>
 #include <QLineEdit>
+#include <QRegularExpression>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QStandardPaths>
 #include <QTabWidget>
+#include <QTabBar>
 #include <QTest>
+#include <QTextBoundaryFinder>
 #include <QToolButton>
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <vector>
@@ -61,10 +66,33 @@ void aligned(EditorWindow& window,const char* where,bool beside=true) {
                     const auto field=QRect(p.field->mapTo(body,QPoint()),p.field->size());
                     if(field.top()>=label.bottom())continue; // wrapped below its label
                     ++rows;
+                    if(!beside) { // D242: Windows is the only host where this has failed, so name what stayed beside
+                        auto* host=form->parentWidget();auto* scroll=qobject_cast<QAbstractScrollArea*>(host->parentWidget()?host->parentWidget()->parentWidget():nullptr);
+                        std::cerr<<where<<": "<<p.field->objectName().toStdString()<<" beside its label; label x "<<label.left()<<" w "<<label.width()
+                                 <<", field x "<<field.left()<<" w "<<field.width()<<", host "<<host->width()<<", policy "<<form->rowWrapPolicy()
+                                 <<", viewport "<<(scroll?scroll->viewport()->width():-1)<<'\n';
+                    }
                     require(field.width()>=80,"A field beside its label is squeezed");
                     if(x<0)x=field.left();
                     else if(std::abs(field.left()-x)>1){std::cerr<<where<<": "<<p.field->objectName().toStdString()<<" at "<<field.left()<<", column at "<<x<<'\n';require(false,"Properties fields do not share one column");}
                 }
+            }
+        }
+        if(!beside&&rows>0) { // D243: on Windows the panel stayed wider than its narrow fixture; name what holds it
+            auto* dock=item<QDockWidget>(window,"editorInspectorDock");
+            std::cerr<<where<<": dock "<<dock->width()<<" (minimum "<<dock->minimumWidth()<<"), body "<<body->width()<<" (hint "<<body->minimumSizeHint().width()
+                     <<"), tabs hint "<<tabs->minimumSizeHint().width()<<", tab bar hint "<<tabs->tabBar()->minimumSizeHint().width()<<'\n';
+            std::vector<std::pair<int,QWidget*>> widest;
+            for(auto* w:body->findChildren<QWidget*>())if(w->isVisible()&&!tabs->isAncestorOf(w))widest.push_back({std::max(w->minimumSizeHint().width(),w->minimumWidth()),w});
+            std::sort(widest.begin(),widest.end(),[](const auto& a,const auto& b){return a.first>b.first;});
+            for(std::size_t i=0;i<widest.size()&&i<6;++i) {
+                auto* w=widest[i].second;
+                std::cerr<<"  "<<widest[i].first<<" "<<w->metaObject()->className()<<" "<<w->objectName().toStdString()<<" (hint "<<w->minimumSizeHint().width()
+                         <<", set "<<w->minimumWidth()<<", width "<<w->width()<<", policy "<<w->sizePolicy().horizontalPolicy();
+                if(auto* label=qobject_cast<QLabel*>(w))
+                    std::cerr<<", QLabel "<<label->QLabel::minimumSizeHint().width()<<", wrap "<<label->wordWrap()<<", format "<<label->textFormat()
+                             <<", text \""<<label->text().left(80).toStdString()<<"\"";
+                std::cerr<<")\n";
             }
         }
         require(beside?rows>0:rows==0,beside?"No Properties row sits beside its label":"A narrow form kept a field beside its label");
@@ -131,7 +159,26 @@ int main(int argc,char** argv) {
         dock->setFloating(true);dock->resize(200,700);settle();
         require(dock->width()<=220,"Narrow fixture did not take effect");
         for(int lang:{0,1}) {
-            language->setCurrentIndex(lang);settle();aligned(window,"narrow",false);
+            language->setCurrentIndex(lang);settle();
+            // D245: Qt finds Thai line breaks through libthai. Without it (Windows CI before D245) a Thai sentence
+            // breaks only at its spaces: the effective-behaviour text asked 257 px and held the panel at 273 px.
+            if(lang==1) {
+                QTextBoundaryFinder breaks(QTextBoundaryFinder::Line,QString::fromUtf8("คลังพฤติกรรมแก้ไขแคตตาล็อกของโปรเจกต์เอง"));
+                int inner=0;while(breaks.toNextBoundary()>0&&breaks.position()<breaks.string().size())++inner;
+                require(inner>0,"Qt has no Thai line breaking here (libthai not found, or LIBTHAI_DICTDIR wrong)");
+            }
+            // D244: a wrapped text above the pages asks only for its longest word; on Windows the effective-behaviour
+            // text asked 257 px and held the panel at 273 px, so the top forms kept two columns.
+            for(auto* text:dock->widget()->findChildren<QLabel*>())
+                if(text->isVisible()&&text->wordWrap()&&!item<QTabWidget>(window,"editorPropertyTabs")->isAncestorOf(text)&&!text->property("editorFormLabel").toBool()) {
+                    int word=0;for(const auto& part:text->text().split(QRegularExpression("\\s+"),Qt::SkipEmptyParts))word=std::max(word,text->fontMetrics().horizontalAdvance(part));
+                    if(text->minimumSizeHint().width()>word+8) {
+                        std::cerr<<text->objectName().toStdString()<<": minimum "<<text->minimumSizeHint().width()<<", QLabel "<<text->QLabel::minimumSizeHint().width()
+                                 <<", set "<<text->minimumWidth()<<", longest word "<<word<<'\n';
+                        require(false,"A wrapped Properties text asks for more than its longest word");
+                    }
+                }
+            aligned(window,"narrow",false);
             auto* tabs=item<QTabWidget>(window,"editorPropertyTabs");
             for(int t=0;t<tabs->count();++t) {
                 tabs->setCurrentIndex(t);settle();
@@ -143,6 +190,40 @@ int main(int argc,char** argv) {
                         require(w->minimumSizeHint().width()<=page->viewport()->width(),"A narrow Properties label or field is wider than its page");
             }
             tabs->setCurrentIndex(0);settle();
+        }
+        // D242: on Windows a page's widest action button made the Link page wide enough for two columns
+        // (Linux: 248 px, 8 px short of it), so its form kept rows beside their labels in a 188 px viewport.
+        // The forcing first: a longer button text makes the page that wide.
+        {
+            language->setCurrentIndex(0);settle();
+            auto* addPoint=item<QAction>(window,"editorAddLinkPoint");
+            auto* page=qobject_cast<QScrollArea*>(item<QTabWidget>(window,"editorPropertyTabs")->widget(0));
+            const auto margins=page->widget()->layout()->contentsMargins();
+            const int twoColumns=2*editorDesign::formLabelWidth+margins.left()+margins.right();
+            for(int n=1;page->widget()->minimumSizeHint().width()<twoColumns+40;++n){addPoint->setText(QString(n,QChar('M')));settle();}
+            // Only the viewport narrows: from about 290 px, two columns' worth, to 188, with the page at its minimum.
+            dock->resize(300,700);settle();const int before=page->widget()->width();
+            require(page->viewport()->width()>=twoColumns&&before>page->viewport()->width(),"Setup: the wide viewport does not show two columns");
+            require(linkForm->rowWrapPolicy()==QFormLayout::WrapLongRows,"A viewport wide enough for two columns kept the Link form stacked");
+            dock->resize(200,700);settle();
+            require(page->widget()->width()==before&&page->widget()->width()>page->viewport()->width(),"Setup: the Link page is not wider than its viewport");
+            aligned(window,"wide page",false);
+            language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
+            require(page->widget()->minimumSizeHint().width()<twoColumns,"Setup: the button text was not restored");
+        }
+        // D243, the Windows run: the appearance toggle's text, which cannot wrap, is wider there, so the floating
+        // panel could not narrow below about 289 px and its top forms kept two columns (the D242 diagnostic:
+        // host 273 px, no viewport). A long text now elides instead. The forcing first: the text alone is that wide.
+        {
+            language->setCurrentIndex(0);settle();
+            auto* toggle=item<QToolButton>(window,"editorAppearanceToggle");auto* appearance=item<QAction>(window,"editorAppearance");
+            for(int n=1;toggle->sizeHint().width()<2*editorDesign::formLabelWidth+40;++n){appearance->setText(QString(n,QChar('M')));settle();}
+            dock->resize(200,700);settle();
+            require(dock->width()<=220,"A long top-group button widened the narrow panel");
+            require(toggle->width()<toggle->sizeHint().width(),"The long toggle text did not shrink to the panel");
+            aligned(window,"long toggle",false);
+            language->setCurrentIndex(1);settle();language->setCurrentIndex(0);settle(); // the table restores the text
+            require(toggle->sizeHint().width()<2*editorDesign::formLabelWidth,"Setup: the toggle text was not restored");
         }
         dock->setFloating(false);language->setCurrentIndex(0);window.resize(1360,860);settle();
         // Immediate settings and Apply sections stay apart, divided, and keep their commit triggers.

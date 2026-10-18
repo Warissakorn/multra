@@ -51,7 +51,7 @@ void EditorWindow::buildBehaviourInspector(QVBoxLayout* layout) {
     layout->addLayout(form);
     behaviourType_ = new QComboBox(this); label(form, "editorBehaviourType", behaviourType_);
     // Every selected Link and Connector at once: the one property edit that acts on the selection.
-    auto* apply = new QToolButton(this); apply->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    auto* apply = new ElidingToolButton(this); apply->setToolButtonStyle(Qt::ToolButtonTextOnly);
     apply->setDefaultAction(action("editorApplyBehaviourType", {}, [this] {
         const auto roads = selectedRoads();
         const auto chosen = behaviourType_->currentData().toString().toStdString();

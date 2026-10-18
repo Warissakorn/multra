@@ -35,6 +35,12 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     if (d.definition) for (const auto& decision : d.definition->routingDecisions)
         if (decision.linkId == id && decision.position && *decision.position >= distance - .1 && *decision.position < distance + .1)
             throw std::invalid_argument("EDIT_SPLIT_CONTROL");
+    if (d.definition) for (const auto& speed : d.definition->speedDecisions) // B-6, as a routing decision
+        if (speed.linkId == id && speed.station >= distance - .1 && speed.station < distance + .1)
+            throw std::invalid_argument("EDIT_SPLIT_CONTROL");
+    if (d.definition) for (const auto& area : d.definition->reducedSpeedAreas) // B-6 §7: a cut inside an area
+        if (area.linkId == id && area.from < distance + .1 && area.to > distance - .1)
+            throw std::invalid_argument("EDIT_SPLIT_CONTROL");
     detail::checkSplitControls(d.network, id, distance); // M3.2.2b: refuse before changing anything
     auto downstream = original;
     downstream.id = allocateId(d, "link");
@@ -113,6 +119,13 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     }
     if (d.definition) {
         auto& def = *d.definition;
+        for (auto& speed : def.speedDecisions)
+            if (speed.linkId == id && speed.station >= distance + .1) { speed.linkId = downstream.id; speed.station -= distance + .1; }
+        for (auto& area : def.reducedSpeedAreas) {
+            if (area.linkId != id || area.from < distance + .1) continue;
+            area.linkId = downstream.id; area.from -= distance + .1; area.to -= distance + .1;
+            for (auto& lane : area.laneIds) if (const auto to = laneMap.find(lane); to != laneMap.end()) lane = to->second;
+        }
         std::map<std::string, std::string> suffixes;
         for (auto& decision : def.routingDecisions) {
             if (decision.linkId != id || !decision.position || *decision.position < distance + .1) continue;

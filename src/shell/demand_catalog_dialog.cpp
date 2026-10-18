@@ -8,12 +8,15 @@
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
+#include <cmath>
 namespace trafficsim {
 namespace {
 QDoubleSpinBox* number(QWidget* parent,const char* name,double value) {
@@ -43,6 +46,28 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
     add("catalogSpeedMin",staged.desiredSpeed.min);add("catalogSpeedMax",staged.desiredSpeed.max);
     add("catalogAcceleration",staged.maxAcceleration);add("catalogComfortableDeceleration",staged.comfortableDeceleration);
     add("catalogMaxDeceleration",staged.maxDeceleration);
+    // B-5 (SPEED_DISTRIBUTION §4, D229): a cumulative curve; when ticked its ends are min and max.
+    auto* curveOn=new QCheckBox(text("catalogSpeedCurve"),&dialog);curveOn->setObjectName("editorCatalogSpeedCurveOn");
+    curveOn->setChecked(!type.desiredSpeed.curve.empty());form->addRow(curveOn);
+    auto* curve=new QTableWidget(0,2,&dialog);curve->setObjectName("editorCatalogSpeedCurve");
+    curve->setHorizontalHeaderLabels({text("catalogCurveSpeed"),text("catalogCurveShare")});form->addRow(curve);
+    const auto addPoint=[curve](int at,double speed,double share){
+        curve->insertRow(at);
+        curve->setItem(at,0,new QTableWidgetItem(QString::number(speed,'g',12)));curve->setItem(at,1,new QTableWidgetItem(QString::number(share,'g',12)));
+    };
+    if(type.desiredSpeed.curve.empty()){addPoint(0,type.desiredSpeed.min,0);addPoint(1,type.desiredSpeed.max,100);}
+    for(const auto& p:type.desiredSpeed.curve)addPoint(curve->rowCount(),p.speed,p.share*100);
+    auto* addRow=new QPushButton(text("catalogCurveAdd"),&dialog);addRow->setObjectName("editorCatalogSpeedCurveAdd");
+    auto* removeRow=new QPushButton(text("catalogCurveRemove"),&dialog);removeRow->setObjectName("editorCatalogSpeedCurveRemove");
+    auto* rowButtons=new QHBoxLayout;rowButtons->addWidget(addRow);rowButtons->addWidget(removeRow);form->addRow(rowButtons);
+    // A new point halfway between the selected one and the next, so the table stays in order.
+    QObject::connect(addRow,&QPushButton::clicked,&dialog,[curve,addPoint]{
+        const auto cell=[curve](int r,int c){return curve->item(r,c)?curve->item(r,c)->text().toDouble():0.;};
+        const int last=curve->rowCount()-1;if(last<0){addPoint(0,0,0);return;}
+        const int at=std::clamp(curve->currentRow(),0,std::max(0,last-1)),next=std::min(at+1,last);
+        addPoint(at+1,(cell(at,0)+cell(next,0))/2,(cell(at,1)+cell(next,1))/2);curve->setCurrentCell(at+1,0);
+    });
+    QObject::connect(removeRow,&QPushButton::clicked,&dialog,[curve]{if(curve->currentRow()>=0)curve->removeRow(curve->currentRow());});
     auto* behaviour=new QComboBox(&dialog);behaviour->setObjectName("editorCatalogBehaviour");
     for(const auto& b:behaviours)behaviour->addItem(QString::fromStdString(b.id));
     behaviour->setCurrentIndex(behaviour->findText(QString::fromStdString(staged.behaviourId)));form->addRow(text("catalogBehaviour"),behaviour);
@@ -51,11 +76,29 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
     auto* wheelbase=number(&dialog,"catalogWheelbase",dimensions.wheelbase);form->addRow(text("catalogWheelbase"),wheelbase);
     auto* front=number(&dialog,"catalogFrontOverhang",dimensions.frontOverhang);form->addRow(text("catalogFrontOverhang"),front);
     auto* rear=number(&dialog,"catalogRearOverhang",dimensions.rearOverhang);form->addRow(text("catalogRearOverhang"),rear);
-    const auto sync=[&]{for(auto* f:{wheelbase,front,rear})f->setEnabled(axles->isChecked());};
-    QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
+    // B-7 (LANE_PREFERENCE §4, D234): enters only on the kerb-most N lanes when ticked.
+    auto* kerbOn=new QCheckBox(text("catalogKerbLanes"),&dialog);kerbOn->setObjectName("editorCatalogKerbLanesOn");
+    kerbOn->setChecked(type.kerbLanes.has_value());
+    auto* kerb=new QSpinBox(&dialog);kerb->setObjectName("editorCatalogKerbLanes");kerb->setRange(1,16);kerb->setValue(type.kerbLanes.value_or(1));
+    form->addRow(kerbOn,kerb);
+    const auto sync=[&]{
+        kerb->setEnabled(kerbOn->isChecked());
+        for(auto* f:{wheelbase,front,rear})f->setEnabled(axles->isChecked());
+        for(const auto& f:fields)if(f.destination==&staged.desiredSpeed.min || f.destination==&staged.desiredSpeed.max)f.spin->setEnabled(!curveOn->isChecked());
+        for(QWidget* w:std::initializer_list<QWidget*>{curve,addRow,removeRow})w->setEnabled(curveOn->isChecked());
+    };
+    QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);QObject::connect(curveOn,&QCheckBox::toggled,&dialog,sync);
+    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
     if(dialog.exec()!=QDialog::Accepted)return false;
     for(const auto& f:fields)*f.destination=value(f.spin);
+    staged.desiredSpeed.curve.clear();
+    if(curveOn->isChecked()) {
+        const auto cell=[curve](int r,int c){bool ok=false;const double v=curve->item(r,c)?curve->item(r,c)->text().toDouble(&ok):0;return ok?v:NAN;};
+        for(int r=0;r<curve->rowCount();++r)staged.desiredSpeed.curve.push_back({cell(r,0),cell(r,1)/100});
+        if(!staged.desiredSpeed.curve.empty()){staged.desiredSpeed.min=staged.desiredSpeed.curve.front().speed;staged.desiredSpeed.max=staged.desiredSpeed.curve.back().speed;}
+    }
     staged.behaviourId=behaviour->currentText().toStdString();
+    staged.kerbLanes=kerbOn->isChecked()?std::optional<int>{kerb->value()}:std::nullopt;
     staged.axles=axles->isChecked()?std::optional<VehicleAxles>{{value(wheelbase),value(front),value(rear)}}:std::nullopt;
     type=std::move(staged);name=label->text().trimmed().toStdString();return true;
 }

@@ -39,9 +39,16 @@ struct SegmentZoneSide {
 // segment index, the other lane sections of segment s's carriageway whose reference ranges overlap.
 // `zoneSides[s]` (D202) lists the zone sides whose chain holds segment s, in zone order, major
 // first; empty without a zone.
+// `clearLeft[s]`/`clearRight[s]` (D209): a body on s whose left edge is at most clearLeft and right edge
+// at least clearRight covers no neighbour by more than kLateralOverlap, so it casts no other span.
+// Conservative by 1e-9, so the fast path decides exactly as the full test would.
+// `onlyNext[s]` (D210): s's one successor, SIZE_MAX at a fork or an end; a straddler's leader search
+// walks the lane it covers along it.
 struct LateralIndex {
     bool on{};
     std::vector<std::vector<std::size_t>> neighbours;
+    std::vector<double> clearLeft, clearRight;
+    std::vector<std::size_t> onlyNext;
     std::vector<std::vector<SegmentZoneSide>> zoneSides;
 };
 }
