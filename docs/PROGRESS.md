@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
+
+D237's contract ([evidence](evidence/red-running.md)).
+- **Rule:** a hashed share of drivers pass a red head in its first seconds while moving; a
+  `red-running` event when they pass the line; `redRunning` in reports only with the keys. BA139
+  and BA144 failed first against a step that ignored the keys.
+- **File and editor:** schema 44, refused below; the pair and ranges validated on both models; two
+  behaviour-dialog rows. Every hook proved by mutation.
+- **Measured:** shipped runs byte-identical. At a 5 % share runs are rare and rise steeply with the
+  window (four-leg 2, 8, 24 in 40 runs for 1–3 s); delay falls within its half-width. Ir −0.44 %
+  (layout).
+
+`check` 177/177, Linux only.
+
 ## 2026-10-18 — B-9 red-light running contract (D237, docs only)
 
 NEXT's item, the last of tier B ([RED_RUNNING](reference/RED_RUNNING.md)). Today red holds
@@ -105,15 +119,6 @@ D228's contract ([evidence](evidence/speed-distribution.md)).
   46.00 → 45.40 s (inside the noise); +0.06 % Ir.
 
 `check` 173/173, Linux only.
-
-## 2026-10-17 — B-5 desired-speed distribution contract (D228, docs only)
-
-NEXT's item after D227, read against ROADMAP M2.1 ("distributions") and tier B
-([SPEED_DISTRIBUTION](reference/SPEED_DISTRIBUTION.md)).
-- **The owner's choices:** a piecewise-linear cumulative curve (Vissim's form), decisions and areas
-  still linear on the driver's share, set on the vehicle type.
-- **The contract:** optional `desiredSpeed.curve` at schema 40, ends equal to `min`/`max`; the same
-  single draw inverted through it, so files without a curve stay byte-identical; rows BA110–BA116.
 
 ## Older entries
 

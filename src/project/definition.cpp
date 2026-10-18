@@ -140,6 +140,8 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.mandatoryDecelerationTrailingVehicle) item["mandatoryDecelerationTrailingVehicle"] = *b.mandatoryDecelerationTrailingVehicle;
             if (b.stopDwellTime) item["stopDwellTime"] = *b.stopDwellTime; // B-8 (D231)
             if (b.driverFactorSpread) item["driverFactorSpread"] = *b.driverFactorSpread; // B-4 (D236)
+            if (b.redRunningShare) item["redRunningShare"] = *b.redRunningShare; // B-9 (D238)
+            if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model

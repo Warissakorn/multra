@@ -165,6 +165,9 @@ MovementReport MovementAccumulator::report(const SimState& end) const {
     const auto summary = summary_.summary();
     r.completed = summary.completed; r.safetyClamps = summary.safetyClamps; r.meanDelay = summary.meanDelay;
     r.laneChanges = summary.laneChanges;
+    // B-9 (D238): only when a behaviour carries the keys, so other runs keep their bytes.
+    if (end.scenario && std::any_of(end.scenario->behaviours.begin(), end.scenario->behaviours.end(),
+                                    [](const auto& b) { return b.redRunningShare.has_value(); })) r.redRunning = summary.redRunning;
     r.sections = sections_.report(); r.los = spec_.los;
     r.lots = lots_.report(end); r.parked = parkedCount(end); // M8.5
     r.unassigned = unassigned_;

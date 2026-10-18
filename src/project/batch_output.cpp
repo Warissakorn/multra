@@ -57,6 +57,7 @@ Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
     }
     j["meanDelay"] = estimateJson(r.meanDelay); j["completed"] = estimateJson(r.completed);
     j["pending"] = estimateJson(r.pending); j["safetyClamps"] = estimateJson(r.safetyClamps);
+    if (r.redRunning) j["redRunning"] = estimateJson(*r.redRunning); // B-9 (D238): only with the keys
     j["movementsWithUnfinished"] = movementsWithUnfinished(r);
     if (!runs.empty()) {
         const auto& first = runs.front().report;
@@ -83,6 +84,7 @@ Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
                  {"safetyClamps", run.report.safetyClamps}, {"overloaded", run.overloaded},
                  {"meanDelay", value(run.report.meanDelay)}};
         if (!run.report.lots.empty()) row["parked"] = run.report.parked; // M8.5
+        if (run.report.redRunning) row["redRunning"] = *run.report.redRunning; // B-9 (D238)
         j["perSeed"].push_back(std::move(row));
     }
     return j;
@@ -134,11 +136,14 @@ std::string batchCsv(const BatchReport& r, const std::vector<SeedRun>& runs) {
                 << csvNumber(l.gateWaitMean.mean) << ',' << csvNumber(l.gateWaitMean.halfWidth95) << ','
                 << csvNumber(l.gateWaitMax.mean) << ',' << csvNumber(l.waitedOverTick.mean) << '\n';
     }
-    out << "\nseed,generated,completed,active,pending,safetyClamps,overloaded,meanDelay_s\n";
-    for (const auto& run : bySeed(runs))
+    out << "\nseed,generated,completed,active,pending,safetyClamps,overloaded,meanDelay_s" << (r.redRunning ? ",redRunning\n" : "\n");
+    for (const auto& run : bySeed(runs)) {
         out << run.seed << ',' << run.generated << ',' << run.report.completed << ',' << run.report.active << ','
             << run.report.pending << ',' << run.report.safetyClamps << ',' << (run.overloaded ? "yes" : "no") << ','
-            << csvNumber(run.report.meanDelay) << '\n';
+            << csvNumber(run.report.meanDelay);
+        if (r.redRunning) out << ',' << run.report.redRunning.value_or(0); // B-9 (D238): only with the keys
+        out << '\n';
+    }
     return out.str();
 }
 }

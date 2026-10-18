@@ -9,6 +9,7 @@
 #include "speed_control.hpp"
 #include "speed_decision.hpp"
 #include "speed_area.hpp"
+#include "red_running.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -282,6 +283,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
             for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
             spreadIssues(b, p, issues); // B-4 (D236)
+            for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
@@ -298,6 +300,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : commitmentParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-2 (D219)
         for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
         spreadIssues(b, p, issues); // B-4 (D236)
+        for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every

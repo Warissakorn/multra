@@ -8,6 +8,7 @@
 #include "lateral_motion.hpp"
 #include "parking.hpp"
 #include "perception.hpp"
+#include "red_running.hpp"
 #include "routing.hpp"
 #include "routes.hpp"
 #include "speed_control.hpp"
@@ -241,6 +242,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     std::vector<Reaction> decisions; // no allocation with zero delay; published in vehicle order
     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
     std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
+    std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); // B-9 (D238): empty without the keys
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto& vehicle = vehicles[v];
         const auto& type = scenario.vehicleTypes[refs[v].type];
@@ -268,6 +270,8 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (gap < -1e-9) continue;
             const auto colour = headColors[routeHead.headIndex];
             if (colour == SignalColor::green) continue;
+            if (colour == SignalColor::red && !ran.empty() && runsRed(behaviour, next.seed, vehicle, scenario.signalPrograms[index.programOfHead[routeHead.headIndex]], startTime)) {
+                if (gap < ran[v].gap) ran[v] = {gap, routeHead.headIndex}; continue; } // RED_RUNNING §3
             // M4.2 (D147, AMBER.md): with an amber deceleration, a driver who cannot stop before the
             // line at it goes on amber, and one who cannot stop at all (the type's maxDeceleration,
             // as at a priority rule) goes on amber or red; equality and a standing vehicle stop.
@@ -414,6 +418,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         const auto& oldParts = index.parts[refs[v].route];
         const auto& move = moves[v];
         if (move.clamped) events.emplace_back(SafetyClampEvent{time, vehicle.id});
+        if (!ran.empty()) reportRedRun(ran[v], scenario, time, vehicle.id, move.distance, events);
         // The working copy is not read after this vehicle is published, so its lists move rather
         // than copy; its scalars (id, times, desired speed) stay readable below. The pending decision
         // is found first, because it reads the passed-decision list.

@@ -1,6 +1,7 @@
 # Red-light running share (B-9)
 
-Written 2026-10-18 (D237). This is tier B-9 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), the
+Written 2026-10-18 (D237); implemented the same day (D238,
+[evidence](../evidence/red-running.md)). This is tier B-9 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), the
 last of tier B: a level-4 key under D216, so driver behaviour, local by road. It extends the red
 rule of [AMBER](AMBER.md) §1. Rule 4 applies: nothing here is validated, and no value ships (D178).
 

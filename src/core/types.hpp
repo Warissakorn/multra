@@ -72,7 +72,7 @@ struct DriverBehaviour {
     PerceptionParameters perception; // M3.5 (PERCEPTION.md §6, D181); each later field last, as above
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
     std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
-    std::optional<double> driverFactorSpread; // B-4 (DRIVER_FACTOR, D236): the factor's standard deviation, 0.15 without it
+    std::optional<double> driverFactorSpread, redRunningShare, redRunningTime; // B-4 (DRIVER_FACTOR, D236): the factor's deviation; B-9 (RED_RUNNING, D238): a pair
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles {
@@ -420,9 +420,10 @@ struct RoutingEvent {
     double time{}; std::uint64_t vehicleId{}; std::string decisionId, fromRouteId, toRouteId;
     bool operator==(const RoutingEvent&) const = default;
 };
+struct RedRunningEvent { double time{}; std::uint64_t vehicleId{}; std::string headId; bool operator==(const RedRunningEvent&) const = default; }; // B-9 (D238)
 // New event alternatives append so every existing index stays stable.
 using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
-                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent>;
+                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent>;
 // M3.2.5: one vehicle's service at a Stop line (contract §5). `line` is the route distance of the
 // next Stop line it has not passed; `since` the tick whose start first found it standing there.
 // It has served the line once a whole tick has run since then. Kept only while the line is ahead

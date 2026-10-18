@@ -11,12 +11,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-18
 
-- **PR #177** carries D207–D236 to `main` (#176 was closed). CI is green except Windows
+- **PR #177** carries D207–D238 to `main` (#176 was closed). CI is green except Windows
   `properties-layout-ui`, which is also red on `main` (D205's open item).
-- **B-9 contract** (D237, [RED_RUNNING](reference/RED_RUNNING.md)): `redRunningShare` and
-  `redRunningTime` on the driver behaviour (schema 44); a hashed share of drivers pass red only in
-  its first seconds and while moving; each run counted; absent = today. Implementation in progress
-  (D238).
+- **Tier B is complete.** **B-9 is in** (D237, D238, [RED_RUNNING](reference/RED_RUNNING.md), [evidence](evidence/red-running.md)):
+  `redRunningShare` and `redRunningTime` on the driver behaviour (schema 44); a hashed share of
+  drivers pass red only in its first seconds while moving; a counted `red-running` event; two
+  dialog rows. Shipped runs byte-identical. No crossing traffic reacts (no conflict areas at the
+  shipped signals).
 - **B-4 is in** (D235, D236, [DRIVER_FACTOR](reference/DRIVER_FACTOR.md), [evidence](evidence/driver-factor-spread.md)):
   `driverFactorSpread` on the driver behaviour (schema 43) sets the factor's standard deviation,
   read from the type's own behaviour when a vehicle is made; absent = 0.15; the random stream is
@@ -96,11 +97,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-9 implementation
+## Next session — after tier B
 
-A session told only to "continue" takes item 1:
-1. **Implement B-9** (D237, [RED_RUNNING](reference/RED_RUNNING.md)): the exemption in the head loop,
-   `RedRunningEvent` and its consumers, rows BA138–BA145 failing first, schema 44, the dialog rows.
-2. Tier B is then complete. The next work comes from ROADMAP and the owner.
-3. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
-   M3.2.8a.1 contract or when the owner asks.
+Tier B (BEHAVIOUR_PARAMETERS §3) is complete. ROADMAP names no single next item for a session told
+only to "continue", so the session asks the owner first. The candidates, in ROADMAP's order:
+1. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
+2. **M3.2.8a.1: give-way line clamps** (D232) and the red-onset clamp (D227). A contract and rows
+   come first; each option moves shipped output.
+3. **M2.8: demand correctness and authoring,** still in progress.
+
+The owner may name other work. Without an answer, the session takes item 1.

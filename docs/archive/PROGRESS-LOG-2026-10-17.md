@@ -3,6 +3,15 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-5 desired-speed distribution contract (D228, docs only)
+
+NEXT's item after D227, read against ROADMAP M2.1 ("distributions") and tier B
+([SPEED_DISTRIBUTION](../reference/SPEED_DISTRIBUTION.md)).
+- **The owner's choices:** a piecewise-linear cumulative curve (Vissim's form), decisions and areas
+  still linear on the driver's share, set on the vehicle type.
+- **The contract:** optional `desiredSpeed.curve` at schema 40, ends equal to `min`/`max`; the same
+  single draw inverted through it, so files without a curve stay byte-identical; rows BA110–BA116.
+
 ## 2026-10-17 — D223's red-onset clamp traced (D227, no code change)
 
 NEXT's item ([evidence](../evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).

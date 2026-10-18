@@ -53,6 +53,7 @@ struct MovementReport {
     std::size_t pending{}, active{};
     double time{};
     std::uint64_t laneChanges{}; // M3.2.8b
+    std::optional<std::uint64_t> redRunning; // B-9 (D238): only when a behaviour carries the keys
     double warmup{}, evaluationEnd{}; // M5.3: the period the rows and queues describe
     std::optional<double> cooldown; // M5.9: the spec's, so output can say how the window was read
     std::vector<SectionRow> sections; // M5.4: one per authored section; empty without any
