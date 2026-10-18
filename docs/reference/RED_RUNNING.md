@@ -2,7 +2,7 @@
 
 Written 2026-10-18 (D237); implemented the same day (D238,
 [evidence](../evidence/red-running.md)). §3 was revised the same day by the owner's answers to
-D241 (D246); the revision is planned until D247 implements it. This is tier B-9 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), the
+D241 (D246) and implemented by D247. This is tier B-9 of [BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md), the
 last of tier B: a level-4 key under D216, so driver behaviour, local by road. It extends the red
 rule of [AMBER](AMBER.md) §1. Rule 4 applies: nothing here is validated, and no value ships (D178).
 
@@ -105,7 +105,7 @@ refused on confirm with the pair's issue. Editing is one Undo step with the libr
 
 ## 6. Rows (BA138–BA145, BA152–BA157)
 
-BA152–BA157 and BA139's amended case are D246's; they are planned until D247.
+BA152–BA157 and BA139's amended case are D246's, implemented by D247.
 
 | Row | Case | Asserts |
 |---|---|---|

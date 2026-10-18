@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lateral_types.hpp"
+#include "line_state_types.hpp"
 #include "parking_types.hpp"
 #include "speed_decision_types.hpp"
 #include <cstdint>
@@ -424,14 +425,6 @@ struct RedRunningEvent { double time{}; std::uint64_t vehicleId{}; std::string h
 // New event alternatives append so every existing index stays stable.
 using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
                               SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent>;
-// M3.2.5: one vehicle's service at a Stop line (contract §5). `line` is the route distance of the
-// next Stop line it has not passed; `since` the tick whose start first found it standing there.
-// It has served the line once a whole tick has run since then. Kept only while the line is ahead
-// of or under the vehicle, so passing a line clears it; a new run starts with none.
-struct StopService {
-    std::uint64_t vehicleId{}; double line{}; std::uint64_t since{}, ticks{1}; // ticks: whole ticks of rest (B-8, D231)
-    bool operator==(const StopService&) const = default;
-};
 // M8.4a (ZONES_AND_PARKING §4). A vehicle in a lot keeps its identity and type for its next trip.
 struct ParkedVehicle {
     PendingVehicle vehicle; double admitted{}, dwellEnd{};
@@ -464,6 +457,7 @@ struct SimState {
     std::vector<SimEvent> events; // Latest step only.
     std::vector<StopService> stopService; // sorted by vehicle id; empty without a Stop zone
     std::vector<LotState> lots;           // parallel to scenario->parkingLots
+    std::vector<RedRelease> redReleases;  // sorted by vehicle id; empty without red-running keys
 };
 struct ValidationIssue {
     std::string code, path;

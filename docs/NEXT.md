@@ -11,28 +11,22 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-18
 
-- **PR #177** carries D207–D245 to `main` (#176 was closed). The owner wants it merged once every
-  CI job is green.
-- **D245:** Windows `properties-layout-ui` (red on `main` too) failed because Qt there had no
-  libthai. A Thai sentence broke only at its spaces, so the effective-behaviour text asked for
-  257 px and held the narrow Properties panel at 273 px.
-  - CI and the Windows package now ship MSYS2's libthai as `thai.dll`, with its dictionary (the
-    owner's choice), and the editor finds the dictionary in `data/libthai`.
-  - The narrow check first asserts a Thai line break, with a clear message.
-  - It is confirmed only by a green `windows-desktop` run
-    ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
-- **D242–D244** (forms reflow by their viewport, top buttons elide, a wrapped text asks only for its
-  word) were not the Windows cause. They stay as robustness fixes, and the narrow check's
-  diagnostic stays; it prints only on failure.
-- **D241 (no code change):** M2.6's clamps added by red running are traced
-  ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). Only seeds 51 and 73 change, and
-  none of the added clamps is a red-head hold:
-  - a runner released after braking for amber meets the green flow at a merge, then hits the
-    standstill cap (D105, D201 B5), and its follower clamps behind it;
-  - a runner held again at the end of a 3 s window stops at 6 m/s², and its follower needs
-    10.6 m/s².
+- **Red running follows the owner's answers to D241** (D246, D247, [RED_RUNNING](reference/RED_RUNNING.md) §3,
+  [evidence](evidence/red-running.md#d247-the-owners-answers-to-d241-2026-10-18)):
+  - a runner is let through anew only when it cannot stop gently (`amberDeceleration`, else the type's
+    `comfortableDeceleration`);
+  - once let through, the head does not hold it again during that red while it moves (`SimState::redReleases`);
+  - its crossing is counted even after the window.
 
-  A run that crosses after the window as committed (under `amberDeceleration`) writes no event.
+  Shipped outputs are byte-identical. With a 5 % share, M2.6's clamps return to the no-key 41.
+- **Finding (D247):** on the shipped projects the window no longer changes anything. The 1, 2 and 3 s
+  copies give identical outputs. Every run starts at, or 0.3 s after, red onset. The reading (not probed
+  further): a vehicle meeting red later has been stopping gently since amber, so only one that went on
+  amber is still unable to stop gently. 6 of M2.6's 15 counted
+  runs would have crossed as committed anyway.
+- **PR #177 is merged** (D207–D245). Every job on its final head was green, `windows-desktop` included,
+  which confirms D245 (libthai) and D205 on Windows. D242–D244 stay as robustness fixes.
+- **D241 (no code change)** traced M2.6's clamps added by red running; D246/D247 removed them.
 - **Give-way line stop is in** (D239, D240, [GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md), [evidence](evidence/give-way-stop.md)):
   on a tick that would clamp at a binding give-way line, a stop within the type's maximum brakes to
   the line instead. The shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays
@@ -112,7 +106,6 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - **D207: a swapping pair of stubs resolves by the rear one yielding** (owner's choice). Shipped
   four-leg and M2.6 multi-seed outputs moved by ≤ 0.2 s mean delay; the CLI pin is byte-identical.
 - M3.7.0's four slices are in (D202, D203); M3.7's gate stays open (ROADMAP).
-- D205 (main's Windows-only UI reds) is on main; it is confirmed only by a green Windows run.
 - The run casing costs paint time (D199: ≈ +9–16 % in a Debug offscreen run); a Release measurement
   is still owed if the owner reports slowness.
 - `map-ui` failed once in a parallel `check` on 2026-10-16 and passed in every rerun (archived PROGRESS D196
@@ -125,17 +118,18 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ROADMAP names no single next item for a session told only to "continue", so the session asks the
 owner first. The candidates, easiest first:
-1. **Red running, D241's three behaviours** (RED_RUNNING §3). Each is the owner's choice, and none
-   ships, since no shipped behaviour carries the keys:
-   - should a runner that was braking for amber at the head start again at red onset?
-   - should a crossing after the window, let through by commitment, still count as a run?
-   - should the window end only for a runner that can still stop gently, rather than re-holding it
-     close to the line?
+1. **Red running after D247.** Two owner choices; no shipped behaviour carries the keys, so neither
+   moves shipped output:
+   - should `redRunningTime` matter with `amberDeceleration`? Today a run starts only at red onset,
+     by a vehicle that went on amber. A wider rule would let, for example, a share of drivers who
+     could stop gently start a run inside the window. That would partly undo D246's first answer;
+   - should a crossing that commitment (AMBER §1) would have let through anyway still count as a
+     run? Today a runner's does and a non-runner's does not.
 
    A contract and rows come first.
 2. **The remaining M3.2.8a.1 cases:** the moving merge clamps behind a shared leader's standstill
-   buffer (D105) and the standstill cap (D201 B5). D241's seed-51 clamps, and the three shipped
-   clamps it traced at that seed, are of this kind. Each needs a contract and the owner's choice.
+   buffer (D105) and the standstill cap (D201 B5). The three shipped M2.6 clamps at seed 51 are of
+   this kind. Each needs a contract and the owner's choice.
 3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
 
 M2.8 has only owner checks left. Without an answer, the session asks again rather than choosing a

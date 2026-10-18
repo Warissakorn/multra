@@ -178,6 +178,80 @@ Both builds were made in the same build directory.
 Without the keys the step adds an empty vector and one branch per red head. The fall is code
 layout.
 
+## D247: the owner's answers to D241 (2026-10-18)
+
+On `d4b52f3` (D246's contract) plus this change, the same host and build. Contract:
+[RED_RUNNING](../reference/RED_RUNNING.md) §3 as revised by D246.
+
+**Rows** (`tests/red_running_tests.cpp`, ctest `redrunning`, 16 passing). The fixture's behaviour
+has no `amberDeceleration`, so the car's `comfortableDeceleration` (2 m/s²) is its gentle value;
+BA152 sets `amberDeceleration` 3 to match the shipped default.
+
+| Row | Case | Asserts |
+|---|---|---|
+| BA139 (amended) | 10 m/s, 15 m short at red onset: 3.3 m/s² against 2 | It asserts the gentle value first; crosses; one event |
+| BA140 | Its 60 m case | Now held by the gentle test from red onset, not by the window |
+| BA152 | 9 m/s, 32 m short, `amberDeceleration` 3 (D241's 1945) | Held, no event; the same runner at 10 m/s and 15 m crosses |
+| BA153 | No `amberDeceleration`; 10 m/s at 20 m and 30 m | 2.5 m/s² against 2: crosses; 1.67: held; at 20 m with `amberDeceleration` 3: held |
+| BA154 | A 0.5 s window, 10 m/s, 15 m short | First asserts it is past the window, short of the line, moving and still let through; then it crosses with one event after 0.5 s |
+| BA155 | A hand-set release, 2 m/s, behind a leader standing at 99 m | First asserts it stays let through while moving; then standing (about 16 s in, the prototype's slow approach); the next tick ends the release; with the leader removed it stays short of the line until green, with no event |
+| BA156 | Red 0.5 s, then green | First asserts the release; it is empty from green on; it crosses with no event. Without the keys `redReleases` is never set over a 90 s run with arrivals; with them two runs are identical |
+| BA157 | A second red head 30 m further on | First asserts it is let through at the first and not at the second; one event, naming the first; held at the second until green |
+
+**Mutations,** each applied in turn to the new code; every one fails at least one row:
+
+| Mutation | Caught by |
+|---|---|
+| No gentle-stop test | BA140, BA152, BA153, BA155, BA157 |
+| The decision does not hold | BA154, BA155 |
+| A standing vehicle stays let through | BA155 |
+| Last tick's pairs kept when this tick has none | BA155, BA156 |
+| A fixed 3 m/s² instead of the type's value | BA153 |
+| One release per vehicle, not per head | BA157 |
+
+**Byte-identical** (no shipped behaviour carries the keys): `trafficsim-cli 42` and the
+`--seeds 42–51` output (without `buildCommit`) of all four shipped projects, against `ef9ccb2`.
+
+**With the keys,** using D238's method: scratchpad copies of the data directory with
+`redRunningShare: 0.05` on the shared `wiedemann-inspired-prototype`, seeds 42–81, 900 s each. The
+`ef9ccb2` column reproduces D238's numbers exactly.
+
+| Project | Measure | `ef9ccb2` 1 s / 2 s / 3 s | This change 1 s / 2 s / 3 s |
+|---|---|---|---|
+| `four-leg-signalised` | Runs in 40 runs | 2 / 8 / 24 | 5 / 5 / 5 |
+| | Mean delay, s | 45.98 / 45.82 / 45.76 | 45.98 / 45.98 / 45.98 (±0.54) |
+| | Safety clamps | 0 / 0 / 0 | 0 / 0 / 0 |
+| `m2.6-study-template` | Runs in 40 runs | 7 / 30 / 75 | 15 / 15 / 15 |
+| | Mean delay, s | 46.00 / 45.90 / 45.86 | 46.00 / 46.00 / 46.00 (±0.38) |
+| | Safety clamps | 41 / 43 / 44 | 41 / 41 / 41 (the no-key count) |
+
+- **D241's clamps are gone.** Seed 51 is back to its 3 shipped clamps, and seed 73 is back to 0.
+- **The window no longer changes anything here.** The 1 s, 2 s and 3 s outputs are identical, apart from
+  `buildCommit`. A temporary stderr probe in `letThrough` (D232's method, never committed) printed every
+  new release on M2.6 at 3 s. There were 15 releases, one per counted run. 14 were at red onset and one
+  0.3 s after it.
+  - A vehicle sees a red head from any distance, so one that meets red later has been stopping
+    gently since amber.
+  - Only a vehicle that went on amber (it could not stop at `amberDeceleration`) is still short of
+    the line and unable to stop gently at red onset.
+  - So the runs read as amber-goers caught by red. The probe did not record the amber decision, so
+    this is a reading, not a measurement. `redRunningTime` matters only when a vehicle
+    first becomes unable to stop gently after red begins.
+- **Runs also count committed crossings.** In 6 of the 15, stopping needed more than the car's
+  8 m/s² maximum, so AMBER §1's commitment would have let them through anyway. The rule is tested
+  first, so a runner's committed crossing is counted. A non-runner's is not. D238 behaved the same.
+- **Delay** stays inside its half-width.
+
+**Performance** (callgrind Ir, Release `-g`, seed 42, no keys; the two builds are in separate
+directories, a baseline worktree and this tree, so a small difference is layout):
+
+| Project | `ef9ccb2` | This change |
+|---|---|---|
+| `four-leg-signalised` | 887.20 M | 888.81 M (+0.18 %) |
+| `lane-change-lab` | 1252.00 M | 1253.26 M (+0.10 %) |
+
+Without the keys the step adds one empty vector moved into the state; the head loop is unchanged.
+
 ## Not covered here
 
 - Yielding to crossing traffic, a collision model, running from standstill, and a share by type or

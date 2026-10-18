@@ -14,9 +14,9 @@
 #include <map>
 
 using namespace trafficsim;
-// B-9 (docs/reference/RED_RUNNING.md, D237/D238): a share of drivers may pass a red head in its first
-// seconds while moving. Rows BA138-BA144 on test::straight()'s road with one head 100 m along it;
-// BA145 is the codec, validation and outputs.
+// B-9 (docs/reference/RED_RUNNING.md, D237/D238, D246/D247): a share of drivers may pass a red head in
+// its first seconds while moving. Rows BA138-BA144 and BA152-BA157 on test::straight()'s road with one
+// head 100 m along it; BA145 is the codec, validation and outputs.
 namespace {
 struct Keys { double share, time; };
 Scenario signalled(std::vector<SignalPhase> phases, std::optional<Keys> keys, double offset = 0) {
@@ -28,6 +28,10 @@ Scenario signalled(std::vector<SignalPhase> phases, std::optional<Keys> keys, do
 }
 const std::vector<SignalPhase> kRedFirst{{20, SignalColor::red}, {40, SignalColor::green}};
 struct Outcome { double furthest{}; int runs{}; std::string head; };
+Scenario withAmber(Scenario s, double deceleration) {
+    for (auto& b : s.behaviours) b.amberDeceleration = deceleration;
+    return s;
+}
 Outcome drive(Scenario s, double distance, double speed, int ticks = 100) {
     auto state = test::withVehicles(std::move(s), {test::vehicle(1, distance, speed)});
     Outcome o{distance};
@@ -46,7 +50,11 @@ TEST(redrunning, ba138_without_the_keys_red_holds) { // BA138
     CHECK(o.furthest <= 100 + 1e-9); CHECK(o.runs == 0);
     CHECK(!carriesRedRunning(signalled(kRedFirst, std::nullopt)));
 }
-TEST(redrunning, ba139_a_runner_at_red_onset_passes_and_is_counted) { // BA139
+TEST(redrunning, ba139_a_runner_at_red_onset_passes_and_is_counted) { // BA139 (amended by D246)
+    // 10 m/s, 15 m short: stopping needs 3.3 m/s², more than the car's comfortableDeceleration 2
+    // (this behaviour has no amberDeceleration).
+    const auto s = signalled(kRedFirst, Keys{1, 2});
+    CHECK(!s.behaviours.front().amberDeceleration); CHECK(s.vehicleTypes.front().comfortableDeceleration == 2.0);
     const auto o = drive(signalled(kRedFirst, Keys{1, 2}), 85, 10);
     CHECK(o.furthest > 100);
     CHECK(o.runs == 1); CHECK(o.head == "h");
@@ -57,7 +65,7 @@ TEST(redrunning, ba140_after_the_window_a_runner_is_held) { // BA140
     test::near(redElapsed({"p", 15, program}, 0), 5, 1e-9);
     const auto o = drive(signalled(program, Keys{1, 2}, 15), 85, 10);
     CHECK(o.furthest <= 100 + 1e-9); CHECK(o.runs == 0);
-    // The window is read on every tick: inside 2 s a runner 60 m short is let go, then held again.
+    // 60 m short, a runner can stop gently, so it is held from red onset (D246).
     const auto late = drive(signalled(kRedFirst, Keys{1, 2}), 40, 10);
     CHECK(late.furthest <= 100 + 1e-9); CHECK(late.runs == 0);
 }
@@ -195,4 +203,118 @@ TEST(redrunning, ba145_the_count_is_written_only_with_the_keys) { // BA145 (outp
     CHECK(batchCsv(aggregate(with), with).find(",redRunning\n") != std::string::npos);
     CHECK(batchCsv(aggregate(without), without).find("redRunning") == std::string::npos);
     CHECK(movementJson(with[0].report).contains("redRunning")); CHECK(!movementJson(without[0].report).contains("redRunning"));
+}
+namespace {
+// The release a state holds for vehicle 1 at the head with this id, after canonicalisation.
+bool releasedAt(const SimState& state, const std::string& headId) {
+    const auto& heads = state.scenario->signalHeads;
+    return std::any_of(state.redReleases.begin(), state.redReleases.end(), [&](const RedRelease& r) {
+        return r.vehicleId == 1 && r.head < heads.size() && heads[r.head].id == headId; });
+}
+}
+TEST(redrunning, ba152_a_runner_that_can_stop_gently_is_held) { // BA152 (D246)
+    // D241's vehicle 1945: 32 m short at 9 m/s needs 1.27 m/s², inside amberDeceleration 3.
+    CHECK(redRunner(42, 1, 1.0)); CHECK(9.0 * 9.0 / (2 * 32) < 3);
+    const auto gentle = drive(withAmber(signalled(kRedFirst, Keys{1, 2}), 3), 68, 9);
+    CHECK(gentle.furthest <= 100 + 1e-9); CHECK(gentle.runs == 0);
+    const auto hard = drive(withAmber(signalled(kRedFirst, Keys{1, 2}), 3), 85, 10); // 3.3 m/s²
+    CHECK(hard.furthest > 100); CHECK(hard.runs == 1);
+}
+TEST(redrunning, ba153_without_amber_deceleration_the_type_decides) { // BA153 (D246)
+    // 10 m/s, 20 m short needs 2.5 m/s²: above the car's comfortable 2, below amberDeceleration 3.
+    const auto without = [](double distance) {
+        auto s = signalled(kRedFirst, Keys{1, 2});
+        CHECK(!s.behaviours.front().amberDeceleration); CHECK(s.vehicleTypes.front().comfortableDeceleration == 2.0);
+        return drive(std::move(s), distance, 10);
+    };
+    const auto near = without(80);
+    CHECK(near.furthest > 100); CHECK(near.runs == 1);
+    const auto far = without(70); // 30 m short: 1.67 m/s² fits
+    CHECK(far.furthest <= 100 + 1e-9); CHECK(far.runs == 0);
+    CHECK(drive(withAmber(signalled(kRedFirst, Keys{1, 2}), 3), 80, 10).runs == 0); // with amberDeceleration 3 it stops
+}
+TEST(redrunning, ba154_a_runner_let_through_is_not_held_again_when_the_window_ends) { // BA154 (D246)
+    // A 0.5 s window; 10 m/s, 15 m short at red onset: the line is more than 0.5 s away.
+    auto state = test::withVehicles(signalled(kRedFirst, Keys{1, 0.5}), {test::vehicle(1, 85, 10)});
+    for (int t = 0; t < 6; ++t) state = stepSimulation(std::move(state));
+    CHECK(state.time > 0.5); // the window has ended ...
+    CHECK(state.vehicles.size() == 1 && state.vehicles[0].distance < 100 && state.vehicles[0].speed > 5); // ... short of the line
+    CHECK(releasedAt(state, "h"));
+    int runs = 0; double at = 0, furthest = 0;
+    for (int t = 0; t < 60 && !state.vehicles.empty(); ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events)
+            if (const auto* r = std::get_if<RedRunningEvent>(&e)) { ++runs; at = r->time; }
+        if (!state.vehicles.empty()) furthest = std::max(furthest, state.vehicles[0].distance);
+    }
+    CHECK(furthest > 100); CHECK(runs == 1); CHECK(at > 0.5);
+    CHECK(state.vehicles.empty() || !releasedAt(state, "h")); // past the line, the release lapses
+}
+TEST(redrunning, ba155_a_runner_that_comes_to_a_standstill_is_held_until_green) { // BA155 (D246)
+    // Let through on the last tick (a hand-set release), 2 m/s, behind a standing leader at 99 m.
+    auto state = test::withVehicles(signalled(kRedFirst, Keys{1, 30}), {test::vehicle(1, 80, 2), test::vehicle(2, 99, 0)});
+    state.redReleases = {{1, 0}};
+    CHECK(state.scenario->signalHeads.size() == 1);
+    state = stepSimulation(std::move(state));
+    CHECK(releasedAt(state, "h")); // moving, it is still let through
+    // The prototype closes on a standing leader slowly: it is standing about 16 s into the red.
+    for (int t = 0; t < 190 && state.vehicles[0].speed >= 0.1; ++t) state = stepSimulation(std::move(state));
+    CHECK(state.vehicles[0].speed < 0.1); CHECK(state.time < 19.5); CHECK(state.vehicles[0].distance < 99 - 4.5);
+    state = stepSimulation(std::move(state));
+    CHECK(!releasedAt(state, "h")); // a tick that starts standing ends the release
+    state.vehicles.pop_back(); // the leader leaves while the head is still red
+    int runs = 0; double furthestOnRed = 0;
+    while (state.time < 25 && !state.vehicles.empty()) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) runs += std::holds_alternative<RedRunningEvent>(e);
+        if (state.time < 20 && !state.vehicles.empty()) furthestOnRed = std::max(furthestOnRed, state.vehicles[0].distance);
+    }
+    CHECK(furthestOnRed <= 100 + 1e-9); CHECK(runs == 0);
+    CHECK(state.vehicles.empty() || state.vehicles[0].distance > 100); // it goes on green
+}
+TEST(redrunning, ba156_green_before_the_crossing_writes_no_event) { // BA156 (D246)
+    const std::vector<SignalPhase> shortRed{{0.5, SignalColor::red}, {40, SignalColor::green}};
+    auto state = test::withVehicles(signalled(shortRed, Keys{1, 2}), {test::vehicle(1, 85, 10)});
+    state = stepSimulation(std::move(state));
+    CHECK(releasedAt(state, "h"));
+    int runs = 0; double furthest = 0;
+    for (int t = 0; t < 40 && !state.vehicles.empty(); ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) runs += std::holds_alternative<RedRunningEvent>(e);
+        if (state.time > 0.65) CHECK(state.redReleases.empty()); // green from 0.5 s
+        if (!state.vehicles.empty()) furthest = std::max(furthest, state.vehicles[0].distance);
+    }
+    CHECK(furthest > 100); CHECK(runs == 0);
+    // Without the keys nothing is kept; with them, one seed replays identically.
+    const auto run = [](std::optional<Keys> keys) {
+        auto s = signalled(kRedFirst, keys);
+        s.inputs = {{"input", "route", "car", 1800, 0, 60}};
+        auto state = createSimulation(s, 42);
+        std::vector<SimEvent> events; bool kept = false;
+        for (int t = 0; t < 900; ++t) {
+            state = stepSimulation(std::move(state));
+            events.insert(events.end(), state.events.begin(), state.events.end());
+            kept = kept || !state.redReleases.empty();
+        }
+        return std::tuple{events, state.vehicles, kept};
+    };
+    CHECK(!std::get<2>(run(std::nullopt)));
+    const auto a = run(Keys{1, 3}), b = run(Keys{1, 3});
+    CHECK(std::get<2>(a)); CHECK(a == b);
+}
+TEST(redrunning, ba157_a_second_head_decides_afresh) { // BA157 (D246)
+    auto s = signalled(kRedFirst, Keys{1, 2});
+    s.signalHeads.push_back({"h2", "road", 130, "p"}); // 45 m short at 10 m/s: 1.1 m/s² fits
+    auto state = test::withVehicles(std::move(s), {test::vehicle(1, 85, 10)});
+    state = stepSimulation(std::move(state));
+    CHECK(releasedAt(state, "h")); CHECK(!releasedAt(state, "h2"));
+    std::vector<std::string> heads; double furthest = 0;
+    for (int t = 0; t < 150 && !state.vehicles.empty(); ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events)
+            if (const auto* r = std::get_if<RedRunningEvent>(&e)) heads.push_back(r->headId);
+        if (!state.vehicles.empty() && state.time < 20) furthest = std::max(furthest, state.vehicles[0].distance);
+    }
+    CHECK(furthest > 100); CHECK(furthest <= 130 + 1e-9);
+    CHECK(heads == std::vector<std::string>{"h"});
 }

@@ -6,6 +6,29 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — Red running: the owner's answers to D241 (D246, D247)
+
+NEXT's first candidate. The owner chose all three recommended options
+([RED_RUNNING](reference/RED_RUNNING.md) §1, §3; [evidence](evidence/red-running.md#d247-the-owners-answers-to-d241-2026-10-18)).
+- **The rule:**
+  - a runner is let through anew only when it cannot stop gently (`amberDeceleration`, else the
+    type's `comfortableDeceleration`);
+  - once let through, the head does not hold it again during that red while it moves;
+  - the crossing is counted even after the window.
+- **Code:** `letThrough` replaces `runsRed`. The (vehicle, head) pairs persist in
+  `SimState::redReleases`. `StopService` and `RedRelease` move to `line_state_types.hpp`, so `types.hpp`
+  stays under 500 lines.
+- **Rows:** BA139 amended, BA152–BA157 added. Six mutations are each caught.
+- **Measured:**
+  - shipped outputs are byte-identical;
+  - with a 5 % share, M2.6's clamps return to 41, so D241's added clamps go;
+  - the 1, 2 and 3 s windows now give identical outputs (four-leg 5 runs, M2.6 15): a probe found
+    every run starting at, or 0.3 s after, red onset (read as vehicles that went
+    on amber; not probed further);
+  - Ir +0.18 % / +0.10 %.
+
+`check` 178/178, Linux only.
+
 ## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
 
 The Windows diagnostic showed that the 257 px text was Thai ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
@@ -128,19 +151,6 @@ every vehicle that can still stop.
 - **The contract:** `redRunningShare` and `redRunningTime` as a pair at schema 44; W74's hash at
   index 15; a `red-running` event and a `redRunning` count written only with the keys; rows
   BA138–BA145.
-
-## 2026-10-18 — B-4 driver-factor spread implemented (D236)
-
-D235's contract ([evidence](evidence/driver-factor-spread.md)).
-- **Draw:** `samplePending` takes the standard deviation from the type's own behaviour, 0.15 without
-  the key; the random stream is unchanged. Rows BA132, BA133, BA135 and BA136 failed first against
-  the 0.15 stub.
-- **File and editor:** schema 43, refused below; `INVALID_BEHAVIOUR_PARAMETER` on both models; a
-  behaviour-dialog row. Codec, validation and the row proved by mutation.
-- **Measured:** shipped runs byte-identical. Spreads of 0, 0.3 and 0.5 leave mean delay inside its
-  half-width on all four projects; clamps rise with a wide spread. Ir ±0.015 %.
-
-`check` 176/176, Linux only.
 
 ## Older entries
 

@@ -62,7 +62,7 @@ give-way delay first. Item numbers are stable labels, not ranks.
 | 6 | B-8 | Stop-sign service time in seconds | **done:** optional `stopDwellTime` (s) on the driver behaviour (D231); one tick without it | Also a correctness fix: the result must not depend on `timeStep`; a real stop lasts about 1–3 s | [STOP_DWELL](STOP_DWELL.md) (D230, D231) |
 | 7 | B-7 | Lane preference by vehicle type (heavy vehicles keep the slow lane) | **done:** optional `kerbLanes` on the vehicle type, entry on the kerb-most N lanes (D234); every lane without it | Truck lane rules differ by country | [LANE_PREFERENCE](LANE_PREFERENCE.md) (D233, D234) |
 | 8 | B-4 | Driver-factor spread | **done:** optional `driverFactorSpread` on the driver behaviour, the standard deviation; 0.15 without it (D236) | Population heterogeneity; calibration only | [DRIVER_FACTOR](DRIVER_FACTOR.md) (D235, D236) |
-| 9 | B-9 | Red-light running share | **done:** optional `redRunningShare` and `redRunningTime` on the driver behaviour; runners pass red only in its first seconds and while moving, counted (D238) | Varies strongly by country; a new model, so last. Amber without the key is already settable by giving `amberDeceleration` | [RED_RUNNING](RED_RUNNING.md) (D237, D238) |
+| 9 | B-9 | Red-light running share | **done:** optional `redRunningShare` and `redRunningTime` on the driver behaviour; runners pass red only in its first seconds and while moving, counted (D238); since D247 only a runner that cannot stop gently runs, and it keeps going for that red | Varies strongly by country; a new model, so last. Amber without the key is already settable by giving `amberDeceleration` | [RED_RUNNING](RED_RUNNING.md) (D237, D238, D246, D247) |
 
 ## 4. Tier C — keep fixed
 

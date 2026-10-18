@@ -242,7 +242,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     std::vector<Reaction> decisions; // no allocation with zero delay; published in vehicle order
     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
     std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
-    std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); // B-9 (D238): empty without the keys
+    std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); std::vector<RedRelease> released; // B-9 (D238, D246): empty without the keys
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto& vehicle = vehicles[v];
         const auto& type = scenario.vehicleTypes[refs[v].type];
@@ -270,8 +270,8 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (gap < -1e-9) continue;
             const auto colour = headColors[routeHead.headIndex];
             if (colour == SignalColor::green) continue;
-            if (colour == SignalColor::red && !ran.empty() && runsRed(behaviour, next.seed, vehicle, scenario.signalPrograms[index.programOfHead[routeHead.headIndex]], startTime)) {
-                if (gap < ran[v].gap) ran[v] = {gap, routeHead.headIndex}; continue; } // RED_RUNNING §3
+            if (colour == SignalColor::red && !ran.empty() && letThrough(behaviour, type, next.seed, vehicle, scenario.signalPrograms[index.programOfHead[routeHead.headIndex]], startTime, gap, routeHead.headIndex, next.redReleases)) {
+                released.push_back({vehicle.id, routeHead.headIndex}); if (gap < ran[v].gap) ran[v] = {gap, routeHead.headIndex}; continue; } // RED_RUNNING §3
             // M4.2 (D147, AMBER.md): with an amber deceleration, a driver who cannot stop before the
             // line at it goes on amber, and one who cannot stop at all (the type's maxDeceleration,
             // as at a priority rule) goes on amber or red; equality and a standing vehicle stop.
@@ -479,7 +479,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         const auto color = signalColorAt(scenario.signalPrograms[index.programOfHead[h]], time);
         if (color != headColors[h]) events.emplace_back(SignalEvent{time, scenario.signalHeads[h].id, color});
     }
-    next.tick = tick; next.time = time;
+    next.tick = tick; next.time = time; next.redReleases = std::move(released); // read as last tick's until here (D246)
     next.stopService = std::move(service);
     // Retain demand due in the last subinterval, even though it cannot enter this run.
     if (tick == totalTicks(scenario)) detail::generateArrivals(next);

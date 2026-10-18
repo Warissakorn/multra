@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — B-4 driver-factor spread implemented (D236)
+
+D235's contract ([evidence](../evidence/driver-factor-spread.md)).
+- **Draw:** `samplePending` takes the standard deviation from the type's own behaviour, 0.15 without
+  the key; the random stream is unchanged. Rows BA132, BA133, BA135 and BA136 failed first against
+  the 0.15 stub.
+- **File and editor:** schema 43, refused below; `INVALID_BEHAVIOUR_PARAMETER` on both models; a
+  behaviour-dialog row. Codec, validation and the row proved by mutation.
+- **Measured:** shipped runs byte-identical. Spreads of 0, 0.3 and 0.5 leave mean delay inside its
+  half-width on all four projects; clamps rise with a wide spread. Ir ±0.015 %.
+
+`check` 176/176, Linux only.
+
 ## 2026-10-18 — B-4 driver-factor spread contract (D235, docs only)
 
 NEXT's item ([DRIVER_FACTOR](../reference/DRIVER_FACTOR.md)). Today every driver's factor is drawn
