@@ -1,6 +1,7 @@
 # The remaining moving clamps at merges and red heads (M3.2.8a.1)
 
-Written 2026-10-18 (D249). **Options for the owner's choice. Nothing here is implemented.** This
+Written 2026-10-18 (D249). The owner chose the recommended package the same day, as three project
+switches that are on by default (D250, §3); it is planned until D251 implements it. This
 is the contract that ROADMAP M3.2.8a.1's gate requires before code. It covers the 41 safety clamps
 left in the shipped M2.6 project, traced in the
 [evidence](../evidence/merge-clamps.md). It names every cause, sets out options measured with
@@ -108,7 +109,29 @@ This is the only option aimed at J1 and J2, and at what is left after B+M+Q.
 It is a new interaction. It would change trajectories at every join, including in clamp-free runs,
 and would need its own contract and rows. It would be booked as M3.2.8a.1b if the owner wants it.
 
-## 3. Rows if the package is chosen (BA158–BA165, planned)
+## 3. The owner's choice and its settings (D250)
+
+The owner chose B + M + Q on 2026-10-18, each rule switchable at project level (level 1 of
+[BEHAVIOUR_PARAMETERS](BEHAVIOUR_PARAMETERS.md#6-scope-project-wide-or-local-d216)), and on by default.
+
+- **The keys.** An optional `clampRules` object on the project definition, with three booleans:
+  - `leaderTravel` (B);
+  - `sideEntryAtLine` (M);
+  - `redLineStop` (Q, still only for a behaviour with `amberDeceleration`).
+- **Absent means on.** A missing key, or a missing object, is `true`.
+- **What the file holds.** The object is written only when some key is `false`, and then only the
+  `false` keys. A project with all three on keeps its old schema.
+- **Schema 45.** A file that writes the object is schema 45. An older schema carrying it is refused
+  with `EDIT_UNSUPPORTED_FIELD` at its path. A non-boolean value, or an unknown key inside the
+  object, is refused with `INVALID_CLAMP_RULE` at its path.
+- **Bare M0 scenario files** take no key and always run with all three on. Under them the
+  TypeScript reference rows and the CLI pin keep their bytes (§2, Q's scope).
+- **Editor.** Run settings gains three checkboxes, labelled with the key names. Confirming the
+  dialog is one Undo step with the other run settings.
+- **Engine.** `Scenario::clampRules`, defaulting to all three on. With all three off, every run is
+  byte-identical to today.
+
+## 4. Rows (BA158–BA167, planned)
 
 Each row first asserts that its forcing worked (AGENTS). The rows use `test::straight()`-style
 fixtures with a two-connector join.
@@ -119,12 +142,14 @@ fixtures with a two-connector join.
 | BA159 | B: a follower 2.5 m behind a leader at 12 m/s, which today clamps | No clamp. The end gap is at least the standstill distance if the leader brakes at its maximum |
 | BA160 | B: the same leader, standing | Unchanged: clamped as today |
 | BA161 | B: a leader entering beside, with 4 m of its body still off the route | No credit, until its body is on the route |
-| BA162 | M: D105's moving-merge fixture (minor at 0.9 m/s, 0.5 m from its line, a major entering) | Brakes to its line, with no clamp. This replaces `core.moving_merge_follower_still_reports_the_impossible_stop` |
+| BA162 | M: D105's moving-merge fixture (minor at 0.9 m/s, 0.5 m from its line, a major entering) | Brakes to its line, with no clamp. `core.moving_merge_follower_still_reports_the_impossible_stop` keeps D105's clamp with `sideEntryAtLine` off |
 | BA163 | M: the same minor not held by its rule | Unchanged |
 | BA164 | Q: a behaviour with `amberDeceleration`, creeping at a red head, stop within the maximum | Brakes to the line, with no clamp; a stop beyond the maximum is still clamped |
 | BA165 | Q: the same without `amberDeceleration` | Unchanged (the M0 crossing demo keeps its pin) |
+| BA166 | Each switch off in turn, then all three | Each off restores today's tick for its rule; all off is byte-identical to today on M2.6 |
+| BA167 | Codec and editor | Schema 45 round-trips; all on writes no key and keeps the old schema; 44 carrying the key refused; a non-boolean or unknown key refused at its path; the Run settings checkboxes write the keys as one Undo step |
 
-## 4. What stays out
+## 5. What stays out
 
 - J1 and J2 after the package (13 of the 17). They need anticipation across a join, or a change to
   how a vehicle stops at its line (D227, D232).
