@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — D223's red-onset clamp traced (D227, no code change)
+
+NEXT's item ([evidence](../evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
+- **Cause:** AMBER §1's red rule meeting a slow arrival. Vehicle 58 went on amber, was 6.7 m short
+  at red, could stop at its maximum and was held. The prototype's braking softens near the line,
+  so the last tick overshot by 1.6 cm at 0.33 m/s.
+- **Not the decision code:** it is idle on those ticks, and slow car types with no decision clamp
+  the same way (seed 68). Shipped speeds give no clamp in seeds 42–81.
+- **Candidate:** a `v²/(2·gap)` braking floor removed both red-onset clamps but added a creep clamp
+  (seed 56). Not adopted; noted in ENGINEERING_NOTES.
+- AMBER §1 gains the note. The CLI pin is byte-identical; no code changed.
+
+`check` 172/172, Linux only.
+
 ## 2026-10-17 — Acceleration capped under the curve bound (D226)
 
 NEXT's item ([evidence](../evidence/curve-speed.md#d226-acceleration-capped-while-the-bound-holds)).

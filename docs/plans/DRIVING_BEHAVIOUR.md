@@ -206,6 +206,14 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA135 | Key on one type's behaviour only | The other type keeps 0.15 |
 | BA136 | Segment behaviour with another spread | The factor is not redrawn |
 | BA137 | Codec at schema 43 and dialog row | Round-trips; faults at their paths; 42 refused |
+| BA138 | No red-running keys ([RED_RUNNING](../reference/RED_RUNNING.md), D237) | Red holds as AMBER §1; shipped outputs byte-identical |
+| BA139 | Runner meets red onset, time 2 s | Not held, crosses, one event; held without the keys |
+| BA140 | Runner arrives after the window | Held |
+| BA141 | Runner standing at red onset | Stays until green |
+| BA142 | The runner draw | About the share; the same id, the same answer |
+| BA143 | The random stream | Unchanged with the keys |
+| BA144 | Behaviour by road | Only heads under a behaviour with the keys |
+| BA145 | Codec at schema 44, outputs, dialog rows | Round-trips; pair and ranges at their paths; 43 refused; `redRunning` only with the keys |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

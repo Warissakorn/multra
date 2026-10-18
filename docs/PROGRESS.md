@@ -6,6 +6,17 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — B-9 red-light running contract (D237, docs only)
+
+NEXT's item, the last of tier B ([RED_RUNNING](reference/RED_RUNNING.md)). Today red holds
+every vehicle that can still stop.
+- **The owner's choices:** only in the first T seconds of red and only while moving; a fixed share
+  of drivers decided once per vehicle by a hash; no new interaction with crossing traffic, but each
+  run is counted.
+- **The contract:** `redRunningShare` and `redRunningTime` as a pair at schema 44; W74's hash at
+  index 15; a `red-running` event and a `redRunning` count written only with the keys; rows
+  BA138–BA145.
+
 ## 2026-10-18 — B-4 driver-factor spread implemented (D236)
 
 D235's contract ([evidence](evidence/driver-factor-spread.md)).
@@ -103,20 +114,6 @@ NEXT's item after D227, read against ROADMAP M2.1 ("distributions") and tier B
   still linear on the driver's share, set on the vehicle type.
 - **The contract:** optional `desiredSpeed.curve` at schema 40, ends equal to `min`/`max`; the same
   single draw inverted through it, so files without a curve stay byte-identical; rows BA110–BA116.
-
-## 2026-10-17 — D223's red-onset clamp traced (D227, no code change)
-
-NEXT's item ([evidence](evidence/speed-decisions.md#d227-the-seed-47-red-onset-clamp)).
-- **Cause:** AMBER §1's red rule meeting a slow arrival. Vehicle 58 went on amber, was 6.7 m short
-  at red, could stop at its maximum and was held. The prototype's braking softens near the line,
-  so the last tick overshot by 1.6 cm at 0.33 m/s.
-- **Not the decision code:** it is idle on those ticks, and slow car types with no decision clamp
-  the same way (seed 68). Shipped speeds give no clamp in seeds 42–81.
-- **Candidate:** a `v²/(2·gap)` braking floor removed both red-onset clamps but added a creep clamp
-  (seed 56). Not adopted; noted in ENGINEERING_NOTES.
-- AMBER §1 gains the note. The CLI pin is byte-identical; no code changed.
-
-`check` 172/172, Linux only.
 
 ## Older entries
 

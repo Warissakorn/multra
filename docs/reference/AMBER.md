@@ -30,7 +30,7 @@ contract replaces that for projects. The model is a deterministic threshold, **n
   forced that impossible stop and reported a safety clamp; the owner chose commitment on
   2026-10-09, after the first measurement left 44 such clamps in 40 four-leg seeds. Every other
   vehicle is held at red, and a clamp still means the engine stopped one harder than its type
-  allows. Deliberate red-light running is not modelled.
+  allows. Deliberate red-light running is a separate, optional rule ([RED_RUNNING](RED_RUNNING.md), B-9).
 - **Slow arrivals at red onset (D227).** The red test is kinematic: a car that can stop at its
   maximum is held. The line then becomes a standing leader inside the car's desired gap, and the
   prototype's braking law is linear in the gap, so it softens near the line. It can end a few

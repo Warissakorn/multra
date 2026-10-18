@@ -13,6 +13,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 - **PR #177** carries D207–D236 to `main` (#176 was closed). CI is green except Windows
   `properties-layout-ui`, which is also red on `main` (D205's open item).
+- **B-9 contract** (D237, [RED_RUNNING](reference/RED_RUNNING.md)): `redRunningShare` and
+  `redRunningTime` on the driver behaviour (schema 44); a hashed share of drivers pass red only in
+  its first seconds and while moving; each run counted; absent = today. Implementation in progress
+  (D238).
 - **B-4 is in** (D235, D236, [DRIVER_FACTOR](reference/DRIVER_FACTOR.md), [evidence](evidence/driver-factor-spread.md)):
   `driverFactorSpread` on the driver behaviour (schema 43) sets the factor's standard deviation,
   read from the type's own behaviour when a vehicle is made; absent = 0.15; the random stream is
@@ -92,12 +96,11 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — B-9, the last of tier B
+## Next session — B-9 implementation
 
 A session told only to "continue" takes item 1:
-1. **B-9: red-light running share** ([BEHAVIOUR_PARAMETERS](reference/BEHAVIOUR_PARAMETERS.md); not
-   modelled today; [AMBER](reference/AMBER.md) §1 holds the red rule): contract first, ask the owner the open choices (who
-   runs, when in the red, how it meets conflicting traffic), then rows that fail first. Absent must
-   stay byte-identical, as the random stream must.
-2. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
+1. **Implement B-9** (D237, [RED_RUNNING](reference/RED_RUNNING.md)): the exemption in the head loop,
+   `RedRunningEvent` and its consumers, rows BA138–BA145 failing first, schema 44, the dialog rows.
+2. Tier B is then complete. The next work comes from ROADMAP and the owner.
+3. Give-way line clamps (D232) and the red-onset clamp (D227) stay recorded. They reopen with an
    M3.2.8a.1 contract or when the owner asks.
