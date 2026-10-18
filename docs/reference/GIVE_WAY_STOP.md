@@ -1,6 +1,7 @@
 # A feasible stop at a give-way line (M3.2.8a.1 slice)
 
-Written 2026-10-18 (D239). This is a slice of ROADMAP M3.2.8a.1, the remaining moving clamps. It
+Written 2026-10-18 (D239); implemented the same day (D240,
+[evidence](../evidence/give-way-stop.md)). This is a slice of ROADMAP M3.2.8a.1, the remaining moving clamps. It
 addresses the give-way line clamps that D232 traced
 ([evidence](../evidence/give-way-line-clamps.md)). It is a contract before code, as the milestone's
 gate requires. No clamp-free claim follows from it, and no gate is closed.
@@ -34,7 +35,8 @@ In phase 1 of the step, for one vehicle on one tick:
    - `speed > 0` and `speed² ≤ 2 · maxDeceleration · gap`, with the vehicle type's maximum.
      `commitmentDeceleration` (D219) is not read here.
 3. **Then** the vehicle brakes at `a = −speed² / (2 · gap)` for the tick:
-   - the move is that braking's integrated distance, bounded by the gap against rounding;
+   - the move is that braking's integrated distance. It ends at the line, past it by at most rounding,
+     which the line tests already tolerate (`kPast`);
    - the speed is the integrated speed, 0 when it stops within the tick;
    - the mode is braking, and no `SafetyClampEvent` is emitted.
 4. **Otherwise nothing changes.** A move that would not pass the line, a stop that needs more than
@@ -64,7 +66,7 @@ every run that has no such clamp stays byte-identical.
 | BA146 | A vehicle braking to a held line with no clamp today | Its trajectory is unchanged on every tick; the rule did not fire |
 | BA147 | A minor at 0.5 m/s, 5 cm short of a Yield zone line whose gap closes | Stops at the line; no clamp; implied deceleration ≤ the type's maximum |
 | BA148 | The same at a priority-rule stop line | The same |
-| BA149 | The same at a Stop zone, served | The same |
+| BA149 | The same at a Stop zone | The same |
 | BA150 | A stop needing more than the maximum | Still clamped and reported |
 | BA151 | A standing vehicle leader nearer than the line | Unchanged; the rule does not fire |
 

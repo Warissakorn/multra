@@ -3,6 +3,14 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-17 — B-8 Stop dwell time contract (D230, docs only)
+
+NEXT's item ([STOP_DWELL](../reference/STOP_DWELL.md)). Today a Stop rests a vehicle for 1–2 ticks,
+so its effect depends on the time step.
+- **The owner's choices:** a driver-behaviour key, absent = today (byte-identical), fixed seconds.
+- **The contract:** `stopDwellTime` (s) at schema 41; the rest becomes whole ticks of at least
+  that time, recorded when the vehicle comes to the line; rows BA117–BA123.
+
 ## 2026-10-17 — B-5 desired-speed distribution curve implemented (D229)
 
 D228's contract ([evidence](../evidence/speed-distribution.md)).

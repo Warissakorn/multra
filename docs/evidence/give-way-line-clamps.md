@@ -65,7 +65,7 @@ line: the standstill cap that treats a moving leader as standing (D201 B5).
 ## What it means
 
 - **It is not the Stop rule's.** The shipped Yield project clamps the same way: 6 clamps at seeds
-  42–81, none at 42–51, so D225's ten-seed baseline never showed them. A Stop only changes which
+  42–81. (This first read "none at 42–51"; seed 46 has 2, and D225's baseline shows them, D240.) A Stop only changes which
   vehicles stand at the line, and how often.
 - **A dwell can add clamps.** It raises them at dt 0.1 (8 → 15) because it leaves more vehicles
   moving off slowly from the line. It lowers them at dt 0.5 (12 → 10).

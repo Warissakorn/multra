@@ -24,6 +24,12 @@ inline bool committed(double speed, double gap, const VehicleType& type) {
 // B-2 (docs/reference/COMMITMENT.md, D219): at a give-way line the behaviour's
 // commitmentDeceleration, when set, replaces the maximum; the lower of the two wins. Signal heads
 // keep the type-only test (owner).
+// M3.2.8a.1 (GIVE_WAY_STOP §2, D240): the braking that stops a moving vehicle exactly at a give-way
+// line `gap` ahead, when it fits the type's maximum; otherwise none, and the caller clamps as before.
+inline std::optional<double> stopAtLine(double speed, double gap, const VehicleType& type) {
+    if (speed <= 0 || gap <= 0 || speed * speed > 2 * type.maxDeceleration * gap) return std::nullopt;
+    return -(speed * speed) / (2 * gap);
+}
 inline bool committed(double speed, double gap, const VehicleType& type, const DriverBehaviour& behaviour) {
     const double deceleration = std::min(behaviour.commitmentDeceleration.value_or(type.maxDeceleration), type.maxDeceleration);
     return speed * speed > 2 * deceleration * gap;

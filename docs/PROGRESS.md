@@ -6,6 +6,18 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-18 — Give-way line stop implemented (D240)
+
+D239's contract ([evidence](evidence/give-way-stop.md)).
+- **Rule:** on a tick that would clamp at a binding give-way line, a stop within the type's maximum
+  brakes at `v²/(2·gap)` instead. BA147–BA149 failed first; the guards were proved by mutation.
+- **Measured:** the shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays unchanged.
+  Every other shipped output is byte-identical. The 11 replaced ticks braked at 2.5–7.4 m/s². Ir
+  +0.11–0.15 %.
+- **Correction:** D232's "none at seeds 42–51" was wrong (seed 46 has 2).
+
+`check` 178/178, Linux only.
+
 ## 2026-10-18 — Give-way line stop contract (D239, docs only)
 
 The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)
@@ -106,14 +118,6 @@ D230's contract ([evidence](evidence/stop-dwell.md)).
   (traced next). +0.25 % Ir on four-leg, +0.41 % on the Stop copy.
 
 `check` 174/174, Linux only.
-
-## 2026-10-17 — B-8 Stop dwell time contract (D230, docs only)
-
-NEXT's item ([STOP_DWELL](reference/STOP_DWELL.md)). Today a Stop rests a vehicle for 1–2 ticks,
-so its effect depends on the time step.
-- **The owner's choices:** a driver-behaviour key, absent = today (byte-identical), fixed seconds.
-- **The contract:** `stopDwellTime` (s) at schema 41; the rest becomes whole ticks of at least
-  that time, recorded when the vehicle comes to the line; rows BA117–BA123.
 
 ## Older entries
 

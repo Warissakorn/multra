@@ -11,12 +11,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## State on 2026-10-18
 
-- **PR #177** carries D207–D238 to `main` (#176 was closed). CI is green except Windows
+- **PR #177** carries D207–D240 to `main` (#176 was closed). CI is green except Windows
   `properties-layout-ui`, which is also red on `main` (D205's open item).
-- **Give-way line stop contract** (D239, [GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)): the owner asked
-  for the easiest item and chose to brake to stop at the line. On a tick that clamps today at a
-  binding give-way line, a stop within the type's maximum brakes at `v²/(2·gap)` instead.
-  Implementation in progress (D240).
+- **Give-way line stop is in** (D239, D240, [GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md), [evidence](evidence/give-way-stop.md)):
+  on a tick that would clamp at a binding give-way line, a stop within the type's maximum brakes to
+  the line instead. The shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays
+  unchanged; every other shipped output is byte-identical.
 - **Tier B is complete.** **B-9 is in** (D237, D238, [RED_RUNNING](reference/RED_RUNNING.md), [evidence](evidence/red-running.md)):
   `redRunningShare` and `redRunningTime` on the driver behaviour (schema 44); a hashed share of
   drivers pass red only in its first seconds while moving; a counted `red-running` event; two
@@ -101,10 +101,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — give-way stop implementation
+## Next session — ask the owner
 
-A session told only to "continue" takes item 1:
-1. **Implement D239** ([GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)): rows BA146–BA151 failing first,
-   the helper beside `committed`, and the 40-seed T-junction and lab comparison.
-2. Then ask the owner between the W99 contract (M3.3.3b) and further M3.2.8a.1 work. M2.8 has only
-   owner checks left.
+ROADMAP names no single next item for a session told only to "continue", so the session asks the
+owner first. The candidates, easiest first:
+1. **Trace M2.6's added clamps under red running** (D238, up to 3 in 40 runs at a 3 s window).
+   Trace only.
+2. **The remaining M3.2.8a.1 cases:** the moving merge clamps behind a shared leader's standstill
+   buffer (D105) and the standstill cap (D201 B5). Each needs a contract and the owner's choice.
+3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
+
+M2.8 has only owner checks left. Without an answer, the session takes item 1.

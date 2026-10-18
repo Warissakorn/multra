@@ -253,8 +253,8 @@ SimState stepSimulation(SimState&& state, double dt) {
         auto leader = closestVehicle(vehicle, parts, spans, buckets, zones.empty() ? nullptr : &leaderId, &lateral);
         const auto vehicleLeader = leader; // receiving space is about vehicles, not stop lines
         if (leader && !zones.empty()) leaders[v] = VehicleLeader{leader->gap, leader->speed, leaderId};
-        double allowedDistance = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) :
-                                          std::numeric_limits<double>::infinity();
+        double allowedDistance = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+        double giveWayLine = std::numeric_limits<double>::infinity(); // GIVE_WAY_STOP §2: the nearest rule or zone hold
         // M3.5 (PERCEPTION.md §2-§3): with a look-ahead or an observed-vehicle count, the
         // acceleration follows the PERCEIVED leaders; the physical leader above keeps the hard cap
         // and admission. Neither key: the physical leader, exactly as before.
@@ -336,14 +336,14 @@ SimState stepSimulation(SimState&& state, double dt) {
                 if (giveWay) break;
             }
             if (!giveWay) continue;
-            allowedDistance = std::min(allowedDistance, std::max(0.0, gap));
+            allowedDistance = std::min(allowedDistance, std::max(0.0, gap)); giveWayLine = std::min(giveWayLine, std::max(0.0, gap));
             if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
         }
         // Conflict zones hold a vehicle by the same stop-line mechanism once more.
         if (const auto hold = index.routeZones[refs[v].route].empty() ? std::nullopt
                               : zoneHold(scenario, index, zones, vehicle, refs[v], vehicleLeader,
                                          stopOf.empty() ? nullptr : stopOf[v], startTick)) {
-            allowedDistance = std::min(allowedDistance, *hold);
+            allowedDistance = std::min(allowedDistance, *hold); giveWayLine = std::min(giveWayLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
@@ -377,15 +377,14 @@ SimState stepSimulation(SimState&& state, double dt) {
         if (target < vehicle.desiredSpeed && vehicle.speed <= target)
             following.acceleration = std::min(following.acceleration, (target - vehicle.speed) / dt);
         const bool aboveTarget = vehicle.speed > target;
-        if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(
-            -braking, (target - vehicle.speed) / dt));
+        if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(-braking, (target - vehicle.speed) / dt));
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];
-        move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false,
-                following.w74};
-        if (move.distance > allowedDistance) {
-            move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt;
-            move.clamped = true;
+        move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
+        if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking
+            if (const auto a = giveWayLine == allowedDistance ? stopAtLine(vehicle.speed, giveWayLine, type) : std::nullopt) {
+                const auto stop = integrate(vehicle.speed, *a, dt); move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
+            } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
         }
     }
     // A Stop finishes the stop the model only approaches (M3.2.5): from below walking pace, so at
