@@ -217,4 +217,14 @@ its minimum, Qt's value, any set minimum and the word.
   the cap. Without the cap it fails, and the Linux panel cannot narrow at all ("Narrow fixture did
   not take effect").
 
-Unconfirmed on Windows until `windows-desktop` runs. UI only.
+UI only.
+
+**Windows result.** On `2596b8e` (job 117674376871) the lines are identical: 257 for the label,
+host 273 px. The new word check did **not** fire. So the label's own `minimumSizeHint` is now within
+its word, and the 257 in the diagnostic, which prints the larger of the hint and `minimumWidth()`,
+comes from somewhere else. No code or style sheet sets a minimum width on it.
+
+The diagnostic now prints, for each of the six widest widgets:
+- the hint and the set minimum, separately;
+- the width and the horizontal policy;
+- for a label, Qt's own value, the wrap flag, the format and the text.

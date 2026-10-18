@@ -84,8 +84,15 @@ void aligned(EditorWindow& window,const char* where,bool beside=true) {
             std::vector<std::pair<int,QWidget*>> widest;
             for(auto* w:body->findChildren<QWidget*>())if(w->isVisible()&&!tabs->isAncestorOf(w))widest.push_back({std::max(w->minimumSizeHint().width(),w->minimumWidth()),w});
             std::sort(widest.begin(),widest.end(),[](const auto& a,const auto& b){return a.first>b.first;});
-            for(std::size_t i=0;i<widest.size()&&i<6;++i)
-                std::cerr<<"  "<<widest[i].first<<" "<<widest[i].second->metaObject()->className()<<" "<<widest[i].second->objectName().toStdString()<<'\n';
+            for(std::size_t i=0;i<widest.size()&&i<6;++i) {
+                auto* w=widest[i].second;
+                std::cerr<<"  "<<widest[i].first<<" "<<w->metaObject()->className()<<" "<<w->objectName().toStdString()<<" (hint "<<w->minimumSizeHint().width()
+                         <<", set "<<w->minimumWidth()<<", width "<<w->width()<<", policy "<<w->sizePolicy().horizontalPolicy();
+                if(auto* label=qobject_cast<QLabel*>(w))
+                    std::cerr<<", QLabel "<<label->QLabel::minimumSizeHint().width()<<", wrap "<<label->wordWrap()<<", format "<<label->textFormat()
+                             <<", text \""<<label->text().left(80).toStdString()<<"\"";
+                std::cerr<<")\n";
+            }
         }
         require(beside?rows>0:rows==0,beside?"No Properties row sits beside its label":"A narrow form kept a field beside its label");
     }

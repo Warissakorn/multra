@@ -13,8 +13,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 - **PR #177** carries D207–D244 to `main` (#176 was closed).
 - **D244:** on Windows the wrapped effective-behaviour text asked for a 257 px minimum and held the
-  narrow Properties panel at 273 px. `ReflowLabel` now asks only for its longest word. It is
-  confirmed only by a green `windows-desktop` run.
+  narrow Properties panel at 273 px. `ReflowLabel` now asks only for its longest word, but
+  Windows still showed 257 on `2596b8e` and the word check did not fire, so the source is still
+  open. The narrow check prints each widget's hint, set minimum, width, policy and text; read that
+  output on the next run.
 - **D243:** the text buttons above the Properties pages elide (the owner's choice). It did **not**
   fix Windows `properties-layout-ui`: the top forms' host is still 273 px there. The narrow check
   now prints the dock, body and tab widths and the six widest top widgets. Read that output from
