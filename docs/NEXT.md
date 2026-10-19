@@ -28,7 +28,12 @@ the log. Rewrite this file; do not append to it. Owner items live only in
     off, every output is byte-identical to before. The pin and the TS reference rows are unchanged.
   - **Rows:** BA158–BA167. D105's row keeps its clamp with `sideEntryAtLine` off.
   - **Still open:** the 17 left (pull-out 9, late catch-up 4, merge creep 3, 1 new), the lane lab's
-    1 clamp (untraced) and source clearance (D108). The gate stays open.
+    1 clamp (traced, D252) and source clearance (D108). The gate stays open.
+- **D252:** the lane lab's one clamp is a follower under-braking behind a leader stopping hard at
+  a dead end (D241's follower class), not a merge.
+- **D253:** anticipation across a join, measured with eight reverted prototypes. The workable variant
+  (A4) nets M2.6 17 → 16 and moves T-junction delay from minor to major (7.069 → 7.545 s). It is
+  not recommended ([JOIN_ANTICIPATION](reference/JOIN_ANTICIPATION.md)).
 - **D249** traced all 41 clamps and measured seven options with reverted prototypes. Its red-head
   prototype braked with the wrong distance; D251's numbers replace it.
 - **D248:** the owner kept the window as an upper bound and the count as it is; the contract now
@@ -132,12 +137,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ROADMAP names no single next item for a session told only to "continue", so the session asks the
 owner first. The candidates, easiest first:
-1. **Trace the lane-change lab's one clamp** (seeds 42–81; untraced). Use D249's method: a
-   temporary stderr probe, never committed. The trace needs no owner choice; any fix that follows does.
-2. **M3.2.8a.1b: anticipation across a join.** A vehicle approaching a join would see the other
-   stream before that stream's front enters the shared lane. It targets 13 of M2.6's 17 remaining
-   clamps (pull-out, late catch-up). It is a new interaction that moves outputs at every join, so a
-   contract and rows come first, then the owner's choice.
+1. **D253's choice.** Adopting A4 is not recommended. If the owner wants it anyway, it becomes a
+   fourth `clampRules` switch, `joinAnticipation`, with rows BA168–BA172 written failure-first.
+2. **The line approach** (the session's recommendation if the remaining clamps are pursued). Write a
+   contract for how a vehicle stops cleanly at a give-way or signal line and behind a hard stop,
+   starting from D227's kinematic braking floor (ENGINEERING_NOTES). It is aimed at J1, D253's new
+   clamps, the lane lab's clamp (D252) and D241's follower. It changes the prototype's braking law,
+   so rows and the owner's choice come first.
 3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
 
 M2.8 has only owner checks left. Without an answer, the session asks again rather than choosing a

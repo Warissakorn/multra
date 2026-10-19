@@ -3,6 +3,15 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — Give-way line stop contract (D239, docs only)
+
+The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)
+([GIVE_WAY_STOP](../reference/GIVE_WAY_STOP.md)).
+- **The owner's choice:** brake to stop at the line.
+- **The contract:** only on a tick that today clamps at a binding give-way line, and only when the
+  stop fits the type's maximum, the vehicle brakes at `v²/(2·gap)` and no clamp is reported.
+  Everything else stays byte-identical. Rows BA146–BA151.
+
 ## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
 
 D237's contract ([evidence](../evidence/red-running.md)).

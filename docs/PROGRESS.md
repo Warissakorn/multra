@@ -6,6 +6,25 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — Lane lab clamp traced (D252); join anticipation measured (D253, docs only)
+
+The owner asked for both of NEXT's M3.2.8a.1 candidates, with the contract and numbers before any
+code for the second.
+- **D252** ([evidence](evidence/merge-clamps.md#d252-the-lane-change-labs-clamp)): the lane lab's
+  only clamp (seed 74) is not a merge. A follower brakes at only 4.4–4.8 m/s² behind a leader
+  stopping hard at its stub lane's dead end. That is D241's follower class, from the prototype
+  braking's softness (D227).
+- **D253** ([JOIN_ANTICIPATION](reference/JOIN_ANTICIPATION.md), [evidence](evidence/join-anticipation.md)):
+  eight reverted prototypes.
+  - **Replacing the following leader** with the other stream's vehicle produced phantom leaders, side-by-side
+    stops, and acceleration into the real leader: thousands of clamps, or 177 clamps and 12
+    overlaps.
+  - **A4** (a second following law, keeping the stricter acceleration) is clean, but it nets M2.6 only
+    17 → 16 and moves T-junction delay from the minor road to the major road (7.069 → 7.545 s).
+  - **Not recommended.** The line approach (D227's floor) is named as the better candidate.
+
+No engine code is committed. `check` 179/179, Linux only.
+
 ## 2026-10-19 — Merge clamp switches implemented (D250, D251)
 
 The owner chose D249's recommended package, as project switches that are on by default
@@ -156,15 +175,6 @@ D239's contract ([evidence](evidence/give-way-stop.md)).
   holds it in a local.
 
 `check` 178/178, Linux only.
-
-## 2026-10-18 — Give-way line stop contract (D239, docs only)
-
-The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)
-([GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)).
-- **The owner's choice:** brake to stop at the line.
-- **The contract:** only on a tick that today clamps at a binding give-way line, and only when the
-  stop fits the type's maximum, the vehicle brakes at `v²/(2·gap)` and no clamp is reported.
-  Everything else stays byte-identical. Rows BA146–BA151.
 
 ## Older entries
 
