@@ -1,4 +1,6 @@
 #include "../project/counted_volumes.hpp"
+#include "../project/macro_settings.hpp"
+#include "../core/validate.hpp"
 #include "demand_commands.hpp"
 #include "detail.hpp"
 #include <algorithm>
@@ -153,6 +155,10 @@ void changeRunSettings(ProjectDocument& d, double duration, double timeStep) {
     auto& def=demand(d); def.duration=duration; def.timeStep=timeStep;
 }
 void changeClampRules(ProjectDocument& d, ClampRules rules) { demand(d).clampRules = rules; }
+void changeMacroSettings(ProjectDocument& d, std::optional<MacroSettings> settings) {
+    if (settings) if (auto issues = macroSettingsIssues(*settings); !issues.empty()) throw ValidationError(std::move(issues));
+    demand(d).macroSettings = settings;
+}
 void changeEvaluationPeriod(ProjectDocument& d, double warmup, std::optional<double> end, double cooldown) {
     auto& def=demand(d);
     if (warmup==0 && !end && cooldown==0) def.evaluation.reset(); else def.evaluation=EvaluationPeriod{warmup,end,cooldown};

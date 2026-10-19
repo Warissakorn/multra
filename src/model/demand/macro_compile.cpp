@@ -52,7 +52,7 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
         const auto& list = stations[l->id];
         for (std::size_t k = 0; k + 1 < list.size(); ++k) {
             MacroLink m;
-            m.kind = MacroArc::link; m.source = l->id; m.fromStation = list[k]; m.toStation = list[k + 1];
+            m.kind = MacroArc::link; m.source = l->id; m.linkType = l->linkTypeId.value_or(""); m.fromStation = list[k]; m.toStation = list[k + 1];
             m.from = node[{l->id, list[k]}]; m.to = node[{l->id, list[k + 1]}];
             m.length = list[k + 1] - list[k]; m.lanes = static_cast<double>(l->lanes.size());
             if (type) {

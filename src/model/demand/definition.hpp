@@ -1,5 +1,6 @@
 #pragma once
 #include "../../core/types.hpp"
+#include "../../macro/graph.hpp"
 #include <algorithm>
 #include <map>
 
@@ -169,6 +170,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     std::optional<EvaluationPeriod> evaluation; // M5.3; absent is warm-up 0 to the end of the run
     bool externalModes{true}; std::vector<Mode> modes; // S1.2 (D269): absent = data/modes/, schema 49
     bool externalLinkTypes{true}; std::vector<LinkType> linkTypes; // S2.1 (D273): absent = data/link-types/, schema 50
+    std::optional<MacroSettings> macroSettings; // S2.3 (D275): absent = kMacroDefaults, schema 51
     double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight
     // M4.2 (D147): where the definition came from, not what it says -- never written and never
     // compared, so a save and reopen round-trips the content exactly. A bare M0 scenario (no

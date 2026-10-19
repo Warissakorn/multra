@@ -13,8 +13,6 @@ MacroTree shortestTree(const MacroGraph&, std::size_t origin, const std::string&
 // One class loaded on its shortest paths: veh/h per link, and sum of demand x shortest time.
 struct MacroLoading { std::vector<double> flows; double shortestCost{}; };
 MacroLoading allOrNothing(const MacroGraph&, const MacroClass&, const std::vector<double>& times);
-// The run's limits; S2.3's run settings hold their defaults (the target is 0.01 %, D272).
-struct MacroSettings { double targetGap{}; int maxIterations{}; };
 struct MacroAssignment {
     std::vector<std::vector<double>> classFlows; // [class][link], veh/h
     std::vector<double> load, time;              // [link]: pcu/h, and the time at that load

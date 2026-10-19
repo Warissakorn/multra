@@ -6,6 +6,27 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — S2.3: Macro run settings, outputs and CLI (D275)
+
+A Macro run now writes its results ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §18). The editor
+surface is split off as S2.4, since it is a second system (a worker job, a Results tab, stale
+marking, a link-type editor).
+- **Settings (schema 51):** `definition.macroSettings{targetGap, maxIterations}`, written only
+  when set. Absent means 10⁻⁴ (D272) and 1000 iterations; bad values are `INVALID_MACRO_SETTING`.
+- **Run:** `runMacro(doc, data, period)` names a period as its study-period id or
+  `matrix:<id>`, refuses the graph's and demand's issues, and adds `MACRO_NOT_CONVERGED` at the
+  cap. The input manifest records every file read.
+- **Outputs:** `macroJson` and `macroCsv`, one row per arc with the link type, veh/h per class,
+  pcu/h, V/C, free and congested time; both carry the not-validated marker.
+- **CLI:** `--macro PERIOD` with `--project` (and `--csv`, `--data-dir` only).
+- **Rows:** MA12, MA13 (ctest `macrooutput`, `cli-macro*`). Writing MA12 showed that S2.2's MA11
+  twin had no route choice (each entry Link had its own zone connector); S2.3's fixture fans one
+  origin out to two routes, and MA11's comment now says so.
+- **Mutations:** nine caught. A missing class column first survived (the row checked only its
+  prefix); MA13 now compares a whole CSV row.
+- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS
+  rows. Linux only.
+
 ## 2026-10-19 — S2.2: the Macro assignment (D274)
 
 The Macro graph can now be assigned ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §17). There are
@@ -159,21 +180,6 @@ What a Node holds is now derived from the network inside its polygon ([NODES](re
 - **Rows:** N6–N11 (ctest `nodemembership`); the four-leg gives 4 + 4 legs, 12 turns, signalised;
   the T-junction 3 + 2 legs, 4 turns, unsignalised and 3 conflict rows.
 - **Unchanged:** the engine reads no Node; the pin and the TS rows are unchanged. Linux only.
-
-## 2026-10-19 — Nodes S0.1: object, file, tool and tab (D260, D261)
-
-The owner accepted every Node recommendation (D260) ([NODES](reference/NODES.md) §11).
-- **Model:** `Network::nodes` and `nodeIssues` (ids, simple polygon, no overlap). The polygon tests
-  are shared with zones in `polygon.*`.
-- **File:** `network.nodes` is written only when a Node exists, at schema 48, with
-  `EDIT_NODE_INVALID` at its path. `generated` is written only when true.
-- **Commands:** `putNode`, `renameNode`, `deleteNode`. An edit clears `generated`.
-- **Editor:** the Node tool (`N`) shares the zone draft, and the Nodes tab in the Measurement group
-  can rename and delete. Each action is one Undo step.
-- **Rows:** N1–N5 (ctest `nodes`, `node-ui`). The workspace and object-group UI tests list the new
-  tool and page.
-- **Unchanged:** the engine does not read Nodes, so every run output, the pin and the TS rows are
-  unchanged. Linux only.
 
 ## Older entries
 

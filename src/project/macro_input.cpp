@@ -26,15 +26,16 @@ std::vector<MacroPeriod> macroPeriods(const ProjectDocument& d) {
     for (const auto& m : matrices) if (m.periodId.empty()) periods.push_back({"", m.id});
     return periods;
 }
-MacroDemand macroDemand(const ProjectDocument& d, const std::filesystem::path& data, const MacroPeriod& period, const MacroGraph& graph) {
+MacroDemand macroDemand(const ProjectDocument& d, const std::filesystem::path& data, const MacroPeriod& period, const MacroGraph& graph,
+                        InputManifest* manifest) {
     MacroDemand out;
     const auto def = d.definition.value_or(AuthoringDefinition{});
     const auto& layer = d.zones;
     if (!def.inputs.empty()) out.advisories.push_back({"MACRO_INPUT_IGNORED", "inputs"});
     for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) out.advisories.push_back({"MACRO_LOT_UNCAPPED", "parkingLots[" + std::to_string(i) + "]"});
-    const auto catalog = resolveDemandCatalog(def, data);
+    const auto catalog = resolveDemandCatalog(def, data, true, manifest);
     const auto modes = std::any_of(layer.odMatrices.begin(), layer.odMatrices.end(), [](const auto& m) { return !m.modeId.empty(); })
-        ? resolveModes(def, data) : std::vector<ResolvedMode>{};
+        ? resolveModes(def, data, manifest) : std::vector<ResolvedMode>{};
     std::map<std::string, MacroClass> classes;
     std::map<std::string, std::map<std::pair<std::size_t, std::size_t>, double>> flows;
     for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {

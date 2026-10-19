@@ -151,19 +151,28 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S2.3: Macro outputs and editor (MACRO_NETWORK §9, §13; rows MA12–MA14)
+## Next session — S2.4: the Macro editor surface (MACRO_NETWORK §9, §13; row MA14)
 
-S2.1 and S2.2 are in (D273, D274): the Macro graph, per-class demand and the multi-class
-Frank–Wolfe. Next, one system:
-- **S2.3,** with rows written failure-first:
-  - run settings holding the target gap (0.01 %, D272) and the iteration cap;
-  - link outputs, JSON and CSV, with the not-validated marker (§9);
-  - `MACRO_NOT_CONVERGED`;
-  - CLI `--macro <period>`;
-  - Run Macro on the worker thread;
-  - a Macro links table, and stale marking;
-  - the link-type editor (a types table, the Link's type field);
-  - VDF parameters swapped through data (MA12).
+S2.1–S2.3 are in (D273–D275): the graph, the assignment, run settings, JSON/CSV link outputs and
+CLI `--macro PERIOD`. Next, one system, the editor, with rows written failure-first:
+- **Run Macro:**
+  - asks for a period (`macroPeriods` → `macroPeriodName`);
+  - compiles on the UI thread and runs `runMacro` on the D141 worker (`startWorker` in
+    `src/shell/editor_batch.cpp`);
+  - one action, and no Undo step.
+  - `assignMacro` has no progress or cancel hook yet. Add an optional per-iteration callback, or
+    let cancel discard the result.
+- **Results → Macro links:**
+  - a table with one row per arc, plus the marker note;
+  - the Run settings dialog gains the target gap and the cap (`changeMacroSettings`).
+- **Stale marking (new):**
+  - the result keeps its revision and is marked stale when `history_.revision()` differs;
+  - decide whether `clearRun()` discards it.
+- **Link-type editor:**
+  - a Link types tab like the Modes tab (`putLinkType` / `deleteLinkType`, refusing a delete in
+    use);
+  - the Link's type field in the inspector, after `behaviourTypeId`'s combo.
+- **Watch the size:** `editor_window.hpp` has about 87 lines left.
 - **Before the gate (MA15),** name and check the textbook example, with Sheffi 1985 the first
   candidate. Then measure the engine's cost on it.
 

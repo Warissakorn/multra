@@ -20,5 +20,6 @@ std::vector<MacroPeriod> macroPeriods(const ProjectDocument&);
 // matrices of one class. Refused: UNKNOWN_MODE (odMatrices[i].modeId), MODE_PCU_MISSING
 // (odMatrices[i]), MACRO_NO_PATH (the cell). Advised: MACRO_INPUT_IGNORED, MACRO_LOT_UNCAPPED.
 struct MacroDemand { std::vector<MacroClass> classes; std::vector<ValidationIssue> issues, advisories; };
-MacroDemand macroDemand(const ProjectDocument&, const std::filesystem::path& dataDirectory, const MacroPeriod&, const MacroGraph&);
+MacroDemand macroDemand(const ProjectDocument&, const std::filesystem::path& dataDirectory, const MacroPeriod&, const MacroGraph&,
+                        InputManifest* = nullptr);
 }

@@ -133,7 +133,7 @@ TEST(macroassign, ma11_a_document_assigns_the_same_bytes_in_any_order) { // MA11
     const auto d = twin();
     const auto a = endToEnd(d);
     CHECK(a.converged && a.classFlows.size() == 1 && a.gap <= kTarget);
-    // The forcing: the short route is congested enough that both entry Links carry flow.
+    // The forcing: both entry Links carry flow (each by its zone connector's share; S2.3's MA12 has route choice).
     const auto g = macroNetwork(d, test::root() / "data").graph;
     for (const auto& link : {d.network.links[0].id, d.network.links[1].id}) {
         const auto at = std::find_if(g.links.begin(), g.links.end(), [&](const auto& l) { return l.source == link; });

@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — Nodes S0.1: object, file, tool and tab (D260, D261)
+
+The owner accepted every Node recommendation (D260) ([NODES](../reference/NODES.md) §11).
+- **Model:** `Network::nodes` and `nodeIssues` (ids, simple polygon, no overlap). The polygon tests
+  are shared with zones in `polygon.*`.
+- **File:** `network.nodes` is written only when a Node exists, at schema 48, with
+  `EDIT_NODE_INVALID` at its path. `generated` is written only when true.
+- **Commands:** `putNode`, `renameNode`, `deleteNode`. An edit clears `generated`.
+- **Editor:** the Node tool (`N`) shares the zone draft, and the Nodes tab in the Measurement group
+  can rename and delete. Each action is one Undo step.
+- **Rows:** N1–N5 (ctest `nodes`, `node-ui`). The workspace and object-group UI tests list the new
+  tool and page.
+- **Unchanged:** the engine does not read Nodes, so every run output, the pin and the TS rows are
+  unchanged. Linux only.
+
 ## 2026-10-19 — The Node contract (S0, D259, docs only)
 
 The owner chose to start the multi-level work (D145, D175) at S0, before W99 ([NODES](../reference/NODES.md)).

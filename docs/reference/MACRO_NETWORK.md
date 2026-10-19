@@ -189,6 +189,11 @@ passes.
   - Definitions differ between sources (Boyce, Ralevic-Dekic and Bar-Gera, *J. Transp. Eng.*
     130(1), 2004, pp. 49–55), so the output names this formula.
 - **Stopping:** at a gap of 0.01 % (D272 choice 8b) or at an iteration cap, a run setting.
+  - **Run settings** (D275): `definition.macroSettings{targetGap, maxIterations}`, written at
+    schema 51 only when present. Absent means a target of 10⁻⁴ and a cap of 1000 iterations.
+    - The cap is a numerical limit, not a model value: reaching it is flagged, never hidden.
+    - A target outside (0, 1), or a cap that is not a whole number from 1 to 100000, is
+      `INVALID_MACRO_SETTING` at the field's path. Below 51 the key is `EDIT_UNSUPPORTED_FIELD`.
   - Stopping at the cap is `MACRO_NOT_CONVERGED`. The result is still written, flagged with the
     gap it reached. It is never hidden.
 - **Determinism:** the same document, data and settings give the same bytes. Permuting the
@@ -217,6 +222,8 @@ passes.
   - the document revision and the data files read, through the input manifest;
   - the gap formula and the gap reached;
   - iterations, convergence and the advisories.
+- **Periods are named** as the study period's id, or `matrix:<id>` for a matrix with its own
+  times. Any other name is `MACRO_PERIOD_UNKNOWN`.
 - **Format.** JSON and CSV through the shared formatters (`csv_format.hpp`), each carrying the
   not-validated marker line. A CLI flag, `--macro <period>`, writes them.
 - **Editor** (choice 5a):
@@ -297,7 +304,8 @@ passes.
 |---|---|---|
 | S2.1 | Link types and VDF data, `Link::linkType` at schema 50, `compileMacroNetwork` (pure, `src/model/`), Macro demand. **Implemented (D273)** | MA1–MA6 |
 | S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence. **Implemented (D274)** | MA7–MA11, MA16, MA17 |
-| S2.3 | Outputs, CLI `--macro`, Run Macro and the Macro links table; the link-type editor (a types table, the Link's type field) | MA12–MA14 |
+| S2.3 | Run settings, `MACRO_NOT_CONVERGED`, the link outputs in JSON and CSV, CLI `--macro`. **Implemented (D275)** | MA12, MA13 |
+| S2.4 | Run Macro on the worker, the Macro links table and stale marking; the link-type editor (a types table, the Link's type field) | MA14 |
 | Gate | Benchmark (choice 7) | MA15 |
 
 ## 14. Acceptance rows (planned)
@@ -405,3 +413,43 @@ Each row first asserts that its forcing worked (AGENTS).
   - bans ignored;
   - the cap off by one;
   - β ignored.
+
+## 18. S2.3 as implemented (D275)
+
+- **The split.** NEXT's S2.3 held two systems, so the editor surface (Run Macro, the Macro links
+  table, stale marking, the link-type editor; row MA14) is S2.4.
+- **Settings.** `src/project/macro_settings.*`: `MacroSettings` and `kMacroDefaults` (10⁻⁴, 1000)
+  live in `src/macro/graph.hpp`; `AuthoringDefinition::macroSettings` is optional; the command is
+  `changeMacroSettings`. The schema chain gains `usesMacroSettings(d)?51`, and fifteen rows'
+  "future schema" example moves to 52.
+- **Run.** `src/project/macro_run.*`: `macroPeriodName`, and `runMacro` returning `MacroRun{period,
+  revision, settings, graph, classes, assignment, advisories, inputManifest}`. `macroDemand` now
+  takes the manifest too, so the catalog files it reads are recorded.
+- **Outputs.** `src/project/macro_output.*`:
+  - JSON: `validated: false`, `measure`, `period`, `revision`, `settings`, `gap{formula, value,
+    target}`, `iterations`, `converged`, `advisories`, `classes{id, mode, pcu}`, `links[]` and
+    `inputManifest`;
+  - each link row: `kind`, `source`, `fromStation`, `toStation`, `linkType` (`MacroLink::linkType`,
+    empty off Links), `flow{class: veh/h}`, `load` (pcu/h), `vc` (null when uncapacitated),
+    `freeTime`, `time`;
+  - CSV: the marker line, `# Period`, `# Relative gap` with the formula, iterations and
+    convergence, then a header with one `flow:<class>` column per class.
+- **CLI.** `trafficsim-cli --project FILE --macro PERIOD [--csv FILE] [--data-dir DIR]`; JSON on
+  stdout, stamped like a batch; a warning on stderr when not converged. The fixture is
+  `tests/macro-two-route.traffic.json`.
+- **Rows.** MA12 and MA13 in `tests/macro_output_tests.cpp` (ctest `macrooutput`); `cli-macro`,
+  `cli-macro-seeds`, `cli-macro-period`.
+- **Found while writing the rows:** S2.2's MA11 document gives each entry Link its own zone
+  connector, so its flows follow the shares, not route choice. MA11's determinism claim stands;
+  its comment is corrected, and S2.3's fixture fans one origin out to two routes.
+- **Mutations caught:**
+  - the marker dropped;
+  - a class column missing (it first survived a prefix check; MA13 now compares a whole row);
+  - `MACRO_NOT_CONVERGED` never added;
+  - the schema gate off;
+  - the VDF parameters ignored;
+  - V/C on veh/h;
+  - the project's settings ignored;
+  - the settings always written;
+  - the cap's upper bound unchecked.
+
