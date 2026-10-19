@@ -122,6 +122,9 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 
 ## 5. Coarse values and lifecycle (specified now; slice S0.4 lands with S2)
 
+S2's contract asks the owner to move S0.4 to S3 ([MACRO_NETWORK](MACRO_NETWORK.md) §10, choice 6).
+
+
 - **Coarse values** are stored only on a Node with no Micro detail (no internal Link or Connector):
   - turns that differ from the default (every in→out pair except U-turns is allowed);
   - control;

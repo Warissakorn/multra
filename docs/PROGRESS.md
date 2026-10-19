@@ -6,6 +6,25 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, docs only)
+
+The owner chose S2. [MACRO_NETWORK](reference/MACRO_NETWORK.md) fixes how the drawn network
+compiles into a Macro graph and how one study period is assigned. Nothing is implemented.
+- **Graph:** Links split at Connector stations become capacitated links. Connectors and zone
+  connectors become uncapacitated arcs. Nodes are not read yet.
+- **Values:** `Link::linkType` and link types `{capacityPerLane, freeSpeed, vdfId, source}` at
+  schema 50, none shipped; BPR 0.15/4 as data (D158).
+- **Demand:** pcu/h by connector share for one period; `MODE_PCU_MISSING` is refused.
+- **Engine:** a pure `src/macro/` Frank–Wolfe with a named gap formula; non-convergence is
+  flagged, never hidden.
+- **Rows:** MA1–MA15, planned.
+- **Source checks** changed three recommendations:
+  - the BPR pair assumes practical capacity, so a type's source must say which capacity it gives;
+  - Boyce et al. (2004) argue for a 0.01 % gap;
+  - the Sioux Falls data are for academic research only, so the benchmark stays local until the
+    licence is confirmed.
+- **Eight owner choices** are pending. One of them moves S0.4 to S3.
+
 ## 2026-10-19 — S1.2: modes and PCU (D269, D270)
 
 S1 is complete ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §6, §14).
@@ -148,23 +167,6 @@ The owner took D256's recommendation, on by default ([LINE_APPROACH](reference/L
   - Off is byte-identical to D255.
   - The pin is unchanged, and the TS rows pass 5/5.
   - Ir +0.13–0.18 %.
-
-## 2026-10-19 — Stopping cleanly at a line measured (D256, docs only)
-
-The owner asked for the line approach as a contract with numbers first (D254)
-([LINE_APPROACH](reference/LINE_APPROACH.md), [evidence](evidence/line-approach.md)).
-- **Eleven reverted prototypes** of the prototype law, on D251's defaults.
-- **D227's floor**, scoped to behaviours with `amberDeceleration` (F1a):
-  - cuts M2.6 17 → 5 (J1 9→1, M 3→0, none new);
-  - keeps the four-leg and lane lab byte-identical, the pin, the TS rows 5/5, and every row but
-    BA164's forcing;
-  - moves delays by ≤ 0.03 s. Unscoped, it fails one TS row.
-- **A floor behind a braking leader** (F2) removes only the lane lab's clamp, but binds about 1,900
-  times per M2.6 run. **J** (held means not committed) gives 17 → 27.
-- **Recommended:** F1a as a fifth `clampRules` switch, with rows BA173–BA178 planned. On or off by
-  default is the owner's call.
-
-No engine code is committed. Linux only.
 
 ## Older entries
 

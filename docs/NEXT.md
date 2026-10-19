@@ -151,15 +151,21 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the owner picks
+## Next session — S2's owner choices, then S2.1
 
-S1 is in. Candidates, for the owner to choose (one system per session):
-- **S0's open items:** the Nodes tab's leg highlight on the canvas, Node rows in Results and the
-  batch comparison, and the cost with a Node (+26–40 % Ir, D264, D265).
-- **S2, Macro compiled from a detailed network (M10.1)**, the workflow's next slice
-  ([MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md)). Its contract and rows come first. It is
-  the first reader of a mode's PCU (`MODE_PCU_MISSING`) and of `macroFlowBasis`.
-- **PCU values:** only once a source is named (title, edition, table).
+The S2 (M10.1) contract is written (D271, [MACRO_NETWORK](reference/MACRO_NETWORK.md)):
+- **First, the owner answers its eight choices** (§12) as D272. The recommendations are 1a–7a and
+  8b; 8b tightens D158's gap to 0.01 %, and 6a moves S0.4 to S3.
+- **Then S2.1,** with rows MA1–MA6 written failure-first:
+  - link types and VDF data;
+  - `Link::linkType` at schema 50;
+  - `compileMacroNetwork`;
+  - Macro demand in PCU.
+- **No link-type value ships** unless a source names it (choice 2). The 1964 BPR manual itself is to
+  be checked before `data/vdf/bpr.json` lands.
+
+Also open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and the cost
+with a Node (+26–40 % Ir, D264, D265).
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.

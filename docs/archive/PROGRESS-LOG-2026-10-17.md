@@ -3,6 +3,23 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — Stopping cleanly at a line measured (D256, docs only)
+
+The owner asked for the line approach as a contract with numbers first (D254)
+([LINE_APPROACH](../reference/LINE_APPROACH.md), [evidence](../evidence/line-approach.md)).
+- **Eleven reverted prototypes** of the prototype law, on D251's defaults.
+- **D227's floor**, scoped to behaviours with `amberDeceleration` (F1a):
+  - cuts M2.6 17 → 5 (J1 9→1, M 3→0, none new);
+  - keeps the four-leg and lane lab byte-identical, the pin, the TS rows 5/5, and every row but
+    BA164's forcing;
+  - moves delays by ≤ 0.03 s. Unscoped, it fails one TS row.
+- **A floor behind a braking leader** (F2) removes only the lane lab's clamp, but binds about 1,900
+  times per M2.6 run. **J** (held means not committed) gives 17 → 27.
+- **Recommended:** F1a as a fifth `clampRules` switch, with rows BA173–BA178 planned. On or off by
+  default is the owner's call.
+
+No engine code is committed. Linux only.
+
 ## 2026-10-19 — `joinAnticipation` as an off-by-default switch (D254, D255)
 
 The owner chose D253's A4 anyway, as a fourth project switch that is off by default, and asked for
