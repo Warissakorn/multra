@@ -139,6 +139,8 @@ The owner chose B + M + Q on 2026-10-18, each rule switchable at project level (
     checkboxes are in Run settings.
   - Measured with the defaults: M2.6 41 → 17, delay 46.013 → 46.010 s, and no overlaps. All off
     is byte-identical to today on all four projects.
+- **A fourth key (D254, D255).** `joinAnticipation` sits in the same object but is off when absent
+  and written only when true, at schema 46 ([JOIN_ANTICIPATION](JOIN_ANTICIPATION.md) §5).
 
 ## 4. Rows (BA158–BA167; implemented, D251)
 
@@ -160,8 +162,8 @@ fixtures with a two-connector join.
 
 ## 5. What stays out
 
-- J1 and J2 after the package (13 of the 17). They need anticipation across a join, or a change to
-  how a vehicle stops at its line (D227, D232).
+- J1 and J2 after the package (13 of the 17). They need anticipation across a join (off-by-default
+  `joinAnticipation`, D255), or a change to how a vehicle stops at its line (D227, D232).
 - Source-insertion clearance (M3.2.8a.1a, D108).
 - The lane-change lab's one clamp, traced by D252
   ([evidence](../evidence/merge-clamps.md#d252-the-lane-change-labs-clamp)). It is no merge: a

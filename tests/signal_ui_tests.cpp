@@ -222,6 +222,18 @@ int main(int argc,char** argv) {
         require(ruled["schemaVersion"]==45 && ruled["definition"]["clampRules"]==Json{{"sideEntryAtLine",false}},"An off rule did not write schema 45");
         w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
         require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore the rule");
+        // JOIN_ANTICIPATION §5 (D255, BA172): the fourth box is unticked by default; ticking it writes true at 46.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            auto* box=dialog?dialog->findChild<QCheckBox*>("editorJoinAnticipation"):nullptr;
+            require(box && !box->isChecked(),"editorJoinAnticipation missing or ticked by default");
+            box->setChecked(true);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto joined=documentJson(w.history().document());
+        require(joined["schemaVersion"]==46 && joined["definition"]["clampRules"]==Json{{"joinAnticipation",true}},"joinAnticipation did not write schema 46");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not clear joinAnticipation");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

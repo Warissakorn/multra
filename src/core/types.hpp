@@ -216,7 +216,7 @@ struct SegmentBehaviour {
     bool operator==(const SegmentBehaviour&) const = default;
 };
 // MERGE_CLAMPS §2-§3 (D250/D251): three project switches that relieve a cap on a tick that would clamp.
-struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}; bool operator==(const ClampRules&) const = default; };
+struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}; bool operator==(const ClampRules&) const = default; }; // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default
 struct ScenarioDefinition {
     double duration{}, timeStep{};
     std::vector<Route> routes;
@@ -313,6 +313,7 @@ struct ScenarioIndex {
     // M8.4a: the lot slot whose gate a route ends at, SIZE_MAX for none; empty without a lot.
     std::vector<std::size_t> lotOfRoute;
     LateralIndex lateral; // M3.7 (LATERAL §5, D188): off and empty without a lateral key
+    std::vector<char> joinOfSegment; std::vector<std::size_t> yieldSegmentOfRule; // JOIN_ANTICIPATION §2 (D255): empty unless clampRules.joinAnticipation
 };
 // Scenario lookups for one vehicle, resolved once per tick instead of once per use.
 struct VehicleRefs { std::size_t route{}, type{}, behaviour{}; };

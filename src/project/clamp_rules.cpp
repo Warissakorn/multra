@@ -4,14 +4,21 @@
 
 namespace trafficsim {
 namespace {
-struct Key { const char* name; bool ClampRules::*member; };
-constexpr Key kKeys[] = {{"leaderTravel", &ClampRules::leaderTravel}, {"sideEntryAtLine", &ClampRules::sideEntryAtLine},
-                         {"redLineStop", &ClampRules::redLineStop}};
+// `absent` is the value a missing key means, and the one never written.
+struct Key { const char* name; bool ClampRules::*member; bool absent; };
+constexpr Key kKeys[] = {{"leaderTravel", &ClampRules::leaderTravel, true}, {"sideEntryAtLine", &ClampRules::sideEntryAtLine, true},
+                         {"redLineStop", &ClampRules::redLineStop, true}, {"joinAnticipation", &ClampRules::joinAnticipation, false}};
 }
 bool ownsClampRules(const ProjectDocument& d) { return d.definition && !(d.definition->clampRules == ClampRules{}); }
+bool ownsJoinAnticipation(const ProjectDocument& d) { return d.definition && d.definition->clampRules.joinAnticipation; }
 void rejectClampRulesBefore45(const Json& j) {
     if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules"))
         throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules"}});
+}
+void rejectJoinAnticipationBefore46(const Json& j) {
+    if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules") &&
+        j.at("definition").at("clampRules").is_object() && j.at("definition").at("clampRules").contains("joinAnticipation"))
+        throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules.joinAnticipation"}});
 }
 ClampRules parseClampRules(const Json& definition) {
     ClampRules rules;
@@ -28,7 +35,7 @@ ClampRules parseClampRules(const Json& definition) {
 }
 void addClampRulesJson(const AuthoringDefinition& d, Json& definition) {
     Json j = Json::object();
-    for (const auto& k : kKeys) if (!(d.clampRules.*k.member)) j[k.name] = false;
+    for (const auto& k : kKeys) if (d.clampRules.*k.member != k.absent) j[k.name] = !k.absent;
     if (!j.empty()) definition["clampRules"] = j;
 }
 }

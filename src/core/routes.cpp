@@ -5,6 +5,7 @@
 #include "lanes.hpp"
 #include "detail.hpp"
 #include "lateral.hpp"
+#include "join_anticipation.hpp"
 #include <cstdint>
 
 namespace trafficsim {
@@ -158,6 +159,7 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
                 index.lotOfRoute[static_cast<std::size_t>(&detail::byId(scenario.routes, id) - scenario.routes.data())] = k;
     }
     index.lateral = buildLateralIndex(scenario); // M3.7 (D188): off and empty without a lateral key
+    indexJoins(scenario, index); // JOIN_ANTICIPATION §2 (D255): empty unless clampRules.joinAnticipation
     return index;
 }
 const std::vector<RoutePart>& partsFor(const ScenarioIndex& index, const Scenario& scenario, const Route& route) {

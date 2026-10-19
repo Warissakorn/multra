@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — Give-way line stop implemented (D240)
+
+D239's contract ([evidence](../evidence/give-way-stop.md)).
+- **Rule:** on a tick that would clamp at a binding give-way line, a stop within the type's maximum
+  brakes at `v²/(2·gap)` instead. BA147–BA149 failed first; the guards were proved by mutation.
+- **Measured:** the shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays unchanged.
+  Every other shipped output is byte-identical. The 11 replaced ticks braked at 2.5–7.4 m/s². Ir
+  +0.11–0.15 %.
+- **Correction:** D232's "none at seeds 42–51" was wrong (seed 46 has 2).
+- **Sanitizer:** CI ASan caught BA151 reading a reference into a temporary scenario; the row now
+  holds it in a local.
+
+`check` 178/178, Linux only.
+
 ## 2026-10-18 — Give-way line stop contract (D239, docs only)
 
 The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)

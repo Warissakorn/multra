@@ -95,3 +95,27 @@ overlap counter, which dominates its cost.
 - A larger or smaller `R`, other tie rules, or anticipation for lane changes.
 - The line approach itself: D227's braking floor and how a minor stops at its line. J1 and the 7 new
   clamps point there.
+
+## D255: the switch implemented
+
+The owner chose A4 as `clampRules.joinAnticipation`, off by default (D254). Branch
+`claude/red-running-owner-choices`, on `c72d73a` (D253). Linux, GCC 13.3.0, Release `-g`.
+
+- **On reproduces the prototype.** A scratch build with the default flipped to on gives outputs
+  byte-identical to D253's A4 build on seeds 42–81 of all four shipped projects (M2.6 16 clamps,
+  delay 46.014 s; T-junction 7.545 s; four-leg 46.001 s; lane lab unchanged).
+- **Off is today.** The committed default gives outputs byte-identical to D251's
+  (`e926bb6`) on the same 160 runs, and `trafficsim-cli 42` keeps its pin.
+- **Cost off.** Callgrind Ir at seed 42 against D251's build: four-leg +0.16 %, lane lab +0.11 %,
+  M2.6 +0.00 %. The step tests one empty vector per vehicle.
+- **Mutations** of `src/core/join_anticipation.cpp`, each run against BA168–BA172:
+
+  | Mutation | Caught by |
+  |---|---|
+  | No held-upstream test | BA169 |
+  | No positive-gap test | BA171 |
+  | No moving test | BA169 |
+  | No "front on the predecessor" test | BA169 |
+  | Replace the following result instead of keeping the stricter | BA170 |
+  | Never apply the second law | BA168 |
+  | No "nearer the join" test | survived: a positive gap implies it, so the test was removed |

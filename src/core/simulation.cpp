@@ -2,6 +2,7 @@
 #include "conflicts.hpp"
 #include "detail.hpp"
 #include "following.hpp"
+#include "join_anticipation.hpp"
 #include "lanes.hpp"
 #include "lateral.hpp"
 #include "leaders.hpp"
@@ -22,9 +23,7 @@
 namespace trafficsim {
 namespace {
 Scenario canonicalScenario(Scenario scenario) {
-    const auto sort = [](auto& items) {
-        std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
-    };
+    const auto sort = [](auto& items) { std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; }); };
     if (!scenario.segmentCrossSections.empty() && scenario.segmentCrossSections.size() == scenario.segments.size()) {
         // M3.7 (D187): cross-sections are parallel to segments, so they move with them.
         std::vector<std::size_t> order(scenario.segments.size());
@@ -129,8 +128,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     // Insertions append to both, reproducing exactly what a full rebuild over the grown vehicle
     // list would have produced.
     std::vector<VehicleRefs> candidateRefs;
-    std::vector<OccupiedSpan> candidateSpans;
-    SpanBuckets candidateBuckets;
+    std::vector<OccupiedSpan> candidateSpans; SpanBuckets candidateBuckets;
     bool spansBuilt = false;
     for (const auto& pending : candidates) {
         const auto& route = scenario.routes[pending.routeIndex];
@@ -217,6 +215,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     // Cooperation, from the post-change snapshot: who holds back for a vehicle waiting to change.
     const auto courtesy = index.laneChanges ? courtesyHolds(scenario, index, vehicles, refs, spans, buckets)
                                             : std::vector<CourtesyHold>{};
+    const auto joins = scenario.clampRules.joinAnticipation ? joinEntries(index, vehicles, refs) : std::vector<JoinEntry>{}; // JOIN_ANTICIPATION §2 (D255)
     // Signal colour depends only on the tick's time, so it is the same for every vehicle.
     std::vector<SignalColor> headColors;
     headColors.reserve(scenario.signalHeads.size());
@@ -347,7 +346,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
-        anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived);
+        anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.

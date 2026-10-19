@@ -195,6 +195,6 @@ TEST(kerbbias, ba70_the_key_round_trips_at_schema_35_and_is_refused_before) { //
     CHECK(refused(older, "EDIT_UNSUPPORTED_FIELD"));
     auto text = j; text["definition"]["behaviours"][0]["kerbLaneBias"] = "1";
     CHECK(refused(text, "INVALID_BEHAVIOUR_PARAMETER"));
-    auto newer = j; newer["schemaVersion"] = 46;
+    auto newer = j; newer["schemaVersion"] = 47;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
 }
