@@ -16,7 +16,7 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
   the editor tool; the lifecycle rules.
 - **Specified here, implemented later:** coarse values for a Node without Micro detail, and the
   refine and derive-back Commands. They have no consumer until Macro compiles (S2, M10.1), so
-  they land with S2 (§5, slice S0.4).
+  they land with S3 (§5, slice S0.4; moved from S2 by D272).
 - **Out:** Roads and cross-section templates (S3); Nodes created from Road crossings, and the
   derived-disc form of a Node with no polygon (S3); Readiness and *Fill defaults* (S4); the
   run-time cut (S5); any Macro or Meso value.
@@ -120,9 +120,10 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
   - Batch JSON uses `{n, mean, sd, halfWidth95}` values (BATCH §4).
   - All of it is written only when a Node exists, so every other output keeps its bytes.
 
-## 5. Coarse values and lifecycle (specified now; slice S0.4 lands with S2)
+## 5. Coarse values and lifecycle (specified now; slice S0.4 lands with S3)
 
-S2's contract asks the owner to move S0.4 to S3 ([MACRO_NETWORK](MACRO_NETWORK.md) §10, choice 6).
+The owner moved S0.4 to S3 (D272, [MACRO_NETWORK](MACRO_NETWORK.md) §10): Macro compiles a Node's
+interior from its detail, and Nodes without detail first arise from Roads. This amends D260's 5a.
 
 
 - **Coarse values** are stored only on a Node with no Micro detail (no internal Link or Connector):
@@ -199,7 +200,7 @@ S2's contract asks the owner to move S0.4 to S3 ([MACRO_NETWORK](MACRO_NETWORK.m
 | S0.1 | Object, codec (schema 48), validation, Node tool, Nodes panel, delete and rename. **Implemented (D261)** | N1–N5 |
 | S0.2 | Membership: inside objects, legs, turns, refusals, conflicts, control (pure functions in `src/model/network/`). **Implemented (D263)** | N6–N11 |
 | S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs. **Implemented (D264)** | N12–N17 |
-| S0.4 | Coarse values, refine and derive back, lifecycle (with S2) | written with S2 |
+| S0.4 | Coarse values, refine and derive back, lifecycle (with S3, D272) | written with S3 |
 | S0.5 | Suggest nodes. **Implemented (D265)** | N18 |
 
 ## 9. Acceptance rows (planned)

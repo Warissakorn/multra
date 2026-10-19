@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Product scope, stack, naming and owner gates | D271, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D272, D271, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
@@ -305,6 +305,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D269](RECORD.md#d269) — Modes join the Demand catalog under its presence rule: `definition.modes` absent is `data/modes/`; a project owning its compositions owns its modes once a matrix names one.
 [D270](RECORD.md#d270) — S1.2 implemented: the matrix `modeId`, vehicle-type `pcu` (no value ships), derived mode PCU, the Modes tab and the PCU row; rows SP9–SP14.
 [D271](RECORD.md#d271) — S2 (M10.1) contract written: Macro graph from Links and Connectors, link types and VDF data, PCU demand per period, Frank–Wolfe UE; eight owner choices; docs only.
+[D272](RECORD.md#d272) — The owner's S2 answers: Link pieces with one cross-level name, no link-type values, one class per mode with mode bans, no turn penalties, Run Macro + table + CLI, S0.4 to S3, a textbook benchmark, a 0.01 % gap.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

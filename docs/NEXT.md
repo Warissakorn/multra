@@ -151,18 +151,21 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S2's owner choices, then S2.1
+## Next session — S2.1: link types and the Macro graph (MACRO_NETWORK §3–§6; rows MA1–MA6)
 
-The S2 (M10.1) contract is written (D271, [MACRO_NETWORK](reference/MACRO_NETWORK.md)):
-- **First, the owner answers its eight choices** (§12) as D272. The recommendations are 1a–7a and
-  8b; 8b tightens D158's gap to 0.01 %, and 6a moves S0.4 to S3.
-- **Then S2.1,** with rows MA1–MA6 written failure-first:
-  - link types and VDF data;
+The S2 contract is written (D271), and the owner has answered it (D272). Next, one system:
+- **S2.1,** with rows MA1–MA6 written failure-first:
+  - link types (`capacityPerLane`, `freeSpeed`, `vdfId`, optional `modes`, `source`) under the
+    catalog presence rule, none shipped;
+  - `data/vdf/bpr.json`;
   - `Link::linkType` at schema 50;
-  - `compileMacroNetwork`;
-  - Macro demand in PCU.
-- **No link-type value ships** unless a source names it (choice 2). The 1964 BPR manual itself is to
-  be checked before `data/vdf/bpr.json` lands.
+  - `compileMacroNetwork` (Link pieces, Connector and centroid arcs);
+  - Macro demand per class (mode or composition) and period.
+- **S2.2** brings the multi-class Frank–Wolfe at a 0.01 % gap (MA7–MA11, MA16, MA17).
+- **Before the gate (MA15),** name and check the textbook example, with Sheffi 1985 the first
+  candidate.
+- **The 1964 BPR manual** is to be checked before `bpr.json` lands. The BPR pair assumes practical
+  capacity.
 
 Also open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and the cost
 with a Node (+26–40 % Ir, D264, D265).

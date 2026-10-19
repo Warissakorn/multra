@@ -1,6 +1,8 @@
 # Macro network and static assignment (S2, M10.1)
 
-Written 2026-10-19 (D271) as a contract with eight owner choices (§12). Nothing is implemented.
+Written 2026-10-19 (D271) as a contract with eight owner choices (§12). The owner answered the
+same day (D272: 1a, 2a, 3b, 4a, 5a, 6a, 7b, 8b); §4, §6, §7, §9–§11 and §14 carry the answers.
+Nothing is implemented.
 This is stage S2 of the multi-level workflow
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §10, D175): "Macro compiles from a detailed
 network (M10.1)". It fixes how one detailed project compiles into a Macro network, which values
@@ -30,7 +32,7 @@ passes.
 | Item | Decision | Where |
 |---|---|---|
 | VDF | BPR, α 0.15, β 4, with a local override | D158 (B7 answer 2) |
-| Stopping | Relative gap 0.1 % | D158 (B7 answer 5); choice 8 revisits it |
+| Stopping | Relative gap 0.01 % (D272 choice 8b, replacing D158's 0.1 %) | D272 |
 | Algorithm | Static UE, Frank–Wolfe first; fixed iteration order; ties broken by id; no seed; the same input gives the same bytes | D145 design §3.4 |
 | Node delay | Not at first: link VDFs and fixed turn penalties | D175 answer 10 |
 | Flow basis | `mean`; no `macroFlowBasis` field before a reader needs another value | D175 answer 13; STUDY_PERIODS choice 4a |
@@ -78,6 +80,11 @@ passes.
   overpass never forms a turn.
 - **Nodes:** M10.1's compile does not read Nodes (choice 1a). A Node's interior Links stay links
   with their own type and capacity.
+- **One name across levels (D272).** Every level compiles from the same document, never from
+  another level's graph (D145). A Macro link is named by its Link id and station range, and Meso
+  (M11.2) uses the same names. Meso's link-transmission model needs a node model with turn
+  capacities and link storage; it builds that from Node membership. Static Macro needs only link
+  VDFs.
 - **Ordering:** Macro nodes and links are ordered by (Link id, station) and Connector id. Every
   later loop runs in that order, never in container order.
 - **Refusals,** each at its path, before any assignment:
@@ -90,7 +97,7 @@ passes.
 
 ```json
 { "id": "urban-arterial", "name": "Urban arterial", "capacityPerLane": 1440,
-  "freeSpeed": 13.9, "vdfId": "bpr", "source": "…" }
+  "freeSpeed": 13.9, "vdfId": "bpr", "modes": ["car", "mixed"], "source": "…" }
 ```
 
 - **Where they live.** `data/link-types/`, under the Demand catalog's presence rule (D269):
@@ -106,6 +113,8 @@ passes.
   - `capacityPerLane`: pcu/h per lane, finite and > 0;
   - `freeSpeed`: m/s, finite and > 0 (the editor shows km/h);
   - `vdfId`: names a VDF (§5);
+  - `modes` (optional): the modes allowed on the type; absent means every mode (D272 choice 3b).
+    An unknown mode id is `INVALID_LINK_TYPE`;
   - `source`: a non-empty citation.
 
   A bad value is `INVALID_LINK_TYPE` at the field's path; a malformed file is
@@ -141,10 +150,14 @@ passes.
 - **Flow.** Each cell's trips follow Micro's split (ZONES_AND_PARKING §3): the origin and
   destination connector shares, giving one OD flow per connector pair. The flow is
   trips × PCU ÷ (period length / 3600), in pcu/h. That is D175's `mean` basis.
-  - PCU is `modePcu` of the matrix's mode, or of its composition by the same formula.
-  - `MODE_PCU_MISSING` at `odMatrices[i]` is refused while it is absent.
-- **One class** in PCU (choice 3a): every mode shares every link. There are no mode bans in
-  M10.1.
+- **One class per mode (D272 choice 3b).**
+  - The matrices of one period that name a mode form that mode's class. A matrix naming only a
+    composition forms a class of its own, keyed by the composition.
+  - A class's demand is in veh/h. Its PCU is `modePcu` of the mode, or of the composition by the
+    same formula.
+  - `MODE_PCU_MISSING` at `odMatrices[i]` is refused while a class's PCU is absent.
+  - A class uses only the links whose type allows its mode (§4); a composition class uses every
+    link. A cell whose class has no allowed path is `MACRO_NO_PATH`.
 - **Advisories, not refusals:**
   - `MACRO_INPUT_IGNORED`: vehicle inputs, routes and routing decisions are Micro demand, and
     Macro leaves them out;
@@ -159,17 +172,21 @@ passes.
   iteration. It gets its own `check_architecture` rule and a negative fixture, as M5.2 had.
 - **All-or-nothing loading.** Shortest paths by Dijkstra over the ordered graph. A tie between
   two labels keeps the predecessor with the lower link order (row MA7).
+- **Classes share one cost.** A link's load is Σₘ pcuₘ · vₘ, and every class sees the same time
+  t(load). The costs are therefore symmetric, and Frank–Wolfe still minimises one Beckmann
+  objective. Each class loads all-or-nothing on its own allowed subgraph, and one step size moves
+  every class.
 - **Frank–Wolfe** (LeBlanc, Morlok and Pierskalla, *Transportation Research* 9(5), 1975,
   pp. 309–318, the method's first traffic application, tested on the Sioux Falls network):
   - start from all-or-nothing loading at free-flow times;
   - each iteration loads all-or-nothing at current times and finds the step by bisection of the
     Beckmann objective's directional derivative;
   - the bisection's tolerance and cap are fixed constants, stated in the code and in the result.
-- **Relative gap:** (Σₐ vₐ tₐ(vₐ) − Σ_rs d_rs κ_rs) / Σₐ vₐ tₐ(vₐ), where κ is the
-  shortest-path time at the current times.
+- **Relative gap:** (Σₘ Σₐ vₘₐ tₐ − Σₘ Σ_rs dₘ_rs κₘ_rs) / Σₘ Σₐ vₘₐ tₐ, where tₐ is the time at
+  the current load and κₘ is class m's shortest-path time on its allowed subgraph.
   - Definitions differ between sources (Boyce, Ralevic-Dekic and Bar-Gera, *J. Transp. Eng.*
     130(1), 2004, pp. 49–55), so the output names this formula.
-- **Stopping:** at the target gap (choice 8) or at an iteration cap, a run setting.
+- **Stopping:** at a gap of 0.01 % (D272 choice 8b) or at an iteration cap, a run setting.
   - Stopping at the cap is `MACRO_NOT_CONVERGED`. The result is still written, flagged with the
     gap it reached. It is never hidden.
 - **Determinism:** the same document, data and settings give the same bytes. Permuting the
@@ -189,8 +206,8 @@ passes.
 ## 9. Outputs
 
 - **Per link** (Macro links and Connector arcs, keyed by their source object and station range):
-  - flow in pcu/h;
-  - V/C (capacitated links only);
+  - flow in veh/h per class, and the total in pcu/h;
+  - V/C on the pcu total (capacitated links only);
   - free-flow and congested time;
   - the link type.
 - **Per run:**
@@ -215,8 +232,8 @@ passes.
 - **What M10.1 actually reads.** It compiles a Node's interior from its Micro detail (§3). A Node
   without detail (no internal Link or Connector) joins nothing in this graph, because Links join
   only through Connectors. Nodes without detail first arise from Roads (S3).
-- **Recommended (6a):** move S0.4 to S3, so no field is stored before its reader (the rule D260
-  choice 5a was answered on).
+- **Answered (D272, 6a):** S0.4 moves to S3, so no field is stored before its reader. This amends
+  D260's answer 5a ("with S2").
 
 ## 11. Benchmark (choice 7)
 
@@ -229,11 +246,12 @@ passes.
   - **Licence:** the repository's page says its data sets are "for academic research purposes
     only". That is a use restriction, not an open licence. The repository's own LICENSE file has
     not been read.
-- **Recommended (7a):** measure against Sioux Falls in a local, uncommitted fixture, and commit
-  only the comparison (gap, objective, maximum link-flow difference). The data enters the
-  repository only if the licence is confirmed to allow it.
+- **Answered (D272, 7b): a textbook network** with a published equilibrium, so its data can live
+  in the repository with a citation. The first candidate is Sheffi, *Urban Transportation
+  Networks* (1985). Its exact example, values and published solution are named and checked
+  against the book before row MA15 is written as code. Sioux Falls is not used.
 
-## 12. Owner choices
+## 12. Owner choices (answered 2026-10-19, D272: 1a, 2a, 3b, 4a, 5a, 6a, 7b, 8b)
 
 1. **The graph.**
    - **(a) Links split at Connector stations; Connectors as uncapacitated arcs; Nodes not read in
@@ -276,7 +294,7 @@ passes.
 | Slice | Content | Rows |
 |---|---|---|
 | S2.1 | Link types and VDF data, `Link::linkType` at schema 50, `compileMacroNetwork` (pure, `src/model/`), Macro demand | MA1–MA6 |
-| S2.2 | `src/macro/`: all-or-nothing loading, Frank–Wolfe, gap, convergence | MA7–MA11 |
+| S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence | MA7–MA11, MA16, MA17 |
 | S2.3 | Outputs, CLI `--macro`, Run Macro and the Macro links table | MA12–MA14 |
 | Gate | Benchmark (choice 7) | MA15 |
 
@@ -291,7 +309,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | MA3 | A Link with a Connector leaving mid-Link | Two Macro links split at the station, lengths and times as hand-measured; the Connector arc's time from its `from` Link's speed |
 | MA4 | The shipped four-leg with types set | Every Link piece and Connector present; an overpass on another level joins nothing |
 | MA5 | Zones | Centroid arcs at Link start and end; `MACRO_NO_PATH` where Micro has `OD_NO_PATH` |
-| MA6 | Demand | pcu/h = trips × PCU ÷ hours, by connector share; `MODE_PCU_MISSING` at the matrix; matrices grouped by period |
+| MA6 | Demand | veh/h per class = trips ÷ hours, by connector share; classes by mode (or composition) and period; `MODE_PCU_MISSING` at the matrix |
 | MA7 | All-or-nothing loading | Hand-checked paths; a tie resolved by link order |
 | MA8 | Two parallel BPR links | Flows equal the closed-form equilibrium (equal times) within the target gap |
 | MA9 | Three routes, one never used | The unused route carries no flow at equilibrium; the used two have equal times |
@@ -300,7 +318,9 @@ Each row first asserts that its forcing worked (AGENTS).
 | MA12 | VDF data | Another α and β change the flows with no code edit |
 | MA13 | Outputs | Every field of §9; the marker line in JSON and CSV |
 | MA14 | Editor | Run Macro is one action and no Undo step; a table row per link; an edit marks the result stale |
-| MA15 | Benchmark | Within the target gap of the published equilibrium (choice 7) |
+| MA15 | Benchmark | Within the target gap of the textbook network's published equilibrium (choice 7b) |
+| MA16 | A mode banned on a link type | That class never uses the link; its flow takes the next allowed path; other classes still use it |
+| MA17 | Two classes, different PCU, one shared link | The link's load is Σ pcu · v, and both classes see the same time |
 
 ## 15. Seams
 

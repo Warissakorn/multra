@@ -6,7 +6,7 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
-## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, docs only)
+## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
 
 The owner chose S2. [MACRO_NETWORK](reference/MACRO_NETWORK.md) fixes how the drawn network
 compiles into a Macro graph and how one study period is assigned. Nothing is implemented.
@@ -23,7 +23,12 @@ compiles into a Macro graph and how one study period is assigned. Nothing is imp
   - Boyce et al. (2004) argue for a 0.01 % gap;
   - the Sioux Falls data are for academic research only, so the benchmark stays local until the
     licence is confirmed.
-- **Eight owner choices** are pending. One of them moves S0.4 to S3.
+- **The owner answered the same day (D272):**
+  - one class per mode, with mode bans on link types;
+  - a textbook benchmark instead of Sioux Falls;
+  - a 0.01 % gap;
+  - S0.4 moves to S3;
+  - the other choices as recommended.
 
 ## 2026-10-19 — S1.2: modes and PCU (D269, D270)
 
