@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — Windows narrow Properties forms (D242)
+
+The owner asked to fix CI ([evidence](../evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
+- **Failure:** `windows-desktop` failed `properties-layout-ui` (1×, 1.5×, 2×) with "A narrow form
+  kept a field beside its label", on main too.
+- **Cause:** a scrolled page is never narrower than its widest action button. On Linux the English
+  Link page is 248 px in the 200 px dock, 8 px short of two columns. A slightly wider Windows button
+  reaches them, so the form kept rows beside their labels.
+- **Fix:** `FormReflow` decides by the visible width (the scroll viewport's when that is less) and
+  watches the viewport.
+- **Tests:** the new row failed first with Windows' message, and both mutations are caught. A row
+  still beside its label in a narrow check now prints its form and widths.
+
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+
 ## 2026-10-18 — M2.6's red-running clamps traced (D241, no code change)
 
 NEXT's item 1 ([evidence](../evidence/red-running.md#d241-the-added-m26-clamps)). A temporary probe

@@ -142,7 +142,7 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   (seeds 47, 68) but added a creep clamp in seed 56 (0.002 m/s at the line). It changes the
   prototype's braking law, so it would need its own rows and the owner's choice. D256 measured it
   again on the shipped M3.2.8a.1 clamps ([LINE_APPROACH](LINE_APPROACH.md)): scoped to
-  `amberDeceleration`, M2.6 17 → 5 with the TS rows kept; awaiting the owner.
+  `amberDeceleration`, M2.6 17 → 5 with the TS rows kept. Adopted, on by default, by D257/D258.
 
 - **Removing the M3.2.8b courtesy (D71):** without cooperation M2.6 was 61.6 s with a 404 s wait.
 - **`comfortableDeceleration` for commitment (D69):** it clamped the major road.

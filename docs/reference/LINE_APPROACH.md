@@ -1,7 +1,7 @@
 # Stopping cleanly at a line and behind a hard stop (M3.2.8a.1c)
 
-Written 2026-10-19 (D256). **Options measured for the owner's choice; nothing is implemented.** The
-owner asked for this contract with measured prototypes before any code (D254). It covers the
+Written 2026-10-19 (D256), as options measured for the owner's choice. The owner chose F1a the same
+day, on by default (D257, §7); it is implemented by D258. The owner asked for this contract with measured prototypes before any code (D254). It covers the
 clamps that D249, D252 and D253 traced to the prototype following law braking too softly. The
 measurements are in the [evidence](../evidence/line-approach.md). No clamp-free claim follows from
 it, and no gate is closed. Rule 4 applies: nothing here is validated.
@@ -99,7 +99,7 @@ braking on every project (about 1,900 binding evaluations per M2.6 run). The lan
 **On or off by default is the owner's call.** On follows D250 for clamp relief, and it moves the
 T-junction exercise by 0.03 s. Off keeps every shipped number.
 
-## 5. Planned rows, if F1a is chosen (BA173–BA178)
+## 5. Rows (BA173–BA178; implemented, D258)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -118,3 +118,30 @@ Each row first asserts that its forcing worked (AGENTS).
 - The W74 law, which has its own braking (W74 §6).
 - Calibration of either floor.
 - Comfort measures for the harder stops F1a makes.
+
+## 7. The owner's choice and its settings (D257)
+
+The owner took the recommendation on 2026-10-19: F1a, as a project switch that is **on by default**.
+
+- **The key.** `clampRules.standingStopFloor`, a boolean beside MERGE_CLAMPS §3's three and
+  JOIN_ANTICIPATION §5's `joinAnticipation`.
+- **Absent means on.** The file writes the key only when it is `false`, and that file is
+  **schema 47**. A schema 46 or older file carrying it is refused with `EDIT_UNSUPPORTED_FIELD` at
+  `definition.clampRules.standingStopFloor`. A non-boolean is refused with `INVALID_CLAMP_RULE`.
+- **Scope.** Only a behaviour carrying `amberDeceleration` gets the floor. Bare M0 scenario files
+  take no key, so their behaviours without the key keep their bytes, and so do the TypeScript
+  reference rows and the CLI pin.
+- **Editor.** Run settings gains a fifth checkbox, labelled `standingStopFloor` and ticked by
+  default. Confirming the dialog is one Undo step with the other run settings.
+- **Engine (D258).**
+  - `ClampRules::standingStopFloor`, default `true`.
+  - `DriverBehaviour::stopFloor` is runtime-only and never in a file. `createSimulation` (and retune,
+    through the same canonical copy) sets it to the switch and `amberDeceleration` together.
+  - `followingAcceleration` reads it, so every evaluation of the law gets the floor, hypothetical
+    ones included, exactly as D256 measured.
+- **Measured (D258).**
+  - The four shipped projects reproduce D256's F1a outputs byte for byte on seeds 42–81.
+  - Switched off, they are byte-identical to D255.
+  - The pin is unchanged, and the reference rows pass 5/5.
+  - Ir is +0.13 % (four-leg), +0.18 % (lane lab) and +0.13 % (M2.6).
+

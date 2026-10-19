@@ -93,3 +93,31 @@ cost. F1a adds one branch in the prototype law.
 - D227's 30 km/h-car case on the four-leg (its creep clamp at seed 56) was not re-run.
 - The W74 law.
 - F1a's effect on comfort or emissions measures.
+
+## D258: the switch implemented
+
+The owner chose F1a, on by default (D257). Branch `claude/red-running-owner-choices`, on D256's
+commit. Linux, GCC 13.3.0, Release `-g`.
+
+- **On is F1a.** Seeds 42–81 of all four shipped projects are byte-identical to D256's F1a build:
+  - M2.6: 5 clamps, delay 46.026 s;
+  - T-junction: 7.099 s;
+  - four-leg: 46.001 s;
+  - lane lab: 1 clamp.
+- **Off is D255.** Copies of the four projects with `standingStopFloor: false` (schema 47) are
+  byte-identical to D255's outputs.
+- **Bare scenarios.** `trafficsim-cli 42` keeps its pin, and the TypeScript reference rows pass 5/5.
+- **Rows.** All 960 rows pass. BA164's forcing now also switches the floor off.
+- **Cost.** Callgrind Ir at seed 42 against D255's build: four-leg +0.13 %, lane lab +0.18 %,
+  M2.6 +0.13 %.
+- **Mutations**, each run against the full suite:
+
+  | Mutation | Caught by |
+  |---|---|
+  | Floor in any mode, not only `braking` | BA175, plus older stop-control, signal and T-junction rows |
+  | Floor behind a moving leader too | BA175, plus an M2.6 study row |
+  | Never apply the floor | BA173, BA176 |
+  | Not scoped to `amberDeceleration` | BA174, BA165, TS reference seed 2³²−1 |
+  | Ignore the switch | BA164, BA173 |
+  | Off by default | BA178, plus older schema round-trip rows |
+

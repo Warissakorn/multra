@@ -34,19 +34,20 @@ void EditorWindow::editRunSettings() {
     auto* cooldown=number(dialog,0,10000000,period.cooldown,"editorCooldown");
     form->addRow(text("editorDuration"),duration);form->addRow(text("editorTimeStep"),dt);form->addRow(text("editorWarmup"),warmup);
     form->addRow(text("editorCooldown"),cooldown);
-    // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255): the clamp rules, labelled with their keys like the behaviour rows.
+    // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255; LINE_APPROACH §7, D258): the clamp rules, labelled with their keys like the behaviour rows.
     const auto rule=[&](const char* key,const char* name,bool on){auto* box=new QCheckBox(QString::fromUtf8(key),&dialog);box->setObjectName(name);
         box->setChecked(on);form->addRow(box);return box;};
     auto* leaderTravel=rule("leaderTravel","editorLeaderTravel",def.clampRules.leaderTravel);
     auto* sideEntry=rule("sideEntryAtLine","editorSideEntryAtLine",def.clampRules.sideEntryAtLine);
     auto* redLineStop=rule("redLineStop","editorRedLineStop",def.clampRules.redLineStop);
     auto* joinAnticipation=rule("joinAnticipation","editorJoinAnticipation",def.clampRules.joinAnticipation);
+    auto* standingStopFloor=rule("standingStopFloor","editorStandingStopFloor",def.clampRules.standingStopFloor);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);form->addRow(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
     if(dialog.exec()==QDialog::Accepted)execute("editorRunSettings",[&](auto& d){
         changeRunSettings(d,duration->value(),dt->value());changeEvaluationPeriod(d,warmup->value(),period.end,cooldown->value());
-        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked()});});
+        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked()});});
 }
 void EditorWindow::editProgram(const std::string& id) {
     SignalProgram value{id,0,{{30,SignalColor::red},{30,SignalColor::green},{3,SignalColor::amber}}};

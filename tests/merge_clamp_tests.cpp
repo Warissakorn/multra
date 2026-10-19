@@ -20,7 +20,9 @@ bool clamped(const SimState& s, std::uint64_t id) {
 const Vehicle& vehicleOf(const SimState& s, std::uint64_t id) {
     return *std::find_if(s.vehicles.begin(), s.vehicles.end(), [&](const auto& v) { return v.id == id; });
 }
-ClampRules only(bool leaderTravel, bool sideEntryAtLine, bool redLineStop) { return {leaderTravel, sideEntryAtLine, redLineStop}; }
+ClampRules only(bool leaderTravel, bool sideEntryAtLine, bool redLineStop, bool standingStopFloor = true) {
+    return {leaderTravel, sideEntryAtLine, redLineStop, false, standingStopFloor};
+}
 // Two segments joining a shared one: D105's moving-merge fixture, with or without its rule.
 Scenario join(bool rule, ClampRules rules = {}) {
     auto s = test::straight();
@@ -110,7 +112,7 @@ TEST(mergeclamps, ba164_a_creep_at_a_red_head_brakes_to_its_line_with_amber_dece
     const auto at = [](ClampRules rules, double distance) {
         return stepSimulation(test::withVehicles(redHead(3, rules), {test::vehicle(1, distance, 1)}));
     };
-    CHECK(clamped(at(only(true, true, false), 99.92), 1)); // forcing
+    CHECK(clamped(at(only(true, true, false, false), 99.92), 1)); // forcing: Q and the stop floor off (D258)
     const auto next = at({}, 99.92);
     CHECK(!clamped(next, 1)); CHECK(vehicleOf(next, 1).distance <= 100 + 1e-9);
     // 1.5 m/s, 0.06 m short needs 18.75 m/s², beyond the maximum: AMBER §1 commits it, with or without Q.

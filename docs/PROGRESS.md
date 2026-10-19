@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — `standingStopFloor` implemented, on by default (D257, D258)
+
+The owner took D256's recommendation, on by default ([LINE_APPROACH](reference/LINE_APPROACH.md) §7).
+- **Engine:** in the prototype law's `braking` mode, behind a standing leader, braking is at least
+  `v²/(2·gap)`, capped at the type's maximum.
+  - Only behaviours with `amberDeceleration` get it, through the runtime-only
+    `DriverBehaviour::stopFloor`, set when the simulation is created.
+  - Bare M0 scenarios keep their bytes.
+- **File and editor:** `clampRules.standingStopFloor` is written only when off, at schema 47. There
+  is a fifth Run settings checkbox.
+- **Rows:** BA173–BA178 and the Run settings UI test. BA164's forcing also switches the floor off.
+- **Measured:**
+  - On reproduces D256's F1a byte for byte: M2.6 17 → 5 clamps, T-junction 7.069 → 7.099 s.
+  - Off is byte-identical to D255.
+  - The pin is unchanged, and the TS rows pass 5/5.
+  - Ir +0.13–0.18 %.
+
 ## 2026-10-19 — Stopping cleanly at a line measured (D256, docs only)
 
 The owner asked for the line approach as a contract with numbers first (D254)
@@ -161,21 +178,6 @@ D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-u
 `check` 178/178, Linux only. **Windows result:** the same failure (host 273 px), so the toggle was
 not the cause there. The narrow check now prints the dock, body and tab widths and the widest top
 widgets, so the next Windows run names the culprit.
-
-## 2026-10-18 — Windows narrow Properties forms (D242)
-
-The owner asked to fix CI ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
-- **Failure:** `windows-desktop` failed `properties-layout-ui` (1×, 1.5×, 2×) with "A narrow form
-  kept a field beside its label", on main too.
-- **Cause:** a scrolled page is never narrower than its widest action button. On Linux the English
-  Link page is 248 px in the 200 px dock, 8 px short of two columns. A slightly wider Windows button
-  reaches them, so the form kept rows beside their labels.
-- **Fix:** `FormReflow` decides by the visible width (the scroll viewport's when that is less) and
-  watches the viewport.
-- **Tests:** the new row failed first with Windows' message, and both mutations are caught. A row
-  still beside its label in a narrow check now prints its form and widths.
-
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
 
 ## Older entries
 

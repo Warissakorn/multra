@@ -7,10 +7,12 @@ namespace {
 // `absent` is the value a missing key means, and the one never written.
 struct Key { const char* name; bool ClampRules::*member; bool absent; };
 constexpr Key kKeys[] = {{"leaderTravel", &ClampRules::leaderTravel, true}, {"sideEntryAtLine", &ClampRules::sideEntryAtLine, true},
-                         {"redLineStop", &ClampRules::redLineStop, true}, {"joinAnticipation", &ClampRules::joinAnticipation, false}};
+                         {"redLineStop", &ClampRules::redLineStop, true}, {"joinAnticipation", &ClampRules::joinAnticipation, false},
+                         {"standingStopFloor", &ClampRules::standingStopFloor, true}};
 }
 bool ownsClampRules(const ProjectDocument& d) { return d.definition && !(d.definition->clampRules == ClampRules{}); }
 bool ownsJoinAnticipation(const ProjectDocument& d) { return d.definition && d.definition->clampRules.joinAnticipation; }
+bool ownsStandingStopFloor(const ProjectDocument& d) { return d.definition && !d.definition->clampRules.standingStopFloor; }
 void rejectClampRulesBefore45(const Json& j) {
     if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules"))
         throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules"}});
@@ -19,6 +21,11 @@ void rejectJoinAnticipationBefore46(const Json& j) {
     if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules") &&
         j.at("definition").at("clampRules").is_object() && j.at("definition").at("clampRules").contains("joinAnticipation"))
         throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules.joinAnticipation"}});
+}
+void rejectStandingStopFloorBefore47(const Json& j) {
+    if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules") &&
+        j.at("definition").at("clampRules").is_object() && j.at("definition").at("clampRules").contains("standingStopFloor"))
+        throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules.standingStopFloor"}});
 }
 ClampRules parseClampRules(const Json& definition) {
     ClampRules rules;

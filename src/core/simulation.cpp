@@ -38,12 +38,12 @@ Scenario canonicalScenario(Scenario scenario) {
     sort(scenario.routes); sort(scenario.vehicleTypes); sort(scenario.behaviours);
     sort(scenario.inputs); sort(scenario.signalPrograms); sort(scenario.signalHeads);
     sort(scenario.conflictZones); sort(scenario.parkingLots);
+    for (auto& b : scenario.behaviours) b.stopFloor = scenario.clampRules.standingStopFloor && b.amberDeceleration; // LINE_APPROACH §7 (D258)
     std::sort(scenario.laneChanges.begin(), scenario.laneChanges.end(), [](const auto& a, const auto& b) {
         if (a.fromRouteId != b.fromRouteId) return a.fromRouteId < b.fromRouteId;
         return a.fromStart != b.fromStart ? a.fromStart < b.fromStart : a.toRouteId < b.toRouteId;
     });
-    std::sort(scenario.routeDeadEnds.begin(), scenario.routeDeadEnds.end(),
-              [](const auto& a, const auto& b) { return a.routeId < b.routeId; });
+    std::sort(scenario.routeDeadEnds.begin(), scenario.routeDeadEnds.end(), [](const auto& a, const auto& b) { return a.routeId < b.routeId; });
     return scenario;
 }
 }

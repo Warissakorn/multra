@@ -137,8 +137,8 @@ Json documentJson(const ProjectDocument& d) {
     // M3.7: 33 only when an owned behaviour carries a lateral key (D187).
     // M3.6: 34 only when an owned behaviour carries curveLateralAcceleration (D212).
     // M3.4: 35 only when an owned behaviour carries kerbLaneBias (D215); B-2: 36 for commitmentDeceleration (D219); B-3: 37 (D221).
-    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255).
-    const int schema=ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258).
+    const int schema=ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -177,7 +177,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 46) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 47) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -218,6 +218,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 44) rejectRedRunningBefore44(j);
     if (version < 45) rejectClampRulesBefore45(j);
     if (version < 46) rejectJoinAnticipationBefore46(j);
+    if (version < 47) rejectStandingStopFloorBefore47(j);
     d.network = parseNetwork(j.at("network"), version);
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));

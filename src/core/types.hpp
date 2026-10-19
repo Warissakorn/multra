@@ -74,6 +74,7 @@ struct DriverBehaviour {
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
     std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
     std::optional<double> driverFactorSpread, redRunningShare, redRunningTime; // B-4 (DRIVER_FACTOR, D236): the factor's deviation; B-9 (RED_RUNNING, D238): a pair
+    bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles {
@@ -216,7 +217,7 @@ struct SegmentBehaviour {
     bool operator==(const SegmentBehaviour&) const = default;
 };
 // MERGE_CLAMPS §2-§3 (D250/D251): three project switches that relieve a cap on a tick that would clamp.
-struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}; bool operator==(const ClampRules&) const = default; }; // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default
+struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}, standingStopFloor{true}; bool operator==(const ClampRules&) const = default; }; // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default; standingStopFloor: LINE_APPROACH §7 (D257)
 struct ScenarioDefinition {
     double duration{}, timeStep{};
     std::vector<Route> routes;

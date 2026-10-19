@@ -208,7 +208,7 @@ TEST(curvespeed, ba63_the_key_round_trips_at_schema_34_and_is_refused_otherwise)
     CHECK(hasIssue([&] { parseDocument(older); }, "EDIT_UNSUPPORTED_FIELD", at));
     auto text = j; text["definition"]["behaviours"][0]["curveLateralAcceleration"] = "3";
     CHECK(hasIssue([&] { parseDocument(text); }, "INVALID_BEHAVIOUR_PARAMETER", at));
-    auto newer = j; newer["schemaVersion"] = 47;
+    auto newer = j; newer["schemaVersion"] = 48;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
     const auto data = test::root() / "data";
     for (const double bad : std::initializer_list<double>{0.0, -1.0, 10.01, std::nan(""), INFINITY}) {

@@ -234,6 +234,18 @@ int main(int argc,char** argv) {
         require(joined["schemaVersion"]==46 && joined["definition"]["clampRules"]==Json{{"joinAnticipation",true}},"joinAnticipation did not write schema 46");
         w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
         require(w.history().document().definition->clampRules==ClampRules{},"Undo did not clear joinAnticipation");
+        // LINE_APPROACH §7 (D258, BA178): the fifth box is ticked by default; unticking it writes false at 47.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            auto* box=dialog?dialog->findChild<QCheckBox*>("editorStandingStopFloor"):nullptr;
+            require(box && box->isChecked(),"editorStandingStopFloor missing or not ticked by default");
+            box->setChecked(false);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto floored=documentJson(w.history().document());
+        require(floored["schemaVersion"]==47 && floored["definition"]["clampRules"]==Json{{"standingStopFloor",false}},"standingStopFloor off did not write schema 47");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore standingStopFloor");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

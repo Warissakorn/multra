@@ -141,6 +141,8 @@ The owner chose B + M + Q on 2026-10-18, each rule switchable at project level (
     is byte-identical to today on all four projects.
 - **A fourth key (D254, D255).** `joinAnticipation` sits in the same object but is off when absent
   and written only when true, at schema 46 ([JOIN_ANTICIPATION](JOIN_ANTICIPATION.md) §5).
+- **A fifth key (D257, D258).** `standingStopFloor` is on when absent and written only when false,
+  at schema 47 ([LINE_APPROACH](LINE_APPROACH.md) §7). With it, M2.6's 17 become 5.
 
 ## 4. Rows (BA158–BA167; implemented, D251)
 
