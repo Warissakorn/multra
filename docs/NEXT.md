@@ -9,7 +9,7 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 [OWNER_SITTING](plans/OWNER_SITTING.md); dated measurements and reverted ideas live in
 [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 
-## State on 2026-10-18
+## State on 2026-10-19
 
 - **Red running follows the owner's answers to D241** (D246, D247, [RED_RUNNING](reference/RED_RUNNING.md) §3,
   [evidence](evidence/red-running.md#d247-the-owners-answers-to-d241-2026-10-18)):
@@ -19,9 +19,18 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   - its crossing is counted even after the window.
 
   Shipped outputs are byte-identical. With a 5 % share, M2.6's clamps return to the no-key 41.
-- **M3.2.8a.1's options are written** (D249, [MERGE_CLAMPS](reference/MERGE_CLAMPS.md),
-  [evidence](evidence/merge-clamps.md)). All 41 shipped clamps (M2.6, seeds 42–81) are traced to four
-  causes, and seven options were measured with reverted prototypes. No engine code is committed.
+- **The merge clamp switches are in** (D250, D251, [MERGE_CLAMPS](reference/MERGE_CLAMPS.md) §3,
+  [evidence](evidence/merge-clamps.md#d251-the-package-implemented)).
+  - **What they are:** `clampRules{leaderTravel, sideEntryAtLine, redLineStop}` on the project. All
+    three are on by default, written at schema 45 only when one is off, and set by three Run settings
+    checkboxes.
+  - **Effect:** M2.6 has 41 → 17 clamps, with delay, trips and overlaps unchanged. With all three
+    off, every output is byte-identical to before. The pin and the TS reference rows are unchanged.
+  - **Rows:** BA158–BA167. D105's row keeps its clamp with `sideEntryAtLine` off.
+  - **Still open:** the 17 left (pull-out 9, late catch-up 4, merge creep 3, 1 new), the lane lab's
+    1 clamp (untraced) and source clearance (D108). The gate stays open.
+- **D249** traced all 41 clamps and measured seven options with reverted prototypes. Its red-head
+  prototype braked with the wrong distance; D251's numbers replace it.
 - **D248:** the owner kept the window as an upper bound and the count as it is; the contract now
   says so.
 - **Finding (D247):** on the shipped projects the window no longer changes anything. The 1, 2 and 3 s
@@ -121,25 +130,15 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 
 ## Next session — ask the owner
 
-The owner chooses for M3.2.8a.1 ([MERGE_CLAMPS](reference/MERGE_CLAMPS.md) §2). The session asks first:
-1. **The recommended package, B + M + Q** (41 → 17 clamps). It changes only ticks that clamp today;
-   delay, trips, the CLI pin and the TS reference rows are unchanged.
-   - **B:** the cap credits the leader's guaranteed travel.
-   - **M:** a vehicle held at its line is capped by the line, not by a vehicle entering beside it.
-     This reverses D105's pinned moving-merge clamp row
-     (`core.moving_merge_follower_still_reports_the_impossible_stop`).
-   - **Q:** D240's feasible stop also at a red head, for a behaviour with `amberDeceleration`.
+ROADMAP names no single next item for a session told only to "continue", so the session asks the
+owner first. The candidates, easiest first:
+1. **Trace the lane-change lab's one clamp** (seeds 42–81; untraced). Use D249's method: a
+   temporary stderr probe, never committed. The trace needs no owner choice; any fix that follows does.
+2. **M3.2.8a.1b: anticipation across a join.** A vehicle approaching a join would see the other
+   stream before that stream's front enters the shared lane. It targets 13 of M2.6's 17 remaining
+   clamps (pull-out, late catch-up). It is a new interaction that moves outputs at every join, so a
+   contract and rows come first, then the owner's choice.
+3. **M3.3.3b: the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
 
-   On a yes:
-   - write rows BA158–BA165 failure-first;
-   - implement in `src/core/simulation.cpp`'s cap/clamp block, keeping it under 500 lines (move the
-     clamp block into a helper if needed);
-   - re-measure seeds 42–81 on all four projects and Ir.
-2. **Or a subset** (B alone 41 → 35; B+M 41 → 21), **or anticipation across a join first** (M3.2.8a.1b,
-   not prototyped). Anticipation is the only option aimed at the 13 pull-out and catch-up clamps
-   left after the package.
-3. **Then M3.3.3b, the W99 contract,** before any code (ROADMAP M3.3 "Next", D177).
-
-Still open in M3.2.8a.1 either way: the lane-change lab's one clamp (not traced) and source clearance
-(D108). M2.8 has only owner checks left. Without an answer, the session asks again rather than
-choosing a rule change.
+M2.8 has only owner checks left. Without an answer, the session asks again rather than choosing a
+rule change.

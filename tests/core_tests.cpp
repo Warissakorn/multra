@@ -350,6 +350,7 @@ TEST(core, stopped_merge_follower_waits_without_an_emergency_clamp_then_releases
 }
 TEST(core, moving_merge_follower_still_reports_the_impossible_stop) {
     auto s = test::straight();
+    s.clampRules.sideEntryAtLine = false; // D105's clamp; on by default it brakes to its line (BA162, D251)
     s.segments = {{"major", 150, {"shared"}}, {"minor", 100, {"shared"}}, {"shared", 150, {}}};
     s.routes = {{"majorRoute", {"major", "shared"}}, {"minorRoute", {"minor", "shared"}}};
     s.priorityRules = {{"merge", "minor", 100, "major", 150, 3, 10}};

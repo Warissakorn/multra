@@ -9,6 +9,7 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QDialog>
 #include <QDoubleSpinBox>
 #include <QFile>
@@ -204,6 +205,23 @@ int main(int argc,char** argv) {
         require(documentJson(w.history().document())["schemaVersion"]==27,"A cool-down did not write schema 27");
         w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
         require(!w.history().document().definition->evaluation,"Undo did not remove the cool-down");
+        // M3.2.8a.1 (D251, BA167): the clamp rules are three boxes there, all ticked by default; unticking
+        // one writes it false at schema 45 and undoes in one step with the rest.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            for(const char* name:{"editorLeaderTravel","editorSideEntryAtLine","editorRedLineStop"}){
+                auto* box=dialog?dialog->findChild<QCheckBox*>(name):nullptr;
+                require(box && box->isChecked(),(std::string(name)+" missing or not ticked by default").c_str());
+            }
+            dialog->findChild<QCheckBox*>("editorSideEntryAtLine")->setChecked(false);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto& rules=w.history().document().definition->clampRules;
+        require(rules.leaderTravel && !rules.sideEntryAtLine && rules.redLineStop,"The unticked rule did not reach the document");
+        const auto ruled=documentJson(w.history().document());
+        require(ruled["schemaVersion"]==45 && ruled["definition"]["clampRules"]==Json{{"sideEntryAtLine",false}},"An off rule did not write schema 45");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore the rule");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

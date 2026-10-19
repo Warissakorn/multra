@@ -21,6 +21,8 @@ void deleteProgram(ProjectDocument&, const std::string&); // Reject referenced p
 std::string putSignalController(ProjectDocument&, SignalController);
 void deleteSignalController(ProjectDocument&, const std::string&);
 void changeRunSettings(ProjectDocument&, double duration, double timeStep);
+// M3.2.8a.1 (MERGE_CLAMPS §3, D251): the three project switches; all on writes nothing.
+void changeClampRules(ProjectDocument&, ClampRules);
 // M5.3. Warm-up 0 with no end clears the period, so a file that never used one keeps its schema.
 // Sets warm-up and end and keeps the cool-down; the four-argument form sets all three (M5.9).
 // The period is removed only when every part is at its default: warm-up 0, no end, no cool-down.

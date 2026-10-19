@@ -30,6 +30,23 @@ inline std::optional<double> stopAtLine(double speed, double gap, const VehicleT
     if (speed <= 0 || gap <= 0 || speed * speed > 2 * type.maxDeceleration * gap) return std::nullopt;
     return -(speed * speed) / (2 * gap);
 }
+// M3.2.8a.1 (MERGE_CLAMPS §2-§3, D251; relievedCap is in caps.cpp): this tick's hard cap, min(holds, leaderCap),
+// leaderCap being the leader's gap less the standstill distance. Only when `proposed` passes it: `leaderTravel` credits what the leader's rear must still travel on
+// this route under its type's maximum braking; `sideEntryAtLine` caps a vehicle held at a give-way line nearer
+// than a leader partly off its route by its holds, not by that leader. The rules off: exactly the plain cap.
+struct LateralFilter;
+double relievedCap(const Scenario&, const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs, const Vehicle& vehicle,
+                   const std::vector<RoutePart>& parts, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                   const LateralFilter* lateral, const Leader& leader, double leaderCap, double holdCap, double giveWayLine, double proposed, double dt);
+// The common tick moves within the plain cap and never leaves this inline test.
+inline double tickCap(const Scenario& scenario, const std::vector<Vehicle>& vehicles, const std::vector<VehicleRefs>& refs, const Vehicle& vehicle,
+                      const std::vector<RoutePart>& parts, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                      const LateralFilter* lateral, const std::optional<Leader>& leader, double leaderCap, double holdCap, double giveWayLine,
+                      double proposed, double dt) {
+    const double cap = std::min(holdCap, leaderCap);
+    if (proposed <= cap || leaderCap >= holdCap) [[likely]] return cap;
+    return relievedCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, lateral, *leader, leaderCap, holdCap, giveWayLine, proposed, dt);
+}
 inline bool committed(double speed, double gap, const VehicleType& type, const DriverBehaviour& behaviour) {
     const double deceleration = std::min(behaviour.commitmentDeceleration.value_or(type.maxDeceleration), type.maxDeceleration);
     return speed * speed > 2 * deceleration * gap;

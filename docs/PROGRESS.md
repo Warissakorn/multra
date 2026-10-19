@@ -6,6 +6,27 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — Merge clamp switches implemented (D250, D251)
+
+The owner chose D249's recommended package, as project switches that are on by default
+([MERGE_CLAMPS](reference/MERGE_CLAMPS.md) §3, [evidence](evidence/merge-clamps.md#d251-the-package-implemented)).
+- **Engine:** `ClampRules{leaderTravel, sideEntryAtLine, redLineStop}` on the definition.
+  - `tickCap` relieves the hard cap only on a tick that would clamp.
+  - `caps.cpp` holds B and M; the step's line-stop test takes Q.
+  - `simulation.cpp` stays at 500 lines through a byte-identical refactor into `holdCap` and `leaderCap`.
+- **File and editor:** `definition.clampRules` at schema 45, written only when a switch is off;
+  three Run settings checkboxes; one Undo step.
+- **Rows:** BA158–BA167, plus the Run settings UI test. D105's row keeps its clamp with
+  `sideEntryAtLine` off. All 14 mutations are caught.
+- **Measured:**
+  - M2.6 41 → 17 clamps; delay 46.013 → 46.010 s; trips unchanged; no overlaps;
+  - all off is byte-identical on all four projects; the pin and the TS rows are unchanged;
+  - Ir +0.50 / +0.73 / +0.68 %.
+- **A prototype bug:** D249's red-head stop braked with the wrong distance. Its measurement stands
+  as recorded, and the implementation's numbers replace it.
+
+`check` 179/179, Linux only.
+
 ## 2026-10-18 — Red running closed (D248); M3.2.8a.1's clamps traced and options measured (D249)
 
 - **D248 (docs only):** the owner kept `redRunningTime` as an upper bound and a runner's committed
@@ -144,20 +165,6 @@ The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D23
 - **The contract:** only on a tick that today clamps at a binding give-way line, and only when the
   stop fits the type's maximum, the vehicle brakes at `v²/(2·gap)` and no clamp is reported.
   Everything else stays byte-identical. Rows BA146–BA151.
-
-## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
-
-D237's contract ([evidence](evidence/red-running.md)).
-- **Rule:** a hashed share of drivers pass a red head in its first seconds while moving; a
-  `red-running` event when they pass the line; `redRunning` in reports only with the keys. BA139
-  and BA144 failed first against a step that ignored the keys.
-- **File and editor:** schema 44, refused below; the pair and ranges validated on both models; two
-  behaviour-dialog rows. Every hook proved by mutation.
-- **Measured:** shipped runs byte-identical. At a 5 % share runs are rare and rise steeply with the
-  window (four-leg 2, 8, 24 in 40 runs for 1–3 s); delay falls within its half-width. Ir −0.44 %
-  (layout).
-
-`check` 177/177, Linux only.
 
 ## Older entries
 

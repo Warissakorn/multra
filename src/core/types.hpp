@@ -215,6 +215,8 @@ struct SegmentBehaviour {
     std::string segmentId, vehicleTypeId, behaviourId;
     bool operator==(const SegmentBehaviour&) const = default;
 };
+// MERGE_CLAMPS §2-§3 (D250/D251): three project switches that relieve a cap on a tick that would clamp.
+struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}; bool operator==(const ClampRules&) const = default; };
 struct ScenarioDefinition {
     double duration{}, timeStep{};
     std::vector<Route> routes;
@@ -241,6 +243,7 @@ struct ScenarioDefinition {
     std::vector<SegmentBehaviour> segmentBehaviours;
     // M8.4a, last again. Empty without a parking lot, which then runs exactly the code path it always did.
     std::vector<ParkingLotSpec> parkingLots;
+    ClampRules clampRules; // M3.2.8a.1 (MERGE_CLAMPS §3, D250/D251): last again; all on by default
     // Value equality, so callers can tell "this edit changed nothing" without serialising.
     bool operator==(const ScenarioDefinition&) const = default;
 };

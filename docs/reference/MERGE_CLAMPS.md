@@ -1,7 +1,8 @@
 # The remaining moving clamps at merges and red heads (M3.2.8a.1)
 
 Written 2026-10-18 (D249). The owner chose the recommended package the same day, as three project
-switches that are on by default (D250, §3); it is planned until D251 implements it. This
+switches that are on by default (D250, §3), implemented by D251
+([evidence](../evidence/merge-clamps.md#d251-the-package-implemented)). This
 is the contract that ROADMAP M3.2.8a.1's gate requires before code. It covers the 41 safety clamps
 left in the shipped M2.6 project, traced in the
 [evidence](../evidence/merge-clamps.md). It names every cause, sets out options measured with
@@ -66,8 +67,9 @@ stop then applies at the line.
 
 ### Q: a stop at a red head, with `amberDeceleration`
 
-GIVE_WAY_STOP §2's feasible stop also applies when a red head's line is the binding cap, but only
-for a behaviour that carries `amberDeceleration`. The same scope keeps D147's amber rule out of bare
+GIVE_WAY_STOP §2's feasible stop also applies when a signal head's line is the binding cap (a red
+head, or an amber one that holds the vehicle), but only for a behaviour that carries
+`amberDeceleration`. The same scope keeps D147's amber rule out of bare
 scenarios.
 
 - **Why the scope:** without it (option R), the M0 crossing demo changes. The `trafficsim-cli 42`
@@ -130,8 +132,15 @@ The owner chose B + M + Q on 2026-10-18, each rule switchable at project level (
   dialog is one Undo step with the other run settings.
 - **Engine.** `Scenario::clampRules`, defaulting to all three on. With all three off, every run is
   byte-identical to today.
+- **Implemented (D251):**
+  - `tickCap` and `relievedCap` (`src/core/conflicts.hpp`, `src/core/caps.cpp`). Only a tick whose
+    move passes the plain cap leaves the inline test.
+  - The codec is in `src/project/clamp_rules.*`, the command is `changeClampRules`, and the
+    checkboxes are in Run settings.
+  - Measured with the defaults: M2.6 41 → 17, delay 46.013 → 46.010 s, and no overlaps. All off
+    is byte-identical to today on all four projects.
 
-## 4. Rows (BA158–BA167, planned)
+## 4. Rows (BA158–BA167; implemented, D251)
 
 Each row first asserts that its forcing worked (AGENTS). The rows use `test::straight()`-style
 fixtures with a two-connector join.
@@ -143,8 +152,8 @@ fixtures with a two-connector join.
 | BA160 | B: the same leader, standing | Unchanged: clamped as today |
 | BA161 | B: a leader entering beside, with 4 m of its body still off the route | No credit, until its body is on the route |
 | BA162 | M: D105's moving-merge fixture (minor at 0.9 m/s, 0.5 m from its line, a major entering) | Brakes to its line, with no clamp. `core.moving_merge_follower_still_reports_the_impossible_stop` keeps D105's clamp with `sideEntryAtLine` off |
-| BA163 | M: the same minor not held by its rule | Unchanged |
-| BA164 | Q: a behaviour with `amberDeceleration`, creeping at a red head, stop within the maximum | Brakes to the line, with no clamp; a stop beyond the maximum is still clamped |
+| BA163 | M: the same minor not held by its rule (committed), or held with a leader whose whole body is on its route | Unchanged: clamped |
+| BA164 | Q: a behaviour with `amberDeceleration`, creeping at a red head, stop within the maximum | Brakes to the line, with no clamp; a stop beyond the maximum goes as committed (AMBER §1), the same with Q off |
 | BA165 | Q: the same without `amberDeceleration` | Unchanged (the M0 crossing demo keeps its pin) |
 | BA166 | Each switch off in turn, then all three | Each off restores today's tick for its rule; all off is byte-identical to today on M2.6 |
 | BA167 | Codec and editor | Schema 45 round-trips; all on writes no key and keeps the old schema; 44 carrying the key refused; a non-boolean or unknown key refused at its path; the Run settings checkboxes write the keys as one Undo step |

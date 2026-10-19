@@ -152,6 +152,7 @@ void deleteSignalController(ProjectDocument& d, const std::string& id) {
 void changeRunSettings(ProjectDocument& d, double duration, double timeStep) {
     auto& def=demand(d); def.duration=duration; def.timeStep=timeStep;
 }
+void changeClampRules(ProjectDocument& d, ClampRules rules) { demand(d).clampRules = rules; }
 void changeEvaluationPeriod(ProjectDocument& d, double warmup, std::optional<double> end, double cooldown) {
     auto& def=demand(d);
     if (warmup==0 && !end && cooldown==0) def.evaluation.reset(); else def.evaluation=EvaluationPeriod{warmup,end,cooldown};

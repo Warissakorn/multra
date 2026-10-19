@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
+
+D237's contract ([evidence](../evidence/red-running.md)).
+- **Rule:** a hashed share of drivers pass a red head in its first seconds while moving; a
+  `red-running` event when they pass the line; `redRunning` in reports only with the keys. BA139
+  and BA144 failed first against a step that ignored the keys.
+- **File and editor:** schema 44, refused below; the pair and ranges validated on both models; two
+  behaviour-dialog rows. Every hook proved by mutation.
+- **Measured:** shipped runs byte-identical. At a 5 % share runs are rare and rise steeply with the
+  window (four-leg 2, 8, 24 in 40 runs for 1–3 s); delay falls within its half-width. Ir −0.44 %
+  (layout).
+
+`check` 177/177, Linux only.
+
 ## 2026-10-18 — B-9 red-light running contract (D237, docs only)
 
 NEXT's item, the last of tier B ([RED_RUNNING](../reference/RED_RUNNING.md)). Today red holds

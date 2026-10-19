@@ -172,6 +172,88 @@ tree without it):
 The prototype passes a leader id to every leader search and tracks one more minimum per cap. An
 implementation would measure again.
 
+## D251: the package implemented
+
+On `7d133cb` (D250) plus this change, the same host. Contract:
+[MERGE_CLAMPS](../reference/MERGE_CLAMPS.md) §3.
+
+**One fix against the D249 prototype.** At a signal head, the prototype passed the *give-way* line
+distance to `stopAtLine` instead of the head's own distance. That distance was often infinite,
+which gave a braking of about 0, so a creeping vehicle passed its red line.
+
+The implementation brakes to the binding distance. It removes the same 4 red-head clamps. M2.6's
+mean delay is 46.010 s, against the prototype's 46.003 s. The prototype figures above are kept as
+they were measured.
+
+**Rows** (`tests/merge_clamp_tests.cpp`, ctest `mergeclamps`, 10 passing). Each engine row first
+runs with its switch off and asserts today's clamp.
+
+| Row | Asserts |
+|---|---|
+| BA158 | The crossing demo: every tick's events and the final vehicles are equal with the rules on and off |
+| BA159 | 2.5 m behind a 12 m/s leader: clamped with `leaderTravel` off, not with it on. The move fits the gap the leader would leave under its maximum braking |
+| BA160 | A standing leader: still clamped |
+| BA161 | A committed minor and a leader with 4 m of its body still on its own connector: still clamped. With the body on the route: clamped off, free on |
+| BA162 | D105's fixture: clamped with `sideEntryAtLine` off. On, it has no clamp and stays at its line |
+| BA163 | A committed minor that its rule does not hold: clamped. A held minor whose standing leader is wholly on its route: clamped |
+| BA164 | 1 m/s, 0.08 m short of a red head with `amberDeceleration` 3: clamped with `redLineStop` off, brakes to the line on. Beyond the maximum it goes as committed, the same either way |
+| BA165 | The same without `amberDeceleration`: clamped |
+| BA166 | `tickCap` with the rules off, or with no leader to find, is `min(holds, leader cap)` |
+| BA167 | Schema 45 round-trips through `compileDocument`. All on writes no key and keeps the old schema bytes. 44 carrying the key, a non-boolean, an unknown key and a non-object are refused at their paths |
+
+- **Run settings** (`signal-ui`): the three boxes are ticked by default. Unticking one writes it
+  `false` at schema 45, and Undo restores it.
+- **D105's row** (`core.moving_merge_follower_still_reports_the_impossible_stop`) now sets
+  `sideEntryAtLine` off and keeps its clamp.
+- **Fifteen codec rows** used 45 as "a future schema". They use 46 now, as D238 did for 44.
+
+**Mutations,** each applied in turn. All 14 are caught:
+
+| Mutation | Caught by |
+|---|---|
+| No B | BA159, BA161 |
+| B ignores the hidden body | BA161–BA163, D105's row |
+| No M | BA162 |
+| M ignores the hidden body | BA163 |
+| No Q | BA164 |
+| Q without the `amberDeceleration` scope | BA165 |
+| Each switch ignored (three mutations) | BA159/BA161; BA162 and D105's row; BA164 |
+| No parse, no writer, no schema 45, no older-schema refusal | BA167 (writer and schema also `signal-ui`) |
+| No command | `signal-ui` |
+
+**Outputs,** seeds 42–81, Release. "Seeds changed" is against `fcb6d3a`:
+
+| Project | Rules | Clamps | Mean delay, s (±95 %) | Seeds changed |
+|---|---|---|---|---|
+| `m2.6-study-template` | all on (default) | **17** | 46.010 (±0.382) | 21 |
+| | `leaderTravel` off | 27 | 46.012 (±0.383) | 18 |
+| | `sideEntryAtLine` off | 31 | 46.012 (±0.383) | 9 |
+| | `redLineStop` off | 21 | 46.010 (±0.382) | 17 |
+| | all off | 41 | 46.013 (±0.383) | 0 (byte-identical) |
+| `lane-change-lab` | all on | 1 | 8.915 (±0.092) | 1 |
+| | all off | 1 | 8.916 (±0.092) | 0 (byte-identical) |
+| `four-leg-signalised`, `t-junction-priority` | every setting | 0 | unchanged | 0 (byte-identical) |
+
+- **Unchanged:** completed trips are 1980.80 per M2.6 run in every row, and `trafficsim-cli 42` is
+  unchanged.
+- **The TS reference rows** pass, 5 of 5.
+- **The 17 left on M2.6** (a temporary probe, never committed): pull-out (J1) 9, late catch-up (J2)
+  4, merge creep (M) 3, and 1 new (seed 59, vehicle 67, 0.1 s after its traced M clamp).
+- **No body overlap** on any project, by the same temporary span-pair counter as D249.
+
+**Performance** (callgrind Ir, Release `-g`, seed 42; against the same engine without the change):
+
+| Project | Without | This change |
+|---|---|---|
+| `four-leg-signalised` | 888.80 M | 893.26 M (+0.50 %) |
+| `lane-change-lab` | 1253.26 M | 1262.45 M (+0.73 %) |
+| `m2.6-study-template` | 3765.92 M | 3791.58 M (+0.68 %) |
+
+A first version cost 2.4–3.4 %. Two changes brought it down:
+- **Inlining.** `tickCap` is now inline, so the common tick never leaves it.
+- **The leader id is found only on the relief path.** Passing an id to every `closestVehicle` call
+  had cost 23 M Ir in that function alone on the lane lab.
+
 ## Not covered here
 
 - **Anticipation across a join was not prototyped.** In it, a vehicle approaching a join would see

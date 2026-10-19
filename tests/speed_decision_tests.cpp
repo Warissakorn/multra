@@ -182,7 +182,7 @@ TEST(speeddecision, ba95_the_object_round_trips_at_schema_38_and_each_fault_is_n
     auto owned = d; putDemandCatalog(owned, resolveDemandCatalog(*owned.definition, test::root() / "data"));
     owned.definition->speedDecisions[0].speeds[0].vehicleTypeId = "tram";
     test::throws([&] { validateDocument(owned); }, "UNKNOWN_VEHICLE_TYPE");
-    auto newer = j; newer["schemaVersion"] = 45;
+    auto newer = j; newer["schemaVersion"] = 46;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
     // It runs: every car through link-1 now drives 8-12 m/s, so mean travel time rises.
     const auto data = test::root() / "data";
