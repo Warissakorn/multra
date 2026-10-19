@@ -1,7 +1,7 @@
 # Nodes: a polygon over a junction (S0, M5.1)
 
 Written 2026-10-19 (D259). The owner accepted every §7 recommendation the same day (D260); slices
-S0.1 and S0.2 are implemented (D261, D263, §8); D262 amended §3. Stage S0
+S0.1, S0.2 and S0.3 are implemented (D261, D263, D264, §8); D262 amended §3. Stage S0
 of the multi-level workflow ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §3, §10,
 D175) merged with M5.1's evaluation nodes (ROADMAP M5.1). A Node is first a Micro evaluation
 object, the per-junction delay and queue a traffic impact study reports
@@ -184,7 +184,7 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 |---|---|---|
 | S0.1 | Object, codec (schema 48), validation, Node tool, Nodes panel, delete and rename. **Implemented (D261)** | N1–N5 |
 | S0.2 | Membership: inside objects, legs, turns, refusals, conflicts, control (pure functions in `src/model/network/`). **Implemented (D263)** | N6–N11 |
-| S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs | N12–N17 |
+| S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs. **Implemented (D264)** | N12–N17 |
 | S0.4 | Coarse values, refine and derive back, lifecycle (with S2) | written with S2 |
 | S0.5 | Suggest nodes | N18 |
 
@@ -207,7 +207,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | N11 | Editing the network (split, delete, reverse a Link) | Membership follows; no Node field changes |
 | N12 | No Node | Single-run and batch JSON/CSV byte-identical |
 | N13 | A turn's section | Start at the in-leg's start (owner choice 1), end at the out-leg's boundary crossing; a vehicle counts only after both lines |
-| N14 | A free-flowing turn (one vehicle, no conflict) | Delay ≤ 0.1 s |
+| N14 | A free-flowing turn (lone vehicles, no conflict), its in-leg starting downstream of the source (D264) | Delay ≤ 0.1 s; at a source the same vehicles show the start-up loss |
 | N15 | Leg and Node rows | Vehicle-weighted means equal a hand computation over the turn rows; a group with no vehicle has no delay |
 | N16 | Queue and letters | Leg queue equals a hand-placed counter at the same line; letters from `losLetter` with the Node's type; the CSV marker line |
 | N17 | Batch | `{n, mean, sd, halfWidth95}` per row; the same seeds give the same bytes |
@@ -271,3 +271,47 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Mutations caught:** the through turn dropped (N7), heads on an in-leg ignored (N6), the lane
   chain filter removed (N6), an unconnected crossing Link counted (N10, N11), re-entry allowed (N9).
   Letting touching spans overlap changes no shipped row (the extra pair is a turn with itself).
+
+## 13. S0.3 as implemented (D264)
+
+- **Spec.** `nodeSpecs(network, table)` (`src/project/node_output.*`) turns each Node's membership
+  into `NodeSpec`s (`src/eval/nodes.hpp`): one `SectionSpec` per turn, from `{in-leg Link, 0}` to
+  `{out-leg Link, crossing station}` through `locateSectionLine`, and one set of queue lines per
+  in-leg at its crossing, on every lane. `evaluationSpec` sets `spec.nodes` and loads the LOS pack
+  also when a Node has a control type.
+- **Measured by the existing machinery.** `MovementAccumulator` appends the turn sections after the
+  authored sections and the leg lines after the authored counters, then splits the rows back, so
+  authored rows keep their indices and numbers. `nodeRows` groups them: leg and Node delay are
+  Σ vᵢdᵢ / Σ vᵢ over turns, unfinished sums, a group with no vehicle has no delay.
+- **The mid-Link join is counted correctly.** A line binds on every route that holds its segment,
+  so the T-junction's minor → eastbound turn (joining `link-1` at station 170) ends at station 175
+  on its own route, and a through vehicle never holds `link-5`'s start line.
+- **Output.**
+  - Single run: JSON `nodes[]` with `{name, controlType, vehicles, delay, unfinished, los, legs[],
+    turns[], conflicts[], issues[]}`. A leg adds `queueMean` and `queueMax`, and a turn adds
+    `travelTime`. Conflicts are `{conflictArea, first, second, kind, priority}`, naming turns.
+  - CSV, after the LOS block: the marker line, then rows at level `node`, `leg` and `turn`. Queue
+    cells are filled on legs only.
+  - Batch: the same shapes with `{n, mean, sd, halfWidth95}` values, and a CSV block
+    `level,node,name,controlType,n,delay_s,ci95_s,sd_s,vehicles_mean,unfinished_mean,queueMean_m,queueMax_m,los`.
+    Letters use the mean over seeds. A leg's or Node's batch delay estimates each seed's weighted
+    mean.
+  - Nothing is written without a Node, and the shipped projects' outputs are byte-identical.
+  - The editor's Results tables and the batch comparison do not show Node rows yet; the editor's CSV
+    copy carries the block.
+- **Finding: the delay window includes start-up from rest.** Vehicles enter the network from rest,
+  so a turn whose in-leg Link starts at a source carries the start-up loss. On the T-junction, lone
+  major vehicles show about 3.0 s against 3.2 s for the full exercise (seed 42). Choice 1a stands
+  as chosen; a study that wants only junction delay draws its approach Link from upstream of the
+  source, or splits it (N14).
+- **Cost.** Callgrind Ir at seed 42 (Release):
+  - without a Node, unchanged (four-leg −0.09 %, T-junction −0.25 %);
+  - with one Node, +40 % on the four-leg (12 turns) and +26 % on the T-junction (4 turns), almost
+    all of it in the section accumulator's per-tick work.
+- **Rows.** N12–N17 are in `tests/node_evaluation_tests.cpp` (ctest `nodeevaluation`).
+- **Mutations caught:**
+  - the start line moved to the boundary (N13, N14);
+  - unweighted leg means (N15);
+  - leg lines dropped (N16);
+  - letters from the wrong type (N16);
+  - the CSV block written with no Node (N12).

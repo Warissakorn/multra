@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — Nodes S0.3: Micro node evaluation (D264)
+
+Each Node now reports per-turn, per-leg and per-Node delay ([NODES](reference/NODES.md) §4, §13).
+- **How:** one travel-time section per turn (in-leg Link start → out-leg crossing) and one queue
+  counter per in-leg at its crossing, measured by the existing accumulators after the authored ones;
+  `nodeRows` weights leg and Node delay by vehicles.
+- **Output:** JSON `nodes[]`, a CSV block after LOS with its marker line, batch estimates
+  `{n, mean, sd, halfWidth95}`, letters with the Node's control type. Nothing without a Node: the
+  shipped projects' single and batch outputs are byte-identical.
+- **Finding:** vehicles enter from rest, so an in-leg starting at a source includes the start-up
+  loss (about 3 s of the T-junction's 3.2 s major-road delay). Choice 1a kept; N14 uses a split
+  in-leg.
+- **Cost:** no change without a Node; with one, Ir +40 % (four-leg) and +26 % (T-junction).
+- **Rows:** N12–N17 (ctest `nodeevaluation`); five mutations caught. Pin and TS rows unchanged.
+  Linux only.
+
 ## 2026-10-19 — Nodes S0.2: membership (D262, D263)
 
 What a Node holds is now derived from the network inside its polygon ([NODES](reference/NODES.md) §3, §12).
@@ -158,29 +174,6 @@ The owner chose D249's recommended package, as project switches that are on by d
   - **No engine code is committed;** the owner chooses.
 
 `check` 178/178 on the committed tree, Linux only.
-
-## 2026-10-18 — Red running: the owner's answers to D241 (D246, D247)
-
-NEXT's first candidate. The owner chose all three recommended options
-([RED_RUNNING](reference/RED_RUNNING.md) §1, §3; [evidence](evidence/red-running.md#d247-the-owners-answers-to-d241-2026-10-18)).
-- **The rule:**
-  - a runner is let through anew only when it cannot stop gently (`amberDeceleration`, else the
-    type's `comfortableDeceleration`);
-  - once let through, the head does not hold it again during that red while it moves;
-  - the crossing is counted even after the window.
-- **Code:** `letThrough` replaces `runsRed`. The (vehicle, head) pairs persist in
-  `SimState::redReleases`. `StopService` and `RedRelease` move to `line_state_types.hpp`, so `types.hpp`
-  stays under 500 lines.
-- **Rows:** BA139 amended, BA152–BA157 added. Six mutations are each caught.
-- **Measured:**
-  - shipped outputs are byte-identical;
-  - with a 5 % share, M2.6's clamps return to 41, so D241's added clamps go;
-  - the 1, 2 and 3 s windows now give identical outputs (four-leg 5 runs, M2.6 15): a probe found
-    every run starting at, or 0.3 s after, red onset (read as vehicles that went
-    on amber; not probed further);
-  - Ir +0.18 % / +0.10 %.
-
-`check` 178/178, Linux only.
 
 ## Older entries
 

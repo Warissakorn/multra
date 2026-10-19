@@ -3,6 +3,29 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — Red running: the owner's answers to D241 (D246, D247)
+
+NEXT's first candidate. The owner chose all three recommended options
+([RED_RUNNING](../reference/RED_RUNNING.md) §1, §3; [evidence](../evidence/red-running.md#d247-the-owners-answers-to-d241-2026-10-18)).
+- **The rule:**
+  - a runner is let through anew only when it cannot stop gently (`amberDeceleration`, else the
+    type's `comfortableDeceleration`);
+  - once let through, the head does not hold it again during that red while it moves;
+  - the crossing is counted even after the window.
+- **Code:** `letThrough` replaces `runsRed`. The (vehicle, head) pairs persist in
+  `SimState::redReleases`. `StopService` and `RedRelease` move to `line_state_types.hpp`, so `types.hpp`
+  stays under 500 lines.
+- **Rows:** BA139 amended, BA152–BA157 added. Six mutations are each caught.
+- **Measured:**
+  - shipped outputs are byte-identical;
+  - with a 5 % share, M2.6's clamps return to 41, so D241's added clamps go;
+  - the 1, 2 and 3 s windows now give identical outputs (four-leg 5 runs, M2.6 15): a probe found
+    every run starting at, or 0.3 s after, red onset (read as vehicles that went
+    on amber; not probed further);
+  - Ir +0.18 % / +0.10 %.
+
+`check` 178/178, Linux only.
+
 ## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
 
 The Windows diagnostic showed that the 257 px text was Thai ([evidence](../evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).

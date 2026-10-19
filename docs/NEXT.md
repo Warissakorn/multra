@@ -33,9 +33,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the owner chose D253's A4 anyway. Absent means off; written only when true at schema 46; a fourth
   Run settings checkbox; rows BA168–BA172. On, it reproduces D253's A4 numbers; off, every shipped
   output is byte-identical to D251.
-- **Nodes S0.1 and S0.2 are in** (D259–D263, [NODES](reference/NODES.md)): the Node object at schema 48,
+- **Nodes S0.1–S0.3 are in** (D259–D264, [NODES](reference/NODES.md)): the Node object at schema 48,
   validation, the Node tool (`N`) and the Nodes tab; membership (legs as boundary crossings, D262;
-  turns, conflicts, control; advisory refusals). The owner's five choices are answered.
+  turns, conflicts, control; advisory refusals); Micro evaluation per turn, leg and Node (D264). The
+  owner's five choices are answered.
 - **`standingStopFloor` is in, on by default** (D256–D258, [LINE_APPROACH](reference/LINE_APPROACH.md) §7):
   D227's floor for behaviours with `amberDeceleration`. M2.6 has 17 → 5 clamps; the four-leg, lane
   lab, pin and TS rows are unchanged; T-junction +0.03 s. Written only when off, at schema 47.
@@ -143,19 +144,19 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — Nodes S0.3: Micro evaluation (NODES §4)
+## Next session — Nodes S0.5: Suggest nodes (NODES §6)
 
-S0.2 is in (D262, D263): `nodeMembership` gives each Node's legs, turns, conflicts and control.
-Next, one system:
-- **S0.3,** with rows N12–N17 written failure-first:
-  - one automatic travel-time section per turn, from the in-leg Link's start (choice 1a) to the
-    out-leg's crossing station, reusing `SectionSpec` and its accumulator;
-  - turn, leg and Node rows (vehicle-weighted), the leg queue at the in-leg crossing (choice 2a),
-    letters through `losLetter` (choice 3a);
-  - single-run and batch JSON/CSV, written only when a Node exists.
-  - Check first how a section start on a Link that a turn path leaves mid-Link (the T-junction's
-    minor turns join `link-1` at station 170) is counted.
-- **Then S0.5,** Suggest nodes.
+S0.3 is in (D264): every Node reports per-turn, leg and Node delay, leg queue and letters in
+single-run and batch JSON/CSV. Next, one system:
+- **S0.5,** row N18: *Suggest nodes* draws one `generated` polygon around each conflict cluster
+  (`conflictGroups`) not already inside a Node, as one Undo step.
+- **Open Node items, smaller:**
+  - the Nodes tab highlighting a selected Node's legs (§6);
+  - Node rows in the editor's Results tables and in batch comparison (§13);
+  - the cost with a Node (+26–40 % Ir, §13).
+- **For the owner, if a study asks:** the delay window includes start-up loss where an in-leg
+  starts at a source (D264's finding).
+- S0.4 (coarse values) lands with S2.
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.

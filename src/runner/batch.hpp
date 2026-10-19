@@ -56,6 +56,18 @@ struct BatchLotRow {
         waitedOverTick, endParked, endAtGate, endInExitQueue;
     bool operator==(const BatchLotRow&) const = default;
 };
+// S0.3 (D264): a Node's rows across seeds. A leg's or Node's delay is each seed's vehicle-weighted
+// mean, then estimated over the seeds like any other row.
+struct BatchNodeLegRow {
+    std::string name; Estimate vehicles, delay, unfinished, queueMean, queueMax;
+    bool operator==(const BatchNodeLegRow&) const = default;
+};
+struct BatchNodeRow {
+    std::string name; std::optional<std::string> controlType; Estimate vehicles, delay, unfinished;
+    std::vector<BatchNodeLegRow> legs; std::vector<BatchMovementRow> turns;
+    std::vector<NodeConflictRow> conflicts; std::vector<std::string> issues;
+    bool operator==(const BatchNodeRow&) const = default;
+};
 struct BatchReport {
     std::vector<std::uint32_t> seeds, overloadedSeeds; // ascending
     std::vector<BatchMovementRow> movements;
@@ -65,6 +77,7 @@ struct BatchReport {
     Estimate meanDelay, completed, pending, safetyClamps;
     std::vector<BatchLotRow> lots; // M8.5; last, so existing brace-initialisations keep meaning
     std::optional<Estimate> redRunning; // B-9 (D238): only when the runs carry the keys
+    std::vector<BatchNodeRow> nodes; // S0.3: one per Node; empty without any
     bool operator==(const BatchReport&) const = default;
 };
 // Sorts by seed first, so any permutation of the same runs gives the same report, bit for bit.
