@@ -254,6 +254,41 @@ A first version cost 2.4–3.4 %. Two changes brought it down:
 - **The leader id is found only on the relief path.** Passing an id to every `closestVehicle` call
   had cost 23 M Ir in that function alone on the lane lab.
 
+## D252: the lane-change lab's clamp
+
+Traced on 2026-10-19, on `e926bb6` (D251), with no code change. The method is D249's: a temporary
+stderr line in the clamp branch, then a tick-by-tick print of the two vehicles, never committed.
+
+**Where it is.** The only clamp in `lane-change-lab` over seeds 42–81 is at seed 74, t = 91.9 s:
+- vehicle 59 at 3.55 m/s;
+- its leader, 51, 2.14 m ahead at 0.63 m/s;
+- both on `lane-18` on route `route-29/lane-3`, so the same lane, and neither has ever changed lanes;
+- the binding cap is the vehicle leader's, 0.14 m. Its next hold is 9.7 m away.
+
+**What happens:**
+
+| t (s) | 51: speed, distance to its next hold | 59: speed, gap to 51 | 59's braking |
+|---|---|---|---|
+| 89.5 | 12.2 m/s, 15.0 m | — | — |
+| 91.0 | 2.9 m/s, 4.5 m | 7.8 m/s, 5.8 m | — |
+| 91.5 | 1.4 m/s, 3.4 m | 5.4 m/s, 3.5 m | ≈ 4.8 m/s² |
+| 91.9 | 0.6 m/s, 3.0 m | 3.6 m/s, 2.1 m | ≈ 4.4 m/s² — clamped |
+
+- **The leader** brakes from 12.2 m/s to a creep in about 2.4 s, at up to about 8 m/s², toward the
+  hold at the end of its stub lane. It is waiting there to change lanes.
+- **The follower** brakes at only about 4.4–4.8 m/s². Its car's maximum is 8. The gap closes inside
+  the standstill buffer at 3.6 m/s.
+
+**What it means:**
+- **Not a merge clamp.** It is none of D249's classes. It is the follower class D241 found at seed 73:
+  the prototype's braking is too soft behind a leader that stops hard. ENGINEERING_NOTES records
+  D227's kinematic braking floor, measured and not adopted.
+- **The D251 switches barely touch it.** `leaderTravel` credits 0.025 m, because the leader is
+  slow, and the clamp stays. The tick moves the follower 0.025 m further, which shifts seed 74's
+  mean delay by 0.0006 s. That is the one lane-lab seed D251 changes.
+- **A fix would change the prototype's braking law,** with D227's own rows and the owner's choice.
+  None is proposed here.
+
 ## Not covered here
 
 - **Anticipation across a join was not prototyped.** In it, a vehicle approaching a join would see

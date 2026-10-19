@@ -162,6 +162,9 @@ fixtures with a two-connector join.
 
 - J1 and J2 after the package (13 of the 17). They need anticipation across a join, or a change to
   how a vehicle stops at its line (D227, D232).
-- Source-insertion clearance (M3.2.8a.1a, D108) and the lane-change lab's one clamp, which is not
-  traced.
+- Source-insertion clearance (M3.2.8a.1a, D108).
+- The lane-change lab's one clamp, traced by D252
+  ([evidence](../evidence/merge-clamps.md#d252-the-lane-change-labs-clamp)). It is no merge: a
+  follower under-brakes behind a leader stopping hard at its stub lane's dead end. That is the
+  prototype law's softness (D227's braking floor, not adopted), and changing it is the owner's call.
 - Gap time and headway values: they are study inputs. No fidelity claim (rule 4).
