@@ -45,7 +45,8 @@ void composition(QComboBox* combo, const std::vector<Choice>& choices, const std
 }
 }
 std::optional<OdMatrix> editOdMatrix(QWidget* parent, const OdMatrix& matrix, const std::vector<Choice>& zones,
-                                     const std::vector<Choice>& compositions, const DialogText& text) {
+                                     const std::vector<Choice>& compositions, const std::vector<Choice>& periods,
+                                     const DialogText& text) {
     QDialog dialog(parent); dialog.setObjectName("editorOdDialog"); dialog.setWindowTitle(text("editorEditOdMatrix"));
     auto* layout = new QVBoxLayout(&dialog);
     auto* form = new QFormLayout; layout->addLayout(form);
@@ -53,6 +54,13 @@ std::optional<OdMatrix> editOdMatrix(QWidget* parent, const OdMatrix& matrix, co
     auto* end = number(&dialog, matrix.endTime, 0, 1e7, 1); end->setObjectName("editorOdEnd");
     auto* types = new QComboBox(&dialog); types->setObjectName("editorOdComposition");
     composition(types, compositions, matrix.compositionId);
+    auto* period = new QComboBox(&dialog); period->setObjectName("editorOdStudyPeriod");
+    period->addItem(text("editorOdOwnTimes"), QString());
+    for (const auto& [id, label] : periods) period->addItem(label, QString::fromStdString(id));
+    period->setCurrentIndex(std::max(0, period->findData(QString::fromStdString(matrix.periodId))));
+    const auto own = [=] { const bool on = period->currentData().toString().isEmpty(); start->setEnabled(on); end->setEnabled(on); };
+    own(); QObject::connect(period, qOverload<int>(&QComboBox::currentIndexChanged), &dialog, own);
+    form->addRow(text("editorOdStudyPeriod"), period);
     form->addRow(text("editorOdStart"), start); form->addRow(text("editorOdEnd"), end); form->addRow(text("editorOdComposition"), types);
     auto* help = new ReflowLabel(text("editorOdHelp"), &dialog); help->setWordWrap(true); layout->addWidget(help);
     auto* row = new QHBoxLayout; layout->addLayout(row, 1);
@@ -96,9 +104,11 @@ std::optional<OdMatrix> editOdMatrix(QWidget* parent, const OdMatrix& matrix, co
     std::optional<OdMatrix> result;
     QObject::connect(buttons(dialog, layout, text), &QDialogButtonBox::accepted, &dialog, [&] {
         if (shown.empty()) { error->setText(text("OD_ZONE_UNKNOWN")); return; }
-        if (!(end->value() > start->value())) { error->setText(text("OD_PERIOD_INVALID")); return; }
+        const auto periodId = period->currentData().toString().toStdString();
+        if (periodId.empty() && !(end->value() > start->value())) { error->setText(text("OD_PERIOD_INVALID")); return; }
         OdMatrix edited = matrix;
-        edited.startTime = start->value(); edited.endTime = end->value();
+        edited.periodId = periodId;
+        edited.startTime = periodId.empty() ? start->value() : 0; edited.endTime = periodId.empty() ? end->value() : 0;
         edited.compositionId = types->currentData().toString().toStdString();
         edited.zoneIds = shown;
         edited.cells.assign(shown.size(), std::vector<double>(shown.size(), 0));

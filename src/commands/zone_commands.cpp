@@ -30,4 +30,9 @@ void deleteZone(ProjectDocument& d, const std::string& id) {
 void deleteZoneConnector(ProjectDocument& d, const std::string& id) { erase(d.zones.zoneConnectors, id); }
 void deleteOdMatrix(ProjectDocument& d, const std::string& id) { erase(d.zones.odMatrices, id); }
 void deleteParkingLot(ProjectDocument& d, const std::string& id) { erase(d.zones.parkingLots, id); }
+std::string putStudyPeriod(ProjectDocument& d, StudyPeriod value) { return put(d, d.zones.studyPeriods, std::move(value), "period"); }
+void deleteStudyPeriod(ProjectDocument& d, const std::string& id) {
+    for (const auto& m : d.zones.odMatrices) if (m.periodId == id) throw std::invalid_argument("EDIT_PERIOD_IN_USE");
+    erase(d.zones.studyPeriods, id);
+}
 }

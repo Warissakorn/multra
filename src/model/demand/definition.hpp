@@ -151,6 +151,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     std::vector<VehicleClass> vehicleClasses;
     std::vector<LinkBehaviourType> linkBehaviourTypes;
     std::optional<EvaluationPeriod> evaluation; // M5.3; absent is warm-up 0 to the end of the run
+    double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight
     // M4.2 (D147): where the definition came from, not what it says -- never written and never
     // compared, so a save and reopen round-trips the content exactly. A bare M0 scenario (no
     // schemaVersion) sets it; its catalog behaviours then resolve without amberDeceleration, so

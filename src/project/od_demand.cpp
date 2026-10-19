@@ -76,6 +76,14 @@ void walkCells(const ProjectDocument& d, ChainFinder& finder, Report report, Add
 }
 }
 
+std::optional<std::pair<double, double>> odMatrixWindow(const ProjectDocument& d, const OdMatrix& m) {
+    if (m.periodId.empty()) return std::pair{m.startTime, m.endTime};
+    const auto& periods = d.zones.studyPeriods;
+    const auto p = std::find_if(periods.begin(), periods.end(), [&](const auto& x) { return x.id == m.periodId; });
+    if (p == periods.end()) return std::nullopt;
+    const double clock = d.definition ? d.definition->clockStart : 0.0;
+    return std::pair{p->start - clock, p->end - clock};
+}
 AuthoringDefinition withOdDemand(const ProjectDocument& d) {
     auto result = d.definition.value_or(AuthoringDefinition{});
     if (d.zones.empty()) return result;
@@ -89,7 +97,10 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
     },
         [&](const OdMatrix& m, std::size_t r, std::size_t c, const ZoneConnector& oc, const ZoneConnector& dc,
             const Chains& chains, double originShares, double destinationShares) {
-            const double rate = m.cells[r][c] / (m.endTime - m.startTime) * 3600 * (oc.share / originShares) *
+            const auto window = odMatrixWindow(d, m);
+            if (!window) return; // UNKNOWN_PERIOD, refused on commit
+            const auto [start, end] = *window;
+            const double rate = m.cells[r][c] / (end - start) * 3600 * (oc.share / originShares) *
                                 (dc.share / destinationShares) / static_cast<double>(chains.size());
             for (std::size_t k = 0; k < chains.size(); ++k) {
                 const auto suffix = chains.size() == 1 ? std::string{} : "/path-" + std::to_string(k + 1);
@@ -99,7 +110,7 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
                 VehicleInput input;
                 input.id = "od:" + m.id + "/" + m.zoneIds[r] + "/" + m.zoneIds[c] + "/" + oc.id + ">" + dc.id + suffix;
                 input.routeId = route;input.vehiclesPerHour = rate;
-                input.startTime = m.startTime;input.endTime = m.endTime;input.compositionId = m.compositionId;
+                input.startTime = start;input.endTime = end;input.compositionId = m.compositionId;
                 result.inputs.push_back(std::move(input));
             }
         });
@@ -157,7 +168,9 @@ std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std:
     auto probe = d.definition.value_or(AuthoringDefinition{});probe.inputs.clear();
     for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {
         const auto& m = layer.odMatrices[i];
-        if (m.endTime > duration) issues.push_back({"OD_PERIOD_INVALID", "odMatrices[" + std::to_string(i) + "]"});
+        // S1.1: a period placed by clockStart must also start no earlier than the run.
+        if (const auto window = odMatrixWindow(d, m); window && (window->first < 0 || window->second > duration))
+            issues.push_back({"OD_PERIOD_INVALID", "odMatrices[" + std::to_string(i) + "]"});
         VehicleInput input;input.id = m.id;input.compositionId = m.compositionId;input.endTime = 1;
         probe.inputs.push_back(std::move(input));
     }

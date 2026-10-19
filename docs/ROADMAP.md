@@ -405,7 +405,7 @@ contract and acceptance rows.
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
 Roads with cross-section templates replace centreline-only Links; M12's stored cut becomes a
 run-time cut over a study area. M9–M11 keep their engine scopes and gates; no gate moves.
-**S1 contract written** ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266): StudyPeriod, the run clock, Mode and PCU; owner choices answered (D267). Next: S1.1.
+**S1 contract written** ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266): StudyPeriod, the run clock, Mode and PCU; owner choices answered (D267); **S1.1 implemented** (D268: study periods, `clockStart`, matrix `periodId`, rows SP1–SP8). Next: S1.2.
 
 ### M8 — Zones, OD matrices and parking lots
 

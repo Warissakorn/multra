@@ -1,5 +1,7 @@
 #include "zone_codec.hpp"
+#include "../core/validate.hpp"
 #include "document.hpp"
+#include "study_period_codec.hpp"
 #include "../model/network/polygon.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
@@ -40,9 +42,18 @@ ZoneConnector parseConnector(const Json& j) {
     return {text(j, "id"), text(j, "zoneId"), text(j, "linkId"),
             direction == "origin" ? ZoneDirection::origin : ZoneDirection::destination, number(j.at("share"))};
 }
-OdMatrix parseMatrix(const Json& j) {
-    exactKeys(j, {"id", "startTime", "endTime", "compositionId", "zoneIds", "cells"});
-    OdMatrix m{text(j, "id"), number(j.at("startTime")), number(j.at("endTime")), text(j, "compositionId"), {}, {}};
+OdMatrix parseMatrix(const Json& j, const std::string& path) {
+    // S1.1 (STUDY_PERIODS §5): its own times or a period, never both and never neither.
+    if (j.is_object() && j.contains("periodId") == (j.contains("startTime") || j.contains("endTime")))
+        throw ValidationError({{"OD_PERIOD_AMBIGUOUS", path}});
+    OdMatrix m;
+    if (j.contains("periodId")) {
+        exactKeys(j, {"id", "periodId", "compositionId", "zoneIds", "cells"});
+        m.id = text(j, "id"); m.periodId = text(j, "periodId"); m.compositionId = text(j, "compositionId");
+    } else {
+        exactKeys(j, {"id", "startTime", "endTime", "compositionId", "zoneIds", "cells"});
+        m = {text(j, "id"), number(j.at("startTime")), number(j.at("endTime")), text(j, "compositionId"), {}, {}};
+    }
     for (const auto& id : array(j.at("zoneIds"))) { if (!id.is_string()) invalid(); m.zoneIds.push_back(id.get<std::string>()); }
     for (const auto& row : array(j.at("cells"))) {
         m.cells.emplace_back();
@@ -92,9 +103,12 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
     }
     if (!layer.odMatrices.empty()) {
         auto& out = document[kMatrices] = Json::array();
-        for (const auto& m : layer.odMatrices)
-            out.push_back({{"id", m.id}, {"startTime", m.startTime}, {"endTime", m.endTime}, {"compositionId", m.compositionId},
-                           {"zoneIds", m.zoneIds}, {"cells", m.cells}});
+        for (const auto& m : layer.odMatrices) {
+            Json row{{"id", m.id}, {"compositionId", m.compositionId}, {"zoneIds", m.zoneIds}, {"cells", m.cells}};
+            if (m.periodId.empty()) { row["startTime"] = m.startTime; row["endTime"] = m.endTime; }
+            else row["periodId"] = m.periodId; // S1.1
+            out.push_back(std::move(row));
+        }
     }
     if (!layer.parkingLots.empty()) {
         auto& out = document[kLots] = Json::array();
@@ -111,7 +125,9 @@ ZoneLayer parseZoneLayer(const Json& document, int schema) {
     ZoneLayer layer;
     parseArray(document, kZones, schema, layer.zones, parseZone);
     parseArray(document, kConnectors, schema, layer.zoneConnectors, parseConnector);
-    parseArray(document, kMatrices, schema, layer.odMatrices, parseMatrix);
+    std::size_t matrix = 0;
+    parseArray(document, kMatrices, schema, layer.odMatrices,
+               [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]"); });
     parseArray(document, kLots, schema, layer.parkingLots, parseLot);
     return layer;
 }
@@ -124,7 +140,15 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
     const auto id = [&](const std::string& value, const std::string& path) {
         if (value.empty() || !used.insert(value).second) issues.push_back({"ZONE_ID_INVALID", path + ".id"});
     };
-    std::set<std::string> zones, links;
+    std::set<std::string> zones, links, periods;
+    // S1.1 (STUDY_PERIODS §3): clock seconds, 0 <= start < end <= two days.
+    for (std::size_t i = 0; i < layer.studyPeriods.size(); ++i) {
+        const auto& p = layer.studyPeriods[i];const auto path = "studyPeriods[" + std::to_string(i) + "]";
+        if (p.id.empty() || !used.insert(p.id).second) issues.push_back({"PERIOD_INVALID", path + ".id"});
+        periods.insert(p.id);
+        if (!std::isfinite(p.start) || p.start < 0 || p.start >= kClockLimit) issues.push_back({"PERIOD_INVALID", path + ".start"});
+        if (!std::isfinite(p.end) || p.end > kClockLimit || !(p.end > p.start)) issues.push_back({"PERIOD_INVALID", path + ".end"});
+    }
     for (const auto& l : d.network.links) links.insert(l.id);
     for (std::size_t i = 0; i < layer.zones.size(); ++i) {
         const auto& z = layer.zones[i];const auto path = "zones[" + std::to_string(i) + "]";
@@ -143,7 +167,8 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
     for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {
         const auto& m = layer.odMatrices[i];const auto path = "odMatrices[" + std::to_string(i) + "]";
         id(m.id, path);
-        if (!std::isfinite(m.startTime) || !std::isfinite(m.endTime) || m.startTime < 0 || m.endTime <= m.startTime)
+        if (!m.periodId.empty()) { if (!periods.contains(m.periodId)) issues.push_back({"UNKNOWN_PERIOD", path + ".periodId"}); }
+        else if (!std::isfinite(m.startTime) || !std::isfinite(m.endTime) || m.startTime < 0 || m.endTime <= m.startTime)
             issues.push_back({"OD_PERIOD_INVALID", path});
         if (m.compositionId.empty()) issues.push_back({"OD_COMPOSITION_MISSING", path + ".compositionId"});
         std::set<std::string> seen;

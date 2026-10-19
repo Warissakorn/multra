@@ -71,8 +71,10 @@ void EditorWindow::refreshOd() {
             const auto& m = layer.odMatrices[static_cast<std::size_t>(r)];
             double total = 0;
             for (const auto& row : m.cells) total = std::accumulate(row.begin(), row.end(), total);
-            const QStringList values{QString::fromStdString(m.id),
-                                     editorDesign::formatValue(m.startTime, 0) + QStringLiteral("–") + editorDesign::formatValue(m.endTime, 0),
+            // S1.1: a matrix placed by a study period shows the period's name.
+            QString period = editorDesign::formatValue(m.startTime, 0) + QStringLiteral("–") + editorDesign::formatValue(m.endTime, 0);
+            for (const auto& [pid, label] : periodChoices()) if (pid == m.periodId) period = label;
+            const QStringList values{QString::fromStdString(m.id), period,
                                      QString::fromStdString(m.compositionId), QString::number(m.zoneIds.size()),
                                      editorDesign::formatValue(total, 0)};
             for (int col = 0; col < values.size(); ++col) {
@@ -105,7 +107,7 @@ void EditorWindow::editOd(const std::string& id) {
     if (id.empty() && !compositions.empty()) matrix.compositionId = compositions.front().first;
     std::vector<Choice> zones;
     for (const auto& z : d.zones.zones) zones.push_back({z.id, QString::fromStdString(z.name.empty() ? z.id : z.name)});
-    const auto edited = editOdMatrix(this, matrix, zones, compositions, [this](const char* key) { return text(key); });
+    const auto edited = editOdMatrix(this, matrix, zones, compositions, periodChoices(), [this](const char* key) { return text(key); });
     if (!edited) return;
     std::string created;
     if (execute(id.empty() ? "editorAddOdMatrix" : "editorEditOdMatrix", [&](auto& doc) { created = putOdMatrix(doc, *edited); })) {

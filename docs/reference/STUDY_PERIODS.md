@@ -1,7 +1,7 @@
 # Study periods, modes and PCU (S1)
 
 Written 2026-10-19 (D266) as a contract with five owner choices. The owner accepted every
-recommendation the same day (D267, §9: 1a–5a). Not implemented yet.
+recommendation the same day (D267, §9: 1a–5a). Slice S1.1 is implemented (D268, §13); S1.2 is not.
 This is stage S1 of the multi-level workflow
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §2, §10; D175): "StudyPeriod +
 mode/PCU, a schema change with byte-identical schema-31 saves". It fills what §2 leaves open: the
@@ -168,7 +168,7 @@ Rule 4 applies: nothing here is validated.
 
 | Slice | Content | Rows |
 |---|---|---|
-| S1.1 | StudyPeriod, `clockStart`, the matrix `periodId`, codec at 49, validation, Study periods table, OD dialog Period choice | SP1–SP8 |
+| S1.1 | StudyPeriod, `clockStart`, the matrix `periodId`, codec at 49, validation, Study periods table, OD dialog Period choice. **Implemented (D268)** | SP1–SP8 |
 | S1.2 | Mode catalog, the matrix `modeId`, `pcu` on vehicle types, derived mode PCU, mode list | SP9–SP14 |
 
 ## 11. Acceptance rows (planned)
@@ -198,3 +198,45 @@ Each row first asserts that its forcing worked (AGENTS).
   adds the period and mode forms.
 - **M10.1** is the first reader of a mode's PCU, and of `macroFlowBasis` if choice 4a stands.
 - **The run-time cut (S5)** places boundary flows by the same clock.
+
+## 13. S1.1 as implemented (D268)
+
+- **Model.**
+  - `StudyPeriod{id, name, start, end}` and `ZoneLayer::studyPeriods` are in
+    `src/model/demand/zones.hpp`, together with `OdMatrix::periodId` (empty = own times).
+  - `AuthoringDefinition::clockStart` is in `definition.hpp`.
+- **File.** `src/project/study_period_codec.*` holds `usesStudyPeriods`, `rejectStudyPeriodsBefore49`
+  and the array and `clockStart` codecs.
+  - `parseMatrix` (`zone_codec.cpp`) takes either key set, and refuses both forms or neither as
+    `OD_PERIOD_AMBIGUOUS` at `odMatrices[i]`.
+  - A matrix with a period is written without times.
+  - A file without any of these keeps schema 31 (or lower) and its bytes.
+- **Checks:**
+  - `zoneLayerIssues` adds `PERIOD_INVALID` (at `.id`, `.start`, `.end`) and `UNKNOWN_PERIOD`.
+  - The document check refuses a `clockStart` outside [0, 172800] with `INVALID_NUMBER` at
+    `definition.clockStart`.
+  - Run refuses a placed window outside `[0, duration]` with `OD_PERIOD_INVALID`.
+- **Expansion.** `odMatrixWindow` (`od_demand.*`) gives the matrix's own times, or its period less
+  `clockStart`. `withOdDemand` and `odDemandIssues` read it, so a placed matrix expands exactly
+  like its run-second twin.
+- **Commands.** `putStudyPeriod` (prefix `period`) and `deleteStudyPeriod`, which refuses with
+  `EDIT_PERIOD_IN_USE`.
+- **Editor:**
+  - **Study periods tab** (`editor_periods.cpp`, Demand group): add, edit and delete, each one
+    Undo step.
+    - The dialog takes the clock in `HH:mm:ss`, and an end at or before the start is the next day.
+    - A start after midnight of the next day cannot be typed in the dialog. The file allows it.
+  - **Run settings:** a `clockStart` field, `editorClockStart`. Left untouched, it keeps a stored
+    value past midnight.
+  - **OD dialog:** a Study period choice, `editorOdStudyPeriod`. Choosing a period disables the
+    own times, and the OD table shows the period's name.
+- **Rows.** SP1–SP6 and SP8 are in `tests/study_period_tests.cpp` (ctest `studyperiods`), and SP7 is
+  in `tests/study_period_ui_tests.cpp` (ctest `studyperiod-ui`). Thirteen codec rows' "future
+  schema" example moves to 50.
+- **Mutations caught:**
+  - the window ignoring `clockStart`;
+  - no schema gate;
+  - periods written when empty;
+  - an in-use delete allowed;
+  - ambiguity allowed;
+  - an unknown period accepted.

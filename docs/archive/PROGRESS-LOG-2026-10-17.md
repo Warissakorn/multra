@@ -3,6 +3,25 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — Lane lab clamp traced (D252); join anticipation measured (D253, docs only)
+
+The owner asked for both of NEXT's M3.2.8a.1 candidates, with the contract and numbers before any
+code for the second.
+- **D252** ([evidence](../evidence/merge-clamps.md#d252-the-lane-change-labs-clamp)): the lane lab's
+  only clamp (seed 74) is not a merge. A follower brakes at only 4.4–4.8 m/s² behind a leader
+  stopping hard at its stub lane's dead end. That is D241's follower class, from the prototype
+  braking's softness (D227).
+- **D253** ([JOIN_ANTICIPATION](../reference/JOIN_ANTICIPATION.md), [evidence](../evidence/join-anticipation.md)):
+  eight reverted prototypes.
+  - **Replacing the following leader** with the other stream's vehicle produced phantom leaders, side-by-side
+    stops, and acceleration into the real leader: thousands of clamps, or 177 clamps and 12
+    overlaps.
+  - **A4** (a second following law, keeping the stricter acceleration) is clean, but it nets M2.6 only
+    17 → 16 and moves T-junction delay from the minor road to the major road (7.069 → 7.545 s).
+  - **Not recommended.** The line approach (D227's floor) is named as the better candidate.
+
+No engine code is committed. `check` 179/179, Linux only.
+
 ## 2026-10-19 — Merge clamp switches implemented (D250, D251)
 
 The owner chose D249's recommended package, as project switches that are on by default

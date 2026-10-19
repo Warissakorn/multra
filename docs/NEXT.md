@@ -144,19 +144,17 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S1.1: study periods (STUDY_PERIODS §3–§5, §8; rows SP1–SP8)
+## Next session — S1.2: modes and PCU (STUDY_PERIODS §5–§7; rows SP9–SP14)
 
-The owner accepted every S1 recommendation (D267), on the contract written as D266. Next, one system:
-- **S1.1,** with rows SP1–SP8 written failure-first:
-  - `studyPeriods[]` at schema 49;
-  - `definition.clockStart`;
-  - the matrix `periodId`, with `OD_PERIOD_AMBIGUOUS` and `UNKNOWN_PERIOD`;
-  - expansion through `odDemandInputs` at `[start − clockStart, end − clockStart]`;
-  - `EDIT_PERIOD_IN_USE`;
-  - the Study periods table and the OD dialog's Period choice.
-
-  Schema-31 files must keep their bytes.
-- **Then S1.2:** modes, `modeId`, `pcu` and the derived mode PCU (SP9–SP14). No PCU value ships.
+S1.1 is in (D268): study periods, `clockStart` and the matrix `periodId`. Next, one system:
+- **S1.2,** with rows SP9–SP14 written failure-first:
+  - the `data/modes/` catalog (`{id, name, compositionId}`, shipping `car` and `mixed`);
+  - the matrix `modeId`, with `OD_TYPES_AMBIGUOUS`, `UNKNOWN_MODE` and `MODE_COMPOSITION_UNKNOWN`;
+  - an optional `pcu: {value, source}` on vehicle types (`INVALID_PCU`);
+  - the derived mode PCU, shown in a read-only mode list;
+  - `EDIT_MODE_IN_USE`.
+- **First, decide against `resolveCatalogs`** whether a project may carry its own modes (§6).
+- **No PCU value ships** (D267).
 
 Also still open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and
 the cost with a Node (D264, D265).

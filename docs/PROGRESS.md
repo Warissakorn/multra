@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — S1.1: study periods (D268)
+
+OD matrices can now be placed on the study clock ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §13).
+- **File (schema 49):** `studyPeriods[]` in clock seconds, `definition.clockStart`, and a matrix's
+  `periodId` in place of its own times. Each is written only when used, so schema-31 and shipped
+  files keep their bytes.
+- **Run:** `odMatrixWindow` places a period at `start − clockStart`. A placed matrix runs
+  byte-identical to its run-second twin, and a window outside the run is `OD_PERIOD_INVALID`.
+- **Editor:**
+  - a Study periods tab (HH:MM:SS; an end before the start is the next day);
+  - the Run settings clock field;
+  - the OD dialog's period choice.
+
+  Each commit is one Undo step.
+- **Rows:** SP1–SP8 (ctest `studyperiods`, `studyperiod-ui`); six mutations caught. Shipped outputs,
+  the pin and the TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — The S1 contract: study periods, modes and PCU (D266, D267, docs only)
 
 The owner chose S1 next. [STUDY_PERIODS](reference/STUDY_PERIODS.md) fills what the workflow left
@@ -142,25 +159,6 @@ the line approach as a contract with numbers first (D254, [JOIN_ANTICIPATION](re
 - **Measured:** on, seeds 42–81 of the four shipped projects reproduce D253's A4 outputs byte for
   byte; off, all four are byte-identical to D251, with the pin unchanged. Ir off: +0.16 % / +0.11 %
   / +0.00 % (four-leg, lane lab, M2.6).
-
-## 2026-10-19 — Lane lab clamp traced (D252); join anticipation measured (D253, docs only)
-
-The owner asked for both of NEXT's M3.2.8a.1 candidates, with the contract and numbers before any
-code for the second.
-- **D252** ([evidence](evidence/merge-clamps.md#d252-the-lane-change-labs-clamp)): the lane lab's
-  only clamp (seed 74) is not a merge. A follower brakes at only 4.4–4.8 m/s² behind a leader
-  stopping hard at its stub lane's dead end. That is D241's follower class, from the prototype
-  braking's softness (D227).
-- **D253** ([JOIN_ANTICIPATION](reference/JOIN_ANTICIPATION.md), [evidence](evidence/join-anticipation.md)):
-  eight reverted prototypes.
-  - **Replacing the following leader** with the other stream's vehicle produced phantom leaders, side-by-side
-    stops, and acceleration into the real leader: thousands of clamps, or 177 clamps and 12
-    overlaps.
-  - **A4** (a second following law, keeping the stricter acceleration) is clean, but it nets M2.6 only
-    17 → 16 and moves T-junction delay from the minor road to the major road (7.069 → 7.545 s).
-  - **Not recommended.** The line approach (D227's floor) is named as the better candidate.
-
-No engine code is committed. `check` 179/179, Linux only.
 
 ## Older entries
 

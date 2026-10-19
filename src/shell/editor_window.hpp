@@ -307,6 +307,12 @@ private:
     void editLot(const std::string& zoneId);
     std::string selectedOd() const;
     std::vector<std::pair<std::string, QString>> compositionChoices() const;
+    // S1.1 (STUDY_PERIODS §8): the Study periods tab and the choices the OD dialog offers.
+    QTableWidget* periodTable_{}; std::uint64_t periodRevision_{UINT64_MAX};
+    void buildPeriods(); void translatePeriods(); void refreshPeriods(); void showPeriods();
+    void editPeriod(const std::string& id); // empty: a new period
+    std::string selectedPeriod() const;
+    std::vector<std::pair<std::string, QString>> periodChoices() const;
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
     void refreshLots();
     QLineEdit* runSeed_{};

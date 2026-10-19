@@ -2,6 +2,8 @@
 #include "document.hpp"
 #include <filesystem>
 #include <map>
+#include <optional>
+#include <utility>
 
 namespace trafficsim {
 // M8.3 (D155, ZONES_AND_PARKING.md §3). The document's definition with every OD matrix added as
@@ -12,6 +14,9 @@ namespace trafficsim {
 // at cell / period · 3600 veh/h times both connector shares, divided equally over the chains.
 // Without a zone layer it returns the definition unchanged. A cell with no connector or no path is left out.
 AuthoringDefinition withOdDemand(const ProjectDocument&);
+// S1.1 (STUDY_PERIODS §4, D268): the run-time window a matrix covers -- its own times, or its
+// period less the run's clockStart. None when the period does not exist.
+std::optional<std::pair<double, double>> odMatrixWindow(const ProjectDocument&, const OdMatrix&);
 // The Run tier of §6 that needs no parking lot: connector positions, the period against the run,
 // unknown compositions, zones with no connector and cells with no path. Authoring keeps all of
 // them; Run refuses them.

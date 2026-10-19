@@ -27,6 +27,8 @@ struct OdMatrix {
     std::string compositionId;
     std::vector<std::string> zoneIds;       // row and column order
     std::vector<std::vector<double>> cells; // row = origin; vehicle trips in the period
+    // S1.1 (STUDY_PERIODS §5, D268): a StudyPeriod in place of startTime/endTime; empty = own times.
+    std::string periodId;
     bool operator==(const OdMatrix&) const = default;
 };
 // M8.4b (D157): a zone with capacity. Its destination connectors' Links are its gate, its origin
@@ -44,12 +46,18 @@ struct ParkingLot {
     std::vector<ParkingDwellPoint> dwell;
     bool operator==(const ParkingLot&) const = default;
 };
+// S1.1 (STUDY_PERIODS §3, D268): a period on the study clock, seconds since midnight.
+struct StudyPeriod {
+    std::string id, name; double start{}, end{};
+    bool operator==(const StudyPeriod&) const = default;
+};
 struct ZoneLayer {
     std::vector<Zone> zones;
     std::vector<ZoneConnector> zoneConnectors;
     std::vector<OdMatrix> odMatrices;
     std::vector<ParkingLot> parkingLots;
-    bool empty() const { return zones.empty() && zoneConnectors.empty() && odMatrices.empty() && parkingLots.empty(); }
+    std::vector<StudyPeriod> studyPeriods; // S1.1, schema 49
+    bool empty() const { return zones.empty() && zoneConnectors.empty() && odMatrices.empty() && parkingLots.empty() && studyPeriods.empty(); }
     bool operator==(const ZoneLayer&) const = default;
 };
 }
