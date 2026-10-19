@@ -6,7 +6,7 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
-## 2026-10-19 — The S1 contract: study periods, modes and PCU (D266, docs only)
+## 2026-10-19 — The S1 contract: study periods, modes and PCU (D266, D267, docs only)
 
 The owner chose S1 next. [STUDY_PERIODS](reference/STUDY_PERIODS.md) fills what the workflow left
 open:
@@ -16,7 +16,9 @@ open:
   composition or a mode. Schema-31 files keep their bytes because nothing is migrated.
 - **Modes and PCU:** a `data/modes/` catalog, and an optional cited `pcu` per vehicle type with a
   derived mode PCU. No value ships without a source.
-- **Rows:** SP1–SP14, planned. Five owner choices are pending. No code changed.
+- **Rows:** SP1–SP14, planned. No code changed.
+- **The owner accepted every recommendation (D267):** seconds since midnight, `clockStart` on the
+  run, no profile or flow basis stored yet, and the PCU field without values.
 
 ## 2026-10-19 — Nodes S0.5: Suggest nodes (D265)
 

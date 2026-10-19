@@ -144,18 +144,19 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S1: ask the owner the five STUDY_PERIODS choices (§9)
+## Next session — S1.1: study periods (STUDY_PERIODS §3–§5, §8; rows SP1–SP8)
 
-The owner chose S1 (after D265), and its contract is written ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266,
-docs only). Ask the owner §9's five choices, each with its recommendation:
-1. the clock form;
-2. how a run meets a period;
-3. profiles within a period;
-4. `macroFlowBasis`;
-5. PCU values and their source.
+The owner accepted every S1 recommendation (D267), on the contract written as D266. Next, one system:
+- **S1.1,** with rows SP1–SP8 written failure-first:
+  - `studyPeriods[]` at schema 49;
+  - `definition.clockStart`;
+  - the matrix `periodId`, with `OD_PERIOD_AMBIGUOUS` and `UNKNOWN_PERIOD`;
+  - expansion through `odDemandInputs` at `[start − clockStart, end − clockStart]`;
+  - `EDIT_PERIOD_IN_USE`;
+  - the Study periods table and the OD dialog's Period choice.
 
-Then record the answers and implement **S1.1** (rows SP1–SP8), one system per session. S1.2 (modes
-and PCU, SP9–SP14) follows.
+  Schema-31 files must keep their bytes.
+- **Then S1.2:** modes, `modeId`, `pcu` and the derived mode PCU (SP9–SP14). No PCU value ships.
 
 Also still open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and
 the cost with a Node (D264, D265).

@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Product scope, stack, naming and owner gates | D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
@@ -300,6 +300,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D257](RECORD.md#d257) — the owner chose F1a as `clampRules.standingStopFloor`, on by default (schema 47 when off).
 [D258](RECORD.md#d258) — `standingStopFloor` implemented; on, it reproduces D256's F1a outputs (M2.6 17 → 5 clamps); off, byte-identical to D255.
 [D259](RECORD.md#d259) — the Node contract (S0, merged with M5.1): polygon object at schema 48, derived legs/turns/control, Micro per-turn evaluation; five owner choices, awaiting the owner.
+[D267](RECORD.md#d267) — the owner accepted every S1 recommendation (1a–5a).
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

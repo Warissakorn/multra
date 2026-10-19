@@ -1,6 +1,7 @@
 # Study periods, modes and PCU (S1)
 
-Written 2026-10-19 (D266) as a contract with five owner choices. **Docs only; awaiting the owner.**
+Written 2026-10-19 (D266) as a contract with five owner choices. The owner accepted every
+recommendation the same day (D267, §9: 1a–5a). Not implemented yet.
 This is stage S1 of the multi-level workflow
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §2, §10; D175): "StudyPeriod +
 mode/PCU, a schema change with byte-identical schema-31 saves". It fills what §2 leaves open: the
@@ -138,7 +139,7 @@ Rule 4 applies: nothing here is validated.
   - a Types choice between Composition and Mode, each a list.
 - **Mode list** (S1.2): read-only, showing id, name, composition and derived PCU.
 
-## 9. Owner choices (each with the session's recommendation)
+## 9. Owner choices (answered 2026-10-19, D267: every recommendation, 1a–5a)
 
 1. **Clock form in the file.**
    - **(a) Seconds since midnight, shown as HH:MM:SS (recommended).** Every time in the file is
