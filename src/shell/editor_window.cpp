@@ -77,7 +77,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     buildHistory();
     auto* tools=addToolBar(QString());texts_["editorTools"]=tools; tools->setObjectName("editorTools");
     tool_=new QComboBox(this); tool_->setObjectName("editorTool");
-    for(int i=0;i<13;++i) tool_->addItem("",i);
+    for(int i=0;i<14;++i) tool_->addItem("",i);
     tool_->hide();
     tools->addAction(action("editorFit",QKeySequence(Qt::Key_F),[this]{canvas_->fitNetwork();}));
     tools->addAction(action("editorRotate",QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_R),[this]{rotateSelection();}));
@@ -107,6 +107,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         else if (index==10) showCounters();
         else if (index==11) showSections();
         else if (index==12) showZones(); // M8.6a
+        else if (index==13) showNodes(); // S0.1
     });
     connect(grid_,&QDoubleSpinBox::valueChanged,this,[this](double n){canvas_->grid=n;canvas_->redraw();});
     canvas_->selectionChanged=[this]{
@@ -170,7 +171,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         execute("editorMoveHead",[&](auto& d){moveSignalHead(d,id,station);});
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
-    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildOd(); buildRecovery(); buildPalette();
+    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildNodes(); buildOd(); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
@@ -200,8 +201,8 @@ void EditorWindow::translate() {
         else if(auto* menu=qobject_cast<QMenu*>(w)) menu->setTitle(text(key));
     }
     for(const auto& refreshValidation:validationRefresh_)refreshValidation();
-    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool"};
-    for(int i=0;i<13;++i) tool_->setItemText(i,text(modes[i]));
+    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool"};
+    for(int i=0;i<14;++i) tool_->setItemText(i,text(modes[i]));
     const char* tabs[]={"editorLinksTab","editorConnectorsTab","editorBackgroundTab"};
     for (int i=0;i<3;++i) properties_->setTabText(i,text(tabs[i]));
     side_->setItemText(0,text("editorLeft"));side_->setItemText(1,text("editorRight"));
@@ -214,7 +215,7 @@ void EditorWindow::translate() {
         if(english)for(int column=0;column<table->columnCount();++column)
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
-    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateSpeedDecisions(); translateSpeedAreas(); translateZones(); translateOd(); translatePalette(); refreshToolHint();
+    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateSpeedDecisions(); translateSpeedAreas(); translateZones(); translateNodes(); translateOd(); translatePalette(); refreshToolHint();
     if (lab_) lab_->retranslate();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
@@ -291,6 +292,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshSpeedDecisions();refreshSpeedAreas();refreshZones();refreshOd();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshSpeedDecisions();refreshSpeedAreas();refreshZones();refreshNodes();refreshOd();refreshDiagnostics();refreshRun();
 }
 }

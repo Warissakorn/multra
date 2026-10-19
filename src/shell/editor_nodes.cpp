@@ -1,0 +1,98 @@
+#include "editor_window.hpp"
+#include "../editor/ui_design_tokens.hpp"
+#include "../commands/node_commands.hpp"
+#include <QAction>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QHeaderView>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSignalBlocker>
+#include <QTableWidget>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <algorithm>
+
+// S0.1 (D261, docs/reference/NODES.md §6): the Nodes tab. The Node tool's Enter commits a polygon
+// through execute(), so a drawn Node is one Undo step; rename and delete go through History too.
+namespace trafficsim {
+void EditorWindow::buildNodes() {
+    auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
+    layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
+    auto* bar = new QToolBar(body); layout->addWidget(bar);
+    nodeTable_ = new QTableWidget(0, 3, body); nodeTable_->setObjectName("editorNodeTable");
+    nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    nodeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    nodeTable_->horizontalHeader()->setStretchLastSection(true); nodeTable_->verticalHeader()->hide();
+    layout->addWidget(nodeTable_);
+    addObjectPage(body, "editorNodeTable");
+    const auto rename = [this] {
+        const auto id = selectedNode(); if (id.empty()) return;
+        const auto& nodes = history_.document().network.nodes;
+        const auto n = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == id; });
+        QDialog dialog(this); dialog.setObjectName("editorNodeDialog"); dialog.setWindowTitle(text("editorRenameNode"));
+        auto* form = new QFormLayout(&dialog);
+        form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
+        auto* name = new QLineEdit(QString::fromStdString(n->name), &dialog); name->setObjectName("editorNodeName");
+        form->addRow(text("editorColumnName"), name);
+        auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+        buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
+        buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
+        form->addRow(buttons);
+        connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+        if (dialog.exec() != QDialog::Accepted) return;
+        const auto renamed = name->text().toStdString();
+        execute("editorRenameNode", [&](auto& d) { renameNode(d, id, renamed); });
+    };
+    bar->addAction(action("editorRenameNode", {}, rename));
+    bar->addAction(action("editorDeleteNode", {}, [this] {
+        const auto id = selectedNode(); if (id.empty()) return;
+        execute("editorDeleteNode", [&](auto& d) { deleteNode(d, id); });
+    }));
+    canvas_->nodeCommitted = [this](std::vector<Point> polygon) {
+        std::string id;
+        if (!execute("editorNodeTool", [&](auto& d) { id = putNode(d, {"", "", std::move(polygon), false}); })) return false;
+        showNodes();
+        for (int r = 0; r < nodeTable_->rowCount(); ++r)
+            if (nodeTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) nodeTable_->selectRow(r);
+        return true;
+    };
+    connect(nodeTable_, &QTableWidget::cellDoubleClicked, this, [rename](int, int) { rename(); });
+    connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+}
+void EditorWindow::translateNodes() {
+    nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints")});
+    nodeRevision_ = UINT64_MAX;
+}
+std::string EditorWindow::selectedNode() const {
+    const auto* cell = nodeTable_ ? nodeTable_->item(nodeTable_->currentRow(), 0) : nullptr;
+    return cell && !nodeTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+}
+void EditorWindow::refreshNodes() {
+    if (!nodeTable_) return;
+    const auto& nodes = history_.document().network.nodes;
+    if (nodeRevision_ != history_.revision() || nodeTable_->rowCount() != static_cast<int>(nodes.size())) {
+        const auto keep = selectedNode();
+        const QSignalBlocker block(nodeTable_);
+        nodeTable_->setRowCount(static_cast<int>(nodes.size()));
+        for (int r = 0; r < nodeTable_->rowCount(); ++r) {
+            const auto& n = nodes[static_cast<std::size_t>(r)];
+            const QStringList values{QString::fromStdString(n.id), QString::fromStdString(n.name), QString::number(n.polygon.size())};
+            for (int col = 0; col < values.size(); ++col) {
+                auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(n.id));
+                if (col != 1) editorDesign::setNumericText(cell, col == 2);
+                nodeTable_->setItem(r, col, cell);
+            }
+            if (n.id == keep) nodeTable_->selectRow(r);
+        }
+        nodeTable_->resizeColumnsToContents();
+        nodeRevision_ = history_.revision();
+    }
+    const bool chosen = !selectedNode().empty();
+    for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
+}
+void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }
+}

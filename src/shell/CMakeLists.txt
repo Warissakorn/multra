@@ -1,6 +1,6 @@
 add_library(trafficsim_shell STATIC editor_interaction.cpp editor_style.cpp editor_appearance.cpp editor_workspace.cpp editor_window.cpp editor_commands.cpp editor_signal.cpp signal_timing_view.cpp editor_inspector.cpp editor_connectors.cpp editor_files.cpp editor_history.cpp editor_rotation.cpp
     editor_tables.cpp editor_diagnostics.cpp editor_demand.cpp editor_demand_preview.cpp editor_catalog.cpp demand_catalog_dialog.cpp behaviour_library_dialog.cpp editor_behaviour.cpp demand_type_rules_dialog.cpp demand_period_editor.cpp editor_input.cpp editor_decision.cpp editor_routing.cpp editor_control.cpp editor_run.cpp editor_results.cpp editor_batch.cpp editor_compare.cpp editor_storage.cpp editor_recovery.cpp editor_palette.cpp editor_creation.cpp behaviour_editor.cpp editor_lab.cpp behaviour_lab_window.cpp behaviour_lab_panel.cpp behaviour_lab_telemetry.cpp
-    ../editor/canvas_feedback.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp ../editor/canvas_zones.cpp editor_priority.cpp editor_zones.cpp editor_od.cpp od_lot_dialogs.cpp editor_counters.cpp editor_sections.cpp editor_speed_decisions.cpp editor_speed_areas.cpp)
+    ../editor/canvas_feedback.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp ../editor/canvas_zones.cpp editor_priority.cpp editor_zones.cpp editor_nodes.cpp editor_od.cpp od_lot_dialogs.cpp editor_counters.cpp editor_sections.cpp editor_speed_decisions.cpp editor_speed_areas.cpp)
 target_sources(trafficsim_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
 target_sources(trafficsim_shell PRIVATE editor_map.cpp ../editor/map_provider.cpp ../editor/map_tile_client.cpp ../editor/map_http_cache.cpp ../editor/map_layer.cpp ../editor/map_mesh.cpp ../editor/canvas_map.cpp ../editor/canvas_hud.cpp ../editor/run_vehicle_item.cpp)
 target_link_libraries(trafficsim_shell PUBLIC trafficsim_lab trafficsim_commands Qt6::Widgets Qt6::Network trafficsim_geo PRIVATE trafficsim_vehicle_pose trafficsim_options)
@@ -303,6 +303,12 @@ target_precompile_headers(trafficsim-gesture-tests REUSE_FROM trafficsim_shell)
     add_test(NAME zone-ui COMMAND trafficsim-zone-ui-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(zone-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
     add_dependencies(check trafficsim-zone-ui-tests)
+    add_executable(trafficsim-node-ui-tests ../../tests/node_ui_tests.cpp)
+    target_link_libraries(trafficsim-node-ui-tests PRIVATE trafficsim_shell Qt6::Test trafficsim_options)
+    target_precompile_headers(trafficsim-node-ui-tests REUSE_FROM trafficsim_shell)
+    add_test(NAME node-ui COMMAND trafficsim-node-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(node-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check trafficsim-node-ui-tests)
     # M8.6b (D162): the OD table, the lot dialog and the lot Results.
     add_executable(trafficsim-od-lot-ui-tests ../../tests/od_lot_ui_tests.cpp)
     target_link_libraries(trafficsim-od-lot-ui-tests PRIVATE trafficsim_shell Qt6::Test trafficsim_options)

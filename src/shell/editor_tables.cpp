@@ -39,7 +39,7 @@ const std::pair<const char*,std::vector<std::string>> objectGroups[]={
     {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable"}},
     {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
     {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable"}},
-    {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable"}},
+    {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable","editorNodeTable"}},
     {"editorObjectGroupResults",{"editorResultsTable"}},
     {"editorObjectGroupProblems",{"editorProblemTable"}}};
 }

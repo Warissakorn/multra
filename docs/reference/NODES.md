@@ -1,6 +1,7 @@
 # Nodes: a polygon over a junction (S0, M5.1)
 
-Written 2026-10-19 (D259). **Contract for the owner's choices; nothing is implemented.** Stage S0
+Written 2026-10-19 (D259). The owner accepted every §7 recommendation the same day (D260); slice
+S0.1 is implemented (D261, §8). Stage S0
 of the multi-level workflow ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §3, §10,
 D175) merged with M5.1's evaluation nodes (ROADMAP M5.1). A Node is first a Micro evaluation
 object, the per-junction delay and queue a traffic impact study reports
@@ -147,7 +148,7 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
   (`conflictGroups`, `src/model/network/right_of_way.hpp`), skipping clusters already inside a Node.
   It is one Undo step for the whole set.
 
-## 7. Owner choices (the session's recommendation first)
+## 7. Owner choices (answered 2026-10-19, D260: every recommendation, 1a–5a)
 
 1. **Where a turn's delay starts.**
    - **(a) At the start of the in-leg Link (recommended).** The window covers the approach the
@@ -175,7 +176,7 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 
 | Slice | Content | Rows |
 |---|---|---|
-| S0.1 | Object, codec (schema 48), validation, Node tool, Nodes panel, delete and rename | N1–N5 |
+| S0.1 | Object, codec (schema 48), validation, Node tool, Nodes panel, delete and rename. **Implemented (D261)** | N1–N5 |
 | S0.2 | Membership: inside objects, legs, turns, refusals, conflicts, control (pure functions in `src/model/network/`) | N6–N11 |
 | S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs | N12–N17 |
 | S0.4 | Coarse values, refine and derive back, lifecycle (with S2) | written with S2 |
@@ -212,3 +213,29 @@ Each row first asserts that its forcing worked (AGENTS).
 - Node delay in Macro: owner answer 10 of WORKFLOW §9; link VDFs and fixed turn penalties first.
 - Node shapes other than one simple polygon, and Nodes nested inside Nodes.
 - Calibration: rule 4.
+
+## 11. S0.1 as implemented (D261)
+
+- **Model.**
+  - `Node` and `Network::nodes` are in `src/model/network/network.hpp`, and `nodeIssues` is in
+    `nodes.*`, called by `validateNetwork`.
+  - The polygon tests are in `polygon.*` (`segmentsMeet`, `simplePolygon`, `pointInPolygon`,
+    `polygonsOverlap`). Zones now use them too, with unchanged behaviour.
+  - The overlap check also catches one polygon wholly inside another.
+- **File.** `src/project/node_codec.*` writes and parses the array.
+  - A malformed Node, an unknown key, a point that is not `{x, y}`, or `generated` written as
+    anything but `true` is `EDIT_NODE_INVALID` at its path.
+  - Below schema 48 the network's known fields refuse the key.
+  - `documentIds` holds node ids, so `allocateId(d, "node")` never collides.
+- **Commands.** `src/commands/node_commands.*` holds `putNode`, `renameNode` and `deleteNode`.
+  Replacing or renaming clears `generated`, and an allocated Node keeps the flag it was given.
+- **Editor.**
+  - `EditorCanvas::Tool::node` shares the zone draft (Ctrl+right-click, Enter, Backspace, Esc) and
+    hands it to `nodeCommitted`.
+  - `drawNodes` draws a solid outline, dotted while `generated`, with the name at the centroid.
+  - The Nodes tab is `src/shell/editor_nodes.cpp`, in the Measurement group: table, rename dialog
+    and delete. Tool 13 has the chord `N` and reuses the zone icon until a node icon is drawn.
+- **Rows.** N1–N4 are in `tests/node_tests.cpp` (ctest `nodes`) and N5 in `tests/node_ui_tests.cpp`
+  (ctest `node-ui`). The workspace and object-group UI tests list the new tool and page.
+- **Mutations caught:** no overlap check (N3), `generated` always written (N2, N4), no schema gate
+  (N2), an edit keeping `generated` (N4).

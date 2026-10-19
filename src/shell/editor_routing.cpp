@@ -48,7 +48,7 @@ void EditorWindow::buildRouting() {
 void EditorWindow::refreshToolHint() {
     if(!toolHint_)return;
     const int index=tool_->currentIndex();
-    toolHint_->setText(index==0?text("editorSelectHelp"):index==6?text(canvas_->routeDraft().empty()?"editorRouteClickHelp":"editorRouteFinishHelp"):index==7?text("editorInputPlaceHelp"):index==8?text("editorHeadPlaceHelp"):index==10?text("editorCounterPlaceHelp"):index==11?text("editorSectionPlaceHelp"):index==12?text("editorZonePlaceHelp"):QString{});
+    toolHint_->setText(index==0?text("editorSelectHelp"):index==6?text(canvas_->routeDraft().empty()?"editorRouteClickHelp":"editorRouteFinishHelp"):index==7?text("editorInputPlaceHelp"):index==8?text("editorHeadPlaceHelp"):index==10?text("editorCounterPlaceHelp"):index==11?text("editorSectionPlaceHelp"):index==12?text("editorZonePlaceHelp"):index==13?text("editorNodePlaceHelp"):QString{});
     toolHint_->setToolTip(toolHint_->text());
 }
 void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,std::optional<double> position,std::optional<RouteDestination> destination) {

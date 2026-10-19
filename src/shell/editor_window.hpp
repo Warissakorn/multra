@@ -283,6 +283,10 @@ private:
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
     QTableWidget *zoneTable_{}, *zoneConnectorTable_{};
     std::uint64_t zoneRevision_{UINT64_MAX}; std::string zoneConnectorsOf_;
+    // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
+    QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
+    void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    std::string selectedNode() const;
     void buildZones();
     void translateZones();
     void refreshZones();

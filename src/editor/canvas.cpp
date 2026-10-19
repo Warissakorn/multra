@@ -123,6 +123,7 @@ void EditorCanvas::redraw() {
         image->setOpacity(bg.opacity); image->setZValue(-200000);
     }
     drawZones(); // M8.6a: below every Link
+    drawNodes(); // S0.1: an outline over the junction
     const auto primary = selected();
     for (auto link : document_->network.links) {
         if(!levelVisible(link.level))continue;

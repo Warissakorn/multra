@@ -21,7 +21,7 @@ class MapLayer;
 enum class MapStatus;
 class EditorCanvas : public QGraphicsView {
 public:
-    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone };
+    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node };
     explicit EditorCanvas(QWidget* parent = nullptr);
     ~EditorCanvas() override;
     void setMapProviders(std::vector<MapProvider>);
@@ -139,6 +139,7 @@ public:
     // M8.6a (D161): a zone polygon is Ctrl+right-clicked vertex by vertex; Enter hands it over once it
     // has three, and the draft stays when the receiver refuses it (returns false).
     std::function<bool(std::vector<Point>)> zoneCommitted;
+    std::function<bool(std::vector<Point>)> nodeCommitted; // S0.1 (NODES §6): the Node tool shares the draft
     const std::vector<Point>& zoneDraft() const { return zoneDraft_; }
     std::function<void(Point)> duplicateRequested;
     std::function<void(Point)> translateRequested;
@@ -230,6 +231,7 @@ private:
     bool zonePress(QMouseEvent*);
     void commitZoneDraft();
     void drawZones();
+    void drawNodes();
     std::optional<SectionLine> sectionLineAt(Point) const;
     void drawSections();
     void drawRouteOverlay(const std::vector<std::string>&, const std::string& id, bool preview);

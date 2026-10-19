@@ -33,8 +33,8 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the owner chose D253's A4 anyway. Absent means off; written only when true at schema 46; a fourth
   Run settings checkbox; rows BA168–BA172. On, it reproduces D253's A4 numbers; off, every shipped
   output is byte-identical to D251.
-- **The Node contract is written** (D259, [NODES](reference/NODES.md)): S0 of the multi-level
-  work, merged with M5.1. Docs only; five owner choices are open.
+- **Nodes S0.1 is in** (D259–D261, [NODES](reference/NODES.md)): the Node object at schema 48,
+  validation, the Node tool (`N`) and the Nodes tab. The owner's five choices are answered.
 - **`standingStopFloor` is in, on by default** (D256–D258, [LINE_APPROACH](reference/LINE_APPROACH.md) §7):
   D227's floor for behaviours with `amberDeceleration`. M2.6 has 17 → 5 clamps; the four-leg, lane
   lab, pin and TS rows are unchanged; T-junction +0.03 s. Written only when off, at schema 47.
@@ -142,17 +142,14 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — ask the owner the Node choices (D259)
+## Next session — Nodes S0.2: membership (NODES §3)
 
-The Node contract is written ([NODES](reference/NODES.md) §7). Ask the owner before any code:
-1. where a turn's delay starts (recommended: at the in-leg Link's start);
-2. queue per leg (recommended: mean and maximum);
-3. LOS letters on Node rows (recommended: yes, labelled as LOS §4);
-4. Suggest nodes as its own slice S0.5 (recommended);
-5. coarse values implemented with S2 (recommended).
-
-Then implement S0.1 (object, codec at schema 48, tool, panel; rows N1–N5) failure-first, followed by
-S0.2 and S0.3.
+The owner accepted every Node recommendation (D260), and S0.1 is in (D261). Next, one system:
+- **S0.2,** pure functions in `src/model/network/`, with rows N6–N11 written failure-first:
+  - inside objects, legs, turns (the `routeLaneChains` walk over internal objects), pass-through
+    Links, refusals, the turn-conflict table and control.
+  - Use the shipped four-leg and T-junction for N6 and N7.
+- **Then S0.3,** the Micro evaluation, and **S0.5,** Suggest nodes.
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.

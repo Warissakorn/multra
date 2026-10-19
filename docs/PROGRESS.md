@@ -6,6 +6,21 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — Nodes S0.1: object, file, tool and tab (D260, D261)
+
+The owner accepted every Node recommendation (D260) ([NODES](reference/NODES.md) §11).
+- **Model:** `Network::nodes` and `nodeIssues` (ids, simple polygon, no overlap). The polygon tests
+  are shared with zones in `polygon.*`.
+- **File:** `network.nodes` is written only when a Node exists, at schema 48, with
+  `EDIT_NODE_INVALID` at its path. `generated` is written only when true.
+- **Commands:** `putNode`, `renameNode`, `deleteNode`. An edit clears `generated`.
+- **Editor:** the Node tool (`N`) shares the zone draft, and the Nodes tab in the Measurement group
+  can rename and delete. Each action is one Undo step.
+- **Rows:** N1–N5 (ctest `nodes`, `node-ui`). The workspace and object-group UI tests list the new
+  tool and page.
+- **Unchanged:** the engine does not read Nodes, so every run output, the pin and the TS rows are
+  unchanged. Linux only.
+
 ## 2026-10-19 — The Node contract (S0, D259, docs only)
 
 The owner chose to start the multi-level work (D145, D175) at S0, before W99 ([NODES](reference/NODES.md)).
@@ -165,18 +180,6 @@ The Windows diagnostic showed that the 257 px text was Thai ([evidence](evidence
   - the editor points `LIBTHAI_DICTDIR` at `data/libthai` beside the executable.
 - **Tests:** the Thai pass of the narrow fixture requires a line break inside a Thai sentence. A
   mutation to an unbroken Latin string is caught.
-
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
-
-## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
-
-The Windows diagnostic named the widget ([evidence](evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).
-- **Cause:** `editorEffectiveBehaviour` asked for a 257 px minimum on Windows (Qt 6.5.3), against
-  69 px on Linux. That held the floating panel at 273 px, so the top forms never stacked.
-- **Fix:** `ReflowLabel`'s wrapped minimum is its longest word, never more than Qt's.
-- **Tests:** a check that every wrapped top text asks for no more than its word (plus 8 px). It
-  passes on Linux before and after; the evidence that it fails is the Windows run. Inflating Qt's
-  value fails without the cap and passes with it.
 
 `check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
 

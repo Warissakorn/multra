@@ -3,6 +3,18 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
+
+The Windows diagnostic named the widget ([evidence](../evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).
+- **Cause:** `editorEffectiveBehaviour` asked for a 257 px minimum on Windows (Qt 6.5.3), against
+  69 px on Linux. That held the floating panel at 273 px, so the top forms never stacked.
+- **Fix:** `ReflowLabel`'s wrapped minimum is its longest word, never more than Qt's.
+- **Tests:** a check that every wrapped top text asks for no more than its word (plus 8 px). It
+  passes on Linux before and after; the evidence that it fails is the Windows run. Inflating Qt's
+  value fails without the cap and passes with it.
+
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+
 ## 2026-10-18 — Top Properties buttons elide (D243)
 
 D242's diagnostic on Windows named the real cause ([evidence](../evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).

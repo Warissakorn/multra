@@ -47,12 +47,12 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
         {"editorProgramTable","editorProgramTable"},{"editorDecisionTable","editorDecisionTable"},
         {"editorResultsTabs","editorResultsTable"},{"editorConflictTable","editorConflictTable"},
         {"editorCounterTable","editorCounterTable"},{"editorSectionTable","editorSectionTable"},
-        {"editorZoneTable","editorZoneTable"},{"editorOdTable","editorOdTable"},
+        {"editorZoneTable","editorZoneTable"},{"editorOdTable","editorOdTable"},{"editorNodeTable","editorNodeTable"},
         {"editorSpeedDecisionTable","editorSpeedDecisionTable"},{"editorReducedSpeedAreaTable","editorReducedSpeedAreaTable"}}; // B-6 (D223, D225)
     const Page results[]={{"editorMovementTable","editorResultsTabMovements"},
         {"editorDischargeTable","editorResultsTabDischarge"},{"editorClampTable","editorResultsTabClamps"},
         {"editorLotTable","editorResultsTabLots"}};
-    require(tabs->count()==16 && inner->count()==4,"Tab inventory changed");
+    require(tabs->count()==17 && inner->count()==4,"Tab inventory changed");
     QList<QWidget*> original,originalInner;
     for(int i=0;i<tabs->count();++i)original<<tabs->widget(i);
     for(int i=0;i<inner->count();++i)originalInner<<inner->widget(i);
@@ -79,7 +79,7 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
         }
     }
     for(const auto& target:{std::pair{9,"editorConflictTable"},std::pair{10,"editorCounterTable"},
-                            std::pair{11,"editorSectionTable"},std::pair{12,"editorZoneTable"}}) {
+                            std::pair{11,"editorSectionTable"},std::pair{12,"editorZoneTable"},std::pair{13,"editorNodeTable"}}) {
         item<QComboBox>(window,"editorTool")->setCurrentIndex(target.first);settle();
         require(tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,target.second)),
                 "Tool navigated to a positional tab");
@@ -138,10 +138,10 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
     auto* canvas=window.canvas();auto* dock=item<QDockWidget>(window,"editorPaletteDock");
     struct Group {const char* key;std::vector<int> modes;};
     const Group groups[]={{"editorPaletteGeometry",{0,1,5,2}},{"editorPaletteControl",{8,9}},
-        {"editorPaletteDemand",{6,7,12}},{"editorPaletteMeasurement",{10,11}},{"editorPaletteTools",{3,4}}};
-    const char* chords[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z"};
+        {"editorPaletteDemand",{6,7,12}},{"editorPaletteMeasurement",{10,11,13}},{"editorPaletteTools",{3,4}}};
+    const char* chords[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z","N"};
     const char* names[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect",
-        "editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool"};
+        "editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool"};
     std::vector<int> order;for(const auto& g:groups)order.insert(order.end(),g.modes.begin(),g.modes.end());
     auto* language=item<QComboBox>(window,"editorLanguage");QApplication::setActiveWindow(&window);
     int namesWidth=0;
@@ -168,7 +168,7 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
                 require(key->shortcut()==QKeySequence(chord),"Tool chord changed");
             }
         }
-        for(int mode=12;mode>=0;--mode) {
+        for(int mode=13;mode>=0;--mode) {
             canvas->setFocus();QTest::keyClick(canvas,QKeySequence(QString::fromLatin1(chords[mode]))[0].key());settle();
             require(tool->currentIndex()==mode,"Tool chord did not select its mode");
         }

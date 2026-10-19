@@ -1,5 +1,6 @@
 #include "zone_codec.hpp"
 #include "document.hpp"
+#include "../model/network/polygon.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <set>
@@ -70,29 +71,6 @@ template<class T, class F> void parseArray(const Json& document, const char* key
     if (!values.is_array() || values.empty()) invalid(); // never written empty
     try { for (const auto& value : values) out.push_back(parse(value)); }
     catch (const Json::exception&) { invalid(); }
-}
-
-double cross(Point o, Point a, Point b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); }
-bool onSegment(Point a, Point b, Point p) {
-    return std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x) && std::min(a.y, b.y) <= p.y && p.y <= std::max(a.y, b.y);
-}
-bool segmentsMeet(Point a, Point b, Point c, Point d) {
-    const double d1 = cross(c, d, a), d2 = cross(c, d, b), d3 = cross(a, b, c), d4 = cross(a, b, d);
-    if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return true;
-    return (d1 == 0 && onSegment(c, d, a)) || (d2 == 0 && onSegment(c, d, b)) ||
-           (d3 == 0 && onSegment(a, b, c)) || (d4 == 0 && onSegment(a, b, d));
-}
-// At least three finite points, and no two non-adjacent edges touch (the ring is simple).
-bool simplePolygon(const std::vector<Point>& p) {
-    if (p.size() < 3) return false;
-    for (const auto& point : p) if (!std::isfinite(point.x) || !std::isfinite(point.y)) return false;
-    const std::size_t n = p.size();
-    for (std::size_t i = 0; i < n; ++i)
-        for (std::size_t j = i + 1; j < n; ++j) {
-            if (j == i + 1 || (i == 0 && j == n - 1)) continue; // adjacent edges share a corner
-            if (segmentsMeet(p[i], p[(i + 1) % n], p[j], p[(j + 1) % n])) return false;
-        }
-    return true;
 }
 }
 
