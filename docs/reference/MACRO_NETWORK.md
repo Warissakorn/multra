@@ -453,3 +453,32 @@ Each row first asserts that its forcing worked (AGENTS).
   - the settings always written;
   - the cap's upper bound unchecked.
 
+## 19. Run procedure (S2.4 design, proposed, D276)
+
+Studied in [evidence/macro-run-procedures.md](../evidence/macro-run-procedures.md): Visum's
+procedure sequence and Aimsun Next's scenario and experiment. Both keep the run's definition and
+limits apart from the network, both stop at a gap or a cap, Aimsun keeps convergence data per run,
+and a 2022 Visum fault let a step with errors count as done.
+
+**The stages** (`runMacro` today, named for the editor):
+1. **Inputs:** read and hash the project and catalog files.
+2. **Period:** the named study period, or `MACRO_PERIOD_UNKNOWN`.
+3. **Graph:** `macroNetwork`; its issues refuse the run.
+4. **Demand:** `macroDemand`; its issues refuse the run, and its advisories are kept.
+5. **Assignment:** Frank–Wolfe to the gap or the cap (`MACRO_NOT_CONVERGED`).
+6. **Outputs:** JSON, CSV, or the Results table.
+
+A stage that refuses stops every later stage. A stage is never counted as done with an issue.
+
+**Owner choice for S2.4:**
+- **(a) Recommended.** One run setting per project, as today.
+  - Add a per-iteration convergence record (iteration, gap, step λ) to `MacroAssignment` and to
+    the outputs, as Aimsun keeps convergence data. It is a measured value, not a setting, so no
+    schema changes.
+  - The Run Macro dialog shows the six stages with their status and messages, and Cancel stops
+    between iterations.
+- (b) As (a), plus several named Macro run definitions (period plus settings) in the document,
+  like Aimsun's experiments. This needs schema 52 and an editor list.
+- (c) A general procedure sequence like Visum's (generation → distribution → mode choice → skim →
+  assignment). It is premature while M10.2–M10.4 do not exist, and is booked as an M10 seam.
+

@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — How Visum and Aimsun organise a Macro run (D276, docs only)
+
+The owner asked whether a Macro run has a working procedure, then for a study of other programs
+([evidence](evidence/macro-run-procedures.md)).
+- **Visum:** an ordered procedure sequence (generation → distribution → mode choice → skim →
+  assignment) in the version file, logged. Its equilibrium assignment balances routes in an inner
+  loop and searches for new routes in an outer loop, to a gap or a cap.
+- **Aimsun Next:** a Static Assignment Scenario (demand, outputs) and an Experiment (method,
+  iteration cap, relative gap), with convergence data retrieved from the output database.
+- **TrafficSim:** `runMacro`'s six stages are now named in [MACRO_NETWORK](reference/MACRO_NETWORK.md)
+  §19, with a choice for S2.4 that the owner makes before any code.
+- **Caveat:** the help pages could not be opened from the session; the facts come from search
+  summaries and are marked so.
+
 ## 2026-10-19 — S2.3: Macro run settings, outputs and CLI (D275)
 
 A Macro run now writes its results ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §18). The editor
@@ -165,21 +179,6 @@ Each Node now reports per-turn, per-leg and per-Node delay ([NODES](reference/NO
 - **Cost:** no change without a Node; with one, Ir +40 % (four-leg) and +26 % (T-junction).
 - **Rows:** N12–N17 (ctest `nodeevaluation`); five mutations caught. Pin and TS rows unchanged.
   Linux only.
-
-## 2026-10-19 — Nodes S0.2: membership (D262, D263)
-
-What a Node holds is now derived from the network inside its polygon ([NODES](reference/NODES.md) §3, §12).
-- **Contract fixed first (D262):** §3 refused any connected Link crossing the boundary twice, which
-  refused the shipped T-junction, whose major roads run through as single Links. Legs are now
-  boundary crossings: an entry is an in-leg, an exit an out-leg, and a Link's own run through is a
-  turn. `NODE_LINK_REENTERS` replaces `NODE_LINK_CROSSES_TWICE`.
-- **Model:** `nodeMembership` (`src/model/network/node_membership.*`) gives inside objects, legs,
-  turns (checked with `routeLaneChains`), the turn-conflict table and control. Refusals are advisory
-  diagnostics at `nodes[i]`, so Run is never blocked.
-- **Editor:** the Nodes tab shows control, legs, turns and issues.
-- **Rows:** N6–N11 (ctest `nodemembership`); the four-leg gives 4 + 4 legs, 12 turns, signalised;
-  the T-junction 3 + 2 legs, 4 turns, unsignalised and 3 conflict rows.
-- **Unchanged:** the engine reads no Node; the pin and the TS rows are unchanged. Linux only.
 
 ## Older entries
 

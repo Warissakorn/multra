@@ -154,7 +154,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 ## Next session — S2.4: the Macro editor surface (MACRO_NETWORK §9, §13; row MA14)
 
 S2.1–S2.3 are in (D273–D275): the graph, the assignment, run settings, JSON/CSV link outputs and
-CLI `--macro PERIOD`. Next, one system, the editor, with rows written failure-first:
+CLI `--macro PERIOD`. D276 studied how Visum and Aimsun organise a run. **First ask the owner
+MACRO_NETWORK §19's choice** (recommended: (a), a per-iteration convergence record and staged
+progress in Run Macro). Then one system, the editor, with rows written failure-first:
 - **Run Macro:**
   - asks for a period (`macroPeriods` → `macroPeriodName`);
   - compiles on the UI thread and runs `runMacro` on the D141 worker (`startWorker` in
