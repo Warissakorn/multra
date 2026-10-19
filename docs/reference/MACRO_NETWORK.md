@@ -2,7 +2,7 @@
 
 Written 2026-10-19 (D271) as a contract with eight owner choices (§12). The owner answered the
 same day (D272: 1a, 2a, 3b, 4a, 5a, 6a, 7b, 8b); §4, §6, §7, §9–§11 and §14 carry the answers.
-Slice S2.1 is implemented (D273, §16).
+Slices S2.1 (D273, §16) and S2.2 (D274, §17) are implemented.
 This is stage S2 of the multi-level workflow
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §10, D175): "Macro compiles from a detailed
 network (M10.1)". It fixes how one detailed project compiles into a Macro network, which values
@@ -182,7 +182,8 @@ passes.
   - start from all-or-nothing loading at free-flow times;
   - each iteration loads all-or-nothing at current times and finds the step by bisection of the
     Beckmann objective's directional derivative;
-  - the bisection's tolerance and cap are fixed constants, stated in the code and in the result.
+  - the bisection is a fixed 60 halvings of [0, 1] (D274); a direction still descending at 1
+    takes the full step.
 - **Relative gap:** (Σₘ Σₐ vₘₐ tₐ − Σₘ Σ_rs dₘ_rs κₘ_rs) / Σₘ Σₐ vₘₐ tₐ, where tₐ is the time at
   the current load and κₘ is class m's shortest-path time on its allowed subgraph.
   - Definitions differ between sources (Boyce, Ralevic-Dekic and Bar-Gera, *J. Transp. Eng.*
@@ -295,7 +296,7 @@ passes.
 | Slice | Content | Rows |
 |---|---|---|
 | S2.1 | Link types and VDF data, `Link::linkType` at schema 50, `compileMacroNetwork` (pure, `src/model/`), Macro demand. **Implemented (D273)** | MA1–MA6 |
-| S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence | MA7–MA11, MA16, MA17 |
+| S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence. **Implemented (D274)** | MA7–MA11, MA16, MA17 |
 | S2.3 | Outputs, CLI `--macro`, Run Macro and the Macro links table; the link-type editor (a types table, the Link's type field) | MA12–MA14 |
 | Gate | Benchmark (choice 7) | MA15 |
 
@@ -372,3 +373,35 @@ Each row first asserts that its forcing worked (AGENTS).
   - a missing type accepted;
   - capacity not multiplied by lanes;
   - document order leaking into the graph.
+
+## 17. S2.2 as implemented (D274)
+
+- **Engine** (`src/macro/assign.*`, pure):
+  - `macroTime`, the BPR time;
+  - `shortestTree`, Dijkstra on a `std::set` queue over the arcs a class may use; on equal distance
+    the lower link index is the predecessor;
+  - `allOrNothing`;
+  - `assignMacro(graph, classes, MacroSettings{targetGap, maxIterations})`, returning `classFlows`,
+    `load` (pcu/h), `time`, `gap`, `iterations` and `converged`.
+
+  `MacroCell` and `MacroClass` moved to `src/macro/graph.hpp`, so the engine takes them.
+- **Loop:**
+  1. start from all-or-nothing at free-flow times;
+  2. each iteration computes the times at the current load, every class's all-or-nothing target
+     and the gap of §7;
+  3. it stops at the target or at the cap. Stopping at the cap returns `converged == false` with
+     the flows reached;
+  4. otherwise one step size moves every class.
+- **Defaults** belong to the run settings (S2.3). The engine has none.
+- **Found while writing the rows:** with an exact line search, two parallel routes reach
+  equilibrium in one step. Row MA8 pins this, and that is what catches a step rule other than the
+  line search.
+- **Rows.** MA7–MA11, MA16 and MA17 are in `tests/macro_assign_tests.cpp` (ctest `macroassign`).
+- **Mutations caught:**
+  - ties to the higher index;
+  - an MSA step in place of the line search;
+  - the gap's sign flipped;
+  - PCU dropped from the load;
+  - bans ignored;
+  - the cap off by one;
+  - β ignored.

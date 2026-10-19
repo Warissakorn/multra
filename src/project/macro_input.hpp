@@ -16,13 +16,6 @@ struct MacroPeriod {
 };
 // The named study periods in their order, then each own-times matrix in matrix order.
 std::vector<MacroPeriod> macroPeriods(const ProjectDocument&);
-// A class: one mode (`mode` set) or one composition (`id` = "composition:<id>", every link), with its
-// PCU and its veh/h from each origin centroid to each destination centroid.
-struct MacroCell { std::size_t origin{}, destination{}; double vehiclesPerHour{}; bool operator==(const MacroCell&) const = default; };
-struct MacroClass {
-    std::string id, mode; double pcu{}; std::vector<MacroCell> cells;
-    bool operator==(const MacroClass&) const = default;
-};
 // veh/h = trips x origin share x destination share / period hours, summed over the period's
 // matrices of one class. Refused: UNKNOWN_MODE (odMatrices[i].modeId), MODE_PCU_MISSING
 // (odMatrices[i]), MACRO_NO_PATH (the cell). Advised: MACRO_INPUT_IGNORED, MACRO_LOT_UNCAPPED.

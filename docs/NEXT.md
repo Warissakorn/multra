@@ -151,17 +151,21 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S2.2: the Macro assignment (MACRO_NETWORK §7; rows MA7–MA11, MA16, MA17)
+## Next session — S2.3: Macro outputs and editor (MACRO_NETWORK §9, §13; rows MA12–MA14)
 
-S2.1 is in (D273): link types, `bpr.json`, the Macro graph and per-class demand. Next, one system:
-- **S2.2,** in the pure `src/macro/`, with rows written failure-first:
-  - all-or-nothing loading by Dijkstra, with ties broken by link order (MA7);
-  - multi-class Frank–Wolfe on a shared Σ pcu·v cost, with bisection and the named relative gap at
-    0.01 % (MA8–MA10);
-  - `MACRO_NOT_CONVERGED`, and determinism under permutation (MA11);
-  - mode bans and mixed PCU (MA16, MA17).
+S2.1 and S2.2 are in (D273, D274): the Macro graph, per-class demand and the multi-class
+Frank–Wolfe. Next, one system:
+- **S2.3,** with rows written failure-first:
+  - run settings holding the target gap (0.01 %, D272) and the iteration cap;
+  - link outputs, JSON and CSV, with the not-validated marker (§9);
+  - `MACRO_NOT_CONVERGED`;
+  - CLI `--macro <period>`;
+  - Run Macro on the worker thread;
+  - a Macro links table, and stale marking;
+  - the link-type editor (a types table, the Link's type field);
+  - VDF parameters swapped through data (MA12).
 - **Before the gate (MA15),** name and check the textbook example, with Sheffi 1985 the first
-  candidate.
+  candidate. Then measure the engine's cost on it.
 
 Also open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and the cost
 with a Node (+26–40 % Ir, D264, D265).

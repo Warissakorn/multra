@@ -26,6 +26,13 @@ struct MacroGraph {
     std::map<std::string, std::size_t> origins, destinations; // zone id -> its node
     bool operator==(const MacroGraph&) const = default;
 };
+// One period's demand class: one mode (`mode` set) or one composition (`id` = "composition:<id>",
+// every link), with its PCU and its veh/h from each origin centroid to each destination centroid.
+struct MacroCell { std::size_t origin{}, destination{}; double vehiclesPerHour{}; bool operator==(const MacroCell&) const = default; };
+struct MacroClass {
+    std::string id, mode; double pcu{}; std::vector<MacroCell> cells;
+    bool operator==(const MacroClass&) const = default;
+};
 // May a class of `mode` (empty: a composition class, every link) use this arc?
 bool allows(const MacroLink&, const std::string& mode);
 // The nodes reachable from `from` over the arcs `mode` may use.

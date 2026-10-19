@@ -6,6 +6,27 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — S2.2: the Macro assignment (D274)
+
+The Macro graph can now be assigned ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §17). There are
+no outputs or editor yet.
+- **Engine** (`src/macro/assign.*`, pure):
+  - Dijkstra, where on equal distance the lower link index wins;
+  - all-or-nothing loading;
+  - multi-class Frank–Wolfe on the shared load Σ pcu·v, with an exact bisection line search;
+  - §7's relative gap. Stopping at the iteration cap is flagged, and the flows are still
+    returned.
+- **Rows:** MA7–MA11, MA16, MA17 (ctest `macroassign`). They cover:
+  - closed-form and bisected equilibria;
+  - an unused route;
+  - the gap recomputed from the flows;
+  - identical results with Links permuted;
+  - a mode ban;
+  - mixed PCU.
+- **Mutations:** seven caught. An MSA step first survived, because it still converged. Row MA8 now
+  pins that two routes reach equilibrium in one exact step.
+- **Unchanged:** Micro outputs, the pin and the TS rows. Linux only.
+
 ## 2026-10-19 — S2.1: link types and the Macro graph (D273)
 
 The first Macro code ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §16). There is no assignment
@@ -153,22 +174,6 @@ The owner accepted every Node recommendation (D260) ([NODES](reference/NODES.md)
   tool and page.
 - **Unchanged:** the engine does not read Nodes, so every run output, the pin and the TS rows are
   unchanged. Linux only.
-
-## 2026-10-19 — The Node contract (S0, D259, docs only)
-
-The owner chose to start the multi-level work (D145, D175) at S0, before W99 ([NODES](reference/NODES.md)).
-- **The object:** a simple polygon at `network.nodes`, at schema 48, merged with M5.1's evaluation
-  nodes.
-- **Derived from the Micro detail inside, never stored:** legs, turns (the `routeLaneChains`
-  walk), conflicts and control.
-- **Micro evaluation:** one automatic travel-time section per turn, with leg and Node rows weighted
-  by vehicles, a queue per leg, and LOS letters labelled as LOS §4.
-- **Coarse values** and refine/derive-back are specified but booked with S2.
-- **Rows:** N1–N18 planned.
-- **Five owner choices,** each with a recommendation. Also fixed: MULTI_LEVEL_MODELLING's dangling
-  "VISSIM_PARITY §6" (now §2b).
-
-No code. Linux only.
 
 ## Older entries
 

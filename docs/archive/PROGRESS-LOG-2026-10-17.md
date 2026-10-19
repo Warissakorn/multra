@@ -3,6 +3,22 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — The Node contract (S0, D259, docs only)
+
+The owner chose to start the multi-level work (D145, D175) at S0, before W99 ([NODES](../reference/NODES.md)).
+- **The object:** a simple polygon at `network.nodes`, at schema 48, merged with M5.1's evaluation
+  nodes.
+- **Derived from the Micro detail inside, never stored:** legs, turns (the `routeLaneChains`
+  walk), conflicts and control.
+- **Micro evaluation:** one automatic travel-time section per turn, with leg and Node rows weighted
+  by vehicles, a queue per leg, and LOS letters labelled as LOS §4.
+- **Coarse values** and refine/derive-back are specified but booked with S2.
+- **Rows:** N1–N18 planned.
+- **Five owner choices,** each with a recommendation. Also fixed: MULTI_LEVEL_MODELLING's dangling
+  "VISSIM_PARITY §6" (now §2b).
+
+No code. Linux only.
+
 ## 2026-10-19 — `standingStopFloor` implemented, on by default (D257, D258)
 
 The owner took D256's recommendation, on by default ([LINE_APPROACH](../reference/LINE_APPROACH.md) §7).
