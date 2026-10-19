@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
+#include "../model/network/node_membership.hpp"
 #include <QAction>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -21,7 +22,7 @@ void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    nodeTable_ = new QTableWidget(0, 3, body); nodeTable_->setObjectName("editorNodeTable");
+    nodeTable_ = new QTableWidget(0, 7, body); nodeTable_->setObjectName("editorNodeTable");
     nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     nodeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -64,7 +65,8 @@ void EditorWindow::buildNodes() {
     connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateNodes() {
-    nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints")});
+    nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
+        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues")});
     nodeRevision_ = UINT64_MAX;
 }
 std::string EditorWindow::selectedNode() const {
@@ -80,10 +82,17 @@ void EditorWindow::refreshNodes() {
         nodeTable_->setRowCount(static_cast<int>(nodes.size()));
         for (int r = 0; r < nodeTable_->rowCount(); ++r) {
             const auto& n = nodes[static_cast<std::size_t>(r)];
-            const QStringList values{QString::fromStdString(n.id), QString::fromStdString(n.name), QString::number(n.polygon.size())};
+            // S0.2 (NODES §3, D263): what the polygon holds, derived again on every refresh.
+            const auto m = nodeMembership(history_.document().network, n);
+            QStringList issues;
+            for (const auto& code : m.issues) issues << text(code);
+            const QString control = !m.control ? QStringLiteral("\u2014")
+                : text(*m.control == SectionControl::signalised ? "editorSectionSignalised" : "editorSectionUnsignalised");
+            const QStringList values{QString::fromStdString(n.id), QString::fromStdString(n.name), QString::number(n.polygon.size()), control,
+                QStringLiteral("%1 / %2").arg(m.inLegs.size()).arg(m.outLegs.size()), QString::number(m.turns.size()), issues.join(", ")};
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(n.id));
-                if (col != 1) editorDesign::setNumericText(cell, col == 2);
+                if (col == 0 || col == 2 || col == 4 || col == 5) editorDesign::setNumericText(cell, col != 0);
                 nodeTable_->setItem(r, col, cell);
             }
             if (n.id == keep) nodeTable_->selectRow(r);

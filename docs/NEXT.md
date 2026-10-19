@@ -33,8 +33,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the owner chose D253's A4 anyway. Absent means off; written only when true at schema 46; a fourth
   Run settings checkbox; rows BA168–BA172. On, it reproduces D253's A4 numbers; off, every shipped
   output is byte-identical to D251.
-- **Nodes S0.1 is in** (D259–D261, [NODES](reference/NODES.md)): the Node object at schema 48,
-  validation, the Node tool (`N`) and the Nodes tab. The owner's five choices are answered.
+- **Nodes S0.1 and S0.2 are in** (D259–D263, [NODES](reference/NODES.md)): the Node object at schema 48,
+  validation, the Node tool (`N`) and the Nodes tab; membership (legs as boundary crossings, D262;
+  turns, conflicts, control; advisory refusals). The owner's five choices are answered.
 - **`standingStopFloor` is in, on by default** (D256–D258, [LINE_APPROACH](reference/LINE_APPROACH.md) §7):
   D227's floor for behaviours with `amberDeceleration`. M2.6 has 17 → 5 clamps; the four-leg, lane
   lab, pin and TS rows are unchanged; T-junction +0.03 s. Written only when off, at schema 47.
@@ -142,14 +143,19 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — Nodes S0.2: membership (NODES §3)
+## Next session — Nodes S0.3: Micro evaluation (NODES §4)
 
-The owner accepted every Node recommendation (D260), and S0.1 is in (D261). Next, one system:
-- **S0.2,** pure functions in `src/model/network/`, with rows N6–N11 written failure-first:
-  - inside objects, legs, turns (the `routeLaneChains` walk over internal objects), pass-through
-    Links, refusals, the turn-conflict table and control.
-  - Use the shipped four-leg and T-junction for N6 and N7.
-- **Then S0.3,** the Micro evaluation, and **S0.5,** Suggest nodes.
+S0.2 is in (D262, D263): `nodeMembership` gives each Node's legs, turns, conflicts and control.
+Next, one system:
+- **S0.3,** with rows N12–N17 written failure-first:
+  - one automatic travel-time section per turn, from the in-leg Link's start (choice 1a) to the
+    out-leg's crossing station, reusing `SectionSpec` and its accumulator;
+  - turn, leg and Node rows (vehicle-weighted), the leg queue at the in-leg crossing (choice 2a),
+    letters through `losLetter` (choice 3a);
+  - single-run and batch JSON/CSV, written only when a Node exists.
+  - Check first how a section start on a Link that a turn path leaves mid-Link (the T-junction's
+    minor turns join `link-1` at station 170) is counted.
+- **Then S0.5,** Suggest nodes.
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.

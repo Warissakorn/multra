@@ -1,7 +1,7 @@
 # Nodes: a polygon over a junction (S0, M5.1)
 
-Written 2026-10-19 (D259). The owner accepted every §7 recommendation the same day (D260); slice
-S0.1 is implemented (D261, §8). Stage S0
+Written 2026-10-19 (D259). The owner accepted every §7 recommendation the same day (D260); slices
+S0.1 and S0.2 are implemented (D261, D263, §8); D262 amended §3. Stage S0
 of the multi-level workflow ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §3, §10,
 D175) merged with M5.1's evaluation nodes (ROADMAP M5.1). A Node is first a Micro evaluation
 object, the per-junction delay and queue a traffic impact study reports
@@ -57,23 +57,29 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 - **Inside objects.** A Link or Connector whose centreline lies wholly inside the polygon is
   *internal*. A conflict area, waiting line or signal head is inside when its point (or both
   sides' entry points, for a conflict area) is inside.
-- **Legs.** A Link whose centreline crosses the boundary exactly once is a leg:
-  - an **in-leg** when it starts outside;
-  - an **out-leg** when it ends outside.
-
-  A leg is named after its Link (Name, else id).
-- **Pass-through.** A Link that crosses the boundary but connects to nothing inside, such as an
-  overpass or a road on another `level`, is ignored. Roads on different levels therefore never
-  form a turn.
-- **Refusals** are reported as validation warnings; the Node then gives no rows, and the run still
+- **Crossings** are taken on each Link's reference polyline (`link.geometry`), the line conflict,
+  waiting-line and head stations are measured on, so a leg's station and a conflict side's station
+  are in one coordinate (D262).
+- **Legs are boundary crossings, not Links** (D262). A Link's entry crossing (outside → inside) is
+  an **in-leg** and its exit crossing an **out-leg**. A Link that enters once and later leaves once
+  gives one of each: the shipped T-junction's major roads are single Links running through the
+  junction. A leg is named after its Link (Name, else id).
+- **Pass-through.** A crossing Link counts only when something inside connects to it: an internal
+  Connector ends on it inside its span, or a conflict area inside has a side on it. Otherwise it is
+  ignored, such as an overpass or a road on another `level`. Roads on different levels therefore
+  never form a turn.
+- **Refusals** are reported as advisory diagnostics; the Node then gives no rows, and the run still
   runs:
-  - `NODE_LINK_CROSSES_TWICE`: a connected Link crosses the boundary more than once;
+  - `NODE_LINK_REENTERS`: a connected Link crosses the boundary in any other pattern than one entry
+    followed by one exit (a second entry, or an exit followed by a re-entry). This replaces D259's
+    `NODE_LINK_CROSSES_TWICE`, which refused the shipped T-junction;
   - `NODE_CONNECTOR_CROSSES`: a Connector is partly inside;
   - `NODE_NO_TURN`: no turn is found.
 - **Turns.** A turn is an (in-leg, out-leg) pair joined by a lane chain through internal objects.
   The chain is found with the same walk as `routeLaneChains` (`src/model/network/routing.cpp`)
   over the internal Links and Connectors. Several lanes of one pair make one turn. A turn is
-  named "in-leg → out-leg". A U-turn that is drawn is a turn.
+  named "in-leg → out-leg". A U-turn that is drawn is a turn, and so is a Link's own run from its
+  entry to its exit (a through movement).
 - **Turn conflicts.** A conflict area whose two sides lie on paths of two different turns of this
   Node gives a row (turn A, turn B, kind, priority) of the Node's conflict table.
 - **Control.** The Node's control type comes from what is inside it:
@@ -177,7 +183,7 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 | Slice | Content | Rows |
 |---|---|---|
 | S0.1 | Object, codec (schema 48), validation, Node tool, Nodes panel, delete and rename. **Implemented (D261)** | N1–N5 |
-| S0.2 | Membership: inside objects, legs, turns, refusals, conflicts, control (pure functions in `src/model/network/`) | N6–N11 |
+| S0.2 | Membership: inside objects, legs, turns, refusals, conflicts, control (pure functions in `src/model/network/`). **Implemented (D263)** | N6–N11 |
 | S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs | N12–N17 |
 | S0.4 | Coarse values, refine and derive back, lifecycle (with S2) | written with S2 |
 | S0.5 | Suggest nodes | N18 |
@@ -194,9 +200,9 @@ Each row first asserts that its forcing worked (AGENTS).
 | N4 | `generated` | Written only when true; moving a vertex clears it in the same Undo step |
 | N5 | Editor | The tool commits one Node as one Undo step; Enter with 2 vertices keeps the draft; delete and rename are one step each |
 | N6 | The four-leg junction (shipped `four-leg-signalised`) with a polygon over it | 4 in-legs, 4 out-legs and the drawn turns, named "in → out"; control `signalised` |
-| N7 | The T-junction (shipped `t-junction-priority`) | 3 legs, its turns, control `unsignalised`; the conflict table lists its conflict areas by turn pair |
+| N7 | The T-junction (shipped `t-junction-priority`) | 3 in-legs and 2 out-legs (the major Links run through, D262), 4 turns, control `unsignalised`; the conflict table lists its conflict areas by turn pair |
 | N8 | An overpass Link crossing the polygon unconnected | Ignored: not a leg, no issue |
-| N9 | A connected Link crossing the boundary twice; a Connector partly inside | `NODE_LINK_CROSSES_TWICE`, `NODE_CONNECTOR_CROSSES`; the Node gives no rows; the run still runs |
+| N9 | A connected Link that leaves and re-enters; a Connector partly inside | `NODE_LINK_REENTERS`, `NODE_CONNECTOR_CROSSES`; the Node gives no rows; the run still runs |
 | N10 | A polygon with no turn | `NODE_NO_TURN` |
 | N11 | Editing the network (split, delete, reverse a Link) | Membership follows; no Node field changes |
 | N12 | No Node | Single-run and batch JSON/CSV byte-identical |
@@ -239,3 +245,29 @@ Each row first asserts that its forcing worked (AGENTS).
   (ctest `node-ui`). The workspace and object-group UI tests list the new tool and page.
 - **Mutations caught:** no overlap check (N3), `generated` always written (N2, N4), no schema gate
   (N2), an edit keeping `generated` (N4).
+
+## 12. S0.2 as implemented (D263)
+
+- **Model.** `nodeMembership(network, node)` in `src/model/network/node_membership.*` returns the
+  inside objects, `inLegs` and `outLegs` (Link id, name, crossing station), `turns` (in, out, name,
+  and each object chain as Link spans and whole Connectors), `conflicts` (area, turn pair, kind,
+  priority), `control` (`SectionControl`, absent for none) and `issues`. It never throws and stores
+  nothing.
+- **Crossings.** Each Link's reference polyline is cut wherever it meets the boundary into runs
+  inside and outside; a touch without a crossing cuts nothing. A Connector is placed by its stored
+  polyline, else `connectorCentreline`.
+- **Turns.** A walk from each in-leg over internal Connectors (leaving within the Link's inside run)
+  and internal Links, ending at an exit crossing. An object chain counts only if
+  `routeLaneChains` gives it a lane chain. Turns are ordered by (in-leg, out-leg).
+- **Conflicts.** A Link side matches a turn whose span on that Link overlaps the side's stations
+  (touching does not); a Connector side matches a turn through that Connector.
+- **Control.** A head inside, or on an in-leg upstream of its entry, makes the Node `signalised`.
+- **Diagnostics.** `nodeMembershipIssues` adds the refusals to `runtimeDiagnostics` as advisories
+  at `nodes[i]`, resolved to the Node id; Run and save are never blocked.
+- **Editor.** The Nodes tab adds control, legs (in / out), turns and issues. Selecting a row does not
+  yet highlight its legs (§6).
+- **Rows.** N6–N11 are in `tests/node_membership_tests.cpp` (ctest `nodemembership`); `node-ui`
+  checks the new columns.
+- **Mutations caught:** the through turn dropped (N7), heads on an in-leg ignored (N6), the lane
+  chain filter removed (N6), an unconnected crossing Link counted (N10, N11), re-entry allowed (N9).
+  Letting touching spans overlap changes no shipped row (the extra pair is a turn with itself).

@@ -3,6 +3,22 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
+
+The Windows diagnostic showed that the 257 px text was Thai ([evidence](../evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
+- **Cause:** Qt finds Thai line breaks through libthai, which it loads at run time as `thai.dll`. The
+  Windows runner had none, so a Thai sentence broke only at its spaces. A Linux probe gives 60 px
+  with libthai and 268 px without it. That is why D242–D244 did not change Windows.
+- **The owner's choice:** ship libthai with Windows.
+- **Fix:**
+  - CI and the package install MSYS2's libthai, as `thai.dll` with `libdatrie-1.dll` and `thbrk.tri`;
+  - the package ships them, with their LGPL licences;
+  - the editor points `LIBTHAI_DICTDIR` at `data/libthai` beside the executable.
+- **Tests:** the Thai pass of the narrow fixture requires a line break inside a Thai sentence. A
+  mutation to an unbroken Latin string is caught.
+
+`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+
 ## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
 
 The Windows diagnostic named the widget ([evidence](../evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).

@@ -6,6 +6,21 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — Nodes S0.2: membership (D262, D263)
+
+What a Node holds is now derived from the network inside its polygon ([NODES](reference/NODES.md) §3, §12).
+- **Contract fixed first (D262):** §3 refused any connected Link crossing the boundary twice, which
+  refused the shipped T-junction, whose major roads run through as single Links. Legs are now
+  boundary crossings: an entry is an in-leg, an exit an out-leg, and a Link's own run through is a
+  turn. `NODE_LINK_REENTERS` replaces `NODE_LINK_CROSSES_TWICE`.
+- **Model:** `nodeMembership` (`src/model/network/node_membership.*`) gives inside objects, legs,
+  turns (checked with `routeLaneChains`), the turn-conflict table and control. Refusals are advisory
+  diagnostics at `nodes[i]`, so Run is never blocked.
+- **Editor:** the Nodes tab shows control, legs, turns and issues.
+- **Rows:** N6–N11 (ctest `nodemembership`); the four-leg gives 4 + 4 legs, 12 turns, signalised;
+  the T-junction 3 + 2 legs, 4 turns, unsignalised and 3 conflict rows.
+- **Unchanged:** the engine reads no Node; the pin and the TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — Nodes S0.1: object, file, tool and tab (D260, D261)
 
 The owner accepted every Node recommendation (D260) ([NODES](reference/NODES.md) §11).
@@ -166,22 +181,6 @@ NEXT's first candidate. The owner chose all three recommended options
   - Ir +0.18 % / +0.10 %.
 
 `check` 178/178, Linux only.
-
-## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
-
-The Windows diagnostic showed that the 257 px text was Thai ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
-- **Cause:** Qt finds Thai line breaks through libthai, which it loads at run time as `thai.dll`. The
-  Windows runner had none, so a Thai sentence broke only at its spaces. A Linux probe gives 60 px
-  with libthai and 268 px without it. That is why D242–D244 did not change Windows.
-- **The owner's choice:** ship libthai with Windows.
-- **Fix:**
-  - CI and the package install MSYS2's libthai, as `thai.dll` with `libdatrie-1.dll` and `thbrk.tri`;
-  - the package ships them, with their LGPL licences;
-  - the editor points `LIBTHAI_DICTDIR` at `data/libthai` beside the executable.
-- **Tests:** the Thai pass of the narrow fixture requires a line break inside a Thai sentence. A
-  mutation to an unbroken Latin string is caught.
-
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
 
 ## Older entries
 

@@ -1,4 +1,5 @@
 #include "diagnostics.hpp"
+#include "node_membership.hpp"
 #include "right_of_way.hpp"
 #include "../../core/validate.hpp"
 #include <algorithm>
@@ -46,6 +47,7 @@ std::string objectIdForPath(const Network& network, const std::string& path) {
     if (name == "rightOfWay.waitingLines") return pick(row.waitingLines);
     if (name == "rightOfWay.conflictAreas") return pick(row.conflictAreas);
     if (name == "rightOfWay.priorityRules") return pick(row.priorityRules);
+    if (name == "nodes") return pick(network.nodes);
     return {};
 }
 std::string selectableFor(const Network& network, const std::string& objectId) {
@@ -113,6 +115,9 @@ std::vector<Diagnostic> runtimeDiagnostics(const Network& network, const Scenari
     // Shape advisories sit beside the runtime rows: visible and selectable, but they never
     // reach compileScenario, so neither Run nor saving is blocked by one.
     for(const auto& issue:connectorShapeIssues(network))
+        result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
+    // S0.2 (NODES §3): a Node whose membership is refused gives no rows, and the run still runs.
+    for(const auto& issue:nodeMembershipIssues(network))
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:routeAmbiguityIssues(network,definition))
         result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
