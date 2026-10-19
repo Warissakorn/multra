@@ -6,6 +6,18 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — The S1 contract: study periods, modes and PCU (D266, docs only)
+
+The owner chose S1 next. [STUDY_PERIODS](reference/STUDY_PERIODS.md) fills what the workflow left
+open:
+- **StudyPeriod:** clock periods in a top-level array at schema 49.
+- **Placing a period:** the run's `clockStart` places each matrix's period on run time.
+- **Matrices:** each takes exactly one of its own times or a `periodId`, and exactly one of a
+  composition or a mode. Schema-31 files keep their bytes because nothing is migrated.
+- **Modes and PCU:** a `data/modes/` catalog, and an optional cited `pcu` per vehicle type with a
+  derived mode PCU. No value ships without a source.
+- **Rows:** SP1–SP14, planned. Five owner choices are pending. No code changed.
+
 ## 2026-10-19 — Nodes S0.5: Suggest nodes (D265)
 
 The Nodes tab can now draw one `generated` Node per junction no Node covers ([NODES](reference/NODES.md) §6, §14).
@@ -147,27 +159,6 @@ code for the second.
   - **Not recommended.** The line approach (D227's floor) is named as the better candidate.
 
 No engine code is committed. `check` 179/179, Linux only.
-
-## 2026-10-19 — Merge clamp switches implemented (D250, D251)
-
-The owner chose D249's recommended package, as project switches that are on by default
-([MERGE_CLAMPS](reference/MERGE_CLAMPS.md) §3, [evidence](evidence/merge-clamps.md#d251-the-package-implemented)).
-- **Engine:** `ClampRules{leaderTravel, sideEntryAtLine, redLineStop}` on the definition.
-  - `tickCap` relieves the hard cap only on a tick that would clamp.
-  - `caps.cpp` holds B and M; the step's line-stop test takes Q.
-  - `simulation.cpp` stays at 500 lines through a byte-identical refactor into `holdCap` and `leaderCap`.
-- **File and editor:** `definition.clampRules` at schema 45, written only when a switch is off;
-  three Run settings checkboxes; one Undo step.
-- **Rows:** BA158–BA167, plus the Run settings UI test. D105's row keeps its clamp with
-  `sideEntryAtLine` off. All 14 mutations are caught.
-- **Measured:**
-  - M2.6 41 → 17 clamps; delay 46.013 → 46.010 s; trips unchanged; no overlaps;
-  - all off is byte-identical on all four projects; the pin and the TS rows are unchanged;
-  - Ir +0.50 / +0.73 / +0.68 %.
-- **A prototype bug:** D249's red-head stop braked with the wrong distance. Its measurement stands
-  as recorded, and the implementation's numbers replace it.
-
-`check` 179/179, Linux only.
 
 ## Older entries
 

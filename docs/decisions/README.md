@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Product scope, stack, naming and owner gates | D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
@@ -306,3 +306,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D263](RECORD.md#d263) — S0.2 implemented: Node membership (legs, turns, conflicts, control; advisory refusals); rows N6–N11.
 [D264](RECORD.md#d264) — S0.3 implemented: per-turn sections, leg queue, vehicle-weighted leg/Node delay and letters in single-run and batch JSON/CSV; rows N12–N17; start-up loss finding.
 [D265](RECORD.md#d265) — S0.5 implemented: Suggest nodes, one generated Node per junction (conflict clusters fed from two Links, padded hull), one Undo step; row N18.
+[D266](RECORD.md#d266) — the S1 contract: StudyPeriod at schema 49, `clockStart`, matrix `periodId`/`modeId`, Mode catalog and cited PCU; five owner choices, awaiting the owner.

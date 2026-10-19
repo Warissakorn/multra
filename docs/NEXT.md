@@ -144,18 +144,21 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the owner chooses (S0 is complete but S0.4)
+## Next session — S1: ask the owner the five STUDY_PERIODS choices (§9)
 
-S0.5 is in (D265), so Stage S0 is done except S0.4, which lands with S2. Ask the owner which comes
-next:
-- **Finish the open Node items:**
-  - the Nodes tab highlighting a selected Node's legs (§6);
-  - Node rows in the editor's Results tables and the batch comparison (§13);
-  - the cost with a Node (+26–40 % Ir).
-- **Start S1 of the multi-level workflow** ([MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) §10).
-- **M3.3.3b, the W99 contract.**
-- **For the owner, if a study asks:** the delay window includes start-up loss where an in-leg
-  starts at a source (D264).
+The owner chose S1 (after D265), and its contract is written ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266,
+docs only). Ask the owner §9's five choices, each with its recommendation:
+1. the clock form;
+2. how a run meets a period;
+3. profiles within a period;
+4. `macroFlowBasis`;
+5. PCU values and their source.
+
+Then record the answers and implement **S1.1** (rows SP1–SP8), one system per session. S1.2 (modes
+and PCU, SP9–SP14) follows.
+
+Also still open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and
+the cost with a Node (D264, D265).
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.
