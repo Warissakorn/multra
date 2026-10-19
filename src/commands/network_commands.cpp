@@ -102,6 +102,10 @@ void deleteLink(ProjectDocument& d, const std::string& id) {
     // M8.2 (D154): zone connectors follow their Link, as routes do; the zones stay.
     std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.linkId == id; });
 }
+void setLinkType(ProjectDocument& d, const std::string& id, std::optional<std::string> type) {
+    if (type && type->empty()) type.reset();
+    editableLink(d, id).linkTypeId = std::move(type);
+}
 void changeDrivingSide(ProjectDocument& d, DrivingSide side) { d.network.drivingSide = side; anchorConnectors(d); }
 std::string oppositeLink(ProjectDocument& d, const std::string& id, double gap) {
     if (!std::isfinite(gap) || gap < 0) throw std::invalid_argument("EDIT_GAP");

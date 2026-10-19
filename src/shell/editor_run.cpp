@@ -125,7 +125,8 @@ void EditorWindow::refreshRun(){
     actions_.at("editorRun")->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
     actions_.at("editorRun")->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));
     actions_.at("editorStep")->setEnabled(!runTimer_.isActive());
-    const bool exportable=runFinished()||batch_.has_value()||comparison_.has_value();
+    refreshMacro(); // S2.4: its actions and stale note follow every refresh
+    const bool exportable=macroTabShown()?macroResult()!=nullptr:runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);
     for(const char* key:{"editorRunSeeds","editorCompareSeeds"})

@@ -106,7 +106,9 @@ TEST(macrooutput, ma13_every_field_and_the_marker) { // MA13
     CHECK(j["settings"]["targetGap"] == 1e-4 && j["settings"]["maxIterations"] == 1000);
     CHECK(j["gap"]["formula"].get<std::string>().find("sum v t") != std::string::npos);
     CHECK(j["gap"]["value"] == run.assignment.gap && j["gap"]["target"] == 1e-4);
-    CHECK(j["iterations"] == run.assignment.iterations && j["converged"] == true);
+    CHECK(j["iterations"] == run.assignment.iterations && j["converged"] == true && j["cancelled"] == false);
+    CHECK(j["convergence"].size() == run.assignment.convergence.size() && j["convergence"].back()["gap"] == run.assignment.gap); // MA18
+    CHECK(j["convergence"][0] == Json({{"iteration", 0}, {"gap", run.assignment.convergence[0].gap}, {"step", run.assignment.convergence[0].step}}));
     CHECK(j["advisories"].is_array() && j["inputManifest"]["files"].size() > 0);
     CHECK(j["classes"].size() == 1 && j["classes"][0]["id"] == "composition:urban-mixed" && j["classes"][0]["mode"] == "");
     CHECK(j["classes"][0]["pcu"] == run.classes[0].pcu);
@@ -170,4 +172,45 @@ TEST(macrooutput, ma13_settings_are_schema_51_only_when_set) { // MA13
     CHECK(documentJson(d)["schemaVersion"] == 50);
     auto future = j; future["schemaVersion"] = 52;
     test::throws([&] { parseDocument(future); }, "EDIT_VERSION");
+}
+TEST(macrooutput, ma14_stages_are_reported_and_a_refusal_names_its_stage) { // MA14 (§19 a)
+    const auto w = twin();
+    std::vector<MacroStage> stages; int iterations = 0;
+    const MacroObserver observer{[&](MacroStage s) { stages.push_back(s); }, [&](const MacroIteration&) { ++iterations; return true; }};
+    const auto run = runMacro(w.d, data(), "matrix:am", nullptr, &observer);
+    CHECK((stages == std::vector{MacroStage::period, MacroStage::graph, MacroStage::demand, MacroStage::assignment}));
+    CHECK(iterations == static_cast<int>(run.assignment.convergence.size()) && !run.assignment.cancelled);
+    // A Link without a type: the graph stage refuses, and no later stage is entered.
+    auto untyped = w.d; untyped.network.links[0].linkTypeId.reset();
+    stages.clear();
+    test::throws([&] { runMacro(untyped, data(), "matrix:am", nullptr, &observer); }, "MACRO_LINK_TYPE_MISSING");
+    CHECK(stages.back() == MacroStage::graph);
+    // A cancel from the observer: flagged, and not reported as MACRO_NOT_CONVERGED.
+    const MacroObserver stop{{}, [](const MacroIteration&) { return false; }};
+    const auto cancelled = runMacro(w.d, data(), "matrix:am", nullptr, &stop);
+    CHECK(cancelled.assignment.cancelled && cancelled.advisories.empty() && macroJson(cancelled)["cancelled"] == true);
+}
+TEST(macrooutput, ma14_link_type_commands) { // MA14
+    auto d = twin().d;
+    // The installed catalog (none ship): the first put owns it, and the file becomes schema 50.
+    auto installed = d; installed.definition->externalLinkTypes = true; installed.definition->linkTypes.clear();
+    for (auto& l : installed.network.links) l.linkTypeId.reset();
+    CHECK(documentJson(installed)["schemaVersion"] == 49);
+    test::throws([&] { deleteLinkType(installed, "arterial"); }, "EDIT_LINK_TYPES_NOT_OWNED");
+    const auto id = putLinkType(installed, {"", "Local", 500, 8, "bpr", {}, "Test values"}, {});
+    CHECK(id.starts_with("link-type") && !installed.definition->externalLinkTypes && installed.definition->linkTypes.size() == 1);
+    CHECK(documentJson(installed)["schemaVersion"] == 50);
+    // Replace by id; a type in use cannot go, an unused one can.
+    putLinkType(d, {"arterial", "Arterial", 700, 10, "bpr", {}, "Test values"}, {});
+    CHECK(d.definition->linkTypes.size() == 1 && d.definition->linkTypes[0].capacityPerLane == 700);
+    test::throws([&] { deleteLinkType(d, "arterial"); }, "EDIT_LINK_TYPE_IN_USE");
+    for (const auto& l : std::vector(d.network.links)) setLinkType(d, l.id, std::nullopt);
+    CHECK(std::none_of(d.network.links.begin(), d.network.links.end(), [](const auto& l) { return l.linkTypeId.has_value(); }));
+    setLinkType(d, d.network.links[0].id, std::string("arterial"));
+    CHECK(d.network.links[0].linkTypeId == "arterial");
+    setLinkType(d, d.network.links[0].id, std::string(""));
+    CHECK(!d.network.links[0].linkTypeId);
+    deleteLinkType(d, "arterial");
+    CHECK(d.definition->linkTypes.empty() && !d.definition->externalLinkTypes);
+    test::throws([&] { deleteLinkType(d, "arterial"); }, "EDIT_UNKNOWN_OBJECT");
 }

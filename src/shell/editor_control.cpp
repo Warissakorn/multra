@@ -11,6 +11,7 @@
 #include <QHeaderView>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QSpinBox>
 #include <QTimeEdit>
 #include <QVBoxLayout>
 
@@ -48,10 +49,18 @@ void EditorWindow::editRunSettings() {
     auto* redLineStop=rule("redLineStop","editorRedLineStop",def.clampRules.redLineStop);
     auto* joinAnticipation=rule("joinAnticipation","editorJoinAnticipation",def.clampRules.joinAnticipation);
     auto* standingStopFloor=rule("standingStopFloor","editorStandingStopFloor",def.clampRules.standingStopFloor);
+    // S2.4 (MACRO_NETWORK §7, D277): the Macro target gap in % and the iteration cap; defaults write nothing.
+    const auto macro=def.macroSettings.value_or(kMacroDefaults);
+    auto* gap=number(dialog,0.0001,99,macro.targetGap*100,"editorMacroTargetGap");gap->setDecimals(4);gap->setValue(macro.targetGap*100);
+    const double gapShown=gap->value();
+    auto* cap=new QSpinBox(&dialog);cap->setObjectName("editorMacroMaxIterations");cap->setRange(1,100000);cap->setValue(macro.maxIterations);
+    form->addRow(text("editorMacroTargetGap"),gap);form->addRow(text("editorMacroMaxIterations"),cap);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);form->addRow(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
     if(dialog.exec()==QDialog::Accepted)execute("editorRunSettings",[&](auto& d){
+        const MacroSettings chosen{gap->value()==gapShown?macro.targetGap:gap->value()/100,cap->value()}; // untouched keeps the stored value
+        if(!(chosen==macro))changeMacroSettings(d,chosen==kMacroDefaults?std::nullopt:std::optional(chosen));
         changeRunSettings(d,duration->value(),dt->value());
         changeEvaluationPeriod(d,warmup->value(),period.end,cooldown->value());
         if(clock->time()!=clockShown)demand(d).clockStart=QTime(0,0).secsTo(clock->time()); // untouched keeps a value past midnight

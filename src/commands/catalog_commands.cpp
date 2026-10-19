@@ -26,6 +26,21 @@ std::string putMode(ProjectDocument& d,Mode mode) {
     if(found!=modes.end())*found=std::move(mode);else modes.push_back(std::move(mode));
     return id;
 }
+std::string putLinkType(ProjectDocument& d,LinkType type,const std::vector<LinkType>& installed) {
+    auto& target=demand(d);
+    if(target.externalLinkTypes){target.linkTypes=installed;target.externalLinkTypes=false;}
+    if(type.id.empty())type.id=allocateId(d,"link-type");
+    const auto id=type.id;
+    auto& types=demand(d).linkTypes;
+    const auto found=std::find_if(types.begin(),types.end(),[&](const auto& t){return t.id==id;});
+    if(found!=types.end())*found=std::move(type);else types.push_back(std::move(type));
+    return id;
+}
+void deleteLinkType(ProjectDocument& d,const std::string& id) {
+    if(!d.definition || d.definition->externalLinkTypes)throw std::invalid_argument("EDIT_LINK_TYPES_NOT_OWNED");
+    for(const auto& l:d.network.links)if(l.linkTypeId==id)throw std::invalid_argument("EDIT_LINK_TYPE_IN_USE");
+    if(!std::erase_if(d.definition->linkTypes,[&](const auto& t){return t.id==id;}))throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
+}
 void deleteMode(ProjectDocument& d,const std::string& id) {
     for(const auto& m:d.zones.odMatrices)if(m.modeId==id)throw std::invalid_argument("EDIT_MODE_IN_USE");
     if(!d.definition || !std::erase_if(d.definition->modes,[&](const auto& m){return m.id==id;}))throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");

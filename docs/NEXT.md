@@ -151,32 +151,19 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S2.4: the Macro editor surface (MACRO_NETWORK §9, §13; row MA14)
+## Next session — the M10.1 gate row MA15: the textbook benchmark (MACRO_NETWORK §11)
 
-S2.1–S2.3 are in (D273–D275): the graph, the assignment, run settings, JSON/CSV link outputs and
-CLI `--macro PERIOD`. D276 studied how Visum and Aimsun organise a run. **First ask the owner
-MACRO_NETWORK §19's choice** (recommended: (a), a per-iteration convergence record and staged
-progress in Run Macro). Then one system, the editor, with rows written failure-first:
-- **Run Macro:**
-  - asks for a period (`macroPeriods` → `macroPeriodName`);
-  - compiles on the UI thread and runs `runMacro` on the D141 worker (`startWorker` in
-    `src/shell/editor_batch.cpp`);
-  - one action, and no Undo step.
-  - `assignMacro` has no progress or cancel hook yet. Add an optional per-iteration callback, or
-    let cancel discard the result.
-- **Results → Macro links:**
-  - a table with one row per arc, plus the marker note;
-  - the Run settings dialog gains the target gap and the cap (`changeMacroSettings`).
-- **Stale marking (new):**
-  - the result keeps its revision and is marked stale when `history_.revision()` differs;
-  - decide whether `clearRun()` discards it.
-- **Link-type editor:**
-  - a Link types tab like the Modes tab (`putLinkType` / `deleteLinkType`, refusing a delete in
-    use);
-  - the Link's type field in the inspector, after `behaviourTypeId`'s combo.
-- **Watch the size:** `editor_window.hpp` has about 87 lines left.
-- **Before the gate (MA15),** name and check the textbook example, with Sheffi 1985 the first
-  candidate. Then measure the engine's cost on it.
+S2.1–S2.4 are in (D273–D277): graph, assignment, outputs, CLI, and the editor's Run Macro in
+stages, Macro links table and link-type editor. Next, one system:
+- **Name and check the textbook example.** The first candidate is Sheffi, *Urban Transportation
+  Networks* (1985): its exact network, values and published equilibrium, read from the book
+  before row MA15 is written as code.
+- **Then:**
+  - commit the data with its citation;
+  - write MA15 (within the target gap of the published flows);
+  - measure the engine's wall time and Ir on it (ENGINEERING_NOTES).
+- **Owner's wish (D277):** more run capability later, such as named run definitions (§19 b) and a
+  procedure sequence (§19 c, after M10.2–M10.4). Ask before starting either.
 
 Also open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and the cost
 with a Node (+26–40 % Ir, D264, D265).

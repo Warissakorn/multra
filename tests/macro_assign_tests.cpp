@@ -166,3 +166,23 @@ TEST(macroassign, ma17_classes_load_a_link_by_their_pcu) { // MA17
     CHECK(r.load[0] == 300 * 1 + 100 * 2);
     test::near(r.time[0], 10 * (1 + 0.15 * std::pow(500.0 / 1000, 4)), 1e-12);
 }
+TEST(macroassign, ma18_the_convergence_record_and_a_cancel) { // MA18
+    const auto three = parallel({route(10, 1000), route(11, 800), route(12, 900)});
+    const std::vector<MacroClass> classes{demand(3000)};
+    const auto r = assignMacro(three, classes, {kTarget, 1000});
+    CHECK(r.converged && r.iterations > 2); // the forcing: enough iterations to stop inside
+    CHECK(r.convergence.size() == static_cast<std::size_t>(r.iterations) + 1 && r.convergence.back().gap == r.gap);
+    for (std::size_t k = 0; k < r.convergence.size(); ++k) {
+        CHECK(r.convergence[k].iteration == static_cast<int>(k));
+        CHECK(r.convergence[k].step >= 0 && r.convergence[k].step <= 1);
+    }
+    CHECK(r.convergence.back().step == 0 && r.convergence.front().step > 0);
+    // The observer sees each entry as it is recorded; false stops the run with what it reached.
+    std::vector<MacroIteration> seen;
+    const auto stopped = assignMacro(three, classes, {kTarget, 1000}, [&](const MacroIteration& i) { seen.push_back(i); return i.iteration < 2; });
+    CHECK(stopped.cancelled && !stopped.converged && stopped.iterations == 2 && seen.size() == 3);
+    CHECK(seen[0] == stopped.convergence[0] && seen[1] == stopped.convergence[1]);
+    CHECK(seen[2].step > 0 && stopped.convergence[2].step == 0); // the step it stopped before is not taken
+    test::near(stopped.classFlows[0][0] + stopped.classFlows[0][1] + stopped.classFlows[0][2], 3000, 1e-9);
+    CHECK(!r.cancelled);
+}

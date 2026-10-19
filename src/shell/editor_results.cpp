@@ -4,6 +4,8 @@
 #include "../core/simulation.hpp"
 #include <map>
 #include "editor_storage.hpp"
+#include "editor_macro.hpp"
+#include "../project/macro_output.hpp"
 #include "../project/batch_output.hpp"
 #include "../project/csv_format.hpp"
 #include <QClipboard>
@@ -83,6 +85,7 @@ void EditorWindow::buildResults() {
     dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote","editorResultsTabDischarge")->addWidget(dischargeTable_,1);
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
+    macro_=std::make_unique<MacroPanel>(); buildMacro(bar,tab(macro_->note,"editorMacroNote","editorResultsTabMacro")); // S2.4
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -197,10 +200,17 @@ void EditorWindow::refreshClamps() {
     }
     clampNote_->setText(text("editorClampNote").arg(runClamps_.size()));
 }
+bool EditorWindow::macroTabShown() const {
+    return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMacro");
+}
 bool EditorWindow::runFinished() const {
     return runState_.scenario && runState_.tick>=totalTicks(*runState_.scenario);
 }
 std::string EditorWindow::resultsCsv() const {
+    if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
+        if(const auto* r=macroResult())return macroCsv(*r);
+        throw std::runtime_error("EDIT_CSV_UNFINISHED");
+    }
     if(batch_)return batchCsv(batch_->report,batch_->runs);
     if(comparison_)return comparisonCsv(comparison_->comparison,comparison_->base,comparison_->alternative);
     const auto report=runReport();

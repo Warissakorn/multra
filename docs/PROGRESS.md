@@ -6,6 +6,30 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — S2.4: Run Macro in stages, Macro links, link types (D277)
+
+The owner chose §19 (a) and wants more capability later
+([MACRO_NETWORK](reference/MACRO_NETWORK.md) §20).
+- **Engine:** a convergence record per iteration (gap and step), and an observer that can cancel
+  between iterations.
+- **Run Macro…:**
+  - asks for the period and runs on its own worker;
+  - shows the six stages with their status and the live gap;
+  - Cancel stops between iterations;
+  - it is not an Undo step.
+- **Results → Macro links:** a row per arc with the marker. An edit keeps the rows and marks them
+  stale until Undo returns to the result's revision. Export and Copy write the Macro CSV.
+- **Run settings:** the target gap and the iteration cap; the defaults write nothing.
+- **Network → Link types:** Add, Edit and Delete (a type in use cannot go). The Link page gets a
+  Macro type combo.
+- **Rows:** MA14 (`macro-ui`), MA18 and the stage and command rows. The workspace and object-group
+  tests list the new page.
+- **Mutations:** nine caught.
+- **Found:** a multi-line note made the Objects dock too tall for the wide-canvas row. It is now one
+  paragraph.
+- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS rows.
+  Linux offscreen only.
+
 ## 2026-10-19 — How Visum and Aimsun organise a Macro run (D276, docs only)
 
 The owner asked whether a Macro run has a working procedure, then for a study of other programs
@@ -163,22 +187,6 @@ The Nodes tab can now draw one `generated` Node per junction no Node covers ([NO
   left out) and on the T-junction (4 turns); none on the lane lab. Each membership has no issue.
 - **Rows:** N18 (ctest `nodesuggest`) and the `node-ui` action check; six mutations caught.
 - **Unchanged:** every run output, the pin and the TS rows. Linux only.
-
-## 2026-10-19 — Nodes S0.3: Micro node evaluation (D264)
-
-Each Node now reports per-turn, per-leg and per-Node delay ([NODES](reference/NODES.md) §4, §13).
-- **How:** one travel-time section per turn (in-leg Link start → out-leg crossing) and one queue
-  counter per in-leg at its crossing, measured by the existing accumulators after the authored ones;
-  `nodeRows` weights leg and Node delay by vehicles.
-- **Output:** JSON `nodes[]`, a CSV block after LOS with its marker line, batch estimates
-  `{n, mean, sd, halfWidth95}`, letters with the Node's control type. Nothing without a Node: the
-  shipped projects' single and batch outputs are byte-identical.
-- **Finding:** vehicles enter from rest, so an in-leg starting at a source includes the start-up
-  loss (about 3 s of the T-junction's 3.2 s major-road delay). Choice 1a kept; N14 uses a split
-  in-leg.
-- **Cost:** no change without a Node; with one, Ir +40 % (four-leg) and +26 % (T-junction).
-- **Rows:** N12–N17 (ctest `nodeevaluation`); five mutations caught. Pin and TS rows unchanged.
-  Linux only.
 
 ## Older entries
 

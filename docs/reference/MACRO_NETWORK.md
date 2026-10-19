@@ -305,7 +305,7 @@ passes.
 | S2.1 | Link types and VDF data, `Link::linkType` at schema 50, `compileMacroNetwork` (pure, `src/model/`), Macro demand. **Implemented (D273)** | MA1–MA6 |
 | S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence. **Implemented (D274)** | MA7–MA11, MA16, MA17 |
 | S2.3 | Run settings, `MACRO_NOT_CONVERGED`, the link outputs in JSON and CSV, CLI `--macro`. **Implemented (D275)** | MA12, MA13 |
-| S2.4 | Run Macro on the worker, the Macro links table and stale marking; the link-type editor (a types table, the Link's type field) | MA14 |
+| S2.4 | Run Macro on the worker with stages (§19 a), the convergence record, the Macro links table and stale marking; the link-type editor (a types table, the Link's type field). **Implemented (D277)** | MA14, MA18 |
 | Gate | Benchmark (choice 7) | MA15 |
 
 ## 14. Acceptance rows (planned)
@@ -331,6 +331,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | MA15 | Benchmark | Within the target gap of the textbook network's published equilibrium (choice 7b) |
 | MA16 | A mode banned on a link type | That class never uses the link; its flow takes the next allowed path; other classes still use it |
 | MA17 | Two classes, different PCU, one shared link | The link's load is Σ pcu · v, and both classes see the same time |
+| MA18 | Convergence record and cancel (§19 a) | One entry per gap computed (iterations + 1), the last equal to the gap; an observer's stop cancels with the flows reached, never converged |
 
 ## 15. Seams
 
@@ -342,118 +343,12 @@ Each row first asserts that its forcing worked (AGENTS).
 - **S5:** the run-time cut reads §9's link flows.
 - **M6:** gains the Macro benchmark kind (D145 design §3.7).
 
-## 16. S2.1 as implemented (D273)
+## 16–18, 20. As implemented
 
-- **Model.**
-  - `Link::linkTypeId` is in `network.hpp`.
-  - `LinkType`, `Vdf`, and `AuthoringDefinition::externalLinkTypes`/`linkTypes` are in
-    `definition.hpp`.
-- **File.** `src/project/link_type_codec.*` holds:
-  - `usesLinkTypes` and `rejectLinkTypesBefore50` (`definition.linkTypes`,
-    `network.links[i].linkType`);
-  - `readLinkTypeIds`;
-  - the type and VDF codecs, with exact keys, where a malformed entry is `EDIT_CATALOG_READ`;
-  - `resolveLinkTypes`, giving owned types or `data/link-types/` in name order;
-  - `resolveVdfs`;
-  - `linkTypeIssues`, `vdfIssues`, and `linkTypeDocumentIssues` on commit.
+The as-implemented records of S2.1 (§16), S2.2 (§17), S2.3 (§18) and S2.4 (§20) are in
+[MACRO_NETWORK_IMPLEMENTED](MACRO_NETWORK_IMPLEMENTED.md), with their section numbers kept.
 
-  Fifteen rows' "future schema" example moves to 51.
-- **Graph.**
-  - `src/macro/graph.*` holds `MacroLink`, `MacroGraph`, `allows` and `reachable`. It is a pure
-    module in `check_architecture`'s list.
-  - `compileMacroNetwork` (`src/model/demand/macro_compile.*`) builds the graph as §3 describes.
-    Every zone connector gets its own centroid node, so a cell keeps Micro's share split and a
-    centroid is never a through node.
-- **Demand.** `src/project/macro_input.*` holds `macroNetwork`, `macroPeriods` and `macroDemand`.
-  - A connector pair with no allowed path is left out. The cell is `MACRO_NO_PATH` only when no
-    pair is served, as with Micro's `OD_NO_PATH`.
-- **Shipped.**
-  - `data/vdf/bpr.json` (α 0.15, β 4). Its source names the 1964 manual as the secondary texts
-    report it. The manual itself is not online and has not been read.
-  - No link type ships.
-- **Rows.** MA1–MA6 are in `tests/macro_network_tests.cpp` (ctest `macronetwork`).
-- **Mutations caught:**
-  - no schema gate;
-  - no station split;
-  - a Connector timed at its to-Link's speed;
-  - shares or hours ignored;
-  - modes ignored;
-  - a missing type accepted;
-  - capacity not multiplied by lanes;
-  - document order leaking into the graph.
-
-## 17. S2.2 as implemented (D274)
-
-- **Engine** (`src/macro/assign.*`, pure):
-  - `macroTime`, the BPR time;
-  - `shortestTree`, Dijkstra on a `std::set` queue over the arcs a class may use; on equal distance
-    the lower link index is the predecessor;
-  - `allOrNothing`;
-  - `assignMacro(graph, classes, MacroSettings{targetGap, maxIterations})`, returning `classFlows`,
-    `load` (pcu/h), `time`, `gap`, `iterations` and `converged`.
-
-  `MacroCell` and `MacroClass` moved to `src/macro/graph.hpp`, so the engine takes them.
-- **Loop:**
-  1. start from all-or-nothing at free-flow times;
-  2. each iteration computes the times at the current load, every class's all-or-nothing target
-     and the gap of §7;
-  3. it stops at the target or at the cap. Stopping at the cap returns `converged == false` with
-     the flows reached;
-  4. otherwise one step size moves every class.
-- **Defaults** belong to the run settings (S2.3). The engine has none.
-- **Found while writing the rows:** with an exact line search, two parallel routes reach
-  equilibrium in one step. Row MA8 pins this, and that is what catches a step rule other than the
-  line search.
-- **Rows.** MA7–MA11, MA16 and MA17 are in `tests/macro_assign_tests.cpp` (ctest `macroassign`).
-- **Mutations caught:**
-  - ties to the higher index;
-  - an MSA step in place of the line search;
-  - the gap's sign flipped;
-  - PCU dropped from the load;
-  - bans ignored;
-  - the cap off by one;
-  - β ignored.
-
-## 18. S2.3 as implemented (D275)
-
-- **The split.** NEXT's S2.3 held two systems, so the editor surface (Run Macro, the Macro links
-  table, stale marking, the link-type editor; row MA14) is S2.4.
-- **Settings.** `src/project/macro_settings.*`: `MacroSettings` and `kMacroDefaults` (10⁻⁴, 1000)
-  live in `src/macro/graph.hpp`; `AuthoringDefinition::macroSettings` is optional; the command is
-  `changeMacroSettings`. The schema chain gains `usesMacroSettings(d)?51`, and fifteen rows'
-  "future schema" example moves to 52.
-- **Run.** `src/project/macro_run.*`: `macroPeriodName`, and `runMacro` returning `MacroRun{period,
-  revision, settings, graph, classes, assignment, advisories, inputManifest}`. `macroDemand` now
-  takes the manifest too, so the catalog files it reads are recorded.
-- **Outputs.** `src/project/macro_output.*`:
-  - JSON: `validated: false`, `measure`, `period`, `revision`, `settings`, `gap{formula, value,
-    target}`, `iterations`, `converged`, `advisories`, `classes{id, mode, pcu}`, `links[]` and
-    `inputManifest`;
-  - each link row: `kind`, `source`, `fromStation`, `toStation`, `linkType` (`MacroLink::linkType`,
-    empty off Links), `flow{class: veh/h}`, `load` (pcu/h), `vc` (null when uncapacitated),
-    `freeTime`, `time`;
-  - CSV: the marker line, `# Period`, `# Relative gap` with the formula, iterations and
-    convergence, then a header with one `flow:<class>` column per class.
-- **CLI.** `trafficsim-cli --project FILE --macro PERIOD [--csv FILE] [--data-dir DIR]`; JSON on
-  stdout, stamped like a batch; a warning on stderr when not converged. The fixture is
-  `tests/macro-two-route.traffic.json`.
-- **Rows.** MA12 and MA13 in `tests/macro_output_tests.cpp` (ctest `macrooutput`); `cli-macro`,
-  `cli-macro-seeds`, `cli-macro-period`.
-- **Found while writing the rows:** S2.2's MA11 document gives each entry Link its own zone
-  connector, so its flows follow the shares, not route choice. MA11's determinism claim stands;
-  its comment is corrected, and S2.3's fixture fans one origin out to two routes.
-- **Mutations caught:**
-  - the marker dropped;
-  - a class column missing (it first survived a prefix check; MA13 now compares a whole row);
-  - `MACRO_NOT_CONVERGED` never added;
-  - the schema gate off;
-  - the VDF parameters ignored;
-  - V/C on veh/h;
-  - the project's settings ignored;
-  - the settings always written;
-  - the cap's upper bound unchecked.
-
-## 19. Run procedure (S2.4 design, proposed, D276)
+## 19. Run procedure (D276; answered (a), D277)
 
 Studied in [evidence/macro-run-procedures.md](../evidence/macro-run-procedures.md): Visum's
 procedure sequence and Aimsun Next's scenario and experiment. Both keep the run's definition and
@@ -470,8 +365,10 @@ and a 2022 Visum fault let a step with errors count as done.
 
 A stage that refuses stops every later stage. A stage is never counted as done with an issue.
 
-**Owner choice for S2.4:**
-- **(a) Recommended.** One run setting per project, as today.
+**Owner choice for S2.4 (answered 2026-10-19, D277: (a), with more capability wanted later).**
+(b) and (c) stay booked as seams. `runMacro(period, settings)` is the unit that a later run list
+(b) or procedure sequence (c) repeats, so neither needs a new engine.
+- **(a) Recommended, chosen.** One run setting per project, as today.
   - Add a per-iteration convergence record (iteration, gap, step λ) to `MacroAssignment` and to
     the outputs, as Aimsun keeps convergence data. It is a measured value, not a setting, so no
     schema changes.
@@ -481,4 +378,3 @@ A stage that refuses stops every later stage. A stage is never counted as done w
   like Aimsun's experiments. This needs schema 52 and an editor list.
 - (c) A general procedure sequence like Visum's (generation → distribution → mode choice → skim →
   assignment). It is premature while M10.2–M10.4 do not exist, and is booked as an M10 seam.
-

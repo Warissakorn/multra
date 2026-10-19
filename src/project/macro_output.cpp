@@ -19,8 +19,10 @@ Json macroJson(const MacroRun& r) {
     Json j{{"validated", false}, {"measure", kMeasure}, {"period", r.period}, {"revision", r.revision},
            {"settings", {{"targetGap", r.settings.targetGap}, {"maxIterations", r.settings.maxIterations}}},
            {"gap", {{"formula", kGapFormula}, {"value", a.gap}, {"target", r.settings.targetGap}}},
-           {"iterations", a.iterations}, {"converged", a.converged}, {"advisories", Json::array()},
+           {"iterations", a.iterations}, {"converged", a.converged}, {"cancelled", a.cancelled}, {"convergence", Json::array()},
+           {"advisories", Json::array()},
            {"classes", Json::array()}, {"links", Json::array()}, {"inputManifest", r.inputManifest}};
+    for (const auto& i : a.convergence) j["convergence"].push_back({{"iteration", i.iteration}, {"gap", i.gap}, {"step", i.step}});
     for (const auto& i : r.advisories) j["advisories"].push_back({{"code", i.code}, {"path", i.path}});
     for (const auto& c : r.classes) j["classes"].push_back({{"id", c.id}, {"mode", c.mode}, {"pcu", c.pcu}});
     for (std::size_t k = 0; k < r.graph.links.size(); ++k) {

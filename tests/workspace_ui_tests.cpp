@@ -41,7 +41,7 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     auto* inner=item<QTabWidget>(window,"editorResultsTabs");
     struct Page {const char* content;const char* label;};
     const Page pages[]={
-        {"editorLinkTable","editorLinkTable"},{"editorConnectorTable","editorConnectorTable"},
+        {"editorLinkTable","editorLinkTable"},{"editorConnectorTable","editorConnectorTable"},{"editorLinkTypeTable","editorLinkTypeTable"},
         {"editorSignalTable","editorSignalTable"},{"editorProblemTable","editorProblemTable"},
         {"editorRouteTable","editorRouteTable"},{"editorInputTable","editorInputTable"},
         {"editorProgramTable","editorProgramTable"},{"editorDecisionTable","editorDecisionTable"},
@@ -51,8 +51,8 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
         {"editorSpeedDecisionTable","editorSpeedDecisionTable"},{"editorReducedSpeedAreaTable","editorReducedSpeedAreaTable"}}; // B-6 (D223, D225)
     const Page results[]={{"editorMovementTable","editorResultsTabMovements"},
         {"editorDischargeTable","editorResultsTabDischarge"},{"editorClampTable","editorResultsTabClamps"},
-        {"editorLotTable","editorResultsTabLots"}};
-    require(tabs->count()==19 && inner->count()==4,"Tab inventory changed");
+        {"editorLotTable","editorResultsTabLots"},{"editorMacroTable","editorResultsTabMacro"}};
+    require(tabs->count()==20 && inner->count()==5,"Tab inventory changed");
     QList<QWidget*> original,originalInner;
     for(int i=0;i<tabs->count();++i)original<<tabs->widget(i);
     for(int i=0;i<inner->count();++i)originalInner<<inner->widget(i);

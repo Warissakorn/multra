@@ -32,7 +32,7 @@ QJsonObject catalog(const std::filesystem::path& data,int lang) {
 struct Group {const char* key;std::vector<const char*> pages;};
 // Page contents by object name, in the spec's order (UI_PRESENTATION_SPEC §1).
 const Group groups[]={
-    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable"}},
+    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable","editorLinkTypeTable"}},
     {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
     {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable","editorPeriodTable","editorModeTable"}},
     {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable","editorNodeTable"}},
@@ -59,7 +59,7 @@ int main(int argc,char** argv) {
         auto* tabs=item<QTabWidget>(window,"editorObjectTabs");auto* combo=item<QComboBox>(window,"editorObjectGroup");
         auto* language=item<QComboBox>(window,"editorLanguage");auto* canvas=window.canvas();
         auto* dock=item<QDockWidget>(window,"editorObjectsDock");
-        require(tabs->count()==19,"Object page inventory changed");
+        require(tabs->count()==20,"Object page inventory changed");
         require(tabs->cornerWidget(Qt::TopLeftCorner)==combo,"Group selector is not in the page strip row");
         require(combo->count()==6,"Selector does not list six task groups");
         // Default after construction and Reset: Network, Links.
@@ -81,7 +81,7 @@ int main(int argc,char** argv) {
                 for(auto* page:expected)covered.insert(page);
             }
         }
-        require(covered.size()==19,"Some page belongs to no group");
+        require(covered.size()==20,"Some page belongs to no group");
         // Any jump to a hidden page, in either language, reveals that page's group, and a locale
         // switch while it is current keeps both.
         for(int lang:{0,1})for(const auto& owner:groups)for(const auto* content:owner.pages) {

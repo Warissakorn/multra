@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "editor_macro.hpp"
 #include "behaviour_lab_window.hpp"
 #include "path.hpp"
 #include "editor_style.hpp"
@@ -61,7 +62,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     setReflowPolicy(error_,QSizePolicy::Ignored);
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
-    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); history_.reset(newProjectDocument());
+    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); history_.reset(newProjectDocument());
         automaticRevision_=conflictRevision_=UINT64_MAX;
         file_.clear(); canvas_->select(""); refresh(); canvas_->fitNetwork(); } }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
@@ -171,7 +172,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         execute("editorMoveHead",[&](auto& d){moveSignalHead(d,id,station);});
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
-    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildNodes(); buildOd(); buildPeriods(); buildModes(); buildRecovery(); buildPalette();
+    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildNodes(); buildOd(); buildPeriods(); buildModes(); buildLinkTypes(); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
@@ -215,7 +216,7 @@ void EditorWindow::translate() {
         if(english)for(int column=0;column<table->columnCount();++column)
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
-    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateSpeedDecisions(); translateSpeedAreas(); translateZones(); translateNodes(); translateOd(); translatePeriods(); translateModes(); translatePalette(); refreshToolHint();
+    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateSpeedDecisions(); translateSpeedAreas(); translateZones(); translateNodes(); translateOd(); translatePeriods(); translateModes(); translateLinkTypes(); translatePalette(); refreshToolHint();
     if (lab_) lab_->retranslate();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
@@ -292,6 +293,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshSpeedDecisions();refreshSpeedAreas();refreshZones();refreshNodes();refreshOd();refreshPeriods();refreshModes();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshSpeedDecisions();refreshSpeedAreas();refreshZones();refreshNodes();refreshOd();refreshPeriods();refreshModes();refreshLinkTypes();refreshLinkTypeField();refreshDiagnostics();refreshRun();
 }
 }

@@ -60,7 +60,8 @@ MacroLoading allOrNothing(const MacroGraph& g, const MacroClass& cls, const std:
     }
     return out;
 }
-MacroAssignment assignMacro(const MacroGraph& g, const std::vector<MacroClass>& classes, const MacroSettings& settings) {
+MacroAssignment assignMacro(const MacroGraph& g, const std::vector<MacroClass>& classes, const MacroSettings& settings,
+                            const std::function<bool(const MacroIteration&)>& observer) {
     MacroAssignment r;
     const auto free = timesAt(g, std::vector<double>(g.links.size(), 0.0));
     for (const auto& cls : classes) r.classFlows.push_back(allOrNothing(g, cls, free).flows);
@@ -76,8 +77,11 @@ MacroAssignment assignMacro(const MacroGraph& g, const std::vector<MacroClass>& 
             target.push_back(std::move(aon.flows));
         }
         r.gap = total > 0 ? (total - shortest) / total : 0.0;
-        if (r.gap <= settings.targetGap) { r.converged = true; return r; }
-        if (r.iterations >= settings.maxIterations) { r.converged = false; return r; }
+        // Recorded with step 0; the step taken, if any, is filled in below before the next entry.
+        r.convergence.push_back({r.iterations, r.gap, 0.0});
+        const auto stop = [&] { return observer && !observer(r.convergence.back()); };
+        if (r.gap <= settings.targetGap) { r.converged = !stop(); r.cancelled = !r.converged; return r; }
+        if (r.iterations >= settings.maxIterations) { r.cancelled = stop(); r.converged = false; return r; }
         const auto y = loads(g, classes, target);
         // The Beckmann derivative along the direction, sum_a (y_a - x_a) t_a(x_a + lambda (y_a - x_a)), rises in lambda.
         const auto slope = [&](double lambda) {
@@ -89,6 +93,8 @@ MacroAssignment assignMacro(const MacroGraph& g, const std::vector<MacroClass>& 
         if (slope(1) <= 0) low = 1;
         else for (int k = 0; k < kHalvings; ++k) { const double mid = (low + high) / 2; (slope(mid) < 0 ? low : high) = mid; }
         const double lambda = low == 1 ? 1.0 : (low + high) / 2;
+        r.convergence.back().step = lambda;
+        if (stop()) { r.convergence.back().step = 0; r.cancelled = true; r.converged = false; return r; } // not taken
         for (std::size_t m = 0; m < classes.size(); ++m)
             for (std::size_t a = 0; a < g.links.size(); ++a) r.classFlows[m][a] += lambda * (target[m][a] - r.classFlows[m][a]);
         ++r.iterations;

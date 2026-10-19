@@ -16,6 +16,8 @@ void changeLinkMarkings(ProjectDocument&, const std::string& id, const std::vect
 void changeLanes(ProjectDocument&, const std::string& id, const std::vector<double>& widths);
 void resizeLinkLanes(ProjectDocument&, const std::string&, int count, bool leading);
 void deleteLink(ProjectDocument&, const std::string& id);
+// S2.4 (MACRO_NETWORK §4, D277): the Link's Macro type; nullopt clears it. Micro never reads it.
+void setLinkType(ProjectDocument&, const std::string& id, std::optional<std::string> type);
 // Deletes links and connectors together in one transaction, with their lanes, attached
 // connectors, signal heads, and the routes/inputs those segments carry. An id already removed
 // as a side effect of an earlier deletion in the same call is skipped, not an error, so the
