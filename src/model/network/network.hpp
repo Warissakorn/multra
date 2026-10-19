@@ -27,6 +27,7 @@ struct Link {
     std::vector<MarkingType> boundaryMarkings{};
     // M3.3.2a, schema 21: a link behaviour type id; absent keeps each type's own behaviour.
     std::optional<std::string> behaviourTypeId{};
+    std::optional<std::string> linkTypeId{}; // S2.1 (MACRO_NETWORK §4, D273), schema 50: Macro only
     bool operator==(const Link&) const = default;
 };
 struct LaneReference {

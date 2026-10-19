@@ -2,7 +2,7 @@
 
 Written 2026-10-19 (D271) as a contract with eight owner choices (§12). The owner answered the
 same day (D272: 1a, 2a, 3b, 4a, 5a, 6a, 7b, 8b); §4, §6, §7, §9–§11 and §14 carry the answers.
-Nothing is implemented.
+Slice S2.1 is implemented (D273, §16).
 This is stage S2 of the multi-level workflow
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §10, D175): "Macro compiles from a detailed
 network (M10.1)". It fixes how one detailed project compiles into a Macro network, which values
@@ -148,8 +148,9 @@ passes.
   - A matrix with its own times is a period of its own, `[startTime, endTime]` in run seconds.
   - Run Macro names the period it assigns.
 - **Flow.** Each cell's trips follow Micro's split (ZONES_AND_PARKING §3): the origin and
-  destination connector shares, giving one OD flow per connector pair. The flow is
-  trips × PCU ÷ (period length / 3600), in pcu/h. That is D175's `mean` basis.
+  destination connector shares, giving one OD flow per connector pair. A class's flow is
+  trips ÷ (period length / 3600), in veh/h, D175's `mean` basis; its load on a link is that times
+  its PCU (§7).
 - **One class per mode (D272 choice 3b).**
   - The matrices of one period that name a mode form that mode's class. A matrix naming only a
     composition forms a class of its own, keyed by the composition.
@@ -293,9 +294,9 @@ passes.
 
 | Slice | Content | Rows |
 |---|---|---|
-| S2.1 | Link types and VDF data, `Link::linkType` at schema 50, `compileMacroNetwork` (pure, `src/model/`), Macro demand | MA1–MA6 |
+| S2.1 | Link types and VDF data, `Link::linkType` at schema 50, `compileMacroNetwork` (pure, `src/model/`), Macro demand. **Implemented (D273)** | MA1–MA6 |
 | S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence | MA7–MA11, MA16, MA17 |
-| S2.3 | Outputs, CLI `--macro`, Run Macro and the Macro links table | MA12–MA14 |
+| S2.3 | Outputs, CLI `--macro`, Run Macro and the Macro links table; the link-type editor (a types table, the Link's type field) | MA12–MA14 |
 | Gate | Benchmark (choice 7) | MA15 |
 
 ## 14. Acceptance rows (planned)
@@ -331,3 +332,43 @@ Each row first asserts that its forcing worked (AGENTS).
   - the `linkType` hierarchy gives a coarse Node's priority (NODES §5).
 - **S5:** the run-time cut reads §9's link flows.
 - **M6:** gains the Macro benchmark kind (D145 design §3.7).
+
+## 16. S2.1 as implemented (D273)
+
+- **Model.**
+  - `Link::linkTypeId` is in `network.hpp`.
+  - `LinkType`, `Vdf`, and `AuthoringDefinition::externalLinkTypes`/`linkTypes` are in
+    `definition.hpp`.
+- **File.** `src/project/link_type_codec.*` holds:
+  - `usesLinkTypes` and `rejectLinkTypesBefore50` (`definition.linkTypes`,
+    `network.links[i].linkType`);
+  - `readLinkTypeIds`;
+  - the type and VDF codecs, with exact keys, where a malformed entry is `EDIT_CATALOG_READ`;
+  - `resolveLinkTypes`, giving owned types or `data/link-types/` in name order;
+  - `resolveVdfs`;
+  - `linkTypeIssues`, `vdfIssues`, and `linkTypeDocumentIssues` on commit.
+
+  Fifteen rows' "future schema" example moves to 51.
+- **Graph.**
+  - `src/macro/graph.*` holds `MacroLink`, `MacroGraph`, `allows` and `reachable`. It is a pure
+    module in `check_architecture`'s list.
+  - `compileMacroNetwork` (`src/model/demand/macro_compile.*`) builds the graph as §3 describes.
+    Every zone connector gets its own centroid node, so a cell keeps Micro's share split and a
+    centroid is never a through node.
+- **Demand.** `src/project/macro_input.*` holds `macroNetwork`, `macroPeriods` and `macroDemand`.
+  - A connector pair with no allowed path is left out. The cell is `MACRO_NO_PATH` only when no
+    pair is served, as with Micro's `OD_NO_PATH`.
+- **Shipped.**
+  - `data/vdf/bpr.json` (α 0.15, β 4). Its source names the 1964 manual as the secondary texts
+    report it. The manual itself is not online and has not been read.
+  - No link type ships.
+- **Rows.** MA1–MA6 are in `tests/macro_network_tests.cpp` (ctest `macronetwork`).
+- **Mutations caught:**
+  - no schema gate;
+  - no station split;
+  - a Connector timed at its to-Link's speed;
+  - shares or hours ignored;
+  - modes ignored;
+  - a missing type accepted;
+  - capacity not multiplied by lanes;
+  - document order leaking into the graph.

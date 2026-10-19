@@ -151,21 +151,17 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S2.1: link types and the Macro graph (MACRO_NETWORK §3–§6; rows MA1–MA6)
+## Next session — S2.2: the Macro assignment (MACRO_NETWORK §7; rows MA7–MA11, MA16, MA17)
 
-The S2 contract is written (D271), and the owner has answered it (D272). Next, one system:
-- **S2.1,** with rows MA1–MA6 written failure-first:
-  - link types (`capacityPerLane`, `freeSpeed`, `vdfId`, optional `modes`, `source`) under the
-    catalog presence rule, none shipped;
-  - `data/vdf/bpr.json`;
-  - `Link::linkType` at schema 50;
-  - `compileMacroNetwork` (Link pieces, Connector and centroid arcs);
-  - Macro demand per class (mode or composition) and period.
-- **S2.2** brings the multi-class Frank–Wolfe at a 0.01 % gap (MA7–MA11, MA16, MA17).
+S2.1 is in (D273): link types, `bpr.json`, the Macro graph and per-class demand. Next, one system:
+- **S2.2,** in the pure `src/macro/`, with rows written failure-first:
+  - all-or-nothing loading by Dijkstra, with ties broken by link order (MA7);
+  - multi-class Frank–Wolfe on a shared Σ pcu·v cost, with bisection and the named relative gap at
+    0.01 % (MA8–MA10);
+  - `MACRO_NOT_CONVERGED`, and determinism under permutation (MA11);
+  - mode bans and mixed PCU (MA16, MA17).
 - **Before the gate (MA15),** name and check the textbook example, with Sheffi 1985 the first
   candidate.
-- **The 1964 BPR manual** is to be checked before `bpr.json` lands. The BPR pair assumes practical
-  capacity.
 
 Also open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and the cost
 with a Node (+26–40 % Ir, D264, D265).

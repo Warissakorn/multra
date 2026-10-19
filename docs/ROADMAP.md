@@ -427,7 +427,7 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 
 ### M10 — Macro four-step model
 
-**Open, not started; M10.1 contract written** ([MACRO_NETWORK](reference/MACRO_NETWORK.md), D271; owner choices answered, D272: one class per mode, a textbook benchmark, 0.01 % gap). Macro network compile with link types and volume-delay functions as data;
+**Open, not started; M10.1 contract written** ([MACRO_NETWORK](reference/MACRO_NETWORK.md), D271; owner choices answered, D272: one class per mode, a textbook benchmark, 0.01 % gap; S2.1 link types and the Macro graph implemented, D273). Macro network compile with link types and volume-delay functions as data;
 static user-equilibrium assignment; trip generation, gravity distribution with Furness
 balancing, multinomial-logit mode choice; skims, select-link, Results and Export; centreline-only
 Links in the editor. Owner's B7 answers 2026-10-14 (D158): BPR 0.15/4 default VDF (1964 manual)

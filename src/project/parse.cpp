@@ -196,7 +196,7 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     for (const auto& item : array(value, "links")) {
         const auto path="links["+std::to_string(network.links.size())+"]";
         // `behaviourType` exists from schema 21 (M3.3.2a).
-        if(schemaVersion>=21)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType"},path,schemaVersion);
+        if(schemaVersion>=21)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType","linkType"},path,schemaVersion); // linkType: S2.1, read by readLinkTypeIds
         else knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings"},path,schemaVersion);
         Link link{field<std::string>(item, "id"), points(item,schemaVersion), {}};
         for (const auto& lane : array(item, "lanes")) {

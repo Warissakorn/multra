@@ -6,6 +6,20 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — S2.1: link types and the Macro graph (D273)
+
+The first Macro code ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §16). There is no assignment
+yet.
+- **File (schema 50):** a Link's `linkType` and project-owned `definition.linkTypes`
+  `{capacityPerLane, freeSpeed, vdfId, modes, source}`. No type ships; `data/vdf/bpr.json` does.
+- **Graph:** `compileMacroNetwork` splits Links at Connector stations into capacitated pieces.
+  Connectors become fixed-time arcs at the from-Link's speed, and each zone connector gets its
+  own centroid node. The new `src/macro/` is a pure module.
+- **Demand:** `macroDemand` gives veh/h per class (mode, or composition) and period by connector
+  share. `MODE_PCU_MISSING` and `MACRO_NO_PATH` are refused.
+- **Rows:** MA1–MA6 (ctest `macronetwork`); nine mutations caught. Micro outputs, the pin and the
+  TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
 
 The owner chose S2. [MACRO_NETWORK](reference/MACRO_NETWORK.md) fixes how the drawn network
@@ -155,23 +169,6 @@ The owner chose to start the multi-level work (D145, D175) at S0, before W99 ([N
   "VISSIM_PARITY §6" (now §2b).
 
 No code. Linux only.
-
-## 2026-10-19 — `standingStopFloor` implemented, on by default (D257, D258)
-
-The owner took D256's recommendation, on by default ([LINE_APPROACH](reference/LINE_APPROACH.md) §7).
-- **Engine:** in the prototype law's `braking` mode, behind a standing leader, braking is at least
-  `v²/(2·gap)`, capped at the type's maximum.
-  - Only behaviours with `amberDeceleration` get it, through the runtime-only
-    `DriverBehaviour::stopFloor`, set when the simulation is created.
-  - Bare M0 scenarios keep their bytes.
-- **File and editor:** `clampRules.standingStopFloor` is written only when off, at schema 47. There
-  is a fifth Run settings checkbox.
-- **Rows:** BA173–BA178 and the Run settings UI test. BA164's forcing also switches the floor off.
-- **Measured:**
-  - On reproduces D256's F1a byte for byte: M2.6 17 → 5 clamps, T-junction 7.069 → 7.099 s.
-  - Off is byte-identical to D255.
-  - The pin is unchanged, and the TS rows pass 5/5.
-  - Ir +0.13–0.18 %.
 
 ## Older entries
 

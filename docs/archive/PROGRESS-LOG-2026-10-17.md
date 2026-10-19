@@ -3,6 +3,23 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — `standingStopFloor` implemented, on by default (D257, D258)
+
+The owner took D256's recommendation, on by default ([LINE_APPROACH](../reference/LINE_APPROACH.md) §7).
+- **Engine:** in the prototype law's `braking` mode, behind a standing leader, braking is at least
+  `v²/(2·gap)`, capped at the type's maximum.
+  - Only behaviours with `amberDeceleration` get it, through the runtime-only
+    `DriverBehaviour::stopFloor`, set when the simulation is created.
+  - Bare M0 scenarios keep their bytes.
+- **File and editor:** `clampRules.standingStopFloor` is written only when off, at schema 47. There
+  is a fifth Run settings checkbox.
+- **Rows:** BA173–BA178 and the Run settings UI test. BA164's forcing also switches the floor off.
+- **Measured:**
+  - On reproduces D256's F1a byte for byte: M2.6 17 → 5 clamps, T-junction 7.069 → 7.099 s.
+  - Off is byte-identical to D255.
+  - The pin is unchanged, and the TS rows pass 5/5.
+  - Ir +0.13–0.18 %.
+
 ## 2026-10-19 — Stopping cleanly at a line measured (D256, docs only)
 
 The owner asked for the line approach as a contract with numbers first (D254)

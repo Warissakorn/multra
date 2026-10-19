@@ -92,7 +92,8 @@ int main(int argc, char** argv) {
         return check("#include <vector>\n#include <cmath>\n", {}) ? 0 : 1;
     }
     bool valid = true;
-    for (const auto* module : {"core", "eval", "runner"}) {
+    // macro: S2 (MACRO_NETWORK §7) imports nothing, like core.
+    for (const auto* module : {"core", "eval", "runner", "macro"}) {
         const auto directory = std::filesystem::path(argv[1]) / "src" / module;
         for (const auto& entry : std::filesystem::directory_iterator(directory)) {
             if (entry.path().extension() != ".hpp" && entry.path().extension() != ".cpp") continue;
