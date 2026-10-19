@@ -367,7 +367,7 @@ rehearsal, and the M5 gate.
 
 ### M5.1 — Additional network objects and evaluated outputs
 
-**Open.** Evaluation nodes/stop lines, movement measurements/overlays and reports. **Node contract written** with S0 of M8–M12 ([NODES](reference/NODES.md), D259); owner choices answered (D260); **S0.1 implemented** (D261: object at schema 48, Node tool and tab, rows N1–N5); §3 amended (D262); **S0.2 implemented** (D263: membership, rows N6–N11); **S0.3 implemented** (D264: per-turn, leg and Node delay, leg queue and letters in single-run and batch outputs, rows N12–N17). Next: S0.5 Suggest nodes. Transit stops, crosswalks and multimodal behaviour moved to *Later* by D143 (R8); parking is M8 since D145. **Gate:** event-accounting and known analytical scenarios, reference cleanup and multi-run output checks. Keep completed-trip delay distinct from HCM control delay/LOS.
+**Open.** Evaluation nodes/stop lines, movement measurements/overlays and reports. **Node contract written** with S0 of M8–M12 ([NODES](reference/NODES.md), D259); owner choices answered (D260); **S0.1 implemented** (D261: object at schema 48, Node tool and tab, rows N1–N5); §3 amended (D262); **S0.2 implemented** (D263: membership, rows N6–N11); **S0.3 implemented** (D264: per-turn, leg and Node delay, leg queue and letters in single-run and batch outputs, rows N12–N17); **S0.5 implemented** (D265: Suggest nodes, row N18). S0 is complete but S0.4, which lands with S2. Transit stops, crosswalks and multimodal behaviour moved to *Later* by D143 (R8); parking is M8 since D145. **Gate:** event-accounting and known analytical scenarios, reference cleanup and multi-run output checks. Keep completed-trip delay distinct from HCM control delay/LOS.
 
 ---
 

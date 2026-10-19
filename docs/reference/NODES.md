@@ -1,7 +1,7 @@
 # Nodes: a polygon over a junction (S0, M5.1)
 
 Written 2026-10-19 (D259). The owner accepted every §7 recommendation the same day (D260); slices
-S0.1, S0.2 and S0.3 are implemented (D261, D263, D264, §8); D262 amended §3. Stage S0
+S0.1, S0.2, S0.3 and S0.5 are implemented (D261, D263–D265, §8); D262 amended §3. Stage S0
 of the multi-level workflow ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §3, §10,
 D175) merged with M5.1's evaluation nodes (ROADMAP M5.1). A Node is first a Micro evaluation
 object, the per-junction delay and queue a traffic impact study reports
@@ -150,9 +150,20 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 - **Nodes panel.** A table of Nodes with name, control type, legs, turns and issues. Rename and
   delete are each one Undo step. Selecting a row highlights the polygon and its legs.
 - **Moving a vertex** is one Undo step and clears `generated`.
-- **Suggest nodes** (S0.5) draws one `generated` polygon around each conflict cluster
-  (`conflictGroups`, `src/model/network/right_of_way.hpp`), skipping clusters already inside a Node.
-  It is one Undo step for the whole set.
+- **Suggest nodes** (S0.5, D265) draws one `generated` polygon around each junction no Node covers
+  yet, as one Undo step for the whole set. D259 named `conflictGroups`, but a `ConflictGroup` is one
+  pair of road objects, not a junction. The junction rule, all of it taken from the drawing:
+  - **Conflicts:** every authored conflict area and every automatic conflict, except the
+    display-only branching kind.
+  - **Clusters:** conflicts join through the Connectors on their sides. Connectors join when they
+    leave, or arrive at, the same station of one Link. Links never join a cluster, because one Link
+    can pass several junctions.
+  - **A junction** is a cluster fed from at least two Links. A Connector feeds from its `from`
+    Link; a Link side feeds from its own Link unless a Connector of the cluster arrives on it at or
+    before that side. A lane added on one road (the four-leg's approach pockets) is not a junction.
+  - **Polygon:** the convex hull of the cluster's Connector polylines and conflict points, padded
+    by the widest lane at those Connectors' ends.
+  - **Overlaps:** overlapping hulls merge into one. A hull overlapping an existing Node is dropped.
 
 ## 7. Owner choices (answered 2026-10-19, D260: every recommendation, 1a–5a)
 
@@ -186,7 +197,7 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 | S0.2 | Membership: inside objects, legs, turns, refusals, conflicts, control (pure functions in `src/model/network/`). **Implemented (D263)** | N6–N11 |
 | S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs. **Implemented (D264)** | N12–N17 |
 | S0.4 | Coarse values, refine and derive back, lifecycle (with S2) | written with S2 |
-| S0.5 | Suggest nodes | N18 |
+| S0.5 | Suggest nodes. **Implemented (D265)** | N18 |
 
 ## 9. Acceptance rows (planned)
 
@@ -211,7 +222,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | N15 | Leg and Node rows | Vehicle-weighted means equal a hand computation over the turn rows; a group with no vehicle has no delay |
 | N16 | Queue and letters | Leg queue equals a hand-placed counter at the same line; letters from `losLetter` with the Node's type; the CSV marker line |
 | N17 | Batch | `{n, mean, sd, halfWidth95}` per row; the same seeds give the same bytes |
-| N18 | Suggest nodes | One `generated` polygon per conflict cluster not already inside a Node; one Undo step |
+| N18 | Suggest nodes | One `generated` polygon per junction (§6) not already covered by a Node, whose membership has no issue on the shipped junctions; overlapping hulls merge, apart junctions do not; one Undo step |
 
 ## 10. What stays out
 
@@ -315,3 +326,28 @@ Each row first asserts that its forcing worked (AGENTS).
   - leg lines dropped (N16);
   - letters from the wrong type (N16);
   - the CSV block written with no Node (N12).
+
+## 14. S0.5 as implemented (D265)
+
+- **Model.** `nodeSuggestions(network)` (`src/model/network/node_suggestions.*`) applies §6's rule
+  and returns `{"", "", hull, generated}` Nodes in cluster order. It never throws.
+- **Command.** `suggestNodes(document)` (`src/commands/node_commands.*`) adds each suggestion through
+  `putNode` and returns the ids.
+- **Editor.** The Nodes tab's *Suggest nodes* action is one `execute`. When nothing is suggested it
+  changes nothing and says so in the status bar; otherwise it reports the count.
+- **On the shipped projects:**
+  - the four-leg and the M2.6 template each give one Node with 4 + 4 legs and 12 turns, and the
+    approach lane adds are left out;
+  - the T-junction gives one Node with 3 + 2 legs, 4 turns and 3 conflict rows;
+  - the lane-change lab gives none.
+- **Rows.** N18 is in `tests/node_suggestion_tests.cpp` (ctest `nodesuggest`), and `node-ui` covers
+  the action.
+- **Mutations caught:**
+  - no padding;
+  - Connectors joined by Link without the station;
+  - no existing-Node skip;
+  - no merge;
+  - `generated` false;
+  - single-source clusters kept.
+
+  Keeping branching conflicts changes no shipped suggestion: their sides add no second source.

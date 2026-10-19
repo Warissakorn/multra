@@ -2,6 +2,8 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
 #include "../model/network/node_membership.hpp"
+#include "../model/network/node_suggestions.hpp"
+#include <QStatusBar>
 #include <QAction>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -52,6 +54,13 @@ void EditorWindow::buildNodes() {
     bar->addAction(action("editorDeleteNode", {}, [this] {
         const auto id = selectedNode(); if (id.empty()) return;
         execute("editorDeleteNode", [&](auto& d) { deleteNode(d, id); });
+    }));
+    // S0.5 (D265): one generated Node per junction no Node covers yet, all in one Undo step.
+    bar->addAction(action("editorSuggestNodes", {}, [this] {
+        if (nodeSuggestions(history_.document().network).empty()) { statusBar()->showMessage(text("editorSuggestNodesNone"), 5000); return; }
+        std::size_t added = 0;
+        if (execute("editorSuggestNodes", [&](auto& d) { added = suggestNodes(d).size(); }))
+            statusBar()->showMessage(text("editorSuggestNodesDone").arg(added), 5000);
     }));
     canvas_->nodeCommitted = [this](std::vector<Point> polygon) {
         std::string id;

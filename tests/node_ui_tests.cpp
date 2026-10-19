@@ -96,6 +96,17 @@ int main(int argc, char** argv) {
         trigger(w, "editorDeleteNode");
         require(nodes().empty() && w.history().revision() == before + 2, "Delete was not one step");
         trigger(w, "editorUndo"); require(nodes().size() == 1 && nodes()[0].name == "Centre", "Undo did not restore the node");
+        // S0.5: Suggest nodes adds the junction's generated Node in one step, then nothing more.
+        table->selectRow(0); QApplication::processEvents();
+        trigger(w, "editorDeleteNode"); require(nodes().empty(), "The drawn node stayed");
+        const auto suggestFrom = w.history().revision();
+        trigger(w, "editorSuggestNodes");
+        require(nodes().size() == 1 && nodes()[0].generated && w.history().revision() == suggestFrom + 1,
+                "Suggest nodes did not add one generated node in one step");
+        require(table->item(0, 5)->text() == "12", "The suggested node does not hold the twelve turns");
+        trigger(w, "editorSuggestNodes");
+        require(nodes().size() == 1 && w.history().revision() == suggestFrom + 1, "A second suggestion changed the document");
+        trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the suggested node");
         std::cout << "Node UI tests passed\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }

@@ -1,4 +1,5 @@
 #include "node_commands.hpp"
+#include "../model/network/node_suggestions.hpp"
 #include <algorithm>
 #include <stdexcept>
 namespace trafficsim {
@@ -27,5 +28,10 @@ void renameNode(ProjectDocument& d, const std::string& id, const std::string& na
 void deleteNode(ProjectDocument& d, const std::string& id) {
     find(d, id);
     std::erase_if(d.network.nodes, [&](const Node& n) { return n.id == id; });
+}
+std::vector<std::string> suggestNodes(ProjectDocument& d) {
+    std::vector<std::string> ids;
+    for (auto& node : nodeSuggestions(d.network)) ids.push_back(putNode(d, std::move(node)));
+    return ids;
 }
 }

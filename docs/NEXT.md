@@ -33,10 +33,10 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the owner chose D253's A4 anyway. Absent means off; written only when true at schema 46; a fourth
   Run settings checkbox; rows BA168–BA172. On, it reproduces D253's A4 numbers; off, every shipped
   output is byte-identical to D251.
-- **Nodes S0.1–S0.3 are in** (D259–D264, [NODES](reference/NODES.md)): the Node object at schema 48,
+- **Nodes S0.1–S0.3 and S0.5 are in** (D259–D265, [NODES](reference/NODES.md)): the Node object at schema 48,
   validation, the Node tool (`N`) and the Nodes tab; membership (legs as boundary crossings, D262;
-  turns, conflicts, control; advisory refusals); Micro evaluation per turn, leg and Node (D264). The
-  owner's five choices are answered.
+  turns, conflicts, control; advisory refusals); Micro evaluation per turn, leg and Node (D264);
+  Suggest nodes (D265). The owner's five choices are answered.
 - **`standingStopFloor` is in, on by default** (D256–D258, [LINE_APPROACH](reference/LINE_APPROACH.md) §7):
   D227's floor for behaviours with `amberDeceleration`. M2.6 has 17 → 5 clamps; the four-leg, lane
   lab, pin and TS rows are unchanged; T-junction +0.03 s. Written only when off, at schema 47.
@@ -144,19 +144,18 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — Nodes S0.5: Suggest nodes (NODES §6)
+## Next session — the owner chooses (S0 is complete but S0.4)
 
-S0.3 is in (D264): every Node reports per-turn, leg and Node delay, leg queue and letters in
-single-run and batch JSON/CSV. Next, one system:
-- **S0.5,** row N18: *Suggest nodes* draws one `generated` polygon around each conflict cluster
-  (`conflictGroups`) not already inside a Node, as one Undo step.
-- **Open Node items, smaller:**
+S0.5 is in (D265), so Stage S0 is done except S0.4, which lands with S2. Ask the owner which comes
+next:
+- **Finish the open Node items:**
   - the Nodes tab highlighting a selected Node's legs (§6);
-  - Node rows in the editor's Results tables and in batch comparison (§13);
-  - the cost with a Node (+26–40 % Ir, §13).
+  - Node rows in the editor's Results tables and the batch comparison (§13);
+  - the cost with a Node (+26–40 % Ir).
+- **Start S1 of the multi-level workflow** ([MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) §10).
+- **M3.3.3b, the W99 contract.**
 - **For the owner, if a study asks:** the delay window includes start-up loss where an in-leg
-  starts at a source (D264's finding).
-- S0.4 (coarse values) lands with S2.
+  starts at a source (D264).
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.
