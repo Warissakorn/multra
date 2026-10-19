@@ -40,7 +40,7 @@ What each study type needs, against what exists on 2026-10-09. "Partial" names t
 |---|---|---|---|
 | Movement delay, LOS, queue, 95 % CI | Intersection, signal retiming, TIA | Micro | **Exists** (M5.2–M5.6), unvalidated |
 | Approach and intersection LOS | Intersection, TIA | Micro | **Exists** (M5.5), section-bounded |
-| Node (junction) aggregation of all movements | Intersection, corridor | Micro, Meso | Missing ([VISSIM_PARITY](../audits/VISSIM_PARITY.md) §6) |
+| Node (junction) aggregation of all movements | Intersection, corridor | Micro, Meso | Missing ([VISSIM_PARITY](../audits/VISSIM_PARITY.md) §2b; contract [NODES](../reference/NODES.md), D259) |
 | Network totals: VHT, VKT, total delay, stops, mean speed | Corridor, scenario comparison | All | Missing |
 | Scenario comparison with Welch CI | Every study (base / with-project / mitigated) | Micro first | Booked (M5.8) |
 | Car-park occupancy over time, gate queue, spill-back, waiting arrivals | Development access TIA | Micro, Meso | Missing — M8 |

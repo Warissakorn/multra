@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — Top Properties buttons elide (D243)
+
+D242's diagnostic on Windows named the real cause ([evidence](../evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
+- **Cause:** the top forms' host was 273 px with no viewport. The appearance toggle's unwrappable
+  text set the floating panel's minimum width (Linux 218 px, Windows about 273).
+- **The owner's choice:** buttons shrink and elide with "…".
+- **Fix:** `ElidingToolButton` (full-text size, ellipsis minimum, `Preferred` policy, elided
+  paint) for the toggle, Apply behaviour type and Apply display.
+- **Tests:** a long-toggle row failed first (the dock went to 299 px), and three mutations are
+  caught.
+
+`check` 178/178, Linux only. **Windows result:** the same failure (host 273 px), so the toggle was
+not the cause there. The narrow check now prints the dock, body and tab widths and the widest top
+widgets, so the next Windows run names the culprit.
+
 ## 2026-10-18 — Windows narrow Properties forms (D242)
 
 The owner asked to fix CI ([evidence](../evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).

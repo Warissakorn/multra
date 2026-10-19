@@ -147,7 +147,7 @@ Steps 0 and 2–8 never need the network.
 
 | Stage | Work |
 |---|---|
-| S0 | **Node** contract and object (polygon, Micro mapping, coarse values, lifecycle) — merges M5.1's evaluation nodes |
+| S0 | **Node** contract and object (polygon, Micro mapping, coarse values, lifecycle) — merges M5.1's evaluation nodes. Contract written: [NODES](../reference/NODES.md) (D259) |
 | S1 | StudyPeriod + mode/PCU (schema change with byte-identical schema-31 saves) |
 | S2 | Macro compiles from a detailed network (M10.1) |
 | S3 | Road + templates + Nodes from crossings + seam checks + *Assign template* |

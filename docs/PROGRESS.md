@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — The Node contract (S0, D259, docs only)
+
+The owner chose to start the multi-level work (D145, D175) at S0, before W99 ([NODES](reference/NODES.md)).
+- **The object:** a simple polygon at `network.nodes`, at schema 48, merged with M5.1's evaluation
+  nodes.
+- **Derived from the Micro detail inside, never stored:** legs, turns (the `routeLaneChains`
+  walk), conflicts and control.
+- **Micro evaluation:** one automatic travel-time section per turn, with leg and Node rows weighted
+  by vehicles, a queue per leg, and LOS letters labelled as LOS §4.
+- **Coarse values** and refine/derive-back are specified but booked with S2.
+- **Rows:** N1–N18 planned.
+- **Five owner choices,** each with a recommendation. Also fixed: MULTI_LEVEL_MODELLING's dangling
+  "VISSIM_PARITY §6" (now §2b).
+
+No code. Linux only.
+
 ## 2026-10-19 — `standingStopFloor` implemented, on by default (D257, D258)
 
 The owner took D256's recommendation, on by default ([LINE_APPROACH](reference/LINE_APPROACH.md) §7).
@@ -163,21 +179,6 @@ The Windows diagnostic named the widget ([evidence](evidence/windows-ui-red.md#r
   value fails without the cap and passes with it.
 
 `check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
-
-## 2026-10-18 — Top Properties buttons elide (D243)
-
-D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
-- **Cause:** the top forms' host was 273 px with no viewport. The appearance toggle's unwrappable
-  text set the floating panel's minimum width (Linux 218 px, Windows about 273).
-- **The owner's choice:** buttons shrink and elide with "…".
-- **Fix:** `ElidingToolButton` (full-text size, ellipsis minimum, `Preferred` policy, elided
-  paint) for the toggle, Apply behaviour type and Apply display.
-- **Tests:** a long-toggle row failed first (the dock went to 299 px), and three mutations are
-  caught.
-
-`check` 178/178, Linux only. **Windows result:** the same failure (host 273 px), so the toggle was
-not the cause there. The narrow check now prints the dock, body and tab widths and the widest top
-widgets, so the next Windows run names the culprit.
 
 ## Older entries
 

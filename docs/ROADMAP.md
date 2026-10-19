@@ -367,7 +367,7 @@ rehearsal, and the M5 gate.
 
 ### M5.1 — Additional network objects and evaluated outputs
 
-**Open.** Evaluation nodes/stop lines, movement measurements/overlays and reports. Transit stops, crosswalks and multimodal behaviour moved to *Later* by D143 (R8); parking is M8 since D145. **Gate:** event-accounting and known analytical scenarios, reference cleanup and multi-run output checks. Keep completed-trip delay distinct from HCM control delay/LOS.
+**Open.** Evaluation nodes/stop lines, movement measurements/overlays and reports. **Node contract written** with S0 of M8–M12 ([NODES](reference/NODES.md), D259): rows N1–N18 planned, owner choices open. Transit stops, crosswalks and multimodal behaviour moved to *Later* by D143 (R8); parking is M8 since D145. **Gate:** event-accounting and known analytical scenarios, reference cleanup and multi-run output checks. Keep completed-trip delay distinct from HCM control delay/LOS.
 
 ---
 
