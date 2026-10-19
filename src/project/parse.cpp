@@ -388,7 +388,7 @@ VehicleType parseVehicleType(const Json& t) {
         knownFields(a,{"wheelbase","frontOverhang","rearOverhang"},"vehicleType.axles",17);
         type.axles=VehicleAxles{field<double>(a,"wheelbase"),field<double>(a,"frontOverhang"),field<double>(a,"rearOverhang")};
     }
-    type.kerbLanes=parseKerbLanes(t); return type; // B-7 (D234)
+    type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); return type; // B-7 (D234); S1.2 (D270)
 }
 Composition parseComposition(const Json& c) {
     knownFields(c,{"id","name","types","intervals"},"composition",19);

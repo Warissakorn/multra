@@ -88,7 +88,7 @@ std::vector<ValidationIssue> compositionIssues(const AuthoringDefinition& author
     return issues;
 }
 DemandCatalog resolveDemandCatalog(const AuthoringDefinition& authored,const std::filesystem::path& dataDirectory,bool includeCompositions,InputManifest* manifest) {
-    DemandCatalog result{authored.vehicleTypes,authored.behaviours,authored.compositions,authored.vehicleTypeNames};
+    DemandCatalog result{authored.vehicleTypes,authored.behaviours,authored.compositions,authored.vehicleTypeNames,authored.modes};
     try {
         if (authored.externalVehicleTypes) {
             result.vehicleTypes.clear();result.vehicleTypeNames.clear();

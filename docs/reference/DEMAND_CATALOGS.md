@@ -38,6 +38,12 @@ are displayed in m/s, dimensions in m and accelerations in m/s². A behavior sel
 uses the captured behavior catalog. Behavior preset editing and new motorcycle or
 articulated dynamics are outside this slice.
 
+**Modes (S1.2, D269).** `definition.modes` follows the same presence rule: absent means
+`data/modes/`, present (even empty) means the project's own. A copy (`putDemandCatalog`) takes the
+modes only when an OD matrix names one, so every other copy keeps its schema; a project owning its
+compositions takes the installed modes in the step that first names one. Owned modes are written
+at schema 49 ([STUDY_PERIODS](STUDY_PERIODS.md) §6).
+
 ## Gates
 
 - Old external projects retain absent composition fields and the same compiled values.

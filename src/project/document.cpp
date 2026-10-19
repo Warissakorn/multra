@@ -5,6 +5,7 @@
 #include "evaluation_period.hpp"
 #include "clamp_rules.hpp"
 #include "study_period_codec.hpp"
+#include "mode_codec.hpp"
 #include "node_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
@@ -140,8 +141,8 @@ Json documentJson(const ProjectDocument& d) {
     // M3.7: 33 only when an owned behaviour carries a lateral key (D187).
     // M3.6: 34 only when an owned behaviour carries curveLateralAcceleration (D212).
     // M3.4: 35 only when an owned behaviour carries kerbLaneBias (D215); B-2: 36 for commitmentDeceleration (D219); B-3: 37 (D221).
-    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268).
-    const int schema=usesStudyPeriods(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268); S1.2: 49 for modes and pcu (D270).
+    const int schema=usesStudyPeriods(d)||usesModes(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -204,7 +205,7 @@ ProjectDocument parseDocument(const Json& j) {
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
     d.map=parseMapSettings(j,version);
-    if (version < 49) rejectStudyPeriodsBefore49(j); // S1.1, before the matrices are read
+    if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
@@ -280,6 +281,7 @@ std::string allocateId(ProjectDocument& d, const std::string& prefix) {
     for (const auto& m : d.zones.odMatrices) used.insert(m.id);
     for (const auto& l : d.zones.parkingLots) used.insert(l.id);
     for (const auto& p : d.zones.studyPeriods) used.insert(p.id);
+    if (d.definition) for (const auto& m : d.definition->modes) used.insert(m.id);
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");
         auto id = prefix + "-" + std::to_string(d.nextId++);

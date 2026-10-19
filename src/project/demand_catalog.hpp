@@ -9,6 +9,7 @@ struct DemandCatalog {
     std::vector<DriverBehaviour> behaviours;
     std::vector<Composition> compositions;
     std::map<std::string,std::string> vehicleTypeNames;
+    std::vector<Mode> modes; // S1.2 (D269): owned by putDemandCatalog only when a matrix names a mode
 };
 // Resolve authored ownership without expanding routes, lanes or compositions.
 DemandCatalog resolveDemandCatalog(const AuthoringDefinition&,const std::filesystem::path&,

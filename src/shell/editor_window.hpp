@@ -313,6 +313,12 @@ private:
     void editPeriod(const std::string& id); // empty: a new period
     std::string selectedPeriod() const;
     std::vector<std::pair<std::string, QString>> periodChoices() const;
+    // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
+    QTableWidget* modeTable_{}; std::uint64_t modeRevision_{UINT64_MAX};
+    void buildModes(); void translateModes(); void refreshModes(); void showModes();
+    void editMode(const std::string& id); // empty: a new mode
+    std::string selectedMode() const;
+    std::vector<std::pair<std::string, QString>> modeChoices() const;
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
     void refreshLots();
     QLineEdit* runSeed_{};

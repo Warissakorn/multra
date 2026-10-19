@@ -27,7 +27,7 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         if (std::any_of(od.begin(), od.end(), [](const auto& row) { return row.code == "OD_ROUTE_SEARCH_LIMIT"; }))
             return od; // expansion is deliberately refused; retain the structured cell diagnostic
         for(const auto& gap:odDemandGaps(d))od.push_back({"OD_SKIPPED_DEMAND",gap.path,{},{},DiagnosticSeverity::advisory});
-        const auto expanded=withOdDemand(d);const auto& def=expanded;
+        const auto expanded=withOdDemand(d,matrixModes(d,data));const auto& def=expanded;
         const auto routeless=routelessIssues(d.network,def);
         if (std::any_of(routeless.blocking.begin(), routeless.blocking.end(),
                         [](const auto& issue) { return issue.code == "ROUTE_SEARCH_LIMIT"; })) {
@@ -58,7 +58,7 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // M8.3 (D155): OD matrices become ordinary routes and inputs here, after their Run checks; a
     // document without a zone layer uses its definition as it stands.
     if(auto issues=odDemandIssues(d,data);!issues.empty())throw ValidationError(std::move(issues));
-    const auto expanded=d.zones.empty()?std::optional<AuthoringDefinition>{}:std::optional{withOdDemand(d)};
+    const auto expanded=d.zones.empty()?std::optional<AuthoringDefinition>{}:std::optional{withOdDemand(d,matrixModes(d,data,manifest))};
     const auto& authored=expanded?*expanded:*d.definition;
     if (authored.inputs.empty() && !holdsVehicles(d)) throw std::invalid_argument("EDIT_NO_INPUTS");
     // An input left out for an unknown or broken composition must stop Run, not vanish from it.

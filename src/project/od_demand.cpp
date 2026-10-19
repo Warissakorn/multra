@@ -1,4 +1,5 @@
 #include "od_demand.hpp"
+#include "mode_codec.hpp"
 #include "run.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
@@ -84,7 +85,21 @@ std::optional<std::pair<double, double>> odMatrixWindow(const ProjectDocument& d
     const double clock = d.definition ? d.definition->clockStart : 0.0;
     return std::pair{p->start - clock, p->end - clock};
 }
-AuthoringDefinition withOdDemand(const ProjectDocument& d) {
+bool namesMode(const ZoneLayer& layer) {
+    return std::any_of(layer.odMatrices.begin(), layer.odMatrices.end(), [](const auto& m) { return !m.modeId.empty(); });
+}
+std::vector<Mode> matrixModes(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
+    if (!namesMode(d.zones)) return {};
+    return modesOf(resolveModes(d.definition.value_or(AuthoringDefinition{}), data, manifest));
+}
+namespace {
+std::string compositionOf(const OdMatrix& m, const std::vector<Mode>& modes) {
+    if (m.modeId.empty()) return m.compositionId;
+    const auto mode = std::find_if(modes.begin(), modes.end(), [&](const auto& x) { return x.id == m.modeId; });
+    return mode == modes.end() ? std::string{} : mode->compositionId; // UNKNOWN_MODE, refused by Run
+}
+}
+AuthoringDefinition withOdDemand(const ProjectDocument& d, const std::vector<Mode>& modes) {
     auto result = d.definition.value_or(AuthoringDefinition{});
     if (d.zones.empty()) return result;
     ChainFinder finder(d.network);
@@ -110,7 +125,7 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d) {
                 VehicleInput input;
                 input.id = "od:" + m.id + "/" + m.zoneIds[r] + "/" + m.zoneIds[c] + "/" + oc.id + ">" + dc.id + suffix;
                 input.routeId = route;input.vehiclesPerHour = rate;
-                input.startTime = start;input.endTime = end;input.compositionId = m.compositionId;
+                input.startTime = start;input.endTime = end;input.compositionId = compositionOf(m, modes);
                 result.inputs.push_back(std::move(input));
             }
         });
@@ -166,27 +181,41 @@ std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std:
     const double duration = d.definition ? d.definition->duration : AuthoringDefinition{}.duration;
     // The compositions are checked by the catalog's own rule, on one probe input per matrix.
     auto probe = d.definition.value_or(AuthoringDefinition{});probe.inputs.clear();
+    // S1.2 (D269): a named mode must exist; its composition is probed in the matrix's place.
+    const auto resolved = namesMode(layer) ? resolveModes(probe, data) : std::vector<ResolvedMode>{};
+    const auto modes = modesOf(resolved);
+    std::vector<std::string> modePaths(layer.odMatrices.size());
+    for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {
+        const auto& m = layer.odMatrices[i];
+        if (m.modeId.empty()) continue;
+        const auto at = std::find_if(resolved.begin(), resolved.end(), [&](const auto& r) { return r.mode.id == m.modeId; });
+        if (at == resolved.end()) issues.push_back({"UNKNOWN_MODE", "odMatrices[" + std::to_string(i) + "].modeId"});
+        else modePaths[i] = at->path;
+    }
+    std::vector<std::string> probePaths; // where each probe's unknown composition is reported
     for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {
         const auto& m = layer.odMatrices[i];
         // S1.1: a period placed by clockStart must also start no earlier than the run.
         if (const auto window = odMatrixWindow(d, m); window && (window->first < 0 || window->second > duration))
             issues.push_back({"OD_PERIOD_INVALID", "odMatrices[" + std::to_string(i) + "]"});
-        VehicleInput input;input.id = m.id;input.compositionId = m.compositionId;input.endTime = 1;
+        if (!m.modeId.empty() && modePaths[i].empty()) continue; // UNKNOWN_MODE above
+        VehicleInput input;input.id = m.id;input.compositionId = compositionOf(m, modes);input.endTime = 1;
         probe.inputs.push_back(std::move(input));
+        probePaths.push_back(m.modeId.empty() ? "odMatrices[" + std::to_string(i) + "].compositionId" : modePaths[i]);
     }
     // M8.4b: a lot's initial composition is checked the same way, after the matrices' probes.
-    std::vector<std::size_t> lotOfProbe;
     for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) {
         if (layer.parkingLots[i].initialCompositionId.empty()) continue;
         VehicleInput input;input.id = layer.parkingLots[i].id;input.compositionId = layer.parkingLots[i].initialCompositionId;
-        input.endTime = 1;probe.inputs.push_back(std::move(input));lotOfProbe.push_back(i);
+        input.endTime = 1;probe.inputs.push_back(std::move(input));
+        probePaths.push_back("parkingLots[" + std::to_string(i) + "].initialCompositionId");
     }
+    std::set<std::string> reported; // several matrices may share one mode
     for (const auto& issue : compositionIssues(probe, data)) {
         if (issue.code != "UNKNOWN_COMPOSITION" || !issue.path.starts_with("inputs[")) continue;
-        const auto k = std::stoul(issue.path.substr(7));
-        issues.push_back({"OD_COMPOSITION_UNKNOWN", k < layer.odMatrices.size()
-            ? "odMatrices[" + std::to_string(k) + "].compositionId"
-            : "parkingLots[" + std::to_string(lotOfProbe[k - layer.odMatrices.size()]) + "].initialCompositionId"});
+        const auto& path = probePaths[std::stoul(issue.path.substr(7))];
+        if (!reported.insert(path).second) continue;
+        issues.push_back({path.starts_with("odMatrices[") || path.starts_with("parkingLots[") ? "OD_COMPOSITION_UNKNOWN" : "MODE_COMPOSITION_UNKNOWN", path});
     }
     for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) {
         const auto& lot = layer.parkingLots[i];const auto path = "parkingLots[" + std::to_string(i) + "]";

@@ -77,10 +77,9 @@ struct DriverBehaviour {
     bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool operator==(const DriverBehaviour&) const = default;
 };
-struct VehicleAxles {
-    double wheelbase{}, frontOverhang{}, rearOverhang{};
-    bool operator==(const VehicleAxles&) const = default;
-};
+struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
+// S1.2 (STUDY_PERIODS §7, D270): a cited passenger-car unit. Absent is unknown; Micro never reads it.
+struct Pcu { double value{}; std::string source; bool operator==(const Pcu&) const = default; };
 struct VehicleType {
     std::string id;
     double length{}, width{};
@@ -88,7 +87,7 @@ struct VehicleType {
     double maxAcceleration{}, comfortableDeceleration{}, maxDeceleration{};
     std::string behaviourId; std::optional<int> kerbLanes; // B-7 (LANE_PREFERENCE, D234): enters on lanes 0..N-1
     // Display kinematics only; traffic following/reservations still use length.
-    std::optional<VehicleAxles> axles;
+    std::optional<VehicleAxles> axles; std::optional<Pcu> pcu;
     bool operator==(const VehicleType&) const = default;
 };
 inline VehicleAxles vehicleAxles(const VehicleType& type) {

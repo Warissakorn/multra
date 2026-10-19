@@ -33,6 +33,13 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the owner chose D253's A4 anyway. Absent means off; written only when true at schema 46; a fourth
   Run settings checkbox; rows BA168–BA172. On, it reproduces D253's A4 numbers; off, every shipped
   output is byte-identical to D251.
+- **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md) §13, §14):
+  - study periods, `clockStart` and the matrix `periodId` (D268);
+  - modes in the Demand catalog (D269);
+  - the matrix `modeId`, vehicle-type `pcu` and the derived mode PCU, with a Modes tab (D270).
+
+  Everything new is written at schema 49 only when used. No PCU value ships: an expert or the owner
+  names the Thai source first (D267).
 - **Nodes S0.1–S0.3 and S0.5 are in** (D259–D265, [NODES](reference/NODES.md)): the Node object at schema 48,
   validation, the Node tool (`N`) and the Nodes tab; membership (legs as boundary crossings, D262;
   turns, conflicts, control; advisory refusals); Micro evaluation per turn, leg and Node (D264);
@@ -144,20 +151,15 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S1.2: modes and PCU (STUDY_PERIODS §5–§7; rows SP9–SP14)
+## Next session — the owner picks
 
-S1.1 is in (D268): study periods, `clockStart` and the matrix `periodId`. Next, one system:
-- **S1.2,** with rows SP9–SP14 written failure-first:
-  - the `data/modes/` catalog (`{id, name, compositionId}`, shipping `car` and `mixed`);
-  - the matrix `modeId`, with `OD_TYPES_AMBIGUOUS`, `UNKNOWN_MODE` and `MODE_COMPOSITION_UNKNOWN`;
-  - an optional `pcu: {value, source}` on vehicle types (`INVALID_PCU`);
-  - the derived mode PCU, shown in a read-only mode list;
-  - `EDIT_MODE_IN_USE`.
-- **First, decide against `resolveCatalogs`** whether a project may carry its own modes (§6).
-- **No PCU value ships** (D267).
-
-Also still open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and
-the cost with a Node (D264, D265).
+S1 is in. Candidates, for the owner to choose (one system per session):
+- **S0's open items:** the Nodes tab's leg highlight on the canvas, Node rows in Results and the
+  batch comparison, and the cost with a Node (+26–40 % Ir, D264, D265).
+- **S2, Macro compiled from a detailed network (M10.1)**, the workflow's next slice
+  ([MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md)). Its contract and rows come first. It is
+  the first reader of a mode's PCU (`MODE_PCU_MISSING`) and of `macroFlowBasis`.
+- **PCU values:** only once a source is named (title, edition, table).
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.

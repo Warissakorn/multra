@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — `joinAnticipation` as an off-by-default switch (D254, D255)
+
+The owner chose D253's A4 anyway, as a fourth project switch that is off by default, and asked for
+the line approach as a contract with numbers first (D254, [JOIN_ANTICIPATION](../reference/JOIN_ANTICIPATION.md) §5).
+- **Engine:** `src/core/join_anticipation.*`. With the switch on, a vehicle within 50 m of a join runs
+  its following law a second time against the other stream's first moving vehicle past its line,
+  and keeps the stricter acceleration. Off, the step reads one empty vector.
+- **File and editor:** `clampRules.joinAnticipation`, absent = off, written only when true at
+  schema 46; a fourth Run settings checkbox; one Undo step.
+- **Rows:** BA168–BA172 and the Run settings UI test. The "nearer the join" test proved redundant
+  under mutation (a positive projected gap implies it) and was removed; every other filter is caught.
+- **Measured:** on, seeds 42–81 of the four shipped projects reproduce D253's A4 outputs byte for
+  byte; off, all four are byte-identical to D251, with the pin unchanged. Ir off: +0.16 % / +0.11 %
+  / +0.00 % (four-leg, lane lab, M2.6).
+
 ## 2026-10-19 — Lane lab clamp traced (D252); join anticipation measured (D253, docs only)
 
 The owner asked for both of NEXT's M3.2.8a.1 candidates, with the contract and numbers before any

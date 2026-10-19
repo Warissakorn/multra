@@ -1,7 +1,7 @@
 # Study periods, modes and PCU (S1)
 
 Written 2026-10-19 (D266) as a contract with five owner choices. The owner accepted every
-recommendation the same day (D267, §9: 1a–5a). Slice S1.1 is implemented (D268, §13); S1.2 is not.
+recommendation the same day (D267, §9: 1a–5a). Slice S1.1 is implemented (D268, §13), and S1.2 (D269, D270, §14).
 This is stage S1 of the multi-level workflow
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §2, §10; D175): "StudyPeriod +
 mode/PCU, a schema change with byte-identical schema-31 saves". It fills what §2 leaves open: the
@@ -100,13 +100,31 @@ Rule 4 applies: nothing here is validated.
 { "id": "car", "name": "Car", "compositionId": "car-only" }
 ```
 
-- **A catalog,** like compositions: shipped files plus the project's own, if M8's project-catalog
-  rule extends to it. The S1.2 contract row decides that against `resolveCatalogs`.
+- **Where modes live (D269).** A mode is part of the Demand catalog and follows its presence rule
+  (DEMAND_CATALOGS):
+  - `definition.modes` absent means the installed files in `data/modes/`;
+  - present means the project's own modes, and an empty array means it owns none.
+  - The mode's `compositionId` is looked up in the project's resolved compositions, owned or
+    installed.
+  - A project owning its compositions owns its modes once a matrix names a mode:
+    - copying the catalog into the project (`putDemandCatalog`) takes the installed modes only when
+      a matrix names one;
+    - the OD dialog step that first names a mode in a project already owning its compositions takes
+      them in the same Undo step (`ownModesWhenNamed`).
+
+    A mode-using project then compiles with no data directory, and every other copy keeps its schema.
+  - Rejected: catalog-only modes, which a project owning its compositions could not use without
+    `data/`; and a root `modes[]` like periods, which would part a mode from the compositions it
+    names.
 - **Micro meaning.** A matrix with `modeId` draws its vehicle types from the mode's composition. It
   therefore runs **byte-identical** to the same matrix naming that composition.
 - **Refused:**
-  - `UNKNOWN_MODE`;
-  - `MODE_COMPOSITION_UNKNOWN` at the mode file;
+  - `OD_TYPES_AMBIGUOUS` on load (§5);
+  - by the run check, which has the data directory, like `OD_COMPOSITION_UNKNOWN`:
+    - `UNKNOWN_MODE` at `odMatrices[i].modeId`;
+    - `MODE_COMPOSITION_UNKNOWN` at the mode: `catalog/modes/<file>` for an installed one,
+      `definition.modes[i].compositionId` for an owned one;
+  - on commit, for owned modes: `INVALID_ID`, `DUPLICATE_ID` and `MODE_COMPOSITION_UNKNOWN`;
   - `EDIT_CATALOG_READ` for a malformed file.
 - **Shipped.** S1.2 ships `car` (`car-only`) and `mixed` (`urban-mixed`), so the existing
   compositions get mode names. No PCU comes with them (§7).
@@ -117,9 +135,11 @@ Rule 4 applies: nothing here is validated.
   - The value must be finite and > 0, and the source a non-empty citation.
   - It is refused with `INVALID_PCU` at its path otherwise.
   - Absent means unknown; there is **no default** (§2 of the workflow).
+  - An owned type carrying `pcu` puts the file at schema 49.
 - **A mode's PCU** is derived and never stored: the share-weighted mean over its composition's
   types, Σ shareᵢ · pcuᵢ / Σ shareᵢ.
-  - It is absent when any type of the composition has no `pcu`.
+  - It is absent when any type of the composition has no `pcu`, and when the composition has
+    time intervals (its shares change over the run; time-weighting is M10.1's).
   - The workflow's "time-weighted PCU over the matrix period" is this same number while demand is
     uniform within a period (choice 3a).
 - **Values** (owner choice 5). Rule 5 forbids an uncited number. WORKFLOW §7 leaves the Thai source
@@ -137,7 +157,10 @@ Rule 4 applies: nothing here is validated.
 - **The OD matrix dialog:**
   - a Period choice, where "own times" keeps today's two fields;
   - a Types choice between Composition and Mode, each a list.
-- **Mode list** (S1.2): read-only, showing id, name, composition and derived PCU.
+- **Mode list** (S1.2): showing id, name, composition and derived PCU. Installed modes are
+  read-only; owned modes are added, edited and deleted, each one Undo step, and deleting one a
+  matrix names is refused (D269: without it, a project owning its catalog could never gain a mode).
+- **Vehicle type dialog:** an off-until-ticked PCU row, value and source.
 
 ## 9. Owner choices (answered 2026-10-19, D267: every recommendation, 1a–5a)
 
@@ -169,7 +192,7 @@ Rule 4 applies: nothing here is validated.
 | Slice | Content | Rows |
 |---|---|---|
 | S1.1 | StudyPeriod, `clockStart`, the matrix `periodId`, codec at 49, validation, Study periods table, OD dialog Period choice. **Implemented (D268)** | SP1–SP8 |
-| S1.2 | Mode catalog, the matrix `modeId`, `pcu` on vehicle types, derived mode PCU, mode list | SP9–SP14 |
+| S1.2 | Mode catalog, the matrix `modeId`, `pcu` on vehicle types, derived mode PCU, mode list. **Implemented (D270)** | SP9–SP14 |
 
 ## 11. Acceptance rows (planned)
 
@@ -187,10 +210,10 @@ Each row first asserts that its forcing worked (AGENTS).
 | SP8 | Single-run and batch outputs of a period project | Equal to the run-second twin's outputs |
 | SP9 | A matrix with `modeId` | Runs byte-identical to the same matrix with the mode's composition |
 | SP10 | Both or neither type sources; an unknown mode | `OD_TYPES_AMBIGUOUS`; `UNKNOWN_MODE` |
-| SP11 | A mode file naming an unknown composition | `MODE_COMPOSITION_UNKNOWN` at the file |
+| SP11 | A mode naming an unknown composition | `MODE_COMPOSITION_UNKNOWN` at the file, or at an owned mode's `compositionId`; a malformed file is `EDIT_CATALOG_READ` |
 | SP12 | `pcu` | Round-trips; non-finite, ≤ 0 or no source is `INVALID_PCU` at its path |
-| SP13 | Mode PCU | Equals the hand-computed share-weighted mean; absent when any type lacks `pcu` |
-| SP14 | Deleting a mode in use; the mode list | `EDIT_MODE_IN_USE`; the list shows the derived value or "—" |
+| SP13 | Mode PCU | Equals the hand-computed share-weighted mean; absent when any type lacks `pcu` or the composition has intervals |
+| SP14 | Owned modes; the mode list | Deleting one in use is `EDIT_MODE_IN_USE`; a catalog copy owns modes only when one is named; an owned project with modes compiles without `data/`; the list shows the derived value or "—"; owned edits are one Undo step each |
 
 ## 12. Seams
 
@@ -240,3 +263,56 @@ Each row first asserts that its forcing worked (AGENTS).
   - an in-use delete allowed;
   - ambiguity allowed;
   - an unknown period accepted.
+
+## 14. S1.2 as implemented (D269, D270)
+
+- **Model.**
+  - `Mode{id, name, compositionId}`, `AuthoringDefinition::externalModes` and `modes` are in
+    `src/model/demand/definition.hpp`; `OdMatrix::modeId` is in `zones.hpp`.
+  - `Pcu{value, source}` and `VehicleType::pcu` are in `src/core/types.hpp`. No engine code reads it.
+- **File.** `src/project/mode_codec.*` holds:
+  - `usesModes` and `rejectModesBefore49`, for `definition.modes`, `odMatrices[i].modeId` and
+    `vehicleTypes[i].pcu`;
+  - the mode and `pcu` codecs, with exact keys;
+  - `resolveModes`, which gives the owned modes or the installed files in name order, with the path
+    a refusal names;
+  - `modePcu`.
+
+  `parseMatrix` takes the 2×2 key sets and refuses both type sources, or neither, as
+  `OD_TYPES_AMBIGUOUS`. A moded matrix is written without `compositionId`.
+- **Expansion.** `withOdDemand(d, modes)` gives a moded matrix's inputs the mode's composition.
+  `matrixModes` resolves modes only when a matrix names one, so no other run reads `data/modes/`, and
+  the input manifest of every existing project is unchanged.
+- **Checks:**
+  - **Run (`odDemandIssues`):** `UNKNOWN_MODE`, and `MODE_COMPOSITION_UNKNOWN` at the mode's path.
+  - **Commit (`ownedCatalogIssues`):** owned mode ids (`INVALID_ID`, `DUPLICATE_ID`), and the
+    composition when the compositions are owned too.
+  - **Validator:** `INVALID_PCU` at `vehicleTypes[i].pcu`. A malformed `pcu` object is `INVALID_PCU` at
+    `vehicleType.pcu` on load.
+- **Commands** (`catalog_commands.*`):
+  - `putDemandCatalog` takes modes only when a matrix names one;
+  - `ownModesWhenNamed`;
+  - `putMode` (prefix `mode`; `EDIT_MODES_NOT_OWNED` for installed modes);
+  - `deleteMode` (`EDIT_MODE_IN_USE`).
+- **Editor:**
+  - **Modes tab** (`editor_modes.cpp`, Demand group): id, name, composition and derived PCU ("—"
+    when unknown). Installed modes are read-only; owned modes are added, edited and deleted, each
+    one Undo step.
+  - **OD dialog:** a Types choice, `editorOdTypes`, between Composition and Mode (`editorOdMode`).
+    The OD table names the mode.
+  - **Vehicle type dialog:** an off-until-ticked PCU row (`editorCatalogPcuOn`, `editorCatalogPcu`,
+    `editorCatalogPcuSource`).
+- **Shipped.**
+  - `data/modes/car.json` (`car-only`) and `data/modes/mixed.json` (`urban-mixed`).
+  - No vehicle type carries `pcu` (D267), so every derived PCU shows "—".
+- **Rows.** SP9–SP14 are in `tests/mode_pcu_tests.cpp` (ctest `modepcu`); the UI half of SP14 is in
+  `tests/mode_pcu_ui_tests.cpp` (ctest `modepcu-ui`).
+- **Mutations caught:**
+  - the mode ignored in the expansion or in the probe;
+  - no schema gate;
+  - ambiguity allowed;
+  - an in-use delete allowed;
+  - unweighted PCU;
+  - a PCU of 0 accepted;
+  - a copy that always owns modes;
+  - the first naming not owning them.

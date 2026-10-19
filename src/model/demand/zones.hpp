@@ -29,6 +29,7 @@ struct OdMatrix {
     std::vector<std::vector<double>> cells; // row = origin; vehicle trips in the period
     // S1.1 (STUDY_PERIODS §5, D268): a StudyPeriod in place of startTime/endTime; empty = own times.
     std::string periodId;
+    std::string modeId; // S1.2 (§6, D269): a Mode in place of compositionId; empty = the composition
     bool operator==(const OdMatrix&) const = default;
 };
 // M8.4b (D157): a zone with capacity. Its destination connectors' Links are its gate, its origin

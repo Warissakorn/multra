@@ -252,7 +252,7 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         const auto& types = list(j, "vehicleTypes");
         for (std::size_t i = 0; i < types.size(); ++i)
             requireKnownFields(types[i], {"id", "name", "length", "width", "desiredSpeed", "maxAcceleration",
-                "comfortableDeceleration", "maxDeceleration", "behaviourId", "axles", "kerbLanes"}, at("vehicleTypes", i));
+                "comfortableDeceleration", "maxDeceleration", "behaviourId", "axles", "kerbLanes", "pcu"}, at("vehicleTypes", i));
     }
     if (j.contains("vehicleClasses")) {
         const auto& classes = list(j, "vehicleClasses");

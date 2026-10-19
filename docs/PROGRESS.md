@@ -6,6 +6,27 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — S1.2: modes and PCU (D269, D270)
+
+S1 is complete ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §6, §14).
+- **The call (D269):** the owner asked for the best design from the project's own rules. Modes join
+  the Demand catalog under its presence rule: `definition.modes` absent is `data/modes/` (`car`,
+  `mixed` ship). A project owning its compositions owns its modes once a matrix names one, so it
+  still runs with no data directory, and a catalog copy keeps the schema of a project using none.
+- **File (schema 49):** a matrix's `modeId` in place of `compositionId` (`OD_TYPES_AMBIGUOUS`),
+  owned `definition.modes`, and a vehicle type's `pcu: {value, source}` (`INVALID_PCU`). Each is
+  written only when used. No PCU value ships (D267).
+- **Run:** a moded matrix runs byte-identical to its composition twin. `UNKNOWN_MODE` and
+  `MODE_COMPOSITION_UNKNOWN` are Run refusals. Modes are read only when a matrix names one.
+- **Editor:**
+  - a Modes tab with the derived PCU ("—" while unknown); owned modes are editable;
+  - the OD dialog's Types choice;
+  - a PCU row in the type dialog.
+
+  Each commit is one Undo step.
+- **Rows:** SP9–SP14 (ctest `modepcu`, `modepcu-ui`); nine mutations caught. Shipped outputs, the
+  pin and the TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — S1.1: study periods (D268)
 
 OD matrices can now be placed on the study clock ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §13).
@@ -144,21 +165,6 @@ The owner asked for the line approach as a contract with numbers first (D254)
   default is the owner's call.
 
 No engine code is committed. Linux only.
-
-## 2026-10-19 — `joinAnticipation` as an off-by-default switch (D254, D255)
-
-The owner chose D253's A4 anyway, as a fourth project switch that is off by default, and asked for
-the line approach as a contract with numbers first (D254, [JOIN_ANTICIPATION](reference/JOIN_ANTICIPATION.md) §5).
-- **Engine:** `src/core/join_anticipation.*`. With the switch on, a vehicle within 50 m of a join runs
-  its following law a second time against the other stream's first moving vehicle past its line,
-  and keeps the stricter acceleration. Off, the step reads one empty vector.
-- **File and editor:** `clampRules.joinAnticipation`, absent = off, written only when true at
-  schema 46; a fourth Run settings checkbox; one Undo step.
-- **Rows:** BA168–BA172 and the Run settings UI test. The "nearer the join" test proved redundant
-  under mutation (a positive projected gap implies it) and was removed; every other filter is caught.
-- **Measured:** on, seeds 42–81 of the four shipped projects reproduce D253's A4 outputs byte for
-  byte; off, all four are byte-identical to D251, with the pin unchanged. Ir off: +0.16 % / +0.11 %
-  / +0.00 % (four-leg, lane lab, M2.6).
 
 ## Older entries
 
