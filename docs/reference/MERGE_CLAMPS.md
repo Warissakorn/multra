@@ -163,7 +163,8 @@ fixtures with a two-connector join.
 ## 5. What stays out
 
 - J1 and J2 after the package (13 of the 17). They need anticipation across a join (off-by-default
-  `joinAnticipation`, D255), or a change to how a vehicle stops at its line (D227, D232).
+  `joinAnticipation`, D255), or a change to how a vehicle stops at its line (D227, D232; measured
+  by D256, [LINE_APPROACH](LINE_APPROACH.md)).
 - Source-insertion clearance (M3.2.8a.1a, D108).
 - The lane-change lab's one clamp, traced by D252
   ([evidence](../evidence/merge-clamps.md#d252-the-lane-change-labs-clamp)). It is no merge: a

@@ -3,6 +3,23 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-18 — M2.6's red-running clamps traced (D241, no code change)
+
+NEXT's item 1 ([evidence](../evidence/red-running.md#d241-the-added-m26-clamps)). A temporary probe
+was never committed.
+- **Where:** only seed 51 (3 → 5 at 2 s and 3 s) and seed 73 (0 → 1 at 3 s) change.
+- **None is a red-head hold.** Every added clamp is bound by a vehicle leader:
+  - Seed 51: a runner released at red onset, after braking for amber, meets the green flow at a
+    derived merge rule. It is let go 0.55 m behind a leader and hits the standstill cap (D105,
+    D201 B5); its follower clamps behind it.
+  - Seed 73: a runner held again when the 3 s window ends stops at 6 m/s², and its follower needs
+    10.6 m/s².
+- **Found:** at 2 s the seed-51 runner crosses after the window as committed under
+  `amberDeceleration`, so no event is counted. RED_RUNNING §3 now says so. Three §3 behaviours are
+  listed as owner choices.
+
+`check` 178/178, Linux only. CLI 42 byte-identical after the probe was reverted.
+
 ## 2026-10-18 — Give-way line stop implemented (D240)
 
 D239's contract ([evidence](../evidence/give-way-stop.md)).

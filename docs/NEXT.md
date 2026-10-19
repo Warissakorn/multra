@@ -33,6 +33,9 @@ the log. Rewrite this file; do not append to it. Owner items live only in
   the owner chose D253's A4 anyway. Absent means off; written only when true at schema 46; a fourth
   Run settings checkbox; rows BA168–BA172. On, it reproduces D253's A4 numbers; off, every shipped
   output is byte-identical to D251.
+- **D256 (docs only):** stopping cleanly at a line, measured with eleven reverted prototypes.
+  D227's floor, scoped to `amberDeceleration`, cuts M2.6 17 → 5 and keeps the four-leg, lane lab,
+  pin and TS rows; it is recommended as a fifth switch and awaits the owner.
 - **D252:** the lane lab's one clamp is a follower under-braking behind a leader stopping hard at
   a dead end (D241's follower class), not a merge.
 - **D253:** anticipation across a join, measured with eight reverted prototypes. The workable variant
@@ -137,13 +140,17 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the line-approach contract (D254)
+## Next session — ask the owner (D256's choice)
 
-The owner asked for it on 2026-10-19 as a contract with measured prototypes first; no engine code
-until they choose. Write a contract for how a vehicle stops cleanly at a give-way or signal line and
-behind a hard stop, starting from D227's kinematic braking floor (ENGINEERING_NOTES). It is aimed at
-J1, D253's new clamps, the lane lab's clamp (D252) and D241's follower. It changes the prototype's
-braking law, so rows and the owner's choice come first.
+The line-approach contract is written with measured prototypes ([LINE_APPROACH](reference/LINE_APPROACH.md)).
+Ask the owner before any code:
+1. **F1a** (the session's recommendation): D227's floor for behaviours with `amberDeceleration`, as
+   a fifth `clampRules` switch, `standingStopFloor`. It cuts M2.6 17 → 5 clamps with the pin and
+   TS rows kept. Ask whether it is on or off by default. Then write rows BA173–BA178 failure-first,
+   amend BA164's forcing to switch it off, and implement.
+2. **F2**, a floor behind a braking leader, which would remove the lane lab's clamp. It is not
+   recommended: it reshapes ordinary braking everywhere.
+3. **Neither:** the remaining clamps stay traced and open.
 
 After it: **M3.3.3b, the W99 contract,** before any code (ROADMAP M3.3 "Next", D177). M2.8 has only
 owner checks left. Without an answer, the session asks again rather than choosing a rule change.

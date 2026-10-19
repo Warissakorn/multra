@@ -6,6 +6,23 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-19 — Stopping cleanly at a line measured (D256, docs only)
+
+The owner asked for the line approach as a contract with numbers first (D254)
+([LINE_APPROACH](reference/LINE_APPROACH.md), [evidence](evidence/line-approach.md)).
+- **Eleven reverted prototypes** of the prototype law, on D251's defaults.
+- **D227's floor**, scoped to behaviours with `amberDeceleration` (F1a):
+  - cuts M2.6 17 → 5 (J1 9→1, M 3→0, none new);
+  - keeps the four-leg and lane lab byte-identical, the pin, the TS rows 5/5, and every row but
+    BA164's forcing;
+  - moves delays by ≤ 0.03 s. Unscoped, it fails one TS row.
+- **A floor behind a braking leader** (F2) removes only the lane lab's clamp, but binds about 1,900
+  times per M2.6 run. **J** (held means not committed) gives 17 → 27.
+- **Recommended:** F1a as a fifth `clampRules` switch, with rows BA173–BA178 planned. On or off by
+  default is the owner's call.
+
+No engine code is committed. Linux only.
+
 ## 2026-10-19 — `joinAnticipation` as an off-by-default switch (D254, D255)
 
 The owner chose D253's A4 anyway, as a fourth project switch that is off by default, and asked for
@@ -159,23 +176,6 @@ The owner asked to fix CI ([evidence](evidence/windows-ui-red.md#round-3-a-narro
   still beside its label in a narrow check now prints its form and widths.
 
 `check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
-
-## 2026-10-18 — M2.6's red-running clamps traced (D241, no code change)
-
-NEXT's item 1 ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). A temporary probe
-was never committed.
-- **Where:** only seed 51 (3 → 5 at 2 s and 3 s) and seed 73 (0 → 1 at 3 s) change.
-- **None is a red-head hold.** Every added clamp is bound by a vehicle leader:
-  - Seed 51: a runner released at red onset, after braking for amber, meets the green flow at a
-    derived merge rule. It is let go 0.55 m behind a leader and hits the standstill cap (D105,
-    D201 B5); its follower clamps behind it.
-  - Seed 73: a runner held again when the 3 s window ends stops at 6 m/s², and its follower needs
-    10.6 m/s².
-- **Found:** at 2 s the seed-51 runner crosses after the window as committed under
-  `amberDeceleration`, so no event is counted. RED_RUNNING §3 now says so. Three §3 behaviours are
-  listed as owner choices.
-
-`check` 178/178, Linux only. CLI 42 byte-identical after the probe was reverted.
 
 ## Older entries
 

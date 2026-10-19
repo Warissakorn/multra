@@ -140,7 +140,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   in braking mode with `leader.speed == 0`, take at least `v²/(2 · gap)`. Over four-leg seeds 42–81
   the shipped JSON stayed byte-identical. With 30 km/h cars it removed the two red-onset clamps
   (seeds 47, 68) but added a creep clamp in seed 56 (0.002 m/s at the line). It changes the
-  prototype's braking law, so it would need its own rows and the owner's choice.
+  prototype's braking law, so it would need its own rows and the owner's choice. D256 measured it
+  again on the shipped M3.2.8a.1 clamps ([LINE_APPROACH](LINE_APPROACH.md)): scoped to
+  `amberDeceleration`, M2.6 17 → 5 with the TS rows kept; awaiting the owner.
 
 - **Removing the M3.2.8b courtesy (D71):** without cooperation M2.6 was 61.6 s with a 404 s wait.
 - **`comfortableDeceleration` for commitment (D69):** it clamped the major road.
