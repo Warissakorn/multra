@@ -982,5 +982,15 @@
   "MACRO_NOT_CONVERGED": "Stopped at the iteration cap before the target gap.",
   "INVALID_LINK_TYPE": "A link type value is invalid.",
   "INVALID_VDF": "A volume-delay function value is invalid.",
-  "INVALID_MACRO_SETTING": "A Macro run setting is invalid."
+  "INVALID_MACRO_SETTING": "A Macro run setting is invalid.",
+  "editorResultsTabNodes": "Nodes",
+  "editorNodeResultsNote": "# Nodes from simulated section delay, not HCM control delay; not validated (M6).",
+  "editorNodeResultsNone": "No Node: draw one with the Node tool (N) or Suggest nodes in the Nodes tab.",
+  "editorNodeResultsNotCompared": "Node rows are not compared yet; the comparison covers movements, sections and queues.",
+  "editorNodeResultsRunning": "Seeds are running; the Node rows appear when the batch finishes.",
+  "editorNodeResultsBatch": "Mean over %1 seeds; the LOS letter uses the mean delay.",
+  "editorNodeLevel": "Level",
+  "editorNodeLevelNode": "Node",
+  "editorNodeLevelLeg": "Leg",
+  "editorNodeLevelTurn": "Turn"
 }

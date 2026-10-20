@@ -6,6 +6,22 @@ move older ones whole to the top of the newest [`archive/`](archive/README.md) P
 
 ---
 
+## 2026-10-20 — S0.6: Node rows in Results (D278); MA15 paused
+
+MA15 needs Sheffi (1985) from web.mit.edu, which the proxy still refused after the owner allowed
+it, so the owner chose other work ([NODES](reference/NODES.md) §15).
+- **Results → Nodes:**
+  - **a run:** the Node, leg and turn rows as the CSV block gives them (vehicles, delay,
+    unfinished, queue on legs, travel time on turns, LOS by the Node's control type);
+  - **a batch:** n, mean, CI and LOS on the mean;
+  - **a comparison:** no rows yet, and it says so.
+
+  The marker comes first.
+- **Rows:** N19–N21 (`node-results-ui`). The workspace test and the UI audit list the new tab.
+- **Mutations:** seven caught. The batch LOS on mean + CI first survived; N20 now checks every
+  row's letter.
+- **Unchanged:** every output (editor-only), the pin and the TS rows. Linux offscreen only.
+
 ## 2026-10-19 — S2.4: Run Macro in stages, Macro links, link types (D277)
 
 The owner chose §19 (a) and wants more capability later
@@ -175,18 +191,6 @@ open:
 - **Rows:** SP1–SP14, planned. No code changed.
 - **The owner accepted every recommendation (D267):** seconds since midnight, `clockStart` on the
   run, no profile or flow basis stored yet, and the PCU field without values.
-
-## 2026-10-19 — Nodes S0.5: Suggest nodes (D265)
-
-The Nodes tab can now draw one `generated` Node per junction no Node covers ([NODES](reference/NODES.md) §6, §14).
-- **The junction rule (D265):** D259 named `conflictGroups`, which are pairs of road objects. A
-  junction is now a cluster of conflicts (authored and automatic) joined through their Connectors,
-  fed from at least two Links. Its polygon is the padded convex hull of its Connectors and conflict
-  points. Overlapping hulls merge; one over an existing Node is dropped.
-- **Shipped projects:** one Node each on the four-leg and M2.6 (12 turns; the approach lane adds
-  left out) and on the T-junction (4 turns); none on the lane lab. Each membership has no issue.
-- **Rows:** N18 (ctest `nodesuggest`) and the `node-ui` action check; six mutations caught.
-- **Unchanged:** every run output, the pin and the TS rows. Linux only.
 
 ## Older entries
 

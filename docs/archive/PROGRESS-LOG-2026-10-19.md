@@ -3,6 +3,18 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — Nodes S0.5: Suggest nodes (D265)
+
+The Nodes tab can now draw one `generated` Node per junction no Node covers ([NODES](../reference/NODES.md) §6, §14).
+- **The junction rule (D265):** D259 named `conflictGroups`, which are pairs of road objects. A
+  junction is now a cluster of conflicts (authored and automatic) joined through their Connectors,
+  fed from at least two Links. Its polygon is the padded convex hull of its Connectors and conflict
+  points. Overlapping hulls merge; one over an existing Node is dropped.
+- **Shipped projects:** one Node each on the four-leg and M2.6 (12 turns; the approach lane adds
+  left out) and on the T-junction (4 turns); none on the lane lab. Each membership has no issue.
+- **Rows:** N18 (ctest `nodesuggest`) and the `node-ui` action check; six mutations caught.
+- **Unchanged:** every run output, the pin and the TS rows. Linux only.
+
 ## 2026-10-19 — Nodes S0.3: Micro node evaluation (D264)
 
 Each Node now reports per-turn, per-leg and per-Node delay ([NODES](../reference/NODES.md) §4, §13).

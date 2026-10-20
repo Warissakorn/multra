@@ -332,6 +332,7 @@ public:
     bool macroTabShown() const; // Export and Copy then write the Macro CSV
 private:
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
+    QTableWidget* nodeResultTable_{}; QLabel* nodeResultNote_{}; void refreshResultNodes(); // S0.6 (NODES §15): Results -> Nodes
     void refreshLots();
     QLineEdit* runSeed_{};
     QComboBox* runSpeed_{};

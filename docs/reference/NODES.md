@@ -312,8 +312,8 @@ Each row first asserts that its forcing worked (AGENTS).
     Letters use the mean over seeds. A leg's or Node's batch delay estimates each seed's weighted
     mean.
   - Nothing is written without a Node, and the shipped projects' outputs are byte-identical.
-  - The editor's Results tables and the batch comparison do not show Node rows yet; the editor's CSV
-    copy carries the block.
+  - The editor's Results tables show Node rows from S0.6 (§15). The batch comparison does not yet;
+    the editor's CSV copy carries the block.
 - **Finding: the delay window includes start-up from rest.** Vehicles enter the network from rest,
   so a turn whose in-leg Link starts at a source carries the start-up loss. On the T-junction, lone
   major vehicles show about 3.0 s against 3.2 s for the full exercise (seed 42). Choice 1a stands
@@ -355,3 +355,38 @@ Each row first asserts that its forcing worked (AGENTS).
   - single-source clusters kept.
 
   Keeping branching conflicts changes no shipped suggestion: their sides add no second source.
+
+## 15. S0.6: Node rows in the editor's Results (D278)
+
+- **Results → Nodes:** one table in the CSV block's order. Each Node's row comes first, then its
+  legs, then its turns.
+  - **A single run:** level, name, control type, vehicles, delay (s), unfinished, queue mean and max
+    (m; legs only), travel time (s; turns only) and LOS. The LOS is `losCell` with the Node's control
+    type, as `writeNodesCsv` gives it.
+  - **A batch:** level, name, control type, n, mean delay (s), 95 % CI half-width (s), mean
+    vehicles, mean unfinished, mean queue mean and max (legs only), and LOS on the mean delay.
+  - **A comparison:** no rows. The note says Node rows are not compared yet, because `Comparison`
+    holds no Node data.
+- **Note:** it starts with the CSV block's marker. Without a Node it says how to draw one; with no
+  run, nothing yet; with an unfinished single run, the partial-run prefix.
+- **Unchanged:** every output, since the change is editor-only.
+- **Rows** (`tests/node_results_ui_tests.cpp`, ctest `node-results-ui`):
+
+| Row | Case | Asserts |
+|---|---|---|
+| N19 | The T-junction with Suggest nodes, one finished run | 1 + 5 + 4 rows equal to `runReport()->nodes`; the queue cells only on legs; the LOS as `losCell`; the marker first |
+| N20 | The same, seeds 42–43 | Rows equal to `aggregate(runs).nodes` (n, mean, CI, LOS on the mean); an edit returns the tab to no run |
+| N21 | No Node, or a comparison | The four-leg without a Node shows the no-Node note and no rows; a comparison shows the not-compared note |
+
+- **As implemented:** `src/shell/editor_results_nodes.cpp` (`refreshResultNodes`), the
+  `editorResultsTabNodes` page after Parking lots.
+- **Mutations caught:**
+  - the LOS without the control type;
+  - legs dropped;
+  - the batch showing the run's rows;
+  - queue cells on turns;
+  - the note without the marker;
+  - a comparison showing rows;
+  - the batch LOS on mean + CI. It survived a Node-row-only check; N20 now checks every row's
+    letter.
+

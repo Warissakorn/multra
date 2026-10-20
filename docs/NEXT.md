@@ -151,22 +151,25 @@ the log. Rewrite this file; do not append to it. Owner items live only in
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
 - No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the M10.1 gate row MA15: the textbook benchmark (MACRO_NETWORK §11)
+## Next session — MA15 when the book is reachable; else the S0 items left
 
-S2.1–S2.4 are in (D273–D277): graph, assignment, outputs, CLI, and the editor's Run Macro in
-stages, Macro links table and link-type editor. Next, one system:
-- **Name and check the textbook example.** The first candidate is Sheffi, *Urban Transportation
-  Networks* (1985): its exact network, values and published equilibrium, read from the book
-  before row MA15 is written as code.
-- **Then:**
-  - commit the data with its citation;
-  - write MA15 (within the target gap of the published flows);
-  - measure the engine's wall time and Ir on it (ENGINEERING_NOTES).
-- **Owner's wish (D277):** more run capability later, such as named run definitions (§19 b) and a
-  procedure sequence (§19 c, after M10.2–M10.4). Ask before starting either.
+S0.6 is in (D278): Results → Nodes for a run and a batch.
+- **MA15 is blocked on access.** Sheffi, *Urban Transportation Networks* (1985), is at
+  https://web.mit.edu/sheffi/www/urbanTransportation.html, and the proxy refused that host on
+  2026-10-20 even after the owner allowed it. Try again first; if it is still refused, ask the
+  owner to upload the PDF. When it is readable, follow the plan:
+  - the Frank–Wolfe chapter's worked example;
+  - the evidence note with its citation and the PDF hash;
+  - the fixture;
+  - MA15;
+  - the cost measurement.
+- **Otherwise, one of S0's items:**
+  - the Nodes tab's leg highlight;
+  - Node rows in the batch comparison (`Comparison` gains Node, leg and turn rows: a model,
+    output and editor change);
+  - the per-Node cost (+26–40 % Ir, D264).
 
-Also open from S0: the Nodes tab's leg highlight, Node rows in Results and comparison, and the cost
-with a Node (+26–40 % Ir, D264, D265).
+
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.
