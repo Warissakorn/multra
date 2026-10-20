@@ -8,6 +8,18 @@ std::vector<ValidationIssue> ownedCatalogIssues(const AuthoringDefinition& d) {
     const auto typeExists=[&](const std::string& id){return std::any_of(d.vehicleTypes.begin(),d.vehicleTypes.end(),[&](const auto& t){return t.id==id;});};
     if(!d.externalVehicleTypes)for(const auto& [id,name]:d.vehicleTypeNames)
         if(!typeExists(id))issues.push_back({"UNKNOWN_VEHICLE_TYPE","vehicleTypeNames."+id});
+    // S1.2 (D269): owned modes; a mode's composition is checked here when the compositions are owned
+    // too, and otherwise by the run check against the installed ones.
+    if(!d.externalModes) {
+        std::set<std::string> modes;
+        for(std::size_t k=0;k<d.modes.size();++k) {
+            const auto& m=d.modes[k];const auto path="definition.modes["+std::to_string(k)+"]";
+            if(m.id.find_first_not_of(" \t\r\n")==std::string::npos)issues.push_back({"INVALID_ID",path+".id"});
+            else if(!modes.insert(m.id).second)issues.push_back({"DUPLICATE_ID",path+".id"});
+            if(!d.externalCompositions && std::none_of(d.compositions.begin(),d.compositions.end(),[&](const auto& c){return c.id==m.compositionId;}))
+                issues.push_back({"MODE_COMPOSITION_UNKNOWN",path+".compositionId"});
+        }
+    }
     if(d.externalCompositions)return issues;
     std::set<std::string> ids;
     for(std::size_t k=0;k<d.compositions.size();++k) {

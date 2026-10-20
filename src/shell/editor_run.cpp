@@ -12,8 +12,33 @@
 #include <QLineEdit>
 #include <QTabWidget>
 #include <QToolBar>
+#include <QResizeEvent>
 #include <algorithm>
 namespace trafficsim {
+namespace {
+// D282: the run status changes every Step. Inside the central layout its label invalidated the
+// whole window's layout each time; in a host without a layout a new text posts a LayoutRequest the
+// host ignores, and the host's own height changes only when the wrapped line count does.
+class RunInfoHost : public QWidget {
+public:
+    RunInfoHost(QLabel* label, QWidget* parent) : QWidget(parent), label_(label) {
+        label_->setParent(this);setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Fixed);
+    }
+    void refit() {
+        const int height=label_->heightForWidth(std::max(1,width()));
+        label_->setGeometry(0,0,width(),height);
+        if(height!=this->height() || height!=minimumHeight())setFixedHeight(height);
+    }
+protected:
+    void resizeEvent(QResizeEvent*) override { refit(); }
+    bool event(QEvent* e) override {
+        if(e->type()==QEvent::LayoutRequest)refit(); // the label's text or font changed
+        return QWidget::event(e);
+    }
+private:
+    QLabel* label_;
+};
+}
 // Every path that advances the run funnels through here. SimState::events holds the latest
 // step only, so a step whose events are not accumulated is one whose clamps are lost for good.
 void EditorWindow::observeRun() {
@@ -56,7 +81,7 @@ void EditorWindow::buildRunControls() {
     runInfo_=new ReflowLabel(centralWidget());runInfo_->setObjectName("editorRunInfo");
     runInfo_->setFont(editorDesign::numericFont());runInfo_->setProperty("numeric",true);
     runInfo_->setWordWrap(true);setReflowPolicy(runInfo_,QSizePolicy::Ignored);
-    qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(1,runInfo_);
+    qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(1,new RunInfoHost(runInfo_,centralWidget()));
     canvas_->stopRequested=[this]{pauseRun();};
     connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun();});
     connect(&runTimer_,&QTimer::timeout,this,[this]{tickRun();});
@@ -125,7 +150,8 @@ void EditorWindow::refreshRun(){
     actions_.at("editorRun")->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
     actions_.at("editorRun")->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));
     actions_.at("editorStep")->setEnabled(!runTimer_.isActive());
-    const bool exportable=runFinished()||batch_.has_value()||comparison_.has_value();
+    refreshMacro(); // S2.4: its actions and stale note follow every refresh
+    const bool exportable=macroTabShown()?macroResult()!=nullptr:runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);
     for(const char* key:{"editorRunSeeds","editorCompareSeeds"})

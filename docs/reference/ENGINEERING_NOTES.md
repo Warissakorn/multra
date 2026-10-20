@@ -93,6 +93,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     `generateArrivals` checks due time first. Owner check: MSVC Release wall on P-cores. Left,
     measured: `closestVehicle` 8 %, `occupiedSpans` 9 %, the `MovedEvent::segmentId` copy 2 %
     (event-interface decision), `Vehicle` moves 2 %.
+- **Node evaluation cost (D279, 2026-10-20, GCC 13.3 RelWithDebInfo callgrind, seed 42):** four-leg
+  with a Node 1,303.6 → 1,128.8 M Ir, T-junction with a Node 256.2 → 233.2 M; `SectionAccumulator::observe`
+  325.8 → 150.9 M. Left there: `advance`'s crossing tests (≈83 M) and the event maps.
 - **Linux replay of D91–D94:** CI (`native.yml`) is the evidence.
 - **M3.2 closure rows:** a diverge acceptance-fixture row (R7; the D98 lab is a development bed,
   not evidence), then `plans/M3_ACCEPTANCE.md` §4, the rows a session can fill ([2026-10-03 review §7, S5](../archive/ROADMAP-review-2026-10-03.md#7-proposed-sequence--owner-free-sessions-after-o1)).
@@ -140,7 +143,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   in braking mode with `leader.speed == 0`, take at least `v²/(2 · gap)`. Over four-leg seeds 42–81
   the shipped JSON stayed byte-identical. With 30 km/h cars it removed the two red-onset clamps
   (seeds 47, 68) but added a creep clamp in seed 56 (0.002 m/s at the line). It changes the
-  prototype's braking law, so it would need its own rows and the owner's choice.
+  prototype's braking law, so it would need its own rows and the owner's choice. D256 measured it
+  again on the shipped M3.2.8a.1 clamps ([LINE_APPROACH](LINE_APPROACH.md)): scoped to
+  `amberDeceleration`, M2.6 17 → 5 with the TS rows kept. Adopted, on by default, by D257/D258.
 
 - **Removing the M3.2.8b courtesy (D71):** without cooperation M2.6 was 61.6 s with a 404 s wait.
 - **`comfortableDeceleration` for commitment (D69):** it clamped the major road.
@@ -153,9 +158,24 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     12,000 Steps (107 → 57 s).
   - Left per Step: canvas ≈1.4 ms, window flush ≈1.1 ms, run label relayout ≈0.8 ms. Measure
     with `trafficsim-run-view-benchmark`, not by hand.
+- **Static run layer (D281, 2026-10-20, Linux RelWithDebInfo offscreen, 1600×1000):**
+  `trafficsim-run-view-benchmark data/projects/m2.6-study-template.traffic.json 6000 2000`, median of 3:
+  24,609 → 17,642 ms (events 20,640 → 13,742 ms). Before, `QGraphicsPathItem::paint` was 32 % of a
+  Step and `QLayout::activate` 20 %. The cache's premultiplied pixmap rounds antialiased edges up to
+  24 levels apart on ≈40 px (run-presentation compares within 32). Heading-up follow redraws the
+  cache every frame (no gain there). Owner check: Windows paint (OWNER_SITTING E22). On Windows
+  (Qt 6.5.3, CI) a half-transparent background photo's antialiased border lands a fraction of a pixel
+  apart from the live paint: ≤60 levels on ≈1.2k px; its interior matches.
+- **Run status outside the central layout (D282, 2026-10-20, same benchmark):** 17,642 → 15,750 ms
+  per 6,000 Steps (median of 3; ranges 17,120–17,919 and 15,598–16,252). Same picture; the
+  window relays out only when the status's wrapped line count changes.
+- **Run vehicle items reused (D283, 2026-10-20):** callgrind, 1,500 Steps of the run-view benchmark:
+  15,517 → 14,716 M Ir (−5.2 %), `drawRunItems` 2,372 → 1,554 M. Wall 15,750 → 15,355 ms per 6,000
+  Steps, inside the clock's spread, so callgrind decides. Left: signal bars and their casings are
+  still rebuilt each frame (`removeItem` 530 M).
 - **Setting the Run/Pause icon only when it changes:** layout stayed 2,439 → 2,438 ms per 3,000
   Steps, because the word-wrapped `editorRunInfo` label relayouts the window every Step anyway.
-  Reverted. The lever is that label's layout, a UI change for the owner.
+  Reverted. The lever was that label's layout; D282 moved it into a host with no layout.
 - **One `refreshRun()` per Step instead of two:** 2,169 → 2,342 ms per 1,000 Steps, inside the
   spread. Reverted. Qt paints once per event-loop pass.
 - **`redraw()` copying only the primary Link:** −1.2% of `redraw()`, inside the clock's spread.

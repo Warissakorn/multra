@@ -34,6 +34,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [m4.2-amber.md](m4.2-amber.md) | M4.2 amber stop-or-go — gate evidence (D147, 2026-10-09) | D147, D88 |
 | [m5.9-cooldown.md](m5.9-cooldown.md) | M5.9 cool-down on `four-leg-signalised` (D146, 2026-10-09) | D146 |
 | [m6-benchmark-options.md](m6-benchmark-options.md) | M6 benchmark option sheet (M6.0, 2026-10-10) | D143, D34 |
+| [macro-run-procedures.md](macro-run-procedures.md) | How Visum and Aimsun organise a Macro run (web search), 2026-10-19 | D276 |
 | [source-first-step.md](source-first-step.md) | Source first-step clearance — D108, M3.2.8a.1a | D108, D107 |
 | [perception-motion.md](perception-motion.md) | M3.5 slice 2: look-ahead and multi-anticipation evidence — 2026-10-15 | D182 |
 | [perception-discharge.md](perception-discharge.md) | M3.5 slice 5 — BA38 reaction-time discharge, raw-input manifests, paired seed/lane evidence — 2026-10-15 | D185, D184 |
@@ -50,7 +51,10 @@ or edit evidence in place. A new measurement gets a new note.
 | [merge-deceleration.md](merge-deceleration.md) | B-3: accepted deceleration for mandatory lane changes — 2026-10-17 | D220, D221 |
 | [speed-decisions.md](speed-decisions.md) | B-6 slice 1: desired-speed decisions — 2026-10-17 | D222, D223, D227 |
 | [give-way-stop.md](give-way-stop.md) | A feasible stop at a give-way line (M3.2.8a.1 slice) — 2026-10-18 | D239, D240 |
-| [red-running.md](red-running.md) | B-9: red-light running share — 2026-10-18; M2.6's added clamps traced | D237, D238, D241 |
+| [join-anticipation.md](join-anticipation.md) | M3.2.8a.1b: anticipation across a join, eight prototype variants measured; the off-by-default switch implemented — 2026-10-19 | D253, D255 |
+| [line-approach.md](line-approach.md) | M3.2.8a.1c: stopping cleanly at a line and behind a hard stop, eleven prototype variants measured; the switch implemented — 2026-10-19 | D256, D258 |
+| [merge-clamps.md](merge-clamps.md) | M3.2.8a.1: M2.6's 41 clamps traced and seven options measured with temporary prototypes — 2026-10-18 | D249, D251, D252 |
+| [red-running.md](red-running.md) | B-9: red-light running share — 2026-10-18; M2.6's added clamps traced; the owner's answers measured | D237, D238, D241, D247 |
 | [driver-factor-spread.md](driver-factor-spread.md) | B-4: driver-factor spread — 2026-10-18 | D235, D236 |
 | [lane-preference.md](lane-preference.md) | B-7: lane preference by vehicle type — 2026-10-17 | D233, D234 |
 | [stop-dwell.md](stop-dwell.md) | B-8: Stop dwell time — 2026-10-17 | D230, D231 |

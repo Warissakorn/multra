@@ -2,6 +2,7 @@
 #include "csv_format.hpp"
 #include "input_manifest.hpp"
 #include "los_output.hpp"
+#include "node_output.hpp"
 #include "json.hpp"
 #include "../model/network/right_of_way.hpp"
 #include "../model/network/travel_time.hpp"
@@ -170,9 +171,11 @@ EvaluationSpec evaluationSpec(const ProjectDocument& document, const RunSnapshot
         for (const auto& at : locateSectionLine(network, table, section.end)) s.end.push_back({at.segment, at.position});
         spec.sections.push_back(std::move(s));
     }
+    spec.nodes = nodeSpecs(network, table); // S0.3 (D264)
     // M5.5 (D134): the pack is read only when a letter can be given, so other projects' input
     // manifests are unchanged.
-    if (std::any_of(spec.sections.begin(), spec.sections.end(), [](const auto& s) { return s.controlType.has_value(); }))
+    if (std::any_of(spec.sections.begin(), spec.sections.end(), [](const auto& s) { return s.controlType.has_value(); }) ||
+        std::any_of(spec.nodes.begin(), spec.nodes.end(), [](const auto& n) { return n.controlType.has_value(); }))
         spec.los = loadLosPack(dataDirectory, manifest);
     return spec;
 }
@@ -212,6 +215,7 @@ Json movementJson(const MovementReport& r) {
                                                                                                   : Json(losCell(row.meanDelay, row.controlType, r.los))}});
         addLosJson(j, losInputs(r), r.los); // M5.5
     }
+    addNodesJson(j, r); // S0.3: only with a Node
     if (!r.lots.empty()) { // M8.5: only with a lot, so other projects keep their bytes
         Json rows = Json::array();
         for (const auto& l : r.lots)
@@ -332,6 +336,7 @@ std::string movementCsv(const MovementReport& r) {
                 << losCell(row.meanDelay, row.controlType, r.los) << '\n';
         writeLosCsv(out, losInputs(r), r.los); // M5.5
     }
+    writeNodesCsv(out, r); // S0.3: only with a Node
     if (!r.lots.empty()) { // M8.5
         out << "\nlot,capacity,occupancyEnd,occupancyMean,occupancyPeak,admitted,departed,gateWaitMean_s,gateWaitMax_s,"
                "waitedOverTick,endParked,endAtGate,endInExitQueue\n";

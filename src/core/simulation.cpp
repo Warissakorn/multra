@@ -2,6 +2,7 @@
 #include "conflicts.hpp"
 #include "detail.hpp"
 #include "following.hpp"
+#include "join_anticipation.hpp"
 #include "lanes.hpp"
 #include "lateral.hpp"
 #include "leaders.hpp"
@@ -22,9 +23,7 @@
 namespace trafficsim {
 namespace {
 Scenario canonicalScenario(Scenario scenario) {
-    const auto sort = [](auto& items) {
-        std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; });
-    };
+    const auto sort = [](auto& items) { std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; }); };
     if (!scenario.segmentCrossSections.empty() && scenario.segmentCrossSections.size() == scenario.segments.size()) {
         // M3.7 (D187): cross-sections are parallel to segments, so they move with them.
         std::vector<std::size_t> order(scenario.segments.size());
@@ -39,12 +38,12 @@ Scenario canonicalScenario(Scenario scenario) {
     sort(scenario.routes); sort(scenario.vehicleTypes); sort(scenario.behaviours);
     sort(scenario.inputs); sort(scenario.signalPrograms); sort(scenario.signalHeads);
     sort(scenario.conflictZones); sort(scenario.parkingLots);
+    for (auto& b : scenario.behaviours) b.stopFloor = scenario.clampRules.standingStopFloor && b.amberDeceleration; // LINE_APPROACH §7 (D258)
     std::sort(scenario.laneChanges.begin(), scenario.laneChanges.end(), [](const auto& a, const auto& b) {
         if (a.fromRouteId != b.fromRouteId) return a.fromRouteId < b.fromRouteId;
         return a.fromStart != b.fromStart ? a.fromStart < b.fromStart : a.toRouteId < b.toRouteId;
     });
-    std::sort(scenario.routeDeadEnds.begin(), scenario.routeDeadEnds.end(),
-              [](const auto& a, const auto& b) { return a.routeId < b.routeId; });
+    std::sort(scenario.routeDeadEnds.begin(), scenario.routeDeadEnds.end(), [](const auto& a, const auto& b) { return a.routeId < b.routeId; });
     return scenario;
 }
 }
@@ -129,8 +128,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     // Insertions append to both, reproducing exactly what a full rebuild over the grown vehicle
     // list would have produced.
     std::vector<VehicleRefs> candidateRefs;
-    std::vector<OccupiedSpan> candidateSpans;
-    SpanBuckets candidateBuckets;
+    std::vector<OccupiedSpan> candidateSpans; SpanBuckets candidateBuckets;
     bool spansBuilt = false;
     for (const auto& pending : candidates) {
         const auto& route = scenario.routes[pending.routeIndex];
@@ -217,6 +215,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     // Cooperation, from the post-change snapshot: who holds back for a vehicle waiting to change.
     const auto courtesy = index.laneChanges ? courtesyHolds(scenario, index, vehicles, refs, spans, buckets)
                                             : std::vector<CourtesyHold>{};
+    const auto joins = scenario.clampRules.joinAnticipation ? joinEntries(index, vehicles, refs) : std::vector<JoinEntry>{}; // JOIN_ANTICIPATION §2 (D255)
     // Signal colour depends only on the tick's time, so it is the same for every vehicle.
     std::vector<SignalColor> headColors;
     headColors.reserve(scenario.signalHeads.size());
@@ -242,7 +241,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     std::vector<Reaction> decisions; // no allocation with zero delay; published in vehicle order
     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
     std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
-    std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); // B-9 (D238): empty without the keys
+    std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); std::vector<RedRelease> released; // B-9 (D238, D246): empty without the keys
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto& vehicle = vehicles[v];
         const auto& type = scenario.vehicleTypes[refs[v].type];
@@ -253,7 +252,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         auto leader = closestVehicle(vehicle, parts, spans, buckets, zones.empty() ? nullptr : &leaderId, &lateral);
         const auto vehicleLeader = leader; // receiving space is about vehicles, not stop lines
         if (leader && !zones.empty()) leaders[v] = VehicleLeader{leader->gap, leader->speed, leaderId};
-        double allowedDistance = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+        const double leaderCap = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity(); double holdCap = std::numeric_limits<double>::infinity(), headLine = holdCap; // every other hold; the nearest signal-head hold (MERGE_CLAMPS §2 Q)
         double giveWayLine = std::numeric_limits<double>::infinity(); // GIVE_WAY_STOP §2: the nearest rule or zone hold
         // M3.5 (PERCEPTION.md §2-§3): with a look-ahead or an observed-vehicle count, the
         // acceleration follows the PERCEIVED leaders; the physical leader above keeps the hard cap
@@ -270,8 +269,8 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (gap < -1e-9) continue;
             const auto colour = headColors[routeHead.headIndex];
             if (colour == SignalColor::green) continue;
-            if (colour == SignalColor::red && !ran.empty() && runsRed(behaviour, next.seed, vehicle, scenario.signalPrograms[index.programOfHead[routeHead.headIndex]], startTime)) {
-                if (gap < ran[v].gap) ran[v] = {gap, routeHead.headIndex}; continue; } // RED_RUNNING §3
+            if (colour == SignalColor::red && !ran.empty() && letThrough(behaviour, type, next.seed, vehicle, scenario.signalPrograms[index.programOfHead[routeHead.headIndex]], startTime, gap, routeHead.headIndex, next.redReleases)) {
+                released.push_back({vehicle.id, routeHead.headIndex}); if (gap < ran[v].gap) ran[v] = {gap, routeHead.headIndex}; continue; } // RED_RUNNING §3
             // M4.2 (D147, AMBER.md): with an amber deceleration, a driver who cannot stop before the
             // line at it goes on amber, and one who cannot stop at all (the type's maxDeceleration,
             // as at a priority rule) goes on amber or red; equality and a standing vehicle stop.
@@ -280,20 +279,20 @@ SimState stepSimulation(SimState&& state, double dt) {
                 if (committed(vehicle.speed, toLine, type) ||
                     (colour == SignalColor::amber && vehicle.speed * vehicle.speed > 2 * *behaviour.amberDeceleration * toLine)) continue;
             }
-            allowedDistance = std::min(allowedDistance, std::max(0.0, gap));
+            holdCap = std::min(holdCap, std::max(0.0, gap)); headLine = std::min(headLine, std::max(0.0, gap));
             if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
         }
         // A stub route's dead end holds its vehicle as a red head does, until it changes lanes.
         if (index.laneChanges)
             if (const double gap = std::max(0.0, index.deadEndOfRoute[refs[v].route] - vehicle.distance); std::isfinite(gap)) {
-                allowedDistance = std::min(allowedDistance, gap);
+                holdCap = std::min(holdCap, gap);
                 if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
             }
         // A lot's gate holds like a dead end while the lot is full or its service is still to serve.
         if (!gateHeld.empty())
             if (const auto gap = gateHold(next, vehicle, refs[v].route)) {
                 gateHeld[v] = 1;
-                allowedDistance = std::min(allowedDistance, *gap);
+                holdCap = std::min(holdCap, *gap);
                 if (!leader || *gap < leader->gap) leader = Leader{*gap, 0, 0};
             }
         // Holding back for a waiting changer, as behind a standing vehicle -- even when a moving
@@ -301,7 +300,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         // A moving changer (cooperative braking) is a virtual leader, so it caps nothing.
         const bool yields = !courtesy.empty() && std::isfinite(courtesy[v].gap);
         if (yields && !courtesy[v].moving)
-            allowedDistance = std::min(allowedDistance, std::max(0.0, courtesy[v].gap - standstillGap(behaviour)));
+            holdCap = std::min(holdCap, std::max(0.0, courtesy[v].gap - standstillGap(behaviour)));
         // Priority rules, after the signal heads and by the same mechanism: a vehicle that must
         // give way is held at its stop line exactly as a red head holds one. Car-following past
         // the merge already works without any of this, because spans are bucketed by GLOBAL
@@ -336,18 +335,18 @@ SimState stepSimulation(SimState&& state, double dt) {
                 if (giveWay) break;
             }
             if (!giveWay) continue;
-            allowedDistance = std::min(allowedDistance, std::max(0.0, gap)); giveWayLine = std::min(giveWayLine, std::max(0.0, gap));
+            holdCap = std::min(holdCap, std::max(0.0, gap)); giveWayLine = std::min(giveWayLine, std::max(0.0, gap));
             if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
         }
         // Conflict zones hold a vehicle by the same stop-line mechanism once more.
         if (const auto hold = index.routeZones[refs[v].route].empty() ? std::nullopt
                               : zoneHold(scenario, index, zones, vehicle, refs[v], vehicleLeader,
                                          stopOf.empty() ? nullptr : stopOf[v], startTick)) {
-            allowedDistance = std::min(allowedDistance, *hold); giveWayLine = std::min(giveWayLine, *hold);
+            holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
-        anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived);
+        anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.
@@ -381,8 +380,9 @@ SimState stepSimulation(SimState&& state, double dt) {
         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
         auto& move = moves[v];
         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
-        if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking
-            if (const auto a = giveWayLine == allowedDistance ? stopAtLine(vehicle.speed, giveWayLine, type) : std::nullopt) {
+        const double allowedDistance = tickCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, &lateral, vehicleLeader, leaderCap, holdCap, giveWayLine, move.distance, dt); // MERGE_CLAMPS §2
+        if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
+            if (const auto a = giveWayLine == allowedDistance || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
                 const auto stop = integrate(vehicle.speed, *a, dt); move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
             } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
         }
@@ -479,7 +479,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         const auto color = signalColorAt(scenario.signalPrograms[index.programOfHead[h]], time);
         if (color != headColors[h]) events.emplace_back(SignalEvent{time, scenario.signalHeads[h].id, color});
     }
-    next.tick = tick; next.time = time;
+    next.tick = tick; next.time = time; next.redReleases = std::move(released); // read as last tick's until here (D246)
     next.stopService = std::move(service);
     // Retain demand due in the last subinterval, even though it cannot enter this run.
     if (tick == totalTicks(scenario)) detail::generateArrivals(next);

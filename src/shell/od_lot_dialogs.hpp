@@ -15,8 +15,11 @@ using Choice = std::pair<std::string, QString>; // id, label
 
 // An OD matrix: period, composition, which zones (in `zones` order) and the zones x zones trips.
 // Refuses locally an empty zone set (OD_ZONE_UNKNOWN) and end <= start (OD_PERIOD_INVALID).
+// S1.1 (STUDY_PERIODS §8): `periods` offers a StudyPeriod in place of the own start and end.
+// S1.2 (D269): a Types choice draws from a composition or from one of `modes` (UNKNOWN_MODE when none).
 std::optional<OdMatrix> editOdMatrix(QWidget*, const OdMatrix&, const std::vector<Choice>& zones,
-                                     const std::vector<Choice>& compositions, const DialogText&);
+                                     const std::vector<Choice>& compositions, const std::vector<Choice>& periods,
+                                     const std::vector<Choice>& modes, const DialogText&);
 
 // The lot of one zone. nullopt: cancelled; an engaged empty optional: "not a lot" (delete it).
 std::optional<std::optional<ParkingLot>> editParkingLot(QWidget*, const std::optional<ParkingLot>& current,

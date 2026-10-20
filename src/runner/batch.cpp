@@ -101,6 +101,13 @@ BatchReport aggregate(std::vector<SeedRun> runs) {
         for (std::size_t i = 0; same && i < first.sections.size(); ++i) same = run.report.sections[i].name == first.sections[i].name;
         same = same && run.report.lots.size() == first.lots.size(); // M8.5
         for (std::size_t i = 0; same && i < first.lots.size(); ++i) same = run.report.lots[i].name == first.lots[i].name;
+        same = same && run.report.nodes.size() == first.nodes.size(); // S0.3
+        for (std::size_t i = 0; same && i < first.nodes.size(); ++i) {
+            const auto &a = run.report.nodes[i], &b = first.nodes[i];
+            same = a.name == b.name && a.legs.size() == b.legs.size() && a.turns.size() == b.turns.size();
+            for (std::size_t k = 0; same && k < b.legs.size(); ++k) same = a.legs[k].name == b.legs[k].name;
+            for (std::size_t k = 0; same && k < b.turns.size(); ++k) same = a.turns[k].name == b.turns[k].name;
+        }
         if (!same) throw std::invalid_argument("aggregate: runs have different movements, approaches or lots");
     }
     const auto& first = runs.front().report;
@@ -136,6 +143,30 @@ BatchReport aggregate(std::vector<SeedRun> runs) {
             over(runs, [i](const SeedRun& s) { return s.report.lots[i].gateWaitMax; }),
             over(runs, count(&LotRow::waitedOverTick)), over(runs, count(&LotRow::endParked)),
             over(runs, count(&LotRow::endAtGate)), over(runs, count(&LotRow::endInExitQueue))});
+    }
+    const auto count = [](std::uint64_t v) { return std::optional<double>(static_cast<double>(v)); };
+    for (std::size_t i = 0; i < first.nodes.size(); ++i) { // S0.3
+        const auto node = [i](const SeedRun& s) -> const NodeRow& { return s.report.nodes[i]; };
+        const auto& f = first.nodes[i];
+        BatchNodeRow row{f.name, f.controlType, over(runs, [&](const SeedRun& s) { return count(node(s).vehicles); }),
+            over(runs, [&](const SeedRun& s) { return node(s).delay; }),
+            over(runs, [&](const SeedRun& s) { return count(node(s).unfinished); }), {}, {}, f.conflicts, f.issues};
+        for (std::size_t k = 0; k < f.legs.size(); ++k) {
+            const auto leg = [&, k](const SeedRun& s) -> const NodeLegRow& { return node(s).legs[k]; };
+            row.legs.push_back({f.legs[k].name, over(runs, [&](const SeedRun& s) { return count(leg(s).vehicles); }),
+                over(runs, [&](const SeedRun& s) { return leg(s).delay; }),
+                over(runs, [&](const SeedRun& s) { return count(leg(s).unfinished); }),
+                over(runs, [&](const SeedRun& s) { return std::optional<double>(leg(s).queueMean); }),
+                over(runs, [&](const SeedRun& s) { return std::optional<double>(leg(s).queueMax); })});
+        }
+        for (std::size_t k = 0; k < f.turns.size(); ++k) {
+            const auto turn = [&, k](const SeedRun& s) -> const NodeTurnRow& { return node(s).turns[k]; };
+            row.turns.push_back({f.turns[k].name, over(runs, [&](const SeedRun& s) { return count(turn(s).vehicles); }),
+                over(runs, [&](const SeedRun& s) { return turn(s).delay; }),
+                over(runs, [&](const SeedRun& s) { return turn(s).travelTime; }),
+                over(runs, [&](const SeedRun& s) { return count(turn(s).unfinished); })});
+        }
+        r.nodes.push_back(std::move(row));
     }
     r.los = first.los;
     r.meanDelay = over(runs, [](const SeedRun& s) { return s.report.meanDelay; });

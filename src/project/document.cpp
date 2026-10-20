@@ -3,6 +3,12 @@
 #include "demand_time_types.hpp"
 #include "behaviour_library.hpp"
 #include "evaluation_period.hpp"
+#include "clamp_rules.hpp"
+#include "macro_settings.hpp"
+#include "study_period_codec.hpp"
+#include "mode_codec.hpp"
+#include "link_type_codec.hpp"
+#include "node_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
 #include "speed_decisions.hpp"
@@ -78,6 +84,7 @@ Json documentJson(const ProjectDocument& d) {
         network["links"].push_back({{"id", l.id}, {"geometry", points(l.geometry)}, {"lanes", lanes}, {"level",l.level}, {"displayType",l.displayType}, {"laneOffset",l.laneOffset}, {"name",l.name},
             {"boundaryMarkings",markingNames(l.boundaryMarkings)}});
         if (l.behaviourTypeId) network["links"].back()["behaviourType"] = *l.behaviourTypeId; // M3.3.2a, schema 21
+        if (l.linkTypeId) network["links"].back()["linkType"] = *l.linkTypeId; // S2.1, schema 50
     }
     for (const auto& c : d.network.connectors) {
         network["connectors"].push_back({{"id", c.id}, {"from", reference(c.from)}, {"to", reference(c.to)}, {"geometry", points(c.geometry)}, {"fromLaneCount",c.fromLaneCount}, {"toLaneCount",c.toLaneCount},
@@ -118,6 +125,7 @@ Json documentJson(const ProjectDocument& d) {
         }
         network["travelTimeSections"] = sections;
     }
+    addNodesJson(d.network, network); // S0.1, schema 48
     const auto& b = d.background;
     // Preserve legacy bytes; use 18 for owned catalogs and 19 for time/type rules.
     const bool positioned=d.definition && std::any_of(d.definition->routingDecisions.begin(),d.definition->routingDecisions.end(),[](const auto& x){return x.position.has_value();});
@@ -136,20 +144,21 @@ Json documentJson(const ProjectDocument& d) {
     // M3.7: 33 only when an owned behaviour carries a lateral key (D187).
     // M3.6: 34 only when an owned behaviour carries curveLateralAcceleration (D212).
     // M3.4: 35 only when an owned behaviour carries kerbLaneBias (D215); B-2: 36 for commitmentDeceleration (D219); B-3: 37 (D221).
-    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238).
-    const int schema=ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268); S1.2: 49 for modes and pcu (D270); S2.1: 50 for link types (D273); S2.3: 51 for macroSettings (D275).
+    const int schema=usesMacroSettings(d)?51:usesLinkTypes(d)?50:usesStudyPeriods(d)||usesModes(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
     // tags them, not only one with a library: owned catalogs with an evaluation period (22) and no
     // library were written untagged and could not be reopened (found by M4.2, D147).
     if ((library || schema >= 21) && d.definition) addBehaviourLibraryJson(*d.definition, definition);
-    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);addSpeedDecisionsJson(*d.definition,definition);addSpeedAreasJson(*d.definition,definition);}
+    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addClampRulesJson(*d.definition, definition);addMacroSettingsJson(*d.definition, definition);addClockStartJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);addSpeedDecisionsJson(*d.definition,definition);addSpeedAreasJson(*d.definition,definition);}
     Json result={{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
     if (d.map) result["map"]=mapSettingsJson(*d.map);
     addZoneLayerJson(d.zones,result);
+    addStudyPeriodsJson(d.zones,result); // S1.1
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
@@ -167,6 +176,8 @@ void validateDocument(const ProjectDocument& d) {
     validateAuthoredDemand(d);
     validateRouteDestinations(d);
     if (d.definition) validateEvaluationPeriod(*d.definition);
+    if (d.definition && !(std::isfinite(d.definition->clockStart) && d.definition->clockStart >= 0 && d.definition->clockStart <= kClockLimit))
+        throw ValidationError({{"INVALID_NUMBER", "definition.clockStart"}}); // S1.1
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = zoneLayerIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
 }
@@ -176,7 +187,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 44) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 51) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -197,7 +208,11 @@ ProjectDocument parseDocument(const Json& j) {
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
     d.map=parseMapSettings(j,version);
+    if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
+    if (version < 50) rejectLinkTypesBefore50(j); // S2.1, before the network is read
+    if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
     d.zones=parseZoneLayer(j,version);
+    d.zones.studyPeriods=parseStudyPeriods(j);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < 25) rejectW74Before25(j);
@@ -215,7 +230,12 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 42) rejectKerbLanesBefore42(j);
     if (version < 43) rejectDriverFactorSpreadBefore43(j);
     if (version < 44) rejectRedRunningBefore44(j);
+    if (version < 45) rejectClampRulesBefore45(j);
+    if (version < 46) rejectJoinAnticipationBefore46(j);
+    if (version < 47) rejectStandingStopFloorBefore47(j);
     d.network = parseNetwork(j.at("network"), version);
+    d.network.nodes = parseNodes(j.at("network"), version); // S0.1 (NODES §2)
+    readLinkTypeIds(j.at("network"), d.network); // S2.1 (MACRO_NETWORK §4)
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
         parseRouteDestinations(j.at("definition"),version,*d.definition);
@@ -223,6 +243,9 @@ ProjectDocument parseDocument(const Json& j) {
         parseSpeedAreas(j.at("definition"),version,*d.definition); // B-6 §7, schema 39
         if (version >= 21) parseBehaviourLibrary(j.at("definition"), *d.definition);
         if (version >= 22) d.definition->evaluation = parseEvaluationPeriod(j.at("definition"));
+        if (version >= 45) d.definition->clampRules = parseClampRules(j.at("definition")); // D251
+        d.definition->clockStart = parseClockStart(j.at("definition")); // S1.1, gated above
+        d.definition->macroSettings = parseMacroSettings(j.at("definition")); // S2.3, gated above
         // M4.2 (D147): a bare M0 scenario keeps amber as red, as the CLI reads it (loadScenario).
         if (!j.contains("schemaVersion")) d.definition->provenance.legacyAmber = true;
         // Schema 7 and earlier stored a route as lanes and Connector paths. Schema 8 stores the
@@ -248,6 +271,7 @@ std::set<std::string> documentIds(const ProjectDocument& d) {
     for (const auto& c : d.network.rightOfWay.stopControls) used.insert(c.id);
     for (const auto& c : d.network.queueCounters) used.insert(c.id);
     for (const auto& s : d.network.travelTimeSections) used.insert(s.id);
+    for (const auto& n : d.network.nodes) used.insert(n.id);
     if (d.definition) {
         for (const auto& r : d.definition->routes) used.insert(r.id);
         for (const auto& i : d.definition->inputs) used.insert(i.id);
@@ -263,6 +287,8 @@ std::string allocateId(ProjectDocument& d, const std::string& prefix) {
     for (const auto& c : d.zones.zoneConnectors) used.insert(c.id);
     for (const auto& m : d.zones.odMatrices) used.insert(m.id);
     for (const auto& l : d.zones.parkingLots) used.insert(l.id);
+    for (const auto& p : d.zones.studyPeriods) used.insert(p.id);
+    if (d.definition) for (const auto& m : d.definition->modes) used.insert(m.id);
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");
         auto id = prefix + "-" + std::to_string(d.nextId++);

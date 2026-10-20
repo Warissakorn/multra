@@ -183,8 +183,8 @@ RightOfWay rightOfWay(const Json& value, int version) {
 }
 Network parseNetwork(const Json& value, int schemaVersion) {
     // `rightOfWay` exists from schema 14; knownFields rejects it in an older file (from 7 on).
-    // `queueCounters` exists from schema 16 (M3.2.6b), `travelTimeSections` from 23 (M5.4).
-    if(schemaVersion>=23)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections"},"network",schemaVersion);
+    // `queueCounters` exists from schema 16 (M3.2.6b), `travelTimeSections` from 23 (M5.4), `nodes` from 48 (S0.1, node_codec).
+    if(schemaVersion>=48)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections","nodes"},"network",schemaVersion); else if(schemaVersion>=23)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections"},"network",schemaVersion);
     else if(schemaVersion>=16)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters"},"network",schemaVersion);
     else if(schemaVersion>=14)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay"},"network",schemaVersion);
     else knownFields(value,{"id","drivingSide","links","connectors","signalHeads"},"network",schemaVersion);
@@ -196,7 +196,7 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     for (const auto& item : array(value, "links")) {
         const auto path="links["+std::to_string(network.links.size())+"]";
         // `behaviourType` exists from schema 21 (M3.3.2a).
-        if(schemaVersion>=21)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType"},path,schemaVersion);
+        if(schemaVersion>=21)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType","linkType"},path,schemaVersion); // linkType: S2.1, read by readLinkTypeIds
         else knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings"},path,schemaVersion);
         Link link{field<std::string>(item, "id"), points(item,schemaVersion), {}};
         for (const auto& lane : array(item, "lanes")) {
@@ -388,7 +388,7 @@ VehicleType parseVehicleType(const Json& t) {
         knownFields(a,{"wheelbase","frontOverhang","rearOverhang"},"vehicleType.axles",17);
         type.axles=VehicleAxles{field<double>(a,"wheelbase"),field<double>(a,"frontOverhang"),field<double>(a,"rearOverhang")};
     }
-    type.kerbLanes=parseKerbLanes(t); return type; // B-7 (D234)
+    type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); return type; // B-7 (D234); S1.2 (D270)
 }
 Composition parseComposition(const Json& c) {
     knownFields(c,{"id","name","types","intervals"},"composition",19);

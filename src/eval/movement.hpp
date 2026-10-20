@@ -3,6 +3,7 @@
 #include "sections.hpp"
 #include "los.hpp"
 #include "lots.hpp"
+#include "nodes.hpp"
 #include <map>
 
 namespace trafficsim {
@@ -33,6 +34,8 @@ struct EvaluationSpec {
     std::vector<SectionSpec> sections; // M5.4 (D133), in authored order
     std::optional<LosPack> los; // M5.5 (D134): read only when a section has a control type
     std::vector<LotSpec> lots; // M8.5 (D160): one row per lot; each gate also has a counter above
+    // S0.3 (D264): measured as sections and counters after the authored ones; reported only as nodes.
+    std::vector<NodeSpec> nodes;
 };
 struct MovementRow {
     std::string name; std::uint64_t vehicles{};
@@ -60,6 +63,7 @@ struct MovementReport {
     std::optional<LosPack> los; // M5.5: the spec's pack, so output can letter the rows
     std::vector<LotRow> lots; // M8.5: one per spec lot; empty without any
     std::size_t parked{};     // M8.5: in a lot, not yet released (released ones are pending)
+    std::vector<NodeRow> nodes; // S0.3: one per Node; empty without any
     bool operator==(const MovementReport&) const = default;
 };
 // Delay a completed trip contributes: the same term as the run summary, so movements add up.

@@ -35,6 +35,10 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
             mode = FollowingMode::following;
             acceleration = following();
         }
+        // LINE_APPROACH §7 (D258): behind a standing obstacle the law's braking softens near it; at
+        // least the deceleration that stops exactly there, capped at the maximum below.
+        if (behaviour.stopFloor && mode == FollowingMode::braking && leader->speed == 0 && speed > 0)
+            acceleration = std::min(acceleration, -(speed * speed) / (2 * std::max(0.01, leader->gap)));
     }
     // A moving merge leader can leave less than the standstill gap at the shared segment's
     // start. A stopped follower must wait for room, not accelerate into the zero hard cap.

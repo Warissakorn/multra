@@ -42,6 +42,8 @@ Results has **4** inner pages (`editor_results.cpp`, `translateResults`):
 | 1 | Queue discharge / editorResultsTabDischarge | editorDischargeTable |
 | 2 | Safety clamps / editorResultsTabClamps | editorClampTable |
 | 3 | Parking lots / editorResultsTabLots | editorLotTable |
+| 4 | Nodes / editorResultsTabNodes | editorNodeResultTable: Node, leg and turn rows of the run or batch (S0.6, D278) |
+| 5 | Macro links / editorResultsTabMacro | editorMacroTable (S2.4, D277) |
 
 Run seeds and Compare with… are toolbar actions, not pages. Their tables live inside page 0;
 Cancel is shared. Export and Copy retain completion guards and use existing export formatters.

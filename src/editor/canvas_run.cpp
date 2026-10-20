@@ -8,6 +8,7 @@
 #include <QGraphicsPathItem>
 #include "run_vehicle_item.hpp"
 #include <QPainter>
+#include <QStyleOptionGraphicsItem>
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -38,13 +39,45 @@ void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId, bool hea
 void EditorCanvas::setRunFrame(const SimState& frame) {
     // Scenarios are owned immutable snapshots, not mutable documents/revisions.
     if(frame.scenario!=runFrame_.scenario){runAxlePaths_.clear();runLaneChangePaths_.clear();}
-    runFrame_=frame;drawRunItems();
+    runFrame_=frame;
+    if(!runLayerBaked_)bakeRunLayer();
+    drawRunItems();
 }
 // Clear the snapshot-derived geometry and head bars together; Reset restores Edit bars.
 void EditorCanvas::clearRunFrame() {runAxlePaths_.clear();runLaneChangePaths_.clear();runFrame_={};runGeometry_.clear();runEquations_.clear();runLevels_.clear();runStyles_.clear();runHeadBars_.clear();redraw();}
+void EditorCanvas::bakeRunLayer() {
+    if(!runLayerCache_ || !runFrame_.scenario || runLevels_.empty())return;
+    // Everything a vehicle (level·100 + 11) is drawn over on the lowest level: surfaces, markings,
+    // Connectors, zones, Nodes, conflict areas. Higher levels, counters and overlays stay live.
+    const auto lowest=std::min_element(runLevels_.begin(),runLevels_.end(),[](const auto& a,const auto& b){return a.second<b.second;})->second;
+    const double below=lowest*100.+11;
+    for(auto* item:scene_.items(Qt::AscendingOrder)) {
+        if(item->zValue()>=below || !item->isVisible() || item->parentItem() || !item->childItems().isEmpty() ||
+           (item->flags()&QGraphicsItem::ItemIgnoresTransformations))continue;
+        item->setVisible(false);runBaked_.push_back(item);
+    }
+    runLayerBaked_=true;resetCachedContent();
+}
+void EditorCanvas::paintRunLayer(QPainter* painter,const QRectF& rect) {
+    // In stacking order, each item with its own transform and opacity, as the scene would paint it.
+    for(auto* item:runBaked_) {
+        if(!item->sceneBoundingRect().intersects(rect))continue;
+        // QGraphicsView fills its background cache in Source mode; items blend over what lies below.
+        painter->save();painter->setRenderHints(renderHints());painter->setCompositionMode(QPainter::CompositionMode_SourceOver);painter->setTransform(item->sceneTransform(),true);painter->setOpacity(item->opacity());
+        QStyleOptionGraphicsItem option;option.exposedRect=item->boundingRect();
+        item->paint(painter,&option,nullptr);
+        painter->restore();
+    }
+}
+void EditorCanvas::dropRunVehicles(bool all) {
+    std::erase_if(runVehicles_,[&](auto& entry) {
+        if(!all && entry.second.seen){entry.second.seen=false;return false;}
+        scene_.removeItem(entry.second.item);delete entry.second.item;return true;
+    });
+}
 void EditorCanvas::drawRunItems() {
     for(auto* item:runItems_){scene_.removeItem(item);delete item;}runItems_.clear();
-    if(!runFrame_.scenario)return;
+    if(!runFrame_.scenario){dropRunVehicles(true);return;}
     // style() already falls back to the default type, so resolve without at(): a segment
     // missing here must degrade like one missing from marker()'s geometry map, not throw
     // out of a paint callback.
@@ -125,19 +158,29 @@ void EditorCanvas::drawRunItems() {
         const auto axles=vehicleAxles(type);const double lever=axles.wheelbase+axles.frontOverhang;
         // Rear axle is local origin; even a minimum-size symbol keeps its nose at
         // the traffic front station. Lane-change guides also satisfy the rear rolling equation.
-        auto body=shape->second;body.translate(lever,0);
-        auto* item=new RunVehicleItem(body,QColor(QString::fromStdString(colour!=display_.vehicleColors.end()?colour->second:styleOf(location.segmentId).vehicleColor)),scale);
+        const QColor fill(QString::fromStdString(colour!=display_.vehicleColors.end()?colour->second:styleOf(location.segmentId).vehicleColor));
+        auto& kept=runVehicles_[v.id];kept.seen=true;
+        if(!kept.item || kept.type!=v.typeIndex || kept.scale!=scale) {
+            auto body=shape->second;body.translate(lever,0);
+            if(!kept.item){kept.item=new RunVehicleItem(body,fill,scale);scene_.addItem(kept.item);}
+            else{kept.item->setPath(body);kept.item->setPixelsPerMetre(scale);}
+            kept.type=v.typeIndex;kept.scale=scale;
+        }
+        auto* item=kept.item;
+        if(item->brush().color()!=fill)item->setBrush(fill);
+        item->setPen(Qt::NoPen);
         const double norm=std::hypot(heading.x,heading.y);
         item->setPos(at.x-lever*heading.x/norm,at.y-lever*heading.y/norm);
         item->setRotation(std::atan2(heading.y,heading.x)*180/std::numbers::pi);
         item->setData(3,lever); // local front-bumper coordinate, metres from rear axle
         item->setData(0,"run-vehicle");item->setData(1,QString::fromStdString(type.id));item->setData(2,QVariant::fromValue<qulonglong>(v.id));
-        item->setZValue(runLevels_.at(location.segmentId)*100.+11);scene_.addItem(item);runItems_.push_back(item);
+        item->setZValue(runLevels_.at(location.segmentId)*100.+11);
         if(runFollow_ && *runFollow_==v.id) {
             QPen outline(canvasStyle::selection(),2);outline.setCosmetic(true);
             item->setPen(outline);item->setZValue(item->zValue()+0.5);followed=item;
         }
     }
+    dropRunVehicles(false); // a vehicle gone, or not drawn this frame
     if(followed) {
         // D166: heading-up turns the world so the followed body's +x (its nose) points to the top
         // of the screen. Under fromScale(s,-s) world angles read anticlockwise on screen, so a

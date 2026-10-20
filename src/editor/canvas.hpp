@@ -21,7 +21,7 @@ class MapLayer;
 enum class MapStatus;
 class EditorCanvas : public QGraphicsView {
 public:
-    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone };
+    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node };
     explicit EditorCanvas(QWidget* parent = nullptr);
     ~EditorCanvas() override;
     void setMapProviders(std::vector<MapProvider>);
@@ -59,6 +59,8 @@ public:
     void setRunNetwork(const Network&);
     void setRunFrame(const SimState&);
     void clearRunFrame();
+    // D281: on by default; off paints the static network live, as before (tests compare the two).
+    void setRunLayerCache(bool on) { runLayerCache_=on; redraw(); }
     std::size_t renderedVehicles() const { return runFrame_.vehicles.size(); }
     // Pixels per metre, whatever the view's rotation (D166); equals |m11| when north is up.
     double viewScale() const { return std::hypot(transform().m11(), transform().m12()); }
@@ -139,6 +141,7 @@ public:
     // M8.6a (D161): a zone polygon is Ctrl+right-clicked vertex by vertex; Enter hands it over once it
     // has three, and the draft stays when the receiver refuses it (returns false).
     std::function<bool(std::vector<Point>)> zoneCommitted;
+    std::function<bool(std::vector<Point>)> nodeCommitted; // S0.1 (NODES §6): the Node tool shares the draft
     const std::vector<Point>& zoneDraft() const { return zoneDraft_; }
     std::function<void(Point)> duplicateRequested;
     std::function<void(Point)> translateRequested;
@@ -230,6 +233,7 @@ private:
     bool zonePress(QMouseEvent*);
     void commitZoneDraft();
     void drawZones();
+    void drawNodes();
     std::optional<SectionLine> sectionLineAt(Point) const;
     void drawSections();
     void drawRouteOverlay(const std::vector<std::string>&, const std::string& id, bool preview);
@@ -302,14 +306,24 @@ private:
     std::optional<LaneReference> nearestLane(Point) const;
     void insertVertex(Point);
     void drawRunItems();
+    // D281: while a run frame is shown, the static items under the lowest run level are painted
+    // into the cached background and hidden from the scene, so a Step repaints only what moves.
+    void bakeRunLayer();
+    void paintRunLayer(QPainter*, const QRectF&);
+    std::vector<QGraphicsItem*> runBaked_;
+    bool runLayerBaked_{};
     std::vector<QGraphicsItem*> runItems_;
+    // D283: run vehicles by id, moved each frame instead of rebuilt; the body they were drawn with.
+    struct RunVehicle { class RunVehicleItem* item{}; std::uint32_t type{}; double scale{}; bool seen{}; };
+    std::map<std::uint64_t,RunVehicle> runVehicles_;
+    void dropRunVehicles(bool all);
     std::map<std::string,int> runLevels_;
     std::map<std::string,std::string> runStyles_;
     std::map<std::string,RoadCrossbar> runHeadBars_;
     std::map<std::uint64_t,LaneChangePath> runLaneChangePaths_;
     SimState runFrame_;
     std::optional<std::uint64_t> runFollow_;
-    bool runHeadingUp_{};
+    bool runHeadingUp_{}, runLayerCache_{true};
     std::map<std::string,std::vector<Point>> runGeometry_;
     std::map<std::string,ConnectorEquation> runEquations_;
     std::map<std::pair<std::uint32_t,std::uint32_t>,RearAxlePath> runAxlePaths_;

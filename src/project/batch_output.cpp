@@ -1,6 +1,7 @@
 #include "batch_output.hpp"
 #include "csv_format.hpp"
 #include "los_output.hpp"
+#include "node_output.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 
@@ -17,9 +18,6 @@ std::vector<LosInput> losInputs(const BatchReport& r) {
     for (const auto& s : r.sections) inputs.push_back({s.approach, s.controlType, s.vehicles.mean.value_or(0), s.meanDelay.mean});
     return inputs;
 }
-Json estimateJson(const Estimate& e) {
-    return {{"n", e.n}, {"mean", value(e.mean)}, {"sd", value(e.sd)}, {"halfWidth95", value(e.halfWidth95)}};
-}
 std::vector<SeedRun> bySeed(std::vector<SeedRun> runs) {
     std::sort(runs.begin(), runs.end(), [](const SeedRun& a, const SeedRun& b) { return a.seed < b.seed; });
     return runs;
@@ -29,6 +27,10 @@ std::string seedList(const std::vector<std::uint32_t>& seeds) {
     for (const auto s : seeds) out += (out.empty() ? "" : " ") + std::to_string(s);
     return out;
 }
+}
+// The four-figure estimate every batch row is written with (BATCH §4).
+Json estimateJson(const Estimate& e) {
+    return {{"n", e.n}, {"mean", value(e.mean)}, {"sd", value(e.sd)}, {"halfWidth95", value(e.halfWidth95)}};
 }
 Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
     Json j;
@@ -55,6 +57,7 @@ Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
                                                                                                     : Json(losCell(m.meanDelay.mean, m.controlType, r.los))}});
         addLosJson(j, losInputs(r), r.los); // M5.5
     }
+    addBatchNodesJson(j, r); // S0.3: only with a Node
     j["meanDelay"] = estimateJson(r.meanDelay); j["completed"] = estimateJson(r.completed);
     j["pending"] = estimateJson(r.pending); j["safetyClamps"] = estimateJson(r.safetyClamps);
     if (r.redRunning) j["redRunning"] = estimateJson(*r.redRunning); // B-9 (D238): only with the keys
@@ -126,6 +129,7 @@ std::string batchCsv(const BatchReport& r, const std::vector<SeedRun>& runs) {
                 << losCell(m.meanDelay.mean, m.controlType, r.los) << '\n';
         writeLosCsv(out, losInputs(r), r.los); // M5.5
     }
+    writeBatchNodesCsv(out, r); // S0.3: only with a Node
     if (!r.lots.empty()) { // M8.5
         out << "\nlot,n,occupancyMean,occupancyMean_ci95,occupancyPeak_mean,occupancyEnd_mean,admitted_mean,departed_mean,"
                "gateWaitMean_s,gateWaitMean_ci95_s,gateWaitMax_mean_s,waitedOverTick_mean\n";

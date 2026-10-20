@@ -2,6 +2,7 @@
 #include "editor_window.hpp"
 #include "demand_catalog_dialog.hpp"
 #include "../commands/catalog_commands.hpp"
+#include "../project/mode_codec.hpp"
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QHeaderView>
@@ -20,7 +21,11 @@ template<class T> std::string nextCatalogId(const std::vector<T>& values,const s
 }
 void EditorWindow::editDemandCatalog() {
     DemandCatalog staged;
-    try{staged=resolveDemandCatalog(history_.document().definition.value_or(AuthoringDefinition{}),data_);}
+    try{
+        const auto authored=history_.document().definition.value_or(AuthoringDefinition{});
+        staged=resolveDemandCatalog(authored,data_);
+        staged.modes=modesOf(resolveModes(authored,data_)); // owned by the copy only when a matrix names one (D269)
+    }
     catch(const std::exception& e){showError(e);return;}
     const CatalogText tr=[this](const char* key){return text(key);};
     QDialog dialog(this);dialog.setObjectName("editorCatalogDialog");dialog.setWindowTitle(text("editorDemandCatalog"));

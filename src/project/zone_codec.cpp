@@ -1,5 +1,8 @@
 #include "zone_codec.hpp"
+#include "../core/validate.hpp"
 #include "document.hpp"
+#include "study_period_codec.hpp"
+#include "../model/network/polygon.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <set>
@@ -12,7 +15,7 @@ constexpr const char* kConnectors = "zoneConnectors";
 constexpr const char* kMatrices = "odMatrices";
 constexpr const char* kLots = "parkingLots";
 [[noreturn]] void invalid() { throw std::invalid_argument("EDIT_ZONE_INVALID"); }
-void exactKeys(const Json& j, std::initializer_list<const char*> keys) {
+void exactKeys(const Json& j, const std::vector<const char*>& keys) {
     if (!j.is_object() || j.size() != keys.size()) invalid();
     for (const auto* key : keys) if (!j.contains(key)) invalid();
 }
@@ -39,9 +42,20 @@ ZoneConnector parseConnector(const Json& j) {
     return {text(j, "id"), text(j, "zoneId"), text(j, "linkId"),
             direction == "origin" ? ZoneDirection::origin : ZoneDirection::destination, number(j.at("share"))};
 }
-OdMatrix parseMatrix(const Json& j) {
-    exactKeys(j, {"id", "startTime", "endTime", "compositionId", "zoneIds", "cells"});
-    OdMatrix m{text(j, "id"), number(j.at("startTime")), number(j.at("endTime")), text(j, "compositionId"), {}, {}};
+OdMatrix parseMatrix(const Json& j, const std::string& path) {
+    // S1.1 (STUDY_PERIODS §5): its own times or a period, never both and never neither.
+    if (j.is_object() && j.contains("periodId") == (j.contains("startTime") || j.contains("endTime")))
+        throw ValidationError({{"OD_PERIOD_AMBIGUOUS", path}});
+    // S1.2 (§5, §6): a composition or a mode, never both and never neither.
+    if (j.is_object() && j.contains("modeId") == j.contains("compositionId")) throw ValidationError({{"OD_TYPES_AMBIGUOUS", path}});
+    const bool period = j.contains("periodId"), mode = j.contains("modeId");
+    std::vector<const char*> keys{"id", "zoneIds", "cells", mode ? "modeId" : "compositionId"};
+    if (period) keys.push_back("periodId"); else { keys.push_back("startTime"); keys.push_back("endTime"); }
+    exactKeys(j, keys);
+    OdMatrix m;
+    m.id = text(j, "id");
+    if (period) m.periodId = text(j, "periodId"); else { m.startTime = number(j.at("startTime")); m.endTime = number(j.at("endTime")); }
+    if (mode) m.modeId = text(j, "modeId"); else m.compositionId = text(j, "compositionId");
     for (const auto& id : array(j.at("zoneIds"))) { if (!id.is_string()) invalid(); m.zoneIds.push_back(id.get<std::string>()); }
     for (const auto& row : array(j.at("cells"))) {
         m.cells.emplace_back();
@@ -71,29 +85,6 @@ template<class T, class F> void parseArray(const Json& document, const char* key
     try { for (const auto& value : values) out.push_back(parse(value)); }
     catch (const Json::exception&) { invalid(); }
 }
-
-double cross(Point o, Point a, Point b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); }
-bool onSegment(Point a, Point b, Point p) {
-    return std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x) && std::min(a.y, b.y) <= p.y && p.y <= std::max(a.y, b.y);
-}
-bool segmentsMeet(Point a, Point b, Point c, Point d) {
-    const double d1 = cross(c, d, a), d2 = cross(c, d, b), d3 = cross(a, b, c), d4 = cross(a, b, d);
-    if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return true;
-    return (d1 == 0 && onSegment(c, d, a)) || (d2 == 0 && onSegment(c, d, b)) ||
-           (d3 == 0 && onSegment(a, b, c)) || (d4 == 0 && onSegment(a, b, d));
-}
-// At least three finite points, and no two non-adjacent edges touch (the ring is simple).
-bool simplePolygon(const std::vector<Point>& p) {
-    if (p.size() < 3) return false;
-    for (const auto& point : p) if (!std::isfinite(point.x) || !std::isfinite(point.y)) return false;
-    const std::size_t n = p.size();
-    for (std::size_t i = 0; i < n; ++i)
-        for (std::size_t j = i + 1; j < n; ++j) {
-            if (j == i + 1 || (i == 0 && j == n - 1)) continue; // adjacent edges share a corner
-            if (segmentsMeet(p[i], p[(i + 1) % n], p[j], p[(j + 1) % n])) return false;
-        }
-    return true;
-}
 }
 
 void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
@@ -114,9 +105,13 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
     }
     if (!layer.odMatrices.empty()) {
         auto& out = document[kMatrices] = Json::array();
-        for (const auto& m : layer.odMatrices)
-            out.push_back({{"id", m.id}, {"startTime", m.startTime}, {"endTime", m.endTime}, {"compositionId", m.compositionId},
-                           {"zoneIds", m.zoneIds}, {"cells", m.cells}});
+        for (const auto& m : layer.odMatrices) {
+            Json row{{"id", m.id}, {"zoneIds", m.zoneIds}, {"cells", m.cells}};
+            if (m.modeId.empty()) row["compositionId"] = m.compositionId; else row["modeId"] = m.modeId; // S1.2
+            if (m.periodId.empty()) { row["startTime"] = m.startTime; row["endTime"] = m.endTime; }
+            else row["periodId"] = m.periodId; // S1.1
+            out.push_back(std::move(row));
+        }
     }
     if (!layer.parkingLots.empty()) {
         auto& out = document[kLots] = Json::array();
@@ -133,7 +128,9 @@ ZoneLayer parseZoneLayer(const Json& document, int schema) {
     ZoneLayer layer;
     parseArray(document, kZones, schema, layer.zones, parseZone);
     parseArray(document, kConnectors, schema, layer.zoneConnectors, parseConnector);
-    parseArray(document, kMatrices, schema, layer.odMatrices, parseMatrix);
+    std::size_t matrix = 0;
+    parseArray(document, kMatrices, schema, layer.odMatrices,
+               [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]"); });
     parseArray(document, kLots, schema, layer.parkingLots, parseLot);
     return layer;
 }
@@ -146,7 +143,15 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
     const auto id = [&](const std::string& value, const std::string& path) {
         if (value.empty() || !used.insert(value).second) issues.push_back({"ZONE_ID_INVALID", path + ".id"});
     };
-    std::set<std::string> zones, links;
+    std::set<std::string> zones, links, periods;
+    // S1.1 (STUDY_PERIODS §3): clock seconds, 0 <= start < end <= two days.
+    for (std::size_t i = 0; i < layer.studyPeriods.size(); ++i) {
+        const auto& p = layer.studyPeriods[i];const auto path = "studyPeriods[" + std::to_string(i) + "]";
+        if (p.id.empty() || !used.insert(p.id).second) issues.push_back({"PERIOD_INVALID", path + ".id"});
+        periods.insert(p.id);
+        if (!std::isfinite(p.start) || p.start < 0 || p.start >= kClockLimit) issues.push_back({"PERIOD_INVALID", path + ".start"});
+        if (!std::isfinite(p.end) || p.end > kClockLimit || !(p.end > p.start)) issues.push_back({"PERIOD_INVALID", path + ".end"});
+    }
     for (const auto& l : d.network.links) links.insert(l.id);
     for (std::size_t i = 0; i < layer.zones.size(); ++i) {
         const auto& z = layer.zones[i];const auto path = "zones[" + std::to_string(i) + "]";
@@ -165,9 +170,10 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
     for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {
         const auto& m = layer.odMatrices[i];const auto path = "odMatrices[" + std::to_string(i) + "]";
         id(m.id, path);
-        if (!std::isfinite(m.startTime) || !std::isfinite(m.endTime) || m.startTime < 0 || m.endTime <= m.startTime)
+        if (!m.periodId.empty()) { if (!periods.contains(m.periodId)) issues.push_back({"UNKNOWN_PERIOD", path + ".periodId"}); }
+        else if (!std::isfinite(m.startTime) || !std::isfinite(m.endTime) || m.startTime < 0 || m.endTime <= m.startTime)
             issues.push_back({"OD_PERIOD_INVALID", path});
-        if (m.compositionId.empty()) issues.push_back({"OD_COMPOSITION_MISSING", path + ".compositionId"});
+        if (m.modeId.empty() && m.compositionId.empty()) issues.push_back({"OD_COMPOSITION_MISSING", path + ".compositionId"});
         std::set<std::string> seen;
         for (std::size_t k = 0; k < m.zoneIds.size(); ++k) {
             const auto at = path + ".zoneIds[" + std::to_string(k) + "]";

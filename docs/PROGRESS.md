@@ -1,146 +1,178 @@
 # PROGRESS — TrafficSim
 
-Newest entry at the top: what changed and why. What to do next is in [`NEXT.md`](NEXT.md);
-decisions go once into the [decision record](decisions/RECORD.md). Keep about ten entries here;
-move older ones whole to the top of the newest [`archive/`](archive/README.md) PROGRESS log.
+Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGENTS.md#working-rules)
+(next work in [`NEXT.md`](NEXT.md); about ten entries, older ones whole to [`archive/`](archive/README.md)).
 
 ---
 
-## 2026-10-18 — Windows ships libthai for Thai line breaks (D245)
+## 2026-10-20 — Run view: vehicle items reused across frames (D283); pass complete
 
-The Windows diagnostic showed that the 257 px text was Thai ([evidence](evidence/windows-ui-red.md#round-6-thai-had-no-line-breaks-on-windows-d245--2026-10-18)).
-- **Cause:** Qt finds Thai line breaks through libthai, which it loads at run time as `thai.dll`. The
-  Windows runner had none, so a Thai sentence broke only at its spaces. A Linux probe gives 60 px
-  with libthai and 268 px without it. That is why D242–D244 did not change Windows.
-- **The owner's choice:** ship libthai with Windows.
-- **Fix:**
-  - CI and the package install MSYS2's libthai, as `thai.dll` with `libdatrie-1.dll` and `thbrk.tri`;
-  - the package ships them, with their LGPL licences;
-  - the editor points `LIBTHAI_DICTDIR` at `data/libthai` beside the executable.
-- **Tests:** the Thai pass of the narrow fixture requires a line break inside a Thai sentence. A
-  mutation to an unbroken Latin string is caught.
+The last item of the optimization pass. Each frame deleted and rebuilt every vehicle item.
+- **How:** run vehicles are kept by id and moved; a body is rebuilt only when the type or zoom
+  changes, and the items of vehicles gone are removed.
+- **Measured:** callgrind over 1,500 Steps 15,517 → 14,716 M Ir (−5.2 %); the wall clock moved
+  −2.5 %, inside its spread.
+- **Rows (run-presentation):** an item survives while its vehicle runs; none outlives its
+  vehicle; a followed outline moves; a reused frame equals a rebuilt one after a zoom. Four of
+  five mutants caught; a fill change has no forcing case in the fixture (one display type).
+- **The pass, Linux:** a Node adds +14–20 % (was +26–39 %); M2.6 run view 24,609 → 15,355 ms per
+  6,000 Steps (−38 %); a session's mandatory reads 32.6 → 22.4 KB.
+- **CI fix (PR #178):** the sanitizer's use-after-free was a range-for over `classes[0]` of a
+  temporary in MA6's test (now named first); MSVC needed `<nlohmann/json.hpp>` in `node_output.cpp`.
+  Windows then failed D281's photo row: its pictures are compared with only pixels more than 2
+  levels apart counted (blend rounding), and a failure prints its numbers. Its numbers then showed
+  a one-pixel band at the photo's border (≤60 levels on ≈1.2k px), so that row compares the interior.
 
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
 
-## 2026-10-18 — A wrapped Properties text asks only for its longest word (D244)
+The fourth item of the optimization pass. The word-wrapped `editorRunInfo` label sat in the central
+layout, so its new text every Step laid out the whole window (`QLayout::activate` ≈20 % of a Step).
+- **How:** the label lives in a host widget without a layout. A new text refits the label inside
+  the host, and the host's height changes only when the wrapped line count does. It looks the same.
+- **Measured:** M2.6, 6,000 Steps: 17,642 → 15,750 ms (−11 %; −36 % since the pass began).
+- **Rows (scenario-run-ui):** the status is as wide as the run view and shows all its lines; a
+  narrower window wraps it onto more; 20 Steps post fewer than 3 layout requests to the window.
+  Two mutants caught; dropping the resize refit survived, since a text change refits as well.
 
-The Windows diagnostic named the widget ([evidence](evidence/windows-ui-red.md#round-5-a-wrapped-texts-minimum-held-the-panel-d244--2026-10-18)).
-- **Cause:** `editorEffectiveBehaviour` asked for a 257 px minimum on Windows (Qt 6.5.3), against
-  69 px on Linux. That held the floating panel at 273 px, so the top forms never stacked.
-- **Fix:** `ReflowLabel`'s wrapped minimum is its longest word, never more than Qt's.
-- **Tests:** a check that every wrapped top text asks for no more than its word (plus 8 px). It
-  passes on Linux before and after; the evidence that it fails is the Windows run. Inflating Qt's
-  value fails without the cap and passes with it.
+## 2026-10-20 — Run view: the static network painted from the background cache (D281)
 
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`
+was 32 % of the run-view profile.
+- **How:** while a run frame is shown, the scene items under the lowest level's vehicles (surfaces,
+  markings, Connectors, zones, Nodes, conflict areas, the background image) are hidden and painted
+  by `drawBackground`, which QGraphicsView caches. Higher levels, counters and overlays stay live;
+  every `redraw()` rebuilds and re-bakes, so a selection or edit is never stale.
+- **Measured:** M2.6, 6,000 Steps, Linux RelWithDebInfo offscreen: 24,609 → 17,642 ms (−28 %).
+- **Rows (run-presentation):** cached and live pictures match (within 32 levels on under 1 % of
+  pixels, the pixmap's rounding); a selection mid-run repaints; a half-transparent background image
+  keeps its opacity; leaving the run shows every item. Five mutants caught.
+- **Owner check:** Windows paint (OWNER_SITTING E22).
 
-## 2026-10-18 — Top Properties buttons elide (D243)
+## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
 
-D242's diagnostic on Windows named the real cause ([evidence](evidence/windows-ui-red.md#round-4-a-top-group-button-held-the-panel-wide-d243--2026-10-18)).
-- **Cause:** the top forms' host was 273 px with no viewport. The appearance toggle's unwrappable
-  text set the floating panel's minimum width (Linux 218 px, Windows about 273).
-- **The owner's choice:** buttons shrink and elide with "…".
-- **Fix:** `ElidingToolButton` (full-text size, ellipsis minimum, `Preferred` policy, elided
-  paint) for the toggle, Apply behaviour type and Apply display.
-- **Tests:** a long-toggle row failed first (the dock went to 299 px), and three mutations are
-  caught.
+The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and
+NEXT was 88 % shipped history that PROGRESS and RECORD already hold.
+- **NEXT:** 13,877 → about 2.9 KB. The 2026-10-19 state list moved whole to
+  [archive/NEXT-state-2026-10-20.md](archive/NEXT-state-2026-10-20.md); the new state lists only
+  what is open, and adds S2 and S0.6, which it lacked.
+- **AGENTS:** RECORD is appended to, never read whole (≈70k tokens); the file-size rule now says
+  what the check enforces (fails above 500); `src/macro/` is in the layout. NEXT and PROGRESS point
+  to AGENTS instead of restating its rules.
+- **Stale lines fixed:** ARCHITECTURE's Macro row, ROADMAP's S0 line (S0.6; S0.4 moved to S3),
+  read-by-task rows for Macro and study periods, a `src/macro/` README, and the decision index
+  (a Macro topic row, D275–D279 summaries, five answered choices no longer "awaiting").
 
-`check` 178/178, Linux only. **Windows result:** the same failure (host 273 px), so the toggle was
-not the cause there. The narrow check now prints the dock, body and tab widths and the widest top
-widgets, so the next Windows run names the culprit.
+## 2026-10-20 — Node evaluation cost: sections by route, tracks in place (D279)
 
-## 2026-10-18 — Windows narrow Properties forms (D242)
+The owner ran an optimization pass and approved the recommended order; this is its first item.
+- **Measured** (Linux, GCC 13.3 RelWithDebInfo, callgrind, seed 42): four-leg with a Node 1,303.6 →
+  1,128.8 M Ir (−13.4 %), T-junction with a Node 256.2 → 233.2 M (−9.0 %). A Node now adds +20 %
+  and +14 % (was +39 % and +26 %, D264). `SectionAccumulator::observe` 325.8 → 150.9 M.
+- **How:** `observe` visits only the sections with a line on the vehicle's route, and advances
+  known tracks in place instead of moving every Track into a new vector each tick.
+- **Unchanged:** every output byte-identical (four shipped projects and two Node fixtures, run and
+  seeds 42–44), the pin and the TS rows.
+- **Tests:** two section rows, each killing a mutant that survived the suite (a section with only
+  its end line on the new route; a track kept after its vehicle left).
 
-The owner asked to fix CI ([evidence](evidence/windows-ui-red.md#round-3-a-narrow-form-kept-a-row-beside-its-label-d242--2026-10-18)).
-- **Failure:** `windows-desktop` failed `properties-layout-ui` (1×, 1.5×, 2×) with "A narrow form
-  kept a field beside its label", on main too.
-- **Cause:** a scrolled page is never narrower than its widest action button. On Linux the English
-  Link page is 248 px in the 200 px dock, 8 px short of two columns. A slightly wider Windows button
-  reaches them, so the form kept rows beside their labels.
-- **Fix:** `FormReflow` decides by the visible width (the scroll viewport's when that is less) and
-  watches the viewport.
-- **Tests:** the new row failed first with Windows' message, and both mutations are caught. A row
-  still beside its label in a narrow check now prints its form and widths.
+## 2026-10-20 — S0.6: Node rows in Results (D278); MA15 paused
 
-`check` 178/178, Linux only. Unconfirmed on Windows until `windows-desktop` runs.
+MA15 needs Sheffi (1985) from web.mit.edu, which the proxy still refused after the owner allowed
+it, so the owner chose other work ([NODES](reference/NODES.md) §15).
+- **Results → Nodes:**
+  - **a run:** the Node, leg and turn rows as the CSV block gives them (vehicles, delay,
+    unfinished, queue on legs, travel time on turns, LOS by the Node's control type);
+  - **a batch:** n, mean, CI and LOS on the mean;
+  - **a comparison:** no rows yet, and it says so.
 
-## 2026-10-18 — M2.6's red-running clamps traced (D241, no code change)
+  The marker comes first.
+- **Rows:** N19–N21 (`node-results-ui`). The workspace test and the UI audit list the new tab.
+- **Mutations:** seven caught. The batch LOS on mean + CI first survived; N20 now checks every
+  row's letter.
+- **Unchanged:** every output (editor-only), the pin and the TS rows. Linux offscreen only.
 
-NEXT's item 1 ([evidence](evidence/red-running.md#d241-the-added-m26-clamps)). A temporary probe
-was never committed.
-- **Where:** only seed 51 (3 → 5 at 2 s and 3 s) and seed 73 (0 → 1 at 3 s) change.
-- **None is a red-head hold.** Every added clamp is bound by a vehicle leader:
-  - Seed 51: a runner released at red onset, after braking for amber, meets the green flow at a
-    derived merge rule. It is let go 0.55 m behind a leader and hits the standstill cap (D105,
-    D201 B5); its follower clamps behind it.
-  - Seed 73: a runner held again when the 3 s window ends stops at 6 m/s², and its follower needs
-    10.6 m/s².
-- **Found:** at 2 s the seed-51 runner crosses after the window as committed under
-  `amberDeceleration`, so no event is counted. RED_RUNNING §3 now says so. Three §3 behaviours are
-  listed as owner choices.
+## 2026-10-19 — S2.4: Run Macro in stages, Macro links, link types (D277)
 
-`check` 178/178, Linux only. CLI 42 byte-identical after the probe was reverted.
+The owner chose §19 (a) and wants more capability later
+([MACRO_NETWORK](reference/MACRO_NETWORK.md) §20).
+- **Engine:** a convergence record per iteration (gap and step), and an observer that can cancel
+  between iterations.
+- **Run Macro…:**
+  - asks for the period and runs on its own worker;
+  - shows the six stages with their status and the live gap;
+  - Cancel stops between iterations;
+  - it is not an Undo step.
+- **Results → Macro links:** a row per arc with the marker. An edit keeps the rows and marks them
+  stale until Undo returns to the result's revision. Export and Copy write the Macro CSV.
+- **Run settings:** the target gap and the iteration cap; the defaults write nothing.
+- **Network → Link types:** Add, Edit and Delete (a type in use cannot go). The Link page gets a
+  Macro type combo.
+- **Rows:** MA14 (`macro-ui`), MA18 and the stage and command rows. The workspace and object-group
+  tests list the new page.
+- **Mutations:** nine caught.
+- **Found:** a multi-line note made the Objects dock too tall for the wide-canvas row. It is now one
+  paragraph.
+- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS rows.
+  Linux offscreen only.
 
-## 2026-10-18 — Give-way line stop implemented (D240)
+## 2026-10-19 — How Visum and Aimsun organise a Macro run (D276, docs only)
 
-D239's contract ([evidence](evidence/give-way-stop.md)).
-- **Rule:** on a tick that would clamp at a binding give-way line, a stop within the type's maximum
-  brakes at `v²/(2·gap)` instead. BA147–BA149 failed first; the guards were proved by mutation.
-- **Measured:** the shipped Yield T-junction's 6 clamps at seeds 42–81 go, with delays unchanged.
-  Every other shipped output is byte-identical. The 11 replaced ticks braked at 2.5–7.4 m/s². Ir
-  +0.11–0.15 %.
-- **Correction:** D232's "none at seeds 42–51" was wrong (seed 46 has 2).
-- **Sanitizer:** CI ASan caught BA151 reading a reference into a temporary scenario; the row now
-  holds it in a local.
+The owner asked whether a Macro run has a working procedure, then for a study of other programs
+([evidence](evidence/macro-run-procedures.md)).
+- **Visum:** an ordered procedure sequence (generation → distribution → mode choice → skim →
+  assignment) in the version file, logged. Its equilibrium assignment balances routes in an inner
+  loop and searches for new routes in an outer loop, to a gap or a cap.
+- **Aimsun Next:** a Static Assignment Scenario (demand, outputs) and an Experiment (method,
+  iteration cap, relative gap), with convergence data retrieved from the output database.
+- **TrafficSim:** `runMacro`'s six stages are now named in [MACRO_NETWORK](reference/MACRO_NETWORK.md)
+  §19, with a choice for S2.4 that the owner makes before any code.
+- **Caveat:** the help pages could not be opened from the session; the facts come from search
+  summaries and are marked so.
 
-`check` 178/178, Linux only.
+## 2026-10-19 — S2.3: Macro run settings, outputs and CLI (D275)
 
-## 2026-10-18 — Give-way line stop contract (D239, docs only)
+A Macro run now writes its results ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §18). The editor
+surface is split off as S2.4, since it is a second system (a worker job, a Results tab, stale
+marking, a link-type editor).
+- **Settings (schema 51):** `definition.macroSettings{targetGap, maxIterations}`, written only
+  when set. Absent means 10⁻⁴ (D272) and 1000 iterations; bad values are `INVALID_MACRO_SETTING`.
+- **Run:** `runMacro(doc, data, period)` names a period as its study-period id or
+  `matrix:<id>`, refuses the graph's and demand's issues, and adds `MACRO_NOT_CONVERGED` at the
+  cap. The input manifest records every file read.
+- **Outputs:** `macroJson` and `macroCsv`, one row per arc with the link type, veh/h per class,
+  pcu/h, V/C, free and congested time; both carry the not-validated marker.
+- **CLI:** `--macro PERIOD` with `--project` (and `--csv`, `--data-dir` only).
+- **Rows:** MA12, MA13 (ctest `macrooutput`, `cli-macro*`). Writing MA12 showed that S2.2's MA11
+  twin had no route choice (each entry Link had its own zone connector); S2.3's fixture fans one
+  origin out to two routes, and MA11's comment now says so.
+- **Mutations:** nine caught. A missing class column first survived (the row checked only its
+  prefix); MA13 now compares a whole CSV row.
+- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS
+  rows. Linux only.
 
-The owner asked for the easiest open item: M3.2.8a.1's give-way line clamps (D232)
-([GIVE_WAY_STOP](reference/GIVE_WAY_STOP.md)).
-- **The owner's choice:** brake to stop at the line.
-- **The contract:** only on a tick that today clamps at a binding give-way line, and only when the
-  stop fits the type's maximum, the vehicle brakes at `v²/(2·gap)` and no clamp is reported.
-  Everything else stays byte-identical. Rows BA146–BA151.
+## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
 
-## 2026-10-18 — B-9 red-light running implemented (D238); tier B complete
-
-D237's contract ([evidence](evidence/red-running.md)).
-- **Rule:** a hashed share of drivers pass a red head in its first seconds while moving; a
-  `red-running` event when they pass the line; `redRunning` in reports only with the keys. BA139
-  and BA144 failed first against a step that ignored the keys.
-- **File and editor:** schema 44, refused below; the pair and ranges validated on both models; two
-  behaviour-dialog rows. Every hook proved by mutation.
-- **Measured:** shipped runs byte-identical. At a 5 % share runs are rare and rise steeply with the
-  window (four-leg 2, 8, 24 in 40 runs for 1–3 s); delay falls within its half-width. Ir −0.44 %
-  (layout).
-
-`check` 177/177, Linux only.
-
-## 2026-10-18 — B-9 red-light running contract (D237, docs only)
-
-NEXT's item, the last of tier B ([RED_RUNNING](reference/RED_RUNNING.md)). Today red holds
-every vehicle that can still stop.
-- **The owner's choices:** only in the first T seconds of red and only while moving; a fixed share
-  of drivers decided once per vehicle by a hash; no new interaction with crossing traffic, but each
-  run is counted.
-- **The contract:** `redRunningShare` and `redRunningTime` as a pair at schema 44; W74's hash at
-  index 15; a `red-running` event and a `redRunning` count written only with the keys; rows
-  BA138–BA145.
-
-## 2026-10-18 — B-4 driver-factor spread implemented (D236)
-
-D235's contract ([evidence](evidence/driver-factor-spread.md)).
-- **Draw:** `samplePending` takes the standard deviation from the type's own behaviour, 0.15 without
-  the key; the random stream is unchanged. Rows BA132, BA133, BA135 and BA136 failed first against
-  the 0.15 stub.
-- **File and editor:** schema 43, refused below; `INVALID_BEHAVIOUR_PARAMETER` on both models; a
-  behaviour-dialog row. Codec, validation and the row proved by mutation.
-- **Measured:** shipped runs byte-identical. Spreads of 0, 0.3 and 0.5 leave mean delay inside its
-  half-width on all four projects; clamps rise with a wide spread. Ir ±0.015 %.
-
-`check` 176/176, Linux only.
+The owner chose S2. [MACRO_NETWORK](reference/MACRO_NETWORK.md) fixes how the drawn network
+compiles into a Macro graph and how one study period is assigned. Nothing is implemented.
+- **Graph:** Links split at Connector stations become capacitated links. Connectors and zone
+  connectors become uncapacitated arcs. Nodes are not read yet.
+- **Values:** `Link::linkType` and link types `{capacityPerLane, freeSpeed, vdfId, source}` at
+  schema 50, none shipped; BPR 0.15/4 as data (D158).
+- **Demand:** pcu/h by connector share for one period; `MODE_PCU_MISSING` is refused.
+- **Engine:** a pure `src/macro/` Frank–Wolfe with a named gap formula; non-convergence is
+  flagged, never hidden.
+- **Rows:** MA1–MA15, planned.
+- **Source checks** changed three recommendations:
+  - the BPR pair assumes practical capacity, so a type's source must say which capacity it gives;
+  - Boyce et al. (2004) argue for a 0.01 % gap;
+  - the Sioux Falls data are for academic research only, so the benchmark stays local until the
+    licence is confirmed.
+- **The owner answered the same day (D272):**
+  - one class per mode, with mode bans on link types;
+  - a textbook benchmark instead of Sioux Falls;
+  - a 0.01 % gap;
+  - S0.4 moves to S3;
+  - the other choices as recommended.
 
 ## Older entries
 

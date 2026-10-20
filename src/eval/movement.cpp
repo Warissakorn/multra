@@ -24,8 +24,19 @@ double walkQueue(std::vector<QueuedVehicle>& vehicles, double maxGap) {
 }
 }
 double queueLength(std::vector<QueuedVehicle> vehicles, double maxGap) { return walkQueue(vehicles, maxGap); }
+namespace {
+// S0.3 (D264): a Node's turns and legs are measured by the same machinery as authored sections and
+// counters, appended after them so every authored row keeps its index and its numbers.
+EvaluationSpec withNodes(EvaluationSpec spec) {
+    for (const auto& node : spec.nodes) {
+        for (const auto& turn : node.turns) spec.sections.push_back(turn.section);
+        for (const auto& leg : node.legs) spec.counters.push_back({leg.name, leg.queueLines});
+    }
+    return spec;
+}
+}
 MovementAccumulator::MovementAccumulator(EvaluationSpec spec)
-    : spec_(std::move(spec)), count_(spec_.movementNames.size()),
+    : spec_(withNodes(std::move(spec))), count_(spec_.movementNames.size()),
       delay_(spec_.movementNames.size()), travel_(spec_.movementNames.size()),
       queueSum_(spec_.counters.size()), queueMax_(spec_.counters.size()),
       sections_(spec_.sections, spec_.warmup, spec_.end, spec_.cooldown.has_value()),
@@ -169,6 +180,17 @@ MovementReport MovementAccumulator::report(const SimState& end) const {
     if (end.scenario && std::any_of(end.scenario->behaviours.begin(), end.scenario->behaviours.end(),
                                     [](const auto& b) { return b.redRunningShare.has_value(); })) r.redRunning = summary.redRunning;
     r.sections = sections_.report(); r.los = spec_.los;
+    if (!spec_.nodes.empty()) {
+        std::size_t turns = 0, legs = 0;
+        for (const auto& node : spec_.nodes) { turns += node.turns.size(); legs += node.legs.size(); }
+        const auto firstTurn = r.sections.end() - static_cast<std::ptrdiff_t>(turns);
+        const std::vector<SectionRow> turnRows(firstTurn, r.sections.end());
+        r.sections.erase(firstTurn, r.sections.end());
+        std::vector<std::pair<double, double>> legQueues;
+        for (auto q = r.queues.end() - static_cast<std::ptrdiff_t>(legs); q != r.queues.end(); ++q) legQueues.push_back({q->meanLength, q->maxLength});
+        r.queues.erase(r.queues.end() - static_cast<std::ptrdiff_t>(legs), r.queues.end());
+        r.nodes = nodeRows(spec_.nodes, turnRows, legQueues);
+    }
     r.lots = lots_.report(end); r.parked = parkedCount(end); // M8.5
     r.unassigned = unassigned_;
     r.pending = pendingCount(end); r.active = end.vehicles.size(); r.time = end.time;

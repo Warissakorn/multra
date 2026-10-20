@@ -19,7 +19,7 @@ Point centroid(const std::vector<Point>& polygon) {
 }
 }
 bool EditorCanvas::zonePress(QMouseEvent* e) {
-    if (tool_ != Tool::zone || !document_ || e->button() != Qt::RightButton || !(e->modifiers() & Qt::ControlModifier))
+    if ((tool_ != Tool::zone && tool_ != Tool::node) || !document_ || e->button() != Qt::RightButton || !(e->modifiers() & Qt::ControlModifier))
         return false; // D84: Ctrl+right-click authors; a left click only selects
     zoneDraft_.push_back(world(e->pos(), false));
     redraw();
@@ -30,7 +30,8 @@ void EditorCanvas::commitZoneDraft() {
     auto polygon = zoneDraft_;
     zoneDraft_.clear();
     redraw();
-    if (zoneCommitted && !zoneCommitted(polygon)) { zoneDraft_ = std::move(polygon); redraw(); }
+    const auto& committed = tool_ == Tool::node ? nodeCommitted : zoneCommitted;
+    if (committed && !committed(polygon)) { zoneDraft_ = std::move(polygon); redraw(); }
 }
 void EditorCanvas::drawZones() {
     if (!document_) return;
@@ -67,11 +68,31 @@ void EditorCanvas::drawZones() {
             }
         }
     }
-    if (tool_ == Tool::zone && !zoneDraft_.empty()) {
+    if ((tool_ == Tool::zone || tool_ == Tool::node) && !zoneDraft_.empty()) {
         outline(zoneDraft_, true);
         const double r = 3 / viewScale();
         QPen pen(canvasStyle::active(), 2); pen.setCosmetic(true);
         for (const auto& p : zoneDraft_) scene_.addEllipse(p.x - r, p.y - r, 2 * r, 2 * r, pen)->setZValue(200008);
+    }
+}
+// S0.1 (NODES §6): a Node is a solid outline over the Links with its name at the centroid.
+void EditorCanvas::drawNodes() {
+    if (!document_) return;
+    for (const auto& node : document_->network.nodes) {
+        if (node.polygon.size() < 3) continue;
+        QPainterPath shape;
+        for (std::size_t i = 0; i < node.polygon.size(); ++i)
+            i ? shape.lineTo(node.polygon[i].x, node.polygon[i].y) : shape.moveTo(node.polygon[i].x, node.polygon[i].y);
+        shape.closeSubpath();
+        QPen pen(canvasStyle::ink(), node.generated ? 1.5 : 2, node.generated ? Qt::DotLine : Qt::SolidLine);
+        pen.setCosmetic(true);
+        auto* item = scene_.addPath(shape, pen, QBrush(Qt::NoBrush));
+        item->setZValue(200005);
+        item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
+        const auto c = centroid(node.polygon);
+        auto* label = scene_.addSimpleText(QString::fromStdString(node.name.empty() ? node.id : node.name));
+        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(200006);
     }
 }
 }

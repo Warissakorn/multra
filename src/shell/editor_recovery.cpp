@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_macro.hpp"
 #include "editor_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -18,6 +19,8 @@ EditorWindow::~EditorWindow() {
     // Every worker can post to this window; cancel and join before QObject/member teardown.
     for (auto& [generation, worker] : batchWorkers_) *worker.cancel = true;
     for (auto& [generation, worker] : batchWorkers_) if (worker.thread.joinable()) worker.thread.join();
+    if (macro_) macro_->stop(); // S2.4: the Macro worker too
+
     // Qt destroys child widgets after C++ members. Focus/leave events during teardown must
     // not let the canvas repaint a document whose owning History has already been destroyed.
     canvas_->setDocument(nullptr);
@@ -73,7 +76,7 @@ void EditorWindow::recoverFile(const QString& file) {
     if(!lock->tryLock())throw std::runtime_error("EDIT_RECOVERY_LOCK");
     auto document=readEditorDocument(file);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
-    clearRecovery();clearRun();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
+    clearRecovery();clearRun();discardMacro();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
     automaticRevision_=conflictRevision_=UINT64_MAX;
     recoveryLock_=std::move(lock);recoveryFile_=file;autosavedRevision_.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));

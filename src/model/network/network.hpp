@@ -27,6 +27,7 @@ struct Link {
     std::vector<MarkingType> boundaryMarkings{};
     // M3.3.2a, schema 21: a link behaviour type id; absent keeps each type's own behaviour.
     std::optional<std::string> behaviourTypeId{};
+    std::optional<std::string> linkTypeId{}; // S2.1 (MACRO_NETWORK §4, D273), schema 50: Macro only
     bool operator==(const Link&) const = default;
 };
 struct LaneReference {
@@ -121,6 +122,12 @@ struct NetworkSignalHead {
     std::string controllerId; int groupNumber{};
     bool operator==(const NetworkSignalHead&) const = default;
 };
+// S0 (NODES §2): a polygon over a junction. It references nothing; what lies inside is derived.
+// `generated` marks one the program drew, until a person edits it.
+struct Node {
+    std::string id, name; std::vector<Point> polygon; bool generated{};
+    bool operator==(const Node&) const = default;
+};
 // DrivingSide lives in core (src/core/lateral_types.hpp) since M3.7 slice 1 (D187).
 struct Network {
     std::string id;
@@ -131,6 +138,7 @@ struct Network {
     RightOfWay rightOfWay; // M3.2.2, schema 14: authored controls (control.hpp)
     std::vector<AuthoredQueueCounter> queueCounters; // M3.2.6b, schema 16
     std::vector<TravelTimeSection> travelTimeSections; // M5.4, schema 23
+    std::vector<Node> nodes; // S0 (NODES §2, D261), schema 48
     bool operator==(const Network&) const = default;
 };
 // A place a Signal head can stand -- a Link lane or a Connector path -- with its polyline and

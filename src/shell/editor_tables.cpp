@@ -36,10 +36,10 @@ QString metres(double value) { return editorDesign::formatValue(value,2); }
 // Task groups of the Objects dock (UI slice c, B16). Pages are named by their registered key;
 // the in-group order is construction order, so no tab moves.
 const std::pair<const char*,std::vector<std::string>> objectGroups[]={
-    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable"}},
+    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable","editorLinkTypeTable"}},
     {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
-    {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable"}},
-    {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable"}},
+    {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable","editorPeriodTable","editorModeTable"}},
+    {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable","editorNodeTable"}},
     {"editorObjectGroupResults",{"editorResultsTable"}},
     {"editorObjectGroupProblems",{"editorProblemTable"}}};
 }

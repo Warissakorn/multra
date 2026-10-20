@@ -43,6 +43,10 @@ void SectionAccumulator::bind(const SimState& state) {
             // A provisional route may contain the start and choose its end only later.
             start_[k].push_back(reversed ? none : a); finish_[k].push_back(reversed ? none : b);
         }
+    sectionsOfRoute_.assign(s.routes.size(), {});
+    for (std::size_t r = 0; r < s.routes.size(); ++r)
+        for (std::size_t k = 0; k < sections_.size(); ++k)
+            if (!std::isnan(start_[k][r]) || !std::isnan(finish_[k][r])) sectionsOfRoute_[r].push_back(k);
 }
 bool SectionAccumulator::inPeriod(double time) const {
     constexpr double slack = 1e-9; // the period's bounds, as MovementAccumulator applies them
@@ -108,7 +112,7 @@ void SectionAccumulator::observe(const SimState& state) {
             from = *mapped; fromRoute = to; // mapping coordinates does not add travelled metres
         }
         const double moved = std::max(0.0, distance - from);
-        for (std::size_t k = 0; k < sections_.size(); ++k) {
+        for (const std::size_t k : sectionsOfRoute_[route]) {
             const auto passage = [&](const auto& lines) {
                 const double before = std::isnan(lines[k][fromRoute]) ? lines[k][route] : lines[k][fromRoute];
                 return crossing(from, before, distance, lines[k][route], t.time, time, entry);
@@ -127,40 +131,48 @@ void SectionAccumulator::observe(const SimState& state) {
         }
         t.travelled += moved; t.freeFlowAt += moved / t.desiredSpeed;
     };
-    std::vector<Track> next;
-    next.reserve(state.vehicles.size());
-    std::vector<bool> seen(tracks_.size());
+    // Known tracks advance in place and new vehicles' tracks wait in `added_`, so a tick moves no
+    // Track; the calls into close() keep the fleet's order, so the sums are unchanged (D279).
+    added_.clear();
+    seen_.assign(tracks_.size(), 0);
     for (const auto& v : state.vehicles) {
         const auto it = std::lower_bound(tracks_.begin(), tracks_.end(), v.id, byId);
         const bool known = it != tracks_.end() && it->id == v.id;
-        Track t;
-        if (known) { seen[static_cast<std::size_t>(it - tracks_.begin())] = true; t = std::move(*it); }
-        else t = makeTrack(v.id, v.routeIndex, v.enteredTime, v.desiredSpeed, v.scheduledTime);
+        if (known) seen_[static_cast<std::size_t>(it - tracks_.begin())] = 1;
+        else added_.push_back(makeTrack(v.id, v.routeIndex, v.enteredTime, v.desiredSpeed, v.scheduledTime));
+        Track& t = known ? *it : added_.back();
         t.type = v.typeIndex;
         advance(t, v.routeIndex, v.distance, state.time, !known);
         if (piecewise_) t.desiredSpeed = v.areaSpeed > 0 && v.areaSpeed < v.desiredSpeed ? v.areaSpeed : v.desiredSpeed; // in force (§4, §7.3)
         t.route = v.routeIndex; t.distance = v.distance; t.speed = v.speed; t.time = state.time;
-        next.push_back(std::move(t));
     }
     // Terminal evidence brackets the final crossing at the selected route's end (within one tick).
     for (std::size_t i = 0; i < tracks_.size(); ++i) {
         auto& t = tracks_[i];
-        if (seen[i] || !arrived.contains(t.id)) continue;
+        if (seen_[i] || !arrived.contains(t.id)) continue;
         const auto route = slot(arrived.at(t.id)->routeId);
         advance(t, route, routeLength_[route], state.time, false);
     }
     for (const auto& [id, arrival] : arrived) {
         if (std::any_of(tracks_.begin(), tracks_.end(), [&](const auto& t) { return t.id == id; }) ||
-            std::any_of(next.begin(), next.end(), [&](const auto& t) { return t.id == id; })) continue;
+            std::any_of(added_.begin(), added_.end(), [&](const auto& t) { return t.id == id; })) continue;
         const auto d = departed.find(id);
         if (d == departed.end()) continue;
         auto t = makeTrack(id, slot(d->second.routeId), d->second.time, d->second.desiredSpeed, d->second.scheduledTime);
         const auto route = slot(arrival->routeId);
         advance(t, route, routeLength_[route], arrival->time, true);
     }
-    // The engine keeps its fleet in id order; a hand-built state need not.
-    std::sort(next.begin(), next.end(), [](const Track& a, const Track& b) { return a.id < b.id; });
-    tracks_ = std::move(next);
+    // The tracks of vehicles still in the fleet, in id order: the engine adds vehicles in id order,
+    // and a hand-built state need not.
+    std::size_t kept = 0;
+    for (std::size_t i = 0; i < tracks_.size(); ++i)
+        if (seen_[i]) { if (kept != i) tracks_[kept] = std::move(tracks_[i]); ++kept; }
+    tracks_.resize(kept);
+    const auto byTrackId = [](const Track& a, const Track& b) { return a.id < b.id; };
+    if (!std::is_sorted(added_.begin(), added_.end(), byTrackId)) std::sort(added_.begin(), added_.end(), byTrackId);
+    const bool appended = tracks_.empty() || added_.empty() || tracks_.back().id < added_.front().id;
+    for (auto& t : added_) tracks_.push_back(std::move(t));
+    if (!appended) std::inplace_merge(tracks_.begin(), tracks_.end() - static_cast<std::ptrdiff_t>(added_.size()), tracks_.end(), byTrackId);
 }
 std::vector<SectionRow> SectionAccumulator::report() const {
     std::vector<SectionRow> rows;

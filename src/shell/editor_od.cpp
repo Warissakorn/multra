@@ -1,4 +1,7 @@
 #include "editor_window.hpp"
+#include "../project/od_demand.hpp"
+#include "../project/mode_codec.hpp"
+#include "../commands/catalog_commands.hpp"
 #include "od_lot_dialogs.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/zone_commands.hpp"
@@ -67,13 +70,19 @@ void EditorWindow::refreshOd() {
         odRevision_ = history_.revision();
         const QSignalBlocker block(odTable_);
         odTable_->setRowCount(static_cast<int>(layer.odMatrices.size()));
+        const auto modes = namesMode(layer) ? modeChoices() : std::vector<std::pair<std::string, QString>>{};
         for (int r = 0; r < odTable_->rowCount(); ++r) {
             const auto& m = layer.odMatrices[static_cast<std::size_t>(r)];
             double total = 0;
             for (const auto& row : m.cells) total = std::accumulate(row.begin(), row.end(), total);
-            const QStringList values{QString::fromStdString(m.id),
-                                     editorDesign::formatValue(m.startTime, 0) + QStringLiteral("–") + editorDesign::formatValue(m.endTime, 0),
-                                     QString::fromStdString(m.compositionId), QString::number(m.zoneIds.size()),
+            // S1.1: a matrix placed by a study period shows the period's name.
+            QString period = editorDesign::formatValue(m.startTime, 0) + QStringLiteral("–") + editorDesign::formatValue(m.endTime, 0);
+            for (const auto& [pid, label] : periodChoices()) if (pid == m.periodId) period = label;
+            // S1.2: a matrix drawing from a mode shows the mode's name.
+            QString types = QString::fromStdString(m.modeId.empty() ? m.compositionId : m.modeId);
+            if (!m.modeId.empty()) for (const auto& [mid, label] : modes) if (mid == m.modeId) types = label;
+            const QStringList values{QString::fromStdString(m.id), period,
+                                     types, QString::number(m.zoneIds.size()),
                                      editorDesign::formatValue(total, 0)};
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(m.id));
@@ -105,10 +114,15 @@ void EditorWindow::editOd(const std::string& id) {
     if (id.empty() && !compositions.empty()) matrix.compositionId = compositions.front().first;
     std::vector<Choice> zones;
     for (const auto& z : d.zones.zones) zones.push_back({z.id, QString::fromStdString(z.name.empty() ? z.id : z.name)});
-    const auto edited = editOdMatrix(this, matrix, zones, compositions, [this](const char* key) { return text(key); });
+    const auto edited = editOdMatrix(this, matrix, zones, compositions, periodChoices(), modeChoices(), [this](const char* key) { return text(key); });
     if (!edited) return;
     std::string created;
-    if (execute(id.empty() ? "editorAddOdMatrix" : "editorEditOdMatrix", [&](auto& doc) { created = putOdMatrix(doc, *edited); })) {
+    std::vector<Mode> installed;
+    try { installed = modesOf(resolveModes(d.definition.value_or(AuthoringDefinition{}), data_)); } catch (const std::exception&) {}
+    if (execute(id.empty() ? "editorAddOdMatrix" : "editorEditOdMatrix", [&](auto& doc) {
+            created = putOdMatrix(doc, *edited);
+            ownModesWhenNamed(doc, installed); // S1.2 (D269): one step with the matrix
+        })) {
         showOd();
         for (int r = 0; r < odTable_->rowCount(); ++r)
             if (odTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) odTable_->selectRow(r);

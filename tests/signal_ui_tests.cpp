@@ -9,6 +9,7 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QDialog>
 #include <QDoubleSpinBox>
 #include <QFile>
@@ -204,6 +205,47 @@ int main(int argc,char** argv) {
         require(documentJson(w.history().document())["schemaVersion"]==27,"A cool-down did not write schema 27");
         w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
         require(!w.history().document().definition->evaluation,"Undo did not remove the cool-down");
+        // M3.2.8a.1 (D251, BA167): the clamp rules are three boxes there, all ticked by default; unticking
+        // one writes it false at schema 45 and undoes in one step with the rest.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            for(const char* name:{"editorLeaderTravel","editorSideEntryAtLine","editorRedLineStop"}){
+                auto* box=dialog?dialog->findChild<QCheckBox*>(name):nullptr;
+                require(box && box->isChecked(),(std::string(name)+" missing or not ticked by default").c_str());
+            }
+            dialog->findChild<QCheckBox*>("editorSideEntryAtLine")->setChecked(false);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto& rules=w.history().document().definition->clampRules;
+        require(rules.leaderTravel && !rules.sideEntryAtLine && rules.redLineStop,"The unticked rule did not reach the document");
+        const auto ruled=documentJson(w.history().document());
+        require(ruled["schemaVersion"]==45 && ruled["definition"]["clampRules"]==Json{{"sideEntryAtLine",false}},"An off rule did not write schema 45");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore the rule");
+        // JOIN_ANTICIPATION §5 (D255, BA172): the fourth box is unticked by default; ticking it writes true at 46.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            auto* box=dialog?dialog->findChild<QCheckBox*>("editorJoinAnticipation"):nullptr;
+            require(box && !box->isChecked(),"editorJoinAnticipation missing or ticked by default");
+            box->setChecked(true);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto joined=documentJson(w.history().document());
+        require(joined["schemaVersion"]==46 && joined["definition"]["clampRules"]==Json{{"joinAnticipation",true}},"joinAnticipation did not write schema 46");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not clear joinAnticipation");
+        // LINE_APPROACH §7 (D258, BA178): the fifth box is ticked by default; unticking it writes false at 47.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            auto* box=dialog?dialog->findChild<QCheckBox*>("editorStandingStopFloor"):nullptr;
+            require(box && box->isChecked(),"editorStandingStopFloor missing or not ticked by default");
+            box->setChecked(false);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto floored=documentJson(w.history().document());
+        require(floored["schemaVersion"]==47 && floored["definition"]["clampRules"]==Json{{"standingStopFloor",false}},"standingStopFloor off did not write schema 47");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore standingStopFloor");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

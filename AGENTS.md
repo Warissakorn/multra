@@ -85,7 +85,7 @@ below, whose reasoning is D7. The ones that get broken by accident:
    carries a "not yet validated" marker.
 5. **Content is data, not code.** Vehicle types, behaviour presets, LOS thresholds live in
    `data/`. If adding the 50th one needs a code edit, fix the boundary instead.
-6. **Files stay near 500 lines.** Check with `trafficsim-check-file-sizes .`
+6. **Files stay at or under 500 lines.** `trafficsim-check-file-sizes .` fails above 500; split before that.
 7. **Never leave the build red.** If it cannot be made green, revert to the last green commit
    and write down what was attempted.
 8. **Never close a milestone that has not met its gate.** Merged code is not a passed gate.
@@ -108,6 +108,8 @@ below, whose reasoning is D7. The ones that get broken by accident:
   non-obvious decision, in a short entry; keep about ten entries and move older ones whole to the
   archive. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
   next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
+- **Append to `docs/decisions/RECORD.md`, never read it whole** (≈70k tokens): add the row with a
+  shell append, and read a cited row by its anchor with `grep -n 'id="dNNN"'` or the file's tail.
 
 ## Session end
 
@@ -127,6 +129,7 @@ src/project/    load, save, revisions, validation
 src/editor/     canvas: tools, gestures, run view
 src/shell/      window, inspector, tables, results, layout, palette, i18n
 src/eval/       event stream → measurements
+src/macro/      static assignment: Macro graph and Frank–Wolfe — imports nothing (M10.1)
 src/runner/     multi-seed batches and scenario comparison (M5)
 src/lab/        behaviour lab: tuning ring, live run and retune (D165)
 src/geo/        Qt-free PROJ transforms and XYZ tile math for the OSM background (desktop only)

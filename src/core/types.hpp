@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lateral_types.hpp"
+#include "line_state_types.hpp"
 #include "parking_types.hpp"
 #include "speed_decision_types.hpp"
 #include <cstdint>
@@ -73,12 +74,12 @@ struct DriverBehaviour {
     LateralParameters lateral; // M3.7 (LATERAL.md §9, D187)
     std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
     std::optional<double> driverFactorSpread, redRunningShare, redRunningTime; // B-4 (DRIVER_FACTOR, D236): the factor's deviation; B-9 (RED_RUNNING, D238): a pair
+    bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool operator==(const DriverBehaviour&) const = default;
 };
-struct VehicleAxles {
-    double wheelbase{}, frontOverhang{}, rearOverhang{};
-    bool operator==(const VehicleAxles&) const = default;
-};
+struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
+// S1.2 (STUDY_PERIODS §7, D270): a cited passenger-car unit. Absent is unknown; Micro never reads it.
+struct Pcu { double value{}; std::string source; bool operator==(const Pcu&) const = default; };
 struct VehicleType {
     std::string id;
     double length{}, width{};
@@ -86,7 +87,7 @@ struct VehicleType {
     double maxAcceleration{}, comfortableDeceleration{}, maxDeceleration{};
     std::string behaviourId; std::optional<int> kerbLanes; // B-7 (LANE_PREFERENCE, D234): enters on lanes 0..N-1
     // Display kinematics only; traffic following/reservations still use length.
-    std::optional<VehicleAxles> axles;
+    std::optional<VehicleAxles> axles; std::optional<Pcu> pcu;
     bool operator==(const VehicleType&) const = default;
 };
 inline VehicleAxles vehicleAxles(const VehicleType& type) {
@@ -214,6 +215,8 @@ struct SegmentBehaviour {
     std::string segmentId, vehicleTypeId, behaviourId;
     bool operator==(const SegmentBehaviour&) const = default;
 };
+// MERGE_CLAMPS §2-§3 (D250/D251): three project switches that relieve a cap on a tick that would clamp.
+struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}, standingStopFloor{true}; bool operator==(const ClampRules&) const = default; }; // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default; standingStopFloor: LINE_APPROACH §7 (D257)
 struct ScenarioDefinition {
     double duration{}, timeStep{};
     std::vector<Route> routes;
@@ -240,6 +243,7 @@ struct ScenarioDefinition {
     std::vector<SegmentBehaviour> segmentBehaviours;
     // M8.4a, last again. Empty without a parking lot, which then runs exactly the code path it always did.
     std::vector<ParkingLotSpec> parkingLots;
+    ClampRules clampRules; // M3.2.8a.1 (MERGE_CLAMPS §3, D250/D251): last again; all on by default
     // Value equality, so callers can tell "this edit changed nothing" without serialising.
     bool operator==(const ScenarioDefinition&) const = default;
 };
@@ -309,6 +313,7 @@ struct ScenarioIndex {
     // M8.4a: the lot slot whose gate a route ends at, SIZE_MAX for none; empty without a lot.
     std::vector<std::size_t> lotOfRoute;
     LateralIndex lateral; // M3.7 (LATERAL §5, D188): off and empty without a lateral key
+    std::vector<char> joinOfSegment; std::vector<std::size_t> yieldSegmentOfRule; // JOIN_ANTICIPATION §2 (D255): empty unless clampRules.joinAnticipation
 };
 // Scenario lookups for one vehicle, resolved once per tick instead of once per use.
 struct VehicleRefs { std::size_t route{}, type{}, behaviour{}; };
@@ -424,14 +429,6 @@ struct RedRunningEvent { double time{}; std::uint64_t vehicleId{}; std::string h
 // New event alternatives append so every existing index stays stable.
 using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
                               SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent>;
-// M3.2.5: one vehicle's service at a Stop line (contract §5). `line` is the route distance of the
-// next Stop line it has not passed; `since` the tick whose start first found it standing there.
-// It has served the line once a whole tick has run since then. Kept only while the line is ahead
-// of or under the vehicle, so passing a line clears it; a new run starts with none.
-struct StopService {
-    std::uint64_t vehicleId{}; double line{}; std::uint64_t since{}, ticks{1}; // ticks: whole ticks of rest (B-8, D231)
-    bool operator==(const StopService&) const = default;
-};
 // M8.4a (ZONES_AND_PARKING §4). A vehicle in a lot keeps its identity and type for its next trip.
 struct ParkedVehicle {
     PendingVehicle vehicle; double admitted{}, dwellEnd{};
@@ -464,6 +461,7 @@ struct SimState {
     std::vector<SimEvent> events; // Latest step only.
     std::vector<StopService> stopService; // sorted by vehicle id; empty without a Stop zone
     std::vector<LotState> lots;           // parallel to scenario->parkingLots
+    std::vector<RedRelease> redReleases;  // sorted by vehicle id; empty without red-running keys
 };
 struct ValidationIssue {
     std::string code, path;

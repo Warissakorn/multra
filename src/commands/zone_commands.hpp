@@ -13,4 +13,8 @@ void deleteZone(ProjectDocument&, const std::string& id);
 void deleteZoneConnector(ProjectDocument&, const std::string& id);
 void deleteOdMatrix(ProjectDocument&, const std::string& id);
 void deleteParkingLot(ProjectDocument&, const std::string& id);
+// S1.1 (STUDY_PERIODS §8): empty id allocates `period`. Deleting one a matrix names is refused
+// (EDIT_PERIOD_IN_USE), as zones are.
+std::string putStudyPeriod(ProjectDocument&, StudyPeriod);
+void deleteStudyPeriod(ProjectDocument&, const std::string& id);
 }

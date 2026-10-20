@@ -9,6 +9,8 @@
 #include "speed_decisions.hpp"
 #include "speed_areas.hpp"
 #include "speed_curve.hpp"
+#include "mode_codec.hpp"
+#include "link_type_codec.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -26,6 +28,16 @@ AuthoringDefinition parseAuthoringDefinition(const Json& j) {
     if(!d.externalCompositions) {
         if(!j.at("compositions").is_array())throw std::invalid_argument("EDIT_CATALOG_READ");
         for(const auto& c:j.at("compositions"))d.compositions.push_back(parseComposition(c));
+    }
+    d.externalModes = !j.contains("modes"); // S1.2 (D269): the catalog's presence rule
+    if(!d.externalModes) {
+        if(!j.at("modes").is_array())throw std::invalid_argument("EDIT_CATALOG_READ");
+        for(const auto& m:j.at("modes"))d.modes.push_back(parseMode(m));
+    }
+    d.externalLinkTypes = !j.contains("linkTypes"); // S2.1 (D273): the catalog's presence rule
+    if(!d.externalLinkTypes) {
+        if(!j.at("linkTypes").is_array())throw std::invalid_argument("EDIT_CATALOG_READ");
+        for(const auto& t:j.at("linkTypes"))d.linkTypes.push_back(parseLinkType(t));
     }
     if(!d.externalVehicleTypes)for(const auto& t:j.at("vehicleTypes"))if(t.contains("name")) {
         if(!t.at("name").is_string())throw std::invalid_argument("EDIT_CATALOG_READ");
@@ -116,6 +128,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             if(const auto at=d.vehicleTypeNames.find(t.id);at!=d.vehicleTypeNames.end() && !at->second.empty())item["name"]=at->second;
             if(t.axles)item["axles"]={{"wheelbase",t.axles->wheelbase},{"frontOverhang",t.axles->frontOverhang},{"rearOverhang",t.axles->rearOverhang}};
             if(t.kerbLanes)item["kerbLanes"]=*t.kerbLanes; // B-7 (D234)
+            addPcuJson(t,item); // S1.2 (D270)
             j["vehicleTypes"].push_back(std::move(item));
         }
     }
@@ -179,6 +192,14 @@ Json definitionJson(const AuthoringDefinition& d) {
             }
             j["compositions"].push_back(std::move(item));
         }
+    }
+    if(!d.externalModes) {
+        j["modes"]=Json::array();
+        for(const auto& m:d.modes)j["modes"].push_back(modeJson(m));
+    }
+    if(!d.externalLinkTypes) {
+        j["linkTypes"]=Json::array();
+        for(const auto& t:d.linkTypes)j["linkTypes"].push_back(linkTypeJson(t));
     }
     return j;
 }
@@ -340,6 +361,7 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     }
     if(auto issues=timeTypeIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
     if(auto issues=ownedCatalogIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
+    if(auto issues=linkTypeDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S2.1
     // Checked on the authored intervals, before they are expanded: an overlap is a property of
     // the table the author typed, and would otherwise surface as two core inputs that each look fine.
     if (auto periods = inputIntervalIssues(*d.definition); !periods.empty()) throw ValidationError(std::move(periods));

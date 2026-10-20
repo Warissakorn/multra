@@ -8,6 +8,10 @@ RunVehicleItem::RunVehicleItem(const QPainterPath& body,QColor fill,double pixel
     : QGraphicsPathItem(body), margin_(2/std::max(1e-9,pixelsPerMetre)) {
     setPen(Qt::NoPen);setBrush(fill);
 }
+void RunVehicleItem::setPixelsPerMetre(double pixelsPerMetre) {
+    const double margin=2/std::max(1e-9,pixelsPerMetre);
+    if(margin!=margin_){prepareGeometryChange();margin_=margin;}
+}
 QRectF RunVehicleItem::boundingRect() const {
     return QGraphicsPathItem::boundingRect().adjusted(-margin_,-margin_,margin_,margin_);
 }

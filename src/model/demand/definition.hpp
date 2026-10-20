@@ -1,5 +1,6 @@
 #pragma once
 #include "../../core/types.hpp"
+#include "../../macro/graph.hpp"
 #include <algorithm>
 #include <map>
 
@@ -21,6 +22,22 @@ struct Composition {
     std::string name;
     std::vector<CompositionInterval> intervals; // Half-open; gaps use types.
     bool operator==(const Composition&) const = default;
+};
+// S1.2 (STUDY_PERIODS §6, D269): a named composition, the matrix-level type source Macro reads.
+struct Mode {
+    std::string id, name, compositionId;
+    bool operator==(const Mode&) const = default;
+};
+// S2.1 (MACRO_NETWORK §4, §5, D273): a Macro link type and a volume-delay function. Micro never reads
+// either. `modes` empty allows every mode; `capacityPerLane` is the capacity the VDF uses (pcu/h).
+struct LinkType {
+    std::string id, name; double capacityPerLane{}, freeSpeed{}; std::string vdfId;
+    std::vector<std::string> modes; std::string source;
+    bool operator==(const LinkType&) const = default;
+};
+struct Vdf {
+    std::string id, form; double alpha{}, beta{}; std::string source;
+    bool operator==(const Vdf&) const = default;
 };
 // M2.1.2. One time interval of a routing decision's counted turning volumes.
 struct DecisionInterval {
@@ -151,6 +168,10 @@ struct AuthoringDefinition : ScenarioDefinition {
     std::vector<VehicleClass> vehicleClasses;
     std::vector<LinkBehaviourType> linkBehaviourTypes;
     std::optional<EvaluationPeriod> evaluation; // M5.3; absent is warm-up 0 to the end of the run
+    bool externalModes{true}; std::vector<Mode> modes; // S1.2 (D269): absent = data/modes/, schema 49
+    bool externalLinkTypes{true}; std::vector<LinkType> linkTypes; // S2.1 (D273): absent = data/link-types/, schema 50
+    std::optional<MacroSettings> macroSettings; // S2.3 (D275): absent = kMacroDefaults, schema 51
+    double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight
     // M4.2 (D147): where the definition came from, not what it says -- never written and never
     // compared, so a save and reopen round-trips the content exactly. A bare M0 scenario (no
     // schemaVersion) sets it; its catalog behaviours then resolve without amberDeceleration, so

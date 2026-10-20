@@ -81,14 +81,21 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
     kerbOn->setChecked(type.kerbLanes.has_value());
     auto* kerb=new QSpinBox(&dialog);kerb->setObjectName("editorCatalogKerbLanes");kerb->setRange(1,16);kerb->setValue(type.kerbLanes.value_or(1));
     form->addRow(kerbOn,kerb);
+    // S1.2 (STUDY_PERIODS §7, D270): a cited PCU when ticked; Micro never reads it.
+    auto* pcuOn=new QCheckBox(text("catalogPcu"),&dialog);pcuOn->setObjectName("editorCatalogPcuOn");pcuOn->setChecked(type.pcu.has_value());
+    auto* pcu=new QDoubleSpinBox(&dialog);pcu->setObjectName("editorCatalogPcu");pcu->setRange(0.01,50);pcu->setDecimals(2);
+    pcu->setFont(editorDesign::numericFont());pcu->setProperty("numeric",true);pcu->setValue(type.pcu?type.pcu->value:1.0);
+    auto* pcuSource=new QLineEdit(type.pcu?QString::fromStdString(type.pcu->source):QString(),&dialog);
+    pcuSource->setObjectName("editorCatalogPcuSource");pcuSource->setPlaceholderText(text("catalogPcuSource"));
+    form->addRow(pcuOn,pcu);form->addRow(text("catalogPcuSource"),pcuSource);
     const auto sync=[&]{
-        kerb->setEnabled(kerbOn->isChecked());
+        kerb->setEnabled(kerbOn->isChecked());pcu->setEnabled(pcuOn->isChecked());pcuSource->setEnabled(pcuOn->isChecked());
         for(auto* f:{wheelbase,front,rear})f->setEnabled(axles->isChecked());
         for(const auto& f:fields)if(f.destination==&staged.desiredSpeed.min || f.destination==&staged.desiredSpeed.max)f.spin->setEnabled(!curveOn->isChecked());
         for(QWidget* w:std::initializer_list<QWidget*>{curve,addRow,removeRow})w->setEnabled(curveOn->isChecked());
     };
     QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);QObject::connect(curveOn,&QCheckBox::toggled,&dialog,sync);
-    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
+    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);QObject::connect(pcuOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
     if(dialog.exec()!=QDialog::Accepted)return false;
     for(const auto& f:fields)*f.destination=value(f.spin);
     staged.desiredSpeed.curve.clear();
@@ -99,6 +106,7 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
     }
     staged.behaviourId=behaviour->currentText().toStdString();
     staged.kerbLanes=kerbOn->isChecked()?std::optional<int>{kerb->value()}:std::nullopt;
+    staged.pcu=pcuOn->isChecked()?std::optional<Pcu>{{pcu->value(),pcuSource->text().trimmed().toStdString()}}:std::nullopt;
     staged.axles=axles->isChecked()?std::optional<VehicleAxles>{{value(wheelbase),value(front),value(rear)}}:std::nullopt;
     type=std::move(staged);name=label->text().trimmed().toStdString();return true;
 }

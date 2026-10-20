@@ -9,6 +9,8 @@ inline constexpr const char* kOverloadedWarning =
 inline constexpr const char* kUnfinishedWarning = "# WARNING: unfinished trips over 5% of the movement; its delay reads low:";
 // Batch output (M5.2): JSON for tools and a CSV whose first line is the not-validated marker.
 // Both carry every seed's accounting and name the overloaded seeds the means include (D131).
+// {n, mean, sd, halfWidth95}, null where a figure is absent.
+Json estimateJson(const Estimate&);
 Json batchJson(const BatchReport&, const std::vector<SeedRun>& runs);
 std::string batchCsv(const BatchReport&, const std::vector<SeedRun>& runs);
 }

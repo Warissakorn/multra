@@ -28,8 +28,14 @@ double redElapsed(const SignalProgram& program, double time) {
         elapsed += program.phases[j].duration;
     return elapsed;
 }
-bool runsRed(const DriverBehaviour& b, std::uint32_t seed, const Vehicle& vehicle, const SignalProgram& program, double time) {
-    return b.redRunningShare && b.redRunningTime && vehicle.speed >= kMoving && redRunner(seed, vehicle.id, *b.redRunningShare) &&
+bool letThrough(const DriverBehaviour& b, const VehicleType& type, std::uint32_t seed, const Vehicle& vehicle, const SignalProgram& program,
+                double time, double gap, std::size_t head, const std::vector<RedRelease>& previous) {
+    if (!b.redRunningShare || !b.redRunningTime || vehicle.speed < kMoving) return false; // a standing vehicle never starts
+    const auto [from, to] = std::equal_range(previous.begin(), previous.end(), RedRelease{vehicle.id, 0},
+                                             [](const RedRelease& x, const RedRelease& y) { return x.vehicleId < y.vehicleId; });
+    if (std::any_of(from, to, [&](const RedRelease& r) { return r.head == head; })) return true; // the decision holds
+    const double gentle = b.amberDeceleration.value_or(type.comfortableDeceleration);
+    return vehicle.speed * vehicle.speed > 2 * gentle * std::max(0.0, gap) && redRunner(seed, vehicle.id, *b.redRunningShare) &&
            redElapsed(program, time) < *b.redRunningTime;
 }
 bool carriesRedRunning(const Scenario& s) {

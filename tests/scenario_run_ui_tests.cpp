@@ -81,6 +81,30 @@ int main(int argc, char** argv) {
         auto* info = item<QLabel>(w, "editorRunInfo");
         require(info->text().contains("mean delay 31.76"), "Mean delay missing from the run status");
         require(info->text().contains("safety clamps"), "Safety clamps missing from the run status");
+        // D282: the status shows all of its wrapped text in a host the width of the run view, and
+        // a Step no longer asks the window to lay itself out again.
+        const auto fits = [&] {
+            auto* host = info->parentWidget();
+            return info->width() == host->width() && host->height() == info->heightForWidth(host->width()) &&
+                   info->height() == host->height() && host->width() == w.canvas()->width();
+        };
+        require(fits(), "The run status is clipped or not as wide as the run view");
+        const int wide = info->height();
+        w.resize(640, 760); QTest::qWait(30); QApplication::processEvents();
+        require(fits() && info->height() > wide, "A narrower window does not wrap the status onto more lines");
+        w.resize(1360, 860); QTest::qWait(30); QApplication::processEvents();
+        struct LayoutRequests : QObject {
+            int count{};
+            bool eventFilter(QObject*, QEvent* e) override { if (e->type() == QEvent::LayoutRequest) ++count; return false; }
+        } requests;
+        action(w, "editorReset"); action(w, "editorStep");
+        w.centralWidget()->installEventFilter(&requests);
+        for (int i = 0; i < 20; ++i) action(w, "editorStep");
+        w.centralWidget()->removeEventFilter(&requests);
+        require(w.runState().tick == 21 && requests.count < 3, "A Step relays out the window");
+        require(fits(), "Stepping left the status clipped");
+        for (int i = 21; i < static_cast<int>(finished); ++i) { step->trigger(); if (i % 100 == 0) QApplication::processEvents(); }
+        QApplication::processEvents();
         // M2.5: the finished run fills the Results tab from the same states, marker included.
         const auto report = w.runReport();
         require(report && !report->movements.empty(), "A finished run has no movement report");

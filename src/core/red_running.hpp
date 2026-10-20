@@ -12,10 +12,15 @@ bool redRunner(std::uint32_t seed, std::uint64_t vehicleId, double share);
 // Seconds since the program last turned red; consecutive red phases are one red. Infinite when the
 // program is red throughout, so such a red never "began".
 double redElapsed(const SignalProgram&, double time);
-// §3: a runner of this behaviour, inside its window, moving, at a head that is red at `time`.
-bool runsRed(const DriverBehaviour&, std::uint32_t seed, const Vehicle&, const SignalProgram&, double time);
+// §3 (D246): whether a head that is red at `time`, `gap` ahead, lets the vehicle through. It goes on
+// letting through a moving vehicle it let through last tick (`previous`, sorted by vehicle id);
+// anew only a runner inside its window that cannot stop gently (amberDeceleration, else the type's
+// comfortableDeceleration).
+bool letThrough(const DriverBehaviour&, const VehicleType&, std::uint32_t seed, const Vehicle&, const SignalProgram&,
+                double time, double gap, std::size_t head, const std::vector<RedRelease>& previous);
 bool carriesRedRunning(const Scenario&);
-// The event, when this tick's move takes the front past the line the vehicle was let through.
+// The event, when this tick's move takes the front past the line the vehicle was let through,
+// whether or not the window has ended (D246).
 void reportRedRun(const RedRun&, const Scenario&, double time, std::uint64_t vehicleId, double move, std::vector<SimEvent>&);
 std::vector<ValidationIssue> redRunningIssues(const DriverBehaviour&, const std::string& path);
 }

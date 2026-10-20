@@ -108,7 +108,8 @@ std::pair<std::string, double> EditorCanvas::hit(Point p,bool connectors) const 
     return hits.empty()?std::pair<std::string,double>{}:hits.front();
 }
 void EditorCanvas::redraw() {
-    previewRouteEnd_=nullptr;runItems_.clear();scene_.clear();pruneConnectorCache();
+    previewRouteEnd_=nullptr;runItems_.clear();runVehicles_.clear();runBaked_.clear();scene_.clear();pruneConnectorCache();
+    if (runLayerBaked_) { runLayerBaked_=false; resetCachedContent(); }
     if (grid != cachedGrid_) { cachedGrid_ = grid; resetCachedContent(); }
     if (!document_) return;
     const auto& bg=document_->background;
@@ -123,6 +124,7 @@ void EditorCanvas::redraw() {
         image->setOpacity(bg.opacity); image->setZValue(-200000);
     }
     drawZones(); // M8.6a: below every Link
+    drawNodes(); // S0.1: an outline over the junction
     const auto primary = selected();
     for (auto link : document_->network.links) {
         if(!levelVisible(link.level))continue;
@@ -178,7 +180,7 @@ void EditorCanvas::redraw() {
         const auto& r=document_->map->reference;
         scene_.setSceneRect(scene_.sceneRect().united(QRectF(r.anchorWorldX-100000,r.anchorWorldY-100000,200000,200000)));
     }
-    drawRunItems();viewport()->update();
+    bakeRunLayer();drawRunItems();viewport()->update();
 }
 void EditorCanvas::fitNetwork() {
     auto bounds=scene_.itemsBoundingRect(); if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
@@ -193,7 +195,7 @@ void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     // a major line every tenth. Each line is a one-device-pixel cosmetic pen centred on a
     // device pixel (+0.5), so it stays a sharp hairline at any devicePixelRatio.
     const auto tiers=editorDesign::gridTiers(grid,editorDesign::levelOfDetail(painter->worldTransform()));
-    if (tiers.minor<=0) return;
+    if (tiers.minor<=0) { paintRunLayer(painter,rect); return; } // the run layer lies over the grid, as its items did
     const auto device=painter->deviceTransform();
     // A rotated view (the behaviour lab's heading-up camera, D166) has no pixel grid to snap to.
     const bool rotated=std::abs(device.m12())>1e-9;
@@ -209,6 +211,7 @@ void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     };
     lines(tiers.minor,editorDesign::role(QPalette::Midlight),true);
     lines(tiers.major,editorDesign::role(QPalette::Mid),false);
+    paintRunLayer(painter,rect);
 }
 bool EditorCanvas::event(QEvent* e) {
     // The scroll area lays out its viewport while handling the event, so the corner overlays are

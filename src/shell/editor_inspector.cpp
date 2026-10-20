@@ -152,6 +152,7 @@ void EditorWindow::buildInspector() {
         if(widths.size()!=static_cast<std::size_t>(count_->value())){showError(std::runtime_error("EDIT_LANES"));return;}
         execute("editorApplyLanes",[&](auto& d){changeLanes(d,canvas_->selected(),widths);});
     });
+    buildLinkTypeField(form); // S2.4: the Link's Macro type
     linkMarkings_=new QLineEdit(body);label(form,"editorLinkMarkings",linkMarkings_);
     button("editorApplyLinkMarkings",[this]{
         try {

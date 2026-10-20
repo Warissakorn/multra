@@ -1,0 +1,7 @@
+{
+  "id": "bpr",
+  "form": "bpr",
+  "alpha": 0.15,
+  "beta": 4,
+  "source": "U.S. Bureau of Public Roads, Traffic Assignment Manual (June 1964), as reproduced in Boyles, Lownes and Unnikrishnan, Transportation Network Analysis, vol. I; the 1964 text itself not read (D273). c is the practical capacity."
+}

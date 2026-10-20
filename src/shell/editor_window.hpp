@@ -46,6 +46,7 @@ class QToolBar;
 namespace trafficsim {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
+struct MacroPanel; struct MacroRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr);
@@ -283,6 +284,10 @@ private:
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
     QTableWidget *zoneTable_{}, *zoneConnectorTable_{};
     std::uint64_t zoneRevision_{UINT64_MAX}; std::string zoneConnectorsOf_;
+    // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
+    QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
+    void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    std::string selectedNode() const;
     void buildZones();
     void translateZones();
     void refreshZones();
@@ -303,7 +308,31 @@ private:
     void editLot(const std::string& zoneId);
     std::string selectedOd() const;
     std::vector<std::pair<std::string, QString>> compositionChoices() const;
+    // S1.1 (STUDY_PERIODS §8): the Study periods tab and the choices the OD dialog offers.
+    QTableWidget* periodTable_{}; std::uint64_t periodRevision_{UINT64_MAX};
+    void buildPeriods(); void translatePeriods(); void refreshPeriods(); void showPeriods();
+    void editPeriod(const std::string& id); // empty: a new period
+    std::string selectedPeriod() const;
+    std::vector<std::pair<std::string, QString>> periodChoices() const;
+    // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
+    QTableWidget* modeTable_{}; std::uint64_t modeRevision_{UINT64_MAX};
+    void buildModes(); void translateModes(); void refreshModes(); void showModes();
+    void editMode(const std::string& id); // empty: a new mode
+    std::string selectedMode() const;
+    std::vector<std::pair<std::string, QString>> modeChoices() const;
+    // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
+    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
+    void buildLinkTypes(); void translateLinkTypes(); void refreshLinkTypes(); void editLinkType(const std::string& id);
+    std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
+    // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
+    std::unique_ptr<MacroPanel> macro_;
+    void buildMacro(QToolBar*, QVBoxLayout*); void refreshMacro(); void startMacro(const std::string& period); void discardMacro();
+public:
+    bool macroRunning() const; const MacroRun* macroResult() const; bool macroStale() const;
+    bool macroTabShown() const; // Export and Copy then write the Macro CSV
+private:
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
+    QTableWidget* nodeResultTable_{}; QLabel* nodeResultNote_{}; void refreshResultNodes(); // S0.6 (NODES §15): Results -> Nodes
     void refreshLots();
     QLineEdit* runSeed_{};
     QComboBox* runSpeed_{};
