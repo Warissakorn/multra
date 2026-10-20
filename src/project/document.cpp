@@ -253,7 +253,7 @@ ProjectDocument parseDocument(const Json& j) {
         // a route. The mapping is idempotent, which is what lets it run on every read.
         migrateRoutesToObjects(d.network, *d.definition);
         // Projects only: an M0 scenario (no schemaVersion) keeps its programs, exactly as the CLI
-        // compiles it, so the frozen fixtures and `trafficsim-cli 42` cannot move.
+        // compiles it, so the frozen fixtures and `multra-cli 42` cannot move.
         if (j.contains("schemaVersion") && j.at("schemaVersion").get<int>() < 13) migrateSignalPrograms(d);
     }
     validateDocument(d);

@@ -158,7 +158,7 @@ struct LotState { std::vector<ParkedVehicle> parked;          // sorted by (dwel
 ```
 
 Without a lot every hook returns at once and no random number is drawn: lot-free runs are
-byte-identical (the frozen baselines, `trafficsim-cli 42` and every existing test pin it).
+byte-identical (the frozen baselines, `multra-cli 42` and every existing test pin it).
 `validateScenario` reports `PARKING_LOT_INVALID` with the path of the broken field: an empty or
 repeated id, capacity < 1, initial occupancy above capacity or without types, an unknown type or a
 share ≤ 0, a negative service time, a dwell curve that is empty, not strictly increasing in both
@@ -344,7 +344,7 @@ blocked, the key is below 31), then the consequence. Test groups are planned nam
 | PL6 | Same seed ⇒ the same events and lot states every tick; on one lane admissions follow arrival order (M8.4a) | `parkinglot` |
 | PL7 | `initialOccupancy` vehicles exist at t = 0 with their `initialTypes`, ids 1…n, and leave by their dwell (M8.4a); compiled from the composition's shares (M8.4b) | `parkinglot`, `parkingproject` |
 | PL8 | Departures' destinations over 40 well-mixed seeds (2,000 departures) match the lot row's 3 : 1 within the binomial 95 % band (M8.4b) | `parkingproject` |
-| PL9 | Without any lot, `trafficsim-cli 42`, the four frozen baselines and BA18 are unchanged; a lot-free document compiles no lot and no `lot:` input | `parkinglot`, `parkingproject` |
+| PL9 | Without any lot, `multra-cli 42`, the four frozen baselines and BA18 are unchanged; a lot-free document compiles no lot and no `lot:` input | `parkinglot`, `parkingproject` |
 | PL10 | Run refuses a lot whose row is empty (`PARKING_LOT_NO_EXIT_DEMAND`), one with no gate or no exit connector, and an unknown initial composition; authoring keeps them. Codec and structural checks for `parkingLots` as Z2–Z5 (`parkingcodec`). The M8 gate run: a zone-OD study fills a capacity-3 lot, queues at the gate and keeps every vehicle (M8.4b) | `parkingproject` |
 | PL11 | Reports (M8.5, implemented) give occupancy, gate queue, gate wait and flows that reconcile with the event stream, with the not-validated marker | `parkingoutputs` |
 

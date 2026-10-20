@@ -29,25 +29,30 @@ jobs:
       - name: Stage install tree
         run: |
           cmake --install build/release --prefix dist
-          cp README.md LICENSE dist/
+          cp README.md LICENSE THIRD-PARTY-NOTICES.md dist/
+          # Licence texts and the copyright files of what is compiled in or shipped (D285).
+          mkdir -p dist/licenses
+          cp licenses/*.txt dist/licenses/
+          cp /usr/share/doc/libproj-dev/copyright dist/licenses/proj-copyright.txt
+          cp /usr/share/doc/nlohmann-json3-dev/copyright dist/licenses/nlohmann-json-copyright.txt
           cat > dist/RUN.txt <<'EOF'
-          TrafficSim - Linux build (not a self-contained bundle)
+          MULTRA - Linux build (not a self-contained bundle)
 
           Requires Qt 6 Widgets runtime on the machine, e.g. on Ubuntu 24.04:
               sudo apt install libqt6widgets6t64 libqt6network6t64 libproj25
 
           Run the desktop editor:
-              ./bin/trafficsim-desktop
-              ./bin/trafficsim-desktop --language th
-              ./bin/trafficsim-desktop --scenario data/scenarios/crossing.json
+              ./bin/multra-desktop
+              ./bin/multra-desktop --language th
+              ./bin/multra-desktop --scenario data/scenarios/crossing.json
           Run the headless CLI with a seed:
-              ./bin/trafficsim-cli 42
+              ./bin/multra-cli 42
 
           Results are NOT yet validated against field or reference data.
           EOF
       - uses: actions/upload-artifact@v6
         with:
-          name: trafficsim-linux-x86_64
+          name: multra-linux-x86_64
           path: dist/
           retention-days: 14
 
@@ -94,33 +99,39 @@ jobs:
       - name: Stage install tree
         run: |
           cmake --install build/native --config Release --prefix dist
-          Copy-Item README.md, LICENSE dist/
+          Copy-Item README.md, LICENSE, THIRD-PARTY-NOTICES.md dist/
           Copy-Item "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin/*.dll" dist/bin/
           Copy-Item libthai/thai.dll, libthai/libdatrie-1.dll dist/bin/
-          New-Item -ItemType Directory -Force dist/bin/data/libthai, dist/licenses | Out-Null
+          New-Item -ItemType Directory -Force dist/bin/data/libthai, dist/licenses/vcpkg | Out-Null
           Copy-Item libthai/thbrk.tri dist/bin/data/libthai/
-          # libthai and libdatrie are LGPL-2.1, linked at run time; their licences go with them.
+          # Licence texts (LGPL for Qt, libthai, libdatrie) and every vcpkg port's copyright file,
+          # since their DLLs and proj.db ship here (D285).
+          Copy-Item licenses/*.txt dist/licenses/
+          $ports = Get-ChildItem "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/share/*/copyright"
+          if (-not $ports) { throw "No vcpkg copyright files found" }
+          foreach ($file in $ports) { Copy-Item $file.FullName "dist/licenses/vcpkg/$($file.Directory.Name).txt" }
           foreach ($name in 'libthai', 'libdatrie') {
             if (Test-Path "C:/msys64/ucrt64/share/licenses/$name") { Copy-Item -Recurse "C:/msys64/ucrt64/share/licenses/$name" dist/licenses/ }
+            else { Write-Warning "$name ships no licence folder; LGPL-2.1.txt and THIRD-PARTY-NOTICES.md cover it" }
           }
       - name: Bundle Qt runtime
-        run: windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw dist/bin/trafficsim-desktop.exe
+        run: windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw dist/bin/multra-desktop.exe
       - name: Write run notes
         run: |
           @'
-          TrafficSim - Windows x64 build (Qt runtime bundled)
+          MULTRA - Windows x64 build (Qt runtime bundled)
 
           Run the desktop editor:
-              bin\trafficsim-desktop.exe
-              bin\trafficsim-desktop.exe --language th
-              bin\trafficsim-desktop.exe --scenario data\scenarios\crossing.json
+              bin\multra-desktop.exe
+              bin\multra-desktop.exe --language th
+              bin\multra-desktop.exe --scenario data\scenarios\crossing.json
           Run the headless CLI with a seed:
-              bin\trafficsim-cli.exe 42
+              bin\multra-cli.exe 42
 
           Results are NOT yet validated against field or reference data.
           '@ | Set-Content dist/RUN.txt
       - uses: actions/upload-artifact@v6
         with:
-          name: trafficsim-windows-x64
+          name: multra-windows-x64
           path: dist/
           retention-days: 14

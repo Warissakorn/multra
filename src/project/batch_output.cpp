@@ -94,7 +94,7 @@ Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
 }
 std::string batchCsv(const BatchReport& r, const std::vector<SeedRun>& runs) {
     std::ostringstream out;
-    out << "# TrafficSim - not yet validated. " << measure(r.seeds.size()) << ".\n";
+    out << "# MULTRA - not yet validated. " << measure(r.seeds.size()) << ".\n";
     if (!r.overloadedSeeds.empty())
         out << kOverloadedWarning << ' ' << seedList(r.overloadedSeeds) << '\n';
     const auto stuck = movementsWithUnfinished(r);

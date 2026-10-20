@@ -179,7 +179,7 @@ Today:
 - The editor "does not simulate edited projects yet" (`docs/NETWORK_EDITOR.md:3`).
 - The simulation window was a **separate** `MainWindow` that loaded M0 scenario JSON.
   **Superseded by M1.24:** it is removed and the editor opens both file kinds; `loadScenario`
-  (`src/project/load.cpp`) survives for `trafficsim-cli`.
+  (`src/project/load.cpp`) survives for `multra-cli`.
 - Until this session, that window could not even *open* a project file: it read
   `definition` unguarded, and an editor project legitimately saves `"definition": null`, so it
   failed with a raw `json.exception.type_error.304`. It now names the file kind and offers to
@@ -223,7 +223,7 @@ The project produces **two** JSON kinds that used to be indistinguishable to the
 | Typical name | `data/scenarios/crossing.json` | `network.traffic.json` |
 | Root keys | `network`, `definition` | `format`, `schemaVersion`, `nextId`, `revision`, `network`, `definition`, `background` |
 | `definition` | Required, complete | **Null** for any network drawn from scratch — that is correct, not corrupt |
-| Opened by | The network editor, or `trafficsim-cli` (M1.24; formerly the simulation window) | The network editor |
+| Opened by | The network editor, or `multra-cli` (M1.24; formerly the simulation window) | The network editor |
 | Runs? | Yes | No — it has no demand yet (§5) |
 
 Both matched the same `*.json` filter, and the editor's default save name is

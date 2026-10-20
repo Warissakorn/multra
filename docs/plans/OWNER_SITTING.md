@@ -16,7 +16,7 @@ verbatim and fills in **no verdict itself**.
 - *Listed* is the date of the decision or merge that created the item.
 
 Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop`, then
-`trafficsim-desktop`. Screen at 100 %, then 125/150/200 % where an item says so.
+`multra-desktop`. Screen at 100 %, then 125/150/200 % where an item says so.
 
 ---
 

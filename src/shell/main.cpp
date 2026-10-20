@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "legacy_storage.hpp"
 #include "path.hpp"
 #include "../geo/projection_data.hpp"
 #include "../project/load.hpp"
@@ -11,7 +12,8 @@
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QLocale::setDefault(QLocale::c()); // Latin digits in every widget, before any is built
-    QCoreApplication::setApplicationName("TrafficSim");
+    QCoreApplication::setApplicationName("MULTRA");
+    trafficsim::moveLegacyStorage("TrafficSim"); // D286: before any recovery file or tile is read
     QCoreApplication::setApplicationVersion(TRAFFICSIM_VERSION);
     QCommandLineParser parser;
     parser.addHelpOption(); parser.addVersionOption();

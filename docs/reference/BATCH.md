@@ -1,6 +1,6 @@
 # Multi-seed batches (M5.2)
 
-What `trafficsim-cli --project F --seeds LIST` and `src/runner/` compute. Decisions:
+What `multra-cli --project F --seeds LIST` and `src/runner/` compute. Decisions:
 [D130](../decisions/RECORD.md#d130) (M5 first) and [D131](../decisions/RECORD.md#d131) (this
 contract); scenario comparison, `--compare`, is §7 ([D148](../decisions/RECORD.md#d148)). Every figure is **simulated movement delay, not HCM control delay or LOS, and not
 validated** (rule 4); LOS waits for travel-time sections ([M5_PLAN](../plans/M5_PLAN.md) M5.4–M5.5).
@@ -167,7 +167,7 @@ The editor's Results tab runs the same batch as `--seeds`, for the project open 
 
 ## 7. Scenario comparison (M5.8, D148, D149)
 
-`trafficsim-cli --project BASE --compare ALTERNATIVE --seeds LIST [--csv FILE]` answers
+`multra-cli --project BASE --compare ALTERNATIVE --seeds LIST [--csv FILE]` answers
 [PROBLEM](../PROBLEM.md) §1 step 6: how much a with-project or mitigated scenario changes the
 base. Every figure is a difference of **simulated** delays or queues, not HCM control delay or
 LOS, and not validated (rule 4). The CLI came first (M5.8a); the editor, with Copy and Export, is

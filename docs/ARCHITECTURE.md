@@ -1,4 +1,4 @@
-# ARCHITECTURE — TrafficSim
+# ARCHITECTURE — MULTRA
 
 **Stack: C++20, CMake, Qt 6 Widgets** (D15 superseded the TypeScript stack). This file maps
 modules, boundaries and interfaces; milestone status and gates live only in [ROADMAP](ROADMAP.md).
@@ -50,8 +50,8 @@ unchanged. See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md).
 | `trafficsim_commands` | `src/commands/` | Project document | Atomic named edits, Undo/Redo, network, demand, control and appearance operations |
 | `trafficsim_geo` | `src/geo/` | Project map settings, PROJ; desktop only, no Qt | Fixed WGS84 UTM reference and XYZ tile math ([MAP_BACKGROUND](reference/MAP_BACKGROUND.md)) |
 | `trafficsim_shell` | `src/shell/`, `src/editor/` | Commands, Geo, Qt Widgets/Network | The native editor — the application's only editing window since M1.24; the Behaviour Lab (D165) is a second, non-modal tool window that never edits the document except through Apply |
-| `trafficsim-cli` | `tools/run_simulation.cpp` | Project/core/eval | Headless runner: single seed, JSONL export, `--project` movement report and CSV, `--seeds` batches with 95 % CI and `buildCommit`, `--compare` scenario differences (M5.8a), and the M3.2.8c diagnostic flags (`--lane-changes`, `--segment-times`, `--stop-lines`, `--arrival-phases`, `--wait-causes`), plus `--discharge` controls and captured input hashes |
-| `trafficsim-desktop` | `src/shell/main.cpp` | Shell | Native desktop entry point; opens the editor |
+| `multra-cli` | `tools/run_simulation.cpp` | Project/core/eval | Headless runner: single seed, JSONL export, `--project` movement report and CSV, `--seeds` batches with 95 % CI and `buildCommit`, `--compare` scenario differences (M5.8a), and the M3.2.8c diagnostic flags (`--lane-changes`, `--segment-times`, `--stop-lines`, `--arrival-phases`, `--wait-causes`), plus `--discharge` controls and captured input hashes |
+| `multra-desktop` | `src/shell/main.cpp` | Shell | Native desktop entry point; opens the editor |
 
 Connector widths and runtime paths share topology-only `connectorLanePairs`; the surface
 never calls `connectorPaths`. D114 derives each runtime lane's interior vertices from adjacent

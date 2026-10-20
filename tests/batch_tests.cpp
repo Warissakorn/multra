@@ -168,7 +168,7 @@ TEST(batch, outputs_carry_the_marker_and_the_flag) {
     const std::vector<SeedRun> runs{seedWith(1, 10), b};
     const auto r = aggregate(runs);
     const auto csv = batchCsv(r, runs);
-    CHECK(csv.starts_with("# TrafficSim - not yet validated. Simulated movement delay, not HCM control delay or LOS; mean of 2 runs"));
+    CHECK(csv.starts_with("# MULTRA - not yet validated. Simulated movement delay, not HCM control delay or LOS; mean of 2 runs"));
     CHECK(csv.find("\"a → b\",2,25.00,") != std::string::npos);
     CHECK(csv.find("# WARNING: overloaded seeds (pending over 5% of generated) are included in the means: 2") != std::string::npos);
     const auto j = batchJson(r, runs);
@@ -185,7 +185,7 @@ TEST(batch, tsv_splits_cells_and_keeps_comments) {
 TEST(batch, tsv_of_the_batch_csv_keeps_its_marker_and_rows) {
     const std::vector<SeedRun> runs{seedWith(1, 10), seedWith(2, 40)};
     const auto tsv = csvToTsv(batchCsv(aggregate(runs), runs));
-    CHECK(tsv.starts_with("# TrafficSim - not yet validated. Simulated movement delay, not HCM control delay or LOS; mean of 2 runs"));
+    CHECK(tsv.starts_with("# MULTRA - not yet validated. Simulated movement delay, not HCM control delay or LOS; mean of 2 runs"));
     CHECK(tsv.find("movement\tn\tmeanDelay_s\tci95_s\tsd_s\tvehicles_mean\tmeanTravelTime_s\tunfinished_mean\n") != std::string::npos);
     CHECK(tsv.find("a → b\t2\t25.00\t") != std::string::npos);
     std::istringstream lines(tsv);

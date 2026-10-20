@@ -14,7 +14,7 @@ build commands in [BUILDING](../BUILDING.md), and gates in [ROADMAP](../ROADMAP.
 | Core contract | `src/core/simulation.hpp` |
 | Network model | `src/model/network/network.hpp` |
 | Desktop shell and canvas | `src/shell/main.cpp`, `src/shell/editor_window.cpp`, `src/editor/canvas.cpp` |
-| Headless runner | `tools/run_simulation.cpp` → `trafficsim-cli` |
+| Headless runner | `tools/run_simulation.cpp` → `multra-cli` |
 | Project formats | [NETWORK_EDITOR — Save, recovery and formats](NETWORK_EDITOR.md#save-recovery-and-formats) |
 
 The numbers below describe frozen migration fixtures, not today's capacity, safety of

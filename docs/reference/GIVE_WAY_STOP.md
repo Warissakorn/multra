@@ -81,4 +81,4 @@ The evidence records:
 - the existing overlap checks passing.
 
 The other shipped projects have no give-way lines and must stay byte-identical: the four-leg, M2.6
-and `trafficsim-cli 42`.
+and `multra-cli 42`.

@@ -17,7 +17,7 @@ C2 is withdrawn and the pass is the owner's judgment; C4 is withdrawn too (D52) 
 | `cmake --preset desktop` + build, clean container | Green, after installing `nlohmann-json3-dev`, `qt6-base-dev`, `qt6-tools-dev`, `ninja-build` (the container had none of them) |
 | `ctest --preset desktop` | **36/36 pass** (offscreen Qt) |
 | `cmake --build build/desktop --target check` | Pass |
-| `trafficsim-cli 42` | Runs, reports `"validation": "not-yet-validated"`, 0 safety clamps |
+| `multra-cli 42` | Runs, reports `"validation": "not-yet-validated"`, 0 safety clamps |
 | CI on `main` | Run 207 (PR #54) green on Linux and Windows; run 211 (PR #55) was in progress at review time |
 
 Windows was not exercised here. A green Linux run is not Windows evidence (CLAUDE.md).
@@ -150,11 +150,11 @@ M2.3/M2.4 below, because M2's done-condition needs them and M2.1's gate does not
 
 Done as below: `VehicleInput.intervals`, derived scalars (`deriveInputTotals`), `id/int-k`
 expansion, schema 10, and a counts box in the input dialog (paste one count per interval, length
-in minutes, default 15). Frozen fixtures and `trafficsim-cli 42` unchanged.
+in minutes, default 15). Frozen fixtures and `multra-cli 42` unchanged.
 
 `VehicleInput` gains an ordered interval list (start, end, veh/h); a single-interval input is
 exactly today's input. Schema 10 with migration; Poisson per interval with the existing PRNG and
-draw order. **Gate:** the four frozen baselines and `trafficsim-cli 42` byte-identical; an interval
+draw order. **Gate:** the four frozen baselines and `multra-cli 42` byte-identical; an interval
 table in the input dialog accepts pasted 15-minute counts.
 
 ### M2.3 — Vehicle compositions · **Implemented 2026-09-24**
@@ -227,7 +227,7 @@ protected phasing), so they are carved here rather than waiting for M4.
   head dialog offers "New signal controller..." and defaults to the group the last head took.
   Schema 13; a schema 12 program shaped like a group migrates to one, colour for colour, and the
   rest stay legacy programs. Expanded at compile time (`expandRouteless`) into ordinary core
-  `SignalProgram`s `<controller>#<group>`, so `core/`, the frozen fixtures, `trafficsim-cli 42` and
+  `SignalProgram`s `<controller>#<group>`, so `core/`, the frozen fixtures, `multra-cli 42` and
   the four-leg's results are unchanged; the four-leg builder now authors one controller.
 
 **Done when:** the owner builds the M2.6 study's signal timing from its timing sheet with the

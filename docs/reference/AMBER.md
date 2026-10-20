@@ -57,7 +57,7 @@ contract replaces that for projects. The model is a deterministic threshold, **n
 - **M0 legacy.** A bare M0 scenario (no `schemaVersion`; the file kind behind the frozen TS
   baselines) resolves the catalog behaviours **without** `amberDeceleration`, whether `loadScenario`
   reads it (CLI) or `parseDocument` opens it (editor). The same precedent applies as for its signal
-  programs: the frozen fixtures, `trafficsim-cli 42` and the editor's run of `crossing.json` cannot
+  programs: the frozen fixtures, `multra-cli 42` and the editor's run of `crossing.json` cannot
   move. An M0 scenario saved as a project becomes a project and takes the project rule.
 
 ## 3. Acceptance rows

@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         require(r && r->assignment.converged, "Run Macro installs a converged result");
         require(table->rowCount() == static_cast<int>(r->graph.links.size()), "A table row per arc");
         require(table->columnCount() == 4 + static_cast<int>(r->classes.size()) + 4, "A flow column per class");
-        require(note->text().startsWith("TrafficSim - not yet validated."), "The Macro tab carries the marker");
+        require(note->text().startsWith("MULTRA - not yet validated."), "The Macro tab carries the marker");
         require(note->text().count("done") == 6, "Every stage is done");
         require(w.history().revision() == revision && !w.history().canUndo(), "Run Macro is not an Undo step");
         require(!w.macroStale(), "A fresh result is not stale");
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
         QTemporaryDir temp; require(temp.isValid(), "Temporary directory unavailable");
         w.exportResults(temp.filePath("macro.csv"));
         std::ifstream csv(temp.filePath("macro.csv").toStdString()); std::string first; std::getline(csv, first);
-        require(first.starts_with("# TrafficSim - not yet validated. Static user-equilibrium assignment"), "Export writes the Macro CSV");
+        require(first.starts_with("# MULTRA - not yet validated. Static user-equilibrium assignment"), "Export writes the Macro CSV");
 
         // An edit leaves the rows and marks the result stale; Undo back to its revision clears the mark.
         const auto rows = table->rowCount();

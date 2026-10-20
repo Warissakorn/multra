@@ -1,4 +1,4 @@
-# ROADMAP — TrafficSim
+# ROADMAP — MULTRA
 
 Not a schedule. A **sequence**, so that any session can see where it sits and what closes the milestone it is in.
 
@@ -19,9 +19,9 @@ The smallest thing that is genuinely a traffic simulator, end to end. Every laye
 
 **Scope:** two crossing one-way roads (four Links in `crossing.json`) · one connector each way · one fixed-time signal (two heads, one program each) · one vehicle input per road · Wiedemann-style car-following · a native 2D view showing vehicles as dots · a headless run that prints average delay.
 
-**Done when:** `trafficsim-desktop` shows vehicles accelerating, queueing at red, and discharging at green in a way a traffic engineer recognises as plausible — and CTest proves the same seed produces the same run on a fixed engine/toolchain.
+**Done when:** `multra-desktop` shows vehicles accelerating, queueing at red, and discharging at green in a way a traffic engineer recognises as plausible — and CTest proves the same seed produces the same run on a fixed engine/toolchain.
 
-**Where that observation is made (M1.24):** open `data/scenarios/crossing.json` in the editor and use Run/Pause/Step/Reset there. Until M1.24 this said the same thing about a separate M0 window; that window is gone, the observation is not. The editor reads a bare M0 scenario, steps the unchanged core, and its run status shows the mean trip delay and the safety-clamp count the retired window showed. `scenario-run-ui` pins this path to the `trafficsim-cli 42` baseline — 45 completed trips exactly, mean delay 31.75870154816726 to within 1e-7 (D159 seeding; 31 and 29.249359418430977 before) — so an engineer judging plausibility in the editor is judging the same run the CLI prints. **The gate itself is unchanged and still open:** no automated test closes it, and the plausibility judgement is the owner’s to make.
+**Where that observation is made (M1.24):** open `data/scenarios/crossing.json` in the editor and use Run/Pause/Step/Reset there. Until M1.24 this said the same thing about a separate M0 window; that window is gone, the observation is not. The editor reads a bare M0 scenario, steps the unchanged core, and its run status shows the mean trip delay and the safety-clamp count the retired window showed. `scenario-run-ui` pins this path to the `multra-cli 42` baseline — 45 completed trips exactly, mean delay 31.75870154816726 to within 1e-7 (D159 seeding; 31 and 29.249359418430977 before) — so an engineer judging plausibility in the editor is judging the same run the CLI prints. **The gate itself is unchanged and still open:** no automated test closes it, and the plausibility judgement is the owner’s to make.
 
 **Explicitly not in M0:** lane changing, editing anything, saving anything, LOS, multiple seeds, priority control. The slice is about the *shape*, not the feature set.
 

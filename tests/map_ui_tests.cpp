@@ -89,7 +89,7 @@ void tilesAndCache() {
         MapTileClient client(cache.path());client.setProvider(provider);
         client.setWantedTiles({key});client.setWantedTiles({key});
         waitFor([&]{return !client.image(key).isNull();});require(server.requests==1,"Duplicate network request");
-        require(server.headers.front().contains("TrafficSim/"),"Missing application User-Agent");
+        require(server.headers.front().contains("MULTRA/")&&server.headers.front().contains("github.com/Warissakorn/multra"),"Missing application User-Agent");
         require(!server.headers.front().contains("Cache-Control: no-cache"),"Request bypassed cache");
     }
     QTest::qWait(50);

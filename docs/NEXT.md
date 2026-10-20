@@ -21,6 +21,10 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   M2.6 run view −38 % per Step; mandatory reads −31 %. Windows paint is OWNER_SITTING E22. Not
   booked: the engine's spread costs (`closestVehicle` 8 %, the per-tick `Vehicle` moves 6 %).
 - If `map-ui` fails in a parallel `check` again, capture its output before re-running.
+- **Name:** MULTRA (D284). Executables are `multra-desktop` and `multra-cli`; the repository,
+  `trafficsim` namespace, internal targets and the file's `"format": "TrafficSim"` stay.
+  Domains and trademarks are unchecked. Licence GPL-3.0-or-later (D285); a CLA comes before any
+  outside contribution.
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 

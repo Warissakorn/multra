@@ -90,8 +90,8 @@ void MapTileClient::pump() {
             if(decoded.isNull()) {disk_->remove(url);metadata={};}
         }
         QNetworkRequest request(url);
-        request.setRawHeader("User-Agent",QByteArray("TrafficSim/")+TRAFFICSIM_VERSION+
-            " (+https://github.com/Warissakorn/trafficsim)");
+        request.setRawHeader("User-Agent",QByteArray("MULTRA/")+TRAFFICSIM_VERSION+
+            " (+https://github.com/Warissakorn/multra)");
         if(metadata.isValid()) {
             const auto tag=header(metadata.rawHeaders(),"etag"),modified=header(metadata.rawHeaders(),"last-modified");
             if(!tag.isEmpty())request.setRawHeader("If-None-Match",tag);

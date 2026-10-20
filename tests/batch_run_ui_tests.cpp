@@ -114,11 +114,11 @@ int main(int argc, char** argv) {
         w.exportResults(csvFile);
         QFile written(csvFile); require(written.open(QIODevice::ReadOnly), "Exported CSV missing");
         require(written.readAll().toStdString() == csv, "Exported CSV differs from the CLI's --csv"); written.close();
-        require(csv.starts_with("# TrafficSim - not yet validated"), "Batch CSV carries no marker");
+        require(csv.starts_with("# MULTRA - not yet validated"), "Batch CSV carries no marker");
         action(w, "editorCopyResults");
         const auto pasted = QApplication::clipboard()->text().toStdString();
         require(pasted == csvToTsv(csv), "Copy differs from the CSV as tab-separated values");
-        require(pasted.starts_with("# TrafficSim - not yet validated") && pasted.find("\t") != std::string::npos,
+        require(pasted.starts_with("# MULTRA - not yet validated") && pasted.find("\t") != std::string::npos,
                 "Copy lacks the marker or the tabs");
 
         // EB5: an edit discards it. Renaming a Link goes through History like every other edit.

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(TrafficSim VERSION 0.2.0 LANGUAGES CXX)
+project(MULTRA VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -117,12 +117,12 @@ add_custom_target(trafficsim-build-info
     COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -DOUTPUT=${CMAKE_BINARY_DIR}/generated/build_info.hpp
             -P ${PROJECT_SOURCE_DIR}/cmake/build_info.cmake
     BYPRODUCTS ${CMAKE_BINARY_DIR}/generated/build_info.hpp)
-add_executable(trafficsim-cli tools/run_simulation.cpp)
-target_link_libraries(trafficsim-cli PRIVATE trafficsim_project trafficsim_options)
-target_include_directories(trafficsim-cli PRIVATE ${CMAKE_BINARY_DIR}/generated)
-add_dependencies(trafficsim-cli trafficsim-build-info)
-trafficsim_runtime_data(trafficsim-cli)
-install(TARGETS trafficsim-cli RUNTIME DESTINATION bin)
+add_executable(multra-cli tools/run_simulation.cpp)
+target_link_libraries(multra-cli PRIVATE trafficsim_project trafficsim_options)
+target_include_directories(multra-cli PRIVATE ${CMAKE_BINARY_DIR}/generated)
+add_dependencies(multra-cli trafficsim-build-info)
+trafficsim_runtime_data(multra-cli)
+install(TARGETS multra-cli RUNTIME DESTINATION bin)
 install(DIRECTORY data/ DESTINATION bin/data)
 
 # Not a test and not in `check`: it prints tick rates, it does not assert them. It needs no Qt,
@@ -199,7 +199,7 @@ add_custom_target(check
     COMMAND $<TARGET_FILE:trafficsim-check-file-sizes> "${PROJECT_SOURCE_DIR}"
     COMMAND $<TARGET_FILE:trafficsim-check-docs> "${PROJECT_SOURCE_DIR}"
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${TRAFFICSIM_TEST_JOBS} -C $<CONFIG>
-    DEPENDS trafficsim-cli trafficsim-check-architecture trafficsim-check-file-sizes trafficsim-check-docs
+    DEPENDS multra-cli trafficsim-check-architecture trafficsim-check-file-sizes trafficsim-check-docs
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 if(BUILD_TESTING)
@@ -249,39 +249,39 @@ if(BUILD_TESTING)
     add_test(NAME file-sizes COMMAND trafficsim-check-file-sizes "${PROJECT_SOURCE_DIR}")
     add_test(NAME documentation COMMAND trafficsim-check-docs "${PROJECT_SOURCE_DIR}")
     add_test(NAME documentation-negative COMMAND trafficsim-check-docs --self-test)
-    add_test(NAME cli COMMAND trafficsim-cli 42)
+    add_test(NAME cli COMMAND multra-cli 42)
     set_tests_properties(cli PROPERTIES PASS_REGULAR_EXPRESSION "31\\.75870")
-    add_test(NAME cli-invalid-seed COMMAND trafficsim-cli 4294967296)
+    add_test(NAME cli-invalid-seed COMMAND multra-cli 4294967296)
     set_tests_properties(cli-invalid-seed PROPERTIES WILL_FAIL TRUE)
     add_test(NAME reaction-discharge-help COMMAND trafficsim-reaction-discharge-sweep --help)
     add_test(NAME reaction-discharge-output-guard COMMAND "${CMAKE_COMMAND}"
         "-DTOOL=$<TARGET_FILE:trafficsim-reaction-discharge-sweep>"
         -P "${PROJECT_SOURCE_DIR}/tests/reaction_discharge_cli.cmake")
     add_dependencies(check trafficsim-reaction-discharge-sweep)
-    add_test(NAME cli-help COMMAND trafficsim-cli --help)
+    add_test(NAME cli-help COMMAND multra-cli --help)
     # Exit code and message, not WILL_FAIL: a crash must not pass as a refusal.
     add_test(NAME cli-phase-bin COMMAND "${CMAKE_COMMAND}"
-        "-DCLI=$<TARGET_FILE:trafficsim-cli>"
+        "-DCLI=$<TARGET_FILE:multra-cli>"
         "-DPROJECT=${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
         -P "${PROJECT_SOURCE_DIR}/tests/phase_bin_cli.cmake")
-    add_test(NAME cli-project COMMAND trafficsim-cli 42 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
+    add_test(NAME cli-project COMMAND multra-cli 42 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-project PROPERTIES PASS_REGULAR_EXPRESSION "North approach .* West exit")
-    add_test(NAME cli-batch COMMAND trafficsim-cli --seeds 42-44 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
+    add_test(NAME cli-batch COMMAND multra-cli --seeds 42-44 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-batch PROPERTIES PASS_REGULAR_EXPRESSION "\"halfWidth95\": [0-9]")
-    add_test(NAME cli-batch-conflict COMMAND trafficsim-cli --seed 1 --seeds 2-3 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
+    add_test(NAME cli-batch-conflict COMMAND multra-cli --seed 1 --seeds 2-3 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-batch-conflict PROPERTIES WILL_FAIL TRUE)
-    add_test(NAME cli-compare COMMAND trafficsim-cli --seeds 42-43 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
+    add_test(NAME cli-compare COMMAND multra-cli --seeds 42-43 --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
         --compare "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-compare PROPERTIES PASS_REGULAR_EXPRESSION "\"difference\": 0\\.0")
-    add_test(NAME cli-compare-conflict COMMAND trafficsim-cli --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
+    add_test(NAME cli-compare-conflict COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
         --compare "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-compare-conflict PROPERTIES PASS_REGULAR_EXPRESSION "--compare needs --project and --seeds")
     # S2.3 (MACRO_NETWORK §9, D275): one period's static assignment, and its refusals.
-    add_test(NAME cli-macro COMMAND trafficsim-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro matrix:am)
+    add_test(NAME cli-macro COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro matrix:am)
     set_tests_properties(cli-macro PROPERTIES PASS_REGULAR_EXPRESSION "\"converged\": true")
-    add_test(NAME cli-macro-seeds COMMAND trafficsim-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro matrix:am --seeds 1-2)
+    add_test(NAME cli-macro-seeds COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro matrix:am --seeds 1-2)
     set_tests_properties(cli-macro-seeds PROPERTIES PASS_REGULAR_EXPRESSION "--macro needs --project and takes only --csv and --data-dir")
-    add_test(NAME cli-macro-period COMMAND trafficsim-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro pm)
+    add_test(NAME cli-macro-period COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro pm)
     set_tests_properties(cli-macro-period PROPERTIES PASS_REGULAR_EXPRESSION "MACRO_PERIOD_UNKNOWN")
     add_dependencies(check trafficsim-tests)
 endif()

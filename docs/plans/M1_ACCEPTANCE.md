@@ -43,7 +43,7 @@ These are separate from the ten-minute drawing task.
 - **The M0 plausibility observation, since M1.24.** Open `data/scenarios/crossing.json` in the
   editor and Run it. Judge whether vehicles accelerate, queue at red and discharge at green
   the way a traffic engineer expects. The run status shows the completed-trip mean delay and
-  the safety-clamp count; `trafficsim-cli 42` prints the same run's figures for comparison.
+  the safety-clamp count; `multra-cli 42` prints the same run's figures for comparison.
   This is the observation ROADMAP M0 asks for; it used to be made in a separate window.
 - Save a copy, make an unsaved edit, allow a recovery checkpoint, then terminate only
   that test instance. Reopen and recover it. Confirm it is untitled/dirty, Save asks for
@@ -58,7 +58,7 @@ These are separate from the ten-minute drawing task.
 
 | Field | Observation |
 |---|---|
-| Commit / build | Windows `trafficsim-desktop.exe` supplied by the owner (2026-09-25); it contains the M2.7 signal-timing UI (`SignalTimingView`), so it is at or after `3c11afd`. Exact commit not stated |
+| Commit / build | Windows `multra-desktop.exe` supplied by the owner (2026-09-25); it contains the M2.7 signal-timing UI (`SignalTimingView`), so it is at or after `3c11afd`. Exact commit not stated |
 | Engineer / observer / date | Owner, self-timed, reported 2026-09-25. Observer not stated |
 | Platform / screen / language / driving side | Windows (from the build supplied). Screen, language, driving side not stated |
 | Prior familiarity / earlier attempts | Not stated — whether this was the first attempt is unknown |
@@ -67,7 +67,7 @@ These are separate from the ten-minute drawing task.
 | Documentation or assistance used | No assistance (owner report). Documentation use not stated |
 | Four-leg geometry and turn pockets complete | Four legs: yes — two crossing dual carriageways (`link-2`/`link-11`, `link-5`/`link-8`), each Link 2 × 3.5 m lanes end to end, 8 turning Connectors (a short and a long turn per approach), through movements on the Links. **Turn pockets: none** — no Link gains a lane before the stop line. Stop lines (8 heads, 4 groups) all sit upstream of the first crossing carriageway |
 | Exact parsed-JSON save/reopen comparison | **Pass** — `parseDocument` → `documentJson` on the supplied file (schema 13, revision 45) gives JSON equal to the file and an equal document, checked 2026-09-25 against `c1e3ce9` |
-| Run / recovery / level checks | Run: the file compiles and runs (`trafficsim-cli --project`, seed 42, 180 s, 6 safety clamps). Recovery and levels not observed |
+| Run / recovery / level checks | Run: the file compiles and runs (`multra-cli --project`, seed 42, 180 s, 6 safety clamps). Recovery and levels not observed |
 | M0 plausibility observation | Pending |
 | Friction, defects and evidence paths | The short turn (`connector-14/16/18/20`) leaves each approach's first lane 3–8 m **upstream** of that lane's head, so it bypasses the signal — **the owner confirmed this is intended** (Thai left turn at all times, 2026-09-25), so it is not a defect. Evidence: owner's `network.traffic.json`, not committed |
 | M1 gate verdict | **Accepted by owner ruling (D49, 2026-09-25)**: an engineer who has used another traffic simulator models an intersection of ordinary complexity in well under 10 minutes. As written, this attempt meets the time (< 10 min, no assistance) and the save/reopen comparison, but **not the requested geometry** (turn pockets, drawn over an aerial image). Documentation use and first-attempt status not stated |

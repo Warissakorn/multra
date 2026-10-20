@@ -39,7 +39,7 @@ Json macroJson(const MacroRun& r) {
 std::string macroCsv(const MacroRun& r) {
     const auto& a = r.assignment;
     std::ostringstream out;
-    out << "# TrafficSim - not yet validated. " << kMeasure << ".\n";
+    out << "# MULTRA - not yet validated. " << kMeasure << ".\n";
     out << "# Period: " << r.period << '\n';
     out << "# Relative gap: " << number(a.gap) << " (target " << number(r.settings.targetGap) << ", " << kGapFormula
         << "); iterations: " << a.iterations << "; converged: " << (a.converged ? "yes" : "no") << '\n';

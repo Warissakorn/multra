@@ -57,7 +57,7 @@ void EditorWindow::buildResults() {
     auto* page=new ResultsPage(objects_,[this]{refreshResults();}); auto* layout=new QVBoxLayout(page);
     layout->setContentsMargins(editorDesign::space1,editorDesign::space1,editorDesign::space1,editorDesign::space1);
     layout->setSpacing(editorDesign::space1);
-    // Export writes exactly what `trafficsim-cli --csv` writes, marker line first, and only for
+    // Export writes exactly what `multra-cli --csv` writes, marker line first, and only for
     // a finished run: the CSV has no field saying its figures are partial.
     auto* bar=new QToolBar(page); layout->addWidget(bar);
     bar->addAction(action("editorExportResults",{},[this]{

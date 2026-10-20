@@ -1,9 +1,39 @@
-# PROGRESS — TrafficSim
+# PROGRESS — MULTRA
 
 Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGENTS.md#working-rules)
 (next work in [`NEXT.md`](NEXT.md); about ten entries, older ones whole to [`archive/`](archive/README.md)).
 
 ---
+
+## 2026-10-20 — Licence: GPL-3.0-or-later, third-party notices in every package (D285)
+
+The owner chose the reviewed recommendation over MIT.
+- **Why it could change:** every commit is the owner's, with no outside contributor and no fork.
+  Commits up to `2053141` stay MIT.
+- **Changed:** `LICENSE` (GPL v3 text) and README's notice. `THIRD-PARTY-NOTICES.md` covers
+  Qt, PROJ/EPSG, vcpkg's DLLs, nlohmann/json, libthai/libdatrie, the font and OSM tiles, and
+  `licenses/` holds the LGPL texts.
+- **Package workflow:** both packages copy the notices and texts. Linux adds PROJ's and
+  nlohmann/json's copyright files. Windows adds every vcpkg port's `copyright` and fails if none
+  are found; a missing libthai licence folder now warns instead of passing silently.
+- **Not run:** the package workflow itself (manual or `v*` tag). Its Linux copy commands were
+  run locally; the Windows step is unverified until it runs.
+
+## 2026-10-20 — The project is named MULTRA (D284)
+
+The owner chose **MULTRA — Multi-Level Traffic Analysis**, after reviews of the licence and of
+name candidates (Velk, Vialo, Viaflow, SIMTIA, TRIMOSA and others; collisions in D284's search).
+- **Renamed:** `multra-desktop` and `multra-cli`, the application and window names, the CLI's
+  help and messages, the CSV/TSV and Macro tab marker, the map User-Agent (its contact URL is
+  `github.com/Warissakorn/multra`, the repository's name after the owner renames it), both
+  locales, the package workflow and the maintained docs' commands.
+- **Kept:** the repository, the `trafficsim` namespace, internal targets and `TRAFFICSIM_*`
+  options, and the project file's `"format": "TrafficSim"` marker, so every saved file still
+  opens. Dated docs keep the old name.
+- **Not checked:** domains, GitHub names and trademarks.
+- **Found in review (D286):** the new application name moved Qt's per-user folders, so recovery
+  files and map tiles written as TrafficSim would be lost after the upgrade. The first start now
+  moves them, never overwriting a folder already under the new name (row `legacy-storage`).
 
 ## 2026-10-20 — Run view: vehicle items reused across frames (D283); pass complete
 
