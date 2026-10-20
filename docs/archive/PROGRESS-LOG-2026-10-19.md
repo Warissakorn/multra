@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — S2.1: link types and the Macro graph (D273)
+
+The first Macro code ([MACRO_NETWORK](../reference/MACRO_NETWORK.md) §16). There is no assignment
+yet.
+- **File (schema 50):** a Link's `linkType` and project-owned `definition.linkTypes`
+  `{capacityPerLane, freeSpeed, vdfId, modes, source}`. No type ships; `data/vdf/bpr.json` does.
+- **Graph:** `compileMacroNetwork` splits Links at Connector stations into capacitated pieces.
+  Connectors become fixed-time arcs at the from-Link's speed, and each zone connector gets its
+  own centroid node. The new `src/macro/` is a pure module.
+- **Demand:** `macroDemand` gives veh/h per class (mode, or composition) and period by connector
+  share. `MODE_PCU_MISSING` and `MACRO_NO_PATH` are refused.
+- **Rows:** MA1–MA6 (ctest `macronetwork`); nine mutations caught. Micro outputs, the pin and the
+  TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — S1.2: modes and PCU (D269, D270)
 
 S1 is complete ([STUDY_PERIODS](../reference/STUDY_PERIODS.md) §6, §14).

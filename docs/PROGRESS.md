@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
+
+The fourth item of the optimization pass. The word-wrapped `editorRunInfo` label sat in the central
+layout, so its new text every Step laid out the whole window (`QLayout::activate` ≈20 % of a Step).
+- **How:** the label lives in a host widget without a layout. A new text refits the label inside
+  the host, and the host's height changes only when the wrapped line count does. It looks the same.
+- **Measured:** M2.6, 6,000 Steps: 17,642 → 15,750 ms (−11 %; −36 % since the pass began).
+- **Rows (scenario-run-ui):** the status is as wide as the run view and shows all its lines; a
+  narrower window wraps it onto more; 20 Steps post fewer than 3 layout requests to the window.
+  Two mutants caught; dropping the resize refit survived, since a text change refits as well.
+
 ## 2026-10-20 — Run view: the static network painted from the background cache (D281)
 
 The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`
@@ -141,20 +152,6 @@ no outputs or editor yet.
 - **Mutations:** seven caught. An MSA step first survived, because it still converged. Row MA8 now
   pins that two routes reach equilibrium in one exact step.
 - **Unchanged:** Micro outputs, the pin and the TS rows. Linux only.
-
-## 2026-10-19 — S2.1: link types and the Macro graph (D273)
-
-The first Macro code ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §16). There is no assignment
-yet.
-- **File (schema 50):** a Link's `linkType` and project-owned `definition.linkTypes`
-  `{capacityPerLane, freeSpeed, vdfId, modes, source}`. No type ships; `data/vdf/bpr.json` does.
-- **Graph:** `compileMacroNetwork` splits Links at Connector stations into capacitated pieces.
-  Connectors become fixed-time arcs at the from-Link's speed, and each zone connector gets its
-  own centroid node. The new `src/macro/` is a pure module.
-- **Demand:** `macroDemand` gives veh/h per class (mode, or composition) and period by connector
-  share. `MODE_PCU_MISSING` and `MACRO_NO_PATH` are refused.
-- **Rows:** MA1–MA6 (ctest `macronetwork`); nine mutations caught. Micro outputs, the pin and the
-  TS rows are unchanged. Linux only.
 
 ## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
 

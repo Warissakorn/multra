@@ -164,9 +164,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   Step and `QLayout::activate` 20 %. The cache's premultiplied pixmap rounds antialiased edges up to
   24 levels apart on ≈40 px (run-presentation compares within 32). Heading-up follow redraws the
   cache every frame (no gain there). Owner check: Windows paint (OWNER_SITTING E22).
+- **Run status outside the central layout (D282, 2026-10-20, same benchmark):** 17,642 → 15,750 ms
+  per 6,000 Steps (median of 3; ranges 17,120–17,919 and 15,598–16,252). Same picture; the
+  window relays out only when the status's wrapped line count changes.
 - **Setting the Run/Pause icon only when it changes:** layout stayed 2,439 → 2,438 ms per 3,000
   Steps, because the word-wrapped `editorRunInfo` label relayouts the window every Step anyway.
-  Reverted. The lever is that label's layout, a UI change for the owner.
+  Reverted. The lever was that label's layout; D282 moved it into a host with no layout.
 - **One `refreshRun()` per Step instead of two:** 2,169 → 2,342 ms per 1,000 Steps, inside the
   spread. Reverted. Qt paints once per event-loop pass.
 - **`redraw()` copying only the primary Link:** −1.2% of `redraw()`, inside the clock's spread.
