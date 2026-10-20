@@ -22,9 +22,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   booked: the engine's spread costs (`closestVehicle` 8 %, the per-tick `Vehicle` moves 6 %).
 - If `map-ui` fails in a parallel `check` again, capture its output before re-running.
 - **Name:** MULTRA (D284). Executables are `multra-desktop` and `multra-cli`; the repository,
-  `trafficsim` namespace, internal targets and the file's `"format": "TrafficSim"` stay. AGENTS.md's
-  naming paragraph still says the name waits on the owner; the owner updates it (a session was
-  refused editing it). Domains and trademarks are unchecked.
+  `trafficsim` namespace, internal targets and the file's `"format": "TrafficSim"` stay.
+  Domains and trademarks are unchecked. Licence GPL-3.0-or-later (D285); a CLA comes before any
+  outside contribution.
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 

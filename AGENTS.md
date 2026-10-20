@@ -22,8 +22,12 @@ silently reorder the owner's queue.
 Read [CONNECTOR_PARITY_AUDIT](docs/audits/CONNECTOR_PARITY_AUDIT.md) before touching the Connector:
 it separates the supplied spec from never-measured Vissim behaviour.
 
-TrafficSim owns a traffic microsimulation engine for engineering studies (D38). `TrafficSim` is a
-working name (D11); do not rename the repository, project or packages until the owner decides.
+MULTRA (Multi-Level Traffic Analysis) owns a traffic microsimulation engine for engineering studies
+(D38). The owner chose the name in D284, superseding D11 and D201's B1; the licence is
+GPL-3.0-or-later (D285). The executables, window, CLI and CSV markers carry the name. The
+repository, the `trafficsim` namespace, internal targets, `TRAFFICSIM_*` options and the project
+file's `"format": "TrafficSim"` marker keep the earlier name until their own decision; never change
+that marker without a schema step that still reads it.
 
 ## Documentation authority
 
