@@ -93,6 +93,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     `generateArrivals` checks due time first. Owner check: MSVC Release wall on P-cores. Left,
     measured: `closestVehicle` 8 %, `occupiedSpans` 9 %, the `MovedEvent::segmentId` copy 2 %
     (event-interface decision), `Vehicle` moves 2 %.
+- **Node evaluation cost (D279, 2026-10-20, GCC 13.3 RelWithDebInfo callgrind, seed 42):** four-leg
+  with a Node 1,303.6 → 1,128.8 M Ir, T-junction with a Node 256.2 → 233.2 M; `SectionAccumulator::observe`
+  325.8 → 150.9 M. Left there: `advance`'s crossing tests (≈83 M) and the event maps.
 - **Linux replay of D91–D94:** CI (`native.yml`) is the evidence.
 - **M3.2 closure rows:** a diverge acceptance-fixture row (R7; the D98 lab is a development bed,
   not evidence), then `plans/M3_ACCEPTANCE.md` §4, the rows a session can fill ([2026-10-03 review §7, S5](../archive/ROADMAP-review-2026-10-03.md#7-proposed-sequence--owner-free-sessions-after-o1)).

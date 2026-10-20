@@ -53,8 +53,13 @@ private:
     bool piecewise_{}; // the bound scenario has speed decisions
     // Per section, per route slot: independent line distances, NaN where a line misses the route.
     std::vector<std::vector<double>> start_, finish_;
+    // Per route slot: the sections, ascending, with a start or end line on it. A section with
+    // neither cannot open or close for a vehicle on that route, so observe() skips it (D279).
+    std::vector<std::vector<std::size_t>> sectionsOfRoute_;
     std::vector<double> routeLength_;
     std::vector<Track> tracks_; // sorted by vehicle id
+    std::vector<Track> added_;  // one tick's new tracks, reused across ticks
+    std::vector<char> seen_;    // per track: its vehicle is in the observed fleet
     std::vector<std::uint64_t> count_;
     std::vector<double> travel_, delay_;
 };

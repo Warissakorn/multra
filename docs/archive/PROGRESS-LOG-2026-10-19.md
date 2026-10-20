@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — The S1 contract: study periods, modes and PCU (D266, D267, docs only)
+
+The owner chose S1 next. [STUDY_PERIODS](../reference/STUDY_PERIODS.md) fills what the workflow left
+open:
+- **StudyPeriod:** clock periods in a top-level array at schema 49.
+- **Placing a period:** the run's `clockStart` places each matrix's period on run time.
+- **Matrices:** each takes exactly one of its own times or a `periodId`, and exactly one of a
+  composition or a mode. Schema-31 files keep their bytes because nothing is migrated.
+- **Modes and PCU:** a `data/modes/` catalog, and an optional cited `pcu` per vehicle type with a
+  derived mode PCU. No value ships without a source.
+- **Rows:** SP1–SP14, planned. No code changed.
+- **The owner accepted every recommendation (D267):** seconds since midnight, `clockStart` on the
+  run, no profile or flow basis stored yet, and the PCU field without values.
+
 ## 2026-10-19 — Nodes S0.5: Suggest nodes (D265)
 
 The Nodes tab can now draw one `generated` Node per junction no Node covers ([NODES](../reference/NODES.md) §6, §14).

@@ -65,6 +65,34 @@ TEST(traveltime, section_tracks_actual_distance_across_unequal_lane_remaps) {
     const auto row = sections.report()[0]; CHECK(row.vehicles == 1 && row.unfinished == 0);
     test::near(*row.meanTravelTime, 14); test::near(*row.meanDelay, 7); // 140 actual metres / 20 m/s
 }
+// D279: observe() skips the sections a route has no line on; one that ends on the new route only
+// must still close after the change.
+TEST(traveltime, section_closes_on_a_route_that_carries_only_its_end_line) {
+    auto s = test::straight(); s.inputs.clear();
+    s.segments = {{"a", 100, {}}, {"b", 200, {}}}; s.routes = {{"ra", {"a"}}, {"rb", {"b"}}};
+    s.laneChanges = {{"ra", "rb", 0, 100, 0, 200}};
+    auto state = createSimulation(s, 42);
+    SectionAccumulator sections({{"s", {{"a", 10}}, {{"b", 180}}}}, 0, {});
+    position(state, 0, 0, 0); sections.observe(state);
+    position(state, 1, 0, 10); sections.observe(state);
+    position(state, 3, 0, 30); sections.observe(state);
+    position(state, 4, 1, 70); state.events = {LaneChangeEvent{3, 1, "ra", "rb"}}; sections.observe(state);
+    position(state, 15, 1, 180); sections.observe(state);
+    const auto row = sections.report()[0]; CHECK(row.vehicles == 1 && row.unfinished == 0);
+    test::near(*row.meanTravelTime, 14);
+}
+// D279: tracks are kept in place; one whose vehicle has left the fleet is dropped, so it is not
+// left open as unfinished.
+TEST(traveltime, section_drops_the_track_of_a_vehicle_gone_from_the_fleet) {
+    auto s = test::straight(); s.inputs.clear(); s.segments = {{"road", 200, {}}}; s.routes = {{"r", {"road"}}};
+    auto state = createSimulation(s, 42);
+    SectionAccumulator sections({{"s", {{"road", 10}}, {{"road", 180}}}}, 0, {});
+    position(state, 0, 0, 0); sections.observe(state);
+    position(state, 1, 0, 20); sections.observe(state);
+    CHECK(sections.report()[0].unfinished == 1);
+    state.time = 2; state.events.clear(); state.vehicles.clear(); sections.observe(state);
+    CHECK(sections.report()[0].unfinished == 0);
+}
 TEST(traveltime, section_start_survives_a_provisional_suffix_selection) {
     auto s = test::straight(); s.inputs.clear();
     s.segments = {{"road", 100, {"left", "right"}}, {"left", 100, {}}, {"right", 100, {}}};

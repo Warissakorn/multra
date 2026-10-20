@@ -167,7 +167,7 @@ S0.6 is in (D278): Results → Nodes for a run and a batch.
   - the Nodes tab's leg highlight;
   - Node rows in the batch comparison (`Comparison` gains Node, leg and turn rows: a model,
     output and editor change);
-  - the per-Node cost (+26–40 % Ir, D264).
+  - the per-Node cost, now +14–20 % Ir (D279; was +26–40 %, D264).
 
 
 
