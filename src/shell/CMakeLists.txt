@@ -4,6 +4,7 @@ add_library(trafficsim_shell STATIC editor_interaction.cpp editor_style.cpp edit
 target_sources(trafficsim_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
 target_sources(trafficsim_shell PRIVATE editor_macro.cpp editor_link_types.cpp) # S2.4 (D277)
 target_sources(trafficsim_shell PRIVATE editor_results_nodes.cpp) # S0.6 (D278)
+target_sources(trafficsim_shell PRIVATE legacy_storage.cpp) # D286
 target_sources(trafficsim_shell PRIVATE editor_map.cpp ../editor/map_provider.cpp ../editor/map_tile_client.cpp ../editor/map_http_cache.cpp ../editor/map_layer.cpp ../editor/map_mesh.cpp ../editor/canvas_map.cpp ../editor/canvas_hud.cpp ../editor/run_vehicle_item.cpp)
 target_link_libraries(trafficsim_shell PUBLIC trafficsim_lab trafficsim_commands Qt6::Widgets Qt6::Network trafficsim_geo PRIVATE trafficsim_vehicle_pose trafficsim_options)
 # 26 sources, every one of them a Qt widgets translation unit: <QGraphicsView> alone costs
@@ -44,6 +45,10 @@ add_dependencies(multra-desktop trafficsim-proj-data)
 install(TARGETS multra-desktop RUNTIME DESTINATION bin)
 add_dependencies(check multra-desktop)
 if(BUILD_TESTING)
+    add_executable(trafficsim-legacy-storage-tests ../../tests/legacy_storage_tests.cpp)
+    target_link_libraries(trafficsim-legacy-storage-tests PRIVATE trafficsim_shell trafficsim_options)
+    add_test(NAME legacy-storage COMMAND trafficsim-legacy-storage-tests)
+    add_dependencies(check trafficsim-legacy-storage-tests)
     add_executable(trafficsim-settings-ui-tests ../../tests/editor_settings_ui_tests.cpp)
     target_link_libraries(trafficsim-settings-ui-tests PRIVATE trafficsim_shell Qt6::Test trafficsim_options)
     add_test(NAME editor-settings-ui COMMAND trafficsim-settings-ui-tests "${PROJECT_SOURCE_DIR}/data")

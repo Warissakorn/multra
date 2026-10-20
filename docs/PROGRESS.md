@@ -30,6 +30,9 @@ name candidates (Velk, Vialo, Viaflow, SIMTIA, TRIMOSA and others; collisions in
   options, and the project file's `"format": "TrafficSim"` marker, so every saved file still
   opens. Dated docs keep the old name.
 - **Not checked:** domains, GitHub names and trademarks.
+- **Found in review (D286):** the new application name moved Qt's per-user folders, so recovery
+  files and map tiles written as TrafficSim would be lost after the upgrade. The first start now
+  moves them, never overwriting a folder already under the new name (row `legacy-storage`).
 
 ## 2026-10-20 — Run view: vehicle items reused across frames (D283); pass complete
 
