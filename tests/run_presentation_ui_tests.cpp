@@ -18,6 +18,7 @@
 #include <QStandardPaths>
 #include <QTest>
 #include <algorithm>
+#include <string>
 #include <filesystem>
 #include <iostream>
 using namespace trafficsim;
@@ -133,28 +134,40 @@ int main(int argc,char** argv) {
         const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())if(!item->isVisible())++n;return n;};
         require(hidden()>0,"The forcing: a run hides the static layer it bakes");
         const auto grab=[&]{settle();return canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_RGB32);};
-        // The cache is a premultiplied pixmap, so antialiased edges may round a level or two apart
-        // and a live casing over them a little more (≤24 levels on ≈40 px measured); a stale or
-        // missing layer differs far more than this.
-        const auto same=[](const QImage& x,const QImage& y){
-            if(x.size()!=y.size())return false;
-            long differing=0;
+        // The cache is a premultiplied pixmap, so a blend can round a level or two apart from the live
+        // viewport: antialiased edges, and every pixel of a half-transparent photo (Qt 6.5 on Windows).
+        // A live casing over an edge differs a little more (≤24 levels on ≈40 px, Linux). A stale or
+        // missing layer, or lost opacity, differs by tens of levels, so only pixels more than 2 levels
+        // apart count toward the 1 % budget, and none may be more than 32 apart.
+        struct Difference { long differing{}, beyond{}, pixels{}; int max{}; };
+        const auto compare=[](const QImage& x,const QImage& y){
+            Difference d{0,0,long(x.width())*x.height(),x.size()==y.size()?0:255};
+            if(d.max)return d;
             for(int r=0;r<x.height();++r)for(int c=0;c<x.width();++c) {
                 const auto p=x.pixel(c,r),q=y.pixel(c,r);
-                const int d=std::max({std::abs(qRed(p)-qRed(q)),std::abs(qGreen(p)-qGreen(q)),std::abs(qBlue(p)-qBlue(q))});
-                if(d>32)return false;
-                if(d>0)++differing;
+                const int level=std::max({std::abs(qRed(p)-qRed(q)),std::abs(qGreen(p)-qGreen(q)),std::abs(qBlue(p)-qBlue(q))});
+                d.max=std::max(d.max,level);if(level>0)++d.differing;if(level>2)++d.beyond;
             }
-            return differing*100<long(x.width())*x.height();
+            return d;
+        };
+        const auto same=[&](const QImage& x,const QImage& y){
+            const auto d=compare(x,y);return d.max<=32&&d.beyond*100<d.pixels;
+        };
+        // A failed match names its numbers, so a CI log tells rounding from a lost layer.
+        const auto requireSame=[&](const QImage& x,const QImage& y,const char* what){
+            if(same(x,y))return;
+            const auto d=compare(x,y);
+            throw std::runtime_error(std::string(what)+": "+std::to_string(d.differing)+" of "+std::to_string(d.pixels)+
+                " pixels differ, "+std::to_string(d.beyond)+" by more than 2 levels, at most "+std::to_string(d.max));
         };
         const auto baked=grab();
         canvas->setRunLayerCache(false);require(hidden()==0,"Without the cache every item is live");
-        require(same(grab(),baked),"The cached static layer paints differently from live items");
-        canvas->setRunLayerCache(true);require(same(grab(),baked),"Turning the cache back on changed the picture");
+        requireSame(grab(),baked,"The cached static layer paints differently from live items");
+        canvas->setRunLayerCache(true);requireSame(grab(),baked,"Turning the cache back on changed the picture");
         const auto link=window.history().document().network.links.front().id;
         canvas->select(link);const auto selected=grab();
         require(!same(selected,baked),"The forcing: selecting a Link changes the picture");
-        canvas->setRunLayerCache(false);require(same(grab(),selected),"A selection during a run left the cached layer stale");
+        canvas->setRunLayerCache(false);requireSame(grab(),selected,"A selection during a run left the cached layer stale");
         canvas->setRunLayerCache(true);
         window.findChild<QLineEdit*>("editorSeed")->setText("43");settle(); // ends the run (clearRun)
         require(hidden()==0,"Leaving the run leaves static items hidden");
@@ -171,7 +184,7 @@ int main(int argc,char** argv) {
             for(int i=0;i<50;++i)window.findChild<QAction*>("editorStep")->trigger();
             const auto photoBaked=grab();
             canvas->setRunLayerCache(false);
-            require(same(grab(),photoBaked),"A background image's opacity is lost in the cached layer");
+            requireSame(grab(),photoBaked,"A background image's opacity is lost in the cached layer");
             canvas->setRunLayerCache(true);
         }
         if(argc>2) {

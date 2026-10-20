@@ -19,6 +19,8 @@ The last item of the optimization pass. Each frame deleted and rebuilt every veh
   6,000 Steps (−38 %); a session's mandatory reads 32.6 → 22.4 KB.
 - **CI fix (PR #178):** the sanitizer's use-after-free was a range-for over `classes[0]` of a
   temporary in MA6's test (now named first); MSVC needed `<nlohmann/json.hpp>` in `node_output.cpp`.
+  Windows then failed D281's photo row: its pictures are compared with only pixels more than 2
+  levels apart counted (blend rounding), and a failure prints its numbers.
 
 ## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
 
