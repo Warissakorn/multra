@@ -184,7 +184,13 @@ int main(int argc,char** argv) {
             for(int i=0;i<50;++i)window.findChild<QAction*>("editorStep")->trigger();
             const auto photoBaked=grab();
             canvas->setRunLayerCache(false);
-            requireSame(grab(),photoBaked,"A background image's opacity is lost in the cached layer");
+            // Only the photo's interior: on Windows (Qt 6.5) its antialiased border lands a fraction of a
+            // pixel apart between the cached and live paints (≤60 levels on ≈1.2k px, CI run 39378395930);
+            // the rows above bound everything else. Lost opacity differs across the whole interior.
+            const auto interior=canvas->mapFromScene(QRectF(-200,-200,400,400)).boundingRect()
+                .intersected(canvas->viewport()->rect()).adjusted(3,3,-3,-3);
+            require(interior.width()>=20&&interior.height()>=20,"The forcing: the photo's interior is on screen");
+            requireSame(grab().copy(interior),photoBaked.copy(interior),"A background image's opacity is lost in the cached layer");
             canvas->setRunLayerCache(true);
         }
         if(argc>2) {

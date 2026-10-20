@@ -163,7 +163,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   24,609 → 17,642 ms (events 20,640 → 13,742 ms). Before, `QGraphicsPathItem::paint` was 32 % of a
   Step and `QLayout::activate` 20 %. The cache's premultiplied pixmap rounds antialiased edges up to
   24 levels apart on ≈40 px (run-presentation compares within 32). Heading-up follow redraws the
-  cache every frame (no gain there). Owner check: Windows paint (OWNER_SITTING E22).
+  cache every frame (no gain there). Owner check: Windows paint (OWNER_SITTING E22). On Windows
+  (Qt 6.5.3, CI) a half-transparent background photo's antialiased border lands a fraction of a pixel
+  apart from the live paint: ≤60 levels on ≈1.2k px; its interior matches.
 - **Run status outside the central layout (D282, 2026-10-20, same benchmark):** 17,642 → 15,750 ms
   per 6,000 Steps (median of 3; ranges 17,120–17,919 and 15,598–16,252). Same picture; the
   window relays out only when the status's wrapped line count changes.
