@@ -149,7 +149,7 @@ TEST(compare, cmp7_output_marker_first_and_reproducible) {
     const auto& base = fourLeg(); const auto& alternative = fourLegCopy();
     const auto c = compareBatches(base.report, alternative.report);
     const auto csv = comparisonCsv(c, base, alternative);
-    CHECK(csv.rfind("# TrafficSim - not yet validated. Difference of means, alternative minus base", 0) == 0);
+    CHECK(csv.rfind("# MULTRA - not yet validated. Difference of means, alternative minus base", 0) == 0);
     CHECK(csv.find("# Base: \"four-leg.traffic.json\"; alternative: \"copy.traffic.json\"\n") != std::string::npos);
     CHECK(csv.find("movement,base_n,base_meanDelay_s,alternative_n,alternative_meanDelay_s,difference_s,ci95_s,df\n") != std::string::npos);
     CHECK(csv.find("approach,base_n,base_meanQueue_m,") != std::string::npos);
@@ -161,5 +161,5 @@ TEST(compare, cmp7_output_marker_first_and_reproducible) {
     // A second, independent run of the same project formats to the same bytes.
     const ComparedBatch rerun{base.name, fourLegCopy().report, fourLegCopy().runs};
     CHECK(comparisonCsv(compareBatches(rerun.report, alternative.report), rerun, alternative) == csv);
-    CHECK(csvToTsv(csv).rfind("# TrafficSim - not yet validated.", 0) == 0); // M5.8b's Copy path
+    CHECK(csvToTsv(csv).rfind("# MULTRA - not yet validated.", 0) == 0); // M5.8b's Copy path
 }

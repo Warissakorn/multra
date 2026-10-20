@@ -140,7 +140,7 @@ TEST(movement, four_leg_movement_table) {
     CHECK(sum == r.completed);
     CHECK(observeRun(createSimulation(snapshot.scenario, 42), spec) == r);
     const auto csv = movementCsv(r);
-    CHECK(csv.starts_with("# TrafficSim - not yet validated. Simulated movement delay, not HCM control delay"));
+    CHECK(csv.starts_with("# MULTRA - not yet validated. Simulated movement delay, not HCM control delay"));
     CHECK(movementJson(r)["validated"] == false);
 }
 TEST(movement, queue_definition_is_data) {

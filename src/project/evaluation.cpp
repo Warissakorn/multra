@@ -321,7 +321,7 @@ Json arrivalPhaseJson(const ArrivalPhaseReport& r) {
 }
 std::string movementCsv(const MovementReport& r) {
     std::ostringstream out;
-    out << "# TrafficSim - not yet validated. Simulated movement delay, not HCM control delay; one run.\n";
+    out << "# MULTRA - not yet validated. Simulated movement delay, not HCM control delay; one run.\n";
     out << "movement,vehicles,meanDelay_s,meanTravelTime_s,unfinished\n";
     for (const auto& m : r.movements)
         out << csvQuoted(m.name) << ',' << m.vehicles << ',' << csvNumber(m.meanDelay) << ',' << csvNumber(m.meanTravelTime) << ',' << m.unfinished << '\n';

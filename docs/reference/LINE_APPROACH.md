@@ -106,7 +106,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | Row | Case | Asserts |
 |---|---|---|
 | BA173 | A car with `amberDeceleration` in braking mode toward a standing obstacle that the law under-brakes (D227's slow car 0.33 m/s at its line; a creeper at a give-way line) | It stops at the obstacle with no clamp; the deceleration is `v²/(2·gap)` |
-| BA174 | The same without `amberDeceleration` | Unchanged; the M0 demo, `trafficsim-cli 42` and the TS reference rows keep their bytes |
+| BA174 | The same without `amberDeceleration` | Unchanged; the M0 demo, `multra-cli 42` and the TS reference rows keep their bytes |
 | BA175 | A moving leader, or a mode other than `braking` | Unchanged |
 | BA176 | A stop beyond the type's `maxDeceleration` | Capped at the maximum, so it still clamps (or goes as committed at a line) |
 | BA177 | The switch off, alone and with all others off | Today's bytes on the four shipped projects; BA164's forcing switches it off |

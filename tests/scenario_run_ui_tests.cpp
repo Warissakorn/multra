@@ -1,6 +1,6 @@
 // The M0 scenario, run through the editor. This is the replay-equivalence check that the
 // retired M0 harness window used to carry: same fixture, same seed, same completed count and
-// same mean delay as `trafficsim-cli 42`, reached through the only UI that still runs.
+// same mean delay as `multra-cli 42`, reached through the only UI that still runs.
 #include "../src/shell/editor_window.hpp"
 #include "../src/shell/path.hpp"
 #include "../src/core/simulation.hpp"
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
         auto* step = item<QAction>(w, "editorStep");
         for (int i = 1; i < 1800; ++i) { step->trigger(); if (i % 100 == 0) QApplication::processEvents(); }
         QApplication::processEvents();
-        // Same numbers CTest pins on `trafficsim-cli 42`; the engine is shared, so any drift
+        // Same numbers CTest pins on `multra-cli 42`; the engine is shared, so any drift
         // here is a UI stepping bug, not a modelling change.
         require(w.runState().completed == 45, "Editor run differs from the CLI baseline");
         const auto summary = w.runSummary();
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
         QFile written(csvFile); require(written.open(QIODevice::ReadOnly), "Exported CSV missing");
         const auto bytes = written.readAll().toStdString(); written.close();
         require(bytes == movementCsv(*report), "Exported CSV differs from the CLI's");
-        require(bytes.starts_with("# TrafficSim - not yet validated"), "Exported CSV carries no validation marker");
+        require(bytes.starts_with("# MULTRA - not yet validated"), "Exported CSV carries no validation marker");
         // Captured on the finished run, so the artifact shows the figures being asserted.
         if (argc > 2) {
             w.resize(1280, 860); QTest::qWait(50);

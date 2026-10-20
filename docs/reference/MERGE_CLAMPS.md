@@ -72,7 +72,7 @@ head, or an amber one that holds the vehicle), but only for a behaviour that car
 `amberDeceleration`. The same scope keeps D147's amber rule out of bare
 scenarios.
 
-- **Why the scope:** without it (option R), the M0 crossing demo changes. The `trafficsim-cli 42`
+- **Why the scope:** without it (option R), the M0 crossing demo changes. The `multra-cli 42`
   pin then differs, and 2 of the 5 TypeScript reference rows fail. Those rows must never be
   regenerated (AGENTS). With the scope, both stay unchanged.
 - **Measured:** removes all 4 R clamps.
@@ -85,7 +85,7 @@ scenarios.
 | M2.6 mean delay, s (±95 %) | 46.013 (±0.383) | 46.003 (±0.381) |
 | Completed trips per run | 1980.80 | 1980.80 |
 | Body overlaps (every span pair, every tick) | 0 | 0 |
-| Four-leg, T-junction, `trafficsim-cli 42`, TS reference rows | — | byte-identical, 5/5 |
+| Four-leg, T-junction, `multra-cli 42`, TS reference rows | — | byte-identical, 5/5 |
 | Lane-change lab | 1 clamp | 1 clamp; 1 seed's output differs |
 | Ir (prototype) | — | +0.6 % four-leg, +1.3 % lane lab, +0.6 % M2.6 |
 

@@ -11,7 +11,7 @@
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QLocale::setDefault(QLocale::c()); // Latin digits in every widget, before any is built
-    QCoreApplication::setApplicationName("TrafficSim");
+    QCoreApplication::setApplicationName("MULTRA");
     QCoreApplication::setApplicationVersion(TRAFFICSIM_VERSION);
     QCommandLineParser parser;
     parser.addHelpOption(); parser.addVersionOption();

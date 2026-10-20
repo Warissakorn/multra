@@ -96,7 +96,7 @@ names a section here.
     `freeTime`, `time`;
   - CSV: the marker line, `# Period`, `# Relative gap` with the formula, iterations and
     convergence, then a header with one `flow:<class>` column per class.
-- **CLI.** `trafficsim-cli --project FILE --macro PERIOD [--csv FILE] [--data-dir DIR]`; JSON on
+- **CLI.** `multra-cli --project FILE --macro PERIOD [--csv FILE] [--data-dir DIR]`; JSON on
   stdout, stamped like a batch; a warning on stderr when not converged. The fixture is
   `tests/macro-two-route.traffic.json`.
 - **Rows.** MA12 and MA13 in `tests/macro_output_tests.cpp` (ctest `macrooutput`); `cli-macro`,

@@ -13,7 +13,7 @@ cmake --build build/headless --target check
 
 | Source | Executable | Purpose |
 |---|---|---|
-| `run_simulation.cpp` | `trafficsim-cli` | Run a seeded M0 scenario without a window |
+| `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
 | `check_architecture.cpp` | `trafficsim-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
 | `check_file_sizes.cpp` | `trafficsim-check-file-sizes` | Enforce the source-file line budget |
 | `check_docs.cpp` | `trafficsim-check-docs` | Check maintained Markdown local links, anchors and folder indexes; supplied spec parts are excluded |
@@ -26,13 +26,13 @@ name after `bin/`.
 ## Simulation runner
 
 ```bash
-./build/headless/bin/trafficsim-cli
-./build/headless/bin/trafficsim-cli 42
-./build/headless/bin/trafficsim-cli --seed 123
-./build/headless/bin/trafficsim-cli --scenario data/scenarios/crossing.json --data-dir data
-./build/headless/bin/trafficsim-cli 42 --events run-42.jsonl
-./build/headless/bin/trafficsim-cli --project data/projects/four-leg-signalised.traffic.json --seeds 42-51 --csv four-leg-10.csv
-./build/headless/bin/trafficsim-cli --help
+./build/headless/bin/multra-cli
+./build/headless/bin/multra-cli 42
+./build/headless/bin/multra-cli --seed 123
+./build/headless/bin/multra-cli --scenario data/scenarios/crossing.json --data-dir data
+./build/headless/bin/multra-cli 42 --events run-42.jsonl
+./build/headless/bin/multra-cli --project data/projects/four-leg-signalised.traffic.json --seeds 42-51 --csv four-leg-10.csv
+./build/headless/bin/multra-cli --help
 ```
 
 | Argument | Meaning | Default |

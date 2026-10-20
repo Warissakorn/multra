@@ -18,8 +18,8 @@ Use the C++ build described in `docs/BUILDING.md`:
 cmake --preset desktop
 cmake --build --preset desktop
 ctest --preset desktop
-./build/desktop/bin/trafficsim-desktop
-./build/desktop/bin/trafficsim-cli 42
+./build/desktop/bin/multra-desktop
+./build/desktop/bin/multra-cli 42
 ```
 
 Use the `headless` preset to build core/model/CLI without Qt.
@@ -29,7 +29,7 @@ speed, and English/Thai text. Changing the seed clears the run, as does editing 
 Playback speed changes the number of fixed steps scheduled by the UI; it never changes the
 engine timestep. Pausing stops the Qt timer. The run status shows the completed-trip mean
 delay and the safety-clamp count; both are diagnostics, not HCM control delay or LOS.
-M1.24 retired the separate M0 harness window — the editor and `trafficsim-cli` are the two
+M1.24 retired the separate M0 harness window — the editor and `multra-cli` are the two
 surfaces that run a scenario, and they produce the same run for the same seed.
 The seed is mixed with one splitmix64 step before xorshift32's first draw, so small seeds start
 well spread (D159); `state.seed` keeps the number the user typed.
@@ -489,7 +489,7 @@ after `createSimulation` and once after every `stepSimulation`). `core/` does no
   `[warmup, end]` whenever they finish, and only those still in the network at the end are
   unfinished; a new project starts with 900 s. The full rule is [BATCH](BATCH.md) §5.
 
-The editor shows this in the **Results** tab, and `trafficsim-cli --project FILE [--csv FILE]`
+The editor shows this in the **Results** tab, and `multra-cli --project FILE [--csv FILE]`
 prints the same report as JSON and CSV. Both carry the not-yet-validated marker. Several seeds
 and confidence intervals are M5.2 ([BATCH](BATCH.md)); LOS letters are M5.5.
 

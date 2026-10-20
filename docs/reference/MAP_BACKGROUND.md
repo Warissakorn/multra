@@ -66,7 +66,7 @@ stale. Corrupt cached bytes lose their validators; a 304 with a different ETag
 cannot validate the stored image. Successful 304 validation refreshes Date/Age.
 HTTP Date/Expires/Retry-After timestamps, including GMT and legacy forms, are parsed in UTC.
 No default no-cache headers. Failures use bounded retry/backoff;
-429/503 obey Retry-After, including delays beyond one day. Live OSM sends a stable TrafficSim User-Agent and shows the
+429/503 obey Retry-After, including delays beyond one day. Live OSM sends a stable MULTRA User-Agent and shows the
 provider's credit visibly. No bulk download, offline archive or prefetch feature.
 Live policy: https://operations.osmfoundation.org/policies/tiles/ (checked 2026-10-12).
 

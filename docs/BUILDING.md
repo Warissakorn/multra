@@ -1,4 +1,4 @@
-# Building TrafficSim
+# Building MULTRA
 
 ## Requirements
 
@@ -26,12 +26,12 @@ set PATH=C:/Qt/6.8.3/msvc2022_64/bin;%PATH%
 cmake --preset desktop -DCMAKE_PREFIX_PATH=C:/Qt/6.8.3/msvc2022_64 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake --build --preset desktop
 ctest --preset desktop
-build\desktop\bin\trafficsim-desktop.exe
-build\desktop\bin\trafficsim-cli.exe 42
+build\desktop\bin\multra-desktop.exe
+build\desktop\bin\multra-cli.exe 42
 ```
 
 Put the Qt kit's `bin` on PATH before testing as well as launching, or deploy the DLLs
-beside the executables. Use the same compiler/architecture for Qt and TrafficSim.
+beside the executables. Use the same compiler/architecture for Qt and MULTRA.
 MinGW Qt binaries are not compatible with an MSVC application.
 
 ### Local presets instead of repeated command-line flags
@@ -47,7 +47,7 @@ checked-in `desktop`, `release` and `headless` presets and build into separate d
 cmake --preset win-desktop
 cmake --build --preset win-desktop
 ctest --preset win-desktop
-build\win-desktop\bin\trafficsim-desktop.exe
+build\win-desktop\bin\multra-desktop.exe
 ```
 
 The test presets prepend the Qt kit's `bin` to `PATH` so CTest resolves the Qt DLLs
@@ -59,7 +59,7 @@ For a local runnable folder, build Release and use the matching Qt kit's `windep
 ```bat
 cmake --preset release -DCMAKE_PREFIX_PATH=C:/Qt/6.8.3/msvc2022_64 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake --build --preset release
-C:/Qt/6.8.3/msvc2022_64/bin/windeployqt.exe --release build/release/bin/trafficsim-desktop.exe
+C:/Qt/6.8.3/msvc2022_64/bin/windeployqt.exe --release build/release/bin/multra-desktop.exe
 ```
 
 **Thai line breaks (D245).** Qt loads libthai at run time, as `thai.dll` only, to find Thai line
@@ -82,7 +82,7 @@ sudo apt-get install g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libpr
 cmake --preset desktop
 cmake --build --preset desktop
 ctest --preset desktop
-./build/desktop/bin/trafficsim-desktop --language th
+./build/desktop/bin/multra-desktop --language th
 ```
 
 `lld` is optional: when the compiler accepts `-fuse-ld=lld` it links every executable
@@ -116,9 +116,9 @@ stays the platform the owner actually draws on.
 cmake --preset headless
 cmake --build --preset headless
 ctest --preset headless
-./build/headless/bin/trafficsim-cli --seed 42
+./build/headless/bin/multra-cli --seed 42
 cmake --install build/headless --prefix ./out/install
-./out/install/bin/trafficsim-cli 42
+./out/install/bin/multra-cli 42
 ```
 
 If nlohmann/json has no package config, set
@@ -151,11 +151,14 @@ math libraries. Preserve toolchain/version metadata for future report runs.
 
 Qt licensing depends on the modules and distribution arrangement; consult the
 [Qt module documentation](https://doc.qt.io/qt-6/qtwidgets-index.html#licenses).
-No commercial license or redistribution arrangement is assumed by this repository.
+No commercial license or redistribution arrangement is assumed by this repository: MULTRA is
+GPL-3.0-or-later and links Qt dynamically under the LGPL-3.0. A package must carry
+[THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) and the texts in `licenses/`; the package
+workflow copies them with each component's copyright file (D285).
 
 ## Network editor
 
-`trafficsim-desktop` opens the editor (add `--language th` for Thai).
+`multra-desktop` opens the editor (add `--language th` for Thai).
 `--scenario path/to/file.json` opens either file kind in it — an editor project or a bare M0
 authoring scenario such as `data/scenarios/crossing.json`. `--editor` is still accepted and
 does nothing; M1.24 retired the separate M0 harness window. See

@@ -1,4 +1,4 @@
-# TrafficSim
+# MULTRA
 
 Standing orders for anyone — human or model — working in this repo. Read this first, every
 session.
@@ -58,8 +58,8 @@ See `docs/BUILDING.md` and `docs/reference/MIGRATION.md`.
 cmake --preset desktop
 cmake --build --preset desktop
 ctest --preset desktop
-./build/desktop/bin/trafficsim-desktop
-./build/desktop/bin/trafficsim-cli 42
+./build/desktop/bin/multra-desktop
+./build/desktop/bin/multra-cli 42
 cmake --build build/desktop --target check
 ```
 

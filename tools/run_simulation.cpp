@@ -97,7 +97,7 @@ Prepared prepare(const std::filesystem::path& file, const std::filesystem::path&
 // BATCH §3: the flag also goes to stderr. `side` is empty for a batch, else "base" or "alternative".
 void warnOverloaded(const BatchReport& report, const std::string& side) {
     if (report.overloadedSeeds.empty()) return;
-    std::cerr << "TrafficSim: warning: " << (side.empty() ? "" : side + ": ") << report.overloadedSeeds.size()
+    std::cerr << "MULTRA: warning: " << (side.empty() ? "" : side + ": ") << report.overloadedSeeds.size()
               << " overloaded seed(s) are included in the means; see " << (side.empty() ? "" : side + ".") << "overloadedSeeds\n";
 }
 std::vector<SeedRun> runAll(const Prepared& p, const std::vector<std::uint32_t>& seeds, const std::string& label,
@@ -161,7 +161,7 @@ int runMacroPeriod(const std::filesystem::path& file, const std::filesystem::pat
     auto result = macroJson(run);
     stamp(result);
     std::cout << result.dump(2) << '\n';
-    if (!run.assignment.converged) std::cerr << "TrafficSim: warning: MACRO_NOT_CONVERGED at the iteration cap; gap " << run.assignment.gap << '\n';
+    if (!run.assignment.converged) std::cerr << "MULTRA: warning: MACRO_NOT_CONVERGED at the iteration cap; gap " << run.assignment.gap << '\n';
     return std::cout ? 0 : 1;
 }
 }
@@ -179,8 +179,8 @@ int main(int argc, char** argv) {
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--help" || arg == "-h") {
-                std::cout << "TrafficSim (not yet validated)\n"
-                             "Usage: trafficsim-cli [seed] [--seed N] [--data-dir DIR]\n"
+                std::cout << "MULTRA (not yet validated)\n"
+                             "Usage: multra-cli [seed] [--seed N] [--data-dir DIR]\n"
                              "       [--scenario FILE] [--events FILE]\n"
                              "       [--project FILE.traffic.json [--seeds LIST [--compare FILE] | --macro PERIOD] [--csv FILE] [--lane-changes] [--segment-times]\n"
                              "        [--stop-lines] [--arrival-phases [--phase-bin S]] [--wait-causes] [--discharge]]\n"
@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
         std::cout << result.dump(2) << '\n';
         return std::cout ? 0 : 1;
     } catch (const std::exception& error) {
-        std::cerr << "TrafficSim: " << error.what() << '\n';
+        std::cerr << "MULTRA: " << error.what() << '\n';
         return 1;
     }
 }

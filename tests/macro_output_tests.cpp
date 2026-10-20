@@ -124,7 +124,7 @@ TEST(macrooutput, ma13_every_field_and_the_marker) { // MA13
     CHECK(j["links"][arcOf(run, "s1")]["kind"] == "centroid");
     // CSV: the marker first, context lines, a header with a column per class, a row per arc.
     const auto csv = lines(macroCsv(run));
-    CHECK(csv[0].starts_with("# TrafficSim - not yet validated. Static user-equilibrium assignment"));
+    CHECK(csv[0].starts_with("# MULTRA - not yet validated. Static user-equilibrium assignment"));
     CHECK(csv[1] == "# Period: matrix:am");
     CHECK(csv[2].starts_with("# Relative gap: ") && csv[2].find("converged: yes") != std::string::npos);
     CHECK(csv[3] == "kind,source,fromStation,toStation,linkType,flow:composition:urban-mixed,load,vc,freeTime,time");

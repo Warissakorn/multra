@@ -15,13 +15,13 @@ Gate status is maintained in [ROADMAP](../ROADMAP.md), with the dated owner ruli
 Build as described in [BUILDING.md](../BUILDING.md), then run:
 
 ```bash
-./build/desktop/bin/trafficsim-desktop
-./build/desktop/bin/trafficsim-desktop --language th
-./build/desktop/bin/trafficsim-desktop --scenario network.traffic.json
-./build/desktop/bin/trafficsim-desktop --scenario data/scenarios/crossing.json
+./build/desktop/bin/multra-desktop
+./build/desktop/bin/multra-desktop --language th
+./build/desktop/bin/multra-desktop --scenario network.traffic.json
+./build/desktop/bin/multra-desktop --scenario data/scenarios/crossing.json
 ```
 
-Since M1.24 the editor is what `trafficsim-desktop` opens; the separate M0 simulation window
+Since M1.24 the editor is what `multra-desktop` opens; the separate M0 simulation window
 is gone and `--editor` is accepted as a no-op.
 
 A new editor starts empty. Multiple editors own independent documents and recovery
@@ -357,7 +357,7 @@ per-approach mean and maximum queue, for the current run. While the run is still
 the figures so far with the time reached. The note above the tables is the not-yet-validated
 marker and says what the delay is not (HCM control delay, LOS). **Export results (CSV)…** (D104),
 on the tab, in the Simulation menu and in the command palette, writes the same file as
-`trafficsim-cli --csv`, marker line first. It is enabled only once the run has reached its end.
+`multra-cli --csv`, marker line first. It is enabled only once the run has reached its end.
 **Run seeds** (M5.6, D141) runs the *Seeds* list (default `42-51`) on a worker thread and replaces
 the tables with n, mean, ±95 %, section LOS, queues and the seed flags; *Cancel seeds* or any edit
 discards it. Export then writes the `--seeds --csv` file and **Copy results table** puts the same
@@ -422,8 +422,8 @@ schema choice and serialized bytes stand. Unknown future versions are rejected.
 | Typical name | `crossing.json` | `network.traffic.json` |
 | Root keys | `network`, `definition` | Versioned envelope plus network, definition and background |
 | Definition | Required | Optional until demand/control is authored |
-| Opened by | Editor (or `trafficsim-cli --scenario`) | Editor |
-| Runs | Editor, or `trafficsim-cli` | Editor after demand/catalog/runtime checks |
+| Opened by | Editor (or `multra-cli --scenario`) | Editor |
+| Runs | Editor, or `multra-cli` | Editor after demand/catalog/runtime checks |
 
 The editor opens bare M0 authoring files and project schemas 1–30. Saving uses schema 17
 by default, 18 for owned composition catalogs or embedded vehicle names, and 19 for
@@ -435,7 +435,7 @@ Schema 4 introduced lane bundle offset and Connector interpolation weights; olde
 default to centred lanes and arclength interpolation. A bare M0 scenario has no
 `schemaVersion`, so its attachments use the pre-5 interpretation; Save writes a versioned
 project using the same feature rule. Writing scenario JSON back out is not
-implemented — `trafficsim-cli` still reads the format, and `loadScenario` still rejects a
+implemented — `multra-cli` still reads the format, and `loadScenario` still rejects a
 project with `SCENARIO_IS_PROJECT` for callers that want only a runnable scenario.
 
 Schema 7 introduced shared Link boundary markings and `none`/`double` marking kinds.

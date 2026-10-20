@@ -63,7 +63,7 @@ these CLI defaults: one row per head and lane with greens, greens with an estima
 over those (headway, rate, startup lost time) and the unavailable reasons with their counts.
 It carries the same not-validated statement. A *Safety clamps* page lists each clamp event.
 
-`trafficsim-cli --project FILE.traffic.json --discharge` adds `discharge` JSON.
+`multra-cli --project FILE.traffic.json --discharge` adds `discharge` JSON.
 Defaults are the full run window, zero warmup, steady ranks 3–5 and startup ranks
 1–2. All defaults, timestamp convention, timestep, sample count, crossings,
 cycle completeness and reasons are emitted. Unavailable numeric fields are null.

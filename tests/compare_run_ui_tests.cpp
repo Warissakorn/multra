@@ -140,13 +140,13 @@ int main(int argc, char** argv) {
         w.exportResults(csvFile);
         QFile written(csvFile); require(written.open(QIODevice::ReadOnly), "Exported CSV missing");
         require(written.readAll().toStdString() == csv, "Exported CSV differs from the CLI's --compare --csv"); written.close();
-        require(csv.starts_with("# TrafficSim - not yet validated") &&
+        require(csv.starts_with("# MULTRA - not yet validated") &&
                 csv.find("# Base: \"base.traffic.json\"; alternative: \"busier.traffic.json\"\n") != std::string::npos,
                 "The CSV lacks the marker or the names");
         action(w, "editorCopyResults");
         const auto pasted = QApplication::clipboard()->text().toStdString();
         require(pasted == csvToTsv(csv), "Copy differs from the CSV as tab-separated values");
-        require(pasted.starts_with("# TrafficSim - not yet validated") && pasted.find('\t') != std::string::npos,
+        require(pasted.starts_with("# MULTRA - not yet validated") && pasted.find('\t') != std::string::npos,
                 "Copy lacks the marker or the tabs");
 
         // EC6: a batch replaces the comparison at once.

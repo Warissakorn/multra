@@ -107,7 +107,7 @@ Json comparisonJson(const Comparison& c, const ComparedBatch& base, const Compar
 }
 std::string comparisonCsv(const Comparison& c, const ComparedBatch& base, const ComparedBatch& alternative) {
     std::ostringstream out;
-    out << "# TrafficSim - not yet validated. " << measure(c.seeds.size()) << ".\n";
+    out << "# MULTRA - not yet validated. " << measure(c.seeds.size()) << ".\n";
     out << "# Base: " << csvQuoted(base.name) << "; alternative: " << csvQuoted(alternative.name) << '\n';
     if (const auto seeds = perSide(base, alternative, [](const ComparedBatch& s) { return seedList(s.report.overloadedSeeds); });
         !seeds.empty())

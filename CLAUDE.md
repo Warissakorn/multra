@@ -1,4 +1,4 @@
-# TrafficSim — Claude entry point
+# MULTRA — Claude entry point
 
 Read [AGENTS.md](AGENTS.md) first. It contains the repository-wide working instructions,
 commands and documentation authority for humans and AI tools.
