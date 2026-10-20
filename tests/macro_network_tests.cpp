@@ -229,7 +229,8 @@ TEST(macronetwork, ma6_demand_per_class_and_period) { // MA6
     auto same = d; auto twice = same.zones.odMatrices.front(); twice.id = "am-2"; twice.periodId = "pm"; twice.startTime = twice.endTime = 0;
     twice.cells = {{0, 36}, {0, 0}}; putOdMatrix(same, twice);
     double both = 0;
-    for (const auto& cell : macroDemand(same, data(), macroPeriods(same)[0], g).classes[0].cells) both += cell.vehiclesPerHour;
+    const auto summed = macroDemand(same, data(), macroPeriods(same)[0], g); // named: a range-for keeps no temporary behind classes[0]
+    for (const auto& cell : summed.classes[0].cells) both += cell.vehiclesPerHour;
     test::near(both, 72);
     // Advisories: Micro-only demand is left out, a lot is uncapped.
     auto micro = d; micro.definition->inputs.push_back({});

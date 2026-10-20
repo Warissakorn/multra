@@ -5,6 +5,7 @@
 #include "../model/network/node_membership.hpp"
 #include "../model/network/polygon.hpp"
 #include "../model/network/travel_time.hpp"
+#include <nlohmann/json.hpp>
 #include <ostream>
 
 namespace trafficsim {

@@ -17,6 +17,8 @@ The last item of the optimization pass. Each frame deleted and rebuilt every veh
   five mutants caught; a fill change has no forcing case in the fixture (one display type).
 - **The pass, Linux:** a Node adds +14–20 % (was +26–39 %); M2.6 run view 24,609 → 15,355 ms per
   6,000 Steps (−38 %); a session's mandatory reads 32.6 → 22.4 KB.
+- **CI fix (PR #178):** the sanitizer's use-after-free was a range-for over `classes[0]` of a
+  temporary in MA6's test (now named first); MSVC needed `<nlohmann/json.hpp>` in `node_output.cpp`.
 
 ## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
 
