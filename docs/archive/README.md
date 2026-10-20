@@ -5,6 +5,12 @@ Old blocks moved whole out of the live docs. Nothing here is current: status is 
 [decision record](../decisions/RECORD.md). Open the entry behind what you are changing, never
 the whole directory.
 
+## NEXT state
+
+| File | What it holds |
+|---|---|
+| [`NEXT-state-2026-10-20.md`](NEXT-state-2026-10-20.md) | NEXT's "State on 2026-10-19" list (D199–D270), moved whole when NEXT was cut to its open state (D280) |
+
 ## PROGRESS log
 
 Old PROGRESS entries, newest first, merged verbatim into dated files of ≤500 lines on

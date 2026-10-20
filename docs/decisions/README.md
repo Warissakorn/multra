@@ -6,14 +6,15 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Product scope, stack, naming and owner gates | D278, D277, D276, D275, D274, D273, D272, D271, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Macro assignment (S2, M10.1) | D277, D276, D275, D274, D273, D272, D271 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
 | Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
 | Signals, conflicts, Stop/Yield and queues | D258, D257, D256, D255, D254, D253, D251, D250, D249, D248, D247, D246, D241, D240, D239, D238, D237, D232, D231, D230, D227, D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
 | Following, commitment and lane changes | D258, D257, D256, D255, D254, D253, D252, D251, D250, D249, D248, D247, D246, D241, D240, D239, D238, D237, D236, D235, D234, D233, D232, D231, D230, D229, D228, D227, D226, D225, D224, D223, D222, D221, D220, D219, D218, D217, D216, D215, D214, D213, D212, D211, D210, D209, D208, D207, D206, D204, D203, D202, D189, D188, D187, D186, D185, D184, D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
 | UI, gestures, display and results | D270, D268, D265, D264, D263, D262, D261, D260, D259, D245, D244, D243, D242, D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
-| Performance, checks and documentation | D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
+| Performance, checks and documentation | D280, D279, D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
 
 ## Reading a historical choice
 
@@ -285,7 +286,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D248](RECORD.md#d248) — red running's window stays an upper bound and a runner's committed crossing still counts; a camera-style red-entry count is booked for evaluation.
 
-[D249](RECORD.md#d249) — M2.6's 41 remaining clamps traced; seven options measured; B+M+Q recommended (41 → 17), awaiting the owner.
+[D249](RECORD.md#d249) — M2.6's 41 remaining clamps traced; seven options measured; B+M+Q recommended (41 → 17), answered by D250.
 
 [D250](RECORD.md#d250) — the owner's merge clamp choice: B + M + Q as three project switches (`clampRules`), on by default, schema 45.
 
@@ -293,13 +294,13 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D252](RECORD.md#d252) — the lane-change lab's one clamp traced: a follower under-brakes behind a leader stopping hard at a dead end (D241's follower class, not a merge).
 
-[D253](RECORD.md#d253) — anticipation across a join measured with prototypes: the workable variant nets 17 → 16 clamps and shifts T-junction delay; not recommended, awaiting the owner.
+[D253](RECORD.md#d253) — anticipation across a join measured with prototypes: the workable variant nets 17 → 16 clamps and shifts T-junction delay; not recommended, answered by D254.
 [D254](RECORD.md#d254) — the owner chose A4 as an off-by-default `joinAnticipation` switch (schema 46), and a line-approach contract with numbers first.
 [D255](RECORD.md#d255) — `joinAnticipation` implemented; on, it reproduces D253's A4 outputs; off, byte-identical to D251.
-[D256](RECORD.md#d256) — stopping cleanly at a line measured: D227's floor scoped to `amberDeceleration` cuts M2.6 17 → 5 clamps with the pin and TS rows kept; recommended as a fifth switch, awaiting the owner.
+[D256](RECORD.md#d256) — stopping cleanly at a line measured: D227's floor scoped to `amberDeceleration` cuts M2.6 17 → 5 clamps with the pin and TS rows kept; recommended as a fifth switch, answered by D257.
 [D257](RECORD.md#d257) — the owner chose F1a as `clampRules.standingStopFloor`, on by default (schema 47 when off).
 [D258](RECORD.md#d258) — `standingStopFloor` implemented; on, it reproduces D256's F1a outputs (M2.6 17 → 5 clamps); off, byte-identical to D255.
-[D259](RECORD.md#d259) — the Node contract (S0, merged with M5.1): polygon object at schema 48, derived legs/turns/control, Micro per-turn evaluation; five owner choices, awaiting the owner.
+[D259](RECORD.md#d259) — the Node contract (S0, merged with M5.1): polygon object at schema 48, derived legs/turns/control, Micro per-turn evaluation; five owner choices, answered by D260.
 [D267](RECORD.md#d267) — the owner accepted every S1 recommendation (1a–5a).
 [D268](RECORD.md#d268) — S1.1 implemented: study periods at schema 49, `clockStart`, a matrix `periodId` placed by `odMatrixWindow`, the Study periods tab; rows SP1–SP8.
 [D269](RECORD.md#d269) — Modes join the Demand catalog under its presence rule: `definition.modes` absent is `data/modes/`; a project owning its compositions owns its modes once a matrix names one.
@@ -308,10 +309,16 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D272](RECORD.md#d272) — The owner's S2 answers: Link pieces with one cross-level name, no link-type values, one class per mode with mode bans, no turn penalties, Run Macro + table + CLI, S0.4 to S3, a textbook benchmark, a 0.01 % gap.
 [D273](RECORD.md#d273) — S2.1 implemented: link types and `bpr.json`, `Link::linkType` at schema 50, `compileMacroNetwork` in a new pure `src/macro/`, Macro demand per class; rows MA1–MA6.
 [D274](RECORD.md#d274) — S2.2 implemented: Dijkstra with link-order ties, all-or-nothing loading, multi-class Frank–Wolfe with an exact line search and the named gap; rows MA7–MA11, MA16, MA17.
+[D275](RECORD.md#d275) — S2.3 implemented: `macroSettings` at schema 51, `runMacro` per study period, Macro JSON and CSV with the marker, the CLI `--macro`; rows MA12, MA13.
+[D276](RECORD.md#d276) — Macro run procedures in Visum and Aimsun studied (evidence note); MACRO_NETWORK §19 gives the owner three options.
+[D277](RECORD.md#d277) — S2.4 implemented (§19 a): Run Macro on a worker in stages with Cancel, the Macro links table with a stale notice, Run settings, the Link types tab; row MA14.
+[D278](RECORD.md#d278) — S0.6 implemented: Results → Nodes for a run and a batch, none for a comparison; rows N19–N21; MA15 paused.
+[D279](RECORD.md#d279) — Node evaluation cost: sections visited per route and tracks advanced in place; outputs byte-identical, a Node adds +14–20 % Ir (was +26–39 %).
+[D280](RECORD.md#d280) — NEXT holds open state only (history archived); RECORD is appended to, never read whole; stale doc lines fixed.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.
 [D263](RECORD.md#d263) — S0.2 implemented: Node membership (legs, turns, conflicts, control; advisory refusals); rows N6–N11.
 [D264](RECORD.md#d264) — S0.3 implemented: per-turn sections, leg queue, vehicle-weighted leg/Node delay and letters in single-run and batch JSON/CSV; rows N12–N17; start-up loss finding.
 [D265](RECORD.md#d265) — S0.5 implemented: Suggest nodes, one generated Node per junction (conflict clusters fed from two Links, padded hull), one Undo step; row N18.
-[D266](RECORD.md#d266) — the S1 contract: StudyPeriod at schema 49, `clockStart`, matrix `periodId`/`modeId`, Mode catalog and cited PCU; five owner choices, awaiting the owner.
+[D266](RECORD.md#d266) — the S1 contract: StudyPeriod at schema 49, `clockStart`, matrix `periodId`/`modeId`, Mode catalog and cited PCU; five owner choices, answered by D267.

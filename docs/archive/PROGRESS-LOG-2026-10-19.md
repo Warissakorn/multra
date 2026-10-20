@@ -3,6 +3,23 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — S1.1: study periods (D268)
+
+OD matrices can now be placed on the study clock ([STUDY_PERIODS](../reference/STUDY_PERIODS.md) §13).
+- **File (schema 49):** `studyPeriods[]` in clock seconds, `definition.clockStart`, and a matrix's
+  `periodId` in place of its own times. Each is written only when used, so schema-31 and shipped
+  files keep their bytes.
+- **Run:** `odMatrixWindow` places a period at `start − clockStart`. A placed matrix runs
+  byte-identical to its run-second twin, and a window outside the run is `OD_PERIOD_INVALID`.
+- **Editor:**
+  - a Study periods tab (HH:MM:SS; an end before the start is the next day);
+  - the Run settings clock field;
+  - the OD dialog's period choice.
+
+  Each commit is one Undo step.
+- **Rows:** SP1–SP8 (ctest `studyperiods`, `studyperiod-ui`); six mutations caught. Shipped outputs,
+  the pin and the TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — The S1 contract: study periods, modes and PCU (D266, D267, docs only)
 
 The owner chose S1 next. [STUDY_PERIODS](../reference/STUDY_PERIODS.md) fills what the workflow left

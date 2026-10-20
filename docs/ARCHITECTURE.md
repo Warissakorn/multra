@@ -274,7 +274,7 @@ M3.1 `PriorityRule`s (D59).
 | Batch runner | `src/runner/` | Implemented (M5.2; comparison M5.8a, D148): independent seeds, deterministic aggregation; editor use is M5.6 (batch) and M5.8b (comparison, D149) |
 | Reports | `src/report/` | Reserved for the M5.5/M5.6 LOS report table; data formatting stays in `src/project/` (D131) |
 | Meso engine | `src/meso/` | Planned (M11, D145): imports nothing; compiled from the same authoring network by `compileMesoNetwork`; seeded and deterministic like core |
-| Macro four-step model | `src/macro/` | Planned (M10, D145): imports nothing; `compileMacroNetwork` derives its graph; generation, distribution, mode choice and assignment parameters are `data/` |
+| Macro four-step model | `src/macro/` | Assignment implemented (S2, M10.1, D273–D277): imports nothing; `compileMacroNetwork` (`src/model/demand/macro_compile.*`) derives its graph and `assignMacro` runs multi-class Frank–Wolfe; `src/project/macro_run.*` runs one study period. Generation, distribution and mode choice remain planned (M10, D145); their parameters are `data/` |
 | Zones, OD and parking | `src/model/demand/`, `src/project/od_demand.*`, `src/core/parking.*` | Implemented (M8, [contract](reference/ZONES_AND_PARKING.md)): Zone, ZoneConnector, OdMatrix and ParkingLot are authoring objects shared by every level; OD compiles to ordinary inputs; never a second editable network. Node, Road and StudyPeriod are planned ([D175 workflow](plans/MULTI_LEVEL_WORKFLOW.md)) |
 
 Adding a command must never teach `project/` its implementation. The corresponding boundary check now runs with the M1 document/command implementation.

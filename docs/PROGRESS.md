@@ -1,10 +1,23 @@
 # PROGRESS — TrafficSim
 
-Newest entry at the top: what changed and why. What to do next is in [`NEXT.md`](NEXT.md);
-decisions go once into the [decision record](decisions/RECORD.md). Keep about ten entries here;
-move older ones whole to the top of the newest [`archive/`](archive/README.md) PROGRESS log.
+Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGENTS.md#working-rules)
+(next work in [`NEXT.md`](NEXT.md); about ten entries, older ones whole to [`archive/`](archive/README.md)).
 
 ---
+
+## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
+
+The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and
+NEXT was 88 % shipped history that PROGRESS and RECORD already hold.
+- **NEXT:** 13,877 → about 2.9 KB. The 2026-10-19 state list moved whole to
+  [archive/NEXT-state-2026-10-20.md](archive/NEXT-state-2026-10-20.md); the new state lists only
+  what is open, and adds S2 and S0.6, which it lacked.
+- **AGENTS:** RECORD is appended to, never read whole (≈70k tokens); the file-size rule now says
+  what the check enforces (fails above 500); `src/macro/` is in the layout. NEXT and PROGRESS point
+  to AGENTS instead of restating its rules.
+- **Stale lines fixed:** ARCHITECTURE's Macro row, ROADMAP's S0 line (S0.6; S0.4 moved to S3),
+  read-by-task rows for Macro and study periods, a `src/macro/` README, and the decision index
+  (a Macro topic row, D275–D279 summaries, five answered choices no longer "awaiting").
 
 ## 2026-10-20 — Node evaluation cost: sections by route, tracks in place (D279)
 
@@ -173,23 +186,6 @@ S1 is complete ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §6, §14).
   Each commit is one Undo step.
 - **Rows:** SP9–SP14 (ctest `modepcu`, `modepcu-ui`); nine mutations caught. Shipped outputs, the
   pin and the TS rows are unchanged. Linux only.
-
-## 2026-10-19 — S1.1: study periods (D268)
-
-OD matrices can now be placed on the study clock ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §13).
-- **File (schema 49):** `studyPeriods[]` in clock seconds, `definition.clockStart`, and a matrix's
-  `periodId` in place of its own times. Each is written only when used, so schema-31 and shipped
-  files keep their bytes.
-- **Run:** `odMatrixWindow` places a period at `start − clockStart`. A placed matrix runs
-  byte-identical to its run-second twin, and a window outside the run is `OD_PERIOD_INVALID`.
-- **Editor:**
-  - a Study periods tab (HH:MM:SS; an end before the start is the next day);
-  - the Run settings clock field;
-  - the OD dialog's period choice.
-
-  Each commit is one Undo step.
-- **Rows:** SP1–SP8 (ctest `studyperiods`, `studyperiod-ui`); six mutations caught. Shipped outputs,
-  the pin and the TS rows are unchanged. Linux only.
 
 ## Older entries
 
