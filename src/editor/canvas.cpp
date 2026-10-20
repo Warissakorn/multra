@@ -108,7 +108,7 @@ std::pair<std::string, double> EditorCanvas::hit(Point p,bool connectors) const 
     return hits.empty()?std::pair<std::string,double>{}:hits.front();
 }
 void EditorCanvas::redraw() {
-    previewRouteEnd_=nullptr;runItems_.clear();runBaked_.clear();scene_.clear();pruneConnectorCache();
+    previewRouteEnd_=nullptr;runItems_.clear();runVehicles_.clear();runBaked_.clear();scene_.clear();pruneConnectorCache();
     if (runLayerBaked_) { runLayerBaked_=false; resetCachedContent(); }
     if (grid != cachedGrid_) { cachedGrid_ = grid; resetCachedContent(); }
     if (!document_) return;

@@ -167,6 +167,10 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 - **Run status outside the central layout (D282, 2026-10-20, same benchmark):** 17,642 → 15,750 ms
   per 6,000 Steps (median of 3; ranges 17,120–17,919 and 15,598–16,252). Same picture; the
   window relays out only when the status's wrapped line count changes.
+- **Run vehicle items reused (D283, 2026-10-20):** callgrind, 1,500 Steps of the run-view benchmark:
+  15,517 → 14,716 M Ir (−5.2 %), `drawRunItems` 2,372 → 1,554 M. Wall 15,750 → 15,355 ms per 6,000
+  Steps, inside the clock's spread, so callgrind decides. Left: signal bars and their casings are
+  still rebuilt each frame (`removeItem` 530 M).
 - **Setting the Run/Pause icon only when it changes:** layout stayed 2,439 → 2,438 ms per 3,000
   Steps, because the word-wrapped `editorRunInfo` label relayouts the window every Step anyway.
   Reverted. The lever was that label's layout; D282 moved it into a host with no layout.

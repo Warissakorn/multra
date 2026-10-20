@@ -207,7 +207,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    Does zooming out on a large network feel quicker on Windows? *Owner:*
 22. **D281 static run layer** (listed 2026-10-20). Run M2.6 on Windows, pan and zoom while it runs,
    select a Link mid-run. Do the roads, markings and Connectors look as they do in Edit, and does
-   the run feel quicker than before (Linux: −36 % per Step with D282)? Does the status line above
+   the run feel quicker than before (Linux: −38 % per Step with D282 and D283)? Does the status line above
    the canvas still show all its lines at 100–200 %? *Owner:*
 
 Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's

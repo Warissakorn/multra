@@ -8,6 +8,8 @@ namespace trafficsim {
 class RunVehicleItem : public QGraphicsPathItem {
 public:
     RunVehicleItem(const QPainterPath& body, QColor fill, double pixelsPerMetre);
+    // D283: a frame reuses the item; the zoom sets the casing's reach.
+    void setPixelsPerMetre(double pixelsPerMetre);
     QRectF boundingRect() const override;
     void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 private:

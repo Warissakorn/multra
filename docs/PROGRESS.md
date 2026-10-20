@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-20 — Run view: vehicle items reused across frames (D283); pass complete
+
+The last item of the optimization pass. Each frame deleted and rebuilt every vehicle item.
+- **How:** run vehicles are kept by id and moved; a body is rebuilt only when the type or zoom
+  changes, and the items of vehicles gone are removed.
+- **Measured:** callgrind over 1,500 Steps 15,517 → 14,716 M Ir (−5.2 %); the wall clock moved
+  −2.5 %, inside its spread.
+- **Rows (run-presentation):** an item survives while its vehicle runs; none outlives its
+  vehicle; a followed outline moves; a reused frame equals a rebuilt one after a zoom. Four of
+  five mutants caught; a fill change has no forcing case in the fixture (one display type).
+- **The pass, Linux:** a Node adds +14–20 % (was +26–39 %); M2.6 run view 24,609 → 15,355 ms per
+  6,000 Steps (−38 %); a session's mandatory reads 32.6 → 22.4 KB.
+
 ## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
 
 The fourth item of the optimization pass. The word-wrapped `editorRunInfo` label sat in the central
@@ -131,27 +144,6 @@ marking, a link-type editor).
   prefix); MA13 now compares a whole CSV row.
 - **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS
   rows. Linux only.
-
-## 2026-10-19 — S2.2: the Macro assignment (D274)
-
-The Macro graph can now be assigned ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §17). There are
-no outputs or editor yet.
-- **Engine** (`src/macro/assign.*`, pure):
-  - Dijkstra, where on equal distance the lower link index wins;
-  - all-or-nothing loading;
-  - multi-class Frank–Wolfe on the shared load Σ pcu·v, with an exact bisection line search;
-  - §7's relative gap. Stopping at the iteration cap is flagged, and the flows are still
-    returned.
-- **Rows:** MA7–MA11, MA16, MA17 (ctest `macroassign`). They cover:
-  - closed-form and bisected equilibria;
-  - an unused route;
-  - the gap recomputed from the flows;
-  - identical results with Links permuted;
-  - a mode ban;
-  - mixed PCU.
-- **Mutations:** seven caught. An MSA step first survived, because it still converged. Row MA8 now
-  pins that two routes reach equilibrium in one exact step.
-- **Unchanged:** Micro outputs, the pin and the TS rows. Linux only.
 
 ## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
 

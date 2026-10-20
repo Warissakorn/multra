@@ -7,10 +7,13 @@
 #include <QBuffer>
 #include <QTemporaryDir>
 #include <fstream>
+#include <map>
+#include <tuple>
 #include <QApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLineEdit>
+#include <QScrollBar>
 #include <QPainter>
 #include <QStandardPaths>
 #include <QTest>
@@ -81,6 +84,50 @@ int main(int argc,char** argv) {
         const auto at=canvas->mapFromScene(first->mapToScene(first->shape().boundingRect().center()));
         QTest::mouseClick(canvas->viewport(),Qt::LeftButton,{},at);settle();
         require(clicked&&*clicked==first->data(2).toULongLong(),"A click on a cased vehicle missed it");
+        // D283: a vehicle keeps its item from frame to frame; items of vehicles gone are removed,
+        // and a followed outline leaves the vehicle that is no longer followed.
+        const auto runVehicles=[&]{
+            std::map<qulonglong,QGraphicsItem*> items;
+            for(auto* item:canvas->scene()->items())if(item->data(0).toString()==QStringLiteral("run-vehicle")) {
+                require(items.emplace(item->data(2).toULongLong(),item).second,"Two items for one vehicle");
+            }
+            return items;
+        };
+        const auto before=runVehicles();
+        for(int i=0;i<200;++i)window.findChild<QAction*>("editorStep")->trigger();
+        settle();
+        const auto after=runVehicles();int kept=0,gone=0;
+        for(const auto& [id,item]:before) {
+            const auto still=after.find(id);
+            if(still!=after.end()){require(still->second==item,"A vehicle's item was rebuilt");++kept;}
+            else ++gone;
+        }
+        for(const auto& [id,item]:after)
+            require(std::any_of(window.runState().vehicles.begin(),window.runState().vehicles.end(),[&](const Vehicle& v){return v.id==id;}),
+                    "An item outlived its vehicle");
+        require(kept>0&&gone>0,"The forcing: 200 Steps keep some vehicles and finish others");
+        const auto ids=runVehicles();require(ids.size()>=2,"Need two vehicles to follow");
+        auto pick=ids.begin();const auto one=pick->first;auto* oneItem=pick->second;const auto two=(++pick)->first;
+        canvas->setRunFollow(one);settle();require(static_cast<QGraphicsPathItem*>(oneItem)->pen().style()!=Qt::NoPen,"The followed vehicle has no outline");
+        canvas->setRunFollow(two);settle();require(static_cast<QGraphicsPathItem*>(oneItem)->pen().style()==Qt::NoPen,"A vehicle no longer followed keeps its outline");
+        canvas->setRunFollow(std::nullopt);settle();
+        // A frame drawn on reused items equals one drawn from scratch, after a zoom too.
+        const auto frame=[&]{
+            std::map<qulonglong,std::tuple<QPainterPath,QRgb,QPointF,double,double,int>> out;
+            for(const auto& [id,item]:runVehicles()) {
+                const auto* body=static_cast<QGraphicsPathItem*>(item);
+                out[id]={body->path(),body->brush().color().rgb(),body->pos(),body->rotation(),body->zValue(),int(body->pen().style())};
+            }
+            return out;
+        };
+        const auto atStart=frame();const auto view=canvas->transform();
+        const int across=canvas->horizontalScrollBar()->value(),down=canvas->verticalScrollBar()->value();
+        canvas->setTransform(QTransform::fromScale(.5,-.5));window.findChild<QAction*>("editorStep")->trigger();settle();
+        const auto reused=frame();
+        require(std::get<0>(reused.begin()->second)!=std::get<0>(atStart.at(reused.begin()->first)) || !atStart.contains(reused.begin()->first),
+                "The forcing: zooming out enlarges the floored bodies");
+        canvas->redraw();settle();require(frame()==reused,"Reused vehicle items differ from rebuilt ones");
+        canvas->setTransform(view);canvas->horizontalScrollBar()->setValue(across);canvas->verticalScrollBar()->setValue(down);canvas->redraw();settle(); // bodies follow the zoom at the next frame
         // D281: during a run the static network below the vehicles is painted from the cached
         // background, pixel for pixel what live items paint, and a selection still repaints it.
         const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())if(!item->isVisible())++n;return n;};

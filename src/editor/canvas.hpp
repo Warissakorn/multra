@@ -313,6 +313,10 @@ private:
     std::vector<QGraphicsItem*> runBaked_;
     bool runLayerBaked_{};
     std::vector<QGraphicsItem*> runItems_;
+    // D283: run vehicles by id, moved each frame instead of rebuilt; the body they were drawn with.
+    struct RunVehicle { class RunVehicleItem* item{}; std::uint32_t type{}; double scale{}; bool seen{}; };
+    std::map<std::uint64_t,RunVehicle> runVehicles_;
+    void dropRunVehicles(bool all);
     std::map<std::string,int> runLevels_;
     std::map<std::string,std::string> runStyles_;
     std::map<std::string,RoadCrossbar> runHeadBars_;

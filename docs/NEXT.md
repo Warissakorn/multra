@@ -17,7 +17,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - **Nodes:** S0.1–S0.3, S0.5 and S0.6 are in (D259–D265, D278, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); the gate stays open. `joinAnticipation` ships off (D255); D95 stays off.
-- **Optimization pass** (owner-approved order, 2026-10-20): Node cost (D279), docs (D280) the static run layer (D281) and the status label (D282) done; next reused Run vehicle items ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)).
+- **The optimization pass is complete** (D279–D283, 2026-10-20, Linux): a Node adds +14–20 % Ir;
+  M2.6 run view −38 % per Step; mandatory reads −31 %. Windows paint is OWNER_SITTING E22. Not
+  booked: the engine's spread costs (`closestVehicle` 8 %, the per-tick `Vehicle` moves 6 %).
 - If `map-ui` fails in a parallel `check` again, capture its output before re-running.
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
@@ -38,7 +40,6 @@ S0.6 is in (D278): Results → Nodes for a run and a batch.
   - the Nodes tab's leg highlight;
   - Node rows in the batch comparison (`Comparison` gains Node, leg and turn rows: a model,
     output and editor change);
-  - the per-Node cost, now +14–20 % Ir (D279; was +26–40 %, D264).
 
 
 
