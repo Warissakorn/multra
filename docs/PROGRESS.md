@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-20 — Run view: the static network painted from the background cache (D281)
+
+The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`
+was 32 % of the run-view profile.
+- **How:** while a run frame is shown, the scene items under the lowest level's vehicles (surfaces,
+  markings, Connectors, zones, Nodes, conflict areas, the background image) are hidden and painted
+  by `drawBackground`, which QGraphicsView caches. Higher levels, counters and overlays stay live;
+  every `redraw()` rebuilds and re-bakes, so a selection or edit is never stale.
+- **Measured:** M2.6, 6,000 Steps, Linux RelWithDebInfo offscreen: 24,609 → 17,642 ms (−28 %).
+- **Rows (run-presentation):** cached and live pictures match (within 32 levels on under 1 % of
+  pixels, the pixmap's rounding); a selection mid-run repaints; a half-transparent background image
+  keeps its opacity; leaving the run shows every item. Five mutants caught.
+- **Owner check:** Windows paint (OWNER_SITTING E22).
+
 ## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
 
 The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and
@@ -165,27 +179,6 @@ compiles into a Macro graph and how one study period is assigned. Nothing is imp
   - a 0.01 % gap;
   - S0.4 moves to S3;
   - the other choices as recommended.
-
-## 2026-10-19 — S1.2: modes and PCU (D269, D270)
-
-S1 is complete ([STUDY_PERIODS](reference/STUDY_PERIODS.md) §6, §14).
-- **The call (D269):** the owner asked for the best design from the project's own rules. Modes join
-  the Demand catalog under its presence rule: `definition.modes` absent is `data/modes/` (`car`,
-  `mixed` ship). A project owning its compositions owns its modes once a matrix names one, so it
-  still runs with no data directory, and a catalog copy keeps the schema of a project using none.
-- **File (schema 49):** a matrix's `modeId` in place of `compositionId` (`OD_TYPES_AMBIGUOUS`),
-  owned `definition.modes`, and a vehicle type's `pcu: {value, source}` (`INVALID_PCU`). Each is
-  written only when used. No PCU value ships (D267).
-- **Run:** a moded matrix runs byte-identical to its composition twin. `UNKNOWN_MODE` and
-  `MODE_COMPOSITION_UNKNOWN` are Run refusals. Modes are read only when a matrix names one.
-- **Editor:**
-  - a Modes tab with the derived PCU ("—" while unknown); owned modes are editable;
-  - the OD dialog's Types choice;
-  - a PCU row in the type dialog.
-
-  Each commit is one Undo step.
-- **Rows:** SP9–SP14 (ctest `modepcu`, `modepcu-ui`); nine mutations caught. Shipped outputs, the
-  pin and the TS rows are unchanged. Linux only.
 
 ## Older entries
 

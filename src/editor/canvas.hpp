@@ -59,6 +59,8 @@ public:
     void setRunNetwork(const Network&);
     void setRunFrame(const SimState&);
     void clearRunFrame();
+    // D281: on by default; off paints the static network live, as before (tests compare the two).
+    void setRunLayerCache(bool on) { runLayerCache_=on; redraw(); }
     std::size_t renderedVehicles() const { return runFrame_.vehicles.size(); }
     // Pixels per metre, whatever the view's rotation (D166); equals |m11| when north is up.
     double viewScale() const { return std::hypot(transform().m11(), transform().m12()); }
@@ -304,6 +306,12 @@ private:
     std::optional<LaneReference> nearestLane(Point) const;
     void insertVertex(Point);
     void drawRunItems();
+    // D281: while a run frame is shown, the static items under the lowest run level are painted
+    // into the cached background and hidden from the scene, so a Step repaints only what moves.
+    void bakeRunLayer();
+    void paintRunLayer(QPainter*, const QRectF&);
+    std::vector<QGraphicsItem*> runBaked_;
+    bool runLayerBaked_{};
     std::vector<QGraphicsItem*> runItems_;
     std::map<std::string,int> runLevels_;
     std::map<std::string,std::string> runStyles_;
@@ -311,7 +319,7 @@ private:
     std::map<std::uint64_t,LaneChangePath> runLaneChangePaths_;
     SimState runFrame_;
     std::optional<std::uint64_t> runFollow_;
-    bool runHeadingUp_{};
+    bool runHeadingUp_{}, runLayerCache_{true};
     std::map<std::string,std::vector<Point>> runGeometry_;
     std::map<std::string,ConnectorEquation> runEquations_;
     std::map<std::pair<std::uint32_t,std::uint32_t>,RearAxlePath> runAxlePaths_;

@@ -3,6 +3,27 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-19 — S1.2: modes and PCU (D269, D270)
+
+S1 is complete ([STUDY_PERIODS](../reference/STUDY_PERIODS.md) §6, §14).
+- **The call (D269):** the owner asked for the best design from the project's own rules. Modes join
+  the Demand catalog under its presence rule: `definition.modes` absent is `data/modes/` (`car`,
+  `mixed` ship). A project owning its compositions owns its modes once a matrix names one, so it
+  still runs with no data directory, and a catalog copy keeps the schema of a project using none.
+- **File (schema 49):** a matrix's `modeId` in place of `compositionId` (`OD_TYPES_AMBIGUOUS`),
+  owned `definition.modes`, and a vehicle type's `pcu: {value, source}` (`INVALID_PCU`). Each is
+  written only when used. No PCU value ships (D267).
+- **Run:** a moded matrix runs byte-identical to its composition twin. `UNKNOWN_MODE` and
+  `MODE_COMPOSITION_UNKNOWN` are Run refusals. Modes are read only when a matrix names one.
+- **Editor:**
+  - a Modes tab with the derived PCU ("—" while unknown); owned modes are editable;
+  - the OD dialog's Types choice;
+  - a PCU row in the type dialog.
+
+  Each commit is one Undo step.
+- **Rows:** SP9–SP14 (ctest `modepcu`, `modepcu-ui`); nine mutations caught. Shipped outputs, the
+  pin and the TS rows are unchanged. Linux only.
+
 ## 2026-10-19 — S1.1: study periods (D268)
 
 OD matrices can now be placed on the study clock ([STUDY_PERIODS](../reference/STUDY_PERIODS.md) §13).

@@ -8,6 +8,7 @@
 #include <QGraphicsPathItem>
 #include "run_vehicle_item.hpp"
 #include <QPainter>
+#include <QStyleOptionGraphicsItem>
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -38,10 +39,36 @@ void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId, bool hea
 void EditorCanvas::setRunFrame(const SimState& frame) {
     // Scenarios are owned immutable snapshots, not mutable documents/revisions.
     if(frame.scenario!=runFrame_.scenario){runAxlePaths_.clear();runLaneChangePaths_.clear();}
-    runFrame_=frame;drawRunItems();
+    runFrame_=frame;
+    if(!runLayerBaked_)bakeRunLayer();
+    drawRunItems();
 }
 // Clear the snapshot-derived geometry and head bars together; Reset restores Edit bars.
 void EditorCanvas::clearRunFrame() {runAxlePaths_.clear();runLaneChangePaths_.clear();runFrame_={};runGeometry_.clear();runEquations_.clear();runLevels_.clear();runStyles_.clear();runHeadBars_.clear();redraw();}
+void EditorCanvas::bakeRunLayer() {
+    if(!runLayerCache_ || !runFrame_.scenario || runLevels_.empty())return;
+    // Everything a vehicle (level·100 + 11) is drawn over on the lowest level: surfaces, markings,
+    // Connectors, zones, Nodes, conflict areas. Higher levels, counters and overlays stay live.
+    const auto lowest=std::min_element(runLevels_.begin(),runLevels_.end(),[](const auto& a,const auto& b){return a.second<b.second;})->second;
+    const double below=lowest*100.+11;
+    for(auto* item:scene_.items(Qt::AscendingOrder)) {
+        if(item->zValue()>=below || !item->isVisible() || item->parentItem() || !item->childItems().isEmpty() ||
+           (item->flags()&QGraphicsItem::ItemIgnoresTransformations))continue;
+        item->setVisible(false);runBaked_.push_back(item);
+    }
+    runLayerBaked_=true;resetCachedContent();
+}
+void EditorCanvas::paintRunLayer(QPainter* painter,const QRectF& rect) {
+    // In stacking order, each item with its own transform and opacity, as the scene would paint it.
+    for(auto* item:runBaked_) {
+        if(!item->sceneBoundingRect().intersects(rect))continue;
+        // QGraphicsView fills its background cache in Source mode; items blend over what lies below.
+        painter->save();painter->setRenderHints(renderHints());painter->setCompositionMode(QPainter::CompositionMode_SourceOver);painter->setTransform(item->sceneTransform(),true);painter->setOpacity(item->opacity());
+        QStyleOptionGraphicsItem option;option.exposedRect=item->boundingRect();
+        item->paint(painter,&option,nullptr);
+        painter->restore();
+    }
+}
 void EditorCanvas::drawRunItems() {
     for(auto* item:runItems_){scene_.removeItem(item);delete item;}runItems_.clear();
     if(!runFrame_.scenario)return;

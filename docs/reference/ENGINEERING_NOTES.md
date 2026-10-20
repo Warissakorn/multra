@@ -158,6 +158,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     12,000 Steps (107 → 57 s).
   - Left per Step: canvas ≈1.4 ms, window flush ≈1.1 ms, run label relayout ≈0.8 ms. Measure
     with `trafficsim-run-view-benchmark`, not by hand.
+- **Static run layer (D281, 2026-10-20, Linux RelWithDebInfo offscreen, 1600×1000):**
+  `trafficsim-run-view-benchmark data/projects/m2.6-study-template.traffic.json 6000 2000`, median of 3:
+  24,609 → 17,642 ms (events 20,640 → 13,742 ms). Before, `QGraphicsPathItem::paint` was 32 % of a
+  Step and `QLayout::activate` 20 %. The cache's premultiplied pixmap rounds antialiased edges up to
+  24 levels apart on ≈40 px (run-presentation compares within 32). Heading-up follow redraws the
+  cache every frame (no gain there). Owner check: Windows paint (OWNER_SITTING E22).
 - **Setting the Run/Pause icon only when it changes:** layout stayed 2,439 → 2,438 ms per 3,000
   Steps, because the word-wrapped `editorRunInfo` label relayouts the window every Step anyway.
   Reverted. The lever is that label's layout, a UI change for the owner.

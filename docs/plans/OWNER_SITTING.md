@@ -205,6 +205,9 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    Compare [at 3 px](../images/ui-lod-after/crossing-at-3px.png) and
    [just under](../images/ui-lod-after/crossing-under-3px.png). Do you miss anything at that zoom?
    Does zooming out on a large network feel quicker on Windows? *Owner:*
+22. **D281 static run layer** (listed 2026-10-20). Run M2.6 on Windows, pan and zoom while it runs,
+   select a Link mid-run. Do the roads, markings and Connectors look as they do in Edit, and does
+   the run feel quicker than before (Linux: −28 % per Step)? *Owner:*
 
 Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now

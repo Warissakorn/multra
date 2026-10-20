@@ -1,13 +1,20 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/editor/run_vehicle_item.hpp"
 #include "../src/editor/road_crossbar.hpp"
+#include "../src/project/json.hpp"
+#include <nlohmann/json.hpp>
 #include <QAction>
+#include <QBuffer>
+#include <QTemporaryDir>
+#include <fstream>
 #include <QApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QLineEdit>
 #include <QPainter>
 #include <QStandardPaths>
 #include <QTest>
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 using namespace trafficsim;
@@ -74,6 +81,52 @@ int main(int argc,char** argv) {
         const auto at=canvas->mapFromScene(first->mapToScene(first->shape().boundingRect().center()));
         QTest::mouseClick(canvas->viewport(),Qt::LeftButton,{},at);settle();
         require(clicked&&*clicked==first->data(2).toULongLong(),"A click on a cased vehicle missed it");
+        // D281: during a run the static network below the vehicles is painted from the cached
+        // background, pixel for pixel what live items paint, and a selection still repaints it.
+        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())if(!item->isVisible())++n;return n;};
+        require(hidden()>0,"The forcing: a run hides the static layer it bakes");
+        const auto grab=[&]{settle();return canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_RGB32);};
+        // The cache is a premultiplied pixmap, so antialiased edges may round a level or two apart
+        // and a live casing over them a little more (≤24 levels on ≈40 px measured); a stale or
+        // missing layer differs far more than this.
+        const auto same=[](const QImage& x,const QImage& y){
+            if(x.size()!=y.size())return false;
+            long differing=0;
+            for(int r=0;r<x.height();++r)for(int c=0;c<x.width();++c) {
+                const auto p=x.pixel(c,r),q=y.pixel(c,r);
+                const int d=std::max({std::abs(qRed(p)-qRed(q)),std::abs(qGreen(p)-qGreen(q)),std::abs(qBlue(p)-qBlue(q))});
+                if(d>32)return false;
+                if(d>0)++differing;
+            }
+            return differing*100<long(x.width())*x.height();
+        };
+        const auto baked=grab();
+        canvas->setRunLayerCache(false);require(hidden()==0,"Without the cache every item is live");
+        require(same(grab(),baked),"The cached static layer paints differently from live items");
+        canvas->setRunLayerCache(true);require(same(grab(),baked),"Turning the cache back on changed the picture");
+        const auto link=window.history().document().network.links.front().id;
+        canvas->select(link);const auto selected=grab();
+        require(!same(selected,baked),"The forcing: selecting a Link changes the picture");
+        canvas->setRunLayerCache(false);require(same(grab(),selected),"A selection during a run left the cached layer stale");
+        canvas->setRunLayerCache(true);
+        window.findChild<QLineEdit*>("editorSeed")->setText("43");settle(); // ends the run (clearRun)
+        require(hidden()==0,"Leaving the run leaves static items hidden");
+        // A half-transparent background image is baked with its opacity, as the scene paints it.
+        {
+            QTemporaryDir directory;require(directory.isValid(),"No temporary directory");
+            auto document=window.history().document();QImage photo(400,400,QImage::Format_RGB32);photo.fill(QColor("#203040"));
+            QByteArray png;QBuffer buffer(&png);buffer.open(QIODevice::WriteOnly);require(photo.save(&buffer,"PNG"),"Image fixture");
+            document.background.pngBase64=std::make_shared<const std::string>(png.toBase64().toStdString());
+            document.background.x=-200;document.background.y=200;document.background.opacity=.5;
+            const auto file=directory.filePath("photo.traffic.json");
+            std::ofstream(file.toStdString())<<documentJson(document).dump(1);
+            window.openFile(file);settle();
+            for(int i=0;i<50;++i)window.findChild<QAction*>("editorStep")->trigger();
+            const auto photoBaked=grab();
+            canvas->setRunLayerCache(false);
+            require(same(grab(),photoBaked),"A background image's opacity is lost in the cached layer");
+            canvas->setRunLayerCache(true);
+        }
         if(argc>2) {
             canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);settle();
             auto image=canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_Grayscale8);
