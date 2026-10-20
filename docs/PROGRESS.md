@@ -24,8 +24,9 @@ The owner chose the reviewed recommendation over MIT.
 The owner chose **MULTRA — Multi-Level Traffic Analysis**, after reviews of the licence and of
 name candidates (Velk, Vialo, Viaflow, SIMTIA, TRIMOSA and others; collisions in D284's search).
 - **Renamed:** `multra-desktop` and `multra-cli`, the application and window names, the CLI's
-  help and messages, the CSV/TSV and Macro tab marker, the map User-Agent, both locales, the
-  package workflow and the maintained docs' commands.
+  help and messages, the CSV/TSV and Macro tab marker, the map User-Agent (its contact URL is
+  `github.com/Warissakorn/multra`, the repository's name after the owner renames it), both
+  locales, the package workflow and the maintained docs' commands.
 - **Kept:** the repository, the `trafficsim` namespace, internal targets and `TRAFFICSIM_*`
   options, and the project file's `"format": "TrafficSim"` marker, so every saved file still
   opens. Dated docs keep the old name.
