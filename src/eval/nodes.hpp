@@ -4,7 +4,7 @@
 // section delay, NOT HCM control delay, not validated (rule 4).
 #include "sections.hpp"
 
-namespace trafficsim {
+namespace multra {
 struct NodeConflictRow {
     std::string conflictArea, first, second, kind, priority; // turn names; control.hpp's enum names
     bool operator==(const NodeConflictRow&) const = default;

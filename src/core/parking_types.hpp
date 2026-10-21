@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M8.4a (D156, docs/reference/ZONES_AND_PARKING.md §4): a parking lot as the engine runs it. The
 // project compiles an authored ParkingLot into this (M8.4b); ids, not slots, because
 // createSimulation re-sorts routes, inputs and types and the index resolves them once.

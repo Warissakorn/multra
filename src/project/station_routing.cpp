@@ -5,7 +5,7 @@
 #include <cmath>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 struct Gate { double at{},begin{},end{};std::vector<std::string> prefix; };
 std::optional<Gate> gateOn(const Network& n,const RuntimeSections& table,const Route& route,

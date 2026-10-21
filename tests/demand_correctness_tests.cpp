@@ -6,7 +6,7 @@
 #include "../src/project/demand_paths.hpp"
 #include "../tools/four_leg_network.hpp"
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument road() {
     ProjectDocument d;

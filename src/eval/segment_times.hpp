@@ -2,7 +2,7 @@
 #include "movement.hpp"
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 // M3.2.8c step 2: where along its route a movement's time goes. Per movement a vehicle arrived on,
 // the mean time from its departure (insertion) to entering each runtime segment, plus its mean
 // departure delay, travel time and free-flow time. A diagnostic fed by snapshots alone; it reads

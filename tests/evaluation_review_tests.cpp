@@ -5,7 +5,7 @@
 #include "../src/runner/batch.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument slashRoutes(int lanes) {
     ProjectDocument d;

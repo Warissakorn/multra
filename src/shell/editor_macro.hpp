@@ -8,7 +8,7 @@
 
 class QLabel;
 class QTableWidget;
-namespace trafficsim {
+namespace multra {
 // S2.4 (MACRO_NETWORK §19 a, §20, D277): the editor's Macro run. One worker at a time over a copy of
 // the document; the stages and the live gap are posted back; the result keeps the revision it ran on.
 struct MacroPanel {

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 namespace { constexpr auto npos = std::numeric_limits<std::size_t>::max(); }
 double tripDelay(const ArrivedEvent& a) {
     return std::max(0.0, a.travelTime + a.departureDelay - a.freeFlowTime);

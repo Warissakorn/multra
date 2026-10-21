@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 #include <vector>
-namespace trafficsim {
+namespace multra {
 struct DisplayLevel {int order{};std::map<std::string,std::string> name;};
 struct DisplayType {
     std::string id;

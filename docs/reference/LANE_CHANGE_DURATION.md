@@ -103,7 +103,7 @@ instantaneous; it is removed only if a later decision makes every run lateral.
 
 ## 7. Performance
 
-The implementing slice re-runs LATERAL §11 with real targets: `trafficsim-engine-benchmark`
+The implementing slice re-runs LATERAL §11 with real targets: `multra-engine-benchmark`
 switched off (no change expected), and `lane-change-lab` and `four-leg-signalised` switched on
 against main. A regression above 10 % switched on needs its own decision (D164).
 

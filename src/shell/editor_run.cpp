@@ -14,7 +14,7 @@
 #include <QToolBar>
 #include <QResizeEvent>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 namespace {
 // D282: the run status changes every Step. Inside the central layout its label invalidated the
 // whole window's layout each time; in a host without a layout a new text posts a LayoutRequest the

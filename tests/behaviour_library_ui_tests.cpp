@@ -23,7 +23,7 @@
 #include <QTemporaryDir>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.2c (D128): BA19/BA20 automated evidence for the behaviour library dialog and road assignment.
 namespace {
 const char* kDefault = "wiedemann-inspired-prototype";

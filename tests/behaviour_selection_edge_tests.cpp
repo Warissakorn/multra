@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.2b (D127) edge rows: BA14 (positioned routing, D119) and BA17 (Stop service, M3.2.5)
 // under assigned behaviours. Sets differ in standstill only, so a lone vehicle's free motion
 // (which reads followingTime) is the same under every set.

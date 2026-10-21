@@ -8,7 +8,7 @@
 #include <map>
 #include <limits>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument timedFile() {
     ProjectDocument d;const auto link=addLink(d,{{0,0},{400,0}},2,3.5);putRoute(d,{"route",{link}});changeRunSettings(d,120,.1);
@@ -176,7 +176,7 @@ TEST(demand, type_only_routing_does_not_read_unused_external_composition_files) 
     def.inputs[0].compositionId.clear();def.inputs[0].vehicleTypeId="car";
     RoutingDecision x{"choose","",{{"route",1}}};x.typeRules={{"car",{1},{{}}}};def.routingDecisions={x};
     def.inputs[0].routeId.clear();def.inputs[0].routingDecisionId="choose";
-    const auto dir=std::filesystem::temp_directory_path()/"trafficsim-unused-compositions-slice6";
+    const auto dir=std::filesystem::temp_directory_path()/"multra-unused-compositions-slice6";
     std::filesystem::remove_all(dir);std::filesystem::create_directories(dir/"compositions");
     struct Cleanup {std::filesystem::path path;~Cleanup(){std::error_code error;std::filesystem::remove_all(path,error);}} cleanup{dir};
     std::ofstream broken(dir/"compositions"/"unused.json");broken<<"invalid json";broken.close();

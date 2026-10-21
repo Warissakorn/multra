@@ -1,6 +1,6 @@
 #pragma once
 #include "history.hpp"
-namespace trafficsim {
+namespace multra {
 // Vissim's Name, on any Link, Connector or signal head. Free text, never a key: two objects
 // may carry the same name, and an empty one is the normal state.
 void renameObject(ProjectDocument&,const std::string& id,const std::string& name);

@@ -19,7 +19,7 @@
 // M8.6b (D162, docs/reference/ZONES_AND_PARKING.md §9): the OD matrices tab and the lot dialog. Both
 // dialogs return local values; every commit is one execute() step, so the structural tier refuses a
 // bad matrix or lot with its own localized code and History stays atomic.
-namespace trafficsim {
+namespace multra {
 namespace {
 }
 std::vector<std::pair<std::string, QString>> EditorWindow::compositionChoices() const {

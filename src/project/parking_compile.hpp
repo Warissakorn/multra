@@ -2,7 +2,7 @@
 #include "document.hpp"
 #include <filesystem>
 
-namespace trafficsim {
+namespace multra {
 // M8.4b (D157, ZONES_AND_PARKING.md §4.4): each authored ParkingLot as the engine's ParkingLotSpec,
 // appended to a scenario `compileScenario` built from `withOdDemand`'s definition. Gate routes are
 // every runtime route ending on one of the lot zone's destination-connector Links; exits are the

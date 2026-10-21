@@ -1,7 +1,7 @@
 #pragma once
 #include "history.hpp"
 
-namespace trafficsim {
+namespace multra {
 Link& editableLink(ProjectDocument& document, const std::string& id);
 std::string addLink(ProjectDocument&, const std::vector<Point>& geometry, int lanes, double width);
 void changeGeometry(ProjectDocument&, const std::string& id, const std::vector<Point>& geometry);

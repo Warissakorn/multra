@@ -1,7 +1,7 @@
 #include "lateral_test_support.hpp"
 #include <cmath>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 using namespace lateral_test;
 // D207: a lane swap at a shared dead end (docs/reference/M3_8_CONTRACT.md §2, "Cooperation"). Two
 // families on one two-lane Link: A is full on the left lane and a stub on the right, B the

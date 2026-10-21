@@ -5,7 +5,7 @@
 #include <map>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 struct Point { double x{}, y{}; bool operator==(const Point&) const = default; };
 enum class MarkingType { solid, dashed, none, doubleLine };
 // The driver's left or right, looking along the direction of travel.

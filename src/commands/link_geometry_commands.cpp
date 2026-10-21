@@ -5,7 +5,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 void straightenLink(ProjectDocument& d,const std::string& id) {
     const auto& g=editableLink(d,id).geometry;
     changeGeometry(d,id,{g.front(),g.back()});

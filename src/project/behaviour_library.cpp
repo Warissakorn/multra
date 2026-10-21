@@ -9,7 +9,7 @@
 #include <map>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::string at(const char* base, std::size_t i) { return std::string(base) + "[" + std::to_string(i) + "]"; }
 bool blank(const std::string& id) { return id.find_first_not_of(" \t\r\n") == std::string::npos; }

@@ -23,7 +23,7 @@
 #include <filesystem>
 #include <iostream>
 #include <vector>
-using namespace trafficsim;
+using namespace multra;
 // UI slice d1: the Properties dock's forms share one label column, wrap at narrow width, and keep
 // their commit boundaries. Presentation only: nothing here may change when an edit commits.
 namespace {

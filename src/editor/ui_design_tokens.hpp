@@ -16,7 +16,7 @@
 
 // Presentation tokens. Every colour the editor draws is read back from editorPalette() by
 // QPalette role, so this header is the only place a hex literal may appear.
-namespace trafficsim::editorDesign {
+namespace multra::editorDesign {
 inline constexpr const char* gray0="#FFFFFF";
 inline constexpr const char* gray1="#F9FAFB";
 inline constexpr const char* gray2="#F3F4F6";

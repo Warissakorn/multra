@@ -4,7 +4,7 @@
 #include "../../core/validate.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Reads "name[index]" off the front of a path. Returns false for anything else,
 // including a trailing "[" with no digits, so a malformed path never indexes a vector.

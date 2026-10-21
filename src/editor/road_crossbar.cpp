@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // At a mouth the normal can meet one Connector rail and one attached Link rail.
 // These are actual road edges, never extrapolated imaginary rail segments.

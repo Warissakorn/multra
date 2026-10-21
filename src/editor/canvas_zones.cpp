@@ -9,7 +9,7 @@
 // M8.6a (D161, docs/reference/ZONES_AND_PARKING.md §9): the Zone tool and the zones' marks. A zone is
 // a translucent polygon under every Link with its name at the centroid; a zone connector is a dashed
 // line from the centroid to its Link's start (origin) or end (destination).
-namespace trafficsim {
+namespace multra {
 namespace {
 Point centroid(const std::vector<Point>& polygon) {
     Point c{};

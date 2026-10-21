@@ -4,7 +4,7 @@
 #include "network.hpp"
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // Whether segments ab and cd touch, end points and collinear overlap included.
 bool segmentsMeet(Point a, Point b, Point c, Point d);
 // At least three finite points, and no two non-adjacent edges touch (the ring is simple).

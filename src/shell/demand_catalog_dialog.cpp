@@ -17,7 +17,7 @@
 #include <QVBoxLayout>
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 namespace {
 QDoubleSpinBox* number(QWidget* parent,const char* name,double value) {
     auto* field=new QDoubleSpinBox(parent);field->setObjectName(name);field->setRange(0,std::max(1e9,value));field->setDecimals(9);

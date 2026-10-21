@@ -3,7 +3,7 @@
 #include <QWidget>
 #include <QString>
 
-namespace trafficsim {
+namespace multra {
 // M2.7b. The timing-bar diagram a signal controller dialog shows: one row per signal group across
 // one cycle, in cycle seconds, painted from the same colour rule the run's expanded program
 // follows (signalGroupColorAt), so the picture cannot disagree with the simulation.

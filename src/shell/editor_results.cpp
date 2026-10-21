@@ -19,7 +19,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-namespace trafficsim {
+namespace multra {
 // M2.5: the per-movement table and the approach queues, beside what they are not. The note is
 // never optional: these are one unvalidated run of a prototype car-following model (rule 4).
 namespace {

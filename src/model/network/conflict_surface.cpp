@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 namespace {
 double distance(Point a, Point b) { return std::hypot(a.x-b.x,a.y-b.y); }
 }

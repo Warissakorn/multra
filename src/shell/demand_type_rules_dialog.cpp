@@ -12,7 +12,7 @@
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 bool editDemandTypeRules(QWidget* parent,RoutingDecision& decision,const std::vector<VehicleType>& types,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorTypeRulesDialog");dialog.setWindowTitle(text("editorTypeRules"));
     auto* layout=new QVBoxLayout(&dialog);auto* help=new ReflowLabel(text("editorTypeRulesHelp"),&dialog);help->setWordWrap(true);layout->addWidget(help);

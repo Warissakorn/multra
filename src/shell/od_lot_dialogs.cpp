@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QDoubleSpinBox* number(QWidget* parent, double value, double low, double high, int decimals) {
     auto* field = new QDoubleSpinBox(parent); field->setRange(low, high); field->setDecimals(decimals);

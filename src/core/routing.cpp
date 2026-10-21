@@ -5,7 +5,7 @@
 #include <cmath>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // The full physical prefix must agree, including segment lengths, through the station.
 std::vector<std::string> prefixAt(const Scenario& s,const Route& r,double at) {

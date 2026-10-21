@@ -8,7 +8,7 @@
 #include <set>
 #include <cmath>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 void renameObject(ProjectDocument& d,const std::string& id,const std::string& name) {
     // A name long enough to be a document belongs in neither a dialog nor a table cell.
     if(name.size()>200)throw std::invalid_argument("EDIT_NAME_LENGTH");

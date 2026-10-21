@@ -1,6 +1,6 @@
 #include "leaders.hpp"
 
-namespace trafficsim {
+namespace multra {
 void coveredLeader(const Vehicle& vehicle, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
                    const LateralFilter& lateral, std::optional<Leader>& nearest, std::uint64_t* id) {
     forCoveredSpans(vehicle, spans, buckets, &lateral, [&](double least) { return nearest && least >= nearest->gap; },

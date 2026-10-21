@@ -4,7 +4,7 @@
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 std::string macroPeriodName(const MacroPeriod& p) { return p.periodId.empty() ? "matrix:" + p.matrixId : p.periodId; }
 MacroRun runMacro(const ProjectDocument& d, const std::filesystem::path& data, const std::string& period, InputManifest* manifest,
                   const MacroObserver* observer) {

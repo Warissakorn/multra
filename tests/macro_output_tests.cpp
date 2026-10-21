@@ -13,7 +13,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::filesystem::path data() { return test::root() / "data"; }
 std::string laneOf(const ProjectDocument& d, const std::string& link) {
@@ -65,7 +65,7 @@ std::vector<std::string> lines(const std::string& text) {
 }
 }
 TEST(macrooutput, ma12_another_alpha_and_beta_come_from_data) { // MA12
-    const auto dir = std::filesystem::temp_directory_path() / "trafficsim-macro-vdf";
+    const auto dir = std::filesystem::temp_directory_path() / "multra-macro-vdf";
     std::filesystem::remove_all(dir);
     std::filesystem::copy(data(), dir, std::filesystem::copy_options::recursive);
     std::ofstream(dir / "vdf/bpr.json") << R"({"id":"bpr","form":"bpr","alpha":0.3,"beta":2,"source":"Test values"})";

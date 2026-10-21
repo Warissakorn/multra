@@ -7,7 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 AuthoringDefinition& demand(ProjectDocument& d) {
     if (!d.definition) d.definition.emplace();
     return *d.definition;

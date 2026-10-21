@@ -12,7 +12,7 @@
 
 // M3.2.4: authored conflict areas and waiting lines on the canvas, drawn from the same lane
 // painted strips. Runtime coverage uses those same rails; grouping shares controls, not outlines.
-namespace trafficsim {
+namespace multra {
 namespace {
 QPainterPath outlinePath(const std::vector<Point>& points) {
     QPainterPath shape(QPointF(points.front().x, points.front().y));

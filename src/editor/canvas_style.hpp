@@ -5,7 +5,7 @@
 #include <QPen>
 #include <cmath>
 
-namespace trafficsim::canvasStyle {
+namespace multra::canvasStyle {
 // Functions, not namespace-scope QColors: the palette must not be built before QApplication.
 inline QColor selection() { return editorDesign::accent(); }
 inline QColor hover() { return editorDesign::accent(); }

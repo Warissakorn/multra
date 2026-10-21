@@ -19,7 +19,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // B-6 (docs/reference/SPEED_DECISIONS.md §6, D223): desired-speed decisions in the editor. Select a
 // Link, Add opens the dialog (station, one min/max row per vehicle type); the decision is one Undo
 // step, drawn across every lane, listed in its tab, edited and deleted through History.

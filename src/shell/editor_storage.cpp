@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QImageReader>
 #include <QSaveFile>
-namespace trafficsim {
+namespace multra {
 ProjectDocument readEditorDocument(const QString& file) {
     QFile input(file);
     if(!input.open(QIODevice::ReadOnly) || input.size()>48*1024*1024)throw std::runtime_error("EDIT_FILE_READ");

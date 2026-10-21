@@ -2,7 +2,7 @@
 // seeds 42-81 (docs/evidence/w74-discharge.md). Not in `check`: evidence to archive, like the
 // other sweeps. Sensitivity is recorded, never bounded; nothing here is calibration (rule 4).
 //
-//   trafficsim-w74-discharge-sweep <w74 behaviour.json> <project.traffic.json> <data dir> <out.csv>
+//   multra-w74-discharge-sweep <w74 behaviour.json> <project.traffic.json> <data dir> <out.csv>
 //
 // Both models run on the same project with its catalogs captured as owned; the w74 arm adds the
 // given behaviour and points every vehicle type at it. The discharge spec is the CLI default.
@@ -15,7 +15,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::string figure(const std::optional<double>& v) {
     if (!v) return "";
@@ -24,7 +24,7 @@ std::string figure(const std::optional<double>& v) {
 }
 int main(int argc, char** argv) {
     if (argc != 5) {
-        std::cerr << "usage: trafficsim-w74-discharge-sweep <w74 behaviour.json> <project> <data dir> <out.csv>\n";
+        std::cerr << "usage: multra-w74-discharge-sweep <w74 behaviour.json> <project> <data dir> <out.csv>\n";
         return 2;
     }
     try {

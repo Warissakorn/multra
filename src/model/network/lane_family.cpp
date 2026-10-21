@@ -3,7 +3,7 @@
 #include <cmath>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // One lane section of a compiled route, with the route distance it starts at.
 struct Stretch { const LaneSection* section{}; double at{}; };

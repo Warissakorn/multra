@@ -2,7 +2,7 @@
 #include "json.hpp"
 #include "../model/demand/zones.hpp"
 
-namespace trafficsim {
+namespace multra {
 struct ProjectDocument;
 // M8.2 (D154), M8.4b (D157). Four top-level arrays, each written only when non-empty, so a document without a
 // zone layer keeps its schema and bytes. Below schema 31 each key is UNSUPPORTED_FIELD; a malformed

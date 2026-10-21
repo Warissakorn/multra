@@ -6,7 +6,7 @@
 #include "../src/commands/network_commands.hpp"
 #include <cmath>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument roads(DrivingSide side=DrivingSide::left) {
     ProjectDocument d;d.network.drivingSide=side;

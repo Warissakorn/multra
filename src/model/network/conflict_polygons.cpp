@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 void append(ConflictPolygons& to,const ConflictPolygons& from) {
     to.insert(to.end(),from.begin(),from.end());

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Named numerical constants, not calibration (contract §1).
 constexpr double kPast = 1e-9;          // m: a front this far beyond a line has crossed it

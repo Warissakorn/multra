@@ -13,7 +13,7 @@
 #include "../src/runner/batch.hpp"
 #include <filesystem>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::filesystem::path data() { return test::root() / "data"; }
 ProjectDocument shipped(const char* project) {
@@ -110,7 +110,7 @@ TEST(macronetwork, ma2_link_types_round_trip_at_50_and_are_checked) { // MA2
     banned.definition->linkTypes[0].modes = {"car"};
     CHECK(!issueAt(macroNetwork(banned, data()).issues, "INVALID_LINK_TYPE", "definition.linkTypes[0].modes[0]"));
     // Installed types and VDFs: the presence rule, paths at the files.
-    const auto dir = std::filesystem::temp_directory_path() / "trafficsim-macro-types";
+    const auto dir = std::filesystem::temp_directory_path() / "multra-macro-types";
     std::filesystem::remove_all(dir); std::filesystem::create_directories(dir / "link-types"); std::filesystem::create_directories(dir / "vdf");
     std::ofstream(dir / "link-types/local.json") << linkTypeJson({"local", "Local", 600, 8, "bpr", {}, "Test values"}).dump();
     std::ofstream(dir / "vdf/odd.json") << R"({"id":"odd","form":"conical","alpha":-1,"beta":4,"source":"x"})";

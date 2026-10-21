@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace trafficsim {
+namespace multra {
 void validateDischargeSpec(const DischargeSpec& s) {
     if(!std::isfinite(s.windowStart)||!std::isfinite(s.windowEnd)||!std::isfinite(s.warmup)||
        s.windowStart<0||s.windowEnd<=s.windowStart||s.warmup<0||s.warmup>=s.windowEnd||

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <array>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 namespace {
 QPointF project(const GeoProjection& projection,const TileKey& key,double u,double v) {
     const auto p=projection.mercatorToWorld(tilePoint(key,u,v));return {p.x,p.y};

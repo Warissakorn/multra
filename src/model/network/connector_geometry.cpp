@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 double attachmentStation(const Network& network,const LaneReference& ref,bool outgoing) {
     for(const auto& link:network.links)if(link.id==ref.linkId) {
         const double reference=polylineLength(link.geometry);

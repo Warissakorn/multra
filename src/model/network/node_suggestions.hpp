@@ -3,7 +3,7 @@
 // Node covers yet. Pure; derived from the drawing alone, so it needs no number of its own.
 #include "network.hpp"
 
-namespace trafficsim {
+namespace multra {
 // A junction is a cluster of conflicts (authored and automatic) joined through their Connectors,
 // and Connectors that leave or arrive at the same place on a Link. Its polygon is the convex hull
 // of the cluster's Connectors and conflict points, padded by the widest lane at those Connectors'

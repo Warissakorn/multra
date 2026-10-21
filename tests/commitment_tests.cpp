@@ -2,7 +2,7 @@
 #include "../src/core/conflicts.hpp"
 #include "../src/core/routes.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8a (docs/reference/M3_8_CONTRACT.md §1, D69): a driver who cannot stop at its line at its type's
 // maximum deceleration goes instead of being clamped there -- unless the area is physically taken.
 // Hand-built scenarios with test-owned states: a crossing (area 98..102 on both roads, the minor

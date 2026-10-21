@@ -1,7 +1,7 @@
 #include "test.hpp"
 #include "../src/commands/appearance_commands.hpp"
 #include "../src/commands/network_commands.hpp"
-using namespace trafficsim;
+using namespace multra;
 
 TEST(history, navigate_saved_states_and_redo_without_new_revisions) {
     History h; h.reset();

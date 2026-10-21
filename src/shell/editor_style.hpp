@@ -5,7 +5,7 @@
 #include <filesystem>
 class QWidget;
 class QTableView;
-namespace trafficsim {
+namespace multra {
 enum class EditorIcon { document, open, save, undo, redo, fit, finish, rotate, remove,
     select, link, connector, route, input, signal, split, measure, image, run, pause,
     step, reset, inspector, objects, focus, grid, conflict, counter, section, zone };

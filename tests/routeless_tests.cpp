@@ -4,7 +4,7 @@
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M2.1.1: vehicle inputs on a Link with no route, and routing decisions placed on a Link. The
 // shares are pinned by hand from the drawing; the engine sees only static routes.
 namespace {

@@ -1,7 +1,7 @@
 #pragma once
 #include "batch.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Scenario comparison (M5.8a, D148, BATCH §7): two batches over one seed list, alternative minus
 // base, row by row. Equal seeds are not common random numbers -- each run's stream diverges once
 // the projects differ -- so every interval is Welch's for independent samples. NOT HCM control

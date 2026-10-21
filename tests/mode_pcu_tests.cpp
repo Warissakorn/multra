@@ -14,7 +14,7 @@
 #include "../src/runner/batch.hpp"
 #include <filesystem>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::string laneOf(const ProjectDocument& d, const std::string& link) {
     for (const auto& l : d.network.links) if (l.id == link) return l.lanes.front().id;
@@ -63,7 +63,7 @@ ProjectDocument owned(ProjectDocument d) {
 }
 // A throwaway data directory: the shipped catalogs plus extra mode or type files.
 std::filesystem::path dataWith(const std::string& name, const std::vector<std::pair<std::string, std::string>>& files) {
-    const auto dir = std::filesystem::temp_directory_path() / ("trafficsim-modes-" + name);
+    const auto dir = std::filesystem::temp_directory_path() / ("multra-modes-" + name);
     std::filesystem::remove_all(dir); std::filesystem::create_directories(dir);
     for (const char* sub : {"vehicle-types", "driver-behaviour", "priority-rules", "compositions", "modes"})
         std::filesystem::copy(data() / sub, dir / sub, std::filesystem::copy_options::recursive);
@@ -212,7 +212,7 @@ TEST(modepcu, sp14_owned_modes_are_edited_and_kept_while_used) { // SP14
     auto external = moded(); ownModesWhenNamed(external, installedModes);
     CHECK(external.definition->externalModes); // installed compositions: the installed modes stay
     // No Demand catalog at all: only the priority rules the drawn merge derives from.
-    const auto none = std::filesystem::temp_directory_path() / "trafficsim-modes-none";
+    const auto none = std::filesystem::temp_directory_path() / "multra-modes-none";
     std::filesystem::remove_all(none); std::filesystem::create_directories(none);
     std::filesystem::copy(data() / "priority-rules", none / "priority-rules", std::filesystem::copy_options::recursive);
     CHECK(!std::filesystem::exists(none / "modes") && !std::filesystem::exists(none / "compositions"));

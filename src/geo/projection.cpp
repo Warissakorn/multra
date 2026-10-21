@@ -4,7 +4,7 @@
 #include <cmath>
 #include <numbers>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 struct GeoProjection::Impl {
     PJ_CONTEXT* context{proj_context_create()};
     PJ* geographic{};PJ* mercator{};

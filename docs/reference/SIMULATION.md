@@ -39,7 +39,7 @@ well spread (D159); `state.seed` keeps the number the user typed.
 ```cpp
 #include "src/core/simulation.hpp"
 #include "src/model/network/network.hpp"
-using namespace trafficsim;
+using namespace multra;
 
 // Caller supplies Network and ScenarioDefinition values.
 auto issues = validateNetwork(network); // ValidationIssue { code, path }

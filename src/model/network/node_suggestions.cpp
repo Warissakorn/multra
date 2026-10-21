@@ -8,7 +8,7 @@
 #include <set>
 #include <tuple>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // `sources` are the Links traffic reaches the conflicts from: a Connector's `from` Link, or the
 // Link a side lies on when no Connector of the cluster arrives on it at or before that side. One

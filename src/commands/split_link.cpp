@@ -5,7 +5,7 @@
 #include <map>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::vector<Point> section(const std::vector<Point>& geometry, double start, double end) {
     std::vector<Point> result{pointAlong(geometry, start)};

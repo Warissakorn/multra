@@ -1,5 +1,5 @@
 #include "canvas.hpp"
-namespace trafficsim {
+namespace multra {
 namespace {
 // A Connector whose Link is gone still has to compare equal to itself from one frame to the
 // next, so a missing Link is a value like any other rather than a special case.

@@ -4,7 +4,7 @@
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M2.5. The analytic cases pin the measurement definitions by hand; the engine cases pin that
 // the engine feeds them what they expect; the four-leg case is M2's done-condition.
 namespace {

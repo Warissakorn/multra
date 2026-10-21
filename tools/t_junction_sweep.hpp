@@ -15,7 +15,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace trafficsim::sweep {
+namespace multra::sweep {
 inline const std::vector<std::uint32_t> kSeeds{0, 42, 43, 4294967295u};
 // Paired: gapTime 3/5/7 s at headway 7 m, then headway 3/7/12 m at gapTime 5 s. (5, 7) is shared.
 inline const std::vector<std::pair<double, double>> kRules{{3, 7}, {5, 7}, {7, 7}, {5, 3}, {5, 12}};

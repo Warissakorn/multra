@@ -34,7 +34,7 @@
 #include <QStyle>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent) : QMainWindow(parent), data_(data) {
     // Numbers are data a user reads back into the project file, so every widget shows Latin
     // digits whatever the system locale. setLocale as well as setDefault: the QMainWindow base has

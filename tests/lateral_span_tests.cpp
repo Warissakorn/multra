@@ -2,7 +2,7 @@
 #include "../src/core/validate.hpp"
 #include <cmath>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M3.7 slice 2 (D188): rows BA40-BA42 and BA39 of docs/plans/DRIVING_BEHAVIOUR.md -- spans with a
 // lateral extent, a span on every lane a body covers by more than kLateralOverlap, and the leader
 // test filtered by dLat (docs/reference/LATERAL.md §5-§6). Nothing moves sideways yet, so a test

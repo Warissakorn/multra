@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <functional>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 class CommandSearch final : public QLineEdit {
 public:

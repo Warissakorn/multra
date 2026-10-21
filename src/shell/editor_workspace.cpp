@@ -21,7 +21,7 @@
 #include <QToolButton>
 #include <QTreeWidget>
 #include <initializer_list>
-namespace trafficsim {
+namespace multra {
 void EditorWindow::buildWorkspace() {
     auto* commandPalette=action("editorCommandPalette",
 #if defined(Q_OS_MACOS) || defined(Q_OS_MAC)

@@ -1,7 +1,7 @@
 #include "test.hpp"
 #include "../tools/reaction_discharge.hpp"
 #include "../tools/reaction_discharge_summary.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 DriverBehaviour model(bool w74) {
     if (!w74) return {"driver", 2, 2, 3, 1.5, .2};

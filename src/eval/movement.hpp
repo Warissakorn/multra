@@ -6,7 +6,7 @@
 #include "nodes.hpp"
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 // Movement evaluation for one run (M2.5). Fed only by SimState snapshots and their events, so the
 // engine does not know it exists. NOT HCM control delay, NOT LOS, not validated (rule 4).
 struct QueueDefinition {

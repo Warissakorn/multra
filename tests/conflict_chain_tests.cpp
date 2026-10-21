@@ -3,7 +3,7 @@
 #include "../src/core/routes.hpp"
 #include <algorithm>
 
-using namespace trafficsim;
+using namespace multra;
 // M3.2.3b: sides over section cuts, chains of zones admitted atomically (A15), and the route
 // topologies the solver refuses by name. Hand-built scenarios; the minor road runs n1 -> n2.
 namespace {

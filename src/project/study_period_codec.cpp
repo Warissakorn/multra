@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr const char* kPeriods = "studyPeriods";
 [[noreturn]] void invalid() { throw std::invalid_argument("EDIT_ZONE_INVALID"); }

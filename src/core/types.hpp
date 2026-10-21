@@ -11,7 +11,7 @@
 #include <variant>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // Runtime contract: metres, seconds, m/s and m/s². No UI or file-format types.
 struct Segment { std::string id; double length{}; std::vector<std::string> next; double curvature{}; }; // 1/m (D212): 0 straight
 struct Route {

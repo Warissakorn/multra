@@ -61,9 +61,9 @@ boundary; `src/runner/` holds batches (M5.2) and scenario comparison (M5.8a).
 
 Who owns what is in [AGENTS § Documentation authority](../AGENTS.md#documentation-authority).
 
-- A new maintained doc gets a row in its folder index in the same commit; `trafficsim-check-docs .`
+- A new maintained doc gets a row in its folder index in the same commit; `multra-check-docs .`
   (in `check`/CTest) checks links, anchors and index coverage.
-- Every `.md` stays under 500 lines (`trafficsim-check-file-sizes`); split or archive near 450.
+- Every `.md` stays under 500 lines (`multra-check-file-sizes`); split or archive near 450.
 - Status lives only in NEXT and ROADMAP; elsewhere link to it, do not copy it.
 - Archive by moving whole blocks: old PROGRESS entries go to the top of the newest
   `archive/PROGRESS-LOG-*.md`; implemented ROADMAP bodies and answered reviews go to `archive/`.

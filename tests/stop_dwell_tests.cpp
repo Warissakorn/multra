@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <map>
 
-using namespace trafficsim;
+using namespace multra;
 // B-8 (docs/reference/STOP_DWELL.md, D230/D231): a behaviour's stopDwellTime lengthens the rest at a
 // Stop line to whole ticks of at least that time. Engine rows BA117-BA122 on stop_control's
 // crossing: the minor approach "north" crosses the major "east"; the minor waiting line is at 90.

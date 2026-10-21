@@ -3,7 +3,7 @@
 #include "../src/commands/history.hpp"
 #include "../src/model/network/right_of_way.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // D86: an authored conflict area follows the overlap it was set on when a Link or Connector is
 // edited, and falls away with its rule, control and line when the overlap does (Vissim's rule).
 namespace {

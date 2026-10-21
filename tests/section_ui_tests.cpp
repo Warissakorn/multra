@@ -16,7 +16,7 @@
 #include <QTimer>
 #include <iostream>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 // M5.4b (D133, TT11) and M5.5 (D134, L7): travel-time sections in the editor. Two Ctrl+right-clicks with the Section
 // tool make one section in one Undo step; the tab renames and deletes it through History; a run
 // accepts it; Save and reopen keep it.

@@ -18,7 +18,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // M8.6a (D161, ZONES_AND_PARKING §9, rows ZE1-ZE5): zones and zone connectors in the editor. The Zone
 // tool (Z) draws a polygon by Ctrl+right-clicks and Enter in one Undo step; the Zones tab adds
 // connectors to the Link selected on the canvas, edits shares and names, and deletes through History.

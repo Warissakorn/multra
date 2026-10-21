@@ -1,7 +1,7 @@
 #include "conflict_polygon_math.hpp"
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 namespace {
 Point sub(Point a,Point b){return {a.x-b.x,a.y-b.y};}
 double cross(Point a,Point b){return a.x*b.y-a.y*b.x;}

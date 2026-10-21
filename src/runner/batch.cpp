@@ -6,7 +6,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 void rejectDuplicates(std::vector<std::uint32_t> seeds) {
     std::sort(seeds.begin(), seeds.end());

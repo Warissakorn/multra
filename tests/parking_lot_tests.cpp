@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 // Road `in` ends at the lot's gate; road `out` leaves it. `arrivals` feeds the gate, `exit` (0 veh/h)
 // is the queue departures wait in.

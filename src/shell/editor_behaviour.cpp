@@ -15,7 +15,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 // M3.3.2c (D128, DRIVING_BEHAVIOUR.md §9): the library dialog and the road assignment.
 void EditorWindow::openBehaviourLibrary() {
     auto staged = history_.document();

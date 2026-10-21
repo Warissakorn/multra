@@ -11,7 +11,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // The route a vehicle input placed on this Link would feed: one that starts there. An input
 // belongs to a route in this engine, so placing one by pointer still has to name a route.

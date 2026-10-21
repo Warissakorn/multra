@@ -2,7 +2,7 @@
 #include "json.hpp"
 #include "../runner/batch.hpp"
 
-namespace trafficsim {
+namespace multra {
 // The CSV warning lines a batch and a comparison share (BATCH §3, §5), so both describe a flag alike.
 inline constexpr const char* kOverloadedWarning =
     "# WARNING: overloaded seeds (pending over 5% of generated) are included in the means:";

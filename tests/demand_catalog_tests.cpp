@@ -5,7 +5,7 @@
 #include "../src/project/demand_catalog.hpp"
 #include "../src/commands/catalog_commands.hpp"
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 Json ownedFile() {
     ProjectDocument d;const auto link=addLink(d,{{0,0},{400,0}},2,3.5);

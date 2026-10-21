@@ -6,7 +6,7 @@
 #include <ostream>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 LosPack loadLosPack(const std::filesystem::path& dataDirectory, InputManifest* manifest) {
     try {
         const auto j = readInputJson(dataDirectory / "los" / "hcm.json", "los/hcm.json", manifest);

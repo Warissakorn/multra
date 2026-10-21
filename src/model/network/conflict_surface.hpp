@@ -1,6 +1,6 @@
 #pragma once
 #include "right_of_way.hpp"
-namespace trafficsim {
+namespace multra {
 // Calculation uses the same painted lane rails as display and Connector path derivation.
 // Stations are metres on the authored reference, so file values need no parameter adapter.
 struct ConflictSurface {

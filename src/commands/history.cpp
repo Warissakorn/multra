@@ -5,7 +5,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 std::vector<History::State> History::states() const {
     const auto first = undo_.empty() ? revision() : undo_.front().before.revision;
     std::vector<State> result{{first, {}, first == saved_}};

@@ -3,7 +3,7 @@
 #include <map>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 struct Run { SignalColor color; double start, duration; };
 // A legacy program's colours as runs round its cycle: adjacent phases of one colour are one run,

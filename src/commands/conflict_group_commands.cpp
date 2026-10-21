@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-namespace trafficsim {
+namespace multra {
 namespace {
 ConflictGroup groupOf(const Network& n,const std::string& id) {
     for(const auto& g:conflictGroups(n,automaticConflicts(n)))if(conflictGroupContains(g,id))return g;

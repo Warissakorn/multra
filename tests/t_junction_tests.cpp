@@ -1,7 +1,7 @@
 #include "t_junction_support.hpp"
 #include <fstream>
 #include <sstream>
-using namespace trafficsim;
+using namespace multra;
 using namespace tjunction;
 // M3.2.7a, A26 of docs/plans/M3_ACCEPTANCE.md: the T-junction fixture (§2). One drawing through the
 // editor's commands, a crossing and a separate downstream merge on the minor turn, both driving

@@ -6,7 +6,7 @@
 #include <set>
 #include <tuple>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kEpsilon = 1e-9;
 // A polyline cut at every point it meets the boundary: alternating runs inside and outside, in

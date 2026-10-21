@@ -2,7 +2,7 @@
 #include <QWidget>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // Screen HUD over the canvas viewport (D197): a 1/2/5 m scale bar, the zoom in px/m and, only
 // when the map georeference supplies one, a north arrow. Transparent to the mouse, so it never
 // takes a gesture; the canvas places it clear of the map credit.

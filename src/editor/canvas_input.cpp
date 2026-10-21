@@ -7,7 +7,7 @@
 #include <QScrollBar>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 void EditorCanvas::mousePressEvent(QMouseEvent* e) {
     setFocus();
     // D165: the behaviour lab picks the vehicle to follow; an editor without the callback is unchanged.

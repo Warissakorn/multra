@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 void compileParkingLots(const ProjectDocument& d, const AuthoringDefinition& expanded, Scenario& scenario,
                         const CompiledRouteOrigins& origins, const std::filesystem::path& data) {
     const auto& layer = d.zones;

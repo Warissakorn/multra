@@ -16,7 +16,7 @@
 #include <map>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::string issueMessage(const std::vector<ValidationIssue>& issues) {
     std::string message;

@@ -8,7 +8,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 bool present(const Json& value, const char* name) {
     return value.is_object() && value.contains(name) && !value.at(name).is_null();
 }

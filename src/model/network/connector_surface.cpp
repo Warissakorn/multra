@@ -3,7 +3,7 @@
 #include <cmath>
 #include <numeric>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 Point sub(Point a,Point b) { return {a.x-b.x,a.y-b.y}; }
 Point add(Point a,Point b) { return {a.x+b.x,a.y+b.y}; }

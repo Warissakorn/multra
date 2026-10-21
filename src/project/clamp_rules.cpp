@@ -2,7 +2,7 @@
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // `absent` is the value a missing key means, and the one never written.
 struct Key { const char* name; bool ClampRules::*member; bool absent; };

@@ -21,7 +21,7 @@
 // S2.4 (MACRO_NETWORK §4, §20, D277): the Link types tab and the Link's type field. Installed types
 // (data/link-types/; none ship) are listed read-only until the first Add owns them; each change is
 // one execute() step. Micro never reads a type, so no edit here moves a Micro output.
-namespace trafficsim {
+namespace multra {
 namespace {
 std::vector<LinkType> linkTypeRows(const ProjectDocument& d, const std::filesystem::path& data) {
     std::vector<LinkType> rows;

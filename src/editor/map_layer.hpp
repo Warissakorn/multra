@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <memory>
 #include <optional>
-namespace trafficsim {
+namespace multra {
 enum class MapStatus { disabled, loading, ready, networkError, outsideStudy, unavailable, renderLimit };
 struct MapMesh {
     int divisions{};

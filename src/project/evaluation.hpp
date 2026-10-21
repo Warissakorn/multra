@@ -10,7 +10,7 @@
 #include "json.hpp"
 #include <filesystem>
 
-namespace trafficsim {
+namespace multra {
 // data/evaluation/queue-counter.json in SI units. Throws EDIT_CATALOG_READ when it is missing or
 // malformed: a queue figure measured against an invented threshold is not one to report.
 QueueDefinition loadQueueDefinition(const std::filesystem::path& dataDirectory, InputManifest* =nullptr);

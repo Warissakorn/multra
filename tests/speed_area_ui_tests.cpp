@@ -20,7 +20,7 @@
 #include <QTimer>
 #include <algorithm>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // B-6 §7 (docs/reference/SPEED_DECISIONS.md §7.4, D225): reduced-speed areas in the editor. Select a
 // Link, Add opens the dialog (stretch, optional deceleration, lanes, one min/max row per vehicle
 // type); the area is one Undo step, shaded on each covered lane, listed in its tab, edited and

@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 #include <ostream>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr const char* kMarker = "# Nodes from simulated section delay, not HCM control delay; not validated (M6)";
 Json value(const std::optional<double>& v) { return v ? Json(*v) : Json(nullptr); }

@@ -41,7 +41,7 @@ A session that cannot get to green reverts to the last green commit and records 
 `PROGRESS.md`. A red build costs the next session an hour before it can do anything.
 
 ### 6. Files stay near ~500 lines
-Checked with `trafficsim-check-file-sizes .` before committing. Split along the seam
+Checked with `multra-check-file-sizes .` before committing. Split along the seam
 already in the file (rendering vs. logic, one concept per file), never at an arbitrary
 midpoint.
 

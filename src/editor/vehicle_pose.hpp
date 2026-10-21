@@ -2,7 +2,7 @@
 #include "../model/network/network.hpp"
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 struct VehiclePose { Point front, heading; };
 // Display only: distance is the front-bumper station on the WHOLE route. The rear
 // sample at distance-length supplies a chord heading, not an axle or a rigid-body

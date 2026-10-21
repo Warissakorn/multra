@@ -1,6 +1,6 @@
 #include "lateral_test_support.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 using namespace lateral_test;
 // M3.7 slice 3a (D189): rows BA43 and BA44 of docs/plans/DRIVING_BEHAVIOUR.md -- lateral motion
 // toward a target, its admission in vehicle-id order after the longitudinal step, and the crossing

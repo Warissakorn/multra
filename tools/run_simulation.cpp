@@ -16,7 +16,7 @@
 #include <cmath>
 
 namespace {
-using namespace trafficsim;
+using namespace multra;
 // A project run steps the engine itself so the movement evaluation sees every state.
 int runProject(const std::filesystem::path& file, const std::filesystem::path& csvFile,
                const std::filesystem::path& data, std::uint32_t seed, bool laneChanges, bool segmentTimes, bool stopLines,
@@ -70,8 +70,8 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
         result["discharge"] = dischargeJson(release->report(), dischargeSpec);
         result["discharge"]["inputManifest"]=inputs.json();
     }
-    result["engineVersion"] = std::string(TRAFFICSIM_VERSION) + "-cpp-m0";
-    result["compiler"] = TRAFFICSIM_COMPILER;
+    result["engineVersion"] = std::string(MULTRA_VERSION) + "-cpp-m0";
+    result["compiler"] = MULTRA_COMPILER;
     result["seed"] = seed;
     if (changes) result["laneChangeDiagnostics"] = laneChangeJson(changes->report());
     if (segments) result["segmentTimes"] = segmentTimeJson(segments->report());
@@ -114,9 +114,9 @@ void writeCsv(const std::filesystem::path& csvFile, const std::string& text) {
     if (!csv) throw std::runtime_error("Failed writing CSV output");
 }
 void stamp(Json& result) {
-    result["engineVersion"] = std::string(TRAFFICSIM_VERSION) + "-cpp-m0";
-    result["buildCommit"] = TRAFFICSIM_BUILD_COMMIT;
-    result["compiler"] = TRAFFICSIM_COMPILER;
+    result["engineVersion"] = std::string(MULTRA_VERSION) + "-cpp-m0";
+    result["buildCommit"] = MULTRA_BUILD_COMMIT;
+    result["compiler"] = MULTRA_COMPILER;
 }
 int runBatch(const std::filesystem::path& file, const std::filesystem::path& csvFile,
              const std::filesystem::path& data, const std::vector<std::uint32_t>& seeds, unsigned threads) {
@@ -300,8 +300,8 @@ int main(int argc, char** argv) {
             if (!events) throw std::runtime_error("Failed writing event output");
         }
         auto result = summaryJson(summary.summary());
-        result["engineVersion"] = std::string(TRAFFICSIM_VERSION) + "-cpp-m0";
-        result["compiler"] = TRAFFICSIM_COMPILER;
+        result["engineVersion"] = std::string(MULTRA_VERSION) + "-cpp-m0";
+        result["compiler"] = MULTRA_COMPILER;
         result["seed"] = seed; result["time"] = state.time; result["active"] = state.vehicles.size();
         result["pending"] = pendingCount(state);
         if (!state.lots.empty()) result["parked"] = parkedCount(state); // M8.5: only with a lot

@@ -4,7 +4,7 @@
 #include "../model/demand/definition.hpp"
 #include <nlohmann/json_fwd.hpp>
 
-namespace trafficsim {
+namespace multra {
 using Json = nlohmann::json;
 // Section accessors that fail with a named, translatable code instead of an nlohmann
 // type_error. A JSON null reaching .at() is the difference between "this file is the

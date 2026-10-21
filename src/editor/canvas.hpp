@@ -16,7 +16,7 @@
 #include "map_provider.hpp"
 class QLabel;
 
-namespace trafficsim {
+namespace multra {
 class MapLayer;
 enum class MapStatus;
 class EditorCanvas : public QGraphicsView {

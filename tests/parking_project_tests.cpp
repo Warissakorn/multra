@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 using namespace lotfix;
 namespace {
 bool hasIssue(const ValidationError& e, const std::string& code, const std::string& path) {

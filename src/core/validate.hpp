@@ -2,7 +2,7 @@
 #include "types.hpp"
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 class ValidationError : public std::runtime_error {
 public:
     explicit ValidationError(std::vector<ValidationIssue> issues);

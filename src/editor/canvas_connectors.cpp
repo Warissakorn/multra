@@ -8,7 +8,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QPainterPath path(const std::vector<Point>& points) {
     QPainterPath result;

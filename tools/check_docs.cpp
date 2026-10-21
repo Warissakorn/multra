@@ -157,7 +157,7 @@ int selfTest() {
 }
 int main(int argc,char** argv) {
     if (argc==2 && std::string(argv[1])=="--self-test") return selfTest();
-    if (argc!=2) { std::cerr << "Usage: trafficsim-check-docs <repository> | --self-test\n"; return 2; }
+    if (argc!=2) { std::cerr << "Usage: multra-check-docs <repository> | --self-test\n"; return 2; }
     const fs::path root=argv[1]; Documents docs; std::set<std::string> files;
     if (!fs::is_directory(root)) { std::cerr << "Not a repository directory: " << root << '\n'; return 2; }
     for (auto it=fs::recursive_directory_iterator(root); it!=fs::recursive_directory_iterator(); ++it) {

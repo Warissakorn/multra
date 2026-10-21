@@ -1,7 +1,7 @@
 #pragma once
 #include "network.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Draft issues reject an edit; runtime issues describe what the M0 compiler cannot run yet.
 // The distinction is the point: a drawing can be perfectly valid and still not be runnable.
 enum class DiagnosticSeverity { draft, runtime, advisory };

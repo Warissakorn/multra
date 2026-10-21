@@ -5,7 +5,7 @@
 #include <QStandardPaths>
 #include <iostream>
 #include <stdexcept>
-using namespace trafficsim;
+using namespace multra;
 // D286: recovery files and map tiles written under the old application name move to the new
 // one on first start, and a folder already under the new name is left alone.
 namespace {

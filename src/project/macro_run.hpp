@@ -3,7 +3,7 @@
 #include "../macro/assign.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 // S2.3 (MACRO_NETWORK §7, §9, D275): one Macro run of a named period, shared by the CLI and the
 // editor. A period is named by its study period's id, or `matrix:<id>` for an own-times matrix.
 std::string macroPeriodName(const MacroPeriod&);

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 struct LoadedScenario { Network network; Scenario scenario; };
 // Carries the file and a translatable code so the shell can say which kind of file this is
 // rather than relaying a parser exception. An empty code means "detail only".

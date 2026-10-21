@@ -2,7 +2,7 @@
 #include "movement.hpp"
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 // M3.2.8c step 3: how each signal head's stop line discharges. Per head, the vehicles that
 // crossed it: how long each stood (below the queue's beginSpeed) upstream of it during red and
 // during green, and through how many green ends it stood. Per green: how many crossed, the mean

@@ -1,7 +1,7 @@
 #include "t_junction_support.hpp"
 #include "../src/core/simulation.hpp"
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 using namespace tjunction;
 // M3.2.7c, on the T-junction fixture: a signal head on the minor approach composed with its
 // Stop/Yield lines (A20 end to end), and a congested major road in which headway, not gap time,

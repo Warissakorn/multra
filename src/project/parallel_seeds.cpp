@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <thread>
 
-namespace trafficsim {
+namespace multra {
 std::vector<SeedRun> runSeedsParallel(const Scenario& scenario, const EvaluationSpec& spec,
                                       const std::vector<std::uint32_t>& seeds,
                                       const std::function<bool(std::size_t)>& progress, unsigned threads,

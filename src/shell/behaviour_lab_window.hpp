@@ -17,7 +17,7 @@ class QComboBox;
 class QLabel;
 class QLineEdit;
 
-namespace trafficsim {
+namespace multra {
 class BehaviourLabChart;
 class BehaviourLabPanel;
 class EditorCanvas;

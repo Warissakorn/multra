@@ -109,7 +109,7 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   A right-turn movement's per-seed change has an SD of about 7 s.
 - **The `b472e05` "before" recipe:**
   1. Make a scratch worktree and copy in the diagnostic's two files.
-  2. Add its source to `trafficsim_eval`.
+  2. Add its source to `multra_eval`.
   3. Patch `runProject`, uncommitted, to observe it behind an environment variable.
   4. `cmp` the default output first.
 - **Lane-change lab (D98):** `data/projects/lane-change-lab.traffic.json`, built from
@@ -124,11 +124,11 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   sanitizer 9m39 (ctest 465 → 524 s, each test 3–5× slower). Locally the sanitizer suite scaled
   952 / 475 / 254 s at 1 / 2 / 4 jobs (peak 4.5 GB). A serial rerun (run 556) took 13m18, so the
   sanitizer step's CI time is runner noise, not parallelism; all presets run in parallel.
-- **Editor hit-testing (2026-10-16, Release, offscreen):** `trafficsim-editor-benchmark 200 20`
+- **Editor hit-testing (2026-10-16, Release, offscreen):** `multra-editor-benchmark 200 20`
   `hitObjects` 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms (median of 3). What is left in
   wireframe is building every centre stroke before the bounds check. `select` stays ≈22 ms at 200
   intersections (`notifySelection`), not yet looked at.
-- **Tests:** add every new model test group to `TRAFFICSIM_TEST_GROUPS`, or `all-model-tests`
+- **Tests:** add every new model test group to `MULTRA_TEST_GROUPS`, or `all-model-tests`
   fails (D70). The longest test is `m26study_merge` (≈6 s, Linux). `scenario-run-ui` paints
   every 100th Step (2.8 s CPU on a P-core).
 - **What M3 shows:** M3.1 supplied merge arbitration only, a deterministic gap-time/headway
@@ -157,9 +157,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   - Windows (D99): painting was 93% of a Step. The grid cache and the hidden-Results skip halved
     12,000 Steps (107 → 57 s).
   - Left per Step: canvas ≈1.4 ms, window flush ≈1.1 ms, run label relayout ≈0.8 ms. Measure
-    with `trafficsim-run-view-benchmark`, not by hand.
+    with `multra-run-view-benchmark`, not by hand.
 - **Static run layer (D281, 2026-10-20, Linux RelWithDebInfo offscreen, 1600×1000):**
-  `trafficsim-run-view-benchmark data/projects/m2.6-study-template.traffic.json 6000 2000`, median of 3:
+  `multra-run-view-benchmark data/projects/m2.6-study-template.traffic.json 6000 2000`, median of 3:
   24,609 → 17,642 ms (events 20,640 → 13,742 ms). Before, `QGraphicsPathItem::paint` was 32 % of a
   Step and `QLayout::activate` 20 %. The cache's premultiplied pixmap rounds antialiased edges up to
   24 levels apart on ≈40 px (run-presentation compares within 32). Heading-up follow redraws the

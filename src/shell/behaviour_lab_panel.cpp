@@ -15,7 +15,7 @@
 #include <string_view>
 #include <tuple>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QWidget* page(QTabWidget* tabs, const char* name) {
     auto* scroll = new QScrollArea(tabs); scroll->setObjectName(name); scroll->setWidgetResizable(true);

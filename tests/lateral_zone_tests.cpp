@@ -1,6 +1,6 @@
 #include "lateral_test_support.hpp"
 #include "../src/core/conflicts.hpp"
-using namespace trafficsim;
+using namespace multra;
 using namespace lateral_test;
 // M3.7 slice 3b (D202): row BA47 of docs/plans/DRIVING_BEHAVIOUR.md -- a straddler's span on the next
 // lane occupies that lane's conflict zone (docs/reference/LATERAL.md §5, §6, §10). A two-lane Link

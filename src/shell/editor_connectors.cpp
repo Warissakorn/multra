@@ -14,7 +14,7 @@
 #include <QSpinBox>
 #include <QToolButton>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 LaneReference reference(const QComboBox* box) {
     if (box->currentData().toString().isEmpty()) throw std::invalid_argument("EDIT_CONNECTOR_LANES");

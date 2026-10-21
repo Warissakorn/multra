@@ -7,7 +7,7 @@
 #include "../src/project/behaviour_library.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.2a (D126): project-owned behaviour library, classes, link behaviour types, assignment.
 // BA06-BA09 in docs/plans/DRIVING_BEHAVIOUR.md. Nothing here changes the engine.
 namespace {

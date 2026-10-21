@@ -14,10 +14,10 @@ cmake --build build/headless --target check
 | Source | Executable | Purpose |
 |---|---|---|
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
-| `check_architecture.cpp` | `trafficsim-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
-| `check_file_sizes.cpp` | `trafficsim-check-file-sizes` | Enforce the source-file line budget |
-| `check_docs.cpp` | `trafficsim-check-docs` | Check maintained Markdown local links, anchors and folder indexes; supplied spec parts are excluded |
-| `validate_benchmark.cpp` | `trafficsim-validate-benchmark` | Time `validateDocument`, which every editor command runs (D140); prints, never asserts; not in `check` |
+| `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
+| `check_file_sizes.cpp` | `multra-check-file-sizes` | Enforce the source-file line budget |
+| `check_docs.cpp` | `multra-check-docs` | Check maintained Markdown local links, anchors and folder indexes; supplied spec parts are excluded |
+| `validate_benchmark.cpp` | `multra-validate-benchmark` | Time `validateDocument`, which every editor command runs (D140); prints, never asserts; not in `check` |
 
 The executables are under `build/headless/bin/` or `build/desktop/bin/` for the Ninja
 presets. On Windows add `.exe`. Multi-configuration generators add the configuration
@@ -87,9 +87,9 @@ sink and no trajectory history is retained. The state still contains latest-step
 ## Architecture and size checks
 
 ```bash
-./build/headless/bin/trafficsim-check-architecture .
-./build/headless/bin/trafficsim-check-architecture --self-test
-./build/headless/bin/trafficsim-check-file-sizes .
+./build/headless/bin/multra-check-architecture .
+./build/headless/bin/multra-check-architecture --self-test
+./build/headless/bin/multra-check-file-sizes .
 ```
 
 The architecture checker permits only literal same-directory headers and a reviewed
@@ -109,7 +109,7 @@ Exit 0 means pass, 1 means a violation; command misuse returns 2.
 cmake --build --preset headless
 ctest --preset headless
 ctest --test-dir build/headless -R reference --output-on-failure
-./build/headless/bin/trafficsim-tests core
+./build/headless/bin/multra-tests core
 cmake --build build/headless --target check
 ```
 
@@ -123,7 +123,7 @@ green, `docs/PROGRESS.md` updated. Automated regression does not replace owner M
 
 | Symptom | Action |
 |---|---|
-| CMake cannot find nlohmann/json | Install its development package or set `TRAFFICSIM_JSON_INCLUDE_DIR` |
+| CMake cannot find nlohmann/json | Install its development package or set `MULTRA_JSON_INCLUDE_DIR` |
 | CMake cannot find Qt Widgets | Select the correct kit with `CMAKE_PREFIX_PATH`, or use the headless preset |
 | Windows reports missing Qt DLLs | Add the matching Qt `bin` to PATH or run `windeployqt` |
 | Cannot locate data | Keep `data/` beside executable or pass `--data-dir` |
@@ -143,11 +143,11 @@ reference-safe deletion/Undo, persistence and English/Thai feedback. Both UI ent
 require a desktop build; headless results do not verify them.
 See [NETWORK_EDITOR.md](../docs/reference/NETWORK_EDITOR.md) for the editing workflow and limits.
 
-`trafficsim-m26-study <output>` regenerates `data/projects/m2.6-study-template.traffic.json` from
+`multra-m26-study <output>` regenerates `data/projects/m2.6-study-template.traffic.json` from
 `m26_study_network.hpp` — the M2.6 study template with placeholder volumes. `m26study` in
-`trafficsim-tests` fails when the two differ.
+`multra-tests` fails when the two differ.
 
-`trafficsim-lane-change-fixture <output>` regenerates `data/projects/lane-change-lab.traffic.json`
+`multra-lane-change-fixture <output>` regenerates `data/projects/lane-change-lab.traffic.json`
 from `lane_change_network.hpp` (D98). It has four independent scenes, each isolating one
 lane-change situation:
 
@@ -160,7 +160,7 @@ lane-change situation:
 
 `lanelab` fails when the file and the builder differ, and pins what each scene compiles to.
 
-`trafficsim-lane-change-sweep <repo root> [--project FILE] [--seeds 42-51]
+`multra-lane-change-sweep <repo root> [--project FILE] [--seeds 42-51]
 [--thresholds absent,0.25,0.5,1.0] [--accepted 1]` runs the project (the lab by default) for every
 seed and variant in one process:
 
@@ -177,7 +177,7 @@ It is development evidence, not part of `check`.
 
 ### T-junction clamp diagnosis (D105)
 
-`trafficsim-t-junction-clamps --trace <out.jsonl> <repo root>` records seeds 42/43 at
+`multra-t-junction-clamps --trace <out.jsonl> <repo root>` records seeds 42/43 at
 headways 3/7/12 m; `--trace-all` records seeds 42–81. `--sweep` writes checked per-run
 movement/queue figures and trajectory digests for those 40 seeds at each headway.
 Each run verifies full copied-state replay, vehicle accounting, shared-segment body
@@ -188,8 +188,8 @@ Development evidence, not an M5 runner or M6 validation; see
 ## Reaction-time discharge evidence (BA38)
 
 ```
-cmake --build --preset headless --target trafficsim-reaction-discharge-sweep
-./build/headless/bin/trafficsim-reaction-discharge-sweep \
+cmake --build --preset headless --target multra-reaction-discharge-sweep
+./build/headless/bin/multra-reaction-discharge-sweep \
   data/projects/four-leg-signalised.traffic.json \
   data/driver-behaviour/presets/w74-sumo-defaults.json data \
   build/headless/compile_commands.json out/ba38-new

@@ -1,7 +1,7 @@
 #include "evaluation.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 Json dischargeJson(const std::vector<DischargeCycle>& cycles,const DischargeSpec& spec) {
     validateDischargeSpec(spec);
     Json rows=Json::array();

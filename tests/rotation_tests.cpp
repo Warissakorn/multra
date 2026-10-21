@@ -4,7 +4,7 @@
 #include "../src/commands/demand_commands.hpp"
 #include "../src/model/network/rotation.hpp"
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument junction(DrivingSide side) {
     ProjectDocument d;d.network.drivingSide=side;

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numbers>
-using namespace trafficsim;
+using namespace multra;
 // Split out of connector_tests.cpp, which passed the 500-line guard (hard rule 6). That file keeps
 // connector TOPOLOGY -- creation, references, retargeting, deletion, history. This one keeps its
 // SHAPE: the carriageway's width, its markings, how tight a bend it draws, and its mouths. The

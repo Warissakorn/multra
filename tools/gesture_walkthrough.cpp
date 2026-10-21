@@ -10,7 +10,7 @@
 // by the UI suites. What it prints is deterministic -- the same gestures on the same document --
 // so two runs are comparable, and that is what a before/after delta needs.
 //
-//   QT_QPA_PLATFORM=offscreen trafficsim-gesture-walkthrough <data-dir>
+//   QT_QPA_PLATFORM=offscreen multra-gesture-walkthrough <data-dir>
 #include "../src/shell/editor_window.hpp"
 #include <QAction>
 #include <QApplication>
@@ -25,7 +25,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 // One primitive input is one thing the hand does: a click, a drag, a keystroke, or one field
 // of a dialog including its confirm button. Counting a drag as one is deliberate -- it is one
@@ -113,7 +113,7 @@ void task(const char* name, const char* reference, int count) {
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
     try {
-        if (argc < 2) { std::cerr << "usage: trafficsim-gesture-walkthrough <data-dir>\n"; return 2; }
+        if (argc < 2) { std::cerr << "usage: multra-gesture-walkthrough <data-dir>\n"; return 2; }
         QTemporaryDir directory;
         if (!directory.isValid()) throw std::runtime_error("Temporary directory");
         qputenv("XDG_DATA_HOME", directory.path().toUtf8());

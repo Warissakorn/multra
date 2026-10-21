@@ -3,7 +3,7 @@
 #include <QApplication>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 void EditorCanvas::drawPositionedDecisions() {
     if(!document_ || !document_->definition)return;
     const auto& n=document_->network;

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 namespace {
 int crsNumber(const std::string& crs) {
     if (crs.size()!=10 || !crs.starts_with("EPSG:")) return 0;

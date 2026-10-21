@@ -6,7 +6,7 @@
 #include <QJsonObject>
 #include <set>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 QUrl MapProvider::tileUrl(const TileKey& k) const {
     auto value=urlTemplate;value.replace("{z}",QString::number(k.zoom));
     value.replace("{x}",QString::number(k.x));value.replace("{y}",QString::number(k.y));return QUrl(value);

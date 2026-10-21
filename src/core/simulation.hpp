@@ -3,7 +3,7 @@
 #include <functional>
 #include <utility>
 
-namespace trafficsim {
+namespace multra {
 // B11 (D159): `mixed` scrambles the seed (splitmix64) before the first draw, so small seeds do not start
 // xorshift32 near zero. `raw` is the pre-D159 mapping, kept only for the frozen TS fixtures.
 enum class SeedStart { mixed, raw };

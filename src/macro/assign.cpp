@@ -3,7 +3,7 @@
 #include <limits>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr int kHalvings = 60;
 std::vector<double> loads(const MacroGraph& g, const std::vector<MacroClass>& classes, const std::vector<std::vector<double>>& flows) {

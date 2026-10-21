@@ -4,7 +4,7 @@
 #include <map>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // M3.2.8c (D92): why a stub vehicle still waits at its dead end, decided once per wait from the
 // snapshot that starts it. A wait is a run of snapshots in which waitingAtDeadEnd holds -- the
 // engine's own test, as LaneChangeAccumulator counts it, so the two reports' seconds agree.

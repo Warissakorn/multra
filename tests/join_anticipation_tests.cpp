@@ -5,7 +5,7 @@
 #include "../src/core/validate.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 // JOIN_ANTICIPATION §2, §5 (D254/D255): off by default, a vehicle within 50 m of a join follows, as a
 // second law, the other stream's vehicle that reaches the join first. Each engine row first runs
 // with the switch off and asserts today's tick.

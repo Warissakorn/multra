@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 class QWidget;
-namespace trafficsim {
+namespace multra {
 // M8.6b (D162, docs/reference/ZONES_AND_PARKING.md §9). Local dialog values only: the caller commits
 // the result with its usual history command, and the structural tier has the last word.
 using DialogText = std::function<QString(const char*)>;

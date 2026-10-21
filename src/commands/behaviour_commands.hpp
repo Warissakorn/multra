@@ -1,6 +1,6 @@
 #pragma once
 #include "history.hpp"
-namespace trafficsim {
+namespace multra {
 // M3.3.2a (D126, DRIVING_BEHAVIOUR.md §1): the project-owned behaviour library. Every function is
 // one part of a History transaction; History validates the result, so a bad reference rejects the
 // whole edit. Library edits need owned behaviour and vehicle-type catalogs (EDIT_EXTERNAL_CATALOG);

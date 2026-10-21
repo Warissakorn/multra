@@ -9,7 +9,7 @@
 #include "../src/project/run.hpp"
 #include "../src/runner/batch.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M5.3 (D132): the evaluation period (warm-up, end) and unfinished trips. With no period every
 // number is the whole-run figure it was before; with one, movement rows count trips that END in
 // the period and queues average its ticks, while run totals stay whole-run.

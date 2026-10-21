@@ -1,7 +1,7 @@
 #include "los.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 std::optional<char> losLetter(double delay, const std::string& controlType, const LosPack& pack) {
     const auto it = pack.bounds.find(controlType);
     if (it == pack.bounds.end()) return std::nullopt;

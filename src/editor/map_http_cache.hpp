@@ -2,7 +2,7 @@
 #include <QDateTime>
 #include <QNetworkCacheMetaData>
 #include <QNetworkRequest>
-namespace trafficsim::mapHttp {
+namespace multra::mapHttp {
 using Headers=QNetworkCacheMetaData::RawHeaderList;
 QByteArray header(const Headers&,const QByteArray& lowerCaseName);
 QDateTime httpDate(const QByteArray&,QDateTime received=QDateTime::currentDateTimeUtc());

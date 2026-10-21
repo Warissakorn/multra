@@ -10,7 +10,7 @@
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 std::optional<std::vector<std::vector<double>>> editDemandPeriods(QWidget* parent,const QStringList& columns,
     const std::vector<std::vector<double>>& values,const std::function<QString(const char*)>& text,
     const std::function<const char*(const std::vector<std::vector<double>>&)>& validate) {

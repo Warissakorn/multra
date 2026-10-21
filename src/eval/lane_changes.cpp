@@ -3,7 +3,7 @@
 #include <cmath>
 #include <utility>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 void fold(LaneChangeRow& row, const auto& tally) {
     row.changes += tally.changes;

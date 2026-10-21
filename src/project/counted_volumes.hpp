@@ -1,7 +1,7 @@
 #pragma once
 #include "document.hpp"
 
-namespace trafficsim {
+namespace multra {
 // D142 (schema 26): a vehicle input whose volume is its entry decision's turning counts, so a
 // count sheet is typed once. Off, D46 holds: the input's volume is split by the counts as
 // proportions. On, each counted interval enters sum(counts) * 3600 / length veh/h, and splitting

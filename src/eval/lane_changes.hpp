@@ -3,7 +3,7 @@
 #include <map>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // M3.2.8c, step 1: where mandatory lane changes happen and how long stub vehicles wait at their
 // dead ends, per movement (docs/NEXT.md; M3_8_CONTRACT.md §2). A diagnostic, fed like
 // MovementAccumulator by snapshots alone, so the engine does not know it exists. Not validated.

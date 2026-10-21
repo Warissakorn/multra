@@ -9,7 +9,7 @@
 
 // M3.2.4: the conflict-area gestures the editor offers, built only from the M3.2.2 put/delete
 // commands, so the structural checks and History's atomicity are the ones already tested.
-namespace trafficsim {
+namespace multra {
 namespace {
 // Where an authored crossing's waiting line stands: 1 m short of its entry, the same setback a
 // derived merge rule uses (D50), so a vehicle waiting there is clear of the area.
@@ -163,7 +163,7 @@ void removeConflictArea(ProjectDocument& d, const std::string& areaId) {
     detail::pruneQueueCounters(d);
 }
 }
-namespace trafficsim {
+namespace multra {
 std::string authorAutomaticConflict(ProjectDocument& d, const AutomaticConflict& automatic, const PriorityDefaults& defaults) {
     if(automatic.kind==ConflictKind::branching || automatic.geometryKind==ConflictGeometryKind::branching)throw std::invalid_argument("EDIT_BRANCHING_PRIORITY");
     requireDefaults(defaults);

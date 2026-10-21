@@ -4,7 +4,7 @@
 #include "../src/core/routes.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M3.5 slice 2 (D182): rows BA31 and BA32 of docs/plans/DRIVING_BEHAVIOUR.md -- look-ahead and
 // multi-anticipation (docs/reference/PERCEPTION.md §2-§3) in own motion, on hand-built roads.
 namespace {

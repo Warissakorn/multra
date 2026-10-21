@@ -6,7 +6,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace trafficsim::detail {
+namespace multra::detail {
 double random(std::uint32_t& state) {
     // Unsigned shifts and overflow intentionally match xorshift32 in the TS baseline.
     state ^= state << 13;
@@ -66,7 +66,7 @@ void generateArrivals(SimState& state) {
     }
 }
 }
-namespace trafficsim {
+namespace multra {
 std::vector<PendingVehicle> upcomingArrivals(const SimState& state) {
     // Mirrors stepSimulation's preconditions and its first action, on a scratch state, so the
     // caller's inputs, RNG and id counter are never touched. Most ticks generate nothing.

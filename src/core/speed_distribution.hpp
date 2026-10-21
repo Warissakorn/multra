@@ -2,7 +2,7 @@
 #include "speed_decision_types.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 // B-5 (docs/reference/SPEED_DISTRIBUTION.md §3, D229). The speed of cumulative share u, and the share
 // of a speed. Without a curve both are the uniform formulas the engine always used, to the bit.
 inline double speedAt(const SpeedRange& r, double u) {

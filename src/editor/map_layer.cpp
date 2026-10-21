@@ -4,7 +4,7 @@
 #include <limits>
 #include <QPainterPath>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 MapLayer::MapLayer(const QString& directory):client_(directory) {
     client_.changed=[this]{if (changed) changed();};
 }

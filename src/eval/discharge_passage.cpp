@@ -4,7 +4,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace trafficsim {
+namespace multra {
 std::map<std::uint64_t,DischargeMotion> dischargeMotions(
     const SimState& state,const DischargePositions& previous,const DischargePending& pending) {
     const auto& s=*state.scenario;const auto& index=*state.index;

@@ -2,7 +2,7 @@
 #include "right_of_way_fixture.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 using namespace rowfixture;
 // M3.2.2c: a waiting line on a preceding Link, and crossing coverage (docs/reference/M3_CONTRACT.md §1).
 // "No issue" below means the area would run (M3.2.3a/b).

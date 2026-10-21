@@ -1,8 +1,8 @@
 // M3.2.7b: the T-junction's diagnostic seeded sweep (docs/plans/M3_ACCEPTANCE.md §2). Not in `check`:
 // it is evidence to archive, like the benchmarks, not a pass/fail test.
 //
-//   trafficsim-t-junction-sweep --metadata <out.json> <repo root>   what the sweep depends on
-//   trafficsim-t-junction-sweep --run <out.csv> <repo root>         one row per seed and rule
+//   multra-t-junction-sweep --metadata <out.json> <repo root>   what the sweep depends on
+//   multra-t-junction-sweep --run <out.csv> <repo root>         one row per seed and rule
 //   ... --metadata-congested / --run-congested                       M3.2.7c: the headway arm on
 //                                                                     the congested variant
 //
@@ -10,7 +10,7 @@
 #include "t_junction_sweep.hpp"
 #include <iomanip>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::string build() {
     std::ostringstream out;
@@ -36,7 +36,7 @@ std::string figure(const std::optional<double>& v) {
 int main(int argc, char** argv) {
     const std::string mode = argc == 4 ? argv[1] : "";
     if (mode != "--metadata" && mode != "--run" && mode != "--metadata-congested" && mode != "--run-congested") {
-        std::cerr << "usage: trafficsim-t-junction-sweep --metadata|--run|--metadata-congested|--run-congested <out> <repo root>\n"; return 2;
+        std::cerr << "usage: multra-t-junction-sweep --metadata|--run|--metadata-congested|--run-congested <out> <repo root>\n"; return 2;
     }
     const bool congested = mode.ends_with("-congested");
     const std::filesystem::path root = argv[3];

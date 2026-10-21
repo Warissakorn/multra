@@ -3,7 +3,7 @@
 #include <iostream>
 #include <numbers>
 #include <stdexcept>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool b,const char* m){if(!b)throw std::runtime_error(m);}
 double angle(Point p){return std::atan2(p.y,p.x);}

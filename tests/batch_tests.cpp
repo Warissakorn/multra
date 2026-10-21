@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <atomic>
-using namespace trafficsim;
+using namespace multra;
 TEST(batch, cancellation_interrupts_inside_a_seed_and_discards_partial_batches) {
     auto scenario = test::straight(); scenario.duration = 1e12; scenario.inputs.clear();
     int calls = 0; bool stopped = false;

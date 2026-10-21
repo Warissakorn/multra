@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr auto npos = std::numeric_limits<std::size_t>::max();
 }

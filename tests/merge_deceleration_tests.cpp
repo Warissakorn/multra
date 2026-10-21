@@ -9,7 +9,7 @@
 #include "../src/core/w74.hpp"
 #include "../src/project/demand_catalog.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // B-3 (docs/reference/MERGE_DECELERATION.md, D220/D221): a mandatory change accepts braking up to
 // `mandatoryDecelerationOwn` for the changer and `mandatoryDecelerationTrailingVehicle` (the
 // changer's key) for its new follower, each capped by the braking vehicle's maxDeceleration; absent,

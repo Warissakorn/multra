@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 Connector& editableConnector(ProjectDocument& d, const std::string& id) {
     for (auto& c : d.network.connectors) if (c.id == id) return c;
     throw std::invalid_argument("EDIT_UNKNOWN_CONNECTOR");

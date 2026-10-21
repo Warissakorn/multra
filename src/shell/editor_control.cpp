@@ -15,7 +15,7 @@
 #include <QTimeEdit>
 #include <QVBoxLayout>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QDoubleSpinBox* number(QDialog& dialog,double min,double max,double value,const char* name) {
     auto* field=new QDoubleSpinBox(&dialog);field->setObjectName(name);field->setDecimals(3);

@@ -1,7 +1,7 @@
 // M3.3.3a: which obstacle, regime and step produces each safety clamp of the BA27 runs
 // (docs/evidence/w74-clamps.md). Not in `check`: a diagnosis, like t_junction_clamps (D105).
 //
-//   trafficsim-w74-clamp-trace <w74 behaviour.json> <project.traffic.json> <data dir> <out.jsonl>
+//   multra-w74-clamp-trace <w74 behaviour.json> <project.traffic.json> <data dir> <out.jsonl>
 //
 // One "clamp" line per SafetyClampEvent and one "onset" line per head turning amber, prototype
 // and w74 x dt 0.1/0.25/0.5 x seeds 42-81. Each obstacle the tick's phase 1 caps a move by is
@@ -18,7 +18,7 @@
 #include "../src/project/run.hpp"
 #include <iostream>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 template <class E> bool has(const SimState& s, std::uint64_t id) {
@@ -219,7 +219,7 @@ void onsets(std::ostream& out, const std::string& model, double dt, std::uint32_
 }
 int main(int argc, char** argv) {
     if (argc != 5) {
-        std::cerr << "usage: trafficsim-w74-clamp-trace <w74 behaviour.json> <project> <data dir> <out.jsonl>\n";
+        std::cerr << "usage: multra-w74-clamp-trace <w74 behaviour.json> <project> <data dir> <out.jsonl>\n";
         return 2;
     }
     try {

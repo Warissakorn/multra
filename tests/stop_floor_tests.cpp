@@ -6,7 +6,7 @@
 #include "../src/core/validate.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 // LINE_APPROACH §7 (D257/D258): on by default, a behaviour with amberDeceleration brakes behind a
 // standing obstacle at least at the deceleration that stops it there. Each engine row first runs
 // with the switch off and asserts today's tick.

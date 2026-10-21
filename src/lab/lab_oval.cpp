@@ -6,7 +6,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace trafficsim::lab::build {
+namespace multra::lab::build {
 namespace {
 constexpr double kJoin = 4; // metres a Connector bridges between two Links
 }

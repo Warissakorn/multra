@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8c, D95 (docs/reference/M3_8_CONTRACT.md §2 "Discretionary lane changes", A47-A54): a vehicle on a
 // full route changes to an adjacent full route by choice, on a hand-built two-lane road.
 namespace {

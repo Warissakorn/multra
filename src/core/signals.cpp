@@ -2,7 +2,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 SignalColor signalColorAt(const SignalProgram& program, double time) {
     if (program.phases.empty()) throw std::invalid_argument("EMPTY_SIGNAL_PROGRAM");
     double cycle = 0;

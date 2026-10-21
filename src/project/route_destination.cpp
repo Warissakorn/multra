@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 std::vector<Point> routeDestinationGeometry(const Network& n,const std::string& id) {
     for(const auto& link:n.links)if(link.id==id)return link.geometry;
     return objectGeometry(n,id);

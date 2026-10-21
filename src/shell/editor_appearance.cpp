@@ -9,7 +9,7 @@
 #include <QPainter>
 #include <QStyleFactory>
 #include <QTemporaryDir>
-namespace trafficsim {
+namespace multra {
 QFont loadEditorFont(const std::filesystem::path& data) {
     // One face for Thai, Latin and digits (its digits are tabular), in two static weights: 400
     // and 600. Static cuts, not the variable font: weight axes are not honoured on every Qt

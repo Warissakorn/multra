@@ -3,7 +3,7 @@
 #include <QToolButton>
 #include <memory>
 
-namespace trafficsim {
+namespace multra {
 // Install once on the application: also covers modal dialogs and later-created fields.
 void installEditorInteraction();
 // Preserve height-for-width when choosing a shrinkable horizontal policy.

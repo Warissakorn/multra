@@ -7,7 +7,7 @@
 #include <numeric>
 #include <set>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 std::vector<std::string> rotationObjects(const Network& n,const std::vector<std::string>& ids) {
     const std::set<std::string> selected(ids.begin(),ids.end());
     std::set<std::string> links,paths;

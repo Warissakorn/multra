@@ -3,7 +3,7 @@
 #include <optional>
 #include <string>
 
-namespace trafficsim {
+namespace multra {
 // Covers full UTM eastings/northings while keeping the desktop's signed-int
 // scroll range usable at its maximum 100 pixels/metre zoom.
 inline constexpr double mapWorldAnchorLimit=1e7;

@@ -5,7 +5,7 @@
 #include "network.hpp"
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // A boundary crossing of a Link, at metres along its reference polyline (`link.geometry`).
 struct NodeLeg { std::string linkId, name; double station{}; bool operator==(const NodeLeg&) const = default; };
 // One object of a turn's path: a Link from one station to another, or a whole Connector (0, 0).

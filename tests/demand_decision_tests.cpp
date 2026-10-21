@@ -5,7 +5,7 @@
 #include <map>
 #include <stdexcept>
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 // M2.4: static turning proportions. A decision's relative flows split an input's volume across
 // routes leaving one Link; resolving it gives ordinary routed inputs, so core/ is untouched.
 namespace {

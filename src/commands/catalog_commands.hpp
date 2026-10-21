@@ -1,6 +1,6 @@
 #pragma once
 #include "../project/demand_catalog.hpp"
-namespace trafficsim {
+namespace multra {
 // One atomic ownership capture. History validates the staged result before committing.
 // S1.2 (D269): modes become owned too only when a matrix names one, so a copy keeps the schema of
 // a project that uses none and a project that does stays runnable with no data directory.

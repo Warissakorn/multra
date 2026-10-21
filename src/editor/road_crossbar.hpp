@@ -3,7 +3,7 @@
 #include <QGraphicsLineItem>
 #include <QColor>
 
-namespace trafficsim {
+namespace multra {
 struct RoadCrossbar { Point first, second; int level{}; };
 // Presentation only: intersect the road normal with its real rails at this station.
 std::optional<RoadCrossbar> roadCrossbar(const std::vector<Point>& centre,

@@ -1,7 +1,7 @@
 #include "graph.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 bool allows(const MacroLink& link, const std::string& mode) {
     return mode.empty() || link.modes.empty() || std::find(link.modes.begin(), link.modes.end(), mode) != link.modes.end();
 }

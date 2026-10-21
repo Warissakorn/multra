@@ -3,7 +3,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
-namespace trafficsim {
+namespace multra {
 void moveLegacyStorage(const QString& legacyName) {
     const auto current=QCoreApplication::applicationName();
     if(current==legacyName) return;

@@ -9,7 +9,7 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
-namespace trafficsim {
+namespace multra {
 void EditorWindow::showDemandPreview() {
     DemandPreview preview;
     try{preview=previewDemand(history_.document(),data_);}catch(const std::exception& e){showError(e);return;}

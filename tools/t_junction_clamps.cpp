@@ -6,7 +6,7 @@
 #include <bit>
 #include <iostream>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 const Vehicle* find(const SimState& s, std::uint64_t id) {
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
     try {
         const std::string mode = argc == 4 ? argv[1] : "";
         if (mode != "--trace" && mode != "--trace-all" && mode != "--sweep") {
-            std::cerr << "usage: trafficsim-t-junction-clamps --trace|--trace-all|--sweep <out.jsonl> <repo root>\n"; return 2;
+            std::cerr << "usage: multra-t-junction-clamps --trace|--trace-all|--sweep <out.jsonl> <repo root>\n"; return 2;
         }
         std::ofstream out(argv[2], std::ios::binary); require(bool(out), "cannot open output");
         for (const double h : {3.0, 7.0, 12.0})

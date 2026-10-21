@@ -12,7 +12,7 @@
 #include <limits>
 #include <numbers>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QPointF q(Point p) { return {p.x, p.y}; }
 QPainterPath path(const std::vector<Point>& points) {

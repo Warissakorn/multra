@@ -6,7 +6,7 @@
 #include "../src/core/w74.hpp"
 #include <algorithm>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.3a (D138): W74 composed into the tick -- rows BA23, BA24, BA25 and BA28 of
 // docs/plans/DRIVING_BEHAVIOUR.md against docs/reference/W74.md §6-§7, on hand-built scenarios.
 namespace {

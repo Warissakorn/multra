@@ -30,7 +30,7 @@
 #include <memory>
 #include <fstream>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool value,const char* message) {if (!value) throw std::runtime_error(message);}
 void waitFor(const std::function<bool()>& predicate,int timeout=3000) {

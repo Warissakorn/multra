@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* message) {if(!ok)throw std::runtime_error(message);}
 void near(Point a,Point b,double tolerance=1e-7) {

@@ -8,7 +8,7 @@
 #include "join_anticipation.hpp"
 #include <cstdint>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Shared by both overloads so the cached and uncached paths cannot diverge.
 VehicleLocation locate(const std::vector<RoutePart>& parts, const Vehicle& vehicle) {

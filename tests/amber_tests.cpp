@@ -6,7 +6,7 @@
 #include "../src/project/demand_catalog.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M4.2 (D147, docs/reference/AMBER.md): amber stop-or-go, a continuous check. Rows AM1-AM7; AM8
 // is the behaviour dialog in behaviour-library-ui.
 namespace {

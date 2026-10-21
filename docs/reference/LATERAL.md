@@ -240,7 +240,7 @@ uncertain.
 A body spans at most two lane sections in this contract, because widths are at most a lane apart.
 The lateral filter is one interval test per candidate. Lateral admission is `O(n · k)` for `k`
 candidate neighbours from the buckets. The implementation slice re-runs
-`trafficsim-engine-benchmark` before and after (benchmarks are not in `check`). A regression above
+`multra-engine-benchmark` before and after (benchmarks are not in `check`). A regression above
 10 % with the switch on needs its own decision (D164). With the switch off, no change is expected,
 and the slice demonstrates that.
 

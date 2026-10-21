@@ -21,7 +21,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // The vehicle-input dialog, split from editor_demand.cpp when M2.2 gave it counted intervals.
 void EditorWindow::editInput(const std::string& id,const std::string& preselectedRoute,const std::string& preselectedLink) {
     VehicleInput value{id,{},{},600,0,history_.document().definition?history_.document().definition->duration:180};

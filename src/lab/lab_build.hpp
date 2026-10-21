@@ -3,7 +3,7 @@
 #include "lab_network.hpp"
 #include <utility>
 
-namespace trafficsim::lab::build {
+namespace multra::lab::build {
 // A polyline drawn piece by piece; `at()` is the arclength so far, so gaps can be marked as drawn.
 class Path {
 public:

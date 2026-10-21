@@ -5,7 +5,7 @@
 // pretend to exercise crossing control. Built through the editor's own commands, like the four-leg
 // fixture; the right-hand Yield base is committed as data/projects/t-junction-priority.traffic.json
 // and `tjunction` checks the file is this builder's output. Regenerate with
-// trafficsim-t-junction-fixture, never by hand.
+// multra-t-junction-fixture, never by hand.
 //
 // Right-hand traffic (the base): the major road runs along x, eastbound on the south side (y < 0),
 // westbound on the north. The minor road arrives from the south heading north. Its LEFT turn
@@ -27,7 +27,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace trafficsim::fixture {
+namespace multra::fixture {
 struct TJunctionOptions {
     DrivingSide side = DrivingSide::right;
     // What the minor approach does at its lines: Yield (the gap test alone), Stop (a full stop

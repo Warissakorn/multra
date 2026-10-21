@@ -19,7 +19,7 @@
 #include <QTimer>
 #include <cmath>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // The Signal head is its stop line (M2.7): a click with the head tool places one exactly where
 // the pointer is, on a Link lane or a Connector path, and a drag slides it along its lane.
 namespace {

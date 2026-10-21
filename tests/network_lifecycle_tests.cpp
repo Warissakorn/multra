@@ -3,7 +3,7 @@
 #include "../src/project/diagnostics.hpp"
 #include <numbers>
 #include "../src/model/network/connector_surface.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument turn(double degrees, DrivingSide side=DrivingSide::left, int lanes=1) {
     ProjectDocument d;d.network.drivingSide=side;

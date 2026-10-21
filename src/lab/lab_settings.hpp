@@ -5,7 +5,7 @@
 #include "../model/network/network.hpp"
 #include <filesystem>
 
-namespace trafficsim::lab {
+namespace multra::lab {
 // The vehicle being tuned: its own type and behaviour, so nothing else on the ring shares them.
 struct FocusSettings {
     VehicleType type;

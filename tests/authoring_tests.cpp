@@ -6,7 +6,7 @@
 #include "../src/project/diagnostics.hpp"
 #include <algorithm>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 
 namespace {
 ProjectDocument roads(DrivingSide side=DrivingSide::left) {

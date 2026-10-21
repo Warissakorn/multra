@@ -4,7 +4,7 @@
 #include "../src/project/evaluation.hpp"
 #include <nlohmann/json.hpp>
 #include "../tools/discharge_options.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 DischargeSpec spec() { return {0,100,0,3,5,2}; }
 DischargeCycle cycle() {

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 bool curveSwitch(const std::vector<DriverBehaviour>& behaviours) {
     return std::any_of(behaviours.begin(), behaviours.end(), [](const auto& b) { return b.curveLateralAcceleration.has_value(); });
 }

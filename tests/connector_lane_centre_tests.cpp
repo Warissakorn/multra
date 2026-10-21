@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument turn(DrivingSide side,int from,int to,bool authored=false) {
     ProjectDocument d;d.network.id="lane-centres";d.network.drivingSide=side;

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace trafficsim {
+namespace multra {
 // Per-vehicle state at a line, kept in SimState from one tick to the next.
 // M3.2.5: one vehicle's service at a Stop line (contract §5). `line` is the route distance of the
 // next Stop line it has not passed; `since` the tick whose start first found it standing there.

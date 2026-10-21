@@ -1,7 +1,7 @@
 #include "test.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void compare(const Json& actual, const Json& expected, const std::string& path = "root") {
     if (actual.is_number() && expected.is_number()) {
@@ -18,7 +18,7 @@ void compare(const Json& actual, const Json& expected, const std::string& path =
 }
 // The length the whole-lane compiler would have given a segment, recomputed from the drawing so
 // the assertion below compares against the geometry rather than against itself.
-double polylineLengthOfSegment(const trafficsim::LoadedScenario& loaded, const std::string& id) {
+double polylineLengthOfSegment(const multra::LoadedScenario& loaded, const std::string& id) {
     for (const auto& link : loaded.network.links)
         for (const auto& lane : link.lanes)
             if (lane.id == id) return polylineLength(laneGeometry(link, lane.id, loaded.network.drivingSide));

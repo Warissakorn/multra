@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <numbers>
 #include <string>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.9b/e: across arrival angles at both ends, lane counts, offset ranges, unequal lane widths and
 // both driving sides, every interior divider ends on the Link lane boundary it belongs to.
 namespace {

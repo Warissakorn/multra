@@ -11,7 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // UI slice e2 (D200): below 3 px per lane the 0.10 m lane markings are not drawn; nothing else
 // changes -- surfaces, heads, selection, handles, hits and Ctrl+A are what they were. Vehicles keep
 // their 4x2.5 px floor and show the windshield/cab only from 14 px.

@@ -18,7 +18,7 @@
 #include <cmath>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 AuthoringDefinition parseAuthoringDefinition(const Json& j) {
     AuthoringDefinition d;
     static_cast<ScenarioDefinition&>(d) = parseDefinition(j);

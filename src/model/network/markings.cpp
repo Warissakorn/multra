@@ -1,7 +1,7 @@
 #include "network.hpp"
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 bool validMarking(MarkingType m) {
     return m==MarkingType::solid || m==MarkingType::dashed ||
            m==MarkingType::none || m==MarkingType::doubleLine;

@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // In vehicle-id order: each vehicle with a `lateralTarget` proposes a move toward it, capped at
 // maxLateralSpeed * dt, kept inside the carriageway's outer edges and, on a side without a covering
 // lane-change span, with its centre inside its lane. A move is admitted only if the new body

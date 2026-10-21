@@ -5,7 +5,7 @@
 //   - runtime issues leave a savable draft that Run refuses, each naming the object at fault.
 #include "network.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Duplicate or blank ids, a reference to a Link/Connector/waiting line/area that does not
 // exist, a non-finite station, entry not before exit, a rule whose gap time or headway is not
 // finite and positive, two rules on one area, a malformed path (neither or both kinds set).

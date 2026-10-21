@@ -1,7 +1,7 @@
 #pragma once
 #include "../runner/batch.hpp"
 
-namespace trafficsim {
+namespace multra {
 // D152: runSeeds with up to `threads` seeds at once (0: one per hardware thread; 1: runSeeds itself,
 // inline). The runner stays thread-free (check_architecture); this only schedules its runSeed. Each
 // seed is still one single-threaded run written to its own slot, so the result is identical to

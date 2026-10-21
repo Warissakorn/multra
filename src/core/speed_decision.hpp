@@ -2,7 +2,7 @@
 // B-6 (docs/reference/SPEED_DECISIONS.md, D223): desired-speed decisions at run time.
 #include "types.hpp"
 
-namespace trafficsim {
+namespace multra {
 // §3: each route's decisions by route distance, ascending (then by id), with every type slot's range.
 void indexSpeedDecisions(const Scenario&, ScenarioIndex&);
 // §3: the vehicle's front moved from `from` to `to` on `route` this tick; each decision with

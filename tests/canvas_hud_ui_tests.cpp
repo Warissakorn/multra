@@ -9,7 +9,7 @@
 #include <QTest>
 #include <cmath>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // UI slice e1 (D197): the canvas HUD shows a 1/2/5 scale bar, px/m and, only when the map
 // georeference supports it, a north arrow. It never takes a gesture and keeps clear of the map corners.
 namespace {

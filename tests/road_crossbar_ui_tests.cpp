@@ -11,7 +11,7 @@
 #include <cmath>
 #include <iostream>
 
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* message) {if(!ok)throw std::runtime_error(message);}
 QGraphicsItem* drawn(EditorCanvas& c,const char* kind) {

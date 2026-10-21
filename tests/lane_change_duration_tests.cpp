@@ -1,7 +1,7 @@
 #include "lateral_test_support.hpp"
 #include "../src/core/following.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 using namespace lateral_test;
 // M3.4 slice 1 (D206): rows BA48-BA53 of docs/plans/DRIVING_BEHAVIOUR.md -- with the lateral switch
 // on, an accepted lane change is a lateral move toward the target lane's centre that remaps the route

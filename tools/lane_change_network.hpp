@@ -4,7 +4,7 @@
 // and M2.6 drawings. It is a development bed, not an acceptance fixture: A55 is judged on those two.
 // Built through the editor's own commands, like the other fixtures; committed as
 // data/projects/lane-change-lab.traffic.json, and `lanelab` checks the file is this builder's
-// output. Regenerate with trafficsim-lane-change-fixture, never by hand.
+// output. Regenerate with multra-lane-change-fixture, never by hand.
 //
 // The scenes share nothing and lie 60 m apart, so each is its own movement row:
 //   Overtaking   one 2-lane Link: cars behind heavy vehicles, discretionary changes both ways (A47,
@@ -16,7 +16,7 @@
 //                2-lane exit's lanes, then discretionary ones between them.
 //
 // Left-hand traffic, as the other fixtures. The D95 fields are not set here: the behaviour catalog
-// decides, and trafficsim-lane-change-sweep sets them per variant. Volumes and dimensions are
+// decides, and multra-lane-change-sweep sets them per variant. Volumes and dimensions are
 // plausible round numbers, not counts: nothing measured here is a claim about a real road (rule 4).
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace trafficsim::fixture {
+namespace multra::fixture {
 struct LaneChangeLab {
     ProjectDocument document;
     std::string overtaking, threeLanes;           // Links

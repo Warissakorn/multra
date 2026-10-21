@@ -10,7 +10,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-namespace trafficsim {
+namespace multra {
 void EditorWindow::buildHistory() {
     auto* dock = new QDockWidget(this);
     dock->setObjectName("editorHistoryDock");

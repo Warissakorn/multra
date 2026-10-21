@@ -7,7 +7,7 @@
 // never a number here against a number from somewhere else. The NETWORK is deterministic, so
 // the work being timed is the same every run.
 //
-//   trafficsim-editor-benchmark [intersections] [frames]
+//   multra-editor-benchmark [intersections] [frames]
 #include "../src/editor/canvas.hpp"
 #include "benchmark_network.hpp"
 #include <QApplication>
@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 double millis(const std::function<void()>& work, int times) {
     // The event loop MUST run between frames, because the real editor's does and because

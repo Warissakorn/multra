@@ -14,7 +14,7 @@
 #include "../src/project/json.hpp"
 #include <algorithm>
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 // B-6 (docs/reference/SPEED_DECISIONS.md, D222/D223): a desired-speed decision gives a passing
 // vehicle of a listed type `min + q (max - min)`, q being its quantile in its type's range, kept
 // for life; delay is measured against the speed in force. Engine rows BA86-BA94 on hand-built

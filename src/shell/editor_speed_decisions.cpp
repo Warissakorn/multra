@@ -22,7 +22,7 @@
 // B-6 (docs/reference/SPEED_DECISIONS.md §6, D223): the Speed decisions tab. Add places one on the
 // selected Link through a dialog (station and one min/max row per vehicle type); add, edit and
 // delete each go through execute(), so each is one Undo step and invalidates the run.
-namespace trafficsim {
+namespace multra {
 namespace {
 const Link* findLink(const Network& n, const std::string& id) {
     const auto link = std::find_if(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id; });

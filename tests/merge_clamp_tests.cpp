@@ -9,7 +9,7 @@
 #include <fstream>
 #include <limits>
 
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8a.1 (docs/reference/MERGE_CLAMPS.md, D250/D251): three project switches that relieve a cap on a
 // tick that would clamp. Each engine row first runs with its switch off and asserts today's clamp.
 namespace {

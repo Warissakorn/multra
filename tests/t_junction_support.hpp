@@ -10,7 +10,7 @@
 #include "../src/model/network/right_of_way.hpp"
 
 namespace tjunction {
-using namespace trafficsim;
+using namespace multra;
 inline Scenario compiled(const fixture::TJunction& t) {
     return compileDocument(t.document, test::root() / "data").scenario;
 }

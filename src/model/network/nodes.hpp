@@ -3,7 +3,7 @@
 // from the network inside its polygon (NODES §3, slice S0.2); nothing here references other objects.
 #include "right_of_way.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Blank or duplicate ids (against every other network id), a polygon that is not simple
 // (NODE_POLYGON_INVALID), two Nodes that share any point (NODE_OVERLAP, at the later one).
 // Paths are "nodes[i]...".

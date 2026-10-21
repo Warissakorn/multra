@@ -3,7 +3,7 @@
 #include "../src/project/run.hpp"
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // The M2.6 study template (tools/m26_study_network.hpp): pockets, the Thai left turn at all times,
 // the owner's timing plan and interval-counted demand. Placeholder volumes; not the gate study.
 namespace {

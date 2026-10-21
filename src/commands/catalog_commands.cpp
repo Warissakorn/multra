@@ -3,7 +3,7 @@
 #include "../project/od_demand.hpp"
 #include <algorithm>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 void putDemandCatalog(ProjectDocument& d,DemandCatalog catalog) {
     const bool named=namesMode(d.zones);
     auto& target=demand(d);

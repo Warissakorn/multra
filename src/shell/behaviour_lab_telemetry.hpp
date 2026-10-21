@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <deque>
 
-namespace trafficsim {
+namespace multra {
 class BehaviourLabChart : public QWidget {
 public:
     explicit BehaviourLabChart(QWidget* parent = nullptr);

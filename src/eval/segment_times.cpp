@@ -1,7 +1,7 @@
 #include "segment_times.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 SegmentTimeAccumulator::SegmentTimeAccumulator(const EvaluationSpec& spec)
     : movementOfRoute_(spec.movementOfRoute), names_(spec.movementNames), movements_(spec.movementNames.size()) {}
 void SegmentTimeAccumulator::observe(const SimState& state) {

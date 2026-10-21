@@ -1,6 +1,6 @@
 #include "projection_data.hpp"
 #include <array>
-namespace trafficsim {
+namespace multra {
 std::optional<std::filesystem::path> projectionDataDirectory(const std::filesystem::path& content,
                                                             const std::filesystem::path& executable) {
     for(const auto& directory:std::array<std::filesystem::path,2>{content/"proj",executable/"data/proj"}) {

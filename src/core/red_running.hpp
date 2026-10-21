@@ -2,7 +2,7 @@
 #include "types.hpp"
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 // B-9 (docs/reference/RED_RUNNING.md, D237/D238): a share of drivers may pass a red head in its
 // first seconds while still moving. Absent keys: nothing here runs and the step is unchanged.
 // The nearest head a vehicle was let through this tick, so the step can report it passing the line.

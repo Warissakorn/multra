@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 namespace rowfixture {
-using namespace trafficsim;
+using namespace multra;
 inline const PriorityDefaults kDefaults{3, 7};
 inline bool has(const std::vector<ValidationIssue>& issues, const std::string& code) {
     return std::any_of(issues.begin(), issues.end(), [&](const auto& i) { return i.code == code; });

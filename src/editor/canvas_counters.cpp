@@ -9,7 +9,7 @@
 // M3.2.6c: the Queue counter tool and the counters' marks. A counter line is drawn exactly where
 // evaluation measures it -- a head's stop line, a waiting line's bar, or an explicit point's bar,
 // each from the helper that also draws or resolves that object -- so what is shown is what counts.
-namespace trafficsim {
+namespace multra {
 namespace {
 int pathLevel(const Network& n, const ControlPathRef& ref) {
     for (const auto& l : n.links) if (l.id == ref.linkId) return l.level;

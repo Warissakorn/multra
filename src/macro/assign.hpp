@@ -4,7 +4,7 @@
 
 // S2.2 (docs/reference/MACRO_NETWORK.md §7, D274): static user-equilibrium assignment by
 // multi-class Frank-Wolfe. Pure: values in, values out, fixed index order, no clock, no seed.
-namespace trafficsim {
+namespace multra {
 // t0 for an uncapacitated arc; t0 (1 + alpha (load / capacity)^beta) otherwise, load in pcu/h.
 double macroTime(const MacroLink&, double load);
 // Dijkstra from `origin` over the arcs `mode` may use. On equal distance the lower link index is the

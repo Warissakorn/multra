@@ -1,7 +1,7 @@
 #pragma once
 #include "vehicle_pose.hpp"
 
-namespace trafficsim {
+namespace multra {
 struct AxleVehiclePose {
     Point front, rearAxle, frontAxle, rearBumper, heading;
 };

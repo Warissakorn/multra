@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool b,const char* m){if(!b)throw std::runtime_error(m);}
 void near(Point a,Point b,double e=1e-7){require(std::hypot(a.x-b.x,a.y-b.y)<e,"Journey pose differs");}

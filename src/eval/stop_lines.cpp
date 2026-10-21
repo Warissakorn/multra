@@ -3,7 +3,7 @@
 #include <cmath>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 StopLineAccumulator::StopLineAccumulator(const EvaluationSpec& spec) : beginSpeed_(spec.queue.beginSpeed) {}
 void StopLineAccumulator::bind(const SimState& state) {
     if (bound_ == state.scenario.get()) return;

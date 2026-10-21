@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <iostream>
 
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
@@ -37,7 +37,7 @@ std::string cell(const Json& value) {
 }
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") {
-        std::cout << "usage: trafficsim-reaction-discharge-sweep <project> <w74.json> <data-dir> <compile_commands.json> <new-output-dir>\n";
+        std::cout << "usage: multra-reaction-discharge-sweep <project> <w74.json> <data-dir> <compile_commands.json> <new-output-dir>\n";
         return 0;
     }
     if (argc != 6) { std::cerr << "Use --help for the BA38 sweep arguments\n"; return 2; }
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
         }
         // Written LAST: absence of complete=true means an interrupted/failed experiment.
         Json metadata{{"complete", true}, {"label", "not yet validated; BA38 sensitivity, not calibration"},
-            {"buildCommit", TRAFFICSIM_BUILD_COMMIT}, {"compiler", TRAFFICSIM_COMPILER},
+            {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER},
             {"compilerCommand", command}, {"toolSources", sources}, {"outputs", outputs},
             {"inputManifest", inputs.json()}, {"variants", variants},
             {"timeStep", .1}, {"firstSeed", 42}, {"lastSeed", 81}, {"experimentalRuns", 240},

@@ -4,7 +4,7 @@
 #include "../src/eval/lane_changes.hpp"
 #include <algorithm>
 #include <numeric>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8c (D92): the wait-cause diagnostic classifies each dead-end wait by the snapshot that
 // starts it, on the three-lane road of the lane-change tests.
 namespace {

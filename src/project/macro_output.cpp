@@ -2,7 +2,7 @@
 #include "csv_format.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr const char* kMeasure = "Static user-equilibrium assignment (multi-class Frank-Wolfe): flow in veh/h per class, "
     "load in pcu/h, times in seconds; Connector arcs at free-flow time, no junction delay";

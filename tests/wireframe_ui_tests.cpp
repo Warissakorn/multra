@@ -13,7 +13,7 @@
 #include <iostream>
 #include <tuple>
 #include <vector>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 int count(EditorCanvas& c, const char* tag) {

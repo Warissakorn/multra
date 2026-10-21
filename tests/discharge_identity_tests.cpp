@@ -1,7 +1,7 @@
 #include "test.hpp"
 #include "../src/eval/discharge.hpp"
 #include "../src/core/simulation.hpp"
-using namespace trafficsim;
+using namespace multra;
 // M3.3.1b2b2 (D125): same-tick source-sink identity (BA05) and rank-scoped remap invalidation.
 namespace {
 Scenario signalled(double length,double head,double dt) {

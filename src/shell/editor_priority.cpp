@@ -25,7 +25,7 @@
 // M3.2.4: the Conflict areas tab. Every edit goes through the M3.2.2 commands inside
 // execute(), so it is one Undo step and a refused edit changes nothing; keyboard (table, Enter,
 // the dialog) and pointer (double-click, toolbar) submit the same command.
-namespace trafficsim {
+namespace multra {
 namespace {
 // An automatic area's row carries its key (automaticConflicts), never an authored id.
 bool isAutomaticKey(const std::string& id) { return id.rfind("auto/", 0) == 0; }

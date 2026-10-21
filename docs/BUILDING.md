@@ -86,7 +86,7 @@ ctest --preset desktop
 ```
 
 `lld` is optional: when the compiler accepts `-fuse-ld=lld` it links every executable
-(about 7x faster than GNU ld on this tree); `-DTRAFFICSIM_LLD=OFF` keeps the default linker.
+(about 7x faster than GNU ld on this tree); `-DMULTRA_LLD=OFF` keeps the default linker.
 
 In displayless CI the desktop test uses `QT_QPA_PLATFORM=offscreen`. Normal launches
 use your desktop session's platform plugin to display a visible window.
@@ -122,7 +122,7 @@ cmake --install build/headless --prefix ./out/install
 ```
 
 If nlohmann/json has no package config, set
-`-DTRAFFICSIM_JSON_INCLUDE_DIR=/path/to/include` (containing `nlohmann/`).
+`-DMULTRA_JSON_INCLUDE_DIR=/path/to/include` (containing `nlohmann/`).
 No dependency is downloaded silently during configuration. For a custom Qt install
 use `-DCMAKE_PREFIX_PATH=/path/to/Qt/kit`.
 
@@ -131,7 +131,7 @@ Multi-Config generators add `Debug/` or `Release/` after `bin/`; use `--config R
 when building and `ctest -C Release` when testing. Runtime data follows that directory.
 Every build mirrors `data/` there, including removed or renamed catalog files. The generated
 destination must be inside the build tree and separate from the source. `data/proj/` is preserved
-because `trafficsim-proj-data` manages that subtree separately, including desktop builds of CLI alone.
+because `multra-proj-data` manages that subtree separately, including desktop builds of CLI alone.
 
 ## Checks and sanitizers
 
@@ -187,7 +187,7 @@ Moved from NEXT on 2026-10-15; dated, machine-specific.
     (`native.yml`) or another Linux/WSL machine.
   - On a 3.7 GB WSL machine, `ar` on `/mnt/c` failed with "Cannot allocate memory" at full
     parallelism; use `-j 4` there. On another, a one-file edit waited 150 s (134 s linking the 101 MB Debug
-    `trafficsim-tests` on `/mnt/c`), and an unbounded `-j` hung a 3 GB WSL. The remedy: a build
+    `multra-tests` on `/mnt/c`), and an unbounded `-j` hung a 3 GB WSL. The remedy: a build
     tree on ext4 via an untracked `CMakeUserPresets.json`, `CMAKE_JOB_POOLS=link=1` with
     `CMAKE_JOB_POOL_LINK=link`, `-j2`, and `--target` only what the change needs.
 - **Timing on this machine:** the i5-12450H is hybrid. The same Debug run is 26–29 s CPU on

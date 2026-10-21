@@ -1,7 +1,7 @@
 #include "map_http_cache.hpp"
 #include <algorithm>
 #include <limits>
-namespace trafficsim::mapHttp {
+namespace multra::mapHttp {
 QByteArray header(const Headers& headers,const QByteArray& name) {
     QByteArray result;
     for(const auto& h:headers)if(h.first.toLower()==name) {

@@ -1,7 +1,7 @@
 #include "summary.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 void SummaryAccumulator::add(const SimEvent& event) {
     if (std::holds_alternative<SafetyClampEvent>(event)) ++clamps_;
     if (std::holds_alternative<LaneChangeEvent>(event)) ++laneChanges_;

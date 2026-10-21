@@ -1,7 +1,7 @@
 #pragma once
 #include "types.hpp"
 
-namespace trafficsim {
+namespace multra {
 // M8.4a (D156, docs/reference/ZONES_AND_PARKING.md §4): the parking-lot runtime. Every function
 // returns at once for a scenario without a lot, which then runs exactly as it always did.
 // Each tick: release (after the arrivals are generated), insertion (noteInserted), admission from

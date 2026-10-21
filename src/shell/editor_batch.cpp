@@ -13,7 +13,7 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
-namespace trafficsim {
+namespace multra {
 // M5.6 (BATCH §6): the editor's `--seeds`. The document is compiled here, on the UI thread, and
 // only value copies cross to the worker, which calls the CLI's runSeeds and aggregate; Export and
 // Copy then format with the CLI's batchCsv. Every number keeps the not-validated marker (rule 4).

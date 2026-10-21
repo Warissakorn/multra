@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QPainterPath polylinePath(const std::vector<Point>& points) {
     QPainterPath path;

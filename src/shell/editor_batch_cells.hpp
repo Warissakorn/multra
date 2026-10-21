@@ -7,7 +7,7 @@
 #include <optional>
 #include <vector>
 
-namespace trafficsim::batchCells {
+namespace multra::batchCells {
 // The cells the batch (M5.6) and comparison (M5.8b) tables share: read-only rows, names in the
 // stretching first column, figures right-aligned in the numeric font to one decimal.
 inline QTableWidget* table(QWidget* parent, const char* name, int columns) {

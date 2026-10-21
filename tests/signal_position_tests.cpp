@@ -4,7 +4,7 @@
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.6a, A21 of docs/plans/M3_ACCEPTANCE.md: a Signal head keeps the place it was drawn through
 // section cuts and Link edits, on both driving sides, and the three readings of that place agree
 // -- the command's station, the canvas's slot (headSlot, what canvas_heads.cpp draws) and the

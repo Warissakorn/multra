@@ -1,6 +1,6 @@
 #pragma once
 #include "run.hpp"
-namespace trafficsim {
+namespace multra {
 struct DemandPreviewRow {
     std::string inputId,vehicleTypeId,routeId,entryLinkId,entryLaneId,lastLinkId;
     double startTime{},endTime{},vehiclesPerHour{},expectedVehicles{};

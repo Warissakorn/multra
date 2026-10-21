@@ -200,7 +200,7 @@ longer match. The other four keys may change on a retune.
 The perceived-leader search reuses `closestVehicle`'s early break, keeping a sorted list of at
 most `observedVehiclesAhead` entries (≤ 8). `lookAheadDistance` can only shorten the scan. The
 physical leader comes out of the same pass. The FIFO is `O(d)` memory per vehicle, `d ≤ 2 / dt`.
-The implementation slice re-runs `trafficsim-engine-benchmark` before and after (benchmarks are
+The implementation slice re-runs `multra-engine-benchmark` before and after (benchmarks are
 not in `check`), and a regression over 10 % on an unassigned scenario needs its own decision
 (D164).
 

@@ -17,7 +17,7 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 namespace {
 QString q(const std::string& s) { return QString::fromStdString(s); }
 // Parameter names are never translated (AGENTS.md): the label is the project-file key.

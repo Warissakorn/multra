@@ -5,7 +5,7 @@
 //
 // It is ONE drawing, committed as data/projects/four-leg-signalised.traffic.json. The file is the
 // thing the editor opens; this builder is its source, and `four-leg` checks the two are identical
-// so neither drifts (hard rule 3). Regenerate with trafficsim-four-leg-fixture, never by hand.
+// so neither drifts (hard rule 3). Regenerate with multra-four-leg-fixture, never by hand.
 //
 // Left-hand traffic, as in Thailand: lane 0 of every Link is the kerb lane, the LEFT turn is the
 // short kerbside turn, and the RIGHT turn is the one that crosses opposing traffic and has the
@@ -18,7 +18,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace trafficsim::fixture {
+namespace multra::fixture {
 struct FourLegOptions {
     // Where each turning Connector joins its exit Link, in metres along it. Zero -- the default,
     // and how an engineer draws it -- meets the exit at its start, where the turns from three

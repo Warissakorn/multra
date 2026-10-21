@@ -4,7 +4,7 @@
 #include "../src/project/run.hpp"
 #include <fstream>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 
 TEST(mapproject, legacy_roundtrip_and_schema) {
     ProjectDocument legacy;const auto before=documentJson(legacy).dump();

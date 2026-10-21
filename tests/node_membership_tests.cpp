@@ -7,7 +7,7 @@
 #include "../src/project/run.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 // S0.2 (docs/reference/NODES.md §3, D262, D263): what a Node holds, derived from the network
 // inside its polygon. Each row first checks that its forcing took.
 namespace {

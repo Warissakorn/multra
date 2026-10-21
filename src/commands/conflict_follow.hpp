@@ -1,7 +1,7 @@
 #pragma once
 #include "../project/document.hpp"
 
-namespace trafficsim {
+namespace multra {
 // D86: an authored conflict area is a setting on an overlap, not a place. After an edit that
 // changed the drawing (Links, Connectors, driving side), each area's extents are re-derived from
 // the overlap its pair has now -- the piece nearest where it was -- and its waiting lines keep

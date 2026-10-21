@@ -13,7 +13,7 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
-namespace trafficsim {
+namespace multra {
 // M5.8b (BATCH §7, D149): the editor's `--compare`. The open project is the base and a chosen
 // file the alternative, both compiled here on the UI thread; the batch worker runs the base's
 // seeds, then the alternative's, and calls the CLI's aggregate and compareBatches. Export and Copy

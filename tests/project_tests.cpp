@@ -3,7 +3,7 @@
 #include <fstream>
 #include <tuple>
 
-using namespace trafficsim;
+using namespace multra;
 TEST(project, strict_seed_parser) {
     CHECK(parseSeed("0") == 0); CHECK(parseSeed("42") == 42); CHECK(parseSeed("4294967295") == 4294967295U);
     for (const auto* invalid : {"", "-1", "+1", "2.5", "NaN", "Infinity", "4294967296", "1x", " 1"})
@@ -62,7 +62,7 @@ TEST(project, catalog_and_translation_keys) {
 // "[json.exception.type_error.304] cannot use at() with null" because a drawn network is
 // legitimately saved with "definition": null. It must name the file kind instead.
 TEST(project, file_kind_is_named_not_thrown_as_a_parser_error) {
-    const auto directory = std::filesystem::temp_directory_path() / "trafficsim-project-tests";
+    const auto directory = std::filesystem::temp_directory_path() / "multra-project-tests";
     std::filesystem::create_directories(directory);
     const auto data = test::root() / "data";
     const auto write = [&](const std::string& name, const Json& value) {
@@ -131,7 +131,7 @@ TEST(project, no_null_field_leaks_a_parser_exception) {
 // parser exception still escaped: value("format", std::string{}) throws when the key is
 // present but not a string. Drive these through loadScenario, not the section parsers.
 TEST(project, file_kind_classification_survives_broken_metadata) {
-    const auto directory = std::filesystem::temp_directory_path() / "trafficsim-metadata-tests";
+    const auto directory = std::filesystem::temp_directory_path() / "multra-metadata-tests";
     std::filesystem::create_directories(directory);
     std::ifstream source(test::root() / "data/scenarios/crossing.json");
     const auto scenario = Json::parse(source);

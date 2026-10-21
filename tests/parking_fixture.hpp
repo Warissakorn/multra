@@ -8,7 +8,7 @@
 #include "../src/project/run.hpp"
 
 namespace lotfix {
-using namespace trafficsim;
+using namespace multra;
 inline std::string laneOf(const ProjectDocument& d, const std::string& link) {
     for (const auto& l : d.network.links) if (l.id == link) return l.lanes.front().id;
     throw std::runtime_error("no link " + link);

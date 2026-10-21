@@ -5,7 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 template<class T> void put(std::vector<T>& values, T value) {
     for (auto& existing : values) if (existing.id == value.id) { existing = std::move(value); return; }
@@ -104,7 +104,7 @@ void restoreAutomaticPriority(ProjectDocument& d, const std::string& section) {
     detail::pruneQueueCounters(d);
 }
 }
-namespace trafficsim::detail {
+namespace multra::detail {
 namespace {
 bool on(const ControlPathRef& p, const std::set<std::string>& links, const std::set<std::string>& connectors) {
     return p.connectorId.empty() ? links.contains(p.linkId) : connectors.contains(p.connectorId);

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <limits>
 
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::vector<SimEvent> events(const Scenario& s, std::uint32_t seed) {
     std::vector<SimEvent> result;

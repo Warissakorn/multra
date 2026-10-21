@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Contract §5 ranges, one per key.
 enum class Range { positive, nonNegative, atLeastOne, nonPositive, unit };

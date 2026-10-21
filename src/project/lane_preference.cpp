@@ -3,7 +3,7 @@
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 std::optional<int> parseKerbLanes(const Json& t) {
     if (!t.contains("kerbLanes")) return std::nullopt;
     const auto& n = t.at("kerbLanes");

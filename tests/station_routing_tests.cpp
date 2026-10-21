@@ -5,7 +5,7 @@
 #include "../src/project/run.hpp"
 #include "../src/core/routing.hpp"
 #include "../src/commands/history.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 Scenario routingFork() {
     auto s=test::straight();

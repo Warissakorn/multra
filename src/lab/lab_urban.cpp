@@ -16,7 +16,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace trafficsim::lab::build {
+namespace multra::lab::build {
 LabNetwork urban(const LabSettings& settings) {
     const auto& road = settings.road;
     const double A = road.straightLength, B = road.blockDepth, R = road.curveRadius;

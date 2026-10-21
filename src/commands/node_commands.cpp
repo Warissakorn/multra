@@ -2,7 +2,7 @@
 #include "../model/network/node_suggestions.hpp"
 #include <algorithm>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 namespace {
 Node& find(ProjectDocument& d, const std::string& id) {
     const auto found = std::find_if(d.network.nodes.begin(), d.network.nodes.end(), [&](const Node& n) { return n.id == id; });

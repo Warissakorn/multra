@@ -12,7 +12,7 @@
 #include <QVBoxLayout>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 QTableWidget* table(QWidget* parent, const char* name, int columns) {
     auto* view=new QTableWidget(0,columns,parent); view->setObjectName(name);

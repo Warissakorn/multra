@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M5.5 (D134, docs/reference/LOS.md): a level-of-service pack is content (rule 5) -- per control
 // type, the upper delay bounds of A-E in seconds; above the last is F. Applied to simulated
 // section delay only: NOT HCM control delay, not validated (rule 4).

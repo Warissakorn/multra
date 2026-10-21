@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kMoving = 0.1; // m/s: kStoppedSpeed (conflicts.cpp); slower is standing
 }

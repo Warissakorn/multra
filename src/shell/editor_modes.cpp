@@ -19,7 +19,7 @@
 // S1.2 (D269, docs/reference/STUDY_PERIODS.md §6-§8): the Modes tab. Installed modes (data/modes/)
 // are listed read-only; a project owning its modes adds, edits and deletes them, each one execute()
 // step. The PCU column is derived (§7) and shows "—" when it is unknown.
-namespace trafficsim {
+namespace multra {
 namespace {
 struct ModeRows { std::vector<Mode> modes; std::vector<Composition> compositions; std::vector<VehicleType> types; };
 ModeRows modeRows(const ProjectDocument& d, const std::filesystem::path& data) {

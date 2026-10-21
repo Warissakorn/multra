@@ -4,7 +4,7 @@
 #include <iterator>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 void InputManifest::record(const std::string& name,std::string_view bytes) {
     const auto digest=inputSha256(bytes);
     const auto [it,added]=entries_.try_emplace(name,Entry{digest,bytes.size(),0});

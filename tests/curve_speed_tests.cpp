@@ -12,7 +12,7 @@
 #include <array>
 #include <cmath>
 #include <functional>
-using namespace trafficsim;
+using namespace multra;
 // M3.6 slice 1 (D212): rows BA56-BA63 of docs/plans/DRIVING_BEHAVIOUR.md against
 // docs/reference/SPEED_CONTROL.md -- a Connector's curve bounds the speed of vehicles whose
 // behaviour carries curveLateralAcceleration, anticipated at the comfortable deceleration.

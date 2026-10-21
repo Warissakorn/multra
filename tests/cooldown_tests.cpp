@@ -9,7 +9,7 @@
 #include "../src/project/run.hpp"
 #include "../src/runner/batch.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M5.9 (D146, docs/reference/BATCH.md §5): the evaluation cool-down. The run continues past
 // `duration` with no new demand; the window then selects trips by when their demand was released,
 // and only window trips the cool-down did not clear are unfinished. Rows CD1-CD8.

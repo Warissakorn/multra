@@ -12,7 +12,7 @@
 #include "../src/runner/batch.hpp"
 #include <filesystem>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::string laneOf(const ProjectDocument& d, const std::string& link) {
     for (const auto& l : d.network.links) if (l.id == link) return l.lanes.front().id;

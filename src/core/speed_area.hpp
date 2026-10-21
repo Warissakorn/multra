@@ -2,7 +2,7 @@
 // B-6 §7 (docs/reference/SPEED_DECISIONS.md, D225): reduced-speed areas at run time.
 #include "types.hpp"
 
-namespace trafficsim {
+namespace multra {
 // §7.2: each route's areas by route distance, ascending (then by id), every type slot's range.
 void indexSpeedAreas(const Scenario&, ScenarioIndex&);
 // §7.2: the area bound on `route` this tick, applied to `target`: inside an area, its speed; ahead,

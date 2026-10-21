@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M8 (D153, docs/reference/ZONES_AND_PARKING.md §2): the demand layer every level shares. Authoring
 // values only; M8.3 compiles an OdMatrix into ordinary inputs, so the core never sees a zone.
 struct Zone {

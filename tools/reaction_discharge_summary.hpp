@@ -5,7 +5,7 @@
 #include <cmath>
 #include <map>
 #include <tuple>
-namespace trafficsim::reactiondischarge {
+namespace multra::reactiondischarge {
 struct Moments {
     std::size_t n{}; double sum{}, squares{};
     void add(double v) { ++n; sum += v; squares += v * v; }

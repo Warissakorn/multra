@@ -8,7 +8,7 @@
 #include <QTransform>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // The pointer while something is being moved: the ordinary arrow with a small hand beside it,
 // so pointing stays an arrow and only a move says "you are carrying this".

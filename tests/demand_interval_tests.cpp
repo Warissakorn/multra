@@ -3,7 +3,7 @@
 #include "../src/commands/network_commands.hpp"
 #include "../src/project/run.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // M2.2: an input's volume per period. Expanded at compile time into one core input per period,
 // so the core, and every frozen fixture, is untouched.
 namespace {

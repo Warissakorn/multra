@@ -8,7 +8,7 @@
 // Timings are wall clock and depend on the window's size and the screen -- compare two runs on
 // one machine. The window is fixed at 1600x1000 and the Results tab stays hidden.
 //
-//   trafficsim-run-view-benchmark <project.traffic.json> [steps] [batch]
+//   multra-run-view-benchmark <project.traffic.json> [steps] [batch]
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/load.hpp"
 #include <QAction>
@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QStandardPaths::setTestModeEnabled(true);

@@ -2,7 +2,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include <tuple>
 #include <utility>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.9a (D73): the lanes of a Connector's two ends pair one to one, and at most one lane is
 // added or dropped on each side.
 namespace {

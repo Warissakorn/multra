@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M2.3: an input may draw its vehicles from a composition in data/compositions/. Resolving the
 // catalog expands it into one input per type, so the core and the frozen fixtures are untouched.
 namespace {
@@ -24,7 +24,7 @@ VehicleInput mixed(const std::string& route, double volume, double end) {
 }
 // A throwaway data directory holding only the catalogs a run reads, plus `compositions`.
 std::filesystem::path dataWith(const std::string& name, const Json& composition) {
-    const auto dir = std::filesystem::temp_directory_path() / ("trafficsim-compositions-" + name);
+    const auto dir = std::filesystem::temp_directory_path() / ("multra-compositions-" + name);
     std::filesystem::remove_all(dir);
     std::filesystem::create_directories(dir);
     for (const char* sub : {"vehicle-types", "driver-behaviour", "priority-rules"})

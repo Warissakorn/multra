@@ -5,7 +5,7 @@
 #include <optional>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 ConnectorPathTable::ConnectorPathTable(const Network& network)
     : network_(network), paths_(network.connectors.size()) {}
 const std::vector<ConnectorPath>& ConnectorPathTable::at(std::size_t index) const {

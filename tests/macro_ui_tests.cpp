@@ -20,7 +20,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // S2.4 rows MA14 (docs/reference/MACRO_NETWORK.md §19 a, §20, D277): Run Macro on its worker in
 // stages, the Macro links table and its stale notice; the Link types tab; the Link's type field;
 // the Macro run settings. Each row first checks its forcing.

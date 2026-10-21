@@ -8,7 +8,7 @@
 #include "../src/project/run.hpp"
 #include <algorithm>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // D93 (M3_8_CONTRACT.md §2, "Downstream routing decisions", A40-A46): a routing decision placed
 // past the entry Link draws by destination, and a lane that cannot reach one changes lanes there.
 namespace {

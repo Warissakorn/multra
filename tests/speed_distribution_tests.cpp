@@ -9,7 +9,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 // B-5 (docs/reference/SPEED_DISTRIBUTION.md, D228/D229): a vehicle type's desired speed drawn
 // through an optional piecewise-linear cumulative curve, with the same single draw; the curve's
 // share is the quantile decisions, areas and D191's rescale read. Engine rows BA110-BA114.

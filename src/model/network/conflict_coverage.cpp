@@ -8,7 +8,7 @@
 // M3.2.2c: the crossing-coverage measurement (docs/reference/M3_CONTRACT.md §1). Two lane surfaces are
 // intersected quad by quad and the overlap is read back as stations, so a crossing area's two
 // stored numbers can be checked against the geometry instead of trusted.
-namespace trafficsim {
+namespace multra {
 namespace {
 // Named numerical constants, not calibration (contract §1).
 constexpr double kMinOverlapArea = 1e-6; // m²: two surfaces closer than this only touch

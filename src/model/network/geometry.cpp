@@ -5,7 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Longest miter, as a multiple of the offset, before a hairpin is cut back.
 constexpr double kMiterLimit=4;

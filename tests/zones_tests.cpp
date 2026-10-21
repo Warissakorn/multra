@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 Json readJson(const std::filesystem::path& path) {
     std::ifstream source(path);CHECK(source.good());return Json::parse(source);

@@ -1,6 +1,6 @@
 #include "nodes.hpp"
 
-namespace trafficsim {
+namespace multra {
 std::optional<double> weightedDelay(const std::vector<std::pair<std::uint64_t, std::optional<double>>>& rows) {
     double weighted = 0; std::uint64_t vehicles = 0;
     for (const auto& [v, d] : rows) if (v && d) { weighted += static_cast<double>(v) * *d; vehicles += v; }

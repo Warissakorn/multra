@@ -23,7 +23,7 @@
 #include <memory>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::string selectedId(QTableWidget* table) {
     const auto* cell=table->item(table->currentRow(),0);

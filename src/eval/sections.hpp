@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // A place on one runtime segment, metres along it: a queue counter's line, or one lane of a
 // travel-time section's line.
 struct CounterLine { std::string segmentId; double position{}; bool operator==(const CounterLine&) const = default; };

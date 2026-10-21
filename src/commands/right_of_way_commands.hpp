@@ -6,7 +6,7 @@
 #include "../model/network/right_of_way.hpp"
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // Empty id allocates; the same id replaces. Structural checks run when the edit commits.
 std::string putWaitingLine(ProjectDocument&, WaitingLine);
 std::string putConflictArea(ProjectDocument&, ConflictArea);
