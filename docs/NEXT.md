@@ -14,7 +14,7 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md));
   MA15, the textbook benchmark, is open. §19 (b) named runs and (c) a procedure sequence are booked (D277).
 - **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md)); no PCU value ships (D267).
-- **Nodes:** S0.1–S0.3, S0.5–S0.7 and S0.8a are in (D259–D265, D278, D288, D289, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
+- **Nodes: S0 is complete** (D259–D265, D278, D288–D290, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); the gate stays open. `joinAnticipation` ships off (D255); D95 stays off.
 - **The optimization pass is complete** (D279–D283, 2026-10-20, Linux): a Node adds +14–20 % Ir;
@@ -29,9 +29,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — MA15 when a book is reachable; else S0.8b
+## Next session — MA15 when a book is reachable; else the owner picks the next item
 
-S0.8a is in (D289). `--compare` and the editor's Copy and Export compare Node, leg and turn rows.
+S0.8b is in (D290): Results → Nodes shows a comparison's rows, so S0 is complete (S0.4 is with S3).
 - **MA15 is blocked on access.** On 2026-10-21 the proxy refused every host below, after the
   owner allowed arxiv.org. That suggests a running container keeps its old policy, but this is
   unconfirmed.
@@ -53,13 +53,11 @@ S0.8a is in (D289). `--compare` and the editor's Copy and Export compare Node, l
     - the fixture;
     - MA15;
     - the cost measurement.
-- **Otherwise, S0.8b:** Results → Nodes shows a comparison's rows from `Comparison::nodes`.
-  - Columns: level, name, base n and mean, alternative n and mean, difference, CI and df, as the
-    comparison's other tables; the legs' queue as extra columns.
-  - Unmatched names in the note.
-  - N21's comparison case changes from the not-compared note to rows.
-  - Code: `src/shell/editor_results_nodes.cpp` (`refreshResultNodes`); tests:
-    `tests/node_results_ui_tests.cpp`.
+- **Otherwise, ask the owner** which open item comes next; nothing is queued after S0. The
+  candidates:
+  - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
+  - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
+  - **S3:** Roads and S0.4's coarse values (D272);
+  - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277).
 
-Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
-the lane lab's 1. M2.8 has only owner checks left.
+M2.8 has only owner checks left.

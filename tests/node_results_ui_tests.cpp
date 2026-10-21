@@ -21,8 +21,8 @@
 #include <iostream>
 using namespace multra;
 // S0.6 rows N19-N21 (docs/reference/NODES.md §15, D278): Results -> Nodes shows the Node, leg and turn
-// rows of a single run and of a batch, as the CSV block gives them; a comparison has none yet. Each
-// row first checks its forcing.
+// rows of a single run and of a batch, as the CSV block gives them; S0.8b (D290): and of a
+// comparison, from Comparison::nodes. Each row first checks its forcing.
 namespace {
 void require(bool ok, const char* message) { if (!ok) { std::cerr << message << "\n"; throw std::runtime_error(message); } }
 template<class T> T* item(QObject& root, const char* name) { auto* p = root.findChild<T*>(name); require(p, name); return p; }
@@ -109,11 +109,39 @@ int main(int argc, char** argv) {
         require(!w.batchResult(), "The batch is discarded");
         require(table->columnCount() == 10, "The tab returns to the single run");
 
-        // N21: a comparison has no Node rows yet.
-        w.compareWithFile(file); waitForBatch(w);
+        // N21 (S0.8b): a comparison with a busier copy shows every Node, leg and turn difference.
+        auto busier = document; busier.definition->inputs[0].vehiclesPerHour *= 1.5;
+        w.compareWithFile(project(dir, "busier.traffic.json", busier)); waitForBatch(w);
         inner->setCurrentWidget(test::tabPage(inner, table)); QApplication::processEvents();
-        require(w.comparisonResult().has_value(), "The comparison finished");
-        require(table->rowCount() == 0 && note->text().contains("not compared"), "A comparison shows the not-compared note");
+        require(w.comparisonResult().has_value() && w.comparisonResult()->comparison.nodes.size() == 1, "The comparison holds one Node");
+        const auto& cn = w.comparisonResult()->comparison.nodes[0];
+        require(cn.legs.size() == 3 && cn.turns.size() == 4, "The forcing: 3 compared legs and 4 turns");
+        require(table->rowCount() == 8 && table->columnCount() == 12, "A comparison row per Node, leg and turn");
+        require(note->text().startsWith("# Nodes from simulated") && note->text().contains("Alternative minus base"), "The comparison note");
+        std::vector<const Difference*> delays{&cn.delay};
+        for (const auto& l : cn.legs) delays.push_back(&l.delay);
+        for (const auto& u : cn.turns) delays.push_back(&u.value);
+        for (int r = 0; r < 8; ++r) {
+            const auto& d = *delays[static_cast<std::size_t>(r)];
+            require(cell(table, r, 2) == QString::number(d.nBase) && cell(table, r, 3) == figure(d.base) &&
+                    cell(table, r, 4) == QString::number(d.nAlternative) && cell(table, r, 5) == figure(d.alternative), "A row's two sides");
+            require(cell(table, r, 6) == figure(d.difference) && cell(table, r, 7) == figure(d.halfWidth95), "A row's difference and CI");
+            const bool isLeg = r >= 1 && r <= 3;
+            require(cell(table, r, 8).isEmpty() != isLeg && cell(table, r, 10).isEmpty() != isLeg, "Queue cells on legs only");
+        }
+        require(*cn.delay.base != *cn.delay.alternative, "The forcing: the two sides differ");
+        require(cell(table, 1, 8) == figure(cn.legs[0].queueMean.base) && cell(table, 1, 9) == figure(cn.legs[0].queueMean.alternative) &&
+                cell(table, 1, 10) == figure(cn.legs[0].queueMean.difference), "A leg's queue cells");
+        // N21: a Node renamed in the alternative is not compared, and the note names both sides.
+        const auto nodeName = cn.name; // a suggested Node has no name, so its rows carry its id
+        auto renamed = document; renamed.network.nodes[0].name = "Other";
+        w.compareWithFile(project(dir, "renamed.traffic.json", renamed)); waitForBatch(w);
+        inner->setCurrentWidget(test::tabPage(inner, table)); QApplication::processEvents();
+        require(w.comparisonResult() && w.comparisonResult()->comparison.nodes.empty() &&
+                w.comparisonResult()->comparison.unmatchedNodes.baseOnly == std::vector<std::string>{nodeName},
+                "The forcing: the renamed Node is unmatched");
+        require(table->rowCount() == 0 && note->text().contains("base only: " + q(nodeName)) &&
+                note->text().contains("alternative only: Other"), "The note names the unmatched Nodes");
         // N21: no Node at all.
         std::ifstream four(data / "projects/four-leg-signalised.traffic.json");
         w.openFile(project(dir, "four.traffic.json", parseDocument(Json::parse(four)))); QApplication::processEvents();

@@ -205,7 +205,7 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 | S0.6 | Results → Nodes. **Implemented (D278)** | N19–N21 |
 | S0.7 | The Nodes tab lights the selected Node and its legs (§6). **Implemented (D288)** | N22 |
 | S0.8a | The scenario comparison compares Node, leg and turn rows (model, JSON, CSV). **Implemented (D289)** | CMP8–CMP10 (BATCH §7) |
-| S0.8b | Results → Nodes shows a comparison's Node rows (N21 changes) | planned |
+| S0.8b | Results → Nodes shows a comparison's Node rows (§18). **Implemented (D290)** | N21 |
 
 ## 9. Acceptance rows (planned)
 
@@ -369,8 +369,8 @@ Each row first asserts that its forcing worked (AGENTS).
     type, as `writeNodesCsv` gives it.
   - **A batch:** level, name, control type, n, mean delay (s), 95 % CI half-width (s), mean
     vehicles, mean unfinished, mean queue mean and max (legs only), and LOS on the mean delay.
-  - **A comparison:** no rows. The note says Node rows are not compared yet, because `Comparison`
-    holds no Node data.
+  - **A comparison:** from S0.8b (§18), the rows of `Comparison::nodes`. Until then it showed none
+    and said so.
 - **Note:** it starts with the CSV block's marker. Without a Node it says how to draw one; with no
   run, nothing yet; with an unfinished single run, the partial-run prefix.
 - **Unchanged:** every output, since the change is editor-only.
@@ -380,7 +380,7 @@ Each row first asserts that its forcing worked (AGENTS).
 |---|---|---|
 | N19 | The T-junction with Suggest nodes, one finished run | 1 + 5 + 4 rows equal to `runReport()->nodes`; the queue cells only on legs; the LOS as `losCell`; the marker first |
 | N20 | The same, seeds 42–43 | Rows equal to `aggregate(runs).nodes` (n, mean, CI, LOS on the mean); an edit returns the tab to no run |
-| N21 | No Node, or a comparison | The four-leg without a Node shows the no-Node note and no rows; a comparison shows the not-compared note |
+| N21 | No Node, or a comparison (S0.8b, §18) | The four-leg without a Node shows the no-Node note and no rows. A comparison with a busier copy gives 8 rows × 12 columns: each row's two sides, difference and CI as `Comparison::nodes` holds them, with queue cells on legs only. A Node renamed in the alternative gives no rows, and the note names it base-only and the new name alternative-only |
 
 - **As implemented:** `src/shell/editor_results_nodes.cpp` (`refreshResultNodes`), the
   `editorResultsTabNodes` page after Parking lots.
@@ -435,7 +435,7 @@ Each row first asserts that its forcing worked (AGENTS).
   - The `# Unmatched` line names Node rows as `node …`, and leg or turn rows as `"Node / name"`.
   - A comparison without a Node keeps its bytes.
 - **Editor.** Copy and Export carry the blocks, since they use `comparisonCsv`. Results → Nodes
-  still shows the not-compared note (N21) until S0.8b.
+  shows the rows from S0.8b (§18).
 - **As implemented:** `ComparisonNodeRow` and `ComparisonLegRow` in `src/runner/compare.hpp`.
   `match` now takes the row builder, and `matchValue` keeps the one-value blocks. The output is in
   `src/project/comparison_output.cpp`.
@@ -446,3 +446,31 @@ Each row first asserts that its forcing worked (AGENTS).
   - an unmatched leg left off the CSV line;
   - the blocks written without a Node;
   - the Node's difference reversed.
+
+## 18. S0.8b: a comparison's Node rows in Results → Nodes (D290)
+
+- **The table:** one row per compared Node, then its legs, then its turns. It has 12 columns:
+  - level and name;
+  - base n and delay, alternative n and delay, difference and ±95 % (s);
+  - base and alternative mean queue, difference and ±95 % (m), on legs only.
+
+  There is no LOS column, because a difference has no letter (BATCH §7).
+- **The note:**
+  - the marker;
+  - "alternative minus base" with the seed count and Welch's half-width;
+  - the unmatched names, in the comparison tab's wording: Node names bare, leg and turn names as
+    `Node / name`.
+
+  While a comparison runs, the note says the rows appear when it finishes. With no Node on either
+  side, it gives the no-Node note.
+- **Unchanged:** every output, since the change is editor-only.
+- **As implemented:**
+  - `refreshComparedNodes` in `src/shell/editor_results_nodes.cpp`;
+  - the locale key `editorNodeResultsCompared`, which replaces `editorNodeResultsNotCompared`.
+- **Row:** N21 (§15).
+- **Mutations caught:**
+  - the not-compared path kept;
+  - base and alternative columns swapped. A comparison with itself let this one survive, so N21
+    uses a busier copy;
+  - queue cells on turns;
+  - unmatched Nodes missing from the note.

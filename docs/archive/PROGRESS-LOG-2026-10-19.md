@@ -3,6 +3,35 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — Node evaluation cost: sections by route, tracks in place (D279)
+
+The owner ran an optimization pass and approved the recommended order; this is its first item.
+- **Measured** (Linux, GCC 13.3 RelWithDebInfo, callgrind, seed 42): four-leg with a Node 1,303.6 →
+  1,128.8 M Ir (−13.4 %), T-junction with a Node 256.2 → 233.2 M (−9.0 %). A Node now adds +20 %
+  and +14 % (was +39 % and +26 %, D264). `SectionAccumulator::observe` 325.8 → 150.9 M.
+- **How:** `observe` visits only the sections with a line on the vehicle's route, and advances
+  known tracks in place instead of moving every Track into a new vector each tick.
+- **Unchanged:** every output byte-identical (four shipped projects and two Node fixtures, run and
+  seeds 42–44), the pin and the TS rows.
+- **Tests:** two section rows, each killing a mutant that survived the suite (a section with only
+  its end line on the new route; a track kept after its vehicle left).
+
+## 2026-10-20 — S0.6: Node rows in Results (D278); MA15 paused
+
+MA15 needs Sheffi (1985) from web.mit.edu, which the proxy still refused after the owner allowed
+it, so the owner chose other work ([NODES](../reference/NODES.md) §15).
+- **Results → Nodes:**
+  - **a run:** the Node, leg and turn rows as the CSV block gives them (vehicles, delay,
+    unfinished, queue on legs, travel time on turns, LOS by the Node's control type);
+  - **a batch:** n, mean, CI and LOS on the mean;
+  - **a comparison:** no rows yet, and it says so.
+
+  The marker comes first.
+- **Rows:** N19–N21 (`node-results-ui`). The workspace test and the UI audit list the new tab.
+- **Mutations:** seven caught. The batch LOS on mean + CI first survived; N20 now checks every
+  row's letter.
+- **Unchanged:** every output (editor-only), the pin and the TS rows. Linux offscreen only.
+
 ## 2026-10-19 — S2.4: Run Macro in stages, Macro links, link types (D277)
 
 The owner chose §19 (a) and wants more capability later

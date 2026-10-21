@@ -272,7 +272,8 @@ the **base** and a chosen file as the **alternative** — the roles of `--projec
   from that file, and `unsaved project` when it has none; the alternative by its file name. The
   CSV therefore never names a file whose bytes did not produce that side.
 - **Table.** Movements, sections and approaches: name, base n and mean, alternative n and mean,
-  difference, ±95 % half-width (s for delay, m for queue). The df is in Copy and Export. The note
+  difference, ±95 % half-width (s for delay, m for queue). Node, leg and turn rows are in Results →
+  Nodes (NODES §18, D290). The df is in Copy and Export. The note
   carries the marker and the measure (independent runs, Welch's 95 % interval, an interval that
   spans 0 is seed noise), both names, the seeds, the evaluation period and cool-down, each side's
   overloaded seeds and unfinished movements, the unmatched names, and the network mean delay

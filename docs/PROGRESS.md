@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-21 — S0.8b: a comparison's Node rows in Results → Nodes (D290); S0 complete
+
+The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org refused again).
+- **Results → Nodes, for a comparison:** the Node, leg and turn rows of `Comparison::nodes`: two
+  sides, difference and ±95 % for delay, plus the legs' queue. There is no letter on a difference.
+  Unmatched names go in the note.
+- **Tests:** N21 rewritten. A comparison with itself let a column swap survive, so it now compares a
+  busier copy; four mutations each fail it.
+- **S0 is complete** but S0.4, which moved to S3 (D272).
+
 ## 2026-10-21 — S0.8a: Node rows in the scenario comparison (D289)
 
 MA15 is still blocked (sheffi.mit.edu, web.mit.edu and arxiv.org refused), so the S0 item left,
@@ -138,35 +148,6 @@ NEXT was 88 % shipped history that PROGRESS and RECORD already hold.
 - **Stale lines fixed:** ARCHITECTURE's Macro row, ROADMAP's S0 line (S0.6; S0.4 moved to S3),
   read-by-task rows for Macro and study periods, a `src/macro/` README, and the decision index
   (a Macro topic row, D275–D279 summaries, five answered choices no longer "awaiting").
-
-## 2026-10-20 — Node evaluation cost: sections by route, tracks in place (D279)
-
-The owner ran an optimization pass and approved the recommended order; this is its first item.
-- **Measured** (Linux, GCC 13.3 RelWithDebInfo, callgrind, seed 42): four-leg with a Node 1,303.6 →
-  1,128.8 M Ir (−13.4 %), T-junction with a Node 256.2 → 233.2 M (−9.0 %). A Node now adds +20 %
-  and +14 % (was +39 % and +26 %, D264). `SectionAccumulator::observe` 325.8 → 150.9 M.
-- **How:** `observe` visits only the sections with a line on the vehicle's route, and advances
-  known tracks in place instead of moving every Track into a new vector each tick.
-- **Unchanged:** every output byte-identical (four shipped projects and two Node fixtures, run and
-  seeds 42–44), the pin and the TS rows.
-- **Tests:** two section rows, each killing a mutant that survived the suite (a section with only
-  its end line on the new route; a track kept after its vehicle left).
-
-## 2026-10-20 — S0.6: Node rows in Results (D278); MA15 paused
-
-MA15 needs Sheffi (1985) from web.mit.edu, which the proxy still refused after the owner allowed
-it, so the owner chose other work ([NODES](reference/NODES.md) §15).
-- **Results → Nodes:**
-  - **a run:** the Node, leg and turn rows as the CSV block gives them (vehicles, delay,
-    unfinished, queue on legs, travel time on turns, LOS by the Node's control type);
-  - **a batch:** n, mean, CI and LOS on the mean;
-  - **a comparison:** no rows yet, and it says so.
-
-  The marker comes first.
-- **Rows:** N19–N21 (`node-results-ui`). The workspace test and the UI audit list the new tab.
-- **Mutations:** seven caught. The batch LOS on mean + CI first survived; N20 now checks every
-  row's letter.
-- **Unchanged:** every output (editor-only), the pin and the TS rows. Linux offscreen only.
 
 ## Older entries
 
