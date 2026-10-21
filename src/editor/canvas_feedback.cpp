@@ -51,7 +51,7 @@ void EditorCanvas::clearSelectionState() {
     clearHighlights();
 }
 void EditorCanvas::clearHighlights() {
-    highlightedRoute_.clear(); highlightedConflict_.clear();
+    highlightedRoute_.clear(); highlightedConflict_.clear(); highlightedNode_.clear();
     if (selectionCleared) selectionCleared();
 }
 void EditorCanvas::clearSelection(bool cancelGesture) {

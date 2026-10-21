@@ -202,6 +202,8 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 | S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs. **Implemented (D264)** | N12–N17 |
 | S0.4 | Coarse values, refine and derive back, lifecycle (with S3, D272) | written with S3 |
 | S0.5 | Suggest nodes. **Implemented (D265)** | N18 |
+| S0.6 | Results → Nodes. **Implemented (D278)** | N19–N21 |
+| S0.7 | The Nodes tab lights the selected Node and its legs (§6). **Implemented (D288)** | N22 |
 
 ## 9. Acceptance rows (planned)
 
@@ -279,8 +281,8 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Control.** A head inside, or on an in-leg upstream of its entry, makes the Node `signalised`.
 - **Diagnostics.** `nodeMembershipIssues` adds the refusals to `runtimeDiagnostics` as advisories
   at `nodes[i]`, resolved to the Node id; Run and save are never blocked.
-- **Editor.** The Nodes tab adds control, legs (in / out), turns and issues. Selecting a row does not
-  yet highlight its legs (§6).
+- **Editor.** The Nodes tab adds control, legs (in / out), turns and issues. Selecting a row lights
+  the polygon and its legs since S0.7 (§16).
 - **Rows.** N6–N11 are in `tests/node_membership_tests.cpp` (ctest `nodemembership`); `node-ui`
   checks the new columns.
 - **Mutations caught:** the through turn dropped (N7), heads on an in-leg ignored (N6), the lane
@@ -390,3 +392,31 @@ Each row first asserts that its forcing worked (AGENTS).
   - the batch LOS on mean + CI. It survived a Node-row-only check; N20 now checks every row's
     letter.
 
+## 16. S0.7: the selected Node and its legs on the canvas (D288)
+
+- **The highlight.** Selecting a Nodes row lights that Node; clearing the row, deleting the Node or
+  an Undo that removes it puts it out. A Select click on the canvas clears it, as it clears the
+  conflict table's.
+  - **The outline:** drawn in the selection colour at 2.5 px, still dotted while `generated`.
+  - **The legs:** each Link's span outside the polygon up to its crossing, as `nodeMembership`
+    gives the legs: `[0, station]` for an in-leg, `[station, end]` for an out-leg. The span is
+    clipped to the Link's own surface. In-legs are filled, out-legs hatched with a dashed edge, so
+    the direction reads without arrows. A Link on a hidden level is not drawn.
+  - **A Node with an issue** has no legs (§3), so only its outline is lit.
+- **Unchanged:** every output, since the change is editor-only.
+- **As implemented:**
+  - `EditorCanvas::setHighlightedNode`, and `drawNodeLegs` in `src/editor/canvas_zones.cpp`;
+  - the Nodes tab sets the highlight on selection and on every refresh;
+  - the canvas's `selectionCleared` clears the Nodes table with the others.
+- **Row** (`tests/node_ui_tests.cpp`, ctest `node-ui`):
+
+| Row | Case | Asserts |
+|---|---|---|
+| N22 | The drawn triangle (refused), then the four-leg's suggested Node | The triangle's outline is lit with no legs. The suggested Node draws exactly its 4 in-legs and 4 out-legs, each tagged by Link id and direction as `nodeMembership` names them. Clearing the row returns the ink outline with no legs. A deleted Node is not highlighted |
+
+- **Mutations caught:**
+  - legs never drawn;
+  - in and out swapped;
+  - the highlight kept after delete;
+  - a refused Node drawing legs;
+  - the outline not lit.

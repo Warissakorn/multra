@@ -1,9 +1,12 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
+#include "../model/network/node_membership.hpp"
 #include <QGraphicsPathItem>
+#include <algorithm>
 #include <QGraphicsSimpleTextItem>
 #include <QMouseEvent>
 #include <QPainterPath>
+#include <QPainterPathStroker>
 #include <QPen>
 
 // M8.6a (D161, docs/reference/ZONES_AND_PARKING.md §9): the Zone tool and the zones' marks. A zone is
@@ -76,6 +79,10 @@ void EditorCanvas::drawZones() {
     }
 }
 // S0.1 (NODES §6): a Node is a solid outline over the Links with its name at the centroid.
+void EditorCanvas::setHighlightedNode(std::string id) {
+    if (highlightedNode_ == id) return;
+    highlightedNode_ = std::move(id); redraw();
+}
 void EditorCanvas::drawNodes() {
     if (!document_) return;
     for (const auto& node : document_->network.nodes) {
@@ -84,7 +91,9 @@ void EditorCanvas::drawNodes() {
         for (std::size_t i = 0; i < node.polygon.size(); ++i)
             i ? shape.lineTo(node.polygon[i].x, node.polygon[i].y) : shape.moveTo(node.polygon[i].x, node.polygon[i].y);
         shape.closeSubpath();
-        QPen pen(canvasStyle::ink(), node.generated ? 1.5 : 2, node.generated ? Qt::DotLine : Qt::SolidLine);
+        const bool lit = node.id == highlightedNode_;
+        QPen pen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2.5 : node.generated ? 1.5 : 2,
+                 node.generated ? Qt::DotLine : Qt::SolidLine);
         pen.setCosmetic(true);
         auto* item = scene_.addPath(shape, pen, QBrush(Qt::NoBrush));
         item->setZValue(200005);
@@ -93,6 +102,36 @@ void EditorCanvas::drawNodes() {
         auto* label = scene_.addSimpleText(QString::fromStdString(node.name.empty() ? node.id : node.name));
         label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
         label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(200006);
+        if (lit) drawNodeLegs(node);
     }
+}
+// S0.7 (NODES §16): the highlighted Node's legs, each Link's span outside the polygon up to its
+// crossing, clipped to the Link's own surface. In-legs are solid, out-legs dashed. A Node with an
+// issue has no legs (§3), so only its outline is lit.
+void EditorCanvas::drawNodeLegs(const Node& node) {
+    const auto& n = document_->network;
+    const auto m = nodeMembership(n, node);
+    const auto draw = [&](const NodeLeg& leg, bool in) {
+        const auto link = std::find_if(n.links.begin(), n.links.end(), [&](const Link& l) { return l.id == leg.linkId; });
+        if (link == n.links.end() || !levelVisible(link->level)) return;
+        const auto span = in ? polylineSpan(link->geometry, 0, leg.station)
+                             : polylineSpan(link->geometry, leg.station, polylineLength(link->geometry));
+        if (span.size() < 2) return;
+        QPainterPath line; line.moveTo(span[0].x, span[0].y);
+        for (std::size_t i = 1; i < span.size(); ++i) line.lineTo(span[i].x, span[i].y);
+        double width = 0;
+        for (const auto& lane : link->lanes) width += lane.width;
+        QPainterPathStroker corridor; corridor.setWidth(4 * width + 2); corridor.setCapStyle(Qt::FlatCap);
+        const auto shape = objectShape(link->id).intersected(corridor.createStroke(line));
+        if (shape.isEmpty()) return;
+        auto tint = canvasStyle::selection(); tint.setAlpha(100);
+        QPen pen(canvasStyle::selection(), 2, in ? Qt::SolidLine : Qt::DashLine); pen.setCosmetic(true);
+        auto* item = scene_.addPath(shape, pen, in ? QBrush(tint) : QBrush(tint, Qt::BDiagPattern));
+        item->setZValue(200004);
+        item->setData(0, QStringLiteral("node-leg")); item->setData(1, QString::fromStdString(leg.linkId));
+        item->setData(2, QString::fromLatin1(in ? "in" : "out"));
+    };
+    for (const auto& leg : m.inLegs) draw(leg, true);
+    for (const auto& leg : m.outLegs) draw(leg, false);
 }
 }

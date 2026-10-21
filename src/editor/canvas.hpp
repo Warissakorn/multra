@@ -114,6 +114,9 @@ public:
     // green where a side has priority, red where it gives way and amber while undetermined.
     void setHighlightedConflict(std::string id);
     const std::string& highlightedConflict() const { return highlightedConflict_; }
+    // S0.7 (NODES §16): the Node the shell's Nodes table has selected, drawn lit with its legs.
+    void setHighlightedNode(std::string id);
+    const std::string& highlightedNode() const { return highlightedNode_; }
     // M3.2.4b, the Conflict area tool (docs/audits/VISSIM_PARITY.md §2b). Only that tool hit-tests areas,
     // so a click at a junction under Select still selects the Link. A click picks an area; a click
     // on the highlighted one asks to cycle its priority; a drag on a waiting line slides it along
@@ -234,6 +237,8 @@ private:
     void commitZoneDraft();
     void drawZones();
     void drawNodes();
+    void drawNodeLegs(const Node&);
+    std::string highlightedNode_;
     std::optional<SectionLine> sectionLineAt(Point) const;
     void drawSections();
     void drawRouteOverlay(const std::vector<std::string>&, const std::string& id, bool preview);

@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-21 — S0.7: the Nodes tab lights the Node and its legs (D288); MA15 still blocked
+
+The proxy refused arxiv.org (Boyles et al., *Transportation Network Analysis*, a newer free
+candidate for MA15) as well as web.mit.edu, after the owner allowed it. The owner chose an S0 item.
+- **Canvas:** selecting a Nodes row lights the outline in the selection colour and draws each leg,
+  the Link's span outside the polygon up to its crossing (in filled, out hatched), from
+  `nodeMembership`. A refused Node lights its outline only. Clearing, deleting or undoing puts it out.
+- **Unchanged:** every output, since the change is editor-only.
+- **Tests:** row N22 in `node-ui`; legs never drawn, in/out swapped, the highlight kept after delete
+  and a refused Node with legs each fail it.
+
 ## 2026-10-21 — Optimization review across all areas; the docs check is 96 % faster
 
 The owner asked for every area (engine, build, docs, design and the rest). Measured on Linux:
@@ -143,54 +154,6 @@ it, so the owner chose other work ([NODES](reference/NODES.md) §15).
 - **Mutations:** seven caught. The batch LOS on mean + CI first survived; N20 now checks every
   row's letter.
 - **Unchanged:** every output (editor-only), the pin and the TS rows. Linux offscreen only.
-
-## 2026-10-19 — S2.4: Run Macro in stages, Macro links, link types (D277)
-
-The owner chose §19 (a) and wants more capability later
-([MACRO_NETWORK](reference/MACRO_NETWORK.md) §20).
-- **Engine:** a convergence record per iteration (gap and step), and an observer that can cancel
-  between iterations.
-- **Run Macro…:**
-  - asks for the period and runs on its own worker;
-  - shows the six stages with their status and the live gap;
-  - Cancel stops between iterations;
-  - it is not an Undo step.
-- **Results → Macro links:** a row per arc with the marker. An edit keeps the rows and marks them
-  stale until Undo returns to the result's revision. Export and Copy write the Macro CSV.
-- **Run settings:** the target gap and the iteration cap; the defaults write nothing.
-- **Network → Link types:** Add, Edit and Delete (a type in use cannot go). The Link page gets a
-  Macro type combo.
-- **Rows:** MA14 (`macro-ui`), MA18 and the stage and command rows. The workspace and object-group
-  tests list the new page.
-- **Mutations:** nine caught.
-- **Found:** a multi-line note made the Objects dock too tall for the wide-canvas row. It is now one
-  paragraph.
-- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS rows.
-  Linux offscreen only.
-
-## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
-
-The owner chose S2. [MACRO_NETWORK](reference/MACRO_NETWORK.md) fixes how the drawn network
-compiles into a Macro graph and how one study period is assigned. Nothing is implemented.
-- **Graph:** Links split at Connector stations become capacitated links. Connectors and zone
-  connectors become uncapacitated arcs. Nodes are not read yet.
-- **Values:** `Link::linkType` and link types `{capacityPerLane, freeSpeed, vdfId, source}` at
-  schema 50, none shipped; BPR 0.15/4 as data (D158).
-- **Demand:** pcu/h by connector share for one period; `MODE_PCU_MISSING` is refused.
-- **Engine:** a pure `src/macro/` Frank–Wolfe with a named gap formula; non-convergence is
-  flagged, never hidden.
-- **Rows:** MA1–MA15, planned.
-- **Source checks** changed three recommendations:
-  - the BPR pair assumes practical capacity, so a type's source must say which capacity it gives;
-  - Boyce et al. (2004) argue for a 0.01 % gap;
-  - the Sioux Falls data are for academic research only, so the benchmark stays local until the
-    licence is confirmed.
-- **The owner answered the same day (D272):**
-  - one class per mode, with mode bans on link types;
-  - a textbook benchmark instead of Sioux Falls;
-  - a 0.01 % gap;
-  - S0.4 moves to S3;
-  - the other choices as recommended.
 
 ## Older entries
 
