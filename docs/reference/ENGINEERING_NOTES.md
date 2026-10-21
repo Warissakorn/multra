@@ -173,6 +173,10 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   15,517 → 14,716 M Ir (−5.2 %), `drawRunItems` 2,372 → 1,554 M. Wall 15,750 → 15,355 ms per 6,000
   Steps, inside the clock's spread, so callgrind decides. Left: signal bars and their casings are
   still rebuilt each frame (`removeItem` 530 M).
+- **Docs check parses each target once (2026-10-21, Linux GCC 13.3):** `multra-check-docs .`
+  re-parsed a document's anchors for every anchored link (`RECORD.md` 332 times) with regexes
+  built per call. Now cached per document, regexes static: callgrind 24,976 → 865 M Ir; wall
+  (median of 3) Release 2,278 → 86 ms, Debug ≈20,400 → 714 ms; ctest `documentation` 21.1 → 0.6 s.
 - **Setting the Run/Pause icon only when it changes:** layout stayed 2,439 → 2,438 ms per 3,000
   Steps, because the word-wrapped `editorRunInfo` label relayouts the window every Step anyway.
   Reverted. The lever was that label's layout; D282 moved it into a host with no layout.

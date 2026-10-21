@@ -43,8 +43,9 @@ std::string decode(const std::string& value) {
     return out;
 }
 std::string slug(std::string heading) {
-    heading = std::regex_replace(heading, std::regex(R"(!?\[([^\]]+)\]\([^)]*\))"), "$1");
-    heading = std::regex_replace(heading, std::regex("<[^>]*>"), "");
+    static const std::regex linkText(R"(!?\[([^\]]+)\]\([^)]*\))"), tag("<[^>]*>");
+    heading = std::regex_replace(heading, linkText, "$1");
+    heading = std::regex_replace(heading, tag, "");
     std::string result;
     for (std::size_t i=0; i<heading.size(); ++i) {
         const auto c=static_cast<unsigned char>(heading[i]);
@@ -67,20 +68,20 @@ std::string slug(std::string heading) {
 std::set<std::string> anchors(const std::string& text) {
     std::set<std::string> result; std::map<std::string, unsigned> seen;
     const auto body=prose(text);
-    const std::regex heading(R"(^ {0,3}#{1,6}\s+(.+?)\s*#*\s*$)");
+    static const std::regex heading(R"(^ {0,3}#{1,6}\s+(.+?)\s*#*\s*$)");
     std::istringstream input(body); std::string line; std::smatch match;
     while (std::getline(input,line)) if (std::regex_match(line,match,heading)) {
         const auto name=slug(match[1]); const auto count=seen[name]++;
         result.insert(name+(count ? "-"+std::to_string(count) : ""));
     }
-    const std::regex explicitAnchor(R"anchor(<a\s+(?:[^>]*\s)?(?:id|name)=["']([^"']+))anchor");
+    static const std::regex explicitAnchor(R"anchor(<a\s+(?:[^>]*\s)?(?:id|name)=["']([^"']+))anchor");
     for (std::sregex_iterator it(body.begin(),body.end(),explicitAnchor), end; it!=end; ++it)
         result.insert((*it)[1]);
     return result;
 }
 std::vector<std::string> links(const std::string& text) {
     const auto body=prose(text); std::vector<std::string> result;
-    const std::regex link(R"(\]\((<?[^\s)]+>?))");
+    static const std::regex link(R"(\]\((<?[^\s)]+>?))");
     for (std::sregex_iterator it(body.begin(),body.end(),link), end; it!=end; ++it) {
         auto url=(*it)[1].str();
         if (url.starts_with('<') && url.ends_with('>')) url=url.substr(1,url.size()-2);
@@ -89,7 +90,8 @@ std::vector<std::string> links(const std::string& text) {
     return result;
 }
 bool external(const std::string& url) {
-    return url.starts_with("//") || std::regex_search(url,std::regex(R"(^[A-Za-z][A-Za-z0-9+.-]*:)"));
+    static const std::regex scheme(R"(^[A-Za-z][A-Za-z0-9+.-]*:)");
+    return url.starts_with("//") || std::regex_search(url,scheme);
 }
 bool sourcePart(const fs::path& path) {
     const auto name=path.generic_string();
@@ -104,6 +106,8 @@ std::string normalized(const fs::path& path) {
 }
 std::vector<std::string> check(const Documents& docs, const std::set<std::string>& files) {
     std::vector<std::string> errors;
+    // One parse per target document: RECORD.md alone is the target of ~330 anchored links.
+    std::map<std::string, std::set<std::string>> anchorsOf;
     for (const auto& [path,text]:docs) {
         if (sourcePart(path)) continue;
         for (auto url:links(text)) {
@@ -113,9 +117,10 @@ std::vector<std::string> check(const Documents& docs, const std::set<std::string
             const auto resolved=target.empty() ? path :
                 normalized(fs::path(path).parent_path()/target);
             if (!files.contains(resolved)) { errors.push_back(path+": missing "+url); continue; }
-            if (hash!=std::string::npos && hash+1<url.size() && docs.contains(resolved) &&
-                !anchors(docs.at(resolved)).contains(url.substr(hash+1)))
-                errors.push_back(path+": missing anchor "+url);
+            if (hash==std::string::npos || hash+1>=url.size() || !docs.contains(resolved)) continue;
+            auto found=anchorsOf.find(resolved);
+            if (found==anchorsOf.end()) found=anchorsOf.emplace(resolved,anchors(docs.at(resolved))).first;
+            if (!found->second.contains(url.substr(hash+1))) errors.push_back(path+": missing anchor "+url);
         }
     }
     // Each maintained document has one folder index. Archive/evidence/specs have their own conventions.
