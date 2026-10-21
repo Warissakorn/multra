@@ -12,7 +12,9 @@ an M2.6 hour 541 ms (3.81 G Ir), 10 seeds 1.8 s, the docs check 2.2 s Release / 
 - **Done:** `multra-check-docs` caches each document's anchors and builds its regexes once
   (24,976 → 865 M Ir; Release 86 ms; `documentation` 21.1 → 0.6 s). Same errors; self-test and
   a broken real anchor still fail.
-- **Package workflow:** run on this branch for the first time since D284/D285/D287.
+- **Package workflow:** the first run since D284/D285/D287 (run 39561211587) is green on Linux
+  and Windows. Windows copied every vcpkg `copyright` and found libthai's licence folders (no
+  warning); both packages carry `multra-cli`, `multra-desktop`, `proj.db` and the notices.
 - **Not worth it now, measured:** `Vehicle` moves per tick 5.8 % and `appendSpans` 7 % of an M2.6
   run; test objects are 60 % of a clean compile, but CI's ccache covers warm builds; slow tests
   are deliberate long runs. No design misfit found; the desktop's start-up was not measured.
@@ -38,8 +40,7 @@ The owner chose the reviewed recommendation over MIT.
 - **Package workflow:** both packages copy the notices and texts. Linux adds PROJ's and
   nlohmann/json's copyright files. Windows adds every vcpkg port's `copyright` and fails if none
   are found; a missing libthai licence folder now warns instead of passing silently.
-- **Not run:** the package workflow itself (manual or `v*` tag). Its Linux copy commands were
-  run locally; the Windows step is unverified until it runs.
+- **Package run:** green on Linux and Windows on 2026-10-21 (see the entry above).
 
 ## 2026-10-20 — The project is named MULTRA (D284)
 
