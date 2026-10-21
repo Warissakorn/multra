@@ -36,6 +36,26 @@ Json sideJson(const ComparedBatch& side) {
             {"movementsWithUnfinished", movementsWithUnfinished(side.report)}};
 }
 bool hasSections(const Comparison& c) { return !c.sections.empty() || !c.unmatchedSections.empty(); }
+bool hasNodes(const Comparison& c) { return !c.nodes.empty() || !c.unmatchedNodes.empty(); }
+// S0.8a (NODES §17): a Node's rows, matched names only; its unmatched legs and turns beside them.
+Json nodesJson(const Comparison& c) {
+    auto out = Json::array();
+    for (const auto& n : c.nodes) {
+        Json row{{"node", n.name}, {"delay", differenceJson(n.delay)}, {"legs", Json::array()},
+                 {"unmatched", {{"legs", unmatchedJson(n.unmatchedLegs)}, {"turns", unmatchedJson(n.unmatchedTurns)}}}};
+        for (const auto& l : n.legs)
+            row["legs"].push_back({{"leg", l.name}, {"delay", differenceJson(l.delay)}, {"queueMean", differenceJson(l.queueMean)}});
+        row["turns"] = rowsJson(n.turns, "turn");
+        out.push_back(std::move(row));
+    }
+    return out;
+}
+// A leg's or turn's name qualified by its Node, as the # Unmatched line names it.
+Unmatched qualified(const std::string& node, Unmatched u) {
+    for (auto* names : {&u.baseOnly, &u.alternativeOnly, &u.ambiguous})
+        for (auto& name : *names) name = node + " / " + name;
+    return u;
+}
 std::string seedList(const std::vector<std::uint32_t>& seeds) {
     std::string out;
     for (const auto s : seeds) out += ' ' + std::to_string(s);
@@ -78,6 +98,26 @@ void blockCsv(std::ostringstream& out, const char* head, const char* quantity, c
         << ",difference_" << unit << ",ci95_" << unit << ",df\n";
     for (const auto& row : rows) rowCsv(out, row.name, row.value);
 }
+// Two blocks after `network`, only with a Node: delay at levels node, leg and turn; mean queue on legs.
+void nodesCsv(std::ostringstream& out, const Comparison& c) {
+    const auto head = [&](const char* quantity, const char* unit) {
+        out << "\nlevel,node,name,base_n,base_" << quantity << '_' << unit << ",alternative_n,alternative_" << quantity << '_'
+            << unit << ",difference_" << unit << ",ci95_" << unit << ",df\n";
+    };
+    const auto row = [&](const char* level, const std::string& node, const std::string& name, const Difference& d) {
+        out << level << ',' << csvQuoted(node) << ',';
+        rowCsv(out, name, d);
+    };
+    head("meanDelay", "s");
+    for (const auto& n : c.nodes) {
+        row("node", n.name, n.name, n.delay);
+        for (const auto& l : n.legs) row("leg", n.name, l.name, l.delay);
+        for (const auto& t : n.turns) row("turn", n.name, t.name, t.value);
+    }
+    head("meanQueue", "m");
+    for (const auto& n : c.nodes)
+        for (const auto& l : n.legs) row("leg", n.name, l.name, l.queueMean);
+}
 }
 void requireSameEvaluationPeriod(const EvaluationSpec& base, double baseDuration,
                                  const EvaluationSpec& alternative, double alternativeDuration) {
@@ -103,6 +143,10 @@ Json comparisonJson(const Comparison& c, const ComparedBatch& base, const Compar
     j["network"] = differenceJson(c.network);
     j["unmatched"] = {{"movements", unmatchedJson(c.unmatchedMovements)}, {"queues", unmatchedJson(c.unmatchedQueues)}};
     if (hasSections(c)) j["unmatched"]["sections"] = unmatchedJson(c.unmatchedSections);
+    if (hasNodes(c)) {
+        j["nodes"] = nodesJson(c);
+        j["unmatched"]["nodes"] = unmatchedJson(c.unmatchedNodes);
+    }
     return j;
 }
 std::string comparisonCsv(const Comparison& c, const ComparedBatch& base, const ComparedBatch& alternative) {
@@ -119,6 +163,11 @@ std::string comparisonCsv(const Comparison& c, const ComparedBatch& base, const 
     unmatchedCsv(unmatched, "movement", c.unmatchedMovements);
     unmatchedCsv(unmatched, "section", c.unmatchedSections);
     unmatchedCsv(unmatched, "approach", c.unmatchedQueues);
+    unmatchedCsv(unmatched, "node", c.unmatchedNodes);
+    for (const auto& n : c.nodes) {
+        unmatchedCsv(unmatched, "leg", qualified(n.name, n.unmatchedLegs));
+        unmatchedCsv(unmatched, "turn", qualified(n.name, n.unmatchedTurns));
+    }
     if (!unmatched.empty()) out << "# Unmatched, not compared: " << unmatched << '\n';
     if (!base.runs.empty()) {
         const auto& first = base.runs.front().report;
@@ -132,6 +181,7 @@ std::string comparisonCsv(const Comparison& c, const ComparedBatch& base, const 
     out << '\n';
     blockCsv(out, "network", "meanDelay", "s", {});
     rowCsv(out, "network", c.network);
+    if (hasNodes(c)) nodesCsv(out, c);
     return out.str();
 }
 }

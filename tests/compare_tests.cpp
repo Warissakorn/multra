@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/commands/node_commands.hpp"
 #include "../src/runner/compare.hpp"
 #include "../src/project/comparison_output.hpp"
 #include "../src/project/csv_format.hpp"
@@ -8,7 +9,8 @@
 #include <fstream>
 using namespace multra;
 // M5.8a (D148, BATCH §7): scenario comparison. CMP1-CMP4 pin the statistic and the matching by
-// hand; CMP5-CMP7 run four-leg-signalised.
+// hand; CMP5-CMP7 run four-leg-signalised. S0.8a (D289): CMP8 matches Node rows by hand, CMP9 runs
+// the T-junction with a Node, CMP10 checks a comparison without one.
 namespace {
 Estimate estimate(std::size_t n, std::optional<double> mean, std::optional<double> sd = std::nullopt) {
     return {n, mean, sd, std::nullopt};
@@ -162,4 +164,86 @@ TEST(compare, cmp7_output_marker_first_and_reproducible) {
     const ComparedBatch rerun{base.name, fourLegCopy().report, fourLegCopy().runs};
     CHECK(comparisonCsv(compareBatches(rerun.report, alternative.report), rerun, alternative) == csv);
     CHECK(csvToTsv(csv).rfind("# MULTRA - not yet validated.", 0) == 0); // M5.8b's Copy path
+}
+namespace {
+BatchNodeLegRow leg(const std::string& name, double delay, double queue) {
+    return {name, {}, estimate(3, delay, 1.0), {}, estimate(3, queue, 2.0), {}};
+}
+BatchNodeRow node(const std::string& name, double delay, std::vector<BatchNodeLegRow> legs, std::vector<BatchMovementRow> turns) {
+    return {name, std::string("unsignalised"), {}, estimate(3, delay, 1.0), {}, std::move(legs), std::move(turns), {}, {}};
+}
+ProjectDocument tJunctionWithNode() {
+    std::ifstream file(test::root() / "data/projects/t-junction-priority.traffic.json"); Json j; file >> j;
+    auto d = parseDocument(j);
+    putNode(d, {"", "Centre", {{-25, -18}, {25, -18}, {25, 8}, {-25, 8}}, false});
+    return d;
+}
+}
+TEST(compare, cmp8_node_rows_match_by_name_at_every_level) {
+    auto base = report({}), alternative = report({});
+    base.nodes = {node("only-base", 1, {}, {}),
+                  node("N", 10, {leg("west", 4, 20), leg("dup", 1, 1), leg("dup", 2, 2)}, {movement("w-e", 5)})};
+    alternative.nodes = {node("N", 13, {leg("dup", 3, 3), leg("west", 6, 26)}, {movement("w-e", 9), movement("s-e", 2)})};
+    const auto c = compareBatches(base, alternative);
+    // Forcing: one Node matched, the other base-only.
+    CHECK(c.nodes.size() == 1 && c.nodes[0].name == "N");
+    CHECK(c.unmatchedNodes.baseOnly == std::vector<std::string>{"only-base"});
+    const auto& n = c.nodes[0];
+    CHECK(n.delay == welch(base.nodes[1].delay, alternative.nodes[0].delay)); test::near(*n.delay.difference, 3);
+    CHECK(n.legs.size() == 1 && n.legs[0].name == "west");
+    CHECK(n.legs[0].delay == welch(base.nodes[1].legs[0].delay, alternative.nodes[0].legs[1].delay));
+    CHECK(n.legs[0].queueMean == welch(base.nodes[1].legs[0].queueMean, alternative.nodes[0].legs[1].queueMean));
+    test::near(*n.legs[0].delay.difference, 2); test::near(*n.legs[0].queueMean.difference, 6);
+    CHECK(n.unmatchedLegs.ambiguous == std::vector<std::string>{"dup"});
+    CHECK(n.turns.size() == 1 && n.turns[0].name == "w-e"); test::near(*n.turns[0].value.difference, 4);
+    CHECK(n.unmatchedTurns.alternativeOnly == std::vector<std::string>{"s-e"});
+    const auto back = compareBatches(alternative, base);
+    CHECK(*back.nodes[0].delay.difference == -*n.delay.difference);
+    CHECK(*back.nodes[0].legs[0].queueMean.difference == -*n.legs[0].queueMean.difference);
+    const auto csv = comparisonCsv(c, {"b", base, {}}, {"a", alternative, {}});
+    CHECK(csv.find("node base only \"only-base\"; leg ambiguous \"N / dup\"; turn alternative only \"N / s-e\"\n")
+          != std::string::npos);
+    const auto j = comparisonJson(c, {"b", base, {}}, {"a", alternative, {}});
+    CHECK(j["unmatched"]["nodes"]["baseOnly"][0] == "only-base");
+    CHECK(j["nodes"][0]["unmatched"]["turns"]["alternativeOnly"][0] == "s-e");
+}
+TEST(compare, cmp9_t_junction_node_rows) {
+    const auto d = tJunctionWithNode();
+    const auto base = batchOf(d, "t.traffic.json", kSeeds), same = batchOf(d, "same.traffic.json", kSeeds);
+    auto busier = d; busier.definition->inputs[0].vehiclesPerHour *= 1.5;
+    const auto alternative = batchOf(busier, "busier.traffic.json", kSeeds);
+    // Forcing: the Node and its three in-legs and four turns are in both batches.
+    CHECK(base.report.nodes.size() == 1 && base.report.nodes[0].legs.size() == 3 && base.report.nodes[0].turns.size() == 4);
+    const auto self = compareBatches(base.report, same.report);
+    CHECK(self.nodes.size() == 1 && self.unmatchedNodes.empty());
+    CHECK(*self.nodes[0].delay.difference == 0);
+    for (const auto& l : self.nodes[0].legs) { CHECK(*l.delay.difference == 0); CHECK(*l.queueMean.difference == 0); }
+    for (const auto& t : self.nodes[0].turns) CHECK(*t.value.difference == 0);
+    const auto c = compareBatches(base.report, alternative.report);
+    const auto& b = base.report.nodes[0]; const auto& a = alternative.report.nodes[0]; const auto& n = c.nodes[0];
+    CHECK(n.legs.size() == 3 && n.turns.size() == 4);
+    CHECK(*n.delay.difference == *a.delay.mean - *b.delay.mean);
+    bool moved = *n.delay.difference != 0;
+    for (std::size_t i = 0; i < n.legs.size(); ++i) {
+        CHECK(*n.legs[i].delay.difference == *a.legs[i].delay.mean - *b.legs[i].delay.mean);
+        CHECK(*n.legs[i].queueMean.difference == *a.legs[i].queueMean.mean - *b.legs[i].queueMean.mean);
+        moved = moved || *n.legs[i].queueMean.difference != 0;
+    }
+    for (std::size_t i = 0; i < n.turns.size(); ++i)
+        CHECK(*n.turns[i].value.difference == *a.turns[i].meanDelay.mean - *b.turns[i].meanDelay.mean);
+    CHECK(moved);
+    const auto j = comparisonJson(c, base, alternative);
+    CHECK(j["nodes"][0]["node"] == "Centre" && j["nodes"][0]["legs"].size() == 3 && j["nodes"][0]["turns"].size() == 4);
+    const auto csv = comparisonCsv(c, base, alternative);
+    const auto network = csv.find("\"network\","), delay = csv.find("\nlevel,node,name,base_n,base_meanDelay_s,"),
+               queue = csv.find("\nlevel,node,name,base_n,base_meanQueue_m,");
+    CHECK(network != std::string::npos && delay > network && queue > delay && queue != std::string::npos);
+    CHECK(csv.find("\nnode,\"Centre\",\"Centre\",2,") != std::string::npos);
+}
+TEST(compare, cmp10_no_node_keeps_the_output) {
+    const auto c = compareBatches(fourLeg().report, fourLegCopy().report);
+    CHECK(fourLeg().report.nodes.empty() && c.nodes.empty() && c.unmatchedNodes.empty()); // forcing: no Node
+    const auto j = comparisonJson(c, fourLeg(), fourLegCopy());
+    CHECK(!j.contains("nodes") && !j["unmatched"].contains("nodes"));
+    CHECK(comparisonCsv(c, fourLeg(), fourLegCopy()).find("level,node") == std::string::npos);
 }

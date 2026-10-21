@@ -27,12 +27,25 @@ struct Unmatched {
     bool empty() const { return baseOnly.empty() && alternativeOnly.empty() && ambiguous.empty(); }
     bool operator==(const Unmatched&) const = default;
 };
+// S0.8a (D289, NODES §17): a Node's rows, matched by Node name, then legs and turns by name within
+// the Node. Delay in s for the Node, its in-legs and turns; mean queue in m for the legs.
+struct ComparisonLegRow {
+    std::string name; Difference delay, queueMean;
+    bool operator==(const ComparisonLegRow&) const = default;
+};
+struct ComparisonNodeRow {
+    std::string name; Difference delay;
+    std::vector<ComparisonLegRow> legs; std::vector<ComparisonRow> turns;
+    Unmatched unmatchedLegs, unmatchedTurns;
+    bool operator==(const ComparisonNodeRow&) const = default;
+};
 struct Comparison {
     std::vector<std::uint32_t> seeds;
     std::vector<ComparisonRow> movements, sections; // mean delay, s
     std::vector<ComparisonRow> queues;              // mean queue length, m
     Difference network;                             // network mean delay, s
     Unmatched unmatchedMovements, unmatchedSections, unmatchedQueues;
+    std::vector<ComparisonNodeRow> nodes; Unmatched unmatchedNodes; // S0.8a; empty without a Node
     bool operator==(const Comparison&) const = default;
 };
 // Rows matched by name in the base's order. Throws when the batches ran different seed lists.

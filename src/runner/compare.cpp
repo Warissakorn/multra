@@ -7,9 +7,9 @@
 
 namespace multra {
 namespace {
-template<class Row, class Value>
-std::vector<ComparisonRow> match(const std::vector<Row>& base, const std::vector<Row>& alternative, Value value,
-                                 Unmatched& unmatched) {
+// `make(base row, alternative row)` builds the compared row of a name found once on each side.
+template<class Row, class Make>
+auto match(const std::vector<Row>& base, const std::vector<Row>& alternative, Make make, Unmatched& unmatched) {
     std::map<std::string, std::size_t> inBase, inAlternative;
     for (const auto& row : base) ++inBase[row.name];
     for (const auto& row : alternative) ++inAlternative[row.name];
@@ -17,7 +17,7 @@ std::vector<ComparisonRow> match(const std::vector<Row>& base, const std::vector
     const auto ambiguous = [&](const std::string& name) {
         if (listed.insert(name).second) unmatched.ambiguous.push_back(name);
     };
-    std::vector<ComparisonRow> rows;
+    std::vector<decltype(make(base.front(), base.front()))> rows;
     for (const auto& row : base) {
         const auto other = inAlternative[row.name];
         if (inBase[row.name] > 1 || other > 1) ambiguous(row.name);
@@ -25,7 +25,7 @@ std::vector<ComparisonRow> match(const std::vector<Row>& base, const std::vector
         else {
             const auto& paired = *std::find_if(alternative.begin(), alternative.end(),
                                                [&](const Row& r) { return r.name == row.name; });
-            rows.push_back({row.name, welch(value(row), value(paired))});
+            rows.push_back(make(row, paired));
         }
     }
     for (const auto& row : alternative) {
@@ -34,6 +34,22 @@ std::vector<ComparisonRow> match(const std::vector<Row>& base, const std::vector
         else unmatched.alternativeOnly.push_back(row.name);
     }
     return rows;
+}
+// One value per row, as every block before S0.8a.
+template<class Row, class Value>
+std::vector<ComparisonRow> matchValue(const std::vector<Row>& base, const std::vector<Row>& alternative, Value value,
+                                      Unmatched& unmatched) {
+    return match(base, alternative, [&](const Row& b, const Row& a) { return ComparisonRow{b.name, welch(value(b), value(a))}; },
+                 unmatched);
+}
+ComparisonNodeRow compareNode(const BatchNodeRow& base, const BatchNodeRow& alternative) {
+    ComparisonNodeRow row{base.name, welch(base.delay, alternative.delay), {}, {}, {}, {}};
+    row.legs = match(base.legs, alternative.legs, [](const BatchNodeLegRow& b, const BatchNodeLegRow& a) {
+        return ComparisonLegRow{b.name, welch(b.delay, a.delay), welch(b.queueMean, a.queueMean)};
+    }, row.unmatchedLegs);
+    row.turns = matchValue(base.turns, alternative.turns, [](const BatchMovementRow& r) { return r.meanDelay; },
+                           row.unmatchedTurns);
+    return row;
 }
 }
 Difference welch(const Estimate& base, const Estimate& alternative) {
@@ -56,13 +72,14 @@ Comparison compareBatches(const BatchReport& base, const BatchReport& alternativ
     if (base.seeds != alternative.seeds) throw std::invalid_argument("compare: the batches ran different seed lists");
     Comparison c;
     c.seeds = base.seeds;
-    c.movements = match(base.movements, alternative.movements, [](const BatchMovementRow& r) { return r.meanDelay; },
-                        c.unmatchedMovements);
-    c.sections = match(base.sections, alternative.sections, [](const BatchSectionRow& r) { return r.meanDelay; },
-                       c.unmatchedSections);
-    c.queues = match(base.queues, alternative.queues, [](const BatchQueueRow& r) { return r.meanLength; },
-                     c.unmatchedQueues);
+    c.movements = matchValue(base.movements, alternative.movements, [](const BatchMovementRow& r) { return r.meanDelay; },
+                             c.unmatchedMovements);
+    c.sections = matchValue(base.sections, alternative.sections, [](const BatchSectionRow& r) { return r.meanDelay; },
+                            c.unmatchedSections);
+    c.queues = matchValue(base.queues, alternative.queues, [](const BatchQueueRow& r) { return r.meanLength; },
+                          c.unmatchedQueues);
     c.network = welch(base.meanDelay, alternative.meanDelay);
+    c.nodes = match(base.nodes, alternative.nodes, compareNode, c.unmatchedNodes);
     return c;
 }
 }

@@ -204,6 +204,8 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 | S0.5 | Suggest nodes. **Implemented (D265)** | N18 |
 | S0.6 | Results → Nodes. **Implemented (D278)** | N19–N21 |
 | S0.7 | The Nodes tab lights the selected Node and its legs (§6). **Implemented (D288)** | N22 |
+| S0.8a | The scenario comparison compares Node, leg and turn rows (model, JSON, CSV). **Implemented (D289)** | CMP8–CMP10 (BATCH §7) |
+| S0.8b | Results → Nodes shows a comparison's Node rows (N21 changes) | planned |
 
 ## 9. Acceptance rows (planned)
 
@@ -314,8 +316,8 @@ Each row first asserts that its forcing worked (AGENTS).
     Letters use the mean over seeds. A leg's or Node's batch delay estimates each seed's weighted
     mean.
   - Nothing is written without a Node, and the shipped projects' outputs are byte-identical.
-  - The editor's Results tables show Node rows from S0.6 (§15). The batch comparison does not yet;
-    the editor's CSV copy carries the block.
+  - The editor's Results tables show Node rows from S0.6 (§15). The batch comparison compares them
+    from S0.8a (§17); its editor table does not yet.
 - **Finding: the delay window includes start-up from rest.** Vehicles enter the network from rest,
   so a turn whose in-leg Link starts at a source carries the start-up loss. On the T-junction, lone
   major vehicles show about 3.0 s against 3.2 s for the full exercise (seed 42). Choice 1a stands
@@ -420,3 +422,27 @@ Each row first asserts that its forcing worked (AGENTS).
   - the highlight kept after delete;
   - a refused Node drawing legs;
   - the outline not lit.
+
+## 17. S0.8a: Node rows in the scenario comparison (D289)
+
+- **Matching.** `compareBatches` matches Nodes by name, then each matched Node's in-legs and turns
+  by name within it, by BATCH §7's rule. Unmatched names are listed per level, never dropped.
+- **Figures.** Welch differences (BATCH §7) of the Node's, each leg's and each turn's delay, and of
+  each leg's mean queue. A difference has no LOS letter.
+- **Output.**
+  - JSON: `nodes` and `unmatched.nodes`, only when either side has a Node.
+  - CSV: two blocks after `network`, delay (levels `node`, `leg`, `turn`) and leg queue.
+  - The `# Unmatched` line names Node rows as `node …`, and leg or turn rows as `"Node / name"`.
+  - A comparison without a Node keeps its bytes.
+- **Editor.** Copy and Export carry the blocks, since they use `comparisonCsv`. Results → Nodes
+  still shows the not-compared note (N21) until S0.8b.
+- **As implemented:** `ComparisonNodeRow` and `ComparisonLegRow` in `src/runner/compare.hpp`.
+  `match` now takes the row builder, and `matchValue` keeps the one-value blocks. The output is in
+  `src/project/comparison_output.cpp`.
+- **Rows:** CMP8–CMP10 in `tests/compare_tests.cpp` (ctest `compare`).
+- **Mutations caught:**
+  - Nodes ignored;
+  - legs' queue compared by delay;
+  - an unmatched leg left off the CSV line;
+  - the blocks written without a Node;
+  - the Node's difference reversed.

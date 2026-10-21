@@ -14,7 +14,7 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md));
   MA15, the textbook benchmark, is open. §19 (b) named runs and (c) a procedure sequence are booked (D277).
 - **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md)); no PCU value ships (D267).
-- **Nodes:** S0.1–S0.3 and S0.5–S0.7 are in (D259–D265, D278, D288, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
+- **Nodes:** S0.1–S0.3, S0.5–S0.7 and S0.8a are in (D259–D265, D278, D288, D289, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); the gate stays open. `joinAnticipation` ships off (D255); D95 stays off.
 - **The optimization pass is complete** (D279–D283, 2026-10-20, Linux): a Node adds +14–20 % Ir;
@@ -29,28 +29,37 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — MA15 when a book is reachable; else Node rows in the batch comparison
+## Next session — MA15 when a book is reachable; else S0.8b
 
-S0.7 is in (D288): selecting a Nodes row lights the Node and its legs.
-- **MA15 is blocked on access.** On 2026-10-21 the proxy refused both hosts after the owner
-  allowed them. That suggests a running container keeps its old policy, but this is unconfirmed.
-  - **Try first:** in a new session, fetch both books before any other work.
-  - **If both are still refused:** ask the owner to upload a PDF.
+S0.8a is in (D289). `--compare` and the editor's Copy and Export compare Node, leg and turn rows.
+- **MA15 is blocked on access.** On 2026-10-21 the proxy refused every host below, after the
+  owner allowed arxiv.org. That suggests a running container keeps its old policy, but this is
+  unconfirmed.
+  - **Try first:** in a new session, fetch the books before any other work.
+  - **If they are still refused:** ask the owner to allow the hosts or upload a PDF.
   - **The books:**
     - Sheffi, *Urban Transportation Networks* (1985), D272's first candidate:
-      https://web.mit.edu/sheffi/www/urbanTransportation.html
+      https://sheffi.mit.edu/sites/sheffi.mit.edu/files/sheffi_urban_trans_networks_0.pdf
+      (also linked from https://web.mit.edu/sheffi/www/urbanTransportation.html).
     - Boyles, Lownes & Unnikrishnan, *Transportation Network Analysis, Vol. I* (arXiv 2502.05182,
       2025): a newer, free candidate. Its licence and whether it has a small network with a
-      published equilibrium are unchecked. Choosing it over Sheffi is a new decision amending D272.
+      published equilibrium are unchecked. Choosing it is a new decision amending D272.
+    - Not a benchmark: Aimsun's manual cites Florian & Hearn (1995), and Visum names
+      Mitradjieva, Lindberg et al. (2013) for BFW and Gentile for LUCE. These are methods, not
+      worked networks.
   - **When one is readable,** follow the plan:
     - the Frank–Wolfe chapter's worked example;
     - the evidence note with its citation and the PDF hash;
     - the fixture;
     - MA15;
     - the cost measurement.
-- **Otherwise, the S0 item left:** Node rows in the batch comparison. `Comparison` gains Node, leg
-  and turn rows, which is a model, output and editor change. It is likely two sessions: the
-  `src/runner/` model and outputs, then Results → Nodes (NODES §15, row N21 changes).
+- **Otherwise, S0.8b:** Results → Nodes shows a comparison's rows from `Comparison::nodes`.
+  - Columns: level, name, base n and mean, alternative n and mean, difference, CI and df, as the
+    comparison's other tables; the legs' queue as extra columns.
+  - Unmatched names in the note.
+  - N21's comparison case changes from the not-compared note to rows.
+  - Code: `src/shell/editor_results_nodes.cpp` (`refreshResultNodes`); tests:
+    `tests/node_results_ui_tests.cpp`.
 
 Also open: **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177); the 5 clamps left on M2.6 and
 the lane lab's 1. M2.8 has only owner checks left.
