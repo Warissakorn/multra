@@ -16,7 +16,7 @@
 #include <QTimer>
 #include <filesystem>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // UI slice d2: one table recipe for every table, including those built after startup; a full-text
 // tooltip on elided cells; figures that read the same in either language.
 namespace {

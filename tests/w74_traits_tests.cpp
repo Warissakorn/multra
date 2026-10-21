@@ -1,7 +1,7 @@
 #include "test.hpp"
 #include "../src/core/w74.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.3a (D137): row BA26 of docs/plans/DRIVING_BEHAVIOUR.md -- the hashed driver traits of
 // docs/reference/W74.md §5. Nothing reads them yet; the composition slice (BA28) will.
 namespace {

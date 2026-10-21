@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-namespace trafficsim {
+namespace multra {
 // The cell formats every results CSV shares, so a single run and a batch read alike: names quoted
 // with doubled quotes, numbers C-locale with two decimals, a missing value an empty cell.
 inline std::string csvQuoted(const std::string& text) {

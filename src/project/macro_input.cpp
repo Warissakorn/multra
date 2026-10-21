@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 MacroCompile macroNetwork(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
     const auto def = d.definition.value_or(AuthoringDefinition{});
     const auto resolved = resolveLinkTypes(def, data, manifest);

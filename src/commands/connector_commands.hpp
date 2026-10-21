@@ -1,7 +1,7 @@
 #pragma once
 #include "history.hpp"
 
-namespace trafficsim {
+namespace multra {
 std::string addConnectorRange(ProjectDocument&, const LaneReference&, const LaneReference&, int fromCount, int toCount);
 void changeConnectorRange(ProjectDocument&, const std::string&, int fromCount, int toCount, bool leading = false, bool fromTab = false);
 // M3.2.9a (D73): the side the one added or dropped lane is on; empty returns it to the kerb

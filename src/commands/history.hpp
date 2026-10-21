@@ -2,7 +2,7 @@
 #include "../project/document.hpp"
 #include <functional>
 
-namespace trafficsim {
+namespace multra {
 // One committed gesture is one named, atomic document change. Project has no command imports.
 class History {
 public:

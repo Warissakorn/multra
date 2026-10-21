@@ -11,7 +11,7 @@
 #include "../src/project/run.hpp"
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.2b (D127): compiled road assignments and one effective behaviour per vehicle (BA10-BA16).
 namespace {
 const std::string kDefault = "wiedemann-inspired-prototype";

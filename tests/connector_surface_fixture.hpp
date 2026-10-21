@@ -4,8 +4,8 @@
 #include <numbers>
 
 namespace surface_fixture {
-inline trafficsim::Network arrival(double degrees) {
-    using namespace trafficsim;
+inline multra::Network arrival(double degrees) {
+    using namespace multra;
     const double angle=degrees*std::numbers::pi/180;
     const double acute=std::acos(std::abs(std::cos(angle)));
     const double a=2*std::tan(acute/2);

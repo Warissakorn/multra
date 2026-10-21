@@ -4,7 +4,7 @@
 #include "../network/network.hpp"
 #include "../../macro/graph.hpp"
 
-namespace trafficsim {
+namespace multra {
 // S2.1 (docs/reference/MACRO_NETWORK.md §3, D273): the drawn network as a Macro graph.
 // - Nodes: each Link's two ends and every station a Connector leaves or reaches (an absent station
 //   is the Link's end or start), merged when equal, in (Link id, station) order.

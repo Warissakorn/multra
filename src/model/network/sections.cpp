@@ -4,7 +4,7 @@
 #include <map>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // A path leaving a lane body, with the station on that lane it leaves at.
 struct Departure { double station{}; std::size_t path{}; };

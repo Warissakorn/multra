@@ -5,7 +5,7 @@
 #include <set>
 #include <string_view>
 
-namespace trafficsim {
+namespace multra {
 // SHA-256 of exact file bytes, not normalized/re-serialized JSON.
 std::string inputSha256(std::string_view bytes);
 class InputManifest {

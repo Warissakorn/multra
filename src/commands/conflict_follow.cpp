@@ -8,7 +8,7 @@
 #include <set>
 
 // D86. See the header.
-namespace trafficsim {
+namespace multra {
 namespace {
 struct Extents { double firstFrom, firstTo, secondFrom, secondTo; };
 double shared(double a0, double a1, double b0, double b1) { return std::max(0.0, std::min(a1, b1) - std::max(a0, b0)); }

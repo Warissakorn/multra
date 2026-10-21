@@ -4,7 +4,7 @@
 #include <limits>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // §9: each key's bounds. maxLateralSpeed's 3 m/s keeps the rate a lane-change speed.
 struct KeyRange { LateralKey key; bool zeroAllowed; double high; };

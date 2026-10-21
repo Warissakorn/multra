@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <iosfwd>
 
-namespace trafficsim {
+namespace multra {
 // M5.5 (D134, docs/reference/LOS.md). data/los/hcm.json; EDIT_CATALOG_READ unless it has an id and
 // five finite, positive, strictly increasing bounds for each of signalised and unsignalised, and
 // nothing else.

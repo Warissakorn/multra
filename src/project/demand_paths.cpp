@@ -7,7 +7,7 @@
 #include <map>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 bool hasLink(const Network& n, const std::string& id) {
     return std::any_of(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id; });

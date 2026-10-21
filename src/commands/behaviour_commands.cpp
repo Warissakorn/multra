@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 AuthoringDefinition& owned(ProjectDocument& d) {
     if (!d.definition || d.definition->externalBehaviours || d.definition->externalVehicleTypes)

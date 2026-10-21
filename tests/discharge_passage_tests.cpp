@@ -1,6 +1,6 @@
 #include "test.hpp"
 #include "../src/eval/discharge.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 DischargeSpec passageSpec() {return {0,100,0,3,5,2};}
 Scenario passageNetwork(double length=20,double head=19,double dt=.1) {

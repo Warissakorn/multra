@@ -3,7 +3,7 @@
 #include <map>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // M8.5 (D160, docs/reference/ZONES_AND_PARKING.md §5): each parking lot's occupancy, flows and gate
 // waits, from SimState snapshots alone -- the engine emits nothing new for it. NOT validated.
 // - An admission is the ArrivedEvent on one of the lot's gate routes; its gate wait is the time from

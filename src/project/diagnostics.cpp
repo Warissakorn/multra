@@ -1,7 +1,7 @@
 #include "demand_paths.hpp"
 #include "diagnostics.hpp"
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // A drawing with no authored demand can still be judged on its topology: the merge and
 // reachability checks read segments alone. Demand findings against a probe definition would

@@ -6,7 +6,7 @@
 #include "../src/project/diagnostics.hpp"
 #include "../src/project/run.hpp"
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument roads(DrivingSide side) {
     ProjectDocument d;d.network.drivingSide=side;

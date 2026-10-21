@@ -14,7 +14,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* message) {if(!ok)throw std::runtime_error(message);}
 void near(double a,double b,double tolerance=1e-7) {

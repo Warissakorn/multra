@@ -14,7 +14,7 @@
 #include <map>
 #include <numbers>
 #include <optional>
-namespace trafficsim {
+namespace multra {
 void EditorCanvas::setRunNetwork(const Network& network) {
     runAxlePaths_.clear();runLaneChangePaths_.clear();
     runGeometry_.clear();runEquations_.clear();runLevels_.clear();runStyles_.clear();runHeadBars_.clear();

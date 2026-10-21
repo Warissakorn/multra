@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 class InputManifest;
 // S1.2 (STUDY_PERIODS §5-§7, D269, D270): owned `definition.modes`, a matrix's `modeId` and a vehicle
 // type's `pcu`. Each is written only when used, which is what makes a file schema 49; below 49 each is

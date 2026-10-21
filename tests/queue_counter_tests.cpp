@@ -6,7 +6,7 @@
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 using namespace rowfixture;
 // M3.2.6b, A22 and A23 of docs/plans/M3_ACCEPTANCE.md: a queue counter is a set of places on the road,
 // independent of signal heads; one mechanism measures both the counters derived from heads and the

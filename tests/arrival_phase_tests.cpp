@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8c step 4: the cycle phase at which vehicles enter a segment and first stand on it.
 namespace {
 constexpr double kmh = 1 / 3.6;

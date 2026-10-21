@@ -11,7 +11,7 @@
 // M5.4b (D133): the Section tool and the sections' marks. Ctrl+right-click on a Link sets the
 // start line, a second one the end line and hands both over; Esc drops a half-placed section. A
 // line is drawn across every lane of its Link, where evaluation measures it.
-namespace trafficsim {
+namespace multra {
 std::optional<SectionLine> EditorCanvas::sectionLineAt(Point p) const {
     if (!document_) return std::nullopt;
     // The same pick a queue counter's explicit point uses, widened from its lane to the Link.

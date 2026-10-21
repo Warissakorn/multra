@@ -2,7 +2,7 @@
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 void addNodesJson(const Network& n, Json& network) {
     if (n.nodes.empty()) return;
     Json nodes = Json::array();

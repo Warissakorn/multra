@@ -6,7 +6,7 @@
 #include <QTabWidget>
 #include <QTableWidget>
 
-namespace trafficsim {
+namespace multra {
 void EditorWindow::buildDiagnostics() {
     problemTable_=new QTableWidget(0,4,objects_); problemTable_->setObjectName("editorProblemTable");
     problemTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);

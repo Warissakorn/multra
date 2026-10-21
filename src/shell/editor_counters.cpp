@@ -19,7 +19,7 @@
 // M3.2.6c: the Queue counters tab. The tool's Enter (pointer) and Add queue counter over the
 // selected heads (keyboard) submit the same command inside execute(), so each is one Undo step
 // and invalidates the run. What a row replaces is read from the rule evaluation applies.
-namespace trafficsim {
+namespace multra {
 namespace {
 QString describe(const MeasurementLine& l) {
     if (!l.point) return QString::fromStdString(l.referenceId);

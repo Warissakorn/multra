@@ -15,7 +15,7 @@
 #include <QSaveFile>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
     clearRecovery(); clearRun(); discardMacro(); history_.reset(std::move(document));

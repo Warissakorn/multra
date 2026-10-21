@@ -11,7 +11,7 @@
 #include <limits>
 #include <map>
 
-using namespace trafficsim;
+using namespace multra;
 // B-4 (docs/reference/DRIVER_FACTOR.md, D235/D236): a behaviour's driverFactorSpread is the standard
 // deviation of the driverFactor drawn when a vehicle is made, read from the type's own behaviour;
 // 0.15 without it. Rows BA131-BA136 on test::straight()'s road; BA137 is the codec.

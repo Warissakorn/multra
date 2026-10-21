@@ -12,7 +12,7 @@
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 namespace {
 template<class T> std::string nextCatalogId(const std::vector<T>& values,const std::string& prefix) {
     for(unsigned n=1;;++n){const auto id=prefix+std::to_string(n);

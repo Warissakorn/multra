@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::string measure(std::size_t runs) {
     return "Simulated movement delay, not HCM control delay or LOS; mean of " + std::to_string(runs) +

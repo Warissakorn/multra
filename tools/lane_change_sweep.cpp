@@ -1,7 +1,7 @@
 // D98: the lane-change sweep -- a project across seeds and discretionary thresholds in one
 // process, printed as markdown. Not in `check`: development evidence, like the other sweeps.
 //
-//   trafficsim-lane-change-sweep <repo root> [--project FILE] [--seeds 42-51]
+//   multra-lane-change-sweep <repo root> [--project FILE] [--seeds 42-51]
 //                                [--thresholds absent,0.25,0.5,1.0] [--accepted 1] [--hold 3]
 //
 // The project defaults to the lane-change lab; A55 runs four-leg and M2.6 through the same tool.
@@ -15,7 +15,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 struct Variant { std::string name; std::optional<double> threshold; };
 struct Totals { std::uint64_t mandatory{}, discretionary{}, quick{}, back{}, afterMandatory{}, onward{}, returns{}; };
@@ -33,7 +33,7 @@ std::string fixed(double v, int places = 2) { std::ostringstream o; o << std::fi
 int main(int argc, char** argv) {
     try {
         if (argc < 2 || argc % 2) {
-            std::cerr << "usage: trafficsim-lane-change-sweep <repo root> [--project FILE] [--seeds 42-51]\n"
+            std::cerr << "usage: multra-lane-change-sweep <repo root> [--project FILE] [--seeds 42-51]\n"
                          "       [--thresholds absent,0.25,0.5,1.0] [--accepted 1] [--hold 3]\n";
             return 2;
         }

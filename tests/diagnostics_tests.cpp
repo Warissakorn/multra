@@ -4,7 +4,7 @@
 #include "../src/commands/network_commands.hpp"
 #include <fstream>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 // Two approaches feeding one exit lane. Valid authoring, but the M0 engine cannot run the merge.
 ProjectDocument merging() {

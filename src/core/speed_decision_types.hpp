@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // B-5 (docs/reference/SPEED_DISTRIBUTION.md, D229): a vehicle type's desired-speed range, with an
 // optional piecewise-linear cumulative curve from (min, 0) to (max, 1). Empty: uniform, as always.
 struct SpeedPoint {

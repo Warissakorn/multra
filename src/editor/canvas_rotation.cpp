@@ -6,7 +6,7 @@
 #include <QGraphicsSimpleTextItem>
 #include <cmath>
 #include <numbers>
-namespace trafficsim {
+namespace multra {
 std::optional<Point> EditorCanvas::rotationPivot() const {
     if(!document_)return {};
     return rotationCentre(document_->network,selection_);

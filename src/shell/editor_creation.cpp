@@ -8,7 +8,7 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 void EditorWindow::createLinkDialog(const std::vector<Point>& points) {
     pauseRun();QDialog dialog(this);dialog.setObjectName("editorLinkDialog");dialog.setWindowTitle(text("editorLinkData"));
     auto* form=new QFormLayout(&dialog);auto* count=new QSpinBox(&dialog);count->setObjectName("editorGestureLaneCount");

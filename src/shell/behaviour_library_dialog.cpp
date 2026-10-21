@@ -20,7 +20,7 @@
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 namespace {
 QString q(const std::string& s) { return QString::fromStdString(s); }
 void okCancel(QDialog& dialog, QLayout* layout, const CatalogText& text) {

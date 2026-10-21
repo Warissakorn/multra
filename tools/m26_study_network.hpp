@@ -10,11 +10,11 @@
 // dialogs. There is no aerial image; import and calibrate one before C4 is read against it.
 //
 // Committed as data/projects/m2.6-study-template.traffic.json; regenerate with
-// trafficsim-m26-study, never by hand. `m26study` fails when the file and this builder differ.
+// multra-m26-study, never by hand. `m26study` fails when the file and this builder differ.
 #include "four_leg_network.hpp"
 #include <stdexcept>
 
-namespace trafficsim::fixture {
+namespace multra::fixture {
 inline ProjectDocument m26StudyTemplate() {
     FourLegOptions options;
     options.leftBypass = 6;  // the left turn leaves the kerb lane 6 m before its stop line

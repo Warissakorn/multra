@@ -14,7 +14,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* msg) { if (!ok) throw std::runtime_error(msg); }
 template<class T> T* item(EditorWindow& w,const char* name) {

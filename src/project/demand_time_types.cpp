@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
-namespace trafficsim {
+namespace multra {
 const std::vector<CompositionShare>& compositionTypesAt(const Composition& c,double t) {
     for(const auto& p:c.intervals)if(t>=p.startTime && t<p.endTime)return p.types;
     return c.types;

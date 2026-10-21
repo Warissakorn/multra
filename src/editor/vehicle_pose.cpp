@@ -3,7 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 struct RouteSample {Point point;const std::vector<Point>* geometry;const ConnectorEquation* equation;double station;};
 std::optional<RouteSample> sample(const std::vector<RoutePart>& parts,double distance,

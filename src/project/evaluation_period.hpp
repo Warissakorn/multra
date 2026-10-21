@@ -1,7 +1,7 @@
 #pragma once
 #include "document.hpp"
 
-namespace trafficsim {
+namespace multra {
 // M5.3 evaluation period codec and checks (D132). Written as `definition.evaluation` only when
 // set, which is what makes a file schema 22; every other file keeps its version and bytes.
 void rejectEvaluationPeriodBefore22(const Json& file);

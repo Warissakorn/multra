@@ -4,7 +4,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 const char* sectionControlName(SectionControl c) { return c == SectionControl::signalised ? "signalised" : "unsignalised"; }
 SectionControl sectionControlFromName(const std::string& name) {
     if (name == "signalised") return SectionControl::signalised;

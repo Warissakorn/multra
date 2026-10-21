@@ -1,7 +1,7 @@
 // D165 (docs/reference/BEHAVIOUR_LAB.md §4, rows BL2-BL8): circuit routes, live retune and placement.
 #include "test.hpp"
 #include "../src/core/routes.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 // A 300 m ring of three 100 m segments; the route closes because c lists a in `next`.
 Scenario ring(double duration = 600) {

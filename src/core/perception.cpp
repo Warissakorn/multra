@@ -5,7 +5,7 @@
 #include <cmath>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // §6: each key's bounds. The upper bounds keep per-tick work bounded (§8), not behaviour claims.
 struct KeyRange { PerceptionKey key; double low; bool lowInclusive; double high; };

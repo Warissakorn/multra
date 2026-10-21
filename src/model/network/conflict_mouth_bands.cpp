@@ -5,7 +5,7 @@
 #include "connector_lane_mapping.hpp"
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 namespace {
 std::vector<ConflictMouthBand> atMouth(const Network& n,const LaneReference& attachment,const ConnectorMouth& mouth) {
     std::vector<ConflictMouthBand> result;

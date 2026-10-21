@@ -3,7 +3,7 @@
 #include <QPainterPathStroker>
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 const DisplayType& EditorCanvas::style(const std::string& id) const {
     for(const auto& type:display_.types)if(type.id==id)return type;
     for(const auto& type:display_.types)if(type.id=="default")return type;

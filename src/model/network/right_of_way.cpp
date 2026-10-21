@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <tuple>
 
-namespace trafficsim {
+namespace multra {
 const char* conflictKindName(ConflictKind kind) {
     if(kind==ConflictKind::crossing)return "crossing";
     if(kind==ConflictKind::merge)return "merge";

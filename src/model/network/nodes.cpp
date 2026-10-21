@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 std::vector<ValidationIssue> nodeIssues(const Network& n) {
     std::vector<ValidationIssue> issues;
     if (n.nodes.empty()) return issues;

@@ -19,7 +19,7 @@
 
 // S0.1 (D261, docs/reference/NODES.md §6): the Nodes tab. The Node tool's Enter commits a polygon
 // through execute(), so a drawn Node is one Undo step; rename and delete go through History too.
-namespace trafficsim {
+namespace multra {
 void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);

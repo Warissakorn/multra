@@ -18,7 +18,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // S1.1 (D268, STUDY_PERIODS §8, row SP7): the Study periods tab, Run settings' clockStart and the OD
 // dialog's Period choice, each commit one Undo step.
 namespace {

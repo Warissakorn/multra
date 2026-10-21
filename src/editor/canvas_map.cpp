@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 EditorCanvas::~EditorCanvas()=default;
 void EditorCanvas::initializeMap() {
     const auto directory=QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/map-tiles";

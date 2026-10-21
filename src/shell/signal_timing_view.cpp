@@ -5,7 +5,7 @@
 #include <cmath>
 #include <utility>
 
-namespace trafficsim {
+namespace multra {
 SignalTimingView::SignalTimingView(QWidget* parent) : QWidget(parent) {
     setObjectName("editorSignalTiming");
     setMinimumHeight(60);

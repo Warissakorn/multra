@@ -8,7 +8,7 @@
 // S0.6 (docs/reference/NODES.md §15, D278): Results -> Nodes, the Node, leg and turn rows of the
 // finished or running single run, or of the batch, in the CSV block's order (writeNodesCsv,
 // writeBatchNodesCsv). A comparison holds no Node data yet, so it shows none.
-namespace trafficsim {
+namespace multra {
 namespace {
 QTableWidgetItem* plain(const QString& text) { return new QTableWidgetItem(text); }
 QTableWidgetItem* figure(const std::optional<double>& value) {

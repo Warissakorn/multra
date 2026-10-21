@@ -21,7 +21,7 @@
 // S2.4 (MACRO_NETWORK §19 a, §20, D277): Run Macro. The document is copied on the UI thread and
 // runMacro runs on this panel's own worker, posting each stage and gap back. It is never an
 // execute() step, so it adds no Undo step; an edit leaves the result on show, marked stale.
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr const char* kStageKeys[] = {"editorMacroStageInputs", "editorMacroStagePeriod", "editorMacroStageGraph",
                                       "editorMacroStageDemand", "editorMacroStageAssignment", "editorMacroStageOutputs"};

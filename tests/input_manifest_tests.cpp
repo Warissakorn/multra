@@ -4,7 +4,7 @@
 #include "../src/project/evaluation.hpp"
 #include <fstream>
 #include <iterator>
-using namespace trafficsim;
+using namespace multra;
 
 TEST(provenance, sha256_known_answers_and_multiblock_padding) {
     CHECK(inputSha256("")=="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
@@ -60,7 +60,7 @@ TEST(provenance, exact_project_bytes_and_catalog_reads_preserve_compilation) {
 TEST(provenance, equivalent_json_retains_distinct_lf_and_crlf_bytes) {
     const std::string lf="{\n  \"value\": 42\n}\n",crlf="{\r\n  \"value\": 42\r\n}\r\n";
     CHECK(Json::parse(lf)==Json::parse(crlf));CHECK(lf.size()==18 && crlf.size()==21);
-    const auto directory=std::filesystem::temp_directory_path()/"trafficsim-input-line-endings";
+    const auto directory=std::filesystem::temp_directory_path()/"multra-input-line-endings";
     std::filesystem::create_directories(directory);
     struct Cleanup {
         std::filesystem::path path;

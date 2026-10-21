@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // Wiedemann-74-structured car-following (M3.3.3a, D129). The contract, including every equation,
 // equality side and the sign hysteresis, is docs/reference/W74.md. Runs through `follow` (D138);
 // stored in schema 25 (D136); edited in the Driving behaviours dialog (D139). Not validated.

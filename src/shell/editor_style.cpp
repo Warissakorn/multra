@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <utility>
-namespace trafficsim {
+namespace multra {
 QIcon editorIcon(EditorIcon icon) {
     static std::map<EditorIcon,QIcon> cache;
     if(const auto found=cache.find(icon);found!=cache.end())return found->second;

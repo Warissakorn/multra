@@ -31,7 +31,7 @@
 // The presentation contract of the precision-tool restyle: tokens, palette roles, QSS rules,
 // box model, number formatting, hairlines and the two-tier grid. Every assertion names the
 // measured value so a failure on a platform is a measurement, not a guess.
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const std::string& message) { if(!ok)throw std::runtime_error(message); }
 double luminance(const QColor& colour) {
@@ -293,7 +293,7 @@ void iconVocabulary() {
         require(d>=.4,name(a)+"/"+name(b)+" differ in only "+std::to_string(d)+" of their 16 px ink");
     }
 }
-// trafficsim-design-ui-tests <data> --contact-sheet <png>: every glyph on white, at actual 16 px,
+// multra-design-ui-tests <data> --contact-sheet <png>: every glyph on white, at actual 16 px,
 // at 16 px magnified 4x with no smoothing, and at the 32/48 px rasters, then reduced to grey.
 void contactSheet(const QString& path) {
     constexpr int columns=3,cellWidth=300,cellHeight=76;

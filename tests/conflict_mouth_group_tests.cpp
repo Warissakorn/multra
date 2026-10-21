@@ -6,7 +6,7 @@
 #include "../src/model/network/connector_surface.hpp"
 #include <algorithm>
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 bool inside(const std::vector<Point>& p,Point q) {
     bool result=false;

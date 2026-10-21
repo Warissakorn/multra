@@ -21,7 +21,7 @@
 // M8.6a (D161, docs/reference/ZONES_AND_PARKING.md §9): the Zones tab. The Zone tool's Enter commits
 // a polygon through execute(), so a drawn zone is one Undo step; connectors are added from the zone
 // row to the Link selected on the canvas, and every edit and delete goes through History too.
-namespace trafficsim {
+namespace multra {
 namespace {
 QTableWidget* zoneTable(QWidget* parent, int columns, const char* name) {
     auto* t = new QTableWidget(0, columns, parent); t->setObjectName(name);

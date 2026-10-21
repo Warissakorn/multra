@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 void fold(WaitCauseRow& row, const auto& tally) {
     for (std::size_t c = 0; c < kWaitCauses; ++c) { row.waits[c] += tally.waits[c]; row.seconds[c] += tally.seconds[c]; }

@@ -1,6 +1,6 @@
 #pragma once
 #include "history.hpp"
-namespace trafficsim {
+namespace multra {
 // M8.2 (D154). Empty id allocates (`zone`, `zone-connector`, `od`); the same id replaces. Every
 // value is checked with the rest of the document on commit (zoneLayerIssues), never here.
 std::string putZone(ProjectDocument&, Zone);

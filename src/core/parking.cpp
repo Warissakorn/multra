@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::size_t slotOf(const auto& items, const std::string& id) {
     return static_cast<std::size_t>(&detail::byId(items, id) - items.data());

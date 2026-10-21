@@ -1,6 +1,6 @@
 #pragma once
 #include "demand_catalog.hpp"
-namespace trafficsim {
+namespace multra {
 // Authoring-only rules; compiler emits ordinary independent Poisson streams. No new RNG.
 const std::vector<CompositionShare>& compositionTypesAt(const Composition&,double scheduledTime);
 std::vector<ValidationIssue> timeTypeIssues(const AuthoringDefinition&);

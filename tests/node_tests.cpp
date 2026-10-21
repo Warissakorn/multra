@@ -7,7 +7,7 @@
 #include "../src/core/validate.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 // S0.1 (docs/reference/NODES.md §2, D261): the Node object, its codec at schema 48 and validation.
 namespace {
 Json fileJson(const char* project) {

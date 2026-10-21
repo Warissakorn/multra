@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 void EditorWindow::buildMapActions() {
     try {mapProviders_=loadMapProviders(data_/"map-providers.json");}
     catch (const std::exception&) {mapProviders_.clear();}

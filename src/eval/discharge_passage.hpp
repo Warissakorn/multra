@@ -2,7 +2,7 @@
 #include "../core/types.hpp"
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 // Observer-owned previous positions; never reconstruct motion from display traces.
 struct DischargePosition {std::size_t route{},type{};double distance{};};
 using DischargePositions=std::map<std::uint64_t,DischargePosition>;

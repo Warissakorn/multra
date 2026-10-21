@@ -5,7 +5,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 template<class Row, class Value>
 std::vector<ComparisonRow> match(const std::vector<Row>& base, const std::vector<Row>& alternative, Value value,

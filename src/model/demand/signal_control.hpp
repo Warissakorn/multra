@@ -2,7 +2,7 @@
 #include "definition.hpp"
 #include "../network/network.hpp"
 
-namespace trafficsim {
+namespace multra {
 // M2.7b. The compile-time expansion of Signal Controllers into ordinary core SignalPrograms, and
 // the checks an authored controller must pass first. Pure functions: no I/O, no Qt.
 

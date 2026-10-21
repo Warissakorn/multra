@@ -2,7 +2,7 @@
 #include <QTabWidget>
 #include <stdexcept>
 
-namespace trafficsim::test {
+namespace multra::test {
 // Tables may be direct tab pages or nested inside body widgets. Resolve actual ownership,
 // never a visual index or an assumed number of parentWidget() hops.
 inline QWidget* tabPage(QTabWidget* tabs, QWidget* content) {

@@ -2,7 +2,7 @@
 #include "document.hpp"
 #include "../model/network/diagnostics.hpp"
 #include <filesystem>
-namespace trafficsim {
+namespace multra {
 class InputManifest;
 // Also expands every input that names a composition (M2.3) into one input per vehicle type,
 // `id/type-<type>` at volume x normalised share -- a single-type composition keeps the plain id.

@@ -1,6 +1,6 @@
 #include "test.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8a.1 (docs/reference/GIVE_WAY_STOP.md, D239/D240): on a tick that would clamp at a binding
 // give-way line, a stop within the type's maximum brakes to the line instead. Rows BA146-BA151 on
 // hand-built scenarios: a crossing (area 98..102 on both roads, the minor line at 90; the major route

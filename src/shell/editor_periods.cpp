@@ -19,7 +19,7 @@
 
 // S1.1 (D268, docs/reference/STUDY_PERIODS.md §8): the Study periods tab. Clock times are stored as
 // seconds since midnight and shown as HH:MM:SS; each add, edit and delete is one execute() step.
-namespace trafficsim {
+namespace multra {
 QString clockText(double seconds) {
     const auto s = static_cast<long long>(std::llround(seconds));
     return QStringLiteral("%1:%2:%3").arg(s / 3600, 2, 10, QLatin1Char('0')).arg(s / 60 % 60, 2, 10, QLatin1Char('0'))

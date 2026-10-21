@@ -19,7 +19,7 @@
 // M5.4b (D133): the Travel-time sections tab. The Section tool's second Ctrl+right-click commits
 // through execute(), so a placed section is one Undo step and invalidates the run, as rename and
 // delete are. M5.5 (D134): the dialog also sets the control type LOS reads, in the same step.
-namespace trafficsim {
+namespace multra {
 namespace {
 QString describe(const Network& n, const SectionLine& l) {
     const auto link = std::find_if(n.links.begin(), n.links.end(), [&](const auto& x) { return x.id == l.linkId; });

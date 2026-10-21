@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kViewMetres = 160; // roughly what the followed view shows across, at first
 }

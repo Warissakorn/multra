@@ -20,7 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 template<class T> T* item(QObject& root, const char* name) { auto* p = root.findChild<T*>(name); require(p, name); return p; }

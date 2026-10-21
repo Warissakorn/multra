@@ -5,7 +5,7 @@
 #include <optional>
 #include <utility>
 
-namespace trafficsim {
+namespace multra {
 class InputManifest;
 // M8.3 (D155, ZONES_AND_PARKING.md §3). The document's definition with every OD matrix added as
 // ordinary authored routes and inputs, so everything downstream -- compositions, the lane split,

@@ -15,7 +15,7 @@ class QGroupBox;
 class QLabel;
 class QSpinBox;
 
-namespace trafficsim {
+namespace multra {
 class BehaviourLabPanel : public QTabWidget {
 public:
     using Text = std::function<QString(const char*)>;

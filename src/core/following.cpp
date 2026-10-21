@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 // Reduced Wiedemann-inspired prototype, NOT W74/W99. See docs/reference/SIMULATION.md.
 FollowingResult followingAcceleration(double speed, double desiredSpeed, double driverFactor,
     const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {

@@ -13,7 +13,7 @@
 #include <fstream>
 #include <functional>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M3.7 slice 1 (D187): rows BA45 and BA39 of docs/plans/DRIVING_BEHAVIOUR.md -- the lateral keys of
 // docs/reference/LATERAL.md §9 are stored, validated and round-tripped, and §3's cross-sections and
 // driving side are compiled only with the switch on (BA45); with every key absent nothing changes (BA39).

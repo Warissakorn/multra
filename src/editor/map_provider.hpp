@@ -4,7 +4,7 @@
 #include <QString>
 #include <filesystem>
 #include <vector>
-namespace trafficsim {
+namespace multra {
 struct MapProvider {
     std::string id;
     QString name, urlTemplate, attribution;

@@ -31,13 +31,13 @@ template<class F> void throws(F action, const std::string& message = {}) {
     }
     throw std::runtime_error("Expected an exception: " + message);
 }
-inline std::filesystem::path root() { return TRAFFICSIM_SOURCE_DIR; }
-inline trafficsim::LoadedScenario demo() {
-    return trafficsim::loadScenario(root() / "data/scenarios/crossing.json", root() / "data");
+inline std::filesystem::path root() { return MULTRA_SOURCE_DIR; }
+inline multra::LoadedScenario demo() {
+    return multra::loadScenario(root() / "data/scenarios/crossing.json", root() / "data");
 }
-inline trafficsim::Scenario straight() {
+inline multra::Scenario straight() {
     const auto source = demo().scenario;
-    trafficsim::Scenario s;
+    multra::Scenario s;
     s.duration = 120; s.timeStep = 0.1;
     s.segments = {{"road", 150, {}}}; s.routes = {{"route", {"road"}}};
     s.vehicleTypes = source.vehicleTypes; s.behaviours = source.behaviours;
@@ -55,15 +55,15 @@ struct Placement {
 inline Placement vehicle(std::uint64_t id, double distance, double speed = 0) {
     return {id, "route", distance, speed};
 }
-inline trafficsim::SimState withVehicles(trafficsim::Scenario s, const std::vector<Placement>& placements) {
-    s.inputs.clear(); auto state = trafficsim::createSimulation(s, 42);
+inline multra::SimState withVehicles(multra::Scenario s, const std::vector<Placement>& placements) {
+    s.inputs.clear(); auto state = multra::createSimulation(s, 42);
     // createSimulation canonicalises, so resolve against the scenario the state actually holds.
     const auto slot = [](const auto& items, const std::string& id) {
         for (std::uint32_t i = 0; i < items.size(); ++i) if (items[i].id == id) return i;
         throw std::invalid_argument("Unknown test id: " + id);
     };
     for (const auto& p : placements) {
-        trafficsim::Vehicle v;
+        multra::Vehicle v;
         v.id = p.id; v.distance = p.distance; v.speed = p.speed;
         v.routeIndex = slot(state.scenario->routes, p.routeId);
         v.typeIndex = slot(state.scenario->vehicleTypes, p.vehicleTypeId);
@@ -73,8 +73,8 @@ inline trafficsim::SimState withVehicles(trafficsim::Scenario s, const std::vect
     }
     return state;
 }
-inline trafficsim::SimState finish(trafficsim::SimState state) {
-    while (state.tick < trafficsim::totalTicks(*state.scenario)) state = trafficsim::stepSimulation(state);
+inline multra::SimState finish(multra::SimState state) {
+    while (state.tick < multra::totalTicks(*state.scenario)) state = multra::stepSimulation(state);
     return state;
 }
 }

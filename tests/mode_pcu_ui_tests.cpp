@@ -18,7 +18,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // S1.2 (D269, D270, STUDY_PERIODS §8, row SP14): the Modes tab, the OD dialog's Types choice and the
 // vehicle type dialog's PCU row, each commit one Undo step.
 namespace {

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 template<class T> std::vector<const T*> byId(const std::vector<T>& values) {
     std::vector<const T*> sorted;

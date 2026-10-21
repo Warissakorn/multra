@@ -3,7 +3,7 @@
 #include <functional>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 // Multi-seed batches (M5.2). Independent seeds of one compiled scenario, each observed exactly as a
 // single run, then aggregated in seed order so the result never depends on the order requested or
 // on which thread ran what. NOT HCM control delay, NOT LOS, not validated (rule 4).

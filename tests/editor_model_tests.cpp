@@ -8,7 +8,7 @@
 #include <cmath>
 #include <limits>
 #include <optional>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument sample() {
     std::ifstream file(test::root()/"data/scenarios/crossing.json");Json j;file>>j;return parseDocument(j);

@@ -6,7 +6,7 @@
 #include "../src/core/routes.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // PERCEPTION §5: BA30, BA35 and BA36. Synthetic fixtures, not calibration.
 namespace {
 Scenario road(double tau = 1, double dt = .1, bool w74 = false) {

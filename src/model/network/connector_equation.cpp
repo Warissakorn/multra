@@ -3,7 +3,7 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 Point equationPoint(const ConnectorEquation& c,double t) {
     t=std::clamp(t,0.,1.);if(t==0)return c.controls[0];if(t==1)return c.controls[3];
     const double u=1-t;const auto& p=c.controls;

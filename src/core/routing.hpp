@@ -1,7 +1,7 @@
 #pragma once
 #include "routes.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Validation is shared by direct scenarios and the project compiler.
 std::vector<ValidationIssue> routingIssues(const Scenario&);
 // The nearest unresolved station on this route; absent leaves legacy motion untouched.

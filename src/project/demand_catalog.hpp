@@ -2,7 +2,7 @@
 #include "document.hpp"
 #include <filesystem>
 #include <map>
-namespace trafficsim {
+namespace multra {
 class InputManifest;
 struct DemandCatalog {
     std::vector<VehicleType> vehicleTypes;

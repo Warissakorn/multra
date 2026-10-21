@@ -14,7 +14,7 @@
 #include <fstream>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 Json readJson(const std::filesystem::path& file,InputManifest* manifest=nullptr) {
     return readInputJson(file,"catalog/"+file.parent_path().filename().generic_string()+"/"+

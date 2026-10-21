@@ -6,7 +6,7 @@
 #include <cmath>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 Link& editableLink(ProjectDocument& d, const std::string& id) {
     for (auto& l : d.network.links) if (l.id == id) return l;
     throw std::invalid_argument("EDIT_UNKNOWN_LINK");

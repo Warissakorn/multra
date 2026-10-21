@@ -3,7 +3,7 @@
 #include <cmath>
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 const std::string kPath = "definition.macroSettings";
 }

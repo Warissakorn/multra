@@ -6,7 +6,7 @@
 #include <optional>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // D210 (LATERAL §6): calls `seen(gap, span)` for every span ahead of the body's front on each lane it
 // covers (`lateral->covered`), with the own scan's skips, walking that lane on through its one successor
 // (`onlyNext`). It stops a lane once `done(least)` holds for the least gap still possible there.

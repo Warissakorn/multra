@@ -4,7 +4,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 // FIPS 180-4 sections 4.2.2, 5 and 6.2; reproducibility digests, no crypto-library dependency.
 // https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
 std::string inputSha256(std::string_view bytes) {

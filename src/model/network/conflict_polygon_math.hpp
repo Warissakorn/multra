@@ -1,6 +1,6 @@
 #pragma once
 #include "right_of_way.hpp"
-namespace trafficsim {
+namespace multra {
 // Inverse bilinear cross-section map, shared by body overlap and mouth station measurement.
 double stationInLaneQuad(Point l0,Point l1,Point r0,Point r1,Point p,double start,double length);
 double polygonSignedArea(const std::vector<Point>&);

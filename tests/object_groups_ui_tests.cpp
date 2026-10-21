@@ -17,7 +17,7 @@
 #include <iostream>
 #include <set>
 #include <vector>
-using namespace trafficsim;
+using namespace multra;
 // UI slice c (B16, layout A): the Objects dock shows one task group of pages at a time.
 // Every page stays one registered widget; the group follows whichever page is current.
 namespace {

@@ -2,7 +2,7 @@
 #include <cmath>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 double wrap(double value, double cycle) {
     double r = std::fmod(value, cycle);

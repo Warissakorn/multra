@@ -1,7 +1,7 @@
 #pragma once
 #include "rear_axle_pose.hpp"
 
-namespace trafficsim {
+namespace multra {
 // A complete display journey from the first change, including overlapping changes
 // and the subsequent settling of body heading. Progress is longitudinal travel,
 // not elapsed time: a stopped vehicle holds its entire pose. Engine lane occupancy

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <optional>
 
-namespace trafficsim::reactiondischarge {
+namespace multra::reactiondischarge {
 inline ProjectDocument variant(const ProjectDocument& base, const DriverBehaviour* w74,
                                std::optional<double> reaction) {
     auto document = w74fixture::arm(base, w74, .1);

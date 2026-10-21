@@ -3,7 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 Point unit(Point p) {
     const double n=std::hypot(p.x,p.y);

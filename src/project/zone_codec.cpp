@@ -8,7 +8,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr const char* kZones = "zones";
 constexpr const char* kConnectors = "zoneConnectors";

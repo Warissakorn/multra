@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <set>
-namespace trafficsim {
+namespace multra {
 namespace {
 std::vector<Json> files(const std::filesystem::path& path) {
     std::vector<std::filesystem::path> names;

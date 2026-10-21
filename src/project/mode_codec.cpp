@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 bool usesModes(const ProjectDocument& d) {
     if (std::any_of(d.zones.odMatrices.begin(), d.zones.odMatrices.end(), [](const auto& m) { return !m.modeId.empty(); })) return true;
     if (!d.definition) return false;

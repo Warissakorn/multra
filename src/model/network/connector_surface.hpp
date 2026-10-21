@@ -2,7 +2,7 @@
 #include "network.hpp"
 #include <array>
 
-namespace trafficsim {
+namespace multra {
 // P1/P4 intersect the local Connector and Link edges; P2 is the centre
 // of the attached lane range; P3 is the nearest point to P2 on the far LINK edge.
 // Near/far are measured from the Connector body, not fixed left/right labels.

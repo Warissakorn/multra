@@ -2,14 +2,14 @@
 // drawing's one source. Run it after changing the builder; `four-leg` fails until the committed
 // file matches, so the two cannot drift.
 //
-//   trafficsim-four-leg-fixture <output.traffic.json>
+//   multra-four-leg-fixture <output.traffic.json>
 #include "four_leg_network.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 int main(int argc, char** argv) {
-    if (argc != 2) { std::cerr << "usage: trafficsim-four-leg-fixture <output.traffic.json>\n"; return 2; }
+    if (argc != 2) { std::cerr << "usage: multra-four-leg-fixture <output.traffic.json>\n"; return 2; }
     const auto built = fixture::fourLegIntersection();
     std::ofstream out(argv[1], std::ios::binary);
     // The editor's own serialisation (src/shell/editor_storage.cpp), so the file reads as saved.

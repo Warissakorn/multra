@@ -31,7 +31,7 @@
 #include <cmath>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 void setReflowPolicy(QLabel* label, QSizePolicy::Policy horizontal) {
     auto policy=label->sizePolicy();policy.setHorizontalPolicy(horizontal);
     policy.setVerticalPolicy(QSizePolicy::Preferred);policy.setHeightForWidth(label->wordWrap());

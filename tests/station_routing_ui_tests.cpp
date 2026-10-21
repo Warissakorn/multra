@@ -14,7 +14,7 @@
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool yes,const char* message){if(!yes)throw std::runtime_error(message);}
 void click(EditorCanvas* c,Point p){QTest::mouseClick(c->viewport(),Qt::LeftButton,{},c->mapFromScene(p.x,p.y));QApplication::processEvents();}

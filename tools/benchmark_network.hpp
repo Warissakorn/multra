@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim::benchmark {
+namespace multra::benchmark {
 constexpr int kLanes = 3;
 // A corridor of signalised crossings: at each one an eastbound carriageway meets a northbound
 // approach, and both turn into the next crossing's eastbound link. Two Links, two Connectors and

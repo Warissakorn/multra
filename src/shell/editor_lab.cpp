@@ -5,7 +5,7 @@
 #include <QAction>
 #include <QLabel>
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 // D165 (docs/reference/BEHAVIOUR_LAB.md §3): the lab starts from the project's resolved catalog --
 // its car (or first) type and that type's behaviour -- and Apply writes the tuned values back there.
 BehaviourLabWindow* EditorWindow::behaviourLab() const { return lab_.data(); }

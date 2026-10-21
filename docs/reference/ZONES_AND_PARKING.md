@@ -319,7 +319,7 @@ objects does not copy zone connectors.
 
 Failure-first: each test first asserts that its forcing worked (the lot is full, the exit is
 blocked, the key is below 31), then the consequence. Test groups are planned names; each joins
-`TRAFFICSIM_TEST_GROUPS` (D70) when written; `zonescodec` and `zonescommands` exist since M8.2.
+`MULTRA_TEST_GROUPS` (D70) when written; `zonescodec` and `zonescommands` exist since M8.2.
 
 | Row | Check | Test |
 |---|---|---|

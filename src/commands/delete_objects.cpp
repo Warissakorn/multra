@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 bool isLink(const ProjectDocument& d, const std::string& id) {
     return std::any_of(d.network.links.begin(), d.network.links.end(), [&](const auto& l) { return l.id == id; });

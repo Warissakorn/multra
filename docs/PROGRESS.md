@@ -5,6 +5,30 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-21 — Optimization review across all areas; the docs check is 96 % faster
+
+The owner asked for every area (engine, build, docs, design and the rest). Measured on Linux:
+an M2.6 hour 541 ms (3.81 G Ir), 10 seeds 1.8 s, the docs check 2.2 s Release / ≈20 s Debug.
+- **Done:** `multra-check-docs` caches each document's anchors and builds its regexes once
+  (24,976 → 865 M Ir; Release 86 ms; `documentation` 21.1 → 0.6 s). Same errors; self-test and
+  a broken real anchor still fail.
+- **Package workflow:** the first run since D284/D285/D287 (run 39561211587) is green on Linux
+  and Windows. Windows copied every vcpkg `copyright` and found libthai's licence folders (no
+  warning); both packages carry `multra-cli`, `multra-desktop`, `proj.db` and the notices.
+- **Not worth it now, measured:** `Vehicle` moves per tick 5.8 % and `appendSpans` 7 % of an M2.6
+  run; test objects are 60 % of a clean compile, but CI's ccache covers warm builds; slow tests
+  are deliberate long runs. No design misfit found; the desktop's start-up was not measured.
+
+## 2026-10-21 — Namespace, targets and CMake options renamed to MULTRA (D287)
+
+The owner renamed the repository to `Warissakorn/multra` and asked for the code to follow.
+- **Renamed:** `namespace multra`, every library, test and tool target (`multra_core`,
+  `multra-tests`, `multra-check-docs`, …), the `MULTRA_*` macros and CMake options, the presets
+  and workflows, and the commands in maintained docs.
+- **Compatibility:** `-DTRAFFICSIM_BUILD_DESKTOP=OFF` and the other three old options still apply,
+  with a deprecation warning (checked: a configure with the old option builds no desktop target).
+- **Kept:** `"format": "TrafficSim"` in project files and D286's legacy folder name.
+
 ## 2026-10-20 — Licence: GPL-3.0-or-later, third-party notices in every package (D285)
 
 The owner chose the reviewed recommendation over MIT.
@@ -16,8 +40,7 @@ The owner chose the reviewed recommendation over MIT.
 - **Package workflow:** both packages copy the notices and texts. Linux adds PROJ's and
   nlohmann/json's copyright files. Windows adds every vcpkg port's `copyright` and fails if none
   are found; a missing libthai licence folder now warns instead of passing silently.
-- **Not run:** the package workflow itself (manual or `v*` tag). Its Linux copy commands were
-  run locally; the Windows step is unverified until it runs.
+- **Package run:** green on Linux and Windows on 2026-10-21 (see the entry above).
 
 ## 2026-10-20 — The project is named MULTRA (D284)
 
@@ -144,41 +167,6 @@ The owner chose §19 (a) and wants more capability later
   paragraph.
 - **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS rows.
   Linux offscreen only.
-
-## 2026-10-19 — How Visum and Aimsun organise a Macro run (D276, docs only)
-
-The owner asked whether a Macro run has a working procedure, then for a study of other programs
-([evidence](evidence/macro-run-procedures.md)).
-- **Visum:** an ordered procedure sequence (generation → distribution → mode choice → skim →
-  assignment) in the version file, logged. Its equilibrium assignment balances routes in an inner
-  loop and searches for new routes in an outer loop, to a gap or a cap.
-- **Aimsun Next:** a Static Assignment Scenario (demand, outputs) and an Experiment (method,
-  iteration cap, relative gap), with convergence data retrieved from the output database.
-- **TrafficSim:** `runMacro`'s six stages are now named in [MACRO_NETWORK](reference/MACRO_NETWORK.md)
-  §19, with a choice for S2.4 that the owner makes before any code.
-- **Caveat:** the help pages could not be opened from the session; the facts come from search
-  summaries and are marked so.
-
-## 2026-10-19 — S2.3: Macro run settings, outputs and CLI (D275)
-
-A Macro run now writes its results ([MACRO_NETWORK](reference/MACRO_NETWORK.md) §18). The editor
-surface is split off as S2.4, since it is a second system (a worker job, a Results tab, stale
-marking, a link-type editor).
-- **Settings (schema 51):** `definition.macroSettings{targetGap, maxIterations}`, written only
-  when set. Absent means 10⁻⁴ (D272) and 1000 iterations; bad values are `INVALID_MACRO_SETTING`.
-- **Run:** `runMacro(doc, data, period)` names a period as its study-period id or
-  `matrix:<id>`, refuses the graph's and demand's issues, and adds `MACRO_NOT_CONVERGED` at the
-  cap. The input manifest records every file read.
-- **Outputs:** `macroJson` and `macroCsv`, one row per arc with the link type, veh/h per class,
-  pcu/h, V/C, free and congested time; both carry the not-validated marker.
-- **CLI:** `--macro PERIOD` with `--project` (and `--csv`, `--data-dir` only).
-- **Rows:** MA12, MA13 (ctest `macrooutput`, `cli-macro*`). Writing MA12 showed that S2.2's MA11
-  twin had no route choice (each entry Link had its own zone connector); S2.3's fixture fans one
-  origin out to two routes, and MA11's comment now says so.
-- **Mutations:** nine caught. A missing class column first survived (the row checked only its
-  prefix); MA13 now compares a whole CSV row.
-- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS
-  rows. Linux only.
 
 ## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
 

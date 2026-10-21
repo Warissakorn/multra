@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field) {
     auto* label=new ReflowLabel(this);label->setWordWrap(true);label->setBuddy(field);texts_[key]=label;
     field->setObjectName(QString::fromStdString(key));form->addRow(label,field);

@@ -21,7 +21,7 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // UI slice e1b (D199): run vehicles carry a neutral casing and run signal bars a shape per state,
 // both drawn only: hit regions, poses and crossbars are what they were.
 namespace {

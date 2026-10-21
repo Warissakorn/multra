@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::string at(std::size_t i) { return "definition.reducedSpeedAreas[" + std::to_string(i) + "]"; }
 }

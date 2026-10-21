@@ -4,7 +4,7 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 namespace {
 double laneWidthOf(const Network& n,const LaneReference& ref) {
     for(const auto& l:n.links)if(l.id==ref.linkId)

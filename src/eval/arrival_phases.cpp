@@ -3,7 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 double cycleOf(const Scenario& s) {
     double cycle = 0;

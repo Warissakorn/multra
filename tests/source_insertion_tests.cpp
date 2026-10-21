@@ -1,7 +1,7 @@
 #include "test.hpp"
 #include "../src/core/following.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 SimState source(double room) {
     auto s=test::straight();s.timeStep=.5;s.inputs.front().vehiclesPerHour=0;

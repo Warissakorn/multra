@@ -1,7 +1,7 @@
 #include "editor_window.hpp"
 #include <QInputDialog>
 #include <QLabel>
-namespace trafficsim {
+namespace multra {
 void EditorWindow::rotateSelection() {
     const auto ids=canvas_->selection();
     const auto pivot=canvas_->rotationPivot();

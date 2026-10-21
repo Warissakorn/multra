@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 [[noreturn]] void invalid() { throw ValidationError({{"EVALUATION_PERIOD_INVALID", "definition.evaluation"}}); }
 }

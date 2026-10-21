@@ -7,7 +7,7 @@
 #include <limits>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 // Validation of the compiled spans and dead ends; called by validateScenario.
 std::vector<ValidationIssue> laneChangeIssues(const Scenario&);
 // OVERTAKING §2 (D215): kerbLaneBias outside (0, 5], or without D95's threshold, at `path`.kerbLaneBias.

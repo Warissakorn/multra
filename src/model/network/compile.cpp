@@ -11,7 +11,7 @@
 #include <optional>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 LaneSplit laneSplit(const std::vector<std::size_t>& chainLanes, std::size_t shareCount,
                     const std::vector<double>& laneShares, std::optional<int> kerbLanes) {
     LaneSplit split;

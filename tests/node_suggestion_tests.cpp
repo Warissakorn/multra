@@ -7,7 +7,7 @@
 #include "../src/project/json.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 // S0.5 (docs/reference/NODES.md §6, D265): Suggest nodes. Each row first checks its forcing.
 namespace {
 ProjectDocument shipped(const char* project) {

@@ -10,7 +10,7 @@
 #include "../src/macro/assign.hpp"
 #include "../src/project/macro_input.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 constexpr double kTarget = 1e-4; // D272
 // Nodes 0 (origin) and 1 (destination), with parallel routes 0 -> 1, each one arc.

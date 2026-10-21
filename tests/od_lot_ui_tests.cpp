@@ -25,7 +25,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // M8.6b (D162, ZONES_AND_PARKING §9, rows OL1-OL5): the OD matrices tab and its grid dialog, the lot
 // dialog on a zone's row, and the lot report in Results.
 namespace {

@@ -6,7 +6,7 @@
 #include "../src/core/w74.hpp"
 #include "../src/project/demand_catalog.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // B-2 (docs/reference/COMMITMENT.md, D218/D219): `commitmentDeceleration` replaces the type's
 // maxDeceleration in the give-way commitment test, the lower of the two winning; the signal head's
 // "cannot stop at all" test keeps the type's maximum. Rows BA72-BA78. The scenes are those of

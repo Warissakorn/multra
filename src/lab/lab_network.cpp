@@ -5,7 +5,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace trafficsim::lab {
+namespace multra::lab {
 namespace build {
 void Path::line(Point to) {
     length_ += std::hypot(to.x - points_.back().x, to.y - points_.back().y);

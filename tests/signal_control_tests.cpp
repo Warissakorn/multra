@@ -6,7 +6,7 @@
 #include "../src/project/run.hpp"
 #include <algorithm>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 // M2.7: a Signal head is its stop line, placed where it is clicked (D47), and it shows a signal
 // group of a fixed-time controller, expanded at compile time into a core program (D48).
 TEST(signals, group_numbers_are_checked_before_integer_conversion) {

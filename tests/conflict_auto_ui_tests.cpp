@@ -20,7 +20,7 @@
 #include <QTimer>
 #include <iostream>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.4c (D68): automatic conflict areas in the editor, as the owner asked -- they appear where
 // roads overlap with no Add step; the Conflict area tool only sets priority. A passive crossing is
 // authored by its first click (or P on its row) and made passive again by Delete; a derived merge is

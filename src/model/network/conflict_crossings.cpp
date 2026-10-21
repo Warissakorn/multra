@@ -2,7 +2,7 @@
 #include "connector_lane_mapping.hpp"
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kMouthStationTolerance=1e-7; // authored metres, numerical only
 struct Mouth {

@@ -3,7 +3,7 @@
 #include "../model/demand/macro_compile.hpp"
 #include <filesystem>
 
-namespace trafficsim {
+namespace multra {
 class InputManifest;
 // S2.1 (docs/reference/MACRO_NETWORK.md §3-§6, D273): what a Macro run reads from a document.
 // The resolved link types (owned or data/link-types/) and data/vdf/ compiled into the graph, with

@@ -13,7 +13,7 @@
 
 namespace lateral_test {
 namespace { // internal linkage: each test file gets its own copy
-using namespace trafficsim;
+using namespace multra;
 LateralParameters keys(double standing, double at50) {
     LateralParameters p;
     p.lateralMinDistanceStanding = standing; p.lateralMinDistanceAt50 = at50; p.maxLateralSpeed = 1;

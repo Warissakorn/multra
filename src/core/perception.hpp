@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M3.5 perception keys (docs/reference/PERCEPTION.md §6, D179/D181): the one list the codec, the
 // validator and the serializer read, so a key name exists once (hard rule 3).
 struct PerceptionKey {

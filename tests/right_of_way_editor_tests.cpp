@@ -7,7 +7,7 @@
 #include <iterator>
 #include <regex>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 using namespace rowfixture;
 // M3.2.4: the commands and geometry the conflict-area editor stands on (docs/plans/M3_ACCEPTANCE.md A24).
 namespace {

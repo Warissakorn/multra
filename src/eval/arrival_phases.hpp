@@ -2,7 +2,7 @@
 #include "movement.hpp"
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 // M3.2.8c step 4: when in the signal cycle vehicles reach a segment and first stop on it. Per
 // movement a vehicle arrived on and per segment, two histograms of the phase in the cycle
 // (simulation time mod the cycle, offsets not folded in): when its front entered the segment (a

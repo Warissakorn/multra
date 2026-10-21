@@ -5,7 +5,7 @@
 #include <optional>
 #include <tuple>
 
-namespace trafficsim {
+namespace multra {
 // M2.1.1 glue between the authored demand and the model's routeless walk.
 // The decisions that are placed on a Link, with each destination resolved to the object chain a
 // route would name. Network-dependent problems (unknown Link, a destination no chain reaches or

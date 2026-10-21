@@ -2,7 +2,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/model/network/right_of_way.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument turn(int count) {
     ProjectDocument d;d.network.links={

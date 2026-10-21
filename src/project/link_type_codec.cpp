@@ -7,7 +7,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 [[noreturn]] void broken() { throw std::invalid_argument("EDIT_CATALOG_READ"); }
 std::string text(const Json& j, const char* key) { if (!j.contains(key) || !j.at(key).is_string()) broken(); return j.at(key).get<std::string>(); }

@@ -9,7 +9,7 @@
 #include <map>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr auto kNone = std::numeric_limits<std::uint32_t>::max();
 double routeLength(const Scenario& s, const Route& route, bool& known) {

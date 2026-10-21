@@ -6,7 +6,7 @@
 #include <QDialog>
 #include <QTest>
 #include <QTimer>
-namespace trafficsim::test {
+namespace multra::test {
 // Accepts the next modal dialog as it opens. Polls, because QTest's mouse events process timers
 // before the release opens the modal; never throws through a Qt event handler.
 inline void acceptNextDialog() {

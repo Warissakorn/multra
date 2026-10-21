@@ -20,7 +20,7 @@
 #include <QTemporaryDir>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* message){if(!ok)throw std::runtime_error(message);}
 template<class T> T* control(QObject& parent,const char* name) {

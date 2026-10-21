@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // The drawing M1's done-condition asks for and M2's done-condition runs (M2_PLAN.md M2.0). Until
 // this file, no test anywhere built a four-leg intersection, so nobody knew whether one would run.
 namespace {
@@ -34,7 +34,7 @@ bool same(const Json& a, const Json& b) {
 }
 TEST(fourleg, committed_file_is_the_builder_output) {
     // The builder is the drawing's one source. A hand edit to the file, or a builder change
-    // without regenerating it (trafficsim-four-leg-fixture), fails here rather than drifting.
+    // without regenerating it (multra-four-leg-fixture), fails here rather than drifting.
     const auto built = documentJson(fixture::fourLegIntersection().document);
     CHECK(same(committed(), built));
     // The comparison can fail: a moved point is caught, not absorbed by the tolerance.

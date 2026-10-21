@@ -4,7 +4,7 @@
 #include "../src/model/network/right_of_way.hpp"
 #include <algorithm>
 #include <numeric>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 Point midpoint(Point a,Point b) { return {std::midpoint(a.x,b.x),std::midpoint(a.y,b.y)}; }
 void near(Point a,Point b) { test::near(a.x,b.x,1e-8);test::near(a.y,b.y,1e-8); }

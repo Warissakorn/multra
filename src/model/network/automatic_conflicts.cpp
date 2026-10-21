@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 // M3.2.4c (D68): conflict areas the drawing implies, as Vissim generates them. See the header.
-namespace trafficsim {
+namespace multra {
 namespace {
 // How far upstream of the join a taken-over merge's waiting line stands: the same 1 m the derived
 // rule waits short of the join (D50), so a take-over compiles to what the fallback already ran.

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace trafficsim::detail {
+namespace multra::detail {
 template<class T>
 const T& byId(const std::vector<T>& items, const std::string& id) {
     const auto found = std::find_if(items.begin(), items.end(),

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim::lab {
+namespace multra::lab {
 void rescaleAxles(VehicleType& type) {
     if (!type.axles || !std::isfinite(type.length) || type.length <= 0) return;
     auto& a = *type.axles;

@@ -14,7 +14,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 // B-6 §7 (docs/reference/SPEED_DECISIONS.md, D224/D225): a reduced-speed area holds a vehicle of a
 // listed type to min(desired, min + q (max - min)) while its front is inside on a covered lane,
 // anticipated at the area's deceleration (else comfortable), and released when it leaves; delay is

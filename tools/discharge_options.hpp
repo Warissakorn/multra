@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 // CLI-only syntax; scientific window/rank validation remains in eval.
 struct DischargeOptions {
     bool enabled{}, configured{};

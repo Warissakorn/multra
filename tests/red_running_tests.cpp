@@ -13,7 +13,7 @@
 #include <cmath>
 #include <map>
 
-using namespace trafficsim;
+using namespace multra;
 // B-9 (docs/reference/RED_RUNNING.md, D237/D238, D246/D247): a share of drivers may pass a red head in
 // its first seconds while moving. Rows BA138-BA144 and BA152-BA157 on test::straight()'s road with one
 // head 100 m along it; BA145 is the codec, validation and outputs.

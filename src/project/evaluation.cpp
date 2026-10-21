@@ -16,7 +16,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 QueueDefinition loadQueueDefinition(const std::filesystem::path& dataDirectory,InputManifest* manifest) {
     try {
         const auto j=readInputJson(dataDirectory / "evaluation" / "queue-counter.json",

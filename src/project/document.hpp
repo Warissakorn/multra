@@ -5,7 +5,7 @@
 #include "../model/demand/zones.hpp"
 #include "../model/demand/definition.hpp"
 
-namespace trafficsim {
+namespace multra {
 struct BackgroundImage {
     std::shared_ptr<const std::string> pngBase64{std::make_shared<const std::string>()};
     double x{}, y{}, metresPerPixel{1}, rotation{}, opacity{0.5};

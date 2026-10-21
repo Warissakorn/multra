@@ -2,7 +2,7 @@
 #include "conflict_surface.hpp"
 #include <algorithm>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 std::vector<Point> conflictBandOutline(const Network& n,const ConflictSide& side) {
     try {
         const auto s=conflictSurface(n,side.path);if(!s)return {};

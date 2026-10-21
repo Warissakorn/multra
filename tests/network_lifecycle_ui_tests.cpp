@@ -12,7 +12,7 @@
 #include <numbers>
 #include <iostream>
 #include <stdexcept>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* text){if(!ok)throw std::runtime_error(text);}
 ProjectDocument roads(DrivingSide side) {
@@ -53,7 +53,7 @@ int main(int argc,char** argv) {
     QApplication app(argc,argv);
     try {
         EditorCanvas c;c.resize(1100,700);c.snap=false;c.show();QTest::qWait(20);
-        c.setDisplayCatalog(loadDisplayCatalog(std::filesystem::path(TRAFFICSIM_SOURCE_DIR)/"data"));
+        c.setDisplayCatalog(loadDisplayCatalog(std::filesystem::path(MULTRA_SOURCE_DIR)/"data"));
         History h;std::string error;
         const auto refresh=[&]{c.setDocument(&h.document());};
         c.moveConnectorEndpoint=[&](bool source,LaneReference ref){

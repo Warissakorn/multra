@@ -2,7 +2,7 @@
 #include "document.hpp"
 #include <filesystem>
 
-namespace trafficsim {
+namespace multra {
 class InputManifest;
 // S2.1 (MACRO_NETWORK §4, §5, D271-D273): a Link's `linkType`, owned `definition.linkTypes`, and the
 // installed `data/link-types/` and `data/vdf/` files. Each document key is written only when used,

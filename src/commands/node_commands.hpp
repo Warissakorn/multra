@@ -1,6 +1,6 @@
 #pragma once
 #include "history.hpp"
-namespace trafficsim {
+namespace multra {
 // S0.1 (NODES §2, D261). Empty id allocates `node`; the same id replaces it, and replacing clears
 // `generated`: an edit is a person taking the Node over. Checked on commit (nodeIssues), not here.
 std::string putNode(ProjectDocument&, Node);

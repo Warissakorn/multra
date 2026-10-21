@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 // A Signal head IS its stop line: the runtime holds a vehicle at the head's station (the
 // clamp in core/simulation.cpp), so the canvas draws the line there, across the lane it holds,
 // and a click puts it exactly where the pointer is -- on a Link lane or a Connector path.

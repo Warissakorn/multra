@@ -1,6 +1,6 @@
 #pragma once
 #include "network.hpp"
-namespace trafficsim {
+namespace multra {
 // Geometry-bearing selection, internal Connectors and heads carried by those roads, in
 // network order. An independently selected head has no free geometry and is excluded.
 std::vector<std::string> rotationObjects(const Network&, const std::vector<std::string>& ids);

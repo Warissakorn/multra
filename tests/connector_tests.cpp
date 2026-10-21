@@ -10,7 +10,7 @@
 #include <numbers>
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument roads(DrivingSide side = DrivingSide::left) {
     ProjectDocument d; d.network.drivingSide=side;

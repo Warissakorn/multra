@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <fstream>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 TEST(demand, authors_runs_and_preserves_snapshot) {
     History h;h.reset();std::string route,input;
     h.execute("road",[](auto& d){addLink(d,{{0,0},{100,0}},1,3.5);});

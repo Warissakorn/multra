@@ -4,7 +4,7 @@
 #include "../src/model/network/right_of_way.hpp"
 #include "../src/project/run.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.4c (D68): conflict areas the drawing implies, Vissim's automatic areas. A crossing nobody has
 // set is passive; a merge shows the drawing-order rule it already runs with. Derived, never stored.
 namespace {

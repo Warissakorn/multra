@@ -8,7 +8,7 @@
 #include "../src/project/behaviour_library.hpp"
 #include "../src/project/run.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.3a (D136): row BA29 of docs/plans/DRIVING_BEHAVIOUR.md -- the schema-25 codec of a `w74`
 // behaviour (docs/reference/W74.md §5, §9) and the interim Run refusal of one in use.
 namespace {

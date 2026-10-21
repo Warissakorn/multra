@@ -5,7 +5,7 @@
 #include "../src/model/network/diagnostics.hpp"
 #include "right_of_way_fixture.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 using namespace rowfixture;
 // M3.2.2: authored right-of-way controls at the file/model seam (docs/plans/M3_ACCEPTANCE.md A01-A08).
 // Since M3.2.3b a complete authored merge group runs on its compiled rules (D58).

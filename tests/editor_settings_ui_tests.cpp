@@ -18,7 +18,7 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok,const char* message){if(!ok)throw std::runtime_error(message);}
 void settle(){QApplication::processEvents();QTest::qWait(20);}

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <limits>
 
-using namespace trafficsim;
+using namespace multra;
 TEST(network, compiled_lengths_and_midlink_heads) {
     const auto loaded = test::demo();
     CHECK(validateNetwork(loaded.network).empty()); CHECK(loaded.scenario.segments.size() == 6);

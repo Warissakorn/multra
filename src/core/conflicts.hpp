@@ -4,7 +4,7 @@
 #include "following.hpp"
 #include "routes.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Every zone this route meets, in route distances (M3.2.3b). Shared by the run index and by
 // validation, so the two cannot disagree about where a route meets a chain. Minor zones with
 // less than one vehicle (the longest type plus its standstill distance) between one's exit and

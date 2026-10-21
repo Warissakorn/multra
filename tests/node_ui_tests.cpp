@@ -14,7 +14,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // S0.1 (D261, NODES §6, row N5): the Node tool (N) draws a polygon by Ctrl+right-clicks and Enter in
 // one Undo step; the Nodes tab renames and deletes through History.
 namespace {

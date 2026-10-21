@@ -1,7 +1,7 @@
 #pragma once
 #include "document.hpp"
 
-namespace trafficsim {
+namespace multra {
 // S1.1 (STUDY_PERIODS §3-§5, D266-D268): `studyPeriods[]` at the root, `definition.clockStart` and
 // a matrix's `periodId`. Each is written only when used, which is what makes a file schema 49; a
 // schema-31 file therefore keeps its bytes. Below 49 each is EDIT_UNSUPPORTED_FIELD at its path.

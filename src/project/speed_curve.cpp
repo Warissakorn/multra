@@ -2,7 +2,7 @@
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 
-namespace trafficsim {
+namespace multra {
 SpeedRange parseSpeedRange(const Json& range) {
     const auto number = [&](const Json& o, const char* key) {
         if (!o.is_object() || !o.contains(key) || !o.at(key).is_number())

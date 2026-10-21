@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 // B-7 (docs/reference/LANE_PREFERENCE.md, D233/D234): a vehicle type's kerbLanes splits its entry
 // only over lanes 0..N-1 of its route's first Link. Rows BA124-BA129 on the lane-change lab: route-26
 // starts on a 2-lane Link, route-27 and route-30 on 3-lane Links; route-30's kerb lane is a stub.

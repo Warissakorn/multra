@@ -3,7 +3,7 @@
 #include <compare>
 #include <string>
 
-namespace trafficsim {
+namespace multra {
 struct TileKey {
     std::string providerId;
     int zoom{}, x{}, y{};

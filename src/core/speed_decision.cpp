@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 void indexSpeedDecisions(const Scenario& s, ScenarioIndex& index) {
     index.routeSpeedDecisions.assign(s.routes.size(), {});
     if (s.speedDecisions.empty()) return;

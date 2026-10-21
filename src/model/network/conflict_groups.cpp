@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
-namespace trafficsim {
+namespace multra {
 std::string conflictOwner(const ControlPathRef& p) { return p.connectorId.empty()?p.linkId:p.connectorId; }
 namespace {
 constexpr double kTouch=1e-6;

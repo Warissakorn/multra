@@ -8,7 +8,7 @@
 #include "../src/project/run.hpp"
 #include "../tools/four_leg_network.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.8b (docs/reference/M3_8_CONTRACT.md §2, A27-A35) and M3.2.8c cooperative braking (A36-A39): mandatory
 // lane changes, on hand-built scenarios.
 namespace {

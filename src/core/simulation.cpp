@@ -20,7 +20,7 @@
 #include <limits>
 #include <cstdint>
 #include <set>
-namespace trafficsim {
+namespace multra {
 namespace {
 Scenario canonicalScenario(Scenario scenario) {
     const auto sort = [](auto& items) { std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; }); };

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 namespace {
 int count(int zoom) { if (zoom<0 || zoom>22) throw std::invalid_argument("EDIT_MAP_TILE");return 1<<zoom; }
 }

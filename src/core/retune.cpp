@@ -10,7 +10,7 @@
 #include <cmath>
 #include <memory>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 template<class T>
 bool sameIds(const std::vector<T>& a, const std::vector<T>& b) {

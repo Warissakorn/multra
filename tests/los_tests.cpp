@@ -6,7 +6,7 @@
 #include "../src/project/run.hpp"
 #include "../src/runner/batch.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M5.5 (D134): LOS letters from section delay, rows L1-L6 of docs/reference/LOS.md §6.
 namespace {
 Json fourLegJson() {
@@ -14,7 +14,7 @@ Json fourLegJson() {
 }
 // A data directory holding the queue conditions and the given pack, so evaluationSpec can read it.
 std::filesystem::path dataWith(const std::string& name, const Json& pack) {
-    const auto dir = std::filesystem::temp_directory_path() / ("trafficsim-los-" + name);
+    const auto dir = std::filesystem::temp_directory_path() / ("multra-los-" + name);
     std::filesystem::remove_all(dir);
     std::filesystem::create_directories(dir / "evaluation"); std::filesystem::create_directories(dir / "los");
     std::filesystem::copy_file(test::root() / "data/evaluation/queue-counter.json", dir / "evaluation/queue-counter.json");
@@ -73,7 +73,7 @@ TEST(los, bad_packs_are_refused) { // L3
         const auto dir = dataWith("bad-" + std::to_string(i), bad[i]);
         test::throws([&] { loadLosPack(dir); }, "EDIT_CATALOG_READ");
     }
-    test::throws([] { loadLosPack(std::filesystem::temp_directory_path() / "trafficsim-los-none"); }, "EDIT_CATALOG_READ");
+    test::throws([] { loadLosPack(std::filesystem::temp_directory_path() / "multra-los-none"); }, "EDIT_CATALOG_READ");
 }
 TEST(los, groups_weight_by_vehicles) { // L4
     const auto pack = loadLosPack(test::root() / "data");

@@ -2,7 +2,7 @@
 #include "../project/map_settings.hpp"
 #include <memory>
 
-namespace trafficsim {
+namespace multra {
 struct LonLat { double longitude{}, latitude{}; };
 struct MetrePoint { double x{}, y{}; };
 // Projected grid metres, not a promise of survey ground distance. One WGS84 UTM

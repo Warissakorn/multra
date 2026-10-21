@@ -9,7 +9,7 @@
 #include <map>
 #include <set>
 class QNetworkReply;
-namespace trafficsim {
+namespace multra {
 // QObject without custom signals: all callbacks execute on its owning UI thread.
 class MapTileClient : public QObject {
 public:

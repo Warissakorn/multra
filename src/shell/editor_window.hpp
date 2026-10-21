@@ -43,7 +43,7 @@ class QCloseEvent;
 class QTabWidget;
 class QTableWidget;
 class QToolBar;
-namespace trafficsim {
+namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel; struct MacroRun;

@@ -6,7 +6,7 @@
 #include "../src/model/network/conflict_surface.hpp"
 #include <algorithm>
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 const PriorityDefaults defaults{3,7};
 std::string lane(const ProjectDocument& d,const std::string& id) {for(const auto& l:d.network.links)if(l.id==id)return l.lanes.front().id;throw std::runtime_error("lane");}

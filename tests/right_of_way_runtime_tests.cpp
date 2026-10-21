@@ -4,7 +4,7 @@
 #include "../src/commands/demand_commands.hpp"
 #include "../src/project/run.hpp"
 #include "../src/core/conflicts.hpp"
-using namespace trafficsim;
+using namespace multra;
 using namespace rowfixture;
 // M3.2.3a: an authored crossing compiles to a core ConflictZone and runs; what the first slice
 // cannot run stays refused by name (docs/plans/M3_ACCEPTANCE.md, M3.2.3 rows at the model seam).

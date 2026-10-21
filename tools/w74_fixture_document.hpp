@@ -11,7 +11,7 @@
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
-namespace trafficsim::w74fixture {
+namespace multra::w74fixture {
 inline Json read(const std::filesystem::path& file) {
     std::ifstream in(file);
     if (!in) throw std::runtime_error("Cannot read " + file.string());

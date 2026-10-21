@@ -8,7 +8,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 using Chains = std::vector<std::vector<std::string>>;
 // The chains a placed decision's destination Link already uses: fewest objects, each one a lane

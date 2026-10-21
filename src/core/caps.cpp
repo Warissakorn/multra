@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // The part of the leader's body that is not on this route's segments: a vehicle entering at a join
 // has its rear on its own connector, so its occupancy here starts at the join (MERGE_CLAMPS §1).

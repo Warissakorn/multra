@@ -6,7 +6,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace trafficsim::lab {
+namespace multra::lab {
 namespace {
 double lapLength(const Scenario& s, const Route& route) {
     double length = 0;

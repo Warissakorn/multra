@@ -1,14 +1,14 @@
 #pragma once
 // D98: one run of a project with the D95 fields set on the compiled scenario, not in a catalog
 // copy -- the index reads them from `scenario.behaviours` when the simulation is created, so this
-// is the run a data directory carrying them would make. Shared by trafficsim-lane-change-sweep
+// is the run a data directory carrying them would make. Shared by multra-lane-change-sweep
 // and `lanelab`. Development evidence only: no calibration, no M6 validity.
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
 #include "../src/core/simulation.hpp"
 #include <optional>
 
-namespace trafficsim::sweep {
+namespace multra::sweep {
 struct LaneChangeRun { MovementReport movements; LaneChangeReport changes; };
 // `threshold` absent leaves the behaviours as the catalog compiled them.
 inline LaneChangeRun runLaneChanges(const ProjectDocument& document, RunSnapshot snapshot, const std::filesystem::path& data,

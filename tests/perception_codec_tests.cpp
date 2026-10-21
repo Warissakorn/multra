@@ -10,7 +10,7 @@
 #include <cmath>
 #include <fstream>
 #include <functional>
-using namespace trafficsim;
+using namespace multra;
 // M3.5 slice 1 (D181): rows BA37 and BA30 of docs/plans/DRIVING_BEHAVIOUR.md -- the perception
 // keys of docs/reference/PERCEPTION.md §6 are stored, validated and round-tripped; zero reaction
 // delay preserves the key-absent run (BA30).

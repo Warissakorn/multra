@@ -12,7 +12,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 struct Pose { double x{}, y{}, rotation{}; };

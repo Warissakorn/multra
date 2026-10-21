@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kWindow = 60; // seconds of simulated time on screen
 }

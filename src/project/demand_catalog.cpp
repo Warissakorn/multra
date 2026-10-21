@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
-namespace trafficsim {
+namespace multra {
 std::vector<ValidationIssue> ownedCatalogIssues(const AuthoringDefinition& d) {
     std::vector<ValidationIssue> issues;
     const auto typeExists=[&](const std::string& id){return std::any_of(d.vehicleTypes.begin(),d.vehicleTypes.end(),[&](const auto& t){return t.id==id;});};

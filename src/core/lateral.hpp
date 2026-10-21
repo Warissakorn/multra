@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M3.7 lateral keys (docs/reference/LATERAL.md §9, D180/D187): the one list the codec, the
 // validator and the serializer read, so a key name exists once (hard rule 3).
 struct LateralKey {

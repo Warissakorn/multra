@@ -19,7 +19,7 @@
 #include <QVBoxLayout>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 // M2.7b. A signal controller the way a timing sheet reads: a cycle, an offset, and per signal
 // group the second its green starts and ends and its amber. The table is the input; the bars
 // under it are the check. Nothing here computes a colour of its own -- the diagram and the run

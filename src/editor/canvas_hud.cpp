@@ -4,7 +4,7 @@
 #include <QPainterPath>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr int inset=editorDesign::space2, pad=editorDesign::space1, gap=editorDesign::space2;
 constexpr int arrowSize=2*editorDesign::space4, barHeight=editorDesign::space1+2; // arrow box: arrow south of centre, N north

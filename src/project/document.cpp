@@ -22,7 +22,7 @@
 #include <set>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Written as names, not as the enum's integers: a project file a human opens should say `dashed`,
 // and an added marking kind must not silently renumber what older files meant.

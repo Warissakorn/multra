@@ -19,7 +19,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // M3.2.4: the Conflict areas tab (A24). Keyboard and pointer reach the same commands; each
 // edit is one Undo step; Problems rows lead to the area; the Run UI says what is protected.
 namespace {

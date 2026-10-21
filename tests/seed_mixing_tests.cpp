@@ -3,7 +3,7 @@
 // frozen TypeScript fixtures only (tests/reference).
 #include "test.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 Scenario oneInput(double vehiclesPerHour, double duration) {
     auto s = test::straight();

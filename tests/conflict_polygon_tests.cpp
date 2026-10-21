@@ -6,7 +6,7 @@
 #include "../src/model/network/right_of_way.hpp"
 #include "../src/model/network/conflict_display.hpp"
 #include <algorithm>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 std::string lane(const ProjectDocument& d,const std::string& id) {
     for(const auto& l:d.network.links)if(l.id==id)return l.lanes.front().id;

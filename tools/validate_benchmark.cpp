@@ -7,7 +7,7 @@
 // number here against a number from elsewhere. The document is parsed once and never changed,
 // so the work being timed is identical every repetition.
 //
-//   trafficsim-validate-benchmark [project.traffic.json] [repetitions]
+//   multra-validate-benchmark [project.traffic.json] [repetitions]
 #include "../src/project/document.hpp"
 #include "../src/project/load.hpp"
 #include <nlohmann/json.hpp>
@@ -18,7 +18,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-using namespace trafficsim;
+using namespace multra;
 int main(int argc, char** argv) {
     try {
         const auto file = argc > 1 ? std::filesystem::path(argv[1])

@@ -1,7 +1,7 @@
 #pragma once
 #include "document.hpp"
 
-namespace trafficsim {
+namespace multra {
 // S2.3 (MACRO_NETWORK §7, D275): `definition.macroSettings{targetGap, maxIterations}`, written only
 // when set, which is what makes a file schema 51; absent means kMacroDefaults.
 bool usesMacroSettings(const ProjectDocument&);

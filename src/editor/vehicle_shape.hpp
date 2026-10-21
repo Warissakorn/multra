@@ -1,7 +1,7 @@
 #pragma once
 #include <QPainterPath>
 
-namespace trafficsim {
+namespace multra {
 // The plan view of one vehicle in the Run view (D97). Local frame, metres: the front bumper at the
 // origin, the body along -x, centred on y = 0, so a caller places it at the located station and
 // rotates it to the heading. One path with odd-even holes -- windshield, and a cab gap on a long

@@ -6,7 +6,7 @@
 #include <cmath>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // Where a body's front is across the road: its route part, the cross-section there and that
 // section's width and reference station at the front.

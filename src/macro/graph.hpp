@@ -6,7 +6,7 @@
 
 // S2.1 (docs/reference/MACRO_NETWORK.md §3, D273): the Macro graph, plain values with no I/O. The
 // compiler (src/model/demand/macro_compile.*) fills it; the assignment (S2.2) only reads it.
-namespace trafficsim {
+namespace multra {
 enum class MacroArc { link, connector, centroid };
 // One directed arc. A `link` is a piece of a drawn Link between two Macro nodes; a `connector` or a
 // `centroid` arc is uncapacitated (capacity 0) with a fixed time.

@@ -4,7 +4,7 @@
 #include <optional>
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 using Fixed = std::set<std::pair<std::string, std::size_t>>; // (family, lane on its decision Link)
 // A destination's chain from `laneId`: full if the lane reaches it, else its stub; null if neither.

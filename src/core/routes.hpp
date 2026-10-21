@@ -1,7 +1,7 @@
 #pragma once
 #include "types.hpp"
 
-namespace trafficsim {
+namespace multra {
 struct VehicleLocation { std::string segmentId; double position{}; };
 // The segment is carried as an index into Scenario::segments, not as a string: a span is
 // rebuilt for every vehicle on every tick, and copying the id was the single largest

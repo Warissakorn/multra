@@ -18,7 +18,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <initializer_list>
-namespace trafficsim {
+namespace multra {
 void EditorWindow::buildPalette() {
     auto* dock=new QDockWidget(this);dock->setObjectName("editorPaletteDock");texts_["editorNetworkObjects"]=dock;
     dock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);

@@ -3,7 +3,7 @@
 #include "../tools/lane_change_sweep.hpp"
 #include <fstream>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // D98: the lane-change lab (tools/lane_change_network.hpp) -- four scenes, each one lane-change
 // situation. These pin what each scene compiles to, so a change to the lane-change compile shows
 // up here as a named scene, and that the lab exercises D95 at all.

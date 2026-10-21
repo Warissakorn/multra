@@ -6,7 +6,7 @@
 #include "../src/project/run.hpp"
 #include <cmath>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M5.8a (D148, BATCH §7): scenario comparison. CMP1-CMP4 pin the statistic and the matching by
 // hand; CMP5-CMP7 run four-leg-signalised.
 namespace {

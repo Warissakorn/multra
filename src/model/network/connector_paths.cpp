@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <numeric>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 std::string connectorPathId(const Connector& c,int index) {
     return index==0?c.id:c.id+"/lane-"+std::to_string(index+1);
 }

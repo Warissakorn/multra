@@ -9,7 +9,7 @@
 #include <utility>
 #include <tuple>
 
-namespace trafficsim {
+namespace multra {
 std::vector<ValidationIssue> validateNetwork(const Network& network) {
     std::vector<ValidationIssue> issues;
     const auto add = [&](const std::string& code, const std::string& path) { issues.push_back({code, path}); };

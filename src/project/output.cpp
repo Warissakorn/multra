@@ -2,7 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <type_traits>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 const char* colorName(SignalColor color) {
     switch (color) { case SignalColor::red: return "red"; case SignalColor::amber: return "amber";

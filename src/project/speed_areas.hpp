@@ -2,7 +2,7 @@
 // B-6 §7 (docs/reference/SPEED_DECISIONS.md, D225): reduced-speed areas in the project file and
 // their compile into the engine's per-lane-section form.
 #include "document.hpp"
-namespace trafficsim {
+namespace multra {
 void parseSpeedAreas(const Json& definition, int schema, AuthoringDefinition&);
 void addSpeedAreasJson(const AuthoringDefinition&, Json& definition);
 // §7.1's faults at their paths; vehicle types only when the document owns them (else on Run).

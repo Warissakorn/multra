@@ -1,7 +1,7 @@
 #include "network.hpp"
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 std::string signalGroupProgramId(const std::string& controllerId, int groupNumber) {
     return controllerId + "#" + std::to_string(groupNumber);
 }

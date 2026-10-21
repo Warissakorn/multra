@@ -1,7 +1,7 @@
 #pragma once
 #include "network.hpp"
 
-namespace trafficsim {
+namespace multra {
 // M2.1.1: vehicles with no route, as Vissim runs them. A vehicle entering on a Link follows its
 // lane; where the lane has several ways out each gets an equal share, and a routing decision
 // placed on a Link it reaches sends it towards that decision's destinations by relative flow.

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 using Geometry=std::map<std::string,std::vector<Point>>;
 using Equations=std::map<std::string,ConnectorEquation>;

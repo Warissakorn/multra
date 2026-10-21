@@ -5,7 +5,7 @@
 #include "lab_settings.hpp"
 #include "../project/document.hpp"
 
-namespace trafficsim::lab {
+namespace multra::lab {
 // The document and which authored Routes are which: `mainRoute` carries the tuned vehicle and its
 // traffic, `crossRoutes` the Urban circuit's cross-traffic loops. Each compiles to one chain per
 // lane, `id` or `id/lane-k`. No inputs: an input on a closed loop has an upstream segment, which a

@@ -5,7 +5,7 @@
 #include <string>
 
 int main(int argc, char** argv) {
-    if (argc != 2) { std::cerr << "Usage: trafficsim-check-file-sizes <repository>\n"; return 2; }
+    if (argc != 2) { std::cerr << "Usage: multra-check-file-sizes <repository>\n"; return 2; }
     const std::set<std::string> extensions{".cpp", ".hpp", ".h", ".md", ".cmake"};
     bool valid = true;
     for (auto it = std::filesystem::recursive_directory_iterator(argv[1]); it != std::filesystem::recursive_directory_iterator(); ++it) {

@@ -13,7 +13,7 @@
 #include "../src/runner/batch.hpp"
 #include <fstream>
 
-using namespace trafficsim;
+using namespace multra;
 // S0.3 (docs/reference/NODES.md §4, D264): Micro node evaluation. Each row first checks that its
 // forcing took.
 namespace {

@@ -8,7 +8,7 @@
 #include "../runner/batch.hpp"
 #include <iosfwd>
 
-namespace trafficsim {
+namespace multra {
 // One spec per Node with a valid polygon, in Node order. A turn's section runs from its in-leg Link's
 // start (owner choice 1a) to the out-leg's boundary crossing; a leg's queue lines are on every lane
 // of its in-leg at the crossing (choice 2a). A refused Node has its issues and no turn or leg.

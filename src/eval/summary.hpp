@@ -1,7 +1,7 @@
 #pragma once
 #include "../core/types.hpp"
 
-namespace trafficsim {
+namespace multra {
 struct RunSummary {
     std::uint64_t completed{}, safetyClamps{};
     std::optional<double> meanTravelTime, meanDelay;

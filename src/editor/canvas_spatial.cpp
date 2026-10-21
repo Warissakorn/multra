@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QPainterPathStroker>
 #include <cmath>
-namespace trafficsim {
+namespace multra {
 std::optional<std::pair<Point,int>> EditorCanvas::headPosition(const NetworkSignalHead& head) const {
     if(head.connectorId.empty()) {
         for(const auto& l:document_->network.links)if(l.id==head.lane.linkId)

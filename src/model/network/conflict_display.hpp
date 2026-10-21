@@ -1,7 +1,7 @@
 #pragma once
 #include "right_of_way.hpp"
 
-namespace trafficsim {
+namespace multra {
 inline constexpr double kConflictRailOffset=0.5; // metres normal to each painted rail
 // Mouth station spans belong to the attached Link, never an extension of Connector stations.
 struct ConflictMouthBand { ConflictSide lane;ConflictPolygons clips; };

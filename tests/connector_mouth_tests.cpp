@@ -4,7 +4,7 @@
 #include "../src/model/network/rotation.hpp"
 #include <algorithm>
 #include <numbers>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 double distance(Point a,Point b) { return std::hypot(a.x-b.x,a.y-b.y); }
 void near(Point a,Point b) { test::near(a.x,b.x);test::near(a.y,b.y); }

@@ -1,7 +1,7 @@
 // D165 (docs/reference/BEHAVIOUR_LAB.md §4, rows BL9-BL11): the lab ring and its run.
 #include "test.hpp"
 #include "../src/lab/lab_run.hpp"
-using namespace trafficsim;
+using namespace multra;
 namespace {
 // The D165 rows were written on the Oval; D166's Urban circuit has rows of its own below.
 lab::LabSettings settings() {

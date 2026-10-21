@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <optional>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kReach = 50;        // m: R, how far before a join a vehicle looks across it
 constexpr double kMovingSpeed = 0.1; // m/s: a slower vehicle is standing and leads nobody across

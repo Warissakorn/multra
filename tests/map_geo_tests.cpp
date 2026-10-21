@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool condition,const char* message) {if (!condition) throw std::runtime_error(message);}
 void near(double a,double b,double tolerance=1e-6) {if (!std::isfinite(a)||std::abs(a-b)>tolerance) throw std::runtime_error("Coordinate mismatch: "+std::to_string(a)+" expected "+std::to_string(b));}

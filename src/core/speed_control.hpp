@@ -3,7 +3,7 @@
 #include "types.hpp"
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M3.6 curve speed (docs/reference/SPEED_CONTROL.md, D211/D212).
 // §2: the switch. True iff some behaviour carries curveLateralAcceleration.
 bool curveSwitch(const std::vector<DriverBehaviour>& behaviours);

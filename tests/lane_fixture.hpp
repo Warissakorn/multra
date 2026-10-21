@@ -3,9 +3,9 @@
 // M3.2.8b/c tests: one 200 m Link of three lanes, "a" | "b" | "c". The movement leaves from lane b
 // only, so a vehicle on a or c is on a stub that must change to b before its dead end at 200.
 namespace test {
-inline trafficsim::Scenario lanes() {
+inline multra::Scenario lanes() {
     const auto source = demo().scenario;
-    trafficsim::Scenario s;
+    multra::Scenario s;
     s.duration = 120; s.timeStep = 0.1;
     s.segments = {{"a", 200, {}}, {"b", 200, {"turn"}}, {"c", 200, {}}, {"turn", 50, {}}};
     s.routes = {{"full", {"b", "turn"}}, {"stubA", {"a"}}, {"stubC", {"c"}}};

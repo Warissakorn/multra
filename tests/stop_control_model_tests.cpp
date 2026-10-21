@@ -4,7 +4,7 @@
 #include "../src/commands/demand_commands.hpp"
 #include "../src/core/conflicts.hpp"
 #include "../src/project/run.hpp"
-using namespace trafficsim;
+using namespace multra;
 using namespace rowfixture;
 // M3.2.5a: the Stop/Yield control at the file/model seam -- the gesture, schema 15, validation and
 // the lifecycle that keeps a control from outliving its line or its areas.

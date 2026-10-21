@@ -1,7 +1,7 @@
 #include "vehicle_shape.hpp"
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 constexpr double kCabLength = 2.4;   // front bumper to the cab gap, metres
 constexpr double kTrailerFrom = 7.0; // a vehicle longer than this draws a separate cab

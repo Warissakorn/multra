@@ -2,7 +2,7 @@
 #include "../src/core/w74.hpp"
 #include <cmath>
 #include <limits>
-using namespace trafficsim;
+using namespace multra;
 // M3.3.3a (D129/D135): rows BA21-BA22 of docs/plans/DRIVING_BEHAVIOUR.md against the pure
 // w74Acceleration of docs/reference/W74.md. Expected values are computed by hand in the comments;
 // the parameters are chosen so most of them are exact in binary.

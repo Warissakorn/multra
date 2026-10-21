@@ -1,7 +1,7 @@
 #include "lateral_test_support.hpp"
 #include "../src/core/leaders.hpp"
 #include <cmath>
-using namespace trafficsim;
+using namespace multra;
 using namespace lateral_test;
 // BA55 (D210, docs/reference/LATERAL.md §6): a body over a lane line follows the leaders of the lane it
 // covers, not only those of its own route. A two-lane Link, keys 0.5/1.0. The straddler is held at a

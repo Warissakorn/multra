@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 RunVehicleItem::RunVehicleItem(const QPainterPath& body,QColor fill,double pixelsPerMetre)
     : QGraphicsPathItem(body), margin_(2/std::max(1e-9,pixelsPerMetre)) {
     setPen(Qt::NoPen);setBrush(fill);

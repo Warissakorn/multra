@@ -3,7 +3,7 @@
 #include "../src/project/demand_paths.hpp"
 #include "../src/project/run.hpp"
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M2.1.2: turning proportions per counted interval on a routing decision (D45). Expanded at
 // compile time like every other demand concept, so the core sees ordinary inputs.
 namespace {

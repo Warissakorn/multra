@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 void EditorCanvas::previewLinkLanes(Link& link) const {
     if(link.id!=selected() || !laneResize_ || (laneResize_->kind!=4 && laneResize_->kind!=8))return;
     const bool leading=laneResize_->kind==8;auto lanes=link.lanes;

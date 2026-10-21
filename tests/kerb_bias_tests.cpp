@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
-using namespace trafficsim;
+using namespace multra;
 // M3.4 keep to the kerb lane (D215): rows BA64-BA71 of docs/plans/DRIVING_BEHAVIOUR.md against
 // docs/reference/OVERTAKING.md -- with kerbLaneBias, a free vehicle returns to the kerb lane, passing
 // and undertaking cost the bias more than D95's threshold.

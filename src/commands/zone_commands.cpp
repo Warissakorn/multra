@@ -1,7 +1,7 @@
 #include "zone_commands.hpp"
 #include <algorithm>
 #include <stdexcept>
-namespace trafficsim {
+namespace multra {
 namespace {
 template<class T> std::string put(ProjectDocument& d, std::vector<T>& values, T value, const char* prefix) {
     if (value.id.empty()) value.id = allocateId(d, prefix);

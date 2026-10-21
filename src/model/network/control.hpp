@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // One lane-level path: a Link lane when `connectorId` is empty, otherwise the Connector lane
 // that joins `fromLaneId` to `toLaneId`. Never a section id, a `/lane-k` path id or a scenario
 // slot -- those are derived and change when the drawing does.

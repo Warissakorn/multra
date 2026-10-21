@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 std::string measure(std::size_t runs) {
     return "Difference of means, alternative minus base: simulated delay and queues, not HCM control delay or LOS; " +

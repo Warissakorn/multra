@@ -2,7 +2,7 @@
 #include "json.hpp"
 #include "../runner/compare.hpp"
 
-namespace trafficsim {
+namespace multra {
 // Scenario comparison output (M5.8a, D148, BATCH §7). Each side is one project's batch, named by
 // its file, with its runs so the output can state that side's overloaded seeds and unfinished
 // movements. Same marker-first CSV conventions as batchCsv.

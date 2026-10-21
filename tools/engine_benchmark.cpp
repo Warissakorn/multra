@@ -8,7 +8,7 @@
 // number here against a number from elsewhere. The SCENARIO is deterministic, and the seed is
 // fixed, so the work being timed is identical every run.
 //
-//   trafficsim-engine-benchmark [intersections] [seconds]
+//   multra-engine-benchmark [intersections] [seconds]
 #include "../src/core/simulation.hpp"
 #include "../src/project/run.hpp"
 #include "../src/project/load.hpp"
@@ -17,7 +17,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 // One long through movement plus one entering movement per crossing, each fed by its own input.
 // Volumes are the Link totals M1.26 made them, split across the three lanes at compile time, so

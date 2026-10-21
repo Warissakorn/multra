@@ -1,7 +1,7 @@
 #include "demand_preview.hpp"
 #include "demand_paths.hpp"
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 DemandPreview previewDemand(const ProjectDocument& d,const std::filesystem::path& data) {
     const auto snapshot=compileDocument(d,data);
     DemandPreview result;result.revision=snapshot.revision;

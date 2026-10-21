@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 // The area speed of slot `t` at quantile q, or 0 when the type is not listed.
 double speedOf(const RouteSpeedArea& a, std::uint32_t t, double q) {

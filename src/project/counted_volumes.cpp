@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <algorithm>
 
-namespace trafficsim {
+namespace multra {
 const RoutingDecision* countedDecision(const AuthoringDefinition& d, const VehicleInput& input) {
     for (const auto& x : d.routingDecisions) {
         if (!input.routingDecisionId.empty() ? x.id == input.routingDecisionId

@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <optional>
 
-namespace trafficsim::lab {
+namespace multra::lab {
 // What the focus vehicle sees this tick. `gap` is front bumper to the leader's rear, metres.
 struct FocusTelemetry {
     std::uint64_t id{};

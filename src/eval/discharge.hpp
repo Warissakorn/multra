@@ -3,7 +3,7 @@
 #include "discharge_passage.hpp"
 #include <set>
 
-namespace trafficsim {
+namespace multra {
 // M3.3.1: tick-quantized, per-head/lane queue discharge; not capacity, PCU or LOS.
 struct DischargeSpec {
     double windowStart{}, windowEnd{}, warmup{};

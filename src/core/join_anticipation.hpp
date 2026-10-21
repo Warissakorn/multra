@@ -3,7 +3,7 @@
 #include "types.hpp"
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // JOIN_ANTICIPATION §2 (A4, D255), on only with `clampRules.joinAnticipation`. A vehicle within
 // 50 m of a join follows, as a second law, the other stream's vehicle that reaches the join first.
 // One entry per vehicle and join ahead within reach, in vehicle order: `d` is the front's distance

@@ -7,7 +7,7 @@
 #include "../src/project/run.hpp"
 #include <algorithm>
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 ProjectDocument roads(DrivingSide side=DrivingSide::left) {
     ProjectDocument d;d.network.drivingSide=side;
@@ -119,7 +119,7 @@ TEST(ranges, vehicle_colours_are_display_data_for_known_types) {
     const auto types=loadScenario(data/"scenarios/crossing.json",data).scenario.vehicleTypes;
     for(const auto& [id,colour]:catalog.vehicleColors)
         CHECK(std::any_of(types.begin(),types.end(),[&](const auto& t){return t.id==id;}));
-    const auto dir=std::filesystem::temp_directory_path()/"trafficsim-vehicle-appearance";
+    const auto dir=std::filesystem::temp_directory_path()/"multra-vehicle-appearance";
     std::filesystem::remove_all(dir);std::filesystem::create_directories(dir);
     for(const auto* sub:{"levels","display-types"})
         std::filesystem::copy(data/sub,dir/sub,std::filesystem::copy_options::recursive);

@@ -6,7 +6,7 @@
 #include "../src/runner/batch.hpp"
 #include <algorithm>
 #include <set>
-using namespace trafficsim;
+using namespace multra;
 using namespace lotfix;
 namespace {
 // The M8.4b study with a 5-10 min dwell, so the full lot also releases vehicles inside the hour.

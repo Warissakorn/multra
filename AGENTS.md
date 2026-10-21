@@ -24,10 +24,10 @@ it separates the supplied spec from never-measured Vissim behaviour.
 
 MULTRA (Multi-Level Traffic Analysis) owns a traffic microsimulation engine for engineering studies
 (D38). The owner chose the name in D284, superseding D11 and D201's B1; the licence is
-GPL-3.0-or-later (D285). The executables, window, CLI and CSV markers carry the name. The
-repository, the `trafficsim` namespace, internal targets, `TRAFFICSIM_*` options and the project
-file's `"format": "TrafficSim"` marker keep the earlier name until their own decision; never change
-that marker without a schema step that still reads it.
+GPL-3.0-or-later (D285). The repository, executables, `multra` namespace, targets and `MULTRA_*`
+options carry the name (D287). Only the project file's `"format": "TrafficSim"` marker and the
+legacy-storage move (D286) keep the earlier name; never change that marker without a schema step
+that still reads it.
 
 ## Documentation authority
 
@@ -47,7 +47,7 @@ READMEs are navigation, not status. Dated audits, plans and archive entries desc
 date. A supplied target specification is not proof of implementation or validation. If sources
 disagree, inspect the applicable decision, code and tests; record the discrepancy rather than
 silently changing an owner gate. Index every new maintained doc in its folder README in the same
-commit (`trafficsim-check-docs`).
+commit (`multra-check-docs`).
 
 ## Stack
 
@@ -89,7 +89,7 @@ below, whose reasoning is D7. The ones that get broken by accident:
    carries a "not yet validated" marker.
 5. **Content is data, not code.** Vehicle types, behaviour presets, LOS thresholds live in
    `data/`. If adding the 50th one needs a code edit, fix the boundary instead.
-6. **Files stay at or under 500 lines.** `trafficsim-check-file-sizes .` fails above 500; split before that.
+6. **Files stay at or under 500 lines.** `multra-check-file-sizes .` fails above 500; split before that.
 7. **Never leave the build red.** If it cannot be made green, revert to the last green commit
    and write down what was attempted.
 8. **Never close a milestone that has not met its gate.** Merged code is not a passed gate.

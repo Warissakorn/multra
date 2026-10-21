@@ -1,7 +1,7 @@
 #pragma once
 #include <QGraphicsPathItem>
 
-namespace trafficsim {
+namespace multra {
 // A run vehicle (D199): the body fill plus a 1 px cosmetic casing whose tone is opposite the fill,
 // so the body or its edge stands out on any background, photo or grid. The casing is drawn in
 // paint() only: shape(), which a click tests, stays the item's own path and pen.

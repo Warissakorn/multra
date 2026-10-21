@@ -1,7 +1,7 @@
 #pragma once
 #include "document.hpp"
 
-namespace trafficsim {
+namespace multra {
 // M3.3.2a (D126, docs/reference/DRIVING_BEHAVIOUR.md §1): the project-owned behaviour library --
 // behaviour names and model tags, vehicle classes, link behaviour types -- and the Link/Connector
 // assignment. Schema 21. Stored and validated only; nothing reaches the engine before M3.3.2b.

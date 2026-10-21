@@ -3,9 +3,8 @@
 **MULTRA — Multi-Level Traffic Analysis.** A traffic microsimulator with its own **C++20 engine,
 link-based network model and Qt 6 Widgets desktop interface**, built to the modelling surface
 PTV Vissim users already know and aimed at the movement-level delay and queue output that traffic
-impact studies need. The owner chose the name in D284. The repository, the C++ namespace, internal
-build targets and the project file's `"format": "TrafficSim"` marker still carry the earlier
-working name.
+impact studies need. The owner chose the name in D284. The project was called TrafficSim before;
+project files keep `"format": "TrafficSim"` so that every saved file still opens.
 
 `multra-desktop` opens the Network Editor:
 - Links, Connectors and turn pockets, drawn on an aerial image or an OpenStreetMap background.
@@ -67,7 +66,7 @@ See [`tools/README.md`](tools/README.md) for all CLI and developer-tool commands
 `.github/workflows/native.yml` builds and tests every push and pull request.
 `.github/workflows/package.yml` produces downloadable builds for manual testing: open
 **Actions → Package binaries → Run workflow** (or push a `v*` tag), then download the
-`trafficsim-linux-x86_64` or `trafficsim-windows-x64` artifact. Each archive contains
+`multra-linux-x86_64` or `multra-windows-x64` artifact. Each archive contains
 `bin/multra-desktop`, `bin/multra-cli`, the `data/` catalogs and a `RUN.txt`.
 The Windows build bundles its Qt runtime; the Linux build needs Qt 6 Widgets installed
 (`sudo apt install libqt6widgets6`). These are unsigned test builds, not a release
@@ -91,7 +90,7 @@ marker. Read [`docs/reference/SIMULATION.md`](docs/reference/SIMULATION.md) for 
 ## Migration evidence
 
 The TypeScript baseline remains in Git at
-[`70383db`](https://github.com/Warissakorn/trafficsim/commit/70383db6ab884c718baef97a8ab81292fdc9d1b0).
+[`70383db`](https://github.com/Warissakorn/multra/commit/70383db6ab884c718baef97a8ab81292fdc9d1b0).
 The C++ tests compare four baseline seeds: all non-movement events and complete state
 checkpoints every 10 simulated seconds, with a 1e-7 absolute tolerance on physical values.
 Same-build C++ replay compares the full event stream exactly.

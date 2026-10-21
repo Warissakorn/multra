@@ -19,7 +19,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 // S0.6 rows N19-N21 (docs/reference/NODES.md §15, D278): Results -> Nodes shows the Node, leg and turn
 // rows of a single run and of a batch, as the CSV block gives them; a comparison has none yet. Each
 // row first checks its forcing.

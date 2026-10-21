@@ -3,7 +3,7 @@
 #include <optional>
 #include <vector>
 
-namespace trafficsim {
+namespace multra {
 // M3.7 lateral contract (docs/reference/LATERAL.md, D180/D187). Slice 1 stores and compiles these;
 // nothing in the tick reads them yet.
 // The driver's side of the road. Core owns it so the compiled Scenario can carry it; the model's

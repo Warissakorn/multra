@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace trafficsim {
+namespace multra {
 std::optional<int> EditorCanvas::objectLevel(const std::string& id) const {
     if (!document_) return {};
     for (const auto& link : document_->network.links) if (link.id == id) return link.level;

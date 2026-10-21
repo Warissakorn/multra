@@ -9,7 +9,7 @@
 #include "parking_compile.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
-namespace trafficsim {
+namespace multra {
 namespace {
 // M8.4b: a lot parked full at t = 0 is demand of its own, with or without an input.
 bool holdsVehicles(const ProjectDocument& d) {

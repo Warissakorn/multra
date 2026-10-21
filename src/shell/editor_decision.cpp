@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <QSignalBlocker>
 
-namespace trafficsim {
+namespace multra {
 // M2.4: a static routing decision -- turning proportions as relative flows over routes that all
 // leave the same Link. One row per authored route; a flow of zero leaves the route out, and the
 // one-origin rule is checked on commit, where the error names the route that breaks it.

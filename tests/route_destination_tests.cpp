@@ -4,7 +4,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/project/route_destination.hpp"
 #include "../src/project/run.hpp"
-using namespace trafficsim;
+using namespace multra;
 TEST(stationrouting, destination_codec_keeps_legacy_and_runtime_routes) {
     ProjectDocument d;const auto link=addLink(d,{{0,0},{100,0}},2,3.5);
     const auto route=putRoute(d,{{},{link}});putInput(d,{"input",route,"car",100,0,60});const auto legacy=documentJson(d);

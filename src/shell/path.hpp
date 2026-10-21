@@ -2,7 +2,7 @@
 #include <QString>
 #include <filesystem>
 
-namespace trafficsim {
+namespace multra {
 inline std::filesystem::path nativePath(const QString& text) {
 #ifdef _WIN32
     return std::filesystem::path(text.toStdWString());

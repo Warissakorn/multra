@@ -22,7 +22,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <iostream>
-using namespace trafficsim;
+using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 template<class T> T* item(QObject& root, const char* name) {
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
         require(w.batchResult().has_value(), "The finished batch shows no result");
         const auto snapshot = compileDocument(w.history().document(), data);
         const auto spec = evaluationSpec(w.history().document(), snapshot, data);
-        const auto runs = trafficsim::runSeeds(snapshot.scenario, spec, list);
+        const auto runs = multra::runSeeds(snapshot.scenario, spec, list);
         const auto expected = aggregate(runs);
         const auto& got = *w.batchResult();
         require(got.report == expected, "The editor's batch differs from the CLI's aggregate");

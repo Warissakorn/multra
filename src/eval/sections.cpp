@@ -3,7 +3,7 @@
 #include <cmath>
 #include <map>
 
-namespace trafficsim {
+namespace multra {
 namespace {
 const double none = std::nan("");
 // Interpolated time a front moving from `before` to `after` reaches a line at `at`/`atAfter` (the

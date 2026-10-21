@@ -3,7 +3,7 @@
 // schema 48. Below 48 the network's known fields refuse the key (EDIT_UNSUPPORTED_FIELD network.nodes).
 #include "json.hpp"
 
-namespace trafficsim {
+namespace multra {
 void addNodesJson(const Network&, Json& network);
 // A malformed Node, an unknown key or a point that is not two numbers is EDIT_NODE_INVALID at its
 // path; what the shape cannot say (ids, a simple polygon, overlap) is nodeIssues' on validation.

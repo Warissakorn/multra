@@ -14,7 +14,7 @@
 #include <QStandardPaths>
 #include <QToolBar>
 #include <QUuid>
-namespace trafficsim {
+namespace multra {
 EditorWindow::~EditorWindow() {
     // Every worker can post to this window; cancel and join before QObject/member teardown.
     for (auto& [generation, worker] : batchWorkers_) *worker.cancel = true;

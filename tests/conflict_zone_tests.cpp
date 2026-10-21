@@ -3,7 +3,7 @@
 #include "../src/core/routes.hpp"
 #include <algorithm>
 
-using namespace trafficsim;
+using namespace multra;
 // M3.2.3a: the crossing admission runtime, rows A09-A14, A16, A17 and A25 of
 // docs/plans/M3_ACCEPTANCE.md, on hand-built scenarios. The minor approach "north" crosses the major
 // "east"; the area is 98..102 on both; the minor waiting line is at 90.

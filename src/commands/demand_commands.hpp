@@ -1,6 +1,6 @@
 #pragma once
 #include "history.hpp"
-namespace trafficsim {
+namespace multra {
 AuthoringDefinition& demand(ProjectDocument&);
 std::string putRoute(ProjectDocument&, Route); // Empty id allocates; same id replaces.
 std::string putInput(ProjectDocument&, VehicleInput);

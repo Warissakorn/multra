@@ -8,7 +8,7 @@
 #include "../src/project/run.hpp"
 #include "../src/runner/batch.hpp"
 #include <fstream>
-using namespace trafficsim;
+using namespace multra;
 // M5.4 (D133): travel-time sections, rows TT1-TT10 of docs/reference/TRAVEL_TIME_SECTIONS.md §6.
 namespace {
 Json fourLegJson() {
