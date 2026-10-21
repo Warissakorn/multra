@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
+
+The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and
+NEXT was 88 % shipped history that PROGRESS and RECORD already hold.
+- **NEXT:** 13,877 → about 2.9 KB. The 2026-10-19 state list moved whole to
+  [archive/NEXT-state-2026-10-20.md](NEXT-state-2026-10-20.md); the new state lists only
+  what is open, and adds S2 and S0.6, which it lacked.
+- **AGENTS:** RECORD is appended to, never read whole (≈70k tokens); the file-size rule now says
+  what the check enforces (fails above 500); `src/macro/` is in the layout. NEXT and PROGRESS point
+  to AGENTS instead of restating its rules.
+- **Stale lines fixed:** ARCHITECTURE's Macro row, ROADMAP's S0 line (S0.6; S0.4 moved to S3),
+  read-by-task rows for Macro and study periods, a `src/macro/` README, and the decision index
+  (a Macro topic row, D275–D279 summaries, five answered choices no longer "awaiting").
+
 ## 2026-10-20 — Node evaluation cost: sections by route, tracks in place (D279)
 
 The owner ran an optimization pass and approved the recommended order; this is its first item.

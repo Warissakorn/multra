@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-21 — M11.1: the Meso contract (D291, docs only)
+
+The owner asked whether Meso could start. M11.1 can, because everything it needs exists; only M11.5
+(dynamic assignment) waits on M9. [MESO_NETWORK](reference/MESO_NETWORK.md) fixes the following:
+- **The graph:** the Macro graph's Link pieces, with each Node as one Meso node.
+- **The link model:** a triangular diagram with Newell's cumulative curves and Yperman's sending and
+  receiving volumes.
+- **The node model:** Tampère et al. (2011), with signals as capacity and spill-back.
+- **Data:** a `jamDensity` per link type, none shipped.
+- **Loading:** deterministic.
+- **Outputs:** by time slice, with rows ME1–ME11.
+
+Seven owner choices are listed as B20. Sources came from search summaries; Yperman's thesis was not
+found, so §4's formulas are checked before M11.3.
+
 ## 2026-10-21 — S0.8b: a comparison's Node rows in Results → Nodes (D290); S0 complete
 
 The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org refused again).
@@ -134,20 +149,6 @@ was 32 % of the run-view profile.
   pixels, the pixmap's rounding); a selection mid-run repaints; a half-transparent background image
   keeps its opacity; leaving the run shows every item. Five mutants caught.
 - **Owner check:** Windows paint (OWNER_SITTING E22).
-
-## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
-
-The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and
-NEXT was 88 % shipped history that PROGRESS and RECORD already hold.
-- **NEXT:** 13,877 → about 2.9 KB. The 2026-10-19 state list moved whole to
-  [archive/NEXT-state-2026-10-20.md](archive/NEXT-state-2026-10-20.md); the new state lists only
-  what is open, and adds S2 and S0.6, which it lacked.
-- **AGENTS:** RECORD is appended to, never read whole (≈70k tokens); the file-size rule now says
-  what the check enforces (fails above 500); `src/macro/` is in the layout. NEXT and PROGRESS point
-  to AGENTS instead of restating its rules.
-- **Stale lines fixed:** ARCHITECTURE's Macro row, ROADMAP's S0 line (S0.6; S0.4 moved to S3),
-  read-by-task rows for Macro and study periods, a `src/macro/` README, and the decision index
-  (a Macro topic row, D275–D279 summaries, five answered choices no longer "awaiting").
 
 ## Older entries
 

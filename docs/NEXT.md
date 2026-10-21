@@ -11,6 +11,8 @@ Rewrite this file each session ([AGENTS](../AGENTS.md#session-end)); owner items
 What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and the
 [decision record](decisions/RECORD.md); the 2026-10-19 state list is
 [archived](archive/NEXT-state-2026-10-20.md). Open state only:
+- **M11 (Meso):** the M11.1 contract is written ([MESO_NETWORK](reference/MESO_NETWORK.md), D291);
+  its seven choices wait on the owner (OWNER_SITTING B20).
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md));
   MA15, the textbook benchmark, is open. §19 (b) named runs and (c) a procedure sequence are booked (D277).
 - **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md)); no PCU value ships (D267).
@@ -29,9 +31,17 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — MA15 when a book is reachable; else the owner picks the next item
+## Next session — the owner answers B20 (Meso), then M11.2; MA15 when a book is reachable
 
-S0.8b is in (D290): Results → Nodes shows a comparison's rows, so S0 is complete (S0.4 is with S3).
+- **Meso:** ask the owner to answer MESO_NETWORK §11 (B20). Recommended: 1a–7a.
+  - **With the answers:** write them into the contract (as D272 did for S2), then M11.2:
+    - `compileMesoNetwork` from the Macro graph and Node membership;
+    - `jamDensity` on link types at a new schema version;
+    - `mesoSettings`;
+    - the refusals;
+    - rows ME1 and ME2.
+  - **Before M11.3:** check §4's formulas and step limit against Yperman's thesis, which the
+    session did not find. Lirias (KU Leuven) is the place to try.
 - **MA15 is blocked on access.** On 2026-10-21 the proxy refused every host below, after the
   owner allowed arxiv.org. That suggests a running container keeps its old policy, but this is
   unconfirmed.
@@ -53,8 +63,7 @@ S0.8b is in (D290): Results → Nodes shows a comparison's rows, so S0 is comple
     - the fixture;
     - MA15;
     - the cost measurement.
-- **Otherwise, ask the owner** which open item comes next; nothing is queued after S0. The
-  candidates:
+- **Other open items,** if the owner prefers one before Meso:
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
   - **S3:** Roads and S0.4's coarse values (D272);

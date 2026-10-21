@@ -438,7 +438,7 @@ code edit.
 
 ### M11 — Meso engine
 
-**Open, not started.** Link-transmission model (owner, D158), signals
+**Open, not started; M11.1 contract written** ([MESO_NETWORK](reference/MESO_NETWORK.md), D291; seven owner choices, OWNER_SITTING B20). Link-transmission model (owner, D158), signals
 and priority as capacity, spill-back, M9's assignment loop reused. **Done when:** analytic queue
 and shockwave fixtures pass; spill-back blocks the upstream link at storage capacity; same seed
 gives the same bytes.
