@@ -262,6 +262,8 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   Part B* 45(1), 289–309, doi:10.1016/j.trb.2010.06.004. **Read in full on 2026-10-22** from the
   owner's PDF (D297, [evidence](../evidence/tampere-node-model.md)).
 - C. F. Daganzo (1994, 1995), the cell transmission model: the alternative D158 did not choose.
+- **The benchmark options** (M11.6a, D302): [meso-benchmark-options](../evidence/meso-benchmark-options.md),
+  published cases for the Meso gate, chosen by the owner (OWNER_SITTING B23) before any tolerance.
 
 ## 11. Owner choices (answered 2026-10-21, D292: 1a–7a)
 
@@ -311,6 +313,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | M11.3d | Signals as averaged green (4b). **Implemented (D299)** | ME7, ME26, ME27 |
 | M11.4 | Outputs, CLI `--meso`, editor surface. **Implemented (D300)** | ME10, ME11 |
 | M11.4b | A turn's free-flow time as a lag charged to the out-link's storage. **Implemented (D301)** | ME28 |
+| M11.6a | The benchmark option sheet ([meso-benchmark-options](../evidence/meso-benchmark-options.md)), docs only. **Written (D302); the owner's choice is B23** | — |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
 
 ## 13. Acceptance rows (planned)

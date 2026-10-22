@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.6a: the Meso benchmark option sheet (D302, docs only)
+
+The owner chose to list published options before choosing a Meso benchmark, by the M6.0 rules: no
+engine numbers and no tolerance.
+- **[meso-benchmark-options](evidence/meso-benchmark-options.md)** has two kinds: M1, a corridor
+  queue and its shockwave; and M2, network spill-back. Each has four options.
+- **Disclosed:** Yperman's Example 4.5 and §7.1, and Tampère's Table 8, are not blind. They already
+  have engine numbers, and our formulas came from them.
+- **Recommended:** Boyles et al. (2025) for both kinds, which is open access but unreachable from
+  this environment, with Daganzo (1994, 1995) secondary. The owner answers OWNER_SITTING B23.
+
 ## 2026-10-22 — M11.4b: a turn's free-flow time in Meso (D301)
 
 The turn free time that the compile recorded was not loaded, so a Node's interior took no time.
@@ -119,19 +130,6 @@ candidate. This unblocked MA15.
 - **Cost:** 80 µs and 0.47 M Ir per run (ENGINEERING_NOTES).
 - **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
   until M6.
-
-## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
-
-The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).
-- **New module `src/meso/`** (imports nothing): links, turns and nodes, the settings and the step
-  limit.
-- **`compileMesoNetwork`:** each Node becomes one node with its membership turns and conflicts; the
-  pieces inside a Node are left out; other junctions become simple nodes with through and merged
-  Connector turns. A refused Node is reported and compiled as if it were not drawn.
-- **File:** a link type's `jamDensity` (pcu/km/lane, above the critical density) and
-  `mesoSettings{step, slice}` at schema 52, only when set; the shipped projects keep their schema.
-- **Tests:** ME1–ME2 in `mesonetwork`. Six mutations are caught, two of them only after the rows
-  gained fixtures (two lane Connectors; a refused Node over the junction).
 
 ## Older entries
 

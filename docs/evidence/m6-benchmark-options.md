@@ -144,7 +144,8 @@ An answer here chooses sources only. It closes nothing, validates nothing and re
 Meso and Macro (M10–M12, [D145](../decisions/RECORD.md#d145)) get their own benchmark kinds when
 their contracts are written, by the same rule: options before any engine number. The design names
 the candidates: published equilibrium solutions for Macro, analytic queue and shockwave cases
-for Meso ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.7).
+for Meso ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.7). The Meso sheet is
+[meso-benchmark-options](meso-benchmark-options.md) (D302, sitting B23).
 
 ## References
 

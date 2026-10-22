@@ -34,6 +34,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [m4.2-amber.md](m4.2-amber.md) | M4.2 amber stop-or-go — gate evidence (D147, 2026-10-09) | D147, D88 |
 | [m5.9-cooldown.md](m5.9-cooldown.md) | M5.9 cool-down on `four-leg-signalised` (D146, 2026-10-09) | D146 |
 | [m6-benchmark-options.md](m6-benchmark-options.md) | M6 benchmark option sheet (M6.0, 2026-10-10) | D143, D34 |
+| [meso-benchmark-options.md](meso-benchmark-options.md) | Meso benchmark option sheet (M11.6a, 2026-10-22): published options for the Meso gate, no engine numbers | D302 |
 | [macro-sheffi-benchmark.md](macro-sheffi-benchmark.md) | MA15 — Sheffi (1985) Table 5.4 as the Macro benchmark, 2026-10-22 | D294, D272 |
 | [macro-run-procedures.md](macro-run-procedures.md) | How Visum and Aimsun organise a Macro run (web search), 2026-10-19 | D276 |
 | [tampere-node-model.md](tampere-node-model.md) | M11.3 node model — Tampère et al. (2011) read against MESO_NETWORK §5, 2026-10-22 | D297, D292 |

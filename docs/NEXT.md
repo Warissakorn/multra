@@ -52,11 +52,13 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 
 ## Next session — owner's pick: M11 follow-ups, or another milestone
 
-- **M11 is in through M11.4b** (D291–D301; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
+- **M11 is in through M11.4b** (D291–D302; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
 - **M11 follow-ups, if the owner wants Meso first:**
-  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). No source
-    has been named yet.
+  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). The
+    option sheet is written ([meso-benchmark-options](evidence/meso-benchmark-options.md), D302);
+    the owner chooses in OWNER_SITTING B23 and supplies the chosen copy (Boyles et al. 2025
+    recommended). The tolerance comes after the choice, then the benchmark row or tool.
   - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`
     (`MESO_PRIORITY_IGNORED`).
 - **Other open items:**
@@ -65,5 +67,6 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   - **S3:** Roads and S0.4's coarse values (D272);
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
   - **B21:** Sheffi Fig 5.1's capacities, for the owner.
+  - **B23:** the Meso benchmark choice, for the owner.
 
 M2.8 has only owner checks left.

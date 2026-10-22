@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
+
+The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).
+- **New module `src/meso/`** (imports nothing): links, turns and nodes, the settings and the step
+  limit.
+- **`compileMesoNetwork`:** each Node becomes one node with its membership turns and conflicts; the
+  pieces inside a Node are left out; other junctions become simple nodes with through and merged
+  Connector turns. A refused Node is reported and compiled as if it were not drawn.
+- **File:** a link type's `jamDensity` (pcu/km/lane, above the critical density) and
+  `mesoSettings{step, slice}` at schema 52, only when set; the shipped projects keep their schema.
+- **Tests:** ME1–ME2 in `mesonetwork`. Six mutations are caught, two of them only after the rows
+  gained fixtures (two lane Connectors; a refused Node over the junction).
+
 ## 2026-10-21 — M11.1: the Meso contract (D291, docs only)
 
 The owner asked whether Meso could start. M11.1 can, because everything it needs exists; only M11.5
