@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — MA15: Sheffi's Table 5.4 as the Macro benchmark (D294)
+
+The owner supplied Markdown copies of four books, among them Sheffi (1985), which was D272's first
+candidate. This unblocked MA15.
+- **The example:** Table 5.4, Frank–Wolfe on Figure 5.1. It has three parallel BPR links, t₀ =
+  (10, 20, 25) and q = 10.
+- **Derived capacities:** the copy's image of book p. 114 is empty, so the capacities were derived.
+  Table 5.1's 947 and 137 give c₁ = 2 and c₂ = 4. c₃ = 3 reproduces every printed number, apart from
+  two misprints. The owner confirms them against the print (OWNER_SITTING B21).
+- **Row:** `macrobenchmark` holds MA15 (a) and (b).
+  - (a) Runs capped at 1–5 iterations match the printed flows, times, objective and steps.
+  - (b) At the 10⁻⁴ target, the run reaches the equal-time equilibrium in 13 iterations, with
+    z = 189.33.
+  - The engine was unchanged.
+- **Cost:** 80 µs and 0.47 M Ir per run (ENGINEERING_NOTES).
+- **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
+  until M6.
+
 ## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
 
 The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).
@@ -137,17 +155,6 @@ The last item of the optimization pass. Each frame deleted and rebuilt every veh
   Windows then failed D281's photo row: its pictures are compared with only pixels more than 2
   levels apart counted (blend rounding), and a failure prints its numbers. Its numbers then showed
   a one-pixel band at the photo's border (≤60 levels on ≈1.2k px), so that row compares the interior.
-
-## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
-
-The fourth item of the optimization pass. The word-wrapped `editorRunInfo` label sat in the central
-layout, so its new text every Step laid out the whole window (`QLayout::activate` ≈20 % of a Step).
-- **How:** the label lives in a host widget without a layout. A new text refits the label inside
-  the host, and the host's height changes only when the wrapped line count does. It looks the same.
-- **Measured:** M2.6, 6,000 Steps: 17,642 → 15,750 ms (−11 %; −36 % since the pass began).
-- **Rows (scenario-run-ui):** the status is as wide as the run view and shows all its lines; a
-  narrower window wraps it onto more; 20 Steps post fewer than 3 layout requests to the window.
-  Two mutants caught; dropping the resize refit survived, since a text change refits as well.
 
 ## Older entries
 

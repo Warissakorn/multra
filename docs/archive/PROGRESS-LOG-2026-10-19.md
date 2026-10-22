@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
+
+The fourth item of the optimization pass. The word-wrapped `editorRunInfo` label sat in the central
+layout, so its new text every Step laid out the whole window (`QLayout::activate` ≈20 % of a Step).
+- **How:** the label lives in a host widget without a layout. A new text refits the label inside
+  the host, and the host's height changes only when the wrapped line count does. It looks the same.
+- **Measured:** M2.6, 6,000 Steps: 17,642 → 15,750 ms (−11 %; −36 % since the pass began).
+- **Rows (scenario-run-ui):** the status is as wide as the run view and shows all its lines; a
+  narrower window wraps it onto more; 20 Steps post fewer than 3 layout requests to the window.
+  Two mutants caught; dropping the resize refit survived, since a text change refits as well.
+
 ## 2026-10-20 — Run view: the static network painted from the background cache (D281)
 
 The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`

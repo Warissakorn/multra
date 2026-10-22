@@ -172,3 +172,17 @@ names a section here.
 - **Found while writing the rows:** a multi-line Macro note made the Objects dock taller than the
   wide-canvas row allows. The note became one reflowing paragraph, shown with stages only after a
   run.
+
+## 21. MA15 as implemented (D294)
+
+- **Row:** `tests/macro_benchmark_tests.cpp`, ctest `macrobenchmark`. It builds a hand graph of
+  Sheffi's Figure 5.1 (§11) and changes no engine code.
+  - (a) `assignMacro` capped at k = 1–5 iterations reproduces Table 5.4's flows, times, objective
+    and step. The misprinted t₃ is checked against the arithmetic's 25.3 instead.
+  - (b) At `kMacroDefaults` the run converges in 13 iterations (gap 6.4 × 10⁻⁵). It lands on the
+    equal-time equilibrium (u = 25.456) and z = 189.33.
+- **Forcing:** Table 5.1's printed times (947, 137) from `macroTime`, the initial z of 1975, and
+  free-flow all-or-nothing on link 1.
+- **Evidence:** [macro-sheffi-benchmark](../evidence/macro-sheffi-benchmark.md). The capacities are
+  derived because the copy's page image is empty; the owner's check is OWNER_SITTING B21.
+- **Cost:** in [ENGINEERING_NOTES](ENGINEERING_NOTES.md).

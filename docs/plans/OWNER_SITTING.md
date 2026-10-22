@@ -45,6 +45,12 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
+21. **MA15's capacities and the M10.1 gate** (listed 2026-10-22, D294). Open Sheffi (1985), book
+   p. 114, Figure 5.1, in print or a PDF. The Markdown copy's image of that page is empty, and the
+   capacities c = (2, 4, 3) were derived from Tables 5.1 and 5.4
+   ([evidence](../evidence/macro-sheffi-benchmark.md)). Does the figure print 2, 4 and 3? If yes,
+   does MA15 (Table 5.4 reproduced, equilibrium within the 10⁻⁴ gap) meet the M10 gate's benchmark
+   clause? *Owner:*
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.

@@ -34,6 +34,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [m4.2-amber.md](m4.2-amber.md) | M4.2 amber stop-or-go — gate evidence (D147, 2026-10-09) | D147, D88 |
 | [m5.9-cooldown.md](m5.9-cooldown.md) | M5.9 cool-down on `four-leg-signalised` (D146, 2026-10-09) | D146 |
 | [m6-benchmark-options.md](m6-benchmark-options.md) | M6 benchmark option sheet (M6.0, 2026-10-10) | D143, D34 |
+| [macro-sheffi-benchmark.md](macro-sheffi-benchmark.md) | MA15 — Sheffi (1985) Table 5.4 as the Macro benchmark, 2026-10-22 | D294, D272 |
 | [macro-run-procedures.md](macro-run-procedures.md) | How Visum and Aimsun organise a Macro run (web search), 2026-10-19 | D276 |
 | [source-first-step.md](source-first-step.md) | Source first-step clearance — D108, M3.2.8a.1a | D108, D107 |
 | [perception-motion.md](perception-motion.md) | M3.5 slice 2: look-ahead and multi-anticipation evidence — 2026-10-15 | D182 |
