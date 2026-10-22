@@ -3,6 +3,24 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — MA15: Sheffi's Table 5.4 as the Macro benchmark (D294)
+
+The owner supplied Markdown copies of four books, among them Sheffi (1985), which was D272's first
+candidate. This unblocked MA15.
+- **The example:** Table 5.4, Frank–Wolfe on Figure 5.1. It has three parallel BPR links, t₀ =
+  (10, 20, 25) and q = 10.
+- **Derived capacities:** the copy's image of book p. 114 is empty, so the capacities were derived.
+  Table 5.1's 947 and 137 give c₁ = 2 and c₂ = 4. c₃ = 3 reproduces every printed number, apart from
+  two misprints. The owner confirms them against the print (OWNER_SITTING B21).
+- **Row:** `macrobenchmark` holds MA15 (a) and (b).
+  - (a) Runs capped at 1–5 iterations match the printed flows, times, objective and steps.
+  - (b) At the 10⁻⁴ target, the run reaches the equal-time equilibrium in 13 iterations, with
+    z = 189.33.
+  - The engine was unchanged.
+- **Cost:** 80 µs and 0.47 M Ir per run (ENGINEERING_NOTES).
+- **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
+  until M6.
+
 ## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
 
 The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).

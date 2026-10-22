@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — S3.1: the Roads contract (D303, docs only)
+
+The owner chose S3 next, with values from HCM 7. [ROADS](reference/ROADS.md) fixes the following:
+- **The Road:** a centreline with a template, whose generated Links stay ordinary Links with
+  `roadId`, so Micro is unchanged.
+- **Editing:** *Apply template*, detaching, *Join opposite Links* and *Assign template*.
+- **Nodes:** *Find crossings* with junction or overpass, and *Merge nodes*.
+- **S0.4:** coarse Node values that Meso and Macro read.
+- **Seam checks** by level.
+- **HCM values**, read in the owner's copy: freeway and multilane capacities (Exhibits 12-4, 12-6),
+  saturation flow (19-11) and jam density 190 pc/mi/ln (10-7). BPR pairs with practical capacity,
+  so a capacity basis is proposed: HCM types shipped as `ultimate`, which Macro refuses with BPR.
+- Seven owner choices (B24) and rows RD1–RD22. Nothing is built yet.
+
 ## 2026-10-22 — M11.6a: the Meso benchmark option sheet (D302, docs only)
 
 The owner chose to list published options before choosing a Meso benchmark, by the M6.0 rules: no
@@ -112,24 +126,6 @@ The owner asked for M11.3a after MA15.
   are refused with `MESO_ROUTELESS_UNSUPPORTED` until then. The M2.6 template uses them.
 - **Rows:** ME12–ME16 in `mesodemand`. Five mutations are caught. A turn preference by `via` was
   removed as dead code, since the graph keeps one turn per (in, out) pair.
-
-## 2026-10-22 — MA15: Sheffi's Table 5.4 as the Macro benchmark (D294)
-
-The owner supplied Markdown copies of four books, among them Sheffi (1985), which was D272's first
-candidate. This unblocked MA15.
-- **The example:** Table 5.4, Frank–Wolfe on Figure 5.1. It has three parallel BPR links, t₀ =
-  (10, 20, 25) and q = 10.
-- **Derived capacities:** the copy's image of book p. 114 is empty, so the capacities were derived.
-  Table 5.1's 947 and 137 give c₁ = 2 and c₂ = 4. c₃ = 3 reproduces every printed number, apart from
-  two misprints. The owner confirms them against the print (OWNER_SITTING B21).
-- **Row:** `macrobenchmark` holds MA15 (a) and (b).
-  - (a) Runs capped at 1–5 iterations match the printed flows, times, objective and steps.
-  - (b) At the 10⁻⁴ target, the run reaches the equal-time equilibrium in 13 iterations, with
-    z = 189.33.
-  - The engine was unchanged.
-- **Cost:** 80 µs and 0.47 M Ir per run (ENGINEERING_NOTES).
-- **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
-  until M6.
 
 ## Older entries
 

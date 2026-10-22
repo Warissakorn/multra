@@ -122,6 +122,8 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 
 ## 5. Coarse values and lifecycle (specified now; slice S0.4 lands with S3)
 
+S3's contract specifies the fields, readers and refusals: [ROADS](ROADS.md) §6 (D303).
+
 The owner moved S0.4 to S3 (D272, [MACRO_NETWORK](MACRO_NETWORK.md) §10): Macro compiles a Node's
 interior from its detail, and Nodes without detail first arise from Roads. This amends D260's 5a.
 

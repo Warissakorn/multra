@@ -64,9 +64,12 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - **Other open items:**
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
-  - **S3:** Roads and S0.4's coarse values (D272);
+  - **S3:** the contract is written ([ROADS](reference/ROADS.md), D303): Road, templates, crossings,
+    S0.4's coarse values, seams and HCM-cited link types. Nothing is built until the owner answers
+    B24 (recommended 1a, 2a, 3a, 4a, 5a, 6b, 7a); S3.2, the HCM catalog, comes first;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
   - **B21:** Sheffi Fig 5.1's capacities, for the owner.
   - **B23:** the Meso benchmark choice, for the owner.
+  - **B24:** the S3 choices, for the owner.
 
 M2.8 has only owner checks left.
