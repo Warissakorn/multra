@@ -46,10 +46,8 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
 
-20. **Meso (M11) choices** (listed 2026-10-21, D291). Read
-    [MESO_NETWORK](../reference/MESO_NETWORK.md) §11 and answer 1–7 by letter (recommended: 1a, 2a,
-    3a, 4a, 5a, 6a, 7a): graph, jam density data, node model, signals, paths until M9, editor
-    surface, step. No Meso code is written before the answer. *Owner:*
+Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
+Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.
 
 Answered 2026-10-17: **B19**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
 [D214](../decisions/RECORD.md#d214): the [tiers](../reference/BEHAVIOUR_PARAMETERS.md) stand, the 50 km/h

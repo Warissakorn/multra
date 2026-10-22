@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — Run view: the static network painted from the background cache (D281)
+
+The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`
+was 32 % of the run-view profile.
+- **How:** while a run frame is shown, the scene items under the lowest level's vehicles (surfaces,
+  markings, Connectors, zones, Nodes, conflict areas, the background image) are hidden and painted
+  by `drawBackground`, which QGraphicsView caches. Higher levels, counters and overlays stay live;
+  every `redraw()` rebuilds and re-bakes, so a selection or edit is never stale.
+- **Measured:** M2.6, 6,000 Steps, Linux RelWithDebInfo offscreen: 24,609 → 17,642 ms (−28 %).
+- **Rows (run-presentation):** cached and live pictures match (within 32 levels on under 1 % of
+  pixels, the pixmap's rounding); a selection mid-run repaints; a half-transparent background image
+  keeps its opacity; leaving the run shows every item. Five mutants caught.
+- **Owner check:** Windows paint (OWNER_SITTING E22).
+
 ## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
 
 The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and

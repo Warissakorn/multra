@@ -1,6 +1,7 @@
 #pragma once
 #include "../../core/types.hpp"
 #include "../../macro/graph.hpp"
+#include "../../meso/graph.hpp"
 #include <algorithm>
 #include <map>
 
@@ -30,9 +31,16 @@ struct Mode {
 };
 // S2.1 (MACRO_NETWORK §4, §5, D273): a Macro link type and a volume-delay function. Micro never reads
 // either. `modes` empty allows every mode; `capacityPerLane` is the capacity the VDF uses (pcu/h).
+// M11.2 (MESO_NETWORK §4, §8, D293): a Meso link's jam density in pcu/km/lane, with its own source.
+// Only Meso reads it; none ships (D292 choice 2a).
+struct JamDensity {
+    double value{}; std::string source;
+    bool operator==(const JamDensity&) const = default;
+};
 struct LinkType {
     std::string id, name; double capacityPerLane{}, freeSpeed{}; std::string vdfId;
     std::vector<std::string> modes; std::string source;
+    std::optional<JamDensity> jamDensity; // M11.2: written only when set, which makes a file schema 52
     bool operator==(const LinkType&) const = default;
 };
 struct Vdf {
@@ -171,6 +179,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     bool externalModes{true}; std::vector<Mode> modes; // S1.2 (D269): absent = data/modes/, schema 49
     bool externalLinkTypes{true}; std::vector<LinkType> linkTypes; // S2.1 (D273): absent = data/link-types/, schema 50
     std::optional<MacroSettings> macroSettings; // S2.3 (D275): absent = kMacroDefaults, schema 51
+    std::optional<MesoSettings> mesoSettings; // M11.2 (D293): absent = kMesoDefaults, schema 52
     double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight
     // M4.2 (D147): where the definition came from, not what it says -- never written and never
     // compared, so a save and reopen round-trips the content exactly. A bare M0 scenario (no

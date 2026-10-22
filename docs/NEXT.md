@@ -11,8 +11,8 @@ Rewrite this file each session ([AGENTS](../AGENTS.md#session-end)); owner items
 What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and the
 [decision record](decisions/RECORD.md); the 2026-10-19 state list is
 [archived](archive/NEXT-state-2026-10-20.md). Open state only:
-- **M11 (Meso):** the M11.1 contract is written ([MESO_NETWORK](reference/MESO_NETWORK.md), D291);
-  its seven choices wait on the owner (OWNER_SITTING B20).
+- **M11 (Meso):** the contract is answered (D291, D292: 1a–7a) and M11.2 is in (D293: the Meso graph,
+  `jamDensity`, `mesoSettings` at schema 52; [MESO_NETWORK](reference/MESO_NETWORK.md) §14).
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md));
   MA15, the textbook benchmark, is open. §19 (b) named runs and (c) a procedure sequence are booked (D277).
 - **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md)); no PCU value ships (D267).
@@ -31,17 +31,19 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — the owner answers B20 (Meso), then M11.2; MA15 when a book is reachable
+## Next session — M11.3a (Meso paths and demand); MA15 when a book is reachable
 
-- **Meso:** ask the owner to answer MESO_NETWORK §11 (B20). Recommended: 1a–7a.
-  - **With the answers:** write them into the contract (as D272 did for S2), then M11.2:
-    - `compileMesoNetwork` from the Macro graph and Node membership;
-    - `jamDensity` on link types at a new schema version;
-    - `mesoSettings`;
-    - the refusals;
-    - rows ME1 and ME2.
-  - **Before M11.3:** check §4's formulas and step limit against Yperman's thesis, which the
-    session did not find. Lirias (KU Leuven) is the place to try.
+- **M11.3a:** Micro's routes and routing-decision weights become Meso paths (D292 5a).
+  - Map each route's Links and Connectors to `MesoGraph` links and turns. The pieces inside a Node
+    collapse to the Node's turn; a Connector outside one is a simple node's turn.
+  - Turn shares at each node per class, from the routes' weights and their intervals.
+  - The study period's demand per class in veh/h (constant, or by the matrix's intervals).
+  - Rows ME12 and later in MESO_NETWORK §13: a route that cannot be mapped is refused, with its
+    path. Write the rows first.
+  - Code: `src/project/meso_input.*` beside `mesoNetwork`; the route compile is in
+    `src/project/demand_paths.*` and `src/model/network/routing.*`.
+- **Before M11.3 (the engine):** check §4's formulas and step limit against Yperman's thesis (try
+  Lirias, KU Leuven), and §5 against Tampère et al. (2011)'s requirements.
 - **MA15 is blocked on access.** On 2026-10-21 the proxy refused every host below, after the
   owner allowed arxiv.org. That suggests a running container keeps its old policy, but this is
   unconfirmed.

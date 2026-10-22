@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
+
+The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).
+- **New module `src/meso/`** (imports nothing): links, turns and nodes, the settings and the step
+  limit.
+- **`compileMesoNetwork`:** each Node becomes one node with its membership turns and conflicts; the
+  pieces inside a Node are left out; other junctions become simple nodes with through and merged
+  Connector turns. A refused Node is reported and compiled as if it were not drawn.
+- **File:** a link type's `jamDensity` (pcu/km/lane, above the critical density) and
+  `mesoSettings{step, slice}` at schema 52, only when set; the shipped projects keep their schema.
+- **Tests:** ME1–ME2 in `mesonetwork`. Six mutations are caught, two of them only after the rows
+  gained fixtures (two lane Connectors; a refused Node over the junction).
+
 ## 2026-10-21 — M11.1: the Meso contract (D291, docs only)
 
 The owner asked whether Meso could start. M11.1 can, because everything it needs exists; only M11.5
@@ -135,20 +148,6 @@ layout, so its new text every Step laid out the whole window (`QLayout::activate
 - **Rows (scenario-run-ui):** the status is as wide as the run view and shows all its lines; a
   narrower window wraps it onto more; 20 Steps post fewer than 3 layout requests to the window.
   Two mutants caught; dropping the resize refit survived, since a text change refits as well.
-
-## 2026-10-20 — Run view: the static network painted from the background cache (D281)
-
-The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`
-was 32 % of the run-view profile.
-- **How:** while a run frame is shown, the scene items under the lowest level's vehicles (surfaces,
-  markings, Connectors, zones, Nodes, conflict areas, the background image) are hidden and painted
-  by `drawBackground`, which QGraphicsView caches. Higher levels, counters and overlays stay live;
-  every `redraw()` rebuilds and re-bakes, so a selection or edit is never stale.
-- **Measured:** M2.6, 6,000 Steps, Linux RelWithDebInfo offscreen: 24,609 → 17,642 ms (−28 %).
-- **Rows (run-presentation):** cached and live pictures match (within 32 levels on under 1 % of
-  pixels, the pixmap's rounding); a selection mid-run repaints; a half-transparent background image
-  keeps its opacity; leaving the run shows every item. Five mutants caught.
-- **Owner check:** Windows paint (OWNER_SITTING E22).
 
 ## Older entries
 

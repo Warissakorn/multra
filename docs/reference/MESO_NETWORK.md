@@ -1,7 +1,8 @@
 # Meso network and link-transmission loading (M11)
 
-Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). No code is
-written against it until the owner answers. It fixes:
+Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
+answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options, and M11.2 is
+implemented (D293, §14). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -65,7 +66,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - path flows from an assignment;
   - a time-varying loading.
 
-## 3. The Meso graph (choice 1)
+## 3. The Meso graph (choice 1a)
 
 - **Links:** the Macro graph's `link` arcs, one Meso link each, with its length, lanes, capacity
   and free speed.
@@ -83,11 +84,16 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - a Node whose membership has an issue (NODE_LINK_REENTERS, NODE_CONNECTOR_CROSSES,
     NODE_NO_TURN) gives `MESO_NODE_REFUSED` at the Node;
   - a link shorter than one step's free-flow travel needs the step limit of §4.
+- **Simple nodes** (as implemented, §14): the stations joined by Connectors outside every Node form
+  one node. A Link that continues through a station gives a through turn with time 0. Several lane
+  Connectors between the same two links give one turn naming them all, timed by the first Connector
+  by id.
 
-## 4. The link model (choice 2, choice 7)
+## 4. The link model (choices 2a and 7a)
 
 - **Fundamental diagram:** triangular, per lane. Free speed `v` and capacity `q_max` come from the
-  link type. Jam density `k_jam` is new (choice 2). The critical density is `k_c = q_max / v`, and
+  link type. Jam density `k_jam` is new (choice 2a), in pcu/km/lane like the capacity's pcu/h. It
+  must exceed the critical density `k_c = q_max / v` (v in km/h), and
   the backward wave speed is `w = q_max / (k_jam − k_c)`.
 - **State:** the cumulative vehicle numbers `N_up(t)` and `N_down(t)` at the link's two ends, per
   Newell's simplified kinematic-wave theory (Newell 1993, Part I: the cumulative count at any point
@@ -101,46 +107,40 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - a fixed `Δt` for the whole run, reported in the output;
   - **the limit:** `Δt ≤ min(L/v)` over links. It is proposed here and checked against Yperman
     before M11.3, together with whether `L/w` also bounds it;
-  - a step above the limit is `MESO_STEP_TOO_LONG`, naming the shortest link (choice 7).
+  - a step above the limit is `MESO_STEP_TOO_LONG` at `definition.mesoSettings.step`;
+    `mesoShortestLink` names the link (choice 7a).
 - **Storage:** `k_jam · lanes · L`. A full link's receiving volume is 0, which blocks its upstream
   node: spill-back.
 - **Units:** veh/h per class; capacity in PCU/h, shared by `Σ pcu · flow` as in Macro (D272).
 
-## 5. The node model (choices 3 and 4)
+## 5. The node model (choices 3a and 4a)
 
 - **Per step, at each node:**
   - the in-links' sending volumes, split by turn;
   - the out-links' receiving volumes;
   - the node model gives each turn's transfer. Every vehicle on an in-link waits in its order
     (first in, first out per in-link), so a blocked turn holds the turns behind it.
-- **Choice 3: the model.**
-  - (a) An instance of the generic first-order node model of Tampère et al. (2011): the out-link
-    supply is distributed in proportion to capacity, with node supply constraints for conflicts
-    inside a Node. The paper gives requirements and an exact solution algorithm.
-  - (b) Merge and diverge rules only (capacity-proportional merge, FIFO diverge), with no
-    constraint for conflicts inside a Node.
-- **Choice 4: signals.** A turn's capacity is the in-leg lanes' saturation flow (the link type's
-  capacity per lane) times its group's green.
-  - (a) Green as a time-varying window per step, from the controller's cycle, offset and green
-    start and end, with amber counted as in Micro.
-  - (b) A constant `g/C` per turn.
+- **The model (3a).** An instance of the generic first-order node model of Tampère et al. (2011):
+  the out-link supply is distributed in proportion to capacity, with node supply constraints for
+  conflicts inside a Node. The paper gives requirements and an exact solution algorithm; they are
+  read before M11.3.
+- **Signals (4a).** A turn's capacity is the in-leg lanes' saturation flow (the link type's
+  capacity per lane) during its group's green, as a time-varying window per step from the
+  controller's cycle, offset and green start and end, with amber counted as in Micro.
 - **Priority (unsignalised).** The Node's conflicts by turn pair, with the minor turn yielding,
-  enter the node model as node supply constraints. Under 3b they are ignored and reported as
-  `MESO_PRIORITY_IGNORED`.
+  enter the node model as node supply constraints.
 
-## 6. Demand and paths (choice 5)
+## 6. Demand and paths (choice 5a)
 
 - **Demand:**
   - one study period, per class in veh/h;
   - by the matrix's intervals where it has them, else constant over the period;
   - loading is deterministic (fluid). There is no seed, so the same input gives the same bytes. This
     meets the ROADMAP gate's "same seed" in its stronger form.
-- **Paths until M9.** Every vehicle class needs turn shares at each node, from a set of paths.
-  - (a) Micro's routes and routing-decision weights, which already compile, including OD → routes
-    (D155). Meso and Micro then load the same paths, which is what M12's comparison needs.
-  - (b) Path flows recovered from the Macro UE of the same period. This needs `assignMacro` to keep
-    each iteration's trees and step weights, which changes S2's code.
-  - (c) Free-flow shortest paths (all-or-nothing). Simple, but blind to congestion.
+- **Paths until M9 (5a).** Every vehicle class needs turn shares at each node. They come from
+  Micro's routes and routing-decision weights, which already compile, including OD → routes
+  (D155). Meso and Micro then load the same paths, which is what M12's comparison needs. Each
+  route's Links and Connectors map to Meso links and turns in M11.3a.
 - **M11.5** later replaces the fixed paths with M9's loop.
 
 ## 7. Outputs
@@ -157,13 +157,16 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 - **CLI:** `--meso PERIOD`, as `--macro PERIOD`, with study-period ids or `matrix:<id>`.
 - **The slice length** is a setting (default 300 s). A reporting interval is a choice of output,
   not a model value, so it needs no citation.
-- **Editor (choice 6):** Run Meso and a Meso links table, or the CLI only.
+- **Editor (6a):** Run Meso, a Meso links table and the CLI, as S2.4.
 
 ## 8. Settings and data
 
-- **`definition.mesoSettings{step, slice}`:** written only when set.
-- **Link type field:** `jamDensity: {value, source}` (veh/km/lane), written only when used, at a
-  new schema version. A Meso run with a link type lacking it gives `MESO_JAM_DENSITY_MISSING` at
+- **`definition.mesoSettings{step, slice}`:** written only when set, at schema 52; absent means
+  step 1 s and slice 300 s. `INVALID_MESO_SETTING` at `.step` outside (0, 60] s, and at `.slice`
+  when it is not a whole number (≥ 1) of steps.
+- **Link type field:** `jamDensity: {value, source}` (pcu/km/lane), written only when used, at
+  schema 52. `INVALID_LINK_TYPE` at `.jamDensity.value` at or below the critical density, and at
+  `.jamDensity.source` when blank. A Meso run with a link type lacking it gives `MESO_JAM_DENSITY_MISSING` at
   that type.
 - **No value ships.** A study enters its own measured or cited value, as for capacity (D272 2a).
   The contract names no default, because a typical figure in a text is not a source for a Thai
@@ -194,7 +197,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   read.
 - C. F. Daganzo (1994, 1995), the cell transmission model: the alternative D158 did not choose.
 
-## 11. Owner choices (recommendations first)
+## 11. Owner choices (answered 2026-10-21, D292: 1a–7a)
 
 1. **The graph.**
    - **(a) A Node as one Meso node with its membership turns; other Connector junctions as simple
@@ -233,7 +236,8 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 
 | Slice | Content | Rows |
 |---|---|---|
-| M11.2 | `compileMesoNetwork`, `jamDensity`, settings, refusals | ME1, ME2 |
+| M11.2 | `compileMesoNetwork`, `jamDensity`, settings, refusals. **Implemented (D293)** | ME1, ME2 |
+| M11.3a | Micro routes and routing-decision weights → Meso paths and turn shares; the period's demand per class (5a) | written with M11.3a |
 | M11.3 | `src/meso/` LTM links and nodes, signals, spill-back, boundary interface declared | ME3–ME9 |
 | M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
@@ -256,3 +260,36 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME9 | Determinism | The same input gives the same bytes; the order of links in the file does not change a number |
 | ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
 | ME11 | Editor (choice 6a) | Run Meso on its own worker with Cancel; the Meso links table with the marker; stale by revision |
+
+## 14. M11.2 as implemented (D293)
+
+- **The graph** (`src/meso/graph.hpp`, imports nothing):
+  - `MesoLink`, `MesoTurn`, `MesoConflict`, `MesoNode` and `MesoGraph` (links, turns grouped by
+    node, entries, exits);
+  - `MesoSettings` with `kMesoDefaults{1, 300}`;
+  - `mesoStepLimit` and `mesoShortestLink`.
+- **The compile** (`compileMesoNetwork`, `src/model/demand/meso_compile.*`):
+  - stations as Macro's, plus every valid Node's crossings;
+  - pieces whose midpoint lies inside a valid Node are left out;
+  - station groups by union-find over outside Connectors and each Node's crossings;
+  - one node per group a link touches, ordered by the group's least (Link id, station).
+  - `mesoNetwork(d, data)` (`src/project/meso_input.*`) resolves the link types and adds
+    `linkTypeIssues`.
+- **The file** (`src/project/meso_settings.*`, `link_type_codec.*`): `mesoSettings` and
+  `jamDensity` at schema 52, `EDIT_UNSUPPORTED_FIELD` below it. The future-schema rows moved to 53.
+- **Rows:** ME1 and ME2 in `tests/meso_network_tests.cpp` (ctest `mesonetwork`).
+  - ME1 covers the T-junction and four-leg Nodes (4 and 12 turns), a junction without a Node, two
+    lane Connectors merged into one turn, and a refused Node compiled as if it were not drawn.
+  - ME2 covers the jam density and the settings, the step limit, and the shipped projects'
+    schemas.
+- **Mutations caught:**
+  - interior pieces kept;
+  - the through turn dropped;
+  - lane Connectors not merged;
+  - the schema gate removed;
+  - the critical-density check removed;
+  - a refused Node treated as valid.
+
+  Two of them survived a first version of the rows. Lane Connectors not merged needed a fixture
+  with two lane Connectors. A refused Node treated as valid needed the Node over the junction
+  rather than in empty space.
