@@ -2,7 +2,7 @@
 
 Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
 answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options. M11.2 is
-implemented (D293, §14), and so is M11.3a (D295, §15). It fixes:
+implemented (D293, §14), and so are M11.3a (D295, §15) and M11.3b (D296, §16). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -145,8 +145,10 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - **Sources:** authored routes, static routing decisions (`withRoutingDecisions`, including
     interval and type weights) and OD matrices (`withOdDemand`).
   - **Classes:** one per composition (`composition:<id>`) or lone vehicle type (`type:<id>`).
-  - **Placed decisions and routeless inputs** walk lanes, not objects. They are refused
-    (`MESO_ROUTELESS_UNSUPPORTED`) until M11.3b.
+  - **Placed decisions and routeless inputs (M11.3b, D296)** take Micro's own expansion
+    (`expandRouteless` after `resolveCatalogs`). Its lane paths are mapped back to Links and
+    Connectors. A stub's flow goes to the full routes its vehicles change lanes onto, because a stub
+    does not end the trip; a free-walk lane end is an exit, as in Micro (D44).
   - **Turn shares are read at a time t** from the path flows entering at t. They are not shifted by
     the travel time to the node, whereas Micro's decision applies as a vehicle passes it. This
     matters only when a share changes during a run; the engine (M11.3) reads them this way.
@@ -249,7 +251,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 |---|---|---|
 | M11.2 | `compileMesoNetwork`, `jamDensity`, settings, refusals. **Implemented (D293)** | ME1, ME2 |
 | M11.3a | Authored routes (static routes, static routing decisions, OD-expanded routes) → Meso paths and turn shares; demand per class (5a). **Implemented (D295)** | ME12–ME16 |
-| M11.3b | Routeless inputs and placed routing decisions (the lane-level walk) → Meso paths; until then `MESO_ROUTELESS_UNSUPPORTED` | written with M11.3b |
+| M11.3b | Routeless inputs and placed routing decisions (the lane-level walk) → Meso paths. **Implemented (D296)** | ME17–ME19 |
 | M11.3 | `src/meso/` LTM links and nodes, signals, spill-back, boundary interface declared | ME3–ME9 |
 | M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
@@ -273,10 +275,13 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
 | ME11 | Editor (choice 6a) | Run Meso on its own worker with Cancel; the Meso links table with the marker; stale by revision |
 | ME12 | Route mapping (M11.3a) | A route over Links and an outside Connector gives its Link pieces in order and the simple node's turn; through a Node, the Node's membership turn and no interior link; a Link split at a station, its through turn. Every path's turn k joins its links k and k + 1 |
-| ME13 | Refusals (M11.3a) | A route whose Connector does not join its Links gives `MESO_PATH_UNMAPPED` at `definition.routes[j]`, and the other routes still map; a routeless input gives `MESO_ROUTELESS_UNSUPPORTED` at `definition.inputs[i]`; a class without PCU gives `MODE_PCU_MISSING` at its input, or at `odMatrices[k]` for a matrix's |
+| ME13 | Refusals (M11.3a) | A route whose Connector does not join its Links gives `MESO_PATH_UNMAPPED` at `definition.routes[j]`, and the other routes still map; the walk's blocking issues (a placed decision's destination no chain reaches) at `definition.inputs[i].…`; a class without PCU gives `MODE_PCU_MISSING` at its input, or at `odMatrices[k]` for a matrix's |
 | ME14 | Turn shares (M11.3a) | A static decision with two routes 3:1, then 1:1 in its second interval, gives turn shares 0.75/0.25, then 0.5/0.5 at the diverge; two compositions keep their own shares |
 | ME15 | Demand per class (M11.3a) | A class's entry veh/h at each time equals its inputs' (by `inputPeriods`); an OD matrix gives a `composition:` class at trips ÷ hours by connector share; PCU from `modePcu` |
 | ME16 | Determinism (M11.3a) | The same demand twice; reversed Links, Connectors and inputs give the same demand |
+| ME17 | Free walk (M11.3b) | A routeless 900 veh/h input on a 2-lane Link whose lane 1 leads to b and lane 2 to c: paths to b and c at 450 each, shares 0.5/0.5, entry 900, no refusal |
+| ME18 | Placed decision with stubs (M11.3b) | The same Link with a placed decision to b and c at 3:1, then 1:1 by interval: object-level turn shares 0.75/0.25, then 0.5/0.5; the stub lanes' flow joins the full paths (forcing: Micro's expansion has dead ends), and none ends on the decision's Link |
+| ME19 | The M2.6 template (M11.3b) | With owned types and PCUs, no issue; at several times Σ entry flows over classes equals Σ the authored inputs' volumes; every path's turns join its links |
 
 ## 14. M11.2 as implemented (D293)
 
@@ -334,3 +339,24 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
   - the routeless refusal removed;
   - the Connector join check removed;
   - shares not normalised.
+
+## 16. M11.3b as implemented (D296)
+
+- **The expansion is Micro's.**
+  - `mesoDemand` runs `routelessIssues` and `expandRouteless` over the routeless inputs, after
+    `resolveCatalogs`, as `compileDocument` does. Lane splits, slice shares and typed routing are
+    therefore Micro's, with no second copy.
+  - Each part returns to its authored input by id (`<id>/type-…` included), so a composition's
+    type parts sum back into its class.
+- **Lanes to objects:** `mesoObjectChain` (`src/model/demand/meso_paths.*`) maps lane sections to
+  their Link and connector paths to their Connector, then `mesoPath` maps the chain as in M11.3a.
+- **Stubs:** a route in `routeDeadEnds` hands its flow to the full routes its `laneChanges` lead to,
+  stub after stub. The flow is split equally in id order.
+- **Rows:** ME17–ME19 in `tests/meso_demand_tests.cpp` (ctest `mesodemand`). ME19 loads the M2.6
+  template's whole demand (its four placed decisions), conserved at four times.
+- **Mutations caught:**
+  - the stub hand-off dropped;
+  - a connector path not mapped to its Connector;
+  - type parts not summed back;
+  - the walk's issues not reported.
+

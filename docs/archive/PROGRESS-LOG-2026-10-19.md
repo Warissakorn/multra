@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — Licence: GPL-3.0-or-later, third-party notices in every package (D285)
+
+The owner chose the reviewed recommendation over MIT.
+- **Why it could change:** every commit is the owner's, with no outside contributor and no fork.
+  Commits up to `2053141` stay MIT.
+- **Changed:** `LICENSE` (GPL v3 text) and README's notice. `THIRD-PARTY-NOTICES.md` covers
+  Qt, PROJ/EPSG, vcpkg's DLLs, nlohmann/json, libthai/libdatrie, the font and OSM tiles, and
+  `licenses/` holds the LGPL texts.
+- **Package workflow:** both packages copy the notices and texts. Linux adds PROJ's and
+  nlohmann/json's copyright files. Windows adds every vcpkg port's `copyright` and fails if none
+  are found; a missing libthai licence folder now warns instead of passing silently.
+- **Package run:** green on Linux and Windows on 2026-10-21 (see the entry above).
+
 ## 2026-10-20 — The project is named MULTRA (D284)
 
 The owner chose **MULTRA — Multi-Level Traffic Analysis**, after reviews of the licence and of

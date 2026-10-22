@@ -9,6 +9,8 @@
 #include "../src/commands/zone_commands.hpp"
 #include "../src/model/network/polygon.hpp"
 #include "../src/project/meso_input.hpp"
+#include "../src/project/run.hpp"
+#include "../src/project/demand_paths.hpp"
 #include <fstream>
 using namespace multra;
 namespace {
@@ -123,8 +125,18 @@ TEST(mesodemand, me13_refusals_name_their_object) { // ME13
     const auto g = mesoNetwork(d, data()).graph;
     const auto m = mesoDemand(d, data(), g);
     CHECK(issueAt(m.issues, "MESO_PATH_UNMAPPED", "definition.routes[2]"));
-    CHECK(issueAt(m.issues, "MESO_ROUTELESS_UNSUPPORTED", "definition.inputs[2]"));
-    CHECK(m.issues.size() == 2 && classOf(m, "type:car").paths.size() == 1); // the good route still maps
+    // The good route still maps, and so does the routeless input on x (M11.3b).
+    CHECK(m.issues.size() == 1 && classOf(m, "type:car").paths.size() == 2);
+    // The walk's own refusal, at the input: a placed decision whose destination no chain reaches.
+    auto lost = d;
+    RoutingDecision nowhere; nowhere.linkId = f.a; nowhere.routes = {{"", 1, f.x, {}}};
+    VehicleInput sent; sent.vehicleTypeId = "car"; sent.vehiclesPerHour = 100; sent.endTime = 3600;
+    sent.routingDecisionId = putRoutingDecision(lost, nowhere);
+    putInput(lost, sent);
+    const auto walkIssues = routelessIssues(lost.network, withRoutingDecisions(*lost.definition)).blocking;
+    CHECK(!walkIssues.empty()); // forcing
+    const auto lm = mesoDemand(lost, data(), g);
+    for (const auto& issue : walkIssues) CHECK(issueAt(lm.issues, issue.code, "definition." + issue.path));
     // A class without PCU, at the input or at the OD matrix.
     auto bare = d;
     for (auto& ty : bare.definition->vehicleTypes) ty.pcu.reset();
@@ -201,4 +213,76 @@ TEST(mesodemand, me16_the_same_demand_in_any_order) { // ME16
     std::reverse(permuted.network.connectors.begin(), permuted.network.connectors.end());
     std::reverse(permuted.definition->inputs.begin(), permuted.definition->inputs.end());
     CHECK(mesoDemand(permuted, data(), mesoNetwork(permuted, data()).graph) == m);
+}
+namespace {
+// M11.3b: a 2-lane Link `a` whose first lane leads to b and second to c, one Connector each.
+Diverge split() {
+    Diverge f;
+    auto& d = f.d;
+    f.a = addLink(d, {{0, 0}, {100, 0}}, 2, 3.5);
+    f.b = addLink(d, {{120, 0}, {220, 0}}, 1, 3.5);
+    f.c = addLink(d, {{120, 40}, {220, 40}}, 1, 3.5);
+    const auto& lanes = d.network.links[0].lanes;
+    addConnector(d, {f.a, lanes[0].id, 100}, {f.b, laneOf(d, f.b), 0});
+    addConnector(d, {f.a, lanes[1].id, 100}, {f.c, laneOf(d, f.c), 0});
+    auto& def = demand(d); def.duration = 3600; def.timeStep = 0.5;
+    typeAll(d); ownPcus(d);
+    return f;
+}
+double entryTotal(const MesoGraph& g, const MesoDemand& m, double t) {
+    double total = 0;
+    for (const auto& c : m.classes) for (const auto v : mesoEntryFlows(g, c, t)) total += v;
+    return total;
+}
+}
+TEST(mesodemand, me17_a_free_walk_splits_by_lane) { // ME17
+    auto f = split();
+    VehicleInput walk; walk.vehicleTypeId = "car"; walk.vehiclesPerHour = 900; walk.endTime = 3600; walk.linkId = f.a;
+    putInput(f.d, walk);
+    const auto g = mesoNetwork(f.d, data()).graph;
+    const auto m = mesoDemand(f.d, data(), g);
+    CHECK(m.issues.empty() && m.classes.size() == 1 && m.classes[0].paths.size() == 2);
+    for (const auto& p : m.classes[0].paths) test::near(mesoPathFlow(p, 100), 450, 1e-9);
+    const auto shares = mesoTurnShares(g, m.classes[0], 100);
+    test::near(shares[turnInto(g, f.b)], 0.5, 1e-12); test::near(shares[turnInto(g, f.c)], 0.5, 1e-12);
+    test::near(entryTotal(g, m, 100), 900, 1e-9);
+}
+TEST(mesodemand, me18_a_placed_decision_hands_its_stubs_to_the_full_paths) { // ME18
+    auto f = split();
+    auto& d = f.d;
+    RoutingDecision dec; dec.linkId = f.a; dec.intervals = {{0, 900}, {900, 3600}};
+    dec.routes = {{"", 1, f.b, {3, 1}}, {"", 1, f.c, {1, 1}}};
+    VehicleInput cars; cars.vehicleTypeId = "car"; cars.vehiclesPerHour = 800; cars.endTime = 3600;
+    cars.routingDecisionId = putRoutingDecision(d, dec);
+    putInput(d, cars);
+    // The forcing: Micro's expansion gives stubs (a lane that cannot reach its destination).
+    const auto expanded = withRoutingDecisions(*d.definition);
+    const auto micro = expandRouteless(d.network, expanded, resolveCatalogs(expanded, data()));
+    CHECK(!micro.routeDeadEnds.empty());
+    const auto g = mesoNetwork(d, data()).graph;
+    const auto m = mesoDemand(d, data(), g);
+    CHECK(m.issues.empty() && m.classes.size() == 1);
+    const auto b = turnInto(g, f.b), c = turnInto(g, f.c);
+    const auto early = mesoTurnShares(g, m.classes[0], 100), late = mesoTurnShares(g, m.classes[0], 2000);
+    test::near(early[b], 0.75, 1e-9); test::near(early[c], 0.25, 1e-9);
+    test::near(late[b], 0.5, 1e-9); test::near(late[c], 0.5, 1e-9);
+    test::near(entryTotal(g, m, 100), 800, 1e-9);
+    for (const auto& p : m.classes[0].paths) CHECK(g.links[p.links.back()].source != f.a); // none ends on a
+}
+TEST(mesodemand, me19_the_m26_template_loads_its_whole_demand) { // ME19
+    const auto d = shipped("m2.6-study-template.traffic.json");
+    CHECK(std::all_of(d.definition->inputs.begin(), d.definition->inputs.end(), [](const auto& i) { return !i.routingDecisionId.empty() || !i.linkId.empty(); })); // forcing: routeless
+    const auto g = mesoNetwork(d, data()).graph;
+    const auto m = mesoDemand(d, data(), g);
+    CHECK(m.issues.empty() && !m.classes.empty());
+    for (const double t : {100.0, 1000.0, 2000.0, 3500.0}) {
+        double authored = 0;
+        for (const auto& input : d.definition->inputs)
+            for (const auto& p : inputPeriods(input)) if (p.startTime <= t && t < p.endTime) authored += p.vehiclesPerHour;
+        CHECK(authored > 0);
+        test::near(entryTotal(g, m, t), authored, 1e-6);
+    }
+    for (const auto& c : m.classes)
+        for (const auto& p : c.paths)
+            for (std::size_t k = 0; k < p.turns.size(); ++k) CHECK(g.turns[p.turns[k]].in == p.links[k] && g.turns[p.turns[k]].out == p.links[k + 1]);
 }

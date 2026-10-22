@@ -438,7 +438,7 @@ code edit.
 
 ### M11 — Meso engine
 
-**Open; M11.1 contract written** ([MESO_NETWORK](reference/MESO_NETWORK.md), D291; owner choices answered 1a–7a, D292); **M11.2 implemented** (D293: the Meso graph, `jamDensity` and `mesoSettings` at schema 52, rows ME1–ME2); **M11.3a implemented** (D295: authored routes, static decisions and OD routes as Meso paths, turn shares and demand per class, rows ME12–ME16); **M11.3b carved out:** routeless inputs and placed decisions, refused with `MESO_ROUTELESS_UNSUPPORTED` until then. Link-transmission model (owner, D158), signals
+**Open; M11.1 contract written** ([MESO_NETWORK](reference/MESO_NETWORK.md), D291; owner choices answered 1a–7a, D292); **M11.2 implemented** (D293: the Meso graph, `jamDensity` and `mesoSettings` at schema 52, rows ME1–ME2); **M11.3a implemented** (D295: authored routes, static decisions and OD routes as Meso paths, turn shares and demand per class, rows ME12–ME16); **M11.3b implemented** (D296: routeless inputs and placed decisions through Micro's own expansion, stubs handed to their full routes, rows ME17–ME19; the M2.6 template's demand loads whole). Link-transmission model (owner, D158), signals
 and priority as capacity, spill-back, M9's assignment loop reused. **Done when:** analytic queue
 and shockwave fixtures pass; spill-back blocks the upstream link at storage capacity; same seed
 gives the same bytes.

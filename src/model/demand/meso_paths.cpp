@@ -41,4 +41,16 @@ std::optional<MesoPath> mesoPath(const Network& network, const MesoGraph& g, con
     }
     return path;
 }
+std::vector<std::string> mesoObjectChain(const RuntimeSections& table, const std::vector<std::string>& segments) {
+    std::map<std::string, std::string> owner;
+    for (const auto& s : table.sections) owner[s.id] = s.linkId;
+    for (std::size_t k = 0; k < table.paths.size() && k < table.pathConnector.size(); ++k) owner[table.paths[k].id] = table.pathConnector[k];
+    std::vector<std::string> chain;
+    for (const auto& id : segments) {
+        const auto o = owner.find(id);
+        if (o == owner.end()) return {};
+        if (chain.empty() || chain.back() != o->second) chain.push_back(o->second);
+    }
+    return chain;
+}
 }

@@ -13,9 +13,11 @@ MesoCompile mesoNetwork(const ProjectDocument&, const std::filesystem::path& dat
 // M11.3a (§6, D295): Micro's authored routes as Meso paths, one class per composition
 // ("composition:<id>") or lone vehicle type ("type:<id>"), over the whole run. OD matrices expand
 // as withOdDemand, static decisions as withRoutingDecisions; inputs on one route and class share a
-// path, classes and paths ordered by id. Refused: MESO_ROUTELESS_UNSUPPORTED at
-// `definition.inputs[i]` (a routeless input or a placed decision, M11.3b); MESO_PATH_UNMAPPED at
-// `definition.routes[j]`, or at `odMatrices[k]` for its routes; MODE_PCU_MISSING at the input or matrix.
+// path, classes and paths ordered by id. M11.3b (D296): routeless inputs and placed decisions take
+// Micro's expandRouteless paths, mapped back to objects; a stub's flow goes to the full routes its
+// vehicles change lanes onto, split equally. Refused: MESO_PATH_UNMAPPED at `definition.routes[j]`
+// (or the routeless input), or at `odMatrices[k]` for its routes; MODE_PCU_MISSING at the input or
+// matrix; the walk's blocking issues at `definition.inputs[i].…`.
 struct MesoDemand { std::vector<MesoClass> classes; std::vector<ValidationIssue> issues; bool operator==(const MesoDemand&) const = default; };
 MesoDemand mesoDemand(const ProjectDocument&, const std::filesystem::path& dataDirectory, const MesoGraph&, InputManifest* = nullptr);
 }
