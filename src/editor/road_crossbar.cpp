@@ -98,10 +98,10 @@ std::optional<RoadCrossbar> signalCrossbar(const Network& n,const NetworkSignalH
     } catch(const std::exception&) {}
     return {};
 }
-RoadCrossbarItem::RoadCrossbarItem(const RoadCrossbar& bar,QColor colour,double scale,bool dashed,SignalCue cue)
+RoadCrossbarItem::RoadCrossbarItem(const RoadCrossbar& bar,QColor colour,double scale,bool preview,SignalCue cue)
     : QGraphicsLineItem(bar.first.x,bar.first.y,bar.second.x,bar.second.y),
-      hitWidth_(editorDesign::crossbarHitPixels/std::max(1e-9,std::abs(scale))), cue_(cue) {
-    QPen pen(colour,editorDesign::crossbarPixels,dashed?Qt::DashLine:Qt::SolidLine);
+      hitWidth_(editorDesign::crossbarHitPixels/std::max(1e-9,std::abs(scale))), cue_(cue), preview_(preview) {
+    QPen pen(colour,editorDesign::crossbarPixels,Qt::SolidLine);
     pen.setCosmetic(true);pen.setCapStyle(Qt::FlatCap);setPen(pen);
 }
 QPainterPath RoadCrossbarItem::shape() const {
@@ -112,6 +112,11 @@ QPainterPath RoadCrossbarItem::shape() const {
 }
 QRectF RoadCrossbarItem::boundingRect() const { return shape().boundingRect(); }
 void RoadCrossbarItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* option,QWidget* widget) {
+    if(preview_) {
+        QColor casing=editorDesign::role(QPalette::Base);casing.setAlpha(170);
+        QPen under(casing,pen().widthF()+3);under.setCosmetic(true);under.setCapStyle(Qt::FlatCap);
+        painter->setPen(under);painter->drawLine(line());
+    }
     if(cue_==SignalCue::none||cue_==SignalCue::stop){QGraphicsLineItem::paint(painter,option,widget);return;}
     const auto a=line().p1(),b=line().p2(),third=(b-a)/3;
     painter->setPen(pen());

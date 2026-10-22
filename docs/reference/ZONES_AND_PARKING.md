@@ -365,7 +365,8 @@ Sitting B10, answered "as recommended":
 
 - **Zone tool.**
   - `Z` selects it (index 12, palette group *Demand*); the Zones tab opens with it.
-  - Ctrl+right-click adds a corner; Backspace drops the last; Esc cancels.
+  - Ctrl+right-click adds the first corner, then a plain click (or Ctrl+right-click) each next one
+    (D306); Backspace drops the last; Esc cancels.
   - Enter commits once there are three corners or more, as one Undo step (`putZone`). Fewer
     corners, or a refused polygon, keep the draft.
 - **Canvas.**

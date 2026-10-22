@@ -3,6 +3,13 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.3 blocked on its sources; nothing built
+
+The owner asked for M11.3. The contract makes checking §4 against Yperman (2007) and §5 against
+Tampère et al. (2011) the first step, but the environment refused every host that holds them
+(proxy 403: arxiv.org, lirias.kuleuven.be, ideas.repec.org). The owner chose to wait for the sources,
+so no engine code was written. OWNER_SITTING B22 asks for the hosts or the PDFs.
+
 ## 2026-10-22 — MA15: Sheffi's Table 5.4 as the Macro benchmark (D294)
 
 The owner supplied Markdown copies of four books, among them Sheffi (1985), which was D272's first

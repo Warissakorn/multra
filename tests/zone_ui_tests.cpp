@@ -9,6 +9,7 @@
 #include <QDoubleSpinBox>
 #include <QFile>
 #include <QGraphicsItem>
+#include <QGraphicsPathItem>
 #include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
@@ -18,6 +19,7 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
+#include <set>
 using namespace multra;
 // M8.6a (D161, ZONES_AND_PARKING §9, rows ZE1-ZE5): zones and zone connectors in the editor. The Zone
 // tool (Z) draws a polygon by Ctrl+right-clicks and Enter in one Undo step; the Zones tab adds
@@ -34,6 +36,16 @@ QPoint pixel(EditorWindow& w, Point p) {
 void author(EditorWindow& w, Point p) {
     QTest::qWait(600);
     QTest::mouseClick(w.canvas()->viewport(), Qt::RightButton, Qt::ControlModifier, pixel(w, p)); QApplication::processEvents();
+}
+// D306: once a draft is open, a plain left click adds the next corner.
+void click(EditorWindow& w, Point p) {
+    QTest::qWait(600);
+    QTest::mouseClick(w.canvas()->viewport(), Qt::LeftButton, Qt::NoModifier, pixel(w, p)); QApplication::processEvents();
+}
+QGraphicsPathItem* taggedPath(EditorWindow& w, const char* tag) {
+    for (auto* i : w.canvas()->scene()->items())
+        if (i->data(0).toString() == tag) if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path;
+    return nullptr;
 }
 void key(EditorWindow& w, Qt::Key k) { w.canvas()->setFocus(); QTest::keyClick(w.canvas(), k); QApplication::processEvents(); }
 int tagged(EditorWindow& w, const char* tag) {
@@ -98,6 +110,39 @@ int main(int argc, char** argv) {
         trigger(w, "editorUndo"); require(layer().zones.empty(), "Undo kept the zone");
         trigger(w, "editorRedo"); require(layer().zones.size() == 1, "Redo lost the zone");
         require(zones->rowCount() == 1, "The Zones tab does not list the zone");
+
+        // E1-2 (D306): a plain click with no draft adds no corner; one Ctrl+right-click opens the
+        // draft and plain clicks add the rest. E1-3/E1-4: the draft is solid with a fainter closing
+        // edge, while a saved zone keeps its dashed outline.
+        click(w, a);
+        require(c->zoneDraft().empty(), "A plain click with no draft started one");
+        const auto before = w.history().revision();
+        author(w, a); click(w, b); click(w, d);
+        require(c->zoneDraft().size() == 3, "Plain clicks did not add corners to an open draft");
+        auto* draft = taggedPath(w, "zone-draft"); auto* pending = taggedPath(w, "zone-draft-pending");
+        require(draft && draft->pen().style() == Qt::SolidLine, "The zone draft is not a solid line");
+        require(pending && pending->pen().style() == Qt::SolidLine && pending->pen().color().alpha() < 255,
+                "The draft's pending edge is missing or not faint and solid");
+        auto* savedZone = taggedPath(w, "zone");
+        require(savedZone && savedZone->pen().style() == Qt::DashLine, "A saved zone lost its dashed outline");
+        key(w, Qt::Key_Return);
+        require(layer().zones.size() == 2 && w.history().revision() == before + 1, "The clicked draft was not one zone in one step");
+        trigger(w, "editorUndo"); require(layer().zones.size() == 1, "Undo kept the clicked zone");
+
+        // E1-1 (D306): no tool shows the crosshair; Select is the arrow, every other tool the arrow
+        // with its own glyph, so two tools' pointers differ.
+        auto* tool = w.findChild<QComboBox*>("editorTool");
+        tool->setCurrentIndex(0); QApplication::processEvents();
+        require(c->cursor().shape() == Qt::ArrowCursor, "Select is not the arrow");
+        std::set<QByteArray> pointers;
+        for (int i = 1; i < tool->count(); ++i) {
+            tool->setCurrentIndex(i); QApplication::processEvents();
+            require(c->cursor().shape() == Qt::BitmapCursor, "A tool's pointer is not the arrow with a glyph");
+            const auto image = c->cursor().pixmap().toImage();
+            pointers.insert(QByteArray(reinterpret_cast<const char*>(image.constBits()), static_cast<int>(image.sizeInBytes())));
+        }
+        require(pointers.size() == 12, "Tools share one pointer: the glyph is missing"); // Node shares the Zone glyph
+        key(w, Qt::Key_Z);
 
         // ZE3: a Link selected on the canvas and the zone row: origin and destination connectors.
         selectRow(zones, zone);

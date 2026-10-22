@@ -7,6 +7,7 @@
 #include <QDialog>
 #include <QFile>
 #include <QGraphicsItem>
+#include <QGraphicsPathItem>
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -34,6 +35,10 @@ QPoint pixel(EditorWindow& w, Point p) {
 void author(EditorWindow& w, Point p) { // D84: Ctrl+right-click authors
     QTest::qWait(600);
     QTest::mouseClick(w.canvas()->viewport(), Qt::RightButton, Qt::ControlModifier, pixel(w, p)); QApplication::processEvents();
+}
+void click(EditorWindow& w, Point p) { // D306: a plain click once the start is placed
+    QTest::qWait(600);
+    QTest::mouseClick(w.canvas()->viewport(), Qt::LeftButton, Qt::NoModifier, pixel(w, p)); QApplication::processEvents();
 }
 void key(EditorWindow& w, Qt::Key k) { w.canvas()->setFocus(); QTest::keyClick(w.canvas(), k); QApplication::processEvents(); }
 // The section marks drawn: "start" or "end" per lane bar, solid ones or the draft's.
@@ -90,6 +95,19 @@ int main(int argc, char** argv) {
         require(marks(w, true) == std::multiset<std::string>{"start", "start"}, "The draft start is not drawn across both lanes");
         key(w, Qt::Key_Escape);
         require(!c->sectionStart() && w.history().revision() == revision, "Esc did not drop the start");
+
+        // E1-2/E1-3 (D306): a plain click with no start places nothing; after a Ctrl+right-click start,
+        // drawn solid, a plain click places the end.
+        click(w, from);
+        require(!c->sectionStart(), "A plain click with no start placed one");
+        author(w, from);
+        for (auto* i : c->scene()->items())
+            if (i->data(0).toString() == "travel-time-section" && i->data(1).toString().isEmpty())
+                require(dynamic_cast<QGraphicsPathItem*>(i) && dynamic_cast<QGraphicsPathItem*>(i)->pen().style() == Qt::SolidLine,
+                        "The section's start is not drawn solid");
+        click(w, to);
+        require(network().travelTimeSections.size() == 1, "A plain second click did not make the section");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents(); require(network().travelTimeSections.empty(), "Undo kept the clicked section");
 
         // Start, then end: one section, one Undo step.
         author(w, from); author(w, to);

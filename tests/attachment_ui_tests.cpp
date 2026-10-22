@@ -213,6 +213,11 @@ int main(int argc,char** argv) {
         }
         // Both click-pick positions are also on link bodies, in connector mode.
         item<QComboBox>(w,"editorTool")->setCurrentIndex(5);
+        // E1-2 (D306): after the Ctrl+right-click on the source, a plain click picks the target.
+        QTest::mouseClick(c->viewport(),Qt::RightButton,Qt::ControlModifier,pixel(c,lanePoint(0,2,.25)));
+        QTest::mouseClick(c->viewport(),Qt::LeftButton,Qt::NoModifier,pixel(c,lanePoint(1,2,.75)));
+        require(w.history().document().network.connectors.size()==2,"A plain second click did not make the Connector");
+        action(w,"editorUndo");require(w.history().document().network.connectors.size()==1,"Undo kept the clicked Connector");
         QTest::mouseClick(c->viewport(),Qt::RightButton,Qt::ControlModifier,pixel(c,lanePoint(0,2,.25)));
         QTest::mouseClick(c->viewport(),Qt::RightButton,Qt::ControlModifier,pixel(c,lanePoint(1,2,.75)));
         require(w.history().document().network.connectors.size()==2,"Two-click body attachment failed");attached(w.history().document());

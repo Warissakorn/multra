@@ -68,6 +68,8 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
     eleven HCM link types and the capacity basis. S3.3 is in (D305): Roads, owned templates,
     `roadId`, *Apply template* and detaching, by command only. **Next, S3.3b:** the editor surface
     (a Road tool, a Cross-sections tab, *Apply template*, the detached display); then S3.4;
+  - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
+    previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
   - **B21:** Sheffi Fig 5.1's capacities, for the owner.
   - **B23:** the Meso benchmark choice, for the owner.

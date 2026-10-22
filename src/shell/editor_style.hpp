@@ -4,12 +4,16 @@
 #include <QString>
 #include <filesystem>
 class QWidget;
+class QPainter;
+class QColor;
 class QTableView;
 namespace multra {
 enum class EditorIcon { document, open, save, undo, redo, fit, finish, rotate, remove,
     select, link, connector, route, input, signal, split, measure, image, run, pause,
     step, reset, inspector, objects, focus, grid, conflict, counter, section, zone };
 QIcon editorIcon(EditorIcon icon);
+// One glyph on the 20-unit grid in `ink`: the toolbar's icons and the canvas's tool cursors (D306).
+void paintEditorGlyph(QPainter& painter,EditorIcon icon,const QColor& ink,double stroke);
 // The complete editor QSS: palette(role) references only, no colour literal.
 QString editorStyleSheet();
 // Registers the bundled face (400 and 600) and makes it the application font at the body size.

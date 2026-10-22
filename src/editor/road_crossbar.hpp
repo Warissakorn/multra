@@ -18,12 +18,15 @@ enum class SignalCue { none, stop, caution, go };
 // The hit region is wider than the visible cosmetic stroke, at every zoom; a cue changes only paint.
 class RoadCrossbarItem : public QGraphicsLineItem {
 public:
-    RoadCrossbarItem(const RoadCrossbar&, QColor, double scale, bool dashed = false, SignalCue cue = SignalCue::none);
+    // `preview` marks a bar not yet placed (a head under the pointer, a route's moving end): solid,
+    // on a translucent Base casing (D306), never dashed.
+    RoadCrossbarItem(const RoadCrossbar&, QColor, double scale, bool preview = false, SignalCue cue = SignalCue::none);
     QPainterPath shape() const override;
     QRectF boundingRect() const override;
     void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 private:
     double hitWidth_{};
     SignalCue cue_{};
+    bool preview_{};
 };
 }

@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
+
+The owner asked for three canvas changes.
+- **Pointers:** no tool shows the crosshair. Select is the arrow; every other tool shows the arrow
+  with its toolbar glyph on a small badge, as a move shows the hand.
+- **Multi-click tools** (Zone, Node, Queue counter, Section, the two-click Connector): only the first
+  point needs Ctrl+right-click; later points take a plain left click. Ctrl+right-click still works,
+  and with no draft a left click still only selects (amends D84).
+- **Previews are never dashed:** a solid accent line on a translucent casing, and the edges still to
+  come (a Zone's closing edge, the edge to the pointer) fainter. Dashes that mean something in saved
+  work stay.
+- **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
+  `editor-attachments`; four mutations caught.
+
 ## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
 
 - **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per
@@ -116,13 +130,6 @@ The owner uploaded the paper, and it was read in full.
 - **Rows:** ME20–ME23 in `mesonode`. Three mutations are caught; two had no effect, and both are
   explained.
 - **Still blocked:** the link model needs Yperman (B22).
-
-## 2026-10-22 — M11.3 blocked on its sources; nothing built
-
-The owner asked for M11.3. The contract makes checking §4 against Yperman (2007) and §5 against
-Tampère et al. (2011) the first step, but the environment refused every host that holds them
-(proxy 403: arxiv.org, lirias.kuleuven.be, ideas.repec.org). The owner chose to wait for the sources,
-so no engine code was written. OWNER_SITTING B22 asks for the hosts or the PDFs.
 
 ## Older entries
 

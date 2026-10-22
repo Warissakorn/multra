@@ -2,6 +2,8 @@
 #include "canvas_style.hpp"
 #include "../model/network/right_of_way.hpp"
 #include <QGraphicsLineItem>
+#include <QGraphicsPathItem>
+#include <QPainterPath>
 #include <QMouseEvent>
 #include <QPen>
 #include <algorithm>
@@ -42,8 +44,8 @@ std::optional<MeasurementLine> EditorCanvas::counterLineAt(Point p) const {
     return MeasurementLine{"", point};
 }
 bool EditorCanvas::counterPress(QMouseEvent* e) {
-    if (tool_ != Tool::counter || !document_ || e->button() != Qt::RightButton || !(e->modifiers() & Qt::ControlModifier))
-        return false; // D84: Ctrl+right-click adds a line; a left click only selects
+    if (tool_ != Tool::counter || !document_ || !authoringPress(e, !counterDraft_.empty()))
+        return false; // D84/D306: Ctrl+right-click adds the first line; then plain clicks add more
     const auto p = world(e->pos(), false);
     lastPick_ = p;
     auto line = counterLineAt(p);
@@ -76,11 +78,18 @@ void EditorCanvas::drawCounters() {
             }
         }
         if (!bar || !levelVisible(level)) return; // a line that no longer resolves is not drawn
-        // Advisory ink and dotted, above stop lines and waiting lines, so a counter on a head still shows.
-        QPen pen(canvasStyle::advisory(), draft ? 4 : 2, draft ? Qt::DashLine : Qt::DotLine);
-        pen.setCosmetic(true); pen.setCapStyle(Qt::FlatCap);
-        auto* item = scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);
-        item->setZValue(level * 100. + 11.5);
+        // Advisory ink, above stop lines and waiting lines, so a counter on a head still shows. A
+        // saved counter is dotted; a draft line is a preview, solid on its casing (D306).
+        QGraphicsItem* item;
+        if (draft) {
+            QPainterPath line(QPointF(bar->first.x, bar->first.y)); line.lineTo(bar->second.x, bar->second.y);
+            auto pen = canvasStyle::previewPen(canvasStyle::advisory(), 4); pen.setCapStyle(Qt::FlatCap);
+            item = addPreviewPath(line, level * 100. + 11.5, pen);
+        } else {
+            QPen pen(canvasStyle::advisory(), 2, Qt::DotLine); pen.setCosmetic(true); pen.setCapStyle(Qt::FlatCap);
+            item = scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);
+            item->setZValue(level * 100. + 11.5);
+        }
         item->setData(0, QStringLiteral("queue-counter")); item->setData(1, QString::fromStdString(counter));
         item->setData(2, QString::fromLatin1(kindOf(l, n)));
     };

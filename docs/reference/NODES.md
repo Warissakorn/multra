@@ -150,7 +150,8 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 
 - **Node tool** (`N`, as `docs/specs/network-editor/part-02.md` names it). It draws the way the zone
   tool does (`src/editor/canvas_zones.cpp`):
-  - Ctrl+right-click adds a vertex, Backspace removes the last one, Esc cancels;
+  - Ctrl+right-click adds the first vertex and plain clicks the next ones (D306), Backspace removes
+    the last one, Esc cancels;
   - Enter commits once there are at least 3 vertices;
   - the commit is `execute("editorNodeTool", …)`, one Undo step.
 - **Nodes panel.** A table of Nodes with name, control type, legs, turns and issues. Rename and
@@ -257,7 +258,7 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Commands.** `src/commands/node_commands.*` holds `putNode`, `renameNode` and `deleteNode`.
   Replacing or renaming clears `generated`, and an allocated Node keeps the flag it was given.
 - **Editor.**
-  - `EditorCanvas::Tool::node` shares the zone draft (Ctrl+right-click, Enter, Backspace, Esc) and
+  - `EditorCanvas::Tool::node` shares the zone draft (Ctrl+right-click, then plain clicks, Enter, Backspace, Esc) and
     hands it to `nodeCommitted`.
   - `drawNodes` draws a solid outline, dotted while `generated`, with the name at the centroid.
   - The Nodes tab is `src/shell/editor_nodes.cpp`, in the Measurement group: table, rename dialog

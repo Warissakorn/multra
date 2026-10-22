@@ -35,6 +35,10 @@ void author(EditorWindow& w, Point p) {
     QTest::qWait(600);
     QTest::mouseClick(w.canvas()->viewport(), Qt::RightButton, Qt::ControlModifier, pixel(w, p)); QApplication::processEvents();
 }
+void click(EditorWindow& w, Point p) { // D306: plain clicks add corners to an open draft
+    QTest::qWait(600);
+    QTest::mouseClick(w.canvas()->viewport(), Qt::LeftButton, Qt::NoModifier, pixel(w, p)); QApplication::processEvents();
+}
 void key(EditorWindow& w, Qt::Key k) { w.canvas()->setFocus(); QTest::keyClick(w.canvas(), k); QApplication::processEvents(); }
 int tagged(EditorWindow& w, const char* tag) {
     int n = 0;
@@ -91,10 +95,13 @@ int main(int argc, char** argv) {
         require(tabs->currentWidget()->isAncestorOf(table), "The tool did not show the Nodes tab");
 
         // Two corners and Enter keep the draft; a third and Enter make one Node in one Undo step.
+        // E1-2 (D306): a plain click with no draft adds nothing; after the first Ctrl+right-click,
+        // plain clicks add the corners.
         const auto start = w.history().revision();
-        author(w, a); author(w, b); key(w, Qt::Key_Return);
+        click(w, a); require(c->zoneDraft().empty(), "A plain click with no draft started a node");
+        author(w, a); click(w, b); key(w, Qt::Key_Return);
         require(nodes().empty() && c->zoneDraft().size() == 2, "Two corners made a node");
-        author(w, d); key(w, Qt::Key_Return);
+        click(w, d); key(w, Qt::Key_Return);
         require(nodes().size() == 1 && nodes()[0].polygon.size() == 3, "Three corners and Enter made no node");
         require(w.history().document().zones.zones.empty(), "The Node tool made a zone");
         require(w.history().revision() == start + 1, "The node was not one Undo step");

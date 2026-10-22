@@ -90,18 +90,18 @@ void EditorCanvas::finishHeadDrag(QPoint position) {
 void EditorCanvas::drawHeads() {
     if(!document_ || runFrame_.scenario)return;
     const double scale=viewScale();
-    const auto draw=[&](const NetworkSignalHead& head,QColor colour,bool dashed) {
+    const auto draw=[&](const NetworkSignalHead& head,QColor colour,bool preview) {
         const auto bar=signalCrossbar(document_->network,head);
         if(!bar || !levelVisible(bar->level))return;
-        if(!dashed && isSelected(head.id)) {
+        if(!preview && isSelected(head.id)) {
             QPen halo(canvasStyle::selection(),editorDesign::crossbarPixels+4);halo.setCosmetic(true);halo.setCapStyle(Qt::FlatCap);
             scene_.addLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y,halo)->setZValue(bar->level*100.+10);
-        } else if(!dashed) {
+        } else if(!preview) {
             QPen outline(editorDesign::role(QPalette::Text),editorDesign::crossbarPixels+2);
             outline.setCosmetic(true);outline.setCapStyle(Qt::FlatCap);
             scene_.addLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y,outline)->setZValue(bar->level*100.+10);
         }
-        auto* line=new RoadCrossbarItem(*bar,colour,scale,dashed);scene_.addItem(line);
+        auto* line=new RoadCrossbarItem(*bar,colour,scale,preview);scene_.addItem(line);
         line->setZValue(bar->level*100.+10.5);line->setData(0,QStringLiteral("stop-line"));
         line->setData(1,QString::fromStdString(head.id));
     };

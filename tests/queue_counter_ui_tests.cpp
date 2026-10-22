@@ -8,6 +8,7 @@
 #include <QDialog>
 #include <QFile>
 #include <QGraphicsItem>
+#include <QGraphicsPathItem>
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -123,6 +124,14 @@ int main(int argc, char** argv) {
         // Esc drops a draft, and nothing is written.
         author(w, stop(*heads[0]));
         require(c->counterDraft().size() == 1, "A click on a stop line did not add a line");
+        // E1-2/E1-3 (D306): with the draft open a plain click adds the next line, and a draft line is
+        // solid, not dashed (the left click above, with no draft, added nothing).
+        click(w, stop(*heads[1]));
+        require(c->counterDraft().size() == 2, "A plain click did not add to the open draft");
+        for (auto* i : c->scene()->items())
+            if (i->data(0).toString() == "queue-counter" && i->data(1).toString().isEmpty())
+                require(dynamic_cast<QGraphicsPathItem*>(i) && dynamic_cast<QGraphicsPathItem*>(i)->pen().style() == Qt::SolidLine,
+                        "A draft counter line is not solid");
         key(w, Qt::Key_Escape);
         require(c->counterDraft().empty() && w.history().revision() == revision, "Esc did not drop the draft");
 
