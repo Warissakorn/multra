@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "editor_macro.hpp"
+#include "editor_meso.hpp"
 #include "behaviour_lab_window.hpp"
 #include "path.hpp"
 #include "editor_style.hpp"
@@ -62,7 +63,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     setReflowPolicy(error_,QSizePolicy::Ignored);
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
-    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); history_.reset(newProjectDocument());
+    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(newProjectDocument());
         automaticRevision_=conflictRevision_=UINT64_MAX;
         file_.clear(); canvas_->select(""); refresh(); canvas_->fitNetwork(); } }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{

@@ -40,7 +40,8 @@ struct Row {
     std::vector<std::pair<std::size_t, double>> parts; // (commodity, PCU in the sending volume)
 };
 }
-MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, double step, double horizon) {
+MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, double step, double horizon,
+                     const std::function<bool(std::size_t, std::size_t)>& progress) {
     MesoLoading out;
     out.step = step;
     const auto steps = static_cast<std::size_t>(std::ceil(horizon / step - 1e-9));
@@ -78,6 +79,7 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
     std::map<std::pair<std::size_t, std::size_t>, std::size_t> turnOf; // (in, out) -> turn
     for (std::size_t u = 0; u < g.turns.size(); ++u) turnOf.try_emplace({g.turns[u].in, g.turns[u].out}, u);
     for (std::size_t k = 0; k < steps; ++k) {
+        if (progress && !progress(k, steps)) { out.cancelled = true; break; }
         const double t = static_cast<double>(k) * step;
         std::vector<double> S(nl), R(nl);
         for (std::size_t l = 0; l < nl; ++l) {

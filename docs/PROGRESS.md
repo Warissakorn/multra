@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.4: Meso outputs, `--meso` and Run Meso (D300)
+
+The owner chose the whole Micro run as Meso's horizon, with the same demand, so the CLI is `--meso`.
+- **`runMeso`** feeds JSON and CSV outputs by slice, in PCU: link flows, density, travel time from the
+  curves, queue and spill-back; turn transfers; VKT, VHT and delay; and vehicles per class.
+- **The editor** has Run Meso and Cancel, the Meso links tab with the marker and a stale notice, and
+  Export.
+- **Rows:** ME10 (`mesooutput`), ME11 (`meso-ui`), and `cli-meso*`. Five mutations are caught.
+- **Docs:** the as-implemented sections moved to MESO_NETWORK_IMPLEMENTED for the 500-line cap.
+- **Known gap:** turn free-flow times are not loaded yet.
+
 ## 2026-10-22 — M11.3d: signals in Meso as averaged green (D299)
 
 The owner chose averaged green (4b) over explicit green, which under FIFO would hold a whole approach
@@ -125,16 +136,6 @@ The owner asked whether Meso could start. M11.1 can, because everything it needs
 
 Seven owner choices are listed as B20. Sources came from search summaries; Yperman's thesis was not
 found, so §4's formulas are checked before M11.3.
-
-## 2026-10-21 — S0.8b: a comparison's Node rows in Results → Nodes (D290); S0 complete
-
-The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org refused again).
-- **Results → Nodes, for a comparison:** the Node, leg and turn rows of `Comparison::nodes`: two
-  sides, difference and ±95 % for delay, plus the legs' queue. There is no letter on a difference.
-  Unmatched names go in the note.
-- **Tests:** N21 rewritten. A comparison with itself let a column swap survive, so it now compares a
-  busier copy; four mutations each fail it.
-- **S0 is complete** but S0.4, which moved to S3 (D272).
 
 ## Older entries
 

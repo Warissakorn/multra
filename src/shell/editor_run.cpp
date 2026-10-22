@@ -151,7 +151,9 @@ void EditorWindow::refreshRun(){
     actions_.at("editorRun")->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));
     actions_.at("editorStep")->setEnabled(!runTimer_.isActive());
     refreshMacro(); // S2.4: its actions and stale note follow every refresh
-    const bool exportable=macroTabShown()?macroResult()!=nullptr:runFinished()||batch_.has_value()||comparison_.has_value();
+    refreshMeso(); // M11.4: and the Meso ones
+    const bool exportable=macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
+        :runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);
     for(const char* key:{"editorRunSeeds","editorCompareSeeds"})

@@ -3,7 +3,8 @@
 Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
 answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options. M11.2 is
 implemented (D293, §14), and so are M11.3a (D295, §15), M11.3b (D296, §16), the node model (D297,
-§17), the link model with the loading engine (D298, §18) and signals (D299, §19). It fixes:
+§17), the link model with the loading engine (D298, §18), signals (D299, §19) and the outputs, CLI
+and editor (D300, §20); §14–§20 are in [MESO_NETWORK_IMPLEMENTED](MESO_NETWORK_IMPLEMENTED.md). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -183,21 +184,36 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     window) belongs to `--meso PERIOD` in M11.4.
 - **M11.5** later replaces the fixed paths with M9's loop.
 
-## 7. Outputs
+## 7. Outputs (as amended by the owner on 2026-10-22, D300)
 
-- **Link rows by time slice:**
-  - inflow, outflow, mean density;
-  - mean travel time (from the cumulative curves' horizontal distance);
-  - queue (vehicles stored above the free-flow number);
+- **The run:** the whole Micro run, `[0, definition.duration]`, with the demand Micro loads (§6). The
+  owner chose this over a study-period window, so that M12 compares like with like. Vehicles still
+  inside at the end are reported as stored.
+- **Units:** PCU, since capacity is shared in PCU (D272). Per-class vehicles appear in the class rows.
+- **Link rows by time slice `[t0, t1)`:**
+  - inflow and outflow, pcu/h;
+  - mean density over the slice's steps, pcu/km;
+  - the mean travel time of the PCU entering in the slice, from the cumulative curves' horizontal
+    distance, integrated exactly over the piecewise-linear curves; null when none entered, or not all
+    have left by the end;
+  - the mean queue, the vertical queue `up(t − L/v) − down(t)` (the vehicles stored above the
+    free-flow number);
   - a spill-back flag when the receiving volume was 0 in any step of the slice.
-- **Node and turn rows by time slice:** transferred vehicles, and delay against the free-flow turn
-  time.
-- **Network totals:** VHT, VKT and total delay.
-- **JSON and CSV** with the marker line first and the run's step, slice and input manifest.
-- **CLI:** `--meso PERIOD`, as `--macro PERIOD`, with study-period ids or `matrix:<id>`.
-- **The slice length** is a setting (default 300 s). A reporting interval is a choice of output,
-  not a model value, so it needs no citation.
-- **Editor (6a):** Run Meso, a Meso links table and the CLI, as S2.4.
+- **Turn rows by time slice:** the PCU transferred, with the turn's signal and g/C.
+  - **No turn delay:** the LTM's nodes have no length (Yperman §3.1: "times spent on nodes are not
+    taken into account"), so all delay is on the links.
+  - The turn free-flow time that §3 records is not used by the loading yet. This is a known gap
+    (NEXT).
+- **Totals, over the PCU that completed each link:** VKT `Σ L·down(T)`; VHT `Σ ∫(t_down − t_up) dN`;
+  delay `VHT − Σ down(T)·L/v`; and the PCU stored at the end.
+- **Class rows:** vehicles demanded, entered, arrived, and waiting at their origins.
+- **JSON and CSV** carry the marker line first. The CSV holds the link slice rows only; turns are in
+  the JSON. The JSON also holds the run's step, slice, duration and input manifest.
+- **CLI:** `--meso` (no PERIOD), with `--project`, taking only `--csv` and `--data-dir`.
+- **The slice length** is a setting (default 300 s). A reporting interval is a choice of output, not
+  a model value, so it needs no citation.
+- **Editor (6a):** Run Meso and Cancel on the Results toolbar, and the Meso links tab. Export and
+  Copy give the Meso CSV, as S2.4.
 
 ## 8. Settings and data
 
@@ -283,7 +299,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | M11.3 | The node model. **Implemented (D297)** | ME20–ME23 |
 | M11.3c | The link model and the loading engine, spill-back, the boundary volumes. **Implemented (D298)** | ME3–ME6, ME8, ME9, ME24, ME25 |
 | M11.3d | Signals as averaged green (4b). **Implemented (D299)** | ME7, ME26, ME27 |
-| M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
+| M11.4 | Outputs, CLI `--meso`, editor surface. **Implemented (D300)** | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
 
 ## 13. Acceptance rows (planned)
@@ -302,8 +318,8 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME7 | A signalised turn (M11.3d, averaged green, D299) | An approach of 2 × 1800 veh/h whose group is green 30 s of 120 s: at 1800 veh/h demand the throughput is `s·g/C` = 900 veh/h once the queue forms and the vertical queue grows at 900 veh/h; at 600 veh/h the throughput equals the demand; two turns of one approach in groups green 30 s and 60 s pass 900 veh/h in all, held by the shorter under FIFO with `b = S_p/S_i`; a green wrapping past the cycle's end and a legacy program give their g/C. (The queue cycle of choice 4a is dropped with 4b: a Micro result) |
 | ME8 | A merge and a diverge | Yperman §7.1's diverge network (Table 7.1, links split at 500 m, Δt = 15 s, 90 min): the congested density on nm ≈ 167 veh/km (Fig. 7.5) and 2000 veh/h into m from each in-link; r2m clears by about 46 min and the queue on r1n lasts from about 28 to 82 min, each within Fig. 7.4's 6-minute spacing; the node model alone is ME21 |
 | ME9 | Determinism | The same input gives the same numbers; a permuted link order gives the same per-link numbers |
-| ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
-| ME11 | Editor (choice 6a) | Run Meso on its own worker with Cancel; the Meso links table with the marker; stale by revision |
+| ME10 | Outputs (M11.4) | `runMeso` reports exactly the stages graph, demand, loading; every JSON key with `validated` false and a manifest; the CSV marker line first and one row per link and slice; Σ slices of inflow × slice = the link's entrance count; vehicles demanded = waiting + entered and PCU entered = arrived + stored; Example 4.5 flags spill-back exactly in the slices whose steps had R = 0; a free link's travel time is its L/v and its delay 0, a bottleneck's delay positive; a cancel gives `cancelled`; a missing jam density refuses at stage graph; a refused path is advised `MESO_PATH_NOT_LOADED` |
+| ME11 | Editor (choice 6a, M11.4) | Run Meso on its own worker with Cancel adds no Undo step; the Meso links table has one row per link and the marker in its note; every stage done; stale after an edit, cleared by Undo; a refused run keeps the previous result; Export gives the Meso CSV |
 | ME12 | Route mapping (M11.3a) | A route over Links and an outside Connector gives its Link pieces in order and the simple node's turn; through a Node, the Node's membership turn and no interior link; a Link split at a station, its through turn. Every path's turn k joins its links k and k + 1 |
 | ME13 | Refusals (M11.3a) | A route whose Connector does not join its Links gives `MESO_PATH_UNMAPPED` at `definition.routes[j]`, and the other routes still map; the walk's blocking issues (a placed decision's destination no chain reaches) at `definition.inputs[i].…`; a class without PCU gives `MODE_PCU_MISSING` at its input, or at `odMatrices[k]` for a matrix's |
 | ME14 | Turn shares (M11.3a) | A static decision with two routes 3:1, then 1:1 in its second interval, gives turn shares 0.75/0.25, then 0.5/0.5 at the diverge; two compositions keep their own shares |
@@ -321,153 +337,8 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME26 | Signals to turns (M11.3d) | The four-leg with its suggested Node: every turn carries its approach's group and g/C (West and East 30/120, South and North 20/120), and no `MESO_SIGNAL_IGNORED`; one West head moved to group 2 gives `MESO_SIGNAL_AMBIGUOUS` at `network.nodes[0]`; the T-junction's turns carry no signal |
 | ME27 | Internal node supplies (Tampère §5.2) | On generated cases with green supplies: `q ≥ 0`, `q_i ≤ S_i`, `q_j ≤ R_j`, each supply's turns `Σ q ≤ N`, CTF, and every in-link demand-met or held by a full out-link or supply; a supply alone with infinite R gives `Σ q = N`; a green in-link's claim on a shared out-link is reduced by its level (Eq. 35) |
 
-## 14. M11.2 as implemented (D293)
+## 14–20. As implemented
 
-- **The graph** (`src/meso/graph.hpp`, imports nothing):
-  - `MesoLink`, `MesoTurn`, `MesoConflict`, `MesoNode` and `MesoGraph` (links, turns grouped by
-    node, entries, exits);
-  - `MesoSettings` with `kMesoDefaults{1, 300}`;
-  - `mesoStepLimit` and `mesoShortestLink`.
-- **The compile** (`compileMesoNetwork`, `src/model/demand/meso_compile.*`):
-  - stations as Macro's, plus every valid Node's crossings;
-  - pieces whose midpoint lies inside a valid Node are left out;
-  - station groups by union-find over outside Connectors and each Node's crossings;
-  - one node per group a link touches, ordered by the group's least (Link id, station).
-  - `mesoNetwork(d, data)` (`src/project/meso_input.*`) resolves the link types and adds
-    `linkTypeIssues`.
-- **The file** (`src/project/meso_settings.*`, `link_type_codec.*`): `mesoSettings` and
-  `jamDensity` at schema 52, `EDIT_UNSUPPORTED_FIELD` below it. The future-schema rows moved to 53.
-- **Rows:** ME1 and ME2 in `tests/meso_network_tests.cpp` (ctest `mesonetwork`).
-  - ME1 covers the T-junction and four-leg Nodes (4 and 12 turns), a junction without a Node, two
-    lane Connectors merged into one turn, and a refused Node compiled as if it were not drawn.
-  - ME2 covers the jam density and the settings, the step limit, and the shipped projects'
-    schemas.
-- **Mutations caught:**
-  - interior pieces kept;
-  - the through turn dropped;
-  - lane Connectors not merged;
-  - the schema gate removed;
-  - the critical-density check removed;
-  - a refused Node treated as valid.
-
-  Two of them survived a first version of the rows. Lane Connectors not merged needed a fixture
-  with two lane Connectors. A refused Node treated as valid needed the Node over the junction
-  rather than in empty space.
-
-## 15. M11.3a as implemented (D295)
-
-- **The values** (`src/meso/demand.hpp`, imports nothing):
-  - `MesoInterval`, `MesoPath` (its route, links, the turns between them, and veh/h intervals) and
-    `MesoClass` (id, PCU, paths);
-  - `mesoPathFlow`, `mesoTurnShares` (per turn, the class's share of its in-link's flow at t) and
-    `mesoEntryFlows` (per link, veh/h entering at its upstream end).
-- **The mapping** (`mesoPath`, `src/model/demand/meso_paths.*`):
-  - Each Link of the route is driven over the range its Connectors give, and its Meso links in that
-    range are taken in order, so a Node's interior drops out.
-  - The turn joining consecutive links comes from the graph, which keeps one per (in, out) pair.
-- **The demand** (`mesoDemand`, `src/project/meso_input.*`):
-  - It expands the document as the Micro compile does (OD, then decisions).
-  - Inputs on one route and class share a path. Classes and paths are ordered by id.
-- **Rows:** ME12–ME16 in `tests/meso_demand_tests.cpp` (ctest `mesodemand`).
-  - ME12 runs the four-leg with its suggested Node (12 routes, one Node turn each), the same project
-    without it, and the T-junction's through turns.
-- **Mutations caught:**
-  - an inclusive interval end;
-  - classes merged by vehicle type;
-  - the routeless refusal removed;
-  - the Connector join check removed;
-  - shares not normalised.
-
-## 16. M11.3b as implemented (D296)
-
-- **The expansion is Micro's.**
-  - `mesoDemand` runs `routelessIssues` and `expandRouteless` over the routeless inputs, after
-    `resolveCatalogs`, as `compileDocument` does. Lane splits, slice shares and typed routing are
-    therefore Micro's, with no second copy.
-  - Each part returns to its authored input by id (`<id>/type-…` included), so a composition's
-    type parts sum back into its class.
-- **Lanes to objects:** `mesoObjectChain` (`src/model/demand/meso_paths.*`) maps lane sections to
-  their Link and connector paths to their Connector, then `mesoPath` maps the chain as in M11.3a.
-- **Stubs:** a route in `routeDeadEnds` hands its flow to the full routes its `laneChanges` lead to,
-  stub after stub. The flow is split equally in id order.
-- **Rows:** ME17–ME19 in `tests/meso_demand_tests.cpp` (ctest `mesodemand`). ME19 loads the M2.6
-  template's whole demand (its four placed decisions), conserved at four times.
-- **Mutations caught:**
-  - the stub hand-off dropped;
-  - a connector path not mapped to its Connector;
-  - type parts not summed back;
-  - the walk's issues not reported.
-
-## 17. M11.3's node model as implemented (D297)
-
-- **`mesoNodeFlows`** (`src/meso/node_model.*`, imports nothing) is the paper's §5.1.2 algorithm,
-  step for step:
-  - the sets `U_j` and `J`;
-  - the reduced supplies `R̃_j`;
-  - `a_j` by Eq. 30 and the most restrictive `ĵ`;
-  - 4(a), demand-constrained in-links, before 4(b), the capacity-proportional share.
-
-  An in-link without capacity sends nothing.
-- **The advisory:** `MesoCompile::advisories` carries `MESO_PRIORITY_IGNORED` for a valid Node with
-  conflicts.
-- **Rows:** ME20–ME23 in `tests/meso_node_model_tests.cpp` (ctest `mesonode`).
-  - ME20 reproduces the paper's Table 8.
-  - ME22 checks the requirements on 300 generated nodes, over 50 of them congested.
-- **Mutations caught:**
-  - step 4(a) skipped;
-  - a demand-proportional rule in place of oriented capacities;
-  - the advisory removed.
-- **Mutations that changed nothing:**
-  - a per-turn `min` in 4(b) is a no-op there, since every in-link in 4(b) has `S_i > a C_i`;
-  - the tie order among equally restrictive out-links, since the solution is unique.
-
-## 18. M11.3c as implemented (D298)
-
-- **The link model** (`src/meso/link_model.*`, imports nothing):
-  - `MesoCurve`: counts at each step, interpolated linearly, with their inverse;
-  - `mesoSending` and `mesoReceiving` (Eqs. 4.31 and 4.35), `mesoStepCapacity` and `mesoStorage`;
-  - `mesoWaveSpeed` and `mesoLinkTimeLimit` sit in `graph.*`, which `mesoStepLimit` uses.
-- **The engine** (`loadMeso`, `src/meso/loading.*`): a commodity per class and path.
-  - Per link: entrance and exit counts, and the sending and receiving volume per step, which is §9's
-    boundary interface.
-  - Per turn: the cumulative transfer.
-  - Per commodity: demand, entered and arrived vehicles.
-  - A path with no PCU, a repeated link or turns that do not join is refused, not loaded.
-- **The node model** accepts an infinite receiving volume, which is the destination column.
-- **The advisory:** `MESO_SIGNAL_IGNORED` for a valid signalised Node, retired by M11.3d (D299, §19).
-- **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `tests/meso_loading_tests.cpp` (ctest
-  `mesoloading`).
-  - ME6 reproduces Example 4.5 exactly.
-  - ME8 reproduces §7.1: `k_B` 166.67 veh/km; r2m clears at 44 min against the thesis's 46; the r1n
-    queue lasts 26.25–82.75 min against 28–82.
-  - ME5's shock crosses each piece in 275 s, exactly the theory's figure.
-- **Mutations caught:**
-  - the receiving lag dropped;
-  - the sending lag dropped;
-  - Eq. 5.2 replaced by the entrance composition at t (ME25);
-  - the step limit back to L/v only (ME24);
-  - a finite destination (ME8);
-  - the infinite-receiving guard removed (the node model then reads out of range).
-
-## 19. M11.3d as implemented (D299)
-
-- **Turns** carry `signal` (the program id) and `green` (g/C).
-  - `compileMesoNetwork` maps each valid Node's heads to the turns whose vehicles pass them.
-  - `mesoGreenShares` (`src/model/demand/meso_compile.*`) gives g/C per program; `mesoNetwork` passes
-    it in.
-- **The node model** takes `MesoNodeStep::internal` supplies (Eqs. 33–35) as an effective capacity
-  per in-link, with its demand capped by invariance. With no supplies it is unchanged (ME20–ME22
-  pass).
-- **The engine** adds one supply per in-link and program, `N = (g/C) C_i S_p / S_i`.
-- **Retired:** `MESO_SIGNAL_IGNORED`. Added: `MESO_SIGNAL_AMBIGUOUS`.
-- **Rows:** ME7 and ME26 in `mesoloading`, ME27 in `mesonode`.
-- **Mutations caught:**
-  - supplies ignored;
-  - the demand cap removed;
-  - `b = 1` instead of `S_p / S_i`;
-  - the wrapped green computed wrongly;
-  - an ambiguous turn constrained anyway.
-
-  A first version reduced claims per movement (Eq. 35 read literally). It broke `q_j ≤ R_j` on ME27's
-  generated cases when an in-link's turns sat in different phases, so the effective capacity replaced
-  it.
+What each slice built (M11.2 to M11.4: files, rows, mutations) is in
+[MESO_NETWORK_IMPLEMENTED](MESO_NETWORK_IMPLEMENTED.md), with this file's section numbers, so "MESO_NETWORK
+§17" still names a section there.

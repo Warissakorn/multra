@@ -3,6 +3,16 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-21 — S0.8b: a comparison's Node rows in Results → Nodes (D290); S0 complete
+
+The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org refused again).
+- **Results → Nodes, for a comparison:** the Node, leg and turn rows of `Comparison::nodes`: two
+  sides, difference and ±95 % for delay, plus the legs' queue. There is no letter on a difference.
+  Unmatched names go in the note.
+- **Tests:** N21 rewritten. A comparison with itself let a column swap survive, so it now compares a
+  busier copy; four mutations each fail it.
+- **S0 is complete** but S0.4, which moved to S3 (D272).
+
 ## 2026-10-21 — S0.8a: Node rows in the scenario comparison (D289)
 
 MA15 is still blocked (sheffi.mit.edu, web.mit.edu and arxiv.org refused), so the S0 item left,

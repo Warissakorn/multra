@@ -16,7 +16,8 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   demand source as Meso paths, with turn shares and demand per class; [MESO_NETWORK](reference/MESO_NETWORK.md)
   §15–§16). The M2.6 template's demand loads whole. M11.3's node model (D297, Tampère et al. 2011)
   and link model with the loading engine (D298, Yperman 2007, `loadMeso`) are in, and so are signals
-  as averaged green (D299, choice 4b).
+  as averaged green (D299, choice 4b), and M11.4 (D300): `runMeso` over the whole run, outputs,
+  `--meso`, and Run Meso in the editor.
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md)),
   and so is MA15, the textbook benchmark: Sheffi Table 5.4 (D294). Its derived capacities and the
   gate wait on the owner (OWNER_SITTING B21). §19 (b) named runs and (c) a procedure sequence are
@@ -48,21 +49,19 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M11.4: Meso outputs, `--meso PERIOD` and the editor surface
+## Next session — owner's pick: M11 follow-ups, or another milestone
 
-- **In:** M11.3 is complete. It covers the node model (D297), the link model with `loadMeso` (D298),
-  and signals as averaged green (D299; MESO_NETWORK §5, §17–§19).
-- **M11.4 (ME10, ME11):**
-  - outputs by slice from `MesoLoading`, per §7: link inflow, outflow, density, travel time, queue
-    and the spill-back flag, turn rows, and VHT, VKT and delay totals; JSON and CSV with the marker
-    line first;
-  - the CLI `--meso PERIOD` (as `--macro`);
-  - the editor: Run Meso on a worker with Cancel, and a Meso links table.
-  - The contract leaves open the run horizon (the demand's end plus clearance), which M11.4 must fix,
-    and how a study period selects matrices (§6). Put these to the owner if no source settles them.
-- **Priority at a Node** still waits on Brilon and Wu (2001) and a cited `t_ij`
-  (`MESO_PRIORITY_IGNORED`).
-- **Other open items,** if the owner prefers one before Meso:
+- **M11 is in through M11.4** (D291–D300; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§20). M11.5
+  (dynamic assignment) waits on M9.
+- **M11 follow-ups, if the owner wants Meso first:**
+  - **The turn free-flow time** (§3) is compiled but not loaded: a Node's interior adds no time.
+    The thesis's nodes have no length, so loading it needs a design. One option is a short virtual
+    link per turn; ask the owner.
+  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). No source
+    has been named yet.
+  - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`
+    (`MESO_PRIORITY_IGNORED`).
+- **Other open items:**
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
   - **S3:** Roads and S0.4's coarse values (D272);

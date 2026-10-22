@@ -1,6 +1,7 @@
 #pragma once
 #include "demand.hpp"
 #include "link_model.hpp"
+#include <functional>
 
 // M11.3c loading engine (docs/reference/MESO_NETWORK.md §4-§6, D298): Yperman's (2007) LTM solution
 // algorithm (§3.2) with the Tampère et al. (2011) node model (D297). Per step, from the state at t
@@ -25,7 +26,10 @@ struct MesoLoading {
     std::vector<std::vector<double>> turned; // per turn, cumulative PCU at k * step
     std::vector<MesoCommodityRun> commodities;
     std::vector<std::pair<std::size_t, std::size_t>> refused; // (class, path) not loaded: no PCU, a link twice, or turns not joining
+    bool cancelled{};                    // progress returned false; the curves end at the last whole step
 };
-// Loads the classes' paths over [0, horizon], s, in steps of `step` s.
-MesoLoading loadMeso(const MesoGraph&, const std::vector<MesoClass>&, double step, double horizon);
+// Loads the classes' paths over [0, horizon], s, in steps of `step` s. `progress(k, steps)` is called
+// before each step k (M11.4, D300); false stops the run there.
+MesoLoading loadMeso(const MesoGraph&, const std::vector<MesoClass>&, double step, double horizon,
+                     const std::function<bool(std::size_t, std::size_t)>& progress = {});
 }
