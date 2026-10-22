@@ -22,6 +22,10 @@ struct MesoTurn {
     std::string name;
     double freeTime{};                  // s
     std::vector<std::string> via;       // the Connectors (and Links inside a Node) it crosses
+    // M11.3d (D299): the signal program its heads show (`headProgramId`) and that program's effective
+    // green over its cycle, g/C; empty and 0 for an unsignalised turn.
+    std::string signal{};
+    double green{};
     bool operator==(const MesoTurn&) const = default;
 };
 struct MesoConflict {

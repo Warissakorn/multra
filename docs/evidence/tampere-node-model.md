@@ -59,7 +59,8 @@ paper before M11.3. This note records what the paper says, and what changed in ย
   but the paper gives no instance for them. The owner chose (2026-10-22) to leave them out and advise
   `MESO_PRIORITY_IGNORED` until Brilon and Wu (2001) is read and a cited `t_ij` exists. This amends
   D292 3a in part.
-- **Specified: signals.** Choice 4a (explicit green) is the paper's own first option, so the node
+- **Specified: signals** (superseded by D299, which builds the paper's averaged option, ยง5.2:
+  [meso-signals](meso-signals.md)). Choice 4a (explicit green) is the paper's own first option, so the node
   model needs no signal term. The engine withholds a red turn's demand.
 
 ## Row and result

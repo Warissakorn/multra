@@ -7,7 +7,8 @@
 // only: every link's sending and receiving volume (§4.6); each in-link's sending volume split by the
 // routes of the vehicles at its exit (Eq. 5.2); origins as point queues (Eq. 5.4) and destinations
 // receiving without limit (Eq. 5.5); mesoNodeFlows at every node; then the counts (Step 3). A
-// commodity is one class's path, counted in PCU. Signals are not applied yet (D298). The step must
+// commodity is one class's path, counted in PCU. Signals are averaged green, internal node supplies
+// (Tampère §5.2, D299), one per in-link and program. The step must
 // meet mesoStepLimit; the compile refuses it otherwise. Deterministic: there is no seed.
 namespace multra {
 // One class's path through the run, vehicles at k * step.

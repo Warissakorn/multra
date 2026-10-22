@@ -1,12 +1,13 @@
-// M11.3c rows ME3-ME6, ME8, ME9 and ME24-ME26 (docs/reference/MESO_NETWORK.md §4-§6, §13, D298):
+// M11.3c-d rows ME3-ME9 and ME24-ME26 (docs/reference/MESO_NETWORK.md §4-§6, §13, D298, D299):
 // Yperman's (2007) link model and LTM loading on hand-built Meso networks, its Example 4.5 and §7.1
-// diverge network, the step limit, route composition by Eq. 5.2, and the signal advisory. Each row
+// diverge network, the step limit, route composition by Eq. 5.2, and signals as averaged green. Each row
 // first checks its forcing.
 #include "test.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/meso/loading.hpp"
 #include "../src/meso/node_model.hpp"
+#include "../src/model/demand/meso_compile.hpp"
 #include "../src/project/meso_input.hpp"
 #include <cmath>
 #include <fstream>
@@ -223,22 +224,68 @@ TEST(mesoloading, me25_vehicles_on_a_link_keep_their_routes) { // ME25
     for (std::size_t k = 351; k < 600; ++k) { CHECK(rate(0, k) == 0); CHECK(rate(1, k) > 0.49); }
     for (const auto& c : r.commodities) { test::near(c.demand.back(), 150, 1e-9); test::near(c.arrived.back(), 150, 1e-6); }
 }
-TEST(mesoloading, me26_a_signalised_node_advises_signals_are_ignored) { // ME26
+TEST(mesoloading, me26_signal_heads_give_their_turns_a_program_and_green) { // ME26
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json"); Json j; file >> j;
     auto four = parseDocument(j);
     auto& def = demand(four); def.externalLinkTypes = false;
     def.linkTypes = {{"arterial", "Arterial", 1000, 10, "bpr", {}, "Test values", JamDensity{150, "Test value"}}};
     for (auto& l : four.network.links) l.linkTypeId = "arterial";
-    CHECK(mesoNetwork(four, test::root() / "data").advisories.empty());
     CHECK(suggestNodes(four).size() == 1);
     const auto c = mesoNetwork(four, test::root() / "data");
-    CHECK(std::any_of(c.graph.nodes.begin(), c.graph.nodes.end(), [](const auto& x) { return x.control == "signalised"; })); // forcing
-    CHECK(std::count_if(c.advisories.begin(), c.advisories.end(), [](const auto& a) { return a.code == "MESO_SIGNAL_IGNORED" && a.path == "network.nodes[0]"; }) == 1);
+    const auto& g = c.graph;
+    std::size_t quarter = 0, sixth = 0, nodeTurns = 0;
+    for (const auto& t : g.turns) {
+        if (g.nodes[t.node].nodeId.empty()) continue;
+        ++nodeTurns;
+        CHECK(!t.signal.empty() && t.green > 0);
+        if (std::abs(t.green - 30.0 / 120) < 1e-12) ++quarter;
+        if (std::abs(t.green - 20.0 / 120) < 1e-12) ++sixth;
+        if (g.links[t.in].source == "link-4") CHECK(t.signal == signalGroupProgramId("controller-61", 1));
+    }
+    CHECK(nodeTurns == 12); // forcing: the Node's twelve turns
+    CHECK(quarter == 6 && sixth == 6); // West and East 30 s, South and North 20 s, of 120 s
+    CHECK(std::none_of(c.advisories.begin(), c.advisories.end(), [](const auto& a) { return a.code == "MESO_SIGNAL_IGNORED" || a.code == "MESO_SIGNAL_AMBIGUOUS"; }));
+    // A second head of group 2 on a West lane: the turns from that lane show two programs.
+    auto mixed = four;
+    auto extra = *std::find_if(mixed.network.signalHeads.begin(), mixed.network.signalHeads.end(), [](const auto& h) { return h.id == "head-62"; });
+    extra.id = "head-extra"; extra.groupNumber = 2; extra.position -= 2;
+    mixed.network.signalHeads.push_back(extra);
+    const auto m = mesoNetwork(mixed, test::root() / "data");
+    CHECK(std::count_if(m.advisories.begin(), m.advisories.end(), [](const auto& a) { return a.code == "MESO_SIGNAL_AMBIGUOUS" && a.path == "network.nodes[0]"; }) == 1);
+    CHECK(std::any_of(m.graph.turns.begin(), m.graph.turns.end(), [&](const auto& t) { return m.graph.links[t.in].source == "link-4" && t.signal.empty(); }));
+    // An unsignalised Node's turns carry no signal.
     std::ifstream teeFile(test::root() / "data/projects/t-junction-priority.traffic.json"); Json tj; teeFile >> tj;
     auto tee = parseDocument(tj);
     auto& td = demand(tee); td.externalLinkTypes = false; td.linkTypes = def.linkTypes;
     for (auto& l : tee.network.links) l.linkTypeId = "arterial";
     putNode(tee, {"", "Centre", {{-25, -18}, {25, -18}, {25, 8}, {-25, 8}}, false});
     const auto u = mesoNetwork(tee, test::root() / "data");
-    CHECK(std::none_of(u.advisories.begin(), u.advisories.end(), [](const auto& a) { return a.code == "MESO_SIGNAL_IGNORED"; }));
+    CHECK(!u.graph.turns.empty() && std::all_of(u.graph.turns.begin(), u.graph.turns.end(), [](const auto& t) { return t.signal.empty() && t.green == 0; }));
+}
+TEST(mesoloading, me7_a_signalised_approach_passes_s_g_over_c) { // ME7
+    const auto run = [](double demand) {
+        auto g = graph({link("a", 0, 1, 3000, 2, 1800, 72, 150), link("b", 1, 2, 1000, 2, 1800, 72, 150)}, {{"a", "b"}});
+        g.turns[0].signal = "c#1"; g.turns[0].green = 30.0 / 120; // green 30 s of a 120 s cycle
+        return loadMeso(g, {{"type:car", 1, {path(g, "p", {"a", "b"}, {{0, 1800, demand}})}}}, 1, 1800);
+    };
+    const auto over = run(1800), under = run(600);
+    // a's free-flow time is 150 s; s = 2 x 1800 = 3600 veh/h, so s g / C = 900 veh/h.
+    CHECK(over.down[0].value(1200) - over.down[0].value(300) < 0.9 * 450); // forcing: below the demand
+    test::near(over.down[0].value(1200) - over.down[0].value(300), 225, 1e-6); // 900 veh/h over 900 s
+    const auto queue = [&](double t) { return over.up[0].value(t - 150) - over.down[0].value(t); };
+    test::near(queue(1200) - queue(300), 225, 1); // grows at 1800 - 900 veh/h
+    test::near(under.down[0].value(1200) - under.down[0].value(300), 150, 1e-6); // below s g / C: the demand
+    // Two turns of one approach in groups green 30 s and 60 s: FIFO holds it at the shorter, b = S_p/S_i
+    // (Yperman Eq. 5.15), so 900 veh/h in all, half each.
+    auto g = graph({link("a", 0, 1, 3000, 2, 1800, 72, 150), link("b", 1, 2, 1000, 2, 1800, 72, 150), link("c", 1, 3, 1000, 2, 1800, 72, 150)},
+                   {{"a", "b"}, {"a", "c"}});
+    g.turns[0].signal = "c#1"; g.turns[0].green = 0.25; g.turns[1].signal = "c#2"; g.turns[1].green = 0.5;
+    const auto two = loadMeso(g, {{"type:car", 1, {path(g, "to-b", {"a", "b"}, {{0, 1800, 900}}), path(g, "to-c", {"a", "c"}, {{0, 1800, 900}})}}}, 1, 1800);
+    test::near(two.down[0].value(1200) - two.down[0].value(300), 225, 1e-6);
+    test::near(two.turned[0][1200] - two.turned[0][300], 112.5, 1e-6);
+    // The program arithmetic: a green wrapping past the cycle's end, and a legacy program.
+    const auto shares = mesoGreenShares({{"k", "", 100, 0, {{1, "", 90, 10, 3}}}},
+                                        {{"legacy", 0, {{30, SignalColor::green}, {3, SignalColor::amber}, {67, SignalColor::red}}}});
+    test::near(shares.at(signalGroupProgramId("k", 1)), 0.2, 1e-12);
+    test::near(shares.at("legacy"), 0.3, 1e-12);
 }

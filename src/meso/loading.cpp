@@ -75,6 +75,8 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
         if (g.links[l].to < g.nodes.size()) ins[g.links[l].to].push_back(l);
         if (g.links[l].from < g.nodes.size()) outs[g.links[l].from].push_back(l);
     }
+    std::map<std::pair<std::size_t, std::size_t>, std::size_t> turnOf; // (in, out) -> turn
+    for (std::size_t u = 0; u < g.turns.size(); ++u) turnOf.try_emplace({g.turns[u].in, g.turns[u].out}, u);
     for (std::size_t k = 0; k < steps; ++k) {
         const double t = static_cast<double>(k) * step;
         std::vector<double> S(nl), R(nl);
@@ -134,6 +136,29 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
             }
             for (const auto j : cols) ns.receiving.push_back(R[j]);
             ns.receiving.push_back(std::numeric_limits<double>::infinity());
+            // Signals as averaged green (D299): one internal supply per in-link and program, Tampère
+            // Eq. 33 with Yperman's shared-lane split (Eq. 5.15), N = (g/C) C_i S_p / S_i.
+            for (std::size_t i = 0; i < rows.size(); ++i) {
+                if (rows[i].origin) continue;
+                double si = 0;
+                for (std::size_t j = 0; j < sink; ++j) si += ns.demand[i][j];
+                si += ns.demand[i][sink];
+                std::map<std::string, MesoNodeSupply> bySignal;
+                std::map<std::string, double> share, sp;
+                for (std::size_t j = 0; j < sink; ++j) {
+                    if (!(ns.demand[i][j] > 0)) continue;
+                    const auto t = turnOf.find({rows[i].link, cols[j]});
+                    if (t == turnOf.end() || g.turns[t->second].signal.empty() || !(g.turns[t->second].green > 0)) continue;
+                    const auto& turn = g.turns[t->second];
+                    auto& s = bySignal[turn.signal];
+                    s.in = i; s.outs.push_back(j);
+                    share[turn.signal] = turn.green; sp[turn.signal] += ns.demand[i][j];
+                }
+                for (auto& [id, s] : bySignal) {
+                    s.supply = share[id] * rows[i].capacity * sp[id] / si;
+                    ns.internal.push_back(std::move(s));
+                }
+            }
             const auto q = mesoNodeFlows(ns);
             for (std::size_t i = 0; i < rows.size(); ++i) {
                 const auto& r = rows[i];

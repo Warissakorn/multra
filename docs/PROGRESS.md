@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.3d: signals in Meso as averaged green (D299)
+
+The owner chose averaged green (4b) over explicit green, which under FIFO would hold a whole approach
+on any red turn.
+- **Turns** take the program their heads show and its g/C. g is the displayed green, by HCM Eq. 19-1
+  with its default lost times.
+- **The node model** takes Tampère §5.2's internal supplies, with Yperman's shared-lane split. Under
+  CTF they act as an effective capacity per in-link. A literal per-movement reading broke `q_j ≤ R_j`
+  on generated cases and was replaced.
+- **Rows:** ME7, ME26 and ME27. Five mutations are caught. `MESO_SIGNAL_IGNORED` is retired;
+  `MESO_SIGNAL_AMBIGUOUS` is new.
+
 ## 2026-10-22 — M11.3c: Yperman's link model and the loading engine (D298)
 
 The owner supplied Yperman's thesis as a Markdown repository, and its chapters 3–5 and §7.1 were read.
@@ -123,19 +135,6 @@ The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org ref
 - **Tests:** N21 rewritten. A comparison with itself let a column swap survive, so it now compares a
   busier copy; four mutations each fail it.
 - **S0 is complete** but S0.4, which moved to S3 (D272).
-
-## 2026-10-21 — S0.8a: Node rows in the scenario comparison (D289)
-
-MA15 is still blocked (sheffi.mit.edu, web.mit.edu and arxiv.org refused), so the S0 item left,
-split per AGENTS into the model and output now and the editor table next.
-- **Model:** `compareBatches` matches Nodes, then their in-legs and turns, by name; Welch
-  differences of delay, and of the legs' mean queue. Unmatched names are listed per level.
-- **Output:** JSON `nodes` and two CSV blocks after `network`, only with a Node; every comparison
-  without one keeps its bytes. The editor's Copy and Export carry the blocks.
-- **Tests:** CMP8–CMP10 in `compare`; five mutations each fail them.
-- **Found while checking sources:** Aimsun's manual cites Florian & Hearn (1995), and Visum names
-  Mitradjieva, Lindberg et al. (2013) for BFW and Gentile for LUCE. Neither is a benchmark network.
-  Sheffi's PDF is also at sheffi.mit.edu.
 
 ## Older entries
 

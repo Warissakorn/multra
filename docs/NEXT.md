@@ -15,8 +15,8 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   `jamDensity`, `mesoSettings` at schema 52), and so are M11.3a and M11.3b (D295, D296: every Micro
   demand source as Meso paths, with turn shares and demand per class; [MESO_NETWORK](reference/MESO_NETWORK.md)
   §15–§16). The M2.6 template's demand loads whole. M11.3's node model (D297, Tampère et al. 2011)
-  and link model with the loading engine (D298, Yperman 2007, `loadMeso`) are in; signals are not
-  applied yet.
+  and link model with the loading engine (D298, Yperman 2007, `loadMeso`) are in, and so are signals
+  as averaged green (D299, choice 4b).
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md)),
   and so is MA15, the textbook benchmark: Sheffi Table 5.4 (D294). Its derived capacities and the
   gate wait on the owner (OWNER_SITTING B21). §19 (b) named runs and (c) a procedure sequence are
@@ -31,6 +31,7 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   - `Warissakorn/Transportation-Planning-Handbook-Markdown`: the Transportation Planning Handbook (edition unchecked).
   - `Warissakorn/the-link-transmission-model-for-dynamic-network-loading-markdown`: Yperman (2007),
     used for D298. It has no page numbers: cite sections and equations.
+  - HCM 7th edition was used for D299's effective green (Ch. 19, Eq. 19-1).
 - **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md)); no PCU value ships (D267).
 - **Nodes: S0 is complete** (D259–D265, D278, D288–D290, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
@@ -47,21 +48,18 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M11.3d: signals in Meso (needs the owner's choice), then M11.4
+## Next session — M11.4: Meso outputs, `--meso PERIOD` and the editor surface
 
-- **In:** the link model and `loadMeso` (D298, MESO_NETWORK §4, §18), checked against Yperman's
-  Example 4.5 and §7.1. Signalised Nodes are advised `MESO_SIGNAL_IGNORED` and load as unsignalised.
-- **The choice to put to the owner first** (AskUserQuestion; the reasons are in D298 and §5):
-  - **(a) Averaged green:** turn capacity `g/C · s`, Yperman Eq. 5.13 and Tampère Eqs. 33–36. Cited,
-    and FIFO stays exact, but there is no queue cycle, so ME7's cycle clause changes (choice 4a → 4b).
-  - **(b) Explicit green with each turn queued separately at the link end:** a point queue per turn,
-    in the spirit of the thesis's ch. 6 movement queues. This keeps 4a, but the separate queues break
-    the link FIFO that Eq. 5.2 relies on, so it needs its own design.
-  - **(c) Explicit green under strict FIFO:** any red turn holds the in-link. Simple and cited by CTF,
-    but far too pessimistic where turns have their own lanes.
-- **Then M11.4:** the outputs (§7: link and turn rows by slice from `MesoLoading`), `--meso PERIOD`,
-  and the editor surface (ME10, ME11). The run horizon (the demand's end plus clearance) is chosen
-  there.
+- **In:** M11.3 is complete. It covers the node model (D297), the link model with `loadMeso` (D298),
+  and signals as averaged green (D299; MESO_NETWORK §5, §17–§19).
+- **M11.4 (ME10, ME11):**
+  - outputs by slice from `MesoLoading`, per §7: link inflow, outflow, density, travel time, queue
+    and the spill-back flag, turn rows, and VHT, VKT and delay totals; JSON and CSV with the marker
+    line first;
+  - the CLI `--meso PERIOD` (as `--macro`);
+  - the editor: Run Meso on a worker with Cancel, and a Meso links table.
+  - The contract leaves open the run horizon (the demand's end plus clearance), which M11.4 must fix,
+    and how a study period selects matrices (§6). Put these to the owner if no source settles them.
 - **Priority at a Node** still waits on Brilon and Wu (2001) and a cited `t_ij`
   (`MESO_PRIORITY_IGNORED`).
 - **Other open items,** if the owner prefers one before Meso:

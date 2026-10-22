@@ -3,7 +3,7 @@
 Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
 answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options. M11.2 is
 implemented (D293, §14), and so are M11.3a (D295, §15), M11.3b (D296, §16), the node model (D297,
-§17) and the link model with the loading engine (D298, §18). It fixes:
+§17), the link model with the loading engine (D298, §18) and signals (D299, §19). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -17,7 +17,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - `compileMesoNetwork`: the drawn Links, Connectors and Nodes as a Meso graph;
   - a jam density per link type;
   - the LTM engine for one study period;
-  - signals and priority as capacity at nodes;
+  - signals as averaged green at nodes (priority deferred, D297);
   - spill-back;
   - link and node outputs by time slice;
   - the CLI and a first editor surface (choice 6).
@@ -141,14 +141,18 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   the subject to future research.
   - A valid Node with conflicts is advised `MESO_PRIORITY_IGNORED` at `network.nodes[i]`.
   - Adding them needs Brilon and Wu (2001) read, a cited `t_ij`, and a new decision.
-- **Signals (4a): deferred to M11.3d (owner, D298).** Explicit green under CTF holds a whole in-link
-  while any of its turns is red, and the thesis (§5.2.1) instead averages green as `g/C` capacities.
-  Until the owner decides, a valid signalised Node is advised `MESO_SIGNAL_IGNORED` and the engine
-  loads it as unsignalised. As planned before that choice: explicit green per step. The paper (§5.2): "if the green and red phases are
-  explicitly simulated, the node model of Section 5.1 can be applied unaltered for every green
-  phase separately". The engine (the rest of M11.3) therefore withholds a turn's demand while its
-  group is red; the averaged-green constraints (Eqs. 33–36) are not used.
-- **Evidence:** [tampere-node-model](../evidence/tampere-node-model.md).
+- **Signals (4b, owner, D299; amends D292 4a): averaged green,** the paper's own option (§5.2).
+  - Each in-link's turns under one program form an internal supply, `Σ q ≤ N = (g/C) b C_i` (Eq. 33),
+    with `b = S_p / S_i` by Yperman's shared-lane split (Eq. 5.15), so its level is g/C (Eq. 34).
+  - Under CTF a supply holds the whole in-link, so the in-link enters the algorithm with capacity
+    `min (g/C) · C_i`, and a demand above it is capped with the same fractions (invariance). This is
+    the paper's solution where an in-link's turns share one phase, and keeps CTF across phases.
+  - g is the displayed green: HCM 7th ed. Eq. 19-1 with its defaults l1 = e = 2.0 s gives
+    `g = G + e − l1 = G`.
+  - A turn whose heads show two programs is advised `MESO_SIGNAL_AMBIGUOUS` and left unsignalised.
+  - Explicit green (4a) is not built: under FIFO a red turn would hold its whole in-link. Queue
+    cycles within a cycle are Micro's.
+- **Evidence:** [meso-signals](../evidence/meso-signals.md), [tampere-node-model](../evidence/tampere-node-model.md).
 
 ## 6. Demand and paths (choice 5a)
 
@@ -251,9 +255,10 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
      (recommended).** It is the cited general form and handles unsignalised priority.
    - (b) Merge and diverge rules only. It is faster to build and reports priority as ignored.
 4. **Signals.**
-   - **(a) Time-varying green per step from the program (recommended).** Queues grow on red and
-     discharge on green, which ME7 checks.
-   - (b) A constant `g/C`. Smoother, but there is no queue cycle.
+   - (a) Time-varying green per step from the program (recommended, chosen on 2026-10-21). Queues
+     grow on red and discharge on green.
+   - **(b) A constant `g/C`. Chosen on 2026-10-22 instead (D299):** under FIFO, (a) holds a whole
+     in-link while any of its turns is red, and both sources average green.
 5. **Paths until M9.**
    - **(a) Micro's routes and routing-decision weights (recommended).** They already compile, and
      Meso and Micro load the same paths.
@@ -276,8 +281,8 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | M11.3a | Authored routes (static routes, static routing decisions, OD-expanded routes) → Meso paths and turn shares; demand per class (5a). **Implemented (D295)** | ME12–ME16 |
 | M11.3b | Routeless inputs and placed routing decisions (the lane-level walk) → Meso paths. **Implemented (D296)** | ME17–ME19 |
 | M11.3 | The node model. **Implemented (D297)** | ME20–ME23 |
-| M11.3c | The link model and the loading engine (unsignalised), spill-back, the boundary volumes. **Implemented (D298)** | ME3–ME6, ME8, ME9, ME24–ME26 |
-| M11.3d | Signals, after the owner's choice (D298) | ME7 |
+| M11.3c | The link model and the loading engine, spill-back, the boundary volumes. **Implemented (D298)** | ME3–ME6, ME8, ME9, ME24, ME25 |
+| M11.3d | Signals as averaged green (4b). **Implemented (D299)** | ME7, ME26, ME27 |
 | M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
 
@@ -294,7 +299,7 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME4 | A bottleneck (downstream capacity below inflow) | The queue grows at inflow − capacity and clears at capacity − inflow after the demand drops; conservation: `N_up − N_down` = stored, every step |
 | ME5 | A queue's back moving upstream | On a chain of 500 m links behind a bottleneck, the back of the queue reaches each link's entrance at the shockwave speed `(q₂ − q₁)/(k₂ − k₁)` of the triangular diagram, within one step per link |
 | ME6 | Spill-back | Yperman's Example 4.5 (10 km, 3600 veh/h, 120 km/h, 225 veh/km, Δt = 5 min, blocked downstream): the entrance count is 300 veh per step until 35 min (the restriction 2.5 min early, as the thesis states), reaches `k_jam·L` = 2250 at 40 min, and R = 0 after; a chain A → B → C with C narrower: A's transfer equals `R_B` while B is full, and the flow resumes when B drains (the ROADMAP gate) |
-| ME7 | A signalised turn (M11.3d, waits on a decision, D298) | Throughput over whole cycles equals `s·g/C` under saturation; the queue cycles with red and green (choice 4a) |
+| ME7 | A signalised turn (M11.3d, averaged green, D299) | An approach of 2 × 1800 veh/h whose group is green 30 s of 120 s: at 1800 veh/h demand the throughput is `s·g/C` = 900 veh/h once the queue forms and the vertical queue grows at 900 veh/h; at 600 veh/h the throughput equals the demand; two turns of one approach in groups green 30 s and 60 s pass 900 veh/h in all, held by the shorter under FIFO with `b = S_p/S_i`; a green wrapping past the cycle's end and a legacy program give their g/C. (The queue cycle of choice 4a is dropped with 4b: a Micro result) |
 | ME8 | A merge and a diverge | Yperman §7.1's diverge network (Table 7.1, links split at 500 m, Δt = 15 s, 90 min): the congested density on nm ≈ 167 veh/km (Fig. 7.5) and 2000 veh/h into m from each in-link; r2m clears by about 46 min and the queue on r1n lasts from about 28 to 82 min, each within Fig. 7.4's 6-minute spacing; the node model alone is ME21 |
 | ME9 | Determinism | The same input gives the same numbers; a permuted link order gives the same per-link numbers |
 | ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
@@ -313,7 +318,8 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME23 | Priority advisory | A valid Node with conflicts gives `MESO_PRIORITY_IGNORED` at `network.nodes[i]` among the compile's advisories; a project without Nodes gives none |
 | ME24 | Step limit and destinations (M11.3c) | A link whose `L/w` is below its `L/v` sets the limit: `MESO_STEP_TOO_LONG` above it, and `mesoShortestLink` names it; an out-link with infinite receiving volume (a destination, Yperman Eq. 5.5) takes the whole sending volume |
 | ME25 | Route composition by Eq. 5.2 (M11.3c) | A diverge whose routes switch from 1:0 to 0:1 at T changes its turn flows only one free-flow link time after T, because vehicles already on the link keep their routes (time-t shares would switch at T); each commodity's entered and arrived vehicles sum to its demand once the network empties |
-| ME26 | Signal advisory (M11.3c) | A valid signalised Node gives `MESO_SIGNAL_IGNORED` at `network.nodes[i]`; an unsignalised Node gives none |
+| ME26 | Signals to turns (M11.3d) | The four-leg with its suggested Node: every turn carries its approach's group and g/C (West and East 30/120, South and North 20/120), and no `MESO_SIGNAL_IGNORED`; one West head moved to group 2 gives `MESO_SIGNAL_AMBIGUOUS` at `network.nodes[0]`; the T-junction's turns carry no signal |
+| ME27 | Internal node supplies (Tampère §5.2) | On generated cases with green supplies: `q ≥ 0`, `q_i ≤ S_i`, `q_j ≤ R_j`, each supply's turns `Σ q ≤ N`, CTF, and every in-link demand-met or held by a full out-link or supply; a supply alone with infinite R gives `Σ q = N`; a green in-link's claim on a shared out-link is reduced by its level (Eq. 35) |
 
 ## 14. M11.2 as implemented (D293)
 
@@ -428,7 +434,7 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
   - Per commodity: demand, entered and arrived vehicles.
   - A path with no PCU, a repeated link or turns that do not join is refused, not loaded.
 - **The node model** accepts an infinite receiving volume, which is the destination column.
-- **The advisory:** `MESO_SIGNAL_IGNORED` for a valid signalised Node.
+- **The advisory:** `MESO_SIGNAL_IGNORED` for a valid signalised Node, retired by M11.3d (D299, §19).
 - **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `tests/meso_loading_tests.cpp` (ctest
   `mesoloading`).
   - ME6 reproduces Example 4.5 exactly.
@@ -442,3 +448,26 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
   - the step limit back to L/v only (ME24);
   - a finite destination (ME8);
   - the infinite-receiving guard removed (the node model then reads out of range).
+
+## 19. M11.3d as implemented (D299)
+
+- **Turns** carry `signal` (the program id) and `green` (g/C).
+  - `compileMesoNetwork` maps each valid Node's heads to the turns whose vehicles pass them.
+  - `mesoGreenShares` (`src/model/demand/meso_compile.*`) gives g/C per program; `mesoNetwork` passes
+    it in.
+- **The node model** takes `MesoNodeStep::internal` supplies (Eqs. 33–35) as an effective capacity
+  per in-link, with its demand capped by invariance. With no supplies it is unchanged (ME20–ME22
+  pass).
+- **The engine** adds one supply per in-link and program, `N = (g/C) C_i S_p / S_i`.
+- **Retired:** `MESO_SIGNAL_IGNORED`. Added: `MESO_SIGNAL_AMBIGUOUS`.
+- **Rows:** ME7 and ME26 in `mesoloading`, ME27 in `mesonode`.
+- **Mutations caught:**
+  - supplies ignored;
+  - the demand cap removed;
+  - `b = 1` instead of `S_p / S_i`;
+  - the wrapped green computed wrongly;
+  - an ambiguous turn constrained anyway.
+
+  A first version reduced claims per movement (Eq. 35 read literally). It broke `q_j ≤ R_j` on ME27's
+  generated cases when an in-link's turns sat in different phases, so the effective capacity replaced
+  it.

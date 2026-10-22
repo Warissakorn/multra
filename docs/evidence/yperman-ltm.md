@@ -70,7 +70,8 @@ changed in the contract, and what the rows measured.
   - An origin whose first link also receives turns enters the node model as a demand-constrained
     row (`C = S`). On an entry link this is exactly Eq. 5.4.
 - **Deferred by owner choice:** signals, to M11.3d. Explicit green under CTF holds the whole in-link,
-  while the thesis averages green instead. A signalised Node is advised `MESO_SIGNAL_IGNORED`.
+  while the thesis averages green instead. A signalised Node was advised `MESO_SIGNAL_IGNORED`.
+  **Later (D299):** averaged green is built, and the advisory retired ([meso-signals](meso-signals.md)).
 
 ## Rows and results (Linux, 2026-10-22, `tests/meso_loading_tests.cpp`, ctest `mesoloading`)
 

@@ -18,7 +18,7 @@ MesoCompile mesoNetwork(const ProjectDocument& d, const std::filesystem::path& d
     const auto resolved = resolveLinkTypes(def, data, manifest);
     std::vector<LinkType> types; std::vector<std::string> paths;
     for (const auto& r : resolved) { types.push_back(r.type); paths.push_back(r.path); }
-    auto out = compileMesoNetwork(d.network, types, paths, mesoSettingsOf(d));
+    auto out = compileMesoNetwork(d.network, types, paths, mesoSettingsOf(d), mesoGreenShares(def.signalControllers, def.signalPrograms));
     std::vector<std::string> modeIds;
     for (const auto& m : resolveModes(def, data, manifest)) modeIds.push_back(m.mode.id);
     const auto issues = linkTypeIssues(resolved, &modeIds);

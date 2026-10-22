@@ -1,12 +1,13 @@
-// M11.3 node model rows ME20-ME23 (docs/reference/MESO_NETWORK.md §5, D297): Tampère et al. (2011)
-// §5.1 against the paper's own example, its merge and diverge reductions and its requirements, and the
-// priority advisory. Each row first checks its forcing.
+// M11.3 node model rows ME20-ME23 and ME27 (docs/reference/MESO_NETWORK.md §5, D297, D299): Tampère et
+// al. (2011) §5.1 against the paper's own example, its merge and diverge reductions and its
+// requirements, the priority advisory, and §5.2's internal supplies. Each row first checks its forcing.
 #include "test.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/meso/node_model.hpp"
 #include "../src/project/meso_input.hpp"
 #include <fstream>
+#include <limits>
 using namespace multra;
 namespace {
 double sum(const std::vector<double>& v) { double s = 0; for (const auto x : v) s += x; return s; }
@@ -96,4 +97,62 @@ TEST(mesonode, me23_a_node_with_conflicts_advises_priority_is_ignored) { // ME23
     const auto c = mesoNetwork(tee, test::root() / "data");
     CHECK(!c.graph.nodes.empty() && std::any_of(c.graph.nodes.begin(), c.graph.nodes.end(), [](const auto& x) { return !x.conflicts.empty(); })); // forcing
     CHECK(c.issues.empty() && c.advisories == (std::vector<ValidationIssue>{{"MESO_PRIORITY_IGNORED", "network.nodes[0]"}}));
+}
+TEST(mesonode, me27_internal_supplies_meet_the_requirements) { // ME27
+    const double inf = std::numeric_limits<double>::infinity();
+    // A supply alone holds its in-link to N, split by the turning fractions.
+    const auto alone = mesoNodeFlows({{{300, 200}}, {1000}, {inf, inf}, {{0, {0, 1}, 100}}});
+    test::near(alone[0][0], 60, 1e-9); test::near(alone[0][1], 40, 1e-9);
+    // Eq. 35: a green in-link (g = 0.25) claims a quarter of its capacity on a shared out-link.
+    const auto shared = mesoNodeFlows({{{1000}, {1000}}, {1000, 1000}, {300}, {{0, {0}, 250}}});
+    test::near(shared[0][0], 60, 1e-9); test::near(shared[1][0], 240, 1e-9);
+    std::uint64_t state = 7;
+    const auto next = [&] { state = state * 6364136223846793005ULL + 1442695040888963407ULL; return static_cast<double>(state >> 11) / 9007199254740992.0; };
+    int heldBySupply = 0;
+    for (int c = 0; c < 300; ++c) {
+        const std::size_t n = 1 + static_cast<std::size_t>(next() * 4), m = 1 + static_cast<std::size_t>(next() * 4);
+        MesoNodeStep step{std::vector<std::vector<double>>(n, std::vector<double>(m)), std::vector<double>(n), std::vector<double>(m)};
+        for (std::size_t i = 0; i < n; ++i) {
+            step.capacity[i] = 500 + 2000 * next();
+            const double s = step.capacity[i] * next();
+            std::vector<double> w(m); for (auto& x : w) x = next() < 0.3 ? 0 : next();
+            const double total = sum(w);
+            for (std::size_t j = 0; j < m; ++j) step.demand[i][j] = total > 0 ? s * w[j] / total : 0;
+            // Up to two green phases over its turns, N = g C_i S_p / S_i (shared lanes).
+            for (int p = 0; p < 2; ++p) {
+                MesoNodeSupply supply{i, {}, 0};
+                double sp = 0;
+                for (std::size_t j = 0; j < m; ++j) if (static_cast<int>(j % 2) == p && step.demand[i][j] > 0) { supply.outs.push_back(j); sp += step.demand[i][j]; }
+                if (supply.outs.empty() || next() < 0.3) continue;
+                supply.supply = (0.1 + 0.6 * next()) * step.capacity[i] * sp / s;
+                step.internal.push_back(supply);
+            }
+        }
+        for (auto& r : step.receiving) r = 2000 * next();
+        const auto q = mesoNodeFlows(step);
+        const auto qi = rowSums(q), qj = columnSums(q, m), si = rowSums(step.demand);
+        for (std::size_t j = 0; j < m; ++j) CHECK(qj[j] <= step.receiving[j] + 1e-6);
+        for (const auto& sup : step.internal) {
+            double used = 0; for (const auto j : sup.outs) used += q[sup.in][j];
+            CHECK(used <= sup.supply + 1e-6);
+        }
+        for (std::size_t i = 0; i < n; ++i) {
+            CHECK(qi[i] <= si[i] + 1e-6);
+            for (std::size_t j = 0; j < m; ++j) {
+                CHECK(q[i][j] >= 0);
+                CHECK(std::abs(q[i][j] * si[i] - step.demand[i][j] * qi[i]) <= 1e-6 * std::max(1.0, si[i] * qi[i])); // CTF
+            }
+            if (!(si[i] > 0) || qi[i] >= si[i] - 1e-6) continue;
+            bool full = false, supplyFull = false;
+            for (std::size_t j = 0; j < m; ++j) full = full || (step.demand[i][j] > 0 && qj[j] >= step.receiving[j] - 1e-6);
+            for (const auto& sup : step.internal) {
+                if (sup.in != i) continue;
+                double used = 0; for (const auto j : sup.outs) used += q[i][j];
+                supplyFull = supplyFull || used >= sup.supply - 1e-6;
+            }
+            CHECK(full || supplyFull);
+            if (supplyFull && !full) ++heldBySupply;
+        }
+    }
+    CHECK(heldBySupply > 50); // forcing: the supplies do bind
 }

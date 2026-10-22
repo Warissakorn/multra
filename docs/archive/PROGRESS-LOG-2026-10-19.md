@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-21 — S0.8a: Node rows in the scenario comparison (D289)
+
+MA15 is still blocked (sheffi.mit.edu, web.mit.edu and arxiv.org refused), so the S0 item left,
+split per AGENTS into the model and output now and the editor table next.
+- **Model:** `compareBatches` matches Nodes, then their in-legs and turns, by name; Welch
+  differences of delay, and of the legs' mean queue. Unmatched names are listed per level.
+- **Output:** JSON `nodes` and two CSV blocks after `network`, only with a Node; every comparison
+  without one keeps its bytes. The editor's Copy and Export carry the blocks.
+- **Tests:** CMP8–CMP10 in `compare`; five mutations each fail them.
+- **Found while checking sources:** Aimsun's manual cites Florian & Hearn (1995), and Visum names
+  Mitradjieva, Lindberg et al. (2013) for BFW and Gentile for LUCE. Neither is a benchmark network.
+  Sheffi's PDF is also at sheffi.mit.edu.
+
 ## 2026-10-21 — S0.7: the Nodes tab lights the Node and its legs (D288); MA15 still blocked
 
 The proxy refused arxiv.org (Boyles et al., *Transportation Network Analysis*, a newer free
