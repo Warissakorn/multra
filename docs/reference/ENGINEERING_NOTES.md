@@ -143,6 +143,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   threshold, not a calibrated critical-gap model. Derived stop lines sit 1 m short of the join
   (D50). M3's done-condition (minor-road delay responds to gap time) rests on development
   evidence only; no gate result is inferred.
+- **Macro benchmark cost, MA15 (D294, 2026-10-22, Linux GCC 13.3, -O2):** Sheffi's Figure 5.1
+  (3 links, q = 10) at `kMacroDefaults` converges in 13 iterations (gap 6.4 × 10⁻⁵). Wall time
+  79–87 µs per run (mean of 2,000 runs, 3 repeats). callgrind for one run: 0.47 M Ir inclusive in
+  `assignMacro`, 2.46 M for the whole process. The harness was a scratch `main` linking
+  `src/macro/assign.cpp` and `graph.cpp` (not kept). Three links set no budget for a city network;
+  measure again on the first real one.
 
 
 ## Do not retry without a new measurement

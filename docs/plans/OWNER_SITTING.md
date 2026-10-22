@@ -45,6 +45,23 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
    (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
    answer and before any comparable run. Which options? *Owner:*
+21. **MA15's capacities and the M10.1 gate** (listed 2026-10-22, D294). Open Sheffi (1985), book
+   p. 114, Figure 5.1, in print or a PDF. The Markdown copy's image of that page is empty, and the
+   capacities c = (2, 4, 3) were derived from Tables 5.1 and 5.4
+   ([evidence](../evidence/macro-sheffi-benchmark.md)). Does the figure print 2, 4 and 3? If yes,
+   does MA15 (Table 5.4 reproduced, equilibrium within the 10⁻⁴ gap) meet the M10 gate's benchmark
+   clause? *Owner:*
+22. **M11.3 sources** (listed 2026-10-22). The LTM engine waits until §4 and §5 of
+   [MESO_NETWORK](../reference/MESO_NETWORK.md) are checked against Yperman (2007, KU Leuven thesis)
+   and Tampère et al. (2011, TR-B 45(1) 289–309). The environment refused every host that holds them
+   (proxy 403). Either allow `arxiv.org`, `lirias.kuleuven.be` (and `sciencedirect.com` if possible)
+   under the environment's Network access → Allowed domains
+   (https://code.claude.com/docs/en/cloud-environments#network-access), or upload the PDFs
+   (optionally Boyles et al., arXiv 2502.05182, too). Which? *Owner:*
+   **2026-10-22:** the owner uploaded Tampère et al. (2011); the node model is in (D297). Still needed:
+   Yperman (2007), or Boyles et al. as a citable secondary source for the LTM link model.
+   **2026-10-22:** the owner supplied Yperman (2007) as a Markdown repository; the link model and the
+   engine are in (D298). Boyles et al. are not needed. Only the host question remains, for later sources.
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.

@@ -2,6 +2,7 @@
 #include "definition.hpp"
 #include "../network/network.hpp"
 #include "../../meso/graph.hpp"
+#include <map>
 
 namespace multra {
 // M11.2 (docs/reference/MESO_NETWORK.md §3, §4, D292, D293): the drawn network as a Meso graph.
@@ -18,7 +19,16 @@ namespace multra {
 // MESO_NODE_REFUSED at `network.nodes[i]` for a Node with membership issues, whose interior is then
 // compiled as simple nodes; MESO_STEP_TOO_LONG at `definition.mesoSettings.step` above
 // mesoStepLimit (mesoShortestLink names the link).
-struct MesoCompile { MesoGraph graph; std::vector<ValidationIssue> issues; };
+// Advised (D297): MESO_PRIORITY_IGNORED at `network.nodes[i]` for a valid Node with conflicts, since the
+// node model has no node supply constraints for them yet; (D299) MESO_SIGNAL_AMBIGUOUS there for a
+// valid Node with a turn whose heads show two programs, which then stays unsignalised.
+// Signals (D299): each Node turn takes the one program its heads show and its g/C from `greenShares`
+// (program id, as headProgramId, to effective green over cycle; mesoGreenShares fills it).
+struct MesoCompile { MesoGraph graph; std::vector<ValidationIssue> issues, advisories; };
 MesoCompile compileMesoNetwork(const Network&, const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
-                               const MesoSettings&);
+                               const MesoSettings&, const std::map<std::string, double>& greenShares = {});
+// Effective green over cycle per signal program id (D299): a controller group's displayed green G,
+// wrapped past the cycle's end, over its cycle (HCM 7th ed. Eq. 19-1 with its defaults l1 = e = 2 s
+// gives g = G); a legacy program's green phases over its whole duration.
+std::map<std::string, double> mesoGreenShares(const std::vector<SignalController>&, const std::vector<SignalProgram>&);
 }

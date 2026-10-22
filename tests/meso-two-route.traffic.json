@@ -1,0 +1,509 @@
+{
+ "background": {
+  "metresPerPixel": 1.0,
+  "opacity": 0.5,
+  "pngBase64": "",
+  "rotation": 0.0,
+  "x": 0.0,
+  "y": 0.0
+ },
+ "definition": {
+  "behaviours": [
+   {
+    "additiveSafetyDistance": 2.0,
+    "amberDeceleration": 3.0,
+    "followingTime": 1.5,
+    "id": "wiedemann-inspired-prototype",
+    "maxDecelerationCooperativeBraking": 3.0,
+    "model": "prototype",
+    "multiplicativeSafetyDistance": 3.0,
+    "speedThreshold": 0.2,
+    "standstillDistance": 2.0
+   }
+  ],
+  "compositions": [
+   {
+    "id": "car-only",
+    "types": [
+     {
+      "share": 1.0,
+      "vehicleTypeId": "car"
+     }
+    ]
+   },
+   {
+    "id": "urban-mixed",
+    "types": [
+     {
+      "share": 0.95,
+      "vehicleTypeId": "car"
+     },
+     {
+      "share": 0.05,
+      "vehicleTypeId": "heavy-vehicle"
+     }
+    ]
+   }
+  ],
+  "duration": 3600.0,
+  "inputs": [],
+  "linkTypes": [
+   {
+    "capacityPerLane": 600.0,
+    "freeSpeed": 10.0,
+    "id": "arterial",
+    "jamDensity": {
+     "source": "Test values",
+     "value": 150.0
+    },
+    "name": "Arterial",
+    "source": "Test values",
+    "vdfId": "bpr"
+   }
+  ],
+  "routes": [],
+  "signalPrograms": [],
+  "timeStep": 0.5,
+  "vehicleTypes": [
+   {
+    "axles": {
+     "frontOverhang": 0.9,
+     "rearOverhang": 0.9,
+     "wheelbase": 2.7
+    },
+    "behaviourId": "wiedemann-inspired-prototype",
+    "comfortableDeceleration": 2.0,
+    "desiredSpeed": {
+     "max": 16.67,
+     "min": 11.11
+    },
+    "id": "car",
+    "length": 4.5,
+    "maxAcceleration": 2.5,
+    "maxDeceleration": 8.0,
+    "pcu": {
+     "source": "Test values",
+     "value": 1.0
+    },
+    "width": 1.8
+   },
+   {
+    "axles": {
+     "frontOverhang": 2.0,
+     "rearOverhang": 4.0,
+     "wheelbase": 6.0
+    },
+    "behaviourId": "wiedemann-inspired-prototype",
+    "comfortableDeceleration": 1.5,
+    "desiredSpeed": {
+     "max": 13.89,
+     "min": 11.11
+    },
+    "id": "heavy-vehicle",
+    "length": 12.0,
+    "maxAcceleration": 1.0,
+    "maxDeceleration": 6.0,
+    "pcu": {
+     "source": "Test values",
+     "value": 2.0
+    },
+    "width": 2.5
+   }
+  ]
+ },
+ "format": "TrafficSim",
+ "network": {
+  "connectors": [
+   {
+    "displayType": "default",
+    "from": {
+     "laneId": "lane-2",
+     "linkId": "link-1",
+     "station": 50.0
+    },
+    "fromLaneCount": 1,
+    "geometry": [
+     {
+      "x": -50.0,
+      "y": 47.0
+     },
+     {
+      "x": -34.744223417255036,
+      "y": 39.65625
+     },
+     {
+      "x": -25.0,
+      "y": 23.5
+     },
+     {
+      "x": -15.255776582744963,
+      "y": 7.34375
+     },
+     {
+      "x": 0.0,
+      "y": 0.0
+     }
+    ],
+    "id": "connector-15",
+    "laneBlend": [],
+    "laneMarkings": [],
+    "laneWidths": [],
+    "level": 0,
+    "name": "",
+    "to": {
+     "laneId": "lane-14",
+     "linkId": "link-13",
+     "station": 0.0
+    },
+    "toLaneCount": 1
+   },
+   {
+    "displayType": "default",
+    "from": {
+     "laneId": "lane-14",
+     "linkId": "link-13",
+     "station": 100.0
+    },
+    "fromLaneCount": 1,
+    "geometry": [
+     {
+      "x": 100.0,
+      "y": 0.0
+     },
+     {
+      "x": 157.72235081951166,
+      "y": 4.21875
+     },
+     {
+      "x": 215.0,
+      "y": 13.5
+     },
+     {
+      "x": 272.2776491804883,
+      "y": 22.78125
+     },
+     {
+      "x": 330.0,
+      "y": 27.0
+     }
+    ],
+    "id": "connector-16",
+    "laneBlend": [],
+    "laneMarkings": [],
+    "laneWidths": [],
+    "level": 0,
+    "name": "",
+    "to": {
+     "laneId": "lane-8",
+     "linkId": "link-7",
+     "station": 0.0
+    },
+    "toLaneCount": 1
+   },
+   {
+    "displayType": "default",
+    "from": {
+     "laneId": "lane-2",
+     "linkId": "link-1",
+     "station": 50.0
+    },
+    "fromLaneCount": 1,
+    "geometry": [
+     {
+      "x": -50.0,
+      "y": 47.0
+     },
+     {
+      "x": -37.43131720534137,
+      "y": 45.90625
+     },
+     {
+      "x": -25.0,
+      "y": 43.5
+     },
+     {
+      "x": -12.56868279465863,
+      "y": 41.09375
+     },
+     {
+      "x": 0.0,
+      "y": 40.0
+     }
+    ],
+    "id": "connector-19",
+    "laneBlend": [],
+    "laneMarkings": [],
+    "laneWidths": [],
+    "level": 0,
+    "name": "",
+    "to": {
+     "laneId": "lane-18",
+     "linkId": "link-17",
+     "station": 0.0
+    },
+    "toLaneCount": 1
+   },
+   {
+    "displayType": "default",
+    "from": {
+     "laneId": "lane-18",
+     "linkId": "link-17",
+     "station": 300.0
+    },
+    "fromLaneCount": 1,
+    "geometry": [
+     {
+      "x": 300.0,
+      "y": 40.0
+     },
+     {
+      "x": 307.8844964472927,
+      "y": 37.96875
+     },
+     {
+      "x": 315.0,
+      "y": 33.5
+     },
+     {
+      "x": 322.1155035527073,
+      "y": 29.03125
+     },
+     {
+      "x": 330.0,
+      "y": 27.0
+     }
+    ],
+    "id": "connector-20",
+    "laneBlend": [],
+    "laneMarkings": [],
+    "laneWidths": [],
+    "level": 0,
+    "name": "",
+    "to": {
+     "laneId": "lane-8",
+     "linkId": "link-7",
+     "station": 0.0
+    },
+    "toLaneCount": 1
+   }
+  ],
+  "drivingSide": "left",
+  "id": "network",
+  "links": [
+   {
+    "boundaryMarkings": [],
+    "displayType": "default",
+    "geometry": [
+     {
+      "x": -100.0,
+      "y": 40.0
+     },
+     {
+      "x": -50.0,
+      "y": 40.0
+     }
+    ],
+    "id": "link-1",
+    "laneOffset": 0.0,
+    "lanes": [
+     {
+      "id": "lane-2",
+      "width": 3.5
+     },
+     {
+      "id": "lane-3",
+      "width": 3.5
+     },
+     {
+      "id": "lane-4",
+      "width": 3.5
+     },
+     {
+      "id": "lane-5",
+      "width": 3.5
+     },
+     {
+      "id": "lane-6",
+      "width": 3.5
+     }
+    ],
+    "level": 0,
+    "linkType": "arterial",
+    "name": ""
+   },
+   {
+    "boundaryMarkings": [],
+    "displayType": "default",
+    "geometry": [
+     {
+      "x": 330.0,
+      "y": 20.0
+     },
+     {
+      "x": 430.0,
+      "y": 20.0
+     }
+    ],
+    "id": "link-7",
+    "laneOffset": 0.0,
+    "lanes": [
+     {
+      "id": "lane-8",
+      "width": 3.5
+     },
+     {
+      "id": "lane-9",
+      "width": 3.5
+     },
+     {
+      "id": "lane-10",
+      "width": 3.5
+     },
+     {
+      "id": "lane-11",
+      "width": 3.5
+     },
+     {
+      "id": "lane-12",
+      "width": 3.5
+     }
+    ],
+    "level": 0,
+    "linkType": "arterial",
+    "name": ""
+   },
+   {
+    "boundaryMarkings": [],
+    "displayType": "default",
+    "geometry": [
+     {
+      "x": 0.0,
+      "y": 0.0
+     },
+     {
+      "x": 100.0,
+      "y": 0.0
+     }
+    ],
+    "id": "link-13",
+    "laneOffset": 0.0,
+    "lanes": [
+     {
+      "id": "lane-14",
+      "width": 3.5
+     }
+    ],
+    "level": 0,
+    "linkType": "arterial",
+    "name": ""
+   },
+   {
+    "boundaryMarkings": [],
+    "displayType": "default",
+    "geometry": [
+     {
+      "x": 0.0,
+      "y": 40.0
+     },
+     {
+      "x": 300.0,
+      "y": 40.0
+     }
+    ],
+    "id": "link-17",
+    "laneOffset": 0.0,
+    "lanes": [
+     {
+      "id": "lane-18",
+      "width": 3.5
+     }
+    ],
+    "level": 0,
+    "linkType": "arterial",
+    "name": ""
+   }
+  ],
+  "signalHeads": []
+ },
+ "nextId": 21,
+ "odMatrices": [
+  {
+   "cells": [
+    [
+     0.0,
+     1200.0
+    ],
+    [
+     0.0,
+     0.0
+    ]
+   ],
+   "compositionId": "urban-mixed",
+   "endTime": 3600.0,
+   "id": "am",
+   "startTime": 0.0,
+   "zoneIds": [
+    "site",
+    "town"
+   ]
+  }
+ ],
+ "revision": 0,
+ "schemaVersion": 52,
+ "zoneConnectors": [
+  {
+   "direction": "origin",
+   "id": "s1",
+   "linkId": "link-1",
+   "share": 1.0,
+   "zoneId": "site"
+  },
+  {
+   "direction": "destination",
+   "id": "t1",
+   "linkId": "link-7",
+   "share": 1.0,
+   "zoneId": "town"
+  }
+ ],
+ "zones": [
+  {
+   "attributes": {},
+   "id": "site",
+   "name": "",
+   "polygon": [
+    [
+     -110.0,
+     30.0
+    ],
+    [
+     -110.0,
+     50.0
+    ],
+    [
+     -130.0,
+     40.0
+    ]
+   ]
+  },
+  {
+   "attributes": {},
+   "id": "town",
+   "name": "",
+   "polygon": [
+    [
+     440.0,
+     0.0
+    ],
+    [
+     460.0,
+     40.0
+    ],
+    [
+     460.0,
+     0.0
+    ]
+   ]
+  }
+ ]
+}

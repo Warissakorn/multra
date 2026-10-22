@@ -259,6 +259,19 @@ passes.
   in the repository with a citation. The first candidate is Sheffi, *Urban Transportation
   Networks* (1985). Its exact example, values and published solution are named and checked
   against the book before row MA15 is written as code. Sioux Falls is not used.
+- **Checked (2026-10-22, D294): Sheffi §5.2, Table 5.4** (book p. 120), Frank–Wolfe on
+  **Figure 5.1** (book p. 114): three parallel links, one O–D pair, q = 10, and
+  tₐ = t₀ₐ (1 + 0.15 (xₐ / cₐ)⁴) with t₀ = (10, 20, 25). The units are the book's (time and flow
+  units), so the row runs on a hand graph.
+  - **Capacities c = (2, 4, 3), derived.** The copy read has no image of book p. 114, and its OCR
+    lost the capacities. Table 5.1 prints t₁(10) = 947 and t₂(10) = 137, giving c₁ = 2 and c₂ = 4.
+    With c₃ = 3 a replay matches every number of Table 5.4 to its print precision; 2.8 and 3.2 fit
+    worse. The owner confirms c against the print (OWNER_SITTING).
+  - **Two misprints:** iteration 2's direction (printed link 1; the arithmetic needs link 3) and
+    iteration 3's t₃ (printed 35.3; 25.3 by its own flows).
+  - **Equilibrium:** equal times u = 25.456 at x = (3.583, 4.645, 1.772), z = 189.332. The book's
+    last row prints z = 189.33 and t = (25.6, 25.7, 25.4).
+  - Evidence: [macro-sheffi-benchmark](../evidence/macro-sheffi-benchmark.md).
 
 ## 12. Owner choices (answered 2026-10-19, D272: 1a, 2a, 3b, 4a, 5a, 6a, 7b, 8b)
 
@@ -306,7 +319,7 @@ passes.
 | S2.2 | `src/macro/`: all-or-nothing loading, multi-class Frank–Wolfe, gap, convergence. **Implemented (D274)** | MA7–MA11, MA16, MA17 |
 | S2.3 | Run settings, `MACRO_NOT_CONVERGED`, the link outputs in JSON and CSV, CLI `--macro`. **Implemented (D275)** | MA12, MA13 |
 | S2.4 | Run Macro on the worker with stages (§19 a), the convergence record, the Macro links table and stale marking; the link-type editor (a types table, the Link's type field). **Implemented (D277)** | MA14, MA18 |
-| Gate | Benchmark (choice 7) | MA15 |
+| Gate | Benchmark (choice 7): Sheffi Table 5.4 (§11). **Row implemented (D294); the gate is the owner's** | MA15 |
 
 ## 14. Acceptance rows (planned)
 
@@ -328,7 +341,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | MA12 | VDF data | Another α and β change the flows with no code edit |
 | MA13 | Outputs | Every field of §9; the marker line in JSON and CSV |
 | MA14 | Editor | Run Macro is one action and no Undo step; a table row per link; an edit marks the result stale |
-| MA15 | Benchmark | Within the target gap of the textbook network's published equilibrium (choice 7b) |
+| MA15 | Benchmark: Sheffi Fig. 5.1 (§11) | (a) Capped at k = 1–5 iterations, the flows, times, objective and step match Table 5.4's printed rows (±0.01, ±0.2, ±0.5, ±0.001; the misprinted t₃ excepted); (b) at the 10⁻⁴ target the run converges on the equal-time equilibrium within 10⁻³ and z within 0.005 of the printed 189.33 |
 | MA16 | A mode banned on a link type | That class never uses the link; its flow takes the next allowed path; other classes still use it |
 | MA17 | Two classes, different PCU, one shared link | The link's load is Σ pcu · v, and both classes see the same time |
 | MA18 | Convergence record and cancel (§19 a) | One entry per gap computed (iterations + 1), the last equal to the gap; an observer's stop cancels with the flows reached, never converged |

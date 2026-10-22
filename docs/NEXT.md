@@ -6,15 +6,33 @@ The single live to-do for this project. [`PROGRESS.md`](PROGRESS.md) is the sess
 Rewrite this file each session ([AGENTS](../AGENTS.md#session-end)); owner items live only in
 [OWNER_SITTING](plans/OWNER_SITTING.md), dated measurements in [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 
-## State on 2026-10-21
+## State on 2026-10-22
 
 What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and the
 [decision record](decisions/RECORD.md); the 2026-10-19 state list is
 [archived](archive/NEXT-state-2026-10-20.md). Open state only:
-- **M11 (Meso):** the contract is answered (D291, D292: 1a–7a) and M11.2 is in (D293: the Meso graph,
-  `jamDensity`, `mesoSettings` at schema 52; [MESO_NETWORK](reference/MESO_NETWORK.md) §14).
-- **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md));
-  MA15, the textbook benchmark, is open. §19 (b) named runs and (c) a procedure sequence are booked (D277).
+- **M11 (Meso):** the contract is answered (D291, D292: 1a–7a). M11.2 is in (D293: the Meso graph,
+  `jamDensity`, `mesoSettings` at schema 52), and so are M11.3a and M11.3b (D295, D296: every Micro
+  demand source as Meso paths, with turn shares and demand per class; [MESO_NETWORK](reference/MESO_NETWORK.md)
+  §15–§16). The M2.6 template's demand loads whole. M11.3's node model (D297, Tampère et al. 2011)
+  and link model with the loading engine (D298, Yperman 2007, `loadMeso`) are in, and so are signals
+  as averaged green (D299, choice 4b), and M11.4 (D300): `runMeso` over the whole run, outputs,
+  `--meso`, and Run Meso in the editor.
+- **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md)),
+  and so is MA15, the textbook benchmark: Sheffi Table 5.4 (D294). Its derived capacities and the
+  gate wait on the owner (OWNER_SITTING B21). §19 (b) named runs and (c) a procedure sequence are
+  booked (D277).
+- **Books:** the owner's Markdown copies are on GitHub. Attach one with `add_repo` and cite book
+  pages, not the copy's prose. Page images can be empty: Sheffi's p. 114 is 0 bytes.
+  - `Warissakorn/Urban-Transportation-Networks-Markdown`: Sheffi (1985), used for MA15.
+  - `Warissakorn/Highway-Capacity-Manual-7edition-Markdown`: HCM 7th edition, for S3's coarse
+    capacities and a link type's `source`.
+  - `Warissakorn/Modelling-Transport-4-edition-Markdown`: Ortúzar & Willumsen, for M10.2–M10.4
+    (generation, distribution, mode choice).
+  - `Warissakorn/Transportation-Planning-Handbook-Markdown`: the Transportation Planning Handbook (edition unchecked).
+  - `Warissakorn/the-link-transmission-model-for-dynamic-network-loading-markdown`: Yperman (2007),
+    used for D298. It has no page numbers: cite sections and equations.
+  - HCM 7th edition was used for D299's effective green (Ch. 19, Eq. 19-1).
 - **S1 is complete** (D266–D270, [STUDY_PERIODS](reference/STUDY_PERIODS.md)); no PCU value ships (D267).
 - **Nodes: S0 is complete** (D259–D265, D278, D288–D290, [NODES](reference/NODES.md)); S0.4 moved to S3 (D272).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
@@ -31,44 +49,23 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M11.3a (Meso paths and demand); MA15 when a book is reachable
+## Next session — owner's pick: M11 follow-ups, or another milestone
 
-- **M11.3a:** Micro's routes and routing-decision weights become Meso paths (D292 5a).
-  - Map each route's Links and Connectors to `MesoGraph` links and turns. The pieces inside a Node
-    collapse to the Node's turn; a Connector outside one is a simple node's turn.
-  - Turn shares at each node per class, from the routes' weights and their intervals.
-  - The study period's demand per class in veh/h (constant, or by the matrix's intervals).
-  - Rows ME12 and later in MESO_NETWORK §13: a route that cannot be mapped is refused, with its
-    path. Write the rows first.
-  - Code: `src/project/meso_input.*` beside `mesoNetwork`; the route compile is in
-    `src/project/demand_paths.*` and `src/model/network/routing.*`.
-- **Before M11.3 (the engine):** check §4's formulas and step limit against Yperman's thesis (try
-  Lirias, KU Leuven), and §5 against Tampère et al. (2011)'s requirements.
-- **MA15 is blocked on access.** On 2026-10-21 the proxy refused every host below, after the
-  owner allowed arxiv.org. That suggests a running container keeps its old policy, but this is
-  unconfirmed.
-  - **Try first:** in a new session, fetch the books before any other work.
-  - **If they are still refused:** ask the owner to allow the hosts or upload a PDF.
-  - **The books:**
-    - Sheffi, *Urban Transportation Networks* (1985), D272's first candidate:
-      https://sheffi.mit.edu/sites/sheffi.mit.edu/files/sheffi_urban_trans_networks_0.pdf
-      (also linked from https://web.mit.edu/sheffi/www/urbanTransportation.html).
-    - Boyles, Lownes & Unnikrishnan, *Transportation Network Analysis, Vol. I* (arXiv 2502.05182,
-      2025): a newer, free candidate. Its licence and whether it has a small network with a
-      published equilibrium are unchecked. Choosing it is a new decision amending D272.
-    - Not a benchmark: Aimsun's manual cites Florian & Hearn (1995), and Visum names
-      Mitradjieva, Lindberg et al. (2013) for BFW and Gentile for LUCE. These are methods, not
-      worked networks.
-  - **When one is readable,** follow the plan:
-    - the Frank–Wolfe chapter's worked example;
-    - the evidence note with its citation and the PDF hash;
-    - the fixture;
-    - MA15;
-    - the cost measurement.
-- **Other open items,** if the owner prefers one before Meso:
+- **M11 is in through M11.4** (D291–D300; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§20). M11.5
+  (dynamic assignment) waits on M9.
+- **M11 follow-ups, if the owner wants Meso first:**
+  - **The turn free-flow time** (§3) is compiled but not loaded: a Node's interior adds no time.
+    The thesis's nodes have no length, so loading it needs a design. One option is a short virtual
+    link per turn; ask the owner.
+  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). No source
+    has been named yet.
+  - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`
+    (`MESO_PRIORITY_IGNORED`).
+- **Other open items:**
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
   - **S3:** Roads and S0.4's coarse values (D272);
-  - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277).
+  - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
+  - **B21:** Sheffi Fig 5.1's capacities, for the owner.
 
 M2.8 has only owner checks left.

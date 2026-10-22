@@ -46,7 +46,7 @@ class QToolBar;
 namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
-struct MacroPanel; struct MacroRun;
+struct MacroPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr);
@@ -330,7 +330,12 @@ private:
 public:
     bool macroRunning() const; const MacroRun* macroResult() const; bool macroStale() const;
     bool macroTabShown() const; // Export and Copy then write the Macro CSV
+    bool mesoRunning() const; const MesoRun* mesoResult() const; bool mesoStale() const;
+    bool mesoTabShown() const; // Export and Copy then write the Meso CSV
 private:
+    // M11.4, editor_meso.cpp: Run Meso on its own worker over the whole run; stale after an edit (D300).
+    std::unique_ptr<MesoPanel> meso_;
+    void buildMeso(QToolBar*, QVBoxLayout*); void refreshMeso(); void startMeso(); void discardMeso();
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
     QTableWidget* nodeResultTable_{}; QLabel* nodeResultNote_{}; void refreshResultNodes(); // S0.6 (NODES §15): Results -> Nodes
     void refreshComparedNodes(const QString& marker); // S0.8b (NODES §18): a comparison's Node rows

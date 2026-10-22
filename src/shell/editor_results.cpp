@@ -5,7 +5,9 @@
 #include <map>
 #include "editor_storage.hpp"
 #include "editor_macro.hpp"
+#include "editor_meso.hpp"
 #include "../project/macro_output.hpp"
+#include "../project/meso_output.hpp"
 #include "../project/batch_output.hpp"
 #include "../project/csv_format.hpp"
 #include <QClipboard>
@@ -87,6 +89,7 @@ void EditorWindow::buildResults() {
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
     nodeResultTable_=resultTable(page,"editorNodeResultTable",10); tab(nodeResultNote_,"editorNodeResultsNote","editorResultsTabNodes")->addWidget(nodeResultTable_,1); // S0.6
     macro_=std::make_unique<MacroPanel>(); buildMacro(bar,tab(macro_->note,"editorMacroNote","editorResultsTabMacro")); // S2.4
+    meso_=std::make_unique<MesoPanel>(); buildMeso(bar,tab(meso_->note,"editorMesoNote","editorResultsTabMeso")); // M11.4
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -204,12 +207,19 @@ void EditorWindow::refreshClamps() {
 bool EditorWindow::macroTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMacro");
 }
+bool EditorWindow::mesoTabShown() const {
+    return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMeso");
+}
 bool EditorWindow::runFinished() const {
     return runState_.scenario && runState_.tick>=totalTicks(*runState_.scenario);
 }
 std::string EditorWindow::resultsCsv() const {
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
         if(const auto* r=macroResult())return macroCsv(*r);
+        throw std::runtime_error("EDIT_CSV_UNFINISHED");
+    }
+    if(mesoTabShown()){ // M11.4: the Meso tab exports its own CSV, the CLI's --meso --csv
+        if(const auto* r=mesoResult())return mesoCsv(*r);
         throw std::runtime_error("EDIT_CSV_UNFINISHED");
     }
     if(batch_)return batchCsv(batch_->report,batch_->runs);

@@ -28,9 +28,42 @@ struct Groups { // union-find over station keys
     void join(const Key& a, const Key& b) { const auto x = find(a), y = find(b); if (x != y) parent[std::max(x, y)] = std::min(x, y); }
 };
 struct ValidNode { std::size_t index; NodeMembership membership; };
+// The signal programs whose heads a turn's vehicles pass (D299): a head on a Connector of the turn's
+// path; on the in-leg, a head on a lane its first Connector leaves from, or any lane when the path
+// has no Connector; a head on a Link inside the Node that the path crosses.
+std::set<std::string> turnPrograms(const Network& network, const NodeMembership& m, const NodeTurn& turn) {
+    std::set<std::string> programs;
+    const auto& leg = m.inLegs[turn.in].linkId;
+    for (const auto& id : m.signalHeads) {
+        const auto h = std::find_if(network.signalHeads.begin(), network.signalHeads.end(), [&](const auto& x) { return x.id == id; });
+        if (h == network.signalHeads.end()) continue;
+        bool governs = false;
+        for (const auto& path : turn.paths) {
+            const auto first = std::find_if(path.begin(), path.end(), [&](const auto& s) { return s.from == 0 && s.to == 0 && s.objectId != leg; });
+            const Connector* c = nullptr;
+            if (first != path.end())
+                for (const auto& x : network.connectors) if (x.id == first->objectId) c = &x;
+            if (!h->connectorId.empty()) {
+                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->connectorId; });
+            } else if (h->lane.linkId == leg) {
+                if (!c || c->from.linkId != leg) { governs = true; continue; }
+                const auto l = std::find_if(network.links.begin(), network.links.end(), [&](const auto& x) { return x.id == leg; });
+                const auto lane = [&](const std::string& laneId) {
+                    return static_cast<int>(std::find_if(l->lanes.begin(), l->lanes.end(), [&](const auto& x) { return x.id == laneId; }) - l->lanes.begin());
+                };
+                const int at = lane(h->lane.laneId), from = lane(c->from.laneId);
+                governs = governs || (at >= from && at < from + c->fromLaneCount);
+            } else {
+                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->lane.linkId; });
+            }
+        }
+        if (governs) programs.insert(headProgramId(*h));
+    }
+    return programs;
+}
 }
 MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
-                               const MesoSettings& settings) {
+                               const MesoSettings& settings, const std::map<std::string, double>& greenShares) {
     MesoCompile out;
     auto& g = out.graph;
     std::map<std::string, std::size_t> linkIndex;
@@ -117,6 +150,7 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
     // Turns, grouped by node.
     std::vector<std::vector<MesoTurn>> byNode(g.nodes.size());
     std::vector<std::vector<MesoConflict>> conflicts(g.nodes.size());
+    std::set<std::size_t> ambiguous; // Nodes with a turn under two programs
     const auto speedOf = [&](const std::string& link) { const auto* t = typeOf(network.links[linkIndex[link]]); return t ? t->freeSpeed : 0.0; };
     for (const auto& v : valid) {
         const auto& m = v.membership;
@@ -139,6 +173,10 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
                 for (const auto& span : path)
                     if (std::find(mt.via.begin(), mt.via.end(), span.objectId) == mt.via.end()) mt.via.push_back(span.objectId);
             if (const double v0 = speedOf(in.linkId); v0 > 0) mt.freeTime = length / v0;
+            if (const auto programs = turnPrograms(network, m, turn); programs.size() == 1) {
+                mt.signal = *programs.begin();
+                if (const auto share = greenShares.find(mt.signal); share != greenShares.end()) mt.green = share->second;
+            } else if (programs.size() > 1) ambiguous.insert(v.index);
             local[t] = byNode[node].size();
             byNode[node].push_back(std::move(mt));
         }
@@ -182,6 +220,11 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         if (!fed[i]) g.entries.push_back(i);
         if (!drained[i]) g.exits.push_back(i);
     }
+    for (const auto& v : valid) {
+        const auto at = "network.nodes[" + std::to_string(v.index) + "]";
+        if (!v.membership.conflicts.empty()) out.advisories.push_back({"MESO_PRIORITY_IGNORED", at});
+        if (ambiguous.contains(v.index)) out.advisories.push_back({"MESO_SIGNAL_AMBIGUOUS", at}); // D299
+    }
     // Refusals.
     std::set<std::string> used;
     for (std::size_t i = 0; i < network.links.size(); ++i) {
@@ -197,5 +240,22 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
     if (const double limit = mesoStepLimit(g); limit > 0 && settings.step > limit)
         out.issues.push_back({"MESO_STEP_TOO_LONG", "definition.mesoSettings.step"});
     return out;
+}
+std::map<std::string, double> mesoGreenShares(const std::vector<SignalController>& controllers, const std::vector<SignalProgram>& programs) {
+    std::map<std::string, double> shares;
+    for (const auto& c : controllers) {
+        if (!(c.cycle > 0)) continue;
+        for (const auto& grp : c.groups) {
+            double green = grp.greenEnd - grp.greenStart;
+            if (green < 0) green += c.cycle;
+            shares[signalGroupProgramId(c.id, grp.number)] = std::clamp(green / c.cycle, 0.0, 1.0);
+        }
+    }
+    for (const auto& p : programs) {
+        double green = 0, total = 0;
+        for (const auto& phase : p.phases) { total += phase.duration; if (phase.color == SignalColor::green) green += phase.duration; }
+        if (total > 0) shares[p.id] = green / total;
+    }
+    return shares;
 }
 }
