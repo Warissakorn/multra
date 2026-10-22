@@ -37,6 +37,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [macro-sheffi-benchmark.md](macro-sheffi-benchmark.md) | MA15 — Sheffi (1985) Table 5.4 as the Macro benchmark, 2026-10-22 | D294, D272 |
 | [macro-run-procedures.md](macro-run-procedures.md) | How Visum and Aimsun organise a Macro run (web search), 2026-10-19 | D276 |
 | [tampere-node-model.md](tampere-node-model.md) | M11.3 node model — Tampère et al. (2011) read against MESO_NETWORK §5, 2026-10-22 | D297, D292 |
+| [yperman-ltm.md](yperman-ltm.md) | M11.3c link model — Yperman (2007) read against MESO_NETWORK §4–§6; Example 4.5 and §7.1 reproduced, 2026-10-22 | D298, D297 |
 | [source-first-step.md](source-first-step.md) | Source first-step clearance — D108, M3.2.8a.1a | D108, D107 |
 | [perception-motion.md](perception-motion.md) | M3.5 slice 2: look-ahead and multi-anticipation evidence — 2026-10-15 | D182 |
 | [perception-discharge.md](perception-discharge.md) | M3.5 slice 5 — BA38 reaction-time discharge, raw-input manifests, paired seed/lane evidence — 2026-10-15 | D185, D184 |

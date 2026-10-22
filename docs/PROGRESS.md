@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.3c: Yperman's link model and the loading engine (D298)
+
+The owner supplied Yperman's thesis as a Markdown repository, and its chapters 3–5 and §7.1 were read.
+- **Confirmed:** §4's sending and receiving volumes, the storage, the origin queue and the
+  destination. The thesis prints only `L/v` as the step limit; `L/w` is added, derived.
+- **Owner choices:**
+  - turn splits follow the vehicles' routes (Eq. 5.2), replacing shares at time t;
+  - signals move to M11.3d, because explicit green under FIFO holds the whole in-link. Signalised
+    Nodes are advised `MESO_SIGNAL_IGNORED`.
+- **`loadMeso`** joins the link model and `mesoNodeFlows` per step, with spill-back and the
+  boundary volumes.
+- **Against the thesis:** Example 4.5 is exact. §7.1's diverge network gives `k_B` = 166.67 veh/km,
+  r2m clear at 44 min (thesis 46) and r1n queued 26.25–82.75 min (thesis 28–82).
+- **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `mesoloading`. Six mutations are caught.
+
 ## 2026-10-22 — M11.3's node model from Tampère et al. (2011) (D297)
 
 The owner uploaded the paper, and it was read in full.
@@ -121,17 +136,6 @@ split per AGENTS into the model and output now and the editor table next.
 - **Found while checking sources:** Aimsun's manual cites Florian & Hearn (1995), and Visum names
   Mitradjieva, Lindberg et al. (2013) for BFW and Gentile for LUCE. Neither is a benchmark network.
   Sheffi's PDF is also at sheffi.mit.edu.
-
-## 2026-10-21 — S0.7: the Nodes tab lights the Node and its legs (D288); MA15 still blocked
-
-The proxy refused arxiv.org (Boyles et al., *Transportation Network Analysis*, a newer free
-candidate for MA15) as well as web.mit.edu, after the owner allowed it. The owner chose an S0 item.
-- **Canvas:** selecting a Nodes row lights the outline in the selection colour and draws each leg,
-  the Link's span outside the polygon up to its crossing (in filled, out hatched), from
-  `nodeMembership`. A refused Node lights its outline only. Clearing, deleting or undoing puts it out.
-- **Unchanged:** every output, since the change is editor-only.
-- **Tests:** row N22 in `node-ui`; legs never drawn, in/out swapped, the highlight kept after delete
-  and a refused Node with legs each fail it.
 
 ## Older entries
 

@@ -182,8 +182,11 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         if (!fed[i]) g.entries.push_back(i);
         if (!drained[i]) g.exits.push_back(i);
     }
-    for (const auto& v : valid)
-        if (!v.membership.conflicts.empty()) out.advisories.push_back({"MESO_PRIORITY_IGNORED", "network.nodes[" + std::to_string(v.index) + "]"});
+    for (const auto& v : valid) {
+        const auto at = "network.nodes[" + std::to_string(v.index) + "]";
+        if (!v.membership.conflicts.empty()) out.advisories.push_back({"MESO_PRIORITY_IGNORED", at});
+        if (v.membership.control == SectionControl::signalised) out.advisories.push_back({"MESO_SIGNAL_IGNORED", at}); // D298
+    }
     // Refusals.
     std::set<std::string> used;
     for (std::size_t i = 0; i < network.links.size(); ++i) {

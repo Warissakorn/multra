@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-21 — S0.7: the Nodes tab lights the Node and its legs (D288); MA15 still blocked
+
+The proxy refused arxiv.org (Boyles et al., *Transportation Network Analysis*, a newer free
+candidate for MA15) as well as web.mit.edu, after the owner allowed it. The owner chose an S0 item.
+- **Canvas:** selecting a Nodes row lights the outline in the selection colour and draws each leg,
+  the Link's span outside the polygon up to its crossing (in filled, out hatched), from
+  `nodeMembership`. A refused Node lights its outline only. Clearing, deleting or undoing puts it out.
+- **Unchanged:** every output, since the change is editor-only.
+- **Tests:** row N22 in `node-ui`; legs never drawn, in/out swapped, the highlight kept after delete
+  and a refused Node with legs each fail it.
+
 ## 2026-10-21 — Optimization review across all areas; the docs check is 96 % faster
 
 The owner asked for every area (engine, build, docs, design and the rest). Measured on Linux:

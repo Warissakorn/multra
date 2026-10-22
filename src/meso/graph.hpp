@@ -47,9 +47,15 @@ struct MesoGraph {
     std::vector<std::size_t> entries, exits; // links with no turn into / out of them
     bool operator==(const MesoGraph&) const = default;
 };
-// The longest step the link model allows: the shortest free-flow link travel time, s (§4). Proposed
-// from the LTM's sending volume and checked against Yperman's thesis before M11.3. Links without a
-// speed are skipped; no link gives 0.
+// The backward wave speed of a link's triangular diagram, m/s and positive: q_max / (k_jam - k_c)
+// (§4); 0 without a free speed or a jam density above the critical one.
+double mesoWaveSpeed(const MesoLink&);
+// The longest step one link allows: min(L/v, L/w). Yperman (2007) Eq. 3.4 prints only L/v; L/w is
+// derived here, because the receiving volume (Eq. 4.35) reads the downstream count at t + dt - L/w,
+// which must already be known (D298). A link without a wave speed gives L/v.
+double mesoLinkTimeLimit(const MesoLink&);
+// The longest step the link model allows: the least mesoLinkTimeLimit over links, s (§4). Links
+// without a speed are skipped; no link gives 0.
 double mesoStepLimit(const MesoGraph&);
 // Its shortest link, or links.size() when there is none.
 std::size_t mesoShortestLink(const MesoGraph&);

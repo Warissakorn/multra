@@ -36,6 +36,12 @@ std::vector<std::vector<double>> mesoNodeFlows(const MesoNodeStep& step) {
             const double level = std::max(reduced[j], 0.0) / claim;
             if (level < a) { a = level; hat = j; }
         }
+        if (hat == m) { // every open out-link receives without limit (a destination, Yperman Eq. 5.5)
+            for (std::size_t i = 0; i < n; ++i)
+                if (std::any_of(open.begin(), open.end(), [&](std::size_t j) { return competing[j].contains(i); }))
+                    for (std::size_t j = 0; j < m; ++j) q[i][j] = step.demand[i][j];
+            break;
+        }
         // Step 4(a): in-links of U_hat that the demand constrains take their demand.
         std::vector<std::size_t> met;
         for (const auto i : competing[hat]) if (sending[i] <= a * step.capacity[i]) met.push_back(i);

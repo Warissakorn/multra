@@ -2,7 +2,8 @@
 
 Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
 answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options. M11.2 is
-implemented (D293, §14), and so are M11.3a (D295, §15) and M11.3b (D296, §16). It fixes:
+implemented (D293, §14), and so are M11.3a (D295, §15), M11.3b (D296, §16), the node model (D297,
+§17) and the link model with the loading engine (D298, §18). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -89,7 +90,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   Connectors between the same two links give one turn naming them all, timed by the first Connector
   by id.
 
-## 4. The link model (choices 2a and 7a)
+## 4. The link model (choices 2a and 7a; checked against Yperman's thesis on 2026-10-22, D298)
 
 - **Fundamental diagram:** triangular, per lane. Free speed `v` and capacity `q_max` come from the
   link type. Jam density `k_jam` is new (choice 2a), in pcu/km/lane like the capacity's pcu/h. It
@@ -98,15 +99,22 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 - **State:** the cumulative vehicle numbers `N_up(t)` and `N_down(t)` at the link's two ends, per
   Newell's simplified kinematic-wave theory (Newell 1993, Part I: the cumulative count at any point
   follows from the boundary counts, with a triangular relation).
-- **Per step `[t, t + Δt]`** (Yperman's LTM, as the search summaries report it; to be checked
-  against the thesis before M11.3):
-  - **sending volume:** `S = min(N_up(t + Δt − L/v) − N_down(t), q_max·lanes·Δt)`;
-  - **receiving volume:** `R = min(N_down(t + Δt − L/w) + k_jam·lanes·L − N_up(t), q_max·lanes·Δt)`;
-  - **cumulative values between steps:** interpolated linearly.
+- **Per step `[t, t + Δt]`** (Yperman 2007, §4.6; the thesis writes w signed negative, so its
+  `t + Δt + L/w` is the `t + Δt − L/w` below):
+  - **sending volume (Eq. 4.31):** `S = min(N_up(t + Δt − L/v) − N_down(t), q_max·lanes·Δt)`;
+  - **receiving volume (Eq. 4.35):** `R = min(N_down(t + Δt − L/w) + k_jam·lanes·L − N_up(t), q_max·lanes·Δt)`;
+  - **cumulative values between steps:** interpolated linearly (Eq. 3.2–3.3);
+  - **the three steps (§3.2):** volumes, then the node model at every node, then the counts, all
+    from the state at t, so the order of nodes changes nothing.
+- **Origins and destinations:** an origin is a point queue, `G = min(N_r(t + Δt) − N_up(t), R)`
+  (Eq. 5.4); a destination receives without limit, `G = S` (Eq. 5.5). An origin whose first link
+  also receives turns joins that node as a demand-constrained row (ours; it reduces to Eq. 5.4 on an
+  entry link).
 - **Step:**
   - a fixed `Δt` for the whole run, reported in the output;
-  - **the limit:** `Δt ≤ min(L/v)` over links. It is proposed here and checked against Yperman
-    before M11.3, together with whether `L/w` also bounds it;
+  - **the limit:** `Δt ≤ min(L/v, L/w)` over links. The thesis prints only `L/v` (Eq. 3.4); `L/w` is
+    derived (D298), because the receiving volume reads the downstream count at `t + Δt − L/w`, which
+    is known only when it is not later than t. It binds only when `k_jam < 2·k_c`;
   - a step above the limit is `MESO_STEP_TOO_LONG` at `definition.mesoSettings.step`;
     `mesoShortestLink` names the link (choice 7a).
 - **Storage:** `k_jam · lanes · L`. A full link's receiving volume is 0, which blocks its upstream
@@ -133,7 +141,10 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   the subject to future research.
   - A valid Node with conflicts is advised `MESO_PRIORITY_IGNORED` at `network.nodes[i]`.
   - Adding them needs Brilon and Wu (2001) read, a cited `t_ij`, and a new decision.
-- **Signals (4a):** explicit green per step. The paper (§5.2): "if the green and red phases are
+- **Signals (4a): deferred to M11.3d (owner, D298).** Explicit green under CTF holds a whole in-link
+  while any of its turns is red, and the thesis (§5.2.1) instead averages green as `g/C` capacities.
+  Until the owner decides, a valid signalised Node is advised `MESO_SIGNAL_IGNORED` and the engine
+  loads it as unsignalised. As planned before that choice: explicit green per step. The paper (§5.2): "if the green and red phases are
   explicitly simulated, the node model of Section 5.1 can be applied unaltered for every green
   phase separately". The engine (the rest of M11.3) therefore withholds a turn's demand while its
   group is red; the averaged-green constraints (Eqs. 33–36) are not used.
@@ -158,9 +169,12 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     (`expandRouteless` after `resolveCatalogs`). Its lane paths are mapped back to Links and
     Connectors. A stub's flow goes to the full routes its vehicles change lanes onto, because a stub
     does not end the trip; a free-walk lane end is an exit, as in Micro (D44).
-  - **Turn shares are read at a time t** from the path flows entering at t. They are not shifted by
-    the travel time to the node, whereas Micro's decision applies as a vehicle passes it. This
-    matters only when a share changes during a run; the engine (M11.3) reads them this way.
+  - **The engine splits by route composition, Yperman Eq. 5.2 (owner, D298; amends D295 in part).**
+    `S_ij` is the routes of the vehicles at the link's exit, read from per-commodity cumulative counts
+    at its entrance, so vehicles already on a link keep their routes when a share changes.
+    `mesoTurnShares` (shares at a time t) remains a summary of the demand, not the engine's split.
+  - **Exact FIFO at a diverge** (the thesis's sub-flow procedure, §5.1.4) is not built; the thesis
+    allows skipping it. A row's transfers are split by its `S_ij` composition.
   - **The demand covers the whole run.** Choosing a study period (which matrices enter, and the
     window) belongs to `--meso PERIOD` in M11.4.
 - **M11.5** later replaces the fixed paths with M9's loop.
@@ -204,15 +218,15 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   boundary link, so a later hybrid can couple a Micro area. It is declared in M11.3 and nothing
   else is built.
 
-## 10. Sources (as reported; the full texts were not opened from the session)
+## 10. Sources
 
-- G. F. Newell (1993), "A simplified theory of kinematic waves in highway traffic, Part I: General
+- G. F. Newell (1993) (as reported; not opened from the session), "A simplified theory of kinematic waves in highway traffic, Part I: General
   theory", *Transportation Research Part B* 27(4), 281–287; Parts II (bottlenecks) and III
   (multi-destination flows). Bibliographic details from TRID and IDEAS; the content from search
   summaries.
-- I. Yperman (2007), the link transmission model (KU Leuven doctoral thesis); Yperman et al.
-  (2005/2006) are the usual paper citations. The thesis was not found from the session, and its
-  formulas and step limit are checked against it before M11.3.
+- I. Yperman (2007), *The Link Transmission Model for Dynamic Network Loading*, KU Leuven doctoral
+  thesis. **Read on 2026-10-22** from the owner's Markdown edition (D298,
+  [evidence](../evidence/yperman-ltm.md)).
 - C. M. J. Tampère, R. Corthout, D. Cattrysse, L. H. Immers (2011), "A generic class of first order
   node models for dynamic macroscopic simulation of traffic flows", *Transportation Research
   Part B* 45(1), 289–309, doi:10.1016/j.trb.2010.06.004. **Read in full on 2026-10-22** from the
@@ -261,7 +275,9 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | M11.2 | `compileMesoNetwork`, `jamDensity`, settings, refusals. **Implemented (D293)** | ME1, ME2 |
 | M11.3a | Authored routes (static routes, static routing decisions, OD-expanded routes) → Meso paths and turn shares; demand per class (5a). **Implemented (D295)** | ME12–ME16 |
 | M11.3b | Routeless inputs and placed routing decisions (the lane-level walk) → Meso paths. **Implemented (D296)** | ME17–ME19 |
-| M11.3 | `src/meso/` LTM links and nodes, signals, spill-back, boundary interface declared. **The node model is implemented (D297, ME20–ME23); the link model waits on Yperman** | ME3–ME9, ME20–ME23 |
+| M11.3 | The node model. **Implemented (D297)** | ME20–ME23 |
+| M11.3c | The link model and the loading engine (unsignalised), spill-back, the boundary volumes. **Implemented (D298)** | ME3–ME6, ME8, ME9, ME24–ME26 |
+| M11.3d | Signals, after the owner's choice (D298) | ME7 |
 | M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
 
@@ -274,13 +290,13 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 |---|---|---|
 | ME1 | Compile the four-leg and the T-junction with a Node | One Meso node per Node with membership's turns; links as the Macro graph's pieces; a refused Node gives `MESO_NODE_REFUSED` |
 | ME2 | A link type without `jamDensity`; a step above the limit | `MESO_JAM_DENSITY_MISSING` at the type; `MESO_STEP_TOO_LONG` naming the shortest link; a project without Meso fields keeps its bytes |
-| ME3 | One link, inflow below capacity | Travel time = L/v within one step; outflow equals inflow after L/v |
+| ME3 | One link, inflow below capacity | Travel time = L/v within one step; outflow equals inflow after L/v; the link stays below critical density |
 | ME4 | A bottleneck (downstream capacity below inflow) | The queue grows at inflow − capacity and clears at capacity − inflow after the demand drops; conservation: `N_up − N_down` = stored, every step |
-| ME5 | A queue's back moving upstream | The shockwave speed equals `(q₂ − q₁)/(k₂ − k₁)` on the triangular diagram, within one step's resolution |
-| ME6 | Spill-back | A full link's receiving volume is 0 and the upstream link stops discharging; it resumes when space returns (the ROADMAP gate) |
-| ME7 | A signalised turn | Throughput over whole cycles equals `s·g/C` under saturation; the queue cycles with red and green (choice 4a) |
-| ME8 | A merge and a diverge | Capacity-proportional merge; a blocked diverge branch holds the in-link (FIFO); the node model alone is ME21, ME8 runs it with the links |
-| ME9 | Determinism | The same input gives the same bytes; the order of links in the file does not change a number |
+| ME5 | A queue's back moving upstream | On a chain of 500 m links behind a bottleneck, the back of the queue reaches each link's entrance at the shockwave speed `(q₂ − q₁)/(k₂ − k₁)` of the triangular diagram, within one step per link |
+| ME6 | Spill-back | Yperman's Example 4.5 (10 km, 3600 veh/h, 120 km/h, 225 veh/km, Δt = 5 min, blocked downstream): the entrance count is 300 veh per step until 35 min (the restriction 2.5 min early, as the thesis states), reaches `k_jam·L` = 2250 at 40 min, and R = 0 after; a chain A → B → C with C narrower: A's transfer equals `R_B` while B is full, and the flow resumes when B drains (the ROADMAP gate) |
+| ME7 | A signalised turn (M11.3d, waits on a decision, D298) | Throughput over whole cycles equals `s·g/C` under saturation; the queue cycles with red and green (choice 4a) |
+| ME8 | A merge and a diverge | Yperman §7.1's diverge network (Table 7.1, links split at 500 m, Δt = 15 s, 90 min): the congested density on nm ≈ 167 veh/km (Fig. 7.5) and 2000 veh/h into m from each in-link; r2m clears by about 46 min and the queue on r1n lasts from about 28 to 82 min, each within Fig. 7.4's 6-minute spacing; the node model alone is ME21 |
+| ME9 | Determinism | The same input gives the same numbers; a permuted link order gives the same per-link numbers |
 | ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
 | ME11 | Editor (choice 6a) | Run Meso on its own worker with Cancel; the Meso links table with the marker; stale by revision |
 | ME12 | Route mapping (M11.3a) | A route over Links and an outside Connector gives its Link pieces in order and the simple node's turn; through a Node, the Node's membership turn and no interior link; a Link split at a station, its through turn. Every path's turn k joins its links k and k + 1 |
@@ -295,6 +311,9 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME21 | Merge and diverge (§5.1.3 of the paper) | A merge with both in-links supply-constrained gives `q_i = C_i/ΣC·R`; with one demand-constrained, the other gets `R − S_i`. A diverge with a blocked branch holds the in-link: `q = min(S, R_j/f_j)` (FIFO) |
 | ME22 | Requirements (§3.1 of the paper) | On generated cases: `q_ij ≥ 0`, `q_i ≤ S_i`, `q_j ≤ R_j`, CTF `q_ij = (S_ij/S_i)·q_i`, and every flow actively constrained (its demand met, or its `j*` supply used up); invariance: `S_i` replaced by `C_i` for a supply-constrained i leaves `q_i` unchanged |
 | ME23 | Priority advisory | A valid Node with conflicts gives `MESO_PRIORITY_IGNORED` at `network.nodes[i]` among the compile's advisories; a project without Nodes gives none |
+| ME24 | Step limit and destinations (M11.3c) | A link whose `L/w` is below its `L/v` sets the limit: `MESO_STEP_TOO_LONG` above it, and `mesoShortestLink` names it; an out-link with infinite receiving volume (a destination, Yperman Eq. 5.5) takes the whole sending volume |
+| ME25 | Route composition by Eq. 5.2 (M11.3c) | A diverge whose routes switch from 1:0 to 0:1 at T changes its turn flows only one free-flow link time after T, because vehicles already on the link keep their routes (time-t shares would switch at T); each commodity's entered and arrived vehicles sum to its demand once the network empties |
+| ME26 | Signal advisory (M11.3c) | A valid signalised Node gives `MESO_SIGNAL_IGNORED` at `network.nodes[i]`; an unsignalised Node gives none |
 
 ## 14. M11.2 as implemented (D293)
 
@@ -396,3 +415,30 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
   - a per-turn `min` in 4(b) is a no-op there, since every in-link in 4(b) has `S_i > a C_i`;
   - the tie order among equally restrictive out-links, since the solution is unique.
 
+## 18. M11.3c as implemented (D298)
+
+- **The link model** (`src/meso/link_model.*`, imports nothing):
+  - `MesoCurve`: counts at each step, interpolated linearly, with their inverse;
+  - `mesoSending` and `mesoReceiving` (Eqs. 4.31 and 4.35), `mesoStepCapacity` and `mesoStorage`;
+  - `mesoWaveSpeed` and `mesoLinkTimeLimit` sit in `graph.*`, which `mesoStepLimit` uses.
+- **The engine** (`loadMeso`, `src/meso/loading.*`): a commodity per class and path.
+  - Per link: entrance and exit counts, and the sending and receiving volume per step, which is §9's
+    boundary interface.
+  - Per turn: the cumulative transfer.
+  - Per commodity: demand, entered and arrived vehicles.
+  - A path with no PCU, a repeated link or turns that do not join is refused, not loaded.
+- **The node model** accepts an infinite receiving volume, which is the destination column.
+- **The advisory:** `MESO_SIGNAL_IGNORED` for a valid signalised Node.
+- **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `tests/meso_loading_tests.cpp` (ctest
+  `mesoloading`).
+  - ME6 reproduces Example 4.5 exactly.
+  - ME8 reproduces §7.1: `k_B` 166.67 veh/km; r2m clears at 44 min against the thesis's 46; the r1n
+    queue lasts 26.25–82.75 min against 28–82.
+  - ME5's shock crosses each piece in 275 s, exactly the theory's figure.
+- **Mutations caught:**
+  - the receiving lag dropped;
+  - the sending lag dropped;
+  - Eq. 5.2 replaced by the entrance composition at t (ME25);
+  - the step limit back to L/v only (ME24);
+  - a finite destination (ME8);
+  - the infinite-receiving guard removed (the node model then reads out of range).

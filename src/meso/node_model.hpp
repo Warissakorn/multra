@@ -16,6 +16,7 @@ struct MesoNodeStep {
 };
 // q_ij = min(S_ij, a_{j*(i)} C_ij) (Eq. 28). The solution is unique (the paper's App. A), so the order
 // equally restrictive out-links are taken in changes nothing. An in-link without capacity sends nothing.
-// At most n + 1 iterations (App. B.2).
+// At most n + 1 iterations (App. B.2). A receiving volume may be +infinity: an out-link no supply limits,
+// as a destination (Yperman 2007, Eq. 5.5); in-links held only by such out-links take their demand.
 std::vector<std::vector<double>> mesoNodeFlows(const MesoNodeStep&);
 }
