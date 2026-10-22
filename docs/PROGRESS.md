@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.3 blocked on its sources; nothing built
+
+The owner asked for M11.3. The contract makes checking §4 against Yperman (2007) and §5 against
+Tampère et al. (2011) the first step, but the environment refused every host that holds them
+(proxy 403: arxiv.org, lirias.kuleuven.be, ideas.repec.org). The owner chose to wait for the sources,
+so no engine code was written. OWNER_SITTING B22 asks for the hosts or the PDFs.
+
 ## 2026-10-22 — M11.3b: routeless inputs and placed decisions as Meso paths (D296)
 
 The owner asked for M11.3b. Meso now takes Micro's own expansion of routeless inputs and placed

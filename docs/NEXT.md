@@ -43,7 +43,12 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M11.3 (the LTM engine): check the sources first
+## Next session — M11.3 (the LTM engine): blocked on its sources (OWNER_SITTING B22)
+
+- **Blocked on 2026-10-22:** the environment's network policy refused (proxy 403) `arxiv.org`,
+  `lirias.kuleuven.be`, `ideas.repec.org` and `tabenchmark.readthedocs.io`. The owner chose to wait
+  for the sources rather than build ahead of them. Once B22 is answered (the hosts allowed or the
+  PDFs uploaded), start here. Until then, take an "Other open item" the owner picks.
 
 - **Before any code:** check §4's link model and step limit against Yperman's thesis (try Lirias,
   KU Leuven), and §5's node model against Tampère et al. (2011). Neither is in the owner's book
