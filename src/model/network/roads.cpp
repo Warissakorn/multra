@@ -9,7 +9,7 @@ namespace multra {
 std::vector<ValidationIssue> roadIssues(const Network& n) {
     std::vector<ValidationIssue> issues;
     const bool linked = std::any_of(n.links.begin(), n.links.end(), [](const auto& l) { return l.roadId.has_value(); });
-    if (n.roads.empty() && !linked) return issues;
+    if (n.roads.empty() && !linked && n.overpasses.empty()) return issues;
     const auto add = [&](const char* code, const std::string& path) { issues.push_back({code, path}); };
     std::set<std::string> ids{n.id};
     for (const auto& l : n.links) { ids.insert(l.id); for (const auto& lane : l.lanes) ids.insert(lane.id); }
@@ -44,6 +44,12 @@ std::vector<ValidationIssue> roadIssues(const Network& n) {
         const auto r = std::find_if(n.roads.begin(), n.roads.end(), [&](const auto& x) { return x.id == *l.roadId; });
         if (r == n.roads.end() || std::find(r->links.begin(), r->links.end(), l.id) == r->links.end())
             add("ROAD_LINK_MISMATCH", "links[" + std::to_string(i) + "].roadId");
+    }
+    // S3.5 (D309): an overpass names two different Roads.
+    const auto road = [&](const std::string& id) { return std::any_of(n.roads.begin(), n.roads.end(), [&](const auto& r) { return r.id == id; }); };
+    for (std::size_t i = 0; i < n.overpasses.size(); ++i) {
+        const auto& [a, b] = n.overpasses[i];
+        if (a == b || !road(a) || !road(b)) add("ROAD_OVERPASS_UNKNOWN", "overpasses[" + std::to_string(i) + "]");
     }
     return issues;
 }

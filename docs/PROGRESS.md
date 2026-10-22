@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — S3.5: Find crossings, overpasses and Merge nodes (D309)
+
+- **Find crossings** (Roads tab) lists every place where Roads on one level cross, or one ends within
+  the snap tolerance (2 m, adjustable) of another. Places with three legs or more are listed,
+  skipping places a Node already covers. Each row is confirmed as a Junction or an Overpass, all in
+  one Undo step.
+- **Junction:** the Roads and their Links are split there (routes follow), and a generated round
+  Node is added, sized from the Roads' width there plus the widest lane.
+- **Overpass:** the pair is stored (`network.overpasses`, schema 53) and not offered again, even
+  after one of the Roads is split elsewhere.
+- **Merge nodes** (Nodes tab) replaces the selected Nodes with their hull, refused when a Node with
+  valid detail would gain an issue.
+- **Rows:** RD12–RD15 (`roadcrossings`), with their editor part in `road-ui`; four mutations caught.
+
 ## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
 
 The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.
@@ -115,18 +129,6 @@ The owner chose the whole Micro run as Meso's horizon, with the same demand, so 
 - **Rows:** ME10 (`mesooutput`), ME11 (`meso-ui`), and `cli-meso*`. Five mutations are caught.
 - **Docs:** the as-implemented sections moved to MESO_NETWORK_IMPLEMENTED for the 500-line cap.
 - **Known gap:** turn free-flow times are not loaded yet.
-
-## 2026-10-22 — M11.3d: signals in Meso as averaged green (D299)
-
-The owner chose averaged green (4b) over explicit green, which under FIFO would hold a whole approach
-on any red turn.
-- **Turns** take the program their heads show and its g/C. g is the displayed green, by HCM Eq. 19-1
-  with its default lost times.
-- **The node model** takes Tampère §5.2's internal supplies, with Yperman's shared-lane split. Under
-  CTF they act as an effective capacity per in-link. A literal per-movement reading broke `q_j ≤ R_j`
-  on generated cases and was replaced.
-- **Rows:** ME7, ME26 and ME27. Five mutations are caught. `MESO_SIGNAL_IGNORED` is retired;
-  `MESO_SIGNAL_AMBIGUOUS` is new.
 
 ## Older entries
 

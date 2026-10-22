@@ -1,5 +1,7 @@
 #include "node_commands.hpp"
 #include "../model/network/node_suggestions.hpp"
+#include "../model/network/node_membership.hpp"
+#include "../core/validate.hpp"
 #include <algorithm>
 #include <stdexcept>
 namespace multra {
@@ -33,5 +35,32 @@ std::vector<std::string> suggestNodes(ProjectDocument& d) {
     std::vector<std::string> ids;
     for (auto& node : nodeSuggestions(d.network)) ids.push_back(putNode(d, std::move(node)));
     return ids;
+}
+void mergeNodes(ProjectDocument& d, const std::vector<std::string>& ids) {
+    std::vector<std::string> unique;
+    for (const auto& id : ids) if (std::find(unique.begin(), unique.end(), id) == unique.end()) unique.push_back(id);
+    const auto known = [&](const std::string& id) { return std::any_of(d.network.nodes.begin(), d.network.nodes.end(), [&](const Node& n) { return n.id == id; }); };
+    if (unique.size() < 2 || !std::all_of(unique.begin(), unique.end(), known)) throw std::invalid_argument("EDIT_NODE_MERGE");
+    std::vector<Point> vertices; bool generated = true, detail = false;
+    for (const auto& id : unique) {
+        const auto& node = find(d, id);
+        vertices.insert(vertices.end(), node.polygon.begin(), node.polygon.end());
+        generated = generated && node.generated;
+        detail = detail || nodeMembership(d.network, node).issues.empty();
+    }
+    auto merged = find(d, unique.front());
+    merged.polygon = convexHull(std::move(vertices)); merged.generated = generated;
+    // Checked on a copy, so a refusal changes nothing.
+    auto nodes = d.network.nodes;
+    std::erase_if(nodes, [&](const Node& n) { return n.id != merged.id && std::find(unique.begin(), unique.end(), n.id) != unique.end(); });
+    const auto k = static_cast<std::size_t>(std::find_if(nodes.begin(), nodes.end(), [&](const Node& n) { return n.id == merged.id; }) - nodes.begin());
+    nodes[k] = merged;
+    const auto m = nodeMembership(d.network, merged); // membership reads Links and control, not the other Nodes
+    if (detail && !m.issues.empty()) {
+        std::vector<ValidationIssue> issues;
+        for (const auto& code : m.issues) issues.push_back({code, "nodes[" + std::to_string(k) + "]"});
+        throw ValidationError(std::move(issues));
+    }
+    d.network.nodes = std::move(nodes);
 }
 }

@@ -2,7 +2,8 @@
 
 Written 2026-10-22 (D303) as the S3.1 contract, docs only. The owner answered its seven choices
 the same day, "as recommended": 1a, 2a, 3a, 4a, 5a, 6b, 7a (D304), so §3–§9 state the chosen
-options. S3.2 is implemented (D304, §14), and so is S3.3 (D305, §15). It fixes:
+options. S3.2 to S3.5 are implemented (D304, D305, D307–D309); §14–§18 are in
+[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md). It fixes:
 - the Road object, and how it relates to the directed Links Micro already runs;
 - cross-section templates and *Apply template*;
 - Nodes from Road crossings;
@@ -146,6 +147,9 @@ not validation.
 - **Merge nodes** (for roundabouts) joins selected Nodes into one polygon, the hull of theirs, in
   one Undo step. A Node with detail inside is merged only if the result passes `nodeMembership`;
   otherwise it is refused with that check's issues.
+- **As implemented (D309, §18):** the tolerance defaults to 2 m; a place is listed with three legs
+  or more and only where no Node covers it; the disc's radius is the half-width there plus the
+  widest lane (D265's rule), so it takes no number of its own.
 
 ## 6. S0.4 coarse values (choices 3a and 4a)
 
@@ -302,7 +306,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
 | S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display. **Implemented (D307)** | RD23–RD26 |
 | S3.4 | *Join opposite Links into a Road*; *Assign template*. **Implemented (D308)** | RD10, RD11 |
-| S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes* | RD12–RD15 |
+| S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes*. **Implemented (D309)** | RD12–RD15 |
 | S3.6 | `coarse`, refine and derive back, lifecycle; the link-type `rank`; Macro and Meso compile coarse Nodes and Roads | RD4, RD16–RD20 |
 | S3.7 | Seam checks | RD21, RD22 |
 
@@ -339,132 +343,8 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD25 | Roads tab (S3.3b) | An override is stored alone; *Apply template* keeps the Link ids and adds the lane; a template a Road names is not deleted |
 | RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Road is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
 
-## 14. S3.2 as implemented (D304)
+## 14–18. As implemented
 
-- **Values** (`src/model/demand/definition.hpp`): `LinkType` and `Vdf` gain `capacityBasis`, where
-  empty means `practical`.
-- **The codec** (`src/project/link_type_codec.*`):
-  - `capacityBasis` is optional on both, written only when set;
-  - a value other than `practical` or `ultimate` is `INVALID_LINK_TYPE` or `INVALID_VDF` at
-    `.capacityBasis`;
-  - an owned type with a basis makes the file schema 53 (`usesCapacityBasis`); below 53 the key is
-    `EDIT_UNSUPPORTED_FIELD` (`rejectCapacityBasisBefore53`).
-- **Macro** (`compileMacroNetwork`): a Link whose type and VDF have different bases is
-  `MACRO_CAPACITY_BASIS_MISMATCH` at its `linkType`. Meso reads any basis.
-- **Data:**
-  - `data/vdf/bpr.json` is `practical`;
-  - `data/link-types/` holds `freeway-55` … `freeway-75` and `multilane-45` … `multilane-70`, each
-    with:
-    - the capacity of Exhibit 12-4;
-    - FFS × 0.44704 m/s;
-    - `jamDensity` 118.0605 pc/km/ln (190 pc/mi/ln, Exhibit 10-7);
-    - `vdfId` `bpr` and basis `ultimate`;
-    - a source naming its exhibits and pages.
-
-  Macro therefore refuses them until an `ultimate` VDF is cited, as chosen (6b).
-- **The editor** (`src/shell/editor_link_types.cpp`): the Link types tab gains a Capacity basis
-  column. A project with no owned types lists the eleven HCM types read-only. The dialog keeps a
-  type's basis, and a new type has none.
-- **Rows:** RD1's capacity-basis part, RD2 and RD3, in `tests/road_catalog_tests.cpp` (ctest
-  `roadcatalog`).
-- **Amendment (D304):** `rank` moved to S3.6. Its reader is the coarse Node, and NODES §5 stores no
-  field before its reader.
-
-## 15. S3.3 as implemented (D305)
-
-- **Model:**
-  - `Road` and `RoadOverrides` in `src/model/network/network.hpp`, held in `Network::roads`;
-  - `Link::roadId`;
-  - `CrossSection` in `src/model/demand/definition.hpp`, kept in `definition.crossSections` under
-    the presence rule. The installed directory is `data/cross-sections/`, which is absent: none
-    ships.
-- **The codec** (`src/project/road_codec.*`):
-  - `network.roads`, Link `roadId` and owned templates, each written only when used. Any of them
-    makes the file schema 53; below 53 each key is `EDIT_UNSUPPORTED_FIELD` at its path;
-  - a bad Road shape is `EDIT_ROAD_INVALID`, and a bad template value is `INVALID_CROSS_SECTION`;
-  - an owned template that does not exist is `ROAD_CROSS_SECTION_UNKNOWN`, checked on commit.
-- **Validation** (`roadIssues`, `src/model/network/roads.*`): ids, `ROAD_GEOMETRY_INVALID`, and
-  `ROAD_LINK_MISMATCH` both ways (a Road's `links` against each Link's `roadId`).
-- **Commands** (`src/commands/road_commands.*`), each one Undo step:
-  - `putRoad`, `deleteRoad` (its Links stay, detached), `putCrossSection` and `deleteCrossSection`;
-  - `applyTemplate`:
-    - Links centred at median/2 + width/2 on each side, the backward one reversed, with
-      `laneOffset` 0;
-    - a re-apply keeps Link and lane ids, through `changeLanes`, and reanchors Connectors;
-    - refusals: `EDIT_ROAD_NO_TEMPLATE`, `ROAD_CROSS_SECTION_UNKNOWN`, `EDIT_ROAD_DIRECTIONS` and
-      `EDIT_REFERENCED_LANE`.
-- **Detaching** (`detail::detachFromRoad`):
-  - `changeGeometry`, `changeLanes`, `resizeLinkLanes`, `reverseLink`, `splitLink`,
-    `translateObjects` and `rotateObjects` detach a generated Link;
-  - `deleteLink` drops it from its Road, and a duplicated Link carries no `roadId`.
-- **Rows:** RD1's Road part and RD5–RD9, in `tests/road_tests.cpp` (ctest `roads`).
-- **The editor** is S3.3b (§16).
-
-## 16. S3.3b as implemented (D307)
-
-The owner chose (2026-10-22): the Road tool applies the chosen template at once, its key is **O**,
-and a detached Road shows in the table and on the canvas.
-- **Road tool** (`O`, index 14, palette group *Geometry* after Links; `EditorCanvas::Tool::road`):
-  - it shares the zone draft (D306): Ctrl+right-click the first centreline point, plain clicks
-    the next ones in the forward direction, Backspace drops the last, Esc cancels;
-  - Enter, with two points or more, calls `roadCommitted`. `putRoad` at the visible level and,
-    when the Roads tab's template combo names one, `applyTemplate` run in one `execute`, so the Road
-    and its Links are one Undo step. A refused apply keeps the draft. With "(no template)" the Road
-    has no Links;
-  - the pointer is the arrow with the road glyph (`EditorIcon::road`); under the tool every Road's
-    centreline is a thin ink line.
-- **Roads tab** (`src/shell/editor_roads.cpp`, group *Network*): id, name, template, lanes (with
-  overrides), Links and status. Its toolbar holds the template combo, *Apply template*, *Edit road*
-  (name, template, lanes each way, lane width and median; a field at its lowest value means "from
-  template" and stores no override) and *Delete road* (its Links stay).
-- **Status:** no template; unknown template (`ROAD_CROSS_SECTION_UNKNOWN`); not applied; applied; or
-  partly detached (*k of n Links*) when it generates fewer Links than its template's directions. The
-  Road keeps no record of a Link it lost, so a Road whose every Link was detached reads as not
-  applied.
-- **Canvas** (`src/editor/canvas_roads.cpp`): the selected row's Road is lit, with its centreline,
-  a direction arrowhead and its generated Links washed. All three are in the selection colour, or
-  in the warning colour while partly detached. A detached Link is not lit.
-- **Cross-sections tab** (`src/shell/editor_cross_sections.cpp`, group *Network*): it is listed
-  read-only from the installed directory (none ships) until *Add* owns it, as Link types are.
-  *Add* and *Edit* set name, one- or two-way, lanes each way, lane width, median, link type and
-  source. Per-lane widths are kept only while the lanes and the width are unchanged. *Delete* is
-  refused while a Road names the template (`EDIT_CROSS_SECTION_IN_USE`).
-- **Rows:** RD23–RD26 in `tests/road_ui_tests.cpp` (ctest `road-ui`). Four mutations were caught:
-  - no apply on commit;
-  - the detached status never given;
-  - the canvas never told;
-  - a Road needing three points.
-
-## 17. S3.4 as implemented (D308)
-
-The owner chose the tolerance (2026-10-22): 15° and half both widths plus 30 m.
-- **`joinOppositeLinks(d, forward, backward)`** (`src/commands/road_commands.*`) makes one Road with
-  no template and `links` = [forward, backward]. Both Links take its `roadId`; neither Link moves.
-  - **Centreline:** `meanCentreline` (`src/model/network/roads.*`) of the two bundle centrelines
-    (`linkCentreline`), digitised along the forward Link. Equal vertex counts pair vertex by vertex,
-    which is exact for `oppositeLink`'s offsets, bends included. Otherwise each vertex pairs with
-    its closest point on the other line, and the midpoints are ordered by station along the
-    forward Link.
-  - **Refusals:**
-    - `EDIT_ROAD_JOIN_TAKEN`: a Link already in a Road;
-    - `EDIT_ROAD_JOIN_LEVEL`: the Links are on different levels;
-    - `EDIT_ROAD_JOIN_DIRECTION`: one Link twice, or the same direction (the end-to-end vectors'
-      cosine ≥ 0);
-    - `EDIT_ROAD_JOIN_PARALLEL`: more than 15° off opposite, or any centreline vertex farther from
-      the other centreline than half of both widths plus 30 m. The constants are
-      `joinAngleDegrees` and `joinMedianMetres`.
-- **`assignTemplate(d, roads, crossSectionId, installed)`** sets or clears the template on every
-  listed Road, generating no Link. An unknown template is `ROAD_CROSS_SECTION_UNKNOWN` at
-  `crossSectionId`, and an unknown Road is `EDIT_UNKNOWN_OBJECT`.
-- **Editor (Roads tab):**
-  - *Join opposite Links* joins the two Links selected on the canvas, the first one forward. It is
-    enabled only with exactly two selected.
-  - *Assign template* puts the combo's template on every selected row, and "(no template)" clears
-    it. The table now takes several rows.
-  - A Road with no template reads *No template* even when it has Links, as a joined Road does.
-- **Rows:** RD10 and RD11 in `tests/road_tests.cpp` (`roads`), with their editor part in `road-ui`.
-  Four mutations were caught:
-  - the mean replaced by the forward line;
-  - no angle check;
-  - no distance check;
-  - no unknown-template check.
+What each slice built (S3.2 to S3.5: files, functions, rows, mutations) is in
+[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md), with this file's section numbers, so "ROADS §16" still
+names a section there.

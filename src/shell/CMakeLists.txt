@@ -3,7 +3,7 @@ add_library(multra_shell STATIC editor_interaction.cpp editor_style.cpp editor_a
     ../editor/canvas_feedback.cpp ../editor/canvas_cursors.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp ../editor/canvas_zones.cpp ../editor/canvas_roads.cpp editor_priority.cpp editor_zones.cpp editor_nodes.cpp editor_periods.cpp editor_modes.cpp editor_od.cpp od_lot_dialogs.cpp editor_counters.cpp editor_sections.cpp editor_speed_decisions.cpp editor_speed_areas.cpp)
 target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
 target_sources(multra_shell PRIVATE editor_macro.cpp editor_link_types.cpp) # S2.4 (D277)
-target_sources(multra_shell PRIVATE editor_roads.cpp editor_cross_sections.cpp) # S3.3b (D307)
+target_sources(multra_shell PRIVATE editor_roads.cpp editor_cross_sections.cpp editor_crossings.cpp) # S3.3b (D307), S3.5 (D309)
 target_sources(multra_shell PRIVATE editor_meso.cpp) # M11.4 (D300)
 target_sources(multra_shell PRIVATE editor_results_nodes.cpp) # S0.6 (D278)
 target_sources(multra_shell PRIVATE legacy_storage.cpp) # D286

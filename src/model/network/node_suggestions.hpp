@@ -9,4 +9,6 @@ namespace multra {
 // of the cluster's Connectors and conflict points, padded by the widest lane at those Connectors'
 // ends. Overlapping suggestions merge; one overlapping an existing Node is dropped.
 std::vector<Node> nodeSuggestions(const Network&);
+// The convex hull, counter-clockwise from the lowest-left point; fewer than three distinct points come back as they are.
+std::vector<Point> convexHull(std::vector<Point>);
 }

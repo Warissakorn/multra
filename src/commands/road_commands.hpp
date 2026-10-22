@@ -1,5 +1,6 @@
 #pragma once
 #include "history.hpp"
+#include "../model/network/road_crossings.hpp"
 
 namespace multra {
 // S3.3 (ROADS §3, §4, D305). Each runs inside one History::execute, so each is one Undo step.
@@ -36,4 +37,20 @@ std::string joinOppositeLinks(ProjectDocument&, const std::string& forward, cons
 // in `installed`; EDIT_UNKNOWN_OBJECT for an unknown Road.
 void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, const std::optional<std::string>& crossSectionId,
                     const std::vector<CrossSection>& installed);
+// S3.5 (ROADS §5, §18, D309). Split a Road at `station` along its centreline (EDIT_SPLIT_RANGE within
+// 0.2 m of an end): the Road keeps the first part, a new Road (same name, template, overrides and level)
+// takes the rest, and each generated Link is split by splitLink at that point. The forward Link's
+// original id stays on the first Road; the backward Link's original id, which runs from the far end,
+// goes to the new one. Overpass pairs naming the Road are copied for the new Road. Returns its id.
+std::string splitRoad(ProjectDocument&, const std::string& roadId, double station);
+enum class CrossingChoice { junction, overpass };
+// Find crossings' batch, run inside one Command. Overpasses first: every pair of the place's Roads
+// (EDIT_CROSSING_OVERPASS where a Road ends). Then each junction in order: the Roads within
+// `tolerance` of the place are found again, those passing through are split there, and a `generated`
+// Node is added: a 16-gon around the place whose radius is the Roads' half-width there (each generated
+// Link's distance plus half its width; a Road without Links, its template's median/2 plus its wider
+// direction) plus the widest lane, D265's rule that a derived polygon takes no number of its own;
+// twice the tolerance when nothing gives a width. Returns the new Nodes' ids.
+std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<RoadCrossing>&, const std::vector<CrossingChoice>&,
+                                        double tolerance, const std::vector<CrossSection>& installed);
 }

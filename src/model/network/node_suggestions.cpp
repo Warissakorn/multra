@@ -17,31 +17,13 @@ struct Cluster {
     std::vector<Point> points; double pad{}; std::size_t order{}; std::set<std::string> sources;
     std::vector<ConflictSide> linkSides; std::map<std::string, double> arrivals; // Link -> first arrival
 };
-std::vector<Point> hull(std::vector<Point> p) {
-    std::sort(p.begin(), p.end(), [](Point a, Point b) { return std::tie(a.x, a.y) < std::tie(b.x, b.y); });
-    p.erase(std::unique(p.begin(), p.end()), p.end());
-    if (p.size() < 3) return p;
-    const auto cross = [](Point o, Point a, Point b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); };
-    std::vector<Point> h(2 * p.size());
-    std::size_t k = 0;
-    for (std::size_t i = 0; i < p.size(); ++i) {
-        while (k >= 2 && cross(h[k - 2], h[k - 1], p[i]) <= 0) --k;
-        h[k++] = p[i];
-    }
-    for (std::size_t i = p.size() - 1, t = k + 1; i-- > 0;) {
-        while (k >= t && cross(h[k - 2], h[k - 1], p[i]) <= 0) --k;
-        h[k++] = p[i];
-    }
-    h.resize(k - 1);
-    return h;
-}
 std::vector<Point> padded(const Cluster& c) {
     std::vector<Point> around;
     const double d = c.pad / std::sqrt(2.0);
     for (const auto p : c.points)
         for (const auto [dx, dy] : {std::pair{c.pad, 0.0}, {-c.pad, 0.0}, {0.0, c.pad}, {0.0, -c.pad}, {d, d}, {d, -d}, {-d, d}, {-d, -d}})
             around.push_back({p.x + dx, p.y + dy});
-    return hull(std::move(around));
+    return convexHull(std::move(around));
 }
 }
 std::vector<Node> nodeSuggestions(const Network& network) {
@@ -134,5 +116,23 @@ std::vector<Node> nodeSuggestions(const Network& network) {
         result.push_back({"", "", std::move(polygon), true});
     }
     return result;
+}
+std::vector<Point> convexHull(std::vector<Point> p) {
+    std::sort(p.begin(), p.end(), [](Point a, Point b) { return std::tie(a.x, a.y) < std::tie(b.x, b.y); });
+    p.erase(std::unique(p.begin(), p.end()), p.end());
+    if (p.size() < 3) return p;
+    const auto cross = [](Point o, Point a, Point b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); };
+    std::vector<Point> h(2 * p.size());
+    std::size_t k = 0;
+    for (std::size_t i = 0; i < p.size(); ++i) {
+        while (k >= 2 && cross(h[k - 2], h[k - 1], p[i]) <= 0) --k;
+        h[k++] = p[i];
+    }
+    for (std::size_t i = p.size() - 1, t = k + 1; i-- > 0;) {
+        while (k >= t && cross(h[k - 2], h[k - 1], p[i]) <= 0) --k;
+        h[k++] = p[i];
+    }
+    h.resize(k - 1);
+    return h;
 }
 }

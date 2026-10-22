@@ -79,6 +79,7 @@ void EditorWindow::buildRoads() {
         const auto installed = crossSectionRows();
         execute("editorAssignTemplate", [&](auto& d) { assignTemplate(d, ids, chosen.empty() ? std::nullopt : std::optional(chosen), installed); });
     }));
+    bar->addAction(action("editorFindCrossings", {}, [this] { findCrossingsDialog(); })); // S3.5 (D309)
     bar->addAction(action("editorEditRoad", {}, [this] { const auto id = selectedRoad(); if (!id.empty()) editRoad(id); }));
     bar->addAction(action("editorDeleteRoad", {}, [this] {
         const auto id = selectedRoad(); if (id.empty()) return;

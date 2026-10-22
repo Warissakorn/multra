@@ -27,7 +27,7 @@ void EditorWindow::buildNodes() {
     nodeTable_ = new QTableWidget(0, 7, body); nodeTable_->setObjectName("editorNodeTable");
     nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    nodeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    nodeTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
     nodeTable_->horizontalHeader()->setStretchLastSection(true); nodeTable_->verticalHeader()->hide();
     layout->addWidget(nodeTable_);
     addObjectPage(body, "editorNodeTable");
@@ -54,6 +54,16 @@ void EditorWindow::buildNodes() {
     bar->addAction(action("editorDeleteNode", {}, [this] {
         const auto id = selectedNode(); if (id.empty()) return;
         execute("editorDeleteNode", [&](auto& d) { deleteNode(d, id); });
+    }));
+    // S3.5 (D309): the selected rows become one Node, the hull of theirs, in one Undo step.
+    bar->addAction(action("editorMergeNodes", {}, [this] {
+        std::vector<std::string> ids;
+        for (const auto& row : nodeTable_->selectionModel()->selectedRows())
+            ids.push_back(nodeTable_->item(row.row(), 0)->data(Qt::UserRole).toString().toStdString());
+        if (ids.size() < 2) return;
+        const auto current = selectedNode();
+        if (const auto first = std::find(ids.begin(), ids.end(), current); first != ids.end()) std::iter_swap(ids.begin(), first);
+        execute("editorMergeNodes", [&](auto& d) { mergeNodes(d, ids); });
     }));
     // S0.5 (D265): one generated Node per junction no Node covers yet, all in one Undo step.
     bar->addAction(action("editorSuggestNodes", {}, [this] {
@@ -113,6 +123,7 @@ void EditorWindow::refreshNodes() {
     canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit
     const bool chosen = !selectedNode().empty();
     for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
+    actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
 }
 void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }
 }

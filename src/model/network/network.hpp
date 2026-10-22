@@ -158,6 +158,8 @@ struct Network {
     std::vector<TravelTimeSection> travelTimeSections; // M5.4, schema 23
     std::vector<Node> nodes; // S0 (NODES §2, D261), schema 48
     std::vector<Road> roads; // S3.3 (ROADS §3, D305), schema 53
+    // S3.5 (ROADS §5, D309): Road pairs confirmed as an overpass, each sorted, so Find crossings asks once.
+    std::vector<std::pair<std::string, std::string>> overpasses;
     bool operator==(const Network&) const = default;
 };
 // A place a Signal head can stand -- a Link lane or a Connector path -- with its polyline and

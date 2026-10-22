@@ -210,6 +210,40 @@ int main(int argc, char** argv) {
         require(network().roads[0].crossSectionId == t.id && network().links.size() == count && w.history().revision() == assigning + 1,
                 "Assign template did not set the template alone in one step");
         require(network().roads[0].links == road.links, "Assigning a template changed the Road's Links");
+
+        // RD13/RD14/RD15 in the editor (S3.5, D309): a second Road drawn across the first gives one
+        // place in Find crossings; Junction splits both and adds a Node in one step, Overpass stores the
+        // pair instead; Merge nodes on two rows leaves one Node.
+        QApplication::setActiveWindow(&w); key(w, Qt::Key_O);
+        const Point top{centre.x() + 50, centre.y() + 100}, bottom{centre.x() + 50, centre.y() + 220};
+        author(w, top); click(w, bottom); key(w, Qt::Key_Return);
+        require(network().roads.size() == 2, "The crossing Road was not drawn");
+        const auto drawn = w.history().revision(); const auto nodesBefore = network().nodes.size();
+        int rows = 0, choices = 0;
+        onDialog([&](QDialog& d) {
+            auto* table = d.findChild<QTableWidget*>("editorCrossingTable");
+            rows = table->rowCount(); choices = qobject_cast<QComboBox*>(table->cellWidget(0, 5))->count();
+        });
+        trigger(w, "editorFindCrossings");
+        require(rows == 1 && choices == 2, "Find crossings did not list one place with Junction and Overpass");
+        require(network().roads.size() == 4 && network().nodes.size() == nodesBefore + 1 && network().nodes.back().generated &&
+                w.history().revision() == drawn + 1, "Confirming the junction did not split both Roads and add a Node in one step");
+        trigger(w, "editorUndo");
+        onDialog([](QDialog& d) { qobject_cast<QComboBox*>(d.findChild<QTableWidget*>("editorCrossingTable")->cellWidget(0, 5))->setCurrentIndex(1); });
+        trigger(w, "editorFindCrossings");
+        require(network().overpasses.size() == 1 && network().roads.size() == 2 && network().nodes.size() == nodesBefore,
+                "Confirming the overpass did not store the pair alone");
+        auto* nodeTable = item<QTableWidget>(w, "editorNodeTable");
+        QApplication::setActiveWindow(&w); key(w, Qt::Key_N);
+        const Point n1{centre.x() - 150, centre.y() - 100}, n2{centre.x() - 130, centre.y() - 100}, n3{centre.x() - 140, centre.y() - 85};
+        author(w, n1); click(w, n2); click(w, n3); key(w, Qt::Key_Return);
+        const Point n4{centre.x() - 150, centre.y() - 60}, n5{centre.x() - 130, centre.y() - 60}, n6{centre.x() - 140, centre.y() - 45};
+        author(w, n4); click(w, n5); click(w, n6); key(w, Qt::Key_Return);
+        require(network().nodes.size() == nodesBefore + 2 && nodeTable->rowCount() == static_cast<int>(nodesBefore + 2), "The two Nodes were not drawn");
+        nodeTable->selectAll(); QApplication::processEvents();
+        require(act(w, "editorMergeNodes")->isEnabled(), "Merge nodes is disabled with two rows selected");
+        trigger(w, "editorMergeNodes");
+        require(network().nodes.size() == nodesBefore + 1, "Merge nodes did not leave one Node");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

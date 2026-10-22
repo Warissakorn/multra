@@ -25,7 +25,7 @@ std::vector<std::filesystem::path> files(const std::filesystem::path& directory)
 [[noreturn]] void invalid(const std::string& path) { throw ValidationError({{"EDIT_ROAD_INVALID", path}}); }
 }
 bool usesRoadFields(const ProjectDocument& d) {
-    if (!d.network.roads.empty()) return true;
+    if (!d.network.roads.empty() || !d.network.overpasses.empty()) return true;
     if (d.definition && !d.definition->externalCrossSections) return true;
     return std::any_of(d.network.links.begin(), d.network.links.end(), [](const auto& l) { return l.roadId.has_value(); });
 }
@@ -36,11 +36,17 @@ void rejectRoadFieldsBefore53(const Json& j) {
     if (!j.contains("network") || !j.at("network").is_object()) return;
     const auto& n = j.at("network");
     if (n.contains("roads")) refuse("network.roads");
+    if (n.contains("overpasses")) refuse("network.overpasses");
     if (!n.contains("links") || !n.at("links").is_array()) return;
     for (std::size_t i = 0; i < n.at("links").size(); ++i)
         if (n.at("links")[i].is_object() && n.at("links")[i].contains("roadId")) refuse("network.links[" + std::to_string(i) + "].roadId");
 }
 void addRoadsJson(const Network& n, Json& network) {
+    if (!n.overpasses.empty()) {
+        Json pairs = Json::array();
+        for (const auto& [a, b] : n.overpasses) pairs.push_back(Json::array({a, b}));
+        network["overpasses"] = pairs;
+    }
     if (n.roads.empty()) return;
     Json roads = Json::array();
     for (const auto& r : n.roads) {
@@ -57,6 +63,18 @@ void addRoadsJson(const Network& n, Json& network) {
         roads.push_back(std::move(road));
     }
     network["roads"] = roads;
+}
+std::vector<std::pair<std::string, std::string>> parseOverpasses(const Json& network, int schema) {
+    std::vector<std::pair<std::string, std::string>> pairs;
+    if (schema < 53 || !network.is_object() || !network.contains("overpasses")) return pairs;
+    const auto& values = network.at("overpasses");
+    if (!values.is_array() || values.empty()) invalid("network.overpasses"); // never written empty
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        const auto& v = values[i];
+        if (!v.is_array() || v.size() != 2 || !v[0].is_string() || !v[1].is_string()) invalid("network.overpasses[" + std::to_string(i) + "]");
+        pairs.emplace_back(v[0].get<std::string>(), v[1].get<std::string>());
+    }
+    return pairs;
 }
 std::vector<Road> parseRoads(const Json& network, int schema) {
     std::vector<Road> roads;

@@ -13,6 +13,8 @@ void addRoadsJson(const Network&, Json& network);
 // A malformed Road or an unknown key is EDIT_ROAD_INVALID at its path; what the shape cannot say is
 // roadIssues' (src/model/network/roads.hpp).
 std::vector<Road> parseRoads(const Json& network, int schema);
+// S3.5 (D309): `network.overpasses`, [[roadA, roadB], …]; a malformed entry is EDIT_ROAD_INVALID.
+std::vector<std::pair<std::string, std::string>> parseOverpasses(const Json& network, int schema);
 // Reads each `network.links[i].roadId` (a string, else EDIT_ROAD_INVALID at its path).
 void readRoadIds(const Json& network, Network&);
 // Exact keys {id, name, directions, lanesForward, lanesBackward, laneWidth, median, source} plus an
