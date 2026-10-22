@@ -294,7 +294,7 @@ private:
     std::vector<CrossSection> crossSectionRows() const;
     RoadStatus roadStatus(const Road&, const std::vector<CrossSection>&) const;
     void buildRoads(); void translateRoads(); void refreshRoads(); void showRoads(); void editRoad(const std::string& id);
-    std::string selectedRoad() const;
+    std::string selectedRoad() const; std::vector<std::string> selectedRoadRows() const; std::vector<std::string> selectedLinks() const;
     void buildCrossSections(); void translateCrossSections(); void refreshCrossSections(); void editCrossSection(const std::string& id);
     std::string selectedCrossSection() const;
     std::string selectedNode() const;

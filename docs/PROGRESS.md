@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
+
+The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.
+- **Join opposite Links:** two Links running opposite ways on one level become one Road without a
+  template. Its centreline is the mean of theirs, and the Links stay where they are. A Link
+  already in a Road, a different level, the same direction, or a pair outside the tolerance is
+  refused.
+- **Assign template:** sets or clears the template on several Roads at once, generating no Link.
+- **Editor:** both are on the Roads tab. Join takes the two Links selected on the canvas, forward
+  first, and the table takes several rows.
+- **Rows:** RD10 and RD11 (`roads`), with their editor part in `road-ui`; four mutations caught.
+
 ## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
 
 The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.
@@ -115,21 +127,6 @@ on any red turn.
   on generated cases and was replaced.
 - **Rows:** ME7, ME26 and ME27. Five mutations are caught. `MESO_SIGNAL_IGNORED` is retired;
   `MESO_SIGNAL_AMBIGUOUS` is new.
-
-## 2026-10-22 — M11.3c: Yperman's link model and the loading engine (D298)
-
-The owner supplied Yperman's thesis as a Markdown repository, and its chapters 3–5 and §7.1 were read.
-- **Confirmed:** §4's sending and receiving volumes, the storage, the origin queue and the
-  destination. The thesis prints only `L/v` as the step limit; `L/w` is added, derived.
-- **Owner choices:**
-  - turn splits follow the vehicles' routes (Eq. 5.2), replacing shares at time t;
-  - signals move to M11.3d, because explicit green under FIFO holds the whole in-link. Signalised
-    Nodes are advised `MESO_SIGNAL_IGNORED`.
-- **`loadMeso`** joins the link model and `mesoNodeFlows` per step, with spill-back and the
-  boundary volumes.
-- **Against the thesis:** Example 4.5 is exact. §7.1's diverge network gives `k_B` = 166.67 veh/km,
-  r2m clear at 44 min (thesis 46) and r1n queued 26.25–82.75 min (thesis 28–82).
-- **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `mesoloading`. Six mutations are caught.
 
 ## Older entries
 

@@ -343,6 +343,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D305](RECORD.md#d305) — S3.3: Road, owned cross-section templates, `roadId` (schema 53), *Apply template*, detach on hand edits; editor moved to S3.3b, `shoulder` dropped; rows RD1, RD5–RD9.
 [D306](RECORD.md#d306) — E1: arrow pointers with the tool glyph (no crosshair); Ctrl+right-click only for a draft's first point, then plain clicks (amends D84); previews solid on a casing, saved dashes kept; rows E1-1 to E1-4.
 [D307](RECORD.md#d307) — S3.3b: Road tool (O) draws and applies the chosen template in one step; Roads tab (status incl. partly detached), Cross-sections tab; the selected Road lit on the canvas, warning colour when detached; rows RD23–RD26.
+[D308](RECORD.md#d308) — S3.4: Join opposite Links (15°, half widths + 30 m, owner; mean centreline, no template) and Assign template (several Roads, no Links generated); rows RD10, RD11.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <stdexcept>
+#include <utility>
 
 namespace multra {
 std::vector<ValidationIssue> roadIssues(const Network& n) {
@@ -44,5 +46,38 @@ std::vector<ValidationIssue> roadIssues(const Network& n) {
             add("ROAD_LINK_MISMATCH", "links[" + std::to_string(i) + "].roadId");
     }
     return issues;
+}
+namespace {
+// The closest point of `line` to `p`, and its station along `line`.
+std::pair<Point, double> closest(const std::vector<Point>& line, Point p) {
+    const double station = stationOfClosestPoint(line, p);
+    return {pointAlong(line, station), station};
+}
+}
+std::vector<Point> meanCentreline(const std::vector<Point>& forward, const std::vector<Point>& backward) {
+    if (forward.size() < 2 || backward.size() < 2) throw std::invalid_argument("INVALID_GEOMETRY");
+    std::vector<Point> reversed(backward.rbegin(), backward.rend());
+    const auto mid = [](Point a, Point b) { return Point{(a.x + b.x) / 2, (a.y + b.y) / 2}; };
+    std::vector<Point> mean;
+    if (forward.size() == reversed.size()) {
+        for (std::size_t i = 0; i < forward.size(); ++i) mean.push_back(mid(forward[i], reversed[i]));
+    } else {
+        std::vector<std::pair<double, Point>> stations;
+        double along = 0;
+        for (std::size_t i = 0; i < forward.size(); ++i) {
+            if (i) along += std::hypot(forward[i].x - forward[i - 1].x, forward[i].y - forward[i - 1].y);
+            stations.emplace_back(along, mid(forward[i], closest(reversed, forward[i]).first));
+        }
+        for (const auto& q : reversed) {
+            const auto [onForward, station] = closest(forward, q);
+            stations.emplace_back(station, mid(onForward, q));
+        }
+        std::stable_sort(stations.begin(), stations.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+        for (const auto& [station, p] : stations) mean.push_back(p);
+    }
+    std::vector<Point> distinct;
+    for (const auto& p : mean)
+        if (distinct.empty() || std::hypot(p.x - distinct.back().x, p.y - distinct.back().y) > 1e-9) distinct.push_back(p);
+    return distinct;
 }
 }

@@ -10,4 +10,9 @@ namespace multra {
 // - ROAD_LINK_MISMATCH: a `links` entry naming no Link, a Link listed twice or whose roadId is not
 //   this Road, or a Link whose roadId names no Road or a Road that does not list it.
 std::vector<ValidationIssue> roadIssues(const Network&);
+// S3.4 (ROADS §3, §17, D308): the mean of two opposite carriageways' centrelines, digitised along
+// `forward`; `backward` is given in its own direction of travel. Equal vertex counts pair vertex by
+// vertex, which is exact for two offsets of one reference (oppositeLink); otherwise each vertex is
+// paired with its closest point on the other line and the midpoints are ordered along `forward`.
+std::vector<Point> meanCentreline(const std::vector<Point>& forward, const std::vector<Point>& backward);
 }

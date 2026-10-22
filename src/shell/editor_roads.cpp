@@ -38,7 +38,7 @@ const CrossSection* findSection(const std::vector<CrossSection>& rows, const std
 }
 }
 EditorWindow::RoadStatus EditorWindow::roadStatus(const Road& road, const std::vector<CrossSection>& sections) const {
-    if (!road.crossSectionId) return road.links.empty() ? RoadStatus::noTemplate : RoadStatus::applied;
+    if (!road.crossSectionId) return RoadStatus::noTemplate; // a joined Road has Links but no template yet
     const auto* section = findSection(sections, road.crossSectionId);
     if (!section) return RoadStatus::unknownTemplate;
     if (road.links.empty()) return RoadStatus::notApplied;
@@ -53,7 +53,7 @@ void EditorWindow::buildRoads() {
     roadTable_ = new QTableWidget(0, 6, body); roadTable_->setObjectName("editorRoadTable");
     roadTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     roadTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    roadTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    roadTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.4: Assign template takes several
     roadTable_->horizontalHeader()->setStretchLastSection(true); roadTable_->verticalHeader()->hide();
     layout->addWidget(roadTable_);
     addObjectPage(body, "editorRoadTable");
@@ -61,6 +61,23 @@ void EditorWindow::buildRoads() {
         const auto id = selectedRoad(); if (id.empty()) return;
         const auto installed = crossSectionRows();
         execute("editorApplyTemplate", [&](auto& d) { applyTemplate(d, id, installed); });
+    }));
+    // S3.4 (D308): the two Links selected on the canvas, the first the forward one.
+    bar->addAction(action("editorJoinOppositeLinks", {}, [this] {
+        const auto links = selectedLinks(); if (links.size() != 2) return;
+        std::string id;
+        if (execute("editorJoinOppositeLinks", [&](auto& d) { id = joinOppositeLinks(d, links[0], links[1]); })) {
+            showRoads();
+            for (int r = 0; r < roadTable_->rowCount(); ++r)
+                if (roadTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) roadTable_->selectRow(r);
+        }
+    }));
+    // The combo's template on every selected row, without generating a Link; "(no template)" clears it.
+    bar->addAction(action("editorAssignTemplate", {}, [this] {
+        const auto ids = selectedRoadRows(); if (ids.empty()) return;
+        const auto chosen = roadTemplate_->currentData().toString().toStdString();
+        const auto installed = crossSectionRows();
+        execute("editorAssignTemplate", [&](auto& d) { assignTemplate(d, ids, chosen.empty() ? std::nullopt : std::optional(chosen), installed); });
     }));
     bar->addAction(action("editorEditRoad", {}, [this] { const auto id = selectedRoad(); if (!id.empty()) editRoad(id); }));
     bar->addAction(action("editorDeleteRoad", {}, [this] {
@@ -87,12 +104,27 @@ void EditorWindow::buildRoads() {
 void EditorWindow::translateRoads() {
     roadTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorRoadTemplateColumn"),
         text("editorRoadLanes"), text("editorRoadLinks"), text("editorRoadStatus")});
+    actions_.at("editorJoinOppositeLinks")->setToolTip(text("editorJoinOppositeLinksHelp"));
     roadTemplate_->setToolTip(text("editorRoadTemplateHelp")); roadTemplate_->setAccessibleName(text("editorRoadTemplateHelp"));
     roadRevision_ = UINT64_MAX;
 }
 std::string EditorWindow::selectedRoad() const {
     const auto* cell = roadTable_ ? roadTable_->item(roadTable_->currentRow(), 0) : nullptr;
     return cell && !roadTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+}
+std::vector<std::string> EditorWindow::selectedRoadRows() const {
+    std::vector<std::string> ids;
+    if (!roadTable_) return ids;
+    for (const auto& range : roadTable_->selectionModel()->selectedRows())
+        ids.push_back(roadTable_->item(range.row(), 0)->data(Qt::UserRole).toString().toStdString());
+    return ids;
+}
+std::vector<std::string> EditorWindow::selectedLinks() const {
+    std::vector<std::string> links;
+    const auto& n = history_.document().network;
+    for (const auto& id : canvas_->selection())
+        if (std::any_of(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id; })) links.push_back(id);
+    return links;
 }
 void EditorWindow::refreshRoads() {
     if (!roadTable_) return;
@@ -145,6 +177,8 @@ void EditorWindow::refreshRoads() {
     canvas_->setHighlightedRoad(road == roads.end() ? std::string{} : id,
                                 road != roads.end() && roadStatus(*road, sections) == RoadStatus::detached);
     for (const auto* key : {"editorApplyTemplate", "editorEditRoad", "editorDeleteRoad"}) actions_.at(key)->setEnabled(road != roads.end());
+    actions_.at("editorAssignTemplate")->setEnabled(!selectedRoadRows().empty());
+    actions_.at("editorJoinOppositeLinks")->setEnabled(selectedLinks().size() == 2);
 }
 void EditorWindow::editRoad(const std::string& id) {
     const auto& roads = history_.document().network.roads;

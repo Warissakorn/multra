@@ -96,7 +96,8 @@ not validation.
   and the Road drops it from `links`. The editor shows the Road as partly detached; nothing is
   regenerated silently.
 - **Join opposite Links into a Road** (Micro-first studies): two Links of opposite direction on the
-  same level, roughly parallel within a tolerance, become one Road. Its centreline is the mean of
+  same level, roughly parallel within a tolerance (15° and half both widths plus 30 m, owner
+  2026-10-22, §17), become one Road. Its centreline is the mean of
   their centrelines, it has no template (`crossSectionId` absent), and they are its `links`.
 - **Assign template** sets `crossSectionId` on several Roads in one Undo step without generating
   Links. Generating is a separate *Apply*, so a Micro study is never rewritten by an assignment.
@@ -300,7 +301,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs. **Implemented (D304)**. `rank` moved to S3.6 with its reader (D304) | RD1 (basis), RD2, RD3 |
 | S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
 | S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display. **Implemented (D307)** | RD23–RD26 |
-| S3.4 | *Join opposite Links into a Road*; *Assign template* | RD10, RD11 |
+| S3.4 | *Join opposite Links into a Road*; *Assign template*. **Implemented (D308)** | RD10, RD11 |
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes* | RD12–RD15 |
 | S3.6 | `coarse`, refine and derive back, lifecycle; the link-type `rank`; Macro and Meso compile coarse Nodes and Roads | RD4, RD16–RD20 |
 | S3.7 | Seam checks | RD21, RD22 |
@@ -433,3 +434,37 @@ and a detached Road shows in the table and on the canvas.
   - the detached status never given;
   - the canvas never told;
   - a Road needing three points.
+
+## 17. S3.4 as implemented (D308)
+
+The owner chose the tolerance (2026-10-22): 15° and half both widths plus 30 m.
+- **`joinOppositeLinks(d, forward, backward)`** (`src/commands/road_commands.*`) makes one Road with
+  no template and `links` = [forward, backward]. Both Links take its `roadId`; neither Link moves.
+  - **Centreline:** `meanCentreline` (`src/model/network/roads.*`) of the two bundle centrelines
+    (`linkCentreline`), digitised along the forward Link. Equal vertex counts pair vertex by vertex,
+    which is exact for `oppositeLink`'s offsets, bends included. Otherwise each vertex pairs with
+    its closest point on the other line, and the midpoints are ordered by station along the
+    forward Link.
+  - **Refusals:**
+    - `EDIT_ROAD_JOIN_TAKEN`: a Link already in a Road;
+    - `EDIT_ROAD_JOIN_LEVEL`: the Links are on different levels;
+    - `EDIT_ROAD_JOIN_DIRECTION`: one Link twice, or the same direction (the end-to-end vectors'
+      cosine ≥ 0);
+    - `EDIT_ROAD_JOIN_PARALLEL`: more than 15° off opposite, or any centreline vertex farther from
+      the other centreline than half of both widths plus 30 m. The constants are
+      `joinAngleDegrees` and `joinMedianMetres`.
+- **`assignTemplate(d, roads, crossSectionId, installed)`** sets or clears the template on every
+  listed Road, generating no Link. An unknown template is `ROAD_CROSS_SECTION_UNKNOWN` at
+  `crossSectionId`, and an unknown Road is `EDIT_UNKNOWN_OBJECT`.
+- **Editor (Roads tab):**
+  - *Join opposite Links* joins the two Links selected on the canvas, the first one forward. It is
+    enabled only with exactly two selected.
+  - *Assign template* puts the combo's template on every selected row, and "(no template)" clears
+    it. The table now takes several rows.
+  - A Road with no template reads *No template* even when it has Links, as a joined Road does.
+- **Rows:** RD10 and RD11 in `tests/road_tests.cpp` (`roads`), with their editor part in `road-ui`.
+  Four mutations were caught:
+  - the mean replaced by the forward line;
+  - no angle check;
+  - no distance check;
+  - no unknown-template check.

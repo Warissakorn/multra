@@ -4,8 +4,10 @@
 #include "detail.hpp"
 #include "network_commands.hpp"
 #include "../core/validate.hpp"
+#include "../model/network/roads.hpp"
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 #include <stdexcept>
 
 namespace multra {
@@ -103,5 +105,42 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& ro
     editableRoad(d, roadId).links = ids; // changeLanes detached them: this re-attaches
     reanchorConnectors(d);
     return ids;
+}
+std::string joinOppositeLinks(ProjectDocument& d, const std::string& forwardId, const std::string& backwardId) {
+    const auto forward = editableLink(d, forwardId), backward = editableLink(d, backwardId);
+    if (forward.roadId || backward.roadId) throw std::invalid_argument("EDIT_ROAD_JOIN_TAKEN");
+    if (forward.level != backward.level) throw std::invalid_argument("EDIT_ROAD_JOIN_LEVEL");
+    if (forwardId == backwardId) throw std::invalid_argument("EDIT_ROAD_JOIN_DIRECTION");
+    const auto f = linkCentreline(forward, d.network.drivingSide), b = linkCentreline(backward, d.network.drivingSide);
+    const Point df{f.back().x - f.front().x, f.back().y - f.front().y}, db{b.back().x - b.front().x, b.back().y - b.front().y};
+    const double nf = std::hypot(df.x, df.y), nb = std::hypot(db.x, db.y);
+    if (!(nf > 0) || !(nb > 0)) throw std::invalid_argument("INVALID_GEOMETRY");
+    const double cosine = (df.x * db.x + df.y * db.y) / (nf * nb);
+    if (cosine >= 0) throw std::invalid_argument("EDIT_ROAD_JOIN_DIRECTION");
+    if (cosine > -std::cos(joinAngleDegrees * std::numbers::pi / 180)) throw std::invalid_argument("EDIT_ROAD_JOIN_PARALLEL");
+    double width = 0;
+    for (const auto& l : forward.lanes) width += l.width / 2;
+    for (const auto& l : backward.lanes) width += l.width / 2;
+    const auto within = [&](const std::vector<Point>& from, const std::vector<Point>& to) {
+        return std::all_of(from.begin(), from.end(), [&](Point p) {
+            const auto q = pointAlong(to, stationOfClosestPoint(to, p));
+            return std::hypot(p.x - q.x, p.y - q.y) <= width + joinMedianMetres;
+        });
+    };
+    if (!within(f, b) || !within(b, f)) throw std::invalid_argument("EDIT_ROAD_JOIN_PARALLEL");
+    Road road{"", "", meanCentreline(f, b), std::nullopt, forward.level, {}, {forwardId, backwardId}};
+    const auto id = putRoad(d, std::move(road));
+    editableLink(d, forwardId).roadId = id;
+    editableLink(d, backwardId).roadId = id;
+    return id;
+}
+void assignTemplate(ProjectDocument& d, const std::vector<std::string>& roads, const std::optional<std::string>& crossSectionId,
+                    const std::vector<CrossSection>& installed) {
+    if (crossSectionId) {
+        const auto& pool = d.definition && !d.definition->externalCrossSections ? d.definition->crossSections : installed;
+        if (std::none_of(pool.begin(), pool.end(), [&](const auto& s) { return s.id == *crossSectionId; }))
+            throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "crossSectionId"}});
+    }
+    for (const auto& id : roads) editableRoad(d, id).crossSectionId = crossSectionId;
 }
 }

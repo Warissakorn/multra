@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.3c: Yperman's link model and the loading engine (D298)
+
+The owner supplied Yperman's thesis as a Markdown repository, and its chapters 3–5 and §7.1 were read.
+- **Confirmed:** §4's sending and receiving volumes, the storage, the origin queue and the
+  destination. The thesis prints only `L/v` as the step limit; `L/w` is added, derived.
+- **Owner choices:**
+  - turn splits follow the vehicles' routes (Eq. 5.2), replacing shares at time t;
+  - signals move to M11.3d, because explicit green under FIFO holds the whole in-link. Signalised
+    Nodes are advised `MESO_SIGNAL_IGNORED`.
+- **`loadMeso`** joins the link model and `mesoNodeFlows` per step, with spill-back and the
+  boundary volumes.
+- **Against the thesis:** Example 4.5 is exact. §7.1's diverge network gives `k_B` = 166.67 veh/km,
+  r2m clear at 44 min (thesis 46) and r1n queued 26.25–82.75 min (thesis 28–82).
+- **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `mesoloading`. Six mutations are caught.
+
 ## 2026-10-22 — M11.3's node model from Tampère et al. (2011) (D297)
 
 The owner uploaded the paper, and it was read in full.

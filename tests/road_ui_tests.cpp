@@ -188,6 +188,28 @@ int main(int argc, char** argv) {
         require(network().roads.empty() && network().links.size() == links + 2, "Deleting the Road removed its Links");
         trigger(w, "editorUndo");
         require(network().roads.size() == 1, "Undo did not restore the Road");
+
+        // RD10/RD11 in the editor (S3.4, D308): the two freed Links, selected forward first, join into
+        // one Road without a template; Assign template then sets it on the selected rows, with no Link
+        // generated, in one Undo step each.
+        selectRow(roads, road.id); trigger(w, "editorDeleteRoad");
+        require(network().roads.empty(), "The fixture Road was not deleted");
+        require(!act(w, "editorJoinOppositeLinks")->isEnabled(), "Join is enabled without two Links");
+        c->setSelection({road.links[0], road.links[1]}); QApplication::processEvents();
+        require(act(w, "editorJoinOppositeLinks")->isEnabled(), "Join is disabled with two Links selected");
+        const auto joining = w.history().revision();
+        trigger(w, "editorJoinOppositeLinks");
+        require(network().roads.size() == 1 && network().roads[0].links == road.links && !network().roads[0].crossSectionId &&
+                w.history().revision() == joining + 1, "Join did not make one Road of the two Links in one step");
+        const auto joined = network().roads[0].id;
+        require(cell(roads, joined, 5) == noTemplate && roads->currentRow() >= 0, "The joined Road is not listed as without a template");
+        selectRow(roads, joined);
+        chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
+        const auto assigning = w.history().revision(); const auto count = network().links.size();
+        trigger(w, "editorAssignTemplate");
+        require(network().roads[0].crossSectionId == t.id && network().links.size() == count && w.history().revision() == assigning + 1,
+                "Assign template did not set the template alone in one step");
+        require(network().roads[0].links == road.links, "Assigning a template changed the Road's Links");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

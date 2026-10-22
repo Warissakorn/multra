@@ -67,8 +67,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   - **S3** ([ROADS](reference/ROADS.md), D303, D304): the owner chose 1a–5a, 6b, 7a. S3.2 is in:
     eleven HCM link types and the capacity basis. S3.3 is in (D305): Roads, owned templates,
     `roadId`, *Apply template* and detaching. S3.3b is in (D307): the Road tool (O), the Roads and
-    Cross-sections tabs and the detached display. **Next, S3.4:** *Join opposite Links into a Road*
-    and *Assign template* (RD10, RD11);
+    Cross-sections tabs and the detached display. S3.4 is in (D308): *Join opposite Links* and
+    *Assign template*. **Next, S3.5:** *Find crossings*, overpasses, junction splits, generated Nodes
+    and *Merge nodes* (RD12–RD15);
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);

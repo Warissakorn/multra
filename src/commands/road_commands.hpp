@@ -22,4 +22,18 @@ void deleteCrossSection(ProjectDocument&, const std::string& id);
 // EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently).
 // Returns the Road's Link ids, forward first.
 std::vector<std::string> applyTemplate(ProjectDocument&, const std::string& roadId, const std::vector<CrossSection>& installed);
+// S3.4 (ROADS §3, §17, D308). Join opposite Links into a Road: `forward` and `backward` become one
+// Road with no template, its centreline the mean of their bundle centrelines (meanCentreline), and
+// both carry its roadId. Their geometry is untouched. Refusals: EDIT_ROAD_JOIN_TAKEN when either
+// already belongs to a Road; EDIT_ROAD_JOIN_LEVEL on different levels; EDIT_ROAD_JOIN_DIRECTION when
+// they are one Link or run the same way; EDIT_ROAD_JOIN_PARALLEL when their overall directions are
+// more than 15 degrees off opposite, or a centreline vertex lies farther from the other centreline
+// than half of both widths plus 30 m (the owner's tolerance, 2026-10-22). Returns the Road's id.
+inline constexpr double joinAngleDegrees = 15, joinMedianMetres = 30;
+std::string joinOppositeLinks(ProjectDocument&, const std::string& forward, const std::string& backward);
+// Assign template: sets (or, with nullopt, clears) crossSectionId on every Road in `roads` without
+// generating a Link. ROAD_CROSS_SECTION_UNKNOWN at `crossSectionId` for a template neither owned nor
+// in `installed`; EDIT_UNKNOWN_OBJECT for an unknown Road.
+void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, const std::optional<std::string>& crossSectionId,
+                    const std::vector<CrossSection>& installed);
 }
