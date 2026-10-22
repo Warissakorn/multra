@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.3's node model from Tampère et al. (2011) (D297)
+
+The owner uploaded the paper, and it was read in full.
+- **`mesoNodeFlows`** is its §5.1 instance and algorithm: oriented capacity proportional, exact,
+  and unique. It reproduces the paper's Table 8.
+- **Changed from the contract:** the paper has no instance of conflict constraints (its Eq. 17 is
+  provisional). By the owner's choice, priority inside a Node is advised `MESO_PRIORITY_IGNORED`
+  instead of guessed.
+- **Signals** are explicit green, as the paper's §5.2 allows.
+- **Rows:** ME20–ME23 in `mesonode`. Three mutations are caught; two had no effect, and both are
+  explained.
+- **Still blocked:** the link model needs Yperman (B22).
+
 ## 2026-10-22 — M11.3 blocked on its sources; nothing built
 
 The owner asked for M11.3. The contract makes checking §4 against Yperman (2007) and §5 against
@@ -119,30 +132,6 @@ candidate for MA15) as well as web.mit.edu, after the owner allowed it. The owne
 - **Unchanged:** every output, since the change is editor-only.
 - **Tests:** row N22 in `node-ui`; legs never drawn, in/out swapped, the highlight kept after delete
   and a refused Node with legs each fail it.
-
-## 2026-10-21 — Optimization review across all areas; the docs check is 96 % faster
-
-The owner asked for every area (engine, build, docs, design and the rest). Measured on Linux:
-an M2.6 hour 541 ms (3.81 G Ir), 10 seeds 1.8 s, the docs check 2.2 s Release / ≈20 s Debug.
-- **Done:** `multra-check-docs` caches each document's anchors and builds its regexes once
-  (24,976 → 865 M Ir; Release 86 ms; `documentation` 21.1 → 0.6 s). Same errors; self-test and
-  a broken real anchor still fail.
-- **Package workflow:** the first run since D284/D285/D287 (run 39561211587) is green on Linux
-  and Windows. Windows copied every vcpkg `copyright` and found libthai's licence folders (no
-  warning); both packages carry `multra-cli`, `multra-desktop`, `proj.db` and the notices.
-- **Not worth it now, measured:** `Vehicle` moves per tick 5.8 % and `appendSpans` 7 % of an M2.6
-  run; test objects are 60 % of a clean compile, but CI's ccache covers warm builds; slow tests
-  are deliberate long runs. No design misfit found; the desktop's start-up was not measured.
-
-## 2026-10-21 — Namespace, targets and CMake options renamed to MULTRA (D287)
-
-The owner renamed the repository to `Warissakorn/multra` and asked for the code to follow.
-- **Renamed:** `namespace multra`, every library, test and tool target (`multra_core`,
-  `multra-tests`, `multra-check-docs`, …), the `MULTRA_*` macros and CMake options, the presets
-  and workflows, and the commands in maintained docs.
-- **Compatibility:** `-DTRAFFICSIM_BUILD_DESKTOP=OFF` and the other three old options still apply,
-  with a deprecation warning (checked: a configure with the old option builds no desktop target).
-- **Kept:** `"format": "TrafficSim"` in project files and D286's legacy folder name.
 
 ## Older entries
 

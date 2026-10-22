@@ -58,6 +58,8 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    under the environment's Network access → Allowed domains
    (https://code.claude.com/docs/en/cloud-environments#network-access), or upload the PDFs
    (optionally Boyles et al., arXiv 2502.05182, too). Which? *Owner:*
+   **2026-10-22:** the owner uploaded Tampère et al. (2011); the node model is in (D297). Still needed:
+   Yperman (2007), or Boyles et al. as a citable secondary source for the LTM link model.
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.

@@ -3,6 +3,30 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-21 — Optimization review across all areas; the docs check is 96 % faster
+
+The owner asked for every area (engine, build, docs, design and the rest). Measured on Linux:
+an M2.6 hour 541 ms (3.81 G Ir), 10 seeds 1.8 s, the docs check 2.2 s Release / ≈20 s Debug.
+- **Done:** `multra-check-docs` caches each document's anchors and builds its regexes once
+  (24,976 → 865 M Ir; Release 86 ms; `documentation` 21.1 → 0.6 s). Same errors; self-test and
+  a broken real anchor still fail.
+- **Package workflow:** the first run since D284/D285/D287 (run 39561211587) is green on Linux
+  and Windows. Windows copied every vcpkg `copyright` and found libthai's licence folders (no
+  warning); both packages carry `multra-cli`, `multra-desktop`, `proj.db` and the notices.
+- **Not worth it now, measured:** `Vehicle` moves per tick 5.8 % and `appendSpans` 7 % of an M2.6
+  run; test objects are 60 % of a clean compile, but CI's ccache covers warm builds; slow tests
+  are deliberate long runs. No design misfit found; the desktop's start-up was not measured.
+
+## 2026-10-21 — Namespace, targets and CMake options renamed to MULTRA (D287)
+
+The owner renamed the repository to `Warissakorn/multra` and asked for the code to follow.
+- **Renamed:** `namespace multra`, every library, test and tool target (`multra_core`,
+  `multra-tests`, `multra-check-docs`, …), the `MULTRA_*` macros and CMake options, the presets
+  and workflows, and the commands in maintained docs.
+- **Compatibility:** `-DTRAFFICSIM_BUILD_DESKTOP=OFF` and the other three old options still apply,
+  with a deprecation warning (checked: a configure with the old option builds no desktop target).
+- **Kept:** `"format": "TrafficSim"` in project files and D286's legacy folder name.
+
 ## 2026-10-20 — Licence: GPL-3.0-or-later, third-party notices in every package (D285)
 
 The owner chose the reviewed recommendation over MIT.

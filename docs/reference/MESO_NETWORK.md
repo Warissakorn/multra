@@ -113,22 +113,31 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   node: spill-back.
 - **Units:** veh/h per class; capacity in PCU/h, shared by `Σ pcu · flow` as in Macro (D272).
 
-## 5. The node model (choices 3a and 4a)
+## 5. The node model (choices 3a and 4a; checked against the paper on 2026-10-22, D297)
 
-- **Per step, at each node:**
-  - the in-links' sending volumes, split by turn;
-  - the out-links' receiving volumes;
-  - the node model gives each turn's transfer. Every vehicle on an in-link waits in its order
-    (first in, first out per in-link), so a blocked turn holds the turns behind it.
-- **The model (3a).** An instance of the generic first-order node model of Tampère et al. (2011):
-  the out-link supply is distributed in proportion to capacity, with node supply constraints for
-  conflicts inside a Node. The paper gives requirements and an exact solution algorithm; they are
-  read before M11.3.
-- **Signals (4a).** A turn's capacity is the in-leg lanes' saturation flow (the link type's
-  capacity per lane) during its group's green, as a time-varying window per step from the
-  controller's cycle, offset and green start and end, with amber counted as in Micro.
-- **Priority (unsignalised).** The Node's conflicts by turn pair, with the minor turn yielding,
-  enter the node model as node supply constraints.
+- **Per step, at each node:** the in-links' sending volumes split by turn (`S_ij`, from the turn
+  shares of §6), the in-links' capacities `C_i`, and the out-links' receiving volumes `R_j` go in;
+  each turn's transfer `q_ij` comes out. Each in-link is first in, first out, so a blocked turn
+  holds the turns behind it: conservation of turning fractions (CTF).
+- **The model (3a):** Tampère et al. (2011), §5.1, the unsignalised instance of their generic class
+  (Eq. 15). It meets the paper's requirements (§3.1): general n × m, flow maximisation,
+  non-negativity, conservation, demand and supply constraints, CTF, and the invariance principle.
+  - **Supply interaction rule:** oriented capacity proportional. `C_ij = (S_ij / S_i) · C_i` (Eq. 19)
+    is in-link i's claim on out-link j's supply.
+  - **Solution:** `q_ij = min(S_ij, a_{j*(i)} · C_ij)` (Eq. 28), with `a_j` the level of reduction of
+    out-link j (Eqs. 25–27), solved exactly by the paper's algorithm (§5.1.2, Eqs. 29–32) in at most
+    n iterations. The solution is unique (App. A).
+- **Conflicts and priority inside a Node: not modelled yet (D297, amends D292 3a in part).** The
+  paper gives no instance of node supply constraints for conflict points. Its Eq. 17,
+  `Σ q_ij t_ij ≤ 1` after Brilon and Wu (2001), is "provisionally suggested", and the paper leaves
+  the subject to future research.
+  - A valid Node with conflicts is advised `MESO_PRIORITY_IGNORED` at `network.nodes[i]`.
+  - Adding them needs Brilon and Wu (2001) read, a cited `t_ij`, and a new decision.
+- **Signals (4a):** explicit green per step. The paper (§5.2): "if the green and red phases are
+  explicitly simulated, the node model of Section 5.1 can be applied unaltered for every green
+  phase separately". The engine (the rest of M11.3) therefore withholds a turn's demand while its
+  group is red; the averaged-green constraints (Eqs. 33–36) are not used.
+- **Evidence:** [tampere-node-model](../evidence/tampere-node-model.md).
 
 ## 6. Demand and paths (choice 5a)
 
@@ -206,8 +215,8 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   formulas and step limit are checked against it before M11.3.
 - C. M. J. Tampère, R. Corthout, D. Cattrysse, L. H. Immers (2011), "A generic class of first order
   node models for dynamic macroscopic simulation of traffic flows", *Transportation Research
-  Part B* 45(1), 289–309. Bibliographic details from IDEAS. The list of requirements is not yet
-  read.
+  Part B* 45(1), 289–309, doi:10.1016/j.trb.2010.06.004. **Read in full on 2026-10-22** from the
+  owner's PDF (D297, [evidence](../evidence/tampere-node-model.md)).
 - C. F. Daganzo (1994, 1995), the cell transmission model: the alternative D158 did not choose.
 
 ## 11. Owner choices (answered 2026-10-21, D292: 1a–7a)
@@ -252,7 +261,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | M11.2 | `compileMesoNetwork`, `jamDensity`, settings, refusals. **Implemented (D293)** | ME1, ME2 |
 | M11.3a | Authored routes (static routes, static routing decisions, OD-expanded routes) → Meso paths and turn shares; demand per class (5a). **Implemented (D295)** | ME12–ME16 |
 | M11.3b | Routeless inputs and placed routing decisions (the lane-level walk) → Meso paths. **Implemented (D296)** | ME17–ME19 |
-| M11.3 | `src/meso/` LTM links and nodes, signals, spill-back, boundary interface declared | ME3–ME9 |
+| M11.3 | `src/meso/` LTM links and nodes, signals, spill-back, boundary interface declared. **The node model is implemented (D297, ME20–ME23); the link model waits on Yperman** | ME3–ME9, ME20–ME23 |
 | M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
 
@@ -270,7 +279,7 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME5 | A queue's back moving upstream | The shockwave speed equals `(q₂ − q₁)/(k₂ − k₁)` on the triangular diagram, within one step's resolution |
 | ME6 | Spill-back | A full link's receiving volume is 0 and the upstream link stops discharging; it resumes when space returns (the ROADMAP gate) |
 | ME7 | A signalised turn | Throughput over whole cycles equals `s·g/C` under saturation; the queue cycles with red and green (choice 4a) |
-| ME8 | A merge and a diverge | Capacity-proportional merge; a blocked diverge branch holds the in-link (FIFO) |
+| ME8 | A merge and a diverge | Capacity-proportional merge; a blocked diverge branch holds the in-link (FIFO); the node model alone is ME21, ME8 runs it with the links |
 | ME9 | Determinism | The same input gives the same bytes; the order of links in the file does not change a number |
 | ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
 | ME11 | Editor (choice 6a) | Run Meso on its own worker with Cancel; the Meso links table with the marker; stale by revision |
@@ -282,6 +291,10 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME17 | Free walk (M11.3b) | A routeless 900 veh/h input on a 2-lane Link whose lane 1 leads to b and lane 2 to c: paths to b and c at 450 each, shares 0.5/0.5, entry 900, no refusal |
 | ME18 | Placed decision with stubs (M11.3b) | The same Link with a placed decision to b and c at 3:1, then 1:1 by interval: object-level turn shares 0.75/0.25, then 0.5/0.5; the stub lanes' flow joins the full paths (forcing: Micro's expansion has dead ends), and none ends on the decision's Link |
 | ME19 | The M2.6 template (M11.3b) | With owned types and PCUs, no issue; at several times Σ entry flows over classes equals Σ the authored inputs' volumes; every path's turns join its links |
+| ME20 | Tampère Table 8 (M11.3 node model) | The paper's 4×4 example (its Table 1, `C_i` of Table 5) gives Table 8's `q_ij` within 0.5 veh/h (the paper prints a rounded `a_7`), and `a_7` = 0.685 ± 0.001 |
+| ME21 | Merge and diverge (§5.1.3 of the paper) | A merge with both in-links supply-constrained gives `q_i = C_i/ΣC·R`; with one demand-constrained, the other gets `R − S_i`. A diverge with a blocked branch holds the in-link: `q = min(S, R_j/f_j)` (FIFO) |
+| ME22 | Requirements (§3.1 of the paper) | On generated cases: `q_ij ≥ 0`, `q_i ≤ S_i`, `q_j ≤ R_j`, CTF `q_ij = (S_ij/S_i)·q_i`, and every flow actively constrained (its demand met, or its `j*` supply used up); invariance: `S_i` replaced by `C_i` for a supply-constrained i leaves `q_i` unchanged |
+| ME23 | Priority advisory | A valid Node with conflicts gives `MESO_PRIORITY_IGNORED` at `network.nodes[i]` among the compile's advisories; a project without Nodes gives none |
 
 ## 14. M11.2 as implemented (D293)
 
@@ -359,4 +372,27 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
   - a connector path not mapped to its Connector;
   - type parts not summed back;
   - the walk's issues not reported.
+
+## 17. M11.3's node model as implemented (D297)
+
+- **`mesoNodeFlows`** (`src/meso/node_model.*`, imports nothing) is the paper's §5.1.2 algorithm,
+  step for step:
+  - the sets `U_j` and `J`;
+  - the reduced supplies `R̃_j`;
+  - `a_j` by Eq. 30 and the most restrictive `ĵ`;
+  - 4(a), demand-constrained in-links, before 4(b), the capacity-proportional share.
+
+  An in-link without capacity sends nothing.
+- **The advisory:** `MesoCompile::advisories` carries `MESO_PRIORITY_IGNORED` for a valid Node with
+  conflicts.
+- **Rows:** ME20–ME23 in `tests/meso_node_model_tests.cpp` (ctest `mesonode`).
+  - ME20 reproduces the paper's Table 8.
+  - ME22 checks the requirements on 300 generated nodes, over 50 of them congested.
+- **Mutations caught:**
+  - step 4(a) skipped;
+  - a demand-proportional rule in place of oriented capacities;
+  - the advisory removed.
+- **Mutations that changed nothing:**
+  - a per-turn `min` in 4(b) is a no-op there, since every in-link in 4(b) has `S_i > a C_i`;
+  - the tie order among equally restrictive out-links, since the solution is unique.
 

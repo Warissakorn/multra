@@ -18,7 +18,9 @@ namespace multra {
 // MESO_NODE_REFUSED at `network.nodes[i]` for a Node with membership issues, whose interior is then
 // compiled as simple nodes; MESO_STEP_TOO_LONG at `definition.mesoSettings.step` above
 // mesoStepLimit (mesoShortestLink names the link).
-struct MesoCompile { MesoGraph graph; std::vector<ValidationIssue> issues; };
+// Advised (D297): MESO_PRIORITY_IGNORED at `network.nodes[i]` for a valid Node with conflicts, since the
+// node model has no node supply constraints for them yet.
+struct MesoCompile { MesoGraph graph; std::vector<ValidationIssue> issues, advisories; };
 MesoCompile compileMesoNetwork(const Network&, const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
                                const MesoSettings&);
 }

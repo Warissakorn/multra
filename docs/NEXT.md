@@ -43,24 +43,22 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M11.3 (the LTM engine): blocked on its sources (OWNER_SITTING B22)
+## Next session — M11.3's link model: blocked on Yperman (OWNER_SITTING B22)
 
-- **Blocked on 2026-10-22:** the environment's network policy refused (proxy 403) `arxiv.org`,
-  `lirias.kuleuven.be`, `ideas.repec.org` and `tabenchmark.readthedocs.io`. The owner chose to wait
-  for the sources rather than build ahead of them. Once B22 is answered (the hosts allowed or the
-  PDFs uploaded), start here. Until then, take an "Other open item" the owner picks.
-
-- **Before any code:** check §4's link model and step limit against Yperman's thesis (try Lirias,
-  KU Leuven), and §5's node model against Tampère et al. (2011). Neither is in the owner's book
-  repositories, so ask the owner for a PDF if the hosts are refused.
-  - Record what was read in an evidence note, as MA15 did (`docs/evidence/macro-sheffi-benchmark.md`).
-  - Amend §4 and §5 where the source differs.
-- **Then the engine** (`src/meso/`, imports nothing; rows ME3–ME9 in MESO_NETWORK §13):
-  - **Links:** Newell's cumulative curves, with Yperman's sending and receiving volumes.
-  - **Nodes:** Tampère's node model, with signals as time-varying capacity (4a) and spill-back.
-  - **Inputs:** `MesoGraph`, the `MesoClass` paths through `mesoTurnShares` and `mesoEntryFlows`,
-    and `MesoSettings`. Shares are read at the entry time, with no travel-time shift (§6).
-  - **Smallest first:** ME3 and ME4 on one link and a bottleneck, before nodes.
+- **The node model is in** (D297, `mesoNodeFlows`, MESO_NETWORK §5 and §17). It was checked against
+  Tampère et al. (2011), which the owner uploaded.
+- **Blocked:** §4's link model (sending and receiving volumes, the step limit) still needs Yperman's
+  thesis. The environment refused `arxiv.org`, `lirias.kuleuven.be` and `ideas.repec.org` (proxy
+  403, 2026-10-22). The owner can upload the thesis, or Boyles et al. (arXiv 2502.05182) as a
+  citable secondary source, or allow the hosts.
+- **When it arrives:**
+  - an evidence note, as `docs/evidence/tampere-node-model.md`;
+  - §4 amended where the source differs;
+  - ME3 and ME4 on one link and a bottleneck;
+  - then the engine joining links and `mesoNodeFlows` per step: `S_ij` from `mesoTurnShares`, a red
+    turn's demand withheld (§5 signals), and spill-back (ME6).
+- **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`. Until then it is advised
+  `MESO_PRIORITY_IGNORED`.
 - **Other open items,** if the owner prefers one before Meso:
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;

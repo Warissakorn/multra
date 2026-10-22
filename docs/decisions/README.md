@@ -332,6 +332,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D294](RECORD.md#d294) — MA15: Sheffi (1985) Table 5.4 is the Macro benchmark; capacities (2, 4, 3) derived, owner to confirm; the M10 gate stays open.
 [D295](RECORD.md#d295) — M11.3a: authored routes, static decisions and OD routes as Meso paths, turn shares and demand per class; rows ME12–ME16; placed decisions and routeless inputs carved out as M11.3b.
 [D296](RECORD.md#d296) — M11.3b: routeless inputs and placed decisions through Micro's expandRouteless, lanes mapped back to objects, stubs handed to their full routes; rows ME17–ME19.
+[D297](RECORD.md#d297) — M11.3 node model: Tampère et al. (2011) §5.1 read in full and reproduced (Table 8); conflicts inside a Node deferred with MESO_PRIORITY_IGNORED; signals as explicit green; rows ME20–ME23.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.
