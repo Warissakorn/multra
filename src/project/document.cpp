@@ -9,6 +9,7 @@
 #include "study_period_codec.hpp"
 #include "mode_codec.hpp"
 #include "link_type_codec.hpp"
+#include "road_codec.hpp"
 #include "node_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
@@ -86,6 +87,7 @@ Json documentJson(const ProjectDocument& d) {
             {"boundaryMarkings",markingNames(l.boundaryMarkings)}});
         if (l.behaviourTypeId) network["links"].back()["behaviourType"] = *l.behaviourTypeId; // M3.3.2a, schema 21
         if (l.linkTypeId) network["links"].back()["linkType"] = *l.linkTypeId; // S2.1, schema 50
+        if (l.roadId) network["links"].back()["roadId"] = *l.roadId; // S3.3, schema 53
     }
     for (const auto& c : d.network.connectors) {
         network["connectors"].push_back({{"id", c.id}, {"from", reference(c.from)}, {"to", reference(c.to)}, {"geometry", points(c.geometry)}, {"fromLaneCount",c.fromLaneCount}, {"toLaneCount",c.toLaneCount},
@@ -127,6 +129,7 @@ Json documentJson(const ProjectDocument& d) {
         network["travelTimeSections"] = sections;
     }
     addNodesJson(d.network, network); // S0.1, schema 48
+    addRoadsJson(d.network, network); // S3.3, schema 53
     const auto& b = d.background;
     // Preserve legacy bytes; use 18 for owned catalogs and 19 for time/type rules.
     const bool positioned=d.definition && std::any_of(d.definition->routingDecisions.begin(),d.definition->routingDecisions.end(),[](const auto& x){return x.position.has_value();});
@@ -145,8 +148,8 @@ Json documentJson(const ProjectDocument& d) {
     // M3.7: 33 only when an owned behaviour carries a lateral key (D187).
     // M3.6: 34 only when an owned behaviour carries curveLateralAcceleration (D212).
     // M3.4: 35 only when an owned behaviour carries kerbLaneBias (D215); B-2: 36 for commitmentDeceleration (D219); B-3: 37 (D221).
-    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268); S1.2: 49 for modes and pcu (D270); S2.1: 50 for link types (D273); S2.3: 51 for macroSettings (D275); M11.2: 52 for mesoSettings and a link type's jamDensity (D293); S3.2: 53 for a link type's capacityBasis (D304).
-    const int schema=usesCapacityBasis(d)?53:usesMesoFields(d)?52:usesMacroSettings(d)?51:usesLinkTypes(d)?50:usesStudyPeriods(d)||usesModes(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268); S1.2: 49 for modes and pcu (D270); S2.1: 50 for link types (D273); S2.3: 51 for macroSettings (D275); M11.2: 52 for mesoSettings and a link type's jamDensity (D293); S3.2: 53 for a link type's capacityBasis (D304); S3.3: 53 for roads, a Link's roadId and owned crossSections (D305).
+    const int schema=usesRoadFields(d)||usesCapacityBasis(d)?53:usesMesoFields(d)?52:usesMacroSettings(d)?51:usesLinkTypes(d)?50:usesStudyPeriods(d)||usesModes(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -214,6 +217,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
+    if (version < 53) rejectRoadFieldsBefore53(j); // S3.3
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
@@ -239,6 +243,8 @@ ProjectDocument parseDocument(const Json& j) {
     d.network = parseNetwork(j.at("network"), version);
     d.network.nodes = parseNodes(j.at("network"), version); // S0.1 (NODES §2)
     readLinkTypeIds(j.at("network"), d.network); // S2.1 (MACRO_NETWORK §4)
+    d.network.roads = parseRoads(j.at("network"), version); // S3.3 (ROADS §3)
+    readRoadIds(j.at("network"), d.network);
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
         parseRouteDestinations(j.at("definition"),version,*d.definition);
@@ -276,6 +282,7 @@ std::set<std::string> documentIds(const ProjectDocument& d) {
     for (const auto& c : d.network.queueCounters) used.insert(c.id);
     for (const auto& s : d.network.travelTimeSections) used.insert(s.id);
     for (const auto& n : d.network.nodes) used.insert(n.id);
+    for (const auto& r : d.network.roads) used.insert(r.id);
     if (d.definition) {
         for (const auto& r : d.definition->routes) used.insert(r.id);
         for (const auto& i : d.definition->inputs) used.insert(i.id);

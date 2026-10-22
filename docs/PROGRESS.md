@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
+
+- **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per
+  direction, at median/2 + width/2 on its driving side, the backward one reversed.
+  - A re-apply keeps the Link and lane ids and reanchors Connectors.
+  - Dropping a direction is refused.
+- **Detaching:** a generated Link edited by hand leaves its Road.
+- **Templates** are owned or installed (none ships, B12). Roads, `roadId` and owned templates make a
+  file schema 53.
+- **Rows:** RD1's Road part and RD5–RD9 (`roads`).
+- **Amended:** the editor surface is S3.3b; `shoulder` waits for a reader.
+
 ## 2026-10-22 — S3.2: HCM link types and the capacity basis (D304)
 
 The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalog came first.
@@ -111,20 +123,6 @@ The owner asked for M11.3. The contract makes checking §4 against Yperman (2007
 Tampère et al. (2011) the first step, but the environment refused every host that holds them
 (proxy 403: arxiv.org, lirias.kuleuven.be, ideas.repec.org). The owner chose to wait for the sources,
 so no engine code was written. OWNER_SITTING B22 asks for the hosts or the PDFs.
-
-## 2026-10-22 — M11.3b: routeless inputs and placed decisions as Meso paths (D296)
-
-The owner asked for M11.3b. Meso now takes Micro's own expansion of routeless inputs and placed
-decisions: `expandRouteless` after `resolveCatalogs`, so lane splits, slice shares and typed routing
-are not copied.
-- **Lanes to objects:** `mesoObjectChain` maps lane sections and connector paths back to Links and
-  Connectors, then `mesoPath` as in M11.3a.
-- **Stubs:** a stub's flow goes to the full routes its vehicles change lanes onto, because the trip
-  does not end there.
-- **Type parts:** a composition's type parts sum back into its class.
-- **The M2.6 template** (four placed decisions) now loads its whole demand, conserved over time.
-- **Rows:** ME17–ME19 in `mesodemand`. ME13 now checks the walk's own issues instead of the old
-  refusal. Four mutations are caught.
 
 ## Older entries
 

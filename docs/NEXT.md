@@ -65,9 +65,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
   - **S3** ([ROADS](reference/ROADS.md), D303, D304): the owner chose 1a–5a, 6b, 7a. S3.2 is in:
-    eleven HCM link types and the capacity basis. **Next, S3.3:** `network.roads`,
-    `data/cross-sections/` (none shipped, B12), `roadId`, *Apply template* and detaching (rows RD1,
-    RD5–RD9);
+    eleven HCM link types and the capacity basis. S3.3 is in (D305): Roads, owned templates,
+    `roadId`, *Apply template* and detaching, by command only. **Next, S3.3b:** the editor surface
+    (a Road tool, a Cross-sections tab, *Apply template*, the detached display); then S3.4;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
   - **B21:** Sheffi Fig 5.1's capacities, for the owner.
   - **B23:** the Meso benchmark choice, for the owner.

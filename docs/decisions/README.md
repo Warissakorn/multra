@@ -340,6 +340,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D302](RECORD.md#d302) — M11.6a: the Meso benchmark option sheet (docs only, M6.0 rules); M1 corridor and M2 network kinds; Yperman and Tampère cases disclosed as not blind; owner answers B23.
 [D303](RECORD.md#d303) — the S3 contract (docs only): Road with generated Links (`roadId`), templates, Nodes from crossings, S0.4 coarse values, seams, HCM-cited link types with a capacity basis; rows RD1–RD22; owner choices B24.
 [D304](RECORD.md#d304) — S3 choices answered (1a–5a, 6b, 7a); S3.2: HCM link-type catalog (Exhibits 12-4, 10-7), `capacityBasis` on types and VDFs (schema 53), `MACRO_CAPACITY_BASIS_MISMATCH`; `rank` moved to S3.6; rows RD1–RD3.
+[D305](RECORD.md#d305) — S3.3: Road, owned cross-section templates, `roadId` (schema 53), *Apply template*, detach on hand edits; editor moved to S3.3b, `shoulder` dropped; rows RD1, RD5–RD9.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

@@ -46,6 +46,14 @@ struct LinkType {
     std::string capacityBasis{};
     bool operator==(const LinkType&) const = default;
 };
+// S3.3 (ROADS §4, D305): a cross-section template. Lane widths are `laneWidth` for every lane, or
+// `laneWidths` per lane, forward lanes first (kerb to median), then backward ones.
+struct CrossSection {
+    std::string id, name; int directions{2}, lanesForward{1}, lanesBackward{};
+    double laneWidth{}; std::vector<double> laneWidths; double median{};
+    std::optional<std::string> linkType; std::string source;
+    bool operator==(const CrossSection&) const = default;
+};
 struct Vdf {
     std::string id, form; double alpha{}, beta{}; std::string source;
     std::string capacityBasis{};        // S3.2 (D304): as LinkType's; empty means practical
@@ -182,6 +190,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     std::optional<EvaluationPeriod> evaluation; // M5.3; absent is warm-up 0 to the end of the run
     bool externalModes{true}; std::vector<Mode> modes; // S1.2 (D269): absent = data/modes/, schema 49
     bool externalLinkTypes{true}; std::vector<LinkType> linkTypes; // S2.1 (D273): absent = data/link-types/, schema 50
+    bool externalCrossSections{true}; std::vector<CrossSection> crossSections; // S3.3 (D305): absent = data/cross-sections/, schema 53
     std::optional<MacroSettings> macroSettings; // S2.3 (D275): absent = kMacroDefaults, schema 51
     std::optional<MesoSettings> mesoSettings; // M11.2 (D293): absent = kMesoDefaults, schema 52
     double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight

@@ -32,7 +32,7 @@ void changeGeometry(ProjectDocument& d, const std::string& id, const std::vector
     for (std::size_t i=0; i<geometry.size(); ++i)
         if (!std::isfinite(geometry[i].x) || !std::isfinite(geometry[i].y) || (i && geometry[i]==geometry[i-1]))
             throw std::invalid_argument("INVALID_GEOMETRY");
-    editableLink(d, id).geometry = geometry; reanchorConnectors(d);
+    editableLink(d, id).geometry = geometry; detail::detachFromRoad(d, id); reanchorConnectors(d); // S3.3: a hand edit detaches
 }
 namespace {
 void checkRemovedLanes(const ProjectDocument& d,const std::set<std::string>& removed) {
@@ -71,7 +71,7 @@ void changeLanes(ProjectDocument& d, const std::string& id, const std::vector<do
     while(lanes.size()<widths.size())lanes.push_back({allocateId(d,"lane"),widths[lanes.size()]});
     lanes.resize(widths.size());
     for(std::size_t i=0;i<widths.size();++i)lanes[i].width=widths[i];
-    replaceLaneBundle(l,std::move(lanes),false);anchorConnectors(d);
+    replaceLaneBundle(l,std::move(lanes),false);detail::detachFromRoad(d,id);anchorConnectors(d); // S3.3: applyTemplate re-attaches
 }
 void resizeLinkLanes(ProjectDocument& d,const std::string& id,int count,bool leading) {
     if(count<1 || count>12)throw std::invalid_argument("EDIT_LANES");
@@ -82,7 +82,7 @@ void resizeLinkLanes(ProjectDocument& d,const std::string& id,int count,bool lea
     }
     checkRemovedLanes(d,removed);
     while(static_cast<int>(lanes.size())<count)lanes.insert(leading?lanes.begin():lanes.end(),{allocateId(d,"lane"),width});
-    replaceLaneBundle(link,std::move(lanes),leading);anchorConnectors(d);
+    replaceLaneBundle(link,std::move(lanes),leading);detail::detachFromRoad(d,id);anchorConnectors(d);
 }
 
 void deleteLink(ProjectDocument& d, const std::string& id) {
@@ -98,6 +98,7 @@ void deleteLink(ProjectDocument& d, const std::string& id) {
     std::erase_if(d.network.signalHeads, [&](const auto& h) { return h.lane.linkId == id || removed.contains(h.connectorId); });
     detail::pruneQueueCounters(d); // M3.2.6b: a counter measuring at a removed head loses that line
     std::erase_if(d.network.links, [&](const auto& link) { return link.id == id; });
+    detail::detachFromRoad(d, id); // S3.3: its Road no longer lists it
     detail::removeRoutesUsingSegments(d, removed);
     // M8.2 (D154): zone connectors follow their Link, as routes do; the zones stay.
     std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.linkId == id; });

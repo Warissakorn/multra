@@ -21,6 +21,20 @@ candidate. This unblocked MA15.
 - **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
   until M6.
 
+## 2026-10-22 — M11.3b: routeless inputs and placed decisions as Meso paths (D296)
+
+The owner asked for M11.3b. Meso now takes Micro's own expansion of routeless inputs and placed
+decisions: `expandRouteless` after `resolveCatalogs`, so lane splits, slice shares and typed routing
+are not copied.
+- **Lanes to objects:** `mesoObjectChain` maps lane sections and connector paths back to Links and
+  Connectors, then `mesoPath` as in M11.3a.
+- **Stubs:** a stub's flow goes to the full routes its vehicles change lanes onto, because the trip
+  does not end there.
+- **Type parts:** a composition's type parts sum back into its class.
+- **The M2.6 template** (four placed decisions) now loads its whole demand, conserved over time.
+- **Rows:** ME17–ME19 in `mesodemand`. ME13 now checks the walk's own issues instead of the old
+  refusal. Four mutations are caught.
+
 ## 2026-10-22 — M11.3a: Micro's routes as Meso paths and demand (D295)
 
 The owner asked for M11.3a after MA15.

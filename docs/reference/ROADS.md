@@ -2,7 +2,7 @@
 
 Written 2026-10-22 (D303) as the S3.1 contract, docs only. The owner answered its seven choices
 the same day, "as recommended": 1a, 2a, 3a, 4a, 5a, 6b, 7a (D304), so §3–§9 state the chosen
-options. S3.2 is implemented (D304, §14). It fixes:
+options. S3.2 is implemented (D304, §14), and so is S3.3 (D305, §15). It fixes:
 - the Road object, and how it relates to the directed Links Micro already runs;
 - cross-section templates and *Apply template*;
 - Nodes from Road crossings;
@@ -125,6 +125,7 @@ not validation.
   - `source`, a non-empty citation.
 - **Errors:** a bad field is `INVALID_CROSS_SECTION` at its path; a malformed file is
   `EDIT_CATALOG_READ`.
+- **`shoulder` is dropped (D305)** until something reads it; neither Micro nor *Apply* uses it.
 - **Shipped:** none (2a). The Thai editions are open (B12). The editor offers project-owned
   templates, and a study states its own source.
 
@@ -297,7 +298,8 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 |---|---|---|
 | S3.1 | This contract. **Written (D303)** | — |
 | S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs. **Implemented (D304)**. `rank` moved to S3.6 with its reader (D304) | RD1 (basis), RD2, RD3 |
-| S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach | RD1, RD5–RD9 |
+| S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
+| S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display | written with S3.3b |
 | S3.4 | *Join opposite Links into a Road*; *Assign template* | RD10, RD11 |
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes* | RD12–RD15 |
 | S3.6 | `coarse`, refine and derive back, lifecycle; the link-type `rank`; Macro and Meso compile coarse Nodes and Roads | RD4, RD16–RD20 |
@@ -362,3 +364,33 @@ Each row first asserts that its forcing worked (AGENTS).
   `roadcatalog`).
 - **Amendment (D304):** `rank` moved to S3.6. Its reader is the coarse Node, and NODES §5 stores no
   field before its reader.
+
+## 15. S3.3 as implemented (D305)
+
+- **Model:**
+  - `Road` and `RoadOverrides` in `src/model/network/network.hpp`, held in `Network::roads`;
+  - `Link::roadId`;
+  - `CrossSection` in `src/model/demand/definition.hpp`, kept in `definition.crossSections` under
+    the presence rule. The installed directory is `data/cross-sections/`, which is absent: none
+    ships.
+- **The codec** (`src/project/road_codec.*`):
+  - `network.roads`, Link `roadId` and owned templates, each written only when used. Any of them
+    makes the file schema 53; below 53 each key is `EDIT_UNSUPPORTED_FIELD` at its path;
+  - a bad Road shape is `EDIT_ROAD_INVALID`, and a bad template value is `INVALID_CROSS_SECTION`;
+  - an owned template that does not exist is `ROAD_CROSS_SECTION_UNKNOWN`, checked on commit.
+- **Validation** (`roadIssues`, `src/model/network/roads.*`): ids, `ROAD_GEOMETRY_INVALID`, and
+  `ROAD_LINK_MISMATCH` both ways (a Road's `links` against each Link's `roadId`).
+- **Commands** (`src/commands/road_commands.*`), each one Undo step:
+  - `putRoad`, `deleteRoad` (its Links stay, detached), `putCrossSection` and `deleteCrossSection`;
+  - `applyTemplate`:
+    - Links centred at median/2 + width/2 on each side, the backward one reversed, with
+      `laneOffset` 0;
+    - a re-apply keeps Link and lane ids, through `changeLanes`, and reanchors Connectors;
+    - refusals: `EDIT_ROAD_NO_TEMPLATE`, `ROAD_CROSS_SECTION_UNKNOWN`, `EDIT_ROAD_DIRECTIONS` and
+      `EDIT_REFERENCED_LANE`.
+- **Detaching** (`detail::detachFromRoad`):
+  - `changeGeometry`, `changeLanes`, `resizeLinkLanes`, `reverseLink`, `splitLink`,
+    `translateObjects` and `rotateObjects` detach a generated Link;
+  - `deleteLink` drops it from its Road, and a duplicated Link carries no `roadId`.
+- **Rows:** RD1's Road part and RD5–RD9, in `tests/road_tests.cpp` (ctest `roads`).
+- **Not yet:** the editor (S3.3b). Roads are authored by command only.

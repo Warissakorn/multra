@@ -2,6 +2,7 @@
 #include "right_of_way.hpp"
 #include "travel_time.hpp"
 #include "nodes.hpp"
+#include "roads.hpp"
 #include "../../core/validate.hpp"
 #include <algorithm>
 #include <cmath>
@@ -136,6 +137,7 @@ std::vector<ValidationIssue> validateNetwork(const Network& network) {
     for (auto& issue : rightOfWayStructuralIssues(network)) issues.push_back(std::move(issue));
     for (auto& issue : travelTimeSectionIssues(network)) issues.push_back(std::move(issue)); // M5.4
     for (auto& issue : nodeIssues(network)) issues.push_back(std::move(issue)); // S0 (NODES §2)
+    for (auto& issue : roadIssues(network)) issues.push_back(std::move(issue)); // S3.3 (ROADS §3)
     return issues;
 }
 void assertValidNetwork(const Network& network) {
