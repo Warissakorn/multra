@@ -3,6 +3,40 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — The project is named MULTRA (D284)
+
+The owner chose **MULTRA — Multi-Level Traffic Analysis**, after reviews of the licence and of
+name candidates (Velk, Vialo, Viaflow, SIMTIA, TRIMOSA and others; collisions in D284's search).
+- **Renamed:** `multra-desktop` and `multra-cli`, the application and window names, the CLI's
+  help and messages, the CSV/TSV and Macro tab marker, the map User-Agent (its contact URL is
+  `github.com/Warissakorn/multra`, the repository's name after the owner renames it), both
+  locales, the package workflow and the maintained docs' commands.
+- **Kept:** the repository, the `trafficsim` namespace, internal targets and `TRAFFICSIM_*`
+  options, and the project file's `"format": "TrafficSim"` marker, so every saved file still
+  opens. Dated docs keep the old name.
+- **Not checked:** domains, GitHub names and trademarks.
+- **Found in review (D286):** the new application name moved Qt's per-user folders, so recovery
+  files and map tiles written as TrafficSim would be lost after the upgrade. The first start now
+  moves them, never overwriting a folder already under the new name (row `legacy-storage`).
+
+## 2026-10-20 — Run view: vehicle items reused across frames (D283); pass complete
+
+The last item of the optimization pass. Each frame deleted and rebuilt every vehicle item.
+- **How:** run vehicles are kept by id and moved; a body is rebuilt only when the type or zoom
+  changes, and the items of vehicles gone are removed.
+- **Measured:** callgrind over 1,500 Steps 15,517 → 14,716 M Ir (−5.2 %); the wall clock moved
+  −2.5 %, inside its spread.
+- **Rows (run-presentation):** an item survives while its vehicle runs; none outlives its
+  vehicle; a followed outline moves; a reused frame equals a rebuilt one after a zoom. Four of
+  five mutants caught; a fill change has no forcing case in the fixture (one display type).
+- **The pass, Linux:** a Node adds +14–20 % (was +26–39 %); M2.6 run view 24,609 → 15,355 ms per
+  6,000 Steps (−38 %); a session's mandatory reads 32.6 → 22.4 KB.
+- **CI fix (PR #178):** the sanitizer's use-after-free was a range-for over `classes[0]` of a
+  temporary in MA6's test (now named first); MSVC needed `<nlohmann/json.hpp>` in `node_output.cpp`.
+  Windows then failed D281's photo row: its pictures are compared with only pixels more than 2
+  levels apart counted (blend rounding), and a failure prints its numbers. Its numbers then showed
+  a one-pixel band at the photo's border (≤60 levels on ≈1.2k px), so that row compares the interior.
+
 ## 2026-10-20 — Run view: the status line no longer relays out the window (D282)
 
 The fourth item of the optimization pass. The word-wrapped `editorRunInfo` label sat in the central

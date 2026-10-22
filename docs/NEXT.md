@@ -11,8 +11,11 @@ Rewrite this file each session ([AGENTS](../AGENTS.md#session-end)); owner items
 What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and the
 [decision record](decisions/RECORD.md); the 2026-10-19 state list is
 [archived](archive/NEXT-state-2026-10-20.md). Open state only:
-- **M11 (Meso):** the contract is answered (D291, D292: 1a–7a) and M11.2 is in (D293: the Meso graph,
-  `jamDensity`, `mesoSettings` at schema 52; [MESO_NETWORK](reference/MESO_NETWORK.md) §14).
+- **M11 (Meso):** the contract is answered (D291, D292: 1a–7a). M11.2 is in (D293: the Meso graph,
+  `jamDensity`, `mesoSettings` at schema 52), and so is M11.3a (D295: authored routes, static
+  decisions and OD routes as Meso paths, turn shares and demand per class;
+  [MESO_NETWORK](reference/MESO_NETWORK.md) §15). Placed decisions and routeless inputs are refused
+  (`MESO_ROUTELESS_UNSUPPORTED`) until M11.3b.
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md)),
   and so is MA15, the textbook benchmark: Sheffi Table 5.4 (D294). Its derived capacities and the
   gate wait on the owner (OWNER_SITTING B21). §19 (b) named runs and (c) a procedure sequence are
@@ -41,20 +44,27 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — M11.3a (Meso paths and demand)
+## Next session — M11.3b (routeless inputs and placed decisions as Meso paths)
 
-- **M11.3a:** Micro's routes and routing-decision weights become Meso paths (D292 5a).
-  - Map each route's Links and Connectors to `MesoGraph` links and turns. The pieces inside a Node
-    collapse to the Node's turn; a Connector outside one is a simple node's turn.
-  - Turn shares at each node per class, from the routes' weights and their intervals.
-  - The study period's demand per class in veh/h (constant, or by the matrix's intervals).
-  - Rows ME12 and later in MESO_NETWORK §13: a route that cannot be mapped is refused, with its
-    path. Write the rows first.
-  - Code: `src/project/meso_input.*` beside `mesoNetwork`; the route compile is in
-    `src/project/demand_paths.*` and `src/model/network/routing.*`.
-- **Before M11.3 (the engine):** check §4's formulas and step limit against Yperman's thesis (try
-  Lirias, KU Leuven), and §5 against Tampère et al. (2011)'s requirements. Neither is in the
-  owner's book repositories; ask for a PDF if the hosts are refused.
+- **M11.3b:** a routeless input (`linkId`) and a placed routing decision become Meso paths, as
+  Micro walks them.
+  - **Reuse the walk:** use `RoutelessWalks` (`src/project/demand_paths.hpp`), whose
+    `walk(linkId, type, slice)` gives `WeightedChain{laneChain, lane, share, families}` per time
+    slice (`points()`/`times()`).
+  - **Map each lane chain back to objects:** a lane id → its Link (`Link::lanes`), and a connector
+    path id → its Connector (`connectorPathId(c, k)`, `network.hpp:98`). Collapse repeats, then
+    call `mesoPath`.
+  - **Path flow:** the input's volume × lane split (`inputLanePolicy`, its `laneShares`; with
+    `byDestination` the share is already of the whole input) × the chain's share, per slice.
+  - **Rows ME17 onwards, written first in MESO_NETWORK §13:**
+    - a free walk splitting by lanes;
+    - a placed decision's destinations by weight and interval;
+    - the M2.6 template giving no `MESO_ROUTELESS_UNSUPPORTED` and conserving each input's volume.
+    Then remove the refusal from `mesoDemand` (`src/project/meso_input.cpp`).
+- **Then M11.3 (the engine):** first check §4's formulas and step limit against Yperman's thesis (try
+  Lirias, KU Leuven), and §5 against Tampère et al. (2011). Neither is in the owner's book
+  repositories, so ask for a PDF if the hosts are refused. The engine reads `mesoTurnShares` and
+  `mesoEntryFlows`. Shares are read at the entry time, with no travel-time shift (§6).
 - **Other open items,** if the owner prefers one before Meso:
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;

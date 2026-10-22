@@ -1,8 +1,8 @@
 # Meso network and link-transmission loading (M11)
 
 Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
-answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options, and M11.2 is
-implemented (D293, §14). It fixes:
+answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options. M11.2 is
+implemented (D293, §14), and so is M11.3a (D295, §15). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -141,6 +141,17 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   Micro's routes and routing-decision weights, which already compile, including OD → routes
   (D155). Meso and Micro then load the same paths, which is what M12's comparison needs. Each
   route's Links and Connectors map to Meso links and turns in M11.3a.
+- **As built in M11.3a (D295):**
+  - **Sources:** authored routes, static routing decisions (`withRoutingDecisions`, including
+    interval and type weights) and OD matrices (`withOdDemand`).
+  - **Classes:** one per composition (`composition:<id>`) or lone vehicle type (`type:<id>`).
+  - **Placed decisions and routeless inputs** walk lanes, not objects. They are refused
+    (`MESO_ROUTELESS_UNSUPPORTED`) until M11.3b.
+  - **Turn shares are read at a time t** from the path flows entering at t. They are not shifted by
+    the travel time to the node, whereas Micro's decision applies as a vehicle passes it. This
+    matters only when a share changes during a run; the engine (M11.3) reads them this way.
+  - **The demand covers the whole run.** Choosing a study period (which matrices enter, and the
+    window) belongs to `--meso PERIOD` in M11.4.
 - **M11.5** later replaces the fixed paths with M9's loop.
 
 ## 7. Outputs
@@ -237,7 +248,8 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | Slice | Content | Rows |
 |---|---|---|
 | M11.2 | `compileMesoNetwork`, `jamDensity`, settings, refusals. **Implemented (D293)** | ME1, ME2 |
-| M11.3a | Micro routes and routing-decision weights → Meso paths and turn shares; the period's demand per class (5a) | written with M11.3a |
+| M11.3a | Authored routes (static routes, static routing decisions, OD-expanded routes) → Meso paths and turn shares; demand per class (5a). **Implemented (D295)** | ME12–ME16 |
+| M11.3b | Routeless inputs and placed routing decisions (the lane-level walk) → Meso paths; until then `MESO_ROUTELESS_UNSUPPORTED` | written with M11.3b |
 | M11.3 | `src/meso/` LTM links and nodes, signals, spill-back, boundary interface declared | ME3–ME9 |
 | M11.4 | Outputs, CLI `--meso`, editor surface | ME10, ME11 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
@@ -260,6 +272,11 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME9 | Determinism | The same input gives the same bytes; the order of links in the file does not change a number |
 | ME10 | Outputs | Slice rows sum to the totals; the marker line first; spill-back flagged in the slice it happened |
 | ME11 | Editor (choice 6a) | Run Meso on its own worker with Cancel; the Meso links table with the marker; stale by revision |
+| ME12 | Route mapping (M11.3a) | A route over Links and an outside Connector gives its Link pieces in order and the simple node's turn; through a Node, the Node's membership turn and no interior link; a Link split at a station, its through turn. Every path's turn k joins its links k and k + 1 |
+| ME13 | Refusals (M11.3a) | A route whose Connector does not join its Links gives `MESO_PATH_UNMAPPED` at `definition.routes[j]`, and the other routes still map; a routeless input gives `MESO_ROUTELESS_UNSUPPORTED` at `definition.inputs[i]`; a class without PCU gives `MODE_PCU_MISSING` at its input, or at `odMatrices[k]` for a matrix's |
+| ME14 | Turn shares (M11.3a) | A static decision with two routes 3:1, then 1:1 in its second interval, gives turn shares 0.75/0.25, then 0.5/0.5 at the diverge; two compositions keep their own shares |
+| ME15 | Demand per class (M11.3a) | A class's entry veh/h at each time equals its inputs' (by `inputPeriods`); an OD matrix gives a `composition:` class at trips ÷ hours by connector share; PCU from `modePcu` |
+| ME16 | Determinism (M11.3a) | The same demand twice; reversed Links, Connectors and inputs give the same demand |
 
 ## 14. M11.2 as implemented (D293)
 
@@ -293,3 +310,27 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
   Two of them survived a first version of the rows. Lane Connectors not merged needed a fixture
   with two lane Connectors. A refused Node treated as valid needed the Node over the junction
   rather than in empty space.
+
+## 15. M11.3a as implemented (D295)
+
+- **The values** (`src/meso/demand.hpp`, imports nothing):
+  - `MesoInterval`, `MesoPath` (its route, links, the turns between them, and veh/h intervals) and
+    `MesoClass` (id, PCU, paths);
+  - `mesoPathFlow`, `mesoTurnShares` (per turn, the class's share of its in-link's flow at t) and
+    `mesoEntryFlows` (per link, veh/h entering at its upstream end).
+- **The mapping** (`mesoPath`, `src/model/demand/meso_paths.*`):
+  - Each Link of the route is driven over the range its Connectors give, and its Meso links in that
+    range are taken in order, so a Node's interior drops out.
+  - The turn joining consecutive links comes from the graph, which keeps one per (in, out) pair.
+- **The demand** (`mesoDemand`, `src/project/meso_input.*`):
+  - It expands the document as the Micro compile does (OD, then decisions).
+  - Inputs on one route and class share a path. Classes and paths are ordered by id.
+- **Rows:** ME12–ME16 in `tests/meso_demand_tests.cpp` (ctest `mesodemand`).
+  - ME12 runs the four-leg with its suggested Node (12 routes, one Node turn each), the same project
+    without it, and the T-junction's through turns.
+- **Mutations caught:**
+  - an inclusive interval end;
+  - classes merged by vehicle type;
+  - the routeless refusal removed;
+  - the Connector join check removed;
+  - shares not normalised.

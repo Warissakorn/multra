@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.3a: Micro's routes as Meso paths and demand (D295)
+
+The owner asked for M11.3a after MA15.
+- **`src/meso/demand.*`:** paths, classes, turn shares and entry flows, as plain values.
+- **`mesoPath`:** a route's Links and Connectors become Meso links and turns. Pieces inside a Node
+  collapse to the Node's turn.
+- **`mesoDemand`:** expands the document as the Micro compile does (OD matrices, then static
+  decisions with their interval and type weights). It keys classes by composition or lone vehicle
+  type, with PCU from `modePcu`.
+- **Carved out as M11.3b:** placed decisions and routeless inputs walk lanes, not objects, so they
+  are refused with `MESO_ROUTELESS_UNSUPPORTED` until then. The M2.6 template uses them.
+- **Rows:** ME12–ME16 in `mesodemand`. Five mutations are caught. A turn preference by `via` was
+  removed as dead code, since the graph keeps one turn per (in, out) pair.
+
 ## 2026-10-22 — MA15: Sheffi's Table 5.4 as the Macro benchmark (D294)
 
 The owner supplied Markdown copies of four books, among them Sheffi (1985), which was D272's first
@@ -121,40 +135,6 @@ The owner chose the reviewed recommendation over MIT.
   nlohmann/json's copyright files. Windows adds every vcpkg port's `copyright` and fails if none
   are found; a missing libthai licence folder now warns instead of passing silently.
 - **Package run:** green on Linux and Windows on 2026-10-21 (see the entry above).
-
-## 2026-10-20 — The project is named MULTRA (D284)
-
-The owner chose **MULTRA — Multi-Level Traffic Analysis**, after reviews of the licence and of
-name candidates (Velk, Vialo, Viaflow, SIMTIA, TRIMOSA and others; collisions in D284's search).
-- **Renamed:** `multra-desktop` and `multra-cli`, the application and window names, the CLI's
-  help and messages, the CSV/TSV and Macro tab marker, the map User-Agent (its contact URL is
-  `github.com/Warissakorn/multra`, the repository's name after the owner renames it), both
-  locales, the package workflow and the maintained docs' commands.
-- **Kept:** the repository, the `trafficsim` namespace, internal targets and `TRAFFICSIM_*`
-  options, and the project file's `"format": "TrafficSim"` marker, so every saved file still
-  opens. Dated docs keep the old name.
-- **Not checked:** domains, GitHub names and trademarks.
-- **Found in review (D286):** the new application name moved Qt's per-user folders, so recovery
-  files and map tiles written as TrafficSim would be lost after the upgrade. The first start now
-  moves them, never overwriting a folder already under the new name (row `legacy-storage`).
-
-## 2026-10-20 — Run view: vehicle items reused across frames (D283); pass complete
-
-The last item of the optimization pass. Each frame deleted and rebuilt every vehicle item.
-- **How:** run vehicles are kept by id and moved; a body is rebuilt only when the type or zoom
-  changes, and the items of vehicles gone are removed.
-- **Measured:** callgrind over 1,500 Steps 15,517 → 14,716 M Ir (−5.2 %); the wall clock moved
-  −2.5 %, inside its spread.
-- **Rows (run-presentation):** an item survives while its vehicle runs; none outlives its
-  vehicle; a followed outline moves; a reused frame equals a rebuilt one after a zoom. Four of
-  five mutants caught; a fill change has no forcing case in the fixture (one display type).
-- **The pass, Linux:** a Node adds +14–20 % (was +26–39 %); M2.6 run view 24,609 → 15,355 ms per
-  6,000 Steps (−38 %); a session's mandatory reads 32.6 → 22.4 KB.
-- **CI fix (PR #178):** the sanitizer's use-after-free was a range-for over `classes[0]` of a
-  temporary in MA6's test (now named first); MSVC needed `<nlohmann/json.hpp>` in `node_output.cpp`.
-  Windows then failed D281's photo row: its pictures are compared with only pixels more than 2
-  levels apart counted (blend rounding), and a failure prints its numbers. Its numbers then showed
-  a one-pixel band at the photo's border (≤60 levels on ≈1.2k px), so that row compares the interior.
 
 ## Older entries
 

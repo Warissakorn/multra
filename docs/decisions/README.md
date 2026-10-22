@@ -330,6 +330,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D292](RECORD.md#d292) — the owner answered the Meso choices 1a–7a, as recommended.
 [D293](RECORD.md#d293) — M11.2: the Meso graph from the drawing and its Nodes; `jamDensity` and `mesoSettings` at schema 52; rows ME1–ME2.
 [D294](RECORD.md#d294) — MA15: Sheffi (1985) Table 5.4 is the Macro benchmark; capacities (2, 4, 3) derived, owner to confirm; the M10 gate stays open.
+[D295](RECORD.md#d295) — M11.3a: authored routes, static decisions and OD routes as Meso paths, turn shares and demand per class; rows ME12–ME16; placed decisions and routeless inputs carved out as M11.3b.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.
