@@ -188,8 +188,11 @@ M5.8b (below, D149).
   base's order. A name found in only one batch, or more than once in either, is not compared. It
   is listed as base-only, alternative-only or ambiguous, in JSON `unmatched` and on a
   `# Unmatched` CSV line; nothing is dropped silently. The network mean delay is one more row.
+  - **Nodes (S0.8a, D289):** Nodes match by name, then each matched Node's in-legs and turns by
+    name within it. Their unmatched names are listed per Node, as `"Node / name"` on the CSV line.
 - **Quantity.** Mean delay for movements, sections and the network; mean queue length for
-  approaches.
+  approaches. For a Node: delay of the Node, each in-leg and each turn, and the in-leg's mean
+  queue. A Node's and a leg's delay is each seed's vehicle-weighted mean (NODES §13).
 - **Statistic.** Each row uses the two batches' estimates over seeds (`n`, mean, SD):
   - difference `d = mean_alternative − mean_base`;
   - standard error `SE = √(s_b²/n_b + s_a²/n_a)`;
@@ -216,6 +219,9 @@ M5.8b (below, D149).
     halfWidth95, degreesOfFreedom}`;
   - `network`, and `unmatched` with `movements`, `queues` and (with sections) `sections`, each
     `{baseOnly, alternativeOnly, ambiguous}`;
+  - only when either side has a Node: `nodes` rows `{node, delay, legs: [{leg, delay, queueMean}],
+    turns: [{turn, …}], unmatched: {legs, turns}}`, each figure in the row shape above, and
+    `unmatched.nodes`;
   - `engineVersion`, `buildCommit`, `compiler`.
 - **CSV (`--csv`):**
   - the marker line first;
@@ -226,6 +232,9 @@ M5.8b (below, D149).
   - then the blocks `movement`, `section` (only when either side has a section), `approach` and
     `network`, each with the columns `base_n, base_mean, alternative_n, alternative_mean,
     difference, ci95, df`, in units of s or m.
+  - only when either side has a Node, two more blocks after `network`. The first is delay,
+    `level,node,name,…_meanDelay_s…`, with rows at level `node`, `leg` and `turn`. The second is
+    the legs' mean queue, `…_meanQueue_m…`. Both use the same seven figure columns.
 - **stderr.** As for a batch (§3), each side's overloaded seeds are also named on stderr.
 
 | Row | Check | Test |
@@ -237,6 +246,9 @@ M5.8b (below, D149).
 | CMP5 | `four-leg-signalised` against itself (seeds 42–43): every `d` is exactly 0 and every half-width positive, approaches included | `compare` |
 | CMP6 | `four-leg-signalised` against a copy with one input's volume raised by half: every movement, approach and network `d` equals the difference of the two batches' own means, bit for bit, and at least one is not 0 | `compare` |
 | CMP7 | `--compare` without `--seeds` is refused with its own message; the CSV starts with the marker line; a second, independent run of the same project formats to the same bytes | `compare`, `cli-compare`, `cli-compare-conflict` |
+| CMP8 | Node, leg and turn rows match by name at each level: each `d` is `welch` of the two estimates; a base-only Node, a duplicate leg and an alternative-only turn are listed (`"N / dup"` on the CSV line) and not compared; swapping negates every Node `d` | `compare` |
+| CMP9 | The T-junction with a Node (seeds 42–43): against itself every Node, leg and turn `d` is exactly 0; against a copy with one input raised by half every `d` equals the difference of the batches' own means, bit for bit, and one is not 0; the two Node blocks follow `network` | `compare` |
+| CMP10 | Without a Node (four-leg): no `nodes` key, no `unmatched.nodes`, no Node block | `compare` |
 
 ### Editor comparison (M5.8b, D149)
 
@@ -260,7 +272,8 @@ the **base** and a chosen file as the **alternative** — the roles of `--projec
   from that file, and `unsaved project` when it has none; the alternative by its file name. The
   CSV therefore never names a file whose bytes did not produce that side.
 - **Table.** Movements, sections and approaches: name, base n and mean, alternative n and mean,
-  difference, ±95 % half-width (s for delay, m for queue). The df is in Copy and Export. The note
+  difference, ±95 % half-width (s for delay, m for queue). Node, leg and turn rows are in Results →
+  Nodes (NODES §18, D290). The df is in Copy and Export. The note
   carries the marker and the measure (independent runs, Welch's 95 % interval, an interval that
   spans 0 is seed noise), both names, the seeds, the evaluation period and cool-down, each side's
   overloaded seeds and unfinished movements, the unmatched names, and the network mean delay

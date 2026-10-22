@@ -105,6 +105,14 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 
 ## Working notes
 
+- **Stale precompiled headers (2026-10-22, Linux, Ninja + GCC).** After `AuthoringDefinition` gained
+  a member (D293), an incremental build left `multra_shell`'s objects and its `cmake_pch.hxx.gch`
+  from the day before. Every Qt UI test then segfaulted in `drawZones`, with a document pointer
+  read at the old layout. Deleting the `cmake_pch.hxx.gch` directories, then `cmake --preset
+  desktop` and a rebuild, fixed it; the crashed runs also left recovery locks in `~/.qttest`
+  (`EDIT_RECOVERY_LOCK` in `m1-workflow`). After a model struct changes, if UI tests crash, do this
+  before suspecting the code. The build rule was not investigated, and CI's clean builds are not
+  affected.
 - **Seeds.** Use at least 40 seeds (42–81) for any before/after comparison of one movement (D88).
   A right-turn movement's per-seed change has an SD of about 7 s.
 - **The `b472e05` "before" recipe:**

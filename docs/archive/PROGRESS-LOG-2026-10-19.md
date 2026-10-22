@@ -3,6 +3,87 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-20 — Run view: the static network painted from the background cache (D281)
+
+The third item of the optimization pass. Each Step repainted every road: `QGraphicsPathItem::paint`
+was 32 % of the run-view profile.
+- **How:** while a run frame is shown, the scene items under the lowest level's vehicles (surfaces,
+  markings, Connectors, zones, Nodes, conflict areas, the background image) are hidden and painted
+  by `drawBackground`, which QGraphicsView caches. Higher levels, counters and overlays stay live;
+  every `redraw()` rebuilds and re-bakes, so a selection or edit is never stale.
+- **Measured:** M2.6, 6,000 Steps, Linux RelWithDebInfo offscreen: 24,609 → 17,642 ms (−28 %).
+- **Rows (run-presentation):** cached and live pictures match (within 32 levels on under 1 % of
+  pixels, the pixmap's rounding); a selection mid-run repaints; a half-transparent background image
+  keeps its opacity; leaving the run shows every item. Five mutants caught.
+- **Owner check:** Windows paint (OWNER_SITTING E22).
+
+## 2026-10-20 — Docs and AI context: NEXT cut to its open state (D280)
+
+The second item of the optimization pass. A session's mandatory reads were ≈8–11k tokens, and
+NEXT was 88 % shipped history that PROGRESS and RECORD already hold.
+- **NEXT:** 13,877 → about 2.9 KB. The 2026-10-19 state list moved whole to
+  [archive/NEXT-state-2026-10-20.md](NEXT-state-2026-10-20.md); the new state lists only
+  what is open, and adds S2 and S0.6, which it lacked.
+- **AGENTS:** RECORD is appended to, never read whole (≈70k tokens); the file-size rule now says
+  what the check enforces (fails above 500); `src/macro/` is in the layout. NEXT and PROGRESS point
+  to AGENTS instead of restating its rules.
+- **Stale lines fixed:** ARCHITECTURE's Macro row, ROADMAP's S0 line (S0.6; S0.4 moved to S3),
+  read-by-task rows for Macro and study periods, a `src/macro/` README, and the decision index
+  (a Macro topic row, D275–D279 summaries, five answered choices no longer "awaiting").
+
+## 2026-10-20 — Node evaluation cost: sections by route, tracks in place (D279)
+
+The owner ran an optimization pass and approved the recommended order; this is its first item.
+- **Measured** (Linux, GCC 13.3 RelWithDebInfo, callgrind, seed 42): four-leg with a Node 1,303.6 →
+  1,128.8 M Ir (−13.4 %), T-junction with a Node 256.2 → 233.2 M (−9.0 %). A Node now adds +20 %
+  and +14 % (was +39 % and +26 %, D264). `SectionAccumulator::observe` 325.8 → 150.9 M.
+- **How:** `observe` visits only the sections with a line on the vehicle's route, and advances
+  known tracks in place instead of moving every Track into a new vector each tick.
+- **Unchanged:** every output byte-identical (four shipped projects and two Node fixtures, run and
+  seeds 42–44), the pin and the TS rows.
+- **Tests:** two section rows, each killing a mutant that survived the suite (a section with only
+  its end line on the new route; a track kept after its vehicle left).
+
+## 2026-10-20 — S0.6: Node rows in Results (D278); MA15 paused
+
+MA15 needs Sheffi (1985) from web.mit.edu, which the proxy still refused after the owner allowed
+it, so the owner chose other work ([NODES](../reference/NODES.md) §15).
+- **Results → Nodes:**
+  - **a run:** the Node, leg and turn rows as the CSV block gives them (vehicles, delay,
+    unfinished, queue on legs, travel time on turns, LOS by the Node's control type);
+  - **a batch:** n, mean, CI and LOS on the mean;
+  - **a comparison:** no rows yet, and it says so.
+
+  The marker comes first.
+- **Rows:** N19–N21 (`node-results-ui`). The workspace test and the UI audit list the new tab.
+- **Mutations:** seven caught. The batch LOS on mean + CI first survived; N20 now checks every
+  row's letter.
+- **Unchanged:** every output (editor-only), the pin and the TS rows. Linux offscreen only.
+
+## 2026-10-19 — S2.4: Run Macro in stages, Macro links, link types (D277)
+
+The owner chose §19 (a) and wants more capability later
+([MACRO_NETWORK](../reference/MACRO_NETWORK.md) §20).
+- **Engine:** a convergence record per iteration (gap and step), and an observer that can cancel
+  between iterations.
+- **Run Macro…:**
+  - asks for the period and runs on its own worker;
+  - shows the six stages with their status and the live gap;
+  - Cancel stops between iterations;
+  - it is not an Undo step.
+- **Results → Macro links:** a row per arc with the marker. An edit keeps the rows and marks them
+  stale until Undo returns to the result's revision. Export and Copy write the Macro CSV.
+- **Run settings:** the target gap and the iteration cap; the defaults write nothing.
+- **Network → Link types:** Add, Edit and Delete (a type in use cannot go). The Link page gets a
+  Macro type combo.
+- **Rows:** MA14 (`macro-ui`), MA18 and the stage and command rows. The workspace and object-group
+  tests list the new page.
+- **Mutations:** nine caught.
+- **Found:** a multi-line note made the Objects dock too tall for the wide-canvas row. It is now one
+  paragraph.
+- **Unchanged:** Micro outputs byte-identical (only `buildCommit` differs), the pin and the TS rows.
+  Linux offscreen only.
+
 ## 2026-10-19 — How Visum and Aimsun organise a Macro run (D276, docs only)
 
 The owner asked whether a Macro run has a working procedure, then for a study of other programs
@@ -72,6 +153,30 @@ yet.
   share. `MODE_PCU_MISSING` and `MACRO_NO_PATH` are refused.
 - **Rows:** MA1–MA6 (ctest `macronetwork`); nine mutations caught. Micro outputs, the pin and the
   TS rows are unchanged. Linux only.
+
+## 2026-10-19 — The S2 (M10.1) contract: Macro network and assignment (D271, D272, docs only)
+
+The owner chose S2. [MACRO_NETWORK](../reference/MACRO_NETWORK.md) fixes how the drawn network
+compiles into a Macro graph and how one study period is assigned. Nothing is implemented.
+- **Graph:** Links split at Connector stations become capacitated links. Connectors and zone
+  connectors become uncapacitated arcs. Nodes are not read yet.
+- **Values:** `Link::linkType` and link types `{capacityPerLane, freeSpeed, vdfId, source}` at
+  schema 50, none shipped; BPR 0.15/4 as data (D158).
+- **Demand:** pcu/h by connector share for one period; `MODE_PCU_MISSING` is refused.
+- **Engine:** a pure `src/macro/` Frank–Wolfe with a named gap formula; non-convergence is
+  flagged, never hidden.
+- **Rows:** MA1–MA15, planned.
+- **Source checks** changed three recommendations:
+  - the BPR pair assumes practical capacity, so a type's source must say which capacity it gives;
+  - Boyce et al. (2004) argue for a 0.01 % gap;
+  - the Sioux Falls data are for academic research only, so the benchmark stays local until the
+    licence is confirmed.
+- **The owner answered the same day (D272):**
+  - one class per mode, with mode bans on link types;
+  - a textbook benchmark instead of Sioux Falls;
+  - a 0.01 % gap;
+  - S0.4 moves to S3;
+  - the other choices as recommended.
 
 ## 2026-10-19 — S1.2: modes and PCU (D269, D270)
 

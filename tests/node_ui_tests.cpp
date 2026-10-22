@@ -1,5 +1,9 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/json.hpp"
+#include "../src/editor/canvas_style.hpp"
+#include "../src/model/network/node_membership.hpp"
+#include <QGraphicsPathItem>
+#include <QPen>
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
@@ -13,6 +17,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <QTimer>
+#include <algorithm>
 #include <iostream>
 using namespace multra;
 // S0.1 (D261, NODES §6, row N5): the Node tool (N) draws a polygon by Ctrl+right-clicks and Enter in
@@ -35,6 +40,27 @@ int tagged(EditorWindow& w, const char* tag) {
     int n = 0;
     for (auto* i : w.canvas()->scene()->items()) n += i->data(0).toString() == tag;
     return n;
+}
+// S0.7 (row N22): the drawn legs as (Link id, "in"/"out"), sorted, and the Node outline's pen colour.
+std::vector<std::pair<std::string, std::string>> drawnLegs(EditorWindow& w) {
+    std::vector<std::pair<std::string, std::string>> legs;
+    for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node-leg")
+        legs.emplace_back(i->data(1).toString().toStdString(), i->data(2).toString().toStdString());
+    std::sort(legs.begin(), legs.end());
+    return legs;
+}
+std::vector<std::pair<std::string, std::string>> membershipLegs(const Network& n, const Node& node) {
+    const auto m = nodeMembership(n, node);
+    std::vector<std::pair<std::string, std::string>> legs;
+    for (const auto& l : m.inLegs) legs.emplace_back(l.linkId, "in");
+    for (const auto& l : m.outLegs) legs.emplace_back(l.linkId, "out");
+    std::sort(legs.begin(), legs.end());
+    return legs;
+}
+QColor outline(EditorWindow& w) {
+    for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node")
+        if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().color();
+    require(false, "No node outline"); return {};
 }
 }
 int main(int argc, char** argv) {
@@ -79,6 +105,10 @@ int main(int argc, char** argv) {
                 "The Nodes tab does not show the membership");
         require(table->item(0, 6)->text().contains("gives no rows"),
                 "The Nodes tab does not show the refusal");
+        // N22: the selected row lights the outline; a refused Node has no legs to draw (NODES §3).
+        require(c->highlightedNode() == nodes()[0].id, "Selecting the row did not highlight the node");
+        require(outline(w) == canvasStyle::selection(), "The selected node's outline is not lit");
+        require(drawnLegs(w).empty(), "A refused node drew legs");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the node");
         trigger(w, "editorRedo"); require(nodes().size() == 1, "Redo lost the node");
 
@@ -99,6 +129,7 @@ int main(int argc, char** argv) {
         // S0.5: Suggest nodes adds the junction's generated Node in one step, then nothing more.
         table->selectRow(0); QApplication::processEvents();
         trigger(w, "editorDeleteNode"); require(nodes().empty(), "The drawn node stayed");
+        require(c->highlightedNode().empty() && tagged(w, "node") == 0, "A deleted node stayed highlighted");
         const auto suggestFrom = w.history().revision();
         trigger(w, "editorSuggestNodes");
         require(nodes().size() == 1 && nodes()[0].generated && w.history().revision() == suggestFrom + 1,
@@ -106,6 +137,17 @@ int main(int argc, char** argv) {
         require(table->item(0, 5)->text() == "12", "The suggested node does not hold the twelve turns");
         trigger(w, "editorSuggestNodes");
         require(nodes().size() == 1 && w.history().revision() == suggestFrom + 1, "A second suggestion changed the document");
+        // N22: selecting the suggested Node lights its four in-legs and four out-legs (N6), as membership names them.
+        table->selectRow(0); QApplication::processEvents();
+        require(table->currentRow() == 0 && c->highlightedNode() == nodes()[0].id, "Selecting the row did not highlight the node");
+        const auto expected = membershipLegs(w.history().document().network, nodes()[0]);
+        require(expected.size() == 8, "The four-leg node does not have eight legs");
+        require(drawnLegs(w) == expected, "The drawn legs are not the node's in- and out-legs");
+        require(outline(w) == canvasStyle::selection(), "The selected node's outline is not lit");
+        table->clearSelection(); QApplication::processEvents();
+        require(table->selectedItems().isEmpty(), "The row stayed selected");
+        require(c->highlightedNode().empty() && drawnLegs(w).empty() && outline(w) == canvasStyle::ink(),
+                "Clearing the row kept the highlight");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the suggested node");
         std::cout << "Node UI tests passed\n";
         return 0;

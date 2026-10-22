@@ -134,6 +134,7 @@ src/editor/     canvas: tools, gestures, run view
 src/shell/      window, inspector, tables, results, layout, palette, i18n
 src/eval/       event stream → measurements
 src/macro/      static assignment: Macro graph and Frank–Wolfe — imports nothing (M10.1)
+src/meso/       Meso graph; the link-transmission engine next — imports nothing (M11)
 src/runner/     multi-seed batches and scenario comparison (M5)
 src/lab/        behaviour lab: tuning ring, live run and retune (D165)
 src/geo/        Qt-free PROJ transforms and XYZ tile math for the OSM background (desktop only)

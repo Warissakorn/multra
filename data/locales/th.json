@@ -986,7 +986,7 @@
   "editorResultsTabNodes": "Node",
   "editorNodeResultsNote": "# Nodes from simulated section delay, not HCM control delay; not validated (M6). (ความล่าช้าของ Node จากการจำลอง ไม่ใช่ HCM control delay ยังไม่ผ่านการตรวจสอบ)",
   "editorNodeResultsNone": "ยังไม่มี Node: วาดด้วยเครื่องมือ Node (N) หรือใช้ Suggest nodes ในแท็บ Nodes",
-  "editorNodeResultsNotCompared": "ยังไม่เปรียบเทียบแถว Node การเปรียบเทียบครอบคลุม movement, section และ queue",
+  "editorNodeResultsCompared": "ทางเลือกลบฐาน จาก %1 seeds ต่อฝั่ง ± คือครึ่งช่วงความเชื่อมั่น 95 % แบบ Welch และผลต่างไม่มีตัวอักษร LOS (Alternative minus base)",
   "editorNodeResultsRunning": "กำลังรัน seeds แถว Node จะแสดงเมื่อรันครบ",
   "editorNodeResultsBatch": "ค่าเฉลี่ยจาก %1 seeds ตัวอักษร LOS ใช้ความล่าช้าเฉลี่ย",
   "editorNodeLevel": "ระดับ",

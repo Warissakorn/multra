@@ -333,6 +333,7 @@ public:
 private:
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
     QTableWidget* nodeResultTable_{}; QLabel* nodeResultNote_{}; void refreshResultNodes(); // S0.6 (NODES §15): Results -> Nodes
+    void refreshComparedNodes(const QString& marker); // S0.8b (NODES §18): a comparison's Node rows
     void refreshLots();
     QLineEdit* runSeed_{};
     QComboBox* runSpeed_{};

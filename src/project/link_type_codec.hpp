@@ -12,7 +12,8 @@ void rejectLinkTypesBefore50(const Json& file);
 // Reads each `network.links[i].linkType` (a string, else INVALID_LINK_TYPE at its path) after
 // parseNetwork has checked the Link's other keys.
 void readLinkTypeIds(const Json& network, Network&);
-// Exact keys {id, name, capacityPerLane, freeSpeed, vdfId, source} plus an optional `modes`;
+// Exact keys {id, name, capacityPerLane, freeSpeed, vdfId, source} plus an optional `modes` and an
+// optional `jamDensity {value, source}` (M11.2);
 // a malformed entry is EDIT_CATALOG_READ. Values are linkTypeIssues'.
 LinkType parseLinkType(const Json&);
 Json linkTypeJson(const LinkType&);
@@ -24,7 +25,8 @@ struct ResolvedLinkType { LinkType type; std::string path; };
 std::vector<ResolvedLinkType> resolveLinkTypes(const AuthoringDefinition&, const std::filesystem::path& dataDirectory, InputManifest* = nullptr);
 std::vector<Vdf> resolveVdfs(const std::filesystem::path& dataDirectory, InputManifest* = nullptr);
 // INVALID_LINK_TYPE at `<path>.<field>`: blank or repeated id, capacity or speed not finite and > 0,
-// blank vdfId or source, a mode id not in `modeIds` (checked only when modeIds is given).
+// blank vdfId or source, a mode id not in `modeIds` (checked only when modeIds is given), a jam
+// density not above the critical density or with a blank source (M11.2).
 std::vector<ValidationIssue> linkTypeIssues(const std::vector<ResolvedLinkType>&, const std::vector<std::string>* modeIds = nullptr);
 // INVALID_VDF at `catalog/vdf/<id>.<field>`: an unknown form, or a parameter not finite and >= 0.
 std::vector<ValidationIssue> vdfIssues(const std::vector<Vdf>&);

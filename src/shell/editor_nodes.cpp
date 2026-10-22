@@ -71,7 +71,8 @@ void EditorWindow::buildNodes() {
         return true;
     };
     connect(nodeTable_, &QTableWidget::cellDoubleClicked, this, [rename](int, int) { rename(); });
-    connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] {
+        canvas_->setHighlightedNode(selectedNode()); refresh(false); });
 }
 void EditorWindow::translateNodes() {
     nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
@@ -109,6 +110,7 @@ void EditorWindow::refreshNodes() {
         nodeTable_->resizeColumnsToContents();
         nodeRevision_ = history_.revision();
     }
+    canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit
     const bool chosen = !selectedNode().empty();
     for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
 }

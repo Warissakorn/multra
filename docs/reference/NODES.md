@@ -202,6 +202,10 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 | S0.3 | Micro evaluation: automatic turn sections, leg and Node rows, queue, letters, single-run and batch outputs. **Implemented (D264)** | N12–N17 |
 | S0.4 | Coarse values, refine and derive back, lifecycle (with S3, D272) | written with S3 |
 | S0.5 | Suggest nodes. **Implemented (D265)** | N18 |
+| S0.6 | Results → Nodes. **Implemented (D278)** | N19–N21 |
+| S0.7 | The Nodes tab lights the selected Node and its legs (§6). **Implemented (D288)** | N22 |
+| S0.8a | The scenario comparison compares Node, leg and turn rows (model, JSON, CSV). **Implemented (D289)** | CMP8–CMP10 (BATCH §7) |
+| S0.8b | Results → Nodes shows a comparison's Node rows (§18). **Implemented (D290)** | N21 |
 
 ## 9. Acceptance rows (planned)
 
@@ -279,8 +283,8 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Control.** A head inside, or on an in-leg upstream of its entry, makes the Node `signalised`.
 - **Diagnostics.** `nodeMembershipIssues` adds the refusals to `runtimeDiagnostics` as advisories
   at `nodes[i]`, resolved to the Node id; Run and save are never blocked.
-- **Editor.** The Nodes tab adds control, legs (in / out), turns and issues. Selecting a row does not
-  yet highlight its legs (§6).
+- **Editor.** The Nodes tab adds control, legs (in / out), turns and issues. Selecting a row lights
+  the polygon and its legs since S0.7 (§16).
 - **Rows.** N6–N11 are in `tests/node_membership_tests.cpp` (ctest `nodemembership`); `node-ui`
   checks the new columns.
 - **Mutations caught:** the through turn dropped (N7), heads on an in-leg ignored (N6), the lane
@@ -312,8 +316,8 @@ Each row first asserts that its forcing worked (AGENTS).
     Letters use the mean over seeds. A leg's or Node's batch delay estimates each seed's weighted
     mean.
   - Nothing is written without a Node, and the shipped projects' outputs are byte-identical.
-  - The editor's Results tables show Node rows from S0.6 (§15). The batch comparison does not yet;
-    the editor's CSV copy carries the block.
+  - The editor's Results tables show Node rows from S0.6 (§15). The batch comparison compares them
+    from S0.8a (§17); its editor table does not yet.
 - **Finding: the delay window includes start-up from rest.** Vehicles enter the network from rest,
   so a turn whose in-leg Link starts at a source carries the start-up loss. On the T-junction, lone
   major vehicles show about 3.0 s against 3.2 s for the full exercise (seed 42). Choice 1a stands
@@ -365,8 +369,8 @@ Each row first asserts that its forcing worked (AGENTS).
     type, as `writeNodesCsv` gives it.
   - **A batch:** level, name, control type, n, mean delay (s), 95 % CI half-width (s), mean
     vehicles, mean unfinished, mean queue mean and max (legs only), and LOS on the mean delay.
-  - **A comparison:** no rows. The note says Node rows are not compared yet, because `Comparison`
-    holds no Node data.
+  - **A comparison:** from S0.8b (§18), the rows of `Comparison::nodes`. Until then it showed none
+    and said so.
 - **Note:** it starts with the CSV block's marker. Without a Node it says how to draw one; with no
   run, nothing yet; with an unfinished single run, the partial-run prefix.
 - **Unchanged:** every output, since the change is editor-only.
@@ -376,7 +380,7 @@ Each row first asserts that its forcing worked (AGENTS).
 |---|---|---|
 | N19 | The T-junction with Suggest nodes, one finished run | 1 + 5 + 4 rows equal to `runReport()->nodes`; the queue cells only on legs; the LOS as `losCell`; the marker first |
 | N20 | The same, seeds 42–43 | Rows equal to `aggregate(runs).nodes` (n, mean, CI, LOS on the mean); an edit returns the tab to no run |
-| N21 | No Node, or a comparison | The four-leg without a Node shows the no-Node note and no rows; a comparison shows the not-compared note |
+| N21 | No Node, or a comparison (S0.8b, §18) | The four-leg without a Node shows the no-Node note and no rows. A comparison with a busier copy gives 8 rows × 12 columns: each row's two sides, difference and CI as `Comparison::nodes` holds them, with queue cells on legs only. A Node renamed in the alternative gives no rows, and the note names it base-only and the new name alternative-only |
 
 - **As implemented:** `src/shell/editor_results_nodes.cpp` (`refreshResultNodes`), the
   `editorResultsTabNodes` page after Parking lots.
@@ -390,3 +394,83 @@ Each row first asserts that its forcing worked (AGENTS).
   - the batch LOS on mean + CI. It survived a Node-row-only check; N20 now checks every row's
     letter.
 
+## 16. S0.7: the selected Node and its legs on the canvas (D288)
+
+- **The highlight.** Selecting a Nodes row lights that Node; clearing the row, deleting the Node or
+  an Undo that removes it puts it out. A Select click on the canvas clears it, as it clears the
+  conflict table's.
+  - **The outline:** drawn in the selection colour at 2.5 px, still dotted while `generated`.
+  - **The legs:** each Link's span outside the polygon up to its crossing, as `nodeMembership`
+    gives the legs: `[0, station]` for an in-leg, `[station, end]` for an out-leg. The span is
+    clipped to the Link's own surface. In-legs are filled, out-legs hatched with a dashed edge, so
+    the direction reads without arrows. A Link on a hidden level is not drawn.
+  - **A Node with an issue** has no legs (§3), so only its outline is lit.
+- **Unchanged:** every output, since the change is editor-only.
+- **As implemented:**
+  - `EditorCanvas::setHighlightedNode`, and `drawNodeLegs` in `src/editor/canvas_zones.cpp`;
+  - the Nodes tab sets the highlight on selection and on every refresh;
+  - the canvas's `selectionCleared` clears the Nodes table with the others.
+- **Row** (`tests/node_ui_tests.cpp`, ctest `node-ui`):
+
+| Row | Case | Asserts |
+|---|---|---|
+| N22 | The drawn triangle (refused), then the four-leg's suggested Node | The triangle's outline is lit with no legs. The suggested Node draws exactly its 4 in-legs and 4 out-legs, each tagged by Link id and direction as `nodeMembership` names them. Clearing the row returns the ink outline with no legs. A deleted Node is not highlighted |
+
+- **Mutations caught:**
+  - legs never drawn;
+  - in and out swapped;
+  - the highlight kept after delete;
+  - a refused Node drawing legs;
+  - the outline not lit.
+
+## 17. S0.8a: Node rows in the scenario comparison (D289)
+
+- **Matching.** `compareBatches` matches Nodes by name, then each matched Node's in-legs and turns
+  by name within it, by BATCH §7's rule. Unmatched names are listed per level, never dropped.
+- **Figures.** Welch differences (BATCH §7) of the Node's, each leg's and each turn's delay, and of
+  each leg's mean queue. A difference has no LOS letter.
+- **Output.**
+  - JSON: `nodes` and `unmatched.nodes`, only when either side has a Node.
+  - CSV: two blocks after `network`, delay (levels `node`, `leg`, `turn`) and leg queue.
+  - The `# Unmatched` line names Node rows as `node …`, and leg or turn rows as `"Node / name"`.
+  - A comparison without a Node keeps its bytes.
+- **Editor.** Copy and Export carry the blocks, since they use `comparisonCsv`. Results → Nodes
+  shows the rows from S0.8b (§18).
+- **As implemented:** `ComparisonNodeRow` and `ComparisonLegRow` in `src/runner/compare.hpp`.
+  `match` now takes the row builder, and `matchValue` keeps the one-value blocks. The output is in
+  `src/project/comparison_output.cpp`.
+- **Rows:** CMP8–CMP10 in `tests/compare_tests.cpp` (ctest `compare`).
+- **Mutations caught:**
+  - Nodes ignored;
+  - legs' queue compared by delay;
+  - an unmatched leg left off the CSV line;
+  - the blocks written without a Node;
+  - the Node's difference reversed.
+
+## 18. S0.8b: a comparison's Node rows in Results → Nodes (D290)
+
+- **The table:** one row per compared Node, then its legs, then its turns. It has 12 columns:
+  - level and name;
+  - base n and delay, alternative n and delay, difference and ±95 % (s);
+  - base and alternative mean queue, difference and ±95 % (m), on legs only.
+
+  There is no LOS column, because a difference has no letter (BATCH §7).
+- **The note:**
+  - the marker;
+  - "alternative minus base" with the seed count and Welch's half-width;
+  - the unmatched names, in the comparison tab's wording: Node names bare, leg and turn names as
+    `Node / name`.
+
+  While a comparison runs, the note says the rows appear when it finishes. With no Node on either
+  side, it gives the no-Node note.
+- **Unchanged:** every output, since the change is editor-only.
+- **As implemented:**
+  - `refreshComparedNodes` in `src/shell/editor_results_nodes.cpp`;
+  - the locale key `editorNodeResultsCompared`, which replaces `editorNodeResultsNotCompared`.
+- **Row:** N21 (§15).
+- **Mutations caught:**
+  - the not-compared path kept;
+  - base and alternative columns swapped. A comparison with itself let this one survive, so N21
+    uses a busier copy;
+  - queue cells on turns;
+  - unmatched Nodes missing from the note.

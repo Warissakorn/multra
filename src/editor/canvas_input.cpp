@@ -55,7 +55,7 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
         copyDragging_=false;copyOffset_={};return;
     }
     if(tool_!=Tool::select && tool_!=Tool::conflict &&
-       (!selection_.empty() || !highlightedRoute_.empty() || !highlightedConflict_.empty()))clearSelection(false);
+       (!selection_.empty() || !highlightedRoute_.empty() || !highlightedConflict_.empty() || !highlightedNode_.empty()))clearSelection(false);
     if(demandPress(e))return;
     if(headPress(e))return;
     if(conflictPress(e))return;

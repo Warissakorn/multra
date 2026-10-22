@@ -46,8 +46,13 @@ void readLinkTypeIds(const Json& network, Network& n) {
     }
 }
 LinkType parseLinkType(const Json& j) {
-    if (!j.is_object() || j.size() != (j.contains("modes") ? 7u : 6u)) broken();
-    LinkType t{text(j, "id"), text(j, "name"), number(j, "capacityPerLane"), number(j, "freeSpeed"), text(j, "vdfId"), {}, text(j, "source")};
+    if (!j.is_object() || j.size() != 6u + j.contains("modes") + j.contains("jamDensity")) broken();
+    LinkType t{text(j, "id"), text(j, "name"), number(j, "capacityPerLane"), number(j, "freeSpeed"), text(j, "vdfId"), {}, text(j, "source"), {}};
+    if (j.contains("jamDensity")) { // M11.2: {value, source}
+        const auto& k = j.at("jamDensity");
+        if (!k.is_object() || k.size() != 2) broken();
+        t.jamDensity = JamDensity{number(k, "value"), text(k, "source")};
+    }
     if (j.contains("modes")) {
         if (!j.at("modes").is_array()) broken();
         for (const auto& m : j.at("modes")) { if (!m.is_string()) broken(); t.modes.push_back(m.get<std::string>()); }
@@ -57,6 +62,7 @@ LinkType parseLinkType(const Json& j) {
 Json linkTypeJson(const LinkType& t) {
     Json j{{"id", t.id}, {"name", t.name}, {"capacityPerLane", t.capacityPerLane}, {"freeSpeed", t.freeSpeed}, {"vdfId", t.vdfId}, {"source", t.source}};
     if (!t.modes.empty()) j["modes"] = t.modes;
+    if (t.jamDensity) j["jamDensity"] = {{"value", t.jamDensity->value}, {"source", t.jamDensity->source}};
     return j;
 }
 Vdf parseVdf(const Json& j) {
@@ -96,6 +102,11 @@ std::vector<ValidationIssue> linkTypeIssues(const std::vector<ResolvedLinkType>&
         if (!positive(t.freeSpeed)) bad("freeSpeed");
         if (blank(t.vdfId)) bad("vdfId");
         if (blank(t.source)) bad("source");
+        // M11.2: above the critical density capacity / speed (pcu/h over km/h), or the wave speed
+        // capacity / (jam - critical) is not a finite positive number.
+        if (t.jamDensity && !(std::isfinite(t.jamDensity->value) && positive(t.capacityPerLane) && positive(t.freeSpeed) &&
+                              t.jamDensity->value > t.capacityPerLane / (t.freeSpeed * 3.6))) bad("jamDensity.value");
+        if (t.jamDensity && blank(t.jamDensity->source)) bad("jamDensity.source");
         if (modeIds)
             for (std::size_t k = 0; k < t.modes.size(); ++k)
                 if (std::find(modeIds->begin(), modeIds->end(), t.modes[k]) == modeIds->end()) bad("modes[" + std::to_string(k) + "]");

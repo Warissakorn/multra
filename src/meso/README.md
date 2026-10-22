@@ -1,0 +1,3 @@
+Meso level (M11; [contract](../../docs/reference/MESO_NETWORK.md)). Pure and Qt-free: it imports nothing outside this folder, reads no clock and draws no random number.
+
+`graph.*` holds the Meso graph as plain values (D293): links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction), `MesoSettings`, and `mesoStepLimit`. `compileMesoNetwork` in `src/model/demand/meso_compile.*` fills it from the drawn network; `src/project/meso_input.*` resolves the link types. The link-transmission engine is M11.3. Not validated (rule 4).
