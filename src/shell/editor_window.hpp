@@ -287,6 +287,16 @@ private:
     // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
     QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
     void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    // S3.3b (ROADS §16, D307): the Roads and Cross-sections tabs and the Road tool's commit.
+    QTableWidget* roadTable_{}; QComboBox* roadTemplate_{}; std::uint64_t roadRevision_{UINT64_MAX};
+    QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
+    enum class RoadStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
+    std::vector<CrossSection> crossSectionRows() const;
+    RoadStatus roadStatus(const Road&, const std::vector<CrossSection>&) const;
+    void buildRoads(); void translateRoads(); void refreshRoads(); void showRoads(); void editRoad(const std::string& id);
+    std::string selectedRoad() const;
+    void buildCrossSections(); void translateCrossSections(); void refreshCrossSections(); void editCrossSection(const std::string& id);
+    std::string selectedCrossSection() const;
     std::string selectedNode() const;
     void buildZones();
     void translateZones();

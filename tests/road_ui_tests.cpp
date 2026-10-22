@@ -1,0 +1,197 @@
+#include "../src/shell/editor_window.hpp"
+#include <QAction>
+#include <QApplication>
+#include <QComboBox>
+#include <QDialog>
+#include <QDoubleSpinBox>
+#include <QFile>
+#include <QGraphicsItem>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QStandardPaths>
+#include <QTabWidget>
+#include <QTableWidget>
+#include <QTemporaryDir>
+#include <QTest>
+#include <QTimer>
+#include <algorithm>
+#include <functional>
+#include <iostream>
+using namespace multra;
+// S3.3b (D307, ROADS §16, rows RD23-RD26): the Road editor surface. The Cross-sections tab owns and
+// edits templates; the Road tool (O) draws a centreline (Ctrl+right-click, then clicks, Enter) and
+// applies the Roads tab's template in the same Undo step; the Roads tab edits overrides, applies and
+// deletes; a Road that lost a generated Link shows as partly detached in the table and on the canvas.
+namespace {
+void require(bool ok, const std::string& message) { if (!ok) { std::cerr << message << "\n"; throw std::runtime_error(message); } }
+QAction* act(EditorWindow& w, const char* name) { auto* a = w.findChild<QAction*>(name); require(a != nullptr, name); return a; }
+void trigger(EditorWindow& w, const char* name) { act(w, name)->trigger(); QApplication::processEvents(); }
+template <class T> T* item(QObject& root, const char* name) { auto* x = root.findChild<T*>(name); require(x != nullptr, name); return x; }
+QPoint pixel(EditorWindow& w, Point p) {
+    const auto q = w.canvas()->mapFromScene(p.x, p.y);
+    require(w.canvas()->viewport()->rect().contains(q), "Point outside the viewport");
+    return q;
+}
+void author(EditorWindow& w, Point p) {
+    QTest::qWait(600);
+    QTest::mouseClick(w.canvas()->viewport(), Qt::RightButton, Qt::ControlModifier, pixel(w, p)); QApplication::processEvents();
+}
+void click(EditorWindow& w, Point p) {
+    QTest::qWait(600);
+    QTest::mouseClick(w.canvas()->viewport(), Qt::LeftButton, Qt::NoModifier, pixel(w, p)); QApplication::processEvents();
+}
+void key(EditorWindow& w, Qt::Key k) { w.canvas()->setFocus(); QTest::keyClick(w.canvas(), k); QApplication::processEvents(); }
+// Accepts the next modal dialog after `fill` has edited it.
+void onDialog(const std::function<void(QDialog&)>& fill) {
+    QTimer::singleShot(0, [fill] {
+        auto* d = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+        require(d != nullptr, "No dialog opened"); fill(*d); d->accept();
+    });
+}
+void selectRow(QTableWidget* table, const std::string& id) {
+    for (int r = 0; r < table->rowCount(); ++r)
+        if (table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) { table->selectRow(r); QApplication::processEvents(); return; }
+    require(false, "Row not found: " + id);
+}
+QString cell(QTableWidget* table, const std::string& id, int column) {
+    for (int r = 0; r < table->rowCount(); ++r)
+        if (table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) return table->item(r, column)->text();
+    require(false, "Row not found: " + id); return {};
+}
+std::vector<std::string> tagged(EditorWindow& w, const char* tag, int field = 1) {
+    std::vector<std::string> found;
+    for (auto* i : w.canvas()->scene()->items())
+        if (i->data(0).toString() == tag) found.push_back(i->data(field).toString().toStdString());
+    std::sort(found.begin(), found.end());
+    return found;
+}
+}
+int main(int argc, char** argv) {
+    QApplication app(argc, argv);
+    QStandardPaths::setTestModeEnabled(true);
+    try {
+        require(argc > 1, "Expected data directory");
+        QTemporaryDir temp; require(temp.isValid(), "Temporary directory unavailable");
+        const auto file = temp.filePath("roads.traffic.json");
+        require(QFile::copy(QString::fromStdString((std::filesystem::path(argv[1]) / "projects/four-leg-signalised.traffic.json").string()), file),
+                "Fixture copy failed");
+        QFile::setPermissions(file, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+        EditorWindow w{std::filesystem::path(argv[1])}; w.show(); QTest::qWait(30);
+        w.openFile(file); QApplication::processEvents();
+        auto* c = w.canvas();
+        auto* tabs = item<QTabWidget>(w, "editorObjectTabs");
+        auto* roads = item<QTableWidget>(w, "editorRoadTable");
+        auto* sections = item<QTableWidget>(w, "editorCrossSectionTable");
+        auto* chosen = item<QComboBox>(w, "editorRoadTemplate");
+        const auto& doc = [&]() -> const ProjectDocument& { return w.history().document(); };
+        const auto& network = [&]() -> const Network& { return doc().network; };
+        require(network().roads.empty() && (!doc().definition || doc().definition->externalCrossSections), "The template already has roads or templates");
+        require(sections->rowCount() == 0, "Installed templates are listed, but none ship (B12)");
+
+        // RD23: Add on the Cross-sections tab owns the catalog and adds one template in one Undo step.
+        const auto start = w.history().revision();
+        onDialog([](QDialog& d) {
+            d.findChild<QLineEdit*>("editorCrossSectionName")->setText("Two by two");
+            d.findChild<QComboBox*>("editorCrossSectionDirections")->setCurrentIndex(1);
+            d.findChild<QSpinBox*>("editorCrossSectionLanesForward")->setValue(2);
+            d.findChild<QSpinBox*>("editorCrossSectionLanesBackward")->setValue(2);
+            d.findChild<QDoubleSpinBox*>("editorCrossSectionLaneWidth")->setValue(3.25);
+            d.findChild<QDoubleSpinBox*>("editorCrossSectionMedian")->setValue(2);
+            d.findChild<QLineEdit*>("editorCrossSectionSource")->setText("Study brief, figure 2");
+        });
+        trigger(w, "editorAddCrossSection");
+        require(doc().definition && !doc().definition->externalCrossSections && doc().definition->crossSections.size() == 1,
+                "Add did not own the catalog with one template");
+        require(w.history().revision() == start + 1, "Adding a template was not one Undo step");
+        const auto t = doc().definition->crossSections[0];
+        require(t.directions == 2 && t.lanesForward == 2 && t.lanesBackward == 2 && t.laneWidth == 3.25 && t.median == 2 &&
+                t.source == "Study brief, figure 2", "The template's fields were not stored");
+        require(sections->rowCount() == 1 && cell(sections, t.id, 3) == "2 + 2", "The Cross-sections tab does not list the template");
+        selectRow(sections, t.id);
+        onDialog([](QDialog& d) { d.findChild<QLineEdit*>("editorCrossSectionName")->setText("Urban 2+2"); });
+        trigger(w, "editorEditCrossSection");
+        require(doc().definition->crossSections[0].name == "Urban 2+2", "Editing the template did not commit");
+        require(chosen->findData(QString::fromStdString(t.id)) > 0, "The Road tool cannot choose the template");
+
+        // RD24: O chooses the Road tool and shows the Roads tab. With no template, Enter draws a Road
+        // without Links; with one, the Road and both directions' Links are one Undo step.
+        QApplication::setActiveWindow(&w); key(w, Qt::Key_O);
+        require(item<QComboBox>(w, "editorTool")->currentIndex() == 14, "O did not choose the Road tool");
+        require(tabs->currentWidget()->isAncestorOf(roads), "The Road tool did not show the Roads tab");
+        require(c->cursor().shape() == Qt::BitmapCursor, "The Road tool has no glyph pointer");
+        c->fitNetwork(); QApplication::processEvents();
+        const auto centre = c->mapToScene(c->viewport()->rect().center());
+        const Point a{centre.x() - 200, centre.y() + 150}, m{centre.x(), centre.y() + 160}, b{centre.x() + 200, centre.y() + 150};
+        chosen->setCurrentIndex(0);
+        const auto links = network().links.size();
+        author(w, a); key(w, Qt::Key_Return);
+        require(network().roads.empty() && c->zoneDraft().size() == 1, "One point made a Road");
+        click(w, b); key(w, Qt::Key_Return);
+        require(network().roads.size() == 1 && network().roads[0].links.empty() && network().links.size() == links,
+                "A Road without a template generated Links");
+        const auto noTemplate = cell(roads, network().roads[0].id, 5);
+        require(!noTemplate.isEmpty() && cell(roads, network().roads[0].id, 4) == "0", "The bare Road has no status");
+        const auto bare = network().roads[0].id;
+        selectRow(roads, bare); trigger(w, "editorDeleteRoad");
+        require(network().roads.empty(), "Delete kept the bare Road");
+
+        chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
+        const auto before = w.history().revision();
+        author(w, a); click(w, m); click(w, b); key(w, Qt::Key_Return);
+        require(network().roads.size() == 1, "The Road tool did not draw a Road");
+        const auto road = network().roads[0];
+        require(road.centreline.size() == 3 && road.crossSectionId == t.id && road.links.size() == 2, "The Road was not drawn and applied");
+        require(network().links.size() == links + 2 && w.history().revision() == before + 1, "Drawing and applying were not one Undo step");
+        for (const auto& id : road.links) {
+            const auto l = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == id; });
+            require(l != network().links.end() && l->roadId == road.id && l->lanes.size() == 2, "A generated Link is not the template's");
+        }
+        require(roads->currentRow() >= 0 && cell(roads, road.id, 3) == "2 + 2" && cell(roads, road.id, 4) == "2", "The new Road row is not listed and selected");
+        const auto applied = cell(roads, road.id, 5);
+        require(tagged(w, "road-link") == std::vector<std::string>{std::min(road.links[0], road.links[1]), std::max(road.links[0], road.links[1])},
+                "The selected Road's Links are not lit");
+        require(tagged(w, "road", 2) == std::vector<std::string>{"lit"}, "The selected Road's centreline is not lit");
+        trigger(w, "editorUndo");
+        require(network().roads.empty() && network().links.size() == links, "Undo kept the Road or its Links");
+        trigger(w, "editorRedo");
+        require(network().roads.size() == 1 && network().links.size() == links + 2, "Redo lost the Road");
+
+        // RD25: Edit sets an override, Apply template re-applies it keeping the Link ids, and the
+        // template a Road names cannot be deleted.
+        selectRow(roads, road.id);
+        onDialog([](QDialog& d) { d.findChild<QSpinBox*>("editorRoadLanesForward")->setValue(3); });
+        trigger(w, "editorEditRoad");
+        require(network().roads[0].overrides.lanesForward == 3 && !network().roads[0].overrides.laneWidth, "The override was not stored alone");
+        selectRow(roads, road.id); trigger(w, "editorApplyTemplate");
+        const auto forward = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == road.links[0]; });
+        require(network().roads[0].links == road.links && forward->lanes.size() == 3, "Re-applying did not keep the ids and add the lane");
+        require(cell(roads, road.id, 3) == "3 + 2", "The Roads tab does not show the override");
+        selectRow(sections, t.id);
+        const auto used = w.history().revision();
+        trigger(w, "editorDeleteCrossSection");
+        require(w.history().revision() == used && doc().definition->crossSections.size() == 1, "A template in use was deleted");
+
+        // RD26: editing one generated Link's lanes detaches it; the Road is partly detached in the
+        // table and lit in the warning colour on the canvas with only its remaining Link.
+        trigger(w, "editorTool0");
+        c->select(road.links[1]); QApplication::processEvents();
+        item<QSpinBox>(w, "editorLaneCount")->setValue(1);
+        item<QLineEdit>(w, "editorLaneWidths")->setText("3.5");
+        trigger(w, "editorApplyLanes");
+        require(network().roads[0].links == std::vector<std::string>{road.links[0]}, "Editing the Link's lanes did not detach it");
+        selectRow(roads, road.id);
+        const auto status = cell(roads, road.id, 5);
+        require(status != applied && status != noTemplate && status.contains("1") && status.contains("2"), "The Roads tab does not show the Road partly detached");
+        require(tagged(w, "road", 2) == std::vector<std::string>{"detached"}, "The canvas does not draw the Road as detached");
+        require(tagged(w, "road-link") == std::vector<std::string>{road.links[0]}, "The canvas lights a detached Link");
+        trigger(w, "editorDeleteRoad");
+        require(network().roads.empty() && network().links.size() == links + 2, "Deleting the Road removed its Links");
+        trigger(w, "editorUndo");
+        require(network().roads.size() == 1, "Undo did not restore the Road");
+        std::cout << "road-ui passed\n";
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << "\n";
+        return 1;
+    }
+}

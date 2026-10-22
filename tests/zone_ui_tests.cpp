@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
             const auto image = c->cursor().pixmap().toImage();
             pointers.insert(QByteArray(reinterpret_cast<const char*>(image.constBits()), static_cast<int>(image.sizeInBytes())));
         }
-        require(pointers.size() == 12, "Tools share one pointer: the glyph is missing"); // Node shares the Zone glyph
+        require(pointers.size() == 13, "Tools share one pointer: the glyph is missing"); // Node shares the Zone glyph
         key(w, Qt::Key_Z);
 
         // ZE3: a Link selected on the canvas and the zone row: origin and destination connectors.

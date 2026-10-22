@@ -329,7 +329,8 @@ void window(const std::filesystem::path& data) {
     // cached QIcon (same cacheKey), so no surface carries a copied painter path.
     const EditorIcon tools[]={EditorIcon::select,EditorIcon::link,EditorIcon::split,EditorIcon::measure,EditorIcon::image,
         EditorIcon::connector,EditorIcon::route,EditorIcon::input,EditorIcon::signal,EditorIcon::conflict,
-        EditorIcon::counter,EditorIcon::section,EditorIcon::zone,EditorIcon::zone}; // S0.1: the Node tool reuses the zone glyph
+        EditorIcon::counter,EditorIcon::section,EditorIcon::zone,EditorIcon::zone, // S0.1: the Node tool reuses the zone glyph
+        EditorIcon::road}; // S3.3b (D307)
     auto* palette=w.findChild<QTreeWidget*>("editorObjectPalette");require(palette!=nullptr,"No object palette");
     auto* iconsOnly=w.findChild<QAction*>("editorPaletteIconsOnly");require(iconsOnly&&iconsOnly->isCheckable(),"No palette view toggle");
     auto* toggle=w.findChild<QToolButton*>("editorPaletteViewButton");require(toggle!=nullptr,"No palette view button");
@@ -340,9 +341,9 @@ void window(const std::filesystem::path& data) {
         int rows=0;
         for(int g=0;g<palette->topLevelItemCount();++g)for(int r=0;r<palette->topLevelItem(g)->childCount();++r) {
             const auto* item=palette->topLevelItem(g)->child(r);const int mode=item->data(0,Qt::UserRole).toInt();++rows;
-            require(mode>=0&&mode<14&&item->icon(0).cacheKey()==editorIcon(tools[mode]).cacheKey(),"Palette tool "+std::to_string(mode)+" does not reuse its glyph"+view);
+            require(mode>=0&&mode<15&&item->icon(0).cacheKey()==editorIcon(tools[mode]).cacheKey(),"Palette tool "+std::to_string(mode)+" does not reuse its glyph"+view);
         }
-        require(rows==14,"Palette lists "+std::to_string(rows)+" tools, not 14"+view);
+        require(rows==15,"Palette lists "+std::to_string(rows)+" tools, not 15"+view);
         require(toggle->height()==editorDesign::controlHeight,"Palette view button height changed"+view);
     }
     // D190 state language in the icons-only view: the active tool is Mid with a left accent bar; a

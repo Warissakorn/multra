@@ -125,6 +125,7 @@ void EditorCanvas::redraw() {
     }
     drawZones(); // M8.6a: below every Link
     drawNodes(); // S0.1: an outline over the junction
+    drawRoads(); // S3.3b
     const auto primary = selected();
     for (auto link : document_->network.links) {
         if(!levelVisible(link.level))continue;

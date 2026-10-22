@@ -299,7 +299,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | S3.1 | This contract. **Written (D303)** | — |
 | S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs. **Implemented (D304)**. `rank` moved to S3.6 with its reader (D304) | RD1 (basis), RD2, RD3 |
 | S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
-| S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display | written with S3.3b |
+| S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display. **Implemented (D307)** | RD23–RD26 |
 | S3.4 | *Join opposite Links into a Road*; *Assign template* | RD10, RD11 |
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes* | RD12–RD15 |
 | S3.6 | `coarse`, refine and derive back, lifecycle; the link-type `rank`; Macro and Meso compile coarse Nodes and Roads | RD4, RD16–RD20 |
@@ -333,6 +333,10 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD20 | Roads without Links | A Road network without generated Links compiles in Macro and Meso with one link per direction split at Nodes; Micro reports `SEAM_ROAD_NOT_GENERATED` and refuses its routes |
 | RD21 | Lane-count seam | A 3-lane Link into a 2-lane leg gives `SEAM_LANE_COUNT`; *use Link* and *use Node* each fix it in one Undo step |
 | RD22 | Speed seam | A 100 → 60 km/h jump warns at every level and refuses none |
+| RD23 | Cross-sections tab (S3.3b) | Add owns the catalog and stores every field in one Undo step; Edit commits; the Road tool can choose the template |
+| RD24 | Road tool (S3.3b) | O chooses the tool and the Roads tab; one point makes nothing; with no template Enter draws a Road without Links; with one, the Road and its two Links are one Undo step, lit on the canvas; Undo and Redo |
+| RD25 | Roads tab (S3.3b) | An override is stored alone; *Apply template* keeps the Link ids and adds the lane; a template a Road names is not deleted |
+| RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Road is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
 
 ## 14. S3.2 as implemented (D304)
 
@@ -393,4 +397,39 @@ Each row first asserts that its forcing worked (AGENTS).
     `translateObjects` and `rotateObjects` detach a generated Link;
   - `deleteLink` drops it from its Road, and a duplicated Link carries no `roadId`.
 - **Rows:** RD1's Road part and RD5–RD9, in `tests/road_tests.cpp` (ctest `roads`).
-- **Not yet:** the editor (S3.3b). Roads are authored by command only.
+- **The editor** is S3.3b (§16).
+
+## 16. S3.3b as implemented (D307)
+
+The owner chose (2026-10-22): the Road tool applies the chosen template at once, its key is **O**,
+and a detached Road shows in the table and on the canvas.
+- **Road tool** (`O`, index 14, palette group *Geometry* after Links; `EditorCanvas::Tool::road`):
+  - it shares the zone draft (D306): Ctrl+right-click the first centreline point, plain clicks
+    the next ones in the forward direction, Backspace drops the last, Esc cancels;
+  - Enter, with two points or more, calls `roadCommitted`. `putRoad` at the visible level and,
+    when the Roads tab's template combo names one, `applyTemplate` run in one `execute`, so the Road
+    and its Links are one Undo step. A refused apply keeps the draft. With "(no template)" the Road
+    has no Links;
+  - the pointer is the arrow with the road glyph (`EditorIcon::road`); under the tool every Road's
+    centreline is a thin ink line.
+- **Roads tab** (`src/shell/editor_roads.cpp`, group *Network*): id, name, template, lanes (with
+  overrides), Links and status. Its toolbar holds the template combo, *Apply template*, *Edit road*
+  (name, template, lanes each way, lane width and median; a field at its lowest value means "from
+  template" and stores no override) and *Delete road* (its Links stay).
+- **Status:** no template; unknown template (`ROAD_CROSS_SECTION_UNKNOWN`); not applied; applied; or
+  partly detached (*k of n Links*) when it generates fewer Links than its template's directions. The
+  Road keeps no record of a Link it lost, so a Road whose every Link was detached reads as not
+  applied.
+- **Canvas** (`src/editor/canvas_roads.cpp`): the selected row's Road is lit, with its centreline,
+  a direction arrowhead and its generated Links washed. All three are in the selection colour, or
+  in the warning colour while partly detached. A detached Link is not lit.
+- **Cross-sections tab** (`src/shell/editor_cross_sections.cpp`, group *Network*): it is listed
+  read-only from the installed directory (none ships) until *Add* owns it, as Link types are.
+  *Add* and *Edit* set name, one- or two-way, lanes each way, lane width, median, link type and
+  source. Per-lane widths are kept only while the lanes and the width are unchanged. *Delete* is
+  refused while a Road names the template (`EDIT_CROSS_SECTION_IN_USE`).
+- **Rows:** RD23–RD26 in `tests/road_ui_tests.cpp` (ctest `road-ui`). Four mutations were caught:
+  - no apply on commit;
+  - the detached status never given;
+  - the canvas never told;
+  - a Road needing three points.

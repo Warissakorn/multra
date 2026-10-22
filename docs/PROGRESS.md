@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
+
+The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.
+- **Road tool (O):** Ctrl+right-click the first centreline point, click the rest, Enter. With the
+  Roads tab's template chosen, the Road and both directions' Links are one Undo step; with none, a
+  Road without Links.
+- **Roads tab:** template, lanes, Links and status (applied, not applied, partly detached *k of n*),
+  with *Apply template*, *Edit road* (overrides) and *Delete road*. The selected Road is lit on the
+  canvas, in the warning colour while partly detached.
+- **Cross-sections tab:** add, edit and delete owned templates; one in use is kept.
+- **Rows:** RD23–RD26 (`road-ui`); four mutations caught. Tool and tab inventories in
+  `workspace-ui`, `object-groups-ui`, `design-system-ui` and `zone-ui` grew by one tool and two tabs.
+
 ## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
 
 The owner asked for three canvas changes.
@@ -117,19 +130,6 @@ The owner supplied Yperman's thesis as a Markdown repository, and its chapters 3
 - **Against the thesis:** Example 4.5 is exact. §7.1's diverge network gives `k_B` = 166.67 veh/km,
   r2m clear at 44 min (thesis 46) and r1n queued 26.25–82.75 min (thesis 28–82).
 - **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `mesoloading`. Six mutations are caught.
-
-## 2026-10-22 — M11.3's node model from Tampère et al. (2011) (D297)
-
-The owner uploaded the paper, and it was read in full.
-- **`mesoNodeFlows`** is its §5.1 instance and algorithm: oriented capacity proportional, exact,
-  and unique. It reproduces the paper's Table 8.
-- **Changed from the contract:** the paper has no instance of conflict constraints (its Eq. 17 is
-  provisional). By the owner's choice, priority inside a Node is advised `MESO_PRIORITY_IGNORED`
-  instead of guessed.
-- **Signals** are explicit green, as the paper's §5.2 allows.
-- **Rows:** ME20–ME23 in `mesonode`. Three mutations are caught; two had no effect, and both are
-  explained.
-- **Still blocked:** the link model needs Yperman (B22).
 
 ## Older entries
 

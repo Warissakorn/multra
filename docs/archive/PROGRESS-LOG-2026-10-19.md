@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.3's node model from Tampère et al. (2011) (D297)
+
+The owner uploaded the paper, and it was read in full.
+- **`mesoNodeFlows`** is its §5.1 instance and algorithm: oriented capacity proportional, exact,
+  and unique. It reproduces the paper's Table 8.
+- **Changed from the contract:** the paper has no instance of conflict constraints (its Eq. 17 is
+  provisional). By the owner's choice, priority inside a Node is advised `MESO_PRIORITY_IGNORED`
+  instead of guessed.
+- **Signals** are explicit green, as the paper's §5.2 allows.
+- **Rows:** ME20–ME23 in `mesonode`. Three mutations are caught; two had no effect, and both are
+  explained.
+- **Still blocked:** the link model needs Yperman (B22).
+
 ## 2026-10-22 — M11.3 blocked on its sources; nothing built
 
 The owner asked for M11.3. The contract makes checking §4 against Yperman (2007) and §5 against

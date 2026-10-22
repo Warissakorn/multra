@@ -22,18 +22,19 @@ Point centroid(const std::vector<Point>& polygon) {
 }
 }
 bool EditorCanvas::zonePress(QMouseEvent* e) {
-    if ((tool_ != Tool::zone && tool_ != Tool::node) || !document_ || !authoringPress(e, !zoneDraft_.empty()))
+    if (!polygonTool() || !document_ || !authoringPress(e, !zoneDraft_.empty()))
         return false; // D84/D306: Ctrl+right-click starts the draft; then plain clicks add corners
     zoneDraft_.push_back(world(e->pos(), false));
     redraw();
     return true;
 }
 void EditorCanvas::commitZoneDraft() {
-    if (zoneDraft_.size() < 3) return; // a polygon needs three corners; the draft stays
+    // A polygon needs three corners and a Road's centreline two points; short of that the draft stays.
+    if (zoneDraft_.size() < (tool_ == Tool::road ? 2u : 3u)) return;
     auto polygon = zoneDraft_;
     zoneDraft_.clear(); draftPointer_.reset();
     redraw();
-    const auto& committed = tool_ == Tool::node ? nodeCommitted : zoneCommitted;
+    const auto& committed = tool_ == Tool::node ? nodeCommitted : tool_ == Tool::road ? roadCommitted : zoneCommitted;
     if (committed && !committed(polygon)) { zoneDraft_ = std::move(polygon); redraw(); }
 }
 void EditorCanvas::drawZones() {
@@ -73,13 +74,14 @@ void EditorCanvas::drawZones() {
             }
         }
     }
-    if ((tool_ == Tool::zone || tool_ == Tool::node) && !zoneDraft_.empty()) {
+    if (polygonTool() && !zoneDraft_.empty()) {
         outline(zoneDraft_, true)->setData(0, QStringLiteral("zone-draft"));
         // The edges still to come, fainter: last corner to the pointer to the first corner, or
         // with no pointer yet the closing edge alone.
         std::vector<Point> pending{zoneDraft_.back()};
         if (draftPointer_) pending.push_back(*draftPointer_);
-        if (zoneDraft_.size() > 1 || draftPointer_) pending.push_back(zoneDraft_.front());
+        // A Road's centreline is open: only the edge to the pointer is still to come.
+        if (tool_ != Tool::road && (zoneDraft_.size() > 1 || draftPointer_)) pending.push_back(zoneDraft_.front());
         if (pending.size() > 1) {
             QPainterPath edges(QPointF(pending[0].x, pending[0].y));
             for (std::size_t i = 1; i < pending.size(); ++i) edges.lineTo(pending[i].x, pending[i].y);
