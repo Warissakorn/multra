@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — M11.4b: a turn's free-flow time in Meso (D301)
+
+The turn free time that the compile recorded was not loaded, so a Node's interior took no time.
+Yperman's nodes have no length, so the owner chose a design of ours:
+- **The lag:** the node model decides at t as before; a vehicle enters the out-link τ later.
+- **Storage:** until then it counts against the out-link's storage (the receiving volume reads the
+  admitted count), so spill-back holds. No step limit or turn capacity is added; τ = 0 is unchanged.
+- **Outputs:** turn rows carry `freeTime`; VHT includes node time with delay unchanged;
+  `inNodesAtEnd` is new.
+- **Rows:** ME28 (`mesoloading`) and ME10 extended. Four mutations are caught.
+
 ## 2026-10-22 — M11.4: Meso outputs, `--meso` and Run Meso (D300)
 
 The owner chose the whole Micro run as Meso's horizon, with the same demand, so the CLI is `--meso`.
@@ -121,21 +132,6 @@ The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a
   `mesoSettings{step, slice}` at schema 52, only when set; the shipped projects keep their schema.
 - **Tests:** ME1–ME2 in `mesonetwork`. Six mutations are caught, two of them only after the rows
   gained fixtures (two lane Connectors; a refused Node over the junction).
-
-## 2026-10-21 — M11.1: the Meso contract (D291, docs only)
-
-The owner asked whether Meso could start. M11.1 can, because everything it needs exists; only M11.5
-(dynamic assignment) waits on M9. [MESO_NETWORK](reference/MESO_NETWORK.md) fixes the following:
-- **The graph:** the Macro graph's Link pieces, with each Node as one Meso node.
-- **The link model:** a triangular diagram with Newell's cumulative curves and Yperman's sending and
-  receiving volumes.
-- **The node model:** Tampère et al. (2011), with signals as capacity and spill-back.
-- **Data:** a `jamDensity` per link type, none shipped.
-- **Loading:** deterministic.
-- **Outputs:** by time slice, with rows ME1–ME11.
-
-Seven owner choices are listed as B20. Sources came from search summaries; Yperman's thesis was not
-found, so §4's formulas are checked before M11.3.
 
 ## Older entries
 

@@ -1,4 +1,4 @@
-# Meso network — as implemented (M11.2–M11.4)
+# Meso network — as implemented (M11.2–M11.4b)
 
 What each slice of [MESO_NETWORK](MESO_NETWORK.md) built, kept apart from the contract so that file
 stays under 500 lines. The section numbers are the contract's, so "MESO_NETWORK §17" still names a
@@ -189,3 +189,33 @@ section here. Every Meso result carries the not-validated marker (rule 4).
   - a cancel ignored;
   - the CSV marker removed;
   - the stale check removed (ME11).
+
+## 21. M11.4b as implemented (D301)
+
+- **The engine** (`src/meso/loading.*`):
+  - per link and commodity slot, an admitted curve (what the node model passed) and an entrance
+    curve, the admitted one shifted by the free time τ of the turn into the link: `up(k·Δt) =
+    admitted(k·Δt − τ)`, linear between steps;
+  - a path's first link has τ = 0, and a link whose slots all have τ = 0 keeps the old arithmetic
+    exactly;
+  - the receiving volume reads `MesoLoading::admitted`; sending, the Eq. 5.2 composition and the
+    outputs read `up`.
+- **The outputs** (`src/project/meso_output.*`):
+  - turn rows carry `freeTime`;
+  - VHT and the free time both add `Σ τ·turned(T − τ)`;
+  - `inNodesAtEnd` is `Σ turned(T) − turned(T − τ)`.
+- **Rows:**
+  - ME28 in `tests/meso_loading_tests.cpp` (ctest `mesoloading`);
+  - ME10's conservation and totals in `tests/meso_output_tests.cpp`.
+- **Measured on the fixture** (the same project as §20; its simple-node turns are timed by their
+  Connectors, 3.3–23.2 s):
+  - 1082 of 1200 vehicles entered and 1044 arrived (1164 and 1132 before);
+  - VHT 37.9 pcu-h and delay 21.2 pcu-h (29.6 and 18.0 before);
+  - 4.9 PCU inside nodes at the end.
+
+  The delay rises because vehicles inside a node take up the out-link's storage.
+- **Mutations caught:**
+  - the receiving volume read from `up`;
+  - τ ignored;
+  - τ with the wrong sign;
+  - node time left out of VHT (ME10).

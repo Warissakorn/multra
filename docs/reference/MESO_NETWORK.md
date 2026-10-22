@@ -3,8 +3,8 @@
 Written 2026-10-21 (D291) as the M11.1 contract, with seven owner choices (§11). The owner
 answered the same day: 1a–7a, as recommended (D292). §3–§8 state the chosen options. M11.2 is
 implemented (D293, §14), and so are M11.3a (D295, §15), M11.3b (D296, §16), the node model (D297,
-§17), the link model with the loading engine (D298, §18), signals (D299, §19) and the outputs, CLI
-and editor (D300, §20); §14–§20 are in [MESO_NETWORK_IMPLEMENTED](MESO_NETWORK_IMPLEMENTED.md). It fixes:
+§17), the link model with the loading engine (D298, §18), signals (D299, §19), the outputs, CLI
+and editor (D300, §20) and the turn time (D301, §21); §14–§21 are in [MESO_NETWORK_IMPLEMENTED](MESO_NETWORK_IMPLEMENTED.md). It fixes:
 - how one detailed project compiles into a Meso network;
 - which values that network needs and the document lacks;
 - how a link-transmission model (LTM) loads one study period's demand onto it, with spill-back.
@@ -77,7 +77,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     crossings, its out-links the arcs starting at its out-legs', and its turns are
     `nodeMembership`'s turns. The Links and Connectors inside the polygon are not Meso links. Their
     length enters the turn as a fixed free-flow time (the Micro turn path's length over the in-leg's
-    free speed).
+    free speed), which the loading applies as a lag (§5, D301).
   - **Any other junction** of Connectors (a merge, a diverge, a lane drop) becomes a simple node
     from the Macro graph's topology.
 - **Zones:** centroids as in Macro. A source link's demand enters at its upstream end, and a sink
@@ -153,6 +153,15 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - A turn whose heads show two programs is advised `MESO_SIGNAL_AMBIGUOUS` and left unsignalised.
   - Explicit green (4a) is not built: under FIFO a red turn would hold its whole in-link. Queue
     cycles within a cycle are Micro's.
+- **A turn's free-flow time τ (M11.4b, owner, D301; ours: Yperman §3.1 gives nodes no length, and
+  no source found gives a rule):**
+  - the node model decides at t against the out-link's `R_j` as above;
+  - a transferred vehicle enters the out-link τ later, its admitted count shifted by τ under the
+    linear interpolation of Eq. 3.2;
+  - until then it counts against the out-link's storage, so the receiving volume (Eq. 4.35) reads
+    the admitted count, not the entrance count, and spill-back holds;
+  - it needs no step limit (the shift reads only the past) and no turn capacity. With τ = 0 it is
+    the thesis's node.
 - **Evidence:** [meso-signals](../evidence/meso-signals.md), [tampere-node-model](../evidence/tampere-node-model.md).
 
 ## 6. Demand and paths (choice 5a)
@@ -200,12 +209,13 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     free-flow number);
   - a spill-back flag when the receiving volume was 0 in any step of the slice.
 - **Turn rows by time slice:** the PCU transferred, with the turn's signal and g/C.
-  - **No turn delay:** the LTM's nodes have no length (Yperman §3.1: "times spent on nodes are not
-    taken into account"), so all delay is on the links.
-  - The turn free-flow time that §3 records is not used by the loading yet. This is a known gap
-    (NEXT).
-- **Totals, over the PCU that completed each link:** VKT `Σ L·down(T)`; VHT `Σ ∫(t_down − t_up) dN`;
-  delay `VHT − Σ down(T)·L/v`; and the PCU stored at the end.
+  - **No turn delay:** a turn takes exactly its free-flow time τ (§5, D301), so all delay is on the
+    links. Each turn row carries τ as `freeTime`.
+- **Totals, over the PCU that completed each link and turn:**
+  - VKT `Σ L·down(T)`, on links only;
+  - VHT `Σ ∫(t_down − t_up) dN` plus `Σ τ·turned(T − τ)`;
+  - delay: VHT less the free time (`Σ down(T)·L/v` plus the same turn term);
+  - the PCU stored on links at the end, and `inNodesAtEnd`, `Σ turned(T) − turned(T − τ)`.
 - **Class rows:** vehicles demanded, entered, arrived, and waiting at their origins.
 - **JSON and CSV** carry the marker line first. The CSV holds the link slice rows only; turns are in
   the JSON. The JSON also holds the run's step, slice, duration and input manifest.
@@ -300,6 +310,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 | M11.3c | The link model and the loading engine, spill-back, the boundary volumes. **Implemented (D298)** | ME3–ME6, ME8, ME9, ME24, ME25 |
 | M11.3d | Signals as averaged green (4b). **Implemented (D299)** | ME7, ME26, ME27 |
 | M11.4 | Outputs, CLI `--meso`, editor surface. **Implemented (D300)** | ME10, ME11 |
+| M11.4b | A turn's free-flow time as a lag charged to the out-link's storage. **Implemented (D301)** | ME28 |
 | M11.5 | M9's loop reused (after M9) | written with M9 |
 
 ## 13. Acceptance rows (planned)
@@ -335,10 +346,11 @@ networks, not drawn projects, so their numbers follow from the formulas alone.
 | ME24 | Step limit and destinations (M11.3c) | A link whose `L/w` is below its `L/v` sets the limit: `MESO_STEP_TOO_LONG` above it, and `mesoShortestLink` names it; an out-link with infinite receiving volume (a destination, Yperman Eq. 5.5) takes the whole sending volume |
 | ME25 | Route composition by Eq. 5.2 (M11.3c) | A diverge whose routes switch from 1:0 to 0:1 at T changes its turn flows only one free-flow link time after T, because vehicles already on the link keep their routes (time-t shares would switch at T); each commodity's entered and arrived vehicles sum to its demand once the network empties |
 | ME26 | Signals to turns (M11.3d) | The four-leg with its suggested Node: every turn carries its approach's group and g/C (West and East 30/120, South and North 20/120), and no `MESO_SIGNAL_IGNORED`; one West head moved to group 2 gives `MESO_SIGNAL_AMBIGUOUS` at `network.nodes[0]`; the T-junction's turns carry no signal |
+| ME28 | A turn's free-flow time (M11.4b, D301) | A free chain whose turn takes 20 s arrives 20 s later than with τ = 0; with τ = 0.4 s below the step, the out-link's entrance count is its admitted count 0.4 s earlier at every step; an out-link blocked at its exit never holds more than `k_jam·L` admitted, counting the vehicles still inside the node, and spill-back reaches the origin; entered = arrived + stored on links + inside nodes at every step; ME10's totals carry `inNodesAtEnd` and a free timed chain's VHT includes τ with delay 0 |
 | ME27 | Internal node supplies (Tampère §5.2) | On generated cases with green supplies: `q ≥ 0`, `q_i ≤ S_i`, `q_j ≤ R_j`, each supply's turns `Σ q ≤ N`, CTF, and every in-link demand-met or held by a full out-link or supply; a supply alone with infinite R gives `Σ q = N`; a green in-link's claim on a shared out-link is reduced by its level (Eq. 35) |
 
-## 14–20. As implemented
+## 14–21. As implemented
 
-What each slice built (M11.2 to M11.4: files, rows, mutations) is in
+What each slice built (M11.2 to M11.4b: files, rows, mutations) is in
 [MESO_NETWORK_IMPLEMENTED](MESO_NETWORK_IMPLEMENTED.md), with this file's section numbers, so "MESO_NETWORK
 §17" still names a section there.

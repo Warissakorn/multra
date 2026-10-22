@@ -16,8 +16,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   demand source as Meso paths, with turn shares and demand per class; [MESO_NETWORK](reference/MESO_NETWORK.md)
   §15–§16). The M2.6 template's demand loads whole. M11.3's node model (D297, Tampère et al. 2011)
   and link model with the loading engine (D298, Yperman 2007, `loadMeso`) are in, and so are signals
-  as averaged green (D299, choice 4b), and M11.4 (D300): `runMeso` over the whole run, outputs,
-  `--meso`, and Run Meso in the editor.
+  as averaged green (D299, choice 4b), M11.4 (D300): `runMeso` over the whole run, outputs,
+  `--meso`, and Run Meso in the editor, and M11.4b (D301): a turn's free-flow time as a lag whose
+  vehicles count against the out-link's storage.
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md)),
   and so is MA15, the textbook benchmark: Sheffi Table 5.4 (D294). Its derived capacities and the
   gate wait on the owner (OWNER_SITTING B21). §19 (b) named runs and (c) a procedure sequence are
@@ -51,12 +52,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 
 ## Next session — owner's pick: M11 follow-ups, or another milestone
 
-- **M11 is in through M11.4** (D291–D300; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§20). M11.5
+- **M11 is in through M11.4b** (D291–D301; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
 - **M11 follow-ups, if the owner wants Meso first:**
-  - **The turn free-flow time** (§3) is compiled but not loaded: a Node's interior adds no time.
-    The thesis's nodes have no length, so loading it needs a design. One option is a short virtual
-    link per turn; ask the owner.
   - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). No source
     has been named yet.
   - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`

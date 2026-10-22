@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-21 — M11.1: the Meso contract (D291, docs only)
+
+The owner asked whether Meso could start. M11.1 can, because everything it needs exists; only M11.5
+(dynamic assignment) waits on M9. [MESO_NETWORK](../reference/MESO_NETWORK.md) fixes the following:
+- **The graph:** the Macro graph's Link pieces, with each Node as one Meso node.
+- **The link model:** a triangular diagram with Newell's cumulative curves and Yperman's sending and
+  receiving volumes.
+- **The node model:** Tampère et al. (2011), with signals as capacity and spill-back.
+- **Data:** a `jamDensity` per link type, none shipped.
+- **Loading:** deterministic.
+- **Outputs:** by time slice, with rows ME1–ME11.
+
+Seven owner choices are listed as B20. Sources came from search summaries; Yperman's thesis was not
+found, so §4's formulas are checked before M11.3.
+
 ## 2026-10-21 — S0.8b: a comparison's Node rows in Results → Nodes (D290); S0 complete
 
 The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org refused again).

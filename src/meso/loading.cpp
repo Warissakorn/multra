@@ -49,21 +49,32 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
     // Commodities, and per link the commodities on it with their entrance counts.
     std::vector<Commodity> cs;
     std::vector<std::vector<std::size_t>> onLink(nl);    // commodity ids by slot
+    std::vector<std::vector<double>> lag(nl);            // per link and slot, the free time of the turn into it, s
     for (std::size_t c = 0; c < classes.size(); ++c)
         for (std::size_t p = 0; p < classes[c].paths.size(); ++p) {
             const auto& path = classes[c].paths[p];
             if (!(classes[c].pcu > 0) || !loadable(g, path)) { out.refused.push_back({c, p}); continue; }
             Commodity x{c, p, classes[c].pcu, &path, {}};
-            for (const auto l : path.links) { x.slot.push_back(onLink[l].size()); onLink[l].push_back(cs.size()); }
+            for (std::size_t k = 0; k < path.links.size(); ++k) {
+                const auto l = path.links[k];
+                x.slot.push_back(onLink[l].size()); onLink[l].push_back(cs.size());
+                lag[l].push_back(k == 0 ? 0.0 : std::max(0.0, g.turns[path.turns[k - 1]].freeTime));
+            }
             cs.push_back(std::move(x));
         }
-    std::vector<std::vector<MesoCurve>> upC(nl);         // per link and slot
-    std::vector<std::vector<double>> downC(nl);          // per link and slot, the exit count now
+    // Per link and slot: the PCU admitted by the node model, and the PCU entered, admC shifted by the
+    // turn's free time (D301); the exit count now.
+    std::vector<std::vector<MesoCurve>> admC(nl), upC(nl);
+    std::vector<std::vector<double>> downC(nl);
+    std::vector<bool> lagged(nl);
     for (std::size_t l = 0; l < nl; ++l) {
+        admC[l].assign(onLink[l].size(), MesoCurve{step, {0}});
         upC[l].assign(onLink[l].size(), MesoCurve{step, {0}});
+        lagged[l] = std::any_of(lag[l].begin(), lag[l].end(), [](double x) { return x > 0; });
         downC[l].assign(onLink[l].size(), 0);
     }
     out.up.assign(nl, MesoCurve{step, {0}});
+    out.admitted.assign(nl, MesoCurve{step, {0}});
     out.down.assign(nl, MesoCurve{step, {0}});
     out.sending.assign(nl, {});
     out.receiving.assign(nl, {});
@@ -84,7 +95,7 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
         std::vector<double> S(nl), R(nl);
         for (std::size_t l = 0; l < nl; ++l) {
             S[l] = mesoSending(g.links[l], out.up[l], out.down[l], t, step);
-            R[l] = mesoReceiving(g.links[l], out.up[l], out.down[l], t, step);
+            R[l] = mesoReceiving(g.links[l], out.admitted[l], out.down[l], t, step); // vehicles inside the node count (D301)
             out.sending[l].push_back(S[l]);
             out.receiving[l].push_back(R[l]);
         }
@@ -186,13 +197,19 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
                 }
             }
         }
+        // A turn's vehicles enter its out-link its free time after the node passed them (D301).
+        const double tNext = t + step;
         for (std::size_t l = 0; l < nl; ++l) {
-            out.up[l].at.push_back(out.up[l].at.back() + dUp[l]);
+            out.admitted[l].at.push_back(out.admitted[l].at.back() + dUp[l]);
             out.down[l].at.push_back(out.down[l].at.back() + dDown[l]);
+            double physical = 0;
             for (std::size_t s = 0; s < onLink[l].size(); ++s) {
-                upC[l][s].at.push_back(upC[l][s].at.back() + dUpC[l][s]);
+                admC[l][s].at.push_back(admC[l][s].at.back() + dUpC[l][s]);
+                upC[l][s].at.push_back(lag[l][s] > 0 ? admC[l][s].value(tNext - lag[l][s]) : admC[l][s].at.back());
+                physical += upC[l][s].at.back();
                 downC[l][s] += dDownC[l][s];
             }
+            out.up[l].at.push_back(lagged[l] ? physical : out.admitted[l].at.back());
         }
         for (std::size_t u = 0; u < g.turns.size(); ++u) out.turned[u].push_back(out.turned[u].back() + dTurn[u]);
         for (std::size_t c = 0; c < cs.size(); ++c) {

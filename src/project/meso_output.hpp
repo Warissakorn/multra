@@ -10,8 +10,9 @@ namespace multra {
 // horizontal distance (null when none entered or not all have left by the end); the mean vertical
 // queue up(t - L/v) - down(t); spill-back when the receiving volume was 0 in a step of the slice.
 // Per turn and slice: the PCU transferred. Turns have no delay: the LTM's nodes have no length.
-// Totals over the PCU that completed each link: VKT, VHT and delay against free flow; PCU stored
-// at the end; vehicles per class demanded, entered, arrived and waiting at their origins.
+// Totals over the PCU that completed each link: VKT (links only), VHT with the turns' free time
+// (D301) and delay against free flow; PCU stored on links and inside nodes at the end; vehicles per
+// class demanded, entered, arrived and waiting at their origins.
 struct MesoLinkSlice {
     double start{}, end{}, inflow{}, outflow{}, density{}, queue{};
     std::optional<double> travelTime;

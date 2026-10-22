@@ -83,7 +83,18 @@ Json mesoJson(const MesoRun& r) {
         j["links"].push_back({{"source", link.source}, {"fromStation", link.fromStation}, {"toStation", link.toStation},
                               {"length", link.length}, {"lanes", link.lanes}, {"capacity", link.capacityPerLane * link.lanes}, {"slices", slices}});
     }
-    j["totals"] = {{"vkt", vkt}, {"vht", vht}, {"delay", vht - free}, {"storedAtEnd", stored}};
+    // Time inside nodes (D301): each turn's free time, for the PCU that finished it by the end.
+    double inNodes = 0;
+    const double T = L.up.empty() ? 0 : static_cast<double>(L.up.front().at.size() - 1) * L.step;
+    for (std::size_t u = 0; u < r.graph.turns.size() && u < L.turned.size(); ++u) {
+        const double tau = r.graph.turns[u].freeTime;
+        if (!(tau > 0)) continue;
+        const MesoCurve c{L.step, L.turned[u]};
+        const double through = c.value(T - tau);
+        vht += through * tau / 3600; free += through * tau / 3600;
+        inNodes += c.at.back() - through;
+    }
+    j["totals"] = {{"vkt", vkt}, {"vht", vht}, {"delay", vht - free}, {"storedAtEnd", stored}, {"inNodesAtEnd", inNodes}};
     const auto per = std::max<std::size_t>(1, static_cast<std::size_t>(std::llround(r.settings.slice / L.step)));
     const auto k = static_cast<std::size_t>(steps(r));
     for (std::size_t u = 0; u < r.graph.turns.size(); ++u) {
@@ -95,7 +106,7 @@ Json mesoJson(const MesoRun& r) {
                               {"transferred", L.turned[u][e] - L.turned[u][s]}});
         }
         j["turns"].push_back({{"node", r.graph.nodes[t.node].name}, {"name", t.name}, {"from", r.graph.links[t.in].source},
-                              {"to", r.graph.links[t.out].source}, {"signal", t.signal}, {"green", t.green}, {"slices", slices}});
+                              {"to", r.graph.links[t.out].source}, {"signal", t.signal}, {"green", t.green}, {"freeTime", t.freeTime}, {"slices", slices}});
     }
     return j;
 }
