@@ -126,6 +126,11 @@ passes.
   **the capacity the VDF uses**, and its `source` must say which capacity it is.
   - The primary 1964 text has not been read. It is to be checked before any value enters `data/`.
 - **Shipped:** no type (choice 2a), as with PCU (D267). The editor offers project-owned types.
+  **Amended by S3.2 (D304, [ROADS](ROADS.md) §8):** `data/link-types/` ships eleven HCM 7 types
+  (freeway and multilane, Exhibit 12-4), each with `capacityBasis` `ultimate`. A type or VDF may
+  carry `capacityBasis` (`practical` or `ultimate`, empty = practical). Macro refuses a Link whose
+  type and VDF differ, as `MACRO_CAPACITY_BASIS_MISMATCH` at its `linkType`, so the HCM types need
+  a cited `ultimate` VDF before Macro runs them.
 
 ## 5. VDF data
 
@@ -133,7 +138,7 @@ passes.
 { "id": "bpr", "form": "bpr", "alpha": 0.15, "beta": 4, "source": "Bureau of Public Roads, Traffic Assignment Manual (1964)" }
 ```
 
-- **Shipped:** `data/vdf/bpr.json`, D158's choice.
+- **Shipped:** `data/vdf/bpr.json`, D158's choice, with `capacityBasis` `practical` (S3.2, D304).
 - **The form is code; the parameters are data.** `form: "bpr"` is
   t(v) = t₀ · (1 + α · (v / c)^β). Another `alpha` or `beta`, or a local file, swaps with no code
   edit (row MA12).

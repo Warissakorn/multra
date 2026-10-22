@@ -171,6 +171,6 @@ TEST(commitdecel, ba78_the_key_round_trips_at_schema_36_and_is_refused_before) {
     }
     auto edge = j; edge["definition"]["behaviours"][0]["commitmentDeceleration"] = 15;
     CHECK(parseDocument(edge).definition->behaviours.front().commitmentDeceleration == 15);
-    auto newer = j; newer["schemaVersion"] = 53;
+    auto newer = j; newer["schemaVersion"] = 54;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
 }

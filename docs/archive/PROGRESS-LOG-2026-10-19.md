@@ -21,6 +21,20 @@ candidate. This unblocked MA15.
 - **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
   until M6.
 
+## 2026-10-22 — M11.3a: Micro's routes as Meso paths and demand (D295)
+
+The owner asked for M11.3a after MA15.
+- **`src/meso/demand.*`:** paths, classes, turn shares and entry flows, as plain values.
+- **`mesoPath`:** a route's Links and Connectors become Meso links and turns. Pieces inside a Node
+  collapse to the Node's turn.
+- **`mesoDemand`:** expands the document as the Micro compile does (OD matrices, then static
+  decisions with their interval and type weights). It keys classes by composition or lone vehicle
+  type, with PCU from `modePcu`.
+- **Carved out as M11.3b:** placed decisions and routeless inputs walk lanes, not objects, so they
+  are refused with `MESO_ROUTELESS_UNSUPPORTED` until then. The M2.6 template uses them.
+- **Rows:** ME12–ME16 in `mesodemand`. Five mutations are caught. A turn preference by `via` was
+  removed as dead code, since the graph keeps one turn per (in, out) pair.
+
 ## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
 
 The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).

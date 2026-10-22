@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-22 — S3.2: HCM link types and the capacity basis (D304)
+
+The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalog came first.
+- **`data/link-types/`** ships eleven HCM 7 types:
+  - freeway at FFS 55–75 mi/h and multilane at 45–70 mi/h, with Exhibit 12-4's capacities;
+  - jam density 190 pc/mi/ln (Exhibit 10-7).
+- **`capacityBasis`** (`practical` or `ultimate`) on link types and VDFs. `bpr` is practical and
+  HCM's types are ultimate, so Macro refuses the pair (`MACRO_CAPACITY_BASIS_MISMATCH`) while Meso
+  runs them. An owned type with a basis is schema 53.
+- **The Link types tab** shows the basis.
+- **Rows:** RD1 (basis), RD2 and RD3 (`roadcatalog`).
+- **Amended:** `rank` moves to S3.6, where its reader lands.
+
 ## 2026-10-22 — S3.1: the Roads contract (D303, docs only)
 
 The owner chose S3 next, with values from HCM 7. [ROADS](reference/ROADS.md) fixes the following:
@@ -112,20 +125,6 @@ are not copied.
 - **The M2.6 template** (four placed decisions) now loads its whole demand, conserved over time.
 - **Rows:** ME17–ME19 in `mesodemand`. ME13 now checks the walk's own issues instead of the old
   refusal. Four mutations are caught.
-
-## 2026-10-22 — M11.3a: Micro's routes as Meso paths and demand (D295)
-
-The owner asked for M11.3a after MA15.
-- **`src/meso/demand.*`:** paths, classes, turn shares and entry flows, as plain values.
-- **`mesoPath`:** a route's Links and Connectors become Meso links and turns. Pieces inside a Node
-  collapse to the Node's turn.
-- **`mesoDemand`:** expands the document as the Micro compile does (OD matrices, then static
-  decisions with their interval and type weights). It keys classes by composition or lone vehicle
-  type, with PCU from `modePcu`.
-- **Carved out as M11.3b:** placed decisions and routeless inputs walk lanes, not objects, so they
-  are refused with `MESO_ROUTELESS_UNSUPPORTED` until then. The M2.6 template uses them.
-- **Rows:** ME12–ME16 in `mesodemand`. Five mutations are caught. A turn preference by `via` was
-  removed as dead code, since the graph keeps one turn per (in, out) pair.
 
 ## Older entries
 

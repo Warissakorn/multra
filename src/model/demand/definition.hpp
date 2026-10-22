@@ -41,10 +41,14 @@ struct LinkType {
     std::string id, name; double capacityPerLane{}, freeSpeed{}; std::string vdfId;
     std::vector<std::string> modes; std::string source;
     std::optional<JamDensity> jamDensity; // M11.2: written only when set, which makes a file schema 52
+    // S3.2 (ROADS §8, D304): the capacity its VDF was fitted to, "practical" or "ultimate"; empty means
+    // practical. Written only when set, which makes an owned type schema 53.
+    std::string capacityBasis{};
     bool operator==(const LinkType&) const = default;
 };
 struct Vdf {
     std::string id, form; double alpha{}, beta{}; std::string source;
+    std::string capacityBasis{};        // S3.2 (D304): as LinkType's; empty means practical
     bool operator==(const Vdf&) const = default;
 };
 // M2.1.2. One time interval of a routing decision's counted turning volumes.

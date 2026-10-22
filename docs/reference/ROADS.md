@@ -1,8 +1,8 @@
 # Roads, cross-section templates and Nodes from crossings (S3)
 
-Written 2026-10-22 (D303) as the S3.1 contract, docs only. It has seven owner choices (§11), asked
-in [OWNER_SITTING](../plans/OWNER_SITTING.md) B24. §3–§9 state the recommended options. Nothing
-here is built until the owner answers. It fixes:
+Written 2026-10-22 (D303) as the S3.1 contract, docs only. The owner answered its seven choices
+the same day, "as recommended": 1a, 2a, 3a, 4a, 5a, 6b, 7a (D304), so §3–§9 state the chosen
+options. S3.2 is implemented (D304, §14). It fixes:
 - the Road object, and how it relates to the directed Links Micro already runs;
 - cross-section templates and *Apply template*;
 - Nodes from Road crossings;
@@ -257,7 +257,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 - **MULTI_LEVEL_WORKFLOW** §2–§7 and §9–§11, NODES §5 and MACRO_NETWORK §4, for the decisions
   cited in §1.
 
-## 11. Owner choices (B24; the recommendation first)
+## 11. Owner choices (answered 2026-10-22, D304: 1a–5a, 6b, 7a)
 
 1. **The Road's storage.**
    - **(a) Road plus its generated Links, stored, linked by `roadId` (recommended).** Micro is
@@ -296,11 +296,11 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | Slice | Content | Rows |
 |---|---|---|
 | S3.1 | This contract. **Written (D303)** | — |
-| S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs; `rank` | RD2–RD4 |
+| S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs. **Implemented (D304)**. `rank` moved to S3.6 with its reader (D304) | RD1 (basis), RD2, RD3 |
 | S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach | RD1, RD5–RD9 |
 | S3.4 | *Join opposite Links into a Road*; *Assign template* | RD10, RD11 |
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes* | RD12–RD15 |
-| S3.6 | `coarse`, refine and derive back, lifecycle; Macro and Meso compile coarse Nodes and Roads | RD16–RD20 |
+| S3.6 | `coarse`, refine and derive back, lifecycle; the link-type `rank`; Macro and Meso compile coarse Nodes and Roads | RD4, RD16–RD20 |
 | S3.7 | Seam checks | RD21, RD22 |
 
 ## 13. Acceptance rows (planned)
@@ -331,3 +331,34 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD20 | Roads without Links | A Road network without generated Links compiles in Macro and Meso with one link per direction split at Nodes; Micro reports `SEAM_ROAD_NOT_GENERATED` and refuses its routes |
 | RD21 | Lane-count seam | A 3-lane Link into a 2-lane leg gives `SEAM_LANE_COUNT`; *use Link* and *use Node* each fix it in one Undo step |
 | RD22 | Speed seam | A 100 → 60 km/h jump warns at every level and refuses none |
+
+## 14. S3.2 as implemented (D304)
+
+- **Values** (`src/model/demand/definition.hpp`): `LinkType` and `Vdf` gain `capacityBasis`, where
+  empty means `practical`.
+- **The codec** (`src/project/link_type_codec.*`):
+  - `capacityBasis` is optional on both, written only when set;
+  - a value other than `practical` or `ultimate` is `INVALID_LINK_TYPE` or `INVALID_VDF` at
+    `.capacityBasis`;
+  - an owned type with a basis makes the file schema 53 (`usesCapacityBasis`); below 53 the key is
+    `EDIT_UNSUPPORTED_FIELD` (`rejectCapacityBasisBefore53`).
+- **Macro** (`compileMacroNetwork`): a Link whose type and VDF have different bases is
+  `MACRO_CAPACITY_BASIS_MISMATCH` at its `linkType`. Meso reads any basis.
+- **Data:**
+  - `data/vdf/bpr.json` is `practical`;
+  - `data/link-types/` holds `freeway-55` … `freeway-75` and `multilane-45` … `multilane-70`, each
+    with:
+    - the capacity of Exhibit 12-4;
+    - FFS × 0.44704 m/s;
+    - `jamDensity` 118.0605 pc/km/ln (190 pc/mi/ln, Exhibit 10-7);
+    - `vdfId` `bpr` and basis `ultimate`;
+    - a source naming its exhibits and pages.
+
+  Macro therefore refuses them until an `ultimate` VDF is cited, as chosen (6b).
+- **The editor** (`src/shell/editor_link_types.cpp`): the Link types tab gains a Capacity basis
+  column. A project with no owned types lists the eleven HCM types read-only. The dialog keeps a
+  type's basis, and a new type has none.
+- **Rows:** RD1's capacity-basis part, RD2 and RD3, in `tests/road_catalog_tests.cpp` (ctest
+  `roadcatalog`).
+- **Amendment (D304):** `rank` moved to S3.6. Its reader is the coarse Node, and NODES §5 stores no
+  field before its reader.

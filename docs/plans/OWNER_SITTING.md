@@ -68,10 +68,10 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    (network spill-back), whether a not-blind case may count, and which copies you will supply
    (the session recommends Boyles et al. 2025 as a Markdown repository, or `arxiv.org` allowed).
    The sheet holds no engine numbers; the tolerance comes after this answer. Which options? *Owner:*
-24. **S3 choices** (listed 2026-10-22, D303). Read [ROADS](../reference/ROADS.md) §11 and answer its
-   seven choices by number and letter: the Road's storage, templates shipped, the coarse values'
-   readers, the priority hierarchy, crossings, HCM link types (the capacity-basis question of §8)
-   and the slice order. The session recommends 1a, 2a, 3a, 4a, 5a, 6b, 7a. Which? *Owner:*
+
+
+Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD.md#d304):
+S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([ROADS](../reference/ROADS.md) §11). Numbers are not reused.
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.
