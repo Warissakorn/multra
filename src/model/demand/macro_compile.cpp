@@ -49,6 +49,8 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
             const auto v = std::find_if(vdfs.begin(), vdfs.end(), [&](const auto& x) { return x.id == type->vdfId; });
             if (v != vdfs.end()) vdf = &*v;
         }
+        const auto basis = [](const std::string& b) { return b.empty() ? std::string("practical") : b; };
+        if (type && vdf && basis(type->capacityBasis) != basis(vdf->capacityBasis)) out.issues.push_back({"MACRO_CAPACITY_BASIS_MISMATCH", path});
         const auto& list = stations[l->id];
         for (std::size_t k = 0; k + 1 < list.size(); ++k) {
             MacroLink m;

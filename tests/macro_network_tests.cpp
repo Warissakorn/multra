@@ -120,7 +120,7 @@ TEST(macronetwork, ma2_link_types_round_trip_at_50_and_are_checked) { // MA2
     const auto compiled = macroNetwork(installed, dir);
     CHECK(issueAt(compiled.issues, "MACRO_LINK_TYPE_UNKNOWN", "network.links[0].linkType")); // arterial is not installed there
     CHECK(issueAt(compiled.issues, "INVALID_VDF", "catalog/vdf/odd.form") && issueAt(compiled.issues, "INVALID_VDF", "catalog/vdf/odd.alpha"));
-    CHECK(resolveVdfs(data()).size() == 1 && resolveVdfs(data())[0] == (Vdf{"bpr", "bpr", 0.15, 4, resolveVdfs(data())[0].source}));
+    CHECK(resolveVdfs(data()).size() == 1 && resolveVdfs(data())[0] == (Vdf{"bpr", "bpr", 0.15, 4, resolveVdfs(data())[0].source, "practical"}));
 }
 TEST(macronetwork, ma3_a_link_splits_where_a_connector_leaves) { // MA3
     ProjectDocument d;

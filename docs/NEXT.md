@@ -16,8 +16,9 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   demand source as Meso paths, with turn shares and demand per class; [MESO_NETWORK](reference/MESO_NETWORK.md)
   §15–§16). The M2.6 template's demand loads whole. M11.3's node model (D297, Tampère et al. 2011)
   and link model with the loading engine (D298, Yperman 2007, `loadMeso`) are in, and so are signals
-  as averaged green (D299, choice 4b), and M11.4 (D300): `runMeso` over the whole run, outputs,
-  `--meso`, and Run Meso in the editor.
+  as averaged green (D299, choice 4b), M11.4 (D300): `runMeso` over the whole run, outputs,
+  `--meso`, and Run Meso in the editor, and M11.4b (D301): a turn's free-flow time as a lag whose
+  vehicles count against the out-link's storage.
 - **S2 (Macro, M10.1):** S2.1–S2.4 are in (D271–D277, [MACRO_NETWORK](reference/MACRO_NETWORK.md)),
   and so is MA15, the textbook benchmark: Sheffi Table 5.4 (D294). Its derived capacities and the
   gate wait on the owner (OWNER_SITTING B21). §19 (b) named runs and (c) a procedure sequence are
@@ -51,21 +52,26 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 
 ## Next session — owner's pick: M11 follow-ups, or another milestone
 
-- **M11 is in through M11.4** (D291–D300; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§20). M11.5
+- **M11 is in through M11.4b** (D291–D302; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
 - **M11 follow-ups, if the owner wants Meso first:**
-  - **The turn free-flow time** (§3) is compiled but not loaded: a Node's interior adds no time.
-    The thesis's nodes have no length, so loading it needs a design. One option is a short virtual
-    link per turn; ask the owner.
-  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). No source
-    has been named yet.
+  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). The
+    option sheet is written ([meso-benchmark-options](evidence/meso-benchmark-options.md), D302);
+    the owner chooses in OWNER_SITTING B23 and supplies the chosen copy (Boyles et al. 2025
+    recommended). The tolerance comes after the choice, then the benchmark row or tool.
   - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`
     (`MESO_PRIORITY_IGNORED`).
 - **Other open items:**
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
-  - **S3:** Roads and S0.4's coarse values (D272);
+  - **S3** ([ROADS](reference/ROADS.md), D303, D304): the owner chose 1a–5a, 6b, 7a. S3.2 is in:
+    eleven HCM link types and the capacity basis. S3.3 is in (D305): Roads, owned templates,
+    `roadId`, *Apply template* and detaching, by command only. **Next, S3.3b:** the editor surface
+    (a Road tool, a Cross-sections tab, *Apply template*, the detached display); then S3.4;
+  - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
+    previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
   - **B21:** Sheffi Fig 5.1's capacities, for the owner.
+  - **B23:** the Meso benchmark choice, for the owner.
 
 M2.8 has only owner checks left.

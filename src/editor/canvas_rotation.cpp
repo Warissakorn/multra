@@ -39,22 +39,22 @@ void EditorCanvas::updateRotation(QPoint position,bool angleSnap) {
 void EditorCanvas::drawRotationPreview() {
     if(!rotationPivot_)return;
     const auto pivot=*rotationPivot_;
-    QPen pen(canvasStyle::active(),2,Qt::DashLine);pen.setCosmetic(true);
+    const auto pen=canvasStyle::previewPen(canvasStyle::active());
     QColor wash=canvasStyle::active();wash.setAlpha(40);
     // Derive the matrix from the same transform as the command, including exact quarter turns.
     const auto origin=rotatePoint({0,0},pivot,rotationDegrees_);
     const auto x=rotatePoint({1,0},{},rotationDegrees_),y=rotatePoint({0,1},{},rotationDegrees_);
     const QTransform rotation(x.x,x.y,y.x,y.y,origin.x,origin.y);
     if(rotationDragging_)for(const auto& id:rotationObjects(document_->network,selection_)) {
-        auto* item=scene_.addPath(rotation.map(objectShape(id)),pen,QBrush(wash));
-        item->setZValue(200008);item->setData(0,QStringLiteral("rotation-preview"));
+        auto* item=addPreviewPath(rotation.map(objectShape(id)),200008,pen,QBrush(wash));
+        item->setData(0,QStringLiteral("rotation-preview"));
         item->setData(1,QString::fromStdString(id));
     }
     const double r=6/viewScale();
     auto* centre=scene_.addEllipse(pivot.x-r,pivot.y-r,2*r,2*r,pen,QBrush(editorDesign::role(QPalette::Base)));
     centre->setZValue(200009);centre->setData(0,QStringLiteral("rotation-pivot"));
     const auto at=rotatePoint(rotationStart_,pivot,rotationDegrees_);
-    auto* guide=scene_.addLine(pivot.x,pivot.y,at.x,at.y,pen);guide->setZValue(200009);
+    QPainterPath arm(QPointF(pivot.x,pivot.y));arm.lineTo(at.x,at.y);addPreviewPath(arm,200009,pen);
     auto* angle=scene_.addSimpleText(QString::number(rotationDegrees_,'f',1)+QChar(0x00b0));
     angle->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     angle->setBrush(editorDesign::role(QPalette::Text));angle->setPos(pivot.x+r*2,pivot.y-r*2);angle->setZValue(200010);

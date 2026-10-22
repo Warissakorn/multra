@@ -11,6 +11,9 @@
 // commodity is one class's path, counted in PCU. Signals are averaged green, internal node supplies
 // (Tampère §5.2, D299), one per in-link and program. The step must
 // meet mesoStepLimit; the compile refuses it otherwise. Deterministic: there is no seed.
+// A turn's free-flow time (M11.4b, D301, ours: the thesis's nodes have no length) delays its vehicles'
+// entrance to the out-link; until then they count against its storage, so its receiving volume reads
+// the admitted count.
 namespace multra {
 // One class's path through the run, vehicles at k * step.
 struct MesoCommodityRun {
@@ -22,6 +25,7 @@ struct MesoLoading {
     // Per link, at k * step (PCU): the cumulative counts at its entrance and exit, and the sending and
     // receiving volumes of step [k, k + 1] (the boundary interface of §9; the last entry is 0).
     std::vector<MesoCurve> up, down;
+    std::vector<MesoCurve> admitted;     // per link: the PCU passed onto it by its node; minus `up`, those still inside the node
     std::vector<std::vector<double>> sending, receiving;
     std::vector<std::vector<double>> turned; // per turn, cumulative PCU at k * step
     std::vector<MesoCommodityRun> commodities;

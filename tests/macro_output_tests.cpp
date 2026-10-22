@@ -170,7 +170,7 @@ TEST(macrooutput, ma13_settings_are_schema_51_only_when_set) { // MA13
     test::throws([&] { changeMacroSettings(d, MacroSettings{0, 10}); }, "INVALID_MACRO_SETTING");
     changeMacroSettings(d, std::nullopt);
     CHECK(documentJson(d)["schemaVersion"] == 50);
-    auto future = j; future["schemaVersion"] = 53;
+    auto future = j; future["schemaVersion"] = 54;
     test::throws([&] { parseDocument(future); }, "EDIT_VERSION");
 }
 TEST(macrooutput, ma14_stages_are_reported_and_a_refusal_names_its_stage) { // MA14 (§19 a)

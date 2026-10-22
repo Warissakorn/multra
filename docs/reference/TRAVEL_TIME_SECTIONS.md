@@ -78,8 +78,8 @@ Rows: `name`, `vehicles`, `meanTravelTime`, `meanDelay` (null with no vehicle), 
 
 History commands `putTravelTimeSection` (empty id allocates `section-N`; the same id replaces) and
 `deleteTravelTimeSection`, each one Undo step. The editor's Section tool reuses the queue-counter
-gesture: Ctrl+right-click on a Link sets the start, a second Ctrl+right-click sets the end and
-commits; Escape drops a half-placed section. A *Travel-time sections* tab lists id, name, start and
+gesture: Ctrl+right-click on a Link sets the start, a second click (plain since D306, or Ctrl+right) sets the
+end and commits; Escape drops a half-placed section. A *Travel-time sections* tab lists id, name, start and
 end, with rename and delete. The canvas draws each line across the Link's full width.
 
 ## 6. Acceptance rows

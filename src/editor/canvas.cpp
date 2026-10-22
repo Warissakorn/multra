@@ -95,7 +95,7 @@ void EditorCanvas::resetGesture() {
     creating_=false;decisionDrag_.reset();headDrag_.reset();lineDrag_.reset();hoverHead_.reset();gestureFrom_.reset();rangeCorner_=0;laneResize_.reset();previewLinkCount_=0;
     draft_.clear(); preview_.clear(); original_.clear(); vertex_ = -1; band_.reset();
     connectorFrom_.reset(); connectorHover_.reset(); dragging_ = false; panning_ = false;
-    clearRouteDraft(); counterDraft_.clear(); sectionStart_.reset(); zoneDraft_.clear();
+    clearRouteDraft(); counterDraft_.clear(); sectionStart_.reset(); zoneDraft_.clear(); draftPointer_.reset();
     if (connectorDraftChanged) connectorDraftChanged();
 }
 Point EditorCanvas::world(QPoint position, bool snapped) const {
@@ -136,8 +136,7 @@ void EditorCanvas::redraw() {
         if(!std::isfinite(polylineLength(road)) || polylineLength(road)<=0) {
             // Invalid transient geometry must remain a cancellable gesture, not an exception
             // from pointAlong while painting. The release command will reject it atomically.
-            QPen invalid(canvasStyle::error(),2,Qt::DashLine);invalid.setCosmetic(true);
-            scene_.addPath(path(link.geometry),invalid)->setZValue(z+5);continue;
+            addPreviewPath(path(link.geometry),z+5,canvasStyle::previewPen(canvasStyle::error()));continue;
         }
         if (wireframe_) { drawCentreLine(link.id,road,colour,z+2);drawGeometryHandles(link.id,road,false);continue; }
         // Drawn lines only: an edge offset round a bend tighter than the lane can loop back on
@@ -166,13 +165,13 @@ void EditorCanvas::redraw() {
     drawSections();
     drawHeads();
     if (band_) {
-        QPen pen(canvasStyle::active(),1,Qt::DashLine); pen.setCosmetic(true);
+        // A box, not a line: a solid hairline over its wash, with no casing (D306).
         QColor wash=canvasStyle::active(); wash.setAlpha(30);
-        scene_.addRect(*band_,pen,QBrush(wash))->setZValue(200009);
+        scene_.addRect(*band_,canvasStyle::previewPen(canvasStyle::active(),1),QBrush(wash))->setZValue(200009);
     }
     if (!draft_.empty()) {
-        QPen pen(canvasStyle::active(),2,Qt::DashLine); pen.setCosmetic(true);
-        scene_.addPath(path(draft_),pen)->setZValue(200008);
+        const auto pen=canvasStyle::previewPen(canvasStyle::active());
+        addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));
         for (auto p:draft_) { const double r=3/viewScale(); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
     }
     scene_.setSceneRect(scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000)));

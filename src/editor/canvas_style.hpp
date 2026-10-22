@@ -16,6 +16,22 @@ inline QColor advisory() { return editorDesign::semantic(editorDesign::Semantic:
 inline QColor ok() { return editorDesign::semantic(editorDesign::Semantic::ok); }
 // Neutral overlay ink: linework a tool draws that is not state (draft, band, waiting line).
 inline QColor ink() { return editorDesign::role(QPalette::Dark); }
+// D306: a preview is never dashed. It is a solid line on a wider translucent casing in the
+// background colour, so it stays readable over a road, a map or empty space; a segment that is
+// still pending (a zone's closing edge, the edge to the pointer) is the same line, fainter.
+inline QPen previewPen(const QColor& colour, double pixels = 2) {
+    QPen pen(colour, pixels, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
+    return pen;
+}
+inline QPen previewCasing(double pixels) {
+    QColor casing = editorDesign::role(QPalette::Base); casing.setAlpha(170);
+    QPen pen(casing, pixels + 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
+    return pen;
+}
+inline QPen pendingPen() {
+    QColor colour = active(); colour.setAlpha(100);
+    return previewPen(colour, 1.5);
+}
 inline constexpr double markingWidth = 0.10; // metres, including each stroke of a double line
 inline constexpr double laneTabLength = 24; // logical pixels along the road
 inline constexpr double laneTabDepth = 8;   // logical pixels outside the road

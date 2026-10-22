@@ -9,7 +9,7 @@
 #include <QPen>
 
 // M5.4b (D133): the Section tool and the sections' marks. Ctrl+right-click on a Link sets the
-// start line, a second one the end line and hands both over; Esc drops a half-placed section. A
+// start line, a second click (plain since D306) the end line and hands both over; Esc drops a half-placed section. A
 // line is drawn across every lane of its Link, where evaluation measures it.
 namespace multra {
 std::optional<SectionLine> EditorCanvas::sectionLineAt(Point p) const {
@@ -22,8 +22,8 @@ std::optional<SectionLine> EditorCanvas::sectionLineAt(Point p) const {
     return SectionLine{point->path.linkId, point->station};
 }
 bool EditorCanvas::sectionPress(QMouseEvent* e) {
-    if (tool_ != Tool::section || !document_ || e->button() != Qt::RightButton || !(e->modifiers() & Qt::ControlModifier))
-        return false; // D84: Ctrl+right-click authors; a left click only selects
+    if (tool_ != Tool::section || !document_ || !authoringPress(e, sectionStart_.has_value()))
+        return false; // D84/D306: Ctrl+right-click sets the start; then a plain click sets the end
     const auto p = world(e->pos(), false);
     lastPick_ = p;
     const auto line = sectionLineAt(p);
@@ -44,9 +44,11 @@ void EditorCanvas::drawSections() {
             for (const auto& lane : link.lanes) {
                 const auto bar = waitingLineBar(n, {{link.id, lane.id, {}, {}, {}}, line.station});
                 if (!bar) continue; // past this lane's end: evaluation skips it too
-                QPen pen(canvasStyle::advisory(), draft ? 4 : 3, draft ? Qt::DashLine : Qt::SolidLine);
-                pen.setCosmetic(true); pen.setCapStyle(Qt::FlatCap);
-                auto* item = scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);
+                // A placed start is a preview: wider, on its casing (D306), never dashed.
+                QPainterPath path(QPointF(bar->first.x, bar->first.y)); path.lineTo(bar->second.x, bar->second.y);
+                auto pen = canvasStyle::previewPen(canvasStyle::advisory(), draft ? 4 : 3); pen.setCapStyle(Qt::FlatCap);
+                QGraphicsItem* item = draft ? static_cast<QGraphicsItem*>(addPreviewPath(path, link.level * 100. + 11.6, pen))
+                                           : scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);
                 item->setZValue(link.level * 100. + 11.6);
                 item->setData(0, QStringLiteral("travel-time-section")); item->setData(1, QString::fromStdString(id));
                 item->setData(2, QString::fromLatin1(end));

@@ -28,6 +28,9 @@ struct Link {
     // M3.3.2a, schema 21: a link behaviour type id; absent keeps each type's own behaviour.
     std::optional<std::string> behaviourTypeId{};
     std::optional<std::string> linkTypeId{}; // S2.1 (MACRO_NETWORK §4, D273), schema 50: Macro only
+    // S3.3 (ROADS §3, D305), schema 53: the Road whose template generated this Link; cleared when the
+    // Link is edited by hand (detached).
+    std::optional<std::string> roadId{};
     bool operator==(const Link&) const = default;
 };
 struct LaneReference {
@@ -128,6 +131,21 @@ struct Node {
     std::string id, name; std::vector<Point> polygon; bool generated{};
     bool operator==(const Node&) const = default;
 };
+// S3.3 (ROADS §3, D305): a Road is a centreline with a cross-section template. *Apply template*
+// generates its directed Links (forward first), which stay ordinary Links carrying `roadId`.
+struct RoadOverrides {
+    std::optional<int> lanesForward{}, lanesBackward{};
+    std::optional<double> laneWidth{}, median{};
+    bool operator==(const RoadOverrides&) const = default;
+};
+struct Road {
+    std::string id, name; std::vector<Point> centreline;
+    std::optional<std::string> crossSectionId{};
+    int level{};
+    RoadOverrides overrides{};
+    std::vector<std::string> links{};
+    bool operator==(const Road&) const = default;
+};
 // DrivingSide lives in core (src/core/lateral_types.hpp) since M3.7 slice 1 (D187).
 struct Network {
     std::string id;
@@ -139,6 +157,7 @@ struct Network {
     std::vector<AuthoredQueueCounter> queueCounters; // M3.2.6b, schema 16
     std::vector<TravelTimeSection> travelTimeSections; // M5.4, schema 23
     std::vector<Node> nodes; // S0 (NODES §2, D261), schema 48
+    std::vector<Road> roads; // S3.3 (ROADS §3, D305), schema 53
     bool operator==(const Network&) const = default;
 };
 // A place a Signal head can stand -- a Link lane or a Connector path -- with its polyline and

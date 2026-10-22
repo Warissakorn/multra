@@ -3,6 +3,87 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.3 blocked on its sources; nothing built
+
+The owner asked for M11.3. The contract makes checking §4 against Yperman (2007) and §5 against
+Tampère et al. (2011) the first step, but the environment refused every host that holds them
+(proxy 403: arxiv.org, lirias.kuleuven.be, ideas.repec.org). The owner chose to wait for the sources,
+so no engine code was written. OWNER_SITTING B22 asks for the hosts or the PDFs.
+
+## 2026-10-22 — MA15: Sheffi's Table 5.4 as the Macro benchmark (D294)
+
+The owner supplied Markdown copies of four books, among them Sheffi (1985), which was D272's first
+candidate. This unblocked MA15.
+- **The example:** Table 5.4, Frank–Wolfe on Figure 5.1. It has three parallel BPR links, t₀ =
+  (10, 20, 25) and q = 10.
+- **Derived capacities:** the copy's image of book p. 114 is empty, so the capacities were derived.
+  Table 5.1's 947 and 137 give c₁ = 2 and c₂ = 4. c₃ = 3 reproduces every printed number, apart from
+  two misprints. The owner confirms them against the print (OWNER_SITTING B21).
+- **Row:** `macrobenchmark` holds MA15 (a) and (b).
+  - (a) Runs capped at 1–5 iterations match the printed flows, times, objective and steps.
+  - (b) At the 10⁻⁴ target, the run reaches the equal-time equilibrium in 13 iterations, with
+    z = 189.33.
+  - The engine was unchanged.
+- **Cost:** 80 µs and 0.47 M Ir per run (ENGINEERING_NOTES).
+- **The M10 gate stays open:** closing it is the owner's call, and the not-validated marker stays
+  until M6.
+
+## 2026-10-22 — M11.3b: routeless inputs and placed decisions as Meso paths (D296)
+
+The owner asked for M11.3b. Meso now takes Micro's own expansion of routeless inputs and placed
+decisions: `expandRouteless` after `resolveCatalogs`, so lane splits, slice shares and typed routing
+are not copied.
+- **Lanes to objects:** `mesoObjectChain` maps lane sections and connector paths back to Links and
+  Connectors, then `mesoPath` as in M11.3a.
+- **Stubs:** a stub's flow goes to the full routes its vehicles change lanes onto, because the trip
+  does not end there.
+- **Type parts:** a composition's type parts sum back into its class.
+- **The M2.6 template** (four placed decisions) now loads its whole demand, conserved over time.
+- **Rows:** ME17–ME19 in `mesodemand`. ME13 now checks the walk's own issues instead of the old
+  refusal. Four mutations are caught.
+
+## 2026-10-22 — M11.3a: Micro's routes as Meso paths and demand (D295)
+
+The owner asked for M11.3a after MA15.
+- **`src/meso/demand.*`:** paths, classes, turn shares and entry flows, as plain values.
+- **`mesoPath`:** a route's Links and Connectors become Meso links and turns. Pieces inside a Node
+  collapse to the Node's turn.
+- **`mesoDemand`:** expands the document as the Micro compile does (OD matrices, then static
+  decisions with their interval and type weights). It keys classes by composition or lone vehicle
+  type, with PCU from `modePcu`.
+- **Carved out as M11.3b:** placed decisions and routeless inputs walk lanes, not objects, so they
+  are refused with `MESO_ROUTELESS_UNSUPPORTED` until then. The M2.6 template uses them.
+- **Rows:** ME12–ME16 in `mesodemand`. Five mutations are caught. A turn preference by `via` was
+  removed as dead code, since the graph keeps one turn per (in, out) pair.
+
+## 2026-10-21 — M11.2: the Meso graph (D292 answers, D293)
+
+The owner answered the Meso choices "เอาตามแนะนำ": 1a–7a (D292).
+- **New module `src/meso/`** (imports nothing): links, turns and nodes, the settings and the step
+  limit.
+- **`compileMesoNetwork`:** each Node becomes one node with its membership turns and conflicts; the
+  pieces inside a Node are left out; other junctions become simple nodes with through and merged
+  Connector turns. A refused Node is reported and compiled as if it were not drawn.
+- **File:** a link type's `jamDensity` (pcu/km/lane, above the critical density) and
+  `mesoSettings{step, slice}` at schema 52, only when set; the shipped projects keep their schema.
+- **Tests:** ME1–ME2 in `mesonetwork`. Six mutations are caught, two of them only after the rows
+  gained fixtures (two lane Connectors; a refused Node over the junction).
+
+## 2026-10-21 — M11.1: the Meso contract (D291, docs only)
+
+The owner asked whether Meso could start. M11.1 can, because everything it needs exists; only M11.5
+(dynamic assignment) waits on M9. [MESO_NETWORK](../reference/MESO_NETWORK.md) fixes the following:
+- **The graph:** the Macro graph's Link pieces, with each Node as one Meso node.
+- **The link model:** a triangular diagram with Newell's cumulative curves and Yperman's sending and
+  receiving volumes.
+- **The node model:** Tampère et al. (2011), with signals as capacity and spill-back.
+- **Data:** a `jamDensity` per link type, none shipped.
+- **Loading:** deterministic.
+- **Outputs:** by time slice, with rows ME1–ME11.
+
+Seven owner choices are listed as B20. Sources came from search summaries; Yperman's thesis was not
+found, so §4's formulas are checked before M11.3.
+
 ## 2026-10-21 — S0.8b: a comparison's Node rows in Results → Nodes (D290); S0 complete
 
 The editor half of D289. MA15 is still blocked (sheffi.mit.edu and arxiv.org refused again).

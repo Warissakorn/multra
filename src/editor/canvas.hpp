@@ -8,6 +8,7 @@
 #include "lane_change_pose.hpp"
 #include "road_crossbar.hpp"
 #include <QGraphicsView>
+#include <QCursor>
 #include <QPainterPath>
 #include <functional>
 #include <optional>
@@ -233,7 +234,10 @@ private:
     std::optional<SectionLine> sectionStart_;
     bool sectionPress(QMouseEvent*);
     std::vector<Point> zoneDraft_;
+    std::optional<Point> draftPointer_; // where a zone or node draft's pending edges meet the pointer
     bool zonePress(QMouseEvent*);
+    // D306: Ctrl+right-click starts a multi-click draft; once it is open a plain left click adds.
+    bool authoringPress(const QMouseEvent*, bool draftOpen) const;
     void commitZoneDraft();
     void drawZones();
     void drawNodes();
@@ -384,6 +388,10 @@ private:
     bool movingGeometry() const;
     bool movingBody() const;
     void showMoveCursor();
+    // D306: the arrow in Select, the arrow with the tool's glyph beside it in every other tool.
+    QCursor idleCursor() const;
+    // A preview line: solid, on a translucent Base casing so it reads over roads and maps (D306).
+    QGraphicsPathItem* addPreviewPath(const QPainterPath&, double z, const QPen&, const QBrush& = Qt::NoBrush);
     std::string hoverObject_, hoverConflict_, hoverAutomatic_, hoverWaitingLine_;
     int hoverVertex_{-1}, hoverLaneKind_{}, hoverLaneLocation_{-1};
     struct LaneHandle { Point position, anchor, direction; double width; int kind, count, maximum; int location{1}; double tabLength{}; };

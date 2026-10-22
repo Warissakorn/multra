@@ -22,8 +22,8 @@ Point centroid(const std::vector<Point>& polygon) {
 }
 }
 bool EditorCanvas::zonePress(QMouseEvent* e) {
-    if ((tool_ != Tool::zone && tool_ != Tool::node) || !document_ || e->button() != Qt::RightButton || !(e->modifiers() & Qt::ControlModifier))
-        return false; // D84: Ctrl+right-click authors; a left click only selects
+    if ((tool_ != Tool::zone && tool_ != Tool::node) || !document_ || !authoringPress(e, !zoneDraft_.empty()))
+        return false; // D84/D306: Ctrl+right-click starts the draft; then plain clicks add corners
     zoneDraft_.push_back(world(e->pos(), false));
     redraw();
     return true;
@@ -31,7 +31,7 @@ bool EditorCanvas::zonePress(QMouseEvent* e) {
 void EditorCanvas::commitZoneDraft() {
     if (zoneDraft_.size() < 3) return; // a polygon needs three corners; the draft stays
     auto polygon = zoneDraft_;
-    zoneDraft_.clear();
+    zoneDraft_.clear(); draftPointer_.reset();
     redraw();
     const auto& committed = tool_ == Tool::node ? nodeCommitted : zoneCommitted;
     if (committed && !committed(polygon)) { zoneDraft_ = std::move(polygon); redraw(); }
@@ -43,12 +43,14 @@ void EditorCanvas::drawZones() {
         QPainterPath shape;
         for (std::size_t i = 0; i < polygon.size(); ++i)
             i ? shape.lineTo(polygon[i].x, polygon[i].y) : shape.moveTo(polygon[i].x, polygon[i].y);
-        if (!draft) shape.closeSubpath();
-        QPen pen(draft ? canvasStyle::active() : canvasStyle::ink(), 2, Qt::DashLine);
-        pen.setCosmetic(true);
-        QColor wash = canvasStyle::advisory(); wash.setAlpha(draft ? 20 : 40);
-        auto* item = scene_.addPath(shape, pen, draft ? QBrush(Qt::NoBrush) : QBrush(wash));
-        item->setZValue(draft ? 200007 : -150);
+        // A saved zone keeps its dashed ink outline (it is not a Node); a draft is a preview,
+        // solid on its casing (D306).
+        if (draft) return addPreviewPath(shape, 200007, canvasStyle::previewPen(canvasStyle::active()));
+        shape.closeSubpath();
+        QPen pen(canvasStyle::ink(), 2, Qt::DashLine); pen.setCosmetic(true);
+        QColor wash = canvasStyle::advisory(); wash.setAlpha(40);
+        auto* item = scene_.addPath(shape, pen, QBrush(wash));
+        item->setZValue(-150);
         return item;
     };
     for (const auto& zone : layer.zones) {
@@ -72,10 +74,22 @@ void EditorCanvas::drawZones() {
         }
     }
     if ((tool_ == Tool::zone || tool_ == Tool::node) && !zoneDraft_.empty()) {
-        outline(zoneDraft_, true);
+        outline(zoneDraft_, true)->setData(0, QStringLiteral("zone-draft"));
+        // The edges still to come, fainter: last corner to the pointer to the first corner, or
+        // with no pointer yet the closing edge alone.
+        std::vector<Point> pending{zoneDraft_.back()};
+        if (draftPointer_) pending.push_back(*draftPointer_);
+        if (zoneDraft_.size() > 1 || draftPointer_) pending.push_back(zoneDraft_.front());
+        if (pending.size() > 1) {
+            QPainterPath edges(QPointF(pending[0].x, pending[0].y));
+            for (std::size_t i = 1; i < pending.size(); ++i) edges.lineTo(pending[i].x, pending[i].y);
+            auto* item = scene_.addPath(edges, canvasStyle::pendingPen()); item->setZValue(200006.9);
+            item->setData(0, QStringLiteral("zone-draft-pending"));
+        }
         const double r = 3 / viewScale();
-        QPen pen(canvasStyle::active(), 2); pen.setCosmetic(true);
-        for (const auto& p : zoneDraft_) scene_.addEllipse(p.x - r, p.y - r, 2 * r, 2 * r, pen)->setZValue(200008);
+        for (const auto& p : zoneDraft_)
+            scene_.addEllipse(p.x - r, p.y - r, 2 * r, 2 * r, canvasStyle::previewPen(canvasStyle::active(), 1.5),
+                              QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }
 }
 // S0.1 (NODES §6): a Node is a solid outline over the Links with its name at the centroid.

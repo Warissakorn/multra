@@ -20,7 +20,8 @@
 
 // S2.4 (MACRO_NETWORK §4, §20, D277): the Link types tab and the Link's type field. Installed types
 // (data/link-types/; none ship) are listed read-only until the first Add owns them; each change is
-// one execute() step. Micro never reads a type, so no edit here moves a Micro output.
+// one execute() step. Micro never reads a type, so no edit here moves a Micro output. S3.2 (D304): the
+// installed types are HCM's; the capacity basis is shown and kept, not edited here.
 namespace multra {
 namespace {
 std::vector<LinkType> linkTypeRows(const ProjectDocument& d, const std::filesystem::path& data) {
@@ -38,7 +39,7 @@ void EditorWindow::buildLinkTypes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    linkTypeTable_ = new QTableWidget(0, 7, body); linkTypeTable_->setObjectName("editorLinkTypeTable");
+    linkTypeTable_ = new QTableWidget(0, 8, body); linkTypeTable_->setObjectName("editorLinkTypeTable");
     linkTypeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     linkTypeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     linkTypeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -58,7 +59,7 @@ void EditorWindow::buildLinkTypes() {
 }
 void EditorWindow::translateLinkTypes() {
     linkTypeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorLinkTypeCapacity"),
-        text("editorLinkTypeSpeed"), text("editorLinkTypeVdf"), text("editorLinkTypeModes"), text("editorLinkTypeSource")});
+        text("editorLinkTypeSpeed"), text("editorLinkTypeVdf"), text("editorLinkTypeModes"), text("editorLinkTypeSource"), text("editorLinkTypeBasis")});
     linkTypeRevision_ = UINT64_MAX;
 }
 std::string EditorWindow::selectedLinkType() const {
@@ -76,7 +77,8 @@ void EditorWindow::refreshLinkTypes() {
             const auto& t = rows[static_cast<std::size_t>(r)];
             const QStringList values{QString::fromStdString(t.id), QString::fromStdString(t.name), editorDesign::formatValue(t.capacityPerLane, 0),
                                      editorDesign::formatValue(t.freeSpeed * 3.6, 1), QString::fromStdString(t.vdfId),
-                                     t.modes.empty() ? text("editorLinkTypeAllModes") : joined(t.modes), QString::fromStdString(t.source)};
+                                     t.modes.empty() ? text("editorLinkTypeAllModes") : joined(t.modes), QString::fromStdString(t.source),
+                                     text(t.capacityBasis == "ultimate" ? "editorCapacityBasisUltimate" : "editorCapacityBasisPractical")};
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(t.id));
                 if (col == 2 || col == 3) editorDesign::setNumericText(cell, true);

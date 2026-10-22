@@ -46,7 +46,7 @@ TEST(mesooutput, me10_a_run_and_its_outputs) { // ME10
     for (const char* key : {"validated", "measure", "revision", "settings", "duration", "cancelled", "advisories", "classes", "totals", "links", "turns", "inputManifest"})
         CHECK(j.contains(key));
     CHECK(j["validated"] == false && j["cancelled"] == false && !j["inputManifest"]["files"].empty());
-    for (const char* key : {"vkt", "vht", "delay", "storedAtEnd"}) CHECK(j["totals"].contains(key));
+    for (const char* key : {"vkt", "vht", "delay", "storedAtEnd", "inNodesAtEnd"}) CHECK(j["totals"].contains(key));
     const auto csv = lines(mesoCsv(r));
     CHECK(csv.at(0).rfind("# MULTRA - not yet validated.", 0) == 0);
     const auto slices = static_cast<std::size_t>(3600 / r.settings.slice);
@@ -57,19 +57,23 @@ TEST(mesooutput, me10_a_run_and_its_outputs) { // ME10
     }
     CHECK(demanded > 1000); // forcing: the matrix's 1200 trips
     test::near(demanded, entered + waiting, 1e-6);
-    // Per link: the slices' inflows sum to its entrance count; PCU entered = arrived + stored.
-    double storedPcu = 0, enteredPcu = 0, arrivedPcu = 0;
+    // Per link: the slices' inflows sum to its entrance count; PCU entered = arrived + stored on links
+    // + inside nodes (D301).
+    double storedPcu = 0, insidePcu = 0, enteredPcu = 0, arrivedPcu = 0;
     for (std::size_t l = 0; l < r.graph.links.size(); ++l) {
         double sum = 0;
         for (const auto& x : mesoLinkSlices(r, l)) sum += x.inflow * (x.end - x.start) / 3600;
         test::near(sum, r.loading.up[l].at.back(), 1e-6);
         storedPcu += r.loading.up[l].at.back() - r.loading.down[l].at.back();
+        insidePcu += r.loading.admitted[l].at.back() - r.loading.up[l].at.back();
     }
+    CHECK(std::any_of(r.graph.turns.begin(), r.graph.turns.end(), [](const auto& t) { return t.freeTime > 0; })); // forcing: timed turns
     for (const auto& x : r.loading.commodities) {
         enteredPcu += x.entered.back() * r.classes[x.cls].pcu; arrivedPcu += x.arrived.back() * r.classes[x.cls].pcu;
     }
-    test::near(enteredPcu, arrivedPcu + storedPcu, 1e-6);
+    test::near(enteredPcu, arrivedPcu + storedPcu + insidePcu, 1e-6);
     test::near(j["totals"]["storedAtEnd"].template get<double>(), storedPcu, 1e-6);
+    test::near(j["totals"]["inNodesAtEnd"].template get<double>(), insidePcu, 1e-6);
 }
 TEST(mesooutput, me10_slices_flag_spill_back_and_time_travel) { // ME10
     // Yperman's Example 4.5 as a run, 10-minute slices: R = 0 from the step at 40 min.
@@ -85,6 +89,14 @@ TEST(mesooutput, me10_slices_flag_spill_back_and_time_travel) { // ME10
     test::near(*f[0].travelTime, 50, 1e-6); test::near(*f[1].travelTime, 50, 1e-6);
     CHECK(f[0].queue < 1e-9);
     test::near(mesoJson(free)["totals"]["delay"].template get<double>(), 0, 1e-9);
+    // A free chain whose turn takes 20 s: no delay, and VHT is the free time with the turn's.
+    auto timed = chain({link("a", 0, 1, 1000, 1, 1800, 72, 150), link("b", 1, 2, 1000, 1, 1800, 72, 150)}, 900, 600, 1, 300, 900);
+    timed.graph.turns[0].freeTime = 20;
+    timed.loading = loadMeso(timed.graph, timed.classes, 1, 900);
+    const auto tj = mesoJson(timed);
+    CHECK(tj["turns"][0]["freeTime"] == 20 && timed.loading.commodities[0].arrived.back() > 149); // forcing
+    test::near(tj["totals"]["delay"].template get<double>(), 0, 1e-6);
+    test::near(tj["totals"]["vht"].template get<double>(), 150 * (50 + 20 + 50) / 3600.0, 1e-6);
     auto drop = chain({link("a", 0, 1, 3000, 2, 1800, 72, 150), link("b", 1, 2, 1000, 1, 1800, 72, 150)}, 2700, 1200, 1, 300, 3600);
     const auto q = mesoLinkSlices(drop, 0);
     CHECK(q[3].queue > 100 && *q[3].travelTime > 150 + 60); // the queue at the lane drop

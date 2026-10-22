@@ -18,11 +18,13 @@ of tool clears the previous selection and cancels unfinished gestures. Table sel
 authoring tool can still show properties, but exposes no geometry/lane grips. Ctrl+Tab cycling and
 canvas Delete operate in Select (conflict areas also support Ctrl+Tab in their own tool).
 
-Escape first cancels an unfinished gesture/draft; when idle, it clears selection. Empty-space
-clicks in any authoring tool clear selection while keeping an unfinished
-multi-click draft, without showing an error. Enter commits and Escape cancels those drafts.
+Escape first cancels an unfinished gesture/draft; when idle, it clears selection. With no draft
+open, empty-space clicks in any authoring tool clear selection without showing an error. Enter
+commits and Escape cancels a multi-click draft.
 Plain right/middle drag remains pan; Ctrl+right-click or Ctrl+right-drag creates or changes
-in every tool, and a plain left click never authors outside Routes (D116) and Measure/Calibrate. Shift-click toggles, Ctrl-click adds an unselected object, and
+in every tool, and a plain left click never authors outside Routes (D116) and Measure/Calibrate,
+except that once a multi-click draft (Zone, Node, Queue counter, Section, two-click Connector) has
+its first point, plain left clicks place the rest (D306). Shift-click toggles, Ctrl-click adds an unselected object, and
 Ctrl-drag of a selected object copies it, retaining the D30 convention.
 
 ## History

@@ -1,0 +1,13 @@
+{
+  "id": "multilane-45",
+  "name": "Multilane highway, FFS 45 mi/h (HCM 7)",
+  "capacityPerLane": 1900,
+  "freeSpeed": 20.1168,
+  "vdfId": "bpr",
+  "source": "HCM 7th ed., Exhibit 12-4 (PDF pp. 818-819) and Exhibit 12-6 (p. 822): multilane highway segment capacity under base conditions at FFS 45 mi/h (c = 1,900 + 20(FFS - 45), c <= 2,300); FFS converted at 0.44704 m/s per mi/h. Ultimate (base) capacity, not BPR's practical capacity; pc taken as PCU; base conditions assume no heavy vehicles (D304).",
+  "jamDensity": {
+    "value": 118.0605,
+    "source": "HCM 7th ed., Exhibit 10-7 (PDF p. 657): jam density default 190 pc/mi/ln (range 150-270), divided by 1.609344 km/mi; pc taken as PCU (D304)."
+  },
+  "capacityBasis": "ultimate"
+}

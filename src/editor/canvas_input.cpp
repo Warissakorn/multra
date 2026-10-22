@@ -54,7 +54,9 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
         copyPick_=picked.first;copyArmed_=isSelected(copyPick_);copyStart_=e->pos();dragStart_=p;
         copyDragging_=false;copyOffset_={};return;
     }
-    if(tool_!=Tool::select && tool_!=Tool::conflict &&
+    // D306: while a multi-click draft is open, a plain click adds its next point, not a selection.
+    const bool draftOpen=(tool_==Tool::connect && connectorFrom_) || !counterDraft_.empty() || sectionStart_ || !zoneDraft_.empty();
+    if(tool_!=Tool::select && tool_!=Tool::conflict && !draftOpen &&
        (!selection_.empty() || !highlightedRoute_.empty() || !highlightedConflict_.empty() || !highlightedNode_.empty()))clearSelection(false);
     if(demandPress(e))return;
     if(headPress(e))return;
@@ -76,6 +78,7 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
         }
         redraw(); return;
     }
+    if(tool_==Tool::connect && connectorFrom_ && authoringPress(e,true)) {pickConnector(lastPick_);return;}
     const auto picked=hit(world(e->pos(),false));
     // In an authoring tool a left click selects what is under it; moving objects is Select's.
     if (tool_!=Tool::select) { if (picked.first.empty())clearSelection(false);else select(picked.first); return; }
@@ -166,6 +169,7 @@ void EditorCanvas::mouseMoveEvent(QMouseEvent* e) {
     }
     if(headDrag_) {updateHeadDrag(e->pos());return;}
     if(lineDrag_) {updateLineDrag(e->pos());return;}
+    if((tool_==Tool::zone || tool_==Tool::node) && !zoneDraft_.empty()) {draftPointer_=world(e->pos(),false);redraw();}
     if(demandHover(e))return;
     if(headHover(e))return;
     if (tool_==Tool::connect && connectorFrom_) {
@@ -191,7 +195,7 @@ void EditorCanvas::mouseMoveEvent(QMouseEvent* e) {
     updateHover(e->pos());
 }
 void EditorCanvas::mouseReleaseEvent(QMouseEvent* e) {
-    setCursor(tool_==Tool::select?Qt::ArrowCursor:Qt::CrossCursor);
+    setCursor(idleCursor());
     if(e->button()==Qt::LeftButton && rotationPivot_) {
         // Native platforms may coalesce the last move; commit the release angle once.
         updateRotation(e->pos(),e->modifiers()&Qt::ShiftModifier);

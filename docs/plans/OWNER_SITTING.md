@@ -62,6 +62,16 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Yperman (2007), or Boyles et al. as a citable secondary source for the LTM link model.
    **2026-10-22:** the owner supplied Yperman (2007) as a Markdown repository; the link model and the
    engine are in (D298). Boyles et al. are not needed. Only the host question remains, for later sources.
+23. **Meso benchmark choice** (listed 2026-10-22, D302). Read the
+   [option sheet](../evidence/meso-benchmark-options.md) and answer its §6 by letter: QM's kind of
+   benchmark, a primary and secondary option for M1 (a corridor queue and shockwave) and M2
+   (network spill-back), whether a not-blind case may count, and which copies you will supply
+   (the session recommends Boyles et al. 2025 as a Markdown repository, or `arxiv.org` allowed).
+   The sheet holds no engine numbers; the tolerance comes after this answer. Which options? *Owner:*
+
+
+Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD.md#d304):
+S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([ROADS](../reference/ROADS.md) §11). Numbers are not reused.
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.

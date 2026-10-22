@@ -1,7 +1,7 @@
-// M11.3c-d rows ME3-ME9 and ME24-ME26 (docs/reference/MESO_NETWORK.md §4-§6, §13, D298, D299):
+// M11.3c-d rows ME3-ME9 and ME24-ME26, ME28 (docs/reference/MESO_NETWORK.md §4-§6, §13, D298, D299):
 // Yperman's (2007) link model and LTM loading on hand-built Meso networks, its Example 4.5 and §7.1
 // diverge network, the step limit, route composition by Eq. 5.2, and signals as averaged green. Each row
-// first checks its forcing.
+// first checks its forcing. ME28: a turn's free time (D301).
 #include "test.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/node_commands.hpp"
@@ -288,4 +288,43 @@ TEST(mesoloading, me7_a_signalised_approach_passes_s_g_over_c) { // ME7
                                         {{"legacy", 0, {{30, SignalColor::green}, {3, SignalColor::amber}, {67, SignalColor::red}}}});
     test::near(shares.at(signalGroupProgramId("k", 1)), 0.2, 1e-12);
     test::near(shares.at("legacy"), 0.3, 1e-12);
+}
+TEST(mesoloading, me28_a_turn_s_free_time_delays_entry_and_counts_against_storage) { // ME28
+    // A free chain a > b (50 s each) whose turn takes tau: arrivals lag the demand by 50 + tau + 50 s.
+    const auto chain = [](double tau, double step) {
+        auto g = graph({link("a", 0, 1, 1000, 1, 1800, 72, 150), link("b", 1, 2, 1000, 1, 1800, 72, 150)}, {{"a", "b"}});
+        g.turns[0].freeTime = tau;
+        return loadMeso(g, {{"type:car", 1, {path(g, "p", {"a", "b"}, {{0, 600, 900}})}}}, step, 900);
+    };
+    const auto lagOf = [](const MesoLoading& r) {
+        const auto& c = r.commodities[0];
+        return MesoCurve{r.step, c.arrived}.time(100) - MesoCurve{r.step, c.demand}.time(100);
+    };
+    const auto none = chain(0, 1), slow = chain(20, 1);
+    test::near(lagOf(none), 100, 0.5);
+    test::near(lagOf(slow) - lagOf(none), 20, 1e-6); // forcing: the turn's 20 s is loaded
+    test::near(slow.commodities[0].arrived.back(), 150, 1e-9);
+    // tau below the step: b's entrance is its admitted count 0.4 s earlier, at every step.
+    const auto brief = chain(0.4, 1);
+    CHECK(brief.admitted[1].at[100] - brief.up[1].at[100] > 0.05); // forcing: vehicles inside the node
+    for (std::size_t k = 0; k < brief.up[1].at.size(); ++k)
+        test::near(brief.up[1].at[k], brief.admitted[1].value(static_cast<double>(k) - 0.4), 1e-9);
+    // Storage: b (200 m, 30 PCU) is blocked at its exit; the 30 s turn's vehicles count against it.
+    auto g = graph({link("a", 0, 1, 1000, 1, 1800, 72, 150), link("b", 1, 2, 200, 1, 1800, 72, 150), link("x", 2, 3, 1000, 1, 0, 72, 150)},
+                   {{"a", "b"}, {"b", "x"}});
+    g.turns[0].freeTime = 30;
+    const auto r = loadMeso(g, {{"type:car", 1, {path(g, "p", {"a", "b", "x"}, {{0, 600, 1800}})}}}, 1, 900);
+    const auto& c = r.commodities[0];
+    bool inside = false, full = false;
+    for (std::size_t k = 0; k < c.demand.size(); ++k) {
+        CHECK(r.admitted[1].at[k] - r.down[1].at[k] <= mesoStorage(g.links[1]) + 1e-9);
+        if (r.admitted[1].at[k] - r.up[1].at[k] > 1 && r.admitted[1].at[k] - r.down[1].at[k] > 25) inside = true;
+        double links = 0;
+        for (std::size_t l = 0; l < 3; ++l) links += stored(r, l, k) + r.admitted[l].at[k] - r.up[l].at[k];
+        test::near(c.entered[k] - c.arrived[k], links, 1e-9); // conservation, every step
+    }
+    for (std::size_t k = 0; k + 1 < r.receiving[1].size(); ++k) full = full || r.receiving[1][k] == 0;
+    CHECK(inside && full); // forcing: b fills while vehicles are still inside the node
+    test::near(r.up[1].at.back(), mesoStorage(g.links[1]), 1e-9); // they all enter in the end
+    CHECK(c.entered.back() < c.demand.back() - 1); // spill-back reaches the origin
 }
