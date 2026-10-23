@@ -63,6 +63,12 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`
     (`MESO_PRIORITY_IGNORED`).
 - **Other open items:**
+  - **Lateral, switched on (2026-10-23, [lateral-run-audit](evidence/lateral-run-audit.md)):**
+    the per-tick invariants hold (no 2D overlap, rate within the cap, no jump), but
+    `m2.6-study-template` regresses: a changer past its window straddles the line at its dead end
+    and jams both lanes (seed 45: 1908 → 1531 completed), and clamps go from 1 to 33. That meets
+    LANE_CHANGE_DURATION §9's reopen condition. Abandoning a change (§9) is the owner's call
+    before any shipped behaviour carries the keys;
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
   - **S3** ([ROADS](reference/ROADS.md), D303, D304): the owner chose 1a–5a, 6b, 7a. S3.2 is in:
