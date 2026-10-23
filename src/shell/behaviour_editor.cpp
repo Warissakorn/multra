@@ -16,6 +16,7 @@
 #include <QLineEdit>
 #include <QLocale>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <tuple>
