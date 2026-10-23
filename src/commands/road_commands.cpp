@@ -234,4 +234,23 @@ std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<Ro
     }
     return nodes;
 }
+namespace {
+const Link& generatedLink(const ProjectDocument& d, const std::string& linkId) {
+    const auto l = std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& x) { return x.id == linkId; });
+    if (l == d.network.links.end()) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
+    if (!l->roadId) throw std::invalid_argument("EDIT_SEAM_NOT_GENERATED");
+    return *l;
+}
+}
+void useLinkLanes(ProjectDocument& d, const std::string& linkId) {
+    const auto& link = generatedLink(d, linkId);
+    const auto lanes = static_cast<int>(link.lanes.size());
+    auto& road = editableRoad(d, *link.roadId);
+    if (!road.links.empty() && road.links.front() == linkId) road.overrides.lanesForward = lanes;
+    else road.overrides.lanesBackward = lanes;
+}
+void useRoadLanes(ProjectDocument& d, const std::string& linkId, const std::vector<CrossSection>& installed) {
+    const auto road = *generatedLink(d, linkId).roadId;
+    applyTemplate(d, road, installed);
+}
 }

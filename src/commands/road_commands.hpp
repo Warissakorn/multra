@@ -53,4 +53,11 @@ enum class CrossingChoice { junction, overpass };
 // twice the tolerance when nothing gives a width. Returns the new Nodes' ids.
 std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<RoadCrossing>&, const std::vector<CrossingChoice>&,
                                         double tolerance, const std::vector<CrossSection>& installed);
+// S3.7 (ROADS §7, D312): the SEAM_LANE_COUNT fixes, each one Command and changing only the side the
+// user chose. useLinkLanes: the Road's override for the Link's direction becomes the Link's lane
+// count (the Road follows Micro). useRoadLanes: Apply template again, so the Road's Links take its
+// lanes (Micro follows the Road), keeping their ids. EDIT_SEAM_NOT_GENERATED for a Link without a
+// Road; EDIT_UNKNOWN_OBJECT when unknown.
+void useLinkLanes(ProjectDocument&, const std::string& linkId);
+void useRoadLanes(ProjectDocument&, const std::string& linkId, const std::vector<CrossSection>& installed);
 }

@@ -163,6 +163,21 @@ int main(int argc, char** argv) {
         onDialog([](QDialog& d) { d.findChild<QSpinBox*>("editorRoadLanesForward")->setValue(3); });
         trigger(w, "editorEditRoad");
         require(network().roads[0].overrides.lanesForward == 3 && !network().roads[0].overrides.laneWidth, "The override was not stored alone");
+        // RD21 in the editor (S3.7, D312): the 2-lane forward Link under a 3-lane Road is a Micro seam;
+        // Use Node applies the template to it in one step.
+        int seams = 0, macroSeams = -1; const auto beforeFix = w.history().revision();
+        onDialog([&](QDialog& d) {
+            auto* table = d.findChild<QTableWidget*>("editorSeamTable");
+            seams = table->rowCount();
+            for (int r = 0; r < table->rowCount(); ++r)
+                if (auto* fix = table->cellWidget(r, 3)) fix->findChild<QPushButton*>("editorSeamUseNode")->click();
+            auto* level = d.findChild<QComboBox*>("editorSeamLevel"); level->setCurrentIndex(level->findData(2));
+            macroSeams = table->rowCount();
+        });
+        trigger(w, "editorSeamChecks");
+        const auto fixed = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == road.links[0]; });
+        require(seams == 1 && macroSeams == 0 && fixed->lanes.size() == 3 && w.history().revision() == beforeFix + 1,
+                "Seam checks did not list the lane count and fix it with Use Node in one step");
         selectRow(roads, road.id); trigger(w, "editorApplyTemplate");
         const auto forward = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == road.links[0]; });
         require(network().roads[0].links == road.links && forward->lanes.size() == 3, "Re-applying did not keep the ids and add the lane");

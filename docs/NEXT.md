@@ -50,7 +50,7 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — owner's pick: M11 follow-ups, or another milestone
+## Next session — owner's pick: S4 (readiness panel), M11 follow-ups, or another milestone
 
 - **M11 is in through M11.4b** (D291–D302; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
@@ -74,10 +74,11 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
     ([ROADS_IMPLEMENTED](reference/ROADS_IMPLEMENTED.md) §19). S3.6b is in (D311): the *Coarse
     values…* dialog, refine, derive back and the two-leg lifecycle, with detail revised to the
     junction's interior and Link legs compiled (§20).
-    **Next, S3.7:** the seam checks (ROADS §7): `SEAM_ROAD_NOT_GENERATED` (RD20's Micro half),
-    `SEAM_LANE_COUNT` with *use Link* / *use Node* (RD21), the speed-jump warning (RD22) and the
-    detached-Link advisory. Booked: demand on a Road-only network (zone connectors attach to Links
-    only);
+    S3.7 is in (D312): seam checks on demand, with *Use Link* / *Use Node* (§21). **S3 is complete.**
+    Booked: demand on a Road-only network (zone connectors attach to Links only);
+  - **S4, next in the workflow** ([MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) §10): the
+    readiness panel, *Fill defaults* and Node proposals. It starts with its contract and owner
+    choices, as every S-stage did; the panel runs `seamChecks` with the run's other refusals;
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);

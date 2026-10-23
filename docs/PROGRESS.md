@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
+
+- **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:
+  - a Road without Links, which Micro leaves out (Micro only);
+  - a generated Link whose lanes differ from its Road's, fixed in one step by *Use Link* (the Road
+    follows) or *Use Node* (the template is applied again);
+  - a free-speed jump above 20 km/h between consecutive Links, adjustable in the dialog, with turns
+    inside junctions skipped;
+  - a Road that lost a generated Link.
+
+  Nothing is refused or changed unless a fix is chosen.
+- **Rows:** RD20's Micro half, RD21, RD22 and RD29 (`roadseams`), with RD21's editor part in
+  `road-ui`; five mutations caught.
+- **S3 (Roads) is complete:** S3.2–S3.7, D304–D312.
+
 ## 2026-10-23 — S3.6b: coarse values dialog, refine, derive back, lifecycle (D311)
 
 - **Detail is the junction's interior** (D311, revising D310): a Connector inside the Node, or a
@@ -127,17 +142,6 @@ The owner chose S3 next, with values from HCM 7. [ROADS](reference/ROADS.md) fix
   saturation flow (19-11) and jam density 190 pc/mi/ln (10-7). BPR pairs with practical capacity,
   so a capacity basis is proposed: HCM types shipped as `ultimate`, which Macro refuses with BPR.
 - Seven owner choices (B24) and rows RD1–RD22. Nothing is built yet.
-
-## 2026-10-22 — M11.6a: the Meso benchmark option sheet (D302, docs only)
-
-The owner chose to list published options before choosing a Meso benchmark, by the M6.0 rules: no
-engine numbers and no tolerance.
-- **[meso-benchmark-options](evidence/meso-benchmark-options.md)** has two kinds: M1, a corridor
-  queue and its shockwave; and M2, network spill-back. Each has four options.
-- **Disclosed:** Yperman's Example 4.5 and §7.1, and Tampère's Table 8, are not blind. They already
-  have engine numbers, and our formulas came from them.
-- **Recommended:** Boyles et al. (2025) for both kinds, which is open access but unreachable from
-  this environment, with Daganzo (1994, 1995) secondary. The owner answers OWNER_SITTING B23.
 
 ## Older entries
 

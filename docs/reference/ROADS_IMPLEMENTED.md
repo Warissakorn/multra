@@ -1,4 +1,4 @@
-# Roads — as implemented (S3.2–S3.6b)
+# Roads — as implemented (S3.2–S3.7)
 
 What each slice of [ROADS](ROADS.md) built, kept apart from the contract so that file stays under
 500 lines. The section numbers are the contract's, so "ROADS §16" still names a section here.
@@ -322,3 +322,49 @@ with the other seam checks.
   - RD28, the dialog, is in `road-ui`.
 - **Mutations caught:** refine off, banned turns not derived, the wrapped stage not merged, the
   lifecycle on any two-leg Node, and D310's detail.
+
+## 21. S3.7 as implemented (D312)
+
+S3 is complete with this slice.
+
+- **`seamChecks(network, types, templates, level, speedJump)`** (`src/model/demand/seam_checks.*`,
+  pure). The caller resolves link types and templates. It returns rows `{code, path, severity}`
+  sorted by code and path; none refuses a run or changes the document.
+
+  | Code | Path | Micro | Meso, Macro |
+  |---|---|---|---|
+  | `SEAM_ROAD_NOT_GENERATED`: a Road without Links | `network.roads[i]` | Advisory | No row (compiled, §9) |
+  | `SEAM_LANE_COUNT`: a Link with `roadId` whose lane count differs from its Road's for that direction (override, else template; forward is the Road's first Link) | `network.links[i]` | Warning, with the two fixes | Advisory |
+  | `SEAM_SPEED_JUMP`: types' free speeds differ by more than the threshold (20 km/h by default) | `network.connectors[i]` | Warning | Warning |
+  | `SEAM_LINK_DETACHED`: a Road with Links but fewer than its template's directions | `network.roads[i]` | Advisory | Advisory |
+
+- **Readings taken:**
+  - **"The Node's leg"** is read as the Road the Link belongs to. A coarse Node's leg is a Road,
+    and a detailed Node's leg is the Link itself, so the seam is a generated Link against its
+    Road's lanes. It is checked for every generated Link, at a Node or not.
+  - **"Consecutive links"** are those joined by a Connector outside every Node. A turn inside a
+    junction is not a corridor, so an arterial turning into a local street is not flagged. Two
+    Link-less Roads meeting end to start outside a Node are also consecutive; the row is at the
+    later Road.
+  - **The detached Link** no longer names its Road (D305), so the row is on the Road.
+  - **The threshold** is a display choice, kept in the dialog for the session and not stored.
+- **Fixes** (`src/commands/road_commands.*`), each one Undo step that changes only the side chosen:
+  - **`useLinkLanes`** (*Use Link*): the Road's override for the Link's direction becomes its lane
+    count;
+  - **`useRoadLanes`** (*Use Node*): *Apply template* again, so the Links take the Road's lanes
+    and keep their ids;
+  - a Link without a Road is `EDIT_SEAM_NOT_GENERATED`.
+- **Editor:** *Seam checks…* on the Roads tab opens a dialog with the level, the threshold, and one
+  row per issue (severity, problem, object). A lane-count row at Micro has *Use Link* and *Use
+  Node*, and the list is checked again after each fix.
+- **Not built:** the readiness panel and *Fill defaults* (S4) will run these checks, as ROADS §7
+  says. Demand on a Road-only network stays booked.
+- **Rows:**
+  - RD20 (Micro half), RD21, RD22 and RD29 are in `tests/road_seam_tests.cpp` (`roadseams`);
+  - RD21's editor part is in `road-ui`.
+- **Mutations caught:**
+  - the not-generated row at every level;
+  - *Use Link* on the wrong direction;
+  - turns inside a junction counted;
+  - the threshold made inclusive;
+  - the detached row off.

@@ -211,6 +211,9 @@ not validation.
 
 - **No silent adjustment:** a seam fix changes only defaults, inside the Command the user chose.
 - The 20 km/h threshold is a display choice, not a model value, and can be changed in settings.
+- **As implemented (D312, §21):** a lane-count seam is a generated Link against its Road's lanes; a
+  speed jump is across a Connector outside every Node, or between Link-less Roads continuing; the
+  detached row is on the Road; the threshold is set in the *Seam checks* dialog for the session.
 
 ## 8. HCM-cited link types (choice 6b)
 
@@ -315,7 +318,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes*. **Implemented (D309)** | RD12–RD15 |
 | S3.6a | The link-type `rank`, `coarse` and its checks; Macro and Meso compile coarse Nodes and Link-less Roads. **Implemented (D310)** | RD4, RD16, RD19, RD20 (Macro, Meso) |
 | S3.6b | The coarse-values dialog, refine and derive back, lifecycle; detail as the interior and Link legs compiled (D311). **Implemented (D311)** | RD17, RD18, RD27, RD28 |
-| S3.7 | Seam checks, with RD20's Micro half (D310) | RD20 (Micro), RD21, RD22 |
+| S3.7 | Seam checks, with RD20's Micro half (D310). **Implemented (D312)**; S3 is complete | RD20 (Micro), RD21, RD22, RD29 |
 
 ## 13. Acceptance rows (planned)
 
@@ -351,9 +354,10 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Road is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
 | RD27 | Lifecycle (S3.6b) | Deleting a T's stem merges the Node away and joins the two Roads, renaming the overpass; a Node with `coarse`, two templates, or drawn with two legs is kept |
 | RD28 | Coarse dialog (S3.6b) | *Coarse values…* is disabled on a Node with detail; on one without, it stores a signalised stage in one step, and back to defaults stores none |
+| RD29 | Detached and continuation seams (S3.7) | A Road that lost a generated Link gives `SEAM_LINK_DETACHED` at every level; two Link-less Roads continuing at 100 → 60 km/h give `SEAM_SPEED_JUMP` |
 
-## 14–20. As implemented
+## 14–21. As implemented
 
-What each slice built (S3.2 to S3.6b: files, functions, rows, mutations) is in
+What each slice built (S3.2 to S3.7: files, functions, rows, mutations) is in
 [ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md), with this file's section numbers, so "ROADS §16" still
 names a section there.

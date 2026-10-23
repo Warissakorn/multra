@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.6a: the Meso benchmark option sheet (D302, docs only)
+
+The owner chose to list published options before choosing a Meso benchmark, by the M6.0 rules: no
+engine numbers and no tolerance.
+- **[meso-benchmark-options](../evidence/meso-benchmark-options.md)** has two kinds: M1, a corridor
+  queue and its shockwave; and M2, network spill-back. Each has four options.
+- **Disclosed:** Yperman's Example 4.5 and §7.1, and Tampère's Table 8, are not blind. They already
+  have engine numbers, and our formulas came from them.
+- **Recommended:** Boyles et al. (2025) for both kinds, which is open access but unreachable from
+  this environment, with Daganzo (1994, 1995) secondary. The owner answers OWNER_SITTING B23.
+
 ## 2026-10-22 — M11.4b: a turn's free-flow time in Meso (D301)
 
 The turn free time that the compile recorded was not loaded, so a Node's interior took no time.

@@ -80,6 +80,7 @@ void EditorWindow::buildRoads() {
         execute("editorAssignTemplate", [&](auto& d) { assignTemplate(d, ids, chosen.empty() ? std::nullopt : std::optional(chosen), installed); });
     }));
     bar->addAction(action("editorFindCrossings", {}, [this] { findCrossingsDialog(); })); // S3.5 (D309)
+    bar->addAction(action("editorSeamChecks", {}, [this] { seamChecksDialog(); })); // S3.7 (D312)
     bar->addAction(action("editorEditRoad", {}, [this] { const auto id = selectedRoad(); if (!id.empty()) editRoad(id); }));
     bar->addAction(action("editorDeleteRoad", {}, [this] {
         const auto id = selectedRoad(); if (id.empty()) return;
