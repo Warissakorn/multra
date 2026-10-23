@@ -12,13 +12,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   reads both. Licence GPL-3.0-or-later (D285); a CLA comes before any outside contribution.
 - **Evidence is Linux only** (offscreen Qt 6.4.2); no Windows or high-DPI claim. No session closes a
   milestone gate.
-- **Books** (owner's Markdown copies; attach with `add_repo`, cite book pages, not the copy's prose):
-  `Warissakorn/Urban-Transportation-Networks-Markdown` (Sheffi 1985),
-  `Warissakorn/Highway-Capacity-Manual-7edition-Markdown` (HCM 7),
-  `Warissakorn/Modelling-Transport-4-edition-Markdown` (Ortúzar & Willumsen),
-  `Warissakorn/Transportation-Planning-Handbook-Markdown`,
-  `Warissakorn/the-link-transmission-model-for-dynamic-network-loading-markdown` (Yperman 2007; no
-  page numbers, cite sections and equations).
+- **Books:** five owner copies (Sheffi, HCM 7, Ortúzar & Willumsen, Planning Handbook 4th ed.,
+  Yperman); repositories, page rules, caveats and the chapter map by milestone are in
+  [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
+  before using a number. Checks of 2026-10-23: [book-copies-check](evidence/book-copies-check.md).
 - **Before an engine slice:** `src/core/` files are at the 500-line limit; split along the
   responsibility a change touches first (D319). The owner deferred splitting `types.hpp` on its
   own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
@@ -39,7 +36,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   switched-on cost (+10–28 % wall) is not worth cutting until then.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
-  (2001) and a cited `t_ij`. M11.5 waits on M9.
+  (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5
+  waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner; §19 (b) named runs or (c) a
   procedure sequence are booked (D277).
 - **Roads:** demand on a Road-only network (zone connectors attach to Links only) is booked.

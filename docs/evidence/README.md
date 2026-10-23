@@ -12,6 +12,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [behaviour-editor.md](behaviour-editor.md) | M3.3.2c behaviour library editor evidence — 2026-10-07 | D128 |
 | [behaviour-library.md](behaviour-library.md) | M3.3.2a behaviour library and codec evidence — 2026-10-07 | D126 |
 | [behaviour-selection.md](behaviour-selection.md) | M3.3.2b front-segment behaviour selection evidence — 2026-10-07 | D127 |
+| [book-copies-check.md](book-copies-check.md) | The owner's book copies against MULTRA's citations: Sheffi's empty pages, HCM 7 against the M6.0 sheet and the LOS pack, a two-route equilibrium — 2026-10-23 | — |
 | [connector-equation.md](connector-equation.md) | Direct Connector equation — D107, 2026-10-04 | D107, D106, D80 |
 | [connector-lane-centres.md](connector-lane-centres.md) | Connector runtime lane-centre verification — 2026-10-04 (D106) | D106 |
 | [discharge-controls.md](discharge-controls.md) | M3.3.1b1 local evidence — 2026-10-06 | — |
