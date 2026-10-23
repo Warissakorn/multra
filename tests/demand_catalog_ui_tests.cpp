@@ -4,6 +4,7 @@
 #include "../src/project/demand_preview.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
+#include "dialog_fit_support.hpp"
 #include <QAction>
 #include <QCheckBox>
 #include <QSpinBox>
@@ -35,6 +36,7 @@ void confirm(QDialog& d){item<QDialogButtonBox>(d,"")->button(QDialogButtonBox::
 void editCar(QDialog& parent,double acceleration){
     select(*item<QTableWidget>(parent,"editorCatalogTypes"),"car");
     modal([&]{item<QPushButton>(parent,"editorCatalogTypescatalogEdit")->click();},[&](QDialog& child){
+        requireFitsScreen(child);
         item<QLineEdit>(child,"editorCatalogTypeName")->setText("Owned car");
         item<QDoubleSpinBox>(child,"catalogAcceleration")->setValue(acceleration);confirm(child);
     });

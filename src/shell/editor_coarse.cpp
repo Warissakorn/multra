@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "dialog_fit.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/coarse_commands.hpp"
 #include "../model/network/coarse_nodes.hpp"
@@ -42,8 +43,8 @@ void EditorWindow::editCoarse(const std::string& id) {
     for (const auto& a : legs) for (const auto& b : legs) if (a != b) turns.push_back({a, b});
 
     QDialog dialog(this); dialog.setObjectName("editorCoarseDialog"); dialog.setWindowTitle(text("editorEditCoarse"));
-    auto* form = new QFormLayout(&dialog);
-    form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
+    auto* form = new QFormLayout(scrollingBody(dialog)); // the buttons stay on screen however many legs
+    form->setContentsMargins(0, 0, 0, 0);
     auto* control = new QComboBox(&dialog); control->setObjectName("editorCoarseControl");
     control->addItem(text("editorCoarsePriority"), 0); control->addItem(text("editorSectionSignalised"), 1); control->addItem(text("editorCoarseAllWayStop"), 2);
     control->setCurrentIndex(value.control == CoarseControl::signalised ? 1 : value.control == CoarseControl::allWayStop ? 2 : 0);
@@ -106,7 +107,7 @@ void EditorWindow::editCoarse(const std::string& id) {
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
-    form->addRow(buttons);
+    addFooter(dialog, buttons);
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     if (dialog.exec() != QDialog::Accepted) return;

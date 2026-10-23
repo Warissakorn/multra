@@ -1,6 +1,7 @@
 #include "../src/shell/editor_window.hpp"
 #include <QAction>
 #include <QApplication>
+#include "dialog_fit_support.hpp"
 #include <QComboBox>
 #include <QDialog>
 #include <QDoubleSpinBox>
@@ -268,6 +269,7 @@ int main(int argc, char** argv) {
         require(act(w, "editorEditCoarse")->isEnabled(), "Coarse values are disabled on a Node without detail");
         const auto merged = w.history().revision();
         onDialog([](QDialog& d) {
+            requireFitsScreen(d);
             auto* control = d.findChild<QComboBox*>("editorCoarseControl"); control->setCurrentIndex(control->findData(1));
             d.findChild<QPushButton*>("editorCoarseAddStage")->click();
             auto* cycle = d.findChild<QDoubleSpinBox*>("editorCoarseCycle"); cycle->setValue(60);

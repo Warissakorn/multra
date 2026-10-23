@@ -90,6 +90,8 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
     Nodes tab (Macro v/c ≥ 1.0 or Meso spill-back on a leg; a junction end without a Node by name;
     a stale result proposes nothing). **S4 is complete.** Open: F4 (S4.5, a coarse Node's Micro
     detail, needs its own contract section) or S5 (the study area and stale marking);
+  - **D318, dialogs on short screens:** the owner checks the tabbed behaviour editor and the
+    scrolling vehicle type, input, decision and coarse dialogs on Windows at 1366×768 or at 150 %;
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);

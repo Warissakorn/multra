@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
+
+- **The owner's report:** the behaviour editor was taller than the screen; not every key showed
+  and Confirm was off screen. Measured, it needed at least 1378 px.
+- **The editor now has three parts:**
+  - a header with users, id, name and model;
+  - four tabs that each scroll: *Car following*, *Lane changes*, *Perception and drivers*, and
+    *Junctions, signals and speed*;
+  - a footer with the error and the buttons.
+
+  The other model's rows are hidden. Prototype opens at 579 px at 1366×768.
+- **Other dialogs:** the UI suites, measured through a scratch `QDialog::exec` shim, gave vehicle
+  type 696 px minimum, input 500, decision 452, and coarse Node values (one row per leg). These now
+  share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
+- **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
+  decision rows are growth guards.
+
 ## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
 
 - **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.
@@ -143,20 +160,6 @@ The owner chose: apply at once, key O, and detached Roads shown in the table and
 - **Cross-sections tab:** add, edit and delete owned templates; one in use is kept.
 - **Rows:** RD23–RD26 (`road-ui`); four mutations caught. Tool and tab inventories in
   `workspace-ui`, `object-groups-ui`, `design-system-ui` and `zone-ui` grew by one tool and two tabs.
-
-## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
-
-The owner asked for three canvas changes.
-- **Pointers:** no tool shows the crosshair. Select is the arrow; every other tool shows the arrow
-  with its toolbar glyph on a small badge, as a move shows the hand.
-- **Multi-click tools** (Zone, Node, Queue counter, Section, the two-click Connector): only the first
-  point needs Ctrl+right-click; later points take a plain left click. Ctrl+right-click still works,
-  and with no draft a left click still only selects (amends D84).
-- **Previews are never dashed:** a solid accent line on a translucent casing, and the edges still to
-  come (a Zone's closing edge, the edge to the pointer) fainter. Dashes that mean something in saved
-  work stay.
-- **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
-  `editor-attachments`; four mutations caught.
 
 ## Older entries
 

@@ -5,6 +5,7 @@
 #include "../src/commands/network_commands.hpp"
 #include "../src/core/lateral.hpp"
 #include "../src/editor/canvas.hpp"
+#include "dialog_fit_support.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
@@ -54,6 +55,7 @@ void buildLibrary(QDialog& d) {
     require(rows(d, "editorBehaviours") == 2, "Duplicate did not add an independent set");
     modal([&] { click(d, "editorBehaviours", "catalogEdit", std::string(kDefault) + "-copy"); }, [](QDialog& e) {
         require(item<QLabel>(e, "editorBehaviourUsers")->text().size() > 0, "Users are not shown first");
+        requireFitsScreen(e); // a prototype behaviour: every key in four tabs, the buttons below them
         item<QLineEdit>(e, "editorBehaviourName")->setText("Slow");
         item<QDoubleSpinBox>(e, "followingTime")->setValue(2.5);
         // AM8 (M4.2, D147): the captured catalog's amber deceleration is shown and edited like any optional key.
@@ -213,6 +215,7 @@ int main(int argc, char** argv) {
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", "w74-set"); }, [](QDialog& e) {
                 require(item<QComboBox>(e, "editorBehaviourModel")->currentIndex() == 1, "w74 not shown as W74");
+                requireFitsScreen(e); // the 18 W74 keys scroll in their tab
                 require(item<QLineEdit>(e, "exAdd")->text() == "2", "w74 value not shown");
                 item<QLineEdit>(e, "exAdd")->setText("0.5"); confirm(e);
                 require(e.isVisible(), "Out-of-range w74 value accepted");

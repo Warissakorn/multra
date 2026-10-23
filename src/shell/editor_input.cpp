@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "dialog_fit.hpp"
 #include "../project/counted_volumes.hpp"
 #include <QCheckBox>
 #include "demand_period_editor.hpp"
@@ -34,8 +35,8 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     }
     catch(const std::exception& e){showError(e);return;}
     QDialog dialog(this);dialog.setObjectName("editorInputDialog");dialog.setWindowTitle(text("editorEditInput"));
-    auto* form=new QFormLayout(&dialog);
-    form->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
+    auto* form=new QFormLayout(scrollingBody(dialog)); // the buttons stay on screen however many rows
+    form->setContentsMargins(0,0,0,0);
     form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);
     auto* route=new QComboBox(&dialog);route->setObjectName("editorInputRoute");
     // Routes, then routing decisions (M2.4): an input follows one route, or is split across the
@@ -221,7 +222,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     connect(route,&QComboBox::currentTextChanged,&dialog,syncPeriods);
     connect(counts,&QPlainTextEdit::textChanged,&dialog,syncPeriods);
     connect(minutes,&QDoubleSpinBox::valueChanged,&dialog,syncPeriods);
-    auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);form->addRow(buttons);
+    auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);addFooter(dialog,buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     buttons->button(QDialogButtonBox::Ok)->setEnabled(route->count()>0 && type->count()>0);
     connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);

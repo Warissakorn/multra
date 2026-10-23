@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
+#include "dialog_fit_support.hpp"
 #include <QDialog>
 #include <QDoubleSpinBox>
 #include <QFile>
@@ -58,6 +59,7 @@ int main(int argc,char** argv) {
         EditorWindow w(argv[1]);w.openFile(path);w.show();QApplication::processEvents();
         control<QTableWidget>(w,"editorInputTable")->selectRow(0);
         edit(w,"editorEditInput",[&](QDialog& d){
+            requireFitsScreen(d);
             require(!control<QDoubleSpinBox>(d,"editorInputVolume")->isEnabled(),"Derived volume is editable");
             require(!control<QDoubleSpinBox>(d,"editorInputStart")->isEnabled(),"Derived start is editable");
             require(!control<QDoubleSpinBox>(d,"editorInputEnd")->isEnabled(),"Derived end is editable");
@@ -65,7 +67,7 @@ int main(int argc,char** argv) {
         });
         require(w.history().document().definition->inputs==original.definition->inputs,"No-op input edit changed irregular periods");
         control<QTableWidget>(w,"editorDecisionTable")->selectRow(0);
-        edit(w,"editorEditDecision",[](QDialog& d){d.accept();});
+        edit(w,"editorEditDecision",[](QDialog& d){requireFitsScreen(d);d.accept();});
         require(w.history().document().definition->routingDecisions==original.definition->routingDecisions,"No-op decision edit lost irregular counts");
         edit(w,"editorEditDecision",[](QDialog& d){control<QLineEdit>(d,"editorDecisionNameField")->setText("Renamed");d.accept();});
         const auto renamed=w.history().document().definition->routingDecisions.front();

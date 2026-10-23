@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
+
+The owner asked for three canvas changes.
+- **Pointers:** no tool shows the crosshair. Select is the arrow; every other tool shows the arrow
+  with its toolbar glyph on a small badge, as a move shows the hand.
+- **Multi-click tools** (Zone, Node, Queue counter, Section, the two-click Connector): only the first
+  point needs Ctrl+right-click; later points take a plain left click. Ctrl+right-click still works,
+  and with no draft a left click still only selects (amends D84).
+- **Previews are never dashed:** a solid accent line on a translucent casing, and the edges still to
+  come (a Zone's closing edge, the edge to the pointer) fainter. Dashes that mean something in saved
+  work stay.
+- **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
+  `editor-attachments`; four mutations caught.
+
 ## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
 
 - **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per
