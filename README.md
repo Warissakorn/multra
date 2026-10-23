@@ -1,5 +1,7 @@
 # MULTRA
 
+[![Package binaries](https://github.com/Warissakorn/multra/actions/workflows/package.yml/badge.svg)](https://github.com/Warissakorn/multra/actions/workflows/package.yml)
+
 **MULTRA — Multi-Level Traffic Analysis.** A traffic microsimulator with its own **C++20 engine,
 link-based network model and Qt 6 Widgets desktop interface**, built to the modelling surface
 PTV Vissim users already know and aimed at the movement-level delay and queue output that traffic
