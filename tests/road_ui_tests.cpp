@@ -9,6 +9,7 @@
 #include <QGraphicsItem>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QSpinBox>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -166,16 +167,21 @@ int main(int argc, char** argv) {
         require(network().roads[0].overrides.lanesForward == 3 && !network().roads[0].overrides.laneWidth, "The override was not stored alone");
         // RD21 in the editor (S3.7, D312): the 2-lane forward Link under a 3-lane Road is a Micro seam;
         // Use Node applies the template to it in one step.
-        int seams = 0, macroSeams = -1; const auto beforeFix = w.history().revision();
+        int seams = 0, macroSeams = -1; bool clipped = false; int fixButtons = 0; const auto beforeFix = w.history().revision();
         onDialog([&](QDialog& d) {
             auto* table = d.findChild<QTableWidget*>("editorSeamTable");
             seams = table->rowCount();
+            // The fix buttons show their whole text: the cell's stylesheet padding is added to the column.
+            for (auto* button : d.findChildren<QPushButton*>(QRegularExpression("^editorSeamUse"))) {
+                ++fixButtons; clipped = clipped || button->width() < button->sizeHint().width();
+            }
             for (int r = 0; r < table->rowCount(); ++r)
                 if (auto* fix = table->cellWidget(r, 3)) fix->findChild<QPushButton*>("editorSeamUseNode")->click();
             auto* level = d.findChild<QComboBox*>("editorSeamLevel"); level->setCurrentIndex(level->findData(2));
             macroSeams = table->rowCount();
         });
         trigger(w, "editorSeamChecks");
+        require(fixButtons == 2, "The seam fix buttons are missing"); require(!clipped, "A seam fix button's text is cut off");
         const auto fixed = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == road.links[0]; });
         require(seams == 1 && macroSeams == 0 && fixed->lanes.size() == 3 && w.history().revision() == beforeFix + 1,
                 "Seam checks did not list the lane count and fix it with Use Node in one step");
