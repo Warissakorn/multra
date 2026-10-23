@@ -287,6 +287,7 @@ private:
     // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
     QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
     void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    void editCoarse(const std::string& id); // S3.6b (D311): editor_coarse.cpp
     // S3.3b (ROADS §16, D307): the Roads and Cross-sections tabs and the Road tool's commit.
     QTableWidget* roadTable_{}; QComboBox* roadTemplate_{}; std::uint64_t roadRevision_{UINT64_MAX};
     QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};

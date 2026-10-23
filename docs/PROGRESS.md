@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — S3.6b: coarse values dialog, refine, derive back, lifecycle (D311)
+
+- **Detail is the junction's interior** (D311, revising D310): a Connector inside the Node, or a
+  Link wholly inside. Links that only reach in are legs, and Macro and Meso now compile them as the
+  arms of a Node without detail.
+- **Refine and derive back** happen inside whatever Command causes them. Drawing detail into a
+  coarse Node drops its values. Deleting a Node's last detail derives them: signalised from the
+  heads, stages from the signal groups' greens, banned turns from missing movements, and major legs
+  from who yields.
+- **Lifecycle:** when a Command leaves a Node with two Link-less Roads of one template meeting end
+  to start, and nothing authored on the Node, the Node is removed and the Roads joined.
+- **Editor:** *Coarse values…* on the Nodes tab, for a Node without detail.
+- **Rows:** RD17, RD18, RD27 (`roadcoarse`) and RD28 (`road-ui`); RD19 gains a junction over
+  generated Links; five mutations caught.
+
 ## 2026-10-23 — S3.6a: link-type rank, coarse Nodes, Macro and Meso from Roads (D310)
 
 S3.6 is split: this half ships the fields with the compile that reads them; the coarse dialog,
@@ -123,17 +138,6 @@ engine numbers and no tolerance.
   have engine numbers, and our formulas came from them.
 - **Recommended:** Boyles et al. (2025) for both kinds, which is open access but unreachable from
   this environment, with Daganzo (1994, 1995) secondary. The owner answers OWNER_SITTING B23.
-
-## 2026-10-22 — M11.4b: a turn's free-flow time in Meso (D301)
-
-The turn free time that the compile recorded was not loaded, so a Node's interior took no time.
-Yperman's nodes have no length, so the owner chose a design of ours:
-- **The lag:** the node model decides at t as before; a vehicle enters the out-link τ later.
-- **Storage:** until then it counts against the out-link's storage (the receiving volume reads the
-  admitted count), so spill-back holds. No step limit or turn capacity is added; τ = 0 is unchanged.
-- **Outputs:** turn rows carry `freeTime`; VHT includes node time with delay unchanged;
-  `inNodesAtEnd` is new.
-- **Rows:** ME28 (`mesoloading`) and ME10 extended. Four mutations are caught.
 
 ## Older entries
 

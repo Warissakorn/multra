@@ -30,39 +30,6 @@ struct Groups { // union-find over station keys
     void join(const Key& a, const Key& b) { const auto x = find(a), y = find(b); if (x != y) parent[std::max(x, y)] = std::min(x, y); }
 };
 struct ValidNode { std::size_t index; NodeMembership membership; };
-// The signal programs whose heads a turn's vehicles pass (D299): a head on a Connector of the turn's
-// path; on the in-leg, a head on a lane its first Connector leaves from, or any lane when the path
-// has no Connector; a head on a Link inside the Node that the path crosses.
-std::set<std::string> turnPrograms(const Network& network, const NodeMembership& m, const NodeTurn& turn) {
-    std::set<std::string> programs;
-    const auto& leg = m.inLegs[turn.in].linkId;
-    for (const auto& id : m.signalHeads) {
-        const auto h = std::find_if(network.signalHeads.begin(), network.signalHeads.end(), [&](const auto& x) { return x.id == id; });
-        if (h == network.signalHeads.end()) continue;
-        bool governs = false;
-        for (const auto& path : turn.paths) {
-            const auto first = std::find_if(path.begin(), path.end(), [&](const auto& s) { return s.from == 0 && s.to == 0 && s.objectId != leg; });
-            const Connector* c = nullptr;
-            if (first != path.end())
-                for (const auto& x : network.connectors) if (x.id == first->objectId) c = &x;
-            if (!h->connectorId.empty()) {
-                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->connectorId; });
-            } else if (h->lane.linkId == leg) {
-                if (!c || c->from.linkId != leg) { governs = true; continue; }
-                const auto l = std::find_if(network.links.begin(), network.links.end(), [&](const auto& x) { return x.id == leg; });
-                const auto lane = [&](const std::string& laneId) {
-                    return static_cast<int>(std::find_if(l->lanes.begin(), l->lanes.end(), [&](const auto& x) { return x.id == laneId; }) - l->lanes.begin());
-                };
-                const int at = lane(h->lane.laneId), from = lane(c->from.laneId);
-                governs = governs || (at >= from && at < from + c->fromLaneCount);
-            } else {
-                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->lane.linkId; });
-            }
-        }
-        if (governs) programs.insert(headProgramId(*h));
-    }
-    return programs;
-}
 }
 MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
                                const MesoSettings& settings, const std::map<std::string, double>& greenShares,
@@ -86,6 +53,8 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         else valid.push_back({i, std::move(m)});
     }
     const auto station = [&](const std::string& link, double s) { return std::clamp(s, 0.0, lengths[link]); };
+    // S3.6a/D311 (ROADS §9): Link-less Roads, Nodes without detail and their Link legs.
+    auto roads = compileRoads(network, crossSections, types);
     const auto fromKey = [&](const Connector& c) { return Key{c.from.linkId, station(c.from.linkId, c.from.station.value_or(lengths[c.from.linkId]))}; };
     const auto toKey = [&](const Connector& c) { return Key{c.to.linkId, station(c.to.linkId, c.to.station.value_or(0.0))}; };
     std::map<std::string, std::set<double>> stations;
@@ -100,6 +69,9 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
             for (const auto& leg : *legs) stations[leg.linkId].insert(station(leg.linkId, leg.station));
         inside.insert(v.membership.connectors.begin(), v.membership.connectors.end());
     }
+    for (const auto& join : roads.joins)
+        for (const auto* arms : {&join.ins, &join.outs})
+            for (const auto& arm : *arms) if (!arm.piece) stations[arm.linkId].insert(station(arm.linkId, arm.station));
     // Link pieces outside every valid Node, in (Link id, station) order.
     std::map<Key, std::size_t> endingAt, startingAt;
     for (const auto& [id, list] : stations) {
@@ -109,6 +81,9 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         for (std::size_t k = 0; k + 1 < s.size(); ++k) {
             const auto mid = pointAt(l.geometry, (s[k] + s[k + 1]) / 2);
             if (std::any_of(valid.begin(), valid.end(), [&](const auto& v) { return pointInPolygon(network.nodes[v.index].polygon, mid); })) continue;
+            if (const auto d = roads.dropped.find(id); d != roads.dropped.end() &&
+                std::any_of(d->second.begin(), d->second.end(), [&](const auto& r) { const double m = (s[k] + s[k + 1]) / 2; return m > r.first && m < r.second; }))
+                continue; // inside a Node without detail
             MesoLink m{id, s[k], s[k + 1], 0, 0, s[k + 1] - s[k], static_cast<double>(l.lanes.size()), 0, 0, 0, {}};
             if (type) {
                 m.capacityPerLane = type->capacityPerLane; m.freeSpeed = type->freeSpeed; m.modes = type->modes;
@@ -131,6 +106,15 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         if (!keys.empty()) nodeOfRoot[groups.find(keys[0])] = n;
     }
     for (auto& [root, n] : std::map<Key, std::size_t>(nodeOfRoot)) { nodeOfRoot.erase(root); nodeOfRoot[groups.find(root)] = n; }
+    std::map<Key, std::size_t> joinOfRoot; // a group's root -> the Road join whose Link legs it holds
+    for (std::size_t j = 0; j < roads.joins.size(); ++j) {
+        std::vector<Key> keys;
+        for (const auto* arms : {&roads.joins[j].ins, &roads.joins[j].outs})
+            for (const auto& arm : *arms) if (!arm.piece) keys.push_back({arm.linkId, station(arm.linkId, arm.station)});
+        for (std::size_t k = 1; k < keys.size(); ++k) groups.join(keys[0], keys[k]);
+        if (!keys.empty()) joinOfRoot[groups.find(keys[0])] = j;
+    }
+    std::vector<std::optional<std::size_t>> joinNode(roads.joins.size());
     // One Meso node per group a kept link touches, in the order of the group's least key.
     std::map<Key, std::size_t> nodeIndex;
     std::set<Key> touched;
@@ -146,6 +130,10 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
             node.name = drawn.name.empty() ? drawn.id : drawn.name; node.nodeId = drawn.id;
             const auto& control = valid[n->second].membership.control;
             node.control = !control ? "" : *control == SectionControl::signalised ? "signalised" : "unsignalised";
+        } else if (const auto j = joinOfRoot.find(root); j != joinOfRoot.end()) {
+            const auto& join = roads.joins[j->second];
+            node.name = join.name; node.nodeId = join.node ? network.nodes[*join.node].id : ""; node.control = join.control;
+            joinNode[j->second] = g.nodes.size();
         } else node.name = root.first + "@" + std::to_string(root.second);
         g.nodes.push_back(std::move(node));
     }
@@ -177,7 +165,7 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
                 for (const auto& span : path)
                     if (std::find(mt.via.begin(), mt.via.end(), span.objectId) == mt.via.end()) mt.via.push_back(span.objectId);
             if (const double v0 = speedOf(in.linkId); v0 > 0) mt.freeTime = length / v0;
-            if (const auto programs = turnPrograms(network, m, turn); programs.size() == 1) {
+            if (const auto programs = turnSignalPrograms(network, m, turn); programs.size() == 1) {
                 mt.signal = *programs.begin();
                 if (const auto share = greenShares.find(mt.signal); share != greenShares.end()) mt.green = share->second;
             } else if (programs.size() > 1) ambiguous.insert(v.index);
@@ -213,10 +201,10 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         turn->second.via.push_back(c->id);
     }
     for (auto& [pair, turn] : simple) byNode[turn.node].push_back(std::move(turn));
-    // S3.6a (ROADS §9, D310): Link-less Roads' pieces and their joins, after every Link's.
-    auto roads = compileRoads(network, crossSections, types);
-    std::vector<std::size_t> joinNode(roads.joins.size());
+    // S3.6a (ROADS §9, D310): Link-less Roads' pieces after every Link's; a join without Link legs
+    // gets its node here.
     for (std::size_t j = 0; j < roads.joins.size(); ++j) {
+        if (joinNode[j]) continue;
         const auto& join = roads.joins[j];
         joinNode[j] = g.nodes.size();
         g.nodes.push_back({join.name, join.node ? network.nodes[*join.node].id : "", join.control, {}, {}});
@@ -229,14 +217,24 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
             if (p.type->jamDensity) m.jamDensity = p.type->jamDensity->value;
         }
         const auto freeEnd = [&](double station) { g.nodes.push_back({p.roadId + "@" + std::to_string(station), "", "", {}, {}}); return g.nodes.size() - 1; };
-        m.from = p.start ? joinNode[*p.start] : freeEnd(p.from);
-        m.to = p.end ? joinNode[*p.end] : freeEnd(p.to);
+        m.from = p.start ? *joinNode[*p.start] : freeEnd(p.from);
+        m.to = p.end ? *joinNode[*p.end] : freeEnd(p.to);
         g.links.push_back(std::move(m));
     }
     byNode.resize(g.nodes.size()); conflicts.resize(g.nodes.size());
-    for (std::size_t j = 0; j < roads.joins.size(); ++j)
-        for (const auto& t : roads.joins[j].turns)
-            byNode[joinNode[j]].push_back({joinNode[j], pieceBase + t.in, pieceBase + t.out, t.name, 0, {}, t.signal, t.green});
+    for (std::size_t j = 0; j < roads.joins.size(); ++j) {
+        const auto& join = roads.joins[j];
+        const auto arm = [&](const JoinArm& a, bool in) -> std::optional<std::size_t> {
+            if (a.piece) return pieceBase + *a.piece;
+            const auto& at = in ? endingAt : startingAt;
+            const auto found = at.find({a.linkId, station(a.linkId, a.station)});
+            return found == at.end() ? std::nullopt : std::optional(found->second);
+        };
+        for (const auto& t : join.turns) {
+            const auto in = arm(join.ins[t.in], true), outLink = arm(join.outs[t.out], false);
+            if (in && outLink) byNode[*joinNode[j]].push_back({*joinNode[j], *in, *outLink, t.name, 0, {}, t.signal, t.green});
+        }
+    }
     out.issues.insert(out.issues.end(), roads.issues.begin(), roads.issues.end());
     out.advisories.insert(out.advisories.end(), roads.advisories.begin(), roads.advisories.end());
     for (std::size_t n = 0; n < g.nodes.size(); ++n) {

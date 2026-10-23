@@ -179,4 +179,34 @@ std::vector<ValidationIssue> nodeMembershipIssues(const Network& network) {
     }
     return result;
 }
+std::set<std::string> turnSignalPrograms(const Network& network, const NodeMembership& m, const NodeTurn& turn) {
+    std::set<std::string> programs;
+    const auto& leg = m.inLegs[turn.in].linkId;
+    for (const auto& id : m.signalHeads) {
+        const auto h = std::find_if(network.signalHeads.begin(), network.signalHeads.end(), [&](const auto& x) { return x.id == id; });
+        if (h == network.signalHeads.end()) continue;
+        bool governs = false;
+        for (const auto& path : turn.paths) {
+            const auto first = std::find_if(path.begin(), path.end(), [&](const auto& s) { return s.from == 0 && s.to == 0 && s.objectId != leg; });
+            const Connector* c = nullptr;
+            if (first != path.end())
+                for (const auto& x : network.connectors) if (x.id == first->objectId) c = &x;
+            if (!h->connectorId.empty()) {
+                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->connectorId; });
+            } else if (h->lane.linkId == leg) {
+                if (!c || c->from.linkId != leg) { governs = true; continue; }
+                const auto l = std::find_if(network.links.begin(), network.links.end(), [&](const auto& x) { return x.id == leg; });
+                const auto lane = [&](const std::string& laneId) {
+                    return static_cast<int>(std::find_if(l->lanes.begin(), l->lanes.end(), [&](const auto& x) { return x.id == laneId; }) - l->lanes.begin());
+                };
+                const int at = lane(h->lane.laneId), from = lane(c->from.laneId);
+                governs = governs || (at >= from && at < from + c->fromLaneCount);
+            } else {
+                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->lane.linkId; });
+            }
+        }
+        if (governs) programs.insert(headProgramId(*h));
+    }
+    return programs;
+}
 }

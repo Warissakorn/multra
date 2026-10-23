@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
+#include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_membership.hpp"
 #include "../model/network/node_suggestions.hpp"
 #include <QStatusBar>
@@ -55,6 +56,8 @@ void EditorWindow::buildNodes() {
         const auto id = selectedNode(); if (id.empty()) return;
         execute("editorDeleteNode", [&](auto& d) { deleteNode(d, id); });
     }));
+    // S3.6b (D311): the coarse values of a Node without detail.
+    bar->addAction(action("editorEditCoarse", {}, [this] { const auto id = selectedNode(); if (!id.empty()) editCoarse(id); }));
     // S3.5 (D309): the selected rows become one Node, the hull of theirs, in one Undo step.
     bar->addAction(action("editorMergeNodes", {}, [this] {
         std::vector<std::string> ids;
@@ -106,8 +109,13 @@ void EditorWindow::refreshNodes() {
             const auto m = nodeMembership(history_.document().network, n);
             QStringList issues;
             for (const auto& code : m.issues) issues << text(code);
-            const QString control = !m.control ? QStringLiteral("\u2014")
+            QString control = !m.control ? QStringLiteral("\u2014")
                 : text(*m.control == SectionControl::signalised ? "editorSectionSignalised" : "editorSectionUnsignalised");
+            if (!nodeHasDetail(history_.document().network, n)) { // S3.6b: a coarse Node shows its coarse control
+                const auto c = n.coarse ? n.coarse->control : std::nullopt;
+                control = text("editorCoarseShown").arg(text(c == CoarseControl::signalised ? "editorSectionSignalised"
+                    : c == CoarseControl::allWayStop ? "editorCoarseAllWayStop" : "editorCoarsePriority"));
+            }
             const QStringList values{QString::fromStdString(n.id), QString::fromStdString(n.name), QString::number(n.polygon.size()), control,
                 QStringLiteral("%1 / %2").arg(m.inLegs.size()).arg(m.outLegs.size()), QString::number(m.turns.size()), issues.join(", ")};
             for (int col = 0; col < values.size(); ++col) {
@@ -123,6 +131,8 @@ void EditorWindow::refreshNodes() {
     canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit
     const bool chosen = !selectedNode().empty();
     for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
+    const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
+    actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
 }
 void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }

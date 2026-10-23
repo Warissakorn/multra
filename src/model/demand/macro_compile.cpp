@@ -31,6 +31,11 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
         if (stations.contains(c.from.linkId)) stations[c.from.linkId].push_back(fromStation(c));
         if (stations.contains(c.to.linkId)) stations[c.to.linkId].push_back(toStation(c));
     }
+    // S3.6a/D311 (ROADS §9): Link-less Roads, Nodes without detail and their Link legs' stations.
+    auto roads = compileRoads(network, crossSections, types);
+    for (const auto& join : roads.joins)
+        for (const auto* arms : {&join.ins, &join.outs})
+            for (const auto& arm : *arms) if (!arm.piece && stations.contains(arm.linkId)) stations[arm.linkId].push_back(clampStation(arm.station, lengths[arm.linkId]));
     std::map<std::pair<std::string, double>, std::size_t> node;
     for (auto& [id, list] : stations) {
         std::sort(list.begin(), list.end());
@@ -53,7 +58,11 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
         const auto basis = [](const std::string& b) { return b.empty() ? std::string("practical") : b; };
         if (type && vdf && basis(type->capacityBasis) != basis(vdf->capacityBasis)) out.issues.push_back({"MACRO_CAPACITY_BASIS_MISMATCH", path});
         const auto& list = stations[l->id];
+        const auto dropped = roads.dropped.find(l->id);
         for (std::size_t k = 0; k + 1 < list.size(); ++k) {
+            const double mid = (list[k] + list[k + 1]) / 2;
+            if (dropped != roads.dropped.end() && std::any_of(dropped->second.begin(), dropped->second.end(), [&](const auto& r) { return mid > r.first && mid < r.second; }))
+                continue; // inside a Node without detail
             MacroLink m;
             m.kind = MacroArc::link; m.source = l->id; m.linkType = l->linkTypeId.value_or(""); m.fromStation = list[k]; m.toStation = list[k + 1];
             m.from = node[{l->id, list[k]}]; m.to = node[{l->id, list[k + 1]}];
@@ -67,7 +76,6 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
     }
     // S3.6a (ROADS §9, D310): Link-less Roads' pieces after every Link's. Each piece end is its own
     // node, so a turn is the only way from one piece to another and a U-turn is never offered.
-    auto roads = compileRoads(network, crossSections, types);
     out.issues.insert(out.issues.end(), roads.issues.begin(), roads.issues.end());
     out.advisories = std::move(roads.advisories);
     std::vector<std::size_t> pieceFrom, pieceTo;
@@ -94,9 +102,11 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
     }
     for (const auto& join : roads.joins)
         for (const auto& t : join.turns) {
+            const auto& in = join.ins[t.in]; const auto& to = join.outs[t.out];
             MacroLink m;
             m.kind = MacroArc::connector; m.source = join.node ? network.nodes[*join.node].id : join.name;
-            m.from = pieceTo[t.in]; m.to = pieceFrom[t.out];
+            m.from = in.piece ? pieceTo[*in.piece] : node[{in.linkId, clampStation(in.station, lengths[in.linkId])}];
+            m.to = to.piece ? pieceFrom[*to.piece] : node[{to.linkId, clampStation(to.station, lengths[to.linkId])}];
             g.links.push_back(std::move(m));
         }
     for (std::size_t k = 0; k < types.size(); ++k)

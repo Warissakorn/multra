@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QGraphicsItem>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -228,6 +229,9 @@ int main(int argc, char** argv) {
         require(rows == 1 && choices == 2, "Find crossings did not list one place with Junction and Overpass");
         require(network().roads.size() == 4 && network().nodes.size() == nodesBefore + 1 && network().nodes.back().generated &&
                 w.history().revision() == drawn + 1, "Confirming the junction did not split both Roads and add a Node in one step");
+        // RD28 (S3.6b, D311): the split's Connectors are detail, so the junction takes no coarse values.
+        selectRow(item<QTableWidget>(w, "editorNodeTable"), network().nodes.back().id);
+        require(!act(w, "editorEditCoarse")->isEnabled(), "Coarse values are offered on a Node with detail");
         trigger(w, "editorUndo");
         onDialog([](QDialog& d) { qobject_cast<QComboBox*>(d.findChild<QTableWidget*>("editorCrossingTable")->cellWidget(0, 5))->setCurrentIndex(1); });
         trigger(w, "editorFindCrossings");
@@ -244,6 +248,23 @@ int main(int argc, char** argv) {
         require(act(w, "editorMergeNodes")->isEnabled(), "Merge nodes is disabled with two rows selected");
         trigger(w, "editorMergeNodes");
         require(network().nodes.size() == nodesBefore + 1, "Merge nodes did not leave one Node");
+        // RD28: the dialog on a Node without detail stores its values in one step; all defaults store none.
+        selectRow(nodeTable, network().nodes.back().id);
+        require(act(w, "editorEditCoarse")->isEnabled(), "Coarse values are disabled on a Node without detail");
+        const auto merged = w.history().revision();
+        onDialog([](QDialog& d) {
+            auto* control = d.findChild<QComboBox*>("editorCoarseControl"); control->setCurrentIndex(control->findData(1));
+            d.findChild<QPushButton*>("editorCoarseAddStage")->click();
+            auto* cycle = d.findChild<QDoubleSpinBox*>("editorCoarseCycle"); cycle->setValue(60);
+        });
+        trigger(w, "editorEditCoarse");
+        const auto& coarse = network().nodes.back().coarse;
+        require(coarse && coarse->control == CoarseControl::signalised && coarse->signal && coarse->signal->cycle == 60 &&
+                coarse->signal->stages.size() == 1 && coarse->signal->stages[0].green == 30 && w.history().revision() == merged + 1,
+                "The dialog did not store a signalised Node with one stage");
+        onDialog([](QDialog& d) { auto* control = d.findChild<QComboBox*>("editorCoarseControl"); control->setCurrentIndex(control->findData(0)); });
+        trigger(w, "editorEditCoarse");
+        require(!network().nodes.back().coarse, "Back to the defaults did not clear the values");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

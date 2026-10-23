@@ -1,4 +1,4 @@
-# Roads — as implemented (S3.2–S3.6a)
+# Roads — as implemented (S3.2–S3.6b)
 
 What each slice of [ROADS](ROADS.md) built, kept apart from the contract so that file stays under
 500 lines. The section numbers are the contract's, so "ROADS §16" still names a section here.
@@ -213,8 +213,8 @@ with the other seam checks.
     `EDIT_NODE_INVALID` at its path.
 - **Detail and legs** (`src/model/network/coarse_nodes.*`, pure):
   - a Node has detail when any Link or Connector has a run inside its polygon (`polygonRuns`, moved
-    to `polygon.*` from Node membership). A junction made by S3.5 over generated Links therefore
-    has detail, and `coarse` belongs in practice to Nodes over Link-less Roads;
+    to `polygon.*` from Node membership). **Revised by D311 (§20):** detail is now the interior
+    only, and Links reaching in are legs;
   - a leg is a Road with a centreline end inside the polygon, named by its id, at the last
     boundary crossing before that end. A Road wholly inside gives no leg;
   - a Road that passes through without ending is not cut. It is the advisory `NODE_ROAD_THROUGH`,
@@ -264,3 +264,61 @@ with the other seam checks.
   demand. Attaching demand to Roads is booked.
 - **Rows:** RD4, RD16, RD19 and RD20 (Macro and Meso) are in `tests/road_coarse_tests.cpp`
   (`roadcoarse`). The rank field is checked in `macro-ui`.
+
+## 20. S3.6b as implemented (D311)
+
+- **Detail revised (D311, replacing D310's reading).** A Node's detail is its interior: a Connector
+  with a run inside the polygon, or a Link wholly inside it (`nodeHasDetail`). A Link that only
+  reaches in is a leg (`nodeLinkLegs`: one crossing, ending or starting inside). Under D310's
+  reading, deleting a junction's Connectors left the approach Links inside as "detail", so derive
+  back could never happen.
+  - The Connectors `splitLink` adds between split pieces are detail, so a junction S3.5 makes over
+    generated Links is Micro's, with its through turns, until they are deleted.
+- **Link legs compile (D311).** At a Node without detail, `compileRoads` takes each Link leg as an
+  arm next to the Link-less Roads' pieces.
+  - The arm is named by the Link's `roadId`, or by the Link's own id when it has no Road.
+  - The leg's part inside the Node goes into `dropped`. Macro and Meso skip that part and put a
+    station at the crossing.
+  - Turns, bans and stage g/C apply as for pieces. Meso joins a Node's leg stations into one node.
+- **`setNodeCoarse(d, id, value)`** (`src/commands/coarse_commands.*`) stores the values, with an
+  all-default value stored as none, and clears `generated`, as any edit of a Node does.
+- **`settleNodes(after, before)`** runs inside `History::execute` on every Command, between the change
+  and the check. It touches only Nodes present before and after, and is skipped when no Link,
+  Connector, Node or Road changed.
+  - **Refine:** a coarse Node that had no detail and now has some loses `coarse` (RD17).
+  - **Derive back:** a Node that had detail and now has none, with no `coarse`, takes
+    `deriveCoarse` of its detail as it was, when every Road it names is still a leg (RD18).
+  - **Lifecycle:** applies to a Node whose Road legs became exactly two in this Command, with no
+    `coarse`, no detail and no Link leg, and whose two Roads:
+    - are Link-less;
+    - share one template, one level and the same overrides;
+    - meet with one ending where the other starts.
+
+    Such a Node is deleted and the Roads joined. The first Road keeps its id and takes the second's
+    centreline after its own. The second's id is renamed to the first in overpasses and in other
+    Nodes' coarse values (RD27). A Node drawn with two legs is kept, as is one with detail or
+    `coarse`.
+- **`deriveCoarse(d, node)`** reads `nodeMembership`. Legs are named by the Road of each leg Link,
+  and nothing is derived if a leg Link has no Road ending in the Node.
+  - **Control:** signalised from the heads; otherwise priority, which is absent.
+  - **Major:** for priority, the in-leg Roads that never yield in a conflict, when others do.
+  - **Banned turns:** every pair of different Roads with no turn.
+  - **Signal:** the turns' programs (`turnSignalPrograms`, moved from Meso to Node membership). They
+    give green intervals over their common cycle; a controller group is offset and wrapped, and a
+    legacy program uses its green phases.
+    - The cycle is cut at every interval end. Each span with a different set of green turns is a
+      stage, and a stage running over the cycle's end is one stage.
+    - Without a common cycle or any green there is no signal, and control stays priority.
+- **Editor:** the Nodes tab's *Coarse values…* is enabled for a Node without detail. Its dialog has:
+  - the control;
+  - the major legs (for priority);
+  - a turn table with *Allowed* and one checkable column per stage (for signalised);
+  - the cycle and the stage greens, with *Add stage* and *Remove stage*.
+
+  Confirm is one Undo step. The table's Control column shows a Node without detail as "… (coarse)".
+- **Rows:**
+  - RD17, RD18 and RD27 are in `tests/road_coarse_command_tests.cpp` (`roadcoarse`).
+  - RD19 gains a junction over generated Links, compiled once its Connectors are deleted.
+  - RD28, the dialog, is in `road-ui`.
+- **Mutations caught:** refine off, banned turns not derived, the wrapped stage not merged, the
+  lifecycle on any two-leg Node, and D310's detail.

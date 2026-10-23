@@ -71,12 +71,13 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
     *Assign template*. S3.5 is in (D309): *Find crossings*, overpasses, junction splits and
     *Merge nodes*. S3.6a is in (D310): the link-type `rank`, `coarse` on Nodes without detail
     with its checks, and Macro and Meso compiling coarse Nodes and Link-less Roads
-    ([ROADS_IMPLEMENTED](reference/ROADS_IMPLEMENTED.md) §19). **Next, S3.6b:** the coarse-values
-    dialog on the Nodes tab, refine (RD17: the first Link or Connector inside deletes `coarse`),
-    derive back (RD18: deleting the last detail derives control, banned turns and stages from it)
-    and the lifecycle (a two-leg Node with no `coarse` and one template is merged away, joining the
-    Roads). Then S3.7, which takes RD20's Micro half (`SEAM_ROAD_NOT_GENERATED`). Booked: demand on
-    a Road-only network (zone connectors attach to Links only);
+    ([ROADS_IMPLEMENTED](reference/ROADS_IMPLEMENTED.md) §19). S3.6b is in (D311): the *Coarse
+    values…* dialog, refine, derive back and the two-leg lifecycle, with detail revised to the
+    junction's interior and Link legs compiled (§20).
+    **Next, S3.7:** the seam checks (ROADS §7): `SEAM_ROAD_NOT_GENERATED` (RD20's Micro half),
+    `SEAM_LANE_COUNT` with *use Link* / *use Node* (RD21), the speed-jump warning (RD22) and the
+    detached-Link advisory. Booked: demand on a Road-only network (zone connectors attach to Links
+    only);
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);

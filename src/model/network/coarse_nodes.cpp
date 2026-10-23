@@ -15,9 +15,25 @@ bool entersPolygon(const std::vector<Point>& line, const std::vector<Point>& pol
 }
 bool nodeHasDetail(const Network& n, const Node& node) {
     if (!simplePolygon(node.polygon)) return false;
-    for (const auto& l : n.links) if (entersPolygon(l.geometry, node.polygon)) return true;
     for (const auto& c : n.connectors) if (entersPolygon(c.geometry, node.polygon)) return true;
+    for (const auto& l : n.links) {
+        if (l.geometry.size() < 2) continue;
+        const auto runs = polygonRuns(l.geometry, node.polygon);
+        if (runs.size() == 1 && runs.front().inside) return true; // wholly inside
+    }
     return false;
+}
+std::vector<LinkLeg> nodeLinkLegs(const Network& n, const Node& node) {
+    std::vector<LinkLeg> legs;
+    if (!simplePolygon(node.polygon)) return legs;
+    for (const auto& l : n.links) {
+        if (l.geometry.size() < 2) continue;
+        const auto runs = polygonRuns(l.geometry, node.polygon);
+        if (runs.size() < 2 || runs.front().inside == runs.back().inside) continue; // outside, inside, through
+        if (runs.back().inside) legs.push_back({l.id, true, runs.back().from});
+        else legs.push_back({l.id, false, runs.front().to});
+    }
+    return legs;
 }
 std::vector<RoadLeg> nodeRoadLegs(const Network& n, const Node& node) {
     std::vector<RoadLeg> legs;

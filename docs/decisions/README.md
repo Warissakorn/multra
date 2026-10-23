@@ -346,6 +346,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D308](RECORD.md#d308) — S3.4: Join opposite Links (15°, half widths + 30 m, owner; mean centreline, no template) and Assign template (several Roads, no Links generated); rows RD10, RD11.
 [D309](RECORD.md#d309) — S3.5: Find crossings (2 m, ≥3 legs, not under a Node), overpasses (schema 53), junction splits with a generated disc Node (half-width + widest lane), Merge nodes (hull, membership-checked); rows RD12–RD15.
 [D310](RECORD.md#d310) — S3.6a: link-type `rank` (tie = undetermined), `coarse` on Nodes without detail (checks), Macro and Meso compile coarse Nodes and Link-less Roads (pieces, joins, banned turns, stage g/C); S3.6b and RD20's Micro half booked; rows RD4, RD16, RD19, RD20.
+[D311](RECORD.md#d311) — S3.6b: detail revised to the interior (Connector inside or Link wholly inside; Link legs compiled as arms), refine and derive back in every Command (`settleNodes`), the two-leg lifecycle, the *Coarse values…* dialog; rows RD17, RD18, RD27, RD28.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

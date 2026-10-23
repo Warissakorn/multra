@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.4b: a turn's free-flow time in Meso (D301)
+
+The turn free time that the compile recorded was not loaded, so a Node's interior took no time.
+Yperman's nodes have no length, so the owner chose a design of ours:
+- **The lag:** the node model decides at t as before; a vehicle enters the out-link τ later.
+- **Storage:** until then it counts against the out-link's storage (the receiving volume reads the
+  admitted count), so spill-back holds. No step limit or turn capacity is added; τ = 0 is unchanged.
+- **Outputs:** turn rows carry `freeTime`; VHT includes node time with delay unchanged;
+  `inNodesAtEnd` is new.
+- **Rows:** ME28 (`mesoloading`) and ME10 extended. Four mutations are caught.
+
 ## 2026-10-22 — M11.4: Meso outputs, `--meso` and Run Meso (D300)
 
 The owner chose the whole Micro run as Meso's horizon, with the same demand, so the CLI is `--meso`.

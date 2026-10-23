@@ -124,7 +124,9 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 
 S3's contract specifies the fields, readers and refusals: [ROADS](ROADS.md) §6 (D303).
 S3.6a implements the fields, checks and the Macro and Meso compile (D310,
-[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19); refine, derive back and the lifecycle are S3.6b.
+[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19); S3.6b refine, derive back, the lifecycle and the
+Nodes tab's *Coarse values…* dialog (D311, §20). Detail is the interior: a Connector inside, or a
+Link wholly inside; Links reaching in are legs.
 
 The owner moved S0.4 to S3 (D272, [MACRO_NETWORK](MACRO_NETWORK.md) §10): Macro compiles a Node's
 interior from its detail, and Nodes without detail first arise from Roads. This amends D260's 5a.
@@ -161,6 +163,8 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 - **Moving a vertex** is one Undo step and clears `generated`.
 - **Merge nodes** (S3.5, D309; [ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §18) replaces the selected rows with the convex hull of
   their polygons in one Undo step, refused when a Node that held valid detail would gain an issue.
+- **Coarse values…** (S3.6b, D311; ROADS_IMPLEMENTED §20) edits a Node without detail: control, major
+  legs, allowed turns and stages, in one Undo step.
 - **Suggest nodes** (S0.5, D265) draws one `generated` polygon around each junction no Node covers
   yet, as one Undo step for the whole set. D259 named `conflictGroups`, but a `ConflictGroup` is one
   pair of road objects, not a junction. The junction rule, all of it taken from the drawing:

@@ -192,10 +192,10 @@ not validation.
   - `coarse` on a Node with detail is `NODE_COARSE_WITH_DETAIL`;
   - a `bannedTurns` or `major` entry naming no leg is `NODE_COARSE_UNKNOWN_LEG`;
   - a signal without stages, or a green total above the cycle, is `NODE_COARSE_SIGNAL_INVALID`.
-- **As implemented (D310, §19):** S3.6a ships the fields, checks and compile. A Node has detail when
-  any Link or Connector runs inside it; a Node without detail compiles as coarse, with absent
-  fields as defaults; a rank tie is every leg sharing the top rank. S3.6b adds the editor, refine,
-  derive back and the lifecycle.
+- **As implemented (D310, D311; §19, §20):** S3.6a ships the fields, checks and compile; S3.6b the
+  dialog, refine, derive back and the lifecycle. A Node's detail is its interior (a Connector inside,
+  or a Link wholly inside), and Links reaching in are legs (D311); a Node without detail compiles as
+  coarse, with absent fields as defaults; a rank tie is every leg sharing the top rank.
 
 ## 7. Seam checks
 
@@ -314,7 +314,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | S3.4 | *Join opposite Links into a Road*; *Assign template*. **Implemented (D308)** | RD10, RD11 |
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes*. **Implemented (D309)** | RD12–RD15 |
 | S3.6a | The link-type `rank`, `coarse` and its checks; Macro and Meso compile coarse Nodes and Link-less Roads. **Implemented (D310)** | RD4, RD16, RD19, RD20 (Macro, Meso) |
-| S3.6b | The coarse-values dialog, refine and derive back, lifecycle | RD17, RD18 |
+| S3.6b | The coarse-values dialog, refine and derive back, lifecycle; detail as the interior and Link legs compiled (D311). **Implemented (D311)** | RD17, RD18, RD27, RD28 |
 | S3.7 | Seam checks, with RD20's Micro half (D310) | RD20 (Micro), RD21, RD22 |
 
 ## 13. Acceptance rows (planned)
@@ -349,9 +349,11 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD24 | Road tool (S3.3b) | O chooses the tool and the Roads tab; one point makes nothing; with no template Enter draws a Road without Links; with one, the Road and its two Links are one Undo step, lit on the canvas; Undo and Redo |
 | RD25 | Roads tab (S3.3b) | An override is stored alone; *Apply template* keeps the Link ids and adds the lane; a template a Road names is not deleted |
 | RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Road is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
+| RD27 | Lifecycle (S3.6b) | Deleting a T's stem merges the Node away and joins the two Roads, renaming the overpass; a Node with `coarse`, two templates, or drawn with two legs is kept |
+| RD28 | Coarse dialog (S3.6b) | *Coarse values…* is disabled on a Node with detail; on one without, it stores a signalised stage in one step, and back to defaults stores none |
 
-## 14–19. As implemented
+## 14–20. As implemented
 
-What each slice built (S3.2 to S3.6a: files, functions, rows, mutations) is in
+What each slice built (S3.2 to S3.6b: files, functions, rows, mutations) is in
 [ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md), with this file's section numbers, so "ROADS §16" still
 names a section there.

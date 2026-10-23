@@ -4,9 +4,18 @@
 #include "network.hpp"
 
 namespace multra {
-// Any Link or Connector with a run inside the polygon (polygonRuns). A Node with detail is Micro's:
-// its turns come from nodeMembership, and it may not store `coarse`.
+// The junction's interior (D311, revising D310): a Connector with a run inside the polygon
+// (polygonRuns), or a Link wholly inside it. A Link that only reaches in is a leg, not detail. A Node
+// with detail is Micro's: its turns come from nodeMembership, and it may not store `coarse`.
 bool nodeHasDetail(const Network&, const Node&);
+// A Link crossing the boundary once and ending inside (`in`, its forward direction enters) or
+// starting inside, at the crossing's station on its geometry; Links passing through, re-entering or
+// lying outside give none. In Link order.
+struct LinkLeg {
+    std::string linkId; bool in{}; double station{};
+    bool operator==(const LinkLeg&) const = default;
+};
+std::vector<LinkLeg> nodeLinkLegs(const Network&, const Node&);
 // A Road with a centreline end inside the polygon, named by its id. `station` is on the centreline,
 // at the last boundary crossing before that end; `atEnd` says which end (true: the Road's end, so
 // its forward direction enters). Sorted by Road id, then start before end. A Road wholly inside or

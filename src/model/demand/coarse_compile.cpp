@@ -19,9 +19,12 @@ RoadCompile compileRoads(const Network& network, const std::vector<CrossSection>
     RoadCompile out;
     // The Nodes without detail, with their legs.
     std::vector<std::pair<std::size_t, std::vector<RoadLeg>>> nodes;
+    std::vector<std::pair<std::size_t, std::vector<LinkLeg>>> linkLegs;
     for (std::size_t k = 0; k < network.nodes.size(); ++k)
-        if (simplePolygon(network.nodes[k].polygon) && !nodeHasDetail(network, network.nodes[k]))
+        if (simplePolygon(network.nodes[k].polygon) && !nodeHasDetail(network, network.nodes[k])) {
             nodes.emplace_back(k, nodeRoadLegs(network, network.nodes[k]));
+            linkLegs.emplace_back(k, nodeLinkLegs(network, network.nodes[k]));
+        }
     std::map<std::size_t, std::size_t> joinOfNode; // network.nodes index -> join
     struct Span { double from{}, to{}; std::optional<std::size_t> start, end; const CrossSection* section{}; };
     std::map<std::size_t, Span> spans; // Link-less Roads that compile, by index
@@ -40,7 +43,7 @@ RoadCompile compileRoads(const Network& network, const std::vector<CrossSection>
     const auto nodeJoin = [&](std::size_t k) {
         if (const auto j = joinOfNode.find(k); j != joinOfNode.end()) return j->second;
         const auto& node = network.nodes[k];
-        RoadJoin join{k, node.name.empty() ? node.id : node.name, "unsignalised", {}};
+        RoadJoin join{k, node.name.empty() ? node.id : node.name, "unsignalised", {}, {}, {}};
         if (node.coarse && node.coarse->control == CoarseControl::signalised) join.control = "signalised";
         out.joins.push_back(std::move(join));
         return joinOfNode[k] = out.joins.size() - 1;
@@ -75,7 +78,7 @@ RoadCompile compileRoads(const Network& network, const std::vector<CrossSection>
     for (const auto& [root, members] : groups) {
         if (members.size() < 2) continue;
         const auto p = point(ends[root]);
-        out.joins.push_back({std::nullopt, "road-end@" + std::to_string(p.x) + "," + std::to_string(p.y), "", {}});
+        out.joins.push_back({std::nullopt, "road-end@" + std::to_string(p.x) + "," + std::to_string(p.y), "", {}, {}, {}});
         for (const auto e : members) (ends[e].second ? spans[ends[e].first].end : spans[ends[e].first].start) = out.joins.size() - 1;
     }
     // Pieces, by Road order, forward first.
@@ -94,18 +97,32 @@ RoadCompile compileRoads(const Network& network, const std::vector<CrossSection>
         piece(true, r.overrides.lanesForward.value_or(s->lanesForward));
         if (s->directions == 2) piece(false, r.overrides.lanesBackward.value_or(s->lanesBackward));
     }
+    // Arms: pieces, then each Node's Link legs.
+    const auto roadLabel = [&](std::size_t road) { return network.roads[road].name.empty() ? network.roads[road].id : network.roads[road].name; };
+    for (std::size_t i = 0; i < out.pieces.size(); ++i) {
+        const auto& p = out.pieces[i];
+        if (p.end) out.joins[*p.end].ins.push_back({i, "", 0, p.roadId, roadLabel(p.road)});
+        if (p.start) out.joins[*p.start].outs.push_back({i, "", 0, p.roadId, roadLabel(p.road)});
+    }
+    for (const auto& [k, legs] : linkLegs)
+        for (const auto& leg : legs) {
+            const auto& l = *std::find_if(network.links.begin(), network.links.end(), [&](const auto& x) { return x.id == leg.linkId; });
+            const auto r = l.roadId ? std::find_if(network.roads.begin(), network.roads.end(), [&](const auto& x) { return x.id == *l.roadId; }) : network.roads.end();
+            JoinArm arm{std::nullopt, l.id, leg.station, l.id, l.name.empty() ? l.id : l.name};
+            if (r != network.roads.end()) { arm.road = r->id; arm.label = roadLabel(static_cast<std::size_t>(r - network.roads.begin())); }
+            const auto j = nodeJoin(k);
+            (leg.in ? out.joins[j].ins : out.joins[j].outs).push_back(arm);
+            out.dropped[l.id].push_back(leg.in ? std::pair{leg.station, polylineLength(l.geometry)} : std::pair{0.0, leg.station});
+        }
     // Turns per join.
-    const auto label = [&](std::size_t road) { return network.roads[road].name.empty() ? network.roads[road].id : network.roads[road].name; };
-    for (std::size_t j = 0; j < out.joins.size(); ++j) {
-        auto& join = out.joins[j];
+    for (auto& join : out.joins) {
         const NodeCoarse* coarse = join.node && network.nodes[*join.node].coarse ? &*network.nodes[*join.node].coarse : nullptr;
-        for (std::size_t a = 0; a < out.pieces.size(); ++a) {
-            if (out.pieces[a].end != j) continue;
-            for (std::size_t b = 0; b < out.pieces.size(); ++b) {
-                if (out.pieces[b].start != j || out.pieces[a].roadId == out.pieces[b].roadId) continue;
-                const std::pair pair{out.pieces[a].roadId, out.pieces[b].roadId};
+        for (std::size_t a = 0; a < join.ins.size(); ++a)
+            for (std::size_t b = 0; b < join.outs.size(); ++b) {
+                const std::pair pair{join.ins[a].road, join.outs[b].road};
+                if (pair.first == pair.second) continue; // a U-turn
                 if (coarse && std::find(coarse->bannedTurns.begin(), coarse->bannedTurns.end(), pair) != coarse->bannedTurns.end()) continue;
-                RoadTurn turn{a, b, label(out.pieces[a].road) + " → " + label(out.pieces[b].road), {}, 0};
+                RoadTurn turn{a, b, join.ins[a].label + " → " + join.outs[b].label, {}, 0};
                 if (coarse && coarse->control == CoarseControl::signalised && coarse->signal && coarse->signal->cycle > 0) {
                     turn.signal = "node:" + network.nodes[*join.node].id;
                     double green = 0;
@@ -115,23 +132,31 @@ RoadCompile compileRoads(const Network& network, const std::vector<CrossSection>
                 }
                 join.turns.push_back(std::move(turn));
             }
-        }
     }
-    // Priority by hierarchy, where it would be read.
-    for (const auto& [k, legs] : nodes) {
-        const auto& node = network.nodes[k];
+    // Priority by hierarchy, where it would be read: over the distinct Roads of a Node's arms.
+    for (const auto& join : out.joins) {
+        if (!join.node) continue;
+        const auto& node = network.nodes[*join.node];
         const bool priority = !node.coarse || !node.coarse->control || *node.coarse->control == CoarseControl::priority;
-        if (!priority || (node.coarse && !node.coarse->major.empty()) || legs.size() < 3) continue;
+        std::vector<std::string> roads;
+        for (const auto* arms : {&join.ins, &join.outs})
+            for (const auto& arm : *arms) if (std::find(roads.begin(), roads.end(), arm.road) == roads.end()) roads.push_back(arm.road);
+        if (!priority || (node.coarse && !node.coarse->major.empty()) || roads.size() < 3) continue;
         std::vector<std::pair<std::string, std::optional<int>>> ranks;
-        for (const auto& leg : legs) {
-            std::optional<int> rank;
-            const auto r = std::find_if(network.roads.begin(), network.roads.end(), [&](const auto& x) { return x.id == leg.roadId; });
+        for (const auto& id : roads) {
+            std::optional<std::string> typeId;
+            const auto r = std::find_if(network.roads.begin(), network.roads.end(), [&](const auto& x) { return x.id == id; });
             const auto span = spans.find(static_cast<std::size_t>(r - network.roads.begin()));
-            if (span != spans.end() && span->second.section->linkType)
-                for (const auto& t : types) if (t.id == *span->second.section->linkType) rank = t.rank;
-            ranks.emplace_back(leg.roadId, rank);
+            if (span != spans.end()) typeId = span->second.section->linkType;
+            else {
+                const auto& first = r != network.roads.end() && !r->links.empty() ? r->links.front() : id; // a Link without a Road
+                for (const auto& l : network.links) if (l.id == first) typeId = l.linkTypeId;
+            }
+            std::optional<int> rank;
+            if (typeId) for (const auto& t : types) if (t.id == *typeId) rank = t.rank;
+            ranks.emplace_back(id, rank);
         }
-        if (!majorByRank(ranks)) out.advisories.push_back({"NODE_PRIORITY_UNDETERMINED", "network.nodes[" + std::to_string(k) + "]"});
+        if (!majorByRank(ranks)) out.advisories.push_back({"NODE_PRIORITY_UNDETERMINED", "network.nodes[" + std::to_string(*join.node) + "]"});
     }
     return out;
 }

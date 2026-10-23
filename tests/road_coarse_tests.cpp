@@ -5,6 +5,8 @@
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/road_commands.hpp"
+#include "../src/model/network/coarse_nodes.hpp"
+#include "../src/model/network/road_crossings.hpp"
 #include "../src/model/demand/coarse_compile.hpp"
 #include "../src/model/demand/macro_compile.hpp"
 #include "../src/model/demand/meso_compile.hpp"
@@ -105,8 +107,10 @@ TEST(roadcoarse, rd16_coarse_codec_and_checks) { // RD16
     try { parseDocument(old); CHECK(false); } catch (const ValidationError& e) { CHECK(issueAt(e.issues, "EDIT_UNSUPPORTED_FIELD", "network.nodes[0].coarse")); }
     auto bad = j; bad["network"]["nodes"][0]["coarse"]["control"] = "roundabout";
     try { parseDocument(bad); CHECK(false); } catch (const ValidationError& e) { CHECK(issueAt(e.issues, "EDIT_NODE_INVALID", "network.nodes[0].coarse.control")); }
-    // Detail inside refuses it.
-    auto detailed = f.d; addLink(detailed, {{-5, -50}, {-5, 50}}, 1, 3.5);
+    // Detail inside refuses it (D311): a Link wholly inside; a Link only reaching in is a leg.
+    auto reaching = f.d; addLink(reaching, {{-5, -50}, {-5, 0}}, 1, 3.5);
+    CHECK(!issueAt(refused(reaching), "NODE_COARSE_WITH_DETAIL", "nodes[0].coarse"));
+    auto detailed = f.d; addLink(detailed, {{-5, -5}, {5, 5}}, 1, 3.5);
     CHECK(issueAt(refused(detailed), "NODE_COARSE_WITH_DETAIL", "nodes[0].coarse"));
     // Unknown legs, wherever they are named.
     auto unknown = f.d; auto& c = *unknown.network.nodes[0].coarse;
@@ -179,4 +183,31 @@ TEST(roadcoarse, rd20_link_less_roads_compile) { // RD20 (Macro and Meso; the Mi
     const auto fromLinks = meso(linked.network, types, sections).graph;
     CHECK(std::any_of(fromLinks.links.begin(), fromLinks.links.end(), [&](const auto& l) { return l.source == linked.network.links[0].id; }) && std::none_of(fromLinks.links.begin(), fromLinks.links.end(), [&](const auto& l) { return l.source == a; }));
     (void)b;
+}
+TEST(roadcoarse, rd19_coarse_over_generated_links) { // RD19 with D311: a junction over generated Links, its Connectors gone
+    ProjectDocument d;
+    putCrossSection(d, section("ns", "arterial"), {});
+    const auto a = road(d, {{0, 0}, {200, 0}}, "ns"), b = road(d, {{100, -100}, {100, 100}}, "ns");
+    applyTemplate(d, a, {}); applyTemplate(d, b, {});
+    const auto found = findCrossings(d.network, 2);
+    applyCrossings(d, found, {CrossingChoice::junction}, 2, {});
+    CHECK(d.network.nodes.size() == 1 && d.network.links.size() == 8); // forcing: a split junction
+    const std::vector<LinkType> types{type("arterial", std::nullopt)};
+    // The split's through Connectors are detail, so Micro's membership compiles it (4 through turns).
+    CHECK(nodeHasDetail(d.network, d.network.nodes[0]) && meso(d.network, types, {}).graph.turns.size() == 4);
+    std::vector<std::string> connectors;
+    for (const auto& c : d.network.connectors) connectors.push_back(c.id);
+    deleteObjects(d, connectors);
+    CHECK(!nodeHasDetail(d.network, d.network.nodes[0])); // only the Links' legs reach in
+    const auto m = meso(d.network, types, {});
+    CHECK(m.issues.empty() && m.graph.turns.size() == 12);
+    for (const auto& l : m.graph.links) CHECK(l.length < 100); // the Links' parts inside the Node are not compiled
+    CHECK(connectorArcs(macro(d.network, types, {}).graph) == 12);
+    // Coarse values apply: a banned pair, by Road id.
+    const auto pieceOf = [&](const std::string& link) { for (const auto& l : d.network.links) if (l.id == link) return *l.roadId; return std::string{}; };
+    const auto& first = m.graph.turns.front();
+    const Turn pair{pieceOf(m.graph.links[first.in].source), pieceOf(m.graph.links[first.out].source)};
+    d.network.nodes[0].coarse = NodeCoarse{std::nullopt, {}, {pair}, std::nullopt};
+    CHECK(refused(d).empty());
+    CHECK(meso(d.network, types, {}).graph.turns.size() == 11 && connectorArcs(macro(d.network, types, {}).graph) == 11);
 }
