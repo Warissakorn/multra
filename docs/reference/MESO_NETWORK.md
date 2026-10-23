@@ -244,6 +244,9 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   nothing to them.
 - **Macro:** shares the graph compile and link types. Meso adds `jamDensity`, which Macro never
   reads.
+- **Roads (D310, S3.6a):** a Node without detail is a Meso node with its coarse turns (time 0,
+  g/C from its stages), and Link-less Roads are links per template direction
+  ([ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19). Such a Node is no longer `MESO_NODE_REFUSED`.
 - **The boundary interface (WORKFLOW 14):** `meso::Boundary{sending(t), receiving(t)}` per
   boundary link, so a later hybrid can couple a Micro area. It is declared in M11.3 and nothing
   else is built.

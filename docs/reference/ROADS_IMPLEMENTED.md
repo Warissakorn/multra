@@ -1,4 +1,4 @@
-# Roads — as implemented (S3.2–S3.5)
+# Roads — as implemented (S3.2–S3.6a)
 
 What each slice of [ROADS](ROADS.md) built, kept apart from the contract so that file stays under
 500 lines. The section numbers are the contract's, so "ROADS §16" still names a section here.
@@ -187,3 +187,80 @@ The owner chose the tolerance (2026-10-22): 15° and half both widths plus 30 m.
     current row first.
 - **Rows:** RD12–RD15 in `tests/road_crossing_tests.cpp` (`roadcrossings`), with their editor
   part in `road-ui`.
+
+## 19. S3.6a as implemented (D310)
+
+S3.6 is split in two. S3.6a ships `rank` and `coarse` with the Macro and Meso compile that reads
+them, so no field is stored before its reader. The editor's coarse dialog, refine, derive back and
+the lifecycle are S3.6b (RD17, RD18). RD20's Micro half, `SEAM_ROAD_NOT_GENERATED`, moves to S3.7
+with the other seam checks.
+
+- **`rank`** is an optional integer on a link type, written only when set; an owned ranked type
+  makes the file 53, and below 53 it is `EDIT_UNSUPPORTED_FIELD` at
+  `definition.linkTypes[i].rank`. A rank that is not an integer is a malformed entry
+  (`EDIT_CATALOG_READ`). The shipped types stay unranked; the owner ranks them. The Link-type
+  dialog has a *Rank* field whose lowest value is *None*, and the table shows it.
+- **`majorByRank(legs)`** (`src/model/demand/coarse_compile.*`) returns the legs with the highest
+  rank. When a leg has no rank, or every leg shares the top rank, it returns nothing, and Macro and
+  Meso advise `NODE_PRIORITY_UNDETERMINED` at `network.nodes[i]` for a priority Node of three legs
+  or more without `major`. Neither reads priority yet (D297), so this is not a refusal.
+- **`Node::coarse`** (`network.hpp`):
+  - fields: `control` (`priority`, `signalised`, `allWayStop`; absent is priority), `major`,
+    `bannedTurns` and `signal {cycle, stages[{green, turns}]}`; turns are `[in Road, out Road]`;
+  - it is written only when present, with fields at their defaults left out, so an all-default
+    one is `{}`;
+  - below 53 it is `EDIT_UNSUPPORTED_FIELD` at `network.nodes[i].coarse`, and a bad shape is
+    `EDIT_NODE_INVALID` at its path.
+- **Detail and legs** (`src/model/network/coarse_nodes.*`, pure):
+  - a Node has detail when any Link or Connector has a run inside its polygon (`polygonRuns`, moved
+    to `polygon.*` from Node membership). A junction made by S3.5 over generated Links therefore
+    has detail, and `coarse` belongs in practice to Nodes over Link-less Roads;
+  - a leg is a Road with a centreline end inside the polygon, named by its id, at the last
+    boundary crossing before that end. A Road wholly inside gives no leg;
+  - a Road that passes through without ending is not cut. It is the advisory `NODE_ROAD_THROUGH`,
+    and *Find crossings* splits it.
+- **Checks** (`coarseNodeIssues`, in the network check):
+  - `NODE_COARSE_WITH_DETAIL` at `nodes[i].coarse`;
+  - `NODE_COARSE_UNKNOWN_LEG` at `.major[k]`, `.bannedTurns[k]` or `.signal.stages[s].turns[t]`;
+  - `NODE_COARSE_SIGNAL_INVALID` at `.signal` for:
+    - a signalised Node without a signal, or a signal on another control;
+    - no stages;
+    - a cycle or green that is not positive;
+    - greens summing above the cycle.
+- **`compileRoads`**, shared by `compileMacroNetwork` and `compileMesoNetwork`. Both take the
+  templates as a new last argument; the inputs pass them only when some Road has no Links, so
+  nothing else is read or recorded.
+  - **Pieces.** A Link-less Road gives one piece per direction of its template, trimmed at the
+    legs of the Nodes without detail that it ends in.
+    - The forward piece runs along the centreline; the backward one has decreasing stations.
+    - Lanes are the override, else the template's; the type is the template's `linkType`.
+    - A Road with Links compiles from its Links, as before.
+  - **Joins.**
+    - A Node without detail is one, with or without `coarse`: absent fields are the defaults.
+      Nodes without detail are no longer `MESO_NODE_REFUSED`.
+    - So is a group of free Road ends within 2 m of one another (Find crossings' default
+      tolerance), as a continuing Link is in Meso. Without this, two templates meeting end to end
+      would disconnect.
+  - **Turns.**
+    - Every (in, out) pair of different Roads, minus `bannedTurns`, with no free time (D301).
+    - At a signalised Node: `signal` `node:<id>` and g/C = the summed greens of the stages that
+      serve the turn over the cycle (D299). A turn no stage serves gets 0.
+  - **Refusals** at `network.roads[i].crossSectionId`:
+    - no template: `MACRO_ROAD_TEMPLATE_MISSING`;
+    - an unknown template: `ROAD_CROSS_SECTION_UNKNOWN`;
+    - a template with no type: `MACRO_LINK_TYPE_MISSING`;
+    - an unknown type: `MACRO_LINK_TYPE_UNKNOWN`.
+
+    A Road refused for its template gives no piece.
+- **Meso:** one `MesoLink` per piece, with `source` the Road id. There is one node per join (with
+  the Node id; allWayStop shows as unsignalised) and one per free piece end. Everything is added
+  after the Links, so a project without Link-less Roads compiles exactly as before.
+- **Macro:**
+  - a `link` arc per piece, between nodes `<road>:forward|backward@<station>`, so a U-turn never
+    shares a node. A basis mismatch is at `network.roads[i].crossSectionId`;
+  - a `connector` arc per turn (`source`: the Node id), uncapacitated and with time 0;
+  - `MacroCompile` gains `advisories`, which `runMacro` reports ahead of demand's.
+- **Not built:** zone connectors attach to Links, so a Road-only network compiles but carries no
+  demand. Attaching demand to Roads is booked.
+- **Rows:** RD4, RD16, RD19 and RD20 (Macro and Meso) are in `tests/road_coarse_tests.cpp`
+  (`roadcoarse`). The rank field is checked in `macro-ui`.

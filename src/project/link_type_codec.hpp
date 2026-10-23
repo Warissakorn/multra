@@ -9,8 +9,8 @@ class InputManifest;
 // which is what makes a file schema 50; below 50 each is EDIT_UNSUPPORTED_FIELD at its path.
 bool usesLinkTypes(const ProjectDocument&);
 void rejectLinkTypesBefore50(const Json& file);
-// S3.2 (ROADS §8, D304): an owned type's `capacityBasis` makes the file schema 53; below 53 it is
-// EDIT_UNSUPPORTED_FIELD at its path. An empty basis means "practical".
+// S3.2 (ROADS §8, D304): an owned type's `capacityBasis` (or S3.6a's `rank`, D310) makes the file
+// schema 53; below 53 it is EDIT_UNSUPPORTED_FIELD at its path. An empty basis means "practical".
 bool usesCapacityBasis(const ProjectDocument&);
 void rejectCapacityBasisBefore53(const Json& file);
 std::string capacityBasisOf(const std::string& basis);
@@ -18,8 +18,8 @@ std::string capacityBasisOf(const std::string& basis);
 // parseNetwork has checked the Link's other keys.
 void readLinkTypeIds(const Json& network, Network&);
 // Exact keys {id, name, capacityPerLane, freeSpeed, vdfId, source} plus an optional `modes`, an
-// optional `jamDensity {value, source}` (M11.2) and an optional `capacityBasis` (S3.2);
-// a malformed entry is EDIT_CATALOG_READ. Values are linkTypeIssues'.
+// optional `jamDensity {value, source}` (M11.2) and an optional `capacityBasis` (S3.2) and an
+// optional integer `rank` (S3.6a); a malformed entry is EDIT_CATALOG_READ. Values are linkTypeIssues'.
 LinkType parseLinkType(const Json&);
 Json linkTypeJson(const LinkType&);
 // Exact keys {id, form, alpha, beta, source} plus an optional `capacityBasis` (S3.2); a malformed

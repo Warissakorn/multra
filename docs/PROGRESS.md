@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — S3.6a: link-type rank, coarse Nodes, Macro and Meso from Roads (D310)
+
+S3.6 is split: this half ships the fields with the compile that reads them; the coarse dialog,
+refine, derive back and the lifecycle are S3.6b.
+- **`rank`** on link types (schema 53, a Rank field in the Link-type dialog): the legs with the
+  highest rank are major; an unranked leg or a tie leaves priority undetermined, which Macro and
+  Meso advise.
+- **`coarse`** on a Node without detail (schema 53): control, major legs, banned turns and a stage
+  signal, refused on a Node with detail, with unknown legs or with a bad signal.
+- **Macro and Meso** compile Roads without generated Links, one link per template direction,
+  split at Nodes without detail. Such a Node, coarse or default, gives every turn between
+  different Roads minus the banned ones, with the stages' g/C when signalised. Road ends within
+  2 m join.
+- **Rows:** RD4, RD16, RD19 and RD20's Macro and Meso half (`roadcoarse`), and the rank field in
+  `macro-ui`; four mutations caught. RD20's Micro half moves to S3.7.
+
 ## 2026-10-22 — S3.5: Find crossings, overpasses and Merge nodes (D309)
 
 - **Find crossings** (Roads tab) lists every place where Roads on one level cross, or one ends within
@@ -118,17 +134,6 @@ Yperman's nodes have no length, so the owner chose a design of ours:
 - **Outputs:** turn rows carry `freeTime`; VHT includes node time with delay unchanged;
   `inNodesAtEnd` is new.
 - **Rows:** ME28 (`mesoloading`) and ME10 extended. Four mutations are caught.
-
-## 2026-10-22 — M11.4: Meso outputs, `--meso` and Run Meso (D300)
-
-The owner chose the whole Micro run as Meso's horizon, with the same demand, so the CLI is `--meso`.
-- **`runMeso`** feeds JSON and CSV outputs by slice, in PCU: link flows, density, travel time from the
-  curves, queue and spill-back; turn transfers; VKT, VHT and delay; and vehicles per class.
-- **The editor** has Run Meso and Cancel, the Meso links tab with the marker and a stale notice, and
-  Export.
-- **Rows:** ME10 (`mesooutput`), ME11 (`meso-ui`), and `cli-meso*`. Five mutations are caught.
-- **Docs:** the as-implemented sections moved to MESO_NETWORK_IMPLEMENTED for the 500-line cap.
-- **Known gap:** turn free-flow times are not loaded yet.
 
 ## Older entries
 

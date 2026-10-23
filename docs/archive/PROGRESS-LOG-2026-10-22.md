@@ -3,6 +3,17 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — M11.4: Meso outputs, `--meso` and Run Meso (D300)
+
+The owner chose the whole Micro run as Meso's horizon, with the same demand, so the CLI is `--meso`.
+- **`runMeso`** feeds JSON and CSV outputs by slice, in PCU: link flows, density, travel time from the
+  curves, queue and spill-back; turn transfers; VKT, VHT and delay; and vehicles per class.
+- **The editor** has Run Meso and Cancel, the Meso links tab with the marker and a stale notice, and
+  Export.
+- **Rows:** ME10 (`mesooutput`), ME11 (`meso-ui`), and `cli-meso*`. Five mutations are caught.
+- **Docs:** the as-implemented sections moved to MESO_NETWORK_IMPLEMENTED for the 500-line cap.
+- **Known gap:** turn free-flow times are not loaded yet.
+
 ## 2026-10-22 — M11.3d: signals in Meso as averaged green (D299)
 
 The owner chose averaged green (4b) over explicit green, which under FIFO would hold a whole approach

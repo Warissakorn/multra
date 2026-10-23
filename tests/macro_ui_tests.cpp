@@ -116,9 +116,13 @@ int main(int argc, char** argv) {
             item<QDoubleSpinBox>(dialog, "editorLinkTypeCapacity")->setValue(500);
             item<QDoubleSpinBox>(dialog, "editorLinkTypeSpeed")->setValue(36);
             item<QLineEdit>(dialog, "editorLinkTypeSource")->setText("Test values");
+            auto* rank = item<QSpinBox>(dialog, "editorLinkTypeRank");
+            require(rank->value() == rank->minimum(), "A new type starts unranked");
+            rank->setValue(2);
             confirm(dialog);
         });
         require(types->rowCount() == 2 && d().definition->linkTypes.size() == 2, "Add appends a type");
+        require(d().definition->linkTypes.back().rank == 2 && !d().definition->linkTypes.front().rank, "The rank is stored (S3.6a)");
         const auto& added = d().definition->linkTypes.back();
         require(added.name == "Local" && added.capacityPerLane == 500 && std::abs(added.freeSpeed - 10) < 1e-9 && added.vdfId == "bpr", "The dialog's values, km/h to m/s");
         select(*types, "arterial");

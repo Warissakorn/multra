@@ -1,5 +1,6 @@
 #include "diagnostics.hpp"
 #include "node_membership.hpp"
+#include "coarse_nodes.hpp"
 #include "right_of_way.hpp"
 #include "../../core/validate.hpp"
 #include <algorithm>
@@ -118,6 +119,8 @@ std::vector<Diagnostic> runtimeDiagnostics(const Network& network, const Scenari
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     // S0.2 (NODES §3): a Node whose membership is refused gives no rows, and the run still runs.
     for(const auto& issue:nodeMembershipIssues(network))
+        result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
+    for(const auto& issue:roadThroughNodeIssues(network)) // S3.6a (ROADS §6)
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:routeAmbiguityIssues(network,definition))
         result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});

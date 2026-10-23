@@ -248,6 +248,8 @@ passes.
   only through Connectors. Nodes without detail first arise from Roads (S3).
 - **Answered (D272, 6a):** S0.4 moves to S3, so no field is stored before its reader. This amends
   D260's answer 5a ("with S2").
+- **Implemented (D310, S3.6a):** a Node without detail and the Link-less Roads ending in it compile
+  as Road pieces joined by one `connector` arc per allowed turn ([ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19).
 
 ## 11. Benchmark (choice 7)
 

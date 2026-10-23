@@ -24,7 +24,8 @@ MacroRun runMacro(const ProjectDocument& d, const std::filesystem::path& data, c
     if (manifest) { manifest->validate(); run.inputManifest = manifest->json(); }
     run.graph = std::move(network.graph);
     run.classes = std::move(demand.classes);
-    run.advisories = std::move(demand.advisories);
+    run.advisories = std::move(network.advisories); // S3.6a
+    run.advisories.insert(run.advisories.end(), demand.advisories.begin(), demand.advisories.end());
     enter(MacroStage::assignment);
     run.assignment = assignMacro(run.graph, run.classes, run.settings, observer ? observer->iteration : std::function<bool(const MacroIteration&)>{});
     if (!run.assignment.converged && !run.assignment.cancelled) run.advisories.push_back({"MACRO_NOT_CONVERGED", "definition.macroSettings.maxIterations"});

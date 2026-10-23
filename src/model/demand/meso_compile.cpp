@@ -1,4 +1,6 @@
 #include "meso_compile.hpp"
+#include "coarse_compile.hpp"
+#include "../network/coarse_nodes.hpp"
 #include "../network/node_membership.hpp"
 #include "../network/polygon.hpp"
 #include <algorithm>
@@ -63,7 +65,8 @@ std::set<std::string> turnPrograms(const Network& network, const NodeMembership&
 }
 }
 MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
-                               const MesoSettings& settings, const std::map<std::string, double>& greenShares) {
+                               const MesoSettings& settings, const std::map<std::string, double>& greenShares,
+                               const std::vector<CrossSection>& crossSections) {
     MesoCompile out;
     auto& g = out.graph;
     std::map<std::string, std::size_t> linkIndex;
@@ -77,6 +80,7 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
     // Nodes whose membership has no issue; the others are refused and left to the simple rule.
     std::vector<ValidNode> valid;
     for (std::size_t i = 0; i < network.nodes.size(); ++i) {
+        if (simplePolygon(network.nodes[i].polygon) && !nodeHasDetail(network, network.nodes[i])) continue; // S3.6a: coarse
         auto m = nodeMembership(network, network.nodes[i]);
         if (!m.issues.empty()) out.issues.push_back({"MESO_NODE_REFUSED", "network.nodes[" + std::to_string(i) + "]"});
         else valid.push_back({i, std::move(m)});
@@ -209,6 +213,32 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         turn->second.via.push_back(c->id);
     }
     for (auto& [pair, turn] : simple) byNode[turn.node].push_back(std::move(turn));
+    // S3.6a (ROADS §9, D310): Link-less Roads' pieces and their joins, after every Link's.
+    auto roads = compileRoads(network, crossSections, types);
+    std::vector<std::size_t> joinNode(roads.joins.size());
+    for (std::size_t j = 0; j < roads.joins.size(); ++j) {
+        const auto& join = roads.joins[j];
+        joinNode[j] = g.nodes.size();
+        g.nodes.push_back({join.name, join.node ? network.nodes[*join.node].id : "", join.control, {}, {}});
+    }
+    const auto pieceBase = g.links.size();
+    for (const auto& p : roads.pieces) {
+        MesoLink m{p.roadId, p.from, p.to, 0, 0, p.length, p.lanes, 0, 0, 0, {}};
+        if (p.type) {
+            m.capacityPerLane = p.type->capacityPerLane; m.freeSpeed = p.type->freeSpeed; m.modes = p.type->modes;
+            if (p.type->jamDensity) m.jamDensity = p.type->jamDensity->value;
+        }
+        const auto freeEnd = [&](double station) { g.nodes.push_back({p.roadId + "@" + std::to_string(station), "", "", {}, {}}); return g.nodes.size() - 1; };
+        m.from = p.start ? joinNode[*p.start] : freeEnd(p.from);
+        m.to = p.end ? joinNode[*p.end] : freeEnd(p.to);
+        g.links.push_back(std::move(m));
+    }
+    byNode.resize(g.nodes.size()); conflicts.resize(g.nodes.size());
+    for (std::size_t j = 0; j < roads.joins.size(); ++j)
+        for (const auto& t : roads.joins[j].turns)
+            byNode[joinNode[j]].push_back({joinNode[j], pieceBase + t.in, pieceBase + t.out, t.name, 0, {}, t.signal, t.green});
+    out.issues.insert(out.issues.end(), roads.issues.begin(), roads.issues.end());
+    out.advisories.insert(out.advisories.end(), roads.advisories.begin(), roads.advisories.end());
     for (std::size_t n = 0; n < g.nodes.size(); ++n) {
         const auto base = g.turns.size();
         for (auto& t : byNode[n]) { g.nodes[n].turns.push_back(g.turns.size()); g.turns.push_back(std::move(t)); }
@@ -234,6 +264,7 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         else if (!typeOf(l)) out.issues.push_back({"MACRO_LINK_TYPE_UNKNOWN", path});
         else used.insert(*l.linkTypeId);
     }
+    for (const auto& p : roads.pieces) if (p.type) used.insert(p.type->id);
     for (std::size_t k = 0; k < types.size(); ++k)
         if (used.contains(types[k].id) && !types[k].jamDensity)
             out.issues.push_back({"MESO_JAM_DENSITY_MISSING", (k < typePaths.size() ? typePaths[k] : types[k].id) + ".jamDensity"});

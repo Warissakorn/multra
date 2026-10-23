@@ -26,6 +26,7 @@ std::vector<std::filesystem::path> files(const std::filesystem::path& directory)
 }
 bool usesRoadFields(const ProjectDocument& d) {
     if (!d.network.roads.empty() || !d.network.overpasses.empty()) return true;
+    if (std::any_of(d.network.nodes.begin(), d.network.nodes.end(), [](const auto& n) { return n.coarse.has_value(); })) return true; // S3.6a
     if (d.definition && !d.definition->externalCrossSections) return true;
     return std::any_of(d.network.links.begin(), d.network.links.end(), [](const auto& l) { return l.roadId.has_value(); });
 }
@@ -37,6 +38,9 @@ void rejectRoadFieldsBefore53(const Json& j) {
     const auto& n = j.at("network");
     if (n.contains("roads")) refuse("network.roads");
     if (n.contains("overpasses")) refuse("network.overpasses");
+    if (n.contains("nodes") && n.at("nodes").is_array())
+        for (std::size_t i = 0; i < n.at("nodes").size(); ++i)
+            if (n.at("nodes")[i].is_object() && n.at("nodes")[i].contains("coarse")) refuse("network.nodes[" + std::to_string(i) + "].coarse");
     if (!n.contains("links") || !n.at("links").is_array()) return;
     for (std::size_t i = 0; i < n.at("links").size(); ++i)
         if (n.at("links")[i].is_object() && n.at("links")[i].contains("roadId")) refuse("network.links[" + std::to_string(i) + "].roadId");
@@ -155,6 +159,12 @@ Json crossSectionJson(const CrossSection& t) {
     if (!t.laneWidths.empty()) j["laneWidths"] = t.laneWidths;
     if (t.linkType) j["linkType"] = *t.linkType;
     return j;
+}
+std::vector<CrossSection> linkLessRoadTemplates(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
+    std::vector<CrossSection> result;
+    if (std::none_of(d.network.roads.begin(), d.network.roads.end(), [](const auto& r) { return r.links.empty(); })) return result;
+    for (auto& r : resolveCrossSections(d.definition.value_or(AuthoringDefinition{}), data, manifest)) result.push_back(std::move(r.section));
+    return result;
 }
 std::vector<ResolvedCrossSection> resolveCrossSections(const AuthoringDefinition& d, const std::filesystem::path& data, InputManifest* manifest) {
     std::vector<ResolvedCrossSection> result;

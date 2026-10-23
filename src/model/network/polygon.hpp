@@ -14,4 +14,10 @@ bool pointInPolygon(const std::vector<Point>& polygon, Point p);
 // Two simple polygons share any point: an edge of one touches an edge of the other, or one holds
 // a vertex of the other.
 bool polygonsOverlap(const std::vector<Point>& a, const std::vector<Point>& b);
+// A polyline cut at every point it meets the boundary: alternating runs inside and outside, in
+// station order. Touching the boundary without crossing it splits nothing, since adjacent runs on
+// the same side merge. The boundary itself counts as inside. (Shared by Node membership and, since
+// S3.6a, coarse Nodes' legs.)
+struct PolygonRun { double from{}, to{}; bool inside{}; };
+std::vector<PolygonRun> polygonRuns(const std::vector<Point>& line, const std::vector<Point>& polygon);
 }
