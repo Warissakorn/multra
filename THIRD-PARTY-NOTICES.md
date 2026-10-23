@@ -14,6 +14,15 @@ and each component's own copyright file into `licenses/` of every build it produ
 | [libthai](https://linux.thai.net/projects/libthai) and [libdatrie](https://linux.thai.net/projects/datrie) | LGPL-2.1-or-later ([text](licenses/LGPL-2.1.txt)) | Loaded at run time as `thai.dll` for Thai line breaks (D245), with the dictionary `thbrk.tri` | Windows package |
 | [Noto Sans Thai](https://github.com/notofonts/thai) | SIL Open Font License 1.1 ([data/fonts/OFL.txt](data/fonts/OFL.txt)) | Bundled UI font, two static weights cut from the variable font | Both packages (`bin/data/fonts/`) |
 | [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles | Map data ODbL; tiles under the OSMF tile usage policy | Fetched at run time when a map background is on; the credit is shown on the map | Not shipped |
+| [Natural Earth](https://www.naturalearthdata.com/) country and province label points | [Public domain](https://github.com/nvkelso/natural-earth-vector/blob/ca96624a56bd078437bca8184e78163e5039ad19/LICENSE.md) | Representative places for the map location picker, derived from admin-0 countries and admin-1 label points at the source commit recorded in the catalog | Both packages (`bin/data/map-locations.json`) |
+| [Wikidata](https://www.wikidata.org/) Thai place names | [CC0-1.0](https://www.wikidata.org/wiki/Wikidata:Licensing) | Thai country and Thai province labels in the local map location catalog, retrieved 2026-10-23 | Both packages (`bin/data/map-locations.json`) |
+
+The location catalog stores representative coordinates and names, without boundary geometry.
+Its 239 country/territory choices and 4,588 regions reflect the Natural Earth source snapshot;
+territories combined by that source are not separate country choices. It is a navigation aid,
+not a current administrative register or a source of survey coordinates. The catalog records
+the source files, commit, omitted records and supported latitude range. Thai labels come from
+Wikidata because some Natural Earth `name_local` attributes identify the wrong Thai province.
 
 ## Source for the LGPL components
 

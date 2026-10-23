@@ -175,17 +175,29 @@ void EditorCanvas::redraw() {
         addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));
         for (auto p:draft_) { const double r=3/viewScale(); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
     }
-    scene_.setSceneRect(scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000)));
+    auto extent=scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000));
     if (document_->map) {
         const auto& r=document_->map->reference;
-        scene_.setSceneRect(scene_.sceneRect().united(QRectF(r.anchorWorldX-100000,r.anchorWorldY-100000,200000,200000)));
+        extent=extent.united(QRectF(r.anchorWorldX-mapOverviewRadius,r.anchorWorldY-mapOverviewRadius,
+            2*mapOverviewRadius,2*mapOverviewRadius));
     }
+    // Apply the complete extent once: an intermediate network-only rectangle clamps a
+    // panned map back toward the roads. Keep the current camera reachable on every redraw.
+    const auto visible=mapToScene(viewport()->rect()).boundingRect();
+    extent=extent.united(visible.adjusted(-visible.width(),-visible.height(),visible.width(),visible.height()));
+    scene_.setSceneRect(extent);
     bakeRunLayer();drawRunItems();viewport()->update();
+}
+double EditorCanvas::minimumViewScale() const {
+    if (!document_ || !document_->map) return 0.05;
+    // A large window must still fit inside the bounded overview when centred on
+    // its reference. Leave a little room for integer scrollbar rounding.
+    return std::max(0.0005,1.01*std::hypot(viewport()->width(),viewport()->height())/(2*mapOverviewRadius));
 }
 void EditorCanvas::fitNetwork() {
     auto bounds=scene_.itemsBoundingRect(); if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
     fitInView(bounds.adjusted(-10,-10,10,10),Qt::KeepAspectRatio);
-    const double scale=std::clamp(viewScale(),0.05,100.0);
+    const double scale=std::clamp(viewScale(),minimumViewScale(),100.0);
     setTransform(QTransform::fromScale(scale,-scale)); centerOn(bounds.center()); redraw();scheduleMapUpdate();
 }
 void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
@@ -228,7 +240,12 @@ bool EditorCanvas::event(QEvent* e) {
 void EditorCanvas::wheelEvent(QWheelEvent* e) {
     clearHover();
     const auto before=mapToScene(e->position().toPoint());
-    const double old=viewScale(), next=std::clamp(old*std::pow(1.0015,e->angleDelta().y()),0.05,100.0);
+    const double old=viewScale(), next=std::clamp(old*std::pow(1.0015,e->angleDelta().y()),minimumViewScale(),100.0);
+    // Reserve the next viewport before changing scale, so Qt cannot clamp its scroll
+    // range and discard the geographic point beneath the pointer at overview zooms.
+    const auto visible=mapToScene(viewport()->rect()).boundingRect();const double ratio=old/next;
+    const QRectF nextView(before+(visible.topLeft()-before)*ratio,before+(visible.bottomRight()-before)*ratio);
+    scene_.setSceneRect(scene_.sceneRect().united(nextView.adjusted(-nextView.width(),-nextView.height(),nextView.width(),nextView.height())));
     scale(next/old,next/old);scheduleMapUpdate();
     const auto after=mapToScene(e->position().toPoint());
     const auto centre=mapToScene(viewport()->rect().center()); centerOn(centre+before-after); redraw(); e->accept();

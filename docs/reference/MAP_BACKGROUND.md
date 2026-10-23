@@ -17,7 +17,11 @@ Geographic input is longitude, latitude in degrees, normalized explicitly in PRO
 Project coordinates are projected grid metres, with local numerical origin at the
 anchor. Rotation is counter-clockwise from grid east/north into project x/y.
 Changing the anchor/rotation moves the background only, never authored geometry.
-The first version supports local studies within 100 km of the anchor, not a world GIS.
+Engineering studies remain local, within 100 km of the anchor. Map browsing and
+coordinate navigation additionally support an overview within 2,000 km of the anchor.
+The overview does not extend the engineering study area or establish distance accuracy.
+The map canvas can zoom out to 0.0005 px/m; very large viewports raise that minimum
+enough to keep a centered overview inside its bound. A map-free canvas retains 0.05 px/m.
 UTM grid distance is not survey ground distance; map position accuracy is not validated.
 
 `world = anchorWorld + R(rotation) * (projected - projectedAnchor)`.
@@ -29,6 +33,12 @@ identifier and scalar ranges without needing PROJ; simulation compilation ignore
 Setting/removing map is one atomic History command; bad settings leave the document
 and history unchanged. Existing successful-edit Run invalidation also applies to map
 commands. Pan, zoom, Go to coordinates and Hide OSM are view state and create no revision.
+Map → Retry failed map tiles is also view state. It restarts failed attempts only for
+the visible viewport, keeps successful cached tiles, and does nothing for a hidden or
+removed layer. It preserves any provider-wide Retry-After deadline; repeated clicks
+cannot bypass it or duplicate an active request.
+Redraw applies the complete network/map/viewport scene bounds once, preserving the
+camera after a pan. Pointer-centered zoom reserves its next viewport before scaling.
 Old documents without map retain their existing serialized bytes and selected schema.
 Pre-29 files containing map are refused, not silently stripped. Tile data and viewport
 position are not embedded. Save/Open and recovery preserve reference and appearance.
@@ -53,6 +63,20 @@ Mercator X is unwrapped around the anchor; XYZ request indices wrap at ±180°.
 Crossing the date line within a local study does not request a world-wide tile box.
 Tiles are painted in the background, never scene items or part of Fit network bounds.
 Tile arrival invalidates background paint only, not road/vehicle scene reconstruction.
+
+## Choosing a place
+
+Map settings and Go to place or coordinates offer a country and an optional province
+or state from the bundled location catalog. Selecting a place fills a representative
+longitude/latitude; it does not import roads or administrative boundaries. Leaving the
+province/state empty uses the country's point. Coordinates remain editable, and Cancel
+leaves the document and camera unchanged. The location list requires no network access;
+if it is missing, manual coordinate entry remains available.
+
+In settings the chosen point becomes the map reference only on confirmation, with its
+UTM zone/hemisphere selected as before. Authored geometry stays fixed. Go to changes only
+the camera and refuses points beyond the current overview; choosing a distant country
+for a different study belongs in Map settings. This is place selection, not address search.
 
 ## Network and cache
 

@@ -35,6 +35,10 @@ void EditorCanvas::setMapProviders(std::vector<MapProvider> providers) {
 void EditorCanvas::setMapVisible(bool visible) {
     mapVisible_=visible;mapLayer_->setVisible(visible);scheduleMapUpdate();
 }
+void EditorCanvas::retryMapTiles() {
+    // Flush a pending pan/zoom first so only the current viewport can be retried.
+    mapViewportTimer_.stop();updateMapViewport();mapLayer_->retryFailedTiles();
+}
 void EditorCanvas::setMapStatusText(std::function<QString(MapStatus)> translator) {
     mapStatusText_=std::move(translator);updateMapOverlay();
 }

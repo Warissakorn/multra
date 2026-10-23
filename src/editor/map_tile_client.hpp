@@ -17,6 +17,9 @@ public:
     ~MapTileClient() override;
     void setProvider(const MapProvider&);
     void setWantedTiles(const std::set<TileKey>&);
+    // Retry current failures without discarding images, duplicating requests or
+    // shortening the provider's Retry-After deadline. Does not change wanted tiles.
+    void retryFailedTiles();
     void stop();
     QImage image(const TileKey&);
     std::size_t pending() const;

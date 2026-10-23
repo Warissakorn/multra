@@ -19,10 +19,12 @@ public:
     void setProviders(std::vector<MapProvider>);
     void setSettings(std::optional<MapSettings>);
     void setVisible(bool);
+    // View-state recovery only: hidden/removed/unavailable layers make no requests.
+    void retryFailedTiles();
     void setView(const QPolygonF& worldViewport,double physicalPixelsPerMetre);
     void paint(QPainter&,const QRectF& exposed);
     std::optional<MetrePoint> geographicToWorld(LonLat) const;
-    // The inverse, under the same rule: nullopt without a projection or outside the study area.
+    // The inverse, under the same rule: nullopt without a projection or outside the overview.
     std::optional<LonLat> worldToGeographic(MetrePoint) const;
     MapStatus status() const;
     QString attribution() const;

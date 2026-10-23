@@ -76,7 +76,7 @@ void EditorCanvas::frame(const std::string& id) {
     // should not silently throw away the zoom level the user chose.
     const double fit = std::min(visible.width() / bounds.width(), visible.height() / bounds.height());
     if (fit < 1 || fit > 10) {
-        const double scale = std::clamp(viewScale() * std::clamp(fit, 0.1, 10.0), 0.05, 100.0);
+        const double scale = std::clamp(viewScale() * std::clamp(fit, 0.1, 10.0), minimumViewScale(), 100.0);
         setTransform(QTransform::fromScale(scale, -scale));
     }
     centerOn(bounds.center()); redraw();scheduleMapUpdate();

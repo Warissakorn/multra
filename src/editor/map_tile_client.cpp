@@ -58,6 +58,13 @@ void MapTileClient::setWantedTiles(const std::set<TileKey>& tiles) {
     }
     if(wanted_.empty())retry_.stop();else retry_.start();pump();
 }
+void MapTileClient::retryFailedTiles() {
+    if(failures_.empty())return;
+    failures_.clear();
+    // blockedUntil_ belongs to the provider, so explicit recovery also waits for it.
+    if(!wanted_.empty())retry_.start();
+    pump();if(changed)changed();
+}
 QImage MapTileClient::image(const TileKey& key) {
     const auto it=images_.find(key);if(it==images_.end())return {};
     it->second.used=++clock_;return it->second.image;

@@ -5,6 +5,35 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — Wider OSM zoom, stable panning and country/province selection (D321, D322)
+
+- **Asked:** zoom out farther, stop the map jumping back after a pan/click, and choose a
+  country with an optional province instead of entering coordinates only.
+- **Navigation:** map zoom reaches 0.0005 px/m (viewport-adjusted on very large displays),
+  with a bounded 2,000 km overview. Redraw previously applied a network-only scene rectangle
+  before expanding it for the map, clamping the camera between the two calls. It now applies
+  the complete bounds once and reserves the next viewport before pointer-centered zoom.
+- **Places:** searchable offline selectors in settings and navigation, with 239 countries/
+  territories, 4,588 regions and all 77 Thai provinces. A country-only selection is valid;
+  manual coordinates remain available. Only the accepted reference coordinates are saved.
+  Natural Earth public-domain points and Wikidata CC0 Thai names are cited in the catalog
+  and [third-party notices](../THIRD-PARTY-NOTICES.md). Dialogs are free functions with a
+  scrolling body and fixed footer (D318, D319).
+- **Recovery:** Map → Retry failed map tiles retries current viewport failures, keeping
+  cached tiles, active requests and Retry-After. Hidden/removed maps cannot be retried;
+  navigation and retry create no document revision.
+- **Coverage:** `map-navigation` reproduces the pan/click jump and old zoom floor, including
+  a large viewport and local-server overview rendering. `map-location-catalog` and
+  `map-location-ui` cover country-only/province/manual/cancel, language, layout and saved
+  geometry; `map-retry` and `map-ui` cover explicit recovery. See
+  [MAP_BACKGROUND](reference/MAP_BACKGROUND.md).
+- **Verification:** Linux, GCC 14.2.0, Qt 6.8.2 and PROJ 9.6.0: all seven map CTest groups
+  pass, including `mapproject`; architecture, file-size and documentation checks pass.
+  The initial full suite passes 215/220: `legacy-storage`, `m1-workflow` and `test-storage-ui`
+  cannot create Qt test-mode storage on this environment's read-only home; `workspace-ui`
+  and `design-system-ui` fail existing font assertions under Qt 6.8.2. The same five failures
+  reproduce before the navigation/place changes. No Windows or MAP10 gate is closed.
+
 ## 2026-10-23 — The owner's book copies analysed and mapped (docs only)
 
 - **Asked:** analyse the five book repositories and add them as development sources.

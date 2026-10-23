@@ -31,12 +31,15 @@ void MapLayer::setVisible(bool visible) {
     visible_=visible;if (!visible) {client_.stop();wanted_.clear();meshes_.clear();}
     if (changed) changed();
 }
+void MapLayer::retryFailedTiles() {
+    if (visible_ && projection_ && provider_) client_.retryFailedTiles();
+}
 void MapLayer::setView(const QPolygonF& viewport,double scale) {
     if (!visible_ || !projection_ || !provider_) return;
     wanted_.clear();scale_=scale;
     try {
         if (viewport.size()<4) return;
-        for (const auto& p:viewport) if (!projection_->insideStudy({p.x(),p.y()})) {
+        for (const auto& p:viewport) if (!projection_->insideOverview({p.x(),p.y()})) {
             viewStatus_=MapStatus::outsideStudy;client_.stop();meshes_.clear();if (changed) changed();return;
         }
         const auto centre=viewport.boundingRect().center();const MetrePoint world{centre.x(),centre.y()};
@@ -99,13 +102,13 @@ void MapLayer::paint(QPainter& painter,const QRectF& exposed) {
     painter.restore();
 }
 std::optional<LonLat> MapLayer::worldToGeographic(MetrePoint p) const {
-    if (!projection_ || !projection_->insideStudy(p)) return {};
+    if (!projection_ || !projection_->insideOverview(p)) return {};
     try {return projection_->worldToGeographic(p);} catch (const std::exception&) {}
     return {};
 }
 std::optional<MetrePoint> MapLayer::geographicToWorld(LonLat p) const {
     if (!projection_) return {};
-    try {const auto world=projection_->geographicToWorld(p);if (projection_->insideStudy(world)) return world;}
+    try {const auto world=projection_->geographicToWorld(p);if (projection_->insideOverview(world)) return world;}
     catch (const std::exception&) {}return {};
 }
 MapStatus MapLayer::status() const {

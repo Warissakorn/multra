@@ -382,11 +382,18 @@ Control field (M3.2.5b, D63) sets Stop/Yield for the line: dashed = none, solid 
 
 Map → Map background settings selects a provider and fixes longitude/latitude to
 anchorWorldX/anchorWorldY. Rotation is relative to UTM grid north; existing roads keep
-their geometry. Pan/zoom use the ordinary Canvas gestures. Map → Go to coordinates
+their geometry. Choose a country and optionally a province/state to fill coordinates,
+or enter coordinates directly. The place list is bundled and works offline.
+Pan/zoom use the ordinary Canvas gestures. Map → Go to place or coordinates
 changes the camera only; Show OSM hides it without a document edit. Remove map is
 undoable. Map tiles paint below the embedded image, with visible provider credit.
-The supported view is within 100 km of the reference. No geocoding or offline
-download is supplied. See [MAP_BACKGROUND](MAP_BACKGROUND.md) for CRS, schema 29,
+After a connection failure, Map → Retry failed map tiles restarts loading the missing
+parts of the visible map without a document edit. The action is disabled while the map
+is hidden or removed, and still waits if the provider has asked the client to slow down.
+Map browsing supports an overview within 2,000 km of the reference and wider zoom-out;
+engineering studies stay within 100 km. For a distant country, set a new reference in
+Map settings. No online address search or offline tile download is supplied.
+See [MAP_BACKGROUND](MAP_BACKGROUND.md) for CRS, schema 29,
 network/cache behaviour and acceptance rows.
 
 ## Background image

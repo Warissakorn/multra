@@ -27,6 +27,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Next session — the owner's pick: F4 (S4.5), S5, or an item below
 
+- **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
+  trace roads, pan/click without a camera jump, zoom out to the overview, choose a country
+  with and without a province, interrupt/restore the connection and retry, then save/reopen.
+  Check Windows and the packaged TLS/PROJ dependencies; Linux
+  local-server tests do not establish those results. See [MAP_BACKGROUND](reference/MAP_BACKGROUND.md).
 - **F4 (S4.5):** a coarse Node's Micro detail; needs its own contract section
   ([READINESS](reference/READINESS.md)). **S5:** the study area and stale marking.
 - **Lateral, before any shipped behaviour carries its keys**

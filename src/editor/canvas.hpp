@@ -27,6 +27,8 @@ public:
     ~EditorCanvas() override;
     void setMapProviders(std::vector<MapProvider>);
     void setMapVisible(bool);
+    // Retry the visible map's failed tiles without changing the document or camera.
+    void retryMapTiles();
     // Unit formats for the HUD's scale and zoom labels, each with one %1 (D197).
     void setHudUnits(const QString& metres, const QString& zoom);
     void setMapStatusText(std::function<QString(MapStatus)>);
@@ -65,6 +67,7 @@ public:
     std::size_t renderedVehicles() const { return runFrame_.vehicles.size(); }
     // Pixels per metre, whatever the view's rotation (D166); equals |m11| when north is up.
     double viewScale() const { return std::hypot(transform().m11(), transform().m12()); }
+    double minimumViewScale() const;
     // D165 behaviour lab: keep this vehicle at the view centre and outline it; nullopt follows none.
     void setRunFollow(std::optional<std::uint64_t> vehicleId, bool headingUp = false);
     bool runHeadingUp() const { return runHeadingUp_; }
