@@ -9,6 +9,7 @@ the whole directory.
 
 | File | What it holds |
 |---|---|
+| [`NEXT-state-2026-10-23.md`](NEXT-state-2026-10-23.md) | The whole of NEXT before it was cut to open items again (2026-10-23, D319): M11 through M11.4b, S3 and S4 complete |
 | [`NEXT-state-2026-10-20.md`](NEXT-state-2026-10-20.md) | NEXT's "State on 2026-10-19" list (D199–D270), moved whole when NEXT was cut to its open state (D280) |
 
 ## PROGRESS log

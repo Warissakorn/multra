@@ -354,6 +354,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D316](RECORD.md#d316) — S4.3: *Fill defaults* F1 (type from the Road's template), F2 (HCM jam density on owned types, only where valid), F3 (Apply template), listed with sources, ticked ones in one Undo step; rows RS5–RS8.
 [D317](RECORD.md#d317) — S4.4: Node proposals after a run (Macro v/c ≥ 1.0, Meso spill-back on a leg; junction ends without a Node by name; stale results none) on the Nodes tab; rows RS9, RS10. S4 complete.
 [D318](RECORD.md#d318) — Dialogs keep their buttons on screen: `dialog_fit` (scrolling body, fixed footer, first size capped to the screen); the behaviour editor split into a header and four topic tabs; vehicle type, input, decision and coarse dialogs scroll.
+[D319](RECORD.md#d319) — Optimization review: NEXT holds open items only (1113 → 469 words, old list archived); new dialogs as free functions, not `EditorWindow` members; split `src/core/` files before an engine slice.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.
