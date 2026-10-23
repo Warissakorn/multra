@@ -1,5 +1,5 @@
 add_library(multra_shell STATIC editor_interaction.cpp editor_style.cpp editor_appearance.cpp editor_workspace.cpp editor_window.cpp editor_commands.cpp editor_signal.cpp signal_timing_view.cpp editor_inspector.cpp editor_connectors.cpp editor_files.cpp editor_history.cpp editor_rotation.cpp
-    editor_tables.cpp editor_diagnostics.cpp editor_demand.cpp editor_demand_preview.cpp editor_catalog.cpp demand_catalog_dialog.cpp behaviour_library_dialog.cpp editor_behaviour.cpp demand_type_rules_dialog.cpp demand_period_editor.cpp editor_input.cpp editor_decision.cpp editor_routing.cpp editor_control.cpp editor_run.cpp editor_results.cpp editor_batch.cpp editor_compare.cpp editor_storage.cpp editor_recovery.cpp editor_palette.cpp editor_creation.cpp behaviour_editor.cpp editor_lab.cpp behaviour_lab_window.cpp behaviour_lab_panel.cpp behaviour_lab_telemetry.cpp
+    editor_tables.cpp editor_diagnostics.cpp editor_demand.cpp editor_demand_preview.cpp editor_catalog.cpp demand_catalog_dialog.cpp behaviour_library_dialog.cpp editor_behaviour.cpp demand_type_rules_dialog.cpp demand_period_editor.cpp editor_input.cpp editor_decision.cpp editor_routing.cpp editor_control.cpp editor_run.cpp editor_results.cpp editor_batch.cpp editor_compare.cpp editor_storage.cpp editor_recovery.cpp editor_palette.cpp editor_creation.cpp behaviour_editor.cpp dialog_fit.cpp editor_lab.cpp behaviour_lab_window.cpp behaviour_lab_panel.cpp behaviour_lab_telemetry.cpp
     ../editor/canvas_feedback.cpp ../editor/canvas_cursors.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp ../editor/canvas_zones.cpp ../editor/canvas_roads.cpp editor_priority.cpp editor_zones.cpp editor_nodes.cpp editor_coarse.cpp editor_seams.cpp editor_fill.cpp editor_proposals.cpp editor_periods.cpp editor_modes.cpp editor_od.cpp od_lot_dialogs.cpp editor_counters.cpp editor_sections.cpp editor_speed_decisions.cpp editor_speed_areas.cpp)
 target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
 target_sources(multra_shell PRIVATE editor_macro.cpp editor_link_types.cpp) # S2.4 (D277)
@@ -325,6 +325,13 @@ target_precompile_headers(multra-gesture-tests REUSE_FROM multra_shell)
     add_test(NAME road-ui COMMAND multra-road-ui-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(road-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
     add_dependencies(check multra-road-ui-tests)
+    # D320: a crashed run's recovery draft does not block the next run of a suite.
+    add_executable(multra-test-storage-ui-tests ../../tests/ui_test_storage_tests.cpp)
+    target_link_libraries(multra-test-storage-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-test-storage-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME test-storage-ui COMMAND multra-test-storage-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(test-storage-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check multra-test-storage-ui-tests)
     add_executable(multra-studyperiod-ui-tests ../../tests/study_period_ui_tests.cpp)
     target_link_libraries(multra-studyperiod-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
     target_precompile_headers(multra-studyperiod-ui-tests REUSE_FROM multra_shell)

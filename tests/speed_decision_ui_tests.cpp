@@ -1,4 +1,5 @@
 #include "tab_page_helpers.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/editor/canvas.hpp"
 #include <QAction>
@@ -46,7 +47,7 @@ template<class T> T* in(QDialog& d, const char* name) { auto* v = d.findChild<T*
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 1, "Expected data directory");
         QTemporaryDir temp; require(temp.isValid(), "Temporary directory unavailable");

@@ -5,6 +5,72 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — UI suites isolate their recovery drafts (D320)
+
+- **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
+  run of that suite then waited at the startup recovery dialog until ctest's 60 s timeout.
+  Eleven suites had no Qt test mode, so they wrote drafts into the user's own data folder.
+- **The fix:** all 51 `EditorWindow` suites call `useTestStorage()`. It enables test mode and
+  removes drafts whose lock nobody holds, keeping a running instance's draft.
+- **Rows:** `test-storage-ui` fails without the cleanup, and fails at the window (not a hang)
+  without the file checks.
+- **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
+  219/219; the eleven suites wrote nothing to the user's folder.
+
+## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
+
+- **Measured first** (Linux; `.optimize/` ledger, not committed):
+  - UX: a `QDialog::exec` shim over the 61 UI suites, in English and Thai;
+  - engine: Release `multra-cli`, seeds 42–51, and callgrind;
+  - build: Debug rebuilds after touching one file;
+  - docs: the words a session reads before it starts.
+- **Done:**
+  - the seam dialog's *Use Node* button lost 8 px to the table's item padding; the column gets
+    it back, the only clipped control measured;
+  - NEXT cut to open items (1113 → 469 words);
+  - D319 records the accepted rules.
+- **Found on the way, fixed:** D318's behaviour editor corrupted the heap. Qt 6.4.2's
+  `QFormLayout::setRowVisible` on a shown dialog writes out of bounds (valgrind); the forms now
+  stay still while their rows change. A crashed local UI run leaves a recovery file that makes the
+  next run wait at its dialog.
+- **Not done:**
+  - caching lateral bands (+10–28 % wall switched on, no shipped keys);
+  - a shared `multra_shell`;
+  - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
+    declarations moved. The owner deferred it to the next engine slice that edits the runtime
+    state (NEXT).
+
+## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
+
+- **The owner's report:** the behaviour editor was taller than the screen; not every key showed
+  and Confirm was off screen. Measured, it needed at least 1378 px.
+- **The editor now has three parts:**
+  - a header with users, id, name and model;
+  - four tabs that each scroll: *Car following*, *Lane changes*, *Perception and drivers*, and
+    *Junctions, signals and speed*;
+  - a footer with the error and the buttons.
+
+  The other model's rows are hidden. Prototype opens at 579 px at 1366×768.
+- **Other dialogs:** the UI suites, measured through a scratch `QDialog::exec` shim, gave vehicle
+  type 696 px minimum, input 500, decision 452, and coarse Node values (one row per leg). These now
+  share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
+- **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
+  decision rows are growth guards.
+
+## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
+
+- **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.
+- **Switched on** (keys 0.5/1.0/1, four projects, seeds 42–51), a per-tick check found:
+  - no 2D overlap, lateral rate within the cap, no position jump, no backward motion;
+  - every lane change lateral, typically 3.5 s.
+- **m2.6-study-template regresses:**
+  - a changer past its window waits on the lane line at its dead end and jams both lanes
+    (seed 45);
+  - one waiting straddler is clamped repeatedly (seed 42); clamps go from 1 to 33.
+- **The lab:** two changers swapping lanes lock side by side for about 50 s.
+- LANE_CHANGE_DURATION §9's reopen conditions are met. The record is in
+  [lateral-run-audit](evidence/lateral-run-audit.md), and the item is in NEXT.
+
 ## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
 
 - **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result
@@ -104,45 +170,6 @@ refine, derive back and the lifecycle are S3.6b.
 - **Merge nodes** (Nodes tab) replaces the selected Nodes with their hull, refused when a Node with
   valid detail would gain an issue.
 - **Rows:** RD12–RD15 (`roadcrossings`), with their editor part in `road-ui`; four mutations caught.
-
-## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
-
-The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.
-- **Join opposite Links:** two Links running opposite ways on one level become one Road without a
-  template. Its centreline is the mean of theirs, and the Links stay where they are. A Link
-  already in a Road, a different level, the same direction, or a pair outside the tolerance is
-  refused.
-- **Assign template:** sets or clears the template on several Roads at once, generating no Link.
-- **Editor:** both are on the Roads tab. Join takes the two Links selected on the canvas, forward
-  first, and the table takes several rows.
-- **Rows:** RD10 and RD11 (`roads`), with their editor part in `road-ui`; four mutations caught.
-
-## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
-
-The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.
-- **Road tool (O):** Ctrl+right-click the first centreline point, click the rest, Enter. With the
-  Roads tab's template chosen, the Road and both directions' Links are one Undo step; with none, a
-  Road without Links.
-- **Roads tab:** template, lanes, Links and status (applied, not applied, partly detached *k of n*),
-  with *Apply template*, *Edit road* (overrides) and *Delete road*. The selected Road is lit on the
-  canvas, in the warning colour while partly detached.
-- **Cross-sections tab:** add, edit and delete owned templates; one in use is kept.
-- **Rows:** RD23–RD26 (`road-ui`); four mutations caught. Tool and tab inventories in
-  `workspace-ui`, `object-groups-ui`, `design-system-ui` and `zone-ui` grew by one tool and two tabs.
-
-## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
-
-The owner asked for three canvas changes.
-- **Pointers:** no tool shows the crosshair. Select is the arrow; every other tool shows the arrow
-  with its toolbar glyph on a small badge, as a move shows the hand.
-- **Multi-click tools** (Zone, Node, Queue counter, Section, the two-click Connector): only the first
-  point needs Ctrl+right-click; later points take a plain left click. Ctrl+right-click still works,
-  and with no draft a left click still only selects (amends D84).
-- **Previews are never dashed:** a solid accent line on a translucent casing, and the edges still to
-  come (a Zone's closing edge, the edge to the pointer) fainter. Dashes that mean something in saved
-  work stay.
-- **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
-  `editor-attachments`; four mutations caught.
 
 ## Older entries
 

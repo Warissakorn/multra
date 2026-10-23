@@ -3,6 +3,45 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
+
+The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.
+- **Join opposite Links:** two Links running opposite ways on one level become one Road without a
+  template. Its centreline is the mean of theirs, and the Links stay where they are. A Link
+  already in a Road, a different level, the same direction, or a pair outside the tolerance is
+  refused.
+- **Assign template:** sets or clears the template on several Roads at once, generating no Link.
+- **Editor:** both are on the Roads tab. Join takes the two Links selected on the canvas, forward
+  first, and the table takes several rows.
+- **Rows:** RD10 and RD11 (`roads`), with their editor part in `road-ui`; four mutations caught.
+
+## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
+
+The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.
+- **Road tool (O):** Ctrl+right-click the first centreline point, click the rest, Enter. With the
+  Roads tab's template chosen, the Road and both directions' Links are one Undo step; with none, a
+  Road without Links.
+- **Roads tab:** template, lanes, Links and status (applied, not applied, partly detached *k of n*),
+  with *Apply template*, *Edit road* (overrides) and *Delete road*. The selected Road is lit on the
+  canvas, in the warning colour while partly detached.
+- **Cross-sections tab:** add, edit and delete owned templates; one in use is kept.
+- **Rows:** RD23–RD26 (`road-ui`); four mutations caught. Tool and tab inventories in
+  `workspace-ui`, `object-groups-ui`, `design-system-ui` and `zone-ui` grew by one tool and two tabs.
+
+## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
+
+The owner asked for three canvas changes.
+- **Pointers:** no tool shows the crosshair. Select is the arrow; every other tool shows the arrow
+  with its toolbar glyph on a small badge, as a move shows the hand.
+- **Multi-click tools** (Zone, Node, Queue counter, Section, the two-click Connector): only the first
+  point needs Ctrl+right-click; later points take a plain left click. Ctrl+right-click still works,
+  and with no draft a left click still only selects (amends D84).
+- **Previews are never dashed:** a solid accent line on a translucent casing, and the edges still to
+  come (a Zone's closing edge, the edge to the pointer) fainter. Dashes that mean something in saved
+  work stay.
+- **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
+  `editor-attachments`; four mutations caught.
+
 ## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
 
 - **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per

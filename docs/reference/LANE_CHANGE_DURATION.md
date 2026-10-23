@@ -123,3 +123,7 @@ asserting its forcing before its consequence.
   (D208, [evidence](../evidence/lane-change-gap.md)). Reopen if a changer waits so long it misses its
   window: then abandoning.
 - A cited source shows lane-change duration independent of lateral speed: then a separate key.
+- **Observed 2026-10-23** ([lateral-run-audit](../evidence/lateral-run-audit.md)): on
+  `m2.6-study-template`, a changer past its window stood at its dead end with its centre on the
+  line and jammed both lanes. Two changers swapping lanes waited side by side for 500 m in the lab.
+  The first and second conditions above are met; nothing has been reopened yet.

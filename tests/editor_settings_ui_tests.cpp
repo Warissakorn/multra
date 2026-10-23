@@ -1,4 +1,5 @@
 #include "../src/shell/editor_interaction.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/editor_window.hpp"
 #include <QApplication>
 #include <QComboBox>
@@ -142,7 +143,7 @@ void inspectorReflow(EditorWindow& window) {
 }
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>1,"Expected data directory");fields();wrapping();
         EditorWindow window{std::filesystem::path(argv[1])};window.resize(1000,760);window.show();settle();

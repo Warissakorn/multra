@@ -1,5 +1,6 @@
 // A cancelled multi-year seed must not block the UI when another batch starts or the window closes.
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include <QAction>
@@ -31,7 +32,7 @@ QString project(QTemporaryDir& dir, const char* name, double duration) {
 }
 }
 int main(int argc, char** argv) {
-    QApplication app(argc, argv); QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc, argv); useTestStorage();
     try {
         require(argc >= 2, "Expected data directory"); QTemporaryDir dir; require(dir.isValid(), "No temporary directory");
         const auto longFile = project(dir, "long.traffic.json", 1e12), shortFile = project(dir, "short.traffic.json", 10);

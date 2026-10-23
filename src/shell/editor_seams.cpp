@@ -77,6 +77,9 @@ void EditorWindow::seamChecksDialog() {
                 execute("editorSeamUseNode", [&](auto& x) { useRoadLanes(x, id, installed); }); QMetaObject::invokeMethod(&dialog, fill, Qt::QueuedConnection); });
         }
         table->resizeColumnsToContents();
+        // A cell widget sits inside QTableView::item's padding (editor_style.cpp), which the content
+        // width leaves out: give the fix buttons' column that padding back, or their text is cut.
+        table->setColumnWidth(3, table->columnWidth(3) + 2 * editorDesign::space1);
         none->setVisible(rows.empty());
         seamSpeedJump_ = jump->value();
     };

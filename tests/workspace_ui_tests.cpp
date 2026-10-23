@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "tab_page_helpers.hpp"
 #include <QTabBar>
 #include <QFile>
@@ -236,7 +237,7 @@ void runToolbar(EditorWindow& window) {
 }
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         // Keep reorder/navigation stress separate from the pristine layout baseline below.

@@ -1,4 +1,5 @@
 #include "tab_page_helpers.hpp"
+#include "ui_test_storage.hpp"
 // D144: the Results tabs for queue discharge and safety clamps, on the four-leg signalised
 // project (900 s, seed 42). The discharge rows are checked against an independent
 // DischargeAccumulator over the same seed; the clamp rows against the run's own count.
@@ -27,7 +28,7 @@ template<class T> T* item(QObject& root, const char* name) { auto* p = root.find
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc >= 2, "Expected data directory");
         const std::filesystem::path data(argv[1]);

@@ -1,4 +1,5 @@
 #include "../src/editor/map_layer.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/editor/map_http_cache.hpp"
 #include "../src/geo/projection_data.hpp"
 #include "../src/shell/editor_window.hpp"
@@ -332,6 +333,7 @@ void editor(const char* data,const QString& screenshot) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         const auto mode=argc>1?QString::fromLocal8Bit(argv[1]):QString();
         if(mode.startsWith("--review-")) {

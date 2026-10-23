@@ -1,4 +1,5 @@
 #include "../src/editor/canvas.hpp"
+#include "ui_test_storage.hpp"
 #include <QFontMetricsF>
 #include "../src/editor/ui_design_tokens.hpp"
 #include "../src/shell/editor_style.hpp"
@@ -369,6 +370,7 @@ void window(const std::filesystem::path& data) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>=2,"Expected data directory");
         // The editor's own face, as EditorWindow loads it: heights are measured with the font

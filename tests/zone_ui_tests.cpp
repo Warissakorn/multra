@@ -1,4 +1,5 @@
 #include "tab_page_helpers.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
@@ -68,7 +69,7 @@ void selectRow(QTableWidget* table, const std::string& id) {
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 1, "Expected data directory");
         QTemporaryDir temp; require(temp.isValid(), "Temporary directory unavailable");

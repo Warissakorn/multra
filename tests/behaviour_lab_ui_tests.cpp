@@ -1,6 +1,7 @@
 // D165 (docs/reference/BEHAVIOUR_LAB.md §4, row BL12): the Behaviour Lab window, driven through the
 // editor. An optional second argument saves a screenshot of the lab there, for the owner's look.
 #include "../src/shell/behaviour_lab_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/behaviour_lab_panel.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/editor/canvas.hpp"
@@ -53,7 +54,7 @@ void requireHeadingUp(BehaviourLabWindow& lab) {
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc >= 2, "Expected data directory");
         const std::filesystem::path data(argv[1]);

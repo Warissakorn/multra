@@ -1,4 +1,5 @@
 #include "tab_page_helpers.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "ui_gestures.hpp"
 #include <nlohmann/json.hpp>
@@ -65,6 +66,7 @@ Point inset(EditorCanvas* c,double fx,double fy) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>=2,"Expected data directory");
         EditorWindow w{std::filesystem::path(argv[1])};w.resize(1280,900);w.show();QTest::qWait(30);
