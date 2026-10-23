@@ -20,7 +20,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `Warissakorn/the-link-transmission-model-for-dynamic-network-loading-markdown` (Yperman 2007; no
   page numbers, cite sections and equations).
 - **Before an engine slice:** `src/core/` files are at the 500-line limit; split along the
-  responsibility a change touches first (D319).
+  responsibility a change touches first (D319). The owner deferred splitting `types.hpp` on its
+  own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
+  `checkpointJson` and `summaryJson` moved out of `project/json.hpp`. Do it with the first engine
+  slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
 - **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - A crashed local UI run leaves `~/.qttest/share/<suite>/recovery`; delete it before re-running,

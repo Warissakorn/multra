@@ -25,7 +25,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - caching lateral bands (+10–28 % wall switched on, no shipped keys);
   - a shared `multra_shell`;
   - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
-    declarations moved; waits on the owner.
+    declarations moved. The owner deferred it to the next engine slice that edits the runtime
+    state (NEXT).
 
 ## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
 
