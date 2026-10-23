@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
+
+- **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result
+  points at:
+  - a Node with a leg at v/c 1.0 or more (Macro);
+  - a Node with a leg that spills back in any slice (Meso).
+
+  Selecting a row selects the Node. An edit makes the result stale, and the list empties.
+- **A junction without a Node** is listed by its end, for example `link-1@50`, and its row points
+  at *Suggest nodes*. A hot end at the network's edge gives no row: there is nothing to refine.
+- **Rows:** RS9, RS10 (`nodeproposals`), with the editor part in `macro-ui`; four mutations caught.
+
 ## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
 
 - **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network
@@ -131,18 +143,6 @@ The owner asked for three canvas changes.
   work stay.
 - **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
   `editor-attachments`; four mutations caught.
-
-## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
-
-- **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per
-  direction, at median/2 + width/2 on its driving side, the backward one reversed.
-  - A re-apply keeps the Link and lane ids and reanchors Connectors.
-  - Dropping a direction is refused.
-- **Detaching:** a generated Link edited by hand leaves its Road.
-- **Templates** are owned or installed (none ships, B12). Roads, `roadId` and owned templates make a
-  file schema 53.
-- **Rows:** RD1's Road part and RD5–RD9 (`roads`).
-- **Amended:** the editor surface is S3.3b; `shoulder` waits for a reader.
 
 ## Older entries
 

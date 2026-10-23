@@ -50,7 +50,7 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S4.4 (Node proposals), or the owner's pick
+## Next session — the owner's pick: F4 (S4.5), S5, or a follow-up below
 
 - **M11 is in through M11.4b** (D291–D302; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
@@ -80,10 +80,10 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
   - **S4** ([READINESS](reference/READINESS.md)): the owner chose S4-1a–S4-4a (D313). S4.2 is in
     (D314): the Problems tab checks Micro, Meso or Macro with its period, from the runs' own
     refusal functions, plus seams. S4.3 is in (D316): *Fill defaults* F1–F3, listed with
-    sources and applied only when ticked. **Next, S4.4:** Node proposals after a run (Macro v/c
-    ≥ 1.0 or Meso spill-back on a Node's leg; a link end without a Node offers *Suggest nodes*;
-    a stale result proposes nothing; RS9, RS10). F4 (a coarse Node's Micro detail) is its own later
-    slice;
+    sources and applied only when ticked. S4.4 is in (D317): Node proposals after a run on the
+    Nodes tab (Macro v/c ≥ 1.0 or Meso spill-back on a leg; a junction end without a Node by name;
+    a stale result proposes nothing). **S4 is complete.** Open: F4 (S4.5, a coarse Node's Micro
+    detail, needs its own contract section) or S5 (the study area and stale marking);
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);

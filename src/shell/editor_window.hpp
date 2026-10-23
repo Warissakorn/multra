@@ -12,6 +12,7 @@
 #include "../project/comparison_output.hpp"
 #include "../commands/appearance_commands.hpp"
 #include "../commands/demand_commands.hpp"
+#include <array>
 #include <QTimer>
 #include <QElapsedTimer>
 #include "../core/validate.hpp"
@@ -289,6 +290,9 @@ private:
     QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
     void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
     void editCoarse(const std::string& id); // S3.6b (D311): editor_coarse.cpp
+    // S4.4 (D317): Node proposals from the Macro and Meso results, editor_proposals.cpp.
+    QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
+    void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
     // S3.3b (ROADS §16, D307): the Roads and Cross-sections tabs and the Road tool's commit.
     QTableWidget* roadTable_{}; QComboBox* roadTemplate_{}; std::uint64_t roadRevision_{UINT64_MAX};
     QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};

@@ -145,7 +145,7 @@ void EditorWindow::tickRun(){
 }
 void EditorWindow::refreshRun(){
     if(!runInfo_)return;
-    refreshResults();
+    refreshResults(); refreshNodeProposals(); // S4.4: a new result proposes
     if(runProtection_)runProtection_->setVisible(runSnapshot_.has_value()); // M3.2.4: shown with every run
     actions_.at("editorRun")->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
     actions_.at("editorRun")->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));

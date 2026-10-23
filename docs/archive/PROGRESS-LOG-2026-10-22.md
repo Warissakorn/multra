@@ -3,6 +3,18 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
+
+- **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per
+  direction, at median/2 + width/2 on its driving side, the backward one reversed.
+  - A re-apply keeps the Link and lane ids and reanchors Connectors.
+  - Dropping a direction is refused.
+- **Detaching:** a generated Link edited by hand leaves its Road.
+- **Templates** are owned or installed (none ships, B12). Roads, `roadId` and owned templates make a
+  file schema 53.
+- **Rows:** RD1's Road part and RD5–RD9 (`roads`).
+- **Amended:** the editor surface is S3.3b; `shoulder` waits for a reader.
+
 ## 2026-10-22 — S3.2: HCM link types and the capacity basis (D304)
 
 The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalog came first.

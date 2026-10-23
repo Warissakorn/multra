@@ -151,7 +151,7 @@ Steps 0 and 2–8 never need the network.
 | S1 | StudyPeriod + mode/PCU (schema change with byte-identical schema-31 saves). Contract written: [STUDY_PERIODS](../reference/STUDY_PERIODS.md) (D266); owner choices answered (D267); S1.1 implemented (D268); S1.2 implemented (D269, D270) |
 | S2 | Macro compiles from a detailed network (M10.1). Contract written: [MACRO_NETWORK](../reference/MACRO_NETWORK.md) (D271); owner choices answered (D272); S2.1–S2.4 implemented (D273–D277) |
 | S3 | Road + templates + Nodes from crossings + seam checks + *Assign template*. Contract written: [ROADS](../reference/ROADS.md) (D303); owner choices answered (D304); S3.2 implemented (D304) |
-| S4 | Readiness panel + *Fill defaults* + Node proposals. Contract written and answered: [READINESS](../reference/READINESS.md) (D313) |
+| S4 | Readiness panel + *Fill defaults* + Node proposals. Contract written and answered: [READINESS](../reference/READINESS.md) (D313); implemented (D314, D316, D317) |
 | S5 | Micro on part of the network + run-time cut + stale marking (replaces M12's stored cut) |
 
 Offline imports: the principle now; world file, control points and CSV import in M10; GeoJSON

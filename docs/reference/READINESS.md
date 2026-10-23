@@ -1,8 +1,8 @@
 # Readiness, *Fill defaults* and Node proposals (S4)
 
 Written 2026-10-23 (D313) as the S4.1 contract, docs only. The owner answered its four choices the
-same day, as recommended: S4-1a, S4-2a, S4-3a, S4-4a (§8), so §3–§6 state the chosen options. S4.2
-and S4.3 are implemented (D314, D316; §10, §11). It fixes, for step 3 and step 6 of the workflow
+same day, as recommended: S4-1a, S4-2a, S4-3a, S4-4a (§8), so §3–§6 state the chosen options. S4.2,
+S4.3 and S4.4 are implemented (D314, D316, D317; §10–§12), so S4 is complete. It fixes, for step 3 and step 6 of the workflow
 loop ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §5):
 - the readiness panel: one list per level of what would stop or weaken a run;
 - *Fill defaults*: which absent values a command may fill, and from which cited source;
@@ -104,7 +104,7 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 | S4.1 | This contract. **Written (D313)** | — |
 | S4.2 | The readiness panel by level, with the seam checks. **Implemented (D314)** | RS1–RS4 |
 | S4.3 | *Fill defaults* F1–F3. **Implemented (D316)** | RS5–RS8 |
-| S4.4 | Node proposals | RS9, RS10 |
+| S4.4 | Node proposals. **Implemented (D317)** | RS9, RS10 |
 | (S4.5) | F4, generating a coarse Node's Micro detail, if chosen | its own contract section |
 
 ## 8. Owner choices (answered 2026-10-23, D313: S4-1a, S4-2a, S4-3a, S4-4a)
@@ -212,3 +212,37 @@ Each row first asserts that its forcing worked (AGENTS).
   - F2 offered on an installed catalog;
   - F3 offered without a template;
   - stale offers applied.
+
+## 12. S4.4 as implemented (D317)
+
+- **`macroProposals(document, run)`** and **`mesoProposals(document, run)`**
+  (`src/project/node_proposals.*`) never throw and change nothing. A run whose revision is not the
+  document's proposes nothing.
+  - **Hot arcs:**
+    - Macro: a `link` arc with capacity and load / capacity ≥ 1.0, `macroJson`'s V/C;
+    - Meso: a link with spill-back in at least one slice (`mesoLinkSlices`), counted in slices.
+  - **A Node's leg:** the arc's source names one of the Node's `nodeLinkLegs` or `nodeRoadLegs`,
+    and its station range reaches that leg's crossing from the outside, within `roadEndTolerance`.
+    Macro keeps a detailed Node's Links whole while Meso cuts them at the boundary; the range rule
+    serves both, and a piece of the same Link away from the Node is not its leg.
+  - **No Node:** a hot arc no Node claims gives one row per end that is a junction (a Macro node
+    with a Connector arc in or out, a Meso node with turns and no Node), named `<source>@<station>`.
+    An end at the network's edge gives no row.
+  - **Order:** Node rows in Node order, then no-Node rows by end; legs in graph order.
+- **Editor:** under the Nodes tab's table, a note and a table (level, Node or "No Node at <end>",
+  legs with their v/c or spill-back slices, revision), Macro rows first.
+  - It is derived again when the revision or either result changes.
+  - The note and the table take the page's space without asking for more, so the docks keep their
+    sizes (`object-groups-ui` and `properties-layout-ui` caught both before).
+  - Selecting a Node row selects that Node. A no-Node row's hint names *Suggest nodes*, or a drawn
+    Node: *Suggest nodes* finds junctions with conflicts, so a plain diverge needs a drawn Node.
+- **Rows:**
+  - RS9 and RS10 in `tests/node_proposal_tests.cpp` (`nodeproposals`), on a split-and-merge network
+    with a detailed Node, and a coarse Node over two Roads;
+  - the editor part is in `macro-ui`: the rows after *Run Macro*, the no-Node hint, none once a
+    Node is drawn (stale), and the Node proposed and selectable after a new run.
+- **Mutations caught:**
+  - the trigger at > 1.0 instead of ≥ 1.0;
+  - the stale check dropped;
+  - any piece of a leg's Link matching;
+  - boundary ends listed.

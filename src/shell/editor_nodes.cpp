@@ -31,6 +31,7 @@ void EditorWindow::buildNodes() {
     nodeTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
     nodeTable_->horizontalHeader()->setStretchLastSection(true); nodeTable_->verticalHeader()->hide();
     layout->addWidget(nodeTable_);
+    buildNodeProposals(layout); // S4.4
     addObjectPage(body, "editorNodeTable");
     const auto rename = [this] {
         const auto id = selectedNode(); if (id.empty()) return;
@@ -91,6 +92,7 @@ void EditorWindow::translateNodes() {
     nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
         text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues")});
     nodeRevision_ = UINT64_MAX;
+    translateNodeProposals();
 }
 std::string EditorWindow::selectedNode() const {
     const auto* cell = nodeTable_ ? nodeTable_->item(nodeTable_->currentRow(), 0) : nullptr;
@@ -134,6 +136,7 @@ void EditorWindow::refreshNodes() {
     const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
+    refreshNodeProposals();
 }
 void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }
 }

@@ -1128,5 +1128,15 @@
   "editorNodeLevel": "ระดับ",
   "editorNodeLevelNode": "Node",
   "editorNodeLevelLeg": "ขา",
-  "editorNodeLevelTurn": "ทิศทางเลี้ยว"
+  "editorNodeLevelTurn": "ทิศทางเลี้ยว",
+  "editorProposals": "ข้อเสนอ Node จากผล Macro หรือ Meso ของรุ่นนี้ (ยังไม่ผ่านการตรวจสอบความถูกต้อง): ขาที่ v/c ตั้งแต่ 1.0 หรือมีคิวย้อนกลับ",
+  "editorProposalsNone": "ไม่มีข้อเสนอ Node: รัน Macro หรือ Meso กับรุ่นนี้ก่อน",
+  "editorProposalLevel": "ระดับ",
+  "editorProposalNode": "Node",
+  "editorProposalLegs": "ขา",
+  "editorProposalRevision": "รุ่น",
+  "editorProposalNoNode": "ไม่มี Node ที่ %1",
+  "editorProposalVc": "%1 v/c %2",
+  "editorProposalSpill": "%1 คิวย้อนกลับ %2 ช่วงเวลา",
+  "editorProposalHint": "ไม่มี Node ครอบ %1: ใช้ Suggest nodes หรือวาด Node ที่นั่น"
 }

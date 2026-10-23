@@ -1128,5 +1128,15 @@
   "editorNodeLevel": "Level",
   "editorNodeLevelNode": "Node",
   "editorNodeLevelLeg": "Leg",
-  "editorNodeLevelTurn": "Turn"
+  "editorNodeLevelTurn": "Turn",
+  "editorProposals": "Node proposals from the Macro or Meso result of this revision (not yet validated): legs at v/c 1.0 or more, or with spill-back.",
+  "editorProposalsNone": "No Node proposals: run Macro or Meso on this revision.",
+  "editorProposalLevel": "Level",
+  "editorProposalNode": "Node",
+  "editorProposalLegs": "Legs",
+  "editorProposalRevision": "Revision",
+  "editorProposalNoNode": "No Node at %1",
+  "editorProposalVc": "%1 v/c %2",
+  "editorProposalSpill": "%1 spill-back in %2 slices",
+  "editorProposalHint": "No Node covers %1: use Suggest nodes, or draw a Node there."
 }

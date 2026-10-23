@@ -1,6 +1,7 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/macro_run.hpp"
 #include "../src/project/json.hpp"
+#include "../src/project/node_proposals.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
@@ -12,6 +13,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QStatusBar>
 #include <QStandardPaths>
 #include <QTableWidget>
 #include <QTemporaryDir>
@@ -142,6 +144,25 @@ int main(int argc, char** argv) {
         require(d().definition->macroSettings == (MacroSettings{1e-4, 5}), "A cap of 5 is stored with the default target");
         settings(1000);
         require(!d().definition->macroSettings, "The defaults write no macroSettings");
+        // S4.4 (D317): Node proposals on the Nodes tab, from the result of this revision only.
+        auto* proposals = item<QTableWidget>(w, "editorNodeProposalTable");
+        runMacro(w, "matrix:am");
+        const auto loose = macroProposals(d(), *w.macroResult());
+        require(!loose.empty() && loose.front().nodeId.empty(), "Forcing: 1200 veh/h over 600 pcu/h Links and no Node yet");
+        require(proposals->rowCount() == static_cast<int>(loose.size()), "A row per proposal");
+        require(proposals->item(0, 1)->text() == "No Node at " + QString::fromStdString(loose.front().end), "A junction without a Node is named by its end");
+        proposals->selectRow(0); QApplication::processEvents();
+        require(w.statusBar()->currentMessage().contains("Suggest nodes"), "Its row points at Suggest nodes");
+        require(w.canvas()->nodeCommitted({{-60, -10}, {10, -10}, {10, 50}, {-60, 50}}), "The Node tool commits a Node over the split");
+        QApplication::processEvents();
+        require(w.macroStale() && proposals->rowCount() == 0, "A stale result proposes nothing");
+        runMacro(w, "matrix:am");
+        const auto node = d().network.nodes.at(0).id;
+        const auto proposed = macroProposals(d(), *w.macroResult());
+        require(proposals->rowCount() == static_cast<int>(proposed.size()) && proposed.front().nodeId == node, "A new run proposes the Node first");
+        auto* nodes = item<QTableWidget>(w, "editorNodeTable");
+        nodes->clearSelection(); proposals->clearSelection(); proposals->selectRow(0); QApplication::processEvents();
+        require(!nodes->selectedItems().isEmpty() && nodes->item(nodes->currentRow(), 0)->text().toStdString() == node, "Selecting it selects the Node");
         std::cout << "macro-ui: ok\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << "macro-ui: " << e.what() << "\n"; return 1; }
