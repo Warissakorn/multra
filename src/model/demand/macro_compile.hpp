@@ -16,8 +16,13 @@ namespace multra {
 // Refusals, at `network.links[i].linkType`: MACRO_LINK_TYPE_MISSING, MACRO_LINK_TYPE_UNKNOWN; at the
 // type's path (`typePaths`, parallel to `types`) `.vdfId`: MACRO_VDF_UNKNOWN. S3.2 (ROADS §8, D304):
 // a type and its VDF fitted to different capacities (`capacityBasis`, empty = practical) are
-// MACRO_CAPACITY_BASIS_MISMATCH at the Link's `linkType`. Nodes are never read.
-struct MacroCompile { MacroGraph graph; std::vector<ValidationIssue> issues; };
+// MACRO_CAPACITY_BASIS_MISMATCH at the Link's `linkType`. A detailed Node is never read.
+// S3.6a (ROADS §9, D310): Link-less Roads and Nodes without detail as compileRoads says
+// (coarse_compile.hpp), after the Links' arcs: a `link` arc per piece (`source` = the Road id, nodes
+// `<road>:forward|backward@<station>`, a basis mismatch at network.roads[i].crossSectionId) and a
+// `connector` arc per turn (`source` = the Node id), uncapacitated, time 0. Advisories are its.
+struct MacroCompile { MacroGraph graph; std::vector<ValidationIssue> issues, advisories; };
 MacroCompile compileMacroNetwork(const Network&, const std::vector<ZoneConnector>&, const std::vector<LinkType>& types,
-                                 const std::vector<std::string>& typePaths, const std::vector<Vdf>&);
+                                 const std::vector<std::string>& typePaths, const std::vector<Vdf>&,
+                                 const std::vector<CrossSection>& crossSections = {});
 }

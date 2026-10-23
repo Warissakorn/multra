@@ -1,6 +1,7 @@
 #include "macro_input.hpp"
 #include "demand_catalog.hpp"
 #include "link_type_codec.hpp"
+#include "road_codec.hpp"
 #include "mode_codec.hpp"
 #include <algorithm>
 #include <map>
@@ -12,7 +13,7 @@ MacroCompile macroNetwork(const ProjectDocument& d, const std::filesystem::path&
     const auto vdfs = resolveVdfs(data, manifest);
     std::vector<LinkType> types; std::vector<std::string> paths;
     for (const auto& r : resolved) { types.push_back(r.type); paths.push_back(r.path); }
-    auto out = compileMacroNetwork(d.network, d.zones.zoneConnectors, types, paths, vdfs);
+    auto out = compileMacroNetwork(d.network, d.zones.zoneConnectors, types, paths, vdfs, linkLessRoadTemplates(d, data, manifest));
     std::vector<std::string> modeIds;
     for (const auto& m : resolveModes(def, data, manifest)) modeIds.push_back(m.mode.id);
     for (auto issues : {linkTypeIssues(resolved, &modeIds), vdfIssues(vdfs)}) out.issues.insert(out.issues.end(), issues.begin(), issues.end());

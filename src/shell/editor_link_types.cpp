@@ -13,6 +13,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSignalBlocker>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -39,7 +40,7 @@ void EditorWindow::buildLinkTypes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    linkTypeTable_ = new QTableWidget(0, 8, body); linkTypeTable_->setObjectName("editorLinkTypeTable");
+    linkTypeTable_ = new QTableWidget(0, 9, body); linkTypeTable_->setObjectName("editorLinkTypeTable");
     linkTypeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     linkTypeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     linkTypeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -59,7 +60,8 @@ void EditorWindow::buildLinkTypes() {
 }
 void EditorWindow::translateLinkTypes() {
     linkTypeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorLinkTypeCapacity"),
-        text("editorLinkTypeSpeed"), text("editorLinkTypeVdf"), text("editorLinkTypeModes"), text("editorLinkTypeSource"), text("editorLinkTypeBasis")});
+        text("editorLinkTypeSpeed"), text("editorLinkTypeVdf"), text("editorLinkTypeModes"), text("editorLinkTypeSource"), text("editorLinkTypeBasis"),
+        text("editorLinkTypeRank")});
     linkTypeRevision_ = UINT64_MAX;
 }
 std::string EditorWindow::selectedLinkType() const {
@@ -78,10 +80,11 @@ void EditorWindow::refreshLinkTypes() {
             const QStringList values{QString::fromStdString(t.id), QString::fromStdString(t.name), editorDesign::formatValue(t.capacityPerLane, 0),
                                      editorDesign::formatValue(t.freeSpeed * 3.6, 1), QString::fromStdString(t.vdfId),
                                      t.modes.empty() ? text("editorLinkTypeAllModes") : joined(t.modes), QString::fromStdString(t.source),
-                                     text(t.capacityBasis == "ultimate" ? "editorCapacityBasisUltimate" : "editorCapacityBasisPractical")};
+                                     text(t.capacityBasis == "ultimate" ? "editorCapacityBasisUltimate" : "editorCapacityBasisPractical"),
+                                     t.rank ? QString::number(*t.rank) : QString()};
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(t.id));
-                if (col == 2 || col == 3) editorDesign::setNumericText(cell, true);
+                if (col == 2 || col == 3 || col == 8) editorDesign::setNumericText(cell, true);
                 linkTypeTable_->setItem(r, col, cell);
             }
             if (t.id == keep) linkTypeTable_->selectRow(r);
@@ -118,9 +121,13 @@ void EditorWindow::editLinkType(const std::string& id) {
     auto* modes = new QLineEdit(joined(value.modes), &dialog); modes->setObjectName("editorLinkTypeModes");
     modes->setPlaceholderText(text("editorLinkTypeAllModes"));
     auto* source = new QLineEdit(QString::fromStdString(value.source), &dialog); source->setObjectName("editorLinkTypeSource");
+    // S3.6a (ROADS §6, D310): the priority hierarchy; the lowest value is "none" (unranked).
+    auto* rank = new QSpinBox(&dialog); rank->setObjectName("editorLinkTypeRank");
+    rank->setRange(-1, 99); rank->setSpecialValueText(text("editorLinkTypeRankNone")); rank->setValue(value.rank.value_or(-1));
     form->addRow(text("editorColumnName"), name); form->addRow(text("editorLinkTypeCapacity"), capacity);
     form->addRow(text("editorLinkTypeSpeed"), speed); form->addRow(text("editorLinkTypeVdf"), vdf);
     form->addRow(text("editorLinkTypeModes"), modes); form->addRow(text("editorLinkTypeSource"), source);
+    form->addRow(text("editorLinkTypeRank"), rank);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
@@ -135,6 +142,7 @@ void EditorWindow::editLinkType(const std::string& id) {
     value.modes.clear();
     for (const auto& m : modes->text().split(',', Qt::SkipEmptyParts)) value.modes.push_back(m.trimmed().toStdString());
     value.source = source->text().toStdString();
+    value.rank = rank->value() < 0 ? std::nullopt : std::optional(rank->value());
     std::string created;
     if (execute(id.empty() ? "editorAddLinkType" : "editorEditLinkType", [&](auto& doc) { created = putLinkType(doc, value, installed); })) {
         objects_->setCurrentWidget(objectPages_.at("editorLinkTypeTable"));

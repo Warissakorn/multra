@@ -38,15 +38,16 @@ void rejectLinkTypesBefore50(const Json& j) {
 }
 bool usesCapacityBasis(const ProjectDocument& d) {
     return d.definition && !d.definition->externalLinkTypes &&
-           std::any_of(d.definition->linkTypes.begin(), d.definition->linkTypes.end(), [](const auto& t) { return !t.capacityBasis.empty(); });
+           std::any_of(d.definition->linkTypes.begin(), d.definition->linkTypes.end(), [](const auto& t) { return !t.capacityBasis.empty() || t.rank; });
 }
 void rejectCapacityBasisBefore53(const Json& j) {
     if (!j.contains("definition") || !j.at("definition").is_object() || !j.at("definition").contains("linkTypes") ||
         !j.at("definition").at("linkTypes").is_array()) return;
     const auto& types = j.at("definition").at("linkTypes");
     for (std::size_t i = 0; i < types.size(); ++i)
-        if (types[i].is_object() && types[i].contains("capacityBasis"))
-            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.linkTypes[" + std::to_string(i) + "].capacityBasis"}});
+        for (const auto* key : {"capacityBasis", "rank"}) // S3.2, S3.6a
+            if (types[i].is_object() && types[i].contains(key))
+                throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.linkTypes[" + std::to_string(i) + "]." + key}});
 }
 std::string capacityBasisOf(const std::string& basis) { return basis.empty() ? "practical" : basis; }
 void readLinkTypeIds(const Json& network, Network& n) {
@@ -59,7 +60,7 @@ void readLinkTypeIds(const Json& network, Network& n) {
     }
 }
 LinkType parseLinkType(const Json& j) {
-    if (!j.is_object() || j.size() != 6u + j.contains("modes") + j.contains("jamDensity") + j.contains("capacityBasis")) broken();
+    if (!j.is_object() || j.size() != 6u + j.contains("modes") + j.contains("jamDensity") + j.contains("capacityBasis") + j.contains("rank")) broken();
     LinkType t{text(j, "id"), text(j, "name"), number(j, "capacityPerLane"), number(j, "freeSpeed"), text(j, "vdfId"), {}, text(j, "source"), {}};
     if (j.contains("jamDensity")) { // M11.2: {value, source}
         const auto& k = j.at("jamDensity");
@@ -67,6 +68,7 @@ LinkType parseLinkType(const Json& j) {
         t.jamDensity = JamDensity{number(k, "value"), text(k, "source")};
     }
     if (j.contains("capacityBasis")) t.capacityBasis = text(j, "capacityBasis");
+    if (j.contains("rank")) { if (!j.at("rank").is_number_integer()) broken(); t.rank = j.at("rank").get<int>(); }
     if (j.contains("modes")) {
         if (!j.at("modes").is_array()) broken();
         for (const auto& m : j.at("modes")) { if (!m.is_string()) broken(); t.modes.push_back(m.get<std::string>()); }
@@ -78,6 +80,7 @@ Json linkTypeJson(const LinkType& t) {
     if (!t.modes.empty()) j["modes"] = t.modes;
     if (t.jamDensity) j["jamDensity"] = {{"value", t.jamDensity->value}, {"source", t.jamDensity->source}};
     if (!t.capacityBasis.empty()) j["capacityBasis"] = t.capacityBasis;
+    if (t.rank) j["rank"] = *t.rank;
     return j;
 }
 Vdf parseVdf(const Json& j) {

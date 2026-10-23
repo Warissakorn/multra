@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
 #include <QAction>
@@ -35,6 +36,7 @@ int roadStrokes(EditorWindow& w,const std::string& id) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>1,"Expected data directory");
         QTemporaryDir temp;require(temp.isValid(),"Temporary directory unavailable");

@@ -44,6 +44,9 @@ struct LinkType {
     // S3.2 (ROADS §8, D304): the capacity its VDF was fitted to, "practical" or "ultimate"; empty means
     // practical. Written only when set, which makes an owned type schema 53.
     std::string capacityBasis{};
+    // S3.6a (ROADS §6, 4a, D310): the priority hierarchy; a higher rank is major. Absent: unranked.
+    // Written only when set, which makes an owned type schema 53.
+    std::optional<int> rank{};
     bool operator==(const LinkType&) const = default;
 };
 // S3.3 (ROADS §4, D305): a cross-section template. Lane widths are `laneWidth` for every lane, or

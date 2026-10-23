@@ -4,6 +4,7 @@
 // gives refusals, not exceptions.
 #include "network.hpp"
 #include <optional>
+#include <set>
 
 namespace multra {
 // A boundary crossing of a Link, at metres along its reference polyline (`link.geometry`).
@@ -37,4 +38,9 @@ struct NodeMembership {
 NodeMembership nodeMembership(const Network&, const Node&);
 // The refusals of every Node with a valid polygon, at "nodes[i]"; reported as advisories.
 std::vector<ValidationIssue> nodeMembershipIssues(const Network&);
+// The signal programs (as headProgramId) whose heads a turn's vehicles pass (D299): a head on a
+// Connector of the turn's path; on the in-leg, a head on a lane its first Connector leaves from, or
+// any lane when the path has no Connector; a head on a Link inside the Node that the path crosses.
+// Shared by Meso (meso_compile) and derive back (S3.6b, coarse_commands).
+std::set<std::string> turnSignalPrograms(const Network&, const NodeMembership&, const NodeTurn&);
 }

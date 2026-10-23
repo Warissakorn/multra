@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "dialog_fit.hpp"
 #include "demand_period_editor.hpp"
 #include "demand_type_rules_dialog.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -33,8 +34,8 @@ void EditorWindow::editDecision(const std::string& id) {
     const auto& network=history_.document().network;
     if(def)for(const auto& x:def->routingDecisions)if(x.id==id)value=x;
     QDialog dialog(this);dialog.setObjectName("editorDecisionDialog");dialog.setWindowTitle(text("editorEditDecision"));
-    auto* layout=new QVBoxLayout(&dialog);
-    layout->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
+    auto* layout=new QVBoxLayout(scrollingBody(dialog)); // the buttons stay on screen however many routes
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(editorDesign::space2);
     auto* name=new QLineEdit(QString::fromStdString(value.name),&dialog);name->setObjectName("editorDecisionNameField");
     name->setPlaceholderText(text("editorDecisionName"));layout->addWidget(name);
@@ -188,7 +189,7 @@ void EditorWindow::editDecision(const std::string& id) {
     connect(minutes,&QDoubleSpinBox::valueChanged,&dialog,syncPeriods);
     connect(place,&QComboBox::currentIndexChanged,&dialog,syncPeriods);
     syncPeriods();
-    auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);layout->addWidget(buttons);
+    auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);addFooter(dialog,buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     buttons->button(QDialogButtonBox::Ok)->setEnabled(!rows.empty());
     connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);

@@ -115,7 +115,7 @@ bool EditorWindow::prepareRun() {
         error_->clear();return true;
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
-        showError(e);revealObjectPage(problemTable_);return false;
+        showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return false;
     }
 }
 void EditorWindow::toggleRun(){
@@ -145,7 +145,7 @@ void EditorWindow::tickRun(){
 }
 void EditorWindow::refreshRun(){
     if(!runInfo_)return;
-    refreshResults();
+    refreshResults(); refreshNodeProposals(); // S4.4: a new result proposes
     if(runProtection_)runProtection_->setVisible(runSnapshot_.has_value()); // M3.2.4: shown with every run
     actions_.at("editorRun")->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
     actions_.at("editorRun")->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));

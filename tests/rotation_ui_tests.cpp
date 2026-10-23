@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/model/network/rotation.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -168,6 +169,7 @@ void window(const std::filesystem::path& data,const QString& screenshot) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>1,"Data directory required");
         gestures(argc>2?QString::fromUtf8(argv[2]):QString{});

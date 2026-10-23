@@ -1,10 +1,12 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/demand_period_editor.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
+#include "dialog_fit_support.hpp"
 #include <QDialog>
 #include <QDoubleSpinBox>
 #include <QFile>
@@ -51,13 +53,14 @@ void save(const QString& path,const ProjectDocument& d) {
 }
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>1,"Expected data directory");QTemporaryDir temp;require(temp.isValid(),"No temp directory");
         const auto original=fixture();const auto path=temp.filePath("demand.traffic.json");save(path,original);
         EditorWindow w(argv[1]);w.openFile(path);w.show();QApplication::processEvents();
         control<QTableWidget>(w,"editorInputTable")->selectRow(0);
         edit(w,"editorEditInput",[&](QDialog& d){
+            requireFitsScreen(d);
             require(!control<QDoubleSpinBox>(d,"editorInputVolume")->isEnabled(),"Derived volume is editable");
             require(!control<QDoubleSpinBox>(d,"editorInputStart")->isEnabled(),"Derived start is editable");
             require(!control<QDoubleSpinBox>(d,"editorInputEnd")->isEnabled(),"Derived end is editable");
@@ -65,7 +68,7 @@ int main(int argc,char** argv) {
         });
         require(w.history().document().definition->inputs==original.definition->inputs,"No-op input edit changed irregular periods");
         control<QTableWidget>(w,"editorDecisionTable")->selectRow(0);
-        edit(w,"editorEditDecision",[](QDialog& d){d.accept();});
+        edit(w,"editorEditDecision",[](QDialog& d){requireFitsScreen(d);d.accept();});
         require(w.history().document().definition->routingDecisions==original.definition->routingDecisions,"No-op decision edit lost irregular counts");
         edit(w,"editorEditDecision",[](QDialog& d){control<QLineEdit>(d,"editorDecisionNameField")->setText("Renamed");d.accept();});
         const auto renamed=w.history().document().definition->routingDecisions.front();

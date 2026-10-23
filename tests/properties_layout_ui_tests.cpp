@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/editor_interaction.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
 #include <QAbstractScrollArea>
@@ -102,7 +103,7 @@ void aligned(EditorWindow& window,const char* where,bool beside=true) {
 int rowOf(QFormLayout* form,QWidget* field){int row=-1;QFormLayout::ItemRole role;form->getWidgetPosition(field,&row,&role);return row;}
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         EditorWindow window(data);window.resize(1360,860);window.show();settle();

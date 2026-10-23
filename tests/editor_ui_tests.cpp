@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "ui_gestures.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
@@ -31,6 +32,7 @@ void write(const QString& file,const Json& data){QFile f(file);require(f.open(QI
 }
 int main(int argc,char** argv){
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try{
         require(argc>=2,"Expected data directory");QTemporaryDir directory;require(directory.isValid(),"temp directory");
         EditorWindow w{std::filesystem::path(argv[1])};w.show();QTest::qWait(40);

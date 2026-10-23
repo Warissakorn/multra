@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/editor/canvas_style.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/project/load.hpp"
@@ -413,6 +414,7 @@ void windowWorkflow(const std::filesystem::path& data,const QString& screenshot)
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>1,"Data directory required");EditorCanvas c;
         c.setDisplayCatalog({{},{{"default",{},"#49596d","#607d8b","#d0dfeb","#facc15"}}});

@@ -9,47 +9,6 @@
 namespace multra {
 namespace {
 constexpr double kEpsilon = 1e-9;
-// A polyline cut at every point it meets the boundary: alternating runs inside and outside, in
-// station order. Touching the boundary without crossing it splits nothing, since adjacent runs on
-// the same side merge. The boundary itself counts as inside.
-struct Run { double from{}, to{}; bool inside{}; };
-std::vector<Run> runs(const std::vector<Point>& line, const std::vector<Point>& polygon) {
-    std::vector<double> cuts{0.0};
-    double base = 0.0;
-    for (std::size_t i = 0; i + 1 < line.size(); ++i) {
-        const auto p = line[i], q = line[i + 1];
-        const double dx = q.x - p.x, dy = q.y - p.y, length = std::hypot(dx, dy);
-        for (std::size_t k = 0; k < polygon.size(); ++k) {
-            const auto a = polygon[k], b = polygon[(k + 1) % polygon.size()];
-            const double ex = b.x - a.x, ey = b.y - a.y, denom = dx * ey - dy * ex;
-            if (std::abs(denom) < kEpsilon) {
-                // Parallel: a collinear overlap cuts at the edge's ends that lie on the segment.
-                if (length < kEpsilon || !segmentsMeet(p, q, a, b)) continue;
-                for (const auto e : {a, b}) {
-                    const double t = ((e.x - p.x) * dx + (e.y - p.y) * dy) / (length * length);
-                    if (t >= 0 && t <= 1) cuts.push_back(base + t * length);
-                }
-                continue;
-            }
-            const double t = ((a.x - p.x) * ey - (a.y - p.y) * ex) / denom;
-            const double u = ((a.x - p.x) * dy - (a.y - p.y) * dx) / denom;
-            if (t >= -kEpsilon && t <= 1 + kEpsilon && u >= -kEpsilon && u <= 1 + kEpsilon)
-                cuts.push_back(base + std::clamp(t, 0.0, 1.0) * length);
-        }
-        base += length;
-    }
-    cuts.push_back(base);
-    std::sort(cuts.begin(), cuts.end());
-    std::vector<Run> result;
-    for (std::size_t i = 0; i + 1 < cuts.size(); ++i) {
-        if (cuts[i + 1] - cuts[i] < 1e-6) continue;
-        const bool inside = pointInPolygon(polygon, pointAlong(line, (cuts[i] + cuts[i + 1]) / 2));
-        if (!result.empty() && result.back().inside == inside) result.back().to = cuts[i + 1];
-        else result.push_back({cuts[i], cuts[i + 1], inside});
-    }
-    if (result.empty()) result.push_back({0.0, base, !line.empty() && pointInPolygon(polygon, line.front())});
-    return result;
-}
 std::vector<Point> connectorLine(const Network& network, const Connector& c) {
     if (!c.geometry.empty()) return c.geometry;
     try { return connectorCentreline(network, c); } catch (...) { return {}; }
@@ -84,7 +43,7 @@ NodeMembership nodeMembership(const Network& network, const Node& node) {
     std::set<std::string> issues;
     std::set<std::string> internalConnectors;
     for (const auto& c : network.connectors) {
-        const auto r = runs(connectorLine(network, c), polygon);
+        const auto r = polygonRuns(connectorLine(network, c), polygon);
         if (r.size() == 1 && r.front().inside) { internalConnectors.insert(c.id); m.connectors.push_back(c.id); }
         else if (r.size() > 1) issues.insert("NODE_CONNECTOR_CROSSES");
     }
@@ -96,10 +55,10 @@ NodeMembership nodeMembership(const Network& network, const Node& node) {
     const auto areaInside = [&](const std::string& id) { return std::find(m.conflictAreas.begin(), m.conflictAreas.end(), id) != m.conflictAreas.end(); };
 
     // Each Link's inside runs, kept only when something inside connects to it (NODES §3).
-    std::map<std::string, std::vector<Run>> insideRuns;
+    std::map<std::string, std::vector<PolygonRun>> insideRuns;
     for (const auto& link : network.links) {
-        const auto r = runs(link.geometry, polygon);
-        std::vector<Run> in;
+        const auto r = polygonRuns(link.geometry, polygon);
+        std::vector<PolygonRun> in;
         for (const auto& run : r) if (run.inside) in.push_back(run);
         if (in.empty()) continue;
         const double length = polylineLength(link.geometry);
@@ -219,5 +178,35 @@ std::vector<ValidationIssue> nodeMembershipIssues(const Network& network) {
             result.push_back({code, "nodes[" + std::to_string(i) + "]"});
     }
     return result;
+}
+std::set<std::string> turnSignalPrograms(const Network& network, const NodeMembership& m, const NodeTurn& turn) {
+    std::set<std::string> programs;
+    const auto& leg = m.inLegs[turn.in].linkId;
+    for (const auto& id : m.signalHeads) {
+        const auto h = std::find_if(network.signalHeads.begin(), network.signalHeads.end(), [&](const auto& x) { return x.id == id; });
+        if (h == network.signalHeads.end()) continue;
+        bool governs = false;
+        for (const auto& path : turn.paths) {
+            const auto first = std::find_if(path.begin(), path.end(), [&](const auto& s) { return s.from == 0 && s.to == 0 && s.objectId != leg; });
+            const Connector* c = nullptr;
+            if (first != path.end())
+                for (const auto& x : network.connectors) if (x.id == first->objectId) c = &x;
+            if (!h->connectorId.empty()) {
+                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->connectorId; });
+            } else if (h->lane.linkId == leg) {
+                if (!c || c->from.linkId != leg) { governs = true; continue; }
+                const auto l = std::find_if(network.links.begin(), network.links.end(), [&](const auto& x) { return x.id == leg; });
+                const auto lane = [&](const std::string& laneId) {
+                    return static_cast<int>(std::find_if(l->lanes.begin(), l->lanes.end(), [&](const auto& x) { return x.id == laneId; }) - l->lanes.begin());
+                };
+                const int at = lane(h->lane.laneId), from = lane(c->from.laneId);
+                governs = governs || (at >= from && at < from + c->fromLaneCount);
+            } else {
+                governs = governs || std::any_of(path.begin(), path.end(), [&](const auto& s) { return s.objectId == h->lane.linkId; });
+            }
+        }
+        if (governs) programs.insert(headProgramId(*h));
+    }
+    return programs;
 }
 }

@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "tab_page_helpers.hpp"
 #include <QAction>
 #include <QApplication>
@@ -32,7 +33,7 @@ QJsonObject catalog(const std::filesystem::path& data,int lang) {
 struct Group {const char* key;std::vector<const char*> pages;};
 // Page contents by object name, in the spec's order (UI_PRESENTATION_SPEC §1).
 const Group groups[]={
-    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable","editorLinkTypeTable"}},
+    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable","editorLinkTypeTable","editorRoadTable","editorCrossSectionTable"}},
     {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
     {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable","editorPeriodTable","editorModeTable"}},
     {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable","editorNodeTable"}},
@@ -51,7 +52,7 @@ void pick(QComboBox* combo,const char* key) {
 }
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         EditorWindow window(data);window.resize(1360,860);window.show();settle();
@@ -59,7 +60,7 @@ int main(int argc,char** argv) {
         auto* tabs=item<QTabWidget>(window,"editorObjectTabs");auto* combo=item<QComboBox>(window,"editorObjectGroup");
         auto* language=item<QComboBox>(window,"editorLanguage");auto* canvas=window.canvas();
         auto* dock=item<QDockWidget>(window,"editorObjectsDock");
-        require(tabs->count()==20,"Object page inventory changed");
+        require(tabs->count()==22,"Object page inventory changed");
         require(tabs->cornerWidget(Qt::TopLeftCorner)==combo,"Group selector is not in the page strip row");
         require(combo->count()==6,"Selector does not list six task groups");
         // Default after construction and Reset: Network, Links.
@@ -81,7 +82,7 @@ int main(int argc,char** argv) {
                 for(auto* page:expected)covered.insert(page);
             }
         }
-        require(covered.size()==20,"Some page belongs to no group");
+        require(covered.size()==22,"Some page belongs to no group");
         // Any jump to a hidden page, in either language, reveals that page's group, and a locale
         // switch while it is current keeps both.
         for(int lang:{0,1})for(const auto& owner:groups)for(const auto* content:owner.pages) {
@@ -109,7 +110,7 @@ int main(int argc,char** argv) {
         require(seed->text()=="invalid","Invalid-seed fixture was not set");
         pick(combo,"editorObjectGroupDemand");dock->hide();settle();require(!dock->isVisible(),"Dock hide fixture failed");
         trigger(window,"editorStep");
-        require(groupKey(combo)=="editorObjectGroupProblems"&&tabs->currentWidget()==item<QWidget>(window,"editorProblemTable"),"Failed Run did not reveal Problems");
+        require(groupKey(combo)=="editorObjectGroupProblems"&&tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,"editorProblemTable")),"Failed Run did not reveal Problems");
         require(dock->isVisible(),"Failed Run left the Problems dock hidden");
         seed->setText("42");
         // Focus keeps the group; Reset returns Network/Links. Neither edits the document or run.

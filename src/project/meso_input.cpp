@@ -1,6 +1,7 @@
 #include "meso_input.hpp"
 #include "demand_catalog.hpp"
 #include "link_type_codec.hpp"
+#include "road_codec.hpp"
 #include "meso_settings.hpp"
 #include "mode_codec.hpp"
 #include "od_demand.hpp"
@@ -18,7 +19,8 @@ MesoCompile mesoNetwork(const ProjectDocument& d, const std::filesystem::path& d
     const auto resolved = resolveLinkTypes(def, data, manifest);
     std::vector<LinkType> types; std::vector<std::string> paths;
     for (const auto& r : resolved) { types.push_back(r.type); paths.push_back(r.path); }
-    auto out = compileMesoNetwork(d.network, types, paths, mesoSettingsOf(d), mesoGreenShares(def.signalControllers, def.signalPrograms));
+    auto out = compileMesoNetwork(d.network, types, paths, mesoSettingsOf(d), mesoGreenShares(def.signalControllers, def.signalPrograms),
+                                  linkLessRoadTemplates(d, data, manifest));
     std::vector<std::string> modeIds;
     for (const auto& m : resolveModes(def, data, manifest)) modeIds.push_back(m.mode.id);
     const auto issues = linkTypeIssues(resolved, &modeIds);

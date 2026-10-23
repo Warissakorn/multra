@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
 #include "../src/project/json.hpp"
@@ -42,7 +43,7 @@ QString project(const QTemporaryDir& dir, const char* name, const ProjectDocumen
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc >= 2, "Expected data directory");
         const std::filesystem::path data(argv[1]);

@@ -4,6 +4,7 @@
 
 namespace multra {
 namespace {
+constexpr double kEpsilon = 1e-9;
 double cross(Point o, Point a, Point b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); }
 bool onSegment(Point a, Point b, Point p) {
     return std::min(a.x, b.x) <= p.x && p.x <= std::max(a.x, b.x) && std::min(a.y, b.y) <= p.y && p.y <= std::max(a.y, b.y);
@@ -41,5 +42,42 @@ bool polygonsOverlap(const std::vector<Point>& a, const std::vector<Point>& b) {
         for (std::size_t j = 0; j < b.size(); ++j)
             if (segmentsMeet(a[i], a[(i + 1) % a.size()], b[j], b[(j + 1) % b.size()])) return true;
     return pointInPolygon(a, b.front()) || pointInPolygon(b, a.front());
+}
+std::vector<PolygonRun> polygonRuns(const std::vector<Point>& line, const std::vector<Point>& polygon) {
+    std::vector<double> cuts{0.0};
+    double base = 0.0;
+    for (std::size_t i = 0; i + 1 < line.size(); ++i) {
+        const auto p = line[i], q = line[i + 1];
+        const double dx = q.x - p.x, dy = q.y - p.y, length = std::hypot(dx, dy);
+        for (std::size_t k = 0; k < polygon.size(); ++k) {
+            const auto a = polygon[k], b = polygon[(k + 1) % polygon.size()];
+            const double ex = b.x - a.x, ey = b.y - a.y, denom = dx * ey - dy * ex;
+            if (std::abs(denom) < kEpsilon) {
+                // Parallel: a collinear overlap cuts at the edge's ends that lie on the segment.
+                if (length < kEpsilon || !segmentsMeet(p, q, a, b)) continue;
+                for (const auto e : {a, b}) {
+                    const double t = ((e.x - p.x) * dx + (e.y - p.y) * dy) / (length * length);
+                    if (t >= 0 && t <= 1) cuts.push_back(base + t * length);
+                }
+                continue;
+            }
+            const double t = ((a.x - p.x) * ey - (a.y - p.y) * ex) / denom;
+            const double u = ((a.x - p.x) * dy - (a.y - p.y) * dx) / denom;
+            if (t >= -kEpsilon && t <= 1 + kEpsilon && u >= -kEpsilon && u <= 1 + kEpsilon)
+                cuts.push_back(base + std::clamp(t, 0.0, 1.0) * length);
+        }
+        base += length;
+    }
+    cuts.push_back(base);
+    std::sort(cuts.begin(), cuts.end());
+    std::vector<PolygonRun> result;
+    for (std::size_t i = 0; i + 1 < cuts.size(); ++i) {
+        if (cuts[i + 1] - cuts[i] < 1e-6) continue;
+        const bool inside = pointInPolygon(polygon, pointAlong(line, (cuts[i] + cuts[i + 1]) / 2));
+        if (!result.empty() && result.back().inside == inside) result.back().to = cuts[i + 1];
+        else result.push_back({cuts[i], cuts[i + 1], inside});
+    }
+    if (result.empty()) result.push_back({0.0, base, !line.empty() && pointInPolygon(polygon, line.front())});
+    return result;
 }
 }

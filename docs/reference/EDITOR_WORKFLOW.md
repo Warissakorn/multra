@@ -153,7 +153,7 @@ names (D193).
 - **Ctrl+Shift+F** (View → Focus on network) hides docks and restores the previous layout on
   the next press, including hidden and floating panels. Opening a panel also leaves focus mode.
 - The Objects panel shows one task group at a time, chosen in the combo left of its tabs:
-  Network (Links, Connectors), Control (Signal heads, Signal control, Conflict areas), Demand
+  Network (Links, Connectors, Link types, Roads, Cross-sections), Control (Signal heads, Signal control, Conflict areas), Demand
   (Routes, Vehicle inputs, Routing decisions, Zones, OD matrices), Measurement (Queue counters,
   Travel-time sections), Results and Problems. A jump to a page (a tool, Show in table, a failed
   check or run) switches to its group; Problems jumps also reopen the panel (D194).

@@ -1,6 +1,7 @@
-// S3.3 rows RD1 (Road part), RD5-RD9 (docs/reference/ROADS.md §3, §4, §13, D305): the Road, the
+// S3.3 rows RD1 (Road part), RD5-RD9, and S3.4's RD10-RD11 at the end (docs/reference/ROADS.md §3, §4, §13, D305): the Road, the
 // cross-section template catalog, Apply template and detaching. Each row first checks its forcing.
 #include "test.hpp"
+#include "../src/commands/appearance_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
@@ -10,6 +11,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <numbers>
 using namespace multra;
 namespace {
 std::filesystem::path data() { return test::root() / "data"; }
@@ -167,4 +169,71 @@ TEST(roads, rd9_road_refusals) { // RD9
         CHECK(issueAt(e.issues, "ROAD_LINK_MISMATCH", "roads[0].links[0]") && issueAt(e.issues, "ROAD_LINK_MISMATCH", "links[0].roadId"));
     }
     test::throws([&] { auto x = d; putRoad(x, {"", "", {{0, 0}, {1, 0}}, {}, 0, {0, {}, {}, {}}, {}}); }, "EDIT_ROAD_OVERRIDE");
+}
+// S3.4 rows RD10, RD11 (ROADS §3, §17, D308).
+TEST(roads, rd10_join_opposite_links) { // RD10
+    ProjectDocument d;
+    const auto a = addLink(d, {{0, 0}, {100, 0}, {200, 50}}, 2, 3.5);
+    const auto b = oppositeLink(d, a, 2.0);
+    CHECK(link(d, b).geometry.size() == 3 && link(d, b).geometry.front().x > 150); // forcing: opposite, reversed
+    const auto f = linkCentreline(link(d, a), d.network.drivingSide), r = linkCentreline(link(d, b), d.network.drivingSide);
+    const auto id = joinOppositeLinks(d, a, b);
+    const auto& road = d.network.roads.at(0);
+    CHECK(road.id == id && road.links == (std::vector<std::string>{a, b}) && !road.crossSectionId && road.level == 0);
+    CHECK(link(d, a).roadId == id && link(d, b).roadId == id && road.centreline.size() == 3);
+    for (std::size_t i = 0; i < 3; ++i) { // midway, vertex by vertex, at the bend too
+        test::near(road.centreline[i].x, (f[i].x + r[2 - i].x) / 2, 1e-9);
+        test::near(road.centreline[i].y, (f[i].y + r[2 - i].y) / 2, 1e-9);
+    }
+    CHECK(link(d, a).geometry == (std::vector<Point>{{0, 0}, {100, 0}, {200, 50}})); // the Links are not moved
+    validateDocument(d);
+    CHECK(thrown([&] { auto x = d; joinOppositeLinks(x, a, b); }) == "EDIT_ROAD_JOIN_TAKEN");
+    // Unequal vertex counts: each vertex pairs with its closest point, ordered along the forward Link.
+    ProjectDocument u;
+    const auto p = addLink(u, {{0, 0}, {200, 0}}, 1, 3.5), q = addLink(u, {{200, 10}, {100, 10}, {0, 10}}, 1, 3.5);
+    joinOppositeLinks(u, p, q);
+    const auto& mean = u.network.roads[0].centreline;
+    CHECK(mean.size() == 3);
+    for (const auto& v : mean) test::near(v.y, 5, 1e-9);
+    CHECK(mean.front().x < mean[1].x && mean[1].x < mean.back().x);
+    // Refusals: the same direction, more than 15 degrees off opposite, farther than the widths plus
+    // 30 m, another level, or one Link twice.
+    ProjectDocument s;
+    const auto base = addLink(s, {{0, 0}, {200, 0}}, 2, 3.5);
+    const auto same = addLink(s, {{0, 10}, {200, 10}}, 2, 3.5);
+    const auto skew = addLink(s, {{200, 10}, {0, 10 + 200 * std::tan(20 * std::numbers::pi / 180)}}, 2, 3.5);
+    const auto slight = addLink(s, {{200, 10}, {0, 10 + 200 * std::tan(10 * std::numbers::pi / 180)}}, 2, 3.5);
+    const auto far = addLink(s, {{200, 45}, {0, 45}}, 2, 3.5);
+    const auto near = addLink(s, {{200, 30}, {0, 30}}, 2, 3.5);
+    CHECK(thrown([&] { auto x = s; joinOppositeLinks(x, base, same); }) == "EDIT_ROAD_JOIN_DIRECTION");
+    CHECK(thrown([&] { auto x = s; joinOppositeLinks(x, base, skew); }) == "EDIT_ROAD_JOIN_PARALLEL");
+    CHECK(thrown([&] { auto x = s; joinOppositeLinks(x, base, far); }) == "EDIT_ROAD_JOIN_PARALLEL"); // 45 m > 7 m of half widths + 30 m
+    CHECK(thrown([&] { auto x = s; joinOppositeLinks(x, base, slight); }) == "EDIT_ROAD_JOIN_PARALLEL"); // 10 degrees, but 45 m apart at x = 0
+    CHECK(thrown([&] { auto x = s; joinOppositeLinks(x, base, base); }) == "EDIT_ROAD_JOIN_DIRECTION");
+    CHECK(thrown([&] { auto x = s; changeAppearance(x, near, 1, link(x, near).displayType); joinOppositeLinks(x, base, near); }) == "EDIT_ROAD_JOIN_LEVEL");
+    { auto x = s; joinOppositeLinks(x, base, near); validateDocument(x); } // 30 m apart: within 7 + 30 m
+    // The angle on its own: 40 m Links within the distance, 20 degrees off opposite is refused, 10 is joined.
+    ProjectDocument t;
+    const auto shortBase = addLink(t, {{0, 0}, {40, 0}}, 2, 3.5);
+    const auto steep = addLink(t, {{40, 5}, {0, 5 + 40 * std::tan(20 * std::numbers::pi / 180)}}, 2, 3.5);
+    const auto gentle = addLink(t, {{40, 5}, {0, 5 + 40 * std::tan(10 * std::numbers::pi / 180)}}, 2, 3.5);
+    CHECK(thrown([&] { auto x = t; joinOppositeLinks(x, shortBase, steep); }) == "EDIT_ROAD_JOIN_PARALLEL");
+    { auto x = t; joinOppositeLinks(x, shortBase, gentle); CHECK(x.network.roads.size() == 1); }
+}
+TEST(roads, rd11_assign_template_generates_nothing) { // RD11
+    History h; h.reset(withRoad());
+    CHECK(h.execute("x", [&](auto& d) { putRoad(d, {"", "", {{0, 50}, {200, 50}}, {}, 0, {}, {}}); putRoad(d, {"", "", {{0, 90}, {200, 90}}, {}, 0, {}, {}}); }));
+    const auto& roads = [&]() -> const std::vector<Road>& { return h.document().network.roads; };
+    CHECK(roads().size() == 3 && !roads()[1].crossSectionId && h.document().network.links.empty()); // forcing
+    const auto before = h.revision();
+    std::vector<std::string> ids; for (const auto& r : roads()) ids.push_back(r.id);
+    CHECK(h.execute("editorAssignTemplate", [&](auto& d) { assignTemplate(d, ids, std::string("divided"), {}); }));
+    CHECK(h.revision() == before + 1 && h.document().network.links.empty());
+    CHECK(std::all_of(roads().begin(), roads().end(), [](const auto& r) { return r.crossSectionId == "divided"; }));
+    auto x = h.document();
+    try { assignTemplate(x, ids, std::string("nope"), {}); CHECK(false); }
+    catch (const ValidationError& e) { CHECK(issueAt(e.issues, "ROAD_CROSS_SECTION_UNKNOWN", "crossSectionId")); }
+    assignTemplate(x, {ids[1]}, std::nullopt, {});
+    CHECK(!x.network.roads[1].crossSectionId && x.network.roads[0].crossSectionId == "divided");
+    CHECK(thrown([&] { auto y = h.document(); assignTemplate(y, {"missing"}, std::nullopt, {}); }) == "EDIT_UNKNOWN_OBJECT");
 }

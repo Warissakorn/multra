@@ -1,4 +1,5 @@
 #pragma once
+#include "../project/readiness.hpp"
 #include "../commands/network_commands.hpp"
 #include "../commands/connector_commands.hpp"
 #include "../project/diagnostics.hpp"
@@ -11,6 +12,7 @@
 #include "../project/comparison_output.hpp"
 #include "../commands/appearance_commands.hpp"
 #include "../commands/demand_commands.hpp"
+#include <array>
 #include <QTimer>
 #include <QElapsedTimer>
 #include "../core/validate.hpp"
@@ -287,6 +289,23 @@ private:
     // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
     QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
     void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    void editCoarse(const std::string& id); // S3.6b (D311): editor_coarse.cpp
+    // S4.4 (D317): Node proposals from the Macro and Meso results, editor_proposals.cpp.
+    QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
+    void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
+    // S3.3b (ROADS §16, D307): the Roads and Cross-sections tabs and the Road tool's commit.
+    QTableWidget* roadTable_{}; QComboBox* roadTemplate_{}; std::uint64_t roadRevision_{UINT64_MAX};
+    QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
+    enum class RoadStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
+    std::vector<CrossSection> crossSectionRows() const;
+    RoadStatus roadStatus(const Road&, const std::vector<CrossSection>&) const;
+    void buildRoads(); void translateRoads(); void refreshRoads(); void showRoads(); void editRoad(const std::string& id);
+    void findCrossingsDialog(); // S3.5 (D309)
+    void seamChecksDialog(); // S3.7 (D312): editor_seams.cpp
+    double seamSpeedJump_{20}; // km/h, a display choice kept for the session (ROADS §7)
+    std::string selectedRoad() const; std::vector<std::string> selectedRoadRows() const; std::vector<std::string> selectedLinks() const;
+    void buildCrossSections(); void translateCrossSections(); void refreshCrossSections(); void editCrossSection(const std::string& id);
+    std::string selectedCrossSection() const;
     std::string selectedNode() const;
     void buildZones();
     void translateZones();
@@ -411,6 +430,10 @@ private:
     void buildDiagnostics();
     void refreshTables(bool modelChanged);
     void refreshDiagnostics();
+    void recheck(); // S4.2 (D313): the chosen level's readiness
+    void fillDefaultsDialog(); // S4.3 (D316): editor_fill.cpp
+    QComboBox *readinessLevel_{}, *readinessPeriod_{};
+    std::vector<ReadinessRow> readiness_; bool readinessChecked_{};
     void retranslateTables();
     void jumpTo(int row);
     void deleteSelected();

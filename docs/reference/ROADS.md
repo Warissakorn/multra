@@ -2,7 +2,8 @@
 
 Written 2026-10-22 (D303) as the S3.1 contract, docs only. The owner answered its seven choices
 the same day, "as recommended": 1a, 2a, 3a, 4a, 5a, 6b, 7a (D304), so §3–§9 state the chosen
-options. S3.2 is implemented (D304, §14), and so is S3.3 (D305, §15). It fixes:
+options. S3.2 to S3.5 are implemented (D304, D305, D307–D309); §14–§18 are in
+[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md). It fixes:
 - the Road object, and how it relates to the directed Links Micro already runs;
 - cross-section templates and *Apply template*;
 - Nodes from Road crossings;
@@ -96,7 +97,8 @@ not validation.
   and the Road drops it from `links`. The editor shows the Road as partly detached; nothing is
   regenerated silently.
 - **Join opposite Links into a Road** (Micro-first studies): two Links of opposite direction on the
-  same level, roughly parallel within a tolerance, become one Road. Its centreline is the mean of
+  same level, roughly parallel within a tolerance (15° and half both widths plus 30 m, owner
+  2026-10-22, §17), become one Road. Its centreline is the mean of
   their centrelines, it has no template (`crossSectionId` absent), and they are its `links`.
 - **Assign template** sets `crossSectionId` on several Roads in one Undo step without generating
   Links. Generating is a separate *Apply*, so a Micro study is never rewritten by an assignment.
@@ -145,6 +147,9 @@ not validation.
 - **Merge nodes** (for roundabouts) joins selected Nodes into one polygon, the hull of theirs, in
   one Undo step. A Node with detail inside is merged only if the result passes `nodeMembership`;
   otherwise it is refused with that check's issues.
+- **As implemented (D309, §18):** the tolerance defaults to 2 m; a place is listed with three legs
+  or more and only where no Node covers it; the disc's radius is the half-width there plus the
+  widest lane (D265's rule), so it takes no number of its own.
 
 ## 6. S0.4 coarse values (choices 3a and 4a)
 
@@ -187,6 +192,10 @@ not validation.
   - `coarse` on a Node with detail is `NODE_COARSE_WITH_DETAIL`;
   - a `bannedTurns` or `major` entry naming no leg is `NODE_COARSE_UNKNOWN_LEG`;
   - a signal without stages, or a green total above the cycle, is `NODE_COARSE_SIGNAL_INVALID`.
+- **As implemented (D310, D311; §19, §20):** S3.6a ships the fields, checks and compile; S3.6b the
+  dialog, refine, derive back and the lifecycle. A Node's detail is its interior (a Connector inside,
+  or a Link wholly inside), and Links reaching in are legs (D311); a Node without detail compiles as
+  coarse, with absent fields as defaults; a rank tie is every leg sharing the top rank.
 
 ## 7. Seam checks
 
@@ -202,6 +211,9 @@ not validation.
 
 - **No silent adjustment:** a seam fix changes only defaults, inside the Command the user chose.
 - The 20 km/h threshold is a display choice, not a model value, and can be changed in settings.
+- **As implemented (D312, §21):** a lane-count seam is a generated Link against its Road's lanes; a
+  speed jump is across a Connector outside every Node, or between Link-less Roads continuing; the
+  detached row is on the Road; the threshold is set in the *Seam checks* dialog for the session.
 
 ## 8. HCM-cited link types (choice 6b)
 
@@ -246,6 +258,8 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 - **A coarse Node** compiles as in §6. A detailed Node compiles as today (D293, S2).
 - **Micro** runs Links only. A Road without Links is `SEAM_ROAD_NOT_GENERATED`; its demand is
   refused at the route as today, so nothing is silently dropped.
+- **As implemented (D310, §19):** Road ends within 2 m of one another, outside any Node, join as a
+  simple node; a Road-only network carries no demand yet.
 - **Byte identity:** a project without Roads, templates, `roadId`, overpasses, `coarse`, `rank` or
   `capacityBasis` keeps its schema and bytes (row RD1).
 
@@ -299,11 +313,12 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 | S3.1 | This contract. **Written (D303)** | — |
 | S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs. **Implemented (D304)**. `rank` moved to S3.6 with its reader (D304) | RD1 (basis), RD2, RD3 |
 | S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
-| S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display | written with S3.3b |
-| S3.4 | *Join opposite Links into a Road*; *Assign template* | RD10, RD11 |
-| S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes* | RD12–RD15 |
-| S3.6 | `coarse`, refine and derive back, lifecycle; the link-type `rank`; Macro and Meso compile coarse Nodes and Roads | RD4, RD16–RD20 |
-| S3.7 | Seam checks | RD21, RD22 |
+| S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display. **Implemented (D307)** | RD23–RD26 |
+| S3.4 | *Join opposite Links into a Road*; *Assign template*. **Implemented (D308)** | RD10, RD11 |
+| S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes*. **Implemented (D309)** | RD12–RD15 |
+| S3.6a | The link-type `rank`, `coarse` and its checks; Macro and Meso compile coarse Nodes and Link-less Roads. **Implemented (D310)** | RD4, RD16, RD19, RD20 (Macro, Meso) |
+| S3.6b | The coarse-values dialog, refine and derive back, lifecycle; detail as the interior and Link legs compiled (D311). **Implemented (D311)** | RD17, RD18, RD27, RD28 |
+| S3.7 | Seam checks, with RD20's Micro half (D310). **Implemented (D312)**; S3 is complete | RD20 (Micro), RD21, RD22, RD29 |
 
 ## 13. Acceptance rows (planned)
 
@@ -333,64 +348,16 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD20 | Roads without Links | A Road network without generated Links compiles in Macro and Meso with one link per direction split at Nodes; Micro reports `SEAM_ROAD_NOT_GENERATED` and refuses its routes |
 | RD21 | Lane-count seam | A 3-lane Link into a 2-lane leg gives `SEAM_LANE_COUNT`; *use Link* and *use Node* each fix it in one Undo step |
 | RD22 | Speed seam | A 100 → 60 km/h jump warns at every level and refuses none |
+| RD23 | Cross-sections tab (S3.3b) | Add owns the catalog and stores every field in one Undo step; Edit commits; the Road tool can choose the template |
+| RD24 | Road tool (S3.3b) | O chooses the tool and the Roads tab; one point makes nothing; with no template Enter draws a Road without Links; with one, the Road and its two Links are one Undo step, lit on the canvas; Undo and Redo |
+| RD25 | Roads tab (S3.3b) | An override is stored alone; *Apply template* keeps the Link ids and adds the lane; a template a Road names is not deleted |
+| RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Road is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
+| RD27 | Lifecycle (S3.6b) | Deleting a T's stem merges the Node away and joins the two Roads, renaming the overpass; a Node with `coarse`, two templates, or drawn with two legs is kept |
+| RD28 | Coarse dialog (S3.6b) | *Coarse values…* is disabled on a Node with detail; on one without, it stores a signalised stage in one step, and back to defaults stores none |
+| RD29 | Detached and continuation seams (S3.7) | A Road that lost a generated Link gives `SEAM_LINK_DETACHED` at every level; two Link-less Roads continuing at 100 → 60 km/h give `SEAM_SPEED_JUMP` |
 
-## 14. S3.2 as implemented (D304)
+## 14–21. As implemented
 
-- **Values** (`src/model/demand/definition.hpp`): `LinkType` and `Vdf` gain `capacityBasis`, where
-  empty means `practical`.
-- **The codec** (`src/project/link_type_codec.*`):
-  - `capacityBasis` is optional on both, written only when set;
-  - a value other than `practical` or `ultimate` is `INVALID_LINK_TYPE` or `INVALID_VDF` at
-    `.capacityBasis`;
-  - an owned type with a basis makes the file schema 53 (`usesCapacityBasis`); below 53 the key is
-    `EDIT_UNSUPPORTED_FIELD` (`rejectCapacityBasisBefore53`).
-- **Macro** (`compileMacroNetwork`): a Link whose type and VDF have different bases is
-  `MACRO_CAPACITY_BASIS_MISMATCH` at its `linkType`. Meso reads any basis.
-- **Data:**
-  - `data/vdf/bpr.json` is `practical`;
-  - `data/link-types/` holds `freeway-55` … `freeway-75` and `multilane-45` … `multilane-70`, each
-    with:
-    - the capacity of Exhibit 12-4;
-    - FFS × 0.44704 m/s;
-    - `jamDensity` 118.0605 pc/km/ln (190 pc/mi/ln, Exhibit 10-7);
-    - `vdfId` `bpr` and basis `ultimate`;
-    - a source naming its exhibits and pages.
-
-  Macro therefore refuses them until an `ultimate` VDF is cited, as chosen (6b).
-- **The editor** (`src/shell/editor_link_types.cpp`): the Link types tab gains a Capacity basis
-  column. A project with no owned types lists the eleven HCM types read-only. The dialog keeps a
-  type's basis, and a new type has none.
-- **Rows:** RD1's capacity-basis part, RD2 and RD3, in `tests/road_catalog_tests.cpp` (ctest
-  `roadcatalog`).
-- **Amendment (D304):** `rank` moved to S3.6. Its reader is the coarse Node, and NODES §5 stores no
-  field before its reader.
-
-## 15. S3.3 as implemented (D305)
-
-- **Model:**
-  - `Road` and `RoadOverrides` in `src/model/network/network.hpp`, held in `Network::roads`;
-  - `Link::roadId`;
-  - `CrossSection` in `src/model/demand/definition.hpp`, kept in `definition.crossSections` under
-    the presence rule. The installed directory is `data/cross-sections/`, which is absent: none
-    ships.
-- **The codec** (`src/project/road_codec.*`):
-  - `network.roads`, Link `roadId` and owned templates, each written only when used. Any of them
-    makes the file schema 53; below 53 each key is `EDIT_UNSUPPORTED_FIELD` at its path;
-  - a bad Road shape is `EDIT_ROAD_INVALID`, and a bad template value is `INVALID_CROSS_SECTION`;
-  - an owned template that does not exist is `ROAD_CROSS_SECTION_UNKNOWN`, checked on commit.
-- **Validation** (`roadIssues`, `src/model/network/roads.*`): ids, `ROAD_GEOMETRY_INVALID`, and
-  `ROAD_LINK_MISMATCH` both ways (a Road's `links` against each Link's `roadId`).
-- **Commands** (`src/commands/road_commands.*`), each one Undo step:
-  - `putRoad`, `deleteRoad` (its Links stay, detached), `putCrossSection` and `deleteCrossSection`;
-  - `applyTemplate`:
-    - Links centred at median/2 + width/2 on each side, the backward one reversed, with
-      `laneOffset` 0;
-    - a re-apply keeps Link and lane ids, through `changeLanes`, and reanchors Connectors;
-    - refusals: `EDIT_ROAD_NO_TEMPLATE`, `ROAD_CROSS_SECTION_UNKNOWN`, `EDIT_ROAD_DIRECTIONS` and
-      `EDIT_REFERENCED_LANE`.
-- **Detaching** (`detail::detachFromRoad`):
-  - `changeGeometry`, `changeLanes`, `resizeLinkLanes`, `reverseLink`, `splitLink`,
-    `translateObjects` and `rotateObjects` detach a generated Link;
-  - `deleteLink` drops it from its Road, and a duplicated Link carries no `roadId`.
-- **Rows:** RD1's Road part and RD5–RD9, in `tests/road_tests.cpp` (ctest `roads`).
-- **Not yet:** the editor (S3.3b). Roads are authored by command only.
+What each slice built (S3.2 to S3.7: files, functions, rows, mutations) is in
+[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md), with this file's section numbers, so "ROADS §16" still
+names a section there.

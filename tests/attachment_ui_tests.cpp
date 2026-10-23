@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
 #include <QAction>
@@ -58,6 +59,7 @@ void attached(const ProjectDocument& d) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>1,"Data required");QTemporaryDir dir;
         EditorWindow w{std::filesystem::path(argv[1])};w.resize(1600,1000);w.show();QTest::qWait(30);

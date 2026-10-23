@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
@@ -207,6 +208,7 @@ void runKeys(const std::filesystem::path& data) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>1,"Data directory required");
         canvasWorkflow();

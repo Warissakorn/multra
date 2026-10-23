@@ -5,131 +5,171 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
+## 2026-10-23 — UI suites isolate their recovery drafts (D320)
 
-The owner asked for three canvas changes.
-- **Pointers:** no tool shows the crosshair. Select is the arrow; every other tool shows the arrow
-  with its toolbar glyph on a small badge, as a move shows the hand.
-- **Multi-click tools** (Zone, Node, Queue counter, Section, the two-click Connector): only the first
-  point needs Ctrl+right-click; later points take a plain left click. Ctrl+right-click still works,
-  and with no draft a left click still only selects (amends D84).
-- **Previews are never dashed:** a solid accent line on a translucent casing, and the edges still to
-  come (a Zone's closing edge, the edge to the pointer) fainter. Dashes that mean something in saved
-  work stay.
-- **Rows:** E1-1 to E1-4 in `zone-ui`, `node-ui`, `section-ui`, `queue-counter-ui` and
-  `editor-attachments`; four mutations caught.
+- **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
+  run of that suite then waited at the startup recovery dialog until ctest's 60 s timeout.
+  Eleven suites had no Qt test mode, so they wrote drafts into the user's own data folder.
+- **The fix:** all 51 `EditorWindow` suites call `useTestStorage()`. It enables test mode and
+  removes drafts whose lock nobody holds, keeping a running instance's draft.
+- **Rows:** `test-storage-ui` fails without the cleanup, and fails at the window (not a hang)
+  without the file checks.
+- **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
+  219/219; the eleven suites wrote nothing to the user's folder.
 
-## 2026-10-22 — S3.3: Roads, templates and *Apply template* (D305)
+## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
 
-- **A Road** is a centreline with a cross-section template. *Apply template* generates one Link per
-  direction, at median/2 + width/2 on its driving side, the backward one reversed.
-  - A re-apply keeps the Link and lane ids and reanchors Connectors.
-  - Dropping a direction is refused.
-- **Detaching:** a generated Link edited by hand leaves its Road.
-- **Templates** are owned or installed (none ships, B12). Roads, `roadId` and owned templates make a
-  file schema 53.
-- **Rows:** RD1's Road part and RD5–RD9 (`roads`).
-- **Amended:** the editor surface is S3.3b; `shoulder` waits for a reader.
+- **Measured first** (Linux; `.optimize/` ledger, not committed):
+  - UX: a `QDialog::exec` shim over the 61 UI suites, in English and Thai;
+  - engine: Release `multra-cli`, seeds 42–51, and callgrind;
+  - build: Debug rebuilds after touching one file;
+  - docs: the words a session reads before it starts.
+- **Done:**
+  - the seam dialog's *Use Node* button lost 8 px to the table's item padding; the column gets
+    it back, the only clipped control measured;
+  - NEXT cut to open items (1113 → 469 words);
+  - D319 records the accepted rules.
+- **Found on the way, fixed:** D318's behaviour editor corrupted the heap. Qt 6.4.2's
+  `QFormLayout::setRowVisible` on a shown dialog writes out of bounds (valgrind); the forms now
+  stay still while their rows change. A crashed local UI run leaves a recovery file that makes the
+  next run wait at its dialog.
+- **Not done:**
+  - caching lateral bands (+10–28 % wall switched on, no shipped keys);
+  - a shared `multra_shell`;
+  - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
+    declarations moved. The owner deferred it to the next engine slice that edits the runtime
+    state (NEXT).
 
-## 2026-10-22 — S3.2: HCM link types and the capacity basis (D304)
+## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
 
-The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalog came first.
-- **`data/link-types/`** ships eleven HCM 7 types:
-  - freeway at FFS 55–75 mi/h and multilane at 45–70 mi/h, with Exhibit 12-4's capacities;
-  - jam density 190 pc/mi/ln (Exhibit 10-7).
-- **`capacityBasis`** (`practical` or `ultimate`) on link types and VDFs. `bpr` is practical and
-  HCM's types are ultimate, so Macro refuses the pair (`MACRO_CAPACITY_BASIS_MISMATCH`) while Meso
-  runs them. An owned type with a basis is schema 53.
-- **The Link types tab** shows the basis.
-- **Rows:** RD1 (basis), RD2 and RD3 (`roadcatalog`).
-- **Amended:** `rank` moves to S3.6, where its reader lands.
+- **The owner's report:** the behaviour editor was taller than the screen; not every key showed
+  and Confirm was off screen. Measured, it needed at least 1378 px.
+- **The editor now has three parts:**
+  - a header with users, id, name and model;
+  - four tabs that each scroll: *Car following*, *Lane changes*, *Perception and drivers*, and
+    *Junctions, signals and speed*;
+  - a footer with the error and the buttons.
 
-## 2026-10-22 — S3.1: the Roads contract (D303, docs only)
+  The other model's rows are hidden. Prototype opens at 579 px at 1366×768.
+- **Other dialogs:** the UI suites, measured through a scratch `QDialog::exec` shim, gave vehicle
+  type 696 px minimum, input 500, decision 452, and coarse Node values (one row per leg). These now
+  share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
+- **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
+  decision rows are growth guards.
 
-The owner chose S3 next, with values from HCM 7. [ROADS](reference/ROADS.md) fixes the following:
-- **The Road:** a centreline with a template, whose generated Links stay ordinary Links with
-  `roadId`, so Micro is unchanged.
-- **Editing:** *Apply template*, detaching, *Join opposite Links* and *Assign template*.
-- **Nodes:** *Find crossings* with junction or overpass, and *Merge nodes*.
-- **S0.4:** coarse Node values that Meso and Macro read.
-- **Seam checks** by level.
-- **HCM values**, read in the owner's copy: freeway and multilane capacities (Exhibits 12-4, 12-6),
-  saturation flow (19-11) and jam density 190 pc/mi/ln (10-7). BPR pairs with practical capacity,
-  so a capacity basis is proposed: HCM types shipped as `ultimate`, which Macro refuses with BPR.
-- Seven owner choices (B24) and rows RD1–RD22. Nothing is built yet.
+## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
 
-## 2026-10-22 — M11.6a: the Meso benchmark option sheet (D302, docs only)
+- **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.
+- **Switched on** (keys 0.5/1.0/1, four projects, seeds 42–51), a per-tick check found:
+  - no 2D overlap, lateral rate within the cap, no position jump, no backward motion;
+  - every lane change lateral, typically 3.5 s.
+- **m2.6-study-template regresses:**
+  - a changer past its window waits on the lane line at its dead end and jams both lanes
+    (seed 45);
+  - one waiting straddler is clamped repeatedly (seed 42); clamps go from 1 to 33.
+- **The lab:** two changers swapping lanes lock side by side for about 50 s.
+- LANE_CHANGE_DURATION §9's reopen conditions are met. The record is in
+  [lateral-run-audit](evidence/lateral-run-audit.md), and the item is in NEXT.
 
-The owner chose to list published options before choosing a Meso benchmark, by the M6.0 rules: no
-engine numbers and no tolerance.
-- **[meso-benchmark-options](evidence/meso-benchmark-options.md)** has two kinds: M1, a corridor
-  queue and its shockwave; and M2, network spill-back. Each has four options.
-- **Disclosed:** Yperman's Example 4.5 and §7.1, and Tampère's Table 8, are not blind. They already
-  have engine numbers, and our formulas came from them.
-- **Recommended:** Boyles et al. (2025) for both kinds, which is open access but unreachable from
-  this environment, with Daganzo (1994, 1995) secondary. The owner answers OWNER_SITTING B23.
+## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
 
-## 2026-10-22 — M11.4b: a turn's free-flow time in Meso (D301)
+- **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result
+  points at:
+  - a Node with a leg at v/c 1.0 or more (Macro);
+  - a Node with a leg that spills back in any slice (Meso).
 
-The turn free time that the compile recorded was not loaded, so a Node's interior took no time.
-Yperman's nodes have no length, so the owner chose a design of ours:
-- **The lag:** the node model decides at t as before; a vehicle enters the out-link τ later.
-- **Storage:** until then it counts against the out-link's storage (the receiving volume reads the
-  admitted count), so spill-back holds. No step limit or turn capacity is added; τ = 0 is unchanged.
-- **Outputs:** turn rows carry `freeTime`; VHT includes node time with delay unchanged;
-  `inNodesAtEnd` is new.
-- **Rows:** ME28 (`mesoloading`) and ME10 extended. Four mutations are caught.
+  Selecting a row selects the Node. An edit makes the result stale, and the list empties.
+- **A junction without a Node** is listed by its end, for example `link-1@50`, and its row points
+  at *Suggest nodes*. A hot end at the network's edge gives no row: there is nothing to refine.
+- **Rows:** RS9, RS10 (`nodeproposals`), with the editor part in `macro-ui`; four mutations caught.
 
-## 2026-10-22 — M11.4: Meso outputs, `--meso` and Run Meso (D300)
+## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
 
-The owner chose the whole Micro run as Meso's horizon, with the same demand, so the CLI is `--meso`.
-- **`runMeso`** feeds JSON and CSV outputs by slice, in PCU: link flows, density, travel time from the
-  curves, queue and spill-back; turn transfers; VKT, VHT and delay; and vehicles per class.
-- **The editor** has Run Meso and Cancel, the Meso links tab with the marker and a stale notice, and
-  Export.
-- **Rows:** ME10 (`mesooutput`), ME11 (`meso-ui`), and `cli-meso*`. Five mutations are caught.
-- **Docs:** the as-implemented sections moved to MESO_NETWORK_IMPLEMENTED for the 500-line cap.
-- **Known gap:** turn free-flow times are not loaded yet.
+- **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network
+  cases, Daganzo 1994/1995 as second choices, and not-blind cases as verification only. The next
+  step is the owner's copy of Boyles et al.
+- **Fill defaults…** (Problems tab) lists the absent values the project can already cite, none
+  ticked:
+  - a generated Link's type from its Road's template;
+  - HCM 7's jam density on a project-owned type, only where it is valid for that type;
+  - a Link-less Road's Links from its template.
 
-## 2026-10-22 — M11.3d: signals in Meso as averaged green (D299)
+  Each row shows its value, source and what it clears. The ticked ones apply in one Undo step, and
+  the panel checks again.
+- **Rows:** RS5–RS8 (`filldefaults`), with the editor part in `road-ui`; four mutations caught.
 
-The owner chose averaged green (4b) over explicit green, which under FIFO would hold a whole approach
-on any red turn.
-- **Turns** take the program their heads show and its g/C. g is the displayed green, by HCM Eq. 19-1
-  with its default lost times.
-- **The node model** takes Tampère §5.2's internal supplies, with Yperman's shared-lane split. Under
-  CTF they act as an effective capacity per in-link. A literal per-movement reading broke `q_j ≤ R_j`
-  on generated cases and was replaced.
-- **Rows:** ME7, ME26 and ME27. Five mutations are caught. `MESO_SIGNAL_IGNORED` is retired;
-  `MESO_SIGNAL_AMBIGUOUS` is new.
+## 2026-10-23 — S4.1–S4.2: the readiness contract and the panel by level (D313, D314)
 
-## 2026-10-22 — M11.3c: Yperman's link model and the loading engine (D298)
+The owner chose all four S4 options as recommended: the Problems tab with a level selector, cited
+fills F1–F3 (a coarse Node's Micro detail later), proposals from v/c ≥ 1.0 and spill-back, and the
+order panel → fills → proposals ([READINESS](reference/READINESS.md)).
+- **The Problems tab** now checks Micro, Meso or Macro (with its period). Each level lists the
+  refusals of the functions its run calls, in the run's order, then advisories and seam rows. A
+  study sees everything missing at once instead of one refusal per run.
+- **An edit after a check** leaves a note to check again, instead of an empty list that read as
+  "no problems".
+- **Rows:** RS1–RS3 (`readiness`), RS4 in `tables-ui`; the panel's refusals are checked against the
+  runs themselves. Four mutations caught.
 
-The owner supplied Yperman's thesis as a Markdown repository, and its chapters 3–5 and §7.1 were read.
-- **Confirmed:** §4's sending and receiving volumes, the storage, the origin queue and the
-  destination. The thesis prints only `L/v` as the step limit; `L/w` is added, derived.
-- **Owner choices:**
-  - turn splits follow the vehicles' routes (Eq. 5.2), replacing shares at time t;
-  - signals move to M11.3d, because explicit green under FIFO holds the whole in-link. Signalised
-    Nodes are advised `MESO_SIGNAL_IGNORED`.
-- **`loadMeso`** joins the link model and `mesoNodeFlows` per step, with spill-back and the
-  boundary volumes.
-- **Against the thesis:** Example 4.5 is exact. §7.1's diverge network gives `k_B` = 166.67 veh/km,
-  r2m clear at 44 min (thesis 46) and r1n queued 26.25–82.75 min (thesis 28–82).
-- **Rows:** ME3–ME6, ME8, ME9 and ME24–ME26 in `mesoloading`. Six mutations are caught.
+## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
 
-## 2026-10-22 — M11.3's node model from Tampère et al. (2011) (D297)
+- **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:
+  - a Road without Links, which Micro leaves out (Micro only);
+  - a generated Link whose lanes differ from its Road's, fixed in one step by *Use Link* (the Road
+    follows) or *Use Node* (the template is applied again);
+  - a free-speed jump above 20 km/h between consecutive Links, adjustable in the dialog, with turns
+    inside junctions skipped;
+  - a Road that lost a generated Link.
 
-The owner uploaded the paper, and it was read in full.
-- **`mesoNodeFlows`** is its §5.1 instance and algorithm: oriented capacity proportional, exact,
-  and unique. It reproduces the paper's Table 8.
-- **Changed from the contract:** the paper has no instance of conflict constraints (its Eq. 17 is
-  provisional). By the owner's choice, priority inside a Node is advised `MESO_PRIORITY_IGNORED`
-  instead of guessed.
-- **Signals** are explicit green, as the paper's §5.2 allows.
-- **Rows:** ME20–ME23 in `mesonode`. Three mutations are caught; two had no effect, and both are
-  explained.
-- **Still blocked:** the link model needs Yperman (B22).
+  Nothing is refused or changed unless a fix is chosen.
+- **Rows:** RD20's Micro half, RD21, RD22 and RD29 (`roadseams`), with RD21's editor part in
+  `road-ui`; five mutations caught.
+- **S3 (Roads) is complete:** S3.2–S3.7, D304–D312.
+
+## 2026-10-23 — S3.6b: coarse values dialog, refine, derive back, lifecycle (D311)
+
+- **Detail is the junction's interior** (D311, revising D310): a Connector inside the Node, or a
+  Link wholly inside. Links that only reach in are legs, and Macro and Meso now compile them as the
+  arms of a Node without detail.
+- **Refine and derive back** happen inside whatever Command causes them. Drawing detail into a
+  coarse Node drops its values. Deleting a Node's last detail derives them: signalised from the
+  heads, stages from the signal groups' greens, banned turns from missing movements, and major legs
+  from who yields.
+- **Lifecycle:** when a Command leaves a Node with two Link-less Roads of one template meeting end
+  to start, and nothing authored on the Node, the Node is removed and the Roads joined.
+- **Editor:** *Coarse values…* on the Nodes tab, for a Node without detail.
+- **Rows:** RD17, RD18, RD27 (`roadcoarse`) and RD28 (`road-ui`); RD19 gains a junction over
+  generated Links; five mutations caught.
+
+## 2026-10-23 — S3.6a: link-type rank, coarse Nodes, Macro and Meso from Roads (D310)
+
+S3.6 is split: this half ships the fields with the compile that reads them; the coarse dialog,
+refine, derive back and the lifecycle are S3.6b.
+- **`rank`** on link types (schema 53, a Rank field in the Link-type dialog): the legs with the
+  highest rank are major; an unranked leg or a tie leaves priority undetermined, which Macro and
+  Meso advise.
+- **`coarse`** on a Node without detail (schema 53): control, major legs, banned turns and a stage
+  signal, refused on a Node with detail, with unknown legs or with a bad signal.
+- **Macro and Meso** compile Roads without generated Links, one link per template direction,
+  split at Nodes without detail. Such a Node, coarse or default, gives every turn between
+  different Roads minus the banned ones, with the stages' g/C when signalised. Road ends within
+  2 m join.
+- **Rows:** RD4, RD16, RD19 and RD20's Macro and Meso half (`roadcoarse`), and the rank field in
+  `macro-ui`; four mutations caught. RD20's Micro half moves to S3.7.
+
+## 2026-10-22 — S3.5: Find crossings, overpasses and Merge nodes (D309)
+
+- **Find crossings** (Roads tab) lists every place where Roads on one level cross, or one ends within
+  the snap tolerance (2 m, adjustable) of another. Places with three legs or more are listed,
+  skipping places a Node already covers. Each row is confirmed as a Junction or an Overpass, all in
+  one Undo step.
+- **Junction:** the Roads and their Links are split there (routes follow), and a generated round
+  Node is added, sized from the Roads' width there plus the widest lane.
+- **Overpass:** the pair is stored (`network.overpasses`, schema 53) and not offered again, even
+  after one of the Roads is split elsewhere.
+- **Merge nodes** (Nodes tab) replaces the selected Nodes with their hull, refused when a Node with
+  valid detail would gain an issue.
+- **Rows:** RD12–RD15 (`roadcrossings`), with their editor part in `road-ui`; four mutations caught.
 
 ## Older entries
 

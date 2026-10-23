@@ -22,11 +22,16 @@ namespace multra {
 // Advised (D297): MESO_PRIORITY_IGNORED at `network.nodes[i]` for a valid Node with conflicts, since the
 // node model has no node supply constraints for them yet; (D299) MESO_SIGNAL_AMBIGUOUS there for a
 // valid Node with a turn whose heads show two programs, which then stays unsignalised.
+// S3.6a (ROADS §9, D310): a Node without detail is not refused; it and the Link-less Roads compile as
+// compileRoads says (coarse_compile.hpp), after every Link: one MesoLink per piece (`source` = the
+// Road id), one node per join and per free piece end, and the joins' turns. Its refusals and
+// advisories are added to these.
 // Signals (D299): each Node turn takes the one program its heads show and its g/C from `greenShares`
 // (program id, as headProgramId, to effective green over cycle; mesoGreenShares fills it).
 struct MesoCompile { MesoGraph graph; std::vector<ValidationIssue> issues, advisories; };
 MesoCompile compileMesoNetwork(const Network&, const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
-                               const MesoSettings&, const std::map<std::string, double>& greenShares = {});
+                               const MesoSettings&, const std::map<std::string, double>& greenShares = {},
+                               const std::vector<CrossSection>& crossSections = {});
 // Effective green over cycle per signal program id (D299): a controller group's displayed green G,
 // wrapped past the cycle's end, over its cycle (HCM 7th ed. Eq. 19-1 with its defaults l1 = e = 2 s
 // gives g = G); a legacy program's green phases over its whole duration.

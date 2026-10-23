@@ -1,4 +1,5 @@
 #include "macro_compile.hpp"
+#include "coarse_compile.hpp"
 #include <algorithm>
 #include <map>
 
@@ -14,7 +15,7 @@ double clampStation(double s, double length) { return std::clamp(s, 0.0, length)
 }
 MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneConnector>& zoneConnectors,
                                  const std::vector<LinkType>& types, const std::vector<std::string>& typePaths,
-                                 const std::vector<Vdf>& vdfs) {
+                                 const std::vector<Vdf>& vdfs, const std::vector<CrossSection>& crossSections) {
     MacroCompile out;
     auto& g = out.graph;
     std::map<std::string, std::size_t> index; // Link id -> its index in the document, for paths
@@ -30,6 +31,11 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
         if (stations.contains(c.from.linkId)) stations[c.from.linkId].push_back(fromStation(c));
         if (stations.contains(c.to.linkId)) stations[c.to.linkId].push_back(toStation(c));
     }
+    // S3.6a/D311 (ROADS §9): Link-less Roads, Nodes without detail and their Link legs' stations.
+    auto roads = compileRoads(network, crossSections, types);
+    for (const auto& join : roads.joins)
+        for (const auto* arms : {&join.ins, &join.outs})
+            for (const auto& arm : *arms) if (!arm.piece && stations.contains(arm.linkId)) stations[arm.linkId].push_back(clampStation(arm.station, lengths[arm.linkId]));
     std::map<std::pair<std::string, double>, std::size_t> node;
     for (auto& [id, list] : stations) {
         std::sort(list.begin(), list.end());
@@ -52,7 +58,11 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
         const auto basis = [](const std::string& b) { return b.empty() ? std::string("practical") : b; };
         if (type && vdf && basis(type->capacityBasis) != basis(vdf->capacityBasis)) out.issues.push_back({"MACRO_CAPACITY_BASIS_MISMATCH", path});
         const auto& list = stations[l->id];
+        const auto dropped = roads.dropped.find(l->id);
         for (std::size_t k = 0; k + 1 < list.size(); ++k) {
+            const double mid = (list[k] + list[k + 1]) / 2;
+            if (dropped != roads.dropped.end() && std::any_of(dropped->second.begin(), dropped->second.end(), [&](const auto& r) { return mid > r.first && mid < r.second; }))
+                continue; // inside a Node without detail
             MacroLink m;
             m.kind = MacroArc::link; m.source = l->id; m.linkType = l->linkTypeId.value_or(""); m.fromStation = list[k]; m.toStation = list[k + 1];
             m.from = node[{l->id, list[k]}]; m.to = node[{l->id, list[k + 1]}];
@@ -64,9 +74,45 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
             g.links.push_back(std::move(m));
         }
     }
+    // S3.6a (ROADS §9, D310): Link-less Roads' pieces after every Link's. Each piece end is its own
+    // node, so a turn is the only way from one piece to another and a U-turn is never offered.
+    out.issues.insert(out.issues.end(), roads.issues.begin(), roads.issues.end());
+    out.advisories = std::move(roads.advisories);
+    std::vector<std::size_t> pieceFrom, pieceTo;
+    const auto basis = [](const std::string& b) { return b.empty() ? std::string("practical") : b; };
+    for (const auto& p : roads.pieces) {
+        const auto side = p.roadId + (p.forward ? ":forward@" : ":backward@");
+        pieceFrom.push_back(g.nodes.size()); g.nodes.push_back(side + std::to_string(p.from));
+        pieceTo.push_back(g.nodes.size()); g.nodes.push_back(side + std::to_string(p.to));
+        MacroLink m;
+        m.kind = MacroArc::link; m.source = p.roadId; m.linkType = p.linkType; m.fromStation = p.from; m.toStation = p.to;
+        m.from = pieceFrom.back(); m.to = pieceTo.back(); m.length = p.length; m.lanes = p.lanes;
+        if (p.type) {
+            m.capacity = m.lanes * p.type->capacityPerLane; m.freeTime = m.length / p.type->freeSpeed; m.modes = p.type->modes;
+            const auto v = std::find_if(vdfs.begin(), vdfs.end(), [&](const auto& x) { return x.id == p.type->vdfId; });
+            if (v != vdfs.end()) {
+                m.alpha = v->alpha; m.beta = v->beta;
+                const auto at = "network.roads[" + std::to_string(p.road) + "].crossSectionId";
+                if (basis(p.type->capacityBasis) != basis(v->capacityBasis) &&
+                    std::none_of(out.issues.begin(), out.issues.end(), [&](const auto& i) { return i.path == at; }))
+                    out.issues.push_back({"MACRO_CAPACITY_BASIS_MISMATCH", at});
+            }
+        }
+        g.links.push_back(std::move(m));
+    }
+    for (const auto& join : roads.joins)
+        for (const auto& t : join.turns) {
+            const auto& in = join.ins[t.in]; const auto& to = join.outs[t.out];
+            MacroLink m;
+            m.kind = MacroArc::connector; m.source = join.node ? network.nodes[*join.node].id : join.name;
+            m.from = in.piece ? pieceTo[*in.piece] : node[{in.linkId, clampStation(in.station, lengths[in.linkId])}];
+            m.to = to.piece ? pieceFrom[*to.piece] : node[{to.linkId, clampStation(to.station, lengths[to.linkId])}];
+            g.links.push_back(std::move(m));
+        }
     for (std::size_t k = 0; k < types.size(); ++k)
         if (std::none_of(vdfs.begin(), vdfs.end(), [&](const auto& v) { return v.id == types[k].vdfId; }) &&
-            std::any_of(network.links.begin(), network.links.end(), [&](const auto& l) { return l.linkTypeId == types[k].id; }))
+            (std::any_of(network.links.begin(), network.links.end(), [&](const auto& l) { return l.linkTypeId == types[k].id; }) ||
+             std::any_of(roads.pieces.begin(), roads.pieces.end(), [&](const auto& p) { return p.type == &types[k]; })))
             out.issues.push_back({"MACRO_VDF_UNKNOWN", (k < typePaths.size() ? typePaths[k] : types[k].id) + ".vdfId"});
     // Connector arcs, by Connector id; a Connector to an unknown Link is the document check's.
     for (const auto* c : byId(network.connectors)) {

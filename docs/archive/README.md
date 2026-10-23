@@ -9,6 +9,7 @@ the whole directory.
 
 | File | What it holds |
 |---|---|
+| [`NEXT-state-2026-10-23.md`](NEXT-state-2026-10-23.md) | The whole of NEXT before it was cut to open items again (2026-10-23, D319): M11 through M11.4b, S3 and S4 complete |
 | [`NEXT-state-2026-10-20.md`](NEXT-state-2026-10-20.md) | NEXT's "State on 2026-10-19" list (D199–D270), moved whole when NEXT was cut to its open state (D280) |
 
 ## PROGRESS log
@@ -19,7 +20,8 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-10-19.md`](PROGRESS-LOG-2026-10-19.md) | D262–D296 | 31 |
+| [`PROGRESS-LOG-2026-10-22.md`](PROGRESS-LOG-2026-10-22.md) | D299–D308 | 9 |
+| [`PROGRESS-LOG-2026-10-19.md`](PROGRESS-LOG-2026-10-19.md) | D262–D298 | 33 |
 | [`PROGRESS-LOG-2026-10-17.md`](PROGRESS-LOG-2026-10-17.md) | D218–D261 | 33 |
 | [`PROGRESS-LOG-2026-10-16.md`](PROGRESS-LOG-2026-10-16.md) | D192–D197, D199–D217 | 25 |
 | [`PROGRESS-LOG-2026-10-15.md`](PROGRESS-LOG-2026-10-15.md) | D175–D189 | 18 |

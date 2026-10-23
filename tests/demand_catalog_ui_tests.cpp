@@ -1,9 +1,11 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/project/demand_preview.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
+#include "dialog_fit_support.hpp"
 #include <QAction>
 #include <QCheckBox>
 #include <QSpinBox>
@@ -35,6 +37,7 @@ void confirm(QDialog& d){item<QDialogButtonBox>(d,"")->button(QDialogButtonBox::
 void editCar(QDialog& parent,double acceleration){
     select(*item<QTableWidget>(parent,"editorCatalogTypes"),"car");
     modal([&]{item<QPushButton>(parent,"editorCatalogTypescatalogEdit")->click();},[&](QDialog& child){
+        requireFitsScreen(child);
         item<QLineEdit>(child,"editorCatalogTypeName")->setText("Owned car");
         item<QDoubleSpinBox>(child,"catalogAcceleration")->setValue(acceleration);confirm(child);
     });
@@ -50,7 +53,7 @@ void editMix(QDialog& parent,bool zero=false){
 }
 }
 int main(int argc,char** argv){
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try{
         require(argc>1,"Expected data directory");QTemporaryDir temp;require(temp.isValid(),"Missing temp directory");
         ProjectDocument d;const auto link=addLink(d,{{0,0},{400,0}},2,3.5);const auto route=putRoute(d,{"route",{link}});

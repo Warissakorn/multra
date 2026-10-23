@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/editor/vehicle_shape.hpp"
 #include "../src/editor/canvas_style.hpp"
 #include <nlohmann/json.hpp>
@@ -31,7 +32,7 @@ int markings(EditorCanvas& canvas){int n=0;for(auto* item:canvas.scene()->items(
 void view(EditorCanvas& canvas,const QTransform& transform){canvas.setTransform(transform);canvas.centerOn(0,0);canvas.redraw();settle();}
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         EditorWindow window(data);window.resize(1360,860);window.show();settle();

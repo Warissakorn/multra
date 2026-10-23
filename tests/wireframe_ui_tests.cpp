@@ -1,6 +1,7 @@
 // Wireframe display (Ctrl+A, Vissim's simple link display): Links and Connectors draw, hit and
 // select as their centre line; vehicles keep their lane positions; the project is untouched.
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/model/network/network.hpp"
 #include <QAction>
 #include <QApplication>
@@ -33,7 +34,7 @@ std::vector<Pose> vehicles(EditorCanvas& c) {
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 1, "data path");
         const std::filesystem::path data(argv[1]);

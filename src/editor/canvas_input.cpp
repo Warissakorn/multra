@@ -169,7 +169,7 @@ void EditorCanvas::mouseMoveEvent(QMouseEvent* e) {
     }
     if(headDrag_) {updateHeadDrag(e->pos());return;}
     if(lineDrag_) {updateLineDrag(e->pos());return;}
-    if((tool_==Tool::zone || tool_==Tool::node) && !zoneDraft_.empty()) {draftPointer_=world(e->pos(),false);redraw();}
+    if(polygonTool() && !zoneDraft_.empty()) {draftPointer_=world(e->pos(),false);redraw();}
     if(demandHover(e))return;
     if(headHover(e))return;
     if (tool_==Tool::connect && connectorFrom_) {

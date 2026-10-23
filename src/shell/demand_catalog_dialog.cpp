@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "demand_catalog_dialog.hpp"
+#include "dialog_fit.hpp"
 #include "demand_period_editor.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QCheckBox>
@@ -34,7 +35,8 @@ void buttons(QDialog& dialog,QLayout* layout,const CatalogText& text) {
 }
 bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const std::vector<DriverBehaviour>& behaviours,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorCatalogTypeDialog");dialog.setWindowTitle(text("editorCatalogType"));
-    auto* form=new QFormLayout(&dialog);form->addRow(text("editorColumnId"),new ReflowLabel(QString::fromStdString(type.id),&dialog));
+    auto* form=new QFormLayout(scrollingBody(dialog));form->setContentsMargins(0,0,0,0); // the buttons stay on screen
+    form->addRow(text("editorColumnId"),new ReflowLabel(QString::fromStdString(type.id),&dialog));
     auto* label=new QLineEdit(QString::fromStdString(name),&dialog);label->setObjectName("editorCatalogTypeName");form->addRow(text("editorColumnName"),label);
     struct Field{const char* key;double* destination;QDoubleSpinBox* spin;};
     std::vector<Field> fields;
@@ -95,7 +97,7 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
         for(QWidget* w:std::initializer_list<QWidget*>{curve,addRow,removeRow})w->setEnabled(curveOn->isChecked());
     };
     QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);QObject::connect(curveOn,&QCheckBox::toggled,&dialog,sync);
-    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);QObject::connect(pcuOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,form,text);
+    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);QObject::connect(pcuOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,dialog.layout(),text);
     if(dialog.exec()!=QDialog::Accepted)return false;
     for(const auto& f:fields)*f.destination=value(f.spin);
     staged.desiredSpeed.curve.clear();

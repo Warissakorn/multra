@@ -2,12 +2,14 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <stdexcept>
+#include <utility>
 
 namespace multra {
 std::vector<ValidationIssue> roadIssues(const Network& n) {
     std::vector<ValidationIssue> issues;
     const bool linked = std::any_of(n.links.begin(), n.links.end(), [](const auto& l) { return l.roadId.has_value(); });
-    if (n.roads.empty() && !linked) return issues;
+    if (n.roads.empty() && !linked && n.overpasses.empty()) return issues;
     const auto add = [&](const char* code, const std::string& path) { issues.push_back({code, path}); };
     std::set<std::string> ids{n.id};
     for (const auto& l : n.links) { ids.insert(l.id); for (const auto& lane : l.lanes) ids.insert(lane.id); }
@@ -43,6 +45,45 @@ std::vector<ValidationIssue> roadIssues(const Network& n) {
         if (r == n.roads.end() || std::find(r->links.begin(), r->links.end(), l.id) == r->links.end())
             add("ROAD_LINK_MISMATCH", "links[" + std::to_string(i) + "].roadId");
     }
+    // S3.5 (D309): an overpass names two different Roads.
+    const auto road = [&](const std::string& id) { return std::any_of(n.roads.begin(), n.roads.end(), [&](const auto& r) { return r.id == id; }); };
+    for (std::size_t i = 0; i < n.overpasses.size(); ++i) {
+        const auto& [a, b] = n.overpasses[i];
+        if (a == b || !road(a) || !road(b)) add("ROAD_OVERPASS_UNKNOWN", "overpasses[" + std::to_string(i) + "]");
+    }
     return issues;
+}
+namespace {
+// The closest point of `line` to `p`, and its station along `line`.
+std::pair<Point, double> closest(const std::vector<Point>& line, Point p) {
+    const double station = stationOfClosestPoint(line, p);
+    return {pointAlong(line, station), station};
+}
+}
+std::vector<Point> meanCentreline(const std::vector<Point>& forward, const std::vector<Point>& backward) {
+    if (forward.size() < 2 || backward.size() < 2) throw std::invalid_argument("INVALID_GEOMETRY");
+    std::vector<Point> reversed(backward.rbegin(), backward.rend());
+    const auto mid = [](Point a, Point b) { return Point{(a.x + b.x) / 2, (a.y + b.y) / 2}; };
+    std::vector<Point> mean;
+    if (forward.size() == reversed.size()) {
+        for (std::size_t i = 0; i < forward.size(); ++i) mean.push_back(mid(forward[i], reversed[i]));
+    } else {
+        std::vector<std::pair<double, Point>> stations;
+        double along = 0;
+        for (std::size_t i = 0; i < forward.size(); ++i) {
+            if (i) along += std::hypot(forward[i].x - forward[i - 1].x, forward[i].y - forward[i - 1].y);
+            stations.emplace_back(along, mid(forward[i], closest(reversed, forward[i]).first));
+        }
+        for (const auto& q : reversed) {
+            const auto [onForward, station] = closest(forward, q);
+            stations.emplace_back(station, mid(onForward, q));
+        }
+        std::stable_sort(stations.begin(), stations.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+        for (const auto& [station, p] : stations) mean.push_back(p);
+    }
+    std::vector<Point> distinct;
+    for (const auto& p : mean)
+        if (distinct.empty() || std::hypot(p.x - distinct.back().x, p.y - distinct.back().y) > 1e-9) distinct.push_back(p);
+    return distinct;
 }
 }

@@ -2,6 +2,7 @@
 // aggregate, Export its CSV byte for byte and Copy the same as tab-separated values; a cancelled or
 // edited-away batch leaves no table that claims runs it did not finish.
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/project/batch_output.hpp"
 #include "../src/project/csv_format.hpp"
@@ -38,7 +39,7 @@ bool refuses(const std::function<void()>& f) { try { f(); } catch (const std::ex
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc >= 2, "Expected data directory");
         const std::filesystem::path data(argv[1]);
