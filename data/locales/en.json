@@ -1046,6 +1046,8 @@
   "EDIT_ROAD_JOIN_PARALLEL": "The Links are not roughly parallel: their directions differ by more than 15° from opposite, or they lie farther apart than half their widths plus 30 m.",
   "editorFindCrossings": "Find crossings",
   "editorSeamChecks": "Seam checks…",
+  "editorReadinessStale": "Edited since the last check: Recheck to renew this list.",
+  "editorRefusalSeverity": "Refusal",
   "editorSeamLevel": "Level",
   "editorSeamMicro": "Micro",
   "editorSeamMeso": "Meso",

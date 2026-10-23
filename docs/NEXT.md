@@ -50,7 +50,7 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — owner's pick: S4 (readiness panel), M11 follow-ups, or another milestone
+## Next session — S4.3 (*Fill defaults*), or the owner's pick
 
 - **M11 is in through M11.4b** (D291–D302; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
@@ -76,9 +76,12 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
     junction's interior and Link legs compiled (§20).
     S3.7 is in (D312): seam checks on demand, with *Use Link* / *Use Node* (§21). **S3 is complete.**
     Booked: demand on a Road-only network (zone connectors attach to Links only);
-  - **S4, next in the workflow** ([MULTI_LEVEL_WORKFLOW](plans/MULTI_LEVEL_WORKFLOW.md) §10): the
-    readiness panel, *Fill defaults* and Node proposals. It starts with its contract and owner
-    choices, as every S-stage did; the panel runs `seamChecks` with the run's other refusals;
+  - **S4** ([READINESS](reference/READINESS.md)): the owner chose S4-1a–S4-4a (D313). S4.2 is in
+    (D314): the Problems tab checks Micro, Meso or Macro with its period, from the runs' own
+    refusal functions, plus seams. **Next, S4.3:** *Fill defaults* F1–F3 (a Link's type from its
+    Road's template, HCM 7 Exhibit 10-7's jam density on an owned type, *Apply template* for a
+    Link-less Road), each listed with its source and applied only when ticked, in one Undo step
+    (RS5–RS8). Then S4.4, Node proposals (RS9, RS10);
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);

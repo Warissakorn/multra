@@ -1046,6 +1046,8 @@
   "EDIT_ROAD_JOIN_PARALLEL": "Link ทั้งสองไม่ขนานกันพอ: ทิศต่างจากทิศสวนทางเกิน 15° หรืออยู่ห่างกันเกินครึ่งความกว้างรวมบวก 30 m",
   "editorFindCrossings": "หาจุดตัดถนน",
   "editorSeamChecks": "ตรวจรอยต่อ…",
+  "editorReadinessStale": "มีการแก้ไขหลังการตรวจครั้งล่าสุด กดตรวจอีกครั้งเพื่อปรับรายการนี้",
+  "editorRefusalSeverity": "รันไม่ได้",
   "editorSeamLevel": "ระดับ",
   "editorSeamMicro": "Micro",
   "editorSeamMeso": "Meso",

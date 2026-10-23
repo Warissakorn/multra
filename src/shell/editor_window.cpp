@@ -250,7 +250,7 @@ void EditorWindow::showError(const std::exception& e) {
         }
     const auto translated=text(e.what()); error_->setText(translated.isEmpty()?text("editorError")+" "+QString::fromUtf8(e.what()):translated);
     refreshDiagnostics();
-    if (!rejected_.empty()) revealObjectPage(problemTable_);
+    if (!rejected_.empty()) revealObjectPage(objectPages_.at("editorProblemTable"));
 }
 std::string EditorWindow::selectedName() const {
     const auto& network=history_.document().network;const auto& id=canvas_->selected();

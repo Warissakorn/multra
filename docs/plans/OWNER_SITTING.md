@@ -70,6 +70,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    The sheet holds no engine numbers; the tolerance comes after this answer. Which options? *Owner:*
 
 
+Answered 2026-10-23 (in chat, AskUserQuestion): **S4's four choices**, as recommended,
+[D313](../decisions/RECORD.md#d313): S4-1a, S4-2a, S4-3a, S4-4a ([READINESS](../reference/READINESS.md) §8).
+
 Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD.md#d304):
 S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([ROADS](../reference/ROADS.md) §11). Numbers are not reused.
 

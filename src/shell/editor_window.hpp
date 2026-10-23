@@ -1,4 +1,5 @@
 #pragma once
+#include "../project/readiness.hpp"
 #include "../commands/network_commands.hpp"
 #include "../commands/connector_commands.hpp"
 #include "../project/diagnostics.hpp"
@@ -425,6 +426,9 @@ private:
     void buildDiagnostics();
     void refreshTables(bool modelChanged);
     void refreshDiagnostics();
+    void recheck(); // S4.2 (D313): the chosen level's readiness
+    QComboBox *readinessLevel_{}, *readinessPeriod_{};
+    std::vector<ReadinessRow> readiness_; bool readinessChecked_{};
     void retranslateTables();
     void jumpTo(int row);
     void deleteSelected();

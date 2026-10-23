@@ -109,7 +109,7 @@ int main(int argc,char** argv) {
         require(seed->text()=="invalid","Invalid-seed fixture was not set");
         pick(combo,"editorObjectGroupDemand");dock->hide();settle();require(!dock->isVisible(),"Dock hide fixture failed");
         trigger(window,"editorStep");
-        require(groupKey(combo)=="editorObjectGroupProblems"&&tabs->currentWidget()==item<QWidget>(window,"editorProblemTable"),"Failed Run did not reveal Problems");
+        require(groupKey(combo)=="editorObjectGroupProblems"&&tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,"editorProblemTable")),"Failed Run did not reveal Problems");
         require(dock->isVisible(),"Failed Run left the Problems dock hidden");
         seed->setText("42");
         // Focus keeps the group; Reset returns Network/Links. Neither edits the document or run.

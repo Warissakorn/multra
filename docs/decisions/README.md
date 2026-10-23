@@ -348,6 +348,8 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D310](RECORD.md#d310) — S3.6a: link-type `rank` (tie = undetermined), `coarse` on Nodes without detail (checks), Macro and Meso compile coarse Nodes and Link-less Roads (pieces, joins, banned turns, stage g/C); S3.6b and RD20's Micro half booked; rows RD4, RD16, RD19, RD20.
 [D311](RECORD.md#d311) — S3.6b: detail revised to the interior (Connector inside or Link wholly inside; Link legs compiled as arms), refine and derive back in every Command (`settleNodes`), the two-leg lifecycle, the *Coarse values…* dialog; rows RD17, RD18, RD27, RD28.
 [D312](RECORD.md#d312) — S3.7: seam checks on demand by level (road not generated, lane count with Use Link / Use Node, speed jump over 20 km/h outside Nodes, detached Link on the Road); S3 complete; rows RD20 (Micro), RD21, RD22, RD29.
+[D313](RECORD.md#d313) — S4.1: readiness / *Fill defaults* / Node proposals contract, answered S4-1a–S4-4a: the Problems tab by level, cited fills F1–F3 (F4 later), proposals from v/c ≥ 1.0 and spill-back; rows RS1–RS10.
+[D314](RECORD.md#d314) — S4.2: the readiness panel by level in the Problems tab (runs' own refusal functions in order, advisories, seams), stale note after an edit; rows RS1–RS4.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

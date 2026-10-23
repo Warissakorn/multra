@@ -145,7 +145,7 @@ int main(int argc,char** argv) {
         item<QLineEdit>(w,"editorLaneWidths")->setText("-1, 3");action(w,"editorApplyLanes");
         require(documentJson(w.history().document())==before,"Rejected edit changed the document");
         require(!item<QLabel>(w,"editorError")->text().isEmpty(),"Rejected edit gave no message");
-        require(tabs->currentWidget()==problems,"Rejected edit did not open Problems");
+        require(tabs->currentWidget()==problems->parentWidget(),"Rejected edit did not open Problems");
         int problem=-1;
         for (int i=0;i<problems->rowCount();++i)
             if (problems->item(i,2) && problems->item(i,2)->text()==QString::fromStdString(drawn[0].lanes[0].id)) problem=i;
@@ -170,7 +170,7 @@ int main(int argc,char** argv) {
         require(item<QLabel>(w,"editorError")->text().isEmpty(),"Authoring a merge reported an error");
         tool->setCurrentIndex(0);
         action(w,"editorRecheck");
-        require(tabs->currentWidget()==problems,"Recheck did not open Problems");
+        require(tabs->currentWidget()==problems->parentWidget(),"Recheck did not open Problems");
         require(item<QLabel>(w,"editorError")->text().isEmpty(),"Runnability check reported an edit error");
         // Since M2.0.1 (D35) a merge at a lane's start is arbitrated by a derived rule, and a
         // drawing with no demand has none of the numbers that rule needs: the row names the
@@ -186,6 +186,20 @@ int main(int argc,char** argv) {
         c->select(merged[0].id);
         item<QLineEdit>(w,"editorLaneWidths")->setText("3.25, 3.25");action(w,"editorApplyLanes");
         require(w.history().document().network.links[0].lanes[0].width==3.25,"Edit blocked after a runnability finding");
+        // RS4 (S4.2, D313): an edit after the check leaves one stale note; a level is its own check.
+        require(problems->item(0,1)->text().contains("Recheck"),"An edit after the check did not mark the list stale");
+        auto* level=item<QComboBox>(w,"editorReadinessLevel");
+        const auto choose=[&](int index){level->setCurrentIndex(index);emit level->activated(index);QApplication::processEvents();};
+        const auto refusalAt=[&](const QString& path){
+            for (int i=0;i<problems->rowCount();++i)
+                if (problems->item(i,0)&&problems->item(i,0)->text()=="Refusal"&&problems->item(i,3)&&problems->item(i,3)->text().startsWith(path)) return true;
+            return false;
+        };
+        choose(1);
+        require(refusalAt("network.links[")&&!problems->item(0,1)->text().contains("Recheck"),"Meso readiness did not list the untyped Links' refusals");
+        choose(2);
+        require(refusalAt("")&&!item<QComboBox>(w,"editorReadinessPeriod")->isHidden(),"Macro readiness without a period did not refuse");
+        choose(0);
 
         // --- signal heads, and Thai -----------------------------------------------------
         w.openFile(QString::fromUtf8(argv[1])+"/scenarios/crossing.json");
@@ -208,8 +222,8 @@ int main(int argc,char** argv) {
         action(w,"editorUndo");require(w.history().document()==beforeHeadCopy,"Head copy was not one undoable edit");
 
         item<QComboBox>(w,"editorLanguage")->setCurrentIndex(1);
-        for(auto* page:{links,connectors,heads,problems}) require(!tabs->tabText(tabs->indexOf(page)).isEmpty(),"Untranslated object tab");
-        require(tabs->tabText(tabs->indexOf(problems))==QString::fromUtf8("ปัญหา"),"Thai Problems tab missing");
+        for(auto* page:{static_cast<QWidget*>(links),static_cast<QWidget*>(connectors),static_cast<QWidget*>(heads),problems->parentWidget()}) require(!tabs->tabText(tabs->indexOf(page)).isEmpty(),"Untranslated object tab");
+        require(tabs->tabText(tabs->indexOf(problems->parentWidget()))==QString::fromUtf8("ปัญหา"),"Thai Problems tab missing");
         for (int column=0;column<links->columnCount();++column)
             require(!links->horizontalHeaderItem(column)->text().isEmpty(),"Untranslated column header");
         require(links->horizontalHeaderItem(1)->text()==QString::fromUtf8("ชื่อ"),"Thai Name column header missing");

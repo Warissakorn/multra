@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — S4.1–S4.2: the readiness contract and the panel by level (D313, D314)
+
+The owner chose all four S4 options as recommended: the Problems tab with a level selector, cited
+fills F1–F3 (a coarse Node's Micro detail later), proposals from v/c ≥ 1.0 and spill-back, and the
+order panel → fills → proposals ([READINESS](reference/READINESS.md)).
+- **The Problems tab** now checks Micro, Meso or Macro (with its period). Each level lists the
+  refusals of the functions its run calls, in the run's order, then advisories and seam rows. A
+  study sees everything missing at once instead of one refusal per run.
+- **An edit after a check** leaves a note to check again, instead of an empty list that read as
+  "no problems".
+- **Rows:** RS1–RS3 (`readiness`), RS4 in `tables-ui`; the panel's refusals are checked against the
+  runs themselves. Four mutations caught.
+
 ## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
 
 - **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:
@@ -128,20 +141,6 @@ The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalo
 - **The Link types tab** shows the basis.
 - **Rows:** RD1 (basis), RD2 and RD3 (`roadcatalog`).
 - **Amended:** `rank` moves to S3.6, where its reader lands.
-
-## 2026-10-22 — S3.1: the Roads contract (D303, docs only)
-
-The owner chose S3 next, with values from HCM 7. [ROADS](reference/ROADS.md) fixes the following:
-- **The Road:** a centreline with a template, whose generated Links stay ordinary Links with
-  `roadId`, so Micro is unchanged.
-- **Editing:** *Apply template*, detaching, *Join opposite Links* and *Assign template*.
-- **Nodes:** *Find crossings* with junction or overpass, and *Merge nodes*.
-- **S0.4:** coarse Node values that Meso and Macro read.
-- **Seam checks** by level.
-- **HCM values**, read in the owner's copy: freeway and multilane capacities (Exhibits 12-4, 12-6),
-  saturation flow (19-11) and jam density 190 pc/mi/ln (10-7). BPR pairs with practical capacity,
-  so a capacity basis is proposed: HCM types shipped as `ultimate`, which Macro refuses with BPR.
-- Seven owner choices (B24) and rows RD1–RD22. Nothing is built yet.
 
 ## Older entries
 
