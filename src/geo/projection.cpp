@@ -60,6 +60,9 @@ MetrePoint GeoProjection::worldToMercator(MetrePoint p) const {
     return result;
 }
 bool GeoProjection::insideStudy(MetrePoint p) const {
-    return std::isfinite(p.x) && std::isfinite(p.y) && std::hypot(p.x-reference_.anchorWorldX,p.y-reference_.anchorWorldY)<=100000;
+    return std::isfinite(p.x) && std::isfinite(p.y) && std::hypot(p.x-reference_.anchorWorldX,p.y-reference_.anchorWorldY)<=mapStudyRadius;
+}
+bool GeoProjection::insideOverview(MetrePoint p) const {
+    return std::isfinite(p.x) && std::isfinite(p.y) && std::hypot(p.x-reference_.anchorWorldX,p.y-reference_.anchorWorldY)<=mapOverviewRadius;
 }
 }

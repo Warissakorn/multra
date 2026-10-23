@@ -104,6 +104,8 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D149](RECORD.md#d149) — M5.8b editor comparison: the open project (base) against a chosen file over the Seeds field on the batch worker; refusals before any run leave the results on show; Export/Copy are `comparisonCsv`; a dirty base is named `(unsaved edits)`.
 
 [D150](RECORD.md#d150) — OSM map background and fixed UTM reference.
+[D321](RECORD.md#d321) — explicit retry of failed visible map tiles; preserve provider cooldown and document state.
+[D322](RECORD.md#d322) — stable OSM pan/zoom, bounded regional overview and offline country/optional-province selection.
 
 [D151](RECORD.md#d151) — Route destination markers, responsive labels, bounded tooltips and wheel protection.
 

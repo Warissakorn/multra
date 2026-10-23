@@ -10,7 +10,10 @@ native editor. Contract and acceptance rows: [MAP_BACKGROUND](../reference/MAP_B
 5. Localized settings and navigation dialog; visible status/attribution; packaging and CI.
 6. Local fixture tests, complete native checks and owner visual review.
 
-Keep engine/eval and existing project bytes unchanged. No geocoding, automatic road import,
+The owner's 2026-10-23 request adds wider overview zoom, stable panning and a bundled
+country/province picker; the current contract above defines their bounds and semantics.
+
+Keep engine/eval and existing project bytes unchanged. No online address search, automatic road import,
 offline tile packages, terrain, satellite layer or world-scale navigation in this version.
 Cache defaults are initial resource budgets, not performance measurements. Runtime costs
 must be measured with event-loop pumping on a real network before any speed-up claim.

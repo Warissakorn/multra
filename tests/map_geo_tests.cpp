@@ -22,6 +22,9 @@ void projection() {
     require(rotated.insideStudy({123,-456}),"Anchor outside study");require(!rotated.insideStudy({100124,-456}),"Unbounded study");
     bool failed=false;try {p.worldToMercator({std::numeric_limits<double>::quiet_NaN(),0});}catch(const std::exception&){failed=true;}
     require(failed,"Invalid coordinate accepted");
+    require(p.insideOverview({500000+mapOverviewRadius,0}),"Overview boundary was refused");
+    require(!p.insideOverview({500001+mapOverviewRadius,0}),"Overview radius was unbounded");
+    require(!p.insideOverview({std::numeric_limits<double>::quiet_NaN(),0}),"Invalid overview coordinate accepted");
     GeoReference south{"EPSG:32734",18,-34,0,0,0};GeoProjection southern(south);
     const auto s=southern.geographicToWorld({18,-34});near(s.x,0);near(s.y,0);
 }

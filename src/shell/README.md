@@ -5,3 +5,5 @@ Qt Widgets desktop: the network editor window, the application's only editing wi
 `editor_lab.cpp` opens Simulation → Behaviour Lab (D165): `behaviour_lab_window.*` (a second, non-modal window drawing the lab run on its own `EditorCanvas`, which follows one vehicle), `behaviour_lab_panel.*` and `behaviour_lab_telemetry.*`; Apply writes the tuned vehicle back through `execute`.
 
 `editor_map.cpp` supplies localized map settings, navigation and visibility actions.
+Its dialogs are free functions in `map_settings_dialog`; `map_location_picker` adds searchable
+country and optional province/state choices while preserving manual coordinate entry.

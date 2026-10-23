@@ -89,7 +89,9 @@ equivalents of the route and vehicle-input gestures.
 
 **Scope:** viewport-only raster XYZ background on the existing editor camera, fixed WGS84
 UTM reference, schema-29 persistence, asynchronous Qt Network loading, bounded caches,
-adaptive reprojection, English/Thai settings/navigation and desktop packaging.
+adaptive reprojection, English/Thai settings/navigation and desktop packaging. The
+2026-10-23 extension adds stable panning, wider bounded overview zoom and offline
+country/province selection, with manual coordinates still available.
 Contract and rows: [MAP_BACKGROUND](reference/MAP_BACKGROUND.md); plan:
 [OSM_BACKGROUND](plans/OSM_BACKGROUND.md). No automatic road import or offline archive.
 **Gate remains open:** MAP1–MAP9 automated/platform evidence and MAP10 owner alignment

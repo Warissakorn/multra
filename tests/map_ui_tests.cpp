@@ -166,7 +166,7 @@ void layerLifecycle() {
     settings.reference.anchorLongitude=100;layer.setSettings(settings);layer.setVisible(true);layer.setView(view,2);
     waitFor([&]{return layer.status()==MapStatus::ready;});
     require(layer.geographicToWorld({100,13}).has_value(),"New reference was not installed");
-    layer.setView(QPolygonF{{200000,0},{201000,0},{201000,1000},{200000,1000}},2);
+    layer.setView(QPolygonF{{2100000,0},{2101000,0},{2101000,1000},{2100000,1000}},2);
     require(layer.status()==MapStatus::outsideStudy && layer.wantedTiles().empty(),"Out-of-study view fetched tiles");
     layer.setSettings({});require(layer.status()==MapStatus::disabled,"Removal retained map");
 }
@@ -296,7 +296,9 @@ void decodedBudget() {
 }
 void editor(const char* data,const QString& screenshot) {
     EditorWindow window(data);window.resize(1000,700);window.show();QApplication::processEvents();
-    Server fixture;window.canvas()->setMapProviders({fixture.provider("osm-standard")});
+    auto* retry=window.findChild<QAction*>("editorMapRetry");
+    require(retry && !retry->isEnabled(),"Map retry enabled without a map");
+    Server fixture;fixture.invalid=true;window.canvas()->setMapProviders({fixture.provider("osm-standard")});
     window.canvas()->createLink({{-60,0},{60,0}});
     require(!window.history().document().network.links.empty(),"Authored-network fixture failed");
     const auto before=window.history().document();bool filled=false;
@@ -309,7 +311,22 @@ void editor(const char* data,const QString& screenshot) {
     window.findChild<QAction*>("editorMapSettings")->trigger();require(filled,"Dialog fixture did not run");
     require(window.history().document().map.has_value(),"Dialog did not commit settings");
     require(window.history().document().network==before.network,"Map moved authored network");
+    // Exhaust automatic attempts before recovering through the menu. A cancelled
+    // startup viewport may leave earlier paths with fewer attempts.
+    waitFor([&]{
+        std::map<QByteArray,int> attempts;
+        for(const auto& request:fixture.headers)++attempts[request.left(request.indexOf('\r'))];
+        return std::any_of(attempts.begin(),attempts.end(),[](const auto& item){return item.second>=3;});
+    },10000);
+    QTest::qWait(100);
+    require(window.findChild<QLabel*>("editorMapStatus")->isVisible(),"Failed-tile forcing did not show an error");
+    const auto retryRevision=window.history().revision();
+    const int failedRequests=fixture.requests;fixture.invalid=false;
+    require(retry->isEnabled() && retry->text()=="Retry failed map tiles","English map retry action missing");
+    retry->trigger();
+    require(window.history().revision()==retryRevision,"Retry dirtied the project");
     waitFor([&]{return fixture.requests>0 && !window.findChild<QLabel*>("editorMapStatus")->isVisible();});
+    require(fixture.requests>failedRequests,"Menu retry did not request failed tiles");
     const auto bounds=window.canvas()->scene()->itemsBoundingRect();
     require(window.findChild<QLabel*>("editorMapCredit")->isVisible(),"Map credit is hidden");
     if (!screenshot.isEmpty())require(window.grab().save(screenshot),"Map preview failed");
@@ -319,13 +336,16 @@ void editor(const char* data,const QString& screenshot) {
     const auto fitted=window.canvas()->mapToScene(window.canvas()->viewport()->rect()).boundingRect();
     require(fitted.width()<bounds.width()*1.6,"Map tiles enlarged Fit network bounds");
     window.findChild<QAction*>("editorToggleMap")->trigger();
+    require(!retry->isEnabled(),"Retry enabled for a hidden map");
     const auto revision=window.history().revision();window.canvas()->centerOnGeographic({100.5,13.7});
     require(window.history().revision()==revision,"Navigation dirtied project");
     QTemporaryDir files;const auto path=files.filePath("map.traffic.json");window.saveFile(path);window.openFile(path);
     require(window.history().document().map->reference.anchorLongitude==100.5,"Open lost georeference");
     auto* language=window.findChild<QComboBox*>("editorLanguage");language->setCurrentIndex(1);
     require(!window.findChild<QAction*>("editorMapSettings")->text().isEmpty(),"Thai map action missing");
+    require(retry->text()==QString::fromUtf8("ลองโหลดแผนที่อีกครั้ง"),"Thai map retry action missing");
     window.findChild<QAction*>("editorRemoveMap")->trigger();require(!window.history().document().map,"Remove failed");
+    require(!retry->isEnabled(),"Retry enabled after map removal");
     window.findChild<QAction*>("editorUndo")->trigger();require(window.history().document().map.has_value(),"Undo lost map");
     window.findChild<QAction*>("editorRedo")->trigger();require(!window.history().document().map,"Redo failed");
     window.saveFile(path);
