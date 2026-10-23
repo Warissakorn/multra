@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/editor/run_vehicle_item.hpp"
 #include "../src/editor/road_crossbar.hpp"
 #include "../src/project/json.hpp"
@@ -44,7 +45,7 @@ QSet<int> ink(const QImage& image,QRgb background) {
 }
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         // A vehicle the colour of its background still shows its edge; its hit shape is the bare path.

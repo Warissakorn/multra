@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/project/macro_run.hpp"
 #include "../src/project/json.hpp"
 #include "../src/project/node_proposals.hpp"
@@ -62,7 +63,7 @@ void runMacro(EditorWindow& w, const char* period) {
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 2, "Expected the data directory and the two-route fixture");
         const std::filesystem::path data(argv[1]);

@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — UI suites isolate their recovery drafts (D320)
+
+- **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
+  run of that suite then waited at the startup recovery dialog until ctest's 60 s timeout.
+  Eleven suites had no Qt test mode, so they wrote drafts into the user's own data folder.
+- **The fix:** all 51 `EditorWindow` suites call `useTestStorage()`. It enables test mode and
+  removes drafts whose lock nobody holds, keeping a running instance's draft.
+- **Rows:** `test-storage-ui` fails without the cleanup, and fails at the window (not a hang)
+  without the file checks.
+- **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
+  219/219; the eleven suites wrote nothing to the user's folder.
+
 ## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
 
 - **Measured first** (Linux; `.optimize/` ledger, not committed):
@@ -158,18 +170,6 @@ refine, derive back and the lifecycle are S3.6b.
 - **Merge nodes** (Nodes tab) replaces the selected Nodes with their hull, refused when a Node with
   valid detail would gain an issue.
 - **Rows:** RD12–RD15 (`roadcrossings`), with their editor part in `road-ui`; four mutations caught.
-
-## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
-
-The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.
-- **Join opposite Links:** two Links running opposite ways on one level become one Road without a
-  template. Its centreline is the mean of theirs, and the Links stay where they are. A Link
-  already in a Road, a different level, the same direction, or a pair outside the tolerance is
-  refused.
-- **Assign template:** sets or clears the template on several Roads at once, generating no Link.
-- **Editor:** both are on the Roads tab. Join takes the two Links selected on the canvas, forward
-  first, and the table takes several rows.
-- **Rows:** RD10 and RD11 (`roads`), with their editor part in `road-ui`; four mutations caught.
 
 ## Older entries
 

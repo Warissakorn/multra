@@ -3,6 +3,7 @@
 // the same as tab-separated values; a refused, cancelled or edited-away comparison leaves nothing
 // that claims runs it did not finish.
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/project/comparison_output.hpp"
 #include "../src/project/csv_format.hpp"
@@ -48,7 +49,7 @@ QString figure(const std::optional<double>& v) { return v ? QString::number(*v, 
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc >= 2, "Expected data directory");
         const std::filesystem::path data(argv[1]);

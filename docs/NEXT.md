@@ -26,9 +26,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
 - **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
-- A crashed local UI run leaves `~/.qttest/share/<suite>/recovery`; delete it before re-running,
-  or the suite waits at the recovery dialog. If `map-ui` fails in a parallel `check`, capture its
-  output before re-running.
+- If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
 ## Next session — the owner's pick: F4 (S4.5), S5, or an item below
 

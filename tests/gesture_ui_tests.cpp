@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
 #include <QGraphicsItem>
@@ -60,6 +61,7 @@ void confirm(const char* expected,int lanes=0,int linkLanes=3) {
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
+    useTestStorage(); // D320
     try {
         require(argc>1,"Data directory required");QTemporaryDir directory;require(directory.isValid(),"Temporary directory");
         qputenv("XDG_DATA_HOME",directory.path().toUtf8());

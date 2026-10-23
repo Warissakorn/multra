@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "ui_gestures.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
@@ -31,7 +32,7 @@ int main(int argc,char** argv) {
     QApplication app(argc,argv);
     // Recovery copies live under AppLocalDataLocation. Test mode redirects that on every
     // platform, so this binary never reads or deletes a real editor session's drafts.
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc>1,"data path");QTemporaryDir directory;require(directory.isValid(),"temporary directory");
         EditorWindow w{std::filesystem::path(argv[1])};w.show();QTest::qWait(30);

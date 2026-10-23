@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
@@ -23,7 +24,7 @@ void undo(EditorWindow& w){auto* a=w.findChild<QAction*>("editorUndo");require(a
 const RoutingDecision& decision(EditorWindow& w){return w.history().document().definition->routingDecisions.front();}
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>1,"Expected data directory");QTemporaryDir tmp;require(tmp.isValid(),"No temporary directory");
         ProjectDocument d;d.definition=AuthoringDefinition{};

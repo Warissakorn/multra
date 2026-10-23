@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/demand_period_editor.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
@@ -52,7 +53,7 @@ void save(const QString& path,const ProjectDocument& d) {
 }
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>1,"Expected data directory");QTemporaryDir temp;require(temp.isValid(),"No temp directory");
         const auto original=fixture();const auto path=temp.filePath("demand.traffic.json");save(path,original);

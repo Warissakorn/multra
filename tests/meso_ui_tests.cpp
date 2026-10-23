@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/project/meso_run.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
@@ -33,7 +34,7 @@ void setType(EditorWindow& w, const QString& type) {
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 2, "Expected the data directory and the Meso two-route fixture");
         const std::filesystem::path data(argv[1]);

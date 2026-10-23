@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QApplication>
@@ -40,7 +41,7 @@ void hover(QTableWidget* table,int row,int column) {
 const QRegularExpression figure(QStringLiteral("^-?[0-9]+(\\.[0-9]+)?$"));
 }
 int main(int argc,char** argv) {
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         EditorWindow window(data);window.resize(1360,860);window.show();settle();

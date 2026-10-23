@@ -1,5 +1,6 @@
 // Continuous lane-change guide with a rolling rear axle; engine changes stay instantaneous.
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/project/load.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/core/routes.hpp"
@@ -193,7 +194,7 @@ double apart(Pose a, Pose b) { return std::hypot(a.x - b.x, a.y - b.y); }
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 1, "data path");
         const std::filesystem::path data(argv[1]);

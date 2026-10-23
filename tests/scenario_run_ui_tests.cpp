@@ -2,6 +2,7 @@
 // retired M0 harness window used to carry: same fixture, same seed, same completed count and
 // same mean delay as `multra-cli 42`, reached through the only UI that still runs.
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/shell/path.hpp"
 #include "../src/core/simulation.hpp"
 #include <QAction>
@@ -28,7 +29,7 @@ void action(EditorWindow& w, const char* name) { item<QAction>(w, name)->trigger
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc >= 2, "Expected data directory");
         const std::filesystem::path data(argv[1]);

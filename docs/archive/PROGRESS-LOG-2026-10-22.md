@@ -3,6 +3,18 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
+
+The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.
+- **Join opposite Links:** two Links running opposite ways on one level become one Road without a
+  template. Its centreline is the mean of theirs, and the Links stay where they are. A Link
+  already in a Road, a different level, the same direction, or a pair outside the tolerance is
+  refused.
+- **Assign template:** sets or clears the template on several Roads at once, generating no Link.
+- **Editor:** both are on the Roads tab. Join takes the two Links selected on the canvas, forward
+  first, and the table takes several rows.
+- **Rows:** RD10 and RD11 (`roads`), with their editor part in `road-ui`; four mutations caught.
+
 ## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
 
 The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.

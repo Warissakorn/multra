@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/project/demand_preview.hpp"
@@ -52,7 +53,7 @@ void editMix(QDialog& parent,bool zero=false){
 }
 }
 int main(int argc,char** argv){
-    QApplication app(argc,argv);QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc,argv);useTestStorage();
     try{
         require(argc>1,"Expected data directory");QTemporaryDir temp;require(temp.isValid(),"Missing temp directory");
         ProjectDocument d;const auto link=addLink(d,{{0,0},{400,0}},2,3.5);const auto route=putRoute(d,{"route",{link}});

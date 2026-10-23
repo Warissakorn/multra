@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include <QAction>
 #include <QApplication>
 #include "dialog_fit_support.hpp"
@@ -71,7 +72,7 @@ std::vector<std::string> tagged(EditorWindow& w, const char* tag, int field = 1)
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
-    QStandardPaths::setTestModeEnabled(true);
+    useTestStorage();
     try {
         require(argc > 1, "Expected data directory");
         QTemporaryDir temp; require(temp.isValid(), "Temporary directory unavailable");

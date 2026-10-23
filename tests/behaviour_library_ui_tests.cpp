@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "ui_test_storage.hpp"
 #include "../src/commands/behaviour_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
@@ -100,7 +101,7 @@ void buildLibrary(QDialog& d) {
 }
 }
 int main(int argc, char** argv) {
-    QApplication app(argc, argv); QStandardPaths::setTestModeEnabled(true);
+    QApplication app(argc, argv); useTestStorage();
     try {
         require(argc > 1, "Expected data directory"); QTemporaryDir temp; require(temp.isValid(), "Missing temp directory");
         ProjectDocument d; const auto a = addLink(d, {{0, 0}, {200, 0}}, 1, 3.5), b = addLink(d, {{220, 0}, {400, 0}}, 1, 3.5);
