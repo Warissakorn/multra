@@ -2,6 +2,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_run.hpp"
 #include <QComboBox>
+#include <QToolButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QAction>
@@ -20,6 +21,8 @@ void EditorWindow::buildDiagnostics() {
     for (int level=0; level<3; ++level) readinessLevel_->addItem(QString(),level);
     readinessPeriod_=new QComboBox(page); readinessPeriod_->setObjectName("editorReadinessPeriod");
     row->addWidget(readinessLevel_); row->addWidget(readinessPeriod_,1);
+    auto* fill=new QToolButton(page); fill->setDefaultAction(action("editorFillDefaults",{},[this]{ fillDefaultsDialog(); })); // S4.3
+    row->addWidget(fill);
     problemTable_=new QTableWidget(0,4,page); problemTable_->setObjectName("editorProblemTable");
     layout->addWidget(problemTable_);
     problemTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);

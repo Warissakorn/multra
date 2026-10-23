@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — S3.2: HCM link types and the capacity basis (D304)
+
+The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalog came first.
+- **`data/link-types/`** ships eleven HCM 7 types:
+  - freeway at FFS 55–75 mi/h and multilane at 45–70 mi/h, with Exhibit 12-4's capacities;
+  - jam density 190 pc/mi/ln (Exhibit 10-7).
+- **`capacityBasis`** (`practical` or `ultimate`) on link types and VDFs. `bpr` is practical and
+  HCM's types are ultimate, so Macro refuses the pair (`MACRO_CAPACITY_BASIS_MISMATCH`) while Meso
+  runs them. An owned type with a basis is schema 53.
+- **The Link types tab** shows the basis.
+- **Rows:** RD1 (basis), RD2 and RD3 (`roadcatalog`).
+- **Amended:** `rank` moves to S3.6, where its reader lands.
+
 ## 2026-10-22 — S3.1: the Roads contract (D303, docs only)
 
 The owner chose S3 next, with values from HCM 7. [ROADS](../reference/ROADS.md) fixes the following:

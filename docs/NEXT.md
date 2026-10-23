@@ -50,15 +50,16 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
 - Local evidence is Linux (offscreen Qt 6.4.2); no Windows or high-DPI verification is claimed.
   No milestone gate is closed by a session; ROADMAP holds every gate.
 
-## Next session — S4.3 (*Fill defaults*), or the owner's pick
+## Next session — S4.4 (Node proposals), or the owner's pick
 
 - **M11 is in through M11.4b** (D291–D302; MESO_NETWORK, MESO_NETWORK_IMPLEMENTED §14–§21). M11.5
   (dynamic assignment) waits on M9.
 - **M11 follow-ups, if the owner wants Meso first:**
-  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). The
-    option sheet is written ([meso-benchmark-options](evidence/meso-benchmark-options.md), D302);
-    the owner chooses in OWNER_SITTING B23 and supplies the chosen copy (Boyles et al. 2025
-    recommended). The tolerance comes after the choice, then the benchmark row or tool.
+  - **The M11 gate** (ROADMAP) needs a Meso benchmark before the marker can go (rule 4). B23 is
+    answered (D315): Boyles et al. 2025 (M1-d, M2-c) primary, Daganzo 1994/1995 secondary,
+    not-blind cases as verification only. Waiting on the owner's copy of Boyles et al. (a Markdown
+    repository, or `arxiv.org` allowed; it is blocked here today); then the tolerance (option sheet
+    §5) and the benchmark rows.
   - **Priority at a Node** waits on Brilon and Wu (2001) and a cited `t_ij`
     (`MESO_PRIORITY_IGNORED`).
 - **Other open items:**
@@ -78,14 +79,15 @@ What shipped is in [PROGRESS](PROGRESS.md), its [archive](archive/README.md) and
     Booked: demand on a Road-only network (zone connectors attach to Links only);
   - **S4** ([READINESS](reference/READINESS.md)): the owner chose S4-1a–S4-4a (D313). S4.2 is in
     (D314): the Problems tab checks Micro, Meso or Macro with its period, from the runs' own
-    refusal functions, plus seams. **Next, S4.3:** *Fill defaults* F1–F3 (a Link's type from its
-    Road's template, HCM 7 Exhibit 10-7's jam density on an owned type, *Apply template* for a
-    Link-less Road), each listed with its source and applied only when ticked, in one Undo step
-    (RS5–RS8). Then S4.4, Node proposals (RS9, RS10);
+    refusal functions, plus seams. S4.3 is in (D316): *Fill defaults* F1–F3, listed with
+    sources and applied only when ticked. **Next, S4.4:** Node proposals after a run (Macro v/c
+    ≥ 1.0 or Meso spill-back on a Node's leg; a link end without a Node offers *Suggest nodes*;
+    a stale result proposes nothing; RS9, RS10). F4 (a coarse Node's Micro detail) is its own later
+    slice;
   - **E1 is in (D306):** tool pointers with glyphs, plain clicks after a draft's first point, solid
     previews. The owner checks the glyphs and the click rule on Windows;
   - **S2.4's booked follow-ups:** §19 (b) named runs or (c) a procedure sequence (D277);
   - **B21:** Sheffi Fig 5.1's capacities, for the owner.
-  - **B23:** the Meso benchmark choice, for the owner.
+  - **Boyles et al. 2025:** the copy for the Meso benchmark, for the owner (D315).
 
 M2.8 has only owner checks left.

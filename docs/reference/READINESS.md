@@ -2,7 +2,7 @@
 
 Written 2026-10-23 (D313) as the S4.1 contract, docs only. The owner answered its four choices the
 same day, as recommended: S4-1a, S4-2a, S4-3a, S4-4a (§8), so §3–§6 state the chosen options. S4.2
-is implemented (D314, §10). It fixes, for step 3 and step 6 of the workflow
+and S4.3 are implemented (D314, D316; §10, §11). It fixes, for step 3 and step 6 of the workflow
 loop ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §5):
 - the readiness panel: one list per level of what would stop or weaken a run;
 - *Fill defaults*: which absent values a command may fill, and from which cited source;
@@ -103,7 +103,7 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 |---|---|---|
 | S4.1 | This contract. **Written (D313)** | — |
 | S4.2 | The readiness panel by level, with the seam checks. **Implemented (D314)** | RS1–RS4 |
-| S4.3 | *Fill defaults* F1–F3 | RS5–RS8 |
+| S4.3 | *Fill defaults* F1–F3. **Implemented (D316)** | RS5–RS8 |
 | S4.4 | Node proposals | RS9, RS10 |
 | (S4.5) | F4, generating a coarse Node's Micro detail, if chosen | its own contract section |
 
@@ -180,3 +180,35 @@ Each row first asserts that its forcing worked (AGENTS).
   - RS4 in `tables-ui`: the stale note, Meso's refusals, and Macro without a period.
 - **Mutations caught:** the Meso demand stage skipped, the Macro demand stage skipped, seam warnings
   shown as advisories, and Micro advisories treated as refusals.
+
+## 11. S4.3 as implemented (D316)
+
+- **`fillOffers(document, templates)`** and **`applyFills(document, chosen, templates)`**
+  (`src/commands/fill_commands.*`). The templates are the resolved cross-sections, the list the
+  Roads tab uses. Offers come in kind order, then in document order, and listing changes nothing.
+  - **F1, a Link's type from its Road:** a Link with `roadId` and no type, whose Road's template
+    names a type.
+    - The value is that type; the source is "template <id>: <its source>".
+    - `setLinkType` keeps the Link attached.
+  - **F2, jam density:** a project-owned type without one.
+    - The value is 118.0605 pc/km/ln, with the shipped catalog's HCM 7 Exhibit 10-7 source word for
+      word (`hcmJamDensitySource`; RS6 compares both with `data/link-types/freeway-55.json`).
+    - It is offered only when the value passes `linkTypeIssues`' jam-density rule for that type, so
+      a fill never trades one refusal for another.
+    - Installed types are never offered.
+  - **F3, a Road's Links:** a Road without Links whose template resolves; *Apply template*.
+  - **Applying:** only the chosen offers are applied, each checked against a fresh listing. An offer
+    that no longer applies is `EDIT_FILL_STALE`.
+- **Editor:** *Fill defaults…* sits beside the Problems tab's level selector. It opens a dialog with
+  one row per offer: the fill, the object, the value, what it clears and the source, none ticked.
+  - Confirm applies the ticked offers as one Undo step and checks the chosen level again.
+  - With no offer, a note says so and Confirm is disabled.
+- **Rows:**
+  - RS5–RS8 in `tests/fill_defaults_tests.cpp` (`filldefaults`);
+  - the editor part is in `road-ui`: F3 offered for an assigned Link-less Road, nothing changed
+    while unticked, and the Links generated in one step once ticked.
+- **Mutations caught:**
+  - F1 detaching the Link;
+  - F2 offered on an installed catalog;
+  - F3 offered without a template;
+  - stale offers applied.

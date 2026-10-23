@@ -350,6 +350,8 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D312](RECORD.md#d312) — S3.7: seam checks on demand by level (road not generated, lane count with Use Link / Use Node, speed jump over 20 km/h outside Nodes, detached Link on the Road); S3 complete; rows RD20 (Micro), RD21, RD22, RD29.
 [D313](RECORD.md#d313) — S4.1: readiness / *Fill defaults* / Node proposals contract, answered S4-1a–S4-4a: the Problems tab by level, cited fills F1–F3 (F4 later), proposals from v/c ≥ 1.0 and spill-back; rows RS1–RS10.
 [D314](RECORD.md#d314) — S4.2: the readiness panel by level in the Problems tab (runs' own refusal functions in order, advisories, seams), stale note after an edit; rows RS1–RS4.
+[D315](RECORD.md#d315) — B23 answered: Meso benchmark from Boyles et al. 2025 (M1-d, M2-c), Daganzo 1994/1995 secondary, not-blind cases as verification only; waiting on the copy.
+[D316](RECORD.md#d316) — S4.3: *Fill defaults* F1 (type from the Road's template), F2 (HCM jam density on owned types, only where valid), F3 (Apply template), listed with sources, ticked ones in one Undo step; rows RS5–RS8.
 [D260](RECORD.md#d260) — the owner accepted every Node recommendation (1a–5a).
 [D261](RECORD.md#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
 [D262](RECORD.md#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.

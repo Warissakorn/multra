@@ -280,6 +280,27 @@ int main(int argc, char** argv) {
         onDialog([](QDialog& d) { auto* control = d.findChild<QComboBox*>("editorCoarseControl"); control->setCurrentIndex(control->findData(0)); });
         trigger(w, "editorEditCoarse");
         require(!network().nodes.back().coarse, "Back to the defaults did not clear the values");
+        // RS7 and RS8 in the editor (S4.3, D316): a Link-less Road with a template is offered F3 in Fill
+        // defaults; confirming with nothing ticked changes nothing, ticking it generates its Links in one step.
+        chosen->setCurrentIndex(chosen->findData(QString()));
+        QApplication::setActiveWindow(&w); key(w, Qt::Key_O);
+        author(w, {centre.x() - 60, centre.y() + 100}); click(w, {centre.x() - 60, centre.y() + 220}); key(w, Qt::Key_Return);
+        const auto loose = network().roads.back();
+        require(loose.links.empty() && !loose.crossSectionId, "The Road without a template was not drawn");
+        selectRow(roads, loose.id); chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
+        trigger(w, "editorAssignTemplate");
+        int offers = 0; const auto unfilled = w.history().revision();
+        onDialog([&](QDialog& d) { offers = d.findChild<QTableWidget*>("editorFillTable")->rowCount(); });
+        trigger(w, "editorFillDefaults");
+        require(offers >= 1 && w.history().revision() == unfilled, "Fill defaults listed nothing, or changed something unticked");
+        onDialog([&](QDialog& d) {
+            auto* table = d.findChild<QTableWidget*>("editorFillTable");
+            for (int r = 0; r < table->rowCount(); ++r)
+                if (table->item(r, 1)->text().toStdString() == loose.id) table->item(r, 0)->setCheckState(Qt::Checked);
+        });
+        trigger(w, "editorFillDefaults");
+        const auto filled = std::find_if(network().roads.begin(), network().roads.end(), [&](const auto& r) { return r.id == loose.id; });
+        require(filled->links.size() == 2 && w.history().revision() == unfilled + 1, "Ticking F3 did not generate the Road's Links in one step");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

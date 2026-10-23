@@ -118,6 +118,11 @@ together with the tolerance:
 
 An answer here chooses sources only. It closes nothing, validates nothing and removes no marker.
 
+**Answered 2026-10-23 (owner: "as recommended", [D315](../decisions/RECORD.md#d315)):** QM (c); M1-d
+primary, M1-b secondary; M2-c primary, M2-b secondary; not-blind cases (M1-a, M2-a, M2-d) as
+verification only; the copy is Boyles et al. 2025, as a Markdown repository or with `arxiv.org`
+allowed. The tolerance (§5) is written once the copy is read.
+
 ## References
 
 How these were checked: web searches on 2026-10-22 against TRID, IDEAS/RePEc, publisher and

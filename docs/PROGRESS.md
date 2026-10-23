@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
+
+- **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network
+  cases, Daganzo 1994/1995 as second choices, and not-blind cases as verification only. The next
+  step is the owner's copy of Boyles et al.
+- **Fill defaults…** (Problems tab) lists the absent values the project can already cite, none
+  ticked:
+  - a generated Link's type from its Road's template;
+  - HCM 7's jam density on a project-owned type, only where it is valid for that type;
+  - a Link-less Road's Links from its template.
+
+  Each row shows its value, source and what it clears. The ticked ones apply in one Undo step, and
+  the panel checks again.
+- **Rows:** RS5–RS8 (`filldefaults`), with the editor part in `road-ui`; four mutations caught.
+
 ## 2026-10-23 — S4.1–S4.2: the readiness contract and the panel by level (D313, D314)
 
 The owner chose all four S4 options as recommended: the Problems tab with a level selector, cited
@@ -128,19 +143,6 @@ The owner asked for three canvas changes.
   file schema 53.
 - **Rows:** RD1's Road part and RD5–RD9 (`roads`).
 - **Amended:** the editor surface is S3.3b; `shoulder` waits for a reader.
-
-## 2026-10-22 — S3.2: HCM link types and the capacity basis (D304)
-
-The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalog came first.
-- **`data/link-types/`** ships eleven HCM 7 types:
-  - freeway at FFS 55–75 mi/h and multilane at 45–70 mi/h, with Exhibit 12-4's capacities;
-  - jam density 190 pc/mi/ln (Exhibit 10-7).
-- **`capacityBasis`** (`practical` or `ultimate`) on link types and VDFs. `bpr` is practical and
-  HCM's types are ultimate, so Macro refuses the pair (`MACRO_CAPACITY_BASIS_MISMATCH`) while Meso
-  runs them. An owned type with a basis is schema 53.
-- **The Link types tab** shows the basis.
-- **Rows:** RD1 (basis), RD2 and RD3 (`roadcatalog`).
-- **Amended:** `rank` moves to S3.6, where its reader lands.
 
 ## Older entries
 

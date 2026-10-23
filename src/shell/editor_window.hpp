@@ -427,6 +427,7 @@ private:
     void refreshTables(bool modelChanged);
     void refreshDiagnostics();
     void recheck(); // S4.2 (D313): the chosen level's readiness
+    void fillDefaultsDialog(); // S4.3 (D316): editor_fill.cpp
     QComboBox *readinessLevel_{}, *readinessPeriod_{};
     std::vector<ReadinessRow> readiness_; bool readinessChecked_{};
     void retranslateTables();
