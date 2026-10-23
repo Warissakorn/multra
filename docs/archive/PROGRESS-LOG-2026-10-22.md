@@ -3,6 +3,19 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
+
+The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.
+- **Road tool (O):** Ctrl+right-click the first centreline point, click the rest, Enter. With the
+  Roads tab's template chosen, the Road and both directions' Links are one Undo step; with none, a
+  Road without Links.
+- **Roads tab:** template, lanes, Links and status (applied, not applied, partly detached *k of n*),
+  with *Apply template*, *Edit road* (overrides) and *Delete road*. The selected Road is lit on the
+  canvas, in the warning colour while partly detached.
+- **Cross-sections tab:** add, edit and delete owned templates; one in use is kept.
+- **Rows:** RD23–RD26 (`road-ui`); four mutations caught. Tool and tab inventories in
+  `workspace-ui`, `object-groups-ui`, `design-system-ui` and `zone-ui` grew by one tool and two tabs.
+
 ## 2026-10-22 — E1: tool pointers, plain clicks after the first point, solid previews (D306)
 
 The owner asked for three canvas changes.

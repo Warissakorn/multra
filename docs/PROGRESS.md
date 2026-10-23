@@ -5,6 +5,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
+
+- **Measured first** (Linux; `.optimize/` ledger, not committed):
+  - UX: a `QDialog::exec` shim over the 61 UI suites, in English and Thai;
+  - engine: Release `multra-cli`, seeds 42–51, and callgrind;
+  - build: Debug rebuilds after touching one file;
+  - docs: the words a session reads before it starts.
+- **Done:**
+  - the seam dialog's *Use Node* button lost 8 px to the table's item padding; the column gets
+    it back, the only clipped control measured;
+  - NEXT cut to open items (1113 → 469 words);
+  - D319 records the accepted rules.
+- **Found on the way, fixed:** D318's behaviour editor corrupted the heap. Qt 6.4.2's
+  `QFormLayout::setRowVisible` on a shown dialog writes out of bounds (valgrind); the forms now
+  stay still while their rows change. A crashed local UI run leaves a recovery file that makes the
+  next run wait at its dialog.
+- **Not done:**
+  - caching lateral bands (+10–28 % wall switched on, no shipped keys);
+  - a shared `multra_shell`;
+  - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
+    declarations moved; waits on the owner.
+
 ## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
 
 - **The owner's report:** the behaviour editor was taller than the screen; not every key showed
@@ -147,19 +169,6 @@ The owner chose the join tolerance: 15° off opposite, and half both widths plus
 - **Editor:** both are on the Roads tab. Join takes the two Links selected on the canvas, forward
   first, and the table takes several rows.
 - **Rows:** RD10 and RD11 (`roads`), with their editor part in `road-ui`; four mutations caught.
-
-## 2026-10-22 — S3.3b: the Road tool, the Roads and Cross-sections tabs (D307)
-
-The owner chose: apply at once, key O, and detached Roads shown in the table and on the canvas.
-- **Road tool (O):** Ctrl+right-click the first centreline point, click the rest, Enter. With the
-  Roads tab's template chosen, the Road and both directions' Links are one Undo step; with none, a
-  Road without Links.
-- **Roads tab:** template, lanes, Links and status (applied, not applied, partly detached *k of n*),
-  with *Apply template*, *Edit road* (overrides) and *Delete road*. The selected Road is lit on the
-  canvas, in the warning colour while partly detached.
-- **Cross-sections tab:** add, edit and delete owned templates; one in use is kept.
-- **Rows:** RD23–RD26 (`road-ui`); four mutations caught. Tool and tab inventories in
-  `workspace-ui`, `object-groups-ui`, `design-system-ui` and `zone-ui` grew by one tool and two tabs.
 
 ## Older entries
 
