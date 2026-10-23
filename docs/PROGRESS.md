@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — The owner's book copies analysed and mapped (docs only)
+
+- **Asked:** analyse the five book repositories and add them as development sources.
+- **Added:** [BOOKS](reference/BOOKS.md), how to attach and cite each copy, how far to trust each
+  conversion, and which chapters serve which milestone; a read-by-task row in the docs map. The
+  books stay in their own repositories (attached with `add_repo`, never vendored).
+- **Checked** ([book-copies-check](evidence/book-copies-check.md)), from the source images:
+  - HCM 7 confirms the M6.0 sheet's TWSC headways (Exhibits 20-17, 20-18, two-lane column),
+    Eq. 20-18, the 1,750 pc/h/ln default and the base conditions; Eq. 19-19 keeps `PF`; the field
+    saturation-flow method counts from the fourth queued vehicle;
+  - `data/los/hcm.json`'s bounds equal HCM 7 Exhibits 19-8, 20-2 and 21-8;
+  - ten Sheffi page images are empty, book p. 114 among them, so B21 still needs the print;
+  - Ortúzar Example 11.1 (two routes, 1400 / 600 at 22 min) fits M9's two-route fixture;
+  - the Planning Handbook is the 4th edition (2016).
+- **Not done:** no number entered `data/` or a test, no benchmark was chosen, no gate moved.
+
 ## 2026-10-23 — UI suites isolate their recovery drafts (D320)
 
 - **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
@@ -156,20 +172,6 @@ refine, derive back and the lifecycle are S3.6b.
   2 m join.
 - **Rows:** RD4, RD16, RD19 and RD20's Macro and Meso half (`roadcoarse`), and the rank field in
   `macro-ui`; four mutations caught. RD20's Micro half moves to S3.7.
-
-## 2026-10-22 — S3.5: Find crossings, overpasses and Merge nodes (D309)
-
-- **Find crossings** (Roads tab) lists every place where Roads on one level cross, or one ends within
-  the snap tolerance (2 m, adjustable) of another. Places with three legs or more are listed,
-  skipping places a Node already covers. Each row is confirmed as a Junction or an Overpass, all in
-  one Undo step.
-- **Junction:** the Roads and their Links are split there (routes follow), and a generated round
-  Node is added, sized from the Roads' width there plus the widest lane.
-- **Overpass:** the pair is stored (`network.overpasses`, schema 53) and not offered again, even
-  after one of the Roads is split elsewhere.
-- **Merge nodes** (Nodes tab) replaces the selected Nodes with their hull, refused when a Node with
-  valid detail would gain an issue.
-- **Rows:** RD12–RD15 (`roadcrossings`), with their editor part in `road-ui`; four mutations caught.
 
 ## Older entries
 

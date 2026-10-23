@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-22 — S3.5: Find crossings, overpasses and Merge nodes (D309)
+
+- **Find crossings** (Roads tab) lists every place where Roads on one level cross, or one ends within
+  the snap tolerance (2 m, adjustable) of another. Places with three legs or more are listed,
+  skipping places a Node already covers. Each row is confirmed as a Junction or an Overpass, all in
+  one Undo step.
+- **Junction:** the Roads and their Links are split there (routes follow), and a generated round
+  Node is added, sized from the Roads' width there plus the widest lane.
+- **Overpass:** the pair is stored (`network.overpasses`, schema 53) and not offered again, even
+  after one of the Roads is split elsewhere.
+- **Merge nodes** (Nodes tab) replaces the selected Nodes with their hull, refused when a Node with
+  valid detail would gain an issue.
+- **Rows:** RD12–RD15 (`roadcrossings`), with their editor part in `road-ui`; four mutations caught.
+
 ## 2026-10-22 — S3.4: Join opposite Links and Assign template (D308)
 
 The owner chose the join tolerance: 15° off opposite, and half both widths plus 30 m apart.

@@ -27,6 +27,7 @@ selects additional context; read related decisions and evidence only when needed
 | Load/save or schema changes | [NETWORK_EDITOR](reference/NETWORK_EDITOR.md) save/recovery; relevant Demand/geometry contract; [MIGRATION](reference/MIGRATION.md) | `src/project/`, `tests/project_tests.cpp` |
 | Evaluation or reporting | [BATCH](reference/BATCH.md); [LOS](reference/LOS.md); [TRAVEL_TIME_SECTIONS](reference/TRAVEL_TIME_SECTIONS.md); [NODES](reference/NODES.md) for per-junction node evaluation; [DISCHARGE](reference/DISCHARGE.md); [PROBLEM](PROBLEM.md); [SIMULATION](reference/SIMULATION.md); [ROADMAP](ROADMAP.md) M5/M6; [M2_PLAN](plans/M2_PLAN.md) | `src/eval/`, `src/project/evaluation.*`, `src/runner/`, `src/report/` |
 | Performance, measurement or a previously reverted idea | [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md) (do-not-retry list, baselines, recipes); D28 and D31 in the [decision record](decisions/RECORD.md); [BUILDING](BUILDING.md) machine notes | `tools/*_benchmark.cpp`, `src/core/`, `src/editor/` |
+| Citing a textbook, or a benchmark or fixture from one | [BOOKS](reference/BOOKS.md); [book-copies-check](evidence/book-copies-check.md) | The owner's book repositories, attached with `add_repo` |
 | Build or portability | [BUILDING](BUILDING.md); [MIGRATION](reference/MIGRATION.md); tools README | `CMakeLists.txt`, `CMakePresets.json`, `.github/workflows/` |
 
 Resolve the document names through the indexes below. `src/report/` is a planned module
