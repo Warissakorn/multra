@@ -10,6 +10,7 @@
 #include "../src/project/road_codec.hpp"
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 using namespace multra;
 namespace {
 template <class F> std::string thrown(F f) { try { f(); } catch (const std::exception& e) { return e.what(); } return {}; }
