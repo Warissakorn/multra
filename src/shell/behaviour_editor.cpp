@@ -125,8 +125,12 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
     w74Amber.on->setObjectName("w74AmberDecelerationSet"); w74Amber.spin->setObjectName("w74AmberDeceleration");
     w74Rows.push_back({junctions, w74Amber.spin});
     const auto showModel = [=](int index) {
+        // Qt 6.4.2's setRowVisible on a shown dialog re-lays the form out between a row's label and
+        // its field and writes past its row table (valgrind); the forms stay still until all are set.
+        for (auto* rows : {following, lanes, junctions}) rows->setEnabled(false);
         for (const auto& [rows, field] : prototypeRows) rows->setRowVisible(field, index == 0);
         for (const auto& [rows, field] : w74Rows) rows->setRowVisible(field, index == 1);
+        for (auto* rows : {following, lanes, junctions}) { rows->setEnabled(true); rows->activate(); }
     };
     QObject::connect(model, &QComboBox::currentIndexChanged, &dialog, showModel);
     model->setCurrentIndex(b.w74 ? 1 : 0); showModel(model->currentIndex());

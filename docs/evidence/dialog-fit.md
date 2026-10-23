@@ -53,3 +53,16 @@ Failure first: with the five product files reverted and the tests kept, `behavio
 `demand-catalog-ui` and `demand-edit-ui` fail ("cannot shrink to a laptop screen"). `road-ui` passes:
 the coarse and decision rows are guards against growth, not reproductions, because both minimums
 were already under 480 px.
+
+## Correction: heap corruption in the behaviour editor (found 2026-10-23, same day)
+
+`behaviour-library-ui` aborted with `corrupted double-linked list` in 2 of 7 parallel runs after
+D318. Valgrind found invalid writes in every run, inside Qt 6.4.2's `QFormLayout::setGeometry`. The
+writes came from `setRowVisible` while the shown dialog switched its model: the form was laid out
+again between a row's label and its field. Fix: each form's layout is disabled while the rows
+change, then re-enabled and activated. After the fix: valgrind 0 errors; 12/12 sequential and 6/6
+parallel `-R ui` runs pass.
+
+A crashed or killed UI run leaves its recovery file under `~/.qttest/share/<suite>/recovery`.
+The next local run of that suite then waits at the recovery dialog until ctest times it out
+(60 s). CI starts clean.
