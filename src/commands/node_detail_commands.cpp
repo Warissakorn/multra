@@ -1,5 +1,7 @@
 #include "node_detail_commands.hpp"
 #include "connector_commands.hpp"
+#include "right_of_way_commands.hpp"
+#include "../model/demand/coarse_compile.hpp"
 #include "network_commands.hpp"
 #include "road_commands.hpp"
 #include "../model/network/coarse_nodes.hpp"
@@ -79,8 +81,40 @@ bool nodeDetailListed(const ProjectDocument& d, const Node& node) {
     for (const auto& leg : nodeRoadLegs(n, node)) arms.insert(leg.roadId);
     return arms.size() >= 2;
 }
-std::string nodeDetailRefusal(const ProjectDocument& d, const Node& node, const std::vector<CrossSection>& templates) {
+namespace {
+std::set<std::string> nodeArms(const Network& n, const Node& node) {
+    std::set<std::string> arms;
+    for (const auto& leg : nodeLinkLegs(n, node)) arms.insert(legArm(linkOf(n, leg.linkId)));
+    return arms;
+}
+// The major arms: the Node's `major`, else majorByRank over each arm's link type (its first leg
+// Link's, else its Road template's). Nothing when that decides nothing.
+std::optional<std::set<std::string>> majorArms(const ProjectDocument& d, const Node& node, const NodeFillCatalogs& c) {
     const auto& n = d.network;
+    if (node.coarse && !node.coarse->major.empty()) return std::set<std::string>(node.coarse->major.begin(), node.coarse->major.end());
+    std::map<std::string, std::optional<std::string>> typeOf;
+    for (const auto& leg : nodeLinkLegs(n, node)) {
+        const auto& l = linkOf(n, leg.linkId);
+        auto& type = typeOf[legArm(l)];
+        if (type) continue;
+        type = l.linkTypeId;
+        if (const auto* r = l.roadId ? roadOf(n, *l.roadId) : nullptr; !type && r)
+            if (const auto* t = roadTemplate(d, *r, c.templates)) type = t->linkType;
+    }
+    std::vector<std::pair<std::string, std::optional<int>>> ranks;
+    for (const auto& [arm, type] : typeOf) {
+        std::optional<int> rank;
+        if (type) for (const auto& t : c.types) if (t.id == *type) rank = t.rank;
+        ranks.emplace_back(arm, rank);
+    }
+    const auto major = majorByRank(ranks);
+    if (!major) return std::nullopt;
+    return std::set<std::string>(major->begin(), major->end());
+}
+}
+std::string nodeDetailRefusal(const ProjectDocument& d, const Node& node, const NodeFillCatalogs& catalogs) {
+    const auto& n = d.network;
+    const auto& templates = catalogs.templates;
     for (const auto& leg : nodeRoadLegs(n, node))
         if (const auto* r = roadOf(n, leg.roadId); r && r->links.empty()) return "FILL_NODE_ROAD_NOT_GENERATED";
     for (const auto& leg : nodeLinkLegs(n, node))
@@ -88,18 +122,69 @@ std::string nodeDetailRefusal(const ProjectDocument& d, const Node& node, const 
     const auto control = node.coarse && node.coarse->control ? *node.coarse->control : CoarseControl::priority;
     if (control == CoarseControl::allWayStop) return "FILL_NODE_ALL_WAY_STOP";
     if (control == CoarseControl::signalised) return "FILL_NODE_SIGNALISED";
+    if (const auto arms = nodeArms(n, node); arms.size() >= 3) {
+        const auto major = majorArms(d, node, catalogs);
+        if (!major) return "FILL_NODE_PRIORITY_UNDETERMINED";
+        if (major->size() != 2 || arms.size() > 4) return "FILL_NODE_MAJOR_ARMS";
+    }
     std::string reason;
     spansAt(d, generatedNodes(n, node.id), templates, reason);
     if (!reason.empty()) return reason;
     if (nodeTurnConnectors(n, node).empty()) return "FILL_NODE_NO_TURN";
     return {};
 }
-std::vector<std::string> generateNodeDetail(ProjectDocument& d, const std::string& nodeId, const std::vector<CrossSection>& templates) {
+namespace {
+template<class T> std::set<std::string> idsOf(const std::vector<T>& list) {
+    std::set<std::string> ids;
+    for (const auto& x : list) ids.insert(x.id);
+    return ids;
+}
+template<class T> void markNew(std::vector<T>& list, const std::set<std::string>& before) {
+    for (auto& x : list) if (!before.contains(x.id)) x.generated = true;
+}
+// S4.5b (§13.4): who gives way between the generated turns, by HCM rank.
+struct GeneratedTurn { std::string inArm; int rank{}; bool minor{}; };
+void authorPriority(ProjectDocument& d, const std::map<std::string, GeneratedTurn>& turns, const PriorityDefaults& defaults) {
+    auto& row = d.network.rightOfWay;
+    const auto lines = idsOf(row.waitingLines), areas = idsOf(row.conflictAreas), rules = idsOf(row.priorityRules), stops = idsOf(row.stopControls);
+    const auto turnOf = [&](const ConflictSide& s) -> const GeneratedTurn* {
+        const auto t = turns.find(s.path.connectorId);
+        return t == turns.end() ? nullptr : &t->second;
+    };
+    const auto decides = [&](const ConflictSide& a, const ConflictSide& b) {
+        const auto *x = turnOf(a), *y = turnOf(b);
+        return x && y && x->inArm != y->inArm && x->rank != y->rank;
+    };
+    for (const auto& conflict : automaticConflicts(d.network)) {
+        if (conflict.kind == ConflictKind::branching || !decides(conflict.first, conflict.second)) continue;
+        try { authorAutomaticConflict(d, conflict, defaults); }
+        catch (const std::invalid_argument& e) { // a merge already taken over whole by an earlier pair
+            const std::string code = e.what();
+            if (code != "EDIT_NO_MERGE" && code != "EDIT_NO_CROSSING" && code != "EDIT_ALREADY_EXPLICIT") throw;
+        }
+    }
+    std::vector<std::string> stopping;
+    const auto added = row.conflictAreas; // setConflictControl edits the list
+    for (const auto& a : added) {
+        if (areas.contains(a.id) || !decides(a.first, a.second)) continue; // equal ranks keep the fallback's order
+        const bool firstYields = turnOf(a.first)->rank > turnOf(a.second)->rank;
+        setConflictControl(d, a.id, a.name, firstYields ? ConflictPriority::firstYields : ConflictPriority::secondYields,
+                           defaults.gapTime, defaults.headway);
+        if ((firstYields ? turnOf(a.first) : turnOf(a.second))->minor) stopping.push_back(a.id);
+    }
+    for (const auto& id : stopping) setAreaControl(d, id, StopMode::stop);
+    markNew(row.waitingLines, lines); markNew(row.conflictAreas, areas); markNew(row.priorityRules, rules); markNew(row.stopControls, stops);
+}
+}
+std::vector<std::string> generateNodeDetail(ProjectDocument& d, const std::string& nodeId, const NodeFillCatalogs& catalogs) {
+    const auto& templates = catalogs.templates;
     const auto found = std::find_if(d.network.nodes.begin(), d.network.nodes.end(), [&](const auto& x) { return x.id == nodeId; });
     if (found == d.network.nodes.end()) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
     const auto node = *found;
     if (!nodeDetailListed(d, node)) throw std::invalid_argument("FILL_NODE_HAS_DETAIL");
-    if (const auto reason = nodeDetailRefusal(d, node, templates); !reason.empty()) throw std::invalid_argument(reason);
+    if (const auto reason = nodeDetailRefusal(d, node, catalogs); !reason.empty()) throw std::invalid_argument(reason);
+    const auto arms = nodeArms(d.network, node);
+    const auto major = arms.size() >= 3 ? majorArms(d, node, catalogs) : std::nullopt;
     std::string reason;
     const auto spans = spansAt(d, generatedNodes(d.network, node.id), templates, reason);
     std::set<std::string> legs;
@@ -107,13 +192,21 @@ std::vector<std::string> generateNodeDetail(ProjectDocument& d, const std::strin
     applySpans(d, spans, legs);
     reanchorConnectors(d);
     std::vector<std::string> ids;
+    std::map<std::string, GeneratedTurn> turns;
     for (const auto& t : nodeTurnConnectors(d.network, node)) {
         const auto& from = linkOf(d.network, t.inLink);
         const auto& to = linkOf(d.network, t.outLink);
         const LaneReference a{from.id, from.lanes[static_cast<std::size_t>(t.fromLane)].id}, b{to.id, to.lanes[static_cast<std::size_t>(t.toLane)].id};
         ids.push_back(addConnectorRange(d, a, b, t.fromCount, t.toCount));
         editableConnector(d, ids.back()).generated = true;
+        if (major) {
+            const auto in = legArm(linkOf(d.network, t.inLink)), out = legArm(linkOf(d.network, t.outLink));
+            turns[ids.back()] = {in, movementRank(major->contains(in), major->contains(out), t.sweep, arms.size()), !major->contains(in)};
+        }
     }
+    if (major) authorPriority(d, turns, catalogs.priority);
+    // Refined here as settleNodes would: the coarse values go as the detail is drawn (NODES §5).
+    for (auto& n : d.network.nodes) if (n.id == nodeId) n.coarse.reset();
     return ids;
 }
 std::map<std::string, std::vector<Point>> generatedCuts(const ProjectDocument& d, const std::vector<std::string>& links,
@@ -129,12 +222,23 @@ std::map<std::string, std::vector<Point>> generatedCuts(const ProjectDocument& d
             result[id] = polylineSpan(s->second.full, s->second.from, std::min(s->second.to, polylineLength(s->second.full)));
     return result;
 }
-void settleGenerated(ProjectDocument& after, const ProjectDocument& before) {
-    if (after.network.connectors == before.network.connectors) return;
-    for (auto& c : after.network.connectors) {
-        if (!c.generated) continue;
-        const auto was = std::find_if(before.network.connectors.begin(), before.network.connectors.end(), [&](const auto& x) { return x.id == c.id; });
-        if (was != before.network.connectors.end() && *was != c) c.generated = false;
+namespace {
+// A generated object this Command changed is the person's from then on.
+template<class T> void settle(std::vector<T>& after, const std::vector<T>& before) {
+    if (after == before) return;
+    for (auto& x : after) {
+        if (!x.generated) continue;
+        const auto was = std::find_if(before.begin(), before.end(), [&](const auto& y) { return y.id == x.id; });
+        if (was != before.end() && *was != x) x.generated = false;
     }
+}
+}
+void settleGenerated(ProjectDocument& after, const ProjectDocument& before) {
+    auto& a = after.network; const auto& b = before.network;
+    settle(a.connectors, b.connectors);
+    settle(a.rightOfWay.waitingLines, b.rightOfWay.waitingLines);
+    settle(a.rightOfWay.conflictAreas, b.rightOfWay.conflictAreas);
+    settle(a.rightOfWay.priorityRules, b.rightOfWay.priorityRules);
+    settle(a.rightOfWay.stopControls, b.rightOfWay.stopControls);
 }
 }

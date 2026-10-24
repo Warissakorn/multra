@@ -1,6 +1,7 @@
 #include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 
 namespace multra {
 namespace {
@@ -128,7 +129,12 @@ Json withoutGenerated(const Json& object, int schema) {
 bool generatedFlag(const Json& object, const std::string& where, int schema) {
     if (schema < 54 || !object.is_object() || !object.contains("generated")) return false;
     const auto& g = object.at("generated");
-    if (!g.is_boolean() || !g.get<bool>()) throw ValidationError({{"EDIT_CONNECTOR_INVALID", where + ".generated"}});
+    if (!g.is_boolean() || !g.get<bool>()) throw ValidationError({{"EDIT_GENERATED_INVALID", where + ".generated"}});
     return true;
+}
+bool usesGeneratedFlags(const Network& n) {
+    const auto any = [](const auto& list) { return std::any_of(list.begin(), list.end(), [](const auto& x) { return x.generated; }); };
+    const auto& r = n.rightOfWay;
+    return any(n.connectors) || any(r.waitingLines) || any(r.conflictAreas) || any(r.priorityRules) || any(r.stopControls);
 }
 }

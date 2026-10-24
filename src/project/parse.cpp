@@ -148,36 +148,36 @@ RightOfWay rightOfWay(const Json& value, int version) {
     RightOfWay row;
     if(present(value,"waitingLines"))for(const auto& w:array(value,"waitingLines")) {
         const auto path="rightOfWay.waitingLines["+std::to_string(row.waitingLines.size())+"]";
-        knownFields(w,{"id","name","point"},path,version);
+        knownFields(withoutGenerated(w,version),{"id","name","point"},path,version);
         const auto& point=member(w,"point");
         knownFields(point,{"path","station"},path+".point",version);
         row.waitingLines.push_back({field<std::string>(w,"id"),present(w,"name")?field<std::string>(w,"name"):"",
-            {controlPath(member(point,"path"),path+".point.path",version),field<double>(point,"station")}});
+            {controlPath(member(point,"path"),path+".point.path",version),field<double>(point,"station")}});row.waitingLines.back().generated=generatedFlag(w,path,version);
     }
     if(present(value,"conflictAreas"))for(const auto& a:array(value,"conflictAreas")) {
         const auto path="rightOfWay.conflictAreas["+std::to_string(row.conflictAreas.size())+"]";
-        knownFields(a,{"id","name","kind","first","second","priority"},path,version);
+        knownFields(withoutGenerated(a,version),{"id","name","kind","first","second","priority"},path,version);
         row.conflictAreas.push_back({field<std::string>(a,"id"),present(a,"name")?field<std::string>(a,"name"):"",
             conflictKindFromName(field<std::string>(a,"kind")),conflictSide(member(a,"first"),path+".first",version),
             conflictSide(member(a,"second"),path+".second",version),
-            conflictPriorityFromName(field<std::string>(a,"priority"))});
+            conflictPriorityFromName(field<std::string>(a,"priority"))});row.conflictAreas.back().generated=generatedFlag(a,path,version);
     }
     if(present(value,"priorityRules"))for(const auto& r:array(value,"priorityRules")) {
         const auto path="rightOfWay.priorityRules["+std::to_string(row.priorityRules.size())+"]";
-        knownFields(r,{"id","name","conflictAreaId","gapTime","headway"},path,version);
+        knownFields(withoutGenerated(r,version),{"id","name","conflictAreaId","gapTime","headway"},path,version);
         row.priorityRules.push_back({field<std::string>(r,"id"),present(r,"name")?field<std::string>(r,"name"):"",
-            field<std::string>(r,"conflictAreaId"),field<double>(r,"gapTime"),field<double>(r,"headway")});
+            field<std::string>(r,"conflictAreaId"),field<double>(r,"gapTime"),field<double>(r,"headway")});row.priorityRules.back().generated=generatedFlag(r,path,version);
     }
     if(version>=15 && present(value,"stopControls"))for(const auto& c:array(value,"stopControls")) {
         const auto path="rightOfWay.stopControls["+std::to_string(row.stopControls.size())+"]";
-        knownFields(c,{"id","name","waitingLineId","mode","conflictAreaIds"},path,version);
+        knownFields(withoutGenerated(c,version),{"id","name","waitingLineId","mode","conflictAreaIds"},path,version);
         StopControl control{field<std::string>(c,"id"),present(c,"name")?field<std::string>(c,"name"):"",
             field<std::string>(c,"waitingLineId"),stopModeFromName(field<std::string>(c,"mode")),{}};
         for(const auto& area:array(c,"conflictAreaIds")) {
             if(!area.is_string())throw std::invalid_argument("Expected text: conflictAreaIds");
             control.conflictAreaIds.push_back(area.get<std::string>());
         }
-        row.stopControls.push_back(std::move(control));
+        control.generated=generatedFlag(c,path,version);row.stopControls.push_back(std::move(control));
     }
     return row;
 }

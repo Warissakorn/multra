@@ -25,18 +25,18 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — S4.5b, F4's priority (the owner's pick, D323)
+## Next session — S4.5c, F4's signals (the owner's pick, D323, D324)
 
-- **S4.5b** ([READINESS](reference/READINESS.md) §13.4, F4-3a, F4-4a): authored areas where the
-  generated Connectors' surfaces overlap (`addCrossingAreas`' shape, merges as `takeOverMerge`),
-  priority by HCM 7 Ch. 20's movement ranks, *Stop* on minor arms, gap time and headway from
-  `data/priority-rules/default.json`. First read the ranks in the owner's HCM 7 copy (BOOKS §4) and
-  cite the exhibit and page. `generated` on conflict areas, waiting lines, priority rules and Stop
-  controls (written only when true, schema 54, cleared by an edit, as `settleGenerated` does for
-  Connectors). Bring `NODE_PRIORITY_UNDETERMINED` as an F4 refusal for a priority Node of three arms
-  or more. Rows RS14 (derive back gives the same `major`, `bannedTurns`) and RS18 (the four-arm
-  fixture runs at Micro, seed 42, with a Node row per turn).
-- **S4.5c** (§13.5): signals. Then S5, the study area, which reads `generated`.
+- **S4.5c** ([READINESS](reference/READINESS.md) §13.5, F4-5a): a signalised coarse Node gets one
+  controller named after the Node (coarse cycle, offset 0) and one signal group per turn. Stages run
+  in stored order with equal intergreens *I* = (cycle − Σ green) / stages; a turn's group is green over
+  the stages serving it, which must be consecutive (`FILL_NODE_STAGES_SPLIT`); amber 3 s, an *I*
+  below it is `FILL_NODE_INTERGREEN`. Heads at the start of each path of a turn's Connector. Turns green
+  together whose Connectors overlap get S4.5b's areas by rank (`authorPriority` in
+  `node_detail_commands.cpp`), turns never green together none; no Stop at a signal. `generated` on
+  heads and the controller (schema 54, cleared by an edit, as `settleGenerated` does). Drop
+  `FILL_NODE_SIGNALISED`. Row RS15: derive back gives the same stages (`deriveCoarse`'s signal path).
+- **Then S5**, the study area, which reads `generated`.
 - **Other picks:**
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country

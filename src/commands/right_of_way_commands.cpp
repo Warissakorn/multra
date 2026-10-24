@@ -226,7 +226,7 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
     for (auto w : row.waitingLines) {
         if (!copied(w.point.path)) continue;
         const auto old = w.id;
-        w.id = allocateId(d, "wait"); w.point.path = remap(w.point.path);
+        w.id = allocateId(d, "wait"); w.generated = false; w.point.path = remap(w.point.path);
         lines[old] = w.id; d.network.rightOfWay.waitingLines.push_back(std::move(w));
     }
     for (auto a : row.conflictAreas) {
@@ -234,13 +234,13 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
                            lines.contains(a.first.waitingLineId) && lines.contains(a.second.waitingLineId);
         if (!whole) continue;
         const auto old = a.id;
-        a.id = allocateId(d, "conflict");
+        a.id = allocateId(d, "conflict"); a.generated = false; // S4.5b: a copy is the person's
         for (auto* s : {&a.first, &a.second}) { s->path = remap(s->path); s->waitingLineId = lines.at(s->waitingLineId); }
         areas[old] = a.id; d.network.rightOfWay.conflictAreas.push_back(std::move(a));
     }
     for (auto r : row.priorityRules) {
         if (!areas.contains(r.conflictAreaId)) continue;
-        r.id = allocateId(d, "rule"); r.conflictAreaId = areas.at(r.conflictAreaId);
+        r.id = allocateId(d, "rule"); r.generated = false; r.conflictAreaId = areas.at(r.conflictAreaId);
         d.network.rightOfWay.priorityRules.push_back(std::move(r));
     }
     // A control goes with its line and keeps the areas that were copied with it.
@@ -249,7 +249,7 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
         std::erase_if(c.conflictAreaIds, [&](const auto& id) { return !areas.contains(id); });
         if (c.conflictAreaIds.empty()) continue;
         for (auto& id : c.conflictAreaIds) id = areas.at(id);
-        c.id = allocateId(d, "stop"); c.waitingLineId = lines.at(c.waitingLineId);
+        c.id = allocateId(d, "stop"); c.generated = false; c.waitingLineId = lines.at(c.waitingLineId);
         d.network.rightOfWay.stopControls.push_back(std::move(c));
     }
     // A line that only served areas left behind (one owner missing) would be an orphan copy.

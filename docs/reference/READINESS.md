@@ -105,7 +105,7 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 | S4.2 | The readiness panel by level, with the seam checks. **Implemented (D314)** | RS1–RS4 |
 | S4.3 | *Fill defaults* F1–F3. **Implemented (D316)** | RS5–RS8 |
 | S4.4 | Node proposals. **Implemented (D317)** | RS9, RS10 |
-| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13)** | RS11–RS18 |
+| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13); S4.5a and S4.5b implemented (D323, D324)** | RS11–RS18 |
 
 ## 8. Owner choices (answered 2026-10-23, D313: S4-1a, S4-2a, S4-3a, S4-4a)
 
@@ -302,10 +302,13 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
 - **Areas:** each pair of generated Connectors whose surfaces overlap gets authored areas, as
   `addCrossingAreas` makes them (one per lane pair, a waiting line 1 m short, D63); merges into one
   out-leg are taken over as `takeOverMerge` does.
-- **Who gives way (F4-3a):** HCM 7 Ch. 20's movement ranks. Rank 1: major through and major
-  kerb turn; 2: major far turn and minor kerb turn; 3: minor through; 4: minor far turn. The higher
-  rank yields; an equal rank leaves the pair automatic (the drawing-order fallback for a merge).
-  The ranks are read from the owner's copy (BOOKS §4) before S4.5b, page cited with them.
+- **Who gives way (F4-3a):** HCM 7th ed., Ch. 20 §2, "Relative Priority of Various Movements at
+  the Intersection" (owner's copy, PDF p. 1590; read for S4.5b, D324). Rank 1: major through and
+  major kerb turn; 2: major far turn and minor kerb turn; 3: minor through, and the minor far turn
+  at a three-leg junction; 4: the minor far turn at a four-leg one ("Rank 4 movements occur only at
+  four-leg" junctions, which corrects this section's first draft). The HCM writes right-hand
+  traffic, so its right turn is the kerb turn here and its left the far turn. The higher rank
+  yields; an equal rank leaves the pair automatic (the drawing-order fallback for a merge).
 - **Control:** a minor arm's yielding areas get *Stop* at their waiting line (F4-3a, two-way stop
   control as Ch. 20 models it).
 - **Gap time and headway (F4-4):** `data/priority-rules/default.json`'s 3.0 s and 7.0 m, which
@@ -407,9 +410,42 @@ Each row first asserts that its forcing worked (AGENTS).
   - **Listing:** a Node with detail, or with fewer than two arms, gives no row; every other Node
     gives one, with its refusal when it has one. A refused row cannot be ticked, and applying it
     throws the refusal.
-- **Until S4.5b** the generated Connectors' crossings are automatic, as an undrawn junction's are:
-  the detail runs, but nobody gives way at it. Rule 4 applies.
+- **Until S4.5b** the generated Connectors' crossings were automatic, as an undrawn junction's
+  are: the detail ran, but nobody gave way at it (S4.5b, §15).
 - **Editor:** *Fill defaults…* lists the Node with the Connector count, the source and what it
   clears; a refused row shows why and has no check box.
 - **Rows:** RS11–RS13, RS16 and RS17 are in `tests/node_detail_tests.cpp` (`nodedetail`). RS14,
   RS15 and RS18 wait for S4.5b and S4.5c.
+
+## 15. S4.5b as implemented (D324)
+
+- **Ranks** (`movementRank`, `node_detail.*`): through is a turn to the other arm of the same class,
+  major to major or minor to minor; otherwise the turn's sweep sign makes it a kerb or a far turn.
+- **Major arms:** the Node's `major`, else `majorByRank` over each arm's link type (its first leg
+  Link's, else its Road template's). At three arms or more, F4 is refused:
+  - `FILL_NODE_PRIORITY_UNDETERMINED` when neither decides;
+  - `FILL_NODE_MAJOR_ARMS` unless exactly two arms are major and there are at most four, the
+    two-way stop shape Ch. 20's ranks are written for (a reading taken: §13.1 did not name it).
+- **Areas:** for every automatic conflict between generated turns from different arms and of
+  different ranks, `authorAutomaticConflict` makes the authored areas (a merge is taken over whole).
+  Then every new area between two such turns gets the priority by rank, with `default.json`'s gap
+  time and headway through `setConflictControl`, and an area a minor arm yields in gets *Stop*
+  (`setAreaControl`). An area of equal ranks that a merge takeover made keeps the fallback's
+  order, which is how it ran before.
+- **`generated`** on waiting lines, conflict areas, priority rules and Stop controls (schema 54), each
+  cleared by its first edit (`settleGenerated`) and never copied. A bad value is
+  `EDIT_GENERATED_INVALID`, which replaces S4.5a's `EDIT_CONNECTOR_INVALID` for every object.
+- **The command refines the Node itself:** `generateNodeDetail` deletes `coarse` as it draws, so a
+  caller outside `History` never holds both.
+- **Derive back amended** (`deriveCoarse`): an arm is minor when each of its turns that meets a
+  decided conflict yields in one; an arm with a turn that meets some and never yields is major.
+  The earlier rule, "never yields", made both major arms minor, since a major far turn yields to the
+  opposite through; a minor kerb turn also has priority over the other minor arm's through, so
+  "has priority somewhere" does not identify a major arm either.
+- **Editor:** *Fill defaults…* passes the resolved link types and the priority defaults.
+- **Rows:** RS14 and RS18 are in `nodedetail`. RS14: every generated area decided and generated,
+  rules at 3.0 s / 7.0 m, Stop only on minor arms' lines, a minor arm yielding to a major one, and
+  deleting the detail deriving back the same major arms with no banned turn. RS18: the four-arm
+  fixture over the shipped T-junction's catalogs runs at Micro (seed 42) with no refusal, its Node
+  has a row for each of the 12 turns, vehicles and no issue. Rule 4 applies: a run, not a validated
+  junction. RS15 waits for S4.5c.

@@ -1,5 +1,6 @@
 #pragma once
 #include "history.hpp"
+#include "node_detail_commands.hpp"
 namespace multra {
 // S4.3 (READINESS §4, D313, D316): *Fill defaults*. Each fill writes a present field from a value the
 // project already cites, is listed with that source, and is applied only when chosen; the editor
@@ -23,9 +24,13 @@ struct FillOffer {
 };
 inline constexpr double hcmJamDensity = 118.0605; // pc/km/ln: 190 pc/mi/ln / 1.609344 (ROADS §8)
 extern const char* const hcmJamDensitySource;
+// F4 also reads the link types and priority defaults (NodeFillCatalogs); the template-only forms
+// pass none, so a Node of three arms or more without `major` lists FILL_NODE_PRIORITY_UNDETERMINED.
+std::vector<FillOffer> fillOffers(const ProjectDocument&, const NodeFillCatalogs&);
 std::vector<FillOffer> fillOffers(const ProjectDocument&, const std::vector<CrossSection>& templates);
 extern const char* const nodeDetailSource;
 // Applies `chosen` only; an offer that no longer applies is EDIT_FILL_STALE, and one with a refusal
 // throws that refusal.
+void applyFills(ProjectDocument&, const std::vector<FillOffer>& chosen, const NodeFillCatalogs&);
 void applyFills(ProjectDocument&, const std::vector<FillOffer>& chosen, const std::vector<CrossSection>& templates);
 }

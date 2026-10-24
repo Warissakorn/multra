@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/fill_commands.hpp"
+#include "../project/link_type_codec.hpp"
 #include <QDialog>
 #include <algorithm>
 #include <QDialogButtonBox>
@@ -15,8 +16,10 @@
 // then checks the chosen level again.
 namespace multra {
 void EditorWindow::fillDefaultsDialog() {
-    const auto templates = crossSectionRows();
-    const auto offers = fillOffers(history_.document(), templates);
+    NodeFillCatalogs catalogs{crossSectionRows(), {}, priorityDefaults()};
+    try { for (auto& t : resolveLinkTypes(history_.document().definition.value_or(AuthoringDefinition{}), data_)) catalogs.types.push_back(std::move(t.type)); }
+    catch (const std::exception&) {} // an unreadable catalog ranks nothing: F4 then asks for major arms
+    const auto offers = fillOffers(history_.document(), catalogs);
     QDialog dialog(this); dialog.setObjectName("editorFillDialog"); dialog.setWindowTitle(text("editorFillDefaults"));
     auto* layout = new QVBoxLayout(&dialog);
     layout->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
@@ -52,7 +55,7 @@ void EditorWindow::fillDefaultsDialog() {
     for (int r = 0; r < table->rowCount(); ++r)
         if (table->item(r, 0)->checkState() == Qt::Checked) chosen.push_back(offers[static_cast<std::size_t>(r)]);
     if (chosen.empty()) return;
-    execute("editorFillDefaults", [&](auto& d) { applyFills(d, chosen, templates); });
+    execute("editorFillDefaults", [&](auto& d) { applyFills(d, chosen, catalogs); });
     recheck();
 }
 }

@@ -24,9 +24,17 @@ NodeCuts nodeLegCuts(const Network&, const Node&, const std::map<std::string, st
 // one in-leg are ordered kerb turn first by their sweep (`drivingSide`); with k turns over n lanes,
 // turn i takes lanes floor(i*n/k) to ceil((i+1)*n/k) - 1. The out end takes as many lanes, capped at
 // its count, from the kerb, except the far turn of two or more, which takes them from the far side.
+// `sweep` is the turn's angle towards the kerb, in radians: positive for a kerb turn, negative for a
+// far turn, near zero for a through movement (S4.5b reads only its sign).
 struct TurnConnector {
-    std::string inLink, outLink; int fromLane{}, fromCount{}, toLane{}, toCount{};
+    std::string inLink, outLink; int fromLane{}, fromCount{}, toLane{}, toCount{}; double sweep{};
     bool operator==(const TurnConnector&) const = default;
 };
 std::vector<TurnConnector> nodeTurnConnectors(const Network&, const Node&);
+// F4-3a (§13.4): HCM 7th ed., Ch. 20 §2 "Relative Priority of Various Movements" (PDF p. 1590), read
+// for any driving side with kerb for the HCM's right and far for its left. Rank 1: major through
+// and major kerb turn; 2: major far turn and minor kerb turn; 3: minor through, and the minor far
+// turn at a three-arm Node; 4: the minor far turn at a four-arm Node. Through is a turn to the
+// other arm of the same class (major to major, minor to minor); otherwise `sweep`'s sign decides.
+int movementRank(bool inMajor, bool outMajor, double sweep, std::size_t arms);
 }

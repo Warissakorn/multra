@@ -24,7 +24,8 @@ bool jamValidFor(const LinkType& t) {
     return t.capacityPerLane > 0 && t.freeSpeed > 0 && hcmJamDensity > t.capacityPerLane / (t.freeSpeed * 3.6);
 }
 }
-std::vector<FillOffer> fillOffers(const ProjectDocument& d, const std::vector<CrossSection>& templates) {
+std::vector<FillOffer> fillOffers(const ProjectDocument& d, const NodeFillCatalogs& catalogs) {
+    const auto& templates = catalogs.templates;
     std::vector<FillOffer> offers;
     const auto& n = d.network;
     for (const auto& l : n.links) {
@@ -42,15 +43,16 @@ std::vector<FillOffer> fillOffers(const ProjectDocument& d, const std::vector<Cr
             offers.push_back({FillKind::roadLinks, r.id, s->id, s->source, "SEAM_ROAD_NOT_GENERATED"});
     for (const auto& node : n.nodes) {
         if (!nodeDetailListed(d, node)) continue;
-        auto refusal = nodeDetailRefusal(d, node, templates);
+        auto refusal = nodeDetailRefusal(d, node, catalogs);
         const auto turns = refusal.empty() ? nodeTurnConnectors(n, node).size() : 0;
         offers.push_back({FillKind::nodeDetail, node.id, refusal.empty() ? std::to_string(turns) : "", nodeDetailSource, "NODE_NO_TURN", std::move(refusal)});
     }
     return offers;
 }
-void applyFills(ProjectDocument& d, const std::vector<FillOffer>& chosen, const std::vector<CrossSection>& templates) {
+void applyFills(ProjectDocument& d, const std::vector<FillOffer>& chosen, const NodeFillCatalogs& catalogs) {
+    const auto& templates = catalogs.templates;
     for (const auto& offer : chosen) {
-        const auto current = fillOffers(d, templates);
+        const auto current = fillOffers(d, catalogs);
         if (std::find(current.begin(), current.end(), offer) == current.end()) throw std::invalid_argument("EDIT_FILL_STALE");
         if (!offer.refusal.empty()) throw std::invalid_argument(offer.refusal);
         switch (offer.kind) {
@@ -59,8 +61,12 @@ void applyFills(ProjectDocument& d, const std::vector<FillOffer>& chosen, const 
             for (auto& t : d.definition->linkTypes) if (t.id == offer.objectId) t.jamDensity = JamDensity{hcmJamDensity, hcmJamDensitySource};
             break;
         case FillKind::roadLinks: applyTemplate(d, offer.objectId, templates); break;
-        case FillKind::nodeDetail: generateNodeDetail(d, offer.objectId, templates); break;
+        case FillKind::nodeDetail: generateNodeDetail(d, offer.objectId, catalogs); break;
         }
     }
+}
+std::vector<FillOffer> fillOffers(const ProjectDocument& d, const std::vector<CrossSection>& templates) { return fillOffers(d, NodeFillCatalogs{templates, {}, {}}); }
+void applyFills(ProjectDocument& d, const std::vector<FillOffer>& chosen, const std::vector<CrossSection>& templates) {
+    applyFills(d, chosen, NodeFillCatalogs{templates, {}, {}});
 }
 }

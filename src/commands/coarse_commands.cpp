@@ -150,13 +150,20 @@ std::optional<NodeCoarse> deriveCoarse(const ProjectDocument& d, const Node& nod
         for (const auto& [pair, ids] : programs) if (!ids.empty()) shown[pair] = ids;
         if (const auto signal = stagesOf(d, shown)) { c.control = CoarseControl::signalised; c.signal = signal; }
     } else {
-        std::set<std::string> yielding;
+        // An arm is minor when each of its turns that meets a decided conflict yields in one; an arm
+        // with a turn that meets some and never yields is major (S4.5b, D324: HCM 7 Ch. 20's major far
+        // turn yields to the opposite through, yet the major through never yields).
+        std::set<std::size_t> met, yields;
         for (const auto& conflict : m.conflicts) {
-            if (conflict.priority == ConflictPriority::firstYields) yielding.insert(ins[m.turns[conflict.first].in]);
-            if (conflict.priority == ConflictPriority::secondYields) yielding.insert(ins[m.turns[conflict.second].in]);
+            if (conflict.priority == ConflictPriority::undetermined) continue;
+            met.insert(conflict.first); met.insert(conflict.second);
+            yields.insert(conflict.priority == ConflictPriority::firstYields ? conflict.first : conflict.second);
         }
-        if (!yielding.empty())
-            for (const auto& r : inRoads) if (!yielding.contains(r)) c.major.push_back(r);
+        std::set<std::string> keeps, yielding;
+        for (const auto t : met) (yields.contains(t) ? yielding : keeps).insert(ins[m.turns[t].in]);
+        const auto minor = [&](const std::string& r) { return yielding.contains(r) && !keeps.contains(r); };
+        if (std::any_of(inRoads.begin(), inRoads.end(), minor))
+            for (const auto& r : inRoads) if (!minor(r)) c.major.push_back(r);
     }
     if (allDefault(c)) return std::nullopt;
     return c;

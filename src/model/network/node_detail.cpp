@@ -80,9 +80,14 @@ std::vector<TurnConnector> nodeTurnConnectors(const Network& n, const Node& node
             const auto& to = *outs[static_cast<std::size_t>(i)].second;
             const int outLanes = static_cast<int>(to.lanes.size()), toCount = std::min(count, outLanes);
             const bool far = k > 1 && i == k - 1;
-            turns.push_back({from.id, to.id, first, count, far ? outLanes - toCount : 0, toCount});
+            turns.push_back({from.id, to.id, first, count, far ? outLanes - toCount : 0, toCount, outs[static_cast<std::size_t>(i)].first});
         }
     }
     return turns;
+}
+int movementRank(bool inMajor, bool outMajor, double sweep, std::size_t arms) {
+    if (inMajor) return outMajor || sweep > 0 ? 1 : 2;
+    if (!outMajor) return 3;
+    return sweep > 0 ? 2 : arms == 3 ? 3 : 4;
 }
 }

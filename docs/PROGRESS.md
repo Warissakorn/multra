@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S4.5b: who gives way at a generated junction (D324)
+
+- **Asked:** continue; S4.5b was next.
+- **Source:** HCM 7th ed., Ch. 20 §2 in the owner's copy (PDF p. 1590). The minor far turn is Rank 3
+  at a three-leg junction and 4 only at a four-leg one; READINESS §13.4's draft said 4 everywhere.
+- **Built** (READINESS §15): ranks by arm class and sweep sign; authored areas where generated turns
+  of different arms and ranks cross or merge, higher rank yielding with `default.json`'s numbers;
+  Stop on minor arms; `generated` on waiting lines, areas, rules and Stop controls. F4 now asks for
+  major arms (`FILL_NODE_PRIORITY_UNDETERMINED`) and two-way stop's shape (`FILL_NODE_MAJOR_ARMS`).
+- **Found:** derive back lost `major` once F4 drew priority, because a major far turn yields to the
+  opposite through. Its rule now calls an arm major when one of its turns meets a decided conflict
+  and never yields (ROADS_IMPLEMENTED §20 amended).
+- **Rows:** RS14, RS18 (`nodedetail`); RS18 runs the generated four-arm junction at Micro.
+  Linux only, GCC 13, Qt 6.4.2 offscreen: `ctest --preset desktop` 224/224;
+  file-size, docs and architecture checks pass. Not built or run on Windows.
+
 ## 2026-10-23 — F4 contract answered; S4.5a: a coarse Node's Connectors (D323)
 
 - **Asked:** continue; the owner picked F4 (S4.5) and answered its six choices as recommended.
@@ -188,21 +204,6 @@ order panel → fills → proposals ([READINESS](reference/READINESS.md)).
 - **Rows:** RD20's Micro half, RD21, RD22 and RD29 (`roadseams`), with RD21's editor part in
   `road-ui`; five mutations caught.
 - **S3 (Roads) is complete:** S3.2–S3.7, D304–D312.
-
-## 2026-10-23 — S3.6b: coarse values dialog, refine, derive back, lifecycle (D311)
-
-- **Detail is the junction's interior** (D311, revising D310): a Connector inside the Node, or a
-  Link wholly inside. Links that only reach in are legs, and Macro and Meso now compile them as the
-  arms of a Node without detail.
-- **Refine and derive back** happen inside whatever Command causes them. Drawing detail into a
-  coarse Node drops its values. Deleting a Node's last detail derives them: signalised from the
-  heads, stages from the signal groups' greens, banned turns from missing movements, and major legs
-  from who yields.
-- **Lifecycle:** when a Command leaves a Node with two Link-less Roads of one template meeting end
-  to start, and nothing authored on the Node, the Node is removed and the Roads joined.
-- **Editor:** *Coarse values…* on the Nodes tab, for a Node without detail.
-- **Rows:** RD17, RD18, RD27 (`roadcoarse`) and RD28 (`road-ui`); RD19 gains a junction over
-  generated Links; five mutations caught.
 
 ## Older entries
 
