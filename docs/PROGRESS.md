@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
+
+- **Asked:** continue; S5.5b was next. The contract left no owner question open.
+- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §21):
+  - the Problems tab warns once per study-area Node holding program-drawn objects, with the
+    count by kind, and the row selects the Node. The run still starts;
+  - every export (single, batch, comparison, Macro, Meso; editor and CLI) carries a second header
+    line when generated objects or stale inputs are behind it, plus a line naming where a study
+    area's flows came from. JSON gains `marking` / `studyArea` the same way. Unmarked exports keep
+    their bytes;
+  - the CLI reads the side files too, and a comparison's alternative uses its own.
+- **Rows:** SA14, SA15 (`studyarea`), the Problems row in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows. No test runs the CLI on a study-area project.
+
 ## 2026-10-24 — S5.5a: Macro and Meso side files, stale by SHA-256 (D331)
 
 - **Asked:** continue; S5.5 was next. It was split like S5.2: S5.5a is the side files and
@@ -185,22 +200,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   cannot create Qt test-mode storage on this environment's read-only home; `workspace-ui`
   and `design-system-ui` fail existing font assertions under Qt 6.8.2. The same five failures
   reproduce before the navigation/place changes. No Windows or MAP10 gate is closed.
-
-## 2026-10-23 — The owner's book copies analysed and mapped (docs only)
-
-- **Asked:** analyse the five book repositories and add them as development sources.
-- **Added:** [BOOKS](reference/BOOKS.md), how to attach and cite each copy, how far to trust each
-  conversion, and which chapters serve which milestone; a read-by-task row in the docs map. The
-  books stay in their own repositories (attached with `add_repo`, never vendored).
-- **Checked** ([book-copies-check](evidence/book-copies-check.md)), from the source images:
-  - HCM 7 confirms the M6.0 sheet's TWSC headways (Exhibits 20-17, 20-18, two-lane column),
-    Eq. 20-18, the 1,750 pc/h/ln default and the base conditions; Eq. 19-19 keeps `PF`; the field
-    saturation-flow method counts from the fourth queued vehicle;
-  - `data/los/hcm.json`'s bounds equal HCM 7 Exhibits 19-8, 20-2 and 21-8;
-  - ten Sheffi page images are empty, book p. 114 among them, so B21 still needs the print;
-  - Ortúzar Example 11.1 (two routes, 1400 / 600 at 22 min) fits M9's two-route fixture;
-  - the Planning Handbook is the 4th edition (2016).
-- **Not done:** no number entered `data/` or a test, no benchmark was chosen, no gate moved.
 
 ## Older entries
 

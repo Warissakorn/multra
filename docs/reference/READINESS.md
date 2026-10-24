@@ -41,13 +41,15 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
   `{severity, code, path, object}`, translated as the Problems tab's rows are, and selecting a row
   selects the object on the canvas.
 - **Rows:**
-  - **Micro:** `runDiagnostics` as today, plus `seamChecks(micro)`;
+  - **Micro:** `runDiagnostics` as today, plus `seamChecks(micro)`, plus one
+    `MICRO_GENERATED_IN_AREA` warning per study-area Node holding generated objects
+    ([STUDY_AREA](STUDY_AREA.md) §10, D332);
   - **Meso:** `mesoNetwork` issues and advisories, then `mesoDemand`'s, plus `seamChecks(meso)`;
   - **Macro:** `macroNetwork` issues and advisories, then `macroDemand`'s for the chosen period,
     plus `seamChecks(macro)`.
 - **Severity:**
   - *refusal*: the run would not start (a compile or demand issue);
-  - *warning*: a seam warning;
+  - *warning*: a seam warning, or generated objects in the study area;
   - *advisory*: everything else.
 - **Agreement:** the panel reads the same functions the runs call, in the same order. So "no
   refusal" holds exactly when the run starts. This is a row (RS2), not a promise.

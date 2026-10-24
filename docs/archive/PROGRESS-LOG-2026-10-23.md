@@ -3,6 +3,22 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — The owner's book copies analysed and mapped (docs only)
+
+- **Asked:** analyse the five book repositories and add them as development sources.
+- **Added:** [BOOKS](../reference/BOOKS.md), how to attach and cite each copy, how far to trust each
+  conversion, and which chapters serve which milestone; a read-by-task row in the docs map. The
+  books stay in their own repositories (attached with `add_repo`, never vendored).
+- **Checked** ([book-copies-check](../evidence/book-copies-check.md)), from the source images:
+  - HCM 7 confirms the M6.0 sheet's TWSC headways (Exhibits 20-17, 20-18, two-lane column),
+    Eq. 20-18, the 1,750 pc/h/ln default and the base conditions; Eq. 19-19 keeps `PF`; the field
+    saturation-flow method counts from the fourth queued vehicle;
+  - `data/los/hcm.json`'s bounds equal HCM 7 Exhibits 19-8, 20-2 and 21-8;
+  - ten Sheffi page images are empty, book p. 114 among them, so B21 still needs the print;
+  - Ortúzar Example 11.1 (two routes, 1400 / 600 at 22 min) fits M9's two-route fixture;
+  - the Planning Handbook is the 4th edition (2016).
+- **Not done:** no number entered `data/` or a test, no benchmark was chosen, no gate moved.
+
 ## 2026-10-23 — UI suites isolate their recovery drafts (D320)
 
 - **The problem:** a crashed or killed UI run left its recovery draft behind. The next local

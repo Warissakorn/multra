@@ -4,6 +4,8 @@
 #include "meso_run.hpp"
 #include "../core/validate.hpp"
 #include <cmath>
+#include <fstream>
+#include <iterator>
 
 namespace multra {
 namespace {
@@ -214,5 +216,19 @@ MesoSide parseMesoSide(const Json& j, const std::string& where) {
     }
     side.inputManifest = in.key(j, "", "inputManifest");
     return side;
+}
+StudyAreaSources readStudyAreaSources(const std::filesystem::path& project) {
+    StudyAreaSources s;
+    const auto read = [&](const char* kind, std::shared_ptr<const Json>& json, std::string& sha) {
+        std::ifstream in(sideFilePath(project, kind), std::ios::binary);
+        if (!in) return;
+        const std::string bytes(std::istreambuf_iterator<char>(in), {});
+        auto parsed = Json::parse(bytes, nullptr, false);
+        json = std::make_shared<const Json>(parsed.is_discarded() ? Json(nullptr) : std::move(parsed));
+        sha = inputSha256(bytes);
+    };
+    read("macro", s.macro, s.macroSha256);
+    read("meso", s.meso, s.mesoSha256);
+    return s;
 }
 }

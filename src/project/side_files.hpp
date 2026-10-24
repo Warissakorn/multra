@@ -5,6 +5,7 @@
 // watched path counts, each with the run's settings, its input manifest and `projectSha256`, the
 // SHA-256 of the project bytes as saved (an unsaved edit counts), so staleness survives a reopen.
 #include "document.hpp"
+#include "study_area_run.hpp"
 #include "../macro/assign.hpp"
 #include "../meso/loading.hpp"
 #include <filesystem>
@@ -55,4 +56,7 @@ Json mesoSideJson(const MesoRun&, const std::string& projectSha256, const std::v
 // its own array).
 MacroSide parseMacroSide(const Json&, const std::string& where = "macroSide");
 MesoSide parseMesoSide(const Json&, const std::string& where = "mesoSide");
+// S5.5b (D332): the side files beside `project` as the CLI reads them, the same way the editor does:
+// a missing file is none, bytes that are not JSON are a JSON null (refused by the cut).
+StudyAreaSources readStudyAreaSources(const std::filesystem::path& project);
 }

@@ -99,6 +99,7 @@ bool EditorWindow::prepareRun() {
         std::uint32_t seed{};
         try{seed=parseSeed(runSeed_->text().toStdString());}catch(const std::exception&){throw std::invalid_argument("invalidSeed");}
         auto snapshot=compileDocument(history_.document(),data_,nullptr,&sources);
+        runMarking_={exportMarking(history_.document(),snapshot.studyArea),snapshot.studyArea}; // S5.5b
         auto state=createSimulation(snapshot.scenario,seed);
         const auto evaluation=evaluationSpec(history_.document(),snapshot,data_);
         MovementAccumulator movements(evaluation);

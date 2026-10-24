@@ -1091,6 +1091,7 @@
   "editorNodeStudyArea": "Study area",
   "editorGateFlowMeso": "Cut from Meso",
   "MICRO_AREA_SOURCE_INCOMPLETE": "The Meso run stopped before its end, so its flows cannot be cut.",
+  "MICRO_GENERATED_IN_AREA": "This study-area Node holds objects the program drew: %1 Connectors, %2 right-of-way objects, %3 signal heads, %4 controllers. The Micro run starts, but check them before relying on its results; exports are marked.",
   "MICRO_AREA_SOURCE_STALE": "The study area's flows come from a Macro or Meso result made for other project bytes (or one that no longer fits the network, so it was run again here). Run it again to refresh its side file.",
   "MICRO_AREA_SOURCE_INVALID": "The Macro or Meso side file beside the project is not a valid side file, so its flows cannot be cut. Run Macro or Meso again to replace it.",
   "MICRO_AREA_CLASS_UNSUPPORTED": "This Meso class names a single vehicle type, which a gate flow cannot carry; it is left out.",

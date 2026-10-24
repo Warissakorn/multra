@@ -25,15 +25,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — S5.5b, or the owner's pick of an item below
+## Next session — the owner's pick (S5 is complete, D327–D332)
 
-- **S5.5b** ([STUDY_AREA](reference/STUDY_AREA.md) §10–§11; S5.5a is in, D331) completes S5;
-  rows SA14, SA15:
-  - `MICRO_GENERATED_IN_AREA` readiness warnings, one per area Node holding `generated` objects;
-  - the export's marking line and JSON `marking` (generated count, stale inputs);
-  - the Micro output's study-area provenance (`RunSnapshot::studyArea`, recorded since D331).
-- **Open from S5.4:** gate flows by vehicle type, for inputs naming one type
-  (`MICRO_AREA_CLASS_UNSUPPORTED`).
+- **Open from S5:** gate flows by vehicle type, for inputs naming one type
+  (`MICRO_AREA_CLASS_UNSUPPORTED`); a CLI test on a study-area project; restoring the full Macro or
+  Meso table on reopen (owner chose the cut source only, D331).
 - **Other picks:**
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country

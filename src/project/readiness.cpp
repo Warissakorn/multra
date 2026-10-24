@@ -1,4 +1,5 @@
 #include "readiness.hpp"
+#include "export_marking.hpp"
 #include "link_type_codec.hpp"
 #include "macro_input.hpp"
 #include "macro_run.hpp"
@@ -39,6 +40,14 @@ std::vector<ReadinessRow> readiness(const ProjectDocument& d, const std::filesys
             for (const auto& r : runDiagnostics(d, data, sources))
                 rows.push_back({r.code, r.path, r.objectId, r.selectId,
                                 r.severity == DiagnosticSeverity::advisory ? ReadinessSeverity::advisory : ReadinessSeverity::refusal});
+            const auto& area = d.zones.studyArea.nodes;
+            for (std::size_t i = 0; i < n.nodes.size(); ++i) {
+                const auto& node = n.nodes[i];
+                if (!area.empty() && std::find(area.begin(), area.end(), node.id) == area.end()) continue;
+                if (const auto c = generatedInNode(d, node); c.total() > 0)
+                    rows.push_back({"MICRO_GENERATED_IN_AREA", "nodes[" + std::to_string(i) + "]", node.id, {}, ReadinessSeverity::warning,
+                                    {c.connectors, c.rightOfWay, c.heads, c.controllers}});
+            }
         } else if (level == ReadinessLevel::meso) {
             const auto network = mesoNetwork(d, data);
             add(rows, n, network.issues, ReadinessSeverity::refusal);

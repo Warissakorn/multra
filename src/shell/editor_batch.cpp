@@ -116,6 +116,7 @@ void EditorWindow::startBatch() {
     try{
         snapshot=compileDocument(history_.document(),data_,nullptr,&sources);
         spec=evaluationSpec(history_.document(),*snapshot,data_);
+        batchMarking_={exportMarking(history_.document(),snapshot->studyArea),snapshot->studyArea}; // S5.5b
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return;

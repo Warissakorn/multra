@@ -31,6 +31,12 @@ std::string writeSide(const QString& file, const Json& json) {
     return inputSha256(bytes);
 }
 }
+StudyAreaSources sideFilesBeside(const QString& project) {
+    StudyAreaSources s;
+    std::tie(s.macro, s.macroSha256) = readSide(sidePath(project, "macro"));
+    std::tie(s.meso, s.mesoSha256) = readSide(sidePath(project, "meso"));
+    return s;
+}
 void EditorWindow::loadSideFiles() {
     std::tie(macro_->side, macro_->sideSha256) = readSide(file_.isEmpty() ? QString() : sidePath(file_, "macro"));
     std::tie(meso_->side, meso_->sideSha256) = readSide(file_.isEmpty() ? QString() : sidePath(file_, "meso"));

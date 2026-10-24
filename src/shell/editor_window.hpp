@@ -4,6 +4,7 @@
 #include "../commands/connector_commands.hpp"
 #include "../project/diagnostics.hpp"
 #include "../project/run.hpp"
+#include "../project/export_marking.hpp"
 #include "../eval/summary.hpp"
 #include "../eval/discharge.hpp"
 #include "../project/evaluation.hpp"
@@ -358,6 +359,10 @@ private:
     // S5.5a (STUDY_AREA §8-§9, D331), editor_side_files.cpp: the Macro and Meso side files.
     void loadSideFiles(); void writeMacroSide(); void writeMesoSide(const std::vector<std::string>& watched);
     StudyAreaSources studyAreaSources() const; const std::string& projectSha() const;
+    // S5.5b (STUDY_AREA §11, D332): each result's export marking and study-area flows, set where its
+    // snapshot is compiled; resultsCsv() writes them.
+    struct ResultMarking { ExportMarking marking; std::optional<StudyAreaProvenance> flows; };
+    ResultMarking runMarking_, batchMarking_, baseMarking_, alternativeMarking_;
 public:
     bool macroSideStale() const; bool mesoSideStale() const; // a side file whose projectSha256 is not the document's
 private:

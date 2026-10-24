@@ -215,18 +215,19 @@ bool EditorWindow::runFinished() const {
 }
 std::string EditorWindow::resultsCsv() const {
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
-        if(const auto* r=macroResult())return macroCsv(*r);
+        if(const auto* r=macroResult())return markedCsv(macroCsv(*r),exportMarking(history_.document(),{},macroStale())); // S5.5b
         throw std::runtime_error("EDIT_CSV_UNFINISHED");
     }
     if(mesoTabShown()){ // M11.4: the Meso tab exports its own CSV, the CLI's --meso --csv
-        if(const auto* r=mesoResult())return mesoCsv(*r);
+        if(const auto* r=mesoResult())return markedCsv(mesoCsv(*r),exportMarking(history_.document(),{},mesoStale()));
         throw std::runtime_error("EDIT_CSV_UNFINISHED");
     }
-    if(batch_)return batchCsv(batch_->report,batch_->runs);
-    if(comparison_)return comparisonCsv(comparison_->comparison,comparison_->base,comparison_->alternative);
+    if(batch_)return markedCsv(batchCsv(batch_->report,batch_->runs),batchMarking_.marking,batchMarking_.flows);
+    if(comparison_)return markedComparisonCsv(comparisonCsv(comparison_->comparison,comparison_->base,comparison_->alternative),
+                                              baseMarking_.marking,alternativeMarking_.marking,baseMarking_.flows,alternativeMarking_.flows);
     const auto report=runReport();
     if(!report || !runFinished())throw std::runtime_error("EDIT_CSV_UNFINISHED");
-    return movementCsv(*report);
+    return markedCsv(movementCsv(*report),runMarking_.marking,runMarking_.flows);
 }
 void EditorWindow::exportResults(const QString& file) const {
     writeEditorBytes(file,resultsCsv(),"EDIT_CSV_WRITE");

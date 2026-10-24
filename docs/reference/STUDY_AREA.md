@@ -263,7 +263,7 @@ nothing is refused silently.
 | S5.3 | Frank–Wolfe path flows, the Macro cut by period. **Implemented** (D329, §18) | SA7–SA9 |
 | S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice. **Implemented** (D330, §19) | SA10, SA11 |
 | S5.5a | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`. **Implemented** (D331, §20) | SA12, SA13 |
-| S5.5b | The marking line and JSON `marking`, `MICRO_GENERATED_IN_AREA` | SA14, SA15 |
+| S5.5b | The marking line and JSON `marking`, `MICRO_GENERATED_IN_AREA`. **Implemented** (D332, §21); **S5 is complete** | SA14, SA15 |
 
 ## 15. Acceptance rows (planned)
 
@@ -496,3 +496,52 @@ S5.5 is split like S5.2: S5.5a is §8–§9 here; S5.5b is §10–§11 (rows SA1
     again. Both suites now open their fixture from a temporary copy.
 - **Not tested here:** an added Link is covered by a changed stored arc, not by editing the
   network.
+
+## 21. S5.5b as implemented (D332)
+
+- **Counting** (`src/project/export_marking.*`):
+  - `generatedInNode` reads the Node through `nodeMembership`: generated Connectors inside;
+    waiting lines and conflict areas inside, plus the priority rules and stop controls naming
+    them; heads inside; and the generated controllers those heads show;
+  - `generatedInArea` sums the study area's Nodes. With no study area it counts every generated
+    object of the network and definition, since Micro runs all of it (§10, applied to the
+    marking too).
+- **Readiness** (§10):
+  - at Micro, one `MICRO_GENERATED_IN_AREA` warning at `nodes[i]` per area Node (every Node
+    without an area) with a non-zero count. `ReadinessRow::counts` carries Connectors,
+    right-of-way objects, heads and controllers, and the Problems tab puts them in the message;
+  - the run still starts: the rule is in `readiness`, not `runDiagnostics`;
+  - a Problems row naming a Node now selects it on the Nodes tab, which lights it (D288). Seam
+    rows at `nodes[i]` gain this too.
+- **Marking** (§11):
+  - `markedCsv` inserts after the not-validated line
+    `# MULTRA - generated objects in the study area: <n>; stale inputs: <list or none>.`, only
+    when n > 0 or something is stale;
+  - then, for a run over a study area,
+    `# MULTRA - study area flows: <source>; source <sha256 | run at compile | typed>; project <sha256>.`
+    (§8);
+  - JSON gains `marking` and `studyArea` under the same rules;
+  - a comparison writes each side's lines, prefixed `base:` and `alternative:`;
+  - the stale tokens are `macroSide` / `mesoSide` (the cut's side file, D331) and `project` (a
+    Macro or Meso result on show that was made for other bytes);
+  - the formatters are unchanged. Every export without generated objects, staleness or a study
+    area keeps its bytes (SA1). The TSV copy is the marked CSV through `csvToTsv`.
+- **Callers:**
+  - the editor's Export and Copy for single, batch, comparison, Macro and Meso. Each result keeps
+    the marking of the snapshot it was compiled from;
+  - the CLI's `--csv` and JSON output for the same five. The CLI now reads the side files beside
+    each project, as the editor does;
+  - a comparison's alternative project is now cut from its own side files, not the open
+    project's (a S5.5a slip found here).
+- **Rows:**
+  - SA14 (`studyarea`): F4's priority junction A counts Connectors and right-of-way objects; the
+    two Nodes share out every flag; the line's exact bytes; stale tokens and the flows line;
+    JSON; both comparison sides; nothing marked keeps the CSV and JSON bytes;
+  - SA15 (`studyarea`): two rows with no area, one at A's `nodes[i]` with its counts with {A},
+    none once the flags are cleared, and the typed area run starts in both cases;
+  - `node-ui`: the row shows "1 Connectors, 0 right-of-way objects…" and selecting it lights the
+    Node.
+- **Not covered:** the CLI wiring is compiled and shares the tested functions, but no test runs
+  the CLI on a project with a study area.
+- **S5 is complete.** Open: gate flows by vehicle type (§19); a full result table restored on
+  reopen (D331).

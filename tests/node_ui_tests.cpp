@@ -24,6 +24,7 @@
 #include <QTest>
 #include <QTimer>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 using namespace multra;
 // S0.1 (D261, NODES §6, row N5): the Node tool (N) draws a polygon by Ctrl+right-clicks and Enter in
@@ -221,6 +222,29 @@ int main(int argc, char** argv) {
         require(c->highlightedNode().empty() && drawnLegs(w).empty() && outline(w) == canvasStyle::ink(),
                 "Clearing the row kept the highlight");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the suggested node");
+        // S5.5b (SA15): a study-area Node holding a generated Connector gives one warning with its
+        // counts on the Problems tab, and its row selects the Node, which lights it.
+        trigger(w, "editorRedo");
+        {
+            auto doc = w.history().document();
+            const auto node = doc.network.nodes.at(0);
+            const auto inside = nodeMembership(doc.network, node).connectors;
+            require(!inside.empty(), "The suggested node holds no Connector");
+            for (auto& x : doc.network.connectors) x.generated = x.id == inside.front();
+            doc.zones.studyArea.nodes = {node.id};
+            QTemporaryDir dir; require(dir.isValid(), "Temporary directory unavailable");
+            const auto file = dir.filePath("area.traffic.json");
+            { std::ofstream f(file.toStdString()); f << documentJson(doc).dump(2) << '\n'; }
+            w.openFile(file); QApplication::processEvents();
+            trigger(w, "editorRecheck");
+            auto* problems = w.findChild<QTableWidget*>("editorProblemTable"); require(problems, "No Problems table");
+            int row = -1;
+            for (int i = 0; i < problems->rowCount(); ++i)
+                if (problems->item(i, 1) && problems->item(i, 1)->text().contains("1 Connectors, 0 right-of-way objects")) row = i;
+            require(row >= 0 && problems->item(row, 3)->text() == "nodes[0]", "The generated Connector is not listed with its count");
+            c->setHighlightedNode(""); problems->selectRow(row); QApplication::processEvents();
+            require(c->highlightedNode() == node.id, "Selecting the row did not light the node");
+        }
         std::cout << "Node UI tests passed\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }

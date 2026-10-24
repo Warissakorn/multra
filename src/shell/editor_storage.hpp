@@ -1,9 +1,12 @@
 #pragma once
 #include "../project/document.hpp"
+#include "../project/study_area_run.hpp"
 #include <QString>
 namespace multra {
 ProjectDocument readEditorDocument(const QString&);
 void writeEditorDocument(const QString&,const Json&);
 // Atomic replacement of any file the shell writes; throws errorCode (a locale key) on failure.
 void writeEditorBytes(const QString& file,const std::string& bytes,const char* errorCode);
+// S5.5b (D332), editor_side_files.cpp: the side files beside `project` (none when it has none).
+StudyAreaSources sideFilesBeside(const QString& project);
 }
