@@ -1,6 +1,7 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/project/json.hpp"
+#include <nlohmann/json.hpp>
 #include "../src/editor/canvas_style.hpp"
 #include "../src/model/network/node_membership.hpp"
 #include <QGraphicsPathItem>
@@ -109,7 +110,7 @@ int main(int argc, char** argv) {
         require(tagged(w, "node") == 1, "The node is not drawn");
         require(table->rowCount() == 1 && table->currentRow() == 0, "The Nodes tab does not list and select the node");
         // S0.2: the small triangle holds no turn, so its membership is refused (NODES §3).
-        require(table->columnCount() == 7 && table->item(0, 5)->text() == "0" && table->item(0, 4)->text() == "0 / 0",
+        require(table->columnCount() == 8 && table->item(0, 5)->text() == "0" && table->item(0, 4)->text() == "0 / 0",
                 "The Nodes tab does not show the membership");
         require(table->item(0, 6)->text().contains("gives no rows"),
                 "The Nodes tab does not show the refusal");
@@ -119,6 +120,18 @@ int main(int argc, char** argv) {
         require(drawnLegs(w).empty(), "A refused node drew legs");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the node");
         trigger(w, "editorRedo"); require(nodes().size() == 1, "Redo lost the node");
+        // S5.2a (SA3): ticking and unticking the Study area column are one Undo step each.
+        {
+            const auto at = w.history().revision();
+            require(table->item(0, 7)->checkState() == Qt::Unchecked, "A new node is in the study area");
+            table->item(0, 7)->setCheckState(Qt::Checked); QApplication::processEvents();
+            require(w.history().document().zones.studyArea.nodes == std::vector<std::string>{nodes()[0].id} &&
+                    w.history().revision() == at + 1, "Ticking the study area was not one step");
+            table->item(0, 7)->setCheckState(Qt::Unchecked); QApplication::processEvents();
+            require(w.history().document().zones.studyArea.nodes.empty() && w.history().revision() == at + 2 &&
+                    !documentJson(w.history().document()).contains("studyArea"), "Unticking kept the node in the study area");
+            table->selectRow(0); QApplication::processEvents();
+        }
 
         // Rename is one step; delete is one step and undoes.
         table->selectRow(0); QApplication::processEvents();

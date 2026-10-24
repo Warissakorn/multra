@@ -62,5 +62,19 @@ void mergeNodes(ProjectDocument& d, const std::vector<std::string>& ids) {
         throw ValidationError(std::move(issues));
     }
     d.network.nodes = std::move(nodes);
+    auto& area = d.zones.studyArea.nodes;
+    const bool inArea = std::any_of(unique.begin(), unique.end(), [&](const auto& id) { return std::find(area.begin(), area.end(), id) != area.end(); });
+    if (inArea && std::find(area.begin(), area.end(), merged.id) == area.end()) area.push_back(merged.id);
+}
+void setStudyAreaNodes(ProjectDocument& d, const std::vector<std::string>& ids) {
+    if (ids.empty()) d.zones.studyArea = {};
+    else d.zones.studyArea.nodes = ids;
+}
+void settleStudyArea(ProjectDocument& d) {
+    auto& area = d.zones.studyArea;
+    std::erase_if(area.nodes, [&](const std::string& id) {
+        return std::none_of(d.network.nodes.begin(), d.network.nodes.end(), [&](const Node& n) { return n.id == id; });
+    });
+    if (area.nodes.empty()) area = {};
 }
 }

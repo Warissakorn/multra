@@ -25,7 +25,7 @@ void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    nodeTable_ = new QTableWidget(0, 7, body); nodeTable_->setObjectName("editorNodeTable");
+    nodeTable_ = new QTableWidget(0, 8, body); nodeTable_->setObjectName("editorNodeTable");
     nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     nodeTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
@@ -85,12 +85,21 @@ void EditorWindow::buildNodes() {
         return true;
     };
     connect(nodeTable_, &QTableWidget::cellDoubleClicked, this, [rename](int, int) { rename(); });
+    // S5.2a (D327): the Study area column; a tick or an untick is one Undo step.
+    connect(nodeTable_, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* cell) {
+        if (cell->column() != 7) return;
+        const auto id = cell->data(Qt::UserRole).toString().toStdString();
+        auto ids = history_.document().zones.studyArea.nodes;
+        std::erase(ids, id);
+        if (cell->checkState() == Qt::Checked) ids.push_back(id);
+        if (!execute("editorNodeStudyArea", [&](auto& d) { setStudyAreaNodes(d, ids); })) nodeRevision_ = UINT64_MAX;
+    });
     connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] {
         canvas_->setHighlightedNode(selectedNode()); refresh(false); });
 }
 void EditorWindow::translateNodes() {
     nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
-        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues")});
+        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues"), text("editorNodeStudyArea")});
     nodeRevision_ = UINT64_MAX;
     translateNodeProposals();
 }
@@ -125,6 +134,11 @@ void EditorWindow::refreshNodes() {
                 if (col == 0 || col == 2 || col == 4 || col == 5) editorDesign::setNumericText(cell, col != 0);
                 nodeTable_->setItem(r, col, cell);
             }
+            const auto& area = history_.document().zones.studyArea.nodes;
+            auto* inArea = new QTableWidgetItem; inArea->setData(Qt::UserRole, QString::fromStdString(n.id));
+            inArea->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
+            inArea->setCheckState(std::find(area.begin(), area.end(), n.id) != area.end() ? Qt::Checked : Qt::Unchecked);
+            nodeTable_->setItem(r, 7, inArea);
             if (n.id == keep) nodeTable_->selectRow(r);
         }
         nodeTable_->resizeColumnsToContents();

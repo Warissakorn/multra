@@ -13,4 +13,10 @@ std::vector<std::string> suggestNodes(ProjectDocument&);
 // EDIT_NODE_MERGE for fewer than two or an unknown id. When an input held valid detail (its
 // nodeMembership had no issue) and the result has issues, those issues are thrown at nodes[k].
 void mergeNodes(ProjectDocument&, const std::vector<std::string>& ids);
+// S5.2a (STUDY_AREA §3, D327): the study area's Nodes, as given (checked on commit); an empty list
+// removes the study area with its gate flows. A merge keeps its result in the area when any merged
+// Node was in it.
+void setStudyAreaNodes(ProjectDocument&, const std::vector<std::string>& ids);
+// In History::execute, after settleNodes: an area id naming no Node any more goes, in that Command.
+void settleStudyArea(ProjectDocument&);
 }

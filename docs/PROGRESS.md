@@ -5,6 +5,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.2a: the study area and a Micro run on its kept set (D327)
+
+- **Asked:** continue; S5.2 was next. It is split in two: S5.2a here; S5.2b, the gate-flow table and
+  the canvas outline, comes next.
+- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §16):
+  - `studyArea` at schema 55;
+  - the *Study area* column on the Nodes tab;
+  - the kept set: the area Nodes' interiors, their legs and the pieces between them;
+  - gates at the open ends, and typed gate flows;
+  - a run-time copy that every Micro caller compiles.
+  The document's own demand is listed as not run.
+- **Found:**
+  - F4 rebuilt a split arm from its template and grew it 0.1 m, so the split's Connector could not
+    run (`UNSUPPORTED_CONNECTOR_POSITION`). F4 now keeps a leg's far end (READINESS §14 amended);
+  - a coarse Node always reads `NODE_NO_TURN`, so the area checks detail first, to name the right
+    fix.
+- **Rows:** SA1–SA6 (`studyarea`), SA3's editor part in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows.
+
 ## 2026-10-24 — S5.1: the study area contract, answered (D326)
 
 - **Asked:** continue; the owner picked S5 and answered its six choices in chat.
@@ -182,18 +202,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **The lab:** two changers swapping lanes lock side by side for about 50 s.
 - LANE_CHANGE_DURATION §9's reopen conditions are met. The record is in
   [lateral-run-audit](evidence/lateral-run-audit.md), and the item is in NEXT.
-
-## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
-
-- **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result
-  points at:
-  - a Node with a leg at v/c 1.0 or more (Macro);
-  - a Node with a leg that spills back in any slice (Meso).
-
-  Selecting a row selects the Node. An edit makes the result stale, and the list empties.
-- **A junction without a Node** is listed by its end, for example `link-1@50`, and its row points
-  at *Suggest nodes*. A hot end at the network's edge gives no row: there is nothing to refine.
-- **Rows:** RS9, RS10 (`nodeproposals`), with the editor part in `macro-ui`; four mutations caught.
 
 ## Older entries
 

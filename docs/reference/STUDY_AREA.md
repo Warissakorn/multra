@@ -6,7 +6,7 @@ from the recommendations:
 - the study area is a set of Nodes, not a polygon;
 - both cuts, from Macro and from Meso, are in S5.
 
-Nothing here is implemented. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
+S5.2a is implemented (D327, §16); the rest is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md)):
 - which part of the network a Micro run keeps;
 - where its boundary flows come from;
@@ -255,7 +255,7 @@ nothing is refused silently.
 | Slice | Content | Rows |
 |---|---|---|
 | S5.1 | This contract (docs only) | — |
-| S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals | SA1–SA6 |
+| S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals. **S5.2a implemented** (D327, §16); S5.2b, the gate-flow table and the outline, is next | SA1–SA6 |
 | S5.3 | Frank–Wolfe path flows, the Macro cut by period | SA7–SA9 |
 | S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice | SA10, SA11 |
 | S5.5 | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`, the marking line, `MICRO_GENERATED_IN_AREA` | SA12–SA15 |
@@ -281,3 +281,44 @@ Each row first asserts that its forcing worked (AGENTS).
 | SA13 | Stale after reopen | Editing a Link, saving and reopening shows the Macro result stale; restoring the bytes shows it fresh; a Micro cut result is stale when its side file changes |
 | SA14 | Marking line | An export with one F4 Node in the area carries the second header line with its count; with no generated object and nothing stale the bytes equal D325's |
 | SA15 | Generated warnings | An F4 Node in the area gives one `MICRO_GENERATED_IN_AREA` with its counts; editing every generated object clears the row; the run starts in both cases |
+
+## 16. S5.2a as implemented (D327)
+
+- **Model and codec** (`src/model/demand/zones.hpp`, `src/project/study_area_codec.*`):
+  - `ZoneLayer::studyArea` holds `nodes`, `flowSource` and `gateFlows`;
+  - `"studyArea"` is written at the root only when it names a Node, which makes the file 55. Below
+    55 the key is `EDIT_UNSUPPORTED_FIELD`;
+  - a malformed value is `EDIT_STUDY_AREA_INVALID`: an empty list, a `flowSource` other than
+    `"typed"` (S5.3 and S5.4 add theirs), or a gate flow not exactly
+    `{periodId, from, to, compositionId | modeId, vehiclesPerHour}`;
+  - `studyAreaIssues` gives `STUDY_AREA_NODE_UNKNOWN`, `_NODE_DUPLICATE` and `_PERIOD_UNKNOWN`,
+    plus M8's `OD_COMPOSITION_MISSING` and `OD_CELL_INVALID` on a flow.
+- **Commands:**
+  - `setStudyAreaNodes`; an empty list removes the area with its flows;
+  - `mergeNodes` keeps its result in the area when any merged Node was in it;
+  - `settleStudyArea` in `History::execute`, after `settleNodes`, drops ids naming no Node, so a
+    deleted Node, a lifecycle merge and Undo all keep the list whole.
+- **The kept set** (`src/model/network/study_area.*`, pure):
+  - `studyAreaCut` computes §4's kept set and its entry and exit gates. A Node without detail is
+    `MICRO_AREA_NODE_COARSE`, checked before its membership, since such a Node always reads
+    `NODE_NO_TURN`. Then come `MICRO_AREA_NODE_INVALID` with the membership codes, and
+    `MICRO_AREA_EMPTY`;
+  - `cutNetwork` keeps the kept objects and the right-of-way standing on them. A Connector path is
+    named by its Connector alone (`ControlPathRef` leaves `linkId` empty).
+- **The run** (`src/project/study_area_run.*`):
+  - `studyAreaDocument` builds §4's run-time copy: gate zones `gate:<link>:in|out` with
+    connectors `…/c`, and one matrix `gate-flows/<k>` per (period, composition or mode);
+  - `compileDocument` and `runDiagnostics` (`src/project/run.cpp`) use the copy whenever the area
+    names a Node, so the editor's Run, batch, compare, readiness and the CLI need no change. The
+    advisories `MICRO_AREA_INPUT_IGNORED` come after the copy's own rows.
+- **Readings taken:**
+  - every input, route, routing decision, route destination and OD matrix of the document is
+    listed as not run, not only those on dropped Links, since none of them runs in an area run;
+  - speed decisions and areas on kept Links stay, as network control.
+- **Editor:** the Nodes tab's eighth column, *Study area*, is a check box; each tick or untick is
+  one Undo step. The gate-flow table and the canvas outline are S5.2b.
+- **F4 fix:** READINESS §14, amended. A leg keeps its far end, so a split arm runs.
+- **Rows:**
+  - SA1–SA6 in `studyarea`, on two F4 junctions joined by a Road split twice; seed 42 runs twice
+    with the same bytes;
+  - SA3's editor part in `node-ui`.

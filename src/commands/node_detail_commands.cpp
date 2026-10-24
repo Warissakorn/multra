@@ -46,7 +46,16 @@ std::map<std::string, Span> spansAt(const ProjectDocument& d, const std::vector<
         if (!cuts.reason.empty()) { reason = cuts.reason; return {}; }
         for (const auto& cut : cuts.cuts) {
             auto& span = spans[cut.linkId];
-            if (span.full.empty()) span.full = full.contains(cut.linkId) ? full.at(cut.linkId) : linkOf(d.network, cut.linkId).geometry;
+            if (span.full.empty()) {
+                span.full = full.contains(cut.linkId) ? full.at(cut.linkId) : linkOf(d.network, cut.linkId).geometry;
+                // The end away from the Node stays where it is: a split there (splitLink's 0.2 m span)
+                // shortened it, and growing it back would strand the split's Connector short of the end.
+                const auto& now = linkOf(d.network, cut.linkId).geometry;
+                const double length = polylineLength(span.full), first = stationOfClosestPoint(span.full, now.front()),
+                             last = stationOfClosestPoint(span.full, now.back());
+                if (first > 1e-6) span.from = first;
+                if (last < length - 1e-6) span.to = last;
+            }
             (cut.in ? span.to : span.from) = cut.station;
         }
     }

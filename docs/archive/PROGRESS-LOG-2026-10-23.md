@@ -3,6 +3,18 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
+
+- **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result
+  points at:
+  - a Node with a leg at v/c 1.0 or more (Macro);
+  - a Node with a leg that spills back in any slice (Meso).
+
+  Selecting a row selects the Node. An edit makes the result stale, and the list empties.
+- **A junction without a Node** is listed by its end, for example `link-1@50`, and its row points
+  at *Suggest nodes*. A hot end at the network's edge gives no row: there is nothing to refine.
+- **Rows:** RS9, RS10 (`nodeproposals`), with the editor part in `macro-ui`; four mutations caught.
+
 ## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
 
 - **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network

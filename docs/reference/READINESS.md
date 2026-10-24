@@ -421,6 +421,11 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Rows:** RS11–RS13, RS16 and RS17 are in `tests/node_detail_tests.cpp` (`nodedetail`). RS14,
   RS15 and RS18 wait for S4.5b and S4.5c.
 
+- **Amended by S5.2a (D327):** a leg keeps its current end away from the Node. A leg that
+  `splitRoad` had split there is 0.1 m shorter than its template, and rebuilding it from the
+  template stranded the split's Connector 0.1 m short of the end (`UNSUPPORTED_CONNECTOR_POSITION`
+  at Run). Found by SA1's corridor, two F4 junctions joined by a split Road.
+
 ## 15. S4.5b as implemented (D324)
 
 - **Ranks** (`movementRank`, `node_detail.*`): through is a turn to the other arm of the same class,
