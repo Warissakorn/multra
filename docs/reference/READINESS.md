@@ -41,9 +41,8 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
   `{severity, code, path, object}`, translated as the Problems tab's rows are, and selecting a row
   selects the object on the canvas.
 - **Rows:**
-  - **Micro:** `runDiagnostics` as today, plus `seamChecks(micro)`, plus one
-    `MICRO_GENERATED_IN_AREA` warning per study-area Node holding generated objects
-    ([STUDY_AREA](STUDY_AREA.md) §10, D332);
+  - **Micro:** `runDiagnostics` as today, `seamChecks(micro)`, and `MICRO_GENERATED_IN_AREA` per
+    area Node holding generated objects ([STUDY_AREA](STUDY_AREA.md) §10, D332);
   - **Meso:** `mesoNetwork` issues and advisories, then `mesoDemand`'s, plus `seamChecks(meso)`;
   - **Macro:** `macroNetwork` issues and advisories, then `macroDemand`'s for the chosen period,
     plus `seamChecks(macro)`.

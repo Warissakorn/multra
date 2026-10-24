@@ -8,7 +8,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
 
 - **Asked:** continue; S5.5b was next. The contract left no owner question open.
-- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §21):
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §21):
   - the Problems tab warns once per study-area Node holding program-drawn objects, with the
     count by kind, and the row selects the Node. The run still starts;
   - every export (single, batch, comparison, Macro, Meso; editor and CLI) carries a second header
@@ -26,7 +26,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   staleness; S5.5b is the marking line and the generated-object warnings. The owner chose: after
   a reopen, the cut source only; a network mismatch runs at compile, marked stale; paths and
   watches only when the area cuts that level.
-- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §20):
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §20):
   - Run Macro and Run Meso of a saved project write `<project>.macro.json` / `.meso.json` with the
     project bytes' SHA-256;
   - the study area's cut reads a usable side file in place of the run at compile, and says
@@ -46,7 +46,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   counts on a link follow its count by FIFO.
 - **Found:** `loadMeso` already keeps those route counts, so the cut only exposes them for the
   kept Links (`watch`). No new model.
-- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §19):
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §19):
   - `mesoGateFlows`: gate flows per slice, with their own run-time window;
   - *Cut from Meso* in the gate-flow dialog.
 
@@ -59,7 +59,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **Asked:** continue; S5.3 was next. The owner chose that, until S5.5's side files, Micro runs
   Macro at compile for each study period inside the run.
-- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §18):
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §18):
   - Frank–Wolfe keeps its paths when asked: each step's all-or-nothing paths with the step weights,
     which sum exactly to the link flows;
   - `macroGateFlows` cuts each path's kept stretches into gate (or inside-zone) trips by period;
@@ -75,7 +75,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-10-24 — S5.2b: gate flows in the editor; S5.2 complete (D328)
 
 - **Asked:** continue; S5.2b was next.
-- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §17):
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §17):
   - *Gate flows…* on the Nodes tab, a dialog with one origins × destinations grid in veh/h per
     study period and composition or mode;
   - `studyAreaEnds`, the one list of gates and inside zones that both the dialog and the run read;
@@ -89,7 +89,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **Asked:** continue; S5.2 was next. It is split in two: S5.2a here; S5.2b, the gate-flow table and
   the canvas outline, comes next.
-- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §16):
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §16):
   - `studyArea` at schema 55;
   - the *Study area* column on the Nodes tab;
   - the kept set: the area Nodes' interiors, their legs and the pieces between them;
