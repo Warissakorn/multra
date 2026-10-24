@@ -17,6 +17,11 @@ void mergeNodes(ProjectDocument&, const std::vector<std::string>& ids);
 // removes the study area with its gate flows. A merge keeps its result in the area when any merged
 // Node was in it.
 void setStudyAreaNodes(ProjectDocument&, const std::vector<std::string>& ids);
+// S5.2b (D328): one (period, composition or mode) key's gate flows replaced by `rows` (cells of 0
+// dropped), every other key's kept in order; and the whole list at once, for the dialog.
+void setGateFlows(ProjectDocument&, const std::string& periodId, const std::string& compositionId, const std::string& modeId,
+                  const std::vector<GateFlow>& rows);
+void setStudyAreaGateFlows(ProjectDocument&, std::vector<GateFlow> flows);
 // In History::execute, after settleNodes: an area id naming no Node any more goes, in that Command.
 void settleStudyArea(ProjectDocument&);
 }

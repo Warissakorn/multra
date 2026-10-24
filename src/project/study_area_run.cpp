@@ -15,6 +15,20 @@ void ignored(std::vector<ValidationIssue>* out, const std::string& list, std::si
 }
 Zone gateZone(const std::string& id, Point p) { return {id, id, {p, {p.x + 1, p.y}, {p.x, p.y + 1}}, {}}; }
 }
+StudyAreaEnds studyAreaEnds(const ProjectDocument& d) {
+    const auto cut = studyAreaCut(d.network, d.zones.studyArea.nodes);
+    if (!cut.issues.empty()) throw ValidationError(cut.issues);
+    const std::set<std::string> links(cut.links.begin(), cut.links.end());
+    StudyAreaEnds ends;
+    for (const auto& id : cut.entryGates) ends.origins.push_back(entryGateName(id));
+    for (const auto& id : cut.exitGates) ends.destinations.push_back(exitGateName(id));
+    for (const auto& z : d.zones.zones)
+        for (const auto direction : {ZoneDirection::origin, ZoneDirection::destination})
+            if (std::any_of(d.zones.zoneConnectors.begin(), d.zones.zoneConnectors.end(), [&](const ZoneConnector& c) {
+                    return c.zoneId == z.id && c.direction == direction && links.contains(c.linkId); }))
+                (direction == ZoneDirection::origin ? ends.origins : ends.destinations).push_back(z.id);
+    return ends;
+}
 ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<ValidationIssue>* advisories) {
     const auto& area = d.zones.studyArea;
     const auto cut = studyAreaCut(d.network, area.nodes);
@@ -53,11 +67,13 @@ ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<Validati
         zones.zoneConnectors.push_back({exitGateName(id) + "/c", exitGateName(id), id, ZoneDirection::destination, 1});
         destinations.insert(exitGateName(id));
     }
+    const auto ends = studyAreaEnds(d);
+    const std::set<std::string> from(ends.origins.begin(), ends.origins.end()), to(ends.destinations.begin(), ends.destinations.end());
     std::vector<ValidationIssue> unknown;
     for (std::size_t i = 0; i < area.gateFlows.size(); ++i) {
         const auto path = "studyArea.gateFlows[" + std::to_string(i) + "]";
-        if (!origins.contains(area.gateFlows[i].from)) unknown.push_back({"STUDY_AREA_GATE_UNKNOWN", path + ".from"});
-        if (!destinations.contains(area.gateFlows[i].to)) unknown.push_back({"STUDY_AREA_GATE_UNKNOWN", path + ".to"});
+        if (!from.contains(area.gateFlows[i].from)) unknown.push_back({"STUDY_AREA_GATE_UNKNOWN", path + ".from"});
+        if (!to.contains(area.gateFlows[i].to)) unknown.push_back({"STUDY_AREA_GATE_UNKNOWN", path + ".to"});
     }
     if (!unknown.empty()) throw ValidationError(std::move(unknown));
     std::vector<std::string> order;

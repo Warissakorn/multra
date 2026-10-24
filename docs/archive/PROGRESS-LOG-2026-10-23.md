@@ -3,6 +3,20 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
+
+- **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.
+- **Switched on** (keys 0.5/1.0/1, four projects, seeds 42–51), a per-tick check found:
+  - no 2D overlap, lateral rate within the cap, no position jump, no backward motion;
+  - every lane change lateral, typically 3.5 s.
+- **m2.6-study-template regresses:**
+  - a changer past its window waits on the lane line at its dead end and jams both lanes
+    (seed 45);
+  - one waiting straddler is clamped repeatedly (seed 42); clamps go from 1 to 33.
+- **The lab:** two changers swapping lanes lock side by side for about 50 s.
+- LANE_CHANGE_DURATION §9's reopen conditions are met. The record is in
+  [lateral-run-audit](../evidence/lateral-run-audit.md), and the item is in NEXT.
+
 ## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
 
 - **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result

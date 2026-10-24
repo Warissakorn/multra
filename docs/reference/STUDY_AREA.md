@@ -6,7 +6,7 @@ from the recommendations:
 - the study area is a set of Nodes, not a polygon;
 - both cuts, from Macro and from Meso, are in S5.
 
-S5.2a is implemented (D327, §16); the rest is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
+S5.2 is implemented (D327, D328; §16, §17); the rest is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md)):
 - which part of the network a Micro run keeps;
 - where its boundary flows come from;
@@ -255,7 +255,7 @@ nothing is refused silently.
 | Slice | Content | Rows |
 |---|---|---|
 | S5.1 | This contract (docs only) | — |
-| S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals. **S5.2a implemented** (D327, §16); S5.2b, the gate-flow table and the outline, is next | SA1–SA6 |
+| S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals. **Implemented**: S5.2a (D327, §16), S5.2b (D328, §17) | SA1–SA6, SA16 |
 | S5.3 | Frank–Wolfe path flows, the Macro cut by period | SA7–SA9 |
 | S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice | SA10, SA11 |
 | S5.5 | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`, the marking line, `MICRO_GENERATED_IN_AREA` | SA12–SA15 |
@@ -281,6 +281,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | SA13 | Stale after reopen | Editing a Link, saving and reopening shows the Macro result stale; restoring the bytes shows it fresh; a Micro cut result is stale when its side file changes |
 | SA14 | Marking line | An export with one F4 Node in the area carries the second header line with its count; with no generated object and nothing stale the bytes equal D325's |
 | SA15 | Generated warnings | An F4 Node in the area gives one `MICRO_GENERATED_IN_AREA` with its counts; editing every generated object clears the row; the run starts in both cases |
+| SA16 | Gate flows (S5.2b) | `studyAreaEnds` lists the entry gates, then the zones on kept Links; `setGateFlows` replaces one (period, types) key and drops zeros; the dialog keeps each period's flows apart and returns the typed one; an area Node is filled on the canvas; *Gate flows…* is disabled while the area cannot run |
 
 ## 16. S5.2a as implemented (D327)
 
@@ -322,3 +323,32 @@ Each row first asserts that its forcing worked (AGENTS).
   - SA1–SA6 in `studyarea`, on two F4 junctions joined by a Road split twice; seed 42 runs twice
     with the same bytes;
   - SA3's editor part in `node-ui`.
+
+## 17. S5.2b as implemented (D328)
+
+- **`studyAreaEnds`** (`src/project/study_area_run.*`): the names a gate flow may use.
+  - The origins are the entry gates in cut order, then the zones with an origin connector on a
+    kept Link.
+  - The destinations are listed the same way, from the exit gates.
+  - The run's `STUDY_AREA_GATE_UNKNOWN` check reads the same lists, so the dialog and the run
+    cannot disagree.
+- **Commands** (`node_commands.*`):
+  - `setGateFlows` replaces one (period, composition or mode) key and keeps the others in order;
+  - `setStudyAreaGateFlows` sets the whole list.
+
+  Both drop cells of 0.
+- **Dialog** (`src/shell/gate_flow_dialog.*`, a free function, D319): a period, Composition/Mode
+  and a grid of origins × destinations in veh/h.
+  - Typed values are kept per key, so switching period or types and back loses nothing.
+  - The first stored flow decides what opens.
+  - Its size is capped to the screen (`fitToScreen`, D318).
+- **Entry:** *Gate flows…* on the Nodes tab is enabled when the area runs (`studyAreaEnds` does not
+  throw) and a study period exists. Accepting it is one Undo step. A gate reads as its Road's name
+  (else the Link's name, else its id), with "in" or "out".
+- **Canvas:** an area Node gets a light fill (`ok` at alpha 40) under its usual outline. Selection
+  and the dotted outline of a `generated` Node still read.
+- **Rows:**
+  - SA16 in `studyarea` (`studyAreaEnds`, the commands);
+  - in `node-ui`: the dialog, the fill, and the action disabled on an area that cannot run.
+
+  S5.2 is complete.

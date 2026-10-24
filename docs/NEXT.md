@@ -25,15 +25,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — S5.2b, or the owner's pick of an item below
+## Next session — S5.3, or the owner's pick of an item below
 
-- **S5.2b** ([STUDY_AREA](reference/STUDY_AREA.md) §3, §5; S5.2a is in, D327): the gate-flow OD
-  table, reusing the OD table's widget (M8.6b) with gate rows and columns. Until it lands, gate
-  flows come only from the file. Also the canvas outline of the area's Nodes. After it:
-  - S5.3: Frank–Wolfe path flows and the Macro cut. Measure path storage on the M2.6 template
-    first;
-  - S5.4: the Meso cut. Cite Yperman's FIFO link model from the owner's copy first;
-  - S5.5: side files, SHA-256 stale and the export marking.
+- **S5.3** ([STUDY_AREA](reference/STUDY_AREA.md) §6; S5.2 is complete, D327, D328): Frank–Wolfe
+  path flows and the Macro cut by period (`flowSource` `"macro"`); rows SA7–SA9.
+  - Measure the extra memory of keeping paths on the M2.6 template's Macro run first.
+  - Hand-compute the two-route fixture (SA7) before code.
+- **After it:**
+  - S5.4, the Meso cut: cite Yperman's FIFO link model from the owner's copy first;
+  - S5.5, side files, SHA-256 stale and the export marking.
 - **Other picks:**
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country

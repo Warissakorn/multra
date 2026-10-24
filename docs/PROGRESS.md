@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.2b: gate flows in the editor; S5.2 complete (D328)
+
+- **Asked:** continue; S5.2b was next.
+- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §17):
+  - *Gate flows…* on the Nodes tab, a dialog with one origins × destinations grid in veh/h per
+    study period and composition or mode;
+  - `studyAreaEnds`, the one list of gates and inside zones that both the dialog and the run read;
+  - a light fill on the canvas for each Node in the area.
+- **Rows:** SA16 (`studyarea`), with the dialog, the fill and the disabled action in `node-ui`.
+  Linux only, GCC 13, Qt 6.4.2 offscreen: `ctest --preset desktop` 225/225; file-size, docs and
+  architecture checks pass. Not built or run on Windows; the dialog's size on a 1366×768 screen is
+  not checked (OWNER_SITTING's D318 item covers it).
+
 ## 2026-10-24 — S5.2a: the study area and a Micro run on its kept set (D327)
 
 - **Asked:** continue; S5.2 was next. It is split in two: S5.2a here; S5.2b, the gate-flow table and
@@ -188,20 +201,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
 - **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
   decision rows are growth guards.
-
-## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
-
-- **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.
-- **Switched on** (keys 0.5/1.0/1, four projects, seeds 42–51), a per-tick check found:
-  - no 2D overlap, lateral rate within the cap, no position jump, no backward motion;
-  - every lane change lateral, typically 3.5 s.
-- **m2.6-study-template regresses:**
-  - a changer past its window waits on the lane line at its dead end and jams both lanes
-    (seed 45);
-  - one waiting straddler is clamped repeatedly (seed 42); clamps go from 1 to 33.
-- **The lab:** two changers swapping lanes lock side by side for about 50 s.
-- LANE_CHANGE_DURATION §9's reopen conditions are met. The record is in
-  [lateral-run-audit](evidence/lateral-run-audit.md), and the item is in NEXT.
 
 ## Older entries
 

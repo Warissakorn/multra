@@ -1,6 +1,8 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
+#include "gate_flow_dialog.hpp"
+#include "../project/study_area_run.hpp"
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_membership.hpp"
 #include "../model/network/node_suggestions.hpp"
@@ -21,6 +23,13 @@
 // S0.1 (D261, docs/reference/NODES.md §6): the Nodes tab. The Node tool's Enter commits a polygon
 // through execute(), so a drawn Node is one Undo step; rename and delete go through History too.
 namespace multra {
+namespace {
+// S5.2b (D328): gate flows need a runnable area (studyAreaEnds) and a study period to name.
+bool gateFlowsEditable(const ProjectDocument& d) {
+    if (d.zones.studyArea.nodes.empty() || d.zones.studyPeriods.empty()) return false;
+    try { studyAreaEnds(d); return true; } catch (const std::exception&) { return false; }
+}
+}
 void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
@@ -68,6 +77,36 @@ void EditorWindow::buildNodes() {
         const auto current = selectedNode();
         if (const auto first = std::find(ids.begin(), ids.end(), current); first != ids.end()) std::iter_swap(ids.begin(), first);
         execute("editorMergeNodes", [&](auto& d) { mergeNodes(d, ids); });
+    }));
+    // S5.2b (D328): the study area's typed gate flows, in one Undo step.
+    bar->addAction(action("editorGateFlows", {}, [this] {
+        if (!gateFlowsEditable(history_.document())) return;
+        const auto& d = history_.document();
+        const auto ends = studyAreaEnds(d);
+        // A gate reads as its Road (else its Link) and its end; a zone as its name.
+        const auto label = [&](const std::string& id) {
+            for (const auto* suffix : {":in", ":out"}) {
+                const std::string tail = suffix;
+                if (id.rfind("gate:", 0) != 0 || id.size() <= tail.size() || id.compare(id.size() - tail.size(), tail.size(), tail) != 0) continue;
+                const auto linkId = id.substr(5, id.size() - 5 - tail.size());
+                const auto l = std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& x) { return x.id == linkId; });
+                auto name = QString::fromStdString(linkId);
+                if (l != d.network.links.end() && !l->name.empty()) name = QString::fromStdString(l->name);
+                if (l != d.network.links.end() && l->roadId)
+                    for (const auto& road : d.network.roads)
+                        if (road.id == *l->roadId && !road.name.empty()) name = QString::fromStdString(road.name);
+                return text(tail == ":in" ? "editorGateIn" : "editorGateOut").arg(name);
+            }
+            const auto z = std::find_if(d.zones.zones.begin(), d.zones.zones.end(), [&](const auto& x) { return x.id == id; });
+            return QString::fromStdString(z != d.zones.zones.end() && !z->name.empty() ? z->name : id);
+        };
+        std::vector<Choice> origins, destinations;
+        for (const auto& id : ends.origins) origins.push_back({id, label(id)});
+        for (const auto& id : ends.destinations) destinations.push_back({id, label(id)});
+        const auto edited = editGateFlows(this, d.zones.studyArea.gateFlows, origins, destinations, compositionChoices(), periodChoices(),
+                                          modeChoices(), [this](const char* key) { return text(key); });
+        if (!edited) return;
+        execute("editorGateFlows", [&](auto& doc) { setStudyAreaGateFlows(doc, *edited); });
     }));
     // S0.5 (D265): one generated Node per junction no Node covers yet, all in one Undo step.
     bar->addAction(action("editorSuggestNodes", {}, [this] {
@@ -149,6 +188,7 @@ void EditorWindow::refreshNodes() {
     for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
     const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
+    actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));
     actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
     refreshNodeProposals();
 }

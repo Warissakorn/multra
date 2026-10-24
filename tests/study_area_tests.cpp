@@ -193,3 +193,28 @@ TEST(studyarea, sa6_refusals) { // SA6
     const auto unknown = refusal([&] { studyAreaDocument(gate); });
     CHECK(has(unknown, "STUDY_AREA_GATE_UNKNOWN", "studyArea.gateFlows[0].from") && has(unknown, "STUDY_AREA_GATE_UNKNOWN", "studyArea.gateFlows[0].to"));
 }
+TEST(studyarea, sa16_gate_flow_commands) { // SA16 (S5.2b)
+    auto c = corridor();
+    auto& d = c.d;
+    setStudyAreaNodes(d, {c.a});
+    const auto cut = studyAreaCut(d.network, {c.a});
+    // A zone whose origin connector stands on a kept Link joins the gates, after them.
+    const auto in = cut.entryGates.front();
+    d.zones.zones.push_back({"zone-in", "Inside", square({0, 50}, 2), {}});
+    d.zones.zoneConnectors.push_back({"zc-1", "zone-in", in, ZoneDirection::origin, 1});
+    const auto ends = studyAreaEnds(d);
+    CHECK(ends.origins.size() == cut.entryGates.size() + 1 && ends.origins.front() == entryGateName(cut.entryGates.front()));
+    CHECK(ends.origins.back() == "zone-in" && ends.destinations.size() == cut.exitGates.size());
+    // setGateFlows replaces one key only, and drops zeros.
+    d.zones.studyPeriods.push_back({"q", "Q", 600, 1200});
+    setGateFlows(d, "p", "car-only", "", {{"", ends.origins[0], ends.destinations[0], "", "", 60}, {"", ends.origins[1], ends.destinations[0], "", "", 0}});
+    setGateFlows(d, "q", "car-only", "", {{"", ends.origins[0], ends.destinations[0], "", "", 30}});
+    CHECK(d.zones.studyArea.gateFlows.size() == 2); // forcing: two keys
+    setGateFlows(d, "p", "car-only", "", {{"", ends.origins[1], ends.destinations[1], "", "", 45}});
+    CHECK(d.zones.studyArea.gateFlows.size() == 2 && d.zones.studyArea.gateFlows[0].periodId == "q" &&
+          d.zones.studyArea.gateFlows[1].vehiclesPerHour == 45 && d.zones.studyArea.gateFlows[1].periodId == "p");
+    validateDocument(d);
+    CHECK(studyAreaDocument(d).zones.odMatrices.size() == 2);
+    setStudyAreaGateFlows(d, {{"p", ends.origins[0], ends.destinations[0], "car-only", "", 0}});
+    CHECK(d.zones.studyArea.gateFlows.empty());
+}

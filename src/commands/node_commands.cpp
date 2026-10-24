@@ -70,6 +70,20 @@ void setStudyAreaNodes(ProjectDocument& d, const std::vector<std::string>& ids) 
     if (ids.empty()) d.zones.studyArea = {};
     else d.zones.studyArea.nodes = ids;
 }
+void setGateFlows(ProjectDocument& d, const std::string& periodId, const std::string& compositionId, const std::string& modeId,
+                  const std::vector<GateFlow>& rows) {
+    auto& flows = d.zones.studyArea.gateFlows;
+    std::erase_if(flows, [&](const GateFlow& f) { return f.periodId == periodId && f.compositionId == compositionId && f.modeId == modeId; });
+    for (auto f : rows) {
+        if (f.vehiclesPerHour == 0) continue;
+        f.periodId = periodId; f.compositionId = compositionId; f.modeId = modeId;
+        flows.push_back(std::move(f));
+    }
+}
+void setStudyAreaGateFlows(ProjectDocument& d, std::vector<GateFlow> flows) {
+    std::erase_if(flows, [](const GateFlow& f) { return f.vehiclesPerHour == 0; });
+    d.zones.studyArea.gateFlows = std::move(flows);
+}
 void settleStudyArea(ProjectDocument& d) {
     auto& area = d.zones.studyArea;
     std::erase_if(area.nodes, [&](const std::string& id) {

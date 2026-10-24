@@ -4,6 +4,10 @@
 #include <nlohmann/json.hpp>
 #include "../src/editor/canvas_style.hpp"
 #include "../src/model/network/node_membership.hpp"
+#include "../src/shell/gate_flow_dialog.hpp"
+#include <QDoubleSpinBox>
+#include <QDialogButtonBox>
+#include <QPushButton>
 #include <QGraphicsPathItem>
 #include <QPen>
 #include <QAction>
@@ -62,6 +66,32 @@ std::vector<std::pair<std::string, std::string>> membershipLegs(const Network& n
     for (const auto& l : m.outLegs) legs.emplace_back(l.linkId, "out");
     std::sort(legs.begin(), legs.end());
     return legs;
+}
+int areaFilled(EditorWindow& w) { // S5.2b: Node outlines drawn as in the study area
+    int n = 0;
+    for (auto* i : w.canvas()->scene()->items()) n += i->data(0).toString() == "node" && i->data(2).toString() == "area";
+    return n;
+}
+// S5.2b (SA16): the gate-flow dialog types a value into its first cell, switches period and back,
+// and accepts; returns what it gave.
+std::optional<std::vector<GateFlow>> typeGateFlow(const std::vector<GateFlow>& current, double value, double* shown) {
+    QTimer::singleShot(0, [value, shown] {
+        auto* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+        require(dialog && dialog->objectName() == "editorGateFlowDialog", "No gate-flow dialog");
+        auto* grid = dialog->findChild<QTableWidget*>("editorGateFlowGrid");
+        require(grid && grid->rowCount() == 2 && grid->columnCount() == 1, "The gate-flow grid is not origins x destinations");
+        auto* cell = qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0));
+        *shown = cell->value();
+        cell->setValue(value);
+        auto* period = dialog->findChild<QComboBox*>("editorGateFlowPeriod");
+        period->setCurrentIndex(1); QApplication::processEvents();
+        require(qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0))->value() == 0, "Another period showed this period's flow");
+        period->setCurrentIndex(0); QApplication::processEvents();
+        require(qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0))->value() == value, "Switching period lost the typed flow");
+        dialog->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
+    });
+    return editGateFlows(nullptr, current, {{"gate:a:in", "A (in)"}, {"zone-1", "Zone"}}, {{"gate:b:out", "B (out)"}},
+                         {{"car-only", "Cars"}}, {{"p1", "AM"}, {"p2", "PM"}}, {}, [](const char* key) { return QString(key); });
 }
 QColor outline(EditorWindow& w) {
     for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node")
@@ -127,9 +157,20 @@ int main(int argc, char** argv) {
             table->item(0, 7)->setCheckState(Qt::Checked); QApplication::processEvents();
             require(w.history().document().zones.studyArea.nodes == std::vector<std::string>{nodes()[0].id} &&
                     w.history().revision() == at + 1, "Ticking the study area was not one step");
+            require(areaFilled(w) == 1, "The study-area node is not filled on the canvas");
+            require(!act(w, "editorGateFlows")->isEnabled(), "Gate flows offered on an area that cannot run");
             table->item(0, 7)->setCheckState(Qt::Unchecked); QApplication::processEvents();
             require(w.history().document().zones.studyArea.nodes.empty() && w.history().revision() == at + 2 &&
                     !documentJson(w.history().document()).contains("studyArea"), "Unticking kept the node in the study area");
+            require(areaFilled(w) == 0, "An unticked node stayed filled");
+            // SA16: the dialog keeps each period's flows apart and gives the typed one back.
+            double shown = -1;
+            const auto first = typeGateFlow({}, 120, &shown);
+            require(first && first->size() == 1 && (*first)[0].vehiclesPerHour == 120 && (*first)[0].periodId == "p1" &&
+                    (*first)[0].from == "gate:a:in" && (*first)[0].to == "gate:b:out" && (*first)[0].compositionId == "car-only" && shown == 0,
+                    "The gate-flow dialog did not give the typed flow");
+            const auto again = typeGateFlow(*first, 90, &shown);
+            require(shown == 120 && again && again->size() == 1 && (*again)[0].vehiclesPerHour == 90, "Reopening did not show the flow");
             table->selectRow(0); QApplication::processEvents();
         }
 
