@@ -1,7 +1,7 @@
 #pragma once
-// S5.3 (STUDY_AREA §6, D329): a study area's gate flows cut from Macro's assignment. Until S5.5's side
-// files, the cut runs Macro itself for each study period inside the Micro run (owner, D329): Frank-
-// Wolfe has no seed, so every caller gets the same bytes.
+// S5.3 (STUDY_AREA §6, D329): a study area's gate flows cut from Macro's assignment. When no side file
+// stands in (S5.5a, D331), the cut runs Macro itself for each study period inside the Micro run (owner,
+// D329): Frank-Wolfe has no seed, so every caller gets the same bytes.
 #include "study_area_run.hpp"
 #include "../macro/graph.hpp"
 #include <filesystem>
@@ -22,6 +22,12 @@ std::vector<CutTrip> cutTrips(const MacroGraph&, const std::vector<std::size_t>&
 // MICRO_AREA_PERIOD_NOT_RUN at `studyPeriods` when no period is inside, and Macro's own refusals.
 // Advised: MICRO_AREA_PERIOD_OUTSIDE at studyPeriods[i] for one only partly inside, MACRO_NOT_CONVERGED
 // at studyPeriods[i], and MICRO_AREA_CUT_UNMATCHED at studyPeriods[i] when a trip was left out.
+// S5.5a (D331): a period's entry in `sources->macro` with paths, whose arcs equal the graph compiled
+// again, is cut in place of the run. MICRO_AREA_SOURCE_STALE at `studyArea.flowSource`, once, when an
+// entry's projectSha256 is not the document's, or an entry could not be used (no paths, another
+// graph) and the period ran at compile (owner). A side file that does not parse is refused with
+// MICRO_AREA_SOURCE_INVALID. A missing file, or period, runs at compile with no advisory.
 std::vector<GateFlow> macroGateFlows(const ProjectDocument&, const std::filesystem::path& dataDirectory,
-                                     std::vector<ValidationIssue>* advisories = nullptr);
+                                     std::vector<ValidationIssue>* advisories = nullptr, const StudyAreaSources* sources = nullptr,
+                                     StudyAreaProvenance* provenance = nullptr);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "document.hpp"
+#include "study_area_run.hpp"
 #include "../model/network/diagnostics.hpp"
 #include <filesystem>
 namespace multra {
@@ -17,7 +18,9 @@ struct RunSnapshot {
     Network network;
     Scenario scenario;
     CompiledRouteOrigins routeOrigins;
+    std::optional<StudyAreaProvenance> studyArea; // S5.5a (D331): set for a run over a study area
 };
-std::vector<Diagnostic> runDiagnostics(const ProjectDocument&, const std::filesystem::path&);
-RunSnapshot compileDocument(const ProjectDocument&, const std::filesystem::path&, InputManifest* =nullptr);
+// S5.5a (D331): `sources` are the side files a study area's cut may read (study_area_run.hpp).
+std::vector<Diagnostic> runDiagnostics(const ProjectDocument&, const std::filesystem::path&, const StudyAreaSources* =nullptr);
+RunSnapshot compileDocument(const ProjectDocument&, const std::filesystem::path&, InputManifest* =nullptr, const StudyAreaSources* =nullptr);
 }

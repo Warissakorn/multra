@@ -2,6 +2,8 @@
 #include "ui_test_storage.hpp"
 #include "../src/project/meso_run.hpp"
 #include "../src/project/json.hpp"
+#include "../src/project/side_files.hpp"
+#include <QFile>
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
@@ -14,6 +16,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 using namespace multra;
 // M11.4 row ME11 (docs/reference/MESO_NETWORK.md §7, §20, D300): Run Meso on its worker in stages,
 // the Meso links table and its stale notice, and Export. Each check first confirms its forcing.
@@ -39,7 +42,13 @@ int main(int argc, char** argv) {
         require(argc > 2, "Expected the data directory and the Meso two-route fixture");
         const std::filesystem::path data(argv[1]);
         EditorWindow w{data}; w.show(); QApplication::processEvents();
-        w.openFile(QString::fromStdString(argv[2])); QApplication::processEvents();
+        // S5.5a (D331): a run writes its side file beside the project, so the fixture is opened from a copy.
+        QTemporaryDir projectDir; require(projectDir.isValid(), "Temporary directory unavailable");
+        const auto project = projectDir.filePath("project.traffic.json");
+        std::filesystem::copy_file(argv[2], project.toStdString());
+        const auto projectBytes = [&] { std::ifstream f(project.toStdString(), std::ios::binary); return std::string(std::istreambuf_iterator<char>(f), {}); };
+        const auto original = projectBytes();
+        w.openFile(project); QApplication::processEvents();
         const auto& d = [&]() -> const ProjectDocument& { return w.history().document(); };
         auto* table = item<QTableWidget>(w, "editorMesoTable");
         auto* note = item<QLabel>(w, "editorMesoNote");
@@ -70,6 +79,28 @@ int main(int argc, char** argv) {
         require(table->rowCount() == rows && w.mesoResult(), "A stale result keeps its rows");
         trigger(w, "editorUndo");
         require(d().network.links[1].linkTypeId == "arterial" && !w.mesoStale(), "Undo restores the type and the result's revision");
+        // SA12, SA13 (S5.5a, D331): as Macro's: the side file, the project's bytes kept, fresh, stale, fresh.
+        const auto sideFile = projectDir.filePath("project.traffic.meso.json");
+        require(QFile::exists(sideFile) && projectBytes() == original, "Run Meso writes its side file, not the project");
+        {
+            std::ifstream f(sideFile.toStdString());
+            const auto json = Json::parse(f);
+            const auto side = parseMesoSide(json);
+            require(side.projectSha256 == projectSha256(d()) && side.watched.empty() && side.watchedLinks.empty(), "Nothing is watched outside a Meso cut");
+            require(mesoSideJson(*w.mesoResult(), side.projectSha256, {}) == json, "The file is what the result writes");
+        }
+        w.openFile(project); QApplication::processEvents();
+        require(!w.mesoResult() && !w.mesoSideStale() && note->text().contains("matches it"), "A reopen shows the saved result fresh");
+        w.canvas()->select(d().network.links[1].id); QApplication::processEvents();
+        setType(w, QString());
+        w.saveFile(project); w.openFile(project); QApplication::processEvents();
+        require(w.mesoSideStale() && note->text().contains("stale"), "An edit saved and reopened reads the saved result stale");
+        { std::ofstream f(project.toStdString(), std::ios::binary); f << original; }
+        w.openFile(project); QApplication::processEvents();
+        require(!w.mesoSideStale(), "The original bytes back read it fresh");
+        runMeso(w);
+        require(w.mesoResult() && !w.mesoStale(), "A new run is fresh");
+        w.canvas()->select(d().network.links[1].id); QApplication::processEvents(); // the reopen cleared the selection
 
         // A refusal names its stage: the untyped Link stops the run at the graph; the result stays.
         setType(w, QString());

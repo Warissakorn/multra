@@ -15,6 +15,10 @@
 #include "../src/project/study_area_macro.hpp"
 #include "../src/project/study_area_meso.hpp"
 #include "../src/project/meso_run.hpp"
+#include "../src/project/macro_run.hpp"
+#include "../src/project/side_files.hpp"
+#include "../src/project/input_manifest.hpp"
+#include <memory>
 #include <cmath>
 #include <map>
 #include "../src/project/demand_catalog.hpp"
@@ -398,4 +402,88 @@ TEST(studyarea, sa11_meso_cut) { // SA11 (S5.4)
     const auto first = runSeed(snapshot.scenario, evaluationSpec(d, snapshot, data), 42);
     const auto again = runSeed(compileDocument(d, data).scenario, evaluationSpec(d, snapshot, data), 42);
     CHECK(first.generated > 0 && first == again);
+}
+TEST(studyarea, sa12_side_files) { // SA12 (S5.5a)
+    auto c = mesoCorridor(100);
+    auto& d = c.d;
+    d.zones.studyPeriods.push_back({"q", "Q", 600, 1200});
+    putOdMatrix(d, {"pm", 0, 0, "car-only", {"west", "east"}, {{0, 50}, {0, 0}}, "q"});
+    setStudyAreaNodes(d, {c.a});
+    const auto data = test::root() / "data";
+    const auto sha = projectSha256(d), bytes = documentBytes(d);
+    CHECK(sha.size() == 64 && sha == inputSha256(bytes)); // forcing: the hash is of the bytes saving writes
+    const auto p = runMacro(d, data, "p", nullptr, nullptr, true);
+    const auto first = macroSideJson(p, sha, Json());
+    auto side = parseMacroSide(first);
+    CHECK(side.periods.size() == 1 && side.periods.at("p").hasPaths && side.periods.at("p").paths == p.assignment.paths);
+    CHECK(side.periods.at("p").arcs == sideArcs(p.graph) && side.periods.at("p").projectSha256 == sha);
+    CHECK(Json::parse(first.dump()) == first); // the bytes read back equal
+    // A second period joins the file; its first period is kept as it was.
+    const auto both = macroSideJson(runMacro(d, data, "q"), sha, first);
+    side = parseMacroSide(both);
+    CHECK(side.periods.size() == 2 && both["periods"]["p"] == first["periods"]["p"] && !side.periods.at("q").hasPaths);
+    // Meso: the watched counts, per (class, path, position), read back equal.
+    const auto kept = studyAreaCut(d.network, {c.a}).links;
+    const auto m = runMeso(d, data, nullptr, nullptr, &kept);
+    const auto meso = parseMesoSide(mesoSideJson(m, sha, kept));
+    CHECK(!m.loading.watched.empty() && meso.watched.size() == m.loading.watched.size() && meso.watchedLinks == kept);
+    for (std::size_t i = 0; i < meso.watched.size(); ++i)
+        CHECK(meso.watched[i].cls == m.loading.watched[i].cls && meso.watched[i].path == m.loading.watched[i].path &&
+              meso.watched[i].entrance.at == m.loading.watched[i].entrance.at);
+    CHECK(meso.links == sideArcs(m.graph) && meso.duration == m.duration && meso.settings == m.settings);
+    CHECK(documentBytes(d) == bytes); // nothing here touched the project
+    CHECK(sideFilePath("/x/net.traffic.json", "macro") == std::filesystem::path("/x/net.traffic.macro.json"));
+}
+TEST(studyarea, sa13_side_file_cut) { // SA13 (S5.5a)
+    auto c = mesoCorridor(100);
+    auto& d = c.d;
+    setStudyAreaNodes(d, {c.a});
+    d.zones.studyArea.flowSource = "macro";
+    const auto data = test::root() / "data";
+    const auto atCompile = macroGateFlows(d, data);
+    const auto file = std::make_shared<const Json>(macroSideJson(runMacro(d, data, "p", nullptr, nullptr, true), projectSha256(d), Json()));
+    const StudyAreaSources sources{file, nullptr, inputSha256(file->dump()), {}};
+    const auto cut = [&](const ProjectDocument& doc, const StudyAreaSources& s, StudyAreaProvenance& from, std::vector<ValidationIssue>& advisories) {
+        from = {"macro", {}, projectSha256(doc), {}, false};
+        return macroGateFlows(doc, data, &advisories, &s, &from);
+    };
+    StudyAreaProvenance from; std::vector<ValidationIssue> advisories;
+    const auto fresh = cut(d, sources, from, advisories);
+    CHECK(from.periods == std::vector<std::string>{"p"} && from.sourceSha256 == sources.macroSha256 && !from.stale); // forcing: read from the file
+    CHECK(fresh.size() == atCompile.size() && !has(advisories, "MICRO_AREA_SOURCE_STALE"));
+    for (std::size_t i = 0; i < fresh.size(); ++i) CHECK(fresh[i].from == atCompile[i].from && std::abs(fresh[i].vehiclesPerHour - atCompile[i].vehiclesPerHour) < 1e-9);
+    // Other project bytes: still the file's flows, marked stale.
+    auto renamed = d; renamed.network.links[0].name = "Renamed";
+    advisories.clear();
+    cut(renamed, sources, from, advisories);
+    CHECK(from.stale && from.periods.size() == 1 && has(advisories, "MICRO_AREA_SOURCE_STALE", "studyArea.flowSource"));
+    // Another graph, or no paths: run at compile, stale (owner); the flows are the run's.
+    auto other = *file; other["periods"]["p"]["arcs"][0][1] = "elsewhere";
+    for (const auto& j : {other, macroSideJson(runMacro(d, data, "p"), projectSha256(d), Json())}) {
+        advisories.clear();
+        const auto ran = cut(d, {std::make_shared<const Json>(j), nullptr, "x", {}}, from, advisories);
+        CHECK(from.stale && from.periods.empty() && from.sourceSha256.empty() && has(advisories, "MICRO_AREA_SOURCE_STALE"));
+        CHECK(ran.size() == atCompile.size() && std::abs(total(ran) - total(atCompile)) < 1e-9);
+    }
+    // Not a side file: refused at its path.
+    auto bad = *file; bad["periods"]["p"]["paths"][0][0]["links"][0] = 9999;
+    CHECK(has(refusal([&] { const StudyAreaSources s{std::make_shared<const Json>(bad), nullptr, "", ""}; macroGateFlows(d, data, nullptr, &s); }),
+              "MICRO_AREA_SOURCE_INVALID", "macroSide.periods.p.paths[0][0].links[0]"));
+    CHECK(has(refusal([&] { const StudyAreaSources s{std::make_shared<const Json>(nullptr), nullptr, "", ""}; macroGateFlows(d, data, nullptr, &s); }),
+              "MICRO_AREA_SOURCE_INVALID", "macroSide"));
+    // The run records where its flows came from; a changed file changes the record.
+    const auto snapshot = compileDocument(d, data, nullptr, &sources);
+    CHECK(snapshot.studyArea && snapshot.studyArea->sourceSha256 == sources.macroSha256 && !compileDocument(d, data).studyArea->stale);
+    // Meso: a file that watched the kept Links is cut; one that watched nothing runs at compile, stale.
+    d.zones.studyArea.flowSource = "meso";
+    const auto kept = studyAreaCut(d.network, {c.a}).links;
+    const auto m = runMeso(d, data, nullptr, nullptr, &kept);
+    const auto mesoAtCompile = mesoGateFlows(d, data);
+    for (const auto& watched : {kept, std::vector<std::string>{}}) {
+        const StudyAreaSources s{nullptr, std::make_shared<const Json>(mesoSideJson(m, projectSha256(d), watched)), {}, "m"};
+        from = {"meso", {}, projectSha256(d), {}, false}; advisories.clear();
+        const auto flows = mesoGateFlows(d, data, &advisories, &s, &from);
+        CHECK(from.stale == watched.empty() && from.sourceSha256 == (watched.empty() ? "" : "m") && has(advisories, "MICRO_AREA_SOURCE_STALE") == watched.empty());
+        CHECK(flows.size() == mesoAtCompile.size() && std::abs(total(flows) - total(mesoAtCompile)) < 1e-9);
+    }
 }

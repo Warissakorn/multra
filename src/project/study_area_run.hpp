@@ -3,8 +3,25 @@
 // and no Undo step: compileDocument and runDiagnostics build it when `studyArea` names a Node.
 #include "document.hpp"
 #include <filesystem>
+#include <memory>
 
 namespace multra {
+// S5.5a (STUDY_AREA §8-§9, D331): the side files beside the project, as the caller read them: the
+// parsed JSON (null when the bytes are not JSON, which the cut refuses) and the bytes' SHA-256. A
+// null pointer is a missing file: the cut runs Macro or Meso at compile, as in D329/D330.
+struct StudyAreaSources {
+    std::shared_ptr<const Json> macro, meso;
+    std::string macroSha256, mesoSha256;
+};
+// What a run from a study area was cut from: `flowSource`, the side file's SHA-256 when one was used
+// (empty when the source ran at compile, or for typed flows), the periods taken from it (Macro), the
+// document's projectSha256, and whether MICRO_AREA_SOURCE_STALE was advised.
+struct StudyAreaProvenance {
+    std::string flowSource, sourceSha256, projectSha256;
+    std::vector<std::string> periods;
+    bool stale{};
+    bool operator==(const StudyAreaProvenance&) const = default;
+};
 // The gate zones' names: `gate:<link>:in` at an entry gate's start, `gate:<link>:out` at an exit's end.
 std::string entryGateName(const std::string& linkId);
 std::string exitGateName(const std::string& linkId);
@@ -23,7 +40,10 @@ StudyAreaEnds studyAreaEnds(const ProjectDocument&);
 // input, route, routing decision, route destination and OD matrix of the document not run is
 // MICRO_AREA_INPUT_IGNORED at its path in `advisories`. S5.3 (D329): under `flowSource` "macro" the gate
 // flows are macroGateFlows' (study_area_macro.hpp), read from `dataDirectory`, and the typed ones stay
-// stored and unused; its advisories follow.
+// stored and unused; its advisories follow. S5.4 (D330): "meso" the same with mesoGateFlows. S5.5a
+// (D331): `sources` lets the cut read a side file in place of the run at compile; `provenance`, when
+// given, is filled.
 ProjectDocument studyAreaDocument(const ProjectDocument&, std::vector<ValidationIssue>* advisories = nullptr,
-                                  const std::filesystem::path& dataDirectory = {});
+                                  const std::filesystem::path& dataDirectory = {}, const StudyAreaSources* sources = nullptr,
+                                  StudyAreaProvenance* provenance = nullptr);
 }

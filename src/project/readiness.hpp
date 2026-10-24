@@ -1,5 +1,6 @@
 #pragma once
 #include "document.hpp"
+#include "study_area_run.hpp"
 #include <filesystem>
 
 namespace multra {
@@ -17,6 +18,7 @@ struct ReadinessRow {
     std::string code, path, objectId, selectId; ReadinessSeverity severity{};
     bool operator==(const ReadinessRow&) const = default;
 };
+// S5.5a (D331): `sources` reach runDiagnostics for a study area's cut.
 std::vector<ReadinessRow> readiness(const ProjectDocument&, const std::filesystem::path& dataDirectory, ReadinessLevel,
-                                    const std::string& period = {});
+                                    const std::string& period = {}, const StudyAreaSources* sources = nullptr);
 }

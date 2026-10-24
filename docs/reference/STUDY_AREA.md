@@ -262,7 +262,8 @@ nothing is refused silently.
 | S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals. **Implemented**: S5.2a (D327, §16), S5.2b (D328, §17) | SA1–SA6, SA16 |
 | S5.3 | Frank–Wolfe path flows, the Macro cut by period. **Implemented** (D329, §18) | SA7–SA9 |
 | S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice. **Implemented** (D330, §19) | SA10, SA11 |
-| S5.5 | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`, the marking line, `MICRO_GENERATED_IN_AREA` | SA12–SA15 |
+| S5.5a | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`. **Implemented** (D331, §20) | SA12, SA13 |
+| S5.5b | The marking line and JSON `marking`, `MICRO_GENERATED_IN_AREA` | SA14, SA15 |
 
 ## 15. Acceptance rows (planned)
 
@@ -437,3 +438,61 @@ Each row first asserts that its forcing worked (AGENTS).
   - SA11: 100 trips over 300 s slices; all 100 vehicles cut, west to the middle exit gate with
     {A} and west to east with {A, B}; the run twice at seed 42;
   - the Source in `node-ui`.
+
+## 20. S5.5a as implemented (D331)
+
+S5.5 is split like S5.2: S5.5a is §8–§9 here; S5.5b is §10–§11 (rows SA14, SA15).
+
+- **Owner (D331):**
+  - a side file holds the cut source only (Macro path flows, Meso watched counts) plus its
+    provenance. A reopen shows one line on the Macro or Meso tab, fresh or stale, not the table;
+  - a side file whose network no longer matches the document is not used. Macro or Meso runs at
+    compile as in D329/D330, and the run gets `MICRO_AREA_SOURCE_STALE`;
+  - Run Macro keeps paths only when the study area cuts Macro, and Run Meso watches the kept
+    Links only when it cuts Meso.
+- **The files** (`src/project/side_files.*`):
+  - `<project>` less its extension, then `.macro.json` / `.meso.json`, with `format` and `schema` 1;
+  - Macro: one entry per period, replacing that period's. Each entry holds `projectSha256`, the
+    settings, gap, iterations and convergence, the classes, the graph's arcs as
+    `[kind, source, fromStation]`, the paths (when kept) and the input manifest;
+  - Meso: `projectSha256`, step and slice, duration, the Meso links as arcs, each class's paths
+    (source, links), `watchedLinks`, the watched counts and the input manifest;
+  - `projectSha256` is `inputSha256` of `documentJson` indented by 2 plus a newline, the bytes
+    saving writes, so an unsaved edit counts.
+- **Untrusted:** `parseMacroSide` / `parseMesoSide` check types, ranges and every index against
+  the file's own arrays. The first bad value is `MICRO_AREA_SOURCE_INVALID` at `macroSide…` /
+  `mesoSide…` plus its JSON path; bytes that are not JSON are refused at `macroSide` / `mesoSide`.
+  Before a stored index is used, the graph is compiled again from the document and its arcs are
+  compared.
+- **The cut** (`StudyAreaSources` through `compileDocument`, `runDiagnostics`, `readiness` and
+  `studyAreaDocument`):
+  - Macro: per period, an entry with paths whose arcs equal the graph is cut in place of the run;
+  - Meso: a file whose links equal the graph and which watched every kept Link is cut with its
+    own slice and duration;
+  - `MICRO_AREA_SOURCE_STALE` (advisory, at `studyArea.flowSource`) when a used entry's
+    `projectSha256` is not the document's, or when a file was there but could not be used;
+  - a missing file, or a missing period, runs at compile with no advisory (D329/D330 unchanged).
+- **Provenance:** `RunSnapshot::studyArea` records `flowSource`, the side file's SHA-256 when used,
+  the Macro periods taken from it, the document's `projectSha256` and whether it was stale.
+  Writing it into the Micro JSON and CSV moves to S5.5b with the marking line, so every export
+  keeps its bytes here.
+- **Editor** (`src/shell/editor_side_files.cpp`):
+  - a finished Run Macro or Run Meso of a saved project writes its side file. A write failure
+    shows `EDIT_SIDE_FILE_WRITE` and the result stays;
+  - opening a project reads its side files. A Save as to another path reads that path's (none are
+    copied);
+  - every Micro run, batch, comparison and readiness check hands them to the cut;
+  - `macroStale()` / `mesoStale()` now follow §9 rule 1: the result's `projectSha256` against the
+    document's, hashed once per revision. Undo back to the same bytes reads fresh, as before.
+- **Rows:**
+  - SA12 (`studyarea`): the hash is of the saved bytes; Macro paths and Meso watched counts read
+    back equal; a second period joins and keeps the first;
+  - SA13 (`studyarea`): a fresh file gives the at-compile flows to 1e-9 with no advisory; other
+    bytes are stale; another graph, or no paths, runs at compile and is stale; a bad index and
+    non-JSON bytes are refused at their paths; the snapshot names the file; Meso without the kept
+    Links watched runs at compile, stale;
+  - `macro-ui` / `meso-ui`: the side file is written and the project's bytes are unchanged; a
+    reopen reads it fresh, an edit saved reads it stale, and the original bytes read it fresh
+    again. Both suites now open their fixture from a temporary copy.
+- **Not tested here:** an added Link is covered by a changed stored arc, not by editing the
+  network.

@@ -18,6 +18,10 @@ struct MesoPanel {
     std::size_t step{}, steps{};
     std::optional<MesoRun> result;
     std::uint64_t revision{}, shown{}, serial{}; // the result's revision; the table shows result `serial`
+    // S5.5a (D331), editor_side_files.cpp: the side file beside the saved project (null: none; a JSON
+    // null: not JSON) and its bytes' SHA-256; the projectSha256 the shown result ran on; whether the
+    // side file is stale, for the key (side file SHA-256 + document's) it was worked out for.
+    std::shared_ptr<const Json> side; std::string sideSha256, resultSha256, staleKey; bool sideStale{};
     QLabel* note{};
     QTableWidget* table{};
     std::thread worker;

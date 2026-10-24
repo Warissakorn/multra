@@ -4,6 +4,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/input_manifest.hpp"
+#include "../project/side_files.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QDialog>
@@ -35,7 +36,9 @@ QTableWidgetItem* figure(double value, int decimals) {
 }
 bool EditorWindow::macroRunning() const { return macro_ && macro_->running; }
 const MacroRun* EditorWindow::macroResult() const { return macro_ && macro_->result ? &*macro_->result : nullptr; }
-bool EditorWindow::macroStale() const { return macroResult() && macro_->revision != history_.revision(); }
+// S5.5a (STUDY_AREA §9 rule 1, D331): stale when the document's projectSha256 is not the one the
+// result ran on, so Undo back to those bytes, or a reopen, reads fresh; the hash is cached per revision.
+bool EditorWindow::macroStale() const { return macroResult() && macro_->resultSha256 != projectSha(); }
 void EditorWindow::buildMacro(QToolBar* bar, QVBoxLayout* box) {
     macro_->table = new QTableWidget(0, 0, box->parentWidget()); macro_->table->setObjectName("editorMacroTable");
     macro_->table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -74,6 +77,8 @@ void EditorWindow::startMacro(const std::string& period) {
     const auto generation = ++macro_->generation, revision = history_.revision();
     error_->clear();
     macro_->worker = std::thread([this, document = history_.document(), data = data_, period, cancel, generation, revision] {
+        // S5.5a (owner, D331): paths only when the study area cuts Macro; the side file then carries them.
+        const bool keepPaths = !document.zones.studyArea.nodes.empty() && document.zones.studyArea.flowSource == "macro";
         const auto post = [this, generation](std::function<void(MacroPanel&)> change) {
             QMetaObject::invokeMethod(this, [this, generation, change = std::move(change)] {
                 if (generation != macro_->generation) return;
@@ -91,11 +96,11 @@ void EditorWindow::startMacro(const std::string& period) {
             },
             [&](const MacroIteration& i) { post([i](MacroPanel& m) { m.live = i; }); return !*cancel; }};
         auto run = std::make_shared<std::optional<MacroRun>>();
-        std::vector<ValidationIssue> issues; std::string error;
-        try { InputManifest inputs; *run = runMacro(document, data, period, &inputs, &observer); }
+        std::vector<ValidationIssue> issues; std::string error, sha;
+        try { InputManifest inputs; *run = runMacro(document, data, period, &inputs, &observer, keepPaths); sha = projectSha256(document); }
         catch (const ValidationError& e) { issues = e.issues; }
         catch (const std::exception& e) { error = e.what(); }
-        QMetaObject::invokeMethod(this, [this, generation, revision, run, issues, error, entered] {
+        QMetaObject::invokeMethod(this, [this, generation, revision, run, issues, error, entered, sha] {
             // A replaced or discarded run was joined by stop(); this worker is the current one only then.
             if (generation != macro_->generation) return;
             if (macro_->worker.joinable()) macro_->worker.join(); // it posted this as its last act
@@ -110,7 +115,8 @@ void EditorWindow::startMacro(const std::string& period) {
             }
             if ((*run)->assignment.cancelled) { stages[static_cast<std::size_t>(MacroStage::assignment)] = Status::cancelled; refreshRun(); return; }
             stages[static_cast<std::size_t>(MacroStage::outputs)] = Status::done;
-            macro_->result = std::move(**run); macro_->revision = revision; ++macro_->serial;
+            macro_->result = std::move(**run); macro_->revision = revision; macro_->resultSha256 = sha; ++macro_->serial;
+            writeMacroSide();
             objects_->setCurrentWidget(resultsPage_); resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMacro"));
             refreshRun();
         }, Qt::QueuedConnection);
@@ -121,6 +127,7 @@ void EditorWindow::discardMacro() {
     if (!macro_) return;
     ++macro_->generation; macro_->stop();
     macro_->running = false; macro_->result.reset(); macro_->live.reset(); macro_->stages.fill(Status::pending); ++macro_->serial;
+    macro_->side.reset(); macro_->sideSha256.clear(); macro_->staleKey.clear(); macro_->hashed.clear(); // read again by loadSideFiles
 }
 void EditorWindow::refreshMacro() {
     if (!macro_ || !macro_->note) return;
@@ -137,6 +144,7 @@ void EditorWindow::refreshMacro() {
     if (r) lines << text("editorMacroSummary").arg(QString::fromStdString(r->period)).arg(r->assignment.gap, 0, 'g', 4)
                         .arg(r->assignment.iterations).arg(text(r->assignment.converged ? "editorMacroConverged" : "editorMacroNotConverged"));
     if (macroStale()) lines << text("editorMacroStale").arg(macro_->revision).arg(history_.revision());
+    if (!r && macro_->side) lines << text(macroSideStale() ? "editorMacroSideStale" : "editorMacroSideFresh"); // S5.5a: after a reopen
     macro_->note->setText(lines.join(" "));
     auto* table = macro_->table;
     if (macro_->shown == macro_->serial && table->rowCount() == (r ? static_cast<int>(r->graph.links.size()) : 0)) return;

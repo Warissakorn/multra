@@ -25,16 +25,13 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — S5.5, or the owner's pick of an item below
+## Next session — S5.5b, or the owner's pick of an item below
 
-- **S5.5** ([STUDY_AREA](reference/STUDY_AREA.md) §8–§11; S5.2–S5.4 are in, D327–D330) completes S5;
-  rows SA12–SA15:
-  - side files `<project>.macro.json` and `<project>.meso.json` with provenance. They replace the
-    runs at compile of D329 and D330 when fresh;
-  - staleness by SHA-256 of the project bytes and of the source;
-  - `MICRO_AREA_SOURCE_STALE`;
-  - the export's marking line;
-  - `MICRO_GENERATED_IN_AREA` readiness warnings.
+- **S5.5b** ([STUDY_AREA](reference/STUDY_AREA.md) §10–§11; S5.5a is in, D331) completes S5;
+  rows SA14, SA15:
+  - `MICRO_GENERATED_IN_AREA` readiness warnings, one per area Node holding `generated` objects;
+  - the export's marking line and JSON `marking` (generated count, stale inputs);
+  - the Micro output's study-area provenance (`RunSnapshot::studyArea`, recorded since D331).
 - **Open from S5.4:** gate flows by vehicle type, for inputs naming one type
   (`MICRO_AREA_CLASS_UNSUPPORTED`).
 - **Other picks:**

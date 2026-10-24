@@ -5,6 +5,7 @@ target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas
 target_sources(multra_shell PRIVATE editor_macro.cpp editor_link_types.cpp) # S2.4 (D277)
 target_sources(multra_shell PRIVATE editor_roads.cpp editor_cross_sections.cpp editor_crossings.cpp) # S3.3b (D307), S3.5 (D309)
 target_sources(multra_shell PRIVATE editor_meso.cpp) # M11.4 (D300)
+target_sources(multra_shell PRIVATE editor_side_files.cpp) # S5.5a (D331)
 target_sources(multra_shell PRIVATE editor_results_nodes.cpp) # S0.6 (D278)
 target_sources(multra_shell PRIVATE legacy_storage.cpp) # D286
 target_sources(multra_shell PRIVATE editor_map.cpp ../editor/map_provider.cpp ../editor/map_tile_client.cpp ../editor/map_http_cache.cpp ../editor/map_layer.cpp ../editor/map_mesh.cpp ../editor/canvas_map.cpp ../editor/canvas_hud.cpp ../editor/run_vehicle_item.cpp)

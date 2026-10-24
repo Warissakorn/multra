@@ -29,13 +29,14 @@ void add(std::vector<ReadinessRow>& rows, const Network& n, const std::vector<Va
     for (const auto& i : issues) rows.push_back(located(n, i, severity));
 }
 }
-std::vector<ReadinessRow> readiness(const ProjectDocument& d, const std::filesystem::path& data, ReadinessLevel level, const std::string& period) {
+std::vector<ReadinessRow> readiness(const ProjectDocument& d, const std::filesystem::path& data, ReadinessLevel level, const std::string& period,
+                                    const StudyAreaSources* sources) {
     std::vector<ReadinessRow> rows;
     const auto& n = d.network;
     std::vector<ValidationIssue> advisories;
     try {
         if (level == ReadinessLevel::micro) {
-            for (const auto& r : runDiagnostics(d, data))
+            for (const auto& r : runDiagnostics(d, data, sources))
                 rows.push_back({r.code, r.path, r.objectId, r.selectId,
                                 r.severity == DiagnosticSeverity::advisory ? ReadinessSeverity::advisory : ReadinessSeverity::refusal});
         } else if (level == ReadinessLevel::meso) {

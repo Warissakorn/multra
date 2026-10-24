@@ -3,6 +3,18 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — UI suites isolate their recovery drafts (D320)
+
+- **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
+  run of that suite then waited at the startup recovery dialog until ctest's 60 s timeout.
+  Eleven suites had no Qt test mode, so they wrote drafts into the user's own data folder.
+- **The fix:** all 51 `EditorWindow` suites call `useTestStorage()`. It enables test mode and
+  removes drafts whose lock nobody holds, keeping a running instance's draft.
+- **Rows:** `test-storage-ui` fails without the cleanup, and fails at the window (not a hang)
+  without the file checks.
+- **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
+  219/219; the eleven suites wrote nothing to the user's folder.
+
 ## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
 
 - **Measured first** (Linux; `.optimize/` ledger, not committed):

@@ -1,6 +1,7 @@
 #include "study_area_run.hpp"
 #include "study_area_macro.hpp"
 #include "study_area_meso.hpp"
+#include "side_files.hpp"
 #include "../model/network/study_area.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
@@ -31,7 +32,8 @@ StudyAreaEnds studyAreaEnds(const ProjectDocument& d) {
                 (direction == ZoneDirection::origin ? ends.origins : ends.destinations).push_back(z.id);
     return ends;
 }
-ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<ValidationIssue>* advisories, const std::filesystem::path& data) {
+ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<ValidationIssue>* advisories, const std::filesystem::path& data,
+                                  const StudyAreaSources* sources, StudyAreaProvenance* provenance) {
     auto area = d.zones.studyArea;
     const auto cut = studyAreaCut(d.network, area.nodes);
     if (!cut.issues.empty()) throw ValidationError(cut.issues);
@@ -69,8 +71,11 @@ ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<Validati
         zones.zoneConnectors.push_back({exitGateName(id) + "/c", exitGateName(id), id, ZoneDirection::destination, 1});
         destinations.insert(exitGateName(id));
     }
-    if (area.flowSource == "macro") area.gateFlows = macroGateFlows(d, data, advisories); // S5.3
-    if (area.flowSource == "meso") area.gateFlows = mesoGateFlows(d, data, advisories);   // S5.4
+    StudyAreaProvenance own;
+    auto& record = provenance ? *provenance : own;
+    record = {area.flowSource, {}, projectSha256(d), {}, false};
+    if (area.flowSource == "macro") area.gateFlows = macroGateFlows(d, data, advisories, sources, &record); // S5.3, S5.5a
+    if (area.flowSource == "meso") area.gateFlows = mesoGateFlows(d, data, advisories, sources, &record);   // S5.4, S5.5a
     const auto ends = studyAreaEnds(d);
     const std::set<std::string> from(ends.origins.begin(), ends.origins.end()), to(ends.destinations.begin(), ends.destinations.end());
     std::vector<ValidationIssue> unknown;

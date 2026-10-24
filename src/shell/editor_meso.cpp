@@ -4,6 +4,8 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/meso_output.hpp"
 #include "../project/input_manifest.hpp"
+#include "../project/side_files.hpp"
+#include "../model/network/study_area.hpp"
 #include <QAction>
 #include <QHeaderView>
 #include <QLabel>
@@ -30,7 +32,7 @@ QTableWidgetItem* figure(double value, int decimals) {
 }
 bool EditorWindow::mesoRunning() const { return meso_ && meso_->running; }
 const MesoRun* EditorWindow::mesoResult() const { return meso_ && meso_->result ? &*meso_->result : nullptr; }
-bool EditorWindow::mesoStale() const { return mesoResult() && meso_->revision != history_.revision(); }
+bool EditorWindow::mesoStale() const { return mesoResult() && meso_->resultSha256 != projectSha(); } // S5.5a, as macroStale
 void EditorWindow::buildMeso(QToolBar* bar, QVBoxLayout* box) {
     meso_->table = new QTableWidget(0, 0, box->parentWidget()); meso_->table->setObjectName("editorMesoTable");
     meso_->table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -52,6 +54,10 @@ void EditorWindow::startMeso() {
     const auto generation = ++meso_->generation, revision = history_.revision();
     error_->clear();
     meso_->worker = std::thread([this, document = history_.document(), data = data_, cancel, generation, revision] {
+        // S5.5a (owner, D331): the kept Links are watched only when the study area cuts Meso.
+        std::vector<std::string> watched;
+        if (!document.zones.studyArea.nodes.empty() && document.zones.studyArea.flowSource == "meso")
+            if (auto cut = studyAreaCut(document.network, document.zones.studyArea.nodes); cut.issues.empty()) watched = std::move(cut.links);
         const auto post = [this, generation](std::function<void(MesoPanel&)> change) {
             QMetaObject::invokeMethod(this, [this, generation, change = std::move(change)] {
                 if (generation != meso_->generation) return;
@@ -72,11 +78,14 @@ void EditorWindow::startMeso() {
                 return !*cancel;
             }};
         auto run = std::make_shared<std::optional<MesoRun>>();
-        std::vector<ValidationIssue> issues; std::string error;
-        try { InputManifest inputs; *run = runMeso(document, data, &inputs, &observer); }
+        std::vector<ValidationIssue> issues; std::string error, sha;
+        try {
+            InputManifest inputs; *run = runMeso(document, data, &inputs, &observer, watched.empty() ? nullptr : &watched);
+            sha = projectSha256(document);
+        }
         catch (const ValidationError& e) { issues = e.issues; }
         catch (const std::exception& e) { error = e.what(); }
-        QMetaObject::invokeMethod(this, [this, generation, revision, run, issues, error, entered] {
+        QMetaObject::invokeMethod(this, [this, generation, revision, run, issues, error, entered, sha, watched] {
             if (generation != meso_->generation) return; // replaced or discarded: stop() joined it
             if (meso_->worker.joinable()) meso_->worker.join(); // it posted this as its last act
             meso_->running = false;
@@ -90,7 +99,8 @@ void EditorWindow::startMeso() {
             }
             if ((*run)->loading.cancelled) { stages[static_cast<std::size_t>(MesoStage::loading)] = Status::cancelled; refreshRun(); return; }
             stages[static_cast<std::size_t>(MesoStage::outputs)] = Status::done;
-            meso_->result = std::move(**run); meso_->revision = revision; ++meso_->serial;
+            meso_->result = std::move(**run); meso_->revision = revision; meso_->resultSha256 = sha; ++meso_->serial;
+            writeMesoSide(watched);
             objects_->setCurrentWidget(resultsPage_); resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMeso"));
             refreshRun();
         }, Qt::QueuedConnection);
@@ -101,6 +111,7 @@ void EditorWindow::discardMeso() {
     if (!meso_) return;
     ++meso_->generation; meso_->stop();
     meso_->running = false; meso_->result.reset(); meso_->stages.fill(Status::pending); ++meso_->serial;
+    meso_->side.reset(); meso_->sideSha256.clear(); meso_->staleKey.clear(); // read again by loadSideFiles
 }
 void EditorWindow::refreshMeso() {
     if (!meso_ || !meso_->note) return;
@@ -119,6 +130,7 @@ void EditorWindow::refreshMeso() {
                      .arg(j["totals"]["vht"].get<double>(), 0, 'f', 1).arg(j["totals"]["delay"].get<double>(), 0, 'f', 1);
     }
     if (mesoStale()) lines << text("editorMesoStale").arg(meso_->revision).arg(history_.revision());
+    if (!r && meso_->side) lines << text(mesoSideStale() ? "editorMesoSideStale" : "editorMesoSideFresh"); // S5.5a: after a reopen
     meso_->note->setText(lines.join(" "));
     auto* table = meso_->table;
     if (meso_->shown == meso_->serial && table->rowCount() == (r ? static_cast<int>(r->graph.links.size()) : 0)) return;

@@ -1,6 +1,7 @@
 #pragma once
-// S5.4 (STUDY_AREA §7, D330): a study area's gate flows cut from Meso's loading. Until S5.5's side
-// files, the cut runs Meso itself over the whole Micro run (owner, D330); Meso has no seed (D292).
+// S5.4 (STUDY_AREA §7, D330): a study area's gate flows cut from Meso's loading. When no side file
+// stands in (S5.5a, D331), the cut runs Meso itself over the whole Micro run (owner, D330); Meso has
+// no seed (D292).
 #include "study_area_run.hpp"
 #include <filesystem>
 
@@ -14,6 +15,12 @@ namespace multra {
 // interval per slice, owner). Refused: MICRO_AREA_SOURCE_INCOMPLETE (a cancelled loading) and Meso's
 // own refusals. Advised: MICRO_AREA_CLASS_UNSUPPORTED at classes[i] for a `type:` class, which no OD
 // matrix can name, and MICRO_AREA_CUT_UNMATCHED at `studyArea` when a stretch has no listed end.
+// S5.5a (D331): `sources->meso`, when it watched every kept Link and its links equal the graph
+// compiled again, is cut in place of the run, with its own step, slice and duration.
+// MICRO_AREA_SOURCE_STALE at `studyArea.flowSource` when its projectSha256 is not the document's, or
+// when it could not be used and Meso ran at compile (owner). One that does not parse is refused with
+// MICRO_AREA_SOURCE_INVALID; a missing one runs at compile with no advisory.
 std::vector<GateFlow> mesoGateFlows(const ProjectDocument&, const std::filesystem::path& dataDirectory,
-                                    std::vector<ValidationIssue>* advisories = nullptr);
+                                    std::vector<ValidationIssue>* advisories = nullptr, const StudyAreaSources* sources = nullptr,
+                                    StudyAreaProvenance* provenance = nullptr);
 }

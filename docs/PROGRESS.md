@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.5a: Macro and Meso side files, stale by SHA-256 (D331)
+
+- **Asked:** continue; S5.5 was next. It was split like S5.2: S5.5a is the side files and
+  staleness; S5.5b is the marking line and the generated-object warnings. The owner chose: after
+  a reopen, the cut source only; a network mismatch runs at compile, marked stale; paths and
+  watches only when the area cuts that level.
+- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §20):
+  - Run Macro and Run Meso of a saved project write `<project>.macro.json` / `.meso.json` with the
+    project bytes' SHA-256;
+  - the study area's cut reads a usable side file in place of the run at compile, and says
+    `MICRO_AREA_SOURCE_STALE` when it is for other bytes or unusable;
+  - a bad side file is refused at its JSON path (`MICRO_AREA_SOURCE_INVALID`);
+  - the Macro and Meso results are stale by hash, so this survives a reopen.
+- **Rows:** SA12, SA13 (`studyarea`), and the reopen checks in `macro-ui` / `meso-ui`, which now
+  open their fixture from a temporary copy. Linux only, GCC 13, Qt 6.4.2 offscreen:
+  `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not built or
+  run on Windows.
+
 ## 2026-10-24 — S5.4: the Meso cut for a study area (D330)
 
 - **Asked:** continue; S5.4 was next. The owner chose that Meso, like Macro, runs at compile until
@@ -183,18 +201,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Ortúzar Example 11.1 (two routes, 1400 / 600 at 22 min) fits M9's two-route fixture;
   - the Planning Handbook is the 4th edition (2016).
 - **Not done:** no number entered `data/` or a test, no benchmark was chosen, no gate moved.
-
-## 2026-10-23 — UI suites isolate their recovery drafts (D320)
-
-- **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
-  run of that suite then waited at the startup recovery dialog until ctest's 60 s timeout.
-  Eleven suites had no Qt test mode, so they wrote drafts into the user's own data folder.
-- **The fix:** all 51 `EditorWindow` suites call `useTestStorage()`. It enables test mode and
-  removes drafts whose lock nobody holds, keeping a running instance's draft.
-- **Rows:** `test-storage-ui` fails without the cleanup, and fails at the window (not a hang)
-  without the file checks.
-- **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
-  219/219; the eleven suites wrote nothing to the user's folder.
 
 ## Older entries
 

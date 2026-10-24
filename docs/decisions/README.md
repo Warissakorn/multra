@@ -363,6 +363,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D328](RECORD.md#d328) — S5.2b: `studyAreaEnds`, gate-flow commands, the *Gate flows…* dialog (grid per period and types), area Nodes filled on the canvas; S5.2 complete; row SA16.
 [D329](RECORD.md#d329) — S5.3: Frank–Wolfe path flows (`keepPaths`, exact), the Macro cut by period (`flowSource` macro), Macro run at compile until S5.5 (owner); +72 % wall on a 1,892-cell grid with paths.
 [D330](RECORD.md#d330) — S5.4: the Meso cut from the loading's FIFO route counts (Yperman §3.2, Eq. 5.2) per output slice; Meso run at compile until S5.5 (owner); `type:` classes not cut.
+[D331](RECORD.md#d331) — S5.5a: Macro and Meso side files with `projectSha256`; the cut reads a usable one; stale by SHA-256 (`MICRO_AREA_SOURCE_STALE`); owner: cut source only, mismatch runs at compile.
 [D318](RECORD.md#d318) — Dialogs keep their buttons on screen: `dialog_fit` (scrolling body, fixed footer, first size capped to the screen); the behaviour editor split into a header and four topic tabs; vehicle type, input, decision and coarse dialogs scroll.
 [D319](RECORD.md#d319) — Optimization review: NEXT holds open items only (1113 → 469 words, old list archived); new dialogs as free functions, not `EditorWindow` members; split `src/core/` files before an engine slice.
 [D320](RECORD.md#d320) — UI suites call `useTestStorage()`: test-mode storage for all 51 `EditorWindow` suites, stale recovery drafts removed, live ones kept; a crashed run no longer blocks the next one.

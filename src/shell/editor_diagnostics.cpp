@@ -48,11 +48,12 @@ void EditorWindow::buildDiagnostics() {
     connect(readinessPeriod_,&QComboBox::activated,this,[this]{ recheck(); });
 }
 void EditorWindow::recheck() {
+    const auto sources=studyAreaSources(); // S5.5a (D331)
     const auto level=static_cast<ReadinessLevel>(readinessLevel_->currentData().toInt());
-    if (level==ReadinessLevel::micro) diagnostics_=runDiagnostics(history_.document(),data_);
+    if (level==ReadinessLevel::micro) diagnostics_=runDiagnostics(history_.document(),data_,&sources);
     else diagnostics_.clear();
     readiness_.clear();
-    for (auto& r : readiness(history_.document(),data_,level,readinessPeriod_->currentData().toString().toStdString()))
+    for (auto& r : readiness(history_.document(),data_,level,readinessPeriod_->currentData().toString().toStdString(),&sources))
         if (level!=ReadinessLevel::micro || r.code.rfind("SEAM_",0)==0) readiness_.push_back(std::move(r)); // Micro's others are diagnostics_
     diagnosticRevision_=history_.revision(); readinessChecked_=true;
     refreshDiagnostics();

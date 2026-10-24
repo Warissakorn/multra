@@ -112,11 +112,12 @@ void EditorWindow::startBatch() {
     auto seeds=std::move(*list);
     clearRun(); // one table at a time: the batch replaces the single run, and this cancels any batch
     std::optional<RunSnapshot> snapshot; std::optional<EvaluationSpec> spec;
+    const auto sources=studyAreaSources(); // S5.5a (D331)
     try{
-        snapshot=compileDocument(history_.document(),data_);
+        snapshot=compileDocument(history_.document(),data_,nullptr,&sources);
         spec=evaluationSpec(history_.document(),*snapshot,data_);
     }catch(const std::exception& e){
-        diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
+        diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return;
     }
     error_->clear();

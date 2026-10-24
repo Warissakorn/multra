@@ -1,9 +1,11 @@
 #include "study_area_macro.hpp"
 #include "macro_run.hpp"
+#include "side_files.hpp"
 #include "../model/network/study_area.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <tuple>
 
 namespace multra {
@@ -40,7 +42,8 @@ std::vector<CutTrip> cutTrips(const MacroGraph& g, const std::vector<std::size_t
     }
     return trips;
 }
-std::vector<GateFlow> macroGateFlows(const ProjectDocument& d, const std::filesystem::path& data, std::vector<ValidationIssue>* advisories) {
+std::vector<GateFlow> macroGateFlows(const ProjectDocument& d, const std::filesystem::path& data, std::vector<ValidationIssue>* advisories,
+                                     const StudyAreaSources* sources, StudyAreaProvenance* provenance) {
     const auto& area = d.zones.studyArea;
     const auto cut = studyAreaCut(d.network, area.nodes);
     if (!cut.issues.empty()) throw ValidationError(cut.issues);
@@ -49,6 +52,13 @@ std::vector<GateFlow> macroGateFlows(const ProjectDocument& d, const std::filesy
     const double start = d.definition ? d.definition->clockStart : 0;
     const double end = start + (d.definition ? d.definition->duration : AuthoringDefinition{}.duration);
     const auto advise = [&](const std::string& code, std::size_t i) { if (advisories) advisories->push_back({code, "studyPeriods[" + std::to_string(i) + "]"}); };
+    // S5.5a (D331): a side file entry with paths, on the graph compiled again, stands in for the run.
+    std::optional<MacroSide> side;
+    if (sources && sources->macro) side = parseMacroSide(*sources->macro);
+    std::optional<MacroGraph> graph;
+    if (side) if (auto network = macroNetwork(d, data); network.issues.empty()) graph = std::move(network.graph);
+    const auto sha = provenance ? provenance->projectSha256 : projectSha256(d);
+    bool stale = false;
     std::map<std::tuple<std::string, std::string, std::string, std::string, std::string>, double> sums; // period, composition, mode, from, to
     bool any = false;
     for (std::size_t i = 0; i < d.zones.studyPeriods.size(); ++i) {
@@ -56,19 +66,33 @@ std::vector<GateFlow> macroGateFlows(const ProjectDocument& d, const std::filesy
         if (p.end <= start || p.start >= end) continue;
         if (p.start < start || p.end > end) { advise("MICRO_AREA_PERIOD_OUTSIDE", i); continue; }
         any = true;
-        const auto run = runMacro(d, data, p.id, nullptr, nullptr, true);
-        if (!run.assignment.converged) advise("MACRO_NOT_CONVERGED", i);
+        const MacroSidePeriod* entry = nullptr;
+        if (side) if (const auto e = side->periods.find(p.id); e != side->periods.end()) entry = &e->second;
+        const bool usable = entry && entry->hasPaths && graph && sideArcs(*graph) == entry->arcs;
+        if (entry && (!usable || entry->projectSha256 != sha)) stale = true; // owner (D331): a mismatch runs at compile, marked stale
+        std::optional<MacroRun> run;
+        if (!usable) run = runMacro(d, data, p.id, nullptr, nullptr, true);
+        else if (provenance) provenance->periods.push_back(p.id);
+        const auto& g = usable ? *graph : run->graph;
+        const auto& classes = usable ? entry->classes : run->classes;
+        const auto& paths = usable ? entry->paths : run->assignment.paths;
+        if (!(usable ? entry->converged : run->assignment.converged)) advise("MACRO_NOT_CONVERGED", i);
         std::size_t unmatched = 0;
-        for (std::size_t m = 0; m < run.classes.size(); ++m) {
-            const auto& cls = run.classes[m];
+        for (std::size_t m = 0; m < classes.size(); ++m) {
+            const auto& cls = classes[m];
             const auto composition = cls.mode.empty() ? cls.id.substr(std::string("composition:").size()) : std::string{};
-            for (const auto& path : run.assignment.paths[m])
-                for (const auto& trip : cutTrips(run.graph, path.links, links, connectors, d, ends, &unmatched))
+            for (const auto& path : paths[m])
+                for (const auto& trip : cutTrips(g, path.links, links, connectors, d, ends, &unmatched))
                     sums[{p.id, composition, cls.mode, trip.from, trip.to}] += path.vehiclesPerHour;
         }
         if (unmatched) advise("MICRO_AREA_CUT_UNMATCHED", i);
     }
     if (!any) throw ValidationError({{"MICRO_AREA_PERIOD_NOT_RUN", "studyPeriods"}});
+    if (provenance && !provenance->periods.empty()) provenance->sourceSha256 = sources->macroSha256;
+    if (stale) {
+        if (advisories) advisories->push_back({"MICRO_AREA_SOURCE_STALE", "studyArea.flowSource"});
+        if (provenance) provenance->stale = true;
+    }
     std::vector<GateFlow> flows;
     for (const auto& [k, v] : sums) flows.push_back({std::get<0>(k), std::get<3>(k), std::get<4>(k), std::get<1>(k), std::get<2>(k), v});
     return flows;

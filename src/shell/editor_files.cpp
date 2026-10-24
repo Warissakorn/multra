@@ -20,7 +20,7 @@ void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
     clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(std::move(document));
     automaticRevision_=conflictRevision_=UINT64_MAX;
-    file_=file;error_->clear();canvas_->select("");refresh();canvas_->fitNetwork();
+    file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files
 }
 void EditorWindow::openFileOrReport(const QString& file) {
     try { openFile(file); } catch (const std::exception& e) { showError(e); }
@@ -29,7 +29,9 @@ void EditorWindow::saveFile(const QString& file) {
     if(file==recoveryFile_)throw std::runtime_error("EDIT_FILE_WRITE");
     validateDocument(history_.document());
     writeEditorDocument(file,documentJson(history_.document()));
-    clearRecovery();file_=file;history_.markSaved();error_->clear();refresh();
+    // S5.5a (D331): a new path has its own side files (none are copied; they would be stale by hash).
+    const bool moved=file!=file_;
+    clearRecovery();file_=file;if(moved)loadSideFiles();history_.markSaved();error_->clear();refresh();
 }
 bool EditorWindow::saveDialog(bool as) {
     auto file=file_;

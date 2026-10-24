@@ -115,18 +115,19 @@ void EditorWindow::compareWithFile(const QString& file) {
     auto list=batchSeedList(); if(!list) return;
     // Everything is compiled and checked before the results on show are cleared (BATCH §7).
     std::optional<RunSnapshot> base; std::optional<EvaluationSpec> baseSpec;
+    const auto sources=studyAreaSources(); // S5.5a (D331)
     try{
-        base=compileDocument(history_.document(),data_);
+        base=compileDocument(history_.document(),data_,nullptr,&sources);
         baseSpec=evaluationSpec(history_.document(),*base,data_);
     }catch(const std::exception& e){
-        diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
+        diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return;
     }
     const auto alternativeName=QFileInfo(file).fileName();
     std::optional<RunSnapshot> alternative; std::optional<EvaluationSpec> alternativeSpec;
     try{
         const auto document=readEditorDocument(file);
-        alternative=compileDocument(document,data_);
+        alternative=compileDocument(document,data_,nullptr,&sources);
         alternativeSpec=evaluationSpec(document,*alternative,data_);
     }catch(const std::exception& e){
         // Its issues are the other network's: one line, never the open project's Problems tab.
