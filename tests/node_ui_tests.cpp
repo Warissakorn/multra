@@ -1,8 +1,13 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/project/json.hpp"
+#include <nlohmann/json.hpp>
 #include "../src/editor/canvas_style.hpp"
 #include "../src/model/network/node_membership.hpp"
+#include "../src/shell/gate_flow_dialog.hpp"
+#include <QDoubleSpinBox>
+#include <QDialogButtonBox>
+#include <QPushButton>
 #include <QGraphicsPathItem>
 #include <QPen>
 #include <QAction>
@@ -19,6 +24,7 @@
 #include <QTest>
 #include <QTimer>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 using namespace multra;
 // S0.1 (D261, NODES §6, row N5): the Node tool (N) draws a polygon by Ctrl+right-clicks and Enter in
@@ -61,6 +67,38 @@ std::vector<std::pair<std::string, std::string>> membershipLegs(const Network& n
     for (const auto& l : m.outLegs) legs.emplace_back(l.linkId, "out");
     std::sort(legs.begin(), legs.end());
     return legs;
+}
+int areaFilled(EditorWindow& w) { // S5.2b: Node outlines drawn as in the study area
+    int n = 0;
+    for (auto* i : w.canvas()->scene()->items()) n += i->data(0).toString() == "node" && i->data(2).toString() == "area";
+    return n;
+}
+// S5.2b (SA16): the gate-flow dialog types a value into its first cell, switches period and back,
+// and accepts; returns what it gave.
+std::optional<GateFlowEdit> typeGateFlow(const std::vector<GateFlow>& current, double value, double* shown, int cut = 0) {
+    QTimer::singleShot(0, [value, shown, cut] {
+        auto* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+        require(dialog && dialog->objectName() == "editorGateFlowDialog", "No gate-flow dialog");
+        auto* grid = dialog->findChild<QTableWidget*>("editorGateFlowGrid");
+        if (cut) { // S5.3/S5.4: a cut from Macro (1) or Meso (2) replaces the grid, which is kept but not edited
+            dialog->findChild<QComboBox*>("editorGateFlowSource")->setCurrentIndex(cut); QApplication::processEvents();
+            require(!grid->isEnabled(), "The grid stayed editable under the Macro source");
+            dialog->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
+            return;
+        }
+        require(grid && grid->rowCount() == 2 && grid->columnCount() == 1, "The gate-flow grid is not origins x destinations");
+        auto* cell = qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0));
+        *shown = cell->value();
+        cell->setValue(value);
+        auto* period = dialog->findChild<QComboBox*>("editorGateFlowPeriod");
+        period->setCurrentIndex(1); QApplication::processEvents();
+        require(qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0))->value() == 0, "Another period showed this period's flow");
+        period->setCurrentIndex(0); QApplication::processEvents();
+        require(qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0))->value() == value, "Switching period lost the typed flow");
+        dialog->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
+    });
+    return editGateFlows(nullptr, "typed", current, {{"gate:a:in", "A (in)"}, {"zone-1", "Zone"}}, {{"gate:b:out", "B (out)"}},
+                         {{"car-only", "Cars"}}, {{"p1", "AM"}, {"p2", "PM"}}, {}, [](const char* key) { return QString(key); });
 }
 QColor outline(EditorWindow& w) {
     for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node")
@@ -109,7 +147,7 @@ int main(int argc, char** argv) {
         require(tagged(w, "node") == 1, "The node is not drawn");
         require(table->rowCount() == 1 && table->currentRow() == 0, "The Nodes tab does not list and select the node");
         // S0.2: the small triangle holds no turn, so its membership is refused (NODES §3).
-        require(table->columnCount() == 7 && table->item(0, 5)->text() == "0" && table->item(0, 4)->text() == "0 / 0",
+        require(table->columnCount() == 8 && table->item(0, 5)->text() == "0" && table->item(0, 4)->text() == "0 / 0",
                 "The Nodes tab does not show the membership");
         require(table->item(0, 6)->text().contains("gives no rows"),
                 "The Nodes tab does not show the refusal");
@@ -119,6 +157,33 @@ int main(int argc, char** argv) {
         require(drawnLegs(w).empty(), "A refused node drew legs");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the node");
         trigger(w, "editorRedo"); require(nodes().size() == 1, "Redo lost the node");
+        // S5.2a (SA3): ticking and unticking the Study area column are one Undo step each.
+        {
+            const auto at = w.history().revision();
+            require(table->item(0, 7)->checkState() == Qt::Unchecked, "A new node is in the study area");
+            table->item(0, 7)->setCheckState(Qt::Checked); QApplication::processEvents();
+            require(w.history().document().zones.studyArea.nodes == std::vector<std::string>{nodes()[0].id} &&
+                    w.history().revision() == at + 1, "Ticking the study area was not one step");
+            require(areaFilled(w) == 1, "The study-area node is not filled on the canvas");
+            require(!act(w, "editorGateFlows")->isEnabled(), "Gate flows offered on an area that cannot run");
+            table->item(0, 7)->setCheckState(Qt::Unchecked); QApplication::processEvents();
+            require(w.history().document().zones.studyArea.nodes.empty() && w.history().revision() == at + 2 &&
+                    !documentJson(w.history().document()).contains("studyArea"), "Unticking kept the node in the study area");
+            require(areaFilled(w) == 0, "An unticked node stayed filled");
+            // SA16: the dialog keeps each period's flows apart and gives the typed one back.
+            double shown = -1;
+            const auto first = typeGateFlow({}, 120, &shown);
+            require(first && first->source == "typed" && first->flows.size() == 1 && first->flows[0].vehiclesPerHour == 120 &&
+                    first->flows[0].periodId == "p1" && first->flows[0].from == "gate:a:in" && first->flows[0].to == "gate:b:out" &&
+                    first->flows[0].compositionId == "car-only" && shown == 0, "The gate-flow dialog did not give the typed flow");
+            const auto again = typeGateFlow(first->flows, 90, &shown);
+            require(shown == 120 && again && again->flows.size() == 1 && again->flows[0].vehiclesPerHour == 90, "Reopening did not show the flow");
+            const auto macro = typeGateFlow(again->flows, 0, &shown, 1);
+            require(macro && macro->source == "macro" && macro->flows == again->flows, "The Macro source lost the typed flows");
+            const auto meso = typeGateFlow(again->flows, 0, &shown, 2);
+            require(meso && meso->source == "meso" && meso->flows == again->flows, "The Meso source lost the typed flows");
+            table->selectRow(0); QApplication::processEvents();
+        }
 
         // Rename is one step; delete is one step and undoes.
         table->selectRow(0); QApplication::processEvents();
@@ -157,6 +222,29 @@ int main(int argc, char** argv) {
         require(c->highlightedNode().empty() && drawnLegs(w).empty() && outline(w) == canvasStyle::ink(),
                 "Clearing the row kept the highlight");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the suggested node");
+        // S5.5b (SA15): a study-area Node holding a generated Connector gives one warning with its
+        // counts on the Problems tab, and its row selects the Node, which lights it.
+        trigger(w, "editorRedo");
+        {
+            auto doc = w.history().document();
+            const auto node = doc.network.nodes.at(0);
+            const auto inside = nodeMembership(doc.network, node).connectors;
+            require(!inside.empty(), "The suggested node holds no Connector");
+            for (auto& x : doc.network.connectors) x.generated = x.id == inside.front();
+            doc.zones.studyArea.nodes = {node.id};
+            QTemporaryDir dir; require(dir.isValid(), "Temporary directory unavailable");
+            const auto file = dir.filePath("area.traffic.json");
+            { std::ofstream f(file.toStdString()); f << documentJson(doc).dump(2) << '\n'; }
+            w.openFile(file); QApplication::processEvents();
+            trigger(w, "editorRecheck");
+            auto* problems = w.findChild<QTableWidget*>("editorProblemTable"); require(problems, "No Problems table");
+            int row = -1;
+            for (int i = 0; i < problems->rowCount(); ++i)
+                if (problems->item(i, 1) && problems->item(i, 1)->text().contains("1 Connectors, 0 right-of-way objects")) row = i;
+            require(row >= 0 && problems->item(row, 3)->text() == "nodes[0]", "The generated Connector is not listed with its count");
+            c->setHighlightedNode(""); problems->selectRow(row); QApplication::processEvents();
+            require(c->highlightedNode() == node.id, "Selecting the row did not light the node");
+        }
         std::cout << "Node UI tests passed\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }

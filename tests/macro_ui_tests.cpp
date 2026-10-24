@@ -3,6 +3,8 @@
 #include "../src/project/macro_run.hpp"
 #include "../src/project/json.hpp"
 #include "../src/project/node_proposals.hpp"
+#include "../src/project/side_files.hpp"
+#include <QFile>
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
@@ -23,6 +25,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 using namespace multra;
 // S2.4 rows MA14 (docs/reference/MACRO_NETWORK.md §19 a, §20, D277): Run Macro on its worker in
 // stages, the Macro links table and its stale notice; the Link types tab; the Link's type field;
@@ -68,7 +71,13 @@ int main(int argc, char** argv) {
         require(argc > 2, "Expected the data directory and the two-route fixture");
         const std::filesystem::path data(argv[1]);
         EditorWindow w{data}; w.show(); QApplication::processEvents();
-        w.openFile(QString::fromStdString(argv[2])); QApplication::processEvents();
+        // S5.5a (D331): a run writes its side file beside the project, so the fixture is opened from a copy.
+        QTemporaryDir projectDir; require(projectDir.isValid(), "Temporary directory unavailable");
+        const auto project = projectDir.filePath("project.traffic.json");
+        std::filesystem::copy_file(argv[2], project.toStdString());
+        const auto projectBytes = [&] { std::ifstream f(project.toStdString(), std::ios::binary); return std::string(std::istreambuf_iterator<char>(f), {}); };
+        const auto original = projectBytes();
+        w.openFile(project); QApplication::processEvents();
         const auto& d = [&]() -> const ProjectDocument& { return w.history().document(); };
         auto* table = item<QTableWidget>(w, "editorMacroTable");
         auto* note = item<QLabel>(w, "editorMacroNote");
@@ -103,6 +112,29 @@ int main(int argc, char** argv) {
         require(table->rowCount() == rows && w.macroResult(), "A stale result keeps its rows");
         trigger(w, "editorUndo");
         require(d().network.links[1].linkTypeId == "arterial" && !w.macroStale(), "Undo restores the type and the result's revision");
+        // SA12, SA13 (S5.5a, D331): the run wrote its side file beside the project and left the project's
+        // bytes alone; a reopen reads it back fresh; an edit saved makes it stale; the bytes back, fresh.
+        const auto sideFile = projectDir.filePath("project.traffic.macro.json");
+        require(QFile::exists(sideFile) && projectBytes() == original, "Run Macro writes its side file, not the project");
+        {
+            std::ifstream f(sideFile.toStdString());
+            const auto side = parseMacroSide(Json::parse(f));
+            require(side.periods.size() == 1 && side.periods.contains("matrix:am") && !side.periods.at("matrix:am").hasPaths,
+                    "One period, without paths outside a Macro cut");
+            require(side.periods.at("matrix:am").projectSha256 == projectSha256(d()), "It names this document's bytes");
+        }
+        w.openFile(project); QApplication::processEvents();
+        require(!w.macroResult() && !w.macroSideStale() && note->text().contains("matches it"), "A reopen shows the saved result fresh");
+        w.canvas()->select(link); QApplication::processEvents();
+        type->setCurrentIndex(type->findData(QString())); emit type->activated(type->currentIndex()); QApplication::processEvents();
+        w.saveFile(project); w.openFile(project); QApplication::processEvents();
+        require(w.macroSideStale() && note->text().contains("stale"), "An edit saved and reopened reads the saved result stale");
+        { std::ofstream f(project.toStdString(), std::ios::binary); f << original; }
+        w.openFile(project); QApplication::processEvents();
+        require(!w.macroSideStale() && projectBytes() == original, "The original bytes back read it fresh");
+        runMacro(w, "matrix:am");
+        require(w.macroResult() && !w.macroStale(), "A new run is fresh");
+        w.canvas()->select(link); QApplication::processEvents(); // the reopen cleared the selection
 
         // A refusal names its stage: the untyped Link stops the run at the graph.
         type->setCurrentIndex(type->findData(QString())); emit type->activated(type->currentIndex()); QApplication::processEvents();

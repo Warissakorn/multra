@@ -1,4 +1,5 @@
 #include "json.hpp"
+#include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
@@ -147,36 +148,36 @@ RightOfWay rightOfWay(const Json& value, int version) {
     RightOfWay row;
     if(present(value,"waitingLines"))for(const auto& w:array(value,"waitingLines")) {
         const auto path="rightOfWay.waitingLines["+std::to_string(row.waitingLines.size())+"]";
-        knownFields(w,{"id","name","point"},path,version);
+        knownFields(withoutGenerated(w,version),{"id","name","point"},path,version);
         const auto& point=member(w,"point");
         knownFields(point,{"path","station"},path+".point",version);
         row.waitingLines.push_back({field<std::string>(w,"id"),present(w,"name")?field<std::string>(w,"name"):"",
-            {controlPath(member(point,"path"),path+".point.path",version),field<double>(point,"station")}});
+            {controlPath(member(point,"path"),path+".point.path",version),field<double>(point,"station")}});row.waitingLines.back().generated=generatedFlag(w,path,version);
     }
     if(present(value,"conflictAreas"))for(const auto& a:array(value,"conflictAreas")) {
         const auto path="rightOfWay.conflictAreas["+std::to_string(row.conflictAreas.size())+"]";
-        knownFields(a,{"id","name","kind","first","second","priority"},path,version);
+        knownFields(withoutGenerated(a,version),{"id","name","kind","first","second","priority"},path,version);
         row.conflictAreas.push_back({field<std::string>(a,"id"),present(a,"name")?field<std::string>(a,"name"):"",
             conflictKindFromName(field<std::string>(a,"kind")),conflictSide(member(a,"first"),path+".first",version),
             conflictSide(member(a,"second"),path+".second",version),
-            conflictPriorityFromName(field<std::string>(a,"priority"))});
+            conflictPriorityFromName(field<std::string>(a,"priority"))});row.conflictAreas.back().generated=generatedFlag(a,path,version);
     }
     if(present(value,"priorityRules"))for(const auto& r:array(value,"priorityRules")) {
         const auto path="rightOfWay.priorityRules["+std::to_string(row.priorityRules.size())+"]";
-        knownFields(r,{"id","name","conflictAreaId","gapTime","headway"},path,version);
+        knownFields(withoutGenerated(r,version),{"id","name","conflictAreaId","gapTime","headway"},path,version);
         row.priorityRules.push_back({field<std::string>(r,"id"),present(r,"name")?field<std::string>(r,"name"):"",
-            field<std::string>(r,"conflictAreaId"),field<double>(r,"gapTime"),field<double>(r,"headway")});
+            field<std::string>(r,"conflictAreaId"),field<double>(r,"gapTime"),field<double>(r,"headway")});row.priorityRules.back().generated=generatedFlag(r,path,version);
     }
     if(version>=15 && present(value,"stopControls"))for(const auto& c:array(value,"stopControls")) {
         const auto path="rightOfWay.stopControls["+std::to_string(row.stopControls.size())+"]";
-        knownFields(c,{"id","name","waitingLineId","mode","conflictAreaIds"},path,version);
+        knownFields(withoutGenerated(c,version),{"id","name","waitingLineId","mode","conflictAreaIds"},path,version);
         StopControl control{field<std::string>(c,"id"),present(c,"name")?field<std::string>(c,"name"):"",
             field<std::string>(c,"waitingLineId"),stopModeFromName(field<std::string>(c,"mode")),{}};
         for(const auto& area:array(c,"conflictAreaIds")) {
             if(!area.is_string())throw std::invalid_argument("Expected text: conflictAreaIds");
             control.conflictAreaIds.push_back(area.get<std::string>());
         }
-        row.stopControls.push_back(std::move(control));
+        control.generated=generatedFlag(c,path,version);row.stopControls.push_back(std::move(control));
     }
     return row;
 }
@@ -215,12 +216,10 @@ Network parseNetwork(const Json& value, int schemaVersion) {
         network.links.push_back(std::move(link));
     }
     for (const auto& c : array(value, "connectors")) {
-        const auto where="connectors["+std::to_string(network.connectors.size())+"]";
-        // `laneChangeSide` exists from schema 17 (M3.2.9a, D73).
-        if(schemaVersion>=21)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
+        const auto where="connectors["+std::to_string(network.connectors.size())+"]"; // laneChangeSide: schema 17 (D73)
+        if(schemaVersion>=21)knownFields(withoutGenerated(c,schemaVersion),{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
             "laneBlend","name","laneWidths","laneMarkings","laneChangeSide","behaviourType"},where,schemaVersion);
-        else if(schemaVersion>=17)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
-            "laneBlend","name","laneWidths","laneMarkings","laneChangeSide"},where,schemaVersion);
+        else if(schemaVersion>=17)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType","laneBlend","name","laneWidths","laneMarkings","laneChangeSide"},where,schemaVersion);
         else knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
             "laneBlend","name","laneWidths","laneMarkings"},where,schemaVersion);
         network.connectors.push_back({field<std::string>(c, "id"), reference(member(c, "from"),schemaVersion), reference(member(c, "to"),schemaVersion), points(c,schemaVersion),
@@ -248,14 +247,15 @@ Network parseNetwork(const Json& value, int schemaVersion) {
             network.connectors.back().laneChangeSide=side=="left"?LaneSide::left:LaneSide::right;
         }
         if(schemaVersion>=21 && c.contains("behaviourType"))network.connectors.back().behaviourTypeId=field<std::string>(c,"behaviourType");
+        network.connectors.back().generated=generatedFlag(c,where,schemaVersion); // S4.5a, schema 54
     }
     for (const auto& h : array(value, "signalHeads")) {
-        knownFields(h,{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
+        knownFields(withoutGenerated(h,schemaVersion),{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
             "signalHeads["+std::to_string(network.signalHeads.size())+"]",schemaVersion);
         network.signalHeads.push_back({field<std::string>(h, "id"), reference(member(h, "lane"),schemaVersion),
                                       field<double>(h, "position"), field<std::string>(h, "programId"),
                                       present(h,"connectorId")?field<std::string>(h,"connectorId"):std::string{}});
-        if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");
+        if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");network.signalHeads.back().generated=generatedFlag(h,"signalHeads["+std::to_string(network.signalHeads.size()-1)+"]",schemaVersion);
         if(present(h,"controllerId")) { // M2.7b, schema 13: the head shows a signal group
             network.signalHeads.back().controllerId=field<std::string>(h,"controllerId");
             network.signalHeads.back().groupNumber=integer(h,"groupNumber");
@@ -413,7 +413,7 @@ std::vector<SignalController> parseSignalControllers(const Json& definition) {
     std::vector<SignalController> result;
     for (const auto& x : array(definition, "signalControllers")) {
         const auto path = "signalControllers[" + std::to_string(result.size()) + "]";
-        knownFields(x, {"id", "name", "cycle", "offset", "groups"}, path, 13);
+        knownFields(withoutGenerated(x, 54), {"id", "name", "cycle", "offset", "groups"}, path, 13); // below 54: rejectGeneratedControllersBefore54
         SignalController c{field<std::string>(x, "id"), present(x, "name") ? field<std::string>(x, "name") : std::string{},
                            field<double>(x, "cycle"), field<double>(x, "offset"), {}};
         for (const auto& g : array(x, "groups")) {
@@ -422,7 +422,7 @@ std::vector<SignalController> parseSignalControllers(const Json& definition) {
                                 present(g, "name") ? field<std::string>(g, "name") : std::string{},
                                 field<double>(g, "greenStart"), field<double>(g, "greenEnd"), field<double>(g, "amber")});
         }
-        result.push_back(std::move(c));
+        c.generated = generatedFlag(x, path, 54); result.push_back(std::move(c));
     }
     return result;
 }

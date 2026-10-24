@@ -65,6 +65,8 @@ struct Connector {
     std::optional<LaneSide> laneChangeSide{};
     // M3.3.2a, schema 21: the Connector's own assignment, independent of the Links it joins.
     std::optional<std::string> behaviourTypeId{};
+    // S4.5a (READINESS §13.6, D323), schema 54: F4 drew it; cleared by the first edit of it.
+    bool generated{};
     bool operator==(const Connector&) const = default;
 };
 // One authored connector owns a contiguous range at each end. Individual runtime
@@ -123,6 +125,7 @@ struct NetworkSignalHead {
     std::string name; // Vissim's Name. See Link::name.
     // M2.7b: the signal group the head shows, instead of `programId`. Exactly one of the two.
     std::string controllerId; int groupNumber{};
+    bool generated{}; // S4.5c (D325), schema 54: F4 drew it; cleared by the first edit of it
     bool operator==(const NetworkSignalHead&) const = default;
 };
 // S3.6a (ROADS §6, D310): coarse values, stored only on a Node without detail. Turns are (in Road,

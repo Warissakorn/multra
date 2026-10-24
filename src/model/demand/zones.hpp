@@ -52,12 +52,28 @@ struct StudyPeriod {
     std::string id, name; double start{}, end{};
     bool operator==(const StudyPeriod&) const = default;
 };
+// S5.2a (STUDY_AREA §3, §5, D326): the Nodes Micro runs on, and the typed flows between its gates
+// (`gate:<link>:in|out`) and the zones inside it, in veh/h over a study period. Schema 55.
+struct GateFlow {
+    std::string periodId, from, to, compositionId, modeId; double vehiclesPerHour{};
+    // S5.4 (D330): run seconds for a flow cut from Meso, which has no period (periodId empty). Only in
+    // the run-time copy; never stored, and the codec requires a period.
+    double start{}, end{};
+    bool operator==(const GateFlow&) const = default;
+};
+struct StudyArea {
+    std::vector<std::string> nodes;
+    std::string flowSource{"typed"}; // "typed" (S5.2), "macro" (S5.3) or "meso" (S5.4): cut at run time
+    std::vector<GateFlow> gateFlows;
+    bool operator==(const StudyArea&) const = default;
+};
 struct ZoneLayer {
     std::vector<Zone> zones;
     std::vector<ZoneConnector> zoneConnectors;
     std::vector<OdMatrix> odMatrices;
     std::vector<ParkingLot> parkingLots;
     std::vector<StudyPeriod> studyPeriods; // S1.1, schema 49
+    StudyArea studyArea; // S5.2a, schema 55; no nodes means none
     bool empty() const { return zones.empty() && zoneConnectors.empty() && odMatrices.empty() && parkingLots.empty() && studyPeriods.empty(); }
     bool operator==(const ZoneLayer&) const = default;
 };

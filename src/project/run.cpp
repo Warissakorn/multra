@@ -7,6 +7,7 @@
 #include "demand_paths.hpp"
 #include "od_demand.hpp"
 #include "parking_compile.hpp"
+#include "study_area_run.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
 namespace multra {
@@ -16,7 +17,23 @@ bool holdsVehicles(const ProjectDocument& d) {
     return std::any_of(d.zones.parkingLots.begin(), d.zones.parkingLots.end(), [](const auto& l) { return l.initialOccupancy > 0; });
 }
 }
-std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::filesystem::path& data) {
+std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::filesystem::path& data, const StudyAreaSources* sources) {
+    // S5.2a (STUDY_AREA §4, D327): a study area runs its run-time copy; its refusals come first.
+    if (!d.zones.studyArea.nodes.empty()) {
+        std::vector<ValidationIssue> ignored;
+        std::vector<Diagnostic> rows;
+        try {
+            const auto copy = studyAreaDocument(d, &ignored, data, sources);
+            rows = runDiagnostics(copy, data);
+        } catch (const ValidationError& e) {
+            for (const auto& issue : e.issues) rows.push_back({issue.code, issue.path, {}, {}, DiagnosticSeverity::runtime});
+            return rows;
+        } catch (const std::exception& e) { // a catalog the Macro cut reads (S5.3)
+            return {{e.what(), "catalogs", {}, {}, DiagnosticSeverity::runtime}};
+        }
+        for (const auto& issue : ignored) rows.push_back({issue.code, issue.path, {}, {}, DiagnosticSeverity::advisory});
+        return rows;
+    }
     // A new project carries run settings (M5.3) but no demand yet: it is still a drawing, and the
     // drawing's own problems are the useful list, exactly as with no definition at all.
     if (!d.definition || (d.zones.empty() && onlyRunSettings(*d.definition))) return documentDiagnostics(d);
@@ -52,8 +69,14 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         return {{e.what(),"catalogs",{},{},DiagnosticSeverity::runtime}};
     }
 }
-RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::path& data,InputManifest* manifest) {
+RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::path& data,InputManifest* manifest,const StudyAreaSources* sources) {
     validateDocument(d);
+    if (!d.zones.studyArea.nodes.empty()) { // S5.2a (D327), S5.5a (D331)
+        StudyAreaProvenance provenance;
+        auto snapshot = compileDocument(studyAreaDocument(d, nullptr, data, sources, &provenance), data, manifest);
+        snapshot.studyArea = std::move(provenance);
+        return snapshot;
+    }
     if (!d.definition) throw std::invalid_argument("EDIT_NO_DEFINITION");
     // M8.3 (D155): OD matrices become ordinary routes and inputs here, after their Run checks; a
     // document without a zone layer uses its definition as it stands.

@@ -4,6 +4,7 @@
 #include "detail.hpp"
 #include "network_commands.hpp"
 #include "node_commands.hpp"
+#include "node_detail_commands.hpp"
 #include "../core/validate.hpp"
 #include "../model/network/roads.hpp"
 #include <algorithm>
@@ -56,43 +57,49 @@ void deleteCrossSection(ProjectDocument& d, const std::string& id) {
     for (const auto& r : d.network.roads) if (r.crossSectionId == id) throw std::invalid_argument("EDIT_CROSS_SECTION_IN_USE");
     if (!std::erase_if(d.definition->crossSections, [&](const auto& s) { return s.id == id; })) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
 }
-std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& roadId, const std::vector<CrossSection>& installed) {
-    const auto index = static_cast<std::size_t>(&editableRoad(d, roadId) - d.network.roads.data());
-    const auto road = d.network.roads[index];
-    if (!road.crossSectionId) throw std::invalid_argument("EDIT_ROAD_NO_TEMPLATE");
+const CrossSection* roadTemplate(const ProjectDocument& d, const Road& road, const std::vector<CrossSection>& installed) {
+    if (!road.crossSectionId) return nullptr;
     const auto& pool = d.definition && !d.definition->externalCrossSections ? d.definition->crossSections : installed;
     const auto found = std::find_if(pool.begin(), pool.end(), [&](const auto& s) { return s.id == *road.crossSectionId; });
-    if (found == pool.end()) throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "network.roads[" + std::to_string(index) + "].crossSectionId"}});
-    auto t = *found;
+    return found == pool.end() ? nullptr : &*found;
+}
+std::vector<TemplateLink> templateLinks(const Network& n, const Road& road, CrossSection t) {
     const auto& o = road.overrides;
     if (o.lanesForward) t.lanesForward = *o.lanesForward;
     if (o.lanesBackward && t.directions == 2) t.lanesBackward = *o.lanesBackward;
     if (o.lanesForward || o.lanesBackward || o.laneWidth) t.laneWidths.clear(); // a lane count or width override makes widths uniform
     if (o.laneWidth) t.laneWidth = *o.laneWidth;
     if (o.median) t.median = *o.median;
-    const auto widths = [&](bool forward) {
-        const auto n = static_cast<std::size_t>(forward ? t.lanesForward : t.lanesBackward);
-        std::vector<double> w(n, t.laneWidth);
+    const double side = n.drivingSide == DrivingSide::left ? 1. : -1.; // offsetGeometry: positive is left of travel
+    std::vector<TemplateLink> links;
+    for (int k = 0; k < t.directions; ++k) {
+        const bool forward = k == 0;
+        const auto count = static_cast<std::size_t>(forward ? t.lanesForward : t.lanesBackward);
+        std::vector<double> w(count, t.laneWidth);
         if (!t.laneWidths.empty())
-            for (std::size_t i = 0; i < n; ++i) w[i] = t.laneWidths[(forward ? 0 : static_cast<std::size_t>(t.lanesForward)) + i];
-        return w;
-    };
-    const double side = d.network.drivingSide == DrivingSide::left ? 1. : -1.; // offsetGeometry: positive is left of travel
-    const auto geometry = [&](bool forward, const std::vector<double>& w) {
+            for (std::size_t i = 0; i < count; ++i) w[i] = t.laneWidths[(forward ? 0 : static_cast<std::size_t>(t.lanesForward)) + i];
         double total = 0;
         for (const auto x : w) total += x;
         const double offset = t.median / 2 + total / 2;
         auto g = offsetGeometry(road.centreline, forward ? side * offset : -side * offset);
         if (!forward) std::reverse(g.begin(), g.end());
-        return g;
-    };
-    const auto directions = static_cast<std::size_t>(t.directions);
-    if (road.links.size() > directions) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
+        links.push_back({std::move(g), std::move(w)});
+    }
+    return links;
+}
+std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& roadId, const std::vector<CrossSection>& installed) {
+    const auto index = static_cast<std::size_t>(&editableRoad(d, roadId) - d.network.roads.data());
+    const auto road = d.network.roads[index];
+    if (!road.crossSectionId) throw std::invalid_argument("EDIT_ROAD_NO_TEMPLATE");
+    const auto* found = roadTemplate(d, road, installed);
+    if (!found) throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "network.roads[" + std::to_string(index) + "].crossSectionId"}});
+    const auto generated = templateLinks(d.network, road, *found);
+    if (road.links.size() > generated.size()) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
     std::vector<std::string> ids = road.links;
-    for (std::size_t k = 0; k < directions; ++k) {
-        const bool forward = k == 0;
-        const auto w = widths(forward);
-        const auto g = geometry(forward, w);
+    const auto cut = generatedCuts(d, ids, installed); // S4.5a (D323): F4's cuts stand through a re-apply
+    for (std::size_t k = 0; k < generated.size(); ++k) {
+        const auto& w = generated[k].widths;
+        const auto& g = k < ids.size() && cut.contains(ids[k]) ? cut.at(ids[k]) : generated[k].geometry;
         if (k >= ids.size()) {
             ids.push_back(addLink(d, g, static_cast<int>(w.size()), w.front()));
         } else {
@@ -102,7 +109,7 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& ro
         auto& link = editableLink(d, ids[k]);
         for (std::size_t i = 0; i < w.size(); ++i) link.lanes[i].width = w[i];
         link.laneOffset = 0; link.level = road.level; link.roadId = road.id;
-        if (t.linkType) link.linkTypeId = t.linkType;
+        if (found->linkType) link.linkTypeId = found->linkType;
     }
     editableRoad(d, roadId).links = ids; // changeLanes detached them: this re-attaches
     reanchorConnectors(d);

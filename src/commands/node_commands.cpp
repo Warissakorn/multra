@@ -62,5 +62,34 @@ void mergeNodes(ProjectDocument& d, const std::vector<std::string>& ids) {
         throw ValidationError(std::move(issues));
     }
     d.network.nodes = std::move(nodes);
+    auto& area = d.zones.studyArea.nodes;
+    const bool inArea = std::any_of(unique.begin(), unique.end(), [&](const auto& id) { return std::find(area.begin(), area.end(), id) != area.end(); });
+    if (inArea && std::find(area.begin(), area.end(), merged.id) == area.end()) area.push_back(merged.id);
+}
+void setStudyAreaNodes(ProjectDocument& d, const std::vector<std::string>& ids) {
+    if (ids.empty()) d.zones.studyArea = {};
+    else d.zones.studyArea.nodes = ids;
+}
+void setGateFlows(ProjectDocument& d, const std::string& periodId, const std::string& compositionId, const std::string& modeId,
+                  const std::vector<GateFlow>& rows) {
+    auto& flows = d.zones.studyArea.gateFlows;
+    std::erase_if(flows, [&](const GateFlow& f) { return f.periodId == periodId && f.compositionId == compositionId && f.modeId == modeId; });
+    for (auto f : rows) {
+        if (f.vehiclesPerHour == 0) continue;
+        f.periodId = periodId; f.compositionId = compositionId; f.modeId = modeId;
+        flows.push_back(std::move(f));
+    }
+}
+void setStudyAreaGateFlows(ProjectDocument& d, std::vector<GateFlow> flows) {
+    std::erase_if(flows, [](const GateFlow& f) { return f.vehiclesPerHour == 0; });
+    d.zones.studyArea.gateFlows = std::move(flows);
+}
+void setStudyAreaSource(ProjectDocument& d, const std::string& source) { d.zones.studyArea.flowSource = source; }
+void settleStudyArea(ProjectDocument& d) {
+    auto& area = d.zones.studyArea;
+    std::erase_if(area.nodes, [&](const std::string& id) {
+        return std::none_of(d.network.nodes.begin(), d.network.nodes.end(), [&](const Node& n) { return n.id == id; });
+    });
+    if (area.nodes.empty()) area = {};
 }
 }

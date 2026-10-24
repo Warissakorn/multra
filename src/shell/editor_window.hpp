@@ -4,6 +4,7 @@
 #include "../commands/connector_commands.hpp"
 #include "../project/diagnostics.hpp"
 #include "../project/run.hpp"
+#include "../project/export_marking.hpp"
 #include "../eval/summary.hpp"
 #include "../eval/discharge.hpp"
 #include "../project/evaluation.hpp"
@@ -355,6 +356,16 @@ private:
     // M11.4, editor_meso.cpp: Run Meso on its own worker over the whole run; stale after an edit (D300).
     std::unique_ptr<MesoPanel> meso_;
     void buildMeso(QToolBar*, QVBoxLayout*); void refreshMeso(); void startMeso(); void discardMeso();
+    // S5.5a (STUDY_AREA §8-§9, D331), editor_side_files.cpp: the Macro and Meso side files.
+    void loadSideFiles(); void writeMacroSide(); void writeMesoSide(const std::vector<std::string>& watched);
+    StudyAreaSources studyAreaSources() const; const std::string& projectSha() const;
+    // S5.5b (STUDY_AREA §11, D332): each result's export marking and study-area flows, set where its
+    // snapshot is compiled; resultsCsv() writes them.
+    struct ResultMarking { ExportMarking marking; std::optional<StudyAreaProvenance> flows; };
+    ResultMarking runMarking_, batchMarking_, baseMarking_, alternativeMarking_;
+public:
+    bool macroSideStale() const; bool mesoSideStale() const; // a side file whose projectSha256 is not the document's
+private:
     QTableWidget* lotTable_{}; QLabel* lotNote_{}; // Results -> Parking lots
     QTableWidget* nodeResultTable_{}; QLabel* nodeResultNote_{}; void refreshResultNodes(); // S0.6 (NODES §15): Results -> Nodes
     void refreshComparedNodes(const QString& marker); // S0.8b (NODES §18): a comparison's Node rows

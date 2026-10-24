@@ -1,6 +1,8 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
+#include "gate_flow_dialog.hpp"
+#include "../project/study_area_run.hpp"
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_membership.hpp"
 #include "../model/network/node_suggestions.hpp"
@@ -21,11 +23,18 @@
 // S0.1 (D261, docs/reference/NODES.md §6): the Nodes tab. The Node tool's Enter commits a polygon
 // through execute(), so a drawn Node is one Undo step; rename and delete go through History too.
 namespace multra {
+namespace {
+// S5.2b (D328): gate flows need a runnable area (studyAreaEnds); a period is checked in the dialog.
+bool gateFlowsEditable(const ProjectDocument& d) {
+    if (d.zones.studyArea.nodes.empty()) return false;
+    try { studyAreaEnds(d); return true; } catch (const std::exception&) { return false; }
+}
+}
 void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    nodeTable_ = new QTableWidget(0, 7, body); nodeTable_->setObjectName("editorNodeTable");
+    nodeTable_ = new QTableWidget(0, 8, body); nodeTable_->setObjectName("editorNodeTable");
     nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     nodeTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
@@ -69,6 +78,36 @@ void EditorWindow::buildNodes() {
         if (const auto first = std::find(ids.begin(), ids.end(), current); first != ids.end()) std::iter_swap(ids.begin(), first);
         execute("editorMergeNodes", [&](auto& d) { mergeNodes(d, ids); });
     }));
+    // S5.2b (D328): the study area's typed gate flows, in one Undo step.
+    bar->addAction(action("editorGateFlows", {}, [this] {
+        if (!gateFlowsEditable(history_.document())) return;
+        const auto& d = history_.document();
+        const auto ends = studyAreaEnds(d);
+        // A gate reads as its Road (else its Link) and its end; a zone as its name.
+        const auto label = [&](const std::string& id) {
+            for (const auto* suffix : {":in", ":out"}) {
+                const std::string tail = suffix;
+                if (id.rfind("gate:", 0) != 0 || id.size() <= tail.size() || id.compare(id.size() - tail.size(), tail.size(), tail) != 0) continue;
+                const auto linkId = id.substr(5, id.size() - 5 - tail.size());
+                const auto l = std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& x) { return x.id == linkId; });
+                auto name = QString::fromStdString(linkId);
+                if (l != d.network.links.end() && !l->name.empty()) name = QString::fromStdString(l->name);
+                if (l != d.network.links.end() && l->roadId)
+                    for (const auto& road : d.network.roads)
+                        if (road.id == *l->roadId && !road.name.empty()) name = QString::fromStdString(road.name);
+                return text(tail == ":in" ? "editorGateIn" : "editorGateOut").arg(name);
+            }
+            const auto z = std::find_if(d.zones.zones.begin(), d.zones.zones.end(), [&](const auto& x) { return x.id == id; });
+            return QString::fromStdString(z != d.zones.zones.end() && !z->name.empty() ? z->name : id);
+        };
+        std::vector<Choice> origins, destinations;
+        for (const auto& id : ends.origins) origins.push_back({id, label(id)});
+        for (const auto& id : ends.destinations) destinations.push_back({id, label(id)});
+        const auto edited = editGateFlows(this, d.zones.studyArea.flowSource, d.zones.studyArea.gateFlows, origins, destinations, compositionChoices(), periodChoices(),
+                                          modeChoices(), [this](const char* key) { return text(key); });
+        if (!edited) return;
+        execute("editorGateFlows", [&](auto& doc) { setStudyAreaSource(doc, edited->source); setStudyAreaGateFlows(doc, edited->flows); });
+    }));
     // S0.5 (D265): one generated Node per junction no Node covers yet, all in one Undo step.
     bar->addAction(action("editorSuggestNodes", {}, [this] {
         if (nodeSuggestions(history_.document().network).empty()) { statusBar()->showMessage(text("editorSuggestNodesNone"), 5000); return; }
@@ -85,12 +124,21 @@ void EditorWindow::buildNodes() {
         return true;
     };
     connect(nodeTable_, &QTableWidget::cellDoubleClicked, this, [rename](int, int) { rename(); });
+    // S5.2a (D327): the Study area column; a tick or an untick is one Undo step.
+    connect(nodeTable_, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* cell) {
+        if (cell->column() != 7) return;
+        const auto id = cell->data(Qt::UserRole).toString().toStdString();
+        auto ids = history_.document().zones.studyArea.nodes;
+        std::erase(ids, id);
+        if (cell->checkState() == Qt::Checked) ids.push_back(id);
+        if (!execute("editorNodeStudyArea", [&](auto& d) { setStudyAreaNodes(d, ids); })) nodeRevision_ = UINT64_MAX;
+    });
     connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] {
         canvas_->setHighlightedNode(selectedNode()); refresh(false); });
 }
 void EditorWindow::translateNodes() {
     nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
-        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues")});
+        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues"), text("editorNodeStudyArea")});
     nodeRevision_ = UINT64_MAX;
     translateNodeProposals();
 }
@@ -125,6 +173,11 @@ void EditorWindow::refreshNodes() {
                 if (col == 0 || col == 2 || col == 4 || col == 5) editorDesign::setNumericText(cell, col != 0);
                 nodeTable_->setItem(r, col, cell);
             }
+            const auto& area = history_.document().zones.studyArea.nodes;
+            auto* inArea = new QTableWidgetItem; inArea->setData(Qt::UserRole, QString::fromStdString(n.id));
+            inArea->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
+            inArea->setCheckState(std::find(area.begin(), area.end(), n.id) != area.end() ? Qt::Checked : Qt::Unchecked);
+            nodeTable_->setItem(r, 7, inArea);
             if (n.id == keep) nodeTable_->selectRow(r);
         }
         nodeTable_->resizeColumnsToContents();
@@ -135,6 +188,7 @@ void EditorWindow::refreshNodes() {
     for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
     const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
+    actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));
     actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
     refreshNodeProposals();
 }

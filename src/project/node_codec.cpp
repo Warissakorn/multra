@@ -1,6 +1,7 @@
 #include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 
 namespace multra {
 namespace {
@@ -118,5 +119,33 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
         nodes.push_back(std::move(node));
     }
     return nodes;
+}
+Json withoutGenerated(const Json& object, int schema) {
+    if (schema < 54 || !object.is_object() || !object.contains("generated")) return object;
+    auto copy = object;
+    copy.erase("generated");
+    return copy;
+}
+bool generatedFlag(const Json& object, const std::string& where, int schema) {
+    if (schema < 54 || !object.is_object() || !object.contains("generated")) return false;
+    const auto& g = object.at("generated");
+    if (!g.is_boolean() || !g.get<bool>()) throw ValidationError({{"EDIT_GENERATED_INVALID", where + ".generated"}});
+    return true;
+}
+bool usesGeneratedFlags(const ProjectDocument& d) {
+    const auto any = [](const auto& list) { return std::any_of(list.begin(), list.end(), [](const auto& x) { return x.generated; }); };
+    const auto& n = d.network;
+    const auto& r = n.rightOfWay;
+    return any(n.connectors) || any(n.signalHeads) || any(r.waitingLines) || any(r.conflictAreas) || any(r.priorityRules) ||
+           any(r.stopControls) || (d.definition && any(d.definition->signalControllers));
+}
+void rejectGeneratedControllersBefore54(const Json& file) {
+    if (!file.is_object() || !file.contains("definition") || !file.at("definition").is_object()) return;
+    const auto& def = file.at("definition");
+    if (!def.contains("signalControllers") || !def.at("signalControllers").is_array()) return;
+    const auto& list = def.at("signalControllers");
+    for (std::size_t i = 0; i < list.size(); ++i)
+        if (list[i].is_object() && list[i].contains("generated"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.signalControllers[" + std::to_string(i) + "].generated"}});
 }
 }

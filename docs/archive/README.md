@@ -20,6 +20,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
+| [`PROGRESS-LOG-2026-10-23.md`](PROGRESS-LOG-2026-10-23.md) | D310–D312 | 3 |
 | [`PROGRESS-LOG-2026-10-22.md`](PROGRESS-LOG-2026-10-22.md) | D299–D308 | 9 |
 | [`PROGRESS-LOG-2026-10-19.md`](PROGRESS-LOG-2026-10-19.md) | D262–D298 | 33 |
 | [`PROGRESS-LOG-2026-10-17.md`](PROGRESS-LOG-2026-10-17.md) | D218–D261 | 33 |

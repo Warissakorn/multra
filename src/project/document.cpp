@@ -1,4 +1,5 @@
 #include "document.hpp"
+#include <algorithm>
 #include "zone_codec.hpp"
 #include "demand_time_types.hpp"
 #include "behaviour_library.hpp"
@@ -7,6 +8,7 @@
 #include "macro_settings.hpp"
 #include "meso_settings.hpp"
 #include "study_period_codec.hpp"
+#include "study_area_codec.hpp"
 #include "mode_codec.hpp"
 #include "link_type_codec.hpp"
 #include "road_codec.hpp"
@@ -49,24 +51,26 @@ Json side(const ConflictSide& s) {
     return {{"path",controlPath(s.path)},{"entryStation",s.entryStation},{"exitStation",s.exitStation},
             {"waitingLineId",s.waitingLineId}};
 }
+// S4.5 (D323, D324): the last object written carries `generated` only when true (schema 54).
+void generated(Json& list, bool flag) { if (flag) list.back()["generated"] = true; }
 // M3.2.2. Written only when there is something to write, so a project without controls saves
 // exactly the keys it always did.
 Json rightOfWayJson(const RightOfWay& row) {
     Json lines=Json::array(),areas=Json::array(),rules=Json::array();
     for(const auto& w:row.waitingLines)
-        lines.push_back({{"id",w.id},{"name",w.name},{"point",{{"path",controlPath(w.point.path)},{"station",w.point.station}}}});
+        lines.push_back({{"id",w.id},{"name",w.name},{"point",{{"path",controlPath(w.point.path)},{"station",w.point.station}}}}),generated(lines,w.generated);
     for(const auto& a:row.conflictAreas)
         areas.push_back({{"id",a.id},{"name",a.name},{"kind",conflictKindName(a.kind)},{"first",side(a.first)},
-                         {"second",side(a.second)},{"priority",conflictPriorityName(a.priority)}});
+                         {"second",side(a.second)},{"priority",conflictPriorityName(a.priority)}}),generated(areas,a.generated);
     for(const auto& r:row.priorityRules)
-        rules.push_back({{"id",r.id},{"name",r.name},{"conflictAreaId",r.conflictAreaId},{"gapTime",r.gapTime},{"headway",r.headway}});
+        rules.push_back({{"id",r.id},{"name",r.name},{"conflictAreaId",r.conflictAreaId},{"gapTime",r.gapTime},{"headway",r.headway}}),generated(rules,r.generated);
     Json result={{"waitingLines",lines},{"conflictAreas",areas},{"priorityRules",rules}};
     // M3.2.5, schema 15: only when there is one, so a file without controls keeps its keys.
     if(!row.stopControls.empty()) {
         Json controls=Json::array();
         for(const auto& c:row.stopControls)
             controls.push_back({{"id",c.id},{"name",c.name},{"waitingLineId",c.waitingLineId},
-                                {"mode",stopModeName(c.mode)},{"conflictAreaIds",c.conflictAreaIds}});
+                                {"mode",stopModeName(c.mode)},{"conflictAreaIds",c.conflictAreaIds}}),generated(controls,c.generated);
         result["stopControls"]=controls;
     }
     return result;
@@ -96,10 +100,12 @@ Json documentJson(const ProjectDocument& d) {
         // M3.2.9a, schema 17: only when chosen, so the kerb-side default keeps a file's keys.
         if (c.laneChangeSide) network["connectors"].back()["laneChangeSide"] = *c.laneChangeSide == LaneSide::left ? "left" : "right";
         if (c.behaviourTypeId) network["connectors"].back()["behaviourType"] = *c.behaviourTypeId;
+        generated(network["connectors"], c.generated); // S4.5a, schema 54
     }
     for (const auto& h : d.network.signalHeads) {
         network["signalHeads"].push_back({{"id", h.id}, {"lane", reference(h.lane)}, {"position", h.position}, {"programId", h.programId}, {"connectorId",h.connectorId}, {"name",h.name}});
         if (!h.controllerId.empty()) { network["signalHeads"].back()["controllerId"] = h.controllerId; network["signalHeads"].back()["groupNumber"] = h.groupNumber; }
+        generated(network["signalHeads"], h.generated); // S4.5c, schema 54
     }
     if (!d.network.rightOfWay.empty()) network["rightOfWay"] = rightOfWayJson(d.network.rightOfWay);
     // M3.2.6b, schema 16: only when there is one, so a file without counters keeps its keys.
@@ -148,8 +154,8 @@ Json documentJson(const ProjectDocument& d) {
     // M3.7: 33 only when an owned behaviour carries a lateral key (D187).
     // M3.6: 34 only when an owned behaviour carries curveLateralAcceleration (D212).
     // M3.4: 35 only when an owned behaviour carries kerbLaneBias (D215); B-2: 36 for commitmentDeceleration (D219); B-3: 37 (D221).
-    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268); S1.2: 49 for modes and pcu (D270); S2.1: 50 for link types (D273); S2.3: 51 for macroSettings (D275); M11.2: 52 for mesoSettings and a link type's jamDensity (D293); S3.2: 53 for a link type's capacityBasis (D304); S3.3: 53 for roads, a Link's roadId and owned crossSections (D305); S3.5: 53 for overpasses (D309).
-    const int schema=usesRoadFields(d)||usesCapacityBasis(d)?53:usesMesoFields(d)?52:usesMacroSettings(d)?51:usesLinkTypes(d)?50:usesStudyPeriods(d)||usesModes(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
+    // B-6: 38 for speed decisions (D223), 39 for reduced-speed areas (D225); B-5: 40 for a speed curve (D229); B-8: 41 for stopDwellTime (D231); B-7: 42 for kerbLanes (D234); B-4: 43 for driverFactorSpread (D236); B-9: 44 for red running (D238); M3.2.8a.1: 45 for clampRules (D251), 46 for its joinAnticipation (D255), 47 for standingStopFloor off (D258); S0.1: 48 for nodes (D261); S1.1: 49 for study periods (D268); S1.2: 49 for modes and pcu (D270); S2.1: 50 for link types (D273); S2.3: 51 for macroSettings (D275); M11.2: 52 for mesoSettings and a link type's jamDensity (D293); S3.2: 53 for a link type's capacityBasis (D304); S3.3: 53 for roads, a Link's roadId and owned crossSections (D305); S3.5: 53 for overpasses (D309); S4.5: 54 for generated flags (D323-D325); S5.2a: 55 for a study area (D327).
+    const int schema=usesStudyArea(d)?55:usesGeneratedFlags(d)?54:usesRoadFields(d)||usesCapacityBasis(d)?53:usesMesoFields(d)?52:usesMacroSettings(d)?51:usesLinkTypes(d)?50:usesStudyPeriods(d)||usesModes(d)?49:!d.network.nodes.empty()?48:ownsStandingStopFloor(d)?47:ownsJoinAnticipation(d)?46:ownsClampRules(d)?45:ownsRedRunning(d)?44:ownsDriverFactorSpread(d)?43:ownsKerbLanes(d)?42:ownsStopDwellBehaviour(d)?41:ownsSpeedCurve(d)?40:d.definition && !d.definition->reducedSpeedAreas.empty()?39:d.definition && !d.definition->speedDecisions.empty()?38:ownsMandatoryBehaviour(d)?37:ownsCommitmentBehaviour(d)?36:ownsKerbBehaviour(d)?35:ownsCurveBehaviour(d)?34:ownsLateralBehaviour(d)?33:ownsPerceptionBehaviour(d)?32:!d.zones.empty()?31:d.definition && !d.definition->routeDestinations.empty()?30:d.map?29:ownsAmberBehaviour(d)?28:cooled?27:usesCountedVolumes(d)?26:ownsW74Behaviour(d)?25:controlled?24:!d.network.travelTimeSections.empty()?23:period?22:library?21:positioned?20:d.definition && hasTimeTypeDemand(*d.definition)?19:d.definition && (!d.definition->externalCompositions ||
         (!d.definition->externalVehicleTypes && !d.definition->vehicleTypeNames.empty()))?18:17;
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
     // From schema 21 the reader requires every owned behaviour's model, so any file at 21 or later
@@ -163,6 +169,7 @@ Json documentJson(const ProjectDocument& d) {
     if (d.map) result["map"]=mapSettingsJson(*d.map);
     addZoneLayerJson(d.zones,result);
     addStudyPeriodsJson(d.zones,result); // S1.1
+    addStudyAreaJson(d.zones,result); // S5.2a
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
@@ -184,6 +191,7 @@ void validateDocument(const ProjectDocument& d) {
         throw ValidationError({{"INVALID_NUMBER", "definition.clockStart"}}); // S1.1
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = zoneLayerIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = studyAreaIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // S5.2a
 }
 ProjectDocument parseDocument(const Json& j) {
     ProjectDocument d;
@@ -191,7 +199,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (j.contains("schemaVersion")) {
         // Every read here is guarded: a hand-edited null section must name itself, not surface
         // as an nlohmann type_error the user cannot act on.
-        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 53) ||
+        if (!present(j, "schemaVersion") || !j.at("schemaVersion").is_number_integer() || (j.at("schemaVersion") < 1 || j.at("schemaVersion") > 55) ||
             !present(j, "format") || j.at("format") != "TrafficSim")
             throw std::invalid_argument("EDIT_VERSION");
         if (!present(j, "nextId") || !j.at("nextId").is_number_unsigned() ||
@@ -218,8 +226,11 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
     if (version < 53) rejectRoadFieldsBefore53(j); // S3.3
+    if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
+    if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
+    d.zones.studyArea=parseStudyArea(j);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < 25) rejectW74Before25(j);

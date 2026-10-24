@@ -5,6 +5,173 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
+
+- **Asked:** continue; S5.5b was next. The contract left no owner question open.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §21):
+  - the Problems tab warns once per study-area Node holding program-drawn objects, with the
+    count by kind, and the row selects the Node. The run still starts;
+  - every export (single, batch, comparison, Macro, Meso; editor and CLI) carries a second header
+    line when generated objects or stale inputs are behind it, plus a line naming where a study
+    area's flows came from. JSON gains `marking` / `studyArea` the same way. Unmarked exports keep
+    their bytes;
+  - the CLI reads the side files too, and a comparison's alternative uses its own.
+- **Rows:** SA14, SA15 (`studyarea`), the Problems row in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows. No test runs the CLI on a study-area project.
+
+## 2026-10-24 — S5.5a: Macro and Meso side files, stale by SHA-256 (D331)
+
+- **Asked:** continue; S5.5 was next. It was split like S5.2: S5.5a is the side files and
+  staleness; S5.5b is the marking line and the generated-object warnings. The owner chose: after
+  a reopen, the cut source only; a network mismatch runs at compile, marked stale; paths and
+  watches only when the area cuts that level.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §20):
+  - Run Macro and Run Meso of a saved project write `<project>.macro.json` / `.meso.json` with the
+    project bytes' SHA-256;
+  - the study area's cut reads a usable side file in place of the run at compile, and says
+    `MICRO_AREA_SOURCE_STALE` when it is for other bytes or unusable;
+  - a bad side file is refused at its JSON path (`MICRO_AREA_SOURCE_INVALID`);
+  - the Macro and Meso results are stale by hash, so this survives a reopen.
+- **Rows:** SA12, SA13 (`studyarea`), and the reopen checks in `macro-ui` / `meso-ui`, which now
+  open their fixture from a temporary copy. Linux only, GCC 13, Qt 6.4.2 offscreen:
+  `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not built or
+  run on Windows.
+
+## 2026-10-24 — S5.4: the Meso cut for a study area (D330)
+
+- **Asked:** continue; S5.4 was next. The owner chose that Meso, like Macro, runs at compile until
+  S5.5, and that each Meso output slice becomes one Micro interval.
+- **Source:** Yperman 2007 §3.2 ("FIFO conditions") and Eq. (5.2), read in the owner's copy. Route
+  counts on a link follow its count by FIFO.
+- **Found:** `loadMeso` already keeps those route counts, so the cut only exposes them for the
+  kept Links (`watch`). No new model.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §19):
+  - `mesoGateFlows`: gate flows per slice, with their own run-time window;
+  - *Cut from Meso* in the gate-flow dialog.
+
+  A class naming one vehicle type cannot become a gate flow yet (`MICRO_AREA_CLASS_UNSUPPORTED`).
+- **Rows:** SA10, SA11 (`studyarea`), the Source in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows.
+
+## 2026-10-24 — S5.3: the Macro cut for a study area (D329)
+
+- **Asked:** continue; S5.3 was next. The owner chose that, until S5.5's side files, Micro runs
+  Macro at compile for each study period inside the run.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §18):
+  - Frank–Wolfe keeps its paths when asked: each step's all-or-nothing paths with the step weights,
+    which sum exactly to the link flows;
+  - `macroGateFlows` cuts each path's kept stretches into gate (or inside-zone) trips by period;
+  - the gate-flow dialog's *Source*, Typed or Cut from Macro.
+- **Measured:** keeping paths costs +72 % wall on a 12×12 grid with 1,892 OD cells (Debug), with
+  27,089 paths. Ordinary runs do not keep them. The M2.6 template has no zones, so it cannot run
+  Macro.
+- **Rows:** SA7–SA9 (`studyarea`), the Source in `node-ui`. `MACRO_NOT_CONVERGED`'s pass-through is
+  not exercised: the corridor's single path has gap 0. Linux only, GCC 13, Qt 6.4.2 offscreen:
+  `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not built or run
+  on Windows.
+
+## 2026-10-24 — S5.2b: gate flows in the editor; S5.2 complete (D328)
+
+- **Asked:** continue; S5.2b was next.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §17):
+  - *Gate flows…* on the Nodes tab, a dialog with one origins × destinations grid in veh/h per
+    study period and composition or mode;
+  - `studyAreaEnds`, the one list of gates and inside zones that both the dialog and the run read;
+  - a light fill on the canvas for each Node in the area.
+- **Rows:** SA16 (`studyarea`), with the dialog, the fill and the disabled action in `node-ui`.
+  Linux only, GCC 13, Qt 6.4.2 offscreen: `ctest --preset desktop` 225/225; file-size, docs and
+  architecture checks pass. Not built or run on Windows; the dialog's size on a 1366×768 screen is
+  not checked (OWNER_SITTING's D318 item covers it).
+
+## 2026-10-24 — S5.2a: the study area and a Micro run on its kept set (D327)
+
+- **Asked:** continue; S5.2 was next. It is split in two: S5.2a here; S5.2b, the gate-flow table and
+  the canvas outline, comes next.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §16):
+  - `studyArea` at schema 55;
+  - the *Study area* column on the Nodes tab;
+  - the kept set: the area Nodes' interiors, their legs and the pieces between them;
+  - gates at the open ends, and typed gate flows;
+  - a run-time copy that every Micro caller compiles.
+  The document's own demand is listed as not run.
+- **Found:**
+  - F4 rebuilt a split arm from its template and grew it 0.1 m, so the split's Connector could not
+    run (`UNSUPPORTED_CONNECTOR_POSITION`). F4 now keeps a leg's far end (READINESS §14 amended);
+  - a coarse Node always reads `NODE_NO_TURN`, so the area checks detail first, to name the right
+    fix.
+- **Rows:** SA1–SA6 (`studyarea`), SA3's editor part in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows.
+
+## 2026-10-24 — S5.1: the study area contract, answered (D326)
+
+- **Asked:** continue; the owner picked S5 and answered its six choices in chat.
+- **Contract:** [STUDY_AREA](reference/STUDY_AREA.md).
+  - The study area is a set of Nodes (owner, against a polygon).
+  - Micro keeps their interiors, legs and the pieces between them, with gates at the open ends.
+  - Gate flows are typed, or cut from Macro or from Meso: both cuts are in S5 (owner).
+  - Macro and Meso results go to side files, and staleness is SHA-256 of the project and source.
+  - Generated objects in the area are warnings, and an export gets a marking line only when it
+    applies.
+- **Found while reading the code:** `MacroAssignment` keeps no path flows, so S5.3 keeps each
+  Frank–Wolfe iteration's paths with their step weights, an exact decomposition. Meso keeps no
+  per-path count at an inner link, so S5.4 adds FIFO counts at the gate links only. Today's stale
+  check is an in-memory revision, lost on reopen.
+- **Rows:** SA1–SA15 planned. Docs only, no code changed; the docs and file-size checks pass.
+
+## 2026-10-24 — S4.5c: signals for a generated junction; S4.5 complete (D325)
+
+- **Asked:** continue; S4.5c was next. The owner answered two points: co-green turns inside a stage
+  yield by S4.5b's HCM ranks (so a signal needs two major arms), and derive back stays exact,
+  reporting a turn carried across an intergreen as a stage of its own.
+- **Built** (READINESS §16): a generated controller and one group per turn from the coarse stages,
+  a generated head on each turn's Connector paths, and crossings only between turns green together.
+- **Found:**
+  - signal times must sit on the time step, so intergreens round down to it and the last takes the
+    rest (`FILL_NODE_SIGNAL_GRID` for an off-step green);
+  - a merge takeover joins turns never green together, and mixing rank priorities with its order
+    made priority cycles. Every pair of a generated merge is now ordered by rank, then drawing order.
+- **Rows:** RS15, plus signal cases in RS11, RS16 and RS18 (`nodedetail`, 10 rows); the signalised
+  four-arm fixture runs at Micro. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 224/224; file-size, docs and architecture checks pass. Not built or
+  run on Windows.
+
+## 2026-10-24 — S4.5b: who gives way at a generated junction (D324)
+
+- **Asked:** continue; S4.5b was next.
+- **Source:** HCM 7th ed., Ch. 20 §2 in the owner's copy (PDF p. 1590). The minor far turn is Rank 3
+  at a three-leg junction and 4 only at a four-leg one; READINESS §13.4's draft said 4 everywhere.
+- **Built** (READINESS §15): ranks by arm class and sweep sign; authored areas where generated turns
+  of different arms and ranks cross or merge, higher rank yielding with `default.json`'s numbers;
+  Stop on minor arms; `generated` on waiting lines, areas, rules and Stop controls. F4 now asks for
+  major arms (`FILL_NODE_PRIORITY_UNDETERMINED`) and two-way stop's shape (`FILL_NODE_MAJOR_ARMS`).
+- **Found:** derive back lost `major` once F4 drew priority, because a major far turn yields to the
+  opposite through. Its rule now calls an arm major when one of its turns meets a decided conflict
+  and never yields (ROADS_IMPLEMENTED §20 amended).
+- **Rows:** RS14, RS18 (`nodedetail`); RS18 runs the generated four-arm junction at Micro.
+  Linux only, GCC 13, Qt 6.4.2 offscreen: `ctest --preset desktop` 224/224;
+  file-size, docs and architecture checks pass. Not built or run on Windows.
+
+## 2026-10-23 — F4 contract answered; S4.5a: a coarse Node's Connectors (D323)
+
+- **Asked:** continue; the owner picked F4 (S4.5) and answered its six choices as recommended.
+- **Contract:** [READINESS](reference/READINESS.md) §13. Legs are cut where a lane surface meets
+  another arm's (F4-1a), turns share lanes kerb to far (F4-2a), priority by HCM 7 Ch. 20's ranks
+  with Stop on minor arms (F4-3a) and `default.json`'s gap values (F4-4a), signals from the stages
+  in order (F4-5a), in three slices (F4-6a). Rows RS11–RS18.
+- **S4.5a** (§14): `Connector::generated` (schema 54), cleared by the first edit in
+  `History::execute`; the pure cut and turn plan (`node_detail.*`); `generateNodeDetail`; the
+  `nodeDetail` fill, with a refused Node listed and not tickable. Cuts are measured on each arm's
+  template geometry (`templateLinks`, extracted from *Apply template*), and *Apply template* takes
+  them before changing its Links: a first try re-anchored the generated Connectors to the uncut end
+  and lost them. A re-apply now changes no byte.
+- **Reading taken:** only generated arms in S4.5a, since a hand-drawn arm's uncut shape is lost
+  after a cut. Until S4.5b nobody gives way at the generated crossings.
+- **Rows:** RS11–RS13, RS16, RS17 (`nodedetail`). Linux only, GCC 13, Qt 6.4.2 offscreen: `ctest --preset
+  desktop` 224/224; file-size, docs and architecture checks pass. Not built or run on Windows.
+
 ## 2026-10-23 — Wider OSM zoom, stable panning and country/province selection (D321, D322)
 
 - **Asked:** zoom out farther, stop the map jumping back after a pan/click, and choose a
@@ -33,174 +200,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   cannot create Qt test-mode storage on this environment's read-only home; `workspace-ui`
   and `design-system-ui` fail existing font assertions under Qt 6.8.2. The same five failures
   reproduce before the navigation/place changes. No Windows or MAP10 gate is closed.
-
-## 2026-10-23 — The owner's book copies analysed and mapped (docs only)
-
-- **Asked:** analyse the five book repositories and add them as development sources.
-- **Added:** [BOOKS](reference/BOOKS.md), how to attach and cite each copy, how far to trust each
-  conversion, and which chapters serve which milestone; a read-by-task row in the docs map. The
-  books stay in their own repositories (attached with `add_repo`, never vendored).
-- **Checked** ([book-copies-check](evidence/book-copies-check.md)), from the source images:
-  - HCM 7 confirms the M6.0 sheet's TWSC headways (Exhibits 20-17, 20-18, two-lane column),
-    Eq. 20-18, the 1,750 pc/h/ln default and the base conditions; Eq. 19-19 keeps `PF`; the field
-    saturation-flow method counts from the fourth queued vehicle;
-  - `data/los/hcm.json`'s bounds equal HCM 7 Exhibits 19-8, 20-2 and 21-8;
-  - ten Sheffi page images are empty, book p. 114 among them, so B21 still needs the print;
-  - Ortúzar Example 11.1 (two routes, 1400 / 600 at 22 min) fits M9's two-route fixture;
-  - the Planning Handbook is the 4th edition (2016).
-- **Not done:** no number entered `data/` or a test, no benchmark was chosen, no gate moved.
-
-## 2026-10-23 — UI suites isolate their recovery drafts (D320)
-
-- **The problem:** a crashed or killed UI run left its recovery draft behind. The next local
-  run of that suite then waited at the startup recovery dialog until ctest's 60 s timeout.
-  Eleven suites had no Qt test mode, so they wrote drafts into the user's own data folder.
-- **The fix:** all 51 `EditorWindow` suites call `useTestStorage()`. It enables test mode and
-  removes drafts whose lock nobody holds, keeping a running instance's draft.
-- **Rows:** `test-storage-ui` fails without the cleanup, and fails at the window (not a hang)
-  without the file checks.
-- **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
-  219/219; the eleven suites wrote nothing to the user's folder.
-
-## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
-
-- **Measured first** (Linux; `.optimize/` ledger, not committed):
-  - UX: a `QDialog::exec` shim over the 61 UI suites, in English and Thai;
-  - engine: Release `multra-cli`, seeds 42–51, and callgrind;
-  - build: Debug rebuilds after touching one file;
-  - docs: the words a session reads before it starts.
-- **Done:**
-  - the seam dialog's *Use Node* button lost 8 px to the table's item padding; the column gets
-    it back, the only clipped control measured;
-  - NEXT cut to open items (1113 → 469 words);
-  - D319 records the accepted rules.
-- **Found on the way, fixed:** D318's behaviour editor corrupted the heap. Qt 6.4.2's
-  `QFormLayout::setRowVisible` on a shown dialog writes out of bounds (valgrind); the forms now
-  stay still while their rows change. A crashed local UI run leaves a recovery file that makes the
-  next run wait at its dialog.
-- **Not done:**
-  - caching lateral bands (+10–28 % wall switched on, no shipped keys);
-  - a shared `multra_shell`;
-  - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
-    declarations moved. The owner deferred it to the next engine slice that edits the runtime
-    state (NEXT).
-
-## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
-
-- **The owner's report:** the behaviour editor was taller than the screen; not every key showed
-  and Confirm was off screen. Measured, it needed at least 1378 px.
-- **The editor now has three parts:**
-  - a header with users, id, name and model;
-  - four tabs that each scroll: *Car following*, *Lane changes*, *Perception and drivers*, and
-    *Junctions, signals and speed*;
-  - a footer with the error and the buttons.
-
-  The other model's rows are hidden. Prototype opens at 579 px at 1366×768.
-- **Other dialogs:** the UI suites, measured through a scratch `QDialog::exec` shim, gave vehicle
-  type 696 px minimum, input 500, decision 452, and coarse Node values (one row per leg). These now
-  share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
-- **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
-  decision rows are growth guards.
-
-## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
-
-- **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.
-- **Switched on** (keys 0.5/1.0/1, four projects, seeds 42–51), a per-tick check found:
-  - no 2D overlap, lateral rate within the cap, no position jump, no backward motion;
-  - every lane change lateral, typically 3.5 s.
-- **m2.6-study-template regresses:**
-  - a changer past its window waits on the lane line at its dead end and jams both lanes
-    (seed 45);
-  - one waiting straddler is clamped repeatedly (seed 42); clamps go from 1 to 33.
-- **The lab:** two changers swapping lanes lock side by side for about 50 s.
-- LANE_CHANGE_DURATION §9's reopen conditions are met. The record is in
-  [lateral-run-audit](evidence/lateral-run-audit.md), and the item is in NEXT.
-
-## 2026-10-23 — S4.4: Node proposals after a run; S4 is complete (D317)
-
-- **The Nodes tab** now lists, under the Nodes, the Nodes this revision's Macro or Meso result
-  points at:
-  - a Node with a leg at v/c 1.0 or more (Macro);
-  - a Node with a leg that spills back in any slice (Meso).
-
-  Selecting a row selects the Node. An edit makes the result stale, and the list empties.
-- **A junction without a Node** is listed by its end, for example `link-1@50`, and its row points
-  at *Suggest nodes*. A hot end at the network's edge gives no row: there is nothing to refine.
-- **Rows:** RS9, RS10 (`nodeproposals`), with the editor part in `macro-ui`; four mutations caught.
-
-## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
-
-- **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network
-  cases, Daganzo 1994/1995 as second choices, and not-blind cases as verification only. The next
-  step is the owner's copy of Boyles et al.
-- **Fill defaults…** (Problems tab) lists the absent values the project can already cite, none
-  ticked:
-  - a generated Link's type from its Road's template;
-  - HCM 7's jam density on a project-owned type, only where it is valid for that type;
-  - a Link-less Road's Links from its template.
-
-  Each row shows its value, source and what it clears. The ticked ones apply in one Undo step, and
-  the panel checks again.
-- **Rows:** RS5–RS8 (`filldefaults`), with the editor part in `road-ui`; four mutations caught.
-
-## 2026-10-23 — S4.1–S4.2: the readiness contract and the panel by level (D313, D314)
-
-The owner chose all four S4 options as recommended: the Problems tab with a level selector, cited
-fills F1–F3 (a coarse Node's Micro detail later), proposals from v/c ≥ 1.0 and spill-back, and the
-order panel → fills → proposals ([READINESS](reference/READINESS.md)).
-- **The Problems tab** now checks Micro, Meso or Macro (with its period). Each level lists the
-  refusals of the functions its run calls, in the run's order, then advisories and seam rows. A
-  study sees everything missing at once instead of one refusal per run.
-- **An edit after a check** leaves a note to check again, instead of an empty list that read as
-  "no problems".
-- **Rows:** RS1–RS3 (`readiness`), RS4 in `tables-ui`; the panel's refusals are checked against the
-  runs themselves. Four mutations caught.
-
-## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
-
-- **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:
-  - a Road without Links, which Micro leaves out (Micro only);
-  - a generated Link whose lanes differ from its Road's, fixed in one step by *Use Link* (the Road
-    follows) or *Use Node* (the template is applied again);
-  - a free-speed jump above 20 km/h between consecutive Links, adjustable in the dialog, with turns
-    inside junctions skipped;
-  - a Road that lost a generated Link.
-
-  Nothing is refused or changed unless a fix is chosen.
-- **Rows:** RD20's Micro half, RD21, RD22 and RD29 (`roadseams`), with RD21's editor part in
-  `road-ui`; five mutations caught.
-- **S3 (Roads) is complete:** S3.2–S3.7, D304–D312.
-
-## 2026-10-23 — S3.6b: coarse values dialog, refine, derive back, lifecycle (D311)
-
-- **Detail is the junction's interior** (D311, revising D310): a Connector inside the Node, or a
-  Link wholly inside. Links that only reach in are legs, and Macro and Meso now compile them as the
-  arms of a Node without detail.
-- **Refine and derive back** happen inside whatever Command causes them. Drawing detail into a
-  coarse Node drops its values. Deleting a Node's last detail derives them: signalised from the
-  heads, stages from the signal groups' greens, banned turns from missing movements, and major legs
-  from who yields.
-- **Lifecycle:** when a Command leaves a Node with two Link-less Roads of one template meeting end
-  to start, and nothing authored on the Node, the Node is removed and the Roads joined.
-- **Editor:** *Coarse values…* on the Nodes tab, for a Node without detail.
-- **Rows:** RD17, RD18, RD27 (`roadcoarse`) and RD28 (`road-ui`); RD19 gains a junction over
-  generated Links; five mutations caught.
-
-## 2026-10-23 — S3.6a: link-type rank, coarse Nodes, Macro and Meso from Roads (D310)
-
-S3.6 is split: this half ships the fields with the compile that reads them; the coarse dialog,
-refine, derive back and the lifecycle are S3.6b.
-- **`rank`** on link types (schema 53, a Rank field in the Link-type dialog): the legs with the
-  highest rank are major; an unranked leg or a tie leaves priority undetermined, which Macro and
-  Meso advise.
-- **`coarse`** on a Node without detail (schema 53): control, major legs, banned turns and a stage
-  signal, refused on a Node with detail, with unknown legs or with a bad signal.
-- **Macro and Meso** compile Roads without generated Links, one link per template direction,
-  split at Nodes without detail. Such a Node, coarse or default, gives every turn between
-  different Roads minus the banned ones, with the stages' g/C when signalised. Road ends within
-  2 m join.
-- **Rows:** RD4, RD16, RD19 and RD20's Macro and Meso half (`roadcoarse`), and the rank field in
-  `macro-ui`; four mutations caught. RD20's Micro half moves to S3.7.
 
 ## Older entries
 

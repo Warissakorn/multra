@@ -7,6 +7,8 @@
 #include "../src/project/batch_output.hpp"
 #include "../src/project/parallel_seeds.hpp"
 #include "../src/project/comparison_output.hpp"
+#include "../src/project/export_marking.hpp"
+#include "../src/project/side_files.hpp"
 #include "../src/project/macro_output.hpp"
 #include "../src/project/meso_output.hpp"
 #include "build_info.hpp"
@@ -27,7 +29,9 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
     InputManifest inputs;
     auto* manifest=discharge.enabled?&inputs:nullptr;
     const auto document = parseDocument(manifest?readInputJson(file,"project",manifest):Json::parse(stream));
-    const auto snapshot = compileDocument(document, data,manifest);
+    const auto sources = readStudyAreaSources(file); // S5.5b (D332): the side files beside the project, as the editor reads them
+    const auto snapshot = compileDocument(document, data, manifest, &sources);
+    const auto marking = exportMarking(document, snapshot.studyArea);
     // Refuse to overwrite before spending the run, as --events does.
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
@@ -63,10 +67,11 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
     const auto report = movements.report(state);
     if (!csvFile.empty()) {
         std::ofstream csv(csvFile);
-        csv << movementCsv(report);
+        csv << markedCsv(movementCsv(report), marking, snapshot.studyArea);
         if (!csv) throw std::runtime_error("Failed writing CSV output");
     }
     auto result = movementJson(report);
+    addMarkingJson(result, marking, snapshot.studyArea);
     if (release) {
         result["discharge"] = dischargeJson(release->report(), dischargeSpec);
         result["discharge"]["inputManifest"]=inputs.json();
@@ -83,17 +88,19 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
     return std::cout ? 0 : 1;
 }
 // --seeds (M5.2): the same compiled project and evaluation spec for every seed, then the aggregate.
-struct Prepared { RunSnapshot snapshot; EvaluationSpec spec; };
+struct Prepared { RunSnapshot snapshot; EvaluationSpec spec; ExportMarking marking; };
 // Refuses an existing --csv after the project compiles and before any run, as runProject does.
 Prepared prepare(const std::filesystem::path& file, const std::filesystem::path& data, const std::filesystem::path& csvFile) {
     std::ifstream stream(file);
     if (!stream) throw std::runtime_error("Cannot read project: " + file.string());
     const auto document = parseDocument(Json::parse(stream));
-    auto snapshot = compileDocument(document, data);
+    const auto sources = readStudyAreaSources(file); // S5.5b (D332)
+    auto snapshot = compileDocument(document, data, nullptr, &sources);
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
     auto spec = evaluationSpec(document, snapshot, data);
-    return {std::move(snapshot), std::move(spec)};
+    auto marking = exportMarking(document, snapshot.studyArea);
+    return {std::move(snapshot), std::move(spec), std::move(marking)};
 }
 // BATCH §3: the flag also goes to stderr. `side` is empty for a batch, else "base" or "alternative".
 void warnOverloaded(const BatchReport& report, const std::string& side) {
@@ -121,10 +128,12 @@ void stamp(Json& result) {
 }
 int runBatch(const std::filesystem::path& file, const std::filesystem::path& csvFile,
              const std::filesystem::path& data, const std::vector<std::uint32_t>& seeds, unsigned threads) {
-    const auto runs = runAll(prepare(file, data, csvFile), seeds, "", threads);
+    const auto prepared = prepare(file, data, csvFile);
+    const auto runs = runAll(prepared, seeds, "", threads);
     const auto report = aggregate(runs);
-    writeCsv(csvFile, batchCsv(report, runs));
+    writeCsv(csvFile, markedCsv(batchCsv(report, runs), prepared.marking, prepared.snapshot.studyArea));
     auto result = batchJson(report, runs);
+    addMarkingJson(result, prepared.marking, prepared.snapshot.studyArea);
     stamp(result);
     std::cout << result.dump(2) << '\n';
     warnOverloaded(report, "");
@@ -141,8 +150,10 @@ int runComparison(const std::filesystem::path& baseFile, const std::filesystem::
     b.report = aggregate(b.runs);
     a.report = aggregate(a.runs);
     const auto comparison = compareBatches(b.report, a.report);
-    writeCsv(csvFile, comparisonCsv(comparison, b, a));
+    const auto& bf = base.snapshot.studyArea; const auto& af = alternative.snapshot.studyArea;
+    writeCsv(csvFile, markedComparisonCsv(comparisonCsv(comparison, b, a), base.marking, alternative.marking, bf, af));
     auto result = comparisonJson(comparison, b, a);
+    addComparisonMarkingJson(result, base.marking, alternative.marking, bf, af);
     stamp(result);
     std::cout << result.dump(2) << '\n';
     warnOverloaded(b.report, "base");
@@ -158,8 +169,10 @@ int runMacroPeriod(const std::filesystem::path& file, const std::filesystem::pat
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
     const auto run = runMacro(document, data, period, &inputs);
-    writeCsv(csvFile, macroCsv(run));
+    const auto marking = exportMarking(document, {});
+    writeCsv(csvFile, markedCsv(macroCsv(run), marking));
     auto result = macroJson(run);
+    addMarkingJson(result, marking);
     stamp(result);
     std::cout << result.dump(2) << '\n';
     if (!run.assignment.converged) std::cerr << "MULTRA: warning: MACRO_NOT_CONVERGED at the iteration cap; gap " << run.assignment.gap << '\n';
@@ -173,8 +186,10 @@ int runMesoProject(const std::filesystem::path& file, const std::filesystem::pat
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
     const auto run = runMeso(document, data, &inputs);
-    writeCsv(csvFile, mesoCsv(run));
+    const auto marking = exportMarking(document, {});
+    writeCsv(csvFile, markedCsv(mesoCsv(run), marking));
     auto result = mesoJson(run);
+    addMarkingJson(result, marking);
     stamp(result);
     std::cout << result.dump(2) << '\n';
     return std::cout ? 0 : 1;

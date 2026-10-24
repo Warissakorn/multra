@@ -94,10 +94,12 @@ void EditorWindow::clearRun(){
 }
 bool EditorWindow::prepareRun() {
     if(runSnapshot_)return true;
+    const auto sources=studyAreaSources(); // S5.5a (D331)
     try {
         std::uint32_t seed{};
         try{seed=parseSeed(runSeed_->text().toStdString());}catch(const std::exception&){throw std::invalid_argument("invalidSeed");}
-        auto snapshot=compileDocument(history_.document(),data_);
+        auto snapshot=compileDocument(history_.document(),data_,nullptr,&sources);
+        runMarking_={exportMarking(history_.document(),snapshot.studyArea),snapshot.studyArea}; // S5.5b
         auto state=createSimulation(snapshot.scenario,seed);
         const auto evaluation=evaluationSpec(history_.document(),snapshot,data_);
         MovementAccumulator movements(evaluation);
@@ -114,7 +116,7 @@ bool EditorWindow::prepareRun() {
         canvas_->setRunNetwork(runSnapshot_->network);canvas_->setRunFrame(runState_);
         error_->clear();return true;
     }catch(const std::exception& e){
-        diagnostics_=runDiagnostics(history_.document(),data_);diagnosticRevision_=history_.revision();
+        diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return false;
     }
 }

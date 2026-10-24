@@ -121,6 +121,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             }
             Json controller = {{"id",c.id},{"cycle",c.cycle},{"offset",c.offset},{"groups",groups}};
             if (!c.name.empty()) controller["name"] = c.name;
+            if (c.generated) controller["generated"] = true; // S4.5c (D325), schema 54
             j["signalControllers"].push_back(std::move(controller));
         }
     }

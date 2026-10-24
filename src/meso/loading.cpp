@@ -41,7 +41,7 @@ struct Row {
 };
 }
 MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, double step, double horizon,
-                     const std::function<bool(std::size_t, std::size_t)>& progress) {
+                     const std::function<bool(std::size_t, std::size_t)>& progress, const std::vector<bool>* watch) {
     MesoLoading out;
     out.step = step;
     const auto steps = static_cast<std::size_t>(std::ceil(horizon / step - 1e-9));
@@ -220,6 +220,10 @@ MesoLoading loadMeso(const MesoGraph& g, const std::vector<MesoClass>& classes, 
         }
     }
     for (std::size_t l = 0; l < nl; ++l) { out.sending[l].push_back(0); out.receiving[l].push_back(0); }
+    if (watch)
+        for (const auto& x : cs)
+            for (std::size_t k = 0; k < x.p->links.size(); ++k)
+                if (const auto l = x.p->links[k]; l < watch->size() && (*watch)[l]) out.watched.push_back({x.cls, x.path, k, upC[l][x.slot[k]]});
     return out;
 }
 }

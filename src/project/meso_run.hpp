@@ -25,6 +25,7 @@ struct MesoRun {
     Json inputManifest;                      // the files read; null without a manifest
 };
 // Refused by ValidationError: the graph's issues (stage graph), then the demand's (stage demand).
+// S5.4 (D330): `watchLinks` names the Links whose Meso links keep per-path entrance counts.
 MesoRun runMeso(const ProjectDocument&, const std::filesystem::path& dataDirectory, InputManifest* = nullptr,
-                const MesoObserver* = nullptr);
+                const MesoObserver* = nullptr, const std::vector<std::string>* watchLinks = nullptr);
 }

@@ -111,9 +111,14 @@ void EditorCanvas::drawNodes() {
         QPen pen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2.5 : node.generated ? 1.5 : 2,
                  node.generated ? Qt::DotLine : Qt::SolidLine);
         pen.setCosmetic(true);
-        auto* item = scene_.addPath(shape, pen, QBrush(Qt::NoBrush));
+        // S5.2b (D328): a study-area Node is filled lightly under its usual outline.
+        const auto& area = document_->zones.studyArea.nodes;
+        const bool inArea = std::find(area.begin(), area.end(), node.id) != area.end();
+        auto fill = canvasStyle::ok(); fill.setAlpha(40);
+        auto* item = scene_.addPath(shape, pen, inArea ? QBrush(fill) : QBrush(Qt::NoBrush));
         item->setZValue(200005);
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
+        if (inArea) item->setData(2, QStringLiteral("area"));
         const auto c = centroid(node.polygon);
         auto* label = scene_.addSimpleText(QString::fromStdString(node.name.empty() ? node.id : node.name));
         label->setFlag(QGraphicsItem::ItemIgnoresTransformations);

@@ -116,7 +116,7 @@ std::vector<std::string> duplicateObjects(ProjectDocument& d,const std::vector<s
         created.push_back(l.id);d.network.links.push_back(std::move(l));
     }
     for(auto c:source.connectors)if(chosen.contains(c.id) || (links.contains(c.from.linkId) && links.contains(c.to.linkId))) {
-        const auto original=c;c.id=allocateId(d,"connector");connectors[original.id]=c.id;
+        const auto original=c;c.id=allocateId(d,"connector");c.generated=false;connectors[original.id]=c.id; // S4.5a: a copy is the person's
         for(int i=0;i<std::max(c.fromLaneCount,c.toLaneCount);++i)paths[connectorPathId(original,i)]=connectorPathId(c,i);
         const auto remap=[&](LaneReference ref,int count,bool outgoing) {
             // A duplicated link has the same geometry, so its stations transfer unchanged.
@@ -148,7 +148,7 @@ std::vector<std::string> duplicateObjects(ProjectDocument& d,const std::vector<s
                 if(path.id==h.connectorId){geometry=path.geometry;level=c.level;sourcePath=path;}
             const auto p=sourcePath?connectorPathPoint(*sourcePath,h.position):pointAlong(geometry,h.position);dropHead(d.network,h,{p.x+offset.x,p.y+offset.y},level);
         } else continue;
-        h.id=allocateId(d,"head");if(selected)created.push_back(h.id);d.network.signalHeads.push_back(std::move(h));
+        h.id=allocateId(d,"head");h.generated=false;if(selected)created.push_back(h.id);d.network.signalHeads.push_back(std::move(h));
     }
     detail::copyControls(d,source,links,lanes,connectors); // M3.2.2b: controls travel with their owners
     return created; // Demand is deliberately not copied; it would double vehicle arrivals.

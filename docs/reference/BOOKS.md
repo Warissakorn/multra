@@ -97,7 +97,7 @@ Chapter rows name what the book offers a milestone; they do not book work. A row
 
 | Chapter | Offers | MULTRA |
 |---|---|---|
-| 3 LTM framework; Eq. (3.4) | Time step `Δt ≤ L / v_f`, cumulative counts | **used:** D298 |
+| 3 LTM framework; Eq. (3.4); §3.2 "FIFO conditions" | Time step `Δt ≤ L / v_f`, cumulative counts, route counts by FIFO | **used:** D298; §3.2's route counts for the Meso cut, D330 |
 | 4 Link model; Eqs. (4.31), (4.35); Example 4.5 | Sending and receiving flows, comparison with CTM | **used:** D298, rows ME3–ME6 ([yperman-ltm](../evidence/yperman-ltm.md)) |
 | 5 Node models; Eqs. 5.2, 5.4, 5.15 | Turn splits, origins as point queues, shared-lane split | **used:** D298, D299 |
 | 6a–6d Intersection delays | Point queues that add signal and priority delay without physical length | **Not used.** Meso signals are capacity only (averaged green, D299), so a signalised Meso route has no red-time delay below capacity. A Meso delay slice would start here |

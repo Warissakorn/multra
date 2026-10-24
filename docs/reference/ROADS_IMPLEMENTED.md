@@ -301,7 +301,7 @@ with the other seam checks.
 - **`deriveCoarse(d, node)`** reads `nodeMembership`. Legs are named by the Road of each leg Link,
   and nothing is derived if a leg Link has no Road ending in the Node.
   - **Control:** signalised from the heads; otherwise priority, which is absent.
-  - **Major:** for priority, the in-leg Roads that never yield in a conflict, when others do.
+  - **Major:** for priority, the in-leg Roads that never yield in a conflict, when others do. **Amended by D324:** an arm is minor when each of its turns that meets a decided conflict yields in one; an arm with a turn that meets some and never yields is major, so a major far turn yielding to the opposite through leaves its arm major.
   - **Banned turns:** every pair of different Roads with no turn.
   - **Signal:** the turns' programs (`turnSignalPrograms`, moved from Meso to Node membership). They
     give green intervals over their common cycle; a controller group is offset and wrapped, and a

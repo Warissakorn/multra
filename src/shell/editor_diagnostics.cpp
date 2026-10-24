@@ -48,12 +48,14 @@ void EditorWindow::buildDiagnostics() {
     connect(readinessPeriod_,&QComboBox::activated,this,[this]{ recheck(); });
 }
 void EditorWindow::recheck() {
+    const auto sources=studyAreaSources(); // S5.5a (D331)
     const auto level=static_cast<ReadinessLevel>(readinessLevel_->currentData().toInt());
-    if (level==ReadinessLevel::micro) diagnostics_=runDiagnostics(history_.document(),data_);
+    if (level==ReadinessLevel::micro) diagnostics_=runDiagnostics(history_.document(),data_,&sources);
     else diagnostics_.clear();
     readiness_.clear();
-    for (auto& r : readiness(history_.document(),data_,level,readinessPeriod_->currentData().toString().toStdString()))
-        if (level!=ReadinessLevel::micro || r.code.rfind("SEAM_",0)==0) readiness_.push_back(std::move(r)); // Micro's others are diagnostics_
+    for (auto& r : readiness(history_.document(),data_,level,readinessPeriod_->currentData().toString().toStdString(),&sources))
+        if (level!=ReadinessLevel::micro || r.code.rfind("SEAM_",0)==0 || r.code=="MICRO_GENERATED_IN_AREA") // Micro's others are diagnostics_
+            readiness_.push_back(std::move(r));
     diagnosticRevision_=history_.revision(); readinessChecked_=true;
     refreshDiagnostics();
 }
@@ -81,8 +83,11 @@ void EditorWindow::refreshDiagnostics() {
     if (stale && readinessChecked_) rows.push_back({"editorReadinessStale",{},{},{},DiagnosticSeverity::advisory});
     for (const auto& row : diagnostics_) rows.push_back(row);
     // Readiness rows; a refusal shows as Micro's runtime rows do, a seam warning as a warning.
-    std::vector<QString> severities(rows.size());
+    std::vector<QString> severities(rows.size()), messages(rows.size());
     for (const auto& r : readiness_) {
+        auto message=text(r.code); // S5.5b (D332): MICRO_GENERATED_IN_AREA's counts by kind
+        for (const auto count : r.counts) message=message.arg(count);
+        messages.push_back(r.counts.empty()?QString():message);
         rows.push_back({r.code,r.path,r.objectId,r.selectId,r.severity==ReadinessSeverity::advisory?DiagnosticSeverity::advisory:DiagnosticSeverity::runtime});
         severities.push_back(text(r.severity==ReadinessSeverity::refusal?"editorRefusalSeverity":r.severity==ReadinessSeverity::warning?"editorSeamWarning":"editorAdvisorySeverity"));
     }
@@ -96,7 +101,8 @@ void EditorWindow::refreshDiagnostics() {
     }
     for (int row=0; row<static_cast<int>(rows.size()); ++row) {
         const auto& item=rows[static_cast<std::size_t>(row)];
-        const auto translated=text(item.code);
+        const auto& message=messages[static_cast<std::size_t>(row)];
+        const auto translated=message.isEmpty()?text(item.code):message;
         const auto severity=static_cast<std::size_t>(row)<severities.size()&&!severities[static_cast<std::size_t>(row)].isEmpty()
             ? severities[static_cast<std::size_t>(row)]
             : text(item.severity==DiagnosticSeverity::draft?"editorDraftSeverity":
@@ -123,6 +129,9 @@ void EditorWindow::jumpTo(int row) {
     const auto id=cell->data(Qt::UserRole).toString().toStdString();
     if (id.empty()) {
         const auto object=cell->data(Qt::UserRole+1).toString().toStdString();
+        // S5.5b (D332): a Node's row selects it on the Nodes tab, which lights it (D288).
+        for (int r=0; nodeTable_ && r<nodeTable_->rowCount(); ++r)
+            if (nodeTable_->item(r,0)->data(Qt::UserRole).toString().toStdString()==object) { nodeTable_->selectRow(r); return; }
         if (!selectConflict(object)) selectDemand(object); // M3.2.4: authored controls have a tab
         return;
     }

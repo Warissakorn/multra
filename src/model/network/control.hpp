@@ -24,8 +24,10 @@ struct ControlPoint {
     ControlPathRef path; double station{};
     bool operator==(const ControlPoint&) const = default;
 };
+// S4.5b (READINESS §13.6, D324), schema 54: `generated` on the right-of-way objects F4 draws,
+// written only when true and cleared by the first edit of the object.
 struct WaitingLine {
-    std::string id, name; ControlPoint point;
+    std::string id, name; ControlPoint point; bool generated{};
     bool operator==(const WaitingLine&) const = default;
 };
 // Branching is a derived display kind only; authored controls/codec accept crossing and merge.
@@ -38,11 +40,12 @@ struct ConflictSide {
 struct ConflictArea {
     std::string id, name; ConflictKind kind{ConflictKind::merge};
     ConflictSide first, second; ConflictPriority priority{ConflictPriority::undetermined};
+    bool generated{};
     bool operator==(const ConflictArea&) const = default;
 };
 // At most one per area. Direction comes from the area, never a second copy here.
 struct AuthoredPriorityRule {
-    std::string id, name, conflictAreaId; double gapTime{}, headway{};
+    std::string id, name, conflictAreaId; double gapTime{}, headway{}; bool generated{};
     bool operator==(const AuthoredPriorityRule&) const = default;
 };
 // M3.2.5 (contract §1, §5): what a driver must do at one waiting line before crossing the areas
@@ -51,7 +54,7 @@ struct AuthoredPriorityRule {
 enum class StopMode { stop, yield };
 struct StopControl {
     std::string id, name, waitingLineId; StopMode mode{StopMode::stop};
-    std::vector<std::string> conflictAreaIds;
+    std::vector<std::string> conflictAreaIds; bool generated{};
     bool operator==(const StopControl&) const = default;
 };
 struct RightOfWay {
