@@ -130,6 +130,7 @@ struct SignalGroup {
 };
 struct SignalController {
     std::string id, name; double cycle{90}, offset{}; std::vector<SignalGroup> groups;
+    bool generated{}; // S4.5c (D325), schema 54: F4 drew it; cleared by the first edit of it
     bool operator==(const SignalController&) const = default;
 };
 // M3.3.2a (D126, DRIVING_BEHAVIOUR.md §1). Authoring only: nothing here reaches the engine until

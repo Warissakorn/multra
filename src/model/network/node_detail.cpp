@@ -90,4 +90,43 @@ int movementRank(bool inMajor, bool outMajor, double sweep, std::size_t arms) {
     if (!outMajor) return 3;
     return sweep > 0 ? 2 : arms == 3 ? 3 : 4;
 }
+SignalLayout signalLayout(const CoarseSignal& signal, double step) {
+    SignalLayout layout;
+    const auto steps = [&](double v) { return step > 0 ? v / step : v; };
+    const auto onGrid = [&](double v) { return !(step > 0) || std::abs(steps(v) - std::round(steps(v))) < 1e-6; };
+    double total = 0;
+    layout.offGrid = !onGrid(signal.cycle);
+    for (const auto& s : signal.stages) { total += s.green; layout.offGrid = layout.offGrid || !onGrid(s.green); }
+    if (signal.stages.empty()) return layout;
+    const auto n = static_cast<double>(signal.stages.size());
+    const double share = (signal.cycle - total) / n;
+    const double each = step > 0 ? std::floor(share / step + 1e-6) * step : share;
+    const double last = signal.cycle - total - each * (n - 1);
+    layout.intergreen = std::min(each, last);
+    double at = 0;
+    for (const auto& s : signal.stages) { layout.starts.push_back(at); at += s.green + each; }
+    return layout;
+}
+TurnGreen turnGreen(const CoarseSignal& signal, const SignalLayout& layout, const std::pair<std::string, std::string>& turn) {
+    TurnGreen out;
+    const auto n = signal.stages.size();
+    std::vector<bool> serves(n);
+    for (std::size_t s = 0; s < n; ++s) {
+        const auto& t = signal.stages[s].turns;
+        serves[s] = std::find(t.begin(), t.end(), turn) != t.end();
+    }
+    const auto count = static_cast<std::size_t>(std::count(serves.begin(), serves.end(), true));
+    if (count == 0) { out.reason = "FILL_NODE_TURN_UNSERVED"; return out; }
+    std::size_t first = 0; // the run's first stage: served, with the one before it not
+    if (count < n) while (!serves[first] || serves[(first + n - 1) % n]) ++first;
+    for (std::size_t k = 0; k < count; ++k) {
+        const auto s = (first + k) % n;
+        if (!serves[s]) { out.reason = "FILL_NODE_STAGES_SPLIT"; return out; }
+        out.stages.push_back(s);
+    }
+    const auto last = out.stages.back();
+    out.start = layout.starts[first];
+    out.end = layout.starts[last] + signal.stages[last].green;
+    return out;
+}
 }

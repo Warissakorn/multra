@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S4.5c: signals for a generated junction; S4.5 complete (D325)
+
+- **Asked:** continue; S4.5c was next. The owner answered two points: co-green turns inside a stage
+  yield by S4.5b's HCM ranks (so a signal needs two major arms), and derive back stays exact,
+  reporting a turn carried across an intergreen as a stage of its own.
+- **Built** (READINESS §16): a generated controller and one group per turn from the coarse stages,
+  a generated head on each turn's Connector paths, and crossings only between turns green together.
+- **Found:**
+  - signal times must sit on the time step, so intergreens round down to it and the last takes the
+    rest (`FILL_NODE_SIGNAL_GRID` for an off-step green);
+  - a merge takeover joins turns never green together, and mixing rank priorities with its order
+    made priority cycles. Every pair of a generated merge is now ordered by rank, then drawing order.
+- **Rows:** RS15, plus signal cases in RS11, RS16 and RS18 (`nodedetail`, 10 rows); the signalised
+  four-arm fixture runs at Micro. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 224/224; file-size, docs and architecture checks pass. Not built or
+  run on Windows.
+
 ## 2026-10-24 — S4.5b: who gives way at a generated junction (D324)
 
 - **Asked:** continue; S4.5b was next.
@@ -189,21 +206,6 @@ order panel → fills → proposals ([READINESS](reference/READINESS.md)).
   "no problems".
 - **Rows:** RS1–RS3 (`readiness`), RS4 in `tables-ui`; the panel's refusals are checked against the
   runs themselves. Four mutations caught.
-
-## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
-
-- **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:
-  - a Road without Links, which Micro leaves out (Micro only);
-  - a generated Link whose lanes differ from its Road's, fixed in one step by *Use Link* (the Road
-    follows) or *Use Node* (the template is applied again);
-  - a free-speed jump above 20 km/h between consecutive Links, adjustable in the dialog, with turns
-    inside junctions skipped;
-  - a Road that lost a generated Link.
-
-  Nothing is refused or changed unless a fix is chosen.
-- **Rows:** RD20's Micro half, RD21, RD22 and RD29 (`roadseams`), with RD21's editor part in
-  `road-ui`; five mutations caught.
-- **S3 (Roads) is complete:** S3.2–S3.7, D304–D312.
 
 ## Older entries
 

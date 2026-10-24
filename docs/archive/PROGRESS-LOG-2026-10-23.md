@@ -3,6 +3,21 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
+
+- **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:
+  - a Road without Links, which Micro leaves out (Micro only);
+  - a generated Link whose lanes differ from its Road's, fixed in one step by *Use Link* (the Road
+    follows) or *Use Node* (the template is applied again);
+  - a free-speed jump above 20 km/h between consecutive Links, adjustable in the dialog, with turns
+    inside junctions skipped;
+  - a Road that lost a generated Link.
+
+  Nothing is refused or changed unless a fix is chosen.
+- **Rows:** RD20's Micro half, RD21, RD22 and RD29 (`roadseams`), with RD21's editor part in
+  `road-ui`; five mutations caught.
+- **S3 (Roads) is complete:** S3.2–S3.7, D304–D312.
+
 ## 2026-10-23 — S3.6b: coarse values dialog, refine, derive back, lifecycle (D311)
 
 - **Detail is the junction's interior** (D311, revising D310): a Connector inside the Node, or a

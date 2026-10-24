@@ -37,4 +37,16 @@ std::vector<TurnConnector> nodeTurnConnectors(const Network&, const Node&);
 // turn at a three-arm Node; 4: the minor far turn at a four-arm Node. Through is a turn to the
 // other arm of the same class (major to major, minor to minor); otherwise `sweep`'s sign decides.
 int movementRank(bool inMajor, bool outMajor, double sweep, std::size_t arms);
+// F4-5a (§13.5): the coarse stages laid out in their stored order, each followed by an intergreen
+// of (cycle - the greens' sum) / stages, as equal as the run's `step` allows: each is that share
+// rounded down to the step, and the last takes what remains. `intergreen` is the shortest and
+// `starts` each stage's green start. `offGrid` names a cycle or green the step cannot time.
+struct SignalLayout { double intergreen{}; std::vector<double> starts; bool offGrid{}; };
+SignalLayout signalLayout(const CoarseSignal&, double step);
+// A turn's green over the stages serving it, from the first stage's start to the last one's end;
+// `end` < `start` when it wraps past the cycle's end. `reason` refuses it: FILL_NODE_TURN_UNSERVED
+// when no stage serves the turn, FILL_NODE_STAGES_SPLIT when its stages are not consecutive (the
+// last stage running on into the first counts as consecutive).
+struct TurnGreen { std::string reason; double start{}, end{}; std::vector<std::size_t> stages; };
+TurnGreen turnGreen(const CoarseSignal&, const SignalLayout&, const std::pair<std::string, std::string>& turn);
 }

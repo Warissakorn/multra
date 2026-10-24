@@ -105,7 +105,7 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 | S4.2 | The readiness panel by level, with the seam checks. **Implemented (D314)** | RS1–RS4 |
 | S4.3 | *Fill defaults* F1–F3. **Implemented (D316)** | RS5–RS8 |
 | S4.4 | Node proposals. **Implemented (D317)** | RS9, RS10 |
-| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13); S4.5a and S4.5b implemented (D323, D324)** | RS11–RS18 |
+| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13); S4.5a–c implemented (D323–D325), so S4.5 is complete** | RS11–RS18 |
 
 ## 8. Owner choices (answered 2026-10-23, D313: S4-1a, S4-2a, S4-3a, S4-4a)
 
@@ -323,10 +323,13 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
   greenⱼ + *I*. A turn's group is green over the stages that serve it, which must be consecutive,
   the last wrapping to the first (`FILL_NODE_STAGES_SPLIT` otherwise). Amber is the group default, 3 s, and an *I* below it is
   `FILL_NODE_INTERGREEN`.
-- **Inside a stage,** turns green together whose Connectors overlap get §13.4's areas and ranks
-  (a permitted far turn gives way to the opposite through). Turns never green together get none.
-- **Derive back** must return the same stages: deleting the generated detail gives the coarse
-  values F4 started from (RS15).
+- **Inside a stage,** turns green together whose Connectors cross get §13.4's areas and ranks
+  (a permitted far turn gives way to the opposite through), with no Stop. So a signalised Node of
+  three arms or more also needs its two major arms (owner, D325). Turns never green together get no
+  crossing area.
+- **Derive back** returns the same stages when no turn spans two (RS15). A turn served by two
+  consecutive stages stays green through the intergreen between them, and derive back reports
+  that span as it runs, so the stages gain it (owner, D325: each turn's g/C stays exact).
 
 ### 13.6 `generated`
 
@@ -430,8 +433,8 @@ Each row first asserts that its forcing worked (AGENTS).
   different ranks, `authorAutomaticConflict` makes the authored areas (a merge is taken over whole).
   Then every new area between two such turns gets the priority by rank, with `default.json`'s gap
   time and headway through `setConflictControl`, and an area a minor arm yields in gets *Stop*
-  (`setAreaControl`). An area of equal ranks that a merge takeover made keeps the fallback's
-  order, which is how it ran before.
+  (`setAreaControl`). An area of equal ranks that a merge takeover made kept the fallback's
+  order; S4.5c orders every pair of a generated merge by rank and then drawing order (§16).
 - **`generated`** on waiting lines, conflict areas, priority rules and Stop controls (schema 54), each
   cleared by its first edit (`settleGenerated`) and never copied. A bad value is
   `EDIT_GENERATED_INVALID`, which replaces S4.5a's `EDIT_CONNECTOR_INVALID` for every object.
@@ -449,3 +452,42 @@ Each row first asserts that its forcing worked (AGENTS).
   fixture over the shipped T-junction's catalogs runs at Micro (seed 42) with no refusal, its Node
   has a row for each of the 12 turns, vehicles and no issue. Rule 4 applies: a run, not a validated
   junction. RS15 waits for S4.5c.
+
+## 16. S4.5c as implemented (D325)
+
+S4.5 is complete with this slice.
+
+- **Layout** (`signalLayout`, `turnGreen`, `node_detail.*`, pure): stages in their stored order,
+  each followed by an intergreen of (cycle − Σ green) / stages. Signal times must lie on the run's
+  time step (`INVALID_SIGNAL_TIMING` otherwise), so each intergreen is that share rounded down to the
+  step and the last takes what remains (20/3 s on 0.1 s: 6.6, 6.6 and 6.8). A turn's green runs from
+  its first stage's start to its last stage's end and wraps past the cycle's end where the run does.
+- **Refusals,** after the cuts:
+  - `FILL_NODE_SIGNAL_GRID`: the cycle or a green is off the step;
+  - `FILL_NODE_INTERGREEN`: the shortest intergreen is below a group's 3 s amber;
+  - `FILL_NODE_TURN_UNSERVED`: an allowed turn is in no stage (a reading taken: a group needs a
+    green, and banning the turn is the user's call);
+  - `FILL_NODE_STAGES_SPLIT`.
+
+  `FILL_NODE_SIGNALISED` is gone. The major-arm refusals of §15 apply at a signal too.
+- **The command:** one controller named after the Node (else its id), with the coarse cycle,
+  offset 0 and group *k* for turn *k* (named "in -> out", amber 3 s). Each path of each turn's
+  Connector gets a head at station 0 showing its turn's group. Both are `generated` (schema 54;
+  a controller below 54 carrying the key is `EDIT_UNSUPPORTED_FIELD`). `settleGenerated` covers both,
+  and a copied head never carries the flag.
+- **Priority at a signal:** two turns decide only when green in a common stage, and nobody
+  Stops. **Found while building:** a merge is taken over whole, so its areas join turns that may
+  never be green together. Rank priorities on some of its pairs, mixed with the takeover's order on
+  the rest, made `CONFLICT_PRIORITY_CYCLE`. Every pair of a generated merge is therefore ordered by
+  one total order, rank and then drawing order, at priority Nodes as well. Stop still goes only
+  where ranks differ and a minor arm yields.
+- **Locale:** the refusals have English and Thai text, S4.5b's two included.
+- **Rows** (`nodedetail`):
+  - RS15: the controller, its 12 groups at [0, 40) or [45, 85), one head per path, control
+    signalised, no Stop, and crossings only within a stage. Derive back gives the two stages; a turn
+    carried across an intergreen derives back with that 6.6 s span as a stage of its own;
+  - RS11 gains the signal refusals; RS16 the head and controller flags;
+  - RS18 runs the signalised four-arm fixture at Micro (seed 42), signalised with 12 turns and
+    vehicles.
+
+  Rule 4 applies.

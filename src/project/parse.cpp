@@ -250,12 +250,12 @@ Network parseNetwork(const Json& value, int schemaVersion) {
         network.connectors.back().generated=generatedFlag(c,where,schemaVersion); // S4.5a, schema 54
     }
     for (const auto& h : array(value, "signalHeads")) {
-        knownFields(h,{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
+        knownFields(withoutGenerated(h,schemaVersion),{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
             "signalHeads["+std::to_string(network.signalHeads.size())+"]",schemaVersion);
         network.signalHeads.push_back({field<std::string>(h, "id"), reference(member(h, "lane"),schemaVersion),
                                       field<double>(h, "position"), field<std::string>(h, "programId"),
                                       present(h,"connectorId")?field<std::string>(h,"connectorId"):std::string{}});
-        if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");
+        if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");network.signalHeads.back().generated=generatedFlag(h,"signalHeads["+std::to_string(network.signalHeads.size()-1)+"]",schemaVersion);
         if(present(h,"controllerId")) { // M2.7b, schema 13: the head shows a signal group
             network.signalHeads.back().controllerId=field<std::string>(h,"controllerId");
             network.signalHeads.back().groupNumber=integer(h,"groupNumber");
@@ -413,7 +413,7 @@ std::vector<SignalController> parseSignalControllers(const Json& definition) {
     std::vector<SignalController> result;
     for (const auto& x : array(definition, "signalControllers")) {
         const auto path = "signalControllers[" + std::to_string(result.size()) + "]";
-        knownFields(x, {"id", "name", "cycle", "offset", "groups"}, path, 13);
+        knownFields(withoutGenerated(x, 54), {"id", "name", "cycle", "offset", "groups"}, path, 13); // below 54: rejectGeneratedControllersBefore54
         SignalController c{field<std::string>(x, "id"), present(x, "name") ? field<std::string>(x, "name") : std::string{},
                            field<double>(x, "cycle"), field<double>(x, "offset"), {}};
         for (const auto& g : array(x, "groups")) {
@@ -422,7 +422,7 @@ std::vector<SignalController> parseSignalControllers(const Json& definition) {
                                 present(g, "name") ? field<std::string>(g, "name") : std::string{},
                                 field<double>(g, "greenStart"), field<double>(g, "greenEnd"), field<double>(g, "amber")});
         }
-        result.push_back(std::move(c));
+        c.generated = generatedFlag(x, path, 54); result.push_back(std::move(c));
     }
     return result;
 }

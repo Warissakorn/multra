@@ -2,6 +2,7 @@
 // S0.1 (NODES §2, D261): `network.nodes`, written only when a Node exists, which makes the file
 // schema 48. Below 48 the network's known fields refuse the key (EDIT_UNSUPPORTED_FIELD network.nodes).
 #include "json.hpp"
+#include "document.hpp"
 
 namespace multra {
 void addNodesJson(const Network&, Json& network);
@@ -14,5 +15,7 @@ std::vector<Node> parseNodes(const Json& network, int schema);
 // usesGeneratedFlags: whether any object carries the flag, which makes the file schema 54.
 Json withoutGenerated(const Json& object, int schema);
 bool generatedFlag(const Json& object, const std::string& where, int schema);
-bool usesGeneratedFlags(const Network&);
+bool usesGeneratedFlags(const ProjectDocument&);
+// A file below 54 whose signal controller carries the key: EDIT_UNSUPPORTED_FIELD at its path.
+void rejectGeneratedControllersBefore54(const Json& file);
 }

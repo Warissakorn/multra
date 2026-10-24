@@ -25,18 +25,13 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — S4.5c, F4's signals (the owner's pick, D323, D324)
+## Next session — the owner's pick: S5 or an item below
 
-- **S4.5c** ([READINESS](reference/READINESS.md) §13.5, F4-5a): a signalised coarse Node gets one
-  controller named after the Node (coarse cycle, offset 0) and one signal group per turn. Stages run
-  in stored order with equal intergreens *I* = (cycle − Σ green) / stages; a turn's group is green over
-  the stages serving it, which must be consecutive (`FILL_NODE_STAGES_SPLIT`); amber 3 s, an *I*
-  below it is `FILL_NODE_INTERGREEN`. Heads at the start of each path of a turn's Connector. Turns green
-  together whose Connectors overlap get S4.5b's areas by rank (`authorPriority` in
-  `node_detail_commands.cpp`), turns never green together none; no Stop at a signal. `generated` on
-  heads and the controller (schema 54, cleared by an edit, as `settleGenerated` does). Drop
-  `FILL_NODE_SIGNALISED`. Row RS15: derive back gives the same stages (`deriveCoarse`'s signal path).
-- **Then S5**, the study area, which reads `generated`.
+- **S5**, the study area and stale marking (WORKFLOW §5 steps 3 and 7–8): "`generated` objects
+  inside the study area count as missing for Micro", and export marked while `generated` objects or
+  stale results remain. F4 (S4.5, D323–D325) now writes `generated` on Connectors, right-of-way
+  objects, heads and controllers (schema 54), so S5 has its input. It needs its own contract first
+  (READINESS §1 lists it as out of S4).
 - **Other picks:**
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country

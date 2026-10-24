@@ -148,7 +148,7 @@ std::vector<std::string> duplicateObjects(ProjectDocument& d,const std::vector<s
                 if(path.id==h.connectorId){geometry=path.geometry;level=c.level;sourcePath=path;}
             const auto p=sourcePath?connectorPathPoint(*sourcePath,h.position):pointAlong(geometry,h.position);dropHead(d.network,h,{p.x+offset.x,p.y+offset.y},level);
         } else continue;
-        h.id=allocateId(d,"head");if(selected)created.push_back(h.id);d.network.signalHeads.push_back(std::move(h));
+        h.id=allocateId(d,"head");h.generated=false;if(selected)created.push_back(h.id);d.network.signalHeads.push_back(std::move(h));
     }
     detail::copyControls(d,source,links,lanes,connectors); // M3.2.2b: controls travel with their owners
     return created; // Demand is deliberately not copied; it would double vehicle arrivals.
