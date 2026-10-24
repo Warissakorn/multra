@@ -2,6 +2,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/fill_commands.hpp"
 #include <QDialog>
+#include <algorithm>
 #include <QDialogButtonBox>
 #include <QHeaderView>
 #include <QLabel>
@@ -25,10 +26,13 @@ void EditorWindow::fillDefaultsDialog() {
     table->setHorizontalHeaderLabels({text("editorFillFill"), text("editorColumnId"), text("editorFillValue"), text("editorFillClears"), text("editorFillSource")});
     for (int r = 0; r < table->rowCount(); ++r) {
         const auto& o = offers[static_cast<std::size_t>(r)];
-        auto* name = new QTableWidgetItem(text(o.kind == FillKind::linkType ? "editorFillLinkType" : o.kind == FillKind::jamDensity ? "editorFillJamDensity" : "editorFillRoadLinks"));
-        name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable); name->setCheckState(Qt::Unchecked);
+        const char* kinds[] = {"editorFillLinkType", "editorFillJamDensity", "editorFillRoadLinks", "editorFillNodeDetail"};
+        auto* name = new QTableWidgetItem(text(kinds[static_cast<int>(o.kind)]));
+        // S4.5a (D323): a Node F4 cannot fill is listed with why, and cannot be ticked.
+        name->setFlags(o.refusal.empty() ? Qt::ItemIsEnabled | Qt::ItemIsUserCheckable : Qt::NoItemFlags); name->setCheckState(Qt::Unchecked);
         table->setItem(r, 0, name);
-        const QStringList values{QString::fromStdString(o.objectId), QString::fromStdString(o.value), text(o.clears), QString::fromStdString(o.source)};
+        const auto value = !o.refusal.empty() ? text(o.refusal) : o.kind == FillKind::nodeDetail ? text("editorFillConnectors").arg(QString::fromStdString(o.value)) : QString::fromStdString(o.value);
+        const QStringList values{QString::fromStdString(o.objectId), value, text(o.clears), QString::fromStdString(o.source)};
         for (int c = 0; c < values.size(); ++c) table->setItem(r, c + 1, new QTableWidgetItem(values[c]));
     }
     table->resizeColumnsToContents();
@@ -37,7 +41,7 @@ void EditorWindow::fillDefaultsDialog() {
     layout->addWidget(none);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
-    buttons->button(QDialogButtonBox::Ok)->setEnabled(!offers.empty());
+    buttons->button(QDialogButtonBox::Ok)->setEnabled(std::any_of(offers.begin(), offers.end(), [](const auto& o) { return o.refusal.empty(); }));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);

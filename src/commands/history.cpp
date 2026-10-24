@@ -1,5 +1,6 @@
 #include "history.hpp"
 #include "coarse_commands.hpp"
+#include "node_detail_commands.hpp"
 #include "conflict_follow.hpp"
 #include "../project/counted_volumes.hpp"
 #include <algorithm>
@@ -36,6 +37,7 @@ bool History::execute(const std::string& name, const std::function<void(ProjectD
     change(candidate);
     followGeometry(candidate, document_.network); // D86: authored areas stay on their overlap
     if (candidate.definition) syncCountedVolumes(*candidate.definition); // D142: counts edited, volume follows
+    settleGenerated(candidate, document_); // S4.5a (D323): an edited generated Connector is the person's
     settleNodes(candidate, document_); // S3.6b (D311): refine, derive back and the lifecycle, in this Command
     validateDocument(candidate); // Failed commands leave model, history, saved state untouched.
     // Value comparison, not serialisation: documentJson-ing both documents on every edit cost

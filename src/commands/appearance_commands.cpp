@@ -116,7 +116,7 @@ std::vector<std::string> duplicateObjects(ProjectDocument& d,const std::vector<s
         created.push_back(l.id);d.network.links.push_back(std::move(l));
     }
     for(auto c:source.connectors)if(chosen.contains(c.id) || (links.contains(c.from.linkId) && links.contains(c.to.linkId))) {
-        const auto original=c;c.id=allocateId(d,"connector");connectors[original.id]=c.id;
+        const auto original=c;c.id=allocateId(d,"connector");c.generated=false;connectors[original.id]=c.id; // S4.5a: a copy is the person's
         for(int i=0;i<std::max(c.fromLaneCount,c.toLaneCount);++i)paths[connectorPathId(original,i)]=connectorPathId(c,i);
         const auto remap=[&](LaneReference ref,int count,bool outgoing) {
             // A duplicated link has the same geometry, so its stations transfer unchanged.

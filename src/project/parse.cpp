@@ -1,4 +1,5 @@
 #include "json.hpp"
+#include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
@@ -215,12 +216,10 @@ Network parseNetwork(const Json& value, int schemaVersion) {
         network.links.push_back(std::move(link));
     }
     for (const auto& c : array(value, "connectors")) {
-        const auto where="connectors["+std::to_string(network.connectors.size())+"]";
-        // `laneChangeSide` exists from schema 17 (M3.2.9a, D73).
-        if(schemaVersion>=21)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
+        const auto where="connectors["+std::to_string(network.connectors.size())+"]"; // laneChangeSide: schema 17 (D73)
+        if(schemaVersion>=21)knownFields(withoutGenerated(c,schemaVersion),{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
             "laneBlend","name","laneWidths","laneMarkings","laneChangeSide","behaviourType"},where,schemaVersion);
-        else if(schemaVersion>=17)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
-            "laneBlend","name","laneWidths","laneMarkings","laneChangeSide"},where,schemaVersion);
+        else if(schemaVersion>=17)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType","laneBlend","name","laneWidths","laneMarkings","laneChangeSide"},where,schemaVersion);
         else knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
             "laneBlend","name","laneWidths","laneMarkings"},where,schemaVersion);
         network.connectors.push_back({field<std::string>(c, "id"), reference(member(c, "from"),schemaVersion), reference(member(c, "to"),schemaVersion), points(c,schemaVersion),
@@ -248,6 +247,7 @@ Network parseNetwork(const Json& value, int schemaVersion) {
             network.connectors.back().laneChangeSide=side=="left"?LaneSide::left:LaneSide::right;
         }
         if(schemaVersion>=21 && c.contains("behaviourType"))network.connectors.back().behaviourTypeId=field<std::string>(c,"behaviourType");
+        network.connectors.back().generated=generatedFlag(c,where,schemaVersion); // S4.5a, schema 54
     }
     for (const auto& h : array(value, "signalHeads")) {
         knownFields(h,{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},

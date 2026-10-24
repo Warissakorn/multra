@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-23 — F4 contract answered; S4.5a: a coarse Node's Connectors (D323)
+
+- **Asked:** continue; the owner picked F4 (S4.5) and answered its six choices as recommended.
+- **Contract:** [READINESS](reference/READINESS.md) §13. Legs are cut where a lane surface meets
+  another arm's (F4-1a), turns share lanes kerb to far (F4-2a), priority by HCM 7 Ch. 20's ranks
+  with Stop on minor arms (F4-3a) and `default.json`'s gap values (F4-4a), signals from the stages
+  in order (F4-5a), in three slices (F4-6a). Rows RS11–RS18.
+- **S4.5a** (§14): `Connector::generated` (schema 54), cleared by the first edit in
+  `History::execute`; the pure cut and turn plan (`node_detail.*`); `generateNodeDetail`; the
+  `nodeDetail` fill, with a refused Node listed and not tickable. Cuts are measured on each arm's
+  template geometry (`templateLinks`, extracted from *Apply template*), and *Apply template* takes
+  them before changing its Links: a first try re-anchored the generated Connectors to the uncut end
+  and lost them. A re-apply now changes no byte.
+- **Reading taken:** only generated arms in S4.5a, since a hand-drawn arm's uncut shape is lost
+  after a cut. Until S4.5b nobody gives way at the generated crossings.
+- **Rows:** RS11–RS13, RS16, RS17 (`nodedetail`). Linux only, GCC 13, Qt 6.4.2 offscreen: `ctest --preset
+  desktop` 224/224; file-size, docs and architecture checks pass. Not built or run on Windows.
+
 ## 2026-10-23 — Wider OSM zoom, stable panning and country/province selection (D321, D322)
 
 - **Asked:** zoom out farther, stop the map jumping back after a pan/click, and choose a
@@ -185,22 +203,6 @@ order panel → fills → proposals ([READINESS](reference/READINESS.md)).
 - **Editor:** *Coarse values…* on the Nodes tab, for a Node without detail.
 - **Rows:** RD17, RD18, RD27 (`roadcoarse`) and RD28 (`road-ui`); RD19 gains a junction over
   generated Links; five mutations caught.
-
-## 2026-10-23 — S3.6a: link-type rank, coarse Nodes, Macro and Meso from Roads (D310)
-
-S3.6 is split: this half ships the fields with the compile that reads them; the coarse dialog,
-refine, derive back and the lifecycle are S3.6b.
-- **`rank`** on link types (schema 53, a Rank field in the Link-type dialog): the legs with the
-  highest rank are major; an unranked leg or a tie leaves priority undetermined, which Macro and
-  Meso advise.
-- **`coarse`** on a Node without detail (schema 53): control, major legs, banned turns and a stage
-  signal, refused on a Node with detail, with unknown legs or with a bad signal.
-- **Macro and Meso** compile Roads without generated Links, one link per template direction,
-  split at Nodes without detail. Such a Node, coarse or default, gives every turn between
-  different Roads minus the banned ones, with the stages' g/C when signalised. Road ends within
-  2 m join.
-- **Rows:** RD4, RD16, RD19 and RD20's Macro and Meso half (`roadcoarse`), and the rank field in
-  `macro-ui`; four mutations caught. RD20's Micro half moves to S3.7.
 
 ## Older entries
 

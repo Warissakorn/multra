@@ -23,6 +23,11 @@ void deleteCrossSection(ProjectDocument&, const std::string& id);
 // EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently).
 // Returns the Road's Link ids, forward first.
 std::vector<std::string> applyTemplate(ProjectDocument&, const std::string& roadId, const std::vector<CrossSection>& installed);
+// What Apply template generates, without generating it: per direction (forward first) the Link's
+// geometry and lane widths. roadTemplate resolves a Road's template (owned, else `installed`), or null.
+struct TemplateLink { std::vector<Point> geometry; std::vector<double> widths; };
+std::vector<TemplateLink> templateLinks(const Network&, const Road&, CrossSection);
+const CrossSection* roadTemplate(const ProjectDocument&, const Road&, const std::vector<CrossSection>& installed);
 // S3.4 (ROADS §3, §17, D308). Join opposite Links into a Road: `forward` and `backward` become one
 // Road with no template, its centreline the mean of their bundle centrelines (meanCentreline), and
 // both carry its roadId. Their geometry is untouched. Refusals: EDIT_ROAD_JOIN_TAKEN when either

@@ -25,15 +25,24 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — the owner's pick: F4 (S4.5), S5, or an item below
+## Next session — S4.5b, F4's priority (the owner's pick, D323)
 
-- **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
-  trace roads, pan/click without a camera jump, zoom out to the overview, choose a country
-  with and without a province, interrupt/restore the connection and retry, then save/reopen.
-  Check Windows and the packaged TLS/PROJ dependencies; Linux
-  local-server tests do not establish those results. See [MAP_BACKGROUND](reference/MAP_BACKGROUND.md).
-- **F4 (S4.5):** a coarse Node's Micro detail; needs its own contract section
-  ([READINESS](reference/READINESS.md)). **S5:** the study area and stale marking.
+- **S4.5b** ([READINESS](reference/READINESS.md) §13.4, F4-3a, F4-4a): authored areas where the
+  generated Connectors' surfaces overlap (`addCrossingAreas`' shape, merges as `takeOverMerge`),
+  priority by HCM 7 Ch. 20's movement ranks, *Stop* on minor arms, gap time and headway from
+  `data/priority-rules/default.json`. First read the ranks in the owner's HCM 7 copy (BOOKS §4) and
+  cite the exhibit and page. `generated` on conflict areas, waiting lines, priority rules and Stop
+  controls (written only when true, schema 54, cleared by an edit, as `settleGenerated` does for
+  Connectors). Bring `NODE_PRIORITY_UNDETERMINED` as an F4 refusal for a priority Node of three arms
+  or more. Rows RS14 (derive back gives the same `major`, `bannedTurns`) and RS18 (the four-arm
+  fixture runs at Micro, seed 42, with a Node row per turn).
+- **S4.5c** (§13.5): signals. Then S5, the study area, which reads `generated`.
+- **Other picks:**
+  - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
+    trace roads, pan/click without a camera jump, zoom out to the overview, choose a country
+    with and without a province, interrupt/restore the connection and retry, then save/reopen.
+    Check Windows and the packaged TLS/PROJ dependencies; Linux
+    local-server tests do not establish those results. See [MAP_BACKGROUND](reference/MAP_BACKGROUND.md).
 - **Lateral, before any shipped behaviour carries its keys**
   ([lateral-run-audit](evidence/lateral-run-audit.md)): on `m2.6-study-template` a changer past its
   window straddles the line and jams both lanes (seed 45: 1908 → 1531 completed; clamps 1 → 33).

@@ -119,4 +119,16 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
     }
     return nodes;
 }
+Json withoutGenerated(const Json& object, int schema) {
+    if (schema < 54 || !object.is_object() || !object.contains("generated")) return object;
+    auto copy = object;
+    copy.erase("generated");
+    return copy;
+}
+bool generatedFlag(const Json& object, const std::string& where, int schema) {
+    if (schema < 54 || !object.is_object() || !object.contains("generated")) return false;
+    const auto& g = object.at("generated");
+    if (!g.is_boolean() || !g.get<bool>()) throw ValidationError({{"EDIT_CONNECTOR_INVALID", where + ".generated"}});
+    return true;
+}
 }

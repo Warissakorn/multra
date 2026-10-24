@@ -12,15 +12,20 @@ namespace multra {
 //   the value passes linkTypeIssues' rule for that type; installed types are never offered.
 // - F3 roadLinks: a Road without Links whose template resolves; Apply template (clears
 //   SEAM_ROAD_NOT_GENERATED).
+// - F4 nodeDetail (S4.5a, READINESS §13, D323): a coarse Node over generated Links; its legs cut
+//   and one generated Connector per allowed turn (clears NODE_NO_TURN). `value` is the Connector
+//   count. A Node F4 cannot fill is still listed, with `refusal` naming why (nodeDetailRefusal).
 // Offers come in kind order, then in document order. Listing changes nothing.
-enum class FillKind { linkType, jamDensity, roadLinks };
+enum class FillKind { linkType, jamDensity, roadLinks, nodeDetail };
 struct FillOffer {
-    FillKind kind{}; std::string objectId, value, source, clears;
+    FillKind kind{}; std::string objectId, value, source, clears, refusal;
     bool operator==(const FillOffer&) const = default;
 };
 inline constexpr double hcmJamDensity = 118.0605; // pc/km/ln: 190 pc/mi/ln / 1.609344 (ROADS §8)
 extern const char* const hcmJamDensitySource;
 std::vector<FillOffer> fillOffers(const ProjectDocument&, const std::vector<CrossSection>& templates);
-// Applies `chosen` only; an offer that no longer applies is EDIT_FILL_STALE.
+extern const char* const nodeDetailSource;
+// Applies `chosen` only; an offer that no longer applies is EDIT_FILL_STALE, and one with a refusal
+// throws that refusal.
 void applyFills(ProjectDocument&, const std::vector<FillOffer>& chosen, const std::vector<CrossSection>& templates);
 }

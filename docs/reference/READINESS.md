@@ -105,7 +105,7 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 | S4.2 | The readiness panel by level, with the seam checks. **Implemented (D314)** | RS1–RS4 |
 | S4.3 | *Fill defaults* F1–F3. **Implemented (D316)** | RS5–RS8 |
 | S4.4 | Node proposals. **Implemented (D317)** | RS9, RS10 |
-| (S4.5) | F4, generating a coarse Node's Micro detail, if chosen | its own contract section |
+| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13)** | RS11–RS18 |
 
 ## 8. Owner choices (answered 2026-10-23, D313: S4-1a, S4-2a, S4-3a, S4-4a)
 
@@ -246,3 +246,170 @@ Each row first asserts that its forcing worked (AGENTS).
   - the stale check dropped;
   - any piece of a leg's Link matching;
   - boundary ends listed.
+
+## 13. S4.5: F4, a coarse Node's Micro detail (contract, D323)
+
+Written 2026-10-23, docs only, at the owner's pick of F4. The owner answered §13.7's six choices the
+same day, as recommended (F4-1a to F4-6a, D323), so §13.1–§13.6 state the chosen options. WORKFLOW
+§3: "turns propose Connectors, major/minor gives conflict areas with Yield/Stop, stages give a
+program and heads". Rule 4 applies: generated detail runs; it is not a calibrated junction.
+
+### 13.1 What is offered
+
+- **F4** is a fourth fill kind, `nodeDetail`, listed and applied by `fillOffers` and `applyFills`
+  like F1–F3: one offer per Node, none ticked, all chosen fills in one Undo step.
+- **It clears** `NODE_NO_TURN` at `nodes[i]`, which Micro reports today for a Node without detail
+  whose legs are Links (membership finds legs and no turn).
+- **Offered** for a Node without detail (`nodeHasDetail` false) when all of these hold:
+  - every leg is a Link leg (`nodeLinkLegs`), at least two arms, each arm a Road or a Link without
+    one. A Link-less Road leg is not offered; its row names F3, which comes first;
+  - control is `priority` or `signalised`. `allWayStop` is not offered: the Micro engine has no
+    all-way stop (`FILL_NODE_ALL_WAY_STOP`);
+  - at a priority Node of three arms or more, major and minor are determined (`major`, else
+    `majorByRank`); otherwise `NODE_PRIORITY_UNDETERMINED` names *Coarse values…*;
+  - every cut (§13.2) lies inside the polygon (`FILL_NODE_CUT_OUTSIDE`);
+  - for a signal, §13.5's layout exists (`FILL_NODE_STAGES_SPLIT`, `FILL_NODE_INTERGREEN`).
+- A Node not offered lists its reason code in the *Fill defaults…* dialog, unticked and disabled,
+  so the user learns what to fix. Listing still changes nothing (RS1).
+- **Turns** are the coarse allowed turns: every (in arm, out arm) pair of different arms minus
+  `bannedTurns`, as `compileRoads` takes them. U-turns are never generated.
+
+### 13.2 Where the legs end (F4-1)
+
+- Today a generated Link runs to its Road's end, near the Node's centre, so the legs overlap inside.
+- **Cut (F4-1a):** each in-leg Link ends where its lane surface first meets another arm's leg
+  surface, its stop line in a drawn junction; each out-leg Link starts where its surface last meets
+  one. The opposite Link of the same Road is not another arm. A leg meeting no other arm keeps its
+  end. The cut takes no number.
+- **The cut keeps `roadId`:** the program made the Link and edits it. *Apply template* on a Road
+  ending in a Node with detail cuts its Links the same way, so a re-apply after F4 changes no byte.
+
+### 13.3 Connectors and lanes (F4-2)
+
+- **One Connector per allowed turn**, from the in-leg's cut end to the out-leg's cut start, with
+  `connectorEquation`'s default curve and the in-leg's level.
+- **Lanes (F4-2a):** the turns from one in-leg are ordered by their sweep from the kerb side
+  (`drivingSide`): kerb turn first, far turn last. With *k* turns over *n* lanes counted from the
+  kerb, turn *i* takes lanes ⌊*i*·*n*/*k*⌋ to ⌈(*i*+1)·*n*/*k*⌉ − 1. Each turn has at least one lane,
+  lanes are contiguous and shared when *n* < *k*. Two lanes and three turns give the kerb lane to
+  the kerb turn and through, and the far lane to through and the far turn.
+- **The out end** takes as many lanes as the in end, capped at the out-leg's count: from the kerb
+  for every turn but the far one, which takes them from the far side.
+- No number is taken; the lanes a study needs (pockets, exclusive turns) are the user's to draw.
+
+### 13.4 Priority (F4-3, F4-4)
+
+- **Areas:** each pair of generated Connectors whose surfaces overlap gets authored areas, as
+  `addCrossingAreas` makes them (one per lane pair, a waiting line 1 m short, D63); merges into one
+  out-leg are taken over as `takeOverMerge` does.
+- **Who gives way (F4-3a):** HCM 7 Ch. 20's movement ranks. Rank 1: major through and major
+  kerb turn; 2: major far turn and minor kerb turn; 3: minor through; 4: minor far turn. The higher
+  rank yields; an equal rank leaves the pair automatic (the drawing-order fallback for a merge).
+  The ranks are read from the owner's copy (BOOKS §4) before S4.5b, page cited with them.
+- **Control:** a minor arm's yielding areas get *Stop* at their waiting line (F4-3a, two-way stop
+  control as Ch. 20 models it).
+- **Gap time and headway (F4-4):** `data/priority-rules/default.json`'s 3.0 s and 7.0 m, which
+  every derived rule uses today and which carry their own "not calibrated" note (F4-4a).
+
+### 13.5 Signals (F4-5)
+
+- **A signalised Node** gets one controller named after the Node, with the coarse cycle and offset
+  0, and one signal group per turn; each path of a turn's Connector gets a head at its start.
+- **Layout (F4-5a):** stages run in their stored order, each followed by an equal intergreen
+  *I* = (cycle − Σ green) / stages. Stage *s* starts at the sum, over the stages *j* before it, of
+  greenⱼ + *I*. A turn's group is green over the stages that serve it, which must be consecutive,
+  the last wrapping to the first (`FILL_NODE_STAGES_SPLIT` otherwise). Amber is the group default, 3 s, and an *I* below it is
+  `FILL_NODE_INTERGREEN`.
+- **Inside a stage,** turns green together whose Connectors overlap get §13.4's areas and ranks
+  (a permitted far turn gives way to the opposite through). Turns never green together get none.
+- **Derive back** must return the same stages: deleting the generated detail gives the coarse
+  values F4 started from (RS15).
+
+### 13.6 `generated`
+
+- WORKFLOW §1.3: every object F4 creates carries `"generated": true` until a person edits it.
+  Connectors, conflict areas, waiting lines, priority rules, Stop controls, heads and the controller
+  gain the flag, written only when true, at schema 54; an older file carrying it is
+  `EDIT_UNSUPPORTED_FIELD`. Any edit of the object clears it.
+- **Each slice adds the flag to the objects it creates** (F4-6a), so no field is stored before
+  something writes it: S4.5a Connectors, S4.5b the right-of-way objects, S4.5c heads and the
+  controller.
+- **S5 reads it** ("`generated` objects inside the study area count as missing for Micro", export
+  marking); F4 only writes it.
+- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears.
+
+### 13.7 Owner choices (answered 2026-10-23, D323: F4-1a to F4-6a)
+
+1. **F4-1 Where the legs end.**
+   - **(a) Cut where a leg's surface meets another arm's (recommended).** No number, and the cut
+     is where a drawn junction's stop line stands.
+   - (b) Cut at the polygon boundary. It needs an inside tolerance, which has no source.
+   - (c) No cut: Connectors leave from the boundary station mid-Link, and the stubs inside overlap
+     and give conflicts no drawn junction has.
+2. **F4-2 Lanes per turn.**
+   - **(a) The kerb-to-far share of §13.3 (recommended).**
+   - (b) Every turn from every lane: no rule, but turns from one approach cross one another.
+3. **F4-3 Who gives way, and how.**
+   - **(a) HCM 7 Ch. 20's ranks, Stop on minor arms (recommended).**
+   - (b) The same ranks, Yield on minor arms.
+   - (c) Major over minor only; turns on the same rank left automatic.
+4. **F4-4 Gap time and headway.**
+   - **(a) `default.json`'s 3.0 s / 7.0 m (recommended),** the derived rules' values.
+   - (b) Ch. 20's base critical headway per movement as gap time.
+5. **F4-5 Signal layout.**
+   - **(a) Stored order, equal intergreens, one group per turn (recommended).**
+   - (b) No signals in S4.5: a signalised Node is not offered.
+6. **F4-6 Slices.**
+   - **(a) S4.5a cuts, Connectors and `generated` (schema 54); S4.5b priority; S4.5c signals
+     (recommended).** Each lands with its rows.
+   - (b) One slice.
+
+### 13.8 Acceptance rows (planned)
+
+Each row first asserts that its forcing worked (AGENTS).
+
+| Row | Case | Asserts |
+|---|---|---|
+| RS11 | Offers | A four-arm coarse Node over F3's Links is offered, clearing `NODE_NO_TURN`; a Node with detail, a Link-less Road leg, `allWayStop`, undetermined priority, a cut outside, split stages and a short intergreen are listed with their codes and not applicable |
+| RS12 | Cuts | Each leg ends or starts where its surface meets another arm's; `roadId` kept; *Apply template* again changes no byte |
+| RS13 | Turns | One Connector per allowed turn, none for a banned turn or a U-turn; a two-lane approach shares by §13.3; `nodeMembership` then gives exactly the coarse turns, with no issue |
+| RS14 | Priority | Minor arms yield with Stop to major through; equal ranks stay automatic; deleting the generated detail derives back the same `major` and `bannedTurns` |
+| RS15 | Signal | The controller's cycle and each group's green follow §13.5; derive back gives the same stages |
+| RS16 | `generated` | Written only when true; editing a Connector clears its flag; schema 54 gated |
+| RS17 | One step | Unticked changes nothing; Undo restores every byte |
+| RS18 | Runs | The four-arm fixture runs at Micro (seed 42) with no refusal, and Node evaluation has a row for every turn |
+
+## 14. S4.5a as implemented (D323)
+
+- **`Connector::generated`** (schema 54), written only when true; at 53 the key is
+  `EDIT_UNSUPPORTED_FIELD`, and anything but `true` is `EDIT_CONNECTOR_INVALID`.
+  - `settleGenerated(after, before)` runs in `History::execute`: a generated Connector the Command
+    changed is the person's from then on. A copied Connector never carries the flag.
+- **The plan** (`src/model/network/node_detail.*`, pure):
+  - `nodeLegCuts(network, node, full)` measures every leg on its uncut geometry, lane by lane with
+    `surfaceOverlaps`, against the legs of the other arms; only an overlap reaching the Node's side
+    of the leg's crossing counts. A cut at or outside the crossing is `FILL_NODE_CUT_OUTSIDE`, and an
+    overlap the resolver cannot measure `FILL_NODE_CUT_UNMEASURED`;
+  - `nodeTurnConnectors(network, node)` gives §13.3's turns and lane ranges.
+- **The command** (`src/commands/node_detail_commands.*`): `generateNodeDetail` cuts the legs
+  (keeping `roadId`) and adds the Connectors through `addConnectorRange`, so D75's fit narrows a
+  range more than two lanes wider than its out end. `settleNodes` then refines the Node.
+  - **The uncut geometry is the template's** (`templateLinks`, extracted from *Apply template*).
+    So a leg is always cut from the same shape, and *Apply template* on a Road ending in a Node that
+    holds a generated Connector cuts its Links there again (`generatedCuts`, taken before the Links change): a re-apply
+    changes no byte (RS12).
+- **Readings taken:**
+  - **Only generated arms in S4.5a.** §13.1 allowed an arm that is a Link without a Road. Its uncut
+    shape is lost once it is cut, so a re-apply could not reproduce the cut; it is
+    `FILL_NODE_ARM_NOT_GENERATED` until a need is shown.
+  - **Signalised Nodes** are `FILL_NODE_SIGNALISED` until S4.5c. **Undetermined priority** is not
+    checked yet: S4.5a writes no priority, so S4.5b brings that refusal with the areas.
+  - **Listing:** a Node with detail, or with fewer than two arms, gives no row; every other Node
+    gives one, with its refusal when it has one. A refused row cannot be ticked, and applying it
+    throws the refusal.
+- **Until S4.5b** the generated Connectors' crossings are automatic, as an undrawn junction's are:
+  the detail runs, but nobody gives way at it. Rule 4 applies.
+- **Editor:** *Fill defaults…* lists the Node with the Connector count, the source and what it
+  clears; a refused row shows why and has no check box.
+- **Rows:** RS11–RS13, RS16 and RS17 are in `tests/node_detail_tests.cpp` (`nodedetail`). RS14,
+  RS15 and RS18 wait for S4.5b and S4.5c.
