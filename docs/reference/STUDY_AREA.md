@@ -6,7 +6,7 @@ from the recommendations:
 - the study area is a set of Nodes, not a polygon;
 - both cuts, from Macro and from Meso, are in S5.
 
-S5.2 is implemented (D327, D328; §16, §17); the rest is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
+S5.2 and S5.3 are implemented (D327–D329; §16–§18); the rest is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md)):
 - which part of the network a Micro run keeps;
 - where its boundary flows come from;
@@ -138,7 +138,9 @@ coarser model's flows to a finer one; it does not make either one right.
   Units stay veh/h per class (Macro's `classFlows`), so no PCU conversion is involved.
 - **Periods:** a Micro interval takes the Macro run of the study period that covers it (S1's run
   clock). An interval with no saved Macro run for its period refuses the run with
-  `MICRO_AREA_PERIOD_NOT_RUN` at the period.
+  `MICRO_AREA_PERIOD_NOT_RUN` at the period. *Amended by D329 (owner):* until S5.5's side files,
+  the cut runs Macro itself at compile for each study period wholly inside the run, so
+  `MICRO_AREA_PERIOD_NOT_RUN` means no period lies inside it (§18).
 - **A run that is not converged** may be cut. The cut carries Macro's `MACRO_NOT_CONVERGED`
   forward as an advisory, with the gap.
 
@@ -256,7 +258,7 @@ nothing is refused silently.
 |---|---|---|
 | S5.1 | This contract (docs only) | — |
 | S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals. **Implemented**: S5.2a (D327, §16), S5.2b (D328, §17) | SA1–SA6, SA16 |
-| S5.3 | Frank–Wolfe path flows, the Macro cut by period | SA7–SA9 |
+| S5.3 | Frank–Wolfe path flows, the Macro cut by period. **Implemented** (D329, §18) | SA7–SA9 |
 | S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice | SA10, SA11 |
 | S5.5 | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`, the marking line, `MICRO_GENERATED_IN_AREA` | SA12–SA15 |
 
@@ -352,3 +354,45 @@ Each row first asserts that its forcing worked (AGENTS).
   - in `node-ui`: the dialog, the fill, and the action disabled on an area that cannot run.
 
   S5.2 is complete.
+
+## 18. S5.3 as implemented (D329)
+
+- **Path flows** (`src/macro/assign.*`):
+  - `assignMacro(…, keepPaths)` and `allOrNothing(…, paths)` record each cell's path in travel
+    order;
+  - `MacroAssignment::paths` holds, per class, the final load's paths sorted by (cell, links),
+    weighted as in §6;
+  - without `keepPaths` the field stays empty and every other byte is unchanged (SA7 compares the
+    two runs).
+- **The cut** (`src/project/study_area_macro.*`):
+  - `cutTrips` splits a path into its kept stretches. A stretch starts at an inside zone when a
+    centroid arc of an origin zone precedes it, else at its first kept Link's entry gate, and ends
+    the same way;
+  - `macroGateFlows` runs `runMacro(…, keepPaths = true)` for each study period wholly inside
+    [clockStart, clockStart + duration] and sums veh/h per (period, class, from, to);
+  - a class names its mode, or else the composition after `composition:`.
+- **Source of the Macro result (owner, D329):** Macro runs at compile, once per such period, until
+  S5.5 reads a fresh side file instead. Frank–Wolfe has no seed, so the CLI, batch and the editor
+  give the same bytes (SA9 runs seed 42 twice).
+- **Codes:**
+  - refused: `MICRO_AREA_PERIOD_NOT_RUN` at `studyPeriods` when no period lies inside the run;
+  - advised: `MICRO_AREA_PERIOD_OUTSIDE` (a period only partly inside), `MACRO_NOT_CONVERGED`, and
+    `MICRO_AREA_CUT_UNMATCHED` (a stretch whose end is no gate or inside zone), each at
+    `studyPeriods[i]`;
+  - Macro's own refusals pass through, and a catalog error is a `catalogs` row in readiness.
+- **`flowSource` `"macro"`** parses at 55. Typed `gateFlows` stay stored and unused under it.
+- **Editor:** the gate-flow dialog's *Source* (Typed here / Cut from Macro) disables the grid
+  under Macro and keeps the typed values. *Gate flows…* no longer needs a period to open.
+- **Measured** (Debug build, GCC 13, Linux, one run each):
+  - a synthetic 12×12 two-way BPR-4 grid, with 1,892 OD cells over its 44 boundary nodes, reaches
+    gap 1e-4 in 187 iterations: 1.51 s without paths and 2.60 s with them (+72 %). It keeps 27,089
+    paths and 434,817 link entries, about 3.5 MB;
+  - MA15's Sheffi network shows no difference (3 paths).
+
+  Only a Micro run cut from Macro keeps paths. The M2.6 template has no zones, so it cannot run
+  Macro (§6's measurement was read on these two instead).
+- **Not covered:** `MACRO_NOT_CONVERGED`'s pass-through is not exercised. The corridor has one path
+  per cell, so its gap is 0 from the start. The code path is a single `advise` call.
+- **Rows:** SA7 (MA8's pair by hand; three routes for the sum), SA8 (the corridor; a synthetic
+  re-entry), SA9 (two periods, outside, none inside, the run twice), and the dialog's Source in
+  `node-ui`.

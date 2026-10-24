@@ -23,11 +23,13 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         std::vector<ValidationIssue> ignored;
         std::vector<Diagnostic> rows;
         try {
-            const auto copy = studyAreaDocument(d, &ignored);
+            const auto copy = studyAreaDocument(d, &ignored, data);
             rows = runDiagnostics(copy, data);
         } catch (const ValidationError& e) {
             for (const auto& issue : e.issues) rows.push_back({issue.code, issue.path, {}, {}, DiagnosticSeverity::runtime});
             return rows;
+        } catch (const std::exception& e) { // a catalog the Macro cut reads (S5.3)
+            return {{e.what(), "catalogs", {}, {}, DiagnosticSeverity::runtime}};
         }
         for (const auto& issue : ignored) rows.push_back({issue.code, issue.path, {}, {}, DiagnosticSeverity::advisory});
         return rows;
@@ -69,7 +71,7 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
 }
 RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::path& data,InputManifest* manifest) {
     validateDocument(d);
-    if (!d.zones.studyArea.nodes.empty()) return compileDocument(studyAreaDocument(d), data, manifest); // S5.2a (D327)
+    if (!d.zones.studyArea.nodes.empty()) return compileDocument(studyAreaDocument(d, nullptr, data), data, manifest); // S5.2a (D327)
     if (!d.definition) throw std::invalid_argument("EDIT_NO_DEFINITION");
     // M8.3 (D155): OD matrices become ordinary routes and inputs here, after their Run checks; a
     // document without a zone layer uses its definition as it stands.

@@ -2,6 +2,7 @@
 // S5.2a (STUDY_AREA §4-§5, D327): the document a Micro run over a study area compiles. Never saved,
 // and no Undo step: compileDocument and runDiagnostics build it when `studyArea` names a Node.
 #include "document.hpp"
+#include <filesystem>
 
 namespace multra {
 // The gate zones' names: `gate:<link>:in` at an entry gate's start, `gate:<link>:out` at an exit's end.
@@ -20,6 +21,9 @@ StudyAreaEnds studyAreaEnds(const ProjectDocument&);
 // triangle at the Link's end, presentation only); and one OD matrix per (period, composition or
 // mode) of the gate flows, in trips (veh/h x period / 3600). `studyArea` is gone from it. Every
 // input, route, routing decision, route destination and OD matrix of the document not run is
-// MICRO_AREA_INPUT_IGNORED at its path in `advisories`.
-ProjectDocument studyAreaDocument(const ProjectDocument&, std::vector<ValidationIssue>* advisories = nullptr);
+// MICRO_AREA_INPUT_IGNORED at its path in `advisories`. S5.3 (D329): under `flowSource` "macro" the gate
+// flows are macroGateFlows' (study_area_macro.hpp), read from `dataDirectory`, and the typed ones stay
+// stored and unused; its advisories follow.
+ProjectDocument studyAreaDocument(const ProjectDocument&, std::vector<ValidationIssue>* advisories = nullptr,
+                                  const std::filesystem::path& dataDirectory = {});
 }

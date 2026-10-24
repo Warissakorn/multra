@@ -29,7 +29,7 @@ StudyArea parseStudyArea(const Json& j) {
     if (!j.contains(kArea)) return area;
     const auto& a = j.at(kArea);
     if (!a.is_object() || !a.contains("nodes") || !a.at("nodes").is_array() || a.at("nodes").empty() || !text(a, "flowSource") ||
-        a.at("flowSource") != "typed" || a.size() != (a.contains("gateFlows") ? 3u : 2u))
+        (a.at("flowSource") != "typed" && a.at("flowSource") != "macro") || a.size() != (a.contains("gateFlows") ? 3u : 2u))
         invalid();
     for (const auto& n : a.at("nodes")) {
         if (!n.is_string()) invalid();

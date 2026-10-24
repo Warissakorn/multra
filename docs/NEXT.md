@@ -25,15 +25,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — S5.3, or the owner's pick of an item below
+## Next session — S5.4, or the owner's pick of an item below
 
-- **S5.3** ([STUDY_AREA](reference/STUDY_AREA.md) §6; S5.2 is complete, D327, D328): Frank–Wolfe
-  path flows and the Macro cut by period (`flowSource` `"macro"`); rows SA7–SA9.
-  - Measure the extra memory of keeping paths on the M2.6 template's Macro run first.
-  - Hand-compute the two-route fixture (SA7) before code.
-- **After it:**
-  - S5.4, the Meso cut: cite Yperman's FIFO link model from the owner's copy first;
-  - S5.5, side files, SHA-256 stale and the export marking.
+- **S5.4** ([STUDY_AREA](reference/STUDY_AREA.md) §7; S5.3 is in, D329): the Meso cut, with
+  per-path FIFO counts at the gate links in `loadMeso` and gate flows per Meso output slice
+  (`flowSource` `"meso"`); rows SA10, SA11.
+  - Cite Yperman 2007's FIFO link model from the owner's copy (BOOKS) before code.
+  - Decide with the owner whether Meso, like Macro (D329), runs at compile until S5.5.
+- **After it:** S5.5, side files (which replace the runs at compile), SHA-256 stale and the export
+  marking.
 - **Other picks:**
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country

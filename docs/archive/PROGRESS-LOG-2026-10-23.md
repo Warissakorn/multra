@@ -3,6 +3,23 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
+
+- **The owner's report:** the behaviour editor was taller than the screen; not every key showed
+  and Confirm was off screen. Measured, it needed at least 1378 px.
+- **The editor now has three parts:**
+  - a header with users, id, name and model;
+  - four tabs that each scroll: *Car following*, *Lane changes*, *Perception and drivers*, and
+    *Junctions, signals and speed*;
+  - a footer with the error and the buttons.
+
+  The other model's rows are hidden. Prototype opens at 579 px at 1366×768.
+- **Other dialogs:** the UI suites, measured through a scratch `QDialog::exec` shim, gave vehicle
+  type 696 px minimum, input 500, decision 452, and coarse Node values (one row per leg). These now
+  share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
+- **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
+  decision rows are growth guards.
+
 ## 2026-10-23 — Audit: lateral behaviour and movement in switched-on runs (no code change)
 
 - **Shipped runs never move sideways:** no catalog behaviour carries the lateral keys.

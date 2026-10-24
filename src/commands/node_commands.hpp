@@ -22,6 +22,8 @@ void setStudyAreaNodes(ProjectDocument&, const std::vector<std::string>& ids);
 void setGateFlows(ProjectDocument&, const std::string& periodId, const std::string& compositionId, const std::string& modeId,
                   const std::vector<GateFlow>& rows);
 void setStudyAreaGateFlows(ProjectDocument&, std::vector<GateFlow> flows);
+// S5.3 (D329): "typed" or "macro" (checked on commit).
+void setStudyAreaSource(ProjectDocument&, const std::string& source);
 // In History::execute, after settleNodes: an area id naming no Node any more goes, in that Command.
 void settleStudyArea(ProjectDocument&);
 }

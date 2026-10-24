@@ -25,13 +25,17 @@ QStringList labels(const std::vector<Choice>& choices) {
     return out;
 }
 }
-std::optional<std::vector<GateFlow>> editGateFlows(QWidget* parent, const std::vector<GateFlow>& current,
+std::optional<GateFlowEdit> editGateFlows(QWidget* parent, const std::string& origin, const std::vector<GateFlow>& current,
                                                    const std::vector<Choice>& origins, const std::vector<Choice>& destinations,
                                                    const std::vector<Choice>& compositions, const std::vector<Choice>& periods,
                                                    const std::vector<Choice>& modes, const DialogText& text) {
     QDialog dialog(parent); dialog.setObjectName("editorGateFlowDialog"); dialog.setWindowTitle(text("editorGateFlows"));
     auto* layout = new QVBoxLayout(&dialog);
     auto* form = new QFormLayout; layout->addLayout(form);
+    auto* from = new QComboBox(&dialog); from->setObjectName("editorGateFlowSource");
+    from->addItem(text("editorGateFlowTyped"), QStringLiteral("typed")); from->addItem(text("editorGateFlowMacro"), QStringLiteral("macro"));
+    from->setCurrentIndex(std::max(0, from->findData(QString::fromStdString(origin))));
+    form->addRow(text("editorGateFlowSource"), from);
     auto* period = new QComboBox(&dialog); period->setObjectName("editorGateFlowPeriod"); fill(period, periods);
     auto* source = new QComboBox(&dialog); source->setObjectName("editorGateFlowTypes");
     source->addItem(text("editorOdComposition")); source->addItem(text("editorOdMode"));
@@ -60,8 +64,10 @@ std::optional<std::vector<GateFlow>> editGateFlows(QWidget* parent, const std::v
                    byMode ? mode->currentData().toString().toStdString() : std::string{}, origins[r].first, destinations[c].first};
     };
     const auto show = [&] {
+        const bool typed = from->currentIndex() == 0;
+        for (auto* w : std::initializer_list<QWidget*>{grid, period, source}) w->setEnabled(typed);
         const bool byMode = source->currentIndex() == 1;
-        types->setEnabled(!byMode); mode->setEnabled(byMode);
+        types->setEnabled(typed && !byMode); mode->setEnabled(typed && byMode);
         for (std::size_t r = 0; r < origins.size(); ++r)
             for (std::size_t c = 0; c < destinations.size(); ++c) {
                 auto* field = new QDoubleSpinBox(grid); field->setRange(0, 1e6); field->setDecimals(1);
@@ -76,7 +82,7 @@ std::optional<std::vector<GateFlow>> editGateFlows(QWidget* parent, const std::v
             }
     };
     show();
-    for (auto* combo : {period, source, types, mode})
+    for (auto* combo : {from, period, source, types, mode})
         QObject::connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), &dialog, [&](int) { show(); });
     auto* error = new ReflowLabel(&dialog); error->setObjectName("editorGateFlowError"); error->setWordWrap(true); layout->addWidget(error);
     auto* box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -84,14 +90,20 @@ std::optional<std::vector<GateFlow>> editGateFlows(QWidget* parent, const std::v
     box->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     layout->addWidget(box);
     QObject::connect(box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    std::optional<std::vector<GateFlow>> result;
+    std::optional<GateFlowEdit> result;
     QObject::connect(box, &QDialogButtonBox::accepted, &dialog, [&] {
+        const auto chosen = from->currentData().toString().toStdString();
+        if (chosen == "macro") {
+            std::vector<GateFlow> kept;
+            for (const auto& [k, v] : flows) if (v > 0) kept.push_back({std::get<0>(k), std::get<3>(k), std::get<4>(k), std::get<1>(k), std::get<2>(k), v});
+            result = GateFlowEdit{chosen, std::move(kept)}; dialog.accept(); return;
+        }
         if (period->currentIndex() < 0) { error->setText(text("STUDY_AREA_PERIOD_UNKNOWN")); return; }
         if (source->currentIndex() == 1 ? mode->currentIndex() < 0 : types->currentIndex() < 0) { error->setText(text("OD_COMPOSITION_MISSING")); return; }
         std::vector<GateFlow> out;
         for (const auto& [k, v] : flows)
             if (v > 0) out.push_back({std::get<0>(k), std::get<3>(k), std::get<4>(k), std::get<1>(k), std::get<2>(k), v});
-        result = std::move(out); dialog.accept();
+        result = GateFlowEdit{chosen, std::move(out)}; dialog.accept();
     });
     dialog.resize(760, 460);
     fitToScreen(dialog); // D318: a large area's grid never pushes the buttons off screen

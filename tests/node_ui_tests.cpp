@@ -74,11 +74,17 @@ int areaFilled(EditorWindow& w) { // S5.2b: Node outlines drawn as in the study 
 }
 // S5.2b (SA16): the gate-flow dialog types a value into its first cell, switches period and back,
 // and accepts; returns what it gave.
-std::optional<std::vector<GateFlow>> typeGateFlow(const std::vector<GateFlow>& current, double value, double* shown) {
-    QTimer::singleShot(0, [value, shown] {
+std::optional<GateFlowEdit> typeGateFlow(const std::vector<GateFlow>& current, double value, double* shown, bool macro = false) {
+    QTimer::singleShot(0, [value, shown, macro] {
         auto* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
         require(dialog && dialog->objectName() == "editorGateFlowDialog", "No gate-flow dialog");
         auto* grid = dialog->findChild<QTableWidget*>("editorGateFlowGrid");
+        if (macro) { // S5.3: Macro's cut replaces the grid, which is kept but not edited
+            dialog->findChild<QComboBox*>("editorGateFlowSource")->setCurrentIndex(1); QApplication::processEvents();
+            require(!grid->isEnabled(), "The grid stayed editable under the Macro source");
+            dialog->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
+            return;
+        }
         require(grid && grid->rowCount() == 2 && grid->columnCount() == 1, "The gate-flow grid is not origins x destinations");
         auto* cell = qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0));
         *shown = cell->value();
@@ -90,7 +96,7 @@ std::optional<std::vector<GateFlow>> typeGateFlow(const std::vector<GateFlow>& c
         require(qobject_cast<QDoubleSpinBox*>(grid->cellWidget(0, 0))->value() == value, "Switching period lost the typed flow");
         dialog->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
     });
-    return editGateFlows(nullptr, current, {{"gate:a:in", "A (in)"}, {"zone-1", "Zone"}}, {{"gate:b:out", "B (out)"}},
+    return editGateFlows(nullptr, "typed", current, {{"gate:a:in", "A (in)"}, {"zone-1", "Zone"}}, {{"gate:b:out", "B (out)"}},
                          {{"car-only", "Cars"}}, {{"p1", "AM"}, {"p2", "PM"}}, {}, [](const char* key) { return QString(key); });
 }
 QColor outline(EditorWindow& w) {
@@ -166,11 +172,13 @@ int main(int argc, char** argv) {
             // SA16: the dialog keeps each period's flows apart and gives the typed one back.
             double shown = -1;
             const auto first = typeGateFlow({}, 120, &shown);
-            require(first && first->size() == 1 && (*first)[0].vehiclesPerHour == 120 && (*first)[0].periodId == "p1" &&
-                    (*first)[0].from == "gate:a:in" && (*first)[0].to == "gate:b:out" && (*first)[0].compositionId == "car-only" && shown == 0,
-                    "The gate-flow dialog did not give the typed flow");
-            const auto again = typeGateFlow(*first, 90, &shown);
-            require(shown == 120 && again && again->size() == 1 && (*again)[0].vehiclesPerHour == 90, "Reopening did not show the flow");
+            require(first && first->source == "typed" && first->flows.size() == 1 && first->flows[0].vehiclesPerHour == 120 &&
+                    first->flows[0].periodId == "p1" && first->flows[0].from == "gate:a:in" && first->flows[0].to == "gate:b:out" &&
+                    first->flows[0].compositionId == "car-only" && shown == 0, "The gate-flow dialog did not give the typed flow");
+            const auto again = typeGateFlow(first->flows, 90, &shown);
+            require(shown == 120 && again && again->flows.size() == 1 && again->flows[0].vehiclesPerHour == 90, "Reopening did not show the flow");
+            const auto macro = typeGateFlow(again->flows, 0, &shown, true);
+            require(macro && macro->source == "macro" && macro->flows == again->flows, "The Macro source lost the typed flows");
             table->selectRow(0); QApplication::processEvents();
         }
 

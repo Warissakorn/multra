@@ -1,6 +1,8 @@
 #include "assign.hpp"
 #include <cmath>
+#include <algorithm>
 #include <limits>
+#include <map>
 #include <set>
 
 namespace multra {
@@ -45,43 +47,68 @@ MacroTree shortestTree(const MacroGraph& g, std::size_t origin, const std::strin
     }
     return tree;
 }
-MacroLoading allOrNothing(const MacroGraph& g, const MacroClass& cls, const std::vector<double>& times) {
+MacroLoading allOrNothing(const MacroGraph& g, const MacroClass& cls, const std::vector<double>& times, bool paths) {
     MacroLoading out{std::vector<double>(g.links.size(), 0.0), 0.0};
+    if (paths) out.paths.resize(cls.cells.size());
     std::set<std::size_t> origins;
     for (const auto& c : cls.cells) origins.insert(c.origin);
     for (const auto origin : origins) {
         const auto tree = shortestTree(g, origin, cls.mode, times);
-        for (const auto& c : cls.cells) {
+        for (std::size_t k = 0; k < cls.cells.size(); ++k) {
+            const auto& c = cls.cells[k];
             if (c.origin != origin || !std::isfinite(tree.distance[c.destination])) continue;
             out.shortestCost += c.vehiclesPerHour * tree.distance[c.destination];
-            for (auto node = c.destination; node != origin && tree.via[node] < g.links.size(); node = g.links[tree.via[node]].from)
+            for (auto node = c.destination; node != origin && tree.via[node] < g.links.size(); node = g.links[tree.via[node]].from) {
                 out.flows[tree.via[node]] += c.vehiclesPerHour;
+                if (paths) out.paths[k].push_back(tree.via[node]);
+            }
+            if (paths) std::reverse(out.paths[k].begin(), out.paths[k].end());
         }
     }
     return out;
 }
 MacroAssignment assignMacro(const MacroGraph& g, const std::vector<MacroClass>& classes, const MacroSettings& settings,
-                            const std::function<bool(const MacroIteration&)>& observer) {
+                            const std::function<bool(const MacroIteration&)>& observer, bool keepPaths) {
     MacroAssignment r;
+    using Paths = std::map<std::pair<std::size_t, std::vector<std::size_t>>, double>; // (cell, links) -> veh/h
+    std::vector<Paths> held(keepPaths ? classes.size() : 0);
+    const auto add = [&](std::size_t m, const MacroLoading& aon, double weight) {
+        for (std::size_t k = 0; k < aon.paths.size(); ++k)
+            if (!aon.paths[k].empty()) held[m][{k, aon.paths[k]}] += weight * classes[m].cells[k].vehiclesPerHour;
+    };
+    const auto finish = [&] {
+        for (const auto& paths : held) {
+            auto& out = r.paths.emplace_back();
+            for (const auto& [key, flow] : paths) if (flow > 0) out.push_back({key.first, key.second, flow});
+        }
+        return r;
+    };
     const auto free = timesAt(g, std::vector<double>(g.links.size(), 0.0));
-    for (const auto& cls : classes) r.classFlows.push_back(allOrNothing(g, cls, free).flows);
+    for (std::size_t m = 0; m < classes.size(); ++m) {
+        auto aon = allOrNothing(g, classes[m], free, keepPaths);
+        if (keepPaths) add(m, aon, 1.0);
+        r.classFlows.push_back(std::move(aon.flows));
+    }
+    std::vector<MacroLoading> aons;
     for (;;) {
         r.load = loads(g, classes, r.classFlows);
         r.time = timesAt(g, r.load);
         std::vector<std::vector<double>> target;
         double total = 0, shortest = 0;
+        aons.clear();
         for (std::size_t m = 0; m < classes.size(); ++m) {
-            auto aon = allOrNothing(g, classes[m], r.time);
+            auto aon = allOrNothing(g, classes[m], r.time, keepPaths);
             shortest += aon.shortestCost;
             for (std::size_t a = 0; a < g.links.size(); ++a) total += r.classFlows[m][a] * r.time[a];
             target.push_back(std::move(aon.flows));
+            if (keepPaths) aons.push_back(std::move(aon));
         }
         r.gap = total > 0 ? (total - shortest) / total : 0.0;
         // Recorded with step 0; the step taken, if any, is filled in below before the next entry.
         r.convergence.push_back({r.iterations, r.gap, 0.0});
         const auto stop = [&] { return observer && !observer(r.convergence.back()); };
-        if (r.gap <= settings.targetGap) { r.converged = !stop(); r.cancelled = !r.converged; return r; }
-        if (r.iterations >= settings.maxIterations) { r.cancelled = stop(); r.converged = false; return r; }
+        if (r.gap <= settings.targetGap) { r.converged = !stop(); r.cancelled = !r.converged; return finish(); }
+        if (r.iterations >= settings.maxIterations) { r.cancelled = stop(); r.converged = false; return finish(); }
         const auto y = loads(g, classes, target);
         // The Beckmann derivative along the direction, sum_a (y_a - x_a) t_a(x_a + lambda (y_a - x_a)), rises in lambda.
         const auto slope = [&](double lambda) {
@@ -94,9 +121,13 @@ MacroAssignment assignMacro(const MacroGraph& g, const std::vector<MacroClass>& 
         else for (int k = 0; k < kHalvings; ++k) { const double mid = (low + high) / 2; (slope(mid) < 0 ? low : high) = mid; }
         const double lambda = low == 1 ? 1.0 : (low + high) / 2;
         r.convergence.back().step = lambda;
-        if (stop()) { r.convergence.back().step = 0; r.cancelled = true; r.converged = false; return r; } // not taken
+        if (stop()) { r.convergence.back().step = 0; r.cancelled = true; r.converged = false; return finish(); } // not taken
         for (std::size_t m = 0; m < classes.size(); ++m)
             for (std::size_t a = 0; a < g.links.size(); ++a) r.classFlows[m][a] += lambda * (target[m][a] - r.classFlows[m][a]);
+        for (std::size_t m = 0; m < held.size(); ++m) {
+            for (auto& [key, flow] : held[m]) flow *= 1 - lambda;
+            add(m, aons[m], lambda);
+        }
         ++r.iterations;
     }
 }

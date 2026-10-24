@@ -84,6 +84,7 @@ void setStudyAreaGateFlows(ProjectDocument& d, std::vector<GateFlow> flows) {
     std::erase_if(flows, [](const GateFlow& f) { return f.vehiclesPerHour == 0; });
     d.zones.studyArea.gateFlows = std::move(flows);
 }
+void setStudyAreaSource(ProjectDocument& d, const std::string& source) { d.zones.studyArea.flowSource = source; }
 void settleStudyArea(ProjectDocument& d) {
     auto& area = d.zones.studyArea;
     std::erase_if(area.nodes, [&](const std::string& id) {

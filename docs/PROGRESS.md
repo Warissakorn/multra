@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.3: the Macro cut for a study area (D329)
+
+- **Asked:** continue; S5.3 was next. The owner chose that, until S5.5's side files, Micro runs
+  Macro at compile for each study period inside the run.
+- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §18):
+  - Frank–Wolfe keeps its paths when asked: each step's all-or-nothing paths with the step weights,
+    which sum exactly to the link flows;
+  - `macroGateFlows` cuts each path's kept stretches into gate (or inside-zone) trips by period;
+  - the gate-flow dialog's *Source*, Typed or Cut from Macro.
+- **Measured:** keeping paths costs +72 % wall on a 12×12 grid with 1,892 OD cells (Debug), with
+  27,089 paths. Ordinary runs do not keep them. The M2.6 template has no zones, so it cannot run
+  Macro.
+- **Rows:** SA7–SA9 (`studyarea`), the Source in `node-ui`. `MACRO_NOT_CONVERGED`'s pass-through is
+  not exercised: the corridor's single path has gap 0. Linux only, GCC 13, Qt 6.4.2 offscreen:
+  `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not built or run
+  on Windows.
+
 ## 2026-10-24 — S5.2b: gate flows in the editor; S5.2 complete (D328)
 
 - **Asked:** continue; S5.2b was next.
@@ -184,23 +201,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
     declarations moved. The owner deferred it to the next engine slice that edits the runtime
     state (NEXT).
-
-## 2026-10-23 — Dialogs keep their buttons on screen; the behaviour editor in tabs (D318)
-
-- **The owner's report:** the behaviour editor was taller than the screen; not every key showed
-  and Confirm was off screen. Measured, it needed at least 1378 px.
-- **The editor now has three parts:**
-  - a header with users, id, name and model;
-  - four tabs that each scroll: *Car following*, *Lane changes*, *Perception and drivers*, and
-    *Junctions, signals and speed*;
-  - a footer with the error and the buttons.
-
-  The other model's rows are hidden. Prototype opens at 579 px at 1366×768.
-- **Other dialogs:** the UI suites, measured through a scratch `QDialog::exec` shim, gave vehicle
-  type 696 px minimum, input 500, decision 452, and coarse Node values (one row per leg). These now
-  share `dialog_fit` (a scrolling body, a fixed footer and a first size capped to the screen).
-- **Rows:** `requireFitsScreen` in four UI suites. Three fail with the old dialogs; the coarse and
-  decision rows are growth guards.
 
 ## Older entries
 

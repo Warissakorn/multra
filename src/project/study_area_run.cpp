@@ -1,4 +1,5 @@
 #include "study_area_run.hpp"
+#include "study_area_macro.hpp"
 #include "../model/network/study_area.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
@@ -29,8 +30,8 @@ StudyAreaEnds studyAreaEnds(const ProjectDocument& d) {
                 (direction == ZoneDirection::origin ? ends.origins : ends.destinations).push_back(z.id);
     return ends;
 }
-ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<ValidationIssue>* advisories) {
-    const auto& area = d.zones.studyArea;
+ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<ValidationIssue>* advisories, const std::filesystem::path& data) {
+    auto area = d.zones.studyArea;
     const auto cut = studyAreaCut(d.network, area.nodes);
     if (!cut.issues.empty()) throw ValidationError(cut.issues);
     auto copy = d;
@@ -67,6 +68,7 @@ ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<Validati
         zones.zoneConnectors.push_back({exitGateName(id) + "/c", exitGateName(id), id, ZoneDirection::destination, 1});
         destinations.insert(exitGateName(id));
     }
+    if (area.flowSource == "macro") area.gateFlows = macroGateFlows(d, data, advisories); // S5.3
     const auto ends = studyAreaEnds(d);
     const std::set<std::string> from(ends.origins.begin(), ends.origins.end()), to(ends.destinations.begin(), ends.destinations.end());
     std::vector<ValidationIssue> unknown;

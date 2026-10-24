@@ -26,5 +26,5 @@ struct MacroRun {
 };
 // Refused by ValidationError: MACRO_PERIOD_UNKNOWN (`period`), then the graph's and the demand's issues.
 MacroRun runMacro(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& period,
-                  InputManifest* = nullptr, const MacroObserver* = nullptr);
+                  InputManifest* = nullptr, const MacroObserver* = nullptr, bool keepPaths = false); // S5.3: paths for a cut
 }

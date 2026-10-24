@@ -7,7 +7,7 @@
 namespace multra {
 std::string macroPeriodName(const MacroPeriod& p) { return p.periodId.empty() ? "matrix:" + p.matrixId : p.periodId; }
 MacroRun runMacro(const ProjectDocument& d, const std::filesystem::path& data, const std::string& period, InputManifest* manifest,
-                  const MacroObserver* observer) {
+                  const MacroObserver* observer, bool keepPaths) {
     const auto enter = [&](MacroStage s) { if (observer && observer->stage) observer->stage(s); };
     enter(MacroStage::period);
     const auto periods = macroPeriods(d);
@@ -27,7 +27,7 @@ MacroRun runMacro(const ProjectDocument& d, const std::filesystem::path& data, c
     run.advisories = std::move(network.advisories); // S3.6a
     run.advisories.insert(run.advisories.end(), demand.advisories.begin(), demand.advisories.end());
     enter(MacroStage::assignment);
-    run.assignment = assignMacro(run.graph, run.classes, run.settings, observer ? observer->iteration : std::function<bool(const MacroIteration&)>{});
+    run.assignment = assignMacro(run.graph, run.classes, run.settings, observer ? observer->iteration : std::function<bool(const MacroIteration&)>{}, keepPaths);
     if (!run.assignment.converged && !run.assignment.cancelled) run.advisories.push_back({"MACRO_NOT_CONVERGED", "definition.macroSettings.maxIterations"});
     return run;
 }

@@ -24,9 +24,9 @@
 // through execute(), so a drawn Node is one Undo step; rename and delete go through History too.
 namespace multra {
 namespace {
-// S5.2b (D328): gate flows need a runnable area (studyAreaEnds) and a study period to name.
+// S5.2b (D328): gate flows need a runnable area (studyAreaEnds); a period is checked in the dialog.
 bool gateFlowsEditable(const ProjectDocument& d) {
-    if (d.zones.studyArea.nodes.empty() || d.zones.studyPeriods.empty()) return false;
+    if (d.zones.studyArea.nodes.empty()) return false;
     try { studyAreaEnds(d); return true; } catch (const std::exception&) { return false; }
 }
 }
@@ -103,10 +103,10 @@ void EditorWindow::buildNodes() {
         std::vector<Choice> origins, destinations;
         for (const auto& id : ends.origins) origins.push_back({id, label(id)});
         for (const auto& id : ends.destinations) destinations.push_back({id, label(id)});
-        const auto edited = editGateFlows(this, d.zones.studyArea.gateFlows, origins, destinations, compositionChoices(), periodChoices(),
+        const auto edited = editGateFlows(this, d.zones.studyArea.flowSource, d.zones.studyArea.gateFlows, origins, destinations, compositionChoices(), periodChoices(),
                                           modeChoices(), [this](const char* key) { return text(key); });
         if (!edited) return;
-        execute("editorGateFlows", [&](auto& doc) { setStudyAreaGateFlows(doc, *edited); });
+        execute("editorGateFlows", [&](auto& doc) { setStudyAreaSource(doc, edited->source); setStudyAreaGateFlows(doc, edited->flows); });
     }));
     // S0.5 (D265): one generated Node per junction no Node covers yet, all in one Undo step.
     bar->addAction(action("editorSuggestNodes", {}, [this] {

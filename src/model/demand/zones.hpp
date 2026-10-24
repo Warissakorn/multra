@@ -60,7 +60,7 @@ struct GateFlow {
 };
 struct StudyArea {
     std::vector<std::string> nodes;
-    std::string flowSource{"typed"}; // S5.2: "typed" only
+    std::string flowSource{"typed"}; // "typed" (S5.2) or "macro" (S5.3: cut from Macro at run time)
     std::vector<GateFlow> gateFlows;
     bool operator==(const StudyArea&) const = default;
 };

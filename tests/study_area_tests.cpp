@@ -12,6 +12,11 @@
 #include "../src/project/json.hpp"
 #include "../src/project/run.hpp"
 #include "../src/project/study_area_run.hpp"
+#include "../src/project/study_area_macro.hpp"
+#include "../src/project/demand_catalog.hpp"
+#include "../src/commands/catalog_commands.hpp"
+#include "../src/commands/zone_commands.hpp"
+#include "../src/macro/assign.hpp"
 #include "../src/runner/batch.hpp"
 #include <algorithm>
 #include <fstream>
@@ -91,7 +96,7 @@ TEST(studyarea, sa2_codec) { // SA2
     CHECK(has(bad([](auto& x) { x.zones.studyArea.gateFlows[0].periodId = "q"; }), "STUDY_AREA_PERIOD_UNKNOWN", "studyArea.gateFlows[0].periodId"));
     CHECK(has(bad([](auto& x) { x.zones.studyArea.gateFlows[0].vehiclesPerHour = -1; }), "OD_CELL_INVALID", "studyArea.gateFlows[0].vehiclesPerHour"));
     CHECK(has(bad([](auto& x) { x.zones.studyArea.gateFlows[0].compositionId.clear(); }), "OD_COMPOSITION_MISSING"));
-    auto wrong = j; wrong["studyArea"]["flowSource"] = "macro"; // S5.3 adds it
+    auto wrong = j; wrong["studyArea"]["flowSource"] = "meso"; // S5.4 adds it
     test::throws([&] { parseDocument(wrong); }, "EDIT_STUDY_AREA_INVALID");
     auto empty = j; empty["studyArea"]["nodes"] = Json::array();
     test::throws([&] { parseDocument(empty); }, "EDIT_STUDY_AREA_INVALID");
@@ -217,4 +222,107 @@ TEST(studyarea, sa16_gate_flow_commands) { // SA16 (S5.2b)
     CHECK(studyAreaDocument(d).zones.odMatrices.size() == 2);
     setStudyAreaGateFlows(d, {{"p", ends.origins[0], ends.destinations[0], "car-only", "", 0}});
     CHECK(d.zones.studyArea.gateFlows.empty());
+}
+namespace {
+// MA8's linear two-link pair (test values): 10 (1 + 0.15 x/1000) against 12 (1 + 0.15 x/1000).
+MacroGraph pair(double beta, std::vector<double> times = {10, 12}) {
+    MacroGraph g; g.nodes = {"o", "d"};
+    for (const double t0 : times) { MacroLink l; l.from = 0; l.to = 1; l.freeTime = t0; l.capacity = 1000; l.alpha = 0.15; l.beta = beta; g.links.push_back(l); }
+    return g;
+}
+// The corridor with a zone west of A (origin, on A's west arm inbound) and one east of B (destination,
+// on B's east arm outbound), `trips` from west to east in period p (0-600 s); owned catalog, PCUs and
+// one link type, all test values.
+Corridor demandCorridor(double trips) {
+    auto c = corridor();
+    auto& d = c.d;
+    putDemandCatalog(d, resolveDemandCatalog(*d.definition, test::root() / "data"));
+    for (auto& ty : d.definition->vehicleTypes) ty.pcu = Pcu{1.0, "Test values"};
+    d.definition->externalLinkTypes = false;
+    d.definition->linkTypes = {{"arterial", "Arterial", 1800, 15, "bpr", {}, "Test values"}};
+    for (auto& l : d.network.links) l.linkTypeId = "arterial";
+    putZone(d, {"west", "West", square({-110, 0}, 5), {}});
+    putZone(d, {"east", "East", square({410, 0}, 5), {}});
+    putZoneConnector(d, {"zw", "west", road(d, c.aw).links[0], ZoneDirection::origin, 1});
+    putZoneConnector(d, {"ze", "east", road(d, c.be).links[1], ZoneDirection::destination, 1});
+    putOdMatrix(d, {"am", 0, 0, "car-only", {"west", "east"}, {{0, trips}, {0, 0}}, "p"});
+    return c;
+}
+double total(const std::vector<GateFlow>& flows) { double s = 0; for (const auto& f : flows) s += f.vehiclesPerHour; return s; }
+}
+TEST(studyarea, sa7_path_decomposition) { // SA7 (S5.3)
+    const MacroClass cls{"c", "", 1, {{0, 1, 2000}}};
+    const auto r = assignMacro(pair(1), {cls}, {1e-4, 1000}, {}, true);
+    CHECK(r.converged && r.iterations == 1 && r.paths.size() == 1 && r.paths[0].size() == 2); // forcing: one step, two paths
+    // By hand: free flow loads 2000 on link 0; the one step lambda lands on x1 = 5.6 / 0.0033, so the
+    // start's path keeps 2000 (1 - lambda) = x1 and the step's path carries 2000 lambda = 2000 - x1.
+    const double x1 = 5.6 / 0.0033;
+    CHECK(r.paths[0][0].links == std::vector<std::size_t>{0} && r.paths[0][1].links == std::vector<std::size_t>{1});
+    CHECK(std::abs(r.paths[0][0].vehiclesPerHour - x1) / x1 < 1e-3 && std::abs(r.paths[0][1].vehiclesPerHour - (2000 - x1)) / x1 < 1e-3);
+    // Three routes at BPR 4 take many steps; the paths still sum to the link flows.
+    const auto three = pair(4, {10, 12, 14});
+    const auto r4 = assignMacro(three, {{"c", "", 1, {{0, 1, 3000}}}}, {1e-6, 1000}, {}, true);
+    CHECK(r4.iterations > 1 && r4.paths[0].size() == 3);
+    for (std::size_t a = 0; a < 3; ++a) {
+        double sum = 0;
+        for (const auto& p : r4.paths[0]) if (std::find(p.links.begin(), p.links.end(), a) != p.links.end()) sum += p.vehiclesPerHour;
+        test::near(sum, r4.classFlows[0][a], 1e-9);
+    }
+    // Without keepPaths nothing else changes.
+    auto plain = assignMacro(three, {{"c", "", 1, {{0, 1, 3000}}}}, {1e-6, 1000});
+    CHECK(plain.paths.empty());
+    plain.paths = r4.paths;
+    CHECK(plain == r4);
+}
+TEST(studyarea, sa8_macro_cut) { // SA8 (S5.3)
+    auto c = demandCorridor(100); // 600 veh/h over 600 s
+    auto& d = c.d;
+    setStudyAreaNodes(d, {c.a});
+    d.zones.studyArea.flowSource = "macro";
+    const auto data = test::root() / "data";
+    std::vector<ValidationIssue> advisories;
+    const auto flows = macroGateFlows(d, data, &advisories);
+    CHECK(flows.size() == 1); // forcing: one trip pair
+    const auto outbound = road(d, c.m3).links[1]; // A's middle leg, eastbound
+    CHECK(flows[0].from == "west" && flows[0].to == exitGateName(outbound) && flows[0].periodId == "p" && flows[0].compositionId == "car-only");
+    test::near(flows[0].vehiclesPerHour, 600, 1e-6);
+    setStudyAreaNodes(d, {c.a, c.b});
+    const auto both = macroGateFlows(d, data);
+    CHECK(both.size() == 1 && both[0].from == "west" && both[0].to == "east");
+    test::near(total(both), 600, 1e-6);
+    // Leaving the kept set and entering it again makes two trips (a synthetic path).
+    MacroGraph g; g.nodes = {"0", "1", "2", "3"};
+    for (const auto& id : {"L1", "X", "L2"}) { MacroLink l; l.source = id; g.links.push_back(l); }
+    const StudyAreaEnds ends{{entryGateName("L1"), entryGateName("L2")}, {exitGateName("L1"), exitGateName("L2")}};
+    std::size_t unmatched = 0;
+    const auto trips = cutTrips(g, {0, 1, 2}, {"L1", "L2"}, {}, d, ends, &unmatched);
+    CHECK(unmatched == 0 && trips == (std::vector<CutTrip>{{entryGateName("L1"), exitGateName("L1")}, {entryGateName("L2"), exitGateName("L2")}}));
+    CHECK(cutTrips(g, {0, 1, 2}, {"L1", "L2"}, {}, d, {{entryGateName("L1")}, {exitGateName("L1")}}, &unmatched).size() == 1 && unmatched == 1);
+}
+TEST(studyarea, sa9_macro_periods) { // SA9 (S5.3)
+    auto c = demandCorridor(100);
+    auto& d = c.d;
+    d.zones.studyPeriods.push_back({"q", "Q", 600, 1200});
+    putOdMatrix(d, {"pm", 0, 0, "car-only", {"west", "east"}, {{0, 50}, {0, 0}}, "q"});
+    setStudyAreaNodes(d, {c.a});
+    d.zones.studyArea.flowSource = "macro";
+    const auto data = test::root() / "data";
+    const auto flows = macroGateFlows(d, data);
+    CHECK(flows.size() == 2 && flows[0].periodId == "p" && flows[1].periodId == "q"); // forcing: two periods
+    test::near(flows[0].vehiclesPerHour, 600, 1e-6); test::near(flows[1].vehiclesPerHour, 300, 1e-6);
+    // A period partly past the run (1500 s) is left out and said so; none inside refuses.
+    auto late = d; late.zones.studyPeriods.push_back({"r", "R", 1200, 1800});
+    std::vector<ValidationIssue> advisories;
+    macroGateFlows(late, data, &advisories);
+    CHECK(has(advisories, "MICRO_AREA_PERIOD_OUTSIDE", "studyPeriods[2]"));
+    auto none = d; none.zones.odMatrices.clear(); none.zones.studyPeriods = {{"z", "Z", 2000, 2600}};
+    CHECK(has(refusal([&] { macroGateFlows(none, data); }), "MICRO_AREA_PERIOD_NOT_RUN", "studyPeriods"));
+    // (MACRO_NOT_CONVERGED's pass-through needs two routes; this corridor has one, so its gap is 0.)
+    // The area run from Macro starts and repeats its bytes.
+    const auto rows = runDiagnostics(d, data);
+    CHECK(std::none_of(rows.begin(), rows.end(), [](const auto& r) { return r.severity == DiagnosticSeverity::runtime; }));
+    const auto snapshot = compileDocument(d, data);
+    const auto first = runSeed(snapshot.scenario, evaluationSpec(d, snapshot, data), 42);
+    const auto again = runSeed(compileDocument(d, data).scenario, evaluationSpec(d, snapshot, data), 42);
+    CHECK(first.generated > 0 && first == again);
 }
