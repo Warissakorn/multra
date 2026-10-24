@@ -30,10 +30,17 @@ struct MesoLoading {
     std::vector<std::vector<double>> turned; // per turn, cumulative PCU at k * step
     std::vector<MesoCommodityRun> commodities;
     std::vector<std::pair<std::size_t, std::size_t>> refused; // (class, path) not loaded: no PCU, a link twice, or turns not joining
+    // S5.4 (STUDY_AREA §7, D330), only for watched links: each loaded path's cumulative PCU entering
+    // the link at `position` on it, at k * step. Route counts split a link's count by FIFO through its
+    // inverse cumulative function (Yperman 2007 §3.2, "FIFO conditions"; Eq. 5.2), so on a watched
+    // link they sum to `up`.
+    struct Watched { std::size_t cls{}, path{}, position{}; MesoCurve entrance; };
+    std::vector<Watched> watched;
     bool cancelled{};                    // progress returned false; the curves end at the last whole step
 };
 // Loads the classes' paths over [0, horizon], s, in steps of `step` s. `progress(k, steps)` is called
 // before each step k (M11.4, D300); false stops the run there.
 MesoLoading loadMeso(const MesoGraph&, const std::vector<MesoClass>&, double step, double horizon,
-                     const std::function<bool(std::size_t, std::size_t)>& progress = {});
+                     const std::function<bool(std::size_t, std::size_t)>& progress = {},
+                     const std::vector<bool>* watch = nullptr); // by link index (S5.4)
 }

@@ -56,11 +56,14 @@ struct StudyPeriod {
 // (`gate:<link>:in|out`) and the zones inside it, in veh/h over a study period. Schema 55.
 struct GateFlow {
     std::string periodId, from, to, compositionId, modeId; double vehiclesPerHour{};
+    // S5.4 (D330): run seconds for a flow cut from Meso, which has no period (periodId empty). Only in
+    // the run-time copy; never stored, and the codec requires a period.
+    double start{}, end{};
     bool operator==(const GateFlow&) const = default;
 };
 struct StudyArea {
     std::vector<std::string> nodes;
-    std::string flowSource{"typed"}; // "typed" (S5.2) or "macro" (S5.3: cut from Macro at run time)
+    std::string flowSource{"typed"}; // "typed" (S5.2), "macro" (S5.3) or "meso" (S5.4): cut at run time
     std::vector<GateFlow> gateFlows;
     bool operator==(const StudyArea&) const = default;
 };

@@ -6,7 +6,7 @@ from the recommendations:
 - the study area is a set of Nodes, not a polygon;
 - both cuts, from Macro and from Meso, are in S5.
 
-S5.2 and S5.3 are implemented (D327–D329; §16–§18); the rest is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
+S5.2–S5.4 are implemented (D327–D330; §16–§19); S5.5 is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md)):
 - which part of the network a Micro run keeps;
 - where its boundary flows come from;
@@ -152,13 +152,15 @@ coarser model's flows to a finer one; it does not make either one right.
   curve maps to the exit curve by the time the link's aggregate curves give. The watched links
   are the kept set's entry-gate links and exit-gate links, so runs without a study area keep
   their bytes (SA1). Yperman 2007's link model is FIFO per link, which is what the mapping
-  assumes. The section is to be cited from the owner's copy in S5.4 before code (BOOKS).
+  assumes. *Cited in S5.4 (D330):* Yperman 2007 §3.2, "FIFO conditions", and the route-count
+  rule before it, with Eq. (5.2) in Ch. 5. `loadMeso` already keeps these route counts, so S5.4
+  exposes the entrance counts of watched links (§19).
 - **The cut.** Each kept stretch of a path gives a trip from its entry gate to its exit gate.
   Per Meso output slice, the trip's volume is the path's count increase at the entry gate's link
   entrance. PCU is turned back into vehicles by the class's PCU (Meso loads PCU, D300).
 - **Time profile:** the gate matrices come one interval per Meso output slice (`mesoSettings`),
   so Micro's arrivals follow the slices. Whether to merge slices into coarser intervals is open
-  (§13); no rule is invented here.
+  (§13); no rule is invented here. *Answered by the owner (D330):* one interval per slice.
 - **A cancelled Meso run** (`cancelled`) cannot be cut: `MICRO_AREA_SOURCE_INCOMPLETE`.
 
 ## 8. Saved results and provenance (S5-5a, slice S5.5)
@@ -243,8 +245,8 @@ nothing is refused silently.
 
 ## 13. Open items (each needs a source or an answer before its slice)
 
-- **Meso slices to Micro intervals** (S5.4): one interval per slice is the reading taken; merging
-  them would need a rule from a source.
+- **Meso slices to Micro intervals** (S5.4): one interval per slice, as the owner chose (D330);
+  merging them would need a rule from a source.
 - **Rounding** of a cut gate matrix into Micro vehicles: M8.3's existing rule applies, unchanged.
   S5.3 checks that it does.
 - **Gates on a Road-only arm:** a kept leg must be a Link (§4). An area Node with a Link-less arm
@@ -259,7 +261,7 @@ nothing is refused silently.
 | S5.1 | This contract (docs only) | — |
 | S5.2 | `studyArea` at schema 55 (nodes, `flowSource`, `gateFlows`), the Nodes tab column and canvas outline, the kept set, gates, the run-time copy, typed gate flows, the area refusals. **Implemented**: S5.2a (D327, §16), S5.2b (D328, §17) | SA1–SA6, SA16 |
 | S5.3 | Frank–Wolfe path flows, the Macro cut by period. **Implemented** (D329, §18) | SA7–SA9 |
-| S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice | SA10, SA11 |
+| S5.4 | Watched path counts in `loadMeso`, the Meso cut by slice. **Implemented** (D330, §19) | SA10, SA11 |
 | S5.5 | Side files, stale by SHA-256, `MICRO_AREA_SOURCE_STALE`, the marking line, `MICRO_GENERATED_IN_AREA` | SA12–SA15 |
 
 ## 15. Acceptance rows (planned)
@@ -396,3 +398,42 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Rows:** SA7 (MA8's pair by hand; three routes for the sum), SA8 (the corridor; a synthetic
   re-entry), SA9 (two periods, outside, none inside, the run twice), and the dialog's Source in
   `node-ui`.
+
+## 19. S5.4 as implemented (D330)
+
+- **Source read** in the owner's copy of Yperman 2007 (`ecd6bfe`, attached and not vendored):
+  - §3.2, in the route-count rule and under "FIFO conditions": a link's downstream route counts
+    inherit the upstream composition through the inverse cumulative function, which needs FIFO
+    on every link. LTM ensures this, though not strictly: vehicles that entered earlier may leave
+    in the same step;
+  - Ch. 5 at Eq. (5.2): disaggregate sending flows need the same link-FIFO and CFL conditions.
+- **Watched counts** (`src/meso/loading.*`): `loadMeso(…, watch)` copies, for each loaded path
+  and each watched link on it, the path's cumulative PCU entering the link. These are the route
+  counts the loading already keeps.
+  - `runMeso(…, watchLinks)` watches the Meso links whose `source` is listed.
+  - With no watch nothing is added (SA10 compares the curves).
+- **The cut** (`src/project/study_area_meso.*`): `mesoGateFlows` runs Meso with the kept Links
+  watched and cuts each loaded path's kept stretches.
+  - The origin is the stretch's first Link's entry gate. An OD route starting the stretch at its
+    own first Link takes the one listed origin zone with a connector there instead. The
+    destination is chosen the same way.
+  - Per output slice, the vehicles are the entrance count's increase on the stretch's first link
+    ÷ the class PCU.
+  - Each (slice, composition, from, to) gives one gate flow with `start`/`end` and no period. The
+    run-time copy builds one matrix with its own times per slice and composition.
+- **Owner (D330):**
+  - Meso runs at compile over the whole Micro run until S5.5's side files (no seed, D292);
+  - one Micro interval per Meso slice.
+- **Codes:**
+  - `MICRO_AREA_SOURCE_INCOMPLETE` (a cancelled loading; at compile there is no observer, so it
+    is a guard);
+  - `MICRO_AREA_CLASS_UNSUPPORTED` at `classes[i]` for a `type:` class: an input naming one
+    vehicle type, which no OD matrix can carry. **Open:** a gate flow by vehicle type;
+  - `MICRO_AREA_CUT_UNMATCHED` at `studyArea`.
+- **Editor:** the gate-flow dialog's Source gains *Cut from Meso*.
+- **Rows:**
+  - SA10: on each watched link the paths' counts sum to its `up` curve, never fall, and leave the
+    loading unchanged;
+  - SA11: 100 trips over 300 s slices; all 100 vehicles cut, west to the middle exit gate with
+    {A} and west to east with {A, B}; the run twice at seed 42;
+  - the Source in `node-ui`.

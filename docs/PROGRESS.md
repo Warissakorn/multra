@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.4: the Meso cut for a study area (D330)
+
+- **Asked:** continue; S5.4 was next. The owner chose that Meso, like Macro, runs at compile until
+  S5.5, and that each Meso output slice becomes one Micro interval.
+- **Source:** Yperman 2007 §3.2 ("FIFO conditions") and Eq. (5.2), read in the owner's copy. Route
+  counts on a link follow its count by FIFO.
+- **Found:** `loadMeso` already keeps those route counts, so the cut only exposes them for the
+  kept Links (`watch`). No new model.
+- **Built** ([STUDY_AREA](reference/STUDY_AREA.md) §19):
+  - `mesoGateFlows`: gate flows per slice, with their own run-time window;
+  - *Cut from Meso* in the gate-flow dialog.
+
+  A class naming one vehicle type cannot become a gate flow yet (`MICRO_AREA_CLASS_UNSUPPORTED`).
+- **Rows:** SA10, SA11 (`studyarea`), the Source in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows.
+
 ## 2026-10-24 — S5.3: the Macro cut for a study area (D329)
 
 - **Asked:** continue; S5.3 was next. The owner chose that, until S5.5's side files, Micro runs
@@ -178,29 +195,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   without the file checks.
 - **Results:** a planted crash draft no longer blocks `behaviour-library-ui`. Two full runs pass
   219/219; the eleven suites wrote nothing to the user's folder.
-
-## 2026-10-23 — Optimization review: UX, build, docs, engine (D319)
-
-- **Measured first** (Linux; `.optimize/` ledger, not committed):
-  - UX: a `QDialog::exec` shim over the 61 UI suites, in English and Thai;
-  - engine: Release `multra-cli`, seeds 42–51, and callgrind;
-  - build: Debug rebuilds after touching one file;
-  - docs: the words a session reads before it starts.
-- **Done:**
-  - the seam dialog's *Use Node* button lost 8 px to the table's item padding; the column gets
-    it back, the only clipped control measured;
-  - NEXT cut to open items (1113 → 469 words);
-  - D319 records the accepted rules.
-- **Found on the way, fixed:** D318's behaviour editor corrupted the heap. Qt 6.4.2's
-  `QFormLayout::setRowVisible` on a shown dialog writes out of bounds (valgrind); the forms now
-  stay still while their rows change. A crashed local UI run leaves a recovery file that makes the
-  next run wait at its dialog.
-- **Not done:**
-  - caching lateral bands (+10–28 % wall switched on, no shipped keys);
-  - a shared `multra_shell`;
-  - splitting `types.hpp`: estimated 466 → 420 objects rebuilt, 338 with the JSON
-    declarations moved. The owner deferred it to the next engine slice that edits the runtime
-    state (NEXT).
 
 ## Older entries
 

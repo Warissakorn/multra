@@ -34,6 +34,7 @@ std::optional<GateFlowEdit> editGateFlows(QWidget* parent, const std::string& or
     auto* form = new QFormLayout; layout->addLayout(form);
     auto* from = new QComboBox(&dialog); from->setObjectName("editorGateFlowSource");
     from->addItem(text("editorGateFlowTyped"), QStringLiteral("typed")); from->addItem(text("editorGateFlowMacro"), QStringLiteral("macro"));
+    from->addItem(text("editorGateFlowMeso"), QStringLiteral("meso")); // S5.4
     from->setCurrentIndex(std::max(0, from->findData(QString::fromStdString(origin))));
     form->addRow(text("editorGateFlowSource"), from);
     auto* period = new QComboBox(&dialog); period->setObjectName("editorGateFlowPeriod"); fill(period, periods);
@@ -93,7 +94,7 @@ std::optional<GateFlowEdit> editGateFlows(QWidget* parent, const std::string& or
     std::optional<GateFlowEdit> result;
     QObject::connect(box, &QDialogButtonBox::accepted, &dialog, [&] {
         const auto chosen = from->currentData().toString().toStdString();
-        if (chosen == "macro") {
+        if (chosen != "typed") { // cut from Macro or Meso at run time
             std::vector<GateFlow> kept;
             for (const auto& [k, v] : flows) if (v > 0) kept.push_back({std::get<0>(k), std::get<3>(k), std::get<4>(k), std::get<1>(k), std::get<2>(k), v});
             result = GateFlowEdit{chosen, std::move(kept)}; dialog.accept(); return;

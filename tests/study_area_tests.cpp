@@ -13,6 +13,10 @@
 #include "../src/project/run.hpp"
 #include "../src/project/study_area_run.hpp"
 #include "../src/project/study_area_macro.hpp"
+#include "../src/project/study_area_meso.hpp"
+#include "../src/project/meso_run.hpp"
+#include <cmath>
+#include <map>
 #include "../src/project/demand_catalog.hpp"
 #include "../src/commands/catalog_commands.hpp"
 #include "../src/commands/zone_commands.hpp"
@@ -96,7 +100,7 @@ TEST(studyarea, sa2_codec) { // SA2
     CHECK(has(bad([](auto& x) { x.zones.studyArea.gateFlows[0].periodId = "q"; }), "STUDY_AREA_PERIOD_UNKNOWN", "studyArea.gateFlows[0].periodId"));
     CHECK(has(bad([](auto& x) { x.zones.studyArea.gateFlows[0].vehiclesPerHour = -1; }), "OD_CELL_INVALID", "studyArea.gateFlows[0].vehiclesPerHour"));
     CHECK(has(bad([](auto& x) { x.zones.studyArea.gateFlows[0].compositionId.clear(); }), "OD_COMPOSITION_MISSING"));
-    auto wrong = j; wrong["studyArea"]["flowSource"] = "meso"; // S5.4 adds it
+    auto wrong = j; wrong["studyArea"]["flowSource"] = "count"; // not a source
     test::throws([&] { parseDocument(wrong); }, "EDIT_STUDY_AREA_INVALID");
     auto empty = j; empty["studyArea"]["nodes"] = Json::array();
     test::throws([&] { parseDocument(empty); }, "EDIT_STUDY_AREA_INVALID");
@@ -322,6 +326,75 @@ TEST(studyarea, sa9_macro_periods) { // SA9 (S5.3)
     const auto rows = runDiagnostics(d, data);
     CHECK(std::none_of(rows.begin(), rows.end(), [](const auto& r) { return r.severity == DiagnosticSeverity::runtime; }));
     const auto snapshot = compileDocument(d, data);
+    const auto first = runSeed(snapshot.scenario, evaluationSpec(d, snapshot, data), 42);
+    const auto again = runSeed(compileDocument(d, data).scenario, evaluationSpec(d, snapshot, data), 42);
+    CHECK(first.generated > 0 && first == again);
+}
+namespace {
+// demandCorridor with a jam density on its type, so Meso loads it (test value, HCM's 118.06 veh/km/ln).
+Corridor mesoCorridor(double trips) {
+    auto c = demandCorridor(trips);
+    c.d.definition->linkTypes[0].jamDensity = JamDensity{118.06, "Test values"};
+    return c;
+}
+}
+TEST(studyarea, sa10_meso_watched_counts) { // SA10 (S5.4)
+    auto c = mesoCorridor(100);
+    auto& d = c.d;
+    const auto cut = studyAreaCut(d.network, {c.a});
+    const auto data = test::root() / "data";
+    const auto run = runMeso(d, data, nullptr, nullptr, &cut.links);
+    CHECK(!run.loading.watched.empty()); // forcing: the corridor's path crosses A
+    // On each watched Meso link, the paths' entrance counts sum to its aggregate entrance count.
+    std::map<std::size_t, std::vector<const MesoLoading::Watched*>> byLink;
+    for (const auto& w : run.loading.watched) byLink[run.classes[w.cls].paths[w.path].links[w.position]].push_back(&w);
+    for (const auto& [l, ws] : byLink) {
+        const auto& up = run.loading.up[l].at;
+        for (std::size_t k = 0; k < up.size(); ++k) {
+            double sum = 0;
+            for (const auto* w : ws) { sum += w->entrance.at[k]; if (k) CHECK(w->entrance.at[k] >= w->entrance.at[k - 1] - 1e-12); }
+            test::near(sum, up[k], 1e-9);
+        }
+    }
+    // Without a watch the loading is the same and keeps no counts.
+    auto plain = runMeso(d, data);
+    CHECK(plain.loading.watched.empty() && plain.loading.up.size() == run.loading.up.size());
+    for (std::size_t l = 0; l < run.loading.up.size(); ++l)
+        CHECK(plain.loading.up[l].at == run.loading.up[l].at && plain.loading.down[l].at == run.loading.down[l].at);
+}
+TEST(studyarea, sa11_meso_cut) { // SA11 (S5.4)
+    auto c = mesoCorridor(100);
+    auto& d = c.d;
+    setStudyAreaNodes(d, {c.a});
+    d.zones.studyArea.flowSource = "meso";
+    const auto data = test::root() / "data";
+    std::vector<ValidationIssue> advisories;
+    const auto flows = mesoGateFlows(d, data, &advisories);
+    CHECK(!flows.empty()); // forcing
+    const auto outbound = road(d, c.m3).links[1];
+    double vehicles = 0;
+    for (const auto& f : flows) {
+        CHECK(f.periodId.empty() && f.from == "west" && f.to == exitGateName(outbound) && f.compositionId == "car-only");
+        CHECK(std::fmod(f.start, 300) == 0 && f.end > f.start && f.end <= 1500); // on the 300 s slice grid of the 1500 s run
+        vehicles += f.vehiclesPerHour * (f.end - f.start) / 3600;
+    }
+    // Every vehicle the path took onto its first kept Link is a trip: here all 100, inside the run.
+    const auto keptA = studyAreaCut(d.network, {c.a}).links;
+    const auto run = runMeso(d, data, nullptr, nullptr, &keptA);
+    double entered = 0;
+    for (const auto& w : run.loading.watched) if (w.position == 0) entered += w.entrance.at.back() / run.classes[w.cls].pcu;
+    test::near(vehicles, entered, 1e-9);
+    CHECK(entered > 99 && entered < 100 + 1e-9);
+    // B too: the trip runs from zone to zone.
+    setStudyAreaNodes(d, {c.a, c.b});
+    const auto both = mesoGateFlows(d, data);
+    CHECK(!both.empty() && std::all_of(both.begin(), both.end(), [](const auto& f) { return f.from == "west" && f.to == "east"; }));
+    // The area run from Meso starts and repeats its bytes.
+    setStudyAreaNodes(d, {c.a});
+    const auto rows = runDiagnostics(d, data);
+    CHECK(std::none_of(rows.begin(), rows.end(), [](const auto& r) { return r.severity == DiagnosticSeverity::runtime; }));
+    const auto snapshot = compileDocument(d, data);
+    CHECK(studyAreaDocument(d, nullptr, data).zones.odMatrices.size() == flows.size()); // one matrix per slice
     const auto first = runSeed(snapshot.scenario, evaluationSpec(d, snapshot, data), 42);
     const auto again = runSeed(compileDocument(d, data).scenario, evaluationSpec(d, snapshot, data), 42);
     CHECK(first.generated > 0 && first == again);

@@ -74,13 +74,13 @@ int areaFilled(EditorWindow& w) { // S5.2b: Node outlines drawn as in the study 
 }
 // S5.2b (SA16): the gate-flow dialog types a value into its first cell, switches period and back,
 // and accepts; returns what it gave.
-std::optional<GateFlowEdit> typeGateFlow(const std::vector<GateFlow>& current, double value, double* shown, bool macro = false) {
-    QTimer::singleShot(0, [value, shown, macro] {
+std::optional<GateFlowEdit> typeGateFlow(const std::vector<GateFlow>& current, double value, double* shown, int cut = 0) {
+    QTimer::singleShot(0, [value, shown, cut] {
         auto* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
         require(dialog && dialog->objectName() == "editorGateFlowDialog", "No gate-flow dialog");
         auto* grid = dialog->findChild<QTableWidget*>("editorGateFlowGrid");
-        if (macro) { // S5.3: Macro's cut replaces the grid, which is kept but not edited
-            dialog->findChild<QComboBox*>("editorGateFlowSource")->setCurrentIndex(1); QApplication::processEvents();
+        if (cut) { // S5.3/S5.4: a cut from Macro (1) or Meso (2) replaces the grid, which is kept but not edited
+            dialog->findChild<QComboBox*>("editorGateFlowSource")->setCurrentIndex(cut); QApplication::processEvents();
             require(!grid->isEnabled(), "The grid stayed editable under the Macro source");
             dialog->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
             return;
@@ -177,8 +177,10 @@ int main(int argc, char** argv) {
                     first->flows[0].compositionId == "car-only" && shown == 0, "The gate-flow dialog did not give the typed flow");
             const auto again = typeGateFlow(first->flows, 90, &shown);
             require(shown == 120 && again && again->flows.size() == 1 && again->flows[0].vehiclesPerHour == 90, "Reopening did not show the flow");
-            const auto macro = typeGateFlow(again->flows, 0, &shown, true);
+            const auto macro = typeGateFlow(again->flows, 0, &shown, 1);
             require(macro && macro->source == "macro" && macro->flows == again->flows, "The Macro source lost the typed flows");
+            const auto meso = typeGateFlow(again->flows, 0, &shown, 2);
+            require(meso && meso->source == "meso" && meso->flows == again->flows, "The Meso source lost the typed flows");
             table->selectRow(0); QApplication::processEvents();
         }
 

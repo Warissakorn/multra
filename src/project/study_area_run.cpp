@@ -1,5 +1,6 @@
 #include "study_area_run.hpp"
 #include "study_area_macro.hpp"
+#include "study_area_meso.hpp"
 #include "../model/network/study_area.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
@@ -69,6 +70,7 @@ ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<Validati
         destinations.insert(exitGateName(id));
     }
     if (area.flowSource == "macro") area.gateFlows = macroGateFlows(d, data, advisories); // S5.3
+    if (area.flowSource == "meso") area.gateFlows = mesoGateFlows(d, data, advisories);   // S5.4
     const auto ends = studyAreaEnds(d);
     const std::set<std::string> from(ends.origins.begin(), ends.origins.end()), to(ends.destinations.begin(), ends.destinations.end());
     std::vector<ValidationIssue> unknown;
@@ -81,17 +83,23 @@ ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<Validati
     std::vector<std::string> order;
     for (const auto& z : zones.zones) order.push_back(z.id);
     const auto index = [&](const std::string& id) { return static_cast<std::size_t>(std::find(order.begin(), order.end(), id) - order.begin()); };
-    std::map<std::tuple<std::string, std::string, std::string>, std::size_t> matrices;
+    // One matrix per (period, or own run-time window for a Meso slice; composition; mode).
+    std::map<std::tuple<std::string, double, double, std::string, std::string>, std::size_t> matrices;
     for (const auto& f : area.gateFlows) {
-        const auto key = std::tuple{f.periodId, f.compositionId, f.modeId};
+        const bool own = f.periodId.empty();
+        const auto key = std::tuple{f.periodId, own ? f.start : 0., own ? f.end : 0., f.compositionId, f.modeId};
         auto [at, added] = matrices.try_emplace(key, zones.odMatrices.size());
         if (added) {
-            OdMatrix m{"gate-flows/" + std::to_string(zones.odMatrices.size() + 1), 0, 0, f.compositionId, order,
+            OdMatrix m{"gate-flows/" + std::to_string(zones.odMatrices.size() + 1), own ? f.start : 0, own ? f.end : 0, f.compositionId, order,
                        std::vector(order.size(), std::vector<double>(order.size())), f.periodId, f.modeId};
             zones.odMatrices.push_back(std::move(m));
         }
-        const auto period = std::find_if(zones.studyPeriods.begin(), zones.studyPeriods.end(), [&](const auto& p) { return p.id == f.periodId; });
-        zones.odMatrices[at->second].cells[index(f.from)][index(f.to)] += f.vehiclesPerHour * (period->end - period->start) / 3600;
+        double seconds = f.end - f.start;
+        if (!own) {
+            const auto period = std::find_if(zones.studyPeriods.begin(), zones.studyPeriods.end(), [&](const auto& p) { return p.id == f.periodId; });
+            seconds = period->end - period->start;
+        }
+        zones.odMatrices[at->second].cells[index(f.from)][index(f.to)] += f.vehiclesPerHour * seconds / 3600;
     }
     return copy;
 }

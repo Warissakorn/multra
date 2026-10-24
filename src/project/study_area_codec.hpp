@@ -6,7 +6,7 @@ namespace multra {
 // is what makes a file schema 55. Below 55 it is EDIT_UNSUPPORTED_FIELD at `studyArea`.
 bool usesStudyArea(const ProjectDocument&);
 void rejectStudyAreaBefore55(const Json& file);
-// Exact keys {nodes, flowSource[, gateFlows]}, `flowSource` "typed" or (S5.3) "macro"; a gate flow is exactly
+// Exact keys {nodes, flowSource[, gateFlows]}, `flowSource` "typed", (S5.3) "macro" or (S5.4) "meso"; a gate flow is exactly
 // {periodId, from, to, compositionId | modeId, vehiclesPerHour}. Anything else, an empty `nodes` or an
 // empty `gateFlows` included (never written), is EDIT_STUDY_AREA_INVALID.
 StudyArea parseStudyArea(const Json& file);
