@@ -3,6 +3,34 @@
 Old PROGRESS entries, moved whole, newest first. Nothing here is current: NEXT and ROADMAP
 hold status, the decision record holds the reasoning.
 
+## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
+
+- **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network
+  cases, Daganzo 1994/1995 as second choices, and not-blind cases as verification only. The next
+  step is the owner's copy of Boyles et al.
+- **Fill defaults…** (Problems tab) lists the absent values the project can already cite, none
+  ticked:
+  - a generated Link's type from its Road's template;
+  - HCM 7's jam density on a project-owned type, only where it is valid for that type;
+  - a Link-less Road's Links from its template.
+
+  Each row shows its value, source and what it clears. The ticked ones apply in one Undo step, and
+  the panel checks again.
+- **Rows:** RS5–RS8 (`filldefaults`), with the editor part in `road-ui`; four mutations caught.
+
+## 2026-10-23 — S4.1–S4.2: the readiness contract and the panel by level (D313, D314)
+
+The owner chose all four S4 options as recommended: the Problems tab with a level selector, cited
+fills F1–F3 (a coarse Node's Micro detail later), proposals from v/c ≥ 1.0 and spill-back, and the
+order panel → fills → proposals ([READINESS](../reference/READINESS.md)).
+- **The Problems tab** now checks Micro, Meso or Macro (with its period). Each level lists the
+  refusals of the functions its run calls, in the run's order, then advisories and seam rows. A
+  study sees everything missing at once instead of one refusal per run.
+- **An edit after a check** leaves a note to check again, instead of an empty list that read as
+  "no problems".
+- **Rows:** RS1–RS3 (`readiness`), RS4 in `tables-ui`; the panel's refusals are checked against the
+  runs themselves. Four mutations caught.
+
 ## 2026-10-23 — S3.7: seam checks; S3 is complete (D312)
 
 - **Seam checks…** (Roads tab) lists, for the chosen level, every place where the levels disagree:

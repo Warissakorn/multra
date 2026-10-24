@@ -19,9 +19,10 @@ not that its results are right.
   - Node proposals from a Macro or Meso result.
 - **Out:**
   - the study area and "`generated` objects inside the study area count as missing for Micro"
-    (WORKFLOW §5): S5, which brings the study area;
+    (WORKFLOW §5): S5, which brings the study area ([STUDY_AREA](STUDY_AREA.md) §10);
   - calibration against counts and proposals from a failed calibration: M10's CountSet;
-  - export marking while `generated` objects or stale results remain: S5's stale marking.
+  - export marking while `generated` objects or stale results remain: S5's stale marking
+    ([STUDY_AREA](STUDY_AREA.md) §9, §11).
 
 ## 2. Today (measured from the code on D312's commit)
 

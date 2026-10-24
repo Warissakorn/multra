@@ -25,13 +25,14 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 
-## Next session — the owner's pick: S5 or an item below
+## Next session — S5.2, or the owner's pick of an item below
 
-- **S5**, the study area and stale marking (WORKFLOW §5 steps 3 and 7–8): "`generated` objects
-  inside the study area count as missing for Micro", and export marked while `generated` objects or
-  stale results remain. F4 (S4.5, D323–D325) now writes `generated` on Connectors, right-of-way
-  objects, heads and controllers (schema 54), so S5 has its input. It needs its own contract first
-  (READINESS §1 lists it as out of S4).
+- **S5.2** ([STUDY_AREA](reference/STUDY_AREA.md) §3–§5, D326): `studyArea` at schema 55
+  (`nodes`, `flowSource`, `gateFlows`), the Nodes tab's *Study area* column and canvas outline,
+  the kept set, gates and the run-time copy, typed gate flows, and the area refusals; rows SA1–SA6.
+  After it: S5.3, Frank–Wolfe path flows and the Macro cut (measure path storage on the M2.6
+  template first); S5.4, the Meso cut (cite Yperman's FIFO link model from the owner's copy first);
+  S5.5, side files, SHA-256 stale and the export marking.
 - **Other picks:**
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country

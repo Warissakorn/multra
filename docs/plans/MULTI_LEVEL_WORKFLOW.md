@@ -33,7 +33,7 @@ candidates that the contract checks against the source before any value enters `
 | **Cross-section template** (new, `data/cross-sections/`) | directions, lanes per direction, widths, median, shoulders, `linkType`, source | — |
 | **Road** (new) | centreline + `crossSectionId` + overrides | Macro/Meso: one directed link per direction. Micro: lane Links generated from the template and stored as today |
 | **Node** (new; merges M5.1 evaluation nodes) | polygon (absent = derived disc); **only without detail:** turns differing from default, control, major/minor, stage signal | **with detail:** legs, turns, lanes, g/C, conflicts from the Links, Connectors, conflict areas and heads inside the polygon |
-| **Study area** (new) | polygon where Micro/Meso results are wanted | run-time subarea cut |
+| **Study area** (new) | the Nodes where Micro results are wanted (a Node set, not a polygon: [D326](../decisions/RECORD.md#d326), [STUDY_AREA](../reference/STUDY_AREA.md)) | run-time subarea cut |
 | **CountSet** (new) | one count store, **merged with D142 decision counts** | — |
 | **Control points** (new) | ≥ 2 known coordinates in the project's EPSG | placement of images and imports |
 | **Background image** (changed) | world file (`.pgw`/`.jgw`) support; several images later | automatic placement |
@@ -152,7 +152,7 @@ Steps 0 and 2–8 never need the network.
 | S2 | Macro compiles from a detailed network (M10.1). Contract written: [MACRO_NETWORK](../reference/MACRO_NETWORK.md) (D271); owner choices answered (D272); S2.1–S2.4 implemented (D273–D277) |
 | S3 | Road + templates + Nodes from crossings + seam checks + *Assign template*. Contract written: [ROADS](../reference/ROADS.md) (D303); owner choices answered (D304); S3.2 implemented (D304) |
 | S4 | Readiness panel + *Fill defaults* + Node proposals. Contract written and answered: [READINESS](../reference/READINESS.md) (D313); implemented (D314, D316, D317) |
-| S5 | Micro on part of the network + run-time cut + stale marking (replaces M12's stored cut) |
+| S5 | Micro on part of the network + run-time cut + stale marking (replaces M12's stored cut). Contract written and answered: [STUDY_AREA](../reference/STUDY_AREA.md) (D326) |
 
 Offline imports: the principle now; world file, control points and CSV import in M10; GeoJSON
 and OSM files next (one importer with the online path); DXF, several images and user MBTiles on

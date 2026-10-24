@@ -358,6 +358,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D323](RECORD.md#d323) — F4 contract answered (F4-1a–6a); S4.5a: generated Connectors (schema 54), legs cut where arms meet, kerb-to-far lanes, re-apply byte-stable.
 [D324](RECORD.md#d324) — S4.5b: F4's priority by HCM 7 Ch. 20's ranks (PDF p. 1590; minor far turn rank 3 at a T), Stop on minor arms, generated right-of-way objects, derive-back major rule amended.
 [D325](RECORD.md#d325) — S4.5c: F4's signals (controller, group per turn, heads; intergreens on the time step), HCM ranks inside a stage, merges ordered by rank then drawing order; S4.5 complete.
+[D326](RECORD.md#d326) — S5.1: study area contract answered (S5-1c Nodes, 2a, 3c both cuts, 4a, 5a, 6a): Micro on the area's Nodes with gates, typed/Macro/Meso gate flows, side files, SHA-256 stale, export marking; rows SA1–SA15.
 [D318](RECORD.md#d318) — Dialogs keep their buttons on screen: `dialog_fit` (scrolling body, fixed footer, first size capped to the screen); the behaviour editor split into a header and four topic tabs; vehicle type, input, decision and coarse dialogs scroll.
 [D319](RECORD.md#d319) — Optimization review: NEXT holds open items only (1113 → 469 words, old list archived); new dialogs as free functions, not `EditorWindow` members; split `src/core/` files before an engine slice.
 [D320](RECORD.md#d320) — UI suites call `useTestStorage()`: test-mode storage for all 51 `EditorWindow` suites, stale recovery drafts removed, live ones kept; a crashed run no longer blocks the next one.

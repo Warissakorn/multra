@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-10-24 — S5.1: the study area contract, answered (D326)
+
+- **Asked:** continue; the owner picked S5 and answered its six choices in chat.
+- **Contract:** [STUDY_AREA](reference/STUDY_AREA.md).
+  - The study area is a set of Nodes (owner, against a polygon).
+  - Micro keeps their interiors, legs and the pieces between them, with gates at the open ends.
+  - Gate flows are typed, or cut from Macro or from Meso: both cuts are in S5 (owner).
+  - Macro and Meso results go to side files, and staleness is SHA-256 of the project and source.
+  - Generated objects in the area are warnings, and an export gets a marking line only when it
+    applies.
+- **Found while reading the code:** `MacroAssignment` keeps no path flows, so S5.3 keeps each
+  Frank–Wolfe iteration's paths with their step weights, an exact decomposition. Meso keeps no
+  per-path count at an inner link, so S5.4 adds FIFO counts at the gate links only. Today's stale
+  check is an in-memory revision, lost on reopen.
+- **Rows:** SA1–SA15 planned. Docs only, no code changed; the docs and file-size checks pass.
+
 ## 2026-10-24 — S4.5c: signals for a generated junction; S4.5 complete (D325)
 
 - **Asked:** continue; S4.5c was next. The owner answered two points: co-green turns inside a stage
@@ -178,34 +194,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **A junction without a Node** is listed by its end, for example `link-1@50`, and its row points
   at *Suggest nodes*. A hot end at the network's edge gives no row: there is nothing to refine.
 - **Rows:** RS9, RS10 (`nodeproposals`), with the editor part in `macro-ui`; four mutations caught.
-
-## 2026-10-23 — B23 answered; S4.3: Fill defaults (D315, D316)
-
-- **B23** (Meso benchmark), "as recommended": Boyles et al. 2025 for the corridor and network
-  cases, Daganzo 1994/1995 as second choices, and not-blind cases as verification only. The next
-  step is the owner's copy of Boyles et al.
-- **Fill defaults…** (Problems tab) lists the absent values the project can already cite, none
-  ticked:
-  - a generated Link's type from its Road's template;
-  - HCM 7's jam density on a project-owned type, only where it is valid for that type;
-  - a Link-less Road's Links from its template.
-
-  Each row shows its value, source and what it clears. The ticked ones apply in one Undo step, and
-  the panel checks again.
-- **Rows:** RS5–RS8 (`filldefaults`), with the editor part in `road-ui`; four mutations caught.
-
-## 2026-10-23 — S4.1–S4.2: the readiness contract and the panel by level (D313, D314)
-
-The owner chose all four S4 options as recommended: the Problems tab with a level selector, cited
-fills F1–F3 (a coarse Node's Micro detail later), proposals from v/c ≥ 1.0 and spill-back, and the
-order panel → fills → proposals ([READINESS](reference/READINESS.md)).
-- **The Problems tab** now checks Micro, Meso or Macro (with its period). Each level lists the
-  refusals of the functions its run calls, in the run's order, then advisories and seam rows. A
-  study sees everything missing at once instead of one refusal per run.
-- **An edit after a check** leaves a note to check again, instead of an empty list that read as
-  "no problems".
-- **Rows:** RS1–RS3 (`readiness`), RS4 in `tables-ui`; the panel's refusals are checked against the
-  runs themselves. Four mutations caught.
 
 ## Older entries
 
