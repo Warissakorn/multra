@@ -303,7 +303,7 @@ Adding a command must never teach `project/` its implementation. The correspondi
 - `data/compositions/` (M2.3), `data/priority-rules/` (gap time and headway for derived rules),
   `data/evaluation/queue-counter.json` (queue-counter conditions), `data/los/hcm.json` (LOS bounds, M5.5), `data/vehicle-appearance/`
   (display only, D97), `data/fonts/` (the bundled UI face) and `data/projects/` (shipped example
-  projects that tests and the CLI run).
+  projects that tests and the CLI run; [purpose of each](../data/projects/README.md)).
 - `data/locales/`: English key source and Thai UI text, copied with runtime data.
 - `data/los/`: LOS packs (`hcm.json`, M5.5) — jurisdiction-specific data, never compiled constants.
 

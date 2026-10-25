@@ -57,6 +57,7 @@ TEST(roads, rd1_roads_are_schema_53) { // RD1 (Road part)
     old["network"].erase("roads");
     CHECK(refusedAt(old, "EDIT_UNSUPPORTED_FIELD", "network.links[0].roadId"));
     for (const auto& entry : std::filesystem::directory_iterator(data() / "projects")) { // shipped projects keep their schema
+        if (!entry.path().string().ends_with(".traffic.json")) continue; // the folder's README
         std::ifstream file(entry.path()); Json p; file >> p;
         CHECK(documentJson(parseDocument(p))["schemaVersion"] == p["schemaVersion"]);
     }

@@ -84,7 +84,7 @@ Answered 2026-10-16: **B1, B2, B3, B5, B6, B8, B12, B13**, owner: “ปิด�
 proposed”), [D201](../decisions/RECORD.md#d201). Keep `TrafficSim` until a release; D95/D101 stay off
 and reopen only by route (i) in M3.4; the `level` skip is a discrepancy with M3_CONTRACT, queued as
 a fix in NEXT; the standstill cap joins M3.2.8a.1; more routing stations wait for a study that needs
-them; `four-leg-signalised` gets a 300 s cool-down (queued in NEXT); B12 is asked when multi-level S1
+them; `four-leg-signalised` gets a 300 s cool-down (done 2026-10-25, D337); B12 is asked when multi-level S1
 starts; the `w74` preset stays out of the catalog until M4.2 is revisited. Numbers are not reused.
 
 Answered 2026-10-15: **UI B16/B17**, owner: “ทำตามแนะนำ” (“follow the recommendation”).

@@ -2,6 +2,35 @@
 
 Entries moved whole from the live log; dates and evidence describe their own session.
 
+## 2026-10-24 — Vehicle library and clearer plan-view shapes (D333)
+
+- **Asked:** more vehicle types and more realistic, attractive, readable shapes.
+- **Built:** motorcycle, pickup, van, bus and rigid-truck catalogs, with explicit axles,
+  names and illustrative physical parameters; opt-in `urban-diverse` composition. Existing
+  car/heavy parameters and old composition weights remain unchanged; owned catalogs stay owned.
+- **Display:** optional appearance `shape` data selects reusable archetypes. Solid bodies carry
+  glass, roof/load panels and nose lights within one retained scene item; glass stays clickable.
+  The existing contrast casing, followed outline, axle origin and overview size floor remain.
+  Detail needs both 14 px physical length and 5 px width. New Scenario ownership drops retained
+  bodies; missing shape uses physical length before applying overview size floors.
+- **Rows:** installed-catalog compile/portable round-trip and appearance-loader refusals;
+  `vehicle-appearance-ui` covers all seven types, silhouettes, actual glass clicks, painted LOD
+  thresholds, overview floors, item reuse and replacement. Historical physics and turning
+  fixtures explicitly retain their original car/heavy pair; full-catalog coverage loads the
+  installed data directly. The contract is [VEHICLE_POSE](../reference/VEHICLE_POSE.md#plan-view-appearance-d333).
+  Historical sweep comparisons retain every original catalog hash, excluding additional
+  vehicle files only after proving their type IDs cannot be selected by the explicit inputs.
+  Archived metadata and measured results are preserved.
+- **Verification (2026-10-25):** Linux, GCC 14.2, Qt 6.8.2 offscreen: desktop build passes;
+  all 226 CTest cases have passing results (full run plus targeted reruns after fixture/setup
+  fixes). Architecture, file-size and documentation checks pass. The seed-42 CLI example is
+  byte-identical before/after. A single 600-Step run-view sample at 0.896525 px/m, 26 vehicles,
+  was 1768 ms before and 1710 ms after; this is not a performance-improvement claim.
+  Test setup permits loopback servers and Qt's isolated `.qttest` storage; fontconfig selects
+  bundled Noto Sans Thai 2.002 over the installed Thai-only 2.000 face with the same family name.
+  New values/proportions remain illustrative; Windows and high-DPI appearance remain owner checks.
+  No milestone gate closed.
+
 ## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
 
 - **Asked:** continue; S5.5b was next. The contract left no owner question open.

@@ -53,8 +53,10 @@ TEST(cooldown, cd1_schema27_round_trips_and_files_without_it_keep_their_bytes) {
     // Clearing every part restores the earlier schema and bytes exactly.
     changeEvaluationPeriod(d, 0, std::nullopt, 0);
     CHECK(!d.definition->evaluation); CHECK(documentJson(d) == plain);
-    // The committed example carries no cool-down and keeps schema 17.
-    CHECK(documentJson(parseDocument(fourLegJson()))["schemaVersion"] == 17);
+    // The committed example carries kFourLegCooldown (D201 B8) at schema 27, and reopens as saved.
+    const auto fourLeg = parseDocument(fourLegJson());
+    CHECK(fourLeg.definition->evaluation == EvaluationPeriod{0, std::nullopt, kFourLegCooldown});
+    CHECK(documentJson(fourLeg) == fourLegJson()); CHECK(fourLegJson()["schemaVersion"] == 27);
 }
 TEST(cooldown, cd1_older_schemas_and_bad_cool_downs_are_refused) {
     auto d = routed(); changeEvaluationPeriod(d, 0, std::nullopt, 300);
@@ -159,7 +161,9 @@ TEST(cooldown, cd5_no_demand_is_released_during_the_cool_down) {
     CHECK(state.vehicles.empty()); // a free road clears in the cool-down
 }
 TEST(cooldown, cd6_no_cool_down_keeps_the_d132_numbers) {
-    const auto d = parseDocument(fourLegJson()); const auto data = test::root() / "data";
+    // The drawing without the committed cool-down (D201 B8), as every four-leg file was before it.
+    auto d = parseDocument(fourLegJson()); changeEvaluationPeriod(d, 0, std::nullopt, 0);
+    const auto data = test::root() / "data";
     const auto snapshot = compileDocument(d, data);
     test::near(snapshot.scenario.duration, 900);
     const auto spec = evaluationSpec(d, snapshot, data);
@@ -176,7 +180,9 @@ TEST(cooldown, cd6_no_cool_down_keeps_the_d132_numbers) {
     CHECK(batchCsv(aggregate(again), again) == csv);
 }
 TEST(cooldown, cd7_four_leg_in_flight_traffic_is_no_longer_unfinished) {
-    auto d = parseDocument(fourLegJson()); const auto data = test::root() / "data";
+    // The committed file carries the cool-down (D201 B8); the forcing removes it first.
+    auto d = parseDocument(fourLegJson()); changeEvaluationPeriod(d, 0, std::nullopt, 0);
+    const auto data = test::root() / "data";
     const std::vector<std::uint32_t> seeds{42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
     {   // The forcing: without a cool-down in-flight traffic is warned (three seeds suffice here).
         const auto snapshot = compileDocument(d, data);

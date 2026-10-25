@@ -9,6 +9,10 @@
   },
   "definition": {
     "duration": 900.0,
+    "evaluation": {
+      "cooldown": 300.0,
+      "warmup": 0.0
+    },
     "inputs": [
       {
         "endTime": 900.0,
@@ -1611,5 +1615,5 @@
   },
   "nextId": 101,
   "revision": 0,
-  "schemaVersion": 17
+  "schemaVersion": 27
 }

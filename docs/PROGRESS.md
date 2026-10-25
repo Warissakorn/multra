@@ -6,6 +6,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-25 — Shipped projects reviewed; four-leg gets its 300 s cool-down (D337)
+
+- **Asked:** check the four shipped projects, then whether any is unneeded; the owner chose the
+  recommendation (“ทำตามแนะนำ”): keep all four, give four-leg its cool-down, document the folder.
+- **Review:** all four regenerate byte-identical from their `tools/` builders, have unique IDs,
+  `nextId` above every ID, resolved references, and run deterministically (seed 42 twice) with
+  none overloaded at seeds 42-51. No file is redundant: four-leg is the main regression fixture, the
+  T-junction the only Yield/right-hand one, the M2.6 template the only routing-decision gate-study
+  shape, the lane-change lab the D98 development bed (8 tests, C4).
+- **Dropped owner decision found:** D201 B8 (2026-10-16) queued a 300 s cool-down for
+  `four-leg-signalised`; it left NEXT by 2026-10-20 without being done. Now
+  `fixture::shippedFourLeg()` adds it to the committed file only (schema 17 → 27); the M2.6 template
+  and in-memory variants keep the bare drawing. Seeds 42-51 had about 52 vehicles still in the
+  network at 900 s and every movement warned unfinished.
+- **Tests:** the codec and no-cool-down rows that used the committed file as their bare baseline
+  (queue counter schema 16, EP schema 22 and warm-up 0, CD1/CD6/CD7, TT8, L5) clear the cool-down
+  first; EP and CD1 now pin the committed period. `road`/`roadcatalog` skip non-`.traffic.json`
+  files so the new [`data/projects/README.md`](../data/projects/README.md) is not parsed.
+- **Verification:** Linux, GCC 13.3: headless CTest 154/154 and `check` pass; desktop (Qt 6
+  offscreen) CTest 230/230. Four-leg seeds 42-51: no movement unfinished, 504.7 vehicles completed
+  of 504.7 generated, safety clamps 0. Windows untested. No milestone gate closed.
+
 ## 2026-10-25 — Review fixes: user-bound automation endpoint, gesture BUSY, car default (D336)
 
 - **Asked:** apply the review of the automation branch (D335) and of PR #190 (D333) and open one PR.
@@ -136,35 +158,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Verification:** Linux/Qt 6.8.2 offscreen: desktop rendering targets build; appearance,
   canvas LOD, run presentation and lane-change display suites pass. File-size, documentation
   and architecture checks pass. Production-painter gallery inspected at two scales.
-
-## 2026-10-24 — Vehicle library and clearer plan-view shapes (D333)
-
-- **Asked:** more vehicle types and more realistic, attractive, readable shapes.
-- **Built:** motorcycle, pickup, van, bus and rigid-truck catalogs, with explicit axles,
-  names and illustrative physical parameters; opt-in `urban-diverse` composition. Existing
-  car/heavy parameters and old composition weights remain unchanged; owned catalogs stay owned.
-- **Display:** optional appearance `shape` data selects reusable archetypes. Solid bodies carry
-  glass, roof/load panels and nose lights within one retained scene item; glass stays clickable.
-  The existing contrast casing, followed outline, axle origin and overview size floor remain.
-  Detail needs both 14 px physical length and 5 px width. New Scenario ownership drops retained
-  bodies; missing shape uses physical length before applying overview size floors.
-- **Rows:** installed-catalog compile/portable round-trip and appearance-loader refusals;
-  `vehicle-appearance-ui` covers all seven types, silhouettes, actual glass clicks, painted LOD
-  thresholds, overview floors, item reuse and replacement. Historical physics and turning
-  fixtures explicitly retain their original car/heavy pair; full-catalog coverage loads the
-  installed data directly. The contract is [VEHICLE_POSE](reference/VEHICLE_POSE.md#plan-view-appearance-d333).
-  Historical sweep comparisons retain every original catalog hash, excluding additional
-  vehicle files only after proving their type IDs cannot be selected by the explicit inputs.
-  Archived metadata and measured results are preserved.
-- **Verification (2026-10-25):** Linux, GCC 14.2, Qt 6.8.2 offscreen: desktop build passes;
-  all 226 CTest cases have passing results (full run plus targeted reruns after fixture/setup
-  fixes). Architecture, file-size and documentation checks pass. The seed-42 CLI example is
-  byte-identical before/after. A single 600-Step run-view sample at 0.896525 px/m, 26 vehicles,
-  was 1768 ms before and 1710 ms after; this is not a performance-improvement claim.
-  Test setup permits loopback servers and Qt's isolated `.qttest` storage; fontconfig selects
-  bundled Noto Sans Thai 2.002 over the installed Thai-only 2.000 face with the same family name.
-  New values/proportions remain illustrative; Windows and high-DPI appearance remain owner checks.
-  No milestone gate closed.
 
 ## Older entries
 

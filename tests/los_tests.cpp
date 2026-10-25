@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/commands/demand_commands.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/project/batch_output.hpp"
 #include "../src/project/evaluation.hpp"
@@ -99,14 +100,16 @@ TEST(los, groups_weight_by_vehicles) { // L4
     CHECK(empty.approaches.size() == 1); CHECK(!empty.approaches[0].delay); CHECK(!empty.approaches[0].los);
 }
 TEST(los, schema24_codec) { // L5
-    const auto d = controlled();
+    // The drawing alone, without the committed file's schema-27 cool-down (D201 B8).
+    auto d = controlled(); changeEvaluationPeriod(d, 0, std::nullopt, 0);
     const auto j = documentJson(d);
     CHECK(j["schemaVersion"] == 24);
     CHECK(j["network"]["travelTimeSections"][0]["controlType"] == "signalised");
     const auto reopened = parseDocument(Json::parse(j.dump()));
     CHECK(reopened == d); CHECK(documentJson(reopened) == j);
     // Without a type the sections stay schema 23 and write no key.
-    const auto plain = documentJson(controlled(std::nullopt));
+    auto bare = controlled(std::nullopt); changeEvaluationPeriod(bare, 0, std::nullopt, 0);
+    const auto plain = documentJson(bare);
     CHECK(plain["schemaVersion"] == 23); CHECK(!plain["network"]["travelTimeSections"][0].contains("controlType"));
     auto older = j; older["schemaVersion"] = 23;
     test::throws([&] { parseDocument(older); }, "EDIT_UNSUPPORTED_FIELD");
