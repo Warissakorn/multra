@@ -1,13 +1,11 @@
 #include "automation_server.hpp"
 #include "automation_endpoint.hpp"
-#include <QCryptographicHash>
 #include <QDir>
-#include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QLocalSocket>
 #include <QLockFile>
-#include <QStandardPaths>
 #include <exception>
 #include <memory>
 
@@ -84,21 +82,11 @@ bool AutomationServer::listen(const QString& endpoint) {
     }
     // Windows permits several QLocalServers on the same named pipe. Hold a
     // process-lifetime lock as well, so a second editor cannot share the name.
-    auto lockKey = endpoint;
-#ifdef Q_OS_WIN
-    lockKey = lockKey.toCaseFolded(); // Windows pipe names are case-insensitive.
-#endif
-    const auto digest = QCryptographicHash::hash(lockKey.toUtf8(), QCryptographicHash::Sha256).toHex();
-    // GenericDataLocation is per-user but independent of the executable/app name,
-    // matching QLocalServer's namespace across production and test host processes.
-    const auto storage = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    const auto directory = QDir(storage).filePath("MULTRA/automation");
-    if (storage.isEmpty() || !QDir().mkpath(directory) ||
-        !QFile::setPermissions(directory, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner)) {
+    const auto lockPath = automationLockPath(endpoint);
+    if (lockPath.isEmpty() || !QDir().mkpath(QFileInfo(lockPath).absolutePath())) {
         error_ = "Cannot create the user-local automation lock directory";
         return false;
     }
-    const auto lockPath = QDir(directory).filePath(QString::fromLatin1(digest) + ".lock");
     auto lock = std::make_unique<QLockFile>(lockPath);
     lock->setStaleLockTime(0);
     if (!lock->tryLock()) {

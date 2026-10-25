@@ -19,6 +19,11 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Default type:** catalogs sort by ID, so D333's bus became the default of a new Vehicle Input,
   the template of a new catalog type and a parking exit's placeholder. `preferredVehicleType`
   (car, else the first) is now the one rule, also used by the Behaviour Lab.
+- **Code review follow-ups:** an open menu is `BUSY` too; a padded seed is stored canonically,
+  not truncated by the 10-character field; the endpoint lock is resolved without Qt's test mode
+  (`automationLockPath`), and the test host uses `useTestStorage()` with one fixed name; a patch
+  never copies the embedded image; `commitChange` is the one post-edit path; History's reset
+  generation, not per-site clears, makes the documentId; the Lab uses `preferredVehicleType`.
 - **Verification:** see the PR; Linux only. The Windows refusal needs a second account.
 
 ## 2026-10-25 — Visible desktop control for AI agents (D335)

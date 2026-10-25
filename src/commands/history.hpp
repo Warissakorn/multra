@@ -21,6 +21,8 @@ public:
     // An unknown/expired revision throws before changing anything.
     bool restore(std::uint64_t revision);
     void reset(ProjectDocument document = {});
+    // Counts resets: a revision restarts from each file, so it alone cannot tell two documents apart.
+    std::uint64_t generation() const { return generation_; }
     void markSaved() { saved_ = revision(); }
     void markUnsaved() { saved_ = ~std::uint64_t{}; } // A recovered document requires an explicit save.
     bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& change);
@@ -30,6 +32,6 @@ private:
     struct Entry { std::string name; ProjectDocument before, after;  };
     ProjectDocument document_;
     std::vector<Entry> undo_, redo_;
-    std::uint64_t saved_{}, nextRevision_{1};
+    std::uint64_t saved_{}, nextRevision_{1}, generation_{};
 };
 }

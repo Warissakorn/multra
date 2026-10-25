@@ -18,7 +18,7 @@
 namespace multra {
 void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
-    clearRecovery(); clearRun(); discardMacro(); discardMeso(); automationDocumentId_.clear();history_.reset(std::move(document));
+    clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(std::move(document));
     automaticRevision_=conflictRevision_=UINT64_MAX;
     file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files
 }

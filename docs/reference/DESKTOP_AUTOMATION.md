@@ -83,9 +83,9 @@ still applies. Do not automatically retry it against the new revision.
 
 State includes `dirty`, `file`, `selection`, `canUndo`, `canRedo`, `busy`, and `run` with `running`, `prepared`, `finished`,
 `tick`, `time` and `seed`. A document revision guards authored content, rather than
-elapsed simulation time. Guarded commands are refused with `BUSY` while a modal editor dialog is open or a
-mouse button is held (a drag would commit over the patched document); finish in the window
-and inspect again.
+elapsed simulation time. Guarded commands are refused with `BUSY` while a modal editor dialog or a menu is open, or
+a mouse button is held (a drag would commit over the patched document); finish in the window
+and inspect again. `simulation.reset` stores its seed as the canonical decimal (`"007"` → `"7"`).
 
 ## Commands
 

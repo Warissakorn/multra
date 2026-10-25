@@ -35,4 +35,19 @@ inline QString automationServerName(const QString& endpoint) {
     return runtime + "/multra-" + QString::fromLatin1(digest);
 #endif
 }
+// The process-lifetime lock that keeps one editor per endpoint. Like the socket it is resolved
+// without Qt's test mode (which moves the data locations), so a test host and the real editor
+// take the same lock for the same name. Unix: beside the socket in the owner-only runtime
+// directory. Windows: the user's local application data; pipe names are case-insensitive.
+inline QString automationLockPath(const QString& endpoint) {
+#ifdef Q_OS_WIN
+    const auto local = qEnvironmentVariable("LOCALAPPDATA");
+    if (local.isEmpty()) return {};
+    const auto digest = QCryptographicHash::hash(endpoint.toCaseFolded().toUtf8(), QCryptographicHash::Sha256).toHex();
+    return local + "/MULTRA/automation/" + QString::fromLatin1(digest) + ".lock";
+#else
+    const auto socket = automationServerName(endpoint);
+    return socket.isEmpty() ? QString{} : socket + ".lock";
+#endif
+}
 }

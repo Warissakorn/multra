@@ -46,15 +46,24 @@ QJsonArray diagnosticJson(const std::vector<Diagnostic>& diagnostics) {
         {"objectId",QString::fromStdString(d.objectId)}});
     return rows;
 }
+// Why a guarded command must wait, or null. A modal dialog or an open menu runs a nested event
+// loop over the current objects, and a held button is a gesture whose release commits over a patch.
+const char* busyReason() {
+    if(QApplication::activeModalWidget())return "Close the open dialog before sending commands";
+    if(QApplication::activePopupWidget())return "Close the open menu before sending commands";
+    if(QApplication::mouseButtons()!=Qt::NoButton)return "Finish the pointer gesture before sending commands";
+    return nullptr;
+}
 }
 
 QJsonObject EditorWindow::automationState() {
-    if(automationDocumentId_.isEmpty())automationDocumentId_=QUuid::createUuid().toString(QUuid::WithoutBraces);
+    // The window's session plus History's generation: New/Open/Recover each start another document.
+    if(automationSession_.isEmpty())automationSession_=QUuid::createUuid().toString(QUuid::WithoutBraces);
     QJsonArray selection;
     for(const auto& id:canvas_->selection())selection.append(QString::fromStdString(id));
-    return {{"documentId",automationDocumentId_},{"revision",QString::number(history_.revision())},
+    return {{"documentId",automationSession_+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
         {"dirty",history_.dirty()},{"file",file_},{"canUndo",history_.canUndo()},{"canRedo",history_.canRedo()},
-        {"selection",selection},{"busy",QApplication::activeModalWidget()!=nullptr || QApplication::mouseButtons()!=Qt::NoButton},
+        {"selection",selection},{"busy",busyReason()!=nullptr},
         {"run",QJsonObject{{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},
             {"finished",runFinished()},{"tick",static_cast<qint64>(runState_.tick)},
             {"time",runState_.time},{"seed",runSeed_->text()}}}};
@@ -76,9 +85,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         if(!read) {
             if(request.value("documentId")!=state.value("documentId") || request.value("expectedRevision")!=state.value("revision"))
                 throw CommandError("STALE_DOCUMENT","Read status and supply the current documentId and expectedRevision strings");
-            if(QApplication::activeModalWidget())throw CommandError("BUSY","Close the open dialog before sending commands");
-            // A held button is a gesture in progress; its release would commit over the patched document.
-            if(QApplication::mouseButtons()!=Qt::NoButton)throw CommandError("BUSY","Finish the pointer gesture before sending commands");
+            if(const auto* reason=busyReason())throw CommandError("BUSY",reason);
         }
         QJsonObject result;
         if(command=="capabilities") {
@@ -106,19 +113,21 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             } else result={{"document",toQt(document)}};
         } else if(command=="document.patch") {
             if(!params.value("patch").isArray())throw CommandError("INVALID_PARAMS","patch must be an RFC6902 array");
-            const auto original=documentJson(history_.document());
+            // The embedded image never enters the JSON: an empty stand-in that must come back
+            // unchanged, then the shared bytes are restored. No copy or compare of up to 32 MB.
+            auto imageless=history_.document();imageless.background.pngBase64=std::make_shared<const std::string>();
+            const auto original=documentJson(imageless);
             const auto patched=original.patch(fromQt(params.value("patch")));
             if(!patched.is_object() || !patched.contains("schemaVersion") || patched.value("format",Json{})!=original.at("format") ||
                 patched.value("revision",Json{})!=original.at("revision") || !patched.contains("background") ||
-                !patched.at("background").is_object() ||
-                patched.at("background").value("pngBase64",Json{})!=original.at("background").at("pngBase64"))
+                !patched.at("background").is_object() || patched.at("background").value("pngBase64",Json{})!=Json(""))
                 throw CommandError("PROTECTED_FIELD","Keep schemaVersion; format, revision and embedded image bytes cannot be changed");
             auto candidate=parseDocument(patched);
             candidate.revision=history_.revision();
             candidate.background.pngBase64=history_.document().background.pngBase64; // Immutable, unchanged bytes stay shared across History.
-            const bool changed=history_.execute("editorAutomationChange",[&](auto& d){d=std::move(candidate);});
-            if(changed)clearRun();
-            error_->clear();rejected_.clear();refresh();
+            bool changed{};
+            try {changed=commitChange("editorAutomationChange",[&](auto& d){d=std::move(candidate);});}
+            catch(...){canvas_->setDocument(&history_.document());throw;} // as execute(); the reply keeps the issues
             result={{"changed",changed}};
         } else if(command=="file.open") {
             const auto path=requiredString(params,"path");
@@ -146,8 +155,8 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             if(command=="simulation.reset") {
                 if(params.contains("seed")) {
                     const auto seed=requiredString(params,"seed");
-                    parseSeed(seed.toStdString()); // Validate before clearing the current run.
-                    runSeed_->setText(seed);
+                    // Validate before clearing the run; write it canonically, as the 10-character field holds it.
+                    runSeed_->setText(QString::number(parseSeed(seed.toStdString())));
                 }
                 clearRun();
             } else if(command=="simulation.pause")pauseRun();

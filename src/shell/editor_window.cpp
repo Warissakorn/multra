@@ -65,7 +65,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     setReflowPolicy(error_,QSizePolicy::Ignored);
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
-    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); discardMeso(); automationDocumentId_.clear();history_.reset(newProjectDocument());
+    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(newProjectDocument());
         automaticRevision_=conflictRevision_=UINT64_MAX;
         file_.clear(); canvas_->select(""); refresh(); canvas_->fitNetwork(); } }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
@@ -178,7 +178,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
     buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildNodes(); buildOd(); buildPeriods(); buildModes(); buildLinkTypes(); buildRoads(); buildCrossSections(); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
-    automationDocumentId_.clear();history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
+    history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
 QAction* EditorWindow::action(const std::string& key,const QKeySequence& shortcut,const std::function<void()>& run) {
     auto* a=new QAction(this); a->setObjectName(QString::fromStdString(key)); a->setShortcut(shortcut);
@@ -228,8 +228,11 @@ void EditorWindow::translate() {
     texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
     buildMapTranslation();error_->clear(); refresh();
 }
+bool EditorWindow::commitChange(const std::string& name,const std::function<void(ProjectDocument&)>& change) {
+    const bool changed=history_.execute(name,change);if(changed)clearRun();error_->clear();rejected_.clear();refresh();return changed;
+}
 bool EditorWindow::execute(const std::string& name,const std::function<void(ProjectDocument&)>& change) {
-    try {const bool changed=history_.execute(name,change);if(changed)clearRun();error_->clear();rejected_.clear();refresh();return changed;}
+    try {return commitChange(name,change);}
     catch(const std::exception& e){showError(e);canvas_->setDocument(&history_.document());return false;}
 }
 void EditorWindow::deleteSelected() {

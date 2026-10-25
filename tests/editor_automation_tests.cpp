@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLineEdit>
+#include <QMenu>
 #include <QTemporaryDir>
 #include <QTest>
 #include <iostream>
@@ -247,6 +248,25 @@ void workflow(const std::filesystem::path& data) {
     QTest::mouseRelease(viewport, Qt::MiddleButton, {}, centre);
     require(QApplication::mouseButtons() == Qt::NoButton, "Pointer gesture fixture was not released");
     require(!status(window).value("busy").toBool(), "Released gesture still reports busy");
+
+    // An open menu runs over the current objects, as a context menu's exec() does.
+    QMenu menu(&window);
+    menu.addAction("fixture");
+    menu.popup(window.mapToGlobal(window.rect().center()));
+    QApplication::processEvents();
+    require(QApplication::activePopupWidget() == &menu, "Popup menu fixture was not established");
+    const auto popped = call(window, "document.patch", {{"patch", renamePatch("unsafe menu edit")}});
+    require(!popped.value("ok").toBool() && popped.value("error").toObject().value("code") == QJsonValue("BUSY"),
+            "Automation edited beneath an open menu");
+    require(window.history().document() == changed, "Menu rejection changed the document");
+    menu.close();
+    QApplication::processEvents();
+    require(!QApplication::activePopupWidget(), "Popup menu fixture was not closed");
+
+    // A seed longer than the 10-character field is written canonically, never truncated.
+    success(call(window, "simulation.reset", {{"seed", "00000000007"}}), "Padded seed reset failed");
+    require(status(window).value("run").toObject().value("seed") == QJsonValue("7"),
+            "Padded seed was not written as its canonical value");
     require(!call(window, "unknown.command").value("ok").toBool(), "Unknown command was accepted");
     window.close();
 }

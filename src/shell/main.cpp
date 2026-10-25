@@ -10,7 +10,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #ifdef MULTRA_AUTOMATION_TEST_STORAGE
-#include <QStandardPaths>
+#include "../../tests/ui_test_storage.hpp"
 #endif
 #include <filesystem>
 
@@ -19,8 +19,9 @@ int main(int argc, char** argv) {
     QLocale::setDefault(QLocale::c()); // Latin digits in every widget, before any is built
 #ifdef MULTRA_AUTOMATION_TEST_STORAGE
     // Test host compiles this same entry point with isolated Qt storage; it is never installed.
-    QStandardPaths::setTestModeEnabled(true);
-    QCoreApplication::setApplicationName("MULTRA-Automation-Test-"+QString::number(QCoreApplication::applicationPid()));
+    // One fixed name, so a killed host's unlocked draft is cleaned by the next (D320).
+    QCoreApplication::setApplicationName("MULTRA-Automation-Test");
+    useTestStorage();
 #else
     QCoreApplication::setApplicationName("MULTRA");
     multra::moveLegacyStorage("TrafficSim"); // D286: before any recovery file or tile is read

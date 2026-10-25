@@ -35,8 +35,7 @@ DriverBehaviour behaviourOf(const VehicleType& type, const std::vector<DriverBeh
 }
 LabSettings defaultSettings(const std::vector<VehicleType>& types, const std::vector<DriverBehaviour>& behaviours) {
     if (types.empty()) throw std::invalid_argument("LAB_NO_VEHICLE_TYPE");
-    const auto* car = find(types, "car");
-    if (!car) car = &types.front();
+    const auto* car = preferredVehicleType(types);
     const auto* heavy = find(types, "heavy-vehicle");
     if (!heavy) heavy = car;
     LabSettings s;

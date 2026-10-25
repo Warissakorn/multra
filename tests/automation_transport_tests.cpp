@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QLocalSocket>
 #include <QProcess>
+#include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QUuid>
@@ -155,6 +156,15 @@ int main(int argc, char** argv) {
         require(response.value("error").toObject().value("code") == "CONNECTION_FAILED" && !squatter.hasPendingConnections(),
                 "Client sent a request to a server at the shared bare name");
 #endif
+        // The endpoint lock ignores Qt's test mode, which moves the data locations: a test host and
+        // the real editor must contend for the same lock (on Windows, the only exclusion).
+        const auto lockPath = multra::automationLockPath(endpoint);
+        const auto data = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        QStandardPaths::setTestModeEnabled(true);
+        require(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) != data,
+                "Test mode did not move the data location");
+        require(!lockPath.isEmpty() && multra::automationLockPath(endpoint) == lockPath, "Test mode moved the endpoint lock");
+        QStandardPaths::setTestModeEnabled(false);
         socket.disconnectFromServer();
         std::cout << "PASS local automation framing, bounds, endpoint ownership and compiled client\n";
         return 0;
