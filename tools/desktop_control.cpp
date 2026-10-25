@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cstdio>
 #ifdef Q_OS_WIN
+#define NOMINMAX // windows.h must not replace std::max below
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <memory>
 #endif
