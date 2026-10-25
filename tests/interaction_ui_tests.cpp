@@ -340,6 +340,8 @@ void runVehicles(EditorCanvas& c,const std::filesystem::path& data) {
     Scenario s;s.duration=60;s.timeStep=.1;
     s.segments={{"d1",std::hypot(60.,60.),{}}};s.routes={{"route",{"d1"}}};
     s.vehicleTypes=source.vehicleTypes;s.behaviours=source.behaviours;
+    // Keep this fixture's custom unstyled van distinct from the installed van catalog entry.
+    std::erase_if(s.vehicleTypes,[](const auto& type){return type.id!="car" && type.id!="heavy-vehicle";});
     auto van=s.vehicleTypes.front();van.id="van";van.length=6;van.width=2;van.axles.reset();s.vehicleTypes.push_back(van);
     auto state=createSimulation(s,42);
     const std::map<std::string,double> front{{"car",20},{"heavy-vehicle",50},{"van",80}};

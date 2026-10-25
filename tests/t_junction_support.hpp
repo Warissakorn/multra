@@ -8,6 +8,8 @@
 #include "../src/project/evaluation.hpp"
 #include "../src/project/run.hpp"
 #include "../src/model/network/right_of_way.hpp"
+#include <fstream>
+#include <set>
 
 namespace tjunction {
 using namespace multra;
@@ -70,5 +72,47 @@ inline Run run(const fixture::TJunction& t, std::uint32_t seed = 42) { return ru
 inline const MovementRow& movement(const MovementReport& r, const std::string& name) {
     for (const auto& m : r.movements) if (m.name == name) return m;
     throw std::runtime_error("no movement " + name);
+}
+// Historical sweep comparisons may omit a newly installed type only when no input can
+// select it. Keep every archived catalog entry/hash, and leave metadata untouched on refusal.
+inline bool omitUnusedVehicleCatalogAdditions(const std::filesystem::path& root,const fixture::TJunction& fixture,
+        const nlohmann::ordered_json& archived,nlohmann::ordered_json& current) {
+    std::set<std::string> used;
+    if(!fixture.document.definition || fixture.document.definition->inputs.empty())return false;
+    for(const auto& input:fixture.document.definition->inputs) {
+        if(input.vehicleTypeId.empty() || !input.compositionId.empty())return false;
+        used.insert(input.vehicleTypeId);
+    }
+    for(const auto* metadata:{&archived,static_cast<const nlohmann::ordered_json*>(&current)}) {
+        const auto& inputs=metadata->at("inputs");
+        if(!inputs.is_array() || inputs.empty())return false;
+        for(const auto& input:inputs) {
+            if(!input.contains("vehicleTypeId") || !input.at("vehicleTypeId").is_string())return false;
+            const auto id=input.at("vehicleTypeId").get<std::string>();
+            if(id.empty() || (input.contains("compositionId") && input.at("compositionId")!=""))return false;
+            used.insert(id);
+        }
+    }
+    const auto typeId=[&](const std::filesystem::path& relative) {
+        std::ifstream file(root/"data"/relative);const auto type=Json::parse(file);
+        return type.at("id").get<std::string>();
+    };
+    auto trimmed=current;
+    std::set<std::string> ids;
+    try {
+        for(const auto& [name,hash]:archived.at("catalogs").items()) {
+            const std::filesystem::path relative(name);
+            if(relative.parent_path()=="vehicle-types")ids.insert(typeId(relative));
+        }
+        for(const auto& [name,hash]:current.at("catalogs").items()) {
+            if(archived.at("catalogs").contains(name))continue;
+            const std::filesystem::path relative(name);
+            if(relative.parent_path()!="vehicle-types" || relative.extension()!=".json")return false;
+            const auto id=typeId(relative);
+            if(id.empty() || used.contains(id) || !ids.insert(id).second)return false;
+            trimmed["catalogs"].erase(name);
+        }
+    }catch(const std::exception&){return false;}
+    current=std::move(trimmed);return true;
 }
 }

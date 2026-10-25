@@ -5,6 +5,7 @@
 #include "behaviour_lab_window.hpp"
 #include "path.hpp"
 #include "editor_style.hpp"
+#include "vehicle_color_dialog.hpp"
 #include "../project/evaluation_period.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
@@ -42,6 +43,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     // already resolved the system locale, and every child and dialog inherits the window's.
     QLocale::setDefault(QLocale::c());setLocale(QLocale::c());
     setObjectName("networkEditor");displayCatalog_=loadDisplayCatalog(data);
+    loadVehicleColorPreferences(displayCatalog_);
     setFont(loadEditorFont(data));
     for(const auto* code:{"en","th"}) {
         QFile f(displayPath(data/"locales"/(std::string(code)+".json")));

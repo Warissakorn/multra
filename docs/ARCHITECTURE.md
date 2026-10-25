@@ -288,6 +288,9 @@ Adding a command must never teach `project/` its implementation. The correspondi
 - `data/levels/`, `data/display-types/`: ordered levels and named styles loaded by
   `loadDisplayCatalog`. Model objects store IDs/levels; rendering owns their appearance.
   These values never alter simulation topology or conflict handling.
+- `data/vehicle-colors.json`: optional stock swatches. Shell colour preferences override
+  type colours in application-local storage; the canvas selects a stable per-vehicle colour
+  without consuming engine random values ([display contract](reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334)).
 - `data/compositions/` (M2.3), `data/priority-rules/` (gap time and headway for derived rules),
   `data/evaluation/queue-counter.json` (queue-counter conditions), `data/los/hcm.json` (LOS bounds, M5.5), `data/vehicle-appearance/`
   (display only, D97), `data/fonts/` (the bundled UI face) and `data/projects/` (shipped example

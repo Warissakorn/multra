@@ -184,6 +184,9 @@ int main(int argc,char** argv) {
             require(dialog,"Input dialog did not open");
             auto* route=dialog->findChild<QComboBox*>("editorInputRoute");
             require(route && route->currentText().toStdString()==routeId,"Input did not open on the drawn route");
+            auto* type=dialog->findChild<QComboBox*>("editorInputType");require(type,"Input has no vehicle-type selector");
+            const int car=type->findData("type:car");require(car>=0,"Input catalog omits the car fixture type");
+            type->setCurrentIndex(car);
             dialog->findChild<QDoubleSpinBox*>("editorInputVolume")->setValue(1800);
             dialog->accept();
         });

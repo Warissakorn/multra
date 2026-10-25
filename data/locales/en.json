@@ -1198,5 +1198,16 @@
   "editorProposalNoNode": "No Node at %1",
   "editorProposalVc": "%1 v/c %2",
   "editorProposalSpill": "%1 spill-back in %2 slices",
-  "editorProposalHint": "No Node covers %1: use Suggest nodes, or draw a Node there."
+  "editorProposalHint": "No Node covers %1: use Suggest nodes, or draw a Node there.",
+  "editorVehicleColors": "Vehicle colours…",
+  "editorVehicleColorsHelp": "Choose one colour or mix several colours within each vehicle type. These display preferences apply to all projects on this computer. Each vehicle keeps its colour during playback.",
+  "editorVehicleColorsMixed": "Mix colours within this type",
+  "editorVehicleColorAdd": "Add colour…",
+  "editorVehicleColorEdit": "Change colour…",
+  "editorVehicleColorRemove": "Remove colour",
+  "editorVehicleColorsPalette": "Use standard mixed palette",
+  "editorVehicleColorsReset": "Restore type default",
+  "editorVehicleColorsNoPalette": "Add another colour to create a mixed palette.",
+  "editorVehicleColorsDuplicate": "This colour is already in the palette. Choose a different colour.",
+  "editorVehicleColorSaveError": "Could not save colour preferences. Check the settings folder and try again."
 }

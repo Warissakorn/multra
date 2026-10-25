@@ -1,4 +1,5 @@
 {
   "vehicleTypeId": "heavy-vehicle",
-  "color": "#f59e0b"
+  "color": "#f59e0b",
+  "shape": "truck"
 }

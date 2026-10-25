@@ -1,6 +1,7 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
 #include "vehicle_shape.hpp"
+#include "vehicle_color.hpp"
 #include "vehicle_pose.hpp"
 #include "../core/routes.hpp"
 #include "../core/simulation.hpp"
@@ -38,7 +39,7 @@ void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId, bool hea
 }
 void EditorCanvas::setRunFrame(const SimState& frame) {
     // Scenarios are owned immutable snapshots, not mutable documents/revisions.
-    if(frame.scenario!=runFrame_.scenario){runAxlePaths_.clear();runLaneChangePaths_.clear();}
+    if(frame.scenario!=runFrame_.scenario){runAxlePaths_.clear();runLaneChangePaths_.clear();dropRunVehicles(true);}
     runFrame_=frame;
     if(!runLayerBaked_)bakeRunLayer();
     drawRunItems();
@@ -102,10 +103,10 @@ void EditorCanvas::drawRunItems() {
         item->setData(0,QStringLiteral("run-signal"));item->setData(1,QString::fromStdString(h.id));runItems_.push_back(item);
     }
     // D97: each vehicle is its type's true length x width, front bumper at the located station.
-    // Below a few pixels the size is floored so a vehicle never vanishes when zoomed far out, and
-    // the windshield and cab gap appear only once the body is long enough on screen to show them.
+    // Below a few pixels the size is floored so a vehicle never vanishes when zoomed far out.
+    // Interior detail also needs enough width, especially on a motorcycle.
     const double scale=viewScale();
-    std::map<std::uint32_t,QPainterPath> shapes; // per type, shared by every item of that type
+    std::map<std::uint32_t,VehicleDrawing> shapes; // per type, shared by every item of that type
     std::map<std::uint32_t,std::vector<RoutePart>> partsOf;
     const auto partsForRoute=[&](std::uint32_t route)->const std::vector<RoutePart>& {
         auto parts=partsOf.find(route);
@@ -130,8 +131,12 @@ void EditorCanvas::drawRunItems() {
         if(it==runGeometry_.end() || !levelVisible(runLevels_.at(location.segmentId)))continue;
         const auto& type=runFrame_.scenario->vehicleTypes.at(v.typeIndex);
         auto shape=shapes.find(v.typeIndex);
-        if(shape==shapes.end())shape=shapes.emplace(v.typeIndex,vehicleShape(std::max(type.length,4/scale),
-            std::max(type.width,2.5/scale),type.length*scale>=14)).first;
+        if(shape==shapes.end()) {
+            const auto appearance=display_.vehicleShapes.find(type.id);
+            shape=shapes.emplace(v.typeIndex,vehicleDrawing(std::max(type.length,4/scale),
+                std::max(type.width,2.5/scale),type.length*scale>=14 && type.width*scale>=5,
+                appearance==display_.vehicleShapes.end()?(type.length>7?"truck":"car"):appearance->second)).first;
+        }
         const auto pose=vehiclePose(parts,v.distance,type.length,runGeometry_,runEquations_);
         if(!pose)continue;
         const auto key=std::pair{v.routeIndex,v.typeIndex};
@@ -154,16 +159,15 @@ void EditorCanvas::drawRunItems() {
         // LATERAL §10 (D203): lane centre + lateral, to the left of the body's heading. Display only.
         const double across=v.lateral/std::hypot(heading.x,heading.y);
         const Point at{axlePose->front.x-across*heading.y,axlePose->front.y+across*heading.x};
-        const auto colour=display_.vehicleColors.find(type.id);
         const auto axles=vehicleAxles(type);const double lever=axles.wheelbase+axles.frontOverhang;
         // Rear axle is local origin; even a minimum-size symbol keeps its nose at
         // the traffic front station. Lane-change guides also satisfy the rear rolling equation.
-        const QColor fill(QString::fromStdString(colour!=display_.vehicleColors.end()?colour->second:styleOf(location.segmentId).vehicleColor));
+        const QColor fill(QString::fromStdString(vehicleDisplayColor(display_,type.id,v.id,styleOf(location.segmentId).vehicleColor)));
         auto& kept=runVehicles_[v.id];kept.seen=true;
         if(!kept.item || kept.type!=v.typeIndex || kept.scale!=scale) {
             auto body=shape->second;body.translate(lever,0);
             if(!kept.item){kept.item=new RunVehicleItem(body,fill,scale);scene_.addItem(kept.item);}
-            else{kept.item->setPath(body);kept.item->setPixelsPerMetre(scale);}
+            else{kept.item->setDrawing(body);kept.item->setPixelsPerMetre(scale);}
             kept.type=v.typeIndex;kept.scale=scale;
         }
         auto* item=kept.item;

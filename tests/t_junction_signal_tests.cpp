@@ -139,5 +139,9 @@ TEST(tjunction_signal, the_archived_headway_metadata_keeps_its_original_geometry
     CHECK(current.at("catalogs").at(behaviour) != archived.at("catalogs").at(behaviour)); // the catalog really changed
     CHECK(sweep::restoreArchivedBehaviour(test::root(), current)); // D90: that field only, and no spans here
     CHECK(sweep::restoreArchivedVehicleAxles(test::root(),current));
+    CHECK(current.at("catalogs").contains("vehicle-types/bus.json"));
+    CHECK(!archived.at("catalogs").contains("vehicle-types/bus.json"));
+    fixture::TJunctionOptions options;options.congestedMajor=true;
+    CHECK(omitUnusedVehicleCatalogAdditions(test::root(),fixture::tJunction(options),archived,current));
     CHECK(archived==current); // timing, volumes, catalogs, seeds and rules still agree
 }

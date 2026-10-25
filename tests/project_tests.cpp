@@ -45,9 +45,10 @@ TEST(project, missing_file) {
     test::throws([&] { loadScenario(test::root() / "missing.json", test::root() / "data"); }, "Cannot read JSON");
 }
 TEST(project, catalog_and_translation_keys) {
-    const auto s = test::demo().scenario;
-    // car and heavy-vehicle (M2.3), sorted by id; one behaviour.
-    CHECK(s.vehicleTypes.size() == 2); CHECK(s.vehicleTypes[0].id == "car"); CHECK(s.vehicleTypes[1].id == "heavy-vehicle");
+    const auto s = loadScenario(test::root()/"data/scenarios/crossing.json",test::root()/"data").scenario;
+    // Installed types are sorted by ID; adding a catalog entry must not require engine code.
+    std::vector<std::string> ids;for(const auto& t:s.vehicleTypes)ids.push_back(t.id);
+    CHECK(ids == std::vector<std::string>({"bus","car","heavy-vehicle","motorcycle","pickup","rigid-truck","van"}));
     CHECK(s.behaviours.size() == 1);
     std::ifstream english(test::root() / "data/locales/en.json"), thai(test::root() / "data/locales/th.json");
     CHECK(english.good()); CHECK(thai.good());

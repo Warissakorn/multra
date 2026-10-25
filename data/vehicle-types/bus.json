@@ -1,0 +1,19 @@
+{
+  "id": "bus",
+  "name": "Bus",
+  "length": 12.0,
+  "width": 2.5,
+  "axles": {
+    "wheelbase": 6.0,
+    "frontOverhang": 2.7,
+    "rearOverhang": 3.3
+  },
+  "desiredSpeed": {
+    "min": 8.33,
+    "max": 13.89
+  },
+  "maxAcceleration": 1.0,
+  "comfortableDeceleration": 1.3,
+  "maxDeceleration": 6.0,
+  "behaviourId": "wiedemann-inspired-prototype"
+}

@@ -7,3 +7,7 @@ Qt Widgets desktop: the network editor window, the application's only editing wi
 `editor_map.cpp` supplies localized map settings, navigation and visibility actions.
 Its dialogs are free functions in `map_settings_dialog`; `map_location_picker` adds searchable
 country and optional province/state choices while preserving manual coordinate entry.
+
+`vehicle_color_dialog` edits per-type fixed or mixed body colours from View, and atomically saves
+application-local display preferences shared by the editor and Behaviour Lab. See
+[vehicle colour contract](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334).

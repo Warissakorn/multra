@@ -130,3 +130,43 @@ TEST(ranges, vehicle_colours_are_display_data_for_known_types) {
     test::throws([&]{loadDisplayCatalog(dir);},"EDIT_DISPLAY_CATALOG");
     std::filesystem::remove_all(dir);
 }
+TEST(ranges, vehicle_shapes_are_optional_validated_display_data) {
+    const auto data=test::root()/"data";const auto catalog=loadDisplayCatalog(data);
+    CHECK(catalog.vehicleShapes.at("bus")=="bus");
+    CHECK(catalog.vehicleShapes.at("heavy-vehicle")=="truck");
+    const auto dir=std::filesystem::temp_directory_path()/"multra-vehicle-shapes";
+    std::filesystem::remove_all(dir);std::filesystem::create_directories(dir/"vehicle-appearance");
+    for(const auto* sub:{"levels","display-types"})
+        std::filesystem::copy(data/sub,dir/sub,std::filesystem::copy_options::recursive);
+    const auto file=dir/"vehicle-appearance/custom.json";
+    const auto write=[&](const Json& j){std::ofstream(file)<<j;};
+    Json j={{"vehicleTypeId","custom-type"},{"color","#123456"}};write(j);
+    CHECK(loadDisplayCatalog(dir).vehicleShapes.empty()); // legacy colour-only entries
+    for(const auto* shape:{"car","motorcycle","pickup","van","bus","truck"}) {
+        j["shape"]=shape;write(j);
+        CHECK(loadDisplayCatalog(dir).vehicleShapes.at("custom-type")==shape);
+    }
+    for(const auto& value:std::vector<Json>{"unknown","",nullptr,42,Json::array()}) {
+        j["shape"]=value;write(j);
+        CHECK(Json::parse(std::ifstream(file))["shape"]==value); // invalid setup reached disk
+        test::throws([&]{loadDisplayCatalog(dir);},"EDIT_DISPLAY_CATALOG");
+    }
+    std::filesystem::remove_all(dir);
+}
+TEST(ranges, standard_vehicle_palette_is_optional_validated_data) {
+    const auto data=test::root()/"data";
+    CHECK(loadDisplayCatalog(data).availableVehicleColors.size()>=2);
+    const auto dir=std::filesystem::temp_directory_path()/"multra-vehicle-palette";
+    std::filesystem::remove_all(dir);std::filesystem::create_directories(dir);
+    for(const auto* sub:{"levels","display-types"})
+        std::filesystem::copy(data/sub,dir/sub,std::filesystem::copy_options::recursive);
+    CHECK(loadDisplayCatalog(dir).availableVehicleColors.empty());
+    for(const auto& colors:std::vector<Json>{Json::array(),Json::array({"red"}),Json::array({"#abcdef","#ABCDEF"}),nullptr}) {
+        const Json bad={{"colors",colors}};std::ofstream(dir/"vehicle-colors.json")<<bad;
+        CHECK(Json::parse(std::ifstream(dir/"vehicle-colors.json"))==bad);
+        test::throws([&]{loadDisplayCatalog(dir);},"EDIT_DISPLAY_CATALOG");
+    }
+    std::ofstream(dir/"vehicle-colors.json")<<R"({"colors":["#ABCDEF","#123456"]})";
+    CHECK(loadDisplayCatalog(dir).availableVehicleColors==std::vector<std::string>({"#abcdef","#123456"}));
+    std::filesystem::remove_all(dir);
+}

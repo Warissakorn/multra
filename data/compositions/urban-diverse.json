@@ -1,0 +1,34 @@
+{
+  "id": "urban-diverse",
+  "name": "Urban diverse (illustrative)",
+  "types": [
+    {
+      "vehicleTypeId": "car",
+      "share": 0.45
+    },
+    {
+      "vehicleTypeId": "motorcycle",
+      "share": 0.2
+    },
+    {
+      "vehicleTypeId": "pickup",
+      "share": 0.15
+    },
+    {
+      "vehicleTypeId": "van",
+      "share": 0.08
+    },
+    {
+      "vehicleTypeId": "bus",
+      "share": 0.04
+    },
+    {
+      "vehicleTypeId": "rigid-truck",
+      "share": 0.05
+    },
+    {
+      "vehicleTypeId": "heavy-vehicle",
+      "share": 0.03
+    }
+  ]
+}

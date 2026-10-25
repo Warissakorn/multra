@@ -4,6 +4,7 @@
 #include "../src/project/load.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <stdexcept>
@@ -33,7 +34,12 @@ template<class F> void throws(F action, const std::string& message = {}) {
 }
 inline std::filesystem::path root() { return MULTRA_SOURCE_DIR; }
 inline multra::LoadedScenario demo() {
-    return multra::loadScenario(root() / "data/scenarios/crossing.json", root() / "data");
+    auto loaded = multra::loadScenario(root() / "data/scenarios/crossing.json", root() / "data");
+    // The historical crossing/physics fixture keeps its original car/heavy pair: manual
+    // placements use slot 0 as car and the frozen trajectories describe those two types.
+    // Tests of the installed catalog loadScenario directly so additions remain covered.
+    std::erase_if(loaded.scenario.vehicleTypes, [](const auto& type) { return type.id != "car" && type.id != "heavy-vehicle"; });
+    return loaded;
 }
 inline multra::Scenario straight() {
     const auto source = demo().scenario;

@@ -38,23 +38,30 @@ void editComposition(QDialog& parent,bool cancel=false){
             item<QPushButton>(periods,"editorDemandAddPeriod")->click();auto* table=item<QTableWidget>(periods,"editorDemandPeriodsTable");
             spin(*table,0,0,20);spin(*table,0,1,40);confirm(periods);
             require(periods.isVisible() && !item<QLabel>(periods,"editorDemandPeriodsError")->text().isEmpty(),"Empty composition period accepted");
-            // Catalog order is car, heavy vehicle; zero car excludes it during this period.
-            spin(*table,0,3,1);confirm(periods);
+            // This period contains only heavy vehicles, independently of installed catalog order.
+            int heavy=-1;for(int column=2;column<table->columnCount();++column)
+                if(table->horizontalHeaderItem(column)->text()=="heavy-vehicle")heavy=column;
+            require(heavy>=2,"Composition period omits the heavy-vehicle type");
+            spin(*table,0,heavy,1);confirm(periods);
         });if(cancel)child.reject();else confirm(child);
     });
 }
 void editRules(QDialog& parent,bool clear=false) {
     modal([&]{item<QPushButton>(parent,"editorTypeRules")->click();},[&](QDialog& rules){
         auto* tabs=item<QTabWidget>(rules,"editorTypeRuleTabs");
+        int carTab=-1;
         for(int k=0;k<tabs->count();++k) {
-            auto* page=tabs->widget(k);item<QCheckBox>(*page,"editorTypeRuleOverride")->setChecked(!clear);
+            const bool car=tabs->tabText(k)=="car",heavy=tabs->tabText(k)=="heavy-vehicle";
+            if(car)carTab=k;
+            auto* page=tabs->widget(k);item<QCheckBox>(*page,"editorTypeRuleOverride")->setChecked(!clear&&(car||heavy));
             auto* table=item<QTableWidget>(*page,"editorTypeRuleWeights");
-            if(!clear){const bool car=tabs->tabText(k)=="car";spin(*table,0,1,car?1:0);spin(*table,1,1,car?0:1);}
+            if(!clear&&(car||heavy)){spin(*table,0,1,car?1:0);spin(*table,1,1,car?0:1);}
         }
+        require(carTab>=0,"Type-rule catalog omits the car fixture type");
         if(!clear) {
-            auto* table=item<QTableWidget>(*tabs->widget(0),"editorTypeRuleWeights");spin(*table,0,1,0);spin(*table,1,1,0);confirm(rules);
+            auto* table=item<QTableWidget>(*tabs->widget(carTab),"editorTypeRuleWeights");spin(*table,0,1,0);spin(*table,1,1,0);confirm(rules);
             require(rules.isVisible() && !item<QLabel>(rules,"editorTypeRulesError")->text().isEmpty(),"Zero type total accepted");
-            const bool car=tabs->tabText(0)=="car";spin(*table,0,1,car?1:0);spin(*table,1,1,car?0:1);
+            spin(*table,0,1,1);spin(*table,1,1,0);
         }confirm(rules);
     });
 }
