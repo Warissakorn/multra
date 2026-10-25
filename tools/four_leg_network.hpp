@@ -165,4 +165,12 @@ inline FourLeg fourLegIntersection(const FourLegOptions& options = {}) {
     changeRunSettings(d, duration, 0.1);
     return result;
 }
+// The committed file: the drawing plus a 300 s cool-down (D201 B8), so the trips released in the
+// 900 s window finish and no movement is warned unfinished (D146, row CD7). Kept out of the
+// builder so the M2.6 template and the in-memory variants keep their own evaluation settings.
+inline ProjectDocument shippedFourLeg() {
+    auto d = fourLegIntersection().document;
+    changeEvaluationPeriod(d, 0, std::nullopt, 300);
+    return d;
+}
 }

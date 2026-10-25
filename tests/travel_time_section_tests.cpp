@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/commands/demand_commands.hpp"
 #include "../src/commands/history.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
@@ -120,8 +121,9 @@ TEST(traveltime, a_vehicle_held_inside_is_unfinished) { // TT7
     CHECK(r.active == 1);
 }
 TEST(traveltime, schema23_codec) { // TT8
-    const auto plain = parseDocument(fourLegJson());
-    const auto d = withSection();
+    // The drawing alone, without the committed file's schema-27 cool-down (D201 B8).
+    auto plain = parseDocument(fourLegJson()); changeEvaluationPeriod(plain, 0, std::nullopt, 0);
+    auto d = withSection(); changeEvaluationPeriod(d, 0, std::nullopt, 0);
     const auto j = documentJson(d);
     CHECK(j["schemaVersion"] == 23);
     CHECK(j["network"]["travelTimeSections"][0] == Json({{"id", d.network.travelTimeSections[0].id}, {"name", "West through"},

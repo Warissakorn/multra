@@ -24,6 +24,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
+- **Shipped projects (D337):** all four stay; [their README](../data/projects/README.md) names each
+  one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
+  that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 

@@ -47,6 +47,7 @@ TEST(roadcatalog, rd1_a_capacity_basis_is_schema_53) { // RD1 (capacity basis)
     CHECK(refusedAt(old, "EDIT_UNSUPPORTED_FIELD", "definition.linkTypes[0].capacityBasis"));
     // Every shipped project keeps its schema: none has a basis.
     for (const auto& entry : std::filesystem::directory_iterator(data() / "projects")) {
+        if (!entry.path().string().ends_with(".traffic.json")) continue; // the folder's README
         std::ifstream file(entry.path()); Json p; file >> p;
         CHECK(documentJson(parseDocument(p))["schemaVersion"] == p["schemaVersion"]);
     }

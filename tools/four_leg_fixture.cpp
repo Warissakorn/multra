@@ -10,10 +10,9 @@
 using namespace multra;
 int main(int argc, char** argv) {
     if (argc != 2) { std::cerr << "usage: multra-four-leg-fixture <output.traffic.json>\n"; return 2; }
-    const auto built = fixture::fourLegIntersection();
     std::ofstream out(argv[1], std::ios::binary);
     // The editor's own serialisation (src/shell/editor_storage.cpp), so the file reads as saved.
-    out << documentJson(built.document).dump(2) << "\n";
+    out << documentJson(fixture::shippedFourLeg()).dump(2) << "\n";
     if (!out) { std::cerr << "could not write " << argv[1] << "\n"; return 1; }
     return 0;
 }

@@ -35,7 +35,7 @@ bool same(const Json& a, const Json& b) {
 TEST(fourleg, committed_file_is_the_builder_output) {
     // The builder is the drawing's one source. A hand edit to the file, or a builder change
     // without regenerating it (multra-four-leg-fixture), fails here rather than drifting.
-    const auto built = documentJson(fixture::fourLegIntersection().document);
+    const auto built = documentJson(fixture::shippedFourLeg());
     CHECK(same(committed(), built));
     // The comparison can fail: a moved point is caught, not absorbed by the tolerance.
     auto moved = built; moved["network"]["links"][0]["geometry"][0]["x"] = built["network"]["links"][0]["geometry"][0]["x"].get<double>() + 0.01;

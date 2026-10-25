@@ -93,6 +93,7 @@ TEST(queue_counter, a22_a_counter_at_a_stop_line_and_the_same_explicit_point_agr
 }
 TEST(queue_counter, schema_16_round_trips_and_bad_lines_are_refused) {
     auto d = fourLeg();
+    changeEvaluationPeriod(d, 0, std::nullopt, 0); // the drawing alone, without its schema-27 cool-down (D201 B8)
     const auto head = d.network.signalHeads.front().id;
     putQueueCounter(d, {"", "west", {{head, std::nullopt}, {"", ControlPoint{{d.network.links[0].id, d.network.links[0].lanes[0].id, "", "", ""}, 10}}}});
     validateDocument(d);

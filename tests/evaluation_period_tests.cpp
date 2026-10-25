@@ -49,9 +49,10 @@ TEST(evaluationperiod, schema22_round_trips_and_files_without_it_keep_their_byte
     // Clearing restores the earlier schema and bytes exactly.
     changeEvaluationPeriod(d, 0, std::nullopt);
     CHECK(!d.definition->evaluation); CHECK(documentJson(d) == plain);
-    // The committed examples carry no period and read as warm-up 0.
+    // The committed four-leg carries only a cool-down (D201 B8): warm-up 0 and no end.
     const auto fourLeg = parseDocument(fourLegJson());
-    CHECK(!fourLeg.definition->evaluation); CHECK(documentJson(fourLeg)["schemaVersion"] == 17);
+    CHECK(fourLeg.definition->evaluation == EvaluationPeriod{0, std::nullopt, 300});
+    CHECK(documentJson(fourLeg)["schemaVersion"] == 27);
 }
 TEST(evaluationperiod, older_schemas_and_bad_periods_are_refused) {
     auto d = routed(); changeEvaluationPeriod(d, 120, std::nullopt);
@@ -143,7 +144,9 @@ TEST(evaluationperiod, unfinished_trips_are_counted_per_movement) {
     CHECK(run.report.movements[0].vehicles == 0);
 }
 TEST(evaluationperiod, warm_up_zero_reproduces_the_whole_run_numbers) {
-    const auto d = parseDocument(fourLegJson()); const auto data = test::root() / "data";
+    // The drawing alone: its committed cool-down would bound the window at 900 s (D201 B8).
+    auto d = parseDocument(fourLegJson()); changeEvaluationPeriod(d, 0, std::nullopt, 0);
+    const auto data = test::root() / "data";
     const auto snapshot = compileDocument(d, data);
     auto spec = evaluationSpec(d, snapshot, data);
     CHECK(spec.warmup == 0); CHECK(!spec.end); // the whole run, with no bound to round against
