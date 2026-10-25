@@ -105,16 +105,21 @@ bool AutomationServer::listen(const QString& endpoint) {
         error_ = "Automation endpoint is already in use or its lock is unavailable";
         return false;
     }
-    bool listening = server_.listen(endpoint);
+    const auto name = automationServerName(endpoint);
+    if (name.isEmpty()) {
+        error_ = "Cannot find the user-private runtime directory for the automation socket";
+        return false;
+    }
+    bool listening = server_.listen(name);
 #ifndef Q_OS_WIN
     if (!listening && server_.serverError() == QAbstractSocket::AddressInUseError) {
         // A crashed Unix process can leave its socket file behind. The lifetime
         // lock excludes another MULTRA owner; only remove after a live-connect
         // probe explicitly reports refusal, never on timeout or access denial.
         QLocalSocket probe;
-        probe.connectToServer(endpoint);
+        probe.connectToServer(name);
         if (!probe.waitForConnected(100) && probe.error() == QLocalSocket::ConnectionRefusedError &&
-            QLocalServer::removeServer(endpoint)) listening = server_.listen(endpoint);
+            QLocalServer::removeServer(name)) listening = server_.listen(name);
     }
 #endif
     if (!listening) {

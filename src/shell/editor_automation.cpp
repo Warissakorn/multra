@@ -54,7 +54,7 @@ QJsonObject EditorWindow::automationState() {
     for(const auto& id:canvas_->selection())selection.append(QString::fromStdString(id));
     return {{"documentId",automationDocumentId_},{"revision",QString::number(history_.revision())},
         {"dirty",history_.dirty()},{"file",file_},{"canUndo",history_.canUndo()},{"canRedo",history_.canRedo()},
-        {"selection",selection},{"busy",QApplication::activeModalWidget()!=nullptr},
+        {"selection",selection},{"busy",QApplication::activeModalWidget()!=nullptr || QApplication::mouseButtons()!=Qt::NoButton},
         {"run",QJsonObject{{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},
             {"finished",runFinished()},{"tick",static_cast<qint64>(runState_.tick)},
             {"time",runState_.time},{"seed",runSeed_->text()}}}};
@@ -77,6 +77,8 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             if(request.value("documentId")!=state.value("documentId") || request.value("expectedRevision")!=state.value("revision"))
                 throw CommandError("STALE_DOCUMENT","Read status and supply the current documentId and expectedRevision strings");
             if(QApplication::activeModalWidget())throw CommandError("BUSY","Close the open dialog before sending commands");
+            // A held button is a gesture in progress; its release would commit over the patched document.
+            if(QApplication::mouseButtons()!=Qt::NoButton)throw CommandError("BUSY","Finish the pointer gesture before sending commands");
         }
         QJsonObject result;
         if(command=="capabilities") {

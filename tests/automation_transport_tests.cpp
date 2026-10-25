@@ -1,7 +1,10 @@
 #include "../src/shell/automation_server.hpp"
+#include "../src/shell/automation_endpoint.hpp"
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QLocalSocket>
 #include <QProcess>
@@ -76,7 +79,7 @@ int main(int argc, char** argv) {
         require(restarted.listen(endpoint + "-restart"), "Normal shutdown did not release its endpoint and lock");
 
         QLocalSocket socket;
-        socket.connectToServer(endpoint);
+        socket.connectToServer(multra::automationServerName(endpoint));
         until([&] { return socket.state() == QLocalSocket::ConnectedState; }, "Local socket did not connect");
         socket.write("{\"id\":\"first\",\"command\":");
         socket.flush(); QTest::qWait(10);
@@ -101,7 +104,7 @@ int main(int argc, char** argv) {
                 "Handler exception escaped the transport");
 
         QLocalSocket huge;
-        huge.connectToServer(endpoint);
+        huge.connectToServer(multra::automationServerName(endpoint));
         until([&] { return huge.state() == QLocalSocket::ConnectedState; }, "Oversize client did not connect");
         huge.write(QByteArray(1024 * 1024 + 1, 'x') + '\n'); huge.flush();
         const auto tooLarge = receive(huge);
@@ -132,9 +135,26 @@ int main(int argc, char** argv) {
         response = invoke(binary, {"--endpoint", "/tmp/multra-alias", "--request", "{}"}, 2);
         require(response.value("error").toObject().value("code") == "INVALID_ARGUMENT", "Client accepted a socket path alias");
         QLocalServer silent;
-        require(silent.listen(endpoint + "-silent"), "Silent timeout test endpoint did not start");
+        require(silent.listen(multra::automationServerName(endpoint + "-silent")), "Silent timeout test endpoint did not start");
         response = invoke(binary, {"--endpoint", endpoint + "-silent", "--request", "{}", "--timeout", "100"}, 2);
         require(response.value("error").toObject().value("code") == "TIMEOUT", "Client did not bound an unanswered request");
+#ifndef Q_OS_WIN
+        // The socket is the user's own: inside an owner-only runtime directory, never the shared
+        // temporary one, so another account cannot create the name first and receive requests.
+        const QFileInfo own(multra::automationServerName(endpoint));
+        require(own.exists(), "Automation socket is not at its user-private path");
+        const auto shared = QFileDevice::ReadGroup | QFileDevice::WriteGroup | QFileDevice::ExeGroup |
+                            QFileDevice::ReadOther | QFileDevice::WriteOther | QFileDevice::ExeOther;
+        require(!(QFileInfo(own.absolutePath()).permissions() & shared), "Automation socket directory is shared");
+        QLocalServer squatter;
+        require(squatter.listen(endpoint + "-squat"), "Squatting fixture did not start");
+        require(QFileInfo(squatter.fullServerName()).absolutePath() == QFileInfo(QDir::tempPath()).absoluteFilePath() &&
+                    squatter.fullServerName() != multra::automationServerName(endpoint + "-squat"),
+                "Squatting fixture is not at the shared bare-name path");
+        response = invoke(binary, {"--endpoint", endpoint + "-squat", "--request", "{}", "--timeout", "100"}, 2);
+        require(response.value("error").toObject().value("code") == "CONNECTION_FAILED" && !squatter.hasPendingConnections(),
+                "Client sent a request to a server at the shared bare name");
+#endif
         socket.disconnectFromServer();
         std::cout << "PASS local automation framing, bounds, endpoint ownership and compiled client\n";
         return 0;

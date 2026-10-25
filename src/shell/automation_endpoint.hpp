@@ -1,4 +1,6 @@
 #pragma once
+#include <QCryptographicHash>
+#include <QStandardPaths>
 #include <QString>
 
 namespace multra {
@@ -16,5 +18,21 @@ inline bool isAutomationEndpoint(const QString& endpoint) {
     for (const auto c : endpoint)
         if (!alphanumeric(c) && c != '.' && c != '_' && c != '-') return false;
     return true;
+}
+// The platform name both ends use. A bare Unix name would land in the shared
+// temporary directory, where another account could create it first; the runtime
+// directory is the user's own (Qt requires owner-only 0700). The hash keeps the
+// socket path under the 104-byte sun_path bound. Windows pipes keep the name, and
+// the client checks the pipe server's owner instead.
+inline QString automationServerName(const QString& endpoint) {
+#ifdef Q_OS_WIN
+    return endpoint;
+#else
+    // Empty when Qt cannot establish a private runtime directory; callers refuse.
+    const auto runtime = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    if (runtime.isEmpty()) return {};
+    const auto digest = QCryptographicHash::hash(endpoint.toUtf8(), QCryptographicHash::Sha256).toHex().left(24);
+    return runtime + "/multra-" + QString::fromLatin1(digest);
+#endif
 }
 }

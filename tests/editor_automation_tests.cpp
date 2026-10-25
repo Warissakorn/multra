@@ -233,6 +233,20 @@ void workflow(const std::filesystem::path& data) {
     require(window.history().document() == changed, "Modal rejection changed the document");
     dialog.reject();
     QApplication::processEvents();
+
+    // A held button is a canvas gesture in progress (middle = pan, which edits nothing).
+    auto* viewport = window.canvas()->viewport();
+    const QPoint centre = viewport->rect().center();
+    QTest::mousePress(viewport, Qt::MiddleButton, {}, centre);
+    require(QApplication::mouseButtons() != Qt::NoButton, "Pointer gesture fixture was not established");
+    const auto held = call(window, "document.patch", {{"patch", renamePatch("unsafe gesture edit")}});
+    require(!held.value("ok").toBool() && held.value("error").toObject().value("code") == QJsonValue("BUSY") &&
+                held.value("state").toObject().value("busy").toBool(),
+            "Automation edited during a pointer gesture");
+    require(window.history().document() == changed, "Gesture rejection changed the document");
+    QTest::mouseRelease(viewport, Qt::MiddleButton, {}, centre);
+    require(QApplication::mouseButtons() == Qt::NoButton, "Pointer gesture fixture was not released");
+    require(!status(window).value("busy").toBool(), "Released gesture still reports busy");
     require(!call(window, "unknown.command").value("ok").toBool(), "Unknown command was accepted");
     window.close();
 }

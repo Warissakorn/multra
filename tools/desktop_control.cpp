@@ -8,6 +8,10 @@
 #include <QLocalSocket>
 #include <algorithm>
 #include <cstdio>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <memory>
+#endif
 
 namespace {
 constexpr qint64 maxRequestBytes = multra::automationRequestLimit;
@@ -17,6 +21,31 @@ void print(const QJsonObject& value) {
     std::fwrite(bytes.constData(), 1, static_cast<std::size_t>(bytes.size()), stdout);
     std::fflush(stdout);
 }
+#ifdef Q_OS_WIN
+// Any account may create a pipe of the same name first, so a request goes only
+// to a server running as this user. A token that cannot be read is untrusted.
+bool sameUserServer(HANDLE pipe) {
+    const auto userOf = [](HANDLE process) -> std::unique_ptr<char[]> {
+        HANDLE token{};
+        if (!OpenProcessToken(process, TOKEN_QUERY, &token)) return {};
+        DWORD size{};
+        GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+        auto buffer = size ? std::make_unique<char[]>(size) : nullptr;
+        const bool ok = buffer && GetTokenInformation(token, TokenUser, buffer.get(), size, &size);
+        CloseHandle(token);
+        return ok ? std::move(buffer) : nullptr;
+    };
+    ULONG pid{};
+    if (!GetNamedPipeServerProcessId(pipe, &pid)) return false;
+    const HANDLE server = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!server) return false;
+    const auto theirs = userOf(server);
+    CloseHandle(server);
+    const auto ours = userOf(GetCurrentProcess());
+    return theirs && ours && EqualSid(reinterpret_cast<TOKEN_USER*>(theirs.get())->User.Sid,
+                                      reinterpret_cast<TOKEN_USER*>(ours.get())->User.Sid);
+}
+#endif
 int failure(const QString& code, const QString& message) {
     print({{"id", QJsonValue::Null}, {"ok", false},
            {"error", QJsonObject{{"code", code}, {"message", message}}}});
@@ -69,8 +98,14 @@ int main(int argc, char** argv) {
     const auto remaining = [&] { return std::max(0, timeout - static_cast<int>(elapsed.elapsed())); };
     QLocalSocket socket;
     socket.setReadBufferSize(maxResponseBytes + 1);
-    socket.connectToServer(parser.value("endpoint"));
+    const auto name = multra::automationServerName(parser.value("endpoint"));
+    if (name.isEmpty()) return failure("CONNECTION_FAILED", "Cannot find the user-private runtime directory");
+    socket.connectToServer(name);
     if (!socket.waitForConnected(remaining())) return failure("CONNECTION_FAILED", socket.errorString());
+#ifdef Q_OS_WIN
+    if (!sameUserServer(reinterpret_cast<HANDLE>(socket.socketDescriptor())))
+        return failure("UNTRUSTED_SERVER", "The endpoint is not served by this user's MULTRA");
+#endif
     if (socket.write(bytes) != bytes.size()) return failure("WRITE_FAILED", socket.errorString());
     while (socket.bytesToWrite() > 0)
         if (!socket.waitForBytesWritten(remaining())) return failure("WRITE_FAILED", socket.errorString());
