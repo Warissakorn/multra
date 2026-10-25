@@ -6,7 +6,7 @@ from the recommendations:
 - the study area is a set of Nodes, not a polygon;
 - both cuts, from Macro and from Meso, are in S5.
 
-S5.2–S5.4 are implemented (D327–D330; §16–§19); S5.5 is not. The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
+The implementation notes are in §16–§22 (D327–D332, D338). The contract fixes, for WORKFLOW §5 steps 3, 4 and 7–8
 ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md)):
 - which part of the network a Micro run keeps;
 - where its boundary flows come from;
@@ -158,6 +158,9 @@ coarser model's flows to a finer one; it does not make either one right.
 - **The cut.** Each kept stretch of a path gives a trip from its entry gate to its exit gate.
   Per Meso output slice, the trip's volume is the path's count increase at the entry gate's link
   entrance. PCU is turned back into vehicles by the class's PCU (Meso loads PCU, D300).
+  Composition and single-vehicle-type classes stay separate. A `type:` class carries its type
+  through the run-time gate flow and matrix into the Micro input (§22, D338); neither the authored
+  catalogs nor the stored matrix/gate-flow schema changes.
 - **Time profile:** the gate matrices come one interval per Meso output slice (`mesoSettings`),
   so Micro's arrivals follow the slices. Whether to merge slices into coarser intervals is open
   (§13); no rule is invented here. *Answered by the owner (D330):* one interval per slice.
@@ -287,9 +290,11 @@ Each row first asserts that its forcing worked (AGENTS).
 | SA14 | Marking line | An export with one F4 Node in the area carries the second header line with its count; with no generated object and nothing stale the bytes equal D325's |
 | SA15 | Generated warnings | An F4 Node in the area gives one `MICRO_GENERATED_IN_AREA` with its counts; editing every generated object clears the row; the run starts in both cases |
 | SA16 | Gate flows (S5.2b) | `studyAreaEnds` lists the entry gates, then the zones on kept Links; `setGateFlows` replaces one (period, types) key and drops zeros; the dialog keeps each period's flows apart and returns the typed one; an area Node is filled on the canvas; *Gate flows…* is disabled while the area cannot run |
+| SA17 | Meso single-type cut | Mixed type/composition classes retain each type, slice and entrance count divided by PCU; two types sharing the same gates stay separate; owned/external catalogs and source bytes stay unchanged; seed replay and fresh side-file cuts agree |
+| SA18 | Study-area CLI | Real single, batch and comparison processes use absent/fresh/stale side files and export JSON/CSV with the exact source/project hashes, generated/stale marking and unchanged simulation outcomes |
 
-## 16.–21. As implemented
+## 16.–22. As implemented
 
-What each slice built (S5.2a–S5.5b, D327–D332) is in
+What each slice built (S5.2a–S5.5b and the single-type cut, D327–D332, D338) is in
 [STUDY_AREA_IMPLEMENTED](STUDY_AREA_IMPLEMENTED.md), with its section numbers kept, so
 "STUDY_AREA §20" still names a section there.

@@ -144,8 +144,8 @@ section here.
 - **Codes:**
   - `MICRO_AREA_SOURCE_INCOMPLETE` (a cancelled loading; at compile there is no observer, so it
     is a guard);
-  - `MICRO_AREA_CLASS_UNSUPPORTED` at `classes[i]` for a `type:` class: an input naming one
-    vehicle type, which no OD matrix can carry. **Open:** a gate flow by vehicle type;
+  - originally `MICRO_AREA_CLASS_UNSUPPORTED` at `classes[i]` for a `type:` class; §22 (D338)
+    adds that cut. Unknown class prefixes still get this advisory;
   - `MICRO_AREA_CUT_UNMATCHED` at `studyArea`.
 - **Editor:** the gate-flow dialog's Source gains *Cut from Meso*.
 - **Rows:**
@@ -257,7 +257,24 @@ S5.5 is split like S5.2: S5.5a is §8–§9 here; S5.5b is §10–§11 (rows SA1
     none once the flags are cleared, and the typed area run starts in both cases;
   - `node-ui`: the row shows "1 Connectors, 0 right-of-way objects…" and selecting it lights the
     Node.
-- **Not covered:** the CLI wiring is compiled and shares the tested functions, but no test runs
-  the CLI on a project with a study area.
-- **S5 is complete.** Open: gate flows by vehicle type (§19); a full result table restored on
-  reopen (D331).
+- The CLI wiring is exercised by §22's separate-process test (SA18).
+- A full result table restored on reopen remains outside D331's cut-source-only choice.
+
+## 22. Single-vehicle-type Meso cuts and CLI coverage (D338)
+
+- `mesoGateFlows` accepts both `composition:` and `type:` classes, keeping the complete class id
+  in its aggregation key. The existing entrance-count difference divided by class PCU still
+  determines each slice's vehicles; no loading or engine rule changes.
+- `GateFlow::vehicleTypeId` and `OdMatrix::vehicleTypeId` are run-time-only fields. The cut groups
+  matrices by type as well as period/window, composition and mode; `withOdDemand` passes the type
+  directly to its ordinary `VehicleInput`. Authored matrices and typed gate flows still require a
+  composition or mode, and their codecs and schema 55 are unchanged.
+- Catalog ownership stays unchanged. In particular, a project with its own reduced vehicle-type
+  library can consume `car-only` from the external catalog without validating unused compositions
+  against that smaller library. No synthetic composition is added.
+- SA17 (`studyarea`, `study_area_vehicle_type_tests.cpp`) checks non-unit PCU, mixed classes,
+  per-type counts, catalog/source preservation, seeded replay and fresh side-file parity. External
+  composition bytes remain in the captured input manifest. Unknown class prefixes still advise.
+- SA18 (`cli-study-area`) generates a synthetic project with a direct heavy-vehicle input, then
+  runs the real CLI for a single seed, batch and comparison. It checks absent, fresh and stale
+  Meso side files, exact hashes, JSON/CSV marking and equal simulation outcomes for equal counts.

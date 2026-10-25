@@ -56,16 +56,14 @@ std::vector<GateFlow> mesoGateFlows(const ProjectDocument& d, const std::filesys
     for (const auto& w : watchedCounts) counts[{w.cls, w.path, w.position}] = &w.entrance;
     const double slice = settings.slice > 0 ? settings.slice : duration;
     const auto listed = [](const std::vector<std::string>& v, const std::string& id) { return std::find(v.begin(), v.end(), id) != v.end(); };
-    std::map<std::tuple<double, std::string, std::string, std::string>, double> vehicles; // slice start, composition, from, to
+    std::map<std::tuple<double, std::string, std::string, std::string>, double> vehicles; // slice start, class, from, to
     std::size_t unmatched = 0;
     for (std::size_t c = 0; c < classes.size(); ++c) {
         const auto& cls = classes[c];
-        const std::string prefix = "composition:";
-        if (cls.id.rfind(prefix, 0) != 0) {
+        if (cls.id.rfind("composition:", 0) != 0 && cls.id.rfind("type:", 0) != 0) {
             if (advisories) advisories->push_back({"MICRO_AREA_CLASS_UNSUPPORTED", "classes[" + std::to_string(c) + "]"});
             continue;
         }
-        const auto composition = cls.id.substr(prefix.size());
         for (std::size_t p = 0; p < cls.paths.size(); ++p) {
             const auto& path = cls.paths[p];
             const bool od = path.source.rfind("od:", 0) == 0;
@@ -83,7 +81,7 @@ std::vector<GateFlow> mesoGateFlows(const ProjectDocument& d, const std::filesys
                 for (double s = 0; s < duration - 1e-9; s += slice) {
                     const double end = std::min(s + slice, duration);
                     const double v = (count->second->value(end) - count->second->value(s)) / cls.pcu;
-                    if (v > 0) vehicles[{s, composition, from, to}] += v;
+                    if (v > 0) vehicles[{s, cls.id, from, to}] += v;
                 }
                 b = e;
             }
@@ -93,7 +91,10 @@ std::vector<GateFlow> mesoGateFlows(const ProjectDocument& d, const std::filesys
     std::vector<GateFlow> flows;
     for (const auto& [k, v] : vehicles) {
         const double s = std::get<0>(k), end = std::min(s + slice, duration);
-        GateFlow f{"", std::get<2>(k), std::get<3>(k), std::get<1>(k), "", v * 3600 / (end - s)};
+        GateFlow f{"", std::get<2>(k), std::get<3>(k), "", "", v * 3600 / (end - s)};
+        const auto& cls = std::get<1>(k);
+        if (cls.rfind("type:", 0) == 0) f.vehicleTypeId = cls.substr(5);
+        else f.compositionId = cls.substr(12);
         f.start = s; f.end = end;
         flows.push_back(std::move(f));
     }

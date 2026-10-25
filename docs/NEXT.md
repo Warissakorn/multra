@@ -30,9 +30,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
-- **Open from S5:** gate flows by vehicle type, for inputs naming one type
-  (`MICRO_AREA_CLASS_UNSUPPORTED`); a CLI test on a study-area project; restoring the full Macro or
-  Meso table on reopen (owner chose the cut source only, D331).
+- **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
+  choice: the owner chose the cut source only (D331). The stored source and freshness line remain
+  the reopen contract.
 - **Other picks:**
   - **Desktop automation (D335):** on a newly packaged Windows build, run the PowerShell
     workflow in [DESKTOP_AUTOMATION](reference/DESKTOP_AUTOMATION.md): control the visible
