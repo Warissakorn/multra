@@ -5,7 +5,7 @@ Entries moved whole from the live log; dates and evidence describe their own ses
 ## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
 
 - **Asked:** continue; S5.5b was next. The contract left no owner question open.
-- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §21):
+- **Built** ([STUDY_AREA_IMPLEMENTED](../reference/STUDY_AREA_IMPLEMENTED.md) §21):
   - the Problems tab warns once per study-area Node holding program-drawn objects, with the
     count by kind, and the row selects the Node. The run still starts;
   - every export (single, batch, comparison, Macro, Meso; editor and CLI) carries a second header
