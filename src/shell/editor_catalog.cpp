@@ -2,6 +2,7 @@
 #include "editor_window.hpp"
 #include "demand_catalog_dialog.hpp"
 #include "../commands/catalog_commands.hpp"
+#include "../project/demand_catalog.hpp"
 #include "../project/mode_codec.hpp"
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -48,7 +49,7 @@ void EditorWindow::editDemandCatalog() {
     };
     const auto typeEdit=[&](bool create){
         const int row=typeTable->currentRow();if(!create && row<0)return;
-        VehicleType value=create?(staged.vehicleTypes.empty()?VehicleType{}:staged.vehicleTypes.front()):staged.vehicleTypes[row];
+        VehicleType value=create?(staged.vehicleTypes.empty()?VehicleType{}:*preferredVehicleType(staged.vehicleTypes)):staged.vehicleTypes[row];
         std::string name;
         if(!create)if(const auto at=staged.vehicleTypeNames.find(value.id);at!=staged.vehicleTypeNames.end())name=at->second;
         if(create)value.id=nextCatalogId(staged.vehicleTypes,"vehicle-type-");

@@ -34,6 +34,8 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
         compositions=catalog.compositions;
     }
     catch(const std::exception& e){showError(e);return;}
+    if(value.vehicleTypeId.empty() && value.compositionId.empty())
+        if(const auto* type=preferredVehicleType(catalog.vehicleTypes))value.vehicleTypeId=type->id; // a new input
     QDialog dialog(this);dialog.setObjectName("editorInputDialog");dialog.setWindowTitle(text("editorEditInput"));
     auto* form=new QFormLayout(scrollingBody(dialog)); // the buttons stay on screen however many rows
     form->setContentsMargins(0,0,0,0);
