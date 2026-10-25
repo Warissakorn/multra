@@ -6,6 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
+| Desktop automation and AI control | D336, D335 |
 | Product scope, stack, naming and owner gates | D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Macro assignment (S2, M10.1) | D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
@@ -378,3 +379,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D266](RECORD.md#d266) — the S1 contract: StudyPeriod at schema 49, `clockStart`, matrix `periodId`/`modeId`, Mode catalog and cited PCU; five owner choices, answered by D267.
 
 [D334](RECORD.md#d334) — Per-type fixed/mixed colour preferences in View, stable display hashing and atomic application-local persistence; original pointed motorcycle restored.
+[D336](RECORD.md#d336) — review fixes: user-bound automation endpoint (runtime-dir socket, Windows server-owner check), `BUSY` during a pointer gesture, `preferredVehicleType` (car) for new defaults.

@@ -68,10 +68,14 @@ public:
     // throwing a bare code at a caller that has no locale to resolve it with.
     void openFileOrReport(const QString& path);
     void saveFile(const QString& path); // Atomic replacement; failures preserve dirty state.
+    // JSON command boundary shared by the local automation server and UI integration tests.
+    QJsonObject automationRequest(const QJsonObject& request);
 protected:
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 private:
+    QString automationSession_; // with History::generation(), the automation documentId
+    QJsonObject automationState();
     History history_;
     std::filesystem::path data_;
     DisplayCatalog displayCatalog_;
@@ -452,6 +456,9 @@ private:
     void connectorHint();
     void refresh(bool modelChanged = true);
     void translate();
+    // The one post-edit path: History, then the run/error/refresh follow-up. Throws on refusal;
+    // execute() shows the error instead, automation returns it.
+    bool commitChange(const std::string& name, const std::function<void(ProjectDocument&)>& action);
     bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& action);
     std::string lastHeadSignal_; // "c:<controller>#<group>" or "p:<program>" the last head took; the next defaults to it
     void showError(const std::exception& error);

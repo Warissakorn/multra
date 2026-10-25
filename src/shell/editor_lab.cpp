@@ -19,8 +19,7 @@ void EditorWindow::openBehaviourLab() {
         const auto catalog = resolveDemandCatalog(document.definition.value_or(AuthoringDefinition{}), data_, false);
         auto settings = lab::defaultSettings(catalog.vehicleTypes, catalog.behaviours);
         const auto& types = catalog.vehicleTypes;
-        const auto source = std::find_if(types.begin(), types.end(), [](const auto& t) { return t.id == "car"; });
-        const auto& type = source != types.end() ? *source : types.front();
+        const auto& type = *preferredVehicleType(types);
         labTypeId_ = type.id; labBehaviourId_ = type.behaviourId;
         const auto behaviour = std::find_if(catalog.behaviours.begin(), catalog.behaviours.end(),
                                             [&](const auto& b) { return b.id == labBehaviourId_; });

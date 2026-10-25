@@ -3,6 +3,11 @@
 #include <cmath>
 #include <set>
 namespace multra {
+const VehicleType* preferredVehicleType(const std::vector<VehicleType>& types) {
+    if(types.empty())return nullptr;
+    const auto car=std::find_if(types.begin(),types.end(),[](const auto& t){return t.id=="car";});
+    return car!=types.end()?&*car:&types.front();
+}
 std::vector<ValidationIssue> ownedCatalogIssues(const AuthoringDefinition& d) {
     std::vector<ValidationIssue> issues;
     const auto typeExists=[&](const std::string& id){return std::any_of(d.vehicleTypes.begin(),d.vehicleTypes.end(),[&](const auto& t){return t.id==id;});};

@@ -32,6 +32,7 @@ bool History::restore(std::uint64_t target) {
 void History::reset(ProjectDocument document) {
     validateDocument(document);
     document_ = std::move(document); undo_.clear(); redo_.clear(); saved_ = revision(); nextRevision_ = revision() + 1;
+    ++generation_;
 }
 bool History::execute(const std::string& name, const std::function<void(ProjectDocument&)>& change) {
     auto candidate = document_;

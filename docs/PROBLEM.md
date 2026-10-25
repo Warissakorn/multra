@@ -18,6 +18,10 @@ intersection redesigns, signal retiming, development-access studies. Their worki
 5. Report **delay, level of service, and queue length per movement**, averaged across runs.
 6. Do it again for the "with project" and "mitigated" scenarios.
 
+The engineer may delegate these operations to an AI agent through structured commands
+against the compiled desktop application, while watching the same project and simulation
+in its native window. Automated edits must remain validated and undoable (D335).
+
 When the study's traffic is not given as counts — a new development, a network change, a
 corridor that diverts — the same engineer also needs, before step 2 (D145):
 

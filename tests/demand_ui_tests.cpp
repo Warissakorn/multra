@@ -185,8 +185,9 @@ int main(int argc,char** argv) {
             auto* route=dialog->findChild<QComboBox*>("editorInputRoute");
             require(route && route->currentText().toStdString()==routeId,"Input did not open on the drawn route");
             auto* type=dialog->findChild<QComboBox*>("editorInputType");require(type,"Input has no vehicle-type selector");
-            const int car=type->findData("type:car");require(car>=0,"Input catalog omits the car fixture type");
-            type->setCurrentIndex(car);
+            // Catalogs sort by ID, so an installed bus comes first; a new input still starts as car.
+            require(type->findData("type:bus")==0,"Fixture lost the type sorted before car");
+            require(type->currentData().toString()=="type:car","A new input did not default to the car type");
             dialog->findChild<QDoubleSpinBox*>("editorInputVolume")->setValue(1800);
             dialog->accept();
         });

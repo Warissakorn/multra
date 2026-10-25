@@ -14,6 +14,7 @@ cmake --build build/headless --target check
 | Source | Executable | Purpose |
 |---|---|---|
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
+| `desktop_control.cpp` | `multra-control` | Send a JSON command to a visible desktop's local automation endpoint; desktop build only |
 | `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
 | `check_file_sizes.cpp` | `multra-check-file-sizes` | Enforce the source-file line budget |
 | `check_docs.cpp` | `multra-check-docs` | Check maintained Markdown local links, anchors and folder indexes; supplied spec parts are excluded |

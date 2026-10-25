@@ -139,3 +139,13 @@ TEST(demand, expanded_catalog_keeps_legacy_mix_and_vehicle_parameters) {
     CHECK(type("motorcycle").width<type("car").width);
     CHECK(type("bus").length>type("van").length);
 }
+TEST(demand, preferred_type_is_car_before_the_first_by_id) {
+    const auto catalog=resolveDemandCatalog(AuthoringDefinition{},test::root()/"data");
+    CHECK(!catalog.vehicleTypes.empty() && catalog.vehicleTypes.front().id=="bus"); // forcing: bus sorts before car
+    const auto* preferred=preferredVehicleType(catalog.vehicleTypes);
+    CHECK(preferred && preferred->id=="car");
+    auto noCar=catalog.vehicleTypes;
+    std::erase_if(noCar,[](const auto& t){return t.id=="car";});
+    CHECK(preferredVehicleType(noCar)==&noCar.front());
+    CHECK(preferredVehicleType({})==nullptr);
+}

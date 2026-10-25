@@ -63,13 +63,18 @@ different working directory. For a custom data installation use `--data-dir <dir
 for another M0 fixture use `--scenario <file.json>`. The desktop accepts `--language th`.
 See [`tools/README.md`](tools/README.md) for all CLI and developer-tool commands.
 
+To let an AI control the visible editor, launch `multra-desktop --automation multra-ai`
+and send JSON commands with the compiled `multra-control` tool. See
+[desktop automation](docs/reference/DESKTOP_AUTOMATION.md) for the Windows PowerShell
+workflow, document edits, playback, results and screenshots. Updated binaries are required.
+
 ### Prebuilt binaries from CI
 
 `.github/workflows/native.yml` builds and tests every push and pull request.
 `.github/workflows/package.yml` produces downloadable builds for manual testing: open
 **Actions → Package binaries → Run workflow** (or push a `v*` tag), then download the
 `multra-linux-x86_64` or `multra-windows-x64` artifact. Each archive contains
-`bin/multra-desktop`, `bin/multra-cli`, the `data/` catalogs and a `RUN.txt`.
+`bin/multra-desktop`, `bin/multra-cli`, `bin/multra-control`, the `data/` catalogs and a `RUN.txt`.
 The Windows build bundles its Qt runtime; the Linux build needs Qt 6 Widgets installed
 (`sudo apt install libqt6widgets6`). These are unsigned test builds, not a release
 installer — M7 owns installation.

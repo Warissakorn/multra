@@ -95,6 +95,10 @@ TEST(parkingproject, od7_lot_row_gives_routes_not_inputs) {
     CHECK(lot.exits.size() == 1);CHECK(lot.exits[0].routeId == "od:" + f.x + ">" + f.t);
     CHECK(lot.dwell.front().seconds == 6000);CHECK(lot.dwell.back().seconds == 12000);
     CHECK(std::count_if(scenario.inputs.begin(), scenario.inputs.end(), [](const auto& i) { return i.id.starts_with("lot:"); }) == 1);
+    // The exit queue's placeholder type is car, not the catalog's first type by ID (bus).
+    CHECK(scenario.vehicleTypes.front().id == "bus"); // forcing: the installed fleet sorts bus first
+    const auto exit = std::find_if(scenario.inputs.begin(), scenario.inputs.end(), [](const auto& i) { return i.id.starts_with("lot:"); });
+    CHECK(exit != scenario.inputs.end() && exit->vehicleTypeId == "car");
 }
 TEST(parkingproject, pl7_initial_occupants_from_the_composition) {
     auto f = fixture(10);

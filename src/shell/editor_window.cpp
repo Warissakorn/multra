@@ -228,8 +228,11 @@ void EditorWindow::translate() {
     texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
     buildMapTranslation();error_->clear(); refresh();
 }
+bool EditorWindow::commitChange(const std::string& name,const std::function<void(ProjectDocument&)>& change) {
+    const bool changed=history_.execute(name,change);if(changed)clearRun();error_->clear();rejected_.clear();refresh();return changed;
+}
 bool EditorWindow::execute(const std::string& name,const std::function<void(ProjectDocument&)>& change) {
-    try {const bool changed=history_.execute(name,change);if(changed)clearRun();error_->clear();rejected_.clear();refresh();return changed;}
+    try {return commitChange(name,change);}
     catch(const std::exception& e){showError(e);canvas_->setDocument(&history_.document());return false;}
 }
 void EditorWindow::deleteSelected() {

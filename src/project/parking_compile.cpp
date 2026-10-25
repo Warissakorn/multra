@@ -30,7 +30,7 @@ void compileParkingLots(const ProjectDocument& d, const AuthoringDefinition& exp
             if (c != catalog.compositions.end())
                 for (const auto& t : c->types) spec.initialTypes.push_back({t.vehicleTypeId, t.share});
         }
-        const auto type = spec.initialTypes.empty() ? scenario.vehicleTypes.front().id : spec.initialTypes.front().vehicleTypeId;
+        const auto type = spec.initialTypes.empty() ? preferredVehicleType(scenario.vehicleTypes)->id : spec.initialTypes.front().vehicleTypeId;
         std::set<std::string> queues;
         for (const auto& [authored, weight] : lotExitWeights(d, lot.zoneId)) {
             std::vector<const Route*> lanes;

@@ -52,6 +52,7 @@ unchanged. See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md).
 | `multra_shell` | `src/shell/`, `src/editor/` | Commands, Geo, Qt Widgets/Network | The native editor — the application's only editing window since M1.24; the Behaviour Lab (D165) is a second, non-modal tool window that never edits the document except through Apply |
 | `multra-cli` | `tools/run_simulation.cpp` | Project/core/eval | Headless runner: single seed, JSONL export, `--project` movement report and CSV, `--seeds` batches with 95 % CI and `buildCommit`, `--compare` scenario differences (M5.8a), and the M3.2.8c diagnostic flags (`--lane-changes`, `--segment-times`, `--stop-lines`, `--arrival-phases`, `--wait-causes`), plus `--discharge` controls and captured input hashes |
 | `multra-desktop` | `src/shell/main.cpp` | Shell | Native desktop entry point; opens the editor |
+| `multra-control` | `tools/desktop_control.cpp` | Qt Core/Network | Sends one JSON request to an opt-in local desktop automation session (D335) |
 
 Connector widths and runtime paths share topology-only `connectorLanePairs`; the surface
 never calls `connectorPaths`. D114 derives each runtime lane's interior vertices from adjacent
@@ -127,6 +128,14 @@ current renderer is a QGraphicsView/QPainter diagnostic, not a performance-teste
 renderer.
 
 ## Editor boundary
+
+The optional `AutomationServer` listens on a user-local named pipe/socket and dispatches
+bounded JSONL requests on the GUI thread to `EditorWindow::automationRequest`. The compiled
+`multra-control` client needs no source tree or scripting runtime. Requests inspect the live
+document or apply RFC 6902 patches through `History`; no alternate editor model is maintained.
+Document-session and revision guards reject stale commands. Playback uses the existing fixed
+steps, accumulators and canvas; batched stepping paints once after at most 200 ticks. See
+[desktop automation](reference/DESKTOP_AUTOMATION.md) for the protocol, limits and Windows examples.
 
 `ProjectDocument` owns the authoring network, optional typed AuthoringDefinition, background,
 revision and ID counter. `History` commits a candidate only after validation and keeps
