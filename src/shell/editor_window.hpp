@@ -68,10 +68,14 @@ public:
     // throwing a bare code at a caller that has no locale to resolve it with.
     void openFileOrReport(const QString& path);
     void saveFile(const QString& path); // Atomic replacement; failures preserve dirty state.
+    // JSON command boundary shared by the local automation server and UI integration tests.
+    QJsonObject automationRequest(const QJsonObject& request);
 protected:
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 private:
+    QString automationDocumentId_;
+    QJsonObject automationState();
     History history_;
     std::filesystem::path data_;
     DisplayCatalog displayCatalog_;

@@ -10,7 +10,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 - **Name:** MULTRA (D284, D287); only the file's `"format": "TrafficSim"` stays until a schema step
   reads both. Licence GPL-3.0-or-later (D285); a CLA comes before any outside contribution.
-- **Evidence is Linux only** (offscreen Qt 6.4.2); no Windows or high-DPI claim. No session closes a
+- **Evidence is Linux only** (offscreen Qt; session versions in PROGRESS); no Windows or high-DPI claim. No session closes a
   milestone gate.
 - **Books:** five owner copies (Sheffi, HCM 7, Ortúzar & Willumsen, Planning Handbook 4th ed.,
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
@@ -31,6 +31,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   (`MICRO_AREA_CLASS_UNSUPPORTED`); a CLI test on a study-area project; restoring the full Macro or
   Meso table on reopen (owner chose the cut source only, D331).
 - **Other picks:**
+  - **Desktop automation (D335):** on a newly packaged Windows build, run the PowerShell
+    workflow in [DESKTOP_AUTOMATION](reference/DESKTOP_AUTOMATION.md): control the visible
+    editor, watch playback, patch/Undo a Link, save/reopen and capture a screenshot. Check
+    duplicate endpoint refusal and Unicode file paths. Local evidence is Linux only.
   - **Vehicle library/display (D333):** owner appearance check on Windows/high DPI for the
     seven types at working and overview zoom; illustrative type parameters still need study-specific calibration.
     D334 adds fixed/mixed colour preferences: include colour editing, restart and lab appearance.

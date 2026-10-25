@@ -78,7 +78,7 @@ void EditorWindow::recoverFile(const QString& file) {
     if(!lock->tryLock())throw std::runtime_error("EDIT_RECOVERY_LOCK");
     auto document=readEditorDocument(file);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
-    clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
+    clearRecovery();clearRun();discardMacro();discardMeso();automationDocumentId_.clear();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
     automaticRevision_=conflictRevision_=UINT64_MAX;
     recoveryLock_=std::move(lock);recoveryFile_=file;autosavedRevision_.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));

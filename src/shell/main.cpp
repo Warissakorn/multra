@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "automation_server.hpp"
 #include "legacy_storage.hpp"
 #include "path.hpp"
 #include "../geo/projection_data.hpp"
@@ -7,19 +8,30 @@
 #include <QCommandLineParser>
 #include <QLocale>
 #include <QMessageBox>
+#include <QTextStream>
+#ifdef MULTRA_AUTOMATION_TEST_STORAGE
+#include <QStandardPaths>
+#endif
 #include <filesystem>
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QLocale::setDefault(QLocale::c()); // Latin digits in every widget, before any is built
+#ifdef MULTRA_AUTOMATION_TEST_STORAGE
+    // Test host compiles this same entry point with isolated Qt storage; it is never installed.
+    QStandardPaths::setTestModeEnabled(true);
+    QCoreApplication::setApplicationName("MULTRA-Automation-Test-"+QString::number(QCoreApplication::applicationPid()));
+#else
     QCoreApplication::setApplicationName("MULTRA");
     multra::moveLegacyStorage("TrafficSim"); // D286: before any recovery file or tile is read
+#endif
     QCoreApplication::setApplicationVersion(MULTRA_VERSION);
     QCommandLineParser parser;
     parser.addHelpOption(); parser.addVersionOption();
     parser.addOption({"data-dir", "Data and locale directory", "directory"});
     parser.addOption({"scenario", "Editor project or M0 authoring scenario JSON", "file"});
     parser.addOption({"language", "Interface language: en or th", "code", "en"});
+    parser.addOption({"automation", "Enable local JSON automation on a named endpoint", "name"});
     // --editor is kept as an accepted no-op: the editor is the application now, and a script or
     // shortcut written against the old two-window build must not start failing on an unknown flag.
     parser.addOption({"editor", "Accepted for compatibility; the editor always opens"});
@@ -35,6 +47,11 @@ int main(int argc, char** argv) {
             qputenv("LIBTHAI_DICTDIR",multra::displayPath(thai).toUtf8());
         if (parser.value("language") != "en" && parser.value("language") != "th") throw std::invalid_argument("Unknown language");
         multra::EditorWindow editor(data, parser.value("language"));
+        multra::AutomationServer automation([&editor](const auto& request){return editor.automationRequest(request);});
+        if(parser.isSet("automation") && !automation.listen(parser.value("automation"))) {
+            QTextStream(stderr)<<"Cannot start automation: "<<automation.errorString()<<'\n';
+            return 2;
+        }
         editor.showMaximized();
         // Both file kinds land here. The editor reports its own failure in its own window, so a
         // file it cannot open never becomes a modal carrying an untranslated error code.

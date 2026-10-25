@@ -65,7 +65,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     setReflowPolicy(error_,QSizePolicy::Ignored);
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
-    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(newProjectDocument());
+    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); discardMeso(); automationDocumentId_.clear();history_.reset(newProjectDocument());
         automaticRevision_=conflictRevision_=UINT64_MAX;
         file_.clear(); canvas_->select(""); refresh(); canvas_->fitNetwork(); } }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
@@ -178,7 +178,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
     buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildNodes(); buildOd(); buildPeriods(); buildModes(); buildLinkTypes(); buildRoads(); buildCrossSections(); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
-    history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
+    automationDocumentId_.clear();history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
 QAction* EditorWindow::action(const std::string& key,const QKeySequence& shortcut,const std::function<void()>& run) {
     auto* a=new QAction(this); a->setObjectName(QString::fromStdString(key)); a->setShortcut(shortcut);

@@ -47,6 +47,10 @@ jobs:
               ./bin/multra-desktop --scenario data/scenarios/crossing.json
           Run the headless CLI with a seed:
               ./bin/multra-cli 42
+          Control the visible editor with local JSON commands:
+              ./bin/multra-desktop --automation multra-ai
+              ./bin/multra-control --endpoint multra-ai --file request.json
+          See DESKTOP_AUTOMATION.md for the protocol and examples.
 
           Results are NOT yet validated against field or reference data.
           EOF
@@ -127,6 +131,10 @@ jobs:
               bin\multra-desktop.exe --scenario data\scenarios\crossing.json
           Run the headless CLI with a seed:
               bin\multra-cli.exe 42
+          Control the visible editor with local JSON commands:
+              bin\multra-desktop.exe --automation multra-ai
+              bin\multra-control.exe --endpoint multra-ai --file request.json
+          See DESKTOP_AUTOMATION.md for the PowerShell example.
 
           Results are NOT yet validated against field or reference data.
           '@ | Set-Content dist/RUN.txt

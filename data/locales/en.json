@@ -1,4 +1,6 @@
 {
+  "editorAutomationCommand": "AI command: %1",
+  "editorAutomationChange": "AI edit",
   "validation": "Not yet validated · Wiedemann-inspired prototype",
   "description": "Two crossing movements, seeded arrivals and fixed-time signals. Vehicles accelerate, queue and discharge along links and connectors.",
   "seed": "Random seed (resets run)",
