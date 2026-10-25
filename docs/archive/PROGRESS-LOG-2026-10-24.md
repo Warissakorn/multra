@@ -2,6 +2,21 @@
 
 Entries moved whole from the live log; dates and evidence describe their own session.
 
+## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
+
+- **Asked:** continue; S5.5b was next. The contract left no owner question open.
+- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §21):
+  - the Problems tab warns once per study-area Node holding program-drawn objects, with the
+    count by kind, and the row selects the Node. The run still starts;
+  - every export (single, batch, comparison, Macro, Meso; editor and CLI) carries a second header
+    line when generated objects or stale inputs are behind it, plus a line naming where a study
+    area's flows came from. JSON gains `marking` / `studyArea` the same way. Unmarked exports keep
+    their bytes;
+  - the CLI reads the side files too, and a comparison's alternative uses its own.
+- **Rows:** SA14, SA15 (`studyarea`), the Problems row in `node-ui`. Linux only, GCC 13, Qt 6.4.2
+  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
+  built or run on Windows. No test runs the CLI on a study-area project.
+
 ## 2026-10-24 — S5.5a: Macro and Meso side files, stale by SHA-256 (D331)
 
 - **Asked:** continue; S5.5 was next. It was split like S5.2: S5.5a is the side files and

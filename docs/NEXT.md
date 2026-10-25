@@ -34,7 +34,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   - **Desktop automation (D335):** on a newly packaged Windows build, run the PowerShell
     workflow in [DESKTOP_AUTOMATION](reference/DESKTOP_AUTOMATION.md): control the visible
     editor, watch playback, patch/Undo a Link, save/reopen and capture a screenshot. Check
-    duplicate endpoint refusal and Unicode file paths. Local evidence is Linux only.
+    duplicate endpoint refusal and Unicode file paths. D336's server-owner check needs a second
+    Windows account: a pipe of the same name created by it must give `UNTRUSTED_SERVER`.
+    Local evidence is Linux only.
   - **Vehicle library/display (D333):** owner appearance check on Windows/high DPI for the
     seven types at working and overview zoom; illustrative type parameters still need study-specific calibration.
     D334 adds fixed/mixed colour preferences: include colour editing, restart and lab appearance.

@@ -6,6 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-25 — Review fixes: user-bound automation endpoint, gesture BUSY, car default (D336)
+
+- **Asked:** apply the review of the automation branch (D335) and of PR #190 (D333) and open one PR.
+- **Endpoint ownership:** a bare Unix name was `/tmp/<name>`, so another account could create it
+  first and receive every request; the per-user lock excluded only this user's editors. Both
+  ends now resolve `automationServerName`: on Unix a hashed socket in the owner-only runtime
+  directory. On Windows `multra-control` refuses a pipe whose server process is another user
+  (`UNTRUSTED_SERVER`).
+- **BUSY during a gesture:** a guarded command arriving while a mouse button is held is refused,
+  as under a modal dialog; a drag's release would otherwise commit over the patched document.
+- **Default type:** catalogs sort by ID, so D333's bus became the default of a new Vehicle Input,
+  the template of a new catalog type and a parking exit's placeholder. `preferredVehicleType`
+  (car, else the first) is now the one rule, also used by the Behaviour Lab.
+- **Verification:** see the PR; Linux only. The Windows refusal needs a second account.
+
 ## 2026-10-25 — Visible desktop control for AI agents (D335)
 
 - **Asked:** operate the compiled Windows application through commands while the user
@@ -145,21 +160,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   bundled Noto Sans Thai 2.002 over the installed Thai-only 2.000 face with the same family name.
   New values/proportions remain illustrative; Windows and high-DPI appearance remain owner checks.
   No milestone gate closed.
-
-## 2026-10-24 — S5.5b: generated objects in the area, export marking; S5 complete (D332)
-
-- **Asked:** continue; S5.5b was next. The contract left no owner question open.
-- **Built** ([STUDY_AREA_IMPLEMENTED](reference/STUDY_AREA_IMPLEMENTED.md) §21):
-  - the Problems tab warns once per study-area Node holding program-drawn objects, with the
-    count by kind, and the row selects the Node. The run still starts;
-  - every export (single, batch, comparison, Macro, Meso; editor and CLI) carries a second header
-    line when generated objects or stale inputs are behind it, plus a line naming where a study
-    area's flows came from. JSON gains `marking` / `studyArea` the same way. Unmarked exports keep
-    their bytes;
-  - the CLI reads the side files too, and a comparison's alternative uses its own.
-- **Rows:** SA14, SA15 (`studyarea`), the Problems row in `node-ui`. Linux only, GCC 13, Qt 6.4.2
-  offscreen: `ctest --preset desktop` 225/225; file-size, docs and architecture checks pass. Not
-  built or run on Windows. No test runs the CLI on a study-area project.
 
 ## Older entries
 

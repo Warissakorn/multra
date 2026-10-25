@@ -20,7 +20,17 @@ Start the editor with an explicit local endpoint:
 
 The endpoint is opt-in. Windows uses a local named pipe; Unix uses a local socket.
 Access is restricted to the local user through Qt's `UserAccessOption`. There is no
-network listener. Endpoint names contain 1–64 ASCII letters, digits, dots, underscores or hyphens,
+network listener. Another account must not be able to take the name first and receive the
+requests, so both ends resolve it the same way (`automationServerName`):
+
+- **Unix:** the socket is `multra-<hash>` inside the user's runtime directory
+  (`$XDG_RUNTIME_DIR`, or Qt's owner-only fallback), never the shared temporary directory.
+- **Windows:** any account can create a pipe of a given name, so `multra-control` asks the pipe
+  for its server process and refuses with `UNTRUSTED_SERVER` unless that process runs as the
+  same Windows user. Only the same-user path is tested; a second account is needed to see the
+  refusal.
+
+ Endpoint names contain 1–64 ASCII letters, digits, dots, underscores or hyphens,
 starting with a letter or digit. Use a different endpoint for each editor process. Starting another
 server on an occupied endpoint fails rather than taking over the existing session.
 
@@ -73,8 +83,9 @@ still applies. Do not automatically retry it against the new revision.
 
 State includes `dirty`, `file`, `selection`, `canUndo`, `canRedo`, `busy`, and `run` with `running`, `prepared`, `finished`,
 `tick`, `time` and `seed`. A document revision guards authored content, rather than
-elapsed simulation time. Guarded commands are refused while a modal editor dialog is open;
-close the dialog in the window and inspect again.
+elapsed simulation time. Guarded commands are refused with `BUSY` while a modal editor dialog is open or a
+mouse button is held (a drag would commit over the patched document); finish in the window
+and inspect again.
 
 ## Commands
 
