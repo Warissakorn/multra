@@ -4,6 +4,7 @@
 #include "../editor/canvas.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/display.hpp"
+#include "vehicle_color_dialog.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QDockWidget>
@@ -28,7 +29,8 @@ BehaviourLabWindow::BehaviourLabWindow(const lab::LabSettings& initial, std::fil
     resize(1280, 800);
     auto* splitter = new QSplitter(Qt::Vertical, this);
     canvas_ = new EditorCanvas(splitter); canvas_->setObjectName("labCanvas");
-    canvas_->setDisplayCatalog(loadDisplayCatalog(dataDirectory)); // road and vehicle colours, as the editor's
+    auto display=loadDisplayCatalog(dataDirectory);loadVehicleColorPreferences(display);
+    canvas_->setDisplayCatalog(std::move(display)); // road and vehicle colours, as the editor's
     auto* lower = new QWidget(splitter);
     auto* lowerLayout = new QVBoxLayout(lower); lowerLayout->setContentsMargins(editorDesign::space2, 0, editorDesign::space2, 0);
     status_ = new QLabel(lower); status_->setObjectName("labStatus"); status_->setFont(editorDesign::numericFont());

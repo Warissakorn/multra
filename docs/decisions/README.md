@@ -365,6 +365,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D330](RECORD.md#d330) — S5.4: the Meso cut from the loading's FIFO route counts (Yperman §3.2, Eq. 5.2) per output slice; Meso run at compile until S5.5 (owner); `type:` classes not cut.
 [D331](RECORD.md#d331) — S5.5a: Macro and Meso side files with `projectSha256`; the cut reads a usable one; stale by SHA-256 (`MICRO_AREA_SOURCE_STALE`); owner: cut source only, mismatch runs at compile.
 [D332](RECORD.md#d332) — S5.5b: `MICRO_GENERATED_IN_AREA` readiness warnings with counts; export marking and study-area flows lines (CSV and JSON, editor and CLI) only when needed; S5 complete.
+[D333](RECORD.md#d333) — Seven bundled vehicle types, opt-in diverse composition and data-selected plan-view archetypes; solid glass hit areas, detail LOD and preserved front/rear references.
 [D318](RECORD.md#d318) — Dialogs keep their buttons on screen: `dialog_fit` (scrolling body, fixed footer, first size capped to the screen); the behaviour editor split into a header and four topic tabs; vehicle type, input, decision and coarse dialogs scroll.
 [D319](RECORD.md#d319) — Optimization review: NEXT holds open items only (1113 → 469 words, old list archived); new dialogs as free functions, not `EditorWindow` members; split `src/core/` files before an engine slice.
 [D320](RECORD.md#d320) — UI suites call `useTestStorage()`: test-mode storage for all 51 `EditorWindow` suites, stale recovery drafts removed, live ones kept; a crashed run no longer blocks the next one.
@@ -375,3 +376,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D264](RECORD.md#d264) — S0.3 implemented: per-turn sections, leg queue, vehicle-weighted leg/Node delay and letters in single-run and batch JSON/CSV; rows N12–N17; start-up loss finding.
 [D265](RECORD.md#d265) — S0.5 implemented: Suggest nodes, one generated Node per junction (conflict clusters fed from two Links, padded hull), one Undo step; row N18.
 [D266](RECORD.md#d266) — the S1 contract: StudyPeriod at schema 49, `clockStart`, matrix `periodId`/`modeId`, Mode catalog and cited PCU; five owner choices, answered by D267.
+
+[D334](RECORD.md#d334) — Per-type fixed/mixed colour preferences in View, stable display hashing and atomic application-local persistence; original pointed motorcycle restored.

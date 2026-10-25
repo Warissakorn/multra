@@ -47,7 +47,10 @@ void editMix(QDialog& parent,bool zero=false){
     modal([&]{item<QPushButton>(parent,"editorCatalogCompositionscatalogEdit")->click();},[&](QDialog& child){
         item<QLineEdit>(child,"editorCatalogCompositionName")->setText("Project mix");
         auto* table=item<QTableWidget>(child,"editorCatalogCompositionShares");
-        for(int r=0;r<table->rowCount();++r)qobject_cast<QDoubleSpinBox*>(table->cellWidget(r,1))->setValue(zero?0:(table->item(r,0)->text()=="car"?3:1));
+        for(int r=0;r<table->rowCount();++r){
+            const auto id=table->item(r,0)->text();
+            qobject_cast<QDoubleSpinBox*>(table->cellWidget(r,1))->setValue(zero?0:(id=="car"?3:(id=="heavy-vehicle"?1:0)));
+        }
         confirm(child);
     });
 }
@@ -63,22 +66,24 @@ int main(int argc,char** argv){
         EditorWindow w(argv[1]);w.openFile(path);w.show();QApplication::processEvents();
         const auto original=documentJson(w.history().document());
         modal([&]{item<QAction>(w,"editorDemandCatalog")->trigger();},[](QDialog& parent){
+            const auto typeCount=item<QTableWidget>(parent,"editorCatalogTypes")->rowCount();
+            const auto compositionCount=item<QTableWidget>(parent,"editorCatalogCompositions")->rowCount();
             editCar(parent,1.75);
             modal([&]{item<QPushButton>(parent,"editorCatalogTypescatalogAdd")->click();},[](QDialog& child){
                 item<QLineEdit>(child,"editorCatalogTypeName")->setText("New vehicle");confirm(child);
             });
             auto* types=item<QTableWidget>(parent,"editorCatalogTypes");select(*types,"vehicle-type-1");
-            require(types->rowCount()==3,"Add did not create a stable new type ID");
-            item<QPushButton>(parent,"editorCatalogTypescatalogDelete")->click();require(types->rowCount()==2,"Unreferenced type was not deleted");
+            require(types->rowCount()==typeCount+1,"Add did not create a stable new type ID");
+            item<QPushButton>(parent,"editorCatalogTypescatalogDelete")->click();require(types->rowCount()==typeCount,"Unreferenced type was not deleted");
             modal([&]{item<QPushButton>(parent,"editorCatalogCompositionscatalogAdd")->click();},[](QDialog& child){
                 auto* table=item<QTableWidget>(child,"editorCatalogCompositionShares");
                 for(int r=0;r<table->rowCount();++r)if(table->item(r,0)->text()=="car")qobject_cast<QDoubleSpinBox*>(table->cellWidget(r,1))->setValue(1);
                 confirm(child);
             });
             auto* compositions=item<QTableWidget>(parent,"editorCatalogCompositions");select(*compositions,"composition-1");
-            require(compositions->rowCount()==3,"Add did not create a stable composition ID");
+            require(compositions->rowCount()==compositionCount+1,"Add did not create a stable composition ID");
             item<QPushButton>(parent,"editorCatalogCompositionscatalogDelete")->click();
-            require(compositions->rowCount()==2,"Unreferenced composition was not deleted");parent.reject();
+            require(compositions->rowCount()==compositionCount,"Unreferenced composition was not deleted");parent.reject();
         });
         require(documentJson(w.history().document())==original,"Cancel captured catalogs");
         modal([&]{item<QAction>(w,"editorDemandCatalog")->trigger();},[](QDialog& parent){

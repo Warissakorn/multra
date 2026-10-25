@@ -1,6 +1,9 @@
 #include "editor_window.hpp"
 #include "editor_interaction.hpp"
 #include "editor_style.hpp"
+#include "vehicle_color_dialog.hpp"
+#include "behaviour_lab_window.hpp"
+#include "../project/demand_catalog.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QActionGroup>
@@ -23,6 +26,16 @@
 #include <initializer_list>
 namespace multra {
 void EditorWindow::buildWorkspace() {
+    action("editorVehicleColors",{},[this]{
+        try {
+            const auto catalog=resolveDemandCatalog(history_.document().definition.value_or(AuthoringDefinition{}),data_,false);
+            std::vector<std::string> ids;for(const auto& type:catalog.vehicleTypes)ids.push_back(type.id);
+            if(editVehicleColors(this,displayCatalog_,ids,[this](const char* key){return text(key);})) {
+                canvas_->setDisplayCatalog(displayCatalog_);
+                if(lab_)lab_->canvas()->setDisplayCatalog(displayCatalog_);
+            }
+        }catch(const std::exception& error){showError(error);}
+    });
     auto* commandPalette=action("editorCommandPalette",
 #if defined(Q_OS_MACOS) || defined(Q_OS_MAC)
         QKeySequence("Meta+K"),[this]{showCommandPalette();});
@@ -48,7 +61,7 @@ void EditorWindow::buildWorkspace() {
     for(const auto* key:{"editorRecover","editorEmbedCatalogs"})files->removeAction(actions_.at(key));
     menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs"});
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});
-    menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
+    menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","editorVehicleColors","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorMapRetry","editorToggleMap","editorRemoveMap"});
     menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorBehaviourLab","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
     menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts"});

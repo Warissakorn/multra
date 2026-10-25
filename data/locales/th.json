@@ -1198,5 +1198,16 @@
   "editorProposalNoNode": "ไม่มี Node ที่ %1",
   "editorProposalVc": "%1 v/c %2",
   "editorProposalSpill": "%1 คิวย้อนกลับ %2 ช่วงเวลา",
-  "editorProposalHint": "ไม่มี Node ครอบ %1: ใช้ Suggest nodes หรือวาด Node ที่นั่น"
+  "editorProposalHint": "ไม่มี Node ครอบ %1: ใช้ Suggest nodes หรือวาด Node ที่นั่น",
+  "editorVehicleColors": "สีของยานพาหนะ…",
+  "editorVehicleColorsHelp": "เลือกสีเดียวหรือคละหลายสีในยานพาหนะแต่ละประเภท การตั้งค่านี้ใช้แสดงผลทุกโครงการบนเครื่องนี้ รถแต่ละคันจะคงสีเดิมระหว่างเล่น",
+  "editorVehicleColorsMixed": "คละสีในยานพาหนะประเภทนี้",
+  "editorVehicleColorAdd": "เพิ่มสี…",
+  "editorVehicleColorEdit": "เปลี่ยนสี…",
+  "editorVehicleColorRemove": "ลบสี",
+  "editorVehicleColorsPalette": "ใช้ชุดสีคละมาตรฐาน",
+  "editorVehicleColorsReset": "คืนสีมาตรฐานของประเภทนี้",
+  "editorVehicleColorsNoPalette": "เพิ่มอีกสีเพื่อสร้างชุดสีคละ",
+  "editorVehicleColorsDuplicate": "มีสีนี้อยู่ในชุดแล้ว กรุณาเลือกสีอื่น",
+  "editorVehicleColorSaveError": "บันทึกการตั้งค่าสีไม่ได้ กรุณาตรวจสอบโฟลเดอร์การตั้งค่าแล้วลองใหม่"
 }

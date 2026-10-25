@@ -9,6 +9,7 @@
 #include <QGraphicsItem>
 #include <QStandardPaths>
 #include <QTest>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <optional>
@@ -83,7 +84,10 @@ void joinedPose(const std::filesystem::path& data) {
     Connector c;c.id="curve";c.from={"a","a1"};c.to={"b","b1"};
     c.geometry=connectorCurve(n,c.from,c.to,19);n.connectors.push_back(c);
     const auto path=connectorPaths(n,c).front();const double length=connectorPathLength(path);
-    const auto source=loadScenario(data/"scenarios/crossing.json",data).scenario;
+    auto source=loadScenario(data/"scenarios/crossing.json",data).scenario;
+    // The tangent-gap forcing and replacement axles below describe the original
+    // car/heavy fixture. The overlapping guide test separately covers every installed type.
+    std::erase_if(source.vehicleTypes,[](const auto& type){return type.id!="car"&&type.id!="heavy-vehicle";});
     Scenario scenario;scenario.duration=60;scenario.timeStep=.1;
     scenario.segments={{"a1",80,{path.id}},{path.id,length,{"b1"}},{"b1",70,{}}};
     scenario.routes={{"route",{"a1",path.id,"b1"}}};

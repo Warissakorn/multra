@@ -143,6 +143,20 @@ TEST(tjunction, the_archived_sweep_metadata_keeps_its_original_geometry) {
     auto oldType=type;oldType.erase("axles");CHECK(sweep::sameTrafficVehicleType(type,oldType));
     auto changed=type;changed["length"]=5.;CHECK(!sweep::sameTrafficVehicleType(changed,oldType));
     changed=type;changed["maxAcceleration"]=3.;CHECK(!sweep::sameTrafficVehicleType(changed,oldType));
+    CHECK(current.at("catalogs").contains("vehicle-types/bus.json"));
+    CHECK(!archived.at("catalogs").contains("vehicle-types/bus.json")); // additions really need checking
+    const auto sweepFixture=fixture::tJunction();
+    auto used=current;used["inputs"][0]["vehicleTypeId"]="bus";
+    CHECK(used["inputs"][0]["vehicleTypeId"]=="bus");const auto usedBefore=used;
+    CHECK(!omitUnusedVehicleCatalogAdditions(test::root(),sweepFixture,archived,used));CHECK(used==usedBefore);
+    auto other=current;other["catalogs"]["evaluation/new-default.json"]="extra";
+    CHECK(other.at("catalogs").contains("evaluation/new-default.json"));const auto otherBefore=other;
+    CHECK(!omitUnusedVehicleCatalogAdditions(test::root(),sweepFixture,archived,other));CHECK(other==otherBefore);
+    auto hashChanged=current;hashChanged["catalogs"]["vehicle-types/car.json"]="changed";
+    CHECK(hashChanged.at("catalogs").at("vehicle-types/car.json")!=archived.at("catalogs").at("vehicle-types/car.json"));
+    CHECK(omitUnusedVehicleCatalogAdditions(test::root(),sweepFixture,archived,hashChanged));
+    CHECK(hashChanged!=archived); // an original type's hash is never discarded/restored by this helper
+    CHECK(omitUnusedVehicleCatalogAdditions(test::root(),sweepFixture,archived,current));
     CHECK(archived==current); // timing, volumes, catalogs, seeds and rules still agree
     // A changed catalog would be caught: the hash reads the file, not its name.
     CHECK(sweep::fnv1a(test::root() / "data/vehicle-types/car.json") != sweep::fnv1a(test::root() / "data/vehicle-types/heavy-vehicle.json"));

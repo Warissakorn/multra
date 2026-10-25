@@ -91,7 +91,10 @@ TEST(behaviourlibrary, invalid_entries_reject_load_and_edit_atomically_even_when
         auto file = j; change(file); test::throws([&] { parseDocument(file); }, code);
     };
     refuse([](Json& f) { f["definition"]["vehicleClasses"].push_back({{"id", "also"}, {"vehicleTypeIds", {"heavy-vehicle"}}}); }, "DUPLICATE_CLASS_MEMBERSHIP");
-    refuse([](Json& f) { f["definition"]["vehicleClasses"][0]["vehicleTypeIds"].push_back("bus"); }, "UNKNOWN_VEHICLE_TYPE");
+    const std::string missingType="__missing_vehicle_type__";
+    const auto& types=j["definition"]["vehicleTypes"];
+    CHECK(std::none_of(types.begin(),types.end(),[&](const auto& type){return type["id"]==missingType;}));
+    refuse([&](Json& f) { f["definition"]["vehicleClasses"][0]["vehicleTypeIds"].push_back(missingType); }, "UNKNOWN_VEHICLE_TYPE");
     refuse([](Json& f) { f["definition"]["vehicleClasses"][0]["id"] = " "; }, "INVALID_ID");
     refuse([](Json& f) { f["definition"]["linkBehaviourTypes"].push_back(f["definition"]["linkBehaviourTypes"][0]); }, "DUPLICATE_ID");
     // An unused behaviour type is still validated: it needs a default and real references.
@@ -146,8 +149,8 @@ TEST(behaviourlibrary, referenced_delete_needs_one_validated_reassignment_transa
     rejected(h, [](auto& d) { deleteBehaviour(d, "slow", std::string("missing")); }, "UNKNOWN_BEHAVIOUR");
     rejected(h, [](auto& d) { deleteBehaviour(d, "slow", std::string("slow")); }, "EDIT_INVALID_REPLACEMENT");
     rejected(h, [](auto& d) { deleteBehaviour(d, "gone"); }, "EDIT_UNKNOWN_BEHAVIOUR");
-    // The default set is referenced by both vehicle types and by the road type's default.
-    CHECK(behaviourUsers(h.document(), kDefault).vehicleTypes.size() == 2);
+    // The default set is referenced by every installed type and by the road type's default.
+    CHECK(behaviourUsers(h.document(), kDefault).vehicleTypes.size() == h.document().definition->vehicleTypes.size());
     const auto revision = h.revision();
     CHECK(h.execute("reassign", [](auto& d) { deleteBehaviour(d, kDefault, std::string("slow")); }));
     CHECK(h.revision() != revision);

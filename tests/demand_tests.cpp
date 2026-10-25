@@ -61,7 +61,8 @@ TEST(demand, axle_catalog_roundtrip_defaults_validation_and_engine_independence)
     CHECK(!legacy.vehicleTypes.front().axles);
     CHECK(!definitionJson(legacy)["vehicleTypes"][0].contains("axles"));
     const auto a=vehicleAxles(legacy.vehicleTypes.front());
-    test::near(a.wheelbase,2.7);test::near(a.frontOverhang,.9);test::near(a.rearOverhang,.9);
+    const double length=legacy.vehicleTypes.front().length;
+    test::near(a.wheelbase,.6*length);test::near(a.frontOverhang,.2*length);test::near(a.rearOverhang,.2*length);
     auto partial=old;partial["vehicleTypes"][0]["axles"]={{"wheelbase",2.7}};
     test::throws([&]{parseAuthoringDefinition(partial);},"Missing field: frontOverhang");
     auto unknown=definitionJson(definition);unknown["vehicleTypes"][0]["axles"]["steeringLimit"]=.7;

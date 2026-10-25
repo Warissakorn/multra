@@ -4,6 +4,7 @@
 #include "../src/project/run.hpp"
 #include "../src/project/demand_catalog.hpp"
 #include "../src/commands/catalog_commands.hpp"
+#include <algorithm>
 #include <limits>
 using namespace multra;
 namespace {
@@ -88,4 +89,53 @@ TEST(demand, catalog_names_are_metadata_and_old_external_ownership_stays_absent)
     CHECK(!documentJson(legacy)["definition"].contains("compositions"));
     const auto resolved=compileDocument(legacy,test::root()/"data").scenario;
     double volume=0;for(const auto& input:resolved.inputs)volume+=input.vehiclesPerHour;test::near(volume,600);
+}
+TEST(demand, diverse_catalog_compiles_all_types_and_owned_copy_is_portable) {
+    const auto data=test::root()/"data";
+    const auto catalog=resolveDemandCatalog(AuthoringDefinition{},data);
+    for(const auto* id:{"motorcycle","pickup","van","bus","rigid-truck"}) {
+        const auto type=std::find_if(catalog.vehicleTypes.begin(),catalog.vehicleTypes.end(),[&](const auto& t){return t.id==id;});
+        CHECK(type!=catalog.vehicleTypes.end());CHECK(type->axles.has_value());
+        test::near(type->axles->wheelbase+type->axles->frontOverhang+type->axles->rearOverhang,type->length);
+        CHECK(!catalog.vehicleTypeNames.at(id).empty());
+    }
+    ProjectDocument d;const auto link=addLink(d,{{0,0},{1000,0}},2,3.5);
+    const auto route=putRoute(d,{"route",{link}});changeRunSettings(d,120,.1);
+    VehicleInput input{"in",route,"",3600,0,120};input.compositionId="urban-diverse";putInput(d,input);
+    const auto external=compileDocument(d,data).scenario;
+    CHECK(validateScenario(external).empty());
+    const std::map<std::string,double> expected{{"car",.45},{"motorcycle",.20},{"pickup",.15},{"van",.08},
+        {"bus",.04},{"rigid-truck",.05},{"heavy-vehicle",.03}};
+    std::map<std::string,double> volumes;
+    for(const auto& compiled:external.inputs)volumes[compiled.vehicleTypeId]+=compiled.vehiclesPerHour;
+    CHECK(volumes.size()==expected.size());
+    for(const auto& [id,share]:expected)test::near(volumes.at(id),3600*share);
+    putDemandCatalog(d,catalog);
+    const auto reopened=parseDocument(documentJson(d));
+    const auto portable=compileDocument(reopened,test::root()/"missing-catalogs").scenario;
+    CHECK(portable.vehicleTypes==external.vehicleTypes);CHECK(portable.behaviours==external.behaviours);
+    CHECK(portable.inputs==external.inputs);CHECK(portable.routes==external.routes);
+    CHECK(portable.segments.size()==external.segments.size());
+    for(std::size_t i=0;i<external.segments.size();++i) {
+        const auto& saved=portable.segments[i];const auto& original=external.segments[i];
+        CHECK(saved.id==original.id);test::near(saved.length,original.length);
+        CHECK(saved.next==original.next);test::near(saved.curvature,original.curvature);
+    }
+    CHECK(validateScenario(portable).empty());
+    CHECK(reopened.definition->vehicleTypeNames==catalog.vehicleTypeNames);
+}
+TEST(demand, expanded_catalog_keeps_legacy_mix_and_vehicle_parameters) {
+    const auto data=test::root()/"data";
+    const auto catalog=resolveDemandCatalog(AuthoringDefinition{},data);
+    const auto mix=std::find_if(catalog.compositions.begin(),catalog.compositions.end(),[](const auto& c){return c.id=="urban-mixed";});
+    CHECK(mix!=catalog.compositions.end());
+    CHECK(mix->types==std::vector<CompositionShare>({{"car",.95},{"heavy-vehicle",.05}}));
+    const auto type=[&](const char* id)->const VehicleType& {
+        const auto found=std::find_if(catalog.vehicleTypes.begin(),catalog.vehicleTypes.end(),[&](const auto& t){return t.id==id;});
+        CHECK(found!=catalog.vehicleTypes.end());return *found;
+    };
+    test::near(type("car").length,4.5);test::near(type("car").width,1.8);
+    test::near(type("heavy-vehicle").length,12);test::near(type("heavy-vehicle").width,2.5);
+    CHECK(type("motorcycle").width<type("car").width);
+    CHECK(type("bus").length>type("van").length);
 }

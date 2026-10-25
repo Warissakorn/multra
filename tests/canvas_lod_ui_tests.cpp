@@ -15,7 +15,7 @@
 using namespace multra;
 // UI slice e2 (D200): below 3 px per lane the 0.10 m lane markings are not drawn; nothing else
 // changes -- surfaces, heads, selection, handles, hits and Ctrl+A are what they were. Vehicles keep
-// their 4x2.5 px floor and show the windshield/cab only from 14 px.
+// their 4x2.5 px floor; interior detail needs 14 px length and 5 px width.
 namespace {
 void require(bool ok,const std::string& message){if(!ok)throw std::runtime_error(message);}
 void settle(){QApplication::processEvents();QTest::qWait(20);}
@@ -107,7 +107,7 @@ int main(int argc,char** argv) {
             for(auto* car:cars) {
                 if(car->data(1).toString()!=type)continue;
                 const auto expected=vehicleShape(length,width,s*length>=14).translated(car->data(3).toDouble(),0);
-                require(car->path()==expected,"Vehicle detail does not switch at 14 px");
+                require(car->path()==expected,"Vehicle body changed with its interior detail level");
             }
         }
         view(canvas,QTransform::fromScale(0.05,-0.05));

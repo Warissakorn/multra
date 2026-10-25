@@ -1,11 +1,19 @@
 #pragma once
 #include <QPainterPath>
+#include <string_view>
 
 namespace multra {
-// The plan view of one vehicle in the Run view (D97). Local frame, metres: the front bumper at the
-// origin, the body along -x, centred on y = 0, so a caller places it at the located station and
-// rotates it to the heading. One path with odd-even holes -- windshield, and a cab gap on a long
-// vehicle -- so the road shows through and every vehicle stays a single one-colour scene item.
-// `detailed` false gives the plain rounded body, for zooms where the holes would be sub-pixel.
-QPainterPath vehicleShape(double length, double width, bool detailed);
+// Plan view in metres: nose at x=0, body along -x, centred on y=0. Decoration is
+// separate from the solid body so glass/cargo never punches holes in the hit shape.
+struct VehicleDrawing {
+    QPainterPath body, glass, panels, lamps;
+    void translate(double x, double y);
+};
+// Archetypes come from appearance data, independently of type IDs and physics.
+// Omission preserves the legacy car/long-vehicle choice. Small symbols keep their
+// silhouette but omit interior detail; the caller owns the pixel floor.
+VehicleDrawing vehicleDrawing(double length, double width, bool detailed,
+                              std::string_view archetype = {});
+QPainterPath vehicleShape(double length, double width, bool detailed,
+                         std::string_view archetype = {});
 }

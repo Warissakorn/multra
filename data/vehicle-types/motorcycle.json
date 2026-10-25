@@ -1,0 +1,19 @@
+{
+  "id": "motorcycle",
+  "name": "Motorcycle",
+  "length": 2.1,
+  "width": 0.8,
+  "axles": {
+    "wheelbase": 1.4,
+    "frontOverhang": 0.3,
+    "rearOverhang": 0.4
+  },
+  "desiredSpeed": {
+    "min": 11.11,
+    "max": 16.67
+  },
+  "maxAcceleration": 3.0,
+  "comfortableDeceleration": 2.5,
+  "maxDeceleration": 8.0,
+  "behaviourId": "wiedemann-inspired-prototype"
+}

@@ -138,3 +138,73 @@ corner can imply infeasible front steering; finite heading is not a feasibility 
 Conflict zones, safety gaps and queues still use scalar length, not the displayed
 swept body. There is no between-lanes occupancy or swept-body clearance; changing those needs a separate
 engine contract and acceptance rows.
+
+## Plan-view appearance (D333)
+
+`data/vehicle-appearance/*.json` maps `vehicleTypeId` to a required `color` (`#rrggbb`)
+and an optional `shape`: `car`, `motorcycle`, `pickup`, `van`, `bus` or `truck`.
+These are reusable drawing archetypes, not engine classes: another vehicle type can
+select an existing archetype by adding data alone. Invalid shape values fail with
+`EDIT_DISPLAY_CATALOG`. Without a user override, a missing folder retains the road's vehicle colour; an entry
+without `shape` retains the length-based car/truck choice (truck above 7 m).
+Appearance never enters `core/`, project schemas or vehicle-type parameter hashes.
+
+`vehicleDrawing` produces a solid body and separate glass, roof/load panels and pale
+headlamps in the front-bumper frame. Cars have a tapered nose and cabin; pickups an open
+bed; vans a short cab-over nose, continuous high roof, divided side windows and upright
+tailgate glass; buses a continuous body with side windows and roof equipment;
+rigid trucks a rounded cab, exposed chassis neck and fixed load box with roof corrugations
+and a rear-door header. At the owner's request, motorcycles use the original D333
+pointed silhouette, windshield, tank highlight, saddle and small nose light.
+Truck cabs are capped at a nominal 2.04 m, matching the smaller 8.5 m rigid truck's
+existing head. On longer bodies, the load-box front moves forward and its roof detail
+stretches along the remaining length. The overall bounds, front bumper, rear bumper
+and physical axle dimensions remain unchanged; overview symbols retain their size floor.
+No trailer articulation or brake/signal state is implied. Glass and cargo are painted
+inside the body rather than cut out, so clicking them selects the same vehicle.
+
+Each vehicle remains one reused `RunVehicleItem`, with its contrasting cosmetic casing
+and followed outline. Body bounds remain exactly the type's length and width at
+working zoom; the nose remains at the traffic front station and the rear axle remains
+the item origin. Overview symbols retain the 4 by 2.5 logical-pixel floor. Interior
+detail appears only at both 14 pixels in physical length and 5 pixels in physical
+width; the solid silhouette and colour remain below either threshold. Appearance
+replacement redraws a stopped frame, and a new immutable Scenario discards retained
+vehicle items so reused IDs cannot carry old dimensions or decoration.
+
+The `vehicle-appearance-ui` suite checks all archetypes' bounds, solid glass hit areas,
+equal-size bus/truck distinction, actual viewport clicks for all seven bundled types,
+painted detail, overview floors, front/rear references, stopped item reuse, followed
+outlines, appearance replacement and changed Scenario dimensions. It accepts an optional
+second argument to save a gallery using the production painter. Platform verification
+is recorded in [PROGRESS](../PROGRESS.md); the drawing is illustrative, not a measured
+manufacturer model or calibrated traffic behaviour.
+
+## Vehicle colour preferences (D334)
+
+**View → Vehicle colours…** edits appearance per vehicle-type ID, including project-owned
+custom types. One colour fixes the type's body colour; two to sixteen distinct colours
+mix within that type. The colour picker edits any selected swatch, Add/Remove changes the
+palette, and the standard mixed palette comes from optional `data/vehicle-colors.json`
+(`colors`, one to sixteen unique `#rrggbb` entries). Reset removes the selected type's
+override and restores its installed/road colour. Single-colour mode retains the selected
+swatch. A directory without the standard palette can still add colours manually.
+
+Preferences are application display settings for this computer, shared by the editor and
+Behaviour Lab, rather than authored traffic data. They live in `vehicle-colors.json` in
+Qt's application-local data directory, with version 1 and a `palettes` object keyed by type ID.
+Confirm atomically replaces that file, then redraws the current frame and any open lab.
+Cancel changes neither the file nor the live appearance; failed saves leave the dialog open
+and preserve the old appearance. Missing or malformed preference files retain installed defaults.
+Opening another project preserves these display preferences; saving a project does not embed them.
+
+`vehicleDisplayColor` hashes the stable vehicle ID and type ID to an equal-choice palette
+index. It uses no simulation PRNG or wall clock. A vehicle retains its colour through
+pause, repaint, zoom and backward/forward seeking; changing the palette deliberately
+recolours the frame. One colour per vehicle is still a body fill plus the existing neutral
+detail/casing. Preferences do not change Scenario snapshots, seeds, schema versions or results.
+
+`vehicle-colors-ui` covers fixed/mixed choices, palette editing and persistence, Cancel,
+malformed settings and failed-save atomicity, and the View action. `vehicle-appearance-ui`
+checks actual same-type mixed vehicles, fixed recolouring, and colour stability through
+zoom and seeking. `ranges` validates the optional standard palette.

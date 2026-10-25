@@ -31,6 +31,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   (`MICRO_AREA_CLASS_UNSUPPORTED`); a CLI test on a study-area project; restoring the full Macro or
   Meso table on reopen (owner chose the cut source only, D331).
 - **Other picks:**
+  - **Vehicle library/display (D333):** owner appearance check on Windows/high DPI for the
+    seven types at working and overview zoom; illustrative type parameters still need study-specific calibration.
+    D334 adds fixed/mixed colour preferences: include colour editing, restart and lab appearance.
   - **OSM (M1.28):** MAP10 still needs the owner's real-study check: align the background,
     trace roads, pan/click without a camera jump, zoom out to the overview, choose a country
     with and without a province, interrupt/restore the connection and retry, then save/reopen.

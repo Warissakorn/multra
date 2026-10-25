@@ -57,3 +57,23 @@ at schema 49 ([STUDY_PERIODS](STUDY_PERIODS.md) §6).
 
 Time-varying compositions and type-specific routing are defined in
 [DEMAND_TIME_TYPES.md](DEMAND_TIME_TYPES.md), slice 6. Reporting stays M5.
+
+## Bundled vehicle library (D333)
+
+The installed library contains `car`, `motorcycle`, `pickup`, `van`, `bus`,
+`rigid-truck` and the existing `heavy-vehicle`. New types supply explicit dimensions,
+complete axle dimensions and the same reduced prototype behaviour reference.
+Their dimensions, speed ranges, acceleration and deceleration are illustrative
+starting assumptions, not manufacturer measurements or calibrated class behaviour.
+The motorcycle entry does not enable filtering or lane sharing by itself; the
+existing behaviour and lateral settings retain their existing rules.
+
+`urban-diverse` is an opt-in illustrative composition containing all seven types.
+The original `car-only` and `urban-mixed` weights, and every physical parameter of
+`car` and `heavy-vehicle`, are preserved. Existing project-owned catalogs remain
+owned; they do not silently acquire newly installed types. External catalogs and
+newly captured catalogs include the additions through the existing ownership rules.
+
+Visual archetypes and colours live separately in `data/vehicle-appearance/`; see
+[VEHICLE_POSE](VEHICLE_POSE.md#plan-view-appearance-d333). Changing appearance does not
+change the dimensions used by traffic following, turning or queue measurements.

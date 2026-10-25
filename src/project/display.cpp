@@ -2,6 +2,7 @@
 #include "json.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <set>
 namespace multra {
@@ -50,6 +51,24 @@ DisplayCatalog loadDisplayCatalog(const std::filesystem::path& data) {
         if(std::filesystem::is_directory(data/"vehicle-appearance"))for(const auto& j:files(data/"vehicle-appearance")) {
             const auto id=j.at("vehicleTypeId").get<std::string>();
             if(id.empty() || !catalog.vehicleColors.emplace(id,color(j,"color")).second)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+            if(j.contains("shape")) {
+                const auto shape=j.at("shape").get<std::string>();
+                if(shape!="car" && shape!="motorcycle" && shape!="pickup" && shape!="van" && shape!="bus" && shape!="truck")
+                    throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+                catalog.vehicleShapes.emplace(id,shape);
+            }
+        }
+        if(std::filesystem::is_regular_file(data/"vehicle-colors.json")) {
+            std::ifstream input(data/"vehicle-colors.json");const auto j=Json::parse(input);
+            const auto& colors=j.at("colors");
+            if(!colors.is_array() || colors.empty() || colors.size()>16)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+            std::set<std::string> unique;
+            for(const auto& c:colors) {
+                auto value=color(Json{{"color",c}},"color");
+                std::transform(value.begin(),value.end(),value.begin(),[](unsigned char ch){return char(std::tolower(ch));});
+                if(!unique.insert(value).second)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+                catalog.availableVehicleColors.push_back(std::move(value));
+            }
         }
         return catalog;
     }catch(const std::exception&){throw std::runtime_error("EDIT_DISPLAY_CATALOG");}

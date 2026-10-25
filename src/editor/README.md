@@ -5,3 +5,8 @@ The screen HUD (scale bar, px/m, north from the map georeference) is `canvas_hud
 Run vehicles are drawn at lane centre + `Vehicle::lateral`, to the left of the body's heading, and a lane-change record flagged `lateral` is never slid (`canvas_run.cpp`, LATERAL §10, D203).
 `map_http_cache` owns response freshness, validation and Retry-After handling.
 `map_locations` validates the bundled country/region catalog for reference and navigation choices.
+Run vehicle silhouettes and interior decoration are `vehicle_shape.*`, painted by one reusable
+`RunVehicleItem` per vehicle. Appearance archetypes are data, separate from engine types; see
+[vehicle display contract](../../docs/reference/VEHICLE_POSE.md#plan-view-appearance-d333).
+`vehicle_color.hpp` resolves fixed or mixed body colours by stable vehicle/type ID, without
+using engine random state. User palettes are supplied by the shell's appearance preferences.
