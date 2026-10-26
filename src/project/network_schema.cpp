@@ -36,12 +36,22 @@ class NetworkSchema {
         }
         case Kind::rightOfWay:rule=reference(Object::rightOfWay,version);break;
         case Kind::waitingLines:rule={{"type","array"},{"items",reference(Object::waitingLine,version)}};break;
-        case Kind::controlPoint:rule=reference(Object::controlPoint,version);break;
+        case Kind::controlPoint:
+            rule=reference(Object::controlPoint,version);
+            if(field.nullable)rule={{"anyOf",Json::array({rule,Json{{"type","null"}}})}};
+            break;
         case Kind::controlPath:rule={{"allOf",Json::array({reference(Object::controlPath,version)})},{"not",{{"type","null"}}}};break;
         case Kind::conflictAreas:rule={{"type","array"},{"items",reference(Object::conflictArea,version)}};break;
         case Kind::conflictSide:rule=reference(Object::conflictSide,version);break;
         case Kind::priorityRules:rule={{"type","array"},{"items",reference(Object::priorityRule,version)}};break;
         case Kind::stopControls:rule={{"type","array"},{"items",reference(Object::stopControl,version)}};break;
+        case Kind::queueCounters:rule={{"type","array"},{"items",reference(Object::queueCounter,version)}};break;
+        case Kind::measurementLines:rule={{"type","array"},{"items",reference(Object::measurementLine,version)}};break;
+        case Kind::travelTimeSections:rule={{"type","array"},{"items",reference(Object::travelTimeSection,version)}};break;
+        case Kind::sectionLine:rule=reference(Object::sectionLine,version);break;
+        case Kind::sectionControl:
+            rule={{"type",Json::array({"string","null"})},
+                {"enum",Json::array({sectionControlName(SectionControl::signalised),sectionControlName(SectionControl::unsignalised),nullptr})}};break;
         case Kind::texts:rule={{"type","array"},{"items",{{"type","string"}}}};break;
         case Kind::conflictKind:rule={{"type","string"},{"enum",Json::array({conflictKindName(ConflictKind::crossing),conflictKindName(ConflictKind::merge)})}};break;
         case Kind::conflictPriority:rule={{"type","string"},{"enum",Json::array({conflictPriorityName(ConflictPriority::firstYields),conflictPriorityName(ConflictPriority::secondYields),conflictPriorityName(ConflictPriority::undetermined)})}};break;
@@ -101,7 +111,7 @@ class NetworkSchema {
         Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",allowsAdditionalFields(object,version)}};
         // These legacy readers ignore non-object containers/references; semantic
         // path validity stays with the model. Required path fields still reject null.
-        if(object==Object::rightOfWay || object==Object::controlPath)result.erase("type");
+        if(object==Object::rightOfWay || object==Object::controlPath || object==Object::measurementLine)result.erase("type");
         if(object==Object::definition)result["type"]=Json::array({"object","null"});
         if(!conditions.empty())result["allOf"]=std::move(conditions);
         return result;
@@ -134,6 +144,10 @@ public:
                 case Object::conflictSide:return "conflictSide";
                 case Object::priorityRule:return "priorityRule";
                 case Object::stopControl:return "stopControl";
+                case Object::queueCounter:return "queueCounter";
+                case Object::measurementLine:return "measurementLine";
+                case Object::travelTimeSection:return "travelTimeSection";
+                case Object::sectionLine:return "sectionLine";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -145,8 +159,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

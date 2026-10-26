@@ -2,6 +2,20 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Candidate ID checks without rebuilding a set (D352)
+
+- **Changed:** `allocateId` checks candidates directly against the document, without collecting
+  every existing ID into a new set. A shared short-circuit traversal preserves `documentIds`'s
+  namespace and Macro-run switch; allocation also checks the existing zone/mode namespaces.
+  No retained index, public API or saved format changes; counters and limit errors stay the same.
+- **Measured:** Release, GCC 14.2.0, no concurrent builds: 4 Nodes 48.39 → 45.43 ms (median of 3);
+  16 Nodes 2.516 → 2.312 s (median of 6, two batches with order reversed), about 8 % less wall
+  time. Full 4/16-Node documents are byte-identical. The ≤ 1.5 s target remains open.
+- **Verified:** focused project tests pass 12/12, including collisions across 25 collections,
+  Connector lane-path suffixes, enumeration scope and counter exhaustion. Release headless build
+  and all 160 CTest entries pass, including architecture, documentation, file-size and reference
+  checks. Evidence is Linux only; no Qt UI or Windows claim.
+
 ## 2026-10-26 — Call-local Connector surfaces for Node detail (D351)
 
 - **Changed:** `automaticConflicts` shares one Connector surface cache through overlap

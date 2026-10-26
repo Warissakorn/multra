@@ -6,10 +6,10 @@
 
 namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
-    rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl };
+    rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
-    conflictKind,conflictPriority,stopMode,texts };
+    conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -38,4 +38,6 @@ std::vector<NetworkSignalHead> readSignalHeads(const Json& network,int version);
 RightOfWay readRightOfWay(const Json&,int version);
 // The existing optional-text decoder also serves queue-counter points.
 ControlPathRef readControlPath(const Json&,const std::string& path,int version);
+std::vector<AuthoredQueueCounter> readQueueCounters(const Json& network,int version);
+std::vector<TravelTimeSection> readTravelTimeSections(const Json& network,int version);
 }

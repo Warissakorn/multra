@@ -11,8 +11,8 @@ namespace {
 constexpr Field networkFields[]={
     {"id",Kind::text,true},{"drivingSide",Kind::side,true},{"links",Kind::links,true},
     {"connectors",Kind::connectors,true},{"signalHeads",Kind::signalHeads,true},
-    {"rightOfWay",Kind::rightOfWay,false,14},{"queueCounters",Kind::unchecked,false,16},
-    {"travelTimeSections",Kind::unchecked,false,23},{"nodes",Kind::unchecked,false,48},
+    {"rightOfWay",Kind::rightOfWay,false,14},{"queueCounters",Kind::queueCounters,false,16,0,true},
+    {"travelTimeSections",Kind::travelTimeSections,false,23,0,true},{"nodes",Kind::unchecked,false,48},
     {"roads",Kind::unchecked,false,roadVersion,roadVersion},
     {"overpasses",Kind::unchecked,false,roadVersion,roadVersion}};
 constexpr Field linkFields[]={
@@ -78,6 +78,14 @@ constexpr Field priorityRuleFields[]={
 constexpr Field stopControlFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"waitingLineId",Kind::text,true},
     {"mode",Kind::stopMode,true},{"conflictAreaIds",Kind::texts,true},{"generated",Kind::generated,false,generatedVersion}};
+constexpr Field queueCounterFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"lines",Kind::measurementLines,true}};
+constexpr Field measurementLineFields[]={
+    {"referenceId",Kind::text,false,0,0,true},{"point",Kind::controlPoint,false,0,0,true}};
+constexpr Field travelTimeSectionFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"start",Kind::sectionLine,true},
+    {"end",Kind::sectionLine,true},{"controlType",Kind::sectionControl,false,24,0,true}};
+constexpr Field sectionLineFields[]={{"linkId",Kind::text,true},{"station",Kind::number,true}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -101,6 +109,10 @@ std::span<const Field> fields(Object object) {
     case Object::conflictSide:return conflictSideFields;
     case Object::priorityRule:return priorityRuleFields;
     case Object::stopControl:return stopControlFields;
+    case Object::queueCounter:return queueCounterFields;
+    case Object::measurementLine:return measurementLineFields;
+    case Object::travelTimeSection:return travelTimeSectionFields;
+    case Object::sectionLine:return sectionLineFields;
     }
     return {};
 }
@@ -135,7 +147,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
         if(!v.is_number_integer() || v < -levelLimit || v > levelLimit)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
@@ -147,10 +159,11 @@ const Json& value(const Json& j,Object object,const char* name) {
         break;
     case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:case Kind::groups:case Kind::phases:case Kind::controllers:case Kind::programs:
     case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::stopControls:case Kind::texts:
+    case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
-    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:break;
+    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

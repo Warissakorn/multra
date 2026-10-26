@@ -414,3 +414,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D360](RECORD.md#d360) — Signal controller/group/program/phase metadata and structural schemas preserve distinct known-key policies, numeric conversion and document migration stages.
 
 [D361](RECORD.md#d361) — Right-of-way structural schemas share codec metadata, preserving nullable collections, legacy container/path decoding and schema 14/15/54 diagnostics.
+
+[D362](RECORD.md#d362) — Queue-counter/measurement-line and travel-time-section structural schemas preserve nullable sources, shared control points and versioned LOS control types.

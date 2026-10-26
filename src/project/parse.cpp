@@ -104,37 +104,8 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     network.signalHeads=networkCodec::readSignalHeads(value,schemaVersion);
     if(schemaVersion<5)migrateAttachments(network);
     if(schemaVersion>=14 && present(value,"rightOfWay"))network.rightOfWay=networkCodec::readRightOfWay(value.at("rightOfWay"),schemaVersion);
-    if(schemaVersion>=16 && present(value,"queueCounters"))for(const auto& c:array(value,"queueCounters")) {
-        const auto path="queueCounters["+std::to_string(network.queueCounters.size())+"]";
-        knownFields(c,{"id","name","lines"},path,schemaVersion);
-        AuthoredQueueCounter counter{field<std::string>(c,"id"),present(c,"name")?field<std::string>(c,"name"):"",{}};
-        for(const auto& l:array(c,"lines")) {
-            const auto at=path+".lines["+std::to_string(counter.lines.size())+"]";
-            knownFields(l,{"referenceId","point"},at,schemaVersion);
-            MeasurementLine line;
-            if(present(l,"referenceId"))line.referenceId=field<std::string>(l,"referenceId");
-            if(present(l,"point")) {
-                const auto& point=member(l,"point");
-                knownFields(point,{"path","station"},at+".point",schemaVersion);
-                line.point=ControlPoint{networkCodec::readControlPath(member(point,"path"),at+".point.path",schemaVersion),field<double>(point,"station")};
-            }
-            counter.lines.push_back(std::move(line));
-        }
-        network.queueCounters.push_back(std::move(counter));
-    }
-    if(schemaVersion>=23 && present(value,"travelTimeSections"))for(const auto& s:array(value,"travelTimeSections")) {
-        const auto path="travelTimeSections["+std::to_string(network.travelTimeSections.size())+"]";
-        // `controlType` from schema 24 (M5.5).
-        if(schemaVersion>=24)knownFields(s,{"id","name","start","end","controlType"},path,schemaVersion);
-        else knownFields(s,{"id","name","start","end"},path,schemaVersion);
-        const auto line=[&](const char* name) {
-            const auto& l=member(s,name);
-            knownFields(l,{"linkId","station"},path+"."+name,schemaVersion);
-            return SectionLine{field<std::string>(l,"linkId"),field<double>(l,"station")};
-        };
-        network.travelTimeSections.push_back({field<std::string>(s,"id"),present(s,"name")?field<std::string>(s,"name"):"",line("start"),line("end"),{}});
-        if(schemaVersion>=24 && present(s,"controlType"))network.travelTimeSections.back().controlType=sectionControlFromName(field<std::string>(s,"controlType"));
-    }
+    network.queueCounters=networkCodec::readQueueCounters(value,schemaVersion);
+    network.travelTimeSections=networkCodec::readTravelTimeSections(value,schemaVersion);
     return network;
 }
 void requireKnownFields(const Json& value,std::initializer_list<const char*> keys,const std::string& path) {

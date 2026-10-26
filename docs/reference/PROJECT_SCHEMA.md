@@ -2,9 +2,8 @@
 
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
-Connector/attachment-reference (D358), SignalHead (D359) signal control (D360) and right-of-way contracts (D361).
-It describes implemented
-readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
+Connector/attachment-reference (D358), SignalHead (D359), signal control (D360),
+right-of-way (D361) and measurement contracts (D362). It describes implemented readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
 uses those existing codecs and validators.
@@ -344,3 +343,30 @@ waiting lines and generated-value validation after each row retain their origina
 There is no new geometry or runtime algorithm. Owner/path/line/area resolution, station and
 extent validity, positive gap/headway, priority cycles and run-readiness remain existing
 model checks. Queue-counter and travel-time-section row schemas remain follow-up work.
+
+
+## Measurement extension (D362)
+
+The composed CLI coverage adds `-measurements` to the D361 identifier; complete remains
+false. Queue counters are known/read from schema 16; travel-time sections from 23; a section's
+controlType from 24. Before schema 7 unknown network properties remain ignored; later files
+predating these keys reject them even when null. Active network arrays may be absent/null.
+
+- Queue-counter rows require text id and a lines array; optional name accepts text/null.
+  Measurement lines read optional nullable referenceId and point. A non-null point requires
+  path and numeric station, using the existing shared ControlPoint/ControlPathRef metadata.
+  Unsupported keys fail. Non-object measurement lines retain the legacy empty-source decode;
+  exactly one usable source, valid references and valid positions remain model checks.
+- Travel-time sections require text id and start/end line objects, each with text linkId and
+  numeric station. Optional name accepts text/null. From 24, optional controlType accepts
+  signalised/unsignalised/null; schema 23 rejects the key even if null. No generated flag is
+  accepted on counters, measurement lines, section rows or section lines.
+- Measurement-line referenceId is read before point. Section id/name and start/end decode
+  before controlType. Native diagnostics and paths remain in that order. The parser delegates
+  these readers at the same stages after right-of-way decoding and attachment migration.
+
+Requiredness, null policy, type and known-key rules use shared metadata. Schema definitions
+reuse the same control point/path entries for waiting lines and queue counters. No measurement
+algorithm, LOS threshold, delay definition, writer version rule or serialized output changes.
+Negative/out-of-bounds stations, reversed sections, empty or ambiguous measurement sources,
+reference resolution and runtime readiness remain the existing model/evaluation validators.

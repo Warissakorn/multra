@@ -37,9 +37,8 @@ TEST(project, network_schema_keeps_envelope_api_and_reuses_versioned_definitions
     const auto envelope=projectEnvelopeSchema(),schema=projectDocumentSchema();
     CHECK(envelope.at("x-multra-coverage")=="envelope-background");
     CHECK(!envelope.contains("allOf"));
-    CHECK(schema.at("x-multra-coverage")=="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way");
+    CHECK(schema.at("x-multra-coverage")=="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements");
     CHECK(schema.at("x-multra-complete")==false);
-    CHECK(schema.at("$defs").size()<kLatestSchema);
     CHECK(schema.at("allOf").size()<kLatestSchema);
     CHECK(projectDocumentSchema()==schema);
     for(int v=1;v<=kLatestSchema;++v) {

@@ -6,6 +6,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Queue-counter and travel-time-section structural schemas (D362)
+
+- **Changed:** shared metadata covers queue counters/measurement lines and travel-time sections/
+  section lines/controlType. Native readers move to measurement_codec at the original parser
+  stages; control points/paths share the right-of-way metadata. The composed partial schema/CLI
+  uses 62 shared definitions and 14 version profiles; the parser is now 290 lines. The old
+  incidental definition-count bound is replaced by an actual shared-ControlPoint reference check.
+- **Preserved:** schema 16/23/24 gates, nullable network arrays and optional names/sources/types,
+  empty-source decoding of non-object measurement lines, reference-before-point and section-
+  lines-before-controlType diagnostics. Exactly-one-source, owner/reference and section bounds/
+  order checks remain model validation; measurement/LOS algorithms and writer rules do not change.
+  The envelope-only API, observed desktop response and existing serialized output are unchanged.
+- **Verified:** 5,928 cases across schemas 1–57 retain byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
+  validate structurally and keep byte-identical canonical output. Five new project tests cover
+  gates/nulls, shared points, empty/ambiguous sources, diagnostics, save versions and semantic
+  exclusions. Release headless build and all 161 CTest entries pass (16.64 s), including CLI,
+  architecture, documentation and file-size checks. Linux headless evidence only; no Qt/Windows,
+  scientific-validation, LOS-validation or owner gate is closed.
+
 ## 2026-10-26 — Right-of-way structural schema and preserved legacy reads (D361)
 
 - **Changed:** shared metadata now covers waiting lines, control points/paths, conflict areas/
@@ -158,20 +178,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   group/arrival ordering, unrelated groups and invalid/self/crossing/cross-group pairs. Release
   headless build and all 160 CTest entries pass, including documentation, architecture, file-size
   and reference checks. Linux evidence only; no Windows/UI acceptance claim.
-
-## 2026-10-26 — Candidate ID checks without rebuilding a set (D352)
-
-- **Changed:** `allocateId` checks candidates directly against the document, without collecting
-  every existing ID into a new set. A shared short-circuit traversal preserves `documentIds`'s
-  namespace and Macro-run switch; allocation also checks the existing zone/mode namespaces.
-  No retained index, public API or saved format changes; counters and limit errors stay the same.
-- **Measured:** Release, GCC 14.2.0, no concurrent builds: 4 Nodes 48.39 → 45.43 ms (median of 3);
-  16 Nodes 2.516 → 2.312 s (median of 6, two batches with order reversed), about 8 % less wall
-  time. Full 4/16-Node documents are byte-identical. The ≤ 1.5 s target remains open.
-- **Verified:** focused project tests pass 12/12, including collisions across 25 collections,
-  Connector lane-path suffixes, enumeration scope and counter exhaustion. Release headless build
-  and all 160 CTest entries pass, including architecture, documentation, file-size and reference
-  checks. Evidence is Linux only; no Qt UI or Windows claim.
 
 ## Older entries
 

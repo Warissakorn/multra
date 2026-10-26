@@ -62,3 +62,10 @@ schema-15 Stop/Yield controls, through shared field metadata. The composed schem
 these rows and their control points/paths. Nullable collections, legacy non-object handling,
 version gates, generated-flag diagnostics and queue-counter path decoding are preserved.
 Geometry, owner/line/area resolution, priority cycles and run-readiness remain model checks.
+
+
+`measurement_codec` reads schema-16 queue counters/measurement lines and schema-23 travel-time
+sections, with optional controlType from 24. Shared field metadata preserves nullable sources,
+ControlPoint/ControlPathRef reads and diagnostic order. The composed partial schema includes
+these rows; exactly-one-source rules, references, section bounds and LOS meaning remain model
+and evaluation concerns. Empty/non-object measurement lines still decode to empty sources.
