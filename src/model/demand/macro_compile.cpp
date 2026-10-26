@@ -79,11 +79,13 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
     out.issues.insert(out.issues.end(), roads.issues.begin(), roads.issues.end());
     out.advisories = std::move(roads.advisories);
     std::vector<std::size_t> pieceFrom, pieceTo;
+    std::map<std::pair<std::string, bool>, std::pair<std::size_t, std::size_t>> roadEnds;
     const auto basis = [](const std::string& b) { return b.empty() ? std::string("practical") : b; };
     for (const auto& p : roads.pieces) {
         const auto side = p.roadId + (p.forward ? ":forward@" : ":backward@");
         pieceFrom.push_back(g.nodes.size()); g.nodes.push_back(side + std::to_string(p.from));
         pieceTo.push_back(g.nodes.size()); g.nodes.push_back(side + std::to_string(p.to));
+        roadEnds[{p.roadId, p.forward}] = {pieceFrom.back(), pieceTo.back()};
         MacroLink m;
         m.kind = MacroArc::link; m.source = p.roadId; m.linkType = p.linkType; m.fromStation = p.from; m.toStation = p.to;
         m.from = pieceFrom.back(); m.to = pieceTo.back(); m.length = p.length; m.lanes = p.lanes;
@@ -128,13 +130,24 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
     }
     // Centroid arcs, by zone connector id.
     for (const auto* z : byId(zoneConnectors)) {
-        if (!lengths.contains(z->linkId)) continue;
+        std::size_t endpoint{};
+        if (!z->roadId.empty()) {
+            const auto end = roadEnds.find({z->roadId, z->roadForward});
+            if (end == roadEnds.end()) {
+                out.issues.push_back({"MACRO_ZONE_ROAD_UNAVAILABLE", "zoneConnectors[" + std::to_string(z - zoneConnectors.data()) + "].roadDirection"});
+                continue;
+            }
+            endpoint = z->direction == ZoneDirection::origin ? end->second.first : end->second.second;
+        } else {
+            if (!lengths.contains(z->linkId)) continue;
+            endpoint = node[{z->linkId, z->direction == ZoneDirection::origin ? 0.0 : lengths[z->linkId]}];
+        }
         const auto centroid = g.nodes.size();
         g.nodes.push_back("zone-connector:" + z->id);
         MacroLink m;
         m.kind = MacroArc::centroid; m.source = z->id;
-        if (z->direction == ZoneDirection::origin) { m.from = centroid; m.to = node[{z->linkId, 0.0}]; g.origins[z->id] = centroid; }
-        else { m.from = node[{z->linkId, lengths[z->linkId]}]; m.to = centroid; g.destinations[z->id] = centroid; }
+        if (z->direction == ZoneDirection::origin) { m.from = centroid; m.to = endpoint; g.origins[z->id] = centroid; }
+        else { m.from = endpoint; m.to = centroid; g.destinations[z->id] = centroid; }
         g.links.push_back(std::move(m));
     }
     return out;

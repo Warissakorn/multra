@@ -10,8 +10,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 - **Name:** MULTRA (D284, D287); only the file's `"format": "TrafficSim"` stays until a schema step
   reads both. Licence GPL-3.0-or-later (D285); a CLA comes before any outside contribution.
-- **Evidence is Linux only** (offscreen Qt; session versions in PROGRESS); no Windows or high-DPI claim. No session closes a
-  milestone gate.
+- **Local evidence is Linux only** (offscreen Qt; session versions in PROGRESS). Automated Windows
+  CI is recorded separately; no owner Windows/high-DPI appearance claim. No session closes a milestone gate.
 - **Books:** five owner copies (Sheffi, HCM 7, Ortúzar & Willumsen, Planning Handbook 4th ed.,
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
@@ -59,7 +59,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), a procedure sequence,
   remains booked until M10.2–M10.4 provide its stages (D277).
-- **Roads:** demand on a Road-only network (zone connectors attach to Links only) is booked.
+- **Road demand — next implementation slice:** Meso OD paths for schema-57 Road zone targets.
+  Specify the path rule over its compiled graph before code; preserve connector shares, period
+  windows and PCU, with explicit path/mode refusals. The present Meso compiler reuses Micro's Link
+  chains and refuses Road targets; Micro still needs *Apply template* or a study-area cut. See
+  [ROADS_IMPLEMENTED §22](reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), RD34.
 - **M3.3.3b**, the W99 contract (ROADMAP M3.3, D177).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); `joinAnticipation` ships off (D255); D95 stays off.

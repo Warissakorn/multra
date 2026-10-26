@@ -95,7 +95,8 @@ void renameRoad(Network& n, const std::string& from, const std::string& to) {
     }
 }
 // The lifecycle's join, when the Node qualifies (see the header).
-bool mergeAway(Network& n, std::size_t k) {
+bool mergeAway(ProjectDocument& d, std::size_t k) {
+    auto& n = d.network;
     const auto& node = n.nodes[k];
     const auto legs = nodeRoadLegs(n, node);
     if (legs.size() != 2 || legs[0].roadId == legs[1].roadId || legs[0].atEnd == legs[1].atEnd) return false;
@@ -104,6 +105,12 @@ bool mergeAway(Network& n, std::size_t k) {
     const auto& a = roadNamed(n, first); const auto& b = roadNamed(n, second);
     if (!a.links.empty() || !b.links.empty() || !a.crossSectionId || a.crossSectionId != b.crossSectionId || a.level != b.level ||
         a.overrides != b.overrides) return false;
+    // A zone using the shared endpoint must keep that endpoint; joining would move it to an
+    // outside end. The lifecycle cannot turn it into an unsupported mid-Road attachment.
+    for (const auto& c : d.zones.zoneConnectors) {
+        const bool atEnd = c.roadForward == (c.direction == ZoneDirection::destination);
+        if ((c.roadId == first && atEnd) || (c.roadId == second && !atEnd)) return false;
+    }
     auto line = a.centreline;
     for (std::size_t i = 0; i < b.centreline.size(); ++i)
         if (i > 0 || std::hypot(b.centreline[0].x - line.back().x, b.centreline[0].y - line.back().y) > 1e-9) line.push_back(b.centreline[i]);
@@ -111,6 +118,7 @@ bool mergeAway(Network& n, std::size_t k) {
     n.nodes.erase(n.nodes.begin() + static_cast<std::ptrdiff_t>(k));
     std::erase_if(n.roads, [&](const auto& r) { return r.id == second; });
     renameRoad(n, second, first);
+    for (auto& c : d.zones.zoneConnectors) if (c.roadId == second) c.roadId = first;
     return true;
 }
 }
@@ -197,7 +205,7 @@ void settleNodes(ProjectDocument& after, const ProjectDocument& before) {
     if (n.roads == b.roads && polygons) return;
     for (std::size_t k = 0; k < n.nodes.size();) { // lifecycle
         const auto* was = previous(n.nodes[k].id);
-        if (was && roadLegs(b, *was).size() != 2 && roadLegs(n, n.nodes[k]).size() == 2 && mergeAway(n, k)) continue;
+        if (was && roadLegs(b, *was).size() != 2 && roadLegs(n, n.nodes[k]).size() == 2 && mergeAway(after, k)) continue;
         ++k;
     }
 }

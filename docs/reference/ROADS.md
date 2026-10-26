@@ -259,7 +259,8 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 - **Micro** runs Links only. A Road without Links is `SEAM_ROAD_NOT_GENERATED`; its demand is
   refused at the route as today, so nothing is silently dropped.
 - **As implemented (D310, §19):** Road ends within 2 m of one another, outside any Node, join as a
-  simple node; a Road-only network carries no demand yet.
+  simple node. Road-only Macro OD uses directed Road zone connectors at schema 57
+  ([§22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), D340); Meso still requires Link targets.
 - **Byte identity:** a project without Roads, templates, `roadId`, overpasses, `coarse`, `rank` or
   `capacityBasis` keeps its schema and bytes (row RD1).
 

@@ -59,6 +59,13 @@ Link end, exactly as a route that leaves the network does today. Any other Link 
 (`UNSUPPORTED_INTERNAL_INPUT`), and a stop part-way along a Link needs an internal-insertion core
 contract. A site driveway is drawn as its own entry and terminal Links.
 
+**Road-only Macro demand (schema 57, D340):** `roadId` plus `roadDirection` (`forward` or
+`backward`) can replace `linkId` on a Road without generated Links. Origin/destination and
+relative shares keep their meaning; travel direction is along/against the centreline. Macro
+reads the selected directed Road piece. *Apply template* remaps the connector to its generated
+Link in the same Undo step. Micro and Meso refuse Road targets until that conversion. The codec,
+editor, lifecycle and rows RD30–RD34 are in [ROADS_IMPLEMENTED §22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340).
+
 ### 2.3 OdMatrix
 
 | Field | Type | Rule |

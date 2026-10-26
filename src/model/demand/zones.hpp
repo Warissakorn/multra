@@ -19,6 +19,10 @@ struct ZoneConnector {
     std::string id, zoneId, linkId;
     ZoneDirection direction{ZoneDirection::origin};
     double share{1}; // relative among the zone's connectors of the same direction
+    // Road-only Macro demand (ROADS_IMPLEMENTED §22): roadId in place of linkId, and travel
+    // direction along/against its centreline. Apply template converts this to an ordinary Link.
+    std::string roadId;
+    bool roadForward{true};
     bool operator==(const ZoneConnector&) const = default;
 };
 struct OdMatrix {

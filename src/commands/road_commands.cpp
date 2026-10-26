@@ -36,11 +36,12 @@ std::string putRoad(ProjectDocument& d, Road road) {
     if (found != roads.end()) *found = std::move(road); else roads.push_back(std::move(road));
     return id;
 }
-void deleteRoad(ProjectDocument& d, const std::string& id) {
-    editableRoad(d, id);
+void deleteRoad(ProjectDocument& d, const std::string& roadId) {
+    const auto id = editableRoad(d, roadId).id; // keep it across erase, even when the caller names a Road's id member
     for (auto& l : d.network.links) if (l.roadId == id) l.roadId.reset();
     std::erase_if(d.network.roads, [&](const auto& r) { return r.id == id; });
     std::erase_if(d.network.overpasses, [&](const auto& p) { return p.first == id || p.second == id; }); // S3.5
+    std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.roadId == id; });
 }
 std::string putCrossSection(ProjectDocument& d, CrossSection section, const std::vector<CrossSection>& installed) {
     auto& target = demand(d);
@@ -95,6 +96,11 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& ro
     if (!found) throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "network.roads[" + std::to_string(index) + "].crossSectionId"}});
     const auto generated = templateLinks(d.network, road, *found);
     if (road.links.size() > generated.size()) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
+    for (std::size_t i = 0; i < d.zones.zoneConnectors.size(); ++i) {
+        const auto& c = d.zones.zoneConnectors[i];
+        if (c.roadId == roadId && !c.roadForward && generated.size() < 2)
+            throw ValidationError({{"ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION", "zoneConnectors[" + std::to_string(i) + "].roadDirection"}});
+    }
     std::vector<std::string> ids = road.links;
     const auto cut = generatedCuts(d, ids, installed); // S4.5a (D323): F4's cuts stand through a re-apply
     for (std::size_t k = 0; k < generated.size(); ++k) {
@@ -112,6 +118,9 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& ro
         if (found->linkType) link.linkTypeId = found->linkType;
     }
     editableRoad(d, roadId).links = ids; // changeLanes detached them: this re-attaches
+    for (auto& c : d.zones.zoneConnectors) if (c.roadId == roadId) {
+        c.linkId = ids[c.roadForward ? 0 : 1]; c.roadId.clear(); c.roadForward = true;
+    }
     reanchorConnectors(d);
     return ids;
 }
@@ -160,7 +169,9 @@ std::string splitRoad(ProjectDocument& d, const std::string& roadId, double stat
     auto rest = road; rest.id.clear(); rest.links.clear();
     rest.centreline = polylineSpan(road.centreline, station, length);
     const auto next = putRoad(d, std::move(rest));
-    editableRoad(d, roadId).centreline = polylineSpan(road.centreline, 0, station);
+    editableRoad(d, road.id).centreline = polylineSpan(road.centreline, 0, station);
+    for (auto& c : d.zones.zoneConnectors)
+        if (c.roadId == road.id && (c.roadForward == (c.direction == ZoneDirection::destination))) c.roadId = next;
     std::vector<std::string> first, second;
     for (std::size_t k = 0; k < road.links.size(); ++k) {
         const auto& id = road.links[k];
@@ -168,13 +179,13 @@ std::string splitRoad(ProjectDocument& d, const std::string& roadId, double stat
         // The forward Link runs with the centreline, the backward one against it.
         first.push_back(k == 0 ? id : down); second.push_back(k == 0 ? down : id);
     }
-    editableRoad(d, roadId).links = first; editableRoad(d, next).links = second; // splitLink detached them
-    for (const auto& id : first) editableLink(d, id).roadId = roadId;
+    editableRoad(d, road.id).links = first; editableRoad(d, next).links = second; // splitLink detached them
+    for (const auto& id : first) editableLink(d, id).roadId = road.id;
     for (const auto& id : second) editableLink(d, id).roadId = next;
     const auto pairs = d.network.overpasses;
     for (const auto& [a, b] : pairs) {
-        if (a != roadId && b != roadId) continue;
-        const auto other = a == roadId ? b : a;
+        if (a != road.id && b != road.id) continue;
+        const auto other = a == road.id ? b : a;
         d.network.overpasses.push_back(next < other ? std::pair{next, other} : std::pair{other, next});
     }
     return next;
