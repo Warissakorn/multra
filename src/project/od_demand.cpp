@@ -126,6 +126,7 @@ AuthoringDefinition withOdDemand(const ProjectDocument& d, const std::vector<Mod
                 input.id = "od:" + m.id + "/" + m.zoneIds[r] + "/" + m.zoneIds[c] + "/" + oc.id + ">" + dc.id + suffix;
                 input.routeId = route;input.vehiclesPerHour = rate;
                 input.startTime = start;input.endTime = end;input.compositionId = compositionOf(m, modes);
+                input.vehicleTypeId = m.vehicleTypeId; // run-time-only study-area type class
                 result.inputs.push_back(std::move(input));
             }
         });
@@ -200,8 +201,10 @@ std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std:
             issues.push_back({"OD_PERIOD_INVALID", "odMatrices[" + std::to_string(i) + "]"});
         if (!m.modeId.empty() && modePaths[i].empty()) continue; // UNKNOWN_MODE above
         VehicleInput input;input.id = m.id;input.compositionId = compositionOf(m, modes);input.endTime = 1;
+        input.vehicleTypeId = m.vehicleTypeId;
         probe.inputs.push_back(std::move(input));
-        probePaths.push_back(m.modeId.empty() ? "odMatrices[" + std::to_string(i) + "].compositionId" : modePaths[i]);
+        probePaths.push_back(!m.vehicleTypeId.empty() ? "odMatrices[" + std::to_string(i) + "].vehicleTypeId" :
+                             m.modeId.empty() ? "odMatrices[" + std::to_string(i) + "].compositionId" : modePaths[i]);
     }
     // M8.4b: a lot's initial composition is checked the same way, after the matrices' probes.
     for (std::size_t i = 0; i < layer.parkingLots.size(); ++i) {

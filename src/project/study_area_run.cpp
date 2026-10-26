@@ -88,15 +88,15 @@ ProjectDocument studyAreaDocument(const ProjectDocument& d, std::vector<Validati
     std::vector<std::string> order;
     for (const auto& z : zones.zones) order.push_back(z.id);
     const auto index = [&](const std::string& id) { return static_cast<std::size_t>(std::find(order.begin(), order.end(), id) - order.begin()); };
-    // One matrix per (period, or own run-time window for a Meso slice; composition; mode).
-    std::map<std::tuple<std::string, double, double, std::string, std::string>, std::size_t> matrices;
+    // One matrix per (period, or own run-time window for a Meso slice; composition; mode; type).
+    std::map<std::tuple<std::string, double, double, std::string, std::string, std::string>, std::size_t> matrices;
     for (const auto& f : area.gateFlows) {
         const bool own = f.periodId.empty();
-        const auto key = std::tuple{f.periodId, own ? f.start : 0., own ? f.end : 0., f.compositionId, f.modeId};
+        const auto key = std::tuple{f.periodId, own ? f.start : 0., own ? f.end : 0., f.compositionId, f.modeId, f.vehicleTypeId};
         auto [at, added] = matrices.try_emplace(key, zones.odMatrices.size());
         if (added) {
             OdMatrix m{"gate-flows/" + std::to_string(zones.odMatrices.size() + 1), own ? f.start : 0, own ? f.end : 0, f.compositionId, order,
-                       std::vector(order.size(), std::vector<double>(order.size())), f.periodId, f.modeId};
+                       std::vector(order.size(), std::vector<double>(order.size())), f.periodId, f.modeId, f.vehicleTypeId};
             zones.odMatrices.push_back(std::move(m));
         }
         double seconds = f.end - f.start;

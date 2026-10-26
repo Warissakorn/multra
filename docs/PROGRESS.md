@@ -6,6 +6,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-25 — Study-area cuts preserve single vehicle types (D338)
+
+- **Asked:** continue development; followed NEXT's first open S5 items: single-type Meso gate
+  flows and CLI coverage on a study-area project.
+- **Changed:** Meso `type:` classes now retain their per-slice vehicle counts (entrance PCU divided
+  by class PCU) and vehicle type through run-time gate flows/matrices into ordinary Micro inputs.
+  Types sharing the same gates stay separate from each other and from composition classes.
+- **Boundary:** no engine, loading, stored schema, UI or catalog-ownership change. External unused
+  compositions stay unused, including with a reduced project-owned vehicle library. Unknown
+  vehicle types refuse Run; unknown class prefixes retain their advisory.
+- **Tests:** SA17 covers mixed classes, non-unit PCU, class grouping, exact input manifests,
+  source/catalog preservation, seeded replay, side-file parity and stored-field rejection. SA18
+  launches the real CLI for single, batch and comparison JSON/CSV exports with absent/fresh/stale
+  side files and exact provenance hashes.
+- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check` pass,
+  **231/231 CTest cases passed**. Fontconfig uses bundled Thai fonts with DejaVu Sans fallback, as
+  in the earlier desktop sessions. Six focused type-cut cases also pass in a separate harness.
+  Windows untested; no milestone gate closed.
+
 ## 2026-10-25 — Shipped projects reviewed; four-leg gets its 300 s cool-down (D337)
 
 - **Asked:** check the four shipped projects, then whether any is unneeded; the owner chose the

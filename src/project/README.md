@@ -14,3 +14,5 @@ Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1โ€
 `zone_codec` persists the optional schema-31 zone layer (zones, zone connectors, OD matrices; M8.2, D154) and its structural checks; compilation does not read it until M8.3.
 `od_demand` adds the OD matrices to a copy of the definition as ordinary routes and inputs before compilation, and holds their Run-tier checks (M8.3, D155).
 `parking_compile` turns each authored ParkingLot into the engine's lot after `compileScenario` (M8.4b, D157).
+
+`study_area_run` builds the run-time Micro cut; `study_area_meso` retains composition and single-type classes per Meso slice. Run-time-only type fields pass through `od_demand` to ordinary inputs without changing catalog ownership or stored codecs. See [STUDY_AREA_IMPLEMENTED ยง22](../../docs/reference/STUDY_AREA_IMPLEMENTED.md#22-single-vehicle-type-meso-cuts-and-cli-coverage-d338).

@@ -36,7 +36,9 @@ StudyAreaEnds studyAreaEnds(const ProjectDocument&);
 // inputs, routes, routing decisions and route destinations, and less the speed decisions and areas
 // on dropped Links; the kept zones with their kept connectors and lots; one zone per gate (a 1 m
 // triangle at the Link's end, presentation only); and one OD matrix per (period, composition or
-// mode) of the gate flows, in trips (veh/h x period / 3600). `studyArea` is gone from it. Every
+// mode) of the gate flows, in trips (veh/h x period / 3600). A Meso flow naming one vehicle type
+// carries vehicleTypeId through the run-time matrix into its input; catalogs are unchanged.
+// `studyArea` is gone from it. Every
 // input, route, routing decision, route destination and OD matrix of the document not run is
 // MICRO_AREA_INPUT_IGNORED at its path in `advisories`. S5.3 (D329): under `flowSource` "macro" the gate
 // flows are macroGateFlows' (study_area_macro.hpp), read from `dataDirectory`, and the typed ones stay

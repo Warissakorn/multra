@@ -173,7 +173,8 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
         if (!m.periodId.empty()) { if (!periods.contains(m.periodId)) issues.push_back({"UNKNOWN_PERIOD", path + ".periodId"}); }
         else if (!std::isfinite(m.startTime) || !std::isfinite(m.endTime) || m.startTime < 0 || m.endTime <= m.startTime)
             issues.push_back({"OD_PERIOD_INVALID", path});
-        if (m.modeId.empty() && m.compositionId.empty()) issues.push_back({"OD_COMPOSITION_MISSING", path + ".compositionId"});
+        if (m.modeId.empty() && m.compositionId.empty() && m.vehicleTypeId.empty())
+            issues.push_back({"OD_COMPOSITION_MISSING", path + ".compositionId"});
         std::set<std::string> seen;
         for (std::size_t k = 0; k < m.zoneIds.size(); ++k) {
             const auto at = path + ".zoneIds[" + std::to_string(k) + "]";

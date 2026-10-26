@@ -380,3 +380,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D334](RECORD.md#d334) — Per-type fixed/mixed colour preferences in View, stable display hashing and atomic application-local persistence; original pointed motorcycle restored.
 [D336](RECORD.md#d336) — review fixes: user-bound automation endpoint (runtime-dir socket, Windows server-owner check), `BUSY` during a pointer gesture, `preferredVehicleType` (car) for new defaults.
+
+[D338](RECORD.md#d338) — Study-area Meso cuts keep single-type classes through run-time matrices into Micro inputs, without catalog/schema changes; CLI source-provenance and marking coverage.

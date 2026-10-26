@@ -30,6 +30,9 @@ struct OdMatrix {
     // S1.1 (STUDY_PERIODS §5, D268): a StudyPeriod in place of startTime/endTime; empty = own times.
     std::string periodId;
     std::string modeId; // S1.2 (§6, D269): a Mode in place of compositionId; empty = the composition
+    // Study-area Meso type: classes only, in the run-time copy. Never loaded or saved; authored
+    // matrices still require a composition or mode. Expanded straight into VehicleInput's type.
+    std::string vehicleTypeId;
     bool operator==(const OdMatrix&) const = default;
 };
 // M8.4b (D157): a zone with capacity. Its destination connectors' Links are its gate, its origin
@@ -59,6 +62,9 @@ struct GateFlow {
     // S5.4 (D330): run seconds for a flow cut from Meso, which has no period (periodId empty). Only in
     // the run-time copy; never stored, and the codec requires a period.
     double start{}, end{};
+    // A Meso type: class, carried through the run-time matrix into VehicleInput. Typed/stored
+    // flows still name a composition or mode; no schema change.
+    std::string vehicleTypeId;
     bool operator==(const GateFlow&) const = default;
 };
 struct StudyArea {
