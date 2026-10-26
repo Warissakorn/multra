@@ -22,6 +22,7 @@ Json macroJson(const MacroRun& r) {
            {"iterations", a.iterations}, {"converged", a.converged}, {"cancelled", a.cancelled}, {"convergence", Json::array()},
            {"advisories", Json::array()},
            {"classes", Json::array()}, {"links", Json::array()}, {"inputManifest", r.inputManifest}};
+    if (!r.definitionId.empty()) j["runDefinition"] = {{"id", r.definitionId}, {"name", r.definitionName}};
     for (const auto& i : a.convergence) j["convergence"].push_back({{"iteration", i.iteration}, {"gap", i.gap}, {"step", i.step}});
     for (const auto& i : r.advisories) j["advisories"].push_back({{"code", i.code}, {"path", i.path}});
     for (const auto& c : r.classes) j["classes"].push_back({{"id", c.id}, {"mode", c.mode}, {"pcu", c.pcu}});
@@ -41,6 +42,7 @@ std::string macroCsv(const MacroRun& r) {
     std::ostringstream out;
     out << "# MULTRA - not yet validated. " << kMeasure << ".\n";
     out << "# Period: " << r.period << '\n';
+    if (!r.definitionId.empty()) out << "# Macro run: " << Json(r.definitionId).dump() << "; name: " << Json(r.definitionName).dump() << ".\n";
     out << "# Relative gap: " << number(a.gap) << " (target " << number(r.settings.targetGap) << ", " << kGapFormula
         << "); iterations: " << a.iterations << "; converged: " << (a.converged ? "yes" : "no") << '\n';
     out << "kind,source,fromStation,toStation,linkType";

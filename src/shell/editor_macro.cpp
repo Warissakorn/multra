@@ -1,18 +1,15 @@
 #include "editor_interaction.hpp"
 #include "editor_macro.hpp"
 #include "editor_window.hpp"
+#include "macro_run_dialog.hpp"
+#include "../commands/macro_run_commands.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/input_manifest.hpp"
 #include "../project/side_files.hpp"
 #include <QAction>
-#include <QComboBox>
-#include <QDialog>
-#include <QDialogButtonBox>
-#include <QFormLayout>
 #include <QHeaderView>
 #include <QLabel>
-#include <QPushButton>
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QToolBar>
@@ -48,26 +45,18 @@ void EditorWindow::buildMacro(QToolBar* bar, QVBoxLayout* box) {
     box->addWidget(macro_->table, 1);
     bar->addSeparator();
     bar->addAction(action("editorRunMacro", {}, [this] {
-        std::vector<std::string> names;
-        for (const auto& p : macroPeriods(history_.document())) names.push_back(macroPeriodName(p));
-        if (names.empty()) { showError(std::runtime_error("MACRO_NO_PERIOD")); return; }
-        QDialog dialog(this); dialog.setObjectName("editorMacroDialog"); dialog.setWindowTitle(text("editorRunMacro"));
-        auto* form = new QFormLayout(&dialog);
-        form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
-        auto* period = new QComboBox(&dialog); period->setObjectName("editorMacroPeriod");
-        for (const auto& n : names) period->addItem(QString::fromStdString(n), QString::fromStdString(n));
-        form->addRow(text("editorMacroPeriod"), period);
-        auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
-        buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
-        buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
-        form->addRow(buttons);
-        connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-        connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-        if (dialog.exec() == QDialog::Accepted) startMacro(period->currentData().toString().toStdString());
+        try {
+            const auto choice = chooseMacroRun(this, history_.document(), [this](const char* key) { return text(key); });
+            if (choice) startMacro(choice->period, choice->definitionId);
+        } catch (const std::exception& e) { showError(e); }
+    }));
+    bar->addAction(action("editorMacroRunDefinitions", {}, [this] {
+        const auto result = editMacroRunDefinitions(this, history_.document(), [this](const char* key) { return text(key); });
+        if (result) execute("editorMacroRunDefinitionsChange", [result](ProjectDocument& d) { setMacroRunDefinitions(d, *result); });
     }));
     bar->addAction(action("editorCancelMacro", {}, [this] { if (macro_->cancel) *macro_->cancel = true; }));
 }
-void EditorWindow::startMacro(const std::string& period) {
+void EditorWindow::startMacro(const std::string& period, const std::string& definitionId) {
     if (macro_->running) return;
     macro_->stop(); // the previous worker has posted its end; join it before a new one
     macro_->stages.fill(Status::pending); macro_->live.reset();
@@ -76,7 +65,7 @@ void EditorWindow::startMacro(const std::string& period) {
     macro_->cancel = cancel; macro_->running = true;
     const auto generation = ++macro_->generation, revision = history_.revision();
     error_->clear();
-    macro_->worker = std::thread([this, document = history_.document(), data = data_, period, cancel, generation, revision] {
+    macro_->worker = std::thread([this, document = history_.document(), data = data_, period, definitionId, cancel, generation, revision] {
         // S5.5a (owner, D331): paths only when the study area cuts Macro; the side file then carries them.
         const bool keepPaths = !document.zones.studyArea.nodes.empty() && document.zones.studyArea.flowSource == "macro";
         const auto post = [this, generation](std::function<void(MacroPanel&)> change) {
@@ -97,7 +86,12 @@ void EditorWindow::startMacro(const std::string& period) {
             [&](const MacroIteration& i) { post([i](MacroPanel& m) { m.live = i; }); return !*cancel; }};
         auto run = std::make_shared<std::optional<MacroRun>>();
         std::vector<ValidationIssue> issues; std::string error, sha;
-        try { InputManifest inputs; *run = runMacro(document, data, period, &inputs, &observer, keepPaths); sha = projectSha256(document); }
+        try {
+            InputManifest inputs;
+            *run = definitionId.empty() ? runMacro(document, data, period, &inputs, &observer, keepPaths)
+                                        : runNamedMacro(document, data, definitionId, &inputs, &observer, keepPaths);
+            sha = projectSha256(document);
+        }
         catch (const ValidationError& e) { issues = e.issues; }
         catch (const std::exception& e) { error = e.what(); }
         QMetaObject::invokeMethod(this, [this, generation, revision, run, issues, error, entered, sha] {
@@ -141,6 +135,7 @@ void EditorWindow::refreshMacro() {
     if (std::any_of(macro_->stages.begin(), macro_->stages.end(), [](Status s) { return s != Status::pending; })) lines << stages.join(" · ") + ".";
     const auto* r = macroResult();
     if (macro_->running && macro_->live) lines << text("editorMacroProgress").arg(macro_->live->iteration).arg(macro_->live->gap, 0, 'g', 4);
+    if (r && !r->definitionId.empty()) lines << text("editorMacroRunSummary").arg(QString::fromStdString(r->definitionName.empty() ? r->definitionId : r->definitionName));
     if (r) lines << text("editorMacroSummary").arg(QString::fromStdString(r->period)).arg(r->assignment.gap, 0, 'g', 4)
                         .arg(r->assignment.iterations).arg(text(r->assignment.converged ? "editorMacroConverged" : "editorMacroNotConverged"));
     if (macroStale()) lines << text("editorMacroStale").arg(macro_->revision).arg(history_.revision());

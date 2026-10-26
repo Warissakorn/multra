@@ -9,6 +9,9 @@ void rejectMacroSettingsBefore51(const Json& file);
 // INVALID_MACRO_SETTING at the field's path: a target outside (0, 1), a cap not a whole number from
 // 1 to 100000, a missing or unknown key.
 std::optional<MacroSettings> parseMacroSettings(const Json& definition);
+// Shared by the global settings and named run definitions. Rejects shape, type and native-int
+// range before conversion, then applies macroSettingsIssues at the caller's settings path.
+MacroSettings parseMacroSettingsValue(const Json& settings, const std::string& path);
 std::vector<ValidationIssue> macroSettingsIssues(const MacroSettings&);
 void addMacroSettingsJson(const AuthoringDefinition&, Json& definition);
 // The settings a run uses: the project's, else the defaults.

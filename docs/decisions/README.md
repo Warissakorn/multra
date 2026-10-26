@@ -382,3 +382,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D336](RECORD.md#d336) — review fixes: user-bound automation endpoint (runtime-dir socket, Windows server-owner check), `BUSY` during a pointer gesture, `preferredVehicleType` (car) for new defaults.
 
 [D338](RECORD.md#d338) — Study-area Meso cuts keep single-type classes through run-time matrices into Micro inputs, without catalog/schema changes; CLI source-provenance and marking coverage.
+
+[D339](RECORD.md#d339) — Named Macro period/settings definitions at schema 56; one-list Undo/Redo, editor/CLI selection through the staged worker, unchanged original project provenance and latest source per period.

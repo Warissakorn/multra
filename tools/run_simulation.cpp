@@ -162,13 +162,13 @@ int runComparison(const std::filesystem::path& baseFile, const std::filesystem::
 }
 // --macro (S2.3, MACRO_NETWORK §9): one period's static assignment; the inputs are always recorded.
 int runMacroPeriod(const std::filesystem::path& file, const std::filesystem::path& csvFile,
-                   const std::filesystem::path& data, const std::string& period) {
+                   const std::filesystem::path& data, const std::string& period, bool named = false) {
     if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
     InputManifest inputs;
     const auto document = parseDocument(readInputJson(file, "project", &inputs));
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
-    const auto run = runMacro(document, data, period, &inputs);
+    const auto run = named ? runNamedMacro(document, data, period, &inputs) : runMacro(document, data, period, &inputs);
     const auto marking = exportMarking(document, {});
     writeCsv(csvFile, markedCsv(macroCsv(run), marking));
     auto result = macroJson(run);
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
     try {
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
-        std::optional<std::string> macroPeriod;
+        std::optional<std::string> macroPeriod, macroRunId;
         bool meso = false;
         bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false;
         bool arrivalPhases = false, waitCauses = false;
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
                 std::cout << "MULTRA (not yet validated)\n"
                              "Usage: multra-cli [seed] [--seed N] [--data-dir DIR]\n"
                              "       [--scenario FILE] [--events FILE]\n"
-                             "       [--project FILE.traffic.json [--seeds LIST [--compare FILE] | --macro PERIOD | --meso] [--csv FILE] [--lane-changes] [--segment-times]\n"
+                             "       [--project FILE.traffic.json [--seeds LIST [--compare FILE] | --macro PERIOD | --macro-run ID | --meso] [--csv FILE] [--lane-changes] [--segment-times]\n"
                              "        [--stop-lines] [--arrival-phases [--phase-bin S]] [--wait-causes] [--discharge]]\n"
                              "Outputs completed-trip diagnostics, not HCM control delay or LOS.\n"
                              "--project adds simulated movement delay and approach queues (M2.5).\n"
@@ -237,6 +237,7 @@ int main(int argc, char** argv) {
                              "--macro PERIOD (with --project, alone) assigns the period's demand to the Macro graph by\n"
                              "  Frank-Wolfe and reports every link's flow, V/C and time (S2.3). PERIOD is a study period\n"
                              "  id, or matrix:ID for a matrix with its own times.\n"
+                             "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
                              "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n";
                 return 0;
@@ -250,7 +251,7 @@ int main(int argc, char** argv) {
             if (arg == "--meso") { if (meso) throw std::invalid_argument("Specify --meso only once"); meso = true; continue; }
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
-                arg == "--threads" || arg == "--macro") {
+                arg == "--threads" || arg == "--macro" || arg == "--macro-run") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -266,6 +267,10 @@ int main(int argc, char** argv) {
                 else if (arg == "--macro") {
                     if (macroPeriod) throw std::invalid_argument("Specify --macro only once");
                     macroPeriod = argv[i];
+                }
+                else if (arg == "--macro-run") {
+                    if (macroRunId) throw std::invalid_argument("Specify --macro-run only once");
+                    macroRunId = argv[i];
                 }
                 else if (arg == "--threads") {
                     if (threads) throw std::invalid_argument("Specify --threads only once");
@@ -287,6 +292,7 @@ int main(int argc, char** argv) {
             }
         }
         if (data.empty()) data = findDataDirectory(argv[0]);
+        if (macroPeriod && macroRunId) throw std::invalid_argument("--macro and --macro-run cannot be combined");
         if (!csvFile.empty() && projectFile.empty()) throw std::invalid_argument("--csv needs --project");
         if (laneChanges && projectFile.empty()) throw std::invalid_argument("--lane-changes needs --project");
         if (segmentTimes && projectFile.empty()) throw std::invalid_argument("--segment-times needs --project");
@@ -301,7 +307,10 @@ int main(int argc, char** argv) {
         if (macroPeriod && (projectFile.empty() || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
                             waitCauses || discharge.enabled))
             throw std::invalid_argument("--macro needs --project and takes only --csv and --data-dir");
-        if (meso && (projectFile.empty() || macroPeriod || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
+        if (macroRunId && (projectFile.empty() || meso || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
+                           waitCauses || discharge.enabled || !compareFile.empty() || threads))
+            throw std::invalid_argument("--macro-run needs --project and takes only --csv and --data-dir");
+        if (meso && (projectFile.empty() || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
                      waitCauses || discharge.enabled))
             throw std::invalid_argument("--meso needs --project and takes only --csv and --data-dir");
         if (seeds) {
@@ -314,6 +323,7 @@ int main(int argc, char** argv) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
             if (macroPeriod) return runMacroPeriod(projectFile, csvFile, data, *macroPeriod);
+            if (macroRunId) return runMacroPeriod(projectFile, csvFile, data, *macroRunId, true);
             if (meso) return runMesoProject(projectFile, csvFile, data);
             if (!compareFile.empty()) return runComparison(projectFile, compareFile, csvFile, data, *seeds, threads);
             if (seeds) return runBatch(projectFile, csvFile, data, *seeds, threads);
