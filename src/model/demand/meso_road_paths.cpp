@@ -78,7 +78,7 @@ std::vector<MesoPath> mesoShortestOdPaths(const MesoGraph& graph, std::size_t fr
             const auto index = outs[frame.link][frame.next++];
             const auto& t = graph.turns[index];
             if (onPath[t.out] || !std::isfinite(distance[t.out]) ||
-                free[frame.link] + t.freeTime + distance[t.out] != distance[frame.link]) continue;
+                free[frame.link] + t.freeTime + distance[t.out] > distance[frame.link] * (1 + kMesoOdTieTolerance)) continue;
             onPath[t.out] = true; path.links.push_back(t.out); path.turns.push_back(index);
             stack.push_back({t.out, 0}); descended = true; break;
         }

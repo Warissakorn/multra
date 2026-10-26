@@ -48,6 +48,8 @@ std::vector<ValidationIssue> routingDecisionIssues(const AuthoringDefinition&);
 // single-route decision keeps the plain id. Everything downstream sees ordinary routed inputs.
 AuthoringDefinition withRoutingDecisions(AuthoringDefinition);
 Json documentJson(const ProjectDocument& document);
+// The newest schema the reader accepts; tests name kLatestSchema + 1 as the first unknown one.
+inline constexpr int kLatestSchema = 57;
 ProjectDocument parseDocument(const Json& json);
 void validateDocument(const ProjectDocument& document); // Empty networks are valid drafts.
 // Every id the network and definition hold, which a new or zone-layer id must not repeat.

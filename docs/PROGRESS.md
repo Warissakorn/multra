@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Review fixes to D339–D341 (D342)
+
+- **Asked:** review every open PR, then improve all findings and merge (owner: "ปรับปรุงทั้งหมด และ Merge").
+  PRs 193–196 merged as reviewed; this follow-up carries the fixes.
+- **Meso OD rule per matrix:** D341 switched every OD matrix to graph paths once any Road
+  connector existed. A Road connector in an unrelated zone thus turned a Link-only matrix from
+  running into `MESO_OD_NO_PATH` and changed its loading (probe: 0 → 900 trips, refused). Now a
+  matrix takes the graph rule only when one of its zones has a Road connector; the rest run the
+  legacy expansion on the document less those matrices and Road connectors. The parking refusal
+  and endpoint checks are limited to the graph-rule matrices' zones.
+- **Ties:** equal-time paths compare within a 1e-12 relative tolerance. Summing the same link
+  times in another order differed by an ulp in about 18 % of realistic detour pairs, so one of two
+  equal detours took all the demand; MR1's unit-speed integers could not show it.
+- **Macro side file:** a named run's period records `runDefinition {id, name}`, so a study-area cut
+  from the side file can name the definition behind its flows; older files still read.
+- **Tests:** `kLatestSchema` names the newest readable schema, and the 16 "next schema refuses"
+  tests use `kLatestSchema + 1` instead of a literal edited at every bump. MR7 covers the
+  per-matrix rule, parking scope and reordered ties; MA20 the side-file definition.
+- **Verification:** Linux, GCC, headless preset: full `multra-tests` pass (Qt/desktop and Windows
+  untested here; CI covers them on the PR).
+
 ## 2026-10-26 — Meso OD demand on directed Roads (D341)
 
 - **Asked:** continue development; followed NEXT's Meso Road-OD seam after D340.
@@ -190,16 +211,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   standard-palette validation and existing display/catalog suites. The seed-42 CLI example
   remains byte-identical. Architecture, documentation and file-size checks pass. Thai dialog
   and mixed-fleet previews inspected. No Windows/high-DPI acceptance claim.
-
-## 2026-10-25 — Simplified motorcycle styling
-
-- **Asked:** simplify the motorcycle. One flowing body, straight handlebar, single tank
-  highlight, saddle and front light replace the faceted fairing and fine trim.
-  Dark tyres and the small screen retain readable direction and vehicle identity.
-- Existing physical bounds, connected picking and zoom detail thresholds remain covered.
-- **Verification:** Linux/Qt 6.8.2 offscreen: rendering build and four display suites
-  (appearance, canvas LOD, run presentation, lane-change display) pass. Close-up inspected;
-  architecture, file-size and documentation checks pass.
 
 ## Older entries
 

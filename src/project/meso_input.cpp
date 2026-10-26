@@ -41,13 +41,15 @@ std::string origin(const std::string& id, const std::vector<std::string>& author
 }
 MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& data, const MesoGraph& graph, InputManifest* manifest) {
     MesoDemand out;
-    const bool graphOd = usesRoadZoneConnectors(d.zones);
+    const bool graphOd = usesMesoGraphOd(d.zones); // D342: per matrix
+    const auto stripped = usesRoadZoneConnectors(d.zones) ? std::optional{withoutGraphOd(d)} : std::nullopt;
+    const auto& linkOd = stripped ? *stripped : d;
     const auto def = d.definition.value_or(AuthoringDefinition{});
     std::vector<std::string> inputIds, routeIds;
     for (const auto& i : def.inputs) inputIds.push_back(i.id);
     for (const auto& r : def.routes) routeIds.push_back(r.id);
     const auto modes = matrixModes(d, data, manifest);
-    const auto expanded = withRoutingDecisions(graphOd || d.zones.empty() ? def : withOdDemand(d, modes));
+    const auto expanded = withRoutingDecisions(linkOd.zones.empty() ? def : withOdDemand(linkOd, modes));
     const auto catalog = resolveDemandCatalog(expanded, data, true, manifest);
     std::set<std::string> reported;
     const auto report = [&](const std::string& code, const std::string& at) { if (reported.insert(code + at).second) out.issues.push_back({code, at}); };

@@ -30,6 +30,7 @@ struct MacroSidePeriod {
     std::string projectSha256;
     MacroSettings settings;
     double gap{}; int iterations{}; bool converged{};
+    std::string definitionId, definitionName; // D342: the named Macro run, blank for project settings
     std::vector<MacroClass> classes;         // id, mode and pcu; no cells
     std::vector<SideArc> arcs;
     bool hasPaths{};                         // kept only when the study area cuts Macro (owner, D331)

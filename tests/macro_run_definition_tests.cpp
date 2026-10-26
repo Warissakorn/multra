@@ -173,6 +173,10 @@ TEST(namedmacro, ma20_refusal_stages_cancel_and_original_manifest) {
     const auto side = parseMacroSide(macroSideJson(run, projectSha256(d), nullptr));
     CHECK(side.periods.at("matrix:am").settings == d.macroRuns[1].settings &&
           side.periods.at("matrix:am").projectSha256 == inputSha256(source));
+    // D342: the side file names the definition; a project-settings run leaves it blank.
+    CHECK(side.periods.at("matrix:am").definitionId == "tight" && side.periods.at("matrix:am").definitionName == d.macroRuns[1].name);
+    CHECK(parseMacroSide(macroSideJson(runMacro(d, data, "matrix:am", nullptr, &cancel), projectSha256(d), nullptr))
+              .periods.at("matrix:am").definitionId.empty());
     auto noPeriod = d; noPeriod.macroRuns[1].period = "missing"; stages.clear();
     CHECK(noPeriod.macroRuns[1].period == "missing");
     test::throws([&] { runNamedMacro(noPeriod, data, "tight", nullptr, &cancel); }, "MACRO_PERIOD_UNKNOWN");

@@ -88,6 +88,8 @@ Json macroSideJson(const MacroRun& r, const std::string& sha, const Json& previo
     Json p{{"projectSha256", sha}, {"settings", {{"targetGap", r.settings.targetGap}, {"maxIterations", r.settings.maxIterations}}},
            {"gap", a.gap}, {"iterations", a.iterations}, {"converged", a.converged}, {"classes", Json::array()},
            {"arcs", arcsJson(sideArcs(r.graph))}, {"inputManifest", r.inputManifest}};
+    // D342: which saved definition produced the period, as the result JSON names it (D339).
+    if (!r.definitionId.empty()) p["runDefinition"] = {{"id", r.definitionId}, {"name", r.definitionName}};
     for (const auto& c : r.classes) p["classes"].push_back({{"id", c.id}, {"mode", c.mode}, {"pcu", c.pcu}});
     if (a.paths.size() == r.classes.size() && !r.classes.empty()) {
         p["paths"] = Json::array();
@@ -134,6 +136,11 @@ MacroSide parseMacroSide(const Json& j, const std::string& where) {
         out.iterations = n.get<int>();
         if (!in.key(p, at, "converged").is_boolean()) in.fail(at + ".converged");
         out.converged = p.at("converged").get<bool>();
+        if (p.contains("runDefinition")) {
+            const auto& r = p.at("runDefinition");
+            out.definitionId = in.text(in.key(r, at + ".runDefinition", "id"), at + ".runDefinition.id");
+            out.definitionName = in.text(in.key(r, at + ".runDefinition", "name"), at + ".runDefinition.name");
+        }
         const auto& classes = in.array(p, at, "classes");
         for (std::size_t c = 0; c < classes.size(); ++c) {
             const auto cp = at + ".classes[" + std::to_string(c) + "]";
