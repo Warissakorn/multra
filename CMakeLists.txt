@@ -147,6 +147,10 @@ target_link_libraries(multra-validate-benchmark PRIVATE multra_commands multra_o
 target_precompile_headers(multra-validate-benchmark REUSE_FROM multra-engine-benchmark)
 multra_runtime_data(multra-validate-benchmark)
 
+add_executable(multra-node-detail-benchmark tools/node_detail_benchmark.cpp)
+target_link_libraries(multra-node-detail-benchmark PRIVATE multra_commands multra_options)
+target_precompile_headers(multra-node-detail-benchmark REUSE_FROM multra-engine-benchmark)
+
 # Regenerates the committed four-leg fixture from its one source, tools/four_leg_network.hpp.
 add_executable(multra-four-leg-fixture tools/four_leg_fixture.cpp)
 target_link_libraries(multra-four-leg-fixture PRIVATE multra_commands multra_options)

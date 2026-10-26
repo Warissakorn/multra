@@ -206,6 +206,16 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   What is left still grows with the network: `automaticConflicts` is network-wide and recomputes
   `connectorSurface` per pair (55,872 calls at k = 4, 65 % before D343). The per-pair probe: rebuild
   the list before each authoring call and compare the entry with `==` (equal on all 973 pairs).
+- **Call-local Connector surfaces (D351, 2026-10-26, Linux GCC 14.2, Release -O3):** same
+  unconnected four-arm recipe, compiler paused during timings, median of 3: k = 4 74.49 →
+  60.96 ms; k = 16 3,058.83 → 2,728.20 ms. This is about 18 % / 11 % less wall time, still above
+  the 1.5 s target. Both complete generated JSON documents are byte-identical to the baseline
+  (SHA-256: k = 4 `c7231ed584fa55c7ab8fe7f9146d9db54043d88f9f819ea00505f4588f5d6e42`,
+  k = 16 `9d49beba88abaf41ccc51f6e93a0ba0c5fa513cf69113fc5243cbae68f03bd27`).
+  `tools/node_detail_benchmark.cpp` retains the drawing recipe; run
+  `multra-node-detail-benchmark 16 output.json` for three timings and a document to compare.
+  Baseline/after linked the same Commands/Project libraries with only the Model library replaced.
+  Earlier timings taken while compiling were discarded. No Windows or Qt UI evidence.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

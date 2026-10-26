@@ -6,6 +6,8 @@
 #include "network.hpp"
 
 namespace multra {
+// Cached overloads share surfaces only while the same Network remains unchanged.
+class ConnectorSurfaceCache;
 // Duplicate or blank ids, a reference to a Link/Connector/waiting line/area that does not
 // exist, a non-finite station, entry not before exit, a rule whose gap time or headway is not
 // finite and positive, two rules on one area, a malformed path (neither or both kinds set).
@@ -44,8 +46,10 @@ SurfaceOverlap surfaceOverlap(const Network&, const ControlPathRef& first, const
 // D72: each separate overlap of the two surfaces, ordered along `first`. Every element has status
 // `overlap`, or the result is a single element carrying none/unsupported/unresolved.
 std::vector<SurfaceOverlap> surfaceOverlaps(const Network&, const ControlPathRef& first, const ControlPathRef& second);
+std::vector<SurfaceOverlap> surfaceOverlaps(const Network&, const ControlPathRef& first, const ControlPathRef& second, ConnectorSurfaceCache* cache);
 // Retains every raw piece, classifying attachment mouths from directed lane topology.
 std::vector<SurfaceOverlap> classifiedOverlaps(const Network&, const ControlPathRef&, const ControlPathRef&);
+std::vector<SurfaceOverlap> classifiedOverlaps(const Network&, const ControlPathRef&, const ControlPathRef&, ConnectorSurfaceCache* cache);
 // Crossing candidates exclude the connected overlap rooted at an actual shared attachment.
 // Raw surfaceOverlaps remains available for geometric measurement. Merge topology owns mouths.
 std::vector<SurfaceOverlap> crossingOverlaps(const Network&, const ControlPathRef& first, const ControlPathRef& second);
@@ -58,6 +62,7 @@ std::vector<Point> conflictSideOutline(const Network&, const ConflictSide&);
 // Exact measured overlap polygons for physical grouping. Stored stations control the runtime.
 // Merge polygons come from terminal mouths, not the old one-metre admission markers.
 ConflictPolygons conflictAreaPolygons(const Network&, ConflictKind, const ConflictSide&, const ConflictSide&);
+ConflictPolygons conflictAreaPolygons(const Network&, ConflictKind, const ConflictSide&, const ConflictSide&, ConnectorSurfaceCache* cache);
 std::optional<std::pair<Point, Point>> waitingLineBar(const Network&, const ControlPoint&);
 // M3.2.4b: the polyline a ControlPoint's station is measured on (a Link's reference polyline, a
 // Connector's base polyline), so a drag commits the station waitingLineBar and the resolver read.

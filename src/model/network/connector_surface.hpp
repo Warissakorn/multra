@@ -1,6 +1,7 @@
 #pragma once
 #include "network.hpp"
 #include <array>
+#include <map>
 
 namespace multra {
 // P1/P4 intersect the local Connector and Link edges; P2 is the centre
@@ -25,6 +26,20 @@ struct ConnectorSurface {
 // lines have no mouth: outline is empty, open rails remain editable, diagnostics report it.
 // Coincident parallel edges use their attachment points (the continuous straight join).
 ConnectorSurface connectorSurface(const Network&, const Connector&);
+// Call-local reuse only. The bound Network must remain unchanged for this object's lifetime.
+// No cross-edit invalidation policy: automaticConflicts owns and destroys it in one call.
+class ConnectorSurfaceCache {
+public:
+    explicit ConnectorSurfaceCache(const Network& network) : network_(network) {}
+    const ConnectorSurface& get(const Connector& connector) {
+        const auto found = surfaces_.find(connector.id);
+        if (found != surfaces_.end()) return found->second;
+        return surfaces_.emplace(connector.id, connectorSurface(network_, connector)).first->second;
+    }
+private:
+    const Network& network_;
+    std::map<std::string, ConnectorSurface> surfaces_;
+};
 // P2 on its own (M3.2.9f, D77): the middle of the attached Link lane range at the attachment
 // station -- where an end grip is drawn and where a dropped end is measured from.
 std::optional<Point> connectorRangeCentre(const Network&, const Connector&, bool start);

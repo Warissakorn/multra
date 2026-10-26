@@ -1,5 +1,6 @@
 #include "right_of_way.hpp"
 #include "conflict_surface.hpp"
+#include "connector_surface.hpp"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -70,12 +71,13 @@ bool authoredCovers(const Network& n, const ControlPathRef& a, const ControlPath
         return false; });
 }
 std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
+    ConnectorSurfaceCache cache(n);
     std::vector<AutomaticConflict> result;
     std::vector<Path> paths;
     for (const auto& l : n.links)
         for (const auto& lane : l.lanes) {
             Path p{{l.id, lane.id, "", "", ""}, l.id, "", l.level};
-            const auto surface=conflictSurface(n,p.ref);
+            const auto surface=conflictSurface(n,p.ref,&cache);
             if(!surface)continue;
             auto edges=surface->left;edges.insert(edges.end(),surface->right.begin(),surface->right.end());
             bound(p,edges,0);
@@ -84,7 +86,7 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
     for (const auto& c : n.connectors)
         for (const auto& cp : connectorPaths(n, c)) {
             Path p{{"", "", c.id, cp.from.laneId, cp.to.laneId}, c.id, "", c.level};
-            const auto surface=conflictSurface(n,p.ref);
+            const auto surface=conflictSurface(n,p.ref,&cache);
             if(!surface)continue;
             auto edges=surface->left;edges.insert(edges.end(),surface->right.begin(),surface->right.end());
             bound(p,edges,0);
@@ -97,7 +99,7 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
             const auto& a = paths[i]; const auto& b = paths[j];
             if(a.owner==b.owner || a.level!=b.level)continue;
             if (a.hi.x < b.lo.x || b.hi.x < a.lo.x || a.hi.y < b.lo.y || b.hi.y < a.lo.y) continue;
-            const auto pieces = classifiedOverlaps(n, a.ref, b.ref);
+            const auto pieces = classifiedOverlaps(n, a.ref, b.ref,&cache);
             std::size_t crossingIndex=0,branchingIndex=0;
             for (std::size_t k = 0; k < pieces.size(); ++k) {
                 const auto& o = pieces[k];
@@ -111,7 +113,7 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
                                       (o.geometryKind==ConflictGeometryKind::branching?"/branching":"") +
                                       (index?"#"+std::to_string(index):std::string{}), "", o.geometryKind, conflictAreaPolygons(n,
                                       o.geometryKind==ConflictGeometryKind::branching?ConflictKind::branching:ConflictKind::crossing,
-                                      {a.ref,o.first.from,o.first.to,""},{b.ref,o.second.from,o.second.to,""})});
+                                      {a.ref,o.first.from,o.first.to,""},{b.ref,o.second.from,o.second.to,""},&cache)});
             }
         }
     const auto table = runtimeSections(n);
@@ -127,7 +129,7 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
                                   "auto/" + g.section + "/" + std::to_string(j) + "/" + std::to_string(i), g.section, ConflictGeometryKind::merge,
                                   conflictAreaPolygons(n,ConflictKind::merge,
                                       {sides[j].path,sides[j].entry,sides[j].exit,""},
-                                      {sides[i].path,sides[i].entry,sides[i].exit,""})});
+                                      {sides[i].path,sides[i].entry,sides[i].exit,""},&cache)});
     }
     std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) { return a.key < b.key; });
     return result;

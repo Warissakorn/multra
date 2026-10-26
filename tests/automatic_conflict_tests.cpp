@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/model/network/connector_surface.hpp"
 #include "../tools/t_junction_network.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/model/network/right_of_way.hpp"
@@ -170,4 +171,41 @@ TEST(automatic_conflict, a_pair_that_crosses_twice_implies_two_areas) {
     validateDocument(d);
     CHECK(of(automaticConflicts(d.network), ConflictKind::crossing).empty());
     CHECK(d.network.rightOfWay.conflictAreas.size() == 2);
+}
+
+// Call-local reuse must preserve stations, classifications and display polygons exactly.
+TEST(automatic_conflict, cached_geometry_matches_uncached_and_edits_get_fresh_surfaces) {
+    for (const auto side : {DrivingSide::right, DrivingSide::left}) {
+        auto d = bare(side).document;
+        auto compare = [&] {
+            ConnectorSurfaceCache cache(d.network);
+            const auto all = automaticConflicts(d.network);
+            CHECK(!all.empty());
+            for (const auto& conflict : all) {
+                const auto& a = conflict.first; const auto& b = conflict.second;
+                const auto cached = classifiedOverlaps(d.network, a.path, b.path, &cache);
+                const auto plain = classifiedOverlaps(d.network, a.path, b.path);
+                CHECK(cached.size() == plain.size());
+                for (std::size_t i = 0; i < plain.size(); ++i) {
+                    CHECK(cached[i].status == plain[i].status);
+                    CHECK(cached[i].geometryKind == plain[i].geometryKind);
+                    CHECK(cached[i].first.from == plain[i].first.from && cached[i].first.to == plain[i].first.to);
+                    CHECK(cached[i].second.from == plain[i].second.from && cached[i].second.to == plain[i].second.to);
+                    CHECK(cached[i].polygons == plain[i].polygons);
+                }
+                CHECK(conflictAreaPolygons(d.network, conflict.kind, a, b, &cache) ==
+                      conflictAreaPolygons(d.network, conflict.kind, a, b));
+            }
+        };
+        compare();
+        const auto before = automaticConflicts(d.network);
+        // Moving the entire drawing forces new coordinates without changing its topology.
+        for (auto& l : d.network.links) for (auto& p : l.geometry) { p.x += 100; p.y -= 50; }
+        for (auto& c : d.network.connectors) for (auto& p : c.geometry) { p.x += 100; p.y -= 50; }
+        CHECK(d.network.links.front().geometry != bare(side).document.network.links.front().geometry);
+        const auto after = automaticConflicts(d.network);
+        CHECK(after != before);
+        CHECK(after.size() == before.size());
+        compare();
+    }
 }

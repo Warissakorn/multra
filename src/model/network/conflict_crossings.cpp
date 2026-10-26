@@ -68,8 +68,8 @@ ConflictGeometryKind relation(const Network& n,const ControlPathRef& a,const Mou
            mb.connector && !ma.connector?joins(mb,a,o.second,o.first):ConflictGeometryKind::crossing;
 }
 }
-std::vector<SurfaceOverlap> classifiedOverlaps(const Network& n,const ControlPathRef& a,const ControlPathRef& b) {
-    auto pieces=surfaceOverlaps(n,a,b);
+std::vector<SurfaceOverlap> classifiedOverlaps(const Network& n,const ControlPathRef& a,const ControlPathRef& b,ConnectorSurfaceCache* cache) {
+    auto pieces=surfaceOverlaps(n,a,b,cache);
     if(pieces.front().status!=SurfaceOverlap::Status::overlap)return pieces;
     const auto ma=mouthOf(n,a),mb=mouthOf(n,b);
     for(auto& o:pieces)o.geometryKind=relation(n,a,ma,b,mb,o);
@@ -82,4 +82,5 @@ std::vector<SurfaceOverlap> crossingOverlaps(const Network& n,const ControlPathR
     if(pieces.empty())return {{SurfaceOverlap::Status::none,{},{}}};
     return pieces;
 }
+std::vector<SurfaceOverlap> classifiedOverlaps(const Network& n,const ControlPathRef& a,const ControlPathRef& b) { return classifiedOverlaps(n,a,b,nullptr); }
 }

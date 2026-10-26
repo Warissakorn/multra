@@ -18,6 +18,7 @@ cmake --build build/headless --target check
 | `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
 | `check_file_sizes.cpp` | `multra-check-file-sizes` | Enforce the source-file line budget |
 | `check_docs.cpp` | `multra-check-docs` | Check maintained Markdown local links, anchors and folder indexes; supplied spec parts are excluded |
+| `node_detail_benchmark.cpp` | `multra-node-detail-benchmark` | Time F4 for unconnected four-arm Nodes; `16 output.json` prints three timings and saves the first document for byte comparison; not in `check` |
 | `validate_benchmark.cpp` | `multra-validate-benchmark` | Time `validateDocument`, which every editor command runs (D140); prints, never asserts; not in `check` |
 
 The executables are under `build/headless/bin/` or `build/desktop/bin/` for the Ninja
