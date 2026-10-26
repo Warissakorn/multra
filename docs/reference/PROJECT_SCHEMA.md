@@ -1,8 +1,8 @@
 # Project schema inventory
 
-This is the codec ownership and version map for a future formal editor-project schema
-(D355). It describes implemented readers/writers, rather than inferring a contract from
-one document. It is **not a complete JSON Schema**, a new validator, or a change to file
+This is the codec ownership and version map for an editor-project schema (D355), with
+a generated partial envelope/background contract (D356). It describes implemented
+readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
 uses those existing codecs and validators.
@@ -16,13 +16,13 @@ that path as a canonical project.
 
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
-| `format` | Required for projects, exactly `TrafficSim`; emitted always | `document.cpp` |
-| `schemaVersion` | Required integer 1–57 for projects; writer chooses from features | `document.cpp`, `document_schema.hpp` |
-| `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document.cpp` |
-| `revision` | Required unsigned JSON integer; below uint64 maximum | `document.cpp` |
+| `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
+| `schemaVersion` | Required integer 1–57 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
+| `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
 | `definition` | Absent/null means no authored demand; writer emits null when absent | `definition.cpp`, feature codecs below |
-| `background` | Required object, including an empty image; writer always emits it | `document.cpp` |
+| `background` | Required object, including an empty image; writer always emits it | `document_envelope.cpp` |
 | `map` | Optional from 29; null is invalid; omitted without settings | `map_codec.cpp` |
 | `zones`, `zoneConnectors`, `odMatrices`, `parkingLots` | Optional from 31; present arrays must be nonempty; null invalid | `zone_codec.cpp` |
 | `studyPeriods` | Optional from 49; present array must be nonempty; null invalid | `study_period_codec.cpp` |
@@ -128,6 +128,42 @@ historical-schema coverage.
 
 A generated schema needs codec-owned field metadata for requiredness, null handling,
 unknown-key policy, version gates and tagged alternatives. The inventory above does not
-supply that metadata for every nested field. Start the next slice with the project
-**envelope and background**; keep partial coverage explicit and test accepted/rejected
-cases against the real codec before expanding to the network and demand branches.
+supply that metadata for every nested field. The next slice maps network fields (starting with the network envelope and Link/Lane
+shapes); keep partial coverage explicit and compare with the real codec before expanding
+to Connector, control and demand branches.
+
+## Generated envelope/background schema (D356)
+
+`projectEnvelopeSchema()` in `document_envelope.hpp` generates a draft-2020-12 schema
+from the field metadata used by the native project envelope reader and typed validation.
+Retrieve it without a document, Qt, external catalogs or a running editor:
+
+```sh
+./build/headless/bin/multra-project-schema > project-envelope.schema.json
+```
+
+The tool is installed beside `multra-cli`; it accepts only `--help` or no arguments.
+It prints JSON directly, preserving the exact integer maximum `18446744073709551614`.
+Use an exact-integer JSON parser for those bounds; a binary64-only parser rounds them.
+No generated schema file is maintained as another source of truth.
+
+Coverage is explicitly `x-multra-coverage: envelope-background`, `x-multra-complete:false`.
+The schema covers required root envelope fields, counter limits, the root shape of network
+and optional definition, and background fields/ranges. Root/background unknown keys stay
+open, as in the codec. Nested network/demand fields, optional features and their version
+rules, ID references and run readiness remain unchecked by this partial schema. A valid
+schema result alone never establishes that the document can be loaded or run.
+
+Two constraints need the codec even within the covered fields:
+
+- `x-multra-nativeType` records integer-token/unsigned-integer-token requirements. JSON
+  Schema treats `17.0` as an integer, whereas the native reader rejects its floating token.
+- `pngBase64.maxLength` supplies a necessary character-count bound; the stricter
+  `x-multra-maxUtf8Bytes` bound is checked by the codec. A non-ASCII string can fit the
+  character count and exceed the byte limit. This validates encoded size, not PNG contents.
+
+Standard validators may ignore these annotations. The native read/validation stages still
+check finite doubles and preserve existing error codes and legacy scenario handling.
+Desktop `document.schema` continues to return observed shapes; its Qt JSON transport is
+not used to carry these exact uint64 schema bounds. `document.validate` remains the way to
+check complete documents/patches against the codec in the live desktop workflow.

@@ -402,3 +402,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D354](RECORD.md#d354) — Bounded observed-schema discovery leaves unvisited array types open; Qt-free structural helper and boundary regression tests.
 
 [D355](RECORD.md#d355) — Project schema ownership/version inventory and shared feature-selected writer inspection; formal nested schemas remain separate.
+
+[D356](RECORD.md#d356) — Shared envelope/background metadata generates a partial formal schema; exact-integer CLI output and explicit codec-only token/byte constraints.

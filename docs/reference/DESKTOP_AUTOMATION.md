@@ -404,7 +404,8 @@ unseen types based on its visited prefix. Depth-limited containers also remain o
 without enumerating their children. Embedded image bytes are
 excluded. This is not a complete formal schema for every supported project/version. The
 [project schema inventory](PROJECT_SCHEMA.md) maps codec ownership, root presence rules
-and feature-selected save versions for the next formal-schema slice.
+and feature-selected save versions. `multra-project-schema` provides a separate, exact-integer
+partial formal envelope/background schema; it does not change this observed-shape response.
 
 `document.validate` accepts exactly one of patch or document. Patch follows the same protected
 field/codec/History settlement path as document.patch on a disposable History; document checks

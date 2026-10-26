@@ -30,3 +30,8 @@ it does not infer required fields, codec version rules or semantic validity.
 `documentSchemaVersion` (`document_schema.hpp`) selects the writer version directly from
 features, without serializing or validating the document. `documentJson` uses this same rule;
 input schema versions are not retained. See the [schema inventory](../../docs/reference/PROJECT_SCHEMA.md).
+
+`document_envelope` owns shared envelope/background field metadata, native read/validation
+stages and partial draft-2020-12 schema generation. `multra-project-schema` prints that
+schema directly, retaining exact uint64 limits. Nested feature validation remains in the
+existing codecs; native integer-token and UTF-8 byte checks are annotated constraints.

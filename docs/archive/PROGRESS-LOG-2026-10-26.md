@@ -2,6 +2,24 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Deferred recovery commands (D346)
+
+- **Asked:** continue the AI workflow with recovery management that avoids blocking startup
+  while preserving the normal user recovery prompt and live editors' drafts.
+- **Changed:** --recovery ask/defer (default ask), startup policy in state, explicit metadata-only
+  recovery list, guarded restore with dirty-work permission, and confirmed single-draft discard.
+  Basename-only IDs reject paths and symlinks; locks are rechecked at use. Restore retains the
+  existing untitled/dirty semantics and adopts the draft lock; autosave/manual Recover stay on.
+  No background scan or default deletion was added.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (137.91 s).
+  Seven targeted automation/storage suites passed. Tests cover both startup policies with
+  real pending files, live/current ownership, list-to-use lock races, invalid/missing IDs,
+  corrupt recovery, dirty replacement, adopted locks, and save/discard isolation. A separate
+  production-desktop smoke test with isolated workspace XDG storage waited for real autosave,
+  intentionally crashed only its test-owned process, restarted with defer, listed/restored the
+  preserved draft, verified its edited content, saved and quit normally. Invalid CLI policy
+  was rejected with exit 2 and no window. Windows runtime remains unrun.
+
 ## 2026-10-26 — Guarded New and intentional Quit (D345)
 
 - **Asked:** continue the reviewed AI workflow with New in the same window and intentional
