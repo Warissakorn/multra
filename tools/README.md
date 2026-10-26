@@ -44,7 +44,7 @@ name after `bin/`.
 | `--events FILE` | Stream all events as JSON Lines | No trajectory file |
 | `--help` | Usage without loading assets or running a simulation | — |
 | `--project FILE --seeds LIST --compare ALT` | Scenario comparison (M5.8a): ALT runs over the same seeds; alternative minus base per movement, section, approach and the network, Welch 95 % CI, unmatched rows listed; refused when the evaluation periods differ; `--csv` writes the table. See [BATCH](../docs/reference/BATCH.md) §7 | Off |
-| `--project FILE --macro PERIOD` | Static Macro assignment for a study period or `matrix:ID`, using project settings; accepts `--csv` | Off |
+| `--project FILE --macro PERIOD` | Static Macro assignment for a study period or `matrix:ID`, using project settings; accepts `--csv`. OD targets can be Links or directed Link-less Roads (schema 57, D340) | Off |
 | `--project FILE --macro-run ID` | Select a saved period/settings definition; JSON/CSV identify it. Mutually exclusive with `--macro`. See [MACRO_NETWORK §21](../docs/reference/MACRO_NETWORK.md#named-macro-runs) | Off |
 | `--threads N` | With `--seeds`: at most N seeds at once (D152); results identical for every N | One per hardware thread |
 | `--project FILE --seeds LIST` | Multi-seed batch (`42-51`, `1,5,9`): n, mean, SD and 95 % CI per movement/approach, per-seed accounting, overloaded seeds flagged and kept, `buildCommit`; `--csv` writes the batch table. See [BATCH](../docs/reference/BATCH.md) | Off |

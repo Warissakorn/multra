@@ -4,6 +4,7 @@
 #include "study_period_codec.hpp"
 #include "../model/network/polygon.hpp"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <cmath>
 #include <set>
 #include <stdexcept>
@@ -36,11 +37,20 @@ Zone parseZone(const Json& j) {
     return z;
 }
 ZoneConnector parseConnector(const Json& j) {
-    exactKeys(j, {"id", "zoneId", "linkId", "direction", "share"});
+    const bool road = j.is_object() && j.contains("roadId");
+    if (road) exactKeys(j, {"id", "zoneId", "roadId", "roadDirection", "direction", "share"});
+    else exactKeys(j, {"id", "zoneId", "linkId", "direction", "share"});
     const auto direction = text(j, "direction");
     if (direction != "origin" && direction != "destination") invalid();
-    return {text(j, "id"), text(j, "zoneId"), text(j, "linkId"),
+    ZoneConnector c{text(j, "id"), text(j, "zoneId"), road ? "" : text(j, "linkId"),
             direction == "origin" ? ZoneDirection::origin : ZoneDirection::destination, number(j.at("share"))};
+    if (road) {
+        c.roadId = text(j, "roadId");
+        const auto travel = text(j, "roadDirection");
+        if (c.roadId.empty() || (travel != "forward" && travel != "backward")) invalid();
+        c.roadForward = travel == "forward";
+    }
+    return c;
 }
 OdMatrix parseMatrix(const Json& j, const std::string& path) {
     // S1.1 (STUDY_PERIODS §5): its own times or a period, never both and never neither.
@@ -100,8 +110,12 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
     }
     if (!layer.zoneConnectors.empty()) {
         auto& out = document[kConnectors] = Json::array();
-        for (const auto& c : layer.zoneConnectors)
-            out.push_back({{"id", c.id}, {"zoneId", c.zoneId}, {"linkId", c.linkId}, {"direction", directionName(c.direction)}, {"share", c.share}});
+        for (const auto& c : layer.zoneConnectors) {
+            Json row{{"id", c.id}, {"zoneId", c.zoneId}, {"direction", directionName(c.direction)}, {"share", c.share}};
+            if (c.roadId.empty()) row["linkId"] = c.linkId;
+            else { row["roadId"] = c.roadId; row["roadDirection"] = c.roadForward ? "forward" : "backward"; }
+            out.push_back(std::move(row));
+        }
     }
     if (!layer.odMatrices.empty()) {
         auto& out = document[kMatrices] = Json::array();
@@ -126,6 +140,11 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
 }
 ZoneLayer parseZoneLayer(const Json& document, int schema) {
     ZoneLayer layer;
+    if (schema < 57 && document.contains(kConnectors) && document.at(kConnectors).is_array())
+        for (std::size_t i = 0; i < document.at(kConnectors).size(); ++i)
+            for (const auto* key : {"roadId", "roadDirection"})
+                if (document.at(kConnectors)[i].contains(key))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "zoneConnectors[" + std::to_string(i) + "]." + key}});
     parseArray(document, kZones, schema, layer.zones, parseZone);
     parseArray(document, kConnectors, schema, layer.zoneConnectors, parseConnector);
     std::size_t matrix = 0;
@@ -133,6 +152,9 @@ ZoneLayer parseZoneLayer(const Json& document, int schema) {
                [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]"); });
     parseArray(document, kLots, schema, layer.parkingLots, parseLot);
     return layer;
+}
+bool usesRoadZoneConnectors(const ZoneLayer& layer) {
+    return std::any_of(layer.zoneConnectors.begin(), layer.zoneConnectors.end(), [](const auto& c) { return !c.roadId.empty(); });
 }
 std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
     std::vector<ValidationIssue> issues;
@@ -164,7 +186,14 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
         const auto& c = layer.zoneConnectors[i];const auto path = "zoneConnectors[" + std::to_string(i) + "]";
         id(c.id, path);
         if (!zones.contains(c.zoneId)) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".zoneId"});
-        if (!links.contains(c.linkId)) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".linkId"});
+        if (c.linkId.empty() == c.roadId.empty() || (c.roadId.empty() && !c.roadForward))
+            issues.push_back({"ZONE_CONNECTOR_TARGET_INVALID", path});
+        if (c.roadId.empty() && !links.contains(c.linkId)) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".linkId"});
+        if (!c.roadId.empty()) {
+            const auto road = std::find_if(d.network.roads.begin(), d.network.roads.end(), [&](const auto& r) { return r.id == c.roadId; });
+            if (road == d.network.roads.end()) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".roadId"});
+            else if (!road->links.empty()) issues.push_back({"ZONE_CONNECTOR_ROAD_HAS_LINKS", path + ".roadId"});
+        }
         if (!std::isfinite(c.share) || c.share <= 0) issues.push_back({"ZONE_CONNECTOR_SHARE_INVALID", path + ".share"});
     }
     for (std::size_t i = 0; i < layer.odMatrices.size(); ++i) {

@@ -9,6 +9,8 @@ struct ProjectDocument;
 // value, an unknown field or an empty array is EDIT_ZONE_INVALID.
 void addZoneLayerJson(const ZoneLayer&, Json& document);
 ZoneLayer parseZoneLayer(const Json& document, int schema);
+// Schema 57 only when a connector targets a Road. Link connector JSON remains unchanged.
+bool usesRoadZoneConnectors(const ZoneLayer&);
 // The structural tier (ZONES_AND_PARKING §6): ids, references, shares, polygons, matrix shape and
 // cells, and the period's own order. Refused on load and on commit. Topology, the period against
 // the run and the composition are the Run's (M8.3).

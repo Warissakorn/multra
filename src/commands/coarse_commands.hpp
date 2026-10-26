@@ -26,6 +26,7 @@ std::optional<NodeCoarse> deriveCoarse(const ProjectDocument&, const Node&);
 //   detail and no Link leg, whose two Roads are Link-less with one template, one level and the same
 //   overrides, one ending where the other starts, is deleted and the Roads joined: the first keeps
 //   its id, takes the second's centreline after its own, and the second's id is renamed to it in
-//   overpasses and other Nodes' coarse values. A Node with detail or `coarse` is never removed.
+//   overpasses, other Nodes' coarse values and external Road zone connectors. A connector on the
+//   shared end prevents merging (D340). A Node with detail or `coarse` is never removed.
 void settleNodes(ProjectDocument& after, const ProjectDocument& before);
 }

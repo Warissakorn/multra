@@ -230,7 +230,7 @@ TEST(speedarea, ba107_the_object_round_trips_at_schema_39_and_each_fault_is_name
     auto owned = d; putDemandCatalog(owned, resolveDemandCatalog(*owned.definition, test::root() / "data"));
     owned.definition->reducedSpeedAreas[0].speeds[0].vehicleTypeId = "tram";
     test::throws([&] { validateDocument(owned); }, "UNKNOWN_VEHICLE_TYPE");
-    auto newer = j; newer["schemaVersion"] = 57;
+    auto newer = j; newer["schemaVersion"] = 58;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
     // It runs: one lane of the west approach is slowed, so its movements' mean travel time rises.
     const auto data = test::root() / "data";

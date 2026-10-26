@@ -18,6 +18,8 @@ MesoCompile mesoNetwork(const ProjectDocument&, const std::filesystem::path& dat
 // vehicles change lanes onto, split equally. Refused: MESO_PATH_UNMAPPED at `definition.routes[j]`
 // (or the routeless input), or at `odMatrices[k]` for its routes; MODE_PCU_MISSING at the input or
 // matrix; the walk's blocking issues at `definition.inputs[i].…`.
+// Direct Road zone targets refuse with ZONE_CONNECTOR_ROAD_REQUIRES_LINKS until their Meso path
+// expansion has its own contract. Apply template remaps them to ordinary Links (D340).
 struct MesoDemand { std::vector<MesoClass> classes; std::vector<ValidationIssue> issues; bool operator==(const MesoDemand&) const = default; };
 MesoDemand mesoDemand(const ProjectDocument&, const std::filesystem::path& dataDirectory, const MesoGraph&, InputManifest* = nullptr);
 }

@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/zone_commands.hpp"
+#include "road_zone_dialog.hpp"
 #include <QAction>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -35,6 +36,12 @@ std::string rowId(const QTableWidget* t) {
     const auto* cell = t ? t->item(t->currentRow(), 0) : nullptr;
     return cell && !t->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
+std::vector<Choice> roadChoices(const ProjectDocument& d) {
+    std::vector<Choice> choices;
+    for (const auto& r : d.network.roads) if (r.links.empty())
+        choices.push_back({r.id, QString::fromStdString(r.name.empty() ? r.id : r.name + " (" + r.id + ")")});
+    return choices;
+}
 }
 void EditorWindow::buildZones() {
     // Zones and the selected zone's connectors side by side: stacked, the tab's minimum height would
@@ -59,6 +66,12 @@ void EditorWindow::buildZones() {
     bar->addAction(action("editorEditLot", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editLot(id); })); // M8.6b
     bar->addAction(action("editorAddOriginConnector", {}, [this] { addZoneConnector(true); }));
     bar->addAction(action("editorAddDestinationConnector", {}, [this] { addZoneConnector(false); }));
+    connectorBar->addAction(action("editorAddRoadZoneConnector", {}, [this] {
+        const auto zone = selectedZone(); if (zone.empty()) return;
+        ZoneConnector initial; initial.zoneId = zone; initial.roadId = selectedRoad();
+        const auto edited = editRoadZoneConnector(this, initial, roadChoices(history_.document()), [this](const char* k) { return text(k); });
+        if (edited) execute("editorAddRoadZoneConnector", [&](auto& d) { putZoneConnector(d, *edited); });
+    }));
     connectorBar->addAction(action("editorEditZoneConnector", {}, [this] {
         const auto id = selectedZoneConnector(); if (!id.empty()) editZoneConnector(id); }));
     connectorBar->addAction(action("editorDeleteZoneConnector", {}, [this] {
@@ -84,7 +97,7 @@ void EditorWindow::buildZones() {
 void EditorWindow::translateZones() {
     zoneTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
                                            text("editorZoneLot")});
-    zoneConnectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorLinksTab"), text("editorZoneConnectorShare")});
+    zoneConnectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorZoneConnectorTarget"), text("editorZoneConnectorShare")});
     zoneRevision_ = UINT64_MAX;
 }
 std::string EditorWindow::selectedZone() const { return rowId(zoneTable_); }
@@ -127,8 +140,14 @@ void EditorWindow::refreshZones() {
         for (const auto& c : layer.zoneConnectors) {
             if (c.zoneId != zone) continue;
             const int r = zoneConnectorTable_->rowCount(); zoneConnectorTable_->insertRow(r);
+            QString target = linkName(c.linkId);
+            if (!c.roadId.empty()) {
+                const auto road = std::find_if(d.network.roads.begin(), d.network.roads.end(), [&](const auto& r) { return r.id == c.roadId; });
+                target = QString::fromStdString(road == d.network.roads.end() || road->name.empty() ? c.roadId : road->name);
+                target += " (" + text(c.roadForward ? "editorZoneRoadForward" : "editorZoneRoadBackward") + ")";
+            }
             const QStringList values{text(c.direction == ZoneDirection::origin ? "editorZoneOrigin" : "editorZoneDestination"),
-                                     linkName(c.linkId), editorDesign::formatValue(c.share, 2)};
+                                     target, editorDesign::formatValue(c.share, 2)};
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(c.id));
                 if (col == 2) editorDesign::setNumericText(cell, true);
@@ -147,6 +166,7 @@ void EditorWindow::refreshZones() {
     const bool link = selection.size() == 1 && std::any_of(d.network.links.begin(), d.network.links.end(),
                                                           [&](const auto& l) { return l.id == selection.front(); });
     for (const auto* key : {"editorAddOriginConnector", "editorAddDestinationConnector"}) actions_.at(key)->setEnabled(chosen && link);
+    actions_.at("editorAddRoadZoneConnector")->setEnabled(chosen && !roadChoices(d).empty());
     const bool connector = !selectedZoneConnector().empty();
     for (const auto* key : {"editorEditZoneConnector", "editorDeleteZoneConnector"}) actions_.at(key)->setEnabled(connector);
 }
@@ -185,6 +205,11 @@ void EditorWindow::editZoneConnector(const std::string& id) {
     const auto& connectors = history_.document().zones.zoneConnectors;
     const auto c = std::find_if(connectors.begin(), connectors.end(), [&](const auto& x) { return x.id == id; });
     if (c == connectors.end()) return;
+    if (!c->roadId.empty()) {
+        const auto edited = editRoadZoneConnector(this, *c, roadChoices(history_.document()), [this](const char* k) { return text(k); });
+        if (edited) execute("editorEditZoneConnector", [&](auto& d) { putZoneConnector(d, *edited); });
+        return;
+    }
     QDialog dialog(this); dialog.setObjectName("editorZoneConnectorDialog"); dialog.setWindowTitle(text("editorEditZoneConnector"));
     auto* form = new QFormLayout(&dialog);
     form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);

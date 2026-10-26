@@ -21,6 +21,8 @@ namespace multra {
 // (coarse_compile.hpp), after the Links' arcs: a `link` arc per piece (`source` = the Road id, nodes
 // `<road>:forward|backward@<station>`, a basis mismatch at network.roads[i].crossSectionId) and a
 // `connector` arc per turn (`source` = the Node id), uncapacitated, time 0. Advisories are its.
+// D340 (ROADS_IMPLEMENTED §22): a centroid may target a Link-less Road's directed piece, with
+// MACRO_ZONE_ROAD_UNAVAILABLE at zoneConnectors[i].roadDirection when it has no such piece.
 struct MacroCompile { MacroGraph graph; std::vector<ValidationIssue> issues, advisories; };
 MacroCompile compileMacroNetwork(const Network&, const std::vector<ZoneConnector>&, const std::vector<LinkType>& types,
                                  const std::vector<std::string>& typePaths, const std::vector<Vdf>&,

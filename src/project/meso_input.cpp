@@ -39,6 +39,8 @@ std::string origin(const std::string& id, const std::vector<std::string>& author
 }
 MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& data, const MesoGraph& graph, InputManifest* manifest) {
     MesoDemand out;
+    out.issues = roadZoneConnectorIssues(d.zones);
+    if (!out.issues.empty()) return out;
     const auto def = d.definition.value_or(AuthoringDefinition{});
     std::vector<std::string> inputIds, routeIds;
     for (const auto& i : def.inputs) inputIds.push_back(i.id);

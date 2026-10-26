@@ -7,7 +7,7 @@ namespace multra {
 // A Road, added (empty id: allocated, prefix `road`) or replaced; its `links` are kept as stored.
 // EDIT_ROAD_OVERRIDE for lanes outside 1-12, a width not > 0 or a negative median.
 std::string putRoad(ProjectDocument&, Road);
-// The Road goes; its Links stay as ordinary Links, without roadId.
+// The Road and its direct zone connectors go; its Links stay as ordinary Links, without roadId.
 void deleteRoad(ProjectDocument&, const std::string& id);
 // An owned template, added (empty id: allocated, prefix `cross-section`) or replaced. A project on
 // the installed data/cross-sections/ owns `installed` (the resolved ones) first.
@@ -21,6 +21,8 @@ void deleteCrossSection(ProjectDocument&, const std::string& id);
 // (EDIT_REFERENCED_LANE when a removed lane is in use) and reanchors Connectors. Refusals:
 // EDIT_ROAD_NO_TEMPLATE, ROAD_CROSS_SECTION_UNKNOWN at network.roads[i].crossSectionId,
 // EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently).
+// Direct Road zone connectors become Link targets in the same Command. A backward connector on
+// a one-way template is ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION before mutation (D340).
 // Returns the Road's Link ids, forward first.
 std::vector<std::string> applyTemplate(ProjectDocument&, const std::string& roadId, const std::vector<CrossSection>& installed);
 // What Apply template generates, without generating it: per direction (forward first) the Link's
@@ -47,6 +49,7 @@ void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, con
 // takes the rest, and each generated Link is split by splitLink at that point. The forward Link's
 // original id stays on the first Road; the backward Link's original id, which runs from the far end,
 // goes to the new one. Overpass pairs naming the Road are copied for the new Road. Returns its id.
+// Direct Road zone connectors keep their physical endpoint in either travel direction (D340).
 std::string splitRoad(ProjectDocument&, const std::string& roadId, double station);
 enum class CrossingChoice { junction, overpass };
 // Find crossings' batch, run inside one Command. Overpasses first: every pair of the place's Roads

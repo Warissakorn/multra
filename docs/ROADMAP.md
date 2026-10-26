@@ -412,6 +412,11 @@ run-time cut over a study area. M9–M11 keep their engine scopes and gates; no 
 
 ### M8 — Zones, OD matrices and parking lots
 
+**Road demand follow-up (D340):** schema-57 directed Road zone targets feed Macro without
+generating Links, with editor authoring and endpoint-preserving commands (RD30–RD34,
+[contract](reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340)). Meso expansion is next;
+Micro requires generated Link targets. No milestone gate changes.
+
 **Code complete; gate open.** Contract [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md) (D153);
 M8.2 codec/commands (D154), M8.3 OD → routes (D155), M8.4a/b lot runtime and authored lots
 (D156, D157), M8.5 lot report (D160), M8.6a/b zone tools, OD table and lot UI (D161, D162); owner

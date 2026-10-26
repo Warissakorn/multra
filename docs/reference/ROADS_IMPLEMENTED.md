@@ -1,4 +1,4 @@
-# Roads — as implemented (S3.2–S3.7)
+# Roads — as implemented (S3.2–S3.7 and Road demand)
 
 What each slice of [ROADS](ROADS.md) built, kept apart from the contract so that file stays under
 500 lines. The section numbers are the contract's, so "ROADS §16" still names a section here.
@@ -260,8 +260,8 @@ with the other seam checks.
     shares a node. A basis mismatch is at `network.roads[i].crossSectionId`;
   - a `connector` arc per turn (`source`: the Node id), uncapacitated and with time 0;
   - `MacroCompile` gains `advisories`, which `runMacro` reports ahead of demand's.
-- **Not built:** zone connectors attach to Links, so a Road-only network compiles but carries no
-  demand. Attaching demand to Roads is booked.
+- **Demand at this slice:** zone connectors attached to Links only. §22 adds direct Road targets
+  for Macro; Meso expansion is the next demand slice.
 - **Rows:** RD4, RD16, RD19 and RD20 (Macro and Meso) are in `tests/road_coarse_tests.cpp`
   (`roadcoarse`). The rank field is checked in `macro-ui`.
 
@@ -357,8 +357,8 @@ S3 is complete with this slice.
 - **Editor:** *Seam checks…* on the Roads tab opens a dialog with the level, the threshold, and one
   row per issue (severity, problem, object). A lane-count row at Micro has *Use Link* and *Use
   Node*, and the list is checked again after each fix.
-- **Not built:** the readiness panel and *Fill defaults* (S4) will run these checks, as ROADS §7
-  says. Demand on a Road-only network stays booked.
+- **Not built in S3:** the readiness panel and *Fill defaults* (S4) run these checks, as ROADS §7
+  says. Road-only Macro demand follows in §22.
 - **Rows:**
   - RD20 (Micro half), RD21, RD22 and RD29 are in `tests/road_seam_tests.cpp` (`roadseams`);
   - RD21's editor part is in `road-ui`.
@@ -368,3 +368,63 @@ S3 is complete with this slice.
   - turns inside a junction counted;
   - the threshold made inclusive;
   - the detached row off.
+
+## 22. Road-only Macro demand (D340)
+
+The booked seam in D310: a Macro study can attach its existing OD layer directly to Roads
+without generating Micro Links. The first slice covers Macro; Meso path expansion is a separate
+slice, since its present OD compiler uses Micro's drivable Link chains. No model parameter or
+milestone gate changes.
+
+### Interface and storage
+
+- A ZoneConnector targets exactly one of:
+  - the existing `linkId`, with its unchanged schema-31 JSON;
+  - `roadId` and required `roadDirection`, `"forward"` or `"backward"`, at schema **57**.
+- `direction` still means `"origin"` or `"destination"` relative to the zone. Travel direction is
+  along or against the Road's centreline. Origin attaches to that direction's compiled start;
+  destination to its compiled end (the boundary where a coarse Node trims it, when applicable).
+- The target Road must have no generated Links. On load/commit, an unknown target is
+  `ZONE_CONNECTOR_UNKNOWN_REF` at `.roadId`; a Road already carrying Links gives
+  `ZONE_CONNECTOR_ROAD_HAS_LINKS`. Bad shape, extra keys or a direction other than the two above
+  gives `EDIT_ZONE_INVALID`, including JSON with both/neither targets. A command supplying
+  both/neither targets gives `ZONE_CONNECTOR_TARGET_INVALID`. Either new key below 57 gives
+  `EDIT_UNSUPPORTED_FIELD` at that key.
+- Empty Road targets are not stored; a file without one keeps its feature schema and bytes.
+  No inferred direction, mid-Road station or extra demand table is introduced.
+
+### Readers and editing
+
+- `compileMacroNetwork` connects the centroid arc to the selected Road piece. An unavailable
+  direction (including a backward connector on a one-way template, or no surviving piece) gives
+  `MACRO_ZONE_ROAD_UNAVAILABLE` at `zoneConnectors[i].roadDirection`. Existing graph/template
+  refusals still apply. Demand shares, modes, PCU, periods, assignment, named runs and exports
+  use the existing Macro pipeline unchanged. Mixed Link/Road connector pairs can run.
+- Micro and Meso refuse Road targets with `ZONE_CONNECTOR_ROAD_REQUIRES_LINKS` at the connector;
+  this prevents a successful empty run or a partial OD expansion. A Micro study-area cut still
+  keeps only its Links and takes outside demand from the selected cut source (S5).
+- The Zones tab keeps its selected-Link actions and adds *Road connector…*. Its dialog selects
+  a Link-less Road, zone direction, travel direction and share; Cancel changes nothing. Editing a Road connector can change its direction
+  and share. The table names the Road and direction, and the canvas line follows the chosen end.
+- *Apply template* remaps all of that Road's connectors to the corresponding generated Link in
+  the same Command, retaining connector ids, zone ids, direction and shares. A one-way template
+  cannot accept a backward connector: the Command refuses before mutation with
+  `ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION`. Re-apply and Link edits then follow the existing rules.
+- `splitRoad` retains the endpoint: forward origins/backward destinations stay on the first
+  piece; forward destinations/backward origins move to the second. Delete cascades connectors
+  as Link deletion does, keeping zones and matrix counts. The two-leg lifecycle remaps external
+  endpoints to the joined Road, but keeps the Node and both Roads if a connector uses their
+  shared end (merging would turn that endpoint into an unsupported internal station).
+
+### Acceptance rows
+
+| Row | Case | Asserts |
+|---|---|---|
+| RD30 | Codec | Both travel directions round-trip at 57; either key below 57 refuses at its path; malformed/ambiguous targets fail; existing Link JSON and shipped project bytes stay unchanged |
+| RD31 | Assignment | A Road-only corridor with OD has exact forward/backward flows and PCU, stable replay, shared connector weights and period isolation; one-way backward and banned turns refuse; a mixed Link/Road path runs |
+| RD32 | Lifecycle | Apply remaps all four origin/destination and travel-direction combinations in one Undo/Redo; one-way refusal is atomic; split retains ends; delete preserves matrix counts; lifecycle merges only when it preserves connector endpoints |
+| RD33 | Editor | Add/Cancel, direction/share edit, Undo/Redo, endpoint drawing, generated-Road refusal and save/reopen, in English/Thai; existing Link actions/dialogs remain usable |
+| RD34 | CLI and refusals | Real CLI Macro JSON/CSV and named execution keep original source hashes and input bytes; Micro/Meso readiness and execution explicitly refuse Road targets |
+
+Verification evidence and platform are recorded in PROGRESS; local Linux checks cannot close an
+owner Windows/high-DPI appearance gate.

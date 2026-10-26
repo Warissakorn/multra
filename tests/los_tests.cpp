@@ -115,7 +115,7 @@ TEST(los, schema24_codec) { // L5
     test::throws([&] { parseDocument(older); }, "EDIT_UNSUPPORTED_FIELD");
     auto other = j; other["network"]["travelTimeSections"][0]["controlType"] = "roundabout";
     test::throws([&] { parseDocument(other); }, "INVALID_ENUM");
-    auto newer = j; newer["schemaVersion"] = 57;
+    auto newer = j; newer["schemaVersion"] = 58;
     test::throws([&] { parseDocument(newer); }, "EDIT_VERSION");
 }
 TEST(los, outputs_letter_and_mark_the_rows) { // L6

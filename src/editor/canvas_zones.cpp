@@ -64,13 +64,21 @@ void EditorCanvas::drawZones() {
         label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(-149);
         for (const auto& connector : layer.zoneConnectors) {
             if (connector.zoneId != zone.id) continue;
+            const auto draw = [&](Point end, int level) {
+                QPen pen(canvasStyle::advisory(), 1.5, Qt::DashLine); pen.setCosmetic(true);
+                auto* line = scene_.addLine(c.x, c.y, end.x, end.y, pen);
+                line->setZValue(level * 100. + 11.4);
+                line->setData(0, QStringLiteral("zone-connector")); line->setData(1, QString::fromStdString(connector.id));
+            };
             for (const auto& link : document_->network.links) {
                 if (link.id != connector.linkId || link.geometry.empty()) continue;
                 const auto end = connector.direction == ZoneDirection::origin ? link.geometry.front() : link.geometry.back();
-                QPen pen(canvasStyle::advisory(), 1.5, Qt::DashLine); pen.setCosmetic(true);
-                auto* line = scene_.addLine(c.x, c.y, end.x, end.y, pen);
-                line->setZValue(link.level * 100. + 11.4);
-                line->setData(0, QStringLiteral("zone-connector")); line->setData(1, QString::fromStdString(connector.id));
+                draw(end, link.level);
+            }
+            for (const auto& road : document_->network.roads) {
+                if (road.id != connector.roadId || road.centreline.empty()) continue;
+                const bool atEnd = connector.roadForward == (connector.direction == ZoneDirection::destination);
+                draw(atEnd ? road.centreline.back() : road.centreline.front(), road.level);
             }
         }
     }
