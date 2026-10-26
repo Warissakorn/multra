@@ -56,3 +56,9 @@ schema includes this condition and shared LaneReferences. ID resolution and lega
 metadata. Controller/group fields are always closed; legacy program/phase fields stay open.
 The composed schema includes nullable definition presence and signal arrays. Document-stage
 generated-flag guards, cyclic timing validation and pre-13 migration keep their original order.
+
+`right_of_way_codec` reads schema-14 waiting lines, conflict areas and priority rules, plus
+schema-15 Stop/Yield controls, through shared field metadata. The composed schema covers
+these rows and their control points/paths. Nullable collections, legacy non-object handling,
+version gates, generated-flag diagnostics and queue-counter path decoding are preserved.
+Geometry, owner/line/area resolution, priority cycles and run-readiness remain model checks.

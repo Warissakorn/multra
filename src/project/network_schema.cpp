@@ -34,6 +34,18 @@ class NetworkSchema {
             Json names=Json::array();for(const auto& entry:signalColors)names.push_back(entry.first);
             rule={{"type","string"},{"enum",names}};break;
         }
+        case Kind::rightOfWay:rule=reference(Object::rightOfWay,version);break;
+        case Kind::waitingLines:rule={{"type","array"},{"items",reference(Object::waitingLine,version)}};break;
+        case Kind::controlPoint:rule=reference(Object::controlPoint,version);break;
+        case Kind::controlPath:rule={{"allOf",Json::array({reference(Object::controlPath,version)})},{"not",{{"type","null"}}}};break;
+        case Kind::conflictAreas:rule={{"type","array"},{"items",reference(Object::conflictArea,version)}};break;
+        case Kind::conflictSide:rule=reference(Object::conflictSide,version);break;
+        case Kind::priorityRules:rule={{"type","array"},{"items",reference(Object::priorityRule,version)}};break;
+        case Kind::stopControls:rule={{"type","array"},{"items",reference(Object::stopControl,version)}};break;
+        case Kind::texts:rule={{"type","array"},{"items",{{"type","string"}}}};break;
+        case Kind::conflictKind:rule={{"type","string"},{"enum",Json::array({conflictKindName(ConflictKind::crossing),conflictKindName(ConflictKind::merge)})}};break;
+        case Kind::conflictPriority:rule={{"type","string"},{"enum",Json::array({conflictPriorityName(ConflictPriority::firstYields),conflictPriorityName(ConflictPriority::secondYields),conflictPriorityName(ConflictPriority::undetermined)})}};break;
+        case Kind::stopMode:rule={{"type","string"},{"enum",Json::array({stopModeName(StopMode::stop),stopModeName(StopMode::yield)})}};break;
         case Kind::reference:rule=reference(Object::reference,version);break;
         case Kind::numbers:rule={{"type","array"},{"items",{{"type","number"}}}};break;
         case Kind::generated:rule={{"type","boolean"},{"const",true}};break;
@@ -46,6 +58,8 @@ class NetworkSchema {
         }
         case Kind::unchecked:break;
         }
+        if(field.nullable && rule.contains("type") && rule.at("type")=="array")
+            rule["type"]=Json::array({"array","null"});
         return rule;
     }
     Json objectSchema(Object object,int version) {
@@ -85,6 +99,9 @@ class NetworkSchema {
             properties["connectorId"]["default"]=defaults.connectorId;
         }
         Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",allowsAdditionalFields(object,version)}};
+        // These legacy readers ignore non-object containers/references; semantic
+        // path validity stays with the model. Required path fields still reject null.
+        if(object==Object::rightOfWay || object==Object::controlPath)result.erase("type");
         if(object==Object::definition)result["type"]=Json::array({"object","null"});
         if(!conditions.empty())result["allOf"]=std::move(conditions);
         return result;
@@ -95,11 +112,31 @@ public:
         const auto signature=schema.dump();
         auto it=names_.find(signature);
         if(it==names_.end()) {
-            const char* prefix=object==Object::network?"network":object==Object::link?"link":object==Object::lane?"lane":
-                object==Object::connector?"connector":object==Object::reference?"reference":object==Object::signalHead?"signalHead":
-                object==Object::signalController?"signalController":object==Object::signalGroup?"signalGroup":
-                object==Object::signalProgram?"signalProgram":object==Object::signalPhase?"signalPhase":
-                object==Object::definition?"definition":"point";
+            const auto prefix=[&]() {
+                switch(object) {
+                case Object::network:return "network";
+                case Object::link:return "link";
+                case Object::lane:return "lane";
+                case Object::point:return "point";
+                case Object::connector:return "connector";
+                case Object::reference:return "reference";
+                case Object::signalHead:return "signalHead";
+                case Object::definition:return "definition";
+                case Object::signalController:return "signalController";
+                case Object::signalGroup:return "signalGroup";
+                case Object::signalProgram:return "signalProgram";
+                case Object::signalPhase:return "signalPhase";
+                case Object::rightOfWay:return "rightOfWay";
+                case Object::waitingLine:return "waitingLine";
+                case Object::controlPoint:return "controlPoint";
+                case Object::controlPath:return "controlPath";
+                case Object::conflictArea:return "conflictArea";
+                case Object::conflictSide:return "conflictSide";
+                case Object::priorityRule:return "priorityRule";
+                case Object::stopControl:return "stopControl";
+                }
+                throw std::logic_error("Unknown schema object");
+            }();
             const auto name=std::string(prefix)+std::to_string(version);
             definitions_[name]=schema;
             it=names_.emplace(signature,name).first;
@@ -108,8 +145,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase structure. Model invariants and other control/demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

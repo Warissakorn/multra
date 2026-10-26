@@ -2,7 +2,7 @@
 
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
-Connector/attachment-reference (D358), SignalHead (D359) and signal control contracts (D360).
+Connector/attachment-reference (D358), SignalHead (D359) signal control (D360) and right-of-way contracts (D361).
 It describes implemented
 readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
@@ -313,3 +313,34 @@ integer conversion and diagnostic order, with generated validation after groups.
 reader retains duration-before-color diagnostics. Pre-13 project migration stays after definition
 and network decoding; bare M0 scenarios retain their programs. The envelope-only schema API,
 writer version selection and desktop observed-shape response remain unchanged.
+
+
+## Right-of-way extension (D361)
+
+The composed CLI coverage adds `-right-of-way` to the D360 coverage identifier; complete
+remains false. Network rightOfWay is known/read from schema 14; Stop/Yield rows from 15.
+Before schema 7 the whole unknown property is ignored, while schemas 7–13 reject it even
+when null. In schema 14 a stopControls property is unknown even when null.
+
+- All four collections (waitingLines, conflictAreas, priorityRules, stopControls) are optional;
+  absent/null collections decode as empty. Active non-null collections require arrays. The
+  legacy rightOfWay reader itself ignores non-object containers, yielding empty controls;
+  schema generation preserves that behavior instead of inventing an object-only rule.
+- Waiting lines require id and point; a point requires path and numeric station. Conflict
+  areas require id, kind (crossing/merge), first, second and priority
+  (firstYields/secondYields/undetermined). Each side requires path, numeric entryStation and
+  exitStation, and text waitingLineId. Branching remains a derived display kind.
+- Priority rules require id, conflictAreaId and numeric gapTime/headway. Stop controls require
+  id, waitingLineId, mode (stop/yield) and a text array conflictAreaIds. These four row types
+  accept optional nullable text name. From schema 54 generated may only be true; earlier
+  active readers reject the key. Nested objects reject unsupported keys.
+- A ControlPathRef reads five optional nullable strings (linkId, laneId, connectorId,
+  fromLaneId, toLaneId); the codec checks their meaning later. Its legacy decoder also maps
+  non-objects to empty references. Required path fields reject null before that decoder;
+  schema rules retain this distinction. Queue counters reuse this same native path reader.
+
+Native reads and generated schemas share the field metadata. Point-before-id errors for
+waiting lines and generated-value validation after each row retain their original order.
+There is no new geometry or runtime algorithm. Owner/path/line/area resolution, station and
+extent validity, positive gap/headway, priority cycles and run-readiness remain existing
+model checks. Queue-counter and travel-time-section row schemas remain follow-up work.

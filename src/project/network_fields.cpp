@@ -11,7 +11,7 @@ namespace {
 constexpr Field networkFields[]={
     {"id",Kind::text,true},{"drivingSide",Kind::side,true},{"links",Kind::links,true},
     {"connectors",Kind::connectors,true},{"signalHeads",Kind::signalHeads,true},
-    {"rightOfWay",Kind::unchecked,false,14},{"queueCounters",Kind::unchecked,false,16},
+    {"rightOfWay",Kind::rightOfWay,false,14},{"queueCounters",Kind::unchecked,false,16},
     {"travelTimeSections",Kind::unchecked,false,23},{"nodes",Kind::unchecked,false,48},
     {"roads",Kind::unchecked,false,roadVersion,roadVersion},
     {"overpasses",Kind::unchecked,false,roadVersion,roadVersion}};
@@ -54,6 +54,30 @@ constexpr Field groupFields[]={
 constexpr Field programFields[]={
     {"id",Kind::text,true},{"offset",Kind::number,true},{"phases",Kind::phases,true}};
 constexpr Field phaseFields[]={{"duration",Kind::number,true},{"color",Kind::color,true}};
+constexpr Field rightOfWayFields[]={
+    {"waitingLines",Kind::waitingLines,false,0,0,true},{"conflictAreas",Kind::conflictAreas,false,0,0,true},
+    {"priorityRules",Kind::priorityRules,false,0,0,true},{"stopControls",Kind::stopControls,false,15,0,true}};
+constexpr Field waitingLineFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"point",Kind::controlPoint,true},
+    {"generated",Kind::generated,false,generatedVersion}};
+constexpr Field controlPointFields[]={{"path",Kind::controlPath,true},{"station",Kind::number,true}};
+constexpr Field controlPathFields[]={
+    {"linkId",Kind::text,false,0,0,true},{"laneId",Kind::text,false,0,0,true},
+    {"connectorId",Kind::text,false,0,0,true},{"fromLaneId",Kind::text,false,0,0,true},
+    {"toLaneId",Kind::text,false,0,0,true}};
+constexpr Field conflictAreaFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"kind",Kind::conflictKind,true},
+    {"first",Kind::conflictSide,true},{"second",Kind::conflictSide,true},{"priority",Kind::conflictPriority,true},
+    {"generated",Kind::generated,false,generatedVersion}};
+constexpr Field conflictSideFields[]={
+    {"path",Kind::controlPath,true},{"entryStation",Kind::number,true},{"exitStation",Kind::number,true},
+    {"waitingLineId",Kind::text,true}};
+constexpr Field priorityRuleFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"conflictAreaId",Kind::text,true},
+    {"gapTime",Kind::number,true},{"headway",Kind::number,true},{"generated",Kind::generated,false,generatedVersion}};
+constexpr Field stopControlFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"waitingLineId",Kind::text,true},
+    {"mode",Kind::stopMode,true},{"conflictAreaIds",Kind::texts,true},{"generated",Kind::generated,false,generatedVersion}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -69,6 +93,14 @@ std::span<const Field> fields(Object object) {
     case Object::signalGroup:return groupFields;
     case Object::signalProgram:return programFields;
     case Object::signalPhase:return phaseFields;
+    case Object::rightOfWay:return rightOfWayFields;
+    case Object::waitingLine:return waitingLineFields;
+    case Object::controlPoint:return controlPointFields;
+    case Object::controlPath:return controlPathFields;
+    case Object::conflictArea:return conflictAreaFields;
+    case Object::conflictSide:return conflictSideFields;
+    case Object::priorityRule:return priorityRuleFields;
+    case Object::stopControl:return stopControlFields;
     }
     return {};
 }
@@ -103,7 +135,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::side:case Kind::color:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:if(!v.is_string())expected="Expected text: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
         if(!v.is_number_integer() || v < -levelLimit || v > levelLimit)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
@@ -114,9 +146,11 @@ const Json& value(const Json& j,Object object,const char* name) {
             throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
         break;
     case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:case Kind::groups:case Kind::phases:case Kind::controllers:case Kind::programs:
+    case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::stopControls:case Kind::texts:
         if(!v.is_array())expected="Expected array: ";
         break;
-    case Kind::unchecked:case Kind::reference:case Kind::generated:break;
+    case Kind::unchecked:case Kind::reference:case Kind::generated:
+    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

@@ -6,6 +6,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Right-of-way structural schema and preserved legacy reads (D361)
+
+- **Changed:** shared metadata now covers waiting lines, control points/paths, conflict areas/
+  sides, priority rules and Stop/Yield controls. Their native reads move to right_of_way_codec;
+  queue counters reuse the same path decoder. The composed partial schema/CLI uses 56 shared
+  definitions and 13 version profiles. The parser is now 319 lines; no geometry/engine changes.
+- **Preserved:** schema 14/15 gates, optional nullable collections/names, legacy non-object
+  right-of-way containers and path decoding, authored enums and generated:true-only from 54.
+  Waiting-line point-before-id diagnostics and generated checks after each row keep their order.
+  Semantic owner/path/line/area checks, bounds, positive gaps, priority cycles and run-readiness
+  remain existing validators. The envelope-only API and desktop observed response are unchanged.
+- **Verified:** 12,967 cases across schemas 1–57 retain byte-identical before/after native
+  outcomes, errors and canonical documents and pass independent Draft-2020-12 expectations.
+  All four shipped projects validate structurally and keep byte-identical canonical output.
+  Five new project tests cover gates/nulls/enums, legacy paths, diagnostics/generated ordering,
+  semantic exclusions and structural refusals; project tests pass 50/50. Release headless build
+  and all 161 CTest entries pass (13.10 s), including docs, architecture, CLI and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows, Vissim, scientific or owner gate is closed.
+
 ## 2026-10-26 — Signal control structural schema and codec parity (D360)
 
 - **Changed:** shared field metadata now covers definition signal-array presence, fixed-time
@@ -153,21 +172,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Connector lane-path suffixes, enumeration scope and counter exhaustion. Release headless build
   and all 160 CTest entries pass, including architecture, documentation, file-size and reference
   checks. Evidence is Linux only; no Qt UI or Windows claim.
-
-## 2026-10-26 — Call-local Connector surfaces for Node detail (D351)
-
-- **Changed:** `automaticConflicts` shares one Connector surface cache through overlap
-  classification and mouth/display polygon construction. It lives for that immutable call only;
-  normal geometry queries remain uncached. Existing entry points retain their signatures.
-- **Measured:** isolated Release medians, 4 Nodes 74.49 → 60.96 ms, 16 Nodes 3.059 → 2.728 s;
-  complete generated documents byte-identical. The 1.5 s target remains open. A checked-in
-  `multra-node-detail-benchmark` retains the recipe and optional JSON output for the next slice.
-- **Verified:** the focused automatic-conflict suite passes 9/9, including exact cached/uncached
-  stations, classifications and polygons on both driving sides, and a geometry edit between calls.
-  Release headless build and all 160 CTest entries pass (including architecture, file-size,
-  documentation, reference and group-registration checks). The retained benchmark also produces
-  the baseline 4-Node bytes. Toolchain: CMake 4.4.4, Ninja 1.13.2, GCC 14.2.0, JSON 3.11.3,
-  installed under the workspace without system changes. No Qt UI or Windows verification.
 
 ## Older entries
 

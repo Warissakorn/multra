@@ -5,8 +5,11 @@
 #include <utility>
 
 namespace multra::networkCodec {
-enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition };
-enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs };
+enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
+    rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl };
+enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
+    rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
+    conflictKind,conflictPriority,stopMode,texts };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -32,4 +35,7 @@ std::vector<Point> readGeometry(const Json&,Object,int version);
 LaneReference readReference(const Json&,int version);
 std::vector<Connector> readConnectors(const Json& network,int version);
 std::vector<NetworkSignalHead> readSignalHeads(const Json& network,int version);
+RightOfWay readRightOfWay(const Json&,int version);
+// The existing optional-text decoder also serves queue-counter points.
+ControlPathRef readControlPath(const Json&,const std::string& path,int version);
 }

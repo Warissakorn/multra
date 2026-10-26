@@ -92,63 +92,6 @@ void migrateAttachments(Network& network) {
 }
 
 }
-namespace {
-// M3.2.2, schema 14. Strict: every key known, every enum spelled out, so a control this build
-// cannot represent fails the load rather than disappearing on the next save.
-ControlPathRef controlPath(const Json& value, const std::string& path, int version) {
-    knownFields(value,{"linkId","laneId","connectorId","fromLaneId","toLaneId"},path,version);
-    ControlPathRef ref;
-    const auto text=[&](const char* key){return present(value,key)?field<std::string>(value,key):std::string{};};
-    ref.linkId=text("linkId"); ref.laneId=text("laneId");
-    ref.connectorId=text("connectorId"); ref.fromLaneId=text("fromLaneId"); ref.toLaneId=text("toLaneId");
-    return ref;
-}
-ConflictSide conflictSide(const Json& value, const std::string& path, int version) {
-    knownFields(value,{"path","entryStation","exitStation","waitingLineId"},path,version);
-    return {controlPath(member(value,"path"),path+".path",version),field<double>(value,"entryStation"),
-            field<double>(value,"exitStation"),field<std::string>(value,"waitingLineId")};
-}
-RightOfWay rightOfWay(const Json& value, int version) {
-    // `stopControls` exists from schema 15 (M3.2.5); an older file naming it fails to load.
-    if(version>=15)knownFields(value,{"waitingLines","conflictAreas","priorityRules","stopControls"},"network.rightOfWay",version);
-    else knownFields(value,{"waitingLines","conflictAreas","priorityRules"},"network.rightOfWay",version);
-    RightOfWay row;
-    if(present(value,"waitingLines"))for(const auto& w:array(value,"waitingLines")) {
-        const auto path="rightOfWay.waitingLines["+std::to_string(row.waitingLines.size())+"]";
-        knownFields(withoutGenerated(w,version),{"id","name","point"},path,version);
-        const auto& point=member(w,"point");
-        knownFields(point,{"path","station"},path+".point",version);
-        row.waitingLines.push_back({field<std::string>(w,"id"),present(w,"name")?field<std::string>(w,"name"):"",
-            {controlPath(member(point,"path"),path+".point.path",version),field<double>(point,"station")}});row.waitingLines.back().generated=generatedFlag(w,path,version);
-    }
-    if(present(value,"conflictAreas"))for(const auto& a:array(value,"conflictAreas")) {
-        const auto path="rightOfWay.conflictAreas["+std::to_string(row.conflictAreas.size())+"]";
-        knownFields(withoutGenerated(a,version),{"id","name","kind","first","second","priority"},path,version);
-        row.conflictAreas.push_back({field<std::string>(a,"id"),present(a,"name")?field<std::string>(a,"name"):"",
-            conflictKindFromName(field<std::string>(a,"kind")),conflictSide(member(a,"first"),path+".first",version),
-            conflictSide(member(a,"second"),path+".second",version),
-            conflictPriorityFromName(field<std::string>(a,"priority"))});row.conflictAreas.back().generated=generatedFlag(a,path,version);
-    }
-    if(present(value,"priorityRules"))for(const auto& r:array(value,"priorityRules")) {
-        const auto path="rightOfWay.priorityRules["+std::to_string(row.priorityRules.size())+"]";
-        knownFields(withoutGenerated(r,version),{"id","name","conflictAreaId","gapTime","headway"},path,version);
-        row.priorityRules.push_back({field<std::string>(r,"id"),present(r,"name")?field<std::string>(r,"name"):"",
-            field<std::string>(r,"conflictAreaId"),field<double>(r,"gapTime"),field<double>(r,"headway")});row.priorityRules.back().generated=generatedFlag(r,path,version);
-    }
-    if(version>=15 && present(value,"stopControls"))for(const auto& c:array(value,"stopControls")) {
-        const auto path="rightOfWay.stopControls["+std::to_string(row.stopControls.size())+"]";
-        knownFields(withoutGenerated(c,version),{"id","name","waitingLineId","mode","conflictAreaIds"},path,version);
-        StopControl control{field<std::string>(c,"id"),present(c,"name")?field<std::string>(c,"name"):"",
-            field<std::string>(c,"waitingLineId"),stopModeFromName(field<std::string>(c,"mode")),{}};
-        for(const auto& area:array(c,"conflictAreaIds")) {
-            if(!area.is_string())throw std::invalid_argument("Expected text: conflictAreaIds");
-            control.conflictAreaIds.push_back(area.get<std::string>());
-        }
-        control.generated=generatedFlag(c,path,version);row.stopControls.push_back(std::move(control));
-    }
-    return row;
-}
-}
 Network parseNetwork(const Json& value, int schemaVersion) {
     networkCodec::knownFields(value,networkCodec::Object::network,"network",schemaVersion);
     Network network;
@@ -160,7 +103,7 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     network.connectors=networkCodec::readConnectors(value,schemaVersion);
     network.signalHeads=networkCodec::readSignalHeads(value,schemaVersion);
     if(schemaVersion<5)migrateAttachments(network);
-    if(schemaVersion>=14 && present(value,"rightOfWay"))network.rightOfWay=rightOfWay(value.at("rightOfWay"),schemaVersion);
+    if(schemaVersion>=14 && present(value,"rightOfWay"))network.rightOfWay=networkCodec::readRightOfWay(value.at("rightOfWay"),schemaVersion);
     if(schemaVersion>=16 && present(value,"queueCounters"))for(const auto& c:array(value,"queueCounters")) {
         const auto path="queueCounters["+std::to_string(network.queueCounters.size())+"]";
         knownFields(c,{"id","name","lines"},path,schemaVersion);
@@ -173,7 +116,7 @@ Network parseNetwork(const Json& value, int schemaVersion) {
             if(present(l,"point")) {
                 const auto& point=member(l,"point");
                 knownFields(point,{"path","station"},at+".point",schemaVersion);
-                line.point=ControlPoint{controlPath(member(point,"path"),at+".point.path",schemaVersion),field<double>(point,"station")};
+                line.point=ControlPoint{networkCodec::readControlPath(member(point,"path"),at+".point.path",schemaVersion),field<double>(point,"station")};
             }
             counter.lines.push_back(std::move(line));
         }

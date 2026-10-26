@@ -13,7 +13,7 @@ cmake --build build/headless --target check
 
 | Source | Executable | Purpose |
 |---|---|---|
-| `project_schema.cpp` | `multra-project-schema` | Print a partial formal project envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase schema with exact integer bounds; `--help` explains its limits |
+| `project_schema.cpp` | `multra-project-schema` | Print a partial formal project envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase and right-of-way schema with exact integer bounds; `--help` explains its limits |
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
 | `desktop_control.cpp` | `multra-control` | Send a JSON command to a visible desktop's local automation endpoint; desktop build only |
 | `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |

@@ -2,6 +2,21 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Call-local Connector surfaces for Node detail (D351)
+
+- **Changed:** `automaticConflicts` shares one Connector surface cache through overlap
+  classification and mouth/display polygon construction. It lives for that immutable call only;
+  normal geometry queries remain uncached. Existing entry points retain their signatures.
+- **Measured:** isolated Release medians, 4 Nodes 74.49 → 60.96 ms, 16 Nodes 3.059 → 2.728 s;
+  complete generated documents byte-identical. The 1.5 s target remains open. A checked-in
+  `multra-node-detail-benchmark` retains the recipe and optional JSON output for the next slice.
+- **Verified:** the focused automatic-conflict suite passes 9/9, including exact cached/uncached
+  stations, classifications and polygons on both driving sides, and a geometry edit between calls.
+  Release headless build and all 160 CTest entries pass (including architecture, file-size,
+  documentation, reference and group-registration checks). The retained benchmark also produces
+  the baseline 4-Node bytes. Toolchain: CMake 4.4.4, Ninja 1.13.2, GCC 14.2.0, JSON 3.11.3,
+  installed under the workspace without system changes. No Qt UI or Windows verification.
+
 ## 2026-10-26 — Codec discovery, dry validation and run-until (D350)
 
 - **Asked:** continue with schema discovery and run-until while keeping the GUI responsive.
