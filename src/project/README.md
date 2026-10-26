@@ -69,3 +69,10 @@ sections, with optional controlType from 24. Shared field metadata preserves nul
 ControlPoint/ControlPathRef reads and diagnostic order. The composed partial schema includes
 these rows; exactly-one-source rules, references, section bounds and LOS meaning remain model
 and evaluation concerns. Empty/non-object measurement lines still decode to empty sources.
+
+
+`demand_codec` reads base Routes and VehicleInputs/volume intervals through shared field
+metadata; definition duration/timeStep use the same accessor. These rows retain open extra
+keys and contains-based optional reads (explicit null fails). Interval-derived totals stay
+at the original decode stage. The counted-volume version guard remains in parseDocument;
+route migration and counted synchronization still follow complete definition decoding.

@@ -20,7 +20,7 @@ TEST(project, signal_control_schema_keeps_presence_and_distinct_known_key_polici
     for(int v=1;v<=kLatestSchema;++v) {
         const auto& d=definitionFor(schema,v);
         CHECK(d.at("type")==Json::array({"object","null"}));
-        CHECK(d.at("required")==Json::array({"signalPrograms"}));
+        CHECK(d.at("required")==Json::array({"signalPrograms","duration","timeStep","routes","inputs"}));
         CHECK(d.at("additionalProperties")==true);
         const auto& c=resolve(schema,d.at("properties").at("signalControllers").at("items"));
         const auto& g=resolve(schema,c.at("properties").at("groups").at("items"));

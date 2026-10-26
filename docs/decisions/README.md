@@ -416,3 +416,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D361](RECORD.md#d361) — Right-of-way structural schemas share codec metadata, preserving nullable collections, legacy container/path decoding and schema 14/15/54 diagnostics.
 
 [D362](RECORD.md#d362) — Queue-counter/measurement-line and travel-time-section structural schemas preserve nullable sources, shared control points and versioned LOS control types.
+
+[D363](RECORD.md#d363) — Base definition, Route, VehicleInput and interval metadata preserve open keys, explicit-null errors, interval totals and counted-volume migration stages.

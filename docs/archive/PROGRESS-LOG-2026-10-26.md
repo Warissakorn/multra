@@ -2,6 +2,21 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Resolve authored merge paths once per grouping call (D353)
+
+- **Found:** a sampling profile of the 16-Node benchmark put about 76 % of samples under
+  `mergeGroups`, mainly resolving the same authored sides again for every receiving group.
+- **Changed:** build the same ordered groups, then resolve each authored merge's pair once and
+  mark groups containing both paths. Empty groups, unresolved/self pairs and crossing areas keep
+  their existing semantics. No retained cache or change to network-wide conflict scope.
+- **Measured:** isolated Release medians of three: 4 Nodes 41.86 → 26.94 ms; 16 Nodes
+  2.193 → 0.609 s, about 72 % less wall time. Both generated documents are byte-identical.
+  This meets the local 1.5 s performance target and closes no milestone or owner gate.
+- **Verified:** automatic-conflict tests pass 10/10, including both driving sides, unchanged
+  group/arrival ordering, unrelated groups and invalid/self/crossing/cross-group pairs. Release
+  headless build and all 160 CTest entries pass, including documentation, architecture, file-size
+  and reference checks. Linux evidence only; no Windows/UI acceptance claim.
+
 ## 2026-10-26 — Candidate ID checks without rebuilding a set (D352)
 
 - **Changed:** `allocateId` checks candidates directly against the document, without collecting

@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Base Route/VehicleInput schema and preserved demand derivation (D363)
+
+- **Changed:** shared metadata now covers definition duration/timeStep, Routes, VehicleInputs
+  and volume intervals. Demand readers move to demand_codec; the parser is now 263 lines.
+  The composed partial schema/CLI uses 67 shared definitions and 15 version profiles. Schema
+  and document prechecks share the counted-volume version floor; the envelope-only API and
+  desktop observed response stay unchanged.
+- **Preserved:** open Route/input/interval keys, contains-based null refusal, scalar-before-
+  interval diagnostics, interval-derived totals and empty-period behavior. Route migration and
+  counted-volume synchronization retain their stages after full definition decoding; bare
+  standalone reads retain their existing behavior. No catalog ownership, demand compilation,
+  simulation dynamics, writer version-selection or serialized-output change.
+- **Verified:** 6,156 cases across schemas 1–57 have byte-identical before/after native outcomes,
+  errors and canonical documents and pass independent Draft-2020-12 expectations. Four shipped
+  projects validate structurally and retain byte-identical canonical output. Five new tests
+  cover required/open fields, nulls, integer-independent numeric types, scalar derivation,
+  counted synchronization/version guards, route migration and semantic exclusions. Release
+  headless build and all 161 CTest entries pass (11.59 s), including project, CLI, docs,
+  architecture and file-size checks. Linux headless evidence only; no Qt/Windows, scientific
+  validation or owner gate is closed.
+
 ## 2026-10-26 — Queue-counter and travel-time-section structural schemas (D362)
 
 - **Changed:** shared metadata covers queue counters/measurement lines and travel-time sections/
@@ -163,21 +184,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   samples, nested truncation, exact visit-budget and depth boundaries. Project tests pass 16/16;
   Release headless build and all 160 CTest entries pass, including documentation, architecture,
   file-size and reference checks. Qt tools are unavailable locally; no desktop/Windows claim.
-
-## 2026-10-26 — Resolve authored merge paths once per grouping call (D353)
-
-- **Found:** a sampling profile of the 16-Node benchmark put about 76 % of samples under
-  `mergeGroups`, mainly resolving the same authored sides again for every receiving group.
-- **Changed:** build the same ordered groups, then resolve each authored merge's pair once and
-  mark groups containing both paths. Empty groups, unresolved/self pairs and crossing areas keep
-  their existing semantics. No retained cache or change to network-wide conflict scope.
-- **Measured:** isolated Release medians of three: 4 Nodes 41.86 → 26.94 ms; 16 Nodes
-  2.193 → 0.609 s, about 72 % less wall time. Both generated documents are byte-identical.
-  This meets the local 1.5 s performance target and closes no milestone or owner gate.
-- **Verified:** automatic-conflict tests pass 10/10, including both driving sides, unchanged
-  group/arrival ordering, unrelated groups and invalid/self/crossing/cross-group pairs. Release
-  headless build and all 160 CTest entries pass, including documentation, architecture, file-size
-  and reference checks. Linux evidence only; no Windows/UI acceptance claim.
 
 ## Older entries
 

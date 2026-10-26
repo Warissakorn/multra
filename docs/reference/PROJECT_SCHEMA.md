@@ -3,7 +3,9 @@
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
 Connector/attachment-reference (D358), SignalHead (D359), signal control (D360),
-right-of-way (D361) and measurement contracts (D362). It describes implemented readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
+right-of-way (D361), measurement (D362) and base demand contracts (D363). It describes
+implemented readers/writers, rather than inferring a contract from one document. It is
+**not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
 uses those existing codecs and validators.
@@ -370,3 +372,33 @@ reuse the same control point/path entries for waiting lines and queue counters. 
 algorithm, LOS threshold, delay definition, writer version rule or serialized output changes.
 Negative/out-of-bounds stations, reversed sections, empty or ambiguous measurement sources,
 reference resolution and runtime readiness remain the existing model/evaluation validators.
+
+
+## Route and VehicleInput extension (D363)
+
+The composed CLI coverage adds `-routes-inputs` to the D362 identifier; complete remains
+false. A present definition object now also requires numeric duration/timeStep and routes/
+inputs arrays, as the native ScenarioDefinition reader does. Definition absence/null remains
+valid for a draft project; other unmapped definition fields remain codec-owned.
+
+- Route rows require text id and a segmentIds array of text. VehicleInputs require text id,
+  routeId and vehicleTypeId, plus numeric vehiclesPerHour, startTime and endTime. Optional
+  laneShares is a numeric array; compositionId/routingDecisionId/linkId are optional text.
+  These optionals use contains, so explicit null fails instead of meaning absent.
+- Optional intervals requires an array of rows with numeric startTime/endTime/vehiclesPerHour.
+  Rows decode before deriveInputTotals replaces scalar totals. Scalars are still required and
+  type-checked first; an empty interval array leaves them unchanged. Ordered/gapped intervals,
+  nonnegative rates and valid time windows remain model concerns.
+- Route, input and interval keys stay open at every version, preserving the standalone reader.
+  volumeFromCounts requires a boolean and is forbidden in project files before schema 26 even
+  when false/null. This shared version floor remains enforced before definition decoding;
+  the standalone scenario reader still accepts the boolean independently of project version.
+- Legacy route lane/path-to-object migration and counted-volume synchronization retain their
+  original stages. Counted volumes still derive from routing-decision counts after the full
+  definition is read; the writer omits those derived intervals as before.
+
+Shared metadata supplies requiredness, native types and schema shapes. File version selection,
+serialized bytes, catalog ownership, routing algorithms and simulation dynamics are unchanged.
+Topology/reachability, catalog/reference resolution, valid demand rates/windows, lane weights
+and counted-decision semantics remain existing validators. Routing decisions and catalog row
+schemas remain separate follow-ups.

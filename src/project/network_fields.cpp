@@ -43,7 +43,9 @@ constexpr Field signalHeadFields[]={
     {"groupNumber",Kind::group,false,0,0,false,0,"controllerId"},
     {"generated",Kind::generated,false,generatedVersion}};
 constexpr Field definitionFields[]={
-    {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers}};
+    {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers},
+    {"duration",Kind::number,true},{"timeStep",Kind::number,true},
+    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true}};
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -86,6 +88,15 @@ constexpr Field travelTimeSectionFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"start",Kind::sectionLine,true},
     {"end",Kind::sectionLine,true},{"controlType",Kind::sectionControl,false,24,0,true}};
 constexpr Field sectionLineFields[]={{"linkId",Kind::text,true},{"station",Kind::number,true}};
+constexpr Field routeFields[]={{"id",Kind::text,true},{"segmentIds",Kind::texts,true}};
+constexpr Field vehicleInputFields[]={
+    {"id",Kind::text,true},{"routeId",Kind::text,true},{"vehicleTypeId",Kind::text,true},
+    {"vehiclesPerHour",Kind::number,true},{"startTime",Kind::number,true},{"endTime",Kind::number,true},
+    {"laneShares",Kind::numbers},{"compositionId",Kind::text},{"routingDecisionId",Kind::text},
+    {"linkId",Kind::text},{"volumeFromCounts",Kind::boolean,false,0,countedVolumeVersion},
+    {"intervals",Kind::volumeIntervals}};
+constexpr Field volumeIntervalFields[]={
+    {"startTime",Kind::number,true},{"endTime",Kind::number,true},{"vehiclesPerHour",Kind::number,true}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -113,11 +124,15 @@ std::span<const Field> fields(Object object) {
     case Object::measurementLine:return measurementLineFields;
     case Object::travelTimeSection:return travelTimeSectionFields;
     case Object::sectionLine:return sectionLineFields;
+    case Object::route:return routeFields;
+    case Object::vehicleInput:return vehicleInputFields;
+    case Object::volumeInterval:return volumeIntervalFields;
     }
     return {};
 }
 bool allowsAdditionalFields(Object object,int version) {
     if(object==Object::signalController || object==Object::signalGroup)return false;
+    if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
 }
@@ -148,6 +163,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     const char* expected=nullptr;
     switch(found->kind) {
     case Kind::text:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::boolean:if(!v.is_boolean())expected="Expected true or false: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
         if(!v.is_number_integer() || v < -levelLimit || v > levelLimit)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
@@ -160,6 +176,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:case Kind::groups:case Kind::phases:case Kind::controllers:case Kind::programs:
     case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::stopControls:case Kind::texts:
     case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
+    case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:

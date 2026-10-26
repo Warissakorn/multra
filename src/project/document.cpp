@@ -249,7 +249,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < 25) rejectW74Before25(j);
-    if (version < 26) rejectCountedVolumesBefore26(j);
+    if (version < networkCodec::countedVolumeVersion) rejectCountedVolumesBefore26(j);
     if (version < 27) rejectCooldownBefore27(j);
     if (version < 28) rejectAmberBefore28(j);
     if (version < 32) rejectPerceptionBefore32(j);

@@ -19,6 +19,7 @@ class NetworkSchema {
             rule={{"type",field.nullable?Json::array({"string","null"}):Json("string")},
                 {"enum",field.nullable?Json::array({"left","right",nullptr}):Json::array({"left","right"})}};
             break;
+        case Kind::boolean:rule={{"type","boolean"}};break;
         case Kind::number:rule={{"type","number"}};break;
         case Kind::level:rule={{"type","integer"},{"minimum",-levelLimit},{"maximum",levelLimit},{"x-multra-nativeType","integer-token"}};break;
         case Kind::group:rule={{"type","integer"},{"minimum",groupMinimum},{"maximum",groupMaximum}};break;
@@ -26,6 +27,9 @@ class NetworkSchema {
         case Kind::links:rule={{"type","array"},{"items",reference(Object::link,version)}};break;
         case Kind::connectors:rule={{"type","array"},{"items",reference(Object::connector,version)}};break;
         case Kind::signalHeads:rule={{"type","array"},{"items",reference(Object::signalHead,version)}};break;
+        case Kind::routes:rule={{"type","array"},{"items",reference(Object::route,version)}};break;
+        case Kind::inputs:rule={{"type","array"},{"items",reference(Object::vehicleInput,version)}};break;
+        case Kind::volumeIntervals:rule={{"type","array"},{"items",reference(Object::volumeInterval,version)}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
         case Kind::programs:rule={{"type","array"},{"items",reference(Object::signalProgram,version)}};break;
@@ -148,6 +152,9 @@ public:
                 case Object::measurementLine:return "measurementLine";
                 case Object::travelTimeSection:return "travelTimeSection";
                 case Object::sectionLine:return "sectionLine";
+                case Object::route:return "route";
+                case Object::vehicleInput:return "vehicleInput";
+                case Object::volumeInterval:return "volumeInterval";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -159,8 +166,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

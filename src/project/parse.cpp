@@ -54,14 +54,6 @@ const Json& array(const Json& value, const char* name) {
     if (!items.is_array()) throw std::invalid_argument(std::string("Expected array: ") + name);
     return items;
 }
-std::vector<std::string> strings(const Json& value, const char* name) {
-    std::vector<std::string> result;
-    for (const auto& item : array(value, name)) {
-        if (!item.is_string()) throw std::invalid_argument(std::string("Expected strings: ") + name);
-        result.push_back(item.get<std::string>());
-    }
-    return result;
-}
 std::vector<double> doubles(const Json& value, const char* name) {
     std::vector<double> result;
     for (const auto& item : array(value, name)) {
@@ -256,29 +248,10 @@ std::vector<RoutingDecision> parseRoutingDecisions(const Json& definition) {
 }
 ScenarioDefinition parseDefinition(const Json& value) {
     ScenarioDefinition definition;
-    definition.duration = field<double>(value, "duration");
-    definition.timeStep = field<double>(value, "timeStep");
-    for (const auto& r : array(value, "routes"))
-        definition.routes.push_back({field<std::string>(r, "id"), strings(r, "segmentIds")});
-    for (const auto& i : array(value, "inputs")) {
-        VehicleInput input{field<std::string>(i, "id"), field<std::string>(i, "routeId"),
-            field<std::string>(i, "vehicleTypeId"), field<double>(i, "vehiclesPerHour"),
-            field<double>(i, "startTime"), field<double>(i, "endTime")};
-        if (i.contains("laneShares")) input.laneShares = doubles(i, "laneShares");
-        if (i.contains("compositionId")) input.compositionId = field<std::string>(i, "compositionId");
-        if (i.contains("routingDecisionId")) input.routingDecisionId = field<std::string>(i, "routingDecisionId");
-        if (i.contains("linkId")) input.linkId = field<std::string>(i, "linkId"); // M2.1.1
-        if (i.contains("volumeFromCounts")) input.volumeFromCounts = field<bool>(i, "volumeFromCounts"); // D142
-        if (i.contains("intervals")) {
-            for (const auto& p : array(i, "intervals"))
-                input.intervals.push_back({field<double>(p, "startTime"), field<double>(p, "endTime"),
-                                           field<double>(p, "vehiclesPerHour")});
-            // The file's scalars are a convenience copy; the intervals are the source, so a
-            // hand edit that makes them disagree cannot create a second truth (hard rule 3).
-            deriveInputTotals(input);
-        }
-        definition.inputs.push_back(std::move(input));
-    }
+    definition.duration=networkCodec::value(value,networkCodec::Object::definition,"duration").get<double>();
+    definition.timeStep=networkCodec::value(value,networkCodec::Object::definition,"timeStep").get<double>();
+    definition.routes=networkCodec::readRoutes(value);
+    definition.inputs=networkCodec::readVehicleInputs(value);
     definition.signalPrograms=networkCodec::readSignalPrograms(value);
     if (value.contains("vehicleTypes"))
         for (const auto& t : array(value, "vehicleTypes")) definition.vehicleTypes.push_back(parseVehicleType(t));
