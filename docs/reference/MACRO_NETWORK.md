@@ -395,6 +395,42 @@ A stage that refuses stops every later stage. A stage is never counted as done w
   - The Run Macro dialog shows the six stages with their status and messages, and Cancel stops
     between iterations.
 - (b) As (a), plus several named Macro run definitions (period plus settings) in the document,
-  like Aimsun's experiments. This needs schema 52 and an editor list.
+  like Aimsun's experiments. §21 implements this at schema 56 with an editor list; the earlier
+  estimate of 52 was taken by Meso.
 - (c) A general procedure sequence like Visum's (generation → distribution → mode choice → skim →
   assignment). It is premature while M10.2–M10.4 do not exist, and is booked as an M10 seam.
+
+<a id="named-macro-runs"></a>
+
+## 21. Named run definitions (D339; §19 b)
+
+This follows NEXT's booked named-run seam. It selects one run at a time through the existing
+staged worker; the general procedure sequence still waits on M10.2–M10.4.
+
+- **Stored:** optional root `macroRuns`, at schema **56** (the old §19 estimate of 52 is already
+  used by Meso). Each row is exactly `{id, name, period, settings: {targetGap, maxIterations}}`.
+  An empty list is omitted; files without definitions keep their schema and bytes. Below 56,
+  `macroRuns` is `EDIT_UNSUPPORTED_FIELD`. Malformed rows are `INVALID_MACRO_RUN`; ids must be
+  nonblank (`INVALID_ID`) and unique (`DUPLICATE_ID`); settings use the existing limits and
+  `INVALID_MACRO_SETTING` at the row.
+- **Period:** the study-period id or `matrix:<id>` used by `macroPeriodName`. Deleting its period or
+  matrix retains the definition for editing; choosing it to run gives `MACRO_PERIOD_UNKNOWN`.
+- **Commands and editing:** a free-function *Macro run definitions…* dialog edits the ordered list
+  (name, period, gap, iteration cap). Add/Remove and edits stay local until acceptance, which is
+  one History step; Cancel changes nothing. Definitions do not store results.
+- **Run:** the existing Run Macro dialog offers project settings or a saved definition. A named
+  run uses its own period/settings without modifying the project or its global settings. Stage
+  refusal, cancellation and generation guards follow §19 a. An unknown id is `MACRO_RUN_UNKNOWN`.
+- **CLI:** `--macro-run <id>` selects a saved definition, with the same allowed flags as `--macro`;
+  the two selectors cannot be combined. JSON includes `runDefinition {id, name}` only for a named
+  run, and CSV adds one escaped identification line. Unnamed outputs keep their bytes.
+- **Side files and freshness:** the existing latest-result-per-period rule stands. A finished named
+  run replaces that period's cut source with the settings actually used; other periods stay.
+  Hashes refer to the original project bytes. This does not restore result tables on reopen or
+  add multiple result tabs.
+
+| Row | Case | Asserts |
+|---|---|---|
+| MA19 | Codec and commands | Schema 56 round-trip; no definitions keeps old bytes; older schemas refuse the field; bad shape, duplicate ids, bad settings and unsafe integer values refuse at row paths; accept is one Undo/Redo step and Cancel preserves bytes |
+| MA20 | Named execution | Two definitions of one period use their own limits with unchanged source/global settings; explicit equivalent settings give equal assignment; missing ids/periods refuse; cancellation/stages and source hashes stay intact; unnamed output bytes stay unchanged |
+| MA21 | Editor and CLI | Edit a list, save/reopen and select a definition; the worker uses it; JSON/CSV identify the selected run; CLI rejects selector conflicts and unknown ids; an unavailable period remains editable and refuses Run |

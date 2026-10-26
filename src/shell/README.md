@@ -15,3 +15,5 @@ country and optional province/state choices while preserving manual coordinate e
 `vehicle_color_dialog` edits per-type fixed or mixed body colours from View, and atomically saves
 application-local display preferences shared by the editor and Behaviour Lab. See
 [vehicle colour contract](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334).
+
+`macro_run_dialog` edits saved Macro run definitions as one Undo step and selects a named definition or project settings for the existing staged worker. Definitions are stored with the project; result tables remain session-local. See [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md#named-macro-runs).

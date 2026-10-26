@@ -350,7 +350,7 @@ private:
     std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
     // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
     std::unique_ptr<MacroPanel> macro_;
-    void buildMacro(QToolBar*, QVBoxLayout*); void refreshMacro(); void startMacro(const std::string& period); void discardMacro();
+    void buildMacro(QToolBar*, QVBoxLayout*); void refreshMacro(); void startMacro(const std::string& period, const std::string& definitionId = {}); void discardMacro();
 public:
     bool macroRunning() const; const MacroRun* macroResult() const; bool macroStale() const;
     bool macroTabShown() const; // Export and Copy then write the Macro CSV

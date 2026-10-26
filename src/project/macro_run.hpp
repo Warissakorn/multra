@@ -23,8 +23,13 @@ struct MacroRun {
     MacroAssignment assignment;
     std::vector<ValidationIssue> advisories; // the demand's, then MACRO_NOT_CONVERGED when stopped at the cap
     Json inputManifest;                      // the files read; null without a manifest
+    std::string definitionId, definitionName; // Named execution only; blank for project settings.
 };
 // Refused by ValidationError: MACRO_PERIOD_UNKNOWN (`period`), then the graph's and the demand's issues.
 MacroRun runMacro(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& period,
                   InputManifest* = nullptr, const MacroObserver* = nullptr, bool keepPaths = false); // S5.3: paths for a cut
+// Runs one saved definition against the original document, without changing its global settings.
+// Refuses MACRO_RUN_UNKNOWN at macroRuns, then the selected definition's settings and period.
+MacroRun runNamedMacro(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& id,
+                      InputManifest* = nullptr, const MacroObserver* = nullptr, bool keepPaths = false);
 }

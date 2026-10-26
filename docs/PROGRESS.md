@@ -6,6 +6,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-25 — Named Macro run definitions (D339)
+
+- **Asked:** continue development; followed NEXT's booked named-run seam (§19 b, D277).
+- **Changed:** optional schema-56 `macroRuns` stores ordered id/name/period/settings definitions.
+  The editor manages the list in one Undo step, then selects one definition for the existing
+  staged worker. CLI `--macro-run ID` uses the same definition; JSON/CSV identify it.
+- **Boundary:** named execution uses explicit settings without editing the source document or
+  global settings. Named and global settings share a parser that rejects oversized integers before
+  narrowing (including large negatives that formerly wrapped to a legal cap). Existing unnamed
+  runs/outputs and old project schemas stay unchanged. The Macro side file still holds the latest
+  cut source per period, with original project provenance;
+  result-table restore and a general procedure sequence are separate seams.
+- **Verification (2026-10-26):** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and
+  `check` pass, **234/234 CTest cases passed**. Five focused model cases and the new/existing Macro
+  UI harnesses also pass independently. Fontconfig uses bundled Thai fonts with DejaVu Sans
+  fallback. Windows untested for this change; no milestone gate closed.
+
 ## 2026-10-25 — Study-area cuts preserve single vehicle types (D338)
 
 - **Asked:** continue development; followed NEXT's first open S5 items: single-type Meso gate

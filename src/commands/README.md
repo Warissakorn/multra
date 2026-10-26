@@ -3,3 +3,5 @@ Qt-free named document transactions and bounded snapshot Undo/Redo. History vali
 `zone_commands` puts/deletes Zones, zone connectors, OD matrices (M8.2) and parking lots (M8.4b); a Zone a matrix names cannot be deleted, and Link deletion/splitting carries zone connectors.
 
 `map_commands` sets/removes the background reference atomically; it never moves network geometry.
+
+`macro_run_commands` replaces the ordered named Macro run list, allocating missing ids; History validates and commits the whole edit atomically.

@@ -57,8 +57,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
   (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
-- **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner; §19 (b) named runs or (c) a
-  procedure sequence are booked (D277).
+- **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), a procedure sequence,
+  remains booked until M10.2–M10.4 provide its stages (D277).
 - **Roads:** demand on a Road-only network (zone connectors attach to Links only) is booked.
 - **M3.3.3b**, the W99 contract (ROADMAP M3.3, D177).
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source

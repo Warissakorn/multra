@@ -2,6 +2,7 @@
 #include <set>
 #include "json.hpp"
 #include "map_settings.hpp"
+#include "macro_run_definition.hpp"
 #include "../model/demand/zones.hpp"
 #include "../model/demand/definition.hpp"
 
@@ -26,6 +27,7 @@ struct ProjectDocument {
     std::uint64_t revision{};
     std::optional<MapSettings> map;
     ZoneLayer zones; // M8.2, schema 31: the shared demand layer (ZONES_AND_PARKING.md)
+    std::vector<MacroRunDefinition> macroRuns; // Named definitions only, schema 56; never results.
     bool operator==(const ProjectDocument&) const = default;
 };
 AuthoringDefinition parseAuthoringDefinition(const Json&);
@@ -49,6 +51,6 @@ Json documentJson(const ProjectDocument& document);
 ProjectDocument parseDocument(const Json& json);
 void validateDocument(const ProjectDocument& document); // Empty networks are valid drafts.
 // Every id the network and definition hold, which a new or zone-layer id must not repeat.
-std::set<std::string> documentIds(const ProjectDocument& document);
+std::set<std::string> documentIds(const ProjectDocument& document, bool includeMacroRuns = true);
 std::string allocateId(ProjectDocument& document, const std::string& prefix);
 }

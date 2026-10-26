@@ -1,4 +1,4 @@
-Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1–30). The document persists authoring data and optional background; no compiled runtime network is saved. Empty draft networks are valid. Commands depend on this module, never the reverse. The shell owns QSaveFile atomic replacement.
+Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1–56). The document persists authoring data and optional background; no compiled runtime network is saved. Empty draft networks are valid. Commands depend on this module, never the reverse. The shell owns QSaveFile atomic replacement.
 
 `input_manifest` optionally records hashes of exact parsed project/catalog/evaluation bytes for CLI discharge studies. Collection is passed explicitly through compilation; loaders keep their legacy path when absent. `input_sha256` has no external dependency. See [measurement/provenance contract](../../docs/reference/DISCHARGE.md).
 
@@ -16,3 +16,5 @@ Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1�
 `parking_compile` turns each authored ParkingLot into the engine's lot after `compileScenario` (M8.4b, D157).
 
 `study_area_run` builds the run-time Micro cut; `study_area_meso` retains composition and single-type classes per Meso slice. Run-time-only type fields pass through `od_demand` to ordinary inputs without changing catalog ownership or stored codecs. See [STUDY_AREA_IMPLEMENTED §22](../../docs/reference/STUDY_AREA_IMPLEMENTED.md#22-single-vehicle-type-meso-cuts-and-cli-coverage-d338).
+
+`macro_run_definition` persists named Macro period/settings definitions at schema 56; `runNamedMacro` executes them without changing the document or its global settings. Results identify the chosen definition; the side file still keeps the latest source for each period. See [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md#named-macro-runs).
