@@ -1,6 +1,7 @@
 #include "document.hpp"
 #include "document_schema.hpp"
 #include "document_envelope.hpp"
+#include "network_fields.hpp"
 #include <algorithm>
 #include "zone_codec.hpp"
 #include "demand_time_types.hpp"
@@ -233,11 +234,11 @@ ProjectDocument parseDocument(const Json& j) {
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
     d.map=parseMapSettings(j,version);
     if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
-    if (version < 50) rejectLinkTypesBefore50(j); // S2.1, before the network is read
+    if (version < networkCodec::linkTypeVersion) rejectLinkTypesBefore50(j); // S2.1, before the network is read
     if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
-    if (version < 53) rejectRoadFieldsBefore53(j); // S3.3
+    if (version < networkCodec::roadVersion) rejectRoadFieldsBefore53(j); // S3.3
     if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
     if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
     if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});

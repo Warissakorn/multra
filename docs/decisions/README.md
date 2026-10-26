@@ -404,3 +404,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D355](RECORD.md#d355) — Project schema ownership/version inventory and shared feature-selected writer inspection; formal nested schemas remain separate.
 
 [D356](RECORD.md#d356) — Shared envelope/background metadata generates a partial formal schema; exact-integer CLI output and explicit codec-only token/byte constraints.
+
+[D357](RECORD.md#d357) — Codec-owned Network/Link/Lane metadata and shared versioned formal schema definitions; compatibility preserved across schemas 1–57.

@@ -2,6 +2,19 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — AI map commands and tile readiness (D347)
+
+- **Asked:** continue with map settings and tile-loading state through commands.
+- **Changed:** map.get/status expose installed providers/settings and current viewport counts;
+  map.set takes coordinates, derives UTM and uses the same apply path as Map settings; remove
+  is idempotent, retry uses existing view-only backoff. Parameter failures include path/expected.
+  Ready requires a settled visible viewport and complete wanted tiles; read requests create
+  no fetches or new polling timers. Existing History and run invalidation remain.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (135.03 s).
+  Eleven targeted automation/map suites passed. A local HTTP tile fixture covers held loading,
+  complete tiles, failed images/retry, pending-pan readiness, hidden retry, unavailable providers,
+  invalid fields, no-op set/remove and Undo/Redo. External OSM and Windows remain unverified.
+
 ## 2026-10-26 — Deferred recovery commands (D346)
 
 - **Asked:** continue the AI workflow with recovery management that avoids blocking startup

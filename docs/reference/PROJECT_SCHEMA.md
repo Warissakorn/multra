@@ -1,7 +1,7 @@
 # Project schema inventory
 
 This is the codec ownership and version map for an editor-project schema (D355), with
-a generated partial envelope/background contract (D356). It describes implemented
+generated partial envelope/background (D356) and Network/Link/Lane contracts (D357). It describes implemented
 readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
@@ -128,18 +128,19 @@ historical-schema coverage.
 
 A generated schema needs codec-owned field metadata for requiredness, null handling,
 unknown-key policy, version gates and tagged alternatives. The inventory above does not
-supply that metadata for every nested field. The next slice maps network fields (starting with the network envelope and Link/Lane
-shapes); keep partial coverage explicit and compare with the real codec before expanding
-to Connector, control and demand branches.
+supply that metadata for every nested field. Network, Link, Lane and Link geometry field metadata are implemented as described below.
+Connector, control and demand field metadata remain separate follow-ups; their semantic
+validation stays in the codec.
 
 ## Generated envelope/background schema (D356)
 
 `projectEnvelopeSchema()` in `document_envelope.hpp` generates a draft-2020-12 schema
 from the field metadata used by the native project envelope reader and typed validation.
-Retrieve it without a document, Qt, external catalogs or a running editor:
+The CLI prints the composed document schema (including the network extension below)
+without a document, Qt, external catalogs or a running editor:
 
 ```sh
-./build/headless/bin/multra-project-schema > project-envelope.schema.json
+./build/headless/bin/multra-project-schema > project.schema.json
 ```
 
 The tool is installed beside `multra-cli`; it accepts only `--help` or no arguments.
@@ -147,7 +148,8 @@ It prints JSON directly, preserving the exact integer maximum `18446744073709551
 Use an exact-integer JSON parser for those bounds; a binary64-only parser rounds them.
 No generated schema file is maintained as another source of truth.
 
-Coverage is explicitly `x-multra-coverage: envelope-background`, `x-multra-complete:false`.
+The envelope-only C++ API retains `x-multra-coverage: envelope-background` and
+`x-multra-complete:false`; the composed CLI coverage is described below.
 The schema covers required root envelope fields, counter limits, the root shape of network
 and optional definition, and background fields/ranges. Root/background unknown keys stay
 open, as in the codec. Nested network/demand fields, optional features and their version
@@ -167,3 +169,44 @@ check finite doubles and preserve existing error codes and legacy scenario handl
 Desktop `document.schema` continues to return observed shapes; its Qt JSON transport is
 not used to carry these exact uint64 schema bounds. `document.validate` remains the way to
 check complete documents/patches against the codec in the live desktop workflow.
+
+## Network, Link and Lane extension (D357)
+
+`projectDocumentSchema()` in `network_schema.hpp` composes the stable envelope-only API
+with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
+`multra-project-schema` now prints this composed schema with no new arguments. Coverage
+is `envelope-background-network-link-lane` and complete remains false. Desktop observed
+schema discovery is unchanged.
+
+The generated schema chooses rules from the document's root `schemaVersion` (1–57).
+Identical structures share `$defs`, and identical network profiles share conditional version
+groups. Reference names are implementation details; consumers follow `$ref`. The same
+metadata drives native known-key checks and Link/Lane field reads. Link decoding has its
+own file; shared Connector/reference decoding and model geometry algorithms are unchanged.
+
+Covered structure:
+
+- Network requires id, drivingSide (left/right), links, connectors and signalHeads. Links
+  have typed items; Connector and signal-head arrays deliberately have unconstrained items.
+  Other known Network properties are allowed at their existing versions, with their contents
+  unchecked. Roads/overpasses retain the document's pre-53 refusal even on legacy versions.
+- Links require id, geometry and lanes. Geometry uses object points with required numeric x/y;
+  lanes have required string id and numeric width. Optional level, displayType, laneOffset,
+  name, boundaryMarkings and versioned behaviourType/linkType/roadId get their read shapes.
+- Level is an integer token within [-1000,1000]; `x-multra-nativeType` records the native-token
+  restriction. Marking names come from the existing model formatter. Model defaults supply
+  schema default annotations, which do not fill or mutate input documents.
+- name may be absent or null; either leaves the model's empty name. Other optional Link
+  scalar/array fields reject null when read. Before 7 unknown keys remain additive on
+  Network/Link/Lane/points; from 7 their known-key lists are closed.
+- behaviourType is read from 21; earlier legacy unknown-field behavior remains. linkType
+  is known by the standalone network reader from 21 but rejected by document prechecks
+  before 50 and read in the existing later stage. roadId stays gated at 53. Those stage
+  boundaries and diagnostic paths are preserved, rather than normalized by the refactor.
+
+This is structural coverage. Nonblank/unique IDs, positive lane widths, lane counts,
+geometry validity, marking-count relationships and behaviour/type/Road reference resolution
+still require model/document validation. The schema can accept a structurally valid empty
+geometry or zero width that the codec refuses. Unmapped Node/control/Road/demand objects
+can likewise pass the partial schema and fail the codec; schema success never establishes
+full authoring validity, run readiness or scientific validation.

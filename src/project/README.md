@@ -35,3 +35,10 @@ input schema versions are not retained. See the [schema inventory](../../docs/re
 stages and partial draft-2020-12 schema generation. `multra-project-schema` prints that
 schema directly, retaining exact uint64 limits. Nested feature validation remains in the
 existing codecs; native integer-token and UTF-8 byte checks are annotated constraints.
+
+`network_fields` owns versioned known-key/type metadata for Network, Link, Lane and Link
+geometry points. `network_link_codec` reads Links in the original order, leaving linkType/
+roadId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
+composes envelope/background with these structural rules for schemas 1–57; shared `$defs`
+and conditional version groups keep it compact. Model invariants and nested features remain
+codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.

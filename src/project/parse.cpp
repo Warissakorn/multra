@@ -1,4 +1,5 @@
 #include "json.hpp"
+#include "network_fields.hpp"
 #include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
@@ -183,38 +184,13 @@ RightOfWay rightOfWay(const Json& value, int version) {
 }
 }
 Network parseNetwork(const Json& value, int schemaVersion) {
-    // `rightOfWay` exists from schema 14; knownFields rejects it in an older file (from 7 on).
-    // `queueCounters` exists from schema 16 (M3.2.6b), `travelTimeSections` from 23 (M5.4), `nodes` from 48 (S0.1, node_codec).
-    if(schemaVersion>=53)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections","nodes","roads","overpasses"},"network",schemaVersion); /* roads: S3.3, overpasses: S3.5, road_codec */ else if(schemaVersion>=48)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections","nodes"},"network",schemaVersion); else if(schemaVersion>=23)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections"},"network",schemaVersion);
-    else if(schemaVersion>=16)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters"},"network",schemaVersion);
-    else if(schemaVersion>=14)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay"},"network",schemaVersion);
-    else knownFields(value,{"id","drivingSide","links","connectors","signalHeads"},"network",schemaVersion);
+    networkCodec::knownFields(value,networkCodec::Object::network,"network",schemaVersion);
     Network network;
-    network.id = field<std::string>(value, "id");
-    const auto side = field<std::string>(value, "drivingSide");
+    network.id = networkCodec::value(value,networkCodec::Object::network,"id").get<std::string>();
+    const auto side = networkCodec::value(value,networkCodec::Object::network,"drivingSide").get<std::string>();
     if (side != "left" && side != "right") throw std::invalid_argument("INVALID_DRIVING_SIDE");
     network.drivingSide = side == "left" ? DrivingSide::left : DrivingSide::right;
-    for (const auto& item : array(value, "links")) {
-        const auto path="links["+std::to_string(network.links.size())+"]";
-        // `behaviourType` exists from schema 21 (M3.3.2a).
-        if(schemaVersion>=53)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType","linkType","roadId"},path,schemaVersion); else if(schemaVersion>=21)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType","linkType"},path,schemaVersion); // linkType: S2.1, read by readLinkTypeIds
-        else knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings"},path,schemaVersion);
-        Link link{field<std::string>(item, "id"), points(item,schemaVersion), {}};
-        for (const auto& lane : array(item, "lanes")) {
-            knownFields(lane,{"id","width"},path+".lanes["+std::to_string(link.lanes.size())+"]",schemaVersion);
-            link.lanes.push_back({field<std::string>(lane, "id"), field<double>(lane, "width")});
-        }
-        link.level=integer(item,"level",0);
-        if(item.contains("laneOffset"))link.laneOffset=field<double>(item,"laneOffset");
-        if(item.contains("displayType"))link.displayType=field<std::string>(item,"displayType");
-        if(present(item,"name"))link.name=field<std::string>(item,"name");
-        if(item.contains("boundaryMarkings"))for(const auto& m:array(item,"boundaryMarkings")) {
-            if(!m.is_string())throw std::invalid_argument("INVALID_MARKING");
-            link.boundaryMarkings.push_back(markingFromName(m.get<std::string>()));
-        }
-        if(schemaVersion>=21 && item.contains("behaviourType"))link.behaviourTypeId=field<std::string>(item,"behaviourType");
-        network.links.push_back(std::move(link));
-    }
+    network.links=networkCodec::readLinks(value,schemaVersion);
     for (const auto& c : array(value, "connectors")) {
         const auto where="connectors["+std::to_string(network.connectors.size())+"]"; // laneChangeSide: schema 17 (D73)
         if(schemaVersion>=21)knownFields(withoutGenerated(c,schemaVersion),{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
