@@ -38,7 +38,7 @@
 #include <cmath>
 
 namespace multra {
-EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent) : QMainWindow(parent), data_(data) {
+EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent,bool deferRecovery) : QMainWindow(parent), data_(data), deferRecovery_(deferRecovery) {
     // Numbers are data a user reads back into the project file, so every widget shows Latin
     // digits whatever the system locale. setLocale as well as setDefault: the QMainWindow base has
     // already resolved the system locale, and every child and dialog inherits the window's.

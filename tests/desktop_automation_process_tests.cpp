@@ -46,8 +46,8 @@ Reply invoke(const QString& control, const QString& endpoint, const QJsonObject&
     return {client.exitCode(), parsed.object()};
 }
 QJsonObject start(Desktop& desktop, const QString& binary, const QString& control,
-                  const QString& endpoint, const QString& data) {
-    desktop.process.start(binary, {"--automation", endpoint, "--data-dir", data});
+                  const QString& endpoint, const QString& data, const QString& recovery = "ask") {
+    desktop.process.start(binary, {"--automation", endpoint, "--data-dir", data,"--recovery",recovery});
     require(desktop.process.waitForStarted(5000), "Desktop entry point did not start");
     QElapsedTimer deadline;
     deadline.start();
@@ -133,7 +133,8 @@ int main(int argc, char** argv) {
         // Ten normal lifecycles: quit must return a full response and a normal exit,
         // including explicitly discarded dirty work and saved Unicode destinations.
         for(int cycle=0;cycle<10;++cycle) {
-            if(cycle)state=start(desktop,binary,control,endpoint,data);
+            if(cycle)state=start(desktop,binary,control,endpoint,data,cycle%2?"defer":"ask");
+            if(cycle)require(state.value("recoveryPolicy")==QJsonValue(cycle%2?"defer":"ask"),"CLI recovery policy was not applied");
             send("file.open",{{"path",QDir(data).filePath("scenarios/crossing.json")}});
             const QJsonArray patch{QJsonObject{{"op","replace"},{"path","/network/links/0/name"},{"value","quit test"}}};
             send("document.patch",{{"patch",patch}});

@@ -1,4 +1,9 @@
 {
+  "RECOVERY_BUSY": "This recovery copy is owned by a live editor or its lock is unavailable.",
+  "RECOVERY_INVALID_ID": "Use a recovery basename from recovery.list; paths and symbolic links are not accepted.",
+  "RECOVERY_NOT_FOUND": "The recovery copy no longer exists. Refresh recovery.list.",
+  "RECOVERY_UNAVAILABLE": "The recovery directory cannot be read.",
+  "RECOVERY_DELETE_FAILED": "The selected recovery copy could not be deleted.",
   "editorAutomationQuitFailed": "Quit was cancelled because the reply could not be sent. Your document and recovery were kept.",
   "editorAutomationEnable": "Enable AI control…",
   "editorAutomationDisable": "Disable AI control",

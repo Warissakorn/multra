@@ -76,7 +76,7 @@ the document and visible run. Validation failures also expose their issues.
 
 `state.documentId` identifies the current document session; `state.revision` is a
 decimal string. Keep both as strings. Every command except `capabilities`, `status`,
-`document.get` and `results.get` requires the two guard fields from the latest state.
+`document.get`, `results.get` and `recovery.list` requires the two guard fields from the latest state.
 This prevents a delayed AI edit from overwriting changes made by the user. A rejected
 guard requires a fresh inspection and a decision about whether the original edit
 still applies. Do not automatically retry it against the new revision.
@@ -95,6 +95,9 @@ and inspect again. `simulation.reset` stores its seed as the canonical decimal (
 | `status` | None | Read current document and run state |
 | `document.get` | Optional `pointer`: JSON Pointer string | Read `result.document`, or only the pointed `result.value` |
 | `document.patch` | `patch`: RFC 6902 operation array | Validate and commit one atomic, undoable document edit |
+| `recovery.list` | None | List recovery IDs and advisory availability without opening a dialog |
+| `recovery.restore` | `id`; `discardChanges: true` when dirty | Restore an inactive draft as untitled/dirty |
+| `recovery.discard` | `id`, `confirm: true` | Delete one inactive draft under its lock |
 | `file.new` | Optional `discardChanges: true` when dirty | Start an empty document in the same window |
 | `app.quit` | Optional `discardChanges: true` when dirty | Accept intentional program quit; caller separately verifies exit |
 | `file.open` | `path`; `discardChanges: true` when dirty | Open a project or supported authoring scenario in the window |
@@ -284,3 +287,23 @@ the reply. The caller must separately observe process exit; timeout must never t
 kill or blind retry. If reply writing fails or cannot drain within 5 seconds, closing is
 cancelled, editing is restored and recovery is retained. Read-only status remains available
 while closing. No timer is installed until an intentional quit reply needs draining.
+
+## Deferred recovery management (D346)
+
+`--recovery ask|defer` defaults to ask, including with automation. Defer skips only the
+startup prompt: autosave and File → Recover remain enabled, and no draft is deleted.
+`state.recoveryPolicy` reports the choice; status performs no recovery-directory scan.
+
+`recovery.list` is unguarded and returns `result.entries`: basename `id`, `modifiedAt`,
+`bytes` and `availability` (available, current, locked or unavailable). It reads metadata,
+not project contents. Availability is advisory; restore/discard recheck files and locks.
+Listing is explicit, with no polling or background scan. Symlinks are not offered.
+
+`recovery.restore {id, discardChanges?}` is guarded and requires explicit boolean discard
+when the current document is dirty. It validates the selected draft before replacing the
+current document, adopts its lock and opens untitled/dirty with a new documentId, so Save
+must name a destination. `recovery.discard {id, confirm: true}` is guarded, requires explicit
+confirmation and deletes only the named inactive draft while holding its lock. Both reject
+this window's current draft, other live owners, missing files, paths and symlinks; IDs are
+basenames from list, never arbitrary paths. A listed draft may become busy before use.
+No command removes another editor's active draft or bulk-deletes pending recovery.

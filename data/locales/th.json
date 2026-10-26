@@ -1,4 +1,9 @@
 {
+  "RECOVERY_BUSY": "สำเนากู้คืนนี้มีหน้าต่างที่เปิดอยู่ใช้งาน หรือไม่สามารถล็อกไฟล์ได้",
+  "RECOVERY_INVALID_ID": "ใช้ชื่อสำเนาจาก recovery.list โดยไม่ระบุเส้นทางหรือลิงก์ไฟล์",
+  "RECOVERY_NOT_FOUND": "ไม่พบสำเนากู้คืนแล้ว โปรดเรียก recovery.list ใหม่",
+  "RECOVERY_UNAVAILABLE": "ไม่สามารถอ่านโฟลเดอร์สำเนากู้คืนได้",
+  "RECOVERY_DELETE_FAILED": "ไม่สามารถลบสำเนากู้คืนที่เลือกได้",
   "editorAutomationQuitFailed": "ยกเลิกการปิดโปรแกรมเนื่องจากส่งคำตอบไม่สำเร็จ เอกสารและสำเนากู้คืนยังอยู่",
   "editorAutomationEnable": "เปิดการควบคุมผ่าน AI…",
   "editorAutomationDisable": "ปิดการควบคุมผ่าน AI",

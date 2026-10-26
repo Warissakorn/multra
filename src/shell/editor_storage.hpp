@@ -2,7 +2,9 @@
 #include "../project/document.hpp"
 #include "../project/study_area_run.hpp"
 #include <QString>
+#include <stdexcept>
 namespace multra {
+struct RecoveryError : std::runtime_error {using std::runtime_error::runtime_error;};
 ProjectDocument readEditorDocument(const QString&);
 void writeEditorDocument(const QString&,const Json&);
 // Atomic replacement of any file the shell writes; throws errorCode (a locale key) on failure.

@@ -10,6 +10,8 @@
 #include <QFile>
 #include <QInputDialog>
 #include <QLabel>
+#include <QJsonArray>
+#include <QFileInfo>
 #include <QLockFile>
 #include <QMessageBox>
 #include <QAbstractButton>
@@ -56,7 +58,7 @@ void EditorWindow::buildRecovery() {
     // Recovering another draft adopts its lock, so offer the dialog either way; without a
     // lock the timer stays stopped rather than reporting the same failure every 15 seconds.
     if(locked)startAutosave();
-    QTimer::singleShot(0,this,[this]{recoverDialog(true);automationStartupComplete_=true;});
+    QTimer::singleShot(0,this,[this]{if(!deferRecovery_)recoverDialog(true);automationStartupComplete_=true;});
 }
 void EditorWindow::startAutosave() {
     if(recoveryLock_ && recoveryLock_->isLocked() && !autosaveTimer_.isActive())autosaveTimer_.start(15000);
@@ -75,15 +77,50 @@ void EditorWindow::clearRecovery() {
     autosavedRevision_.reset();
 }
 void EditorWindow::recoverFile(const QString& file) {
-    if(file==recoveryFile_)throw std::runtime_error("EDIT_RECOVERY_LOCK");
+    if(file==recoveryFile_)throw RecoveryError("RECOVERY_BUSY");
     auto lock=std::make_unique<QLockFile>(file+".lock");lock->setStaleLockTime(0);
-    if(!lock->tryLock())throw std::runtime_error("EDIT_RECOVERY_LOCK");
+    if(!lock->tryLock())throw RecoveryError("RECOVERY_BUSY");
     auto document=readEditorDocument(file);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
     clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
     automaticRevision_=conflictRevision_=UINT64_MAX;
     recoveryLock_=std::move(lock);recoveryFile_=file;autosavedRevision_.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));
+}
+QString EditorWindow::recoveryCandidate(const QString& id) const {
+    if(id.isEmpty() || id.size()>255 || id.contains('/') || id.contains('\\') || id.contains(':') ||
+       id.contains(QChar::Null) || !id.endsWith(".traffic.json"))
+        throw RecoveryError("RECOVERY_INVALID_ID");
+    const auto path=QDir(recoveryDirectory_).filePath(id);
+    const QFileInfo file(path);
+    if(file.isSymLink())throw RecoveryError("RECOVERY_INVALID_ID");
+    if(!file.exists() || !file.isFile())throw RecoveryError("RECOVERY_NOT_FOUND");
+    if(file==QFileInfo(recoveryFile_))throw RecoveryError("RECOVERY_BUSY");
+    return path;
+}
+QJsonArray EditorWindow::recoveryEntries() const {
+    const QFileInfo directory(recoveryDirectory_);
+    if(!directory.isDir() || !directory.isReadable())throw RecoveryError("RECOVERY_UNAVAILABLE");
+    QJsonArray entries;
+    for(const auto& file:QDir(recoveryDirectory_).entryInfoList({"*.traffic.json"},QDir::Files|QDir::NoSymLinks,QDir::Time)) {
+        QString availability;
+        if(file==QFileInfo(recoveryFile_))availability="current";
+        else {
+            QLockFile lock(file.absoluteFilePath()+".lock");lock.setStaleLockTime(0);
+            if(lock.tryLock())availability="available";
+            else availability=lock.error()==QLockFile::LockFailedError?"locked":"unavailable";
+        }
+        entries.append(QJsonObject{{"id",file.fileName()},{"modifiedAt",file.lastModified().toUTC().toString(Qt::ISODateWithMs)},
+            {"bytes",file.size()},{"availability",availability}});
+    }
+    return entries;
+}
+void EditorWindow::discardRecovery(const QString& id) {
+    const auto path=recoveryCandidate(id);
+    QLockFile lock(path+".lock");lock.setStaleLockTime(0);
+    if(!lock.tryLock())throw RecoveryError("RECOVERY_BUSY");
+    recoveryCandidate(id); // Recheck after acquiring ownership, including symlink rejection.
+    if(!QFile::remove(path))throw RecoveryError("RECOVERY_DELETE_FAILED");
 }
 void EditorWindow::recoverDialog(bool startup) {
     QStringList paths,labels;

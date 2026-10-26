@@ -28,17 +28,16 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## AI automation follow-up (D344–D345)
+## AI automation follow-up (D344–D346)
 
-- Next approved slice: deferred recovery management (list/restore/discard), keeping the normal
-  user recovery prompt and protecting drafts owned by active editors. No default deletion.
-- Then map/geometry helpers and run identity/export targeting as separate slices. Reuse the GUI
-  run timer; no generic job/session subsystem is booked yet. AI disconnect is not quit/cancel.
-- Windows acceptance: enable Help → AI control after editing, occupied endpoint refusal,
-  disconnect/reconnect during a run, disable/re-enable with a connected client, and focus/menu/
-  pointer busy reasons. Check guarded New, dirty/clean Quit and full response before normal
-  process exit, Unicode save paths and recovery preservation. Keep packaged Windows and
-  second-account checks below; Linux offscreen is not Windows evidence.
+- Next approved slices: map get/set/remove and tile readiness, geometry suggestions and
+  field-specific diagnostics, then run identity/export targeting. Reuse existing validation,
+  History and GUI run timer; no generic job/session subsystem is booked yet.
+- Windows acceptance: live endpoint enable/disable and reconnect, guarded New/Quit with full
+  reply before normal exit, and deferred recovery list/restore/discard after a crash. Ensure
+  live-owner drafts and unsaved current work survive refusals. Check Unicode save paths and
+  focus/menu/pointer reasons. Keep packaged Windows and second-account checks below;
+  Linux offscreen is not Windows evidence. AI disconnect remains distinct from quit/cancel.
 
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
