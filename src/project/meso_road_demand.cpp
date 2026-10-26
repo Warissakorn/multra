@@ -25,6 +25,26 @@ Ends endsOf(const ZoneLayer& layer, const std::string& zone, ZoneDirection direc
     return ends;
 }
 }
+std::vector<bool> mesoGraphOdMatrices(const ZoneLayer& layer) {
+    std::set<std::string> roadZones;
+    for (const auto& c : layer.zoneConnectors) if (!c.roadId.empty()) roadZones.insert(c.zoneId);
+    std::vector<bool> graph;
+    for (const auto& m : layer.odMatrices)
+        graph.push_back(std::any_of(m.zoneIds.begin(), m.zoneIds.end(), [&](const auto& z) { return roadZones.contains(z); }));
+    return graph;
+}
+bool usesMesoGraphOd(const ZoneLayer& layer) {
+    const auto graph = mesoGraphOdMatrices(layer);
+    return std::find(graph.begin(), graph.end(), true) != graph.end();
+}
+ProjectDocument withoutGraphOd(const ProjectDocument& d) {
+    auto result = d;
+    const auto graph = mesoGraphOdMatrices(d.zones);
+    auto& matrices = result.zones.odMatrices; matrices.clear();
+    for (std::size_t i = 0; i < graph.size(); ++i) if (!graph[i]) matrices.push_back(d.zones.odMatrices[i]);
+    std::erase_if(result.zones.zoneConnectors, [](const auto& c) { return !c.roadId.empty(); });
+    return result;
+}
 MesoDemand mesoRoadOdDemand(const ProjectDocument& d, const MesoGraph& graph, const DemandCatalog& catalog, const std::vector<Mode>& modes) {
     MesoDemand out;
     out.issues = zoneLayerIssues(d);
@@ -33,11 +53,15 @@ MesoDemand mesoRoadOdDemand(const ProjectDocument& d, const MesoGraph& graph, co
     const auto report = [&](const std::string& code, const std::string& path) {
         if (reported.insert({code, path}).second) out.issues.push_back({code, path});
     };
+    const auto rule = mesoGraphOdMatrices(d.zones);
+    std::set<std::string> zones; // named by a graph-rule matrix
+    for (std::size_t i = 0; i < rule.size(); ++i) if (rule[i]) zones.insert(d.zones.odMatrices[i].zoneIds.begin(), d.zones.odMatrices[i].zoneIds.end());
     for (std::size_t i = 0; i < d.zones.parkingLots.size(); ++i)
-        report("MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[" + std::to_string(i) + "]");
+        if (zones.contains(d.zones.parkingLots[i].zoneId)) report("MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[" + std::to_string(i) + "]");
     std::map<std::string, std::size_t> endpoint;
     for (std::size_t i = 0; i < d.zones.zoneConnectors.size(); ++i) {
         const auto& c = d.zones.zoneConnectors[i];
+        if (!zones.contains(c.zoneId)) continue; // a Link-rule connector: Micro's expansion checks it
         const auto at = mesoZoneEndpoint(graph, c);
         if (at) endpoint[c.id] = *at;
         else report(c.roadId.empty() ? "MESO_ZONE_LINK_UNAVAILABLE" : "MESO_ZONE_ROAD_UNAVAILABLE",
@@ -47,6 +71,7 @@ MesoDemand mesoRoadOdDemand(const ProjectDocument& d, const MesoGraph& graph, co
     const double duration = d.definition ? d.definition->duration : AuthoringDefinition{}.duration;
     std::map<std::string, MesoClass> classes;
     for (std::size_t i = 0; i < d.zones.odMatrices.size(); ++i) {
+        if (!rule[i]) continue;
         const auto& m = d.zones.odMatrices[i]; const auto at = "odMatrices[" + std::to_string(i) + "]";
         const auto window = odMatrixWindow(d, m);
         if (!window) { report("UNKNOWN_PERIOD", at + ".periodId"); continue; }

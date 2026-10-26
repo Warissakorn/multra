@@ -388,3 +388,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D340](RECORD.md#d340) — Directed Road zone targets at schema 57 for Macro OD; endpoint-preserving Apply/split/delete/lifecycle commands and editor, explicit Micro/Meso refusal until conversion.
 
 [D341](RECORD.md#d341) — Meso Road OD uses minimum free-flow-time graph paths with equal tie shares, modes/PCU/windows and strict pair refusals; schema 57 and legacy paths stay unchanged, rule identified in exports/editor.
+
+[D342](RECORD.md#d342) — Review fixes: Meso graph OD per matrix (a Road zone opts its matrices in, others keep the legacy expansion), 1e-12 relative tie tolerance, `runDefinition` in the Macro side file, `kLatestSchema` in tests.

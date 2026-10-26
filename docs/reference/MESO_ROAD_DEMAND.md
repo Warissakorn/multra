@@ -1,4 +1,4 @@
-# Meso OD demand on Roads (D341)
+# Meso OD demand on Roads (D341, D342)
 
 The next Road-demand slice after [ROADS_IMPLEMENTED §22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340)
 (D340), booked in NEXT. Uses the existing schema-57 Road zone targets. No schema, LTM engine,
@@ -6,19 +6,23 @@ milestone gate or model-parameter change; all results remain **not yet validated
 
 ## Scope and compatibility
 
-- A document with at least one direct Road zone connector opts into graph-based OD paths for
-  **all its OD matrices**, including Link-to-Link pairs. This covers mixed Link/Road networks
-  without inventing a second editable network or pretending a Road is a Micro Link.
-- Without a Road target, `mesoDemand` keeps its existing Micro-chain OD expansion (D295/D296),
-  including its path weights, ordering, result shape and input manifests. Legacy CSV is byte
-  identical; JSON is byte identical apart from the normal `buildCommit` change between builds.
-  Converting the last Road target with Apply template therefore restores the legacy OD path rule
-  on the next run; the result's rule marker identifies which reader was used.
+- **Per matrix (D342, superseding D341's whole-document switch):** an OD matrix takes the graph
+  rule when one of its `zoneIds` has a direct Road zone connector (`mesoGraphOdMatrices`), and
+  then for all its pairs, Link-to-Link included. This covers mixed Link/Road networks without
+  inventing a second editable network or pretending a Road is a Micro Link.
+- Every other matrix keeps the existing Micro-chain OD expansion (D295/D296), run on
+  `withoutGraphOd`: the document less the graph-rule matrices and every Road connector. Their
+  zones have no Road connector, so their shares, path weights, ordering and refusals are as
+  before. A Road connector in a zone no matrix names changes no result. Without a graph-rule
+  matrix, legacy CSV is byte identical; JSON is byte identical apart from the normal
+  `buildCommit` change. Converting a zone's last Road target with Apply template returns its
+  matrices to the legacy rule; the result's rule marker says whether any matrix used the graph.
 - Authored routes, routing decisions and routeless inputs keep their existing expansion in
   either case. Graph OD is appended to those classes, without replacing their paths.
 - Micro still requires Link targets or a study-area cut. Macro keeps D340's assignment.
-- Parking-lot dynamics remain Micro's. Graph OD with any parking lot refuses explicitly with
-  `MESO_ROAD_OD_PARKING_UNSUPPORTED`, rather than inventing departures or ignoring capacity.
+- Parking-lot dynamics remain Micro's. A lot whose zone a graph-rule matrix names refuses
+  explicitly with `MESO_ROAD_OD_PARKING_UNSUPPORTED`, rather than inventing departures or
+  ignoring capacity; other lots stay with the legacy expansion.
 
 ## Endpoints and paths
 
@@ -30,13 +34,16 @@ They read the compiled Meso graph, with no Qt, I/O, random numbers or persistent
   A Link travels along its reference line. A Node's trimming uses the compiled boundary.
 - An unavailable Road direction gives `MESO_ZONE_ROAD_UNAVAILABLE` at
   `zoneConnectors[i].roadDirection`; no compiled Link gives `MESO_ZONE_LINK_UNAVAILABLE` at
-  `.linkId`. Every target is checked, even when its zone has no positive cell.
+  `.linkId`. Every target of a zone a graph-rule matrix names is checked, even when that zone has
+  no positive cell; other connectors are the legacy expansion's.
 - Routes minimize **free-flow travel time**: sum of `length/freeSpeed` over their links plus
   `freeTime` over their turns. Only compiled turns are traversable, so banned turns stay absent.
   A named matrix mode can use only links admitting that mode; composition-only matrices use all
   modes, as Macro does. Signal green and congestion affect loading, not this fixed path choice.
 - Dijkstra computes reverse distances; iterative traversal enumerates all simple shortest paths
-  in turn-index order. Ties mean exactly equal computed double times, without a new tolerance.
+  in turn-index order. Ties are times equal within a relative `kMesoOdTieTolerance` (1e-12, D342): the
+  same link times summed in another order differ by an ulp, and an exact comparison gave one of
+  two equal detours all the demand (about 18 % of 10 m-step detour pairs at 50 km/h).
   Every tied path gets an equal share. More than **4096** paths gives `MESO_OD_PATH_LIMIT` at the
   cell and blocks Run, with no partial enumeration used.
 - This is the first fixed-path rule for Road OD; no Micro drivable chain exists for a Road.
@@ -50,7 +57,8 @@ modes from `mesoDemand`. It leaves the source document and catalog ownership unc
 
 - Each matrix uses its own run window, or its StudyPeriod less `clockStart`, via
   `odMatrixWindow`. Unknown periods and windows outside `[0, definition.duration]` refuse with
-  `UNKNOWN_PERIOD` / `OD_PERIOD_INVALID`. All matrices are checked, including zero-demand ones.
+  `UNKNOWN_PERIOD` / `OD_PERIOD_INVALID`. All graph-rule matrices are checked, including
+  zero-demand ones.
 - A cell contains vehicle trips; its hourly flow is `trips / windowHours`. It is split by both
   normalized connector shares and equally over tied paths. Normalization scales by the maximum
   share before summing, so finite large shares do not overflow the denominator.
@@ -71,7 +79,8 @@ modes from `mesoDemand`. It leaves the source document and catalog ownership unc
 
 ## Results and editor
 
-- `MesoRun::odPathRule` is `minimum-free-flow-time` for the opted-in documents, empty otherwise.
+- `MesoRun::odPathRule` is `minimum-free-flow-time` when any matrix took the graph rule, empty
+  otherwise.
   Only nonempty values add `odPathRule` to JSON and an OD-path-rule comment to CSV. The editor's
   Meso note explains the rule in English/Thai. Legacy output bytes keep their existing shape.
 - The existing Road connector dialog describes Macro and Meso support, with Apply template
@@ -90,6 +99,7 @@ modes from `mesoDemand`. It leaves the source document and catalog ownership unc
 | MR4 | Refusals | One-way backward, banned/unreachable/mode-restricted pairs, missing endpoints/references/PCU, invalid periods and parking lots; valid forcing checked first |
 | MR5 | Loading and provenance | Demand/arrival/storage conservation, class identity, unchanged source bytes/ownership and manifests; result rule marker and unchanged legacy outputs |
 | MR6 | Editor and CLI | Real Meso worker and CLI run Road OD, export JSON/CSV and original hashes; Micro still refuses; persistence and English/Thai rule text |
+| MR7 | Per-matrix rule and ties (D342) | A Road connector in an unnamed zone leaves the Link-only demand and parking unchanged; naming the zone opts the matrix in; equal detours in another order share, a metre's difference does not |
 
 Verification date, platform and results are in PROGRESS. No automated run closes an owner
 Windows/high-DPI appearance gate or a published Meso benchmark gate.

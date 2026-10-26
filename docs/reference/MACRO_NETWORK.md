@@ -425,7 +425,9 @@ staged worker; the general procedure sequence still waits on M10.2–M10.4.
   the two selectors cannot be combined. JSON includes `runDefinition {id, name}` only for a named
   run, and CSV adds one escaped identification line. Unnamed outputs keep their bytes.
 - **Side files and freshness:** the existing latest-result-per-period rule stands. A finished named
-  run replaces that period's cut source with the settings actually used; other periods stay.
+  run replaces that period's cut source with the settings actually used and, from D342, its
+  `runDefinition {id, name}` (absent for project settings; older side files still read); other
+  periods stay.
   Hashes refer to the original project bytes. This does not restore result tables on reopen or
   add multiple result tabs.
 

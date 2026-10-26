@@ -2,6 +2,16 @@
 
 Entries moved whole from the live log; dates and evidence describe their own session.
 
+## 2026-10-25 — Simplified motorcycle styling
+
+- **Asked:** simplify the motorcycle. One flowing body, straight handlebar, single tank
+  highlight, saddle and front light replace the faceted fairing and fine trim.
+  Dark tyres and the small screen retain readable direction and vehicle identity.
+- Existing physical bounds, connected picking and zoom detail thresholds remain covered.
+- **Verification:** Linux/Qt 6.8.2 offscreen: rendering build and four display suites
+  (appearance, canvas LOD, run presentation, lane-change display) pass. Close-up inspected;
+  architecture, file-size and documentation checks pass.
+
 ## 2026-10-25 — Modern sport-bike styling
 
 - **Asked:** make the motorcycle more modern. Compact angular fairing, tucked waist,

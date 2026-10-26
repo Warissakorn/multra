@@ -10,6 +10,7 @@
 #include "../src/project/meso_road_demand.hpp"
 #include "../src/project/od_demand.hpp"
 #include "../src/project/readiness.hpp"
+#include "../src/project/zone_codec.hpp"
 #include <limits>
 #include <set>
 using namespace multra;
@@ -245,9 +246,14 @@ TEST(mesoroad, mr5_study_area_keeps_od_zone_identity_and_side_file_parity) {
     putRoad(d, {"road-only", "", {{0, 1000}, {200, 1000}}, std::string("road-only-section"), 0, {}, {}});
     putZone(d, {"road-zone", "", studyfix::square({-10, 1000}, 5), {}});
     putZoneConnector(d, {"road-origin", "road-zone", "", ZoneDirection::origin, 1, "road-only", true});
+    // D342: the matrix takes the graph rule only when it names the Road's zone (no trips from it).
+    auto& matrix = d.zones.odMatrices[0]; matrix.zoneIds.push_back("road-zone");
+    for (auto& row : matrix.cells) row.push_back(0);
+    matrix.cells.push_back(std::vector<double>(matrix.zoneIds.size()));
     setStudyAreaNodes(d, {c.a}); d.zones.studyArea.flowSource = "meso";
     const auto cut = studyAreaCut(d.network, {c.a}); CHECK(cut.issues.empty() && !cut.links.empty());
     const auto run = runMeso(d, data(), nullptr, nullptr, &cut.links);
+    CHECK(run.odPathRule == kMesoRoadOdPathRule);
     CHECK(run.classes.size() == 1 && !run.loading.watched.empty() && run.loading.refused.empty());
     const auto& source = studyfix::road(d, c.aw).links[0];
     CHECK(std::find(cut.links.begin(), cut.links.end(), source) != cut.links.end());
@@ -264,4 +270,37 @@ TEST(mesoroad, mr5_study_area_keeps_od_zone_identity_and_side_file_parity) {
     const auto side = std::make_shared<const Json>(mesoSideJson(run, projectSha256(d), cut.links));
     const StudyAreaSources sources{nullptr, side, {}, inputSha256(side->dump())};
     CHECK(mesoGateFlows(d, data(), nullptr, &sources) == live && documentBytes(d) == before);
+}
+TEST(mesoroad, mr7_link_only_matrices_keep_their_expansion) { // D342
+    auto d = fixture(); junction(d, 0); applyTemplate(d, "west", {}); applyTemplate(d, "east", {});
+    CHECK(!usesRoadZoneConnectors(d.zones));
+    const auto legacy = compile(d);
+    // A Road connector in a zone no matrix names changes nothing, the parking refusal included.
+    auto zone = d.zones.zones[0]; zone.id = "spur-zone"; d.zones.zones.push_back(zone);
+    putRoad(d, {"spur", "", {{0, 2000}, {200, 2000}}, std::string("road-section"), 0, {}, {}});
+    d.zones.zoneConnectors.push_back({"spur-in", "spur-zone", "", ZoneDirection::origin, 1, "spur", true});
+    CHECK(usesRoadZoneConnectors(d.zones) && !usesMesoGraphOd(d.zones));
+    CHECK(compile(d) == legacy && runMeso(d, data()).odPathRule.empty());
+    auto lot = d; lot.zones.parkingLots = {{"lot", "site", 10, 0, "", 0, {{5, 1}}}};
+    CHECK(!issueAt(compile(lot), "MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
+    // Naming that zone opts the matrix in; its zero cells add no pair.
+    auto& m = d.zones.odMatrices[0]; m.zoneIds.push_back("spur-zone");
+    for (auto& row : m.cells) row.push_back(0);
+    m.cells.push_back(std::vector<double>(m.zoneIds.size()));
+    CHECK(mesoGraphOdMatrices(d.zones) == std::vector<bool>{true} && runMeso(d, data()).odPathRule == kMesoRoadOdPathRule);
+    lot = d; lot.zones.parkingLots = {{"lot", "site", 10, 0, "", 0, {{5, 1}}}};
+    CHECK(issueAt(compile(lot), "MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
+}
+TEST(mesoroad, mr7_equal_detours_in_another_order_share) { // D342
+    // 60 m then 70 m against 70 m then 60 m at 50 km/h: the same time, summed to different doubles.
+    const double v = 50 / 3.6;
+    MesoGraph g;
+    for (const auto& [id, length] : std::vector<std::pair<const char*, double>>{{"o", 100}, {"a", 60}, {"b", 70}, {"b2", 70}, {"a2", 60}, {"t", 200}}) {
+        auto l = link(id); l.toStation = l.length = length; l.freeSpeed = v; g.links.push_back(l);
+    }
+    turn(g, 0, 1); turn(g, 1, 2); turn(g, 2, 5); turn(g, 0, 3); turn(g, 3, 4); turn(g, 4, 5);
+    CHECK(100 / v + (60 / v + (70 / v + 200 / v)) != 100 / v + (70 / v + (60 / v + 200 / v))); // forcing
+    const auto p = mesoShortestOdPaths(g, 0, 5, "");
+    CHECK(p.size() == 2 && p[0].links == (std::vector<std::size_t>{0, 1, 2, 5}) && p[1].links == (std::vector<std::size_t>{0, 3, 4, 5}));
+    g.links[4].length = 61; CHECK(mesoShortestOdPaths(g, 0, 5, "").size() == 1); // a metre is not a tie
 }
