@@ -224,6 +224,17 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   are byte-identical, with the same k = 4/16 SHA-256 values recorded above for D351.
   Allocation now scans for each candidate without building a full `std::set`; worst-case bulk
   allocation still scans quadratically. No persistent index or invalidation policy was added.
+- **Resolve merge sides once (D353, 2026-10-26, Linux GCC 14.2, Release -O3):** a scratch
+  SIGPROF/backtrace sampler at a requested 2 ms CPU interval (1,663 before samples) put 75.9 %
+  of stacks under `mergeGroups` and 74.4 % under `resolveControlPath`. Whole benchmark sampling
+  includes setup; percentages are approximate inclusive samples, not instruction counts.
+  `mergeGroups` resolved each authored pair once per group. Reordering that pure work to once
+  per call preserves ordered incoming groups and explicit-control flags, with no retained cache.
+  Uninstrumented, no compiler running, `multra-node-detail-benchmark`: k = 4
+  41.86 → 26.94 ms, k = 16 2,193.07 → 608.73 ms (medians of three). Both full JSON files retain
+  D351's hashes above. The local 1.5 s target is met; milestone/Windows/UI gates remain unchanged.
+  An after sample (470 stacks) puts `locateChecked` at 6.4 % nearest-model-frame samples versus
+  63.4 % before. Future work needs a new profile; network-wide conflict scope is unchanged.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

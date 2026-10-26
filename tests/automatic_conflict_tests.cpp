@@ -209,3 +209,36 @@ TEST(automatic_conflict, cached_geometry_matches_uncached_and_edits_get_fresh_su
         compare();
     }
 }
+
+TEST(automatic_conflict, merge_control_marks_only_the_group_containing_both_resolved_paths) {
+    for (const auto side : {DrivingSide::right, DrivingSide::left}) {
+        auto d = bare(side).document;
+        const auto table = runtimeSections(d.network);
+        const auto before = mergeGroups(d.network, table);
+        CHECK(before.size() == 2);
+        for (const auto& group : before) CHECK(!group.explicitControl);
+        const auto merges = of(automaticConflicts(d.network), ConflictKind::merge);
+        CHECK(merges.size() == 2 && merges[0].mergeSection != merges[1].mergeSection);
+        authorAutomaticConflict(d, merges[0], kDefaults);
+        CHECK(!d.network.rightOfWay.conflictAreas.empty());
+        const auto after = mergeGroups(d.network, table);
+        CHECK(after.size() == before.size());
+        for (std::size_t i = 0; i < after.size(); ++i) {
+            CHECK(after[i].section == before[i].section);
+            CHECK(after[i].incoming == before[i].incoming);
+            CHECK(after[i].explicitControl == (after[i].section == merges[0].mergeSection));
+        }
+        const auto valid = d.network.rightOfWay.conflictAreas.front();
+        // Resolution must still refuse stale references and pairs naming the same path.
+        for (int invalid = 0; invalid < 4; ++invalid) {
+            auto area = valid;
+            if (invalid == 0) area.first.path.connectorId = "missing-connector";
+            if (invalid == 1) area.second = area.first;
+            if (invalid == 2) area.kind = ConflictKind::crossing;
+            if (invalid == 3) area.second = merges[1].first; // valid paths in different groups
+            CHECK(area != valid);
+            d.network.rightOfWay.conflictAreas = {area};
+            for (const auto& group : mergeGroups(d.network, table)) CHECK(!group.explicitControl);
+        }
+    }
+}

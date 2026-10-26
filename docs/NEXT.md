@@ -79,12 +79,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   marker and the M0 plausibility/owner gates; this item does not authorize closing those gates.
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); `joinAnticipation` ships off (D255); D95 stays off.
-- **Node detail, after D352:** the booked surface reuse and `allocateId` changes are complete.
-  Local Release time for 16 unconnected Nodes is 2.312 s (median of six); the ≤ 1.5 s target is
-  still open. Re-profile before proposing another optimization; re-run
-  `multra-node-detail-benchmark 16 output.json` and retain byte-identical documents.
-  - Open owner choice: `automaticConflicts` stays network-wide, so a Node's cost still grows with
-    the network. Keep, scope it to a Node's bounds, or go incremental; recommended keep until a city network.
+- **Node detail:** the booked local performance target is met after D353: 16 unconnected Nodes
+  0.609 s (Release, median of three), below 1.5 s, with byte-identical documents. No further
+  optimization is booked. Keep `multra-node-detail-benchmark 16 output.json` as the regression
+  measurement; re-profile before proposing more work.
+  - `automaticConflicts` remains network-wide. Scoping to Node bounds or incremental updates
+    would still need the owner's choice; this optimization changes neither scope nor output.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).
 - **Owner checks on Windows:** D318's dialogs at 1366×768 or 150 %; E1's tool glyphs and click rule
   (D306); paint, OWNER_SITTING E22. M2.8 has only owner checks left.

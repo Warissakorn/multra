@@ -1,0 +1,90 @@
+# PROGRESS archive — 2026-10-26
+
+Whole session entries moved from [PROGRESS](../PROGRESS.md).
+
+## 2026-10-26 — Node detail authors from one conflict list (D343)
+
+- **Asked:** measure-first optimization of the engine, build, docs and design (owner: "ทั้งหมด",
+  then "ทำตามแนะนำ"). The engine (0.09–0.14 ms per tick at 491–637 vehicles), docs and desktop start
+  (0.26 s) needed nothing; `types.hpp` stays the owner's deferred split (506 objects rebuilt).
+- **Found:** `generateNodeDetail` and `authorConflictGroup` authored each pair through
+  `authorAutomaticConflict`, which rebuilt `automaticConflicts` for the whole network per pair to
+  refuse a stale click: 92 % of generating a Node (callgrind). Release, one Node 65 → 12 ms; 16
+  unconnected Nodes 15.5 → 3.1 s (median of 3). `studyarea` (Debug) 50 → 16 s.
+- **Change:** both loops call `detail::authorCurrentConflict` with the entry of the list they took
+  before the first area; the canvas click keeps its check. A probe on every pair (954 node-detail,
+  19 group) found the rebuilt entry equal to the loop's; the generated documents hash identical.
+- **Verification:** Linux, GCC 13.3, desktop Debug offscreen: `check` passes (238/238).
+  No Windows run here.
+
+## 2026-10-26 — Review fixes to D339–D341 (D342)
+
+- **Asked:** review every open PR, then improve all findings and merge (owner: "ปรับปรุงทั้งหมด และ Merge").
+  PRs 193–196 merged as reviewed; this follow-up carries the fixes.
+- **Meso OD rule per matrix:** D341 switched every OD matrix to graph paths once any Road
+  connector existed. A Road connector in an unrelated zone thus turned a Link-only matrix from
+  running into `MESO_OD_NO_PATH` and changed its loading (probe: 0 → 900 trips, refused). Now a
+  matrix takes the graph rule only when one of its zones has a Road connector; the rest run the
+  legacy expansion on the document less those matrices and Road connectors. The parking refusal
+  and endpoint checks are limited to the graph-rule matrices' zones.
+- **Ties:** equal-time paths compare within a 1e-12 relative tolerance. Summing the same link
+  times in another order differed by an ulp in about 18 % of realistic detour pairs, so one of two
+  equal detours took all the demand; MR1's unit-speed integers could not show it.
+- **Macro side file:** a named run's period records `runDefinition {id, name}`, so a study-area cut
+  from the side file can name the definition behind its flows; older files still read.
+- **Tests:** `kLatestSchema` names the newest readable schema, and the 16 "next schema refuses"
+  tests use `kLatestSchema + 1` instead of a literal edited at every bump. MR7 covers the
+  per-matrix rule, parking scope and reordered ties; MA20 the side-file definition.
+- **Verification:** Linux, GCC, headless preset: full `multra-tests` pass (Qt/desktop and Windows
+  untested here; CI covers them on the PR).
+
+## 2026-10-26 — Meso OD demand on directed Roads (D341)
+
+- **Asked:** continue development; followed NEXT's Meso Road-OD seam after D340.
+- **Changed:** the existing schema-57 Road targets opt OD matrices into minimum free-flow-time
+  paths on the compiled Meso graph, with equal shares over tied paths. Connector shares, named
+  modes, PCU and clock/period windows are resolved from the original document/catalogs; authored
+  and routeless paths remain alongside graph OD. No LTM engine or project-schema change.
+- **Refusals:** unavailable directions, any unserved positive connector pair, unknown mode/type
+  references, missing PCU, invalid windows and path counts above 4096 block Run. Parking-lot
+  dynamics remain Micro's and refuse in this new reader. Micro still requires generated Links.
+- **Results:** Road runs identify `minimum-free-flow-time` in JSON/CSV and the English/Thai Meso
+  note. The existing worker and Road dialog now support both Macro and Meso. Source bytes and
+  ownership stay unchanged; paths keep collision-safe matrix/zone/connector identities.
+- **Tests:** nine model cases cover directional endpoints, time/turn costs, modes, all shortest
+  paths, 5000-link routes, the path cap, shares (including overflow-sized totals), windows,
+  mixed/authored/routeless demand, refusals, fluid count conservation, replay and provenance.
+  The existing `od:` path namespace preserves study-area zone identity and live/side-file parity.
+  Real CLI and editor tests run both levels and retain the Micro refusal.
+- **Compatibility:** legacy CLI CSV is byte-identical; JSON differs only in `buildCommit`.
+- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and final `check`
+  pass, **238/238 CTest cases passed**. All nine focused model cases, the expanded real CLI
+  regression and the Road editor harness also pass. Fontconfig uses bundled Thai fonts with
+  DejaVu Sans fallback. Windows untested for this change; no milestone gate closed.
+
+## 2026-10-26 — Road-only Macro OD demand (D340)
+
+- **Asked:** continue development; followed NEXT's Road-only demand seam booked by D310.
+- **Changed:** schema-57 zone connectors can target a Link-less Road in an explicit travel
+  direction. The Macro graph reads those endpoints, so the existing OD shares, PCU, periods,
+  assignment, named runs and exports work without generating Micro Links. The Zones tab adds a
+  Road connector dialog with English/Thai text and endpoint drawing.
+- **Lifecycle:** Apply template remaps every connector to its generated Link in one Undo step;
+  split preserves the physical end and delete cascades connectors while keeping matrix counts.
+  A two-leg merge remaps external endpoints and keeps Roads separate if a connector uses their
+  shared end. Commands retain id values across Road-vector mutation, including aliased arguments.
+- **Boundary:** Micro and Meso explicitly refuse direct Road targets, preventing a successful
+  empty or partial-demand run. Meso needs its own graph-path expansion; the Micro study-area cut
+  keeps its existing contract. Existing Link JSON and shipped project bytes remain unchanged.
+- **Tests:** RD30–RD34 cover codec/version refusals, exact directional flows, share splitting,
+  periods, mixed Link/Road paths, one-way/banned turns, lifecycle/Undo, editor worker and dialogs,
+  save/reopen, original CLI input provenance and Micro/Meso refusal.
+- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check`
+  pass, **237/237 CTest cases passed**. Six focused model cases, the new UI harness and the
+  real CLI regression also pass independently. Fontconfig uses bundled Thai fonts with DejaVu
+  Sans fallback. Windows untested for this change; no milestone gate closed.
+
+- **CI follow-up (2026-10-26):** [run 642](https://github.com/Warissakorn/multra/actions/runs/40253582320)
+  passed Linux headless/sanitizer/release/desktop and Windows core/desktop. Automated evidence
+  for D340; no owner appearance gate closed.
+
