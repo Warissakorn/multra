@@ -238,3 +238,29 @@ and vehicle playback appear in the visible window.
 The interface does not add a second model or simulation engine. Traffic results remain
 **not yet validated**; mean completed-trip delay is not HCM control delay. See
 [SIMULATION.md](SIMULATION.md) and [NETWORK_EDITOR.md](NETWORK_EDITOR.md).
+
+## Live automation lifecycle (D344)
+
+The existing editor can enable or disable local automation from Help → AI control.
+Enabling asks for an endpoint and reports it in the menu and status bar. A failed bind
+keeps the editor, document, Undo, selection and run intact. `--automation` remains supported;
+its startup bind failure still exits with code 2 for existing scripts.
+
+No server is allocated until enable is requested. Disabling closes the listener and client
+connections, releasing the endpoint. It does not cancel completed commands, stop simulation,
+change the document or disable recovery. An incomplete request is discarded; a submitted
+command may have executed even if its reply was lost. Do not retry mutations blindly.
+There is no automation polling timer, heartbeat or background JSON generation.
+
+Responses add a window-lifetime `state.instanceId`, `connectionReady` (listener active),
+`startupComplete` (startup recovery handling returned), and `busyReason` (null, modal,
+menu or pointer). Existing document/revision guards, busy boolean and protocol v1 remain.
+A fresh client uses status/capabilities and the latest response state; no persistent client
+session is required. `status` accepts `includeSelection: false` in params to omit the
+selection array and its copy; `selectionCount` remains. Other callers retain their existing
+selection response. Readiness does not imply a runnable document or absence of busy UI.
+
+Acceptance: enable after editing, refuse an occupied endpoint without losing work, disable
+with a connected client and pending bytes, re-enable the same endpoint, reconnect while a
+run advances, and reject stale document guards. No AI timer is added. Linux offscreen
+checks do not establish Windows focus, named-pipe or visible-desktop acceptance.

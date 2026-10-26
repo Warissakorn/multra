@@ -1,4 +1,11 @@
 {
+  "editorAutomationEnable": "เปิดการควบคุมผ่าน AI…",
+  "editorAutomationDisable": "ปิดการควบคุมผ่าน AI",
+  "editorAutomationEndpoint": "จุดเชื่อมต่อ AI: %1",
+  "editorAutomationEndpointPrompt": "ชื่อจุดเชื่อมต่อ (อักษรอังกฤษ ตัวเลข จุด ขีดล่าง หรือขีดกลาง 1–64 ตัว เริ่มด้วยอักษรหรือตัวเลข):",
+  "editorAutomationAlreadyEnabled": "ปิดจุดเชื่อมต่อ AI เดิมก่อนเลือกชื่อใหม่",
+  "editorAutomationFailed": "เปิดการควบคุมผ่าน AI ไม่สำเร็จ: %1",
+  "editorAutomationStopped": "การควบคุมผ่าน AI ปิดอยู่",
   "MESO_ZONE_ROAD_UNAVAILABLE": "Road ไม่มี Link ของ Meso ที่คอมไพล์ได้ในทิศทางเดินทางนี้",
   "MESO_ZONE_LINK_UNAVAILABLE": "จุดเชื่อมโซนไม่มีปลาย Link ที่คอมไพล์เป็น Meso ได้",
   "MESO_OD_NO_PATH": "จุดเชื่อม OD บางคู่ไม่มีเส้นทาง Meso ที่ใช้ได้ โปรดตรวจทิศทาง ทางเลี้ยว และโหมดการเดินทาง",

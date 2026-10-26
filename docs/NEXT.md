@@ -28,6 +28,17 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## AI automation follow-up (D344)
+
+- Continue the approved plan with `file.new` and guarded `app.quit`, using the existing
+  document/reset/save/recovery paths. Specify closing response delivery and refuse new mutations
+  while closing; never kill the user's editor on timeout. AI disconnect is not quit or cancel.
+- Then add deferred recovery management, map/geometry helpers, and run identity/export targeting
+  as separate slices. Reuse the GUI run timer; no generic job/session subsystem is booked yet.
+- Windows acceptance: enable Help → AI control after editing, occupied endpoint refusal,
+  disconnect/reconnect during a run, disable/re-enable with a connected client, and focus/menu/
+  pointer busy reasons. Keep the D335/D336 packaged Windows and second-account checks below.
+
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner

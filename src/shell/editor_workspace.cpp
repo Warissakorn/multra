@@ -26,6 +26,7 @@
 #include <initializer_list>
 namespace multra {
 void EditorWindow::buildWorkspace() {
+    buildAutomationActions();
     action("editorVehicleColors",{},[this]{
         try {
             const auto catalog=resolveDemandCatalog(history_.document().definition.value_or(AuthoringDefinition{}),data_,false);
@@ -64,7 +65,7 @@ void EditorWindow::buildWorkspace() {
     menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","editorVehicleColors","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorMapRetry","editorToggleMap","editorRemoveMap"});
     menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorBehaviourLab","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
-    menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts"});
+    menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts","","editorAutomationEnable","editorAutomationEndpoint","editorAutomationDisable"});
     // Menu alternatives keep widget controls reachable even at extreme toolbar widths.
     auto* languages=new QActionGroup(this);
     for(int index=0;index<language_->count();++index) {

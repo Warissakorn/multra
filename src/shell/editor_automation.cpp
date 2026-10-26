@@ -49,51 +49,63 @@ QJsonArray diagnosticJson(const std::vector<Diagnostic>& diagnostics) {
 // Why a guarded command must wait, or null. A modal dialog or an open menu runs a nested event
 // loop over the current objects, and a held button is a gesture whose release commits over a patch.
 const char* busyReason() {
-    if(QApplication::activeModalWidget())return "Close the open dialog before sending commands";
-    if(QApplication::activePopupWidget())return "Close the open menu before sending commands";
-    if(QApplication::mouseButtons()!=Qt::NoButton)return "Finish the pointer gesture before sending commands";
+    if(QApplication::activeModalWidget())return "modal";
+    if(QApplication::activePopupWidget())return "menu";
+    if(QApplication::mouseButtons()!=Qt::NoButton)return "pointer";
     return nullptr;
 }
 }
 
-QJsonObject EditorWindow::automationState() {
+QJsonObject EditorWindow::automationState(bool includeSelection) {
     // The window's session plus History's generation: New/Open/Recover each start another document.
     if(automationSession_.isEmpty())automationSession_=QUuid::createUuid().toString(QUuid::WithoutBraces);
     QJsonArray selection;
-    for(const auto& id:canvas_->selection())selection.append(QString::fromStdString(id));
-    return {{"documentId",automationSession_+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
+    if(includeSelection)for(const auto& id:canvas_->selection())selection.append(QString::fromStdString(id));
+    QJsonObject state{{"instanceId",automationSession_},{"connectionReady",automationServer_!=nullptr},
+        {"startupComplete",automationStartupComplete_},{"busyReason",busyReason()?QJsonValue(busyReason()):QJsonValue(QJsonValue::Null)},
+        {"selectionCount",static_cast<qint64>(canvas_->selection().size())},{"documentId",automationSession_+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
         {"dirty",history_.dirty()},{"file",file_},{"canUndo",history_.canUndo()},{"canRedo",history_.canRedo()},
         {"selection",selection},{"busy",busyReason()!=nullptr},
         {"run",QJsonObject{{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},
             {"finished",runFinished()},{"tick",static_cast<qint64>(runState_.tick)},
             {"time",runState_.time},{"seed",runSeed_->text()}}}};
+    if(!includeSelection)state.remove("selection");
+    return state;
 }
 
 QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
     QJsonObject response{{"id",request.value("id")}};
+    const auto selectionOption=request.value("params").toObject().value("includeSelection");
+    const bool includeSelection=request.value("command")!=QJsonValue("status") || selectionOption!=QJsonValue(false);
     try {
         const auto command=requiredString(request,"command");
         if(request.contains("params") && !request.value("params").isObject())
             throw CommandError("INVALID_PARAMS","params must be an object");
         const auto params=request.value("params").toObject();
+        if(request.value("command")==QJsonValue("status") && params.contains("includeSelection") && !selectionOption.isBool())
+            throw CommandError("INVALID_PARAMS","includeSelection must be a boolean");
         static const QStringList commands{"capabilities","status","document.get","document.patch",
             "file.open","file.save","history.undo","history.redo","simulation.start","simulation.pause",
             "simulation.step","simulation.reset","results.get","results.export","view.fit","view.select","view.screenshot"};
         if(!commands.contains(command))throw CommandError("UNKNOWN_COMMAND","Unknown automation command");
         const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get";
-        const auto state=automationState();
         if(!read) {
+            const auto state=automationState(false);
             if(request.value("documentId")!=state.value("documentId") || request.value("expectedRevision")!=state.value("revision"))
                 throw CommandError("STALE_DOCUMENT","Read status and supply the current documentId and expectedRevision strings");
-            if(const auto* reason=busyReason())throw CommandError("BUSY",reason);
+            if(const auto* reason=busyReason())throw CommandError("BUSY",
+                QString(reason)=="modal"?"Close the open dialog before sending commands":
+                QString(reason)=="menu"?"Close the open menu before sending commands":
+                "Finish the pointer gesture before sending commands",{{"busyReason",reason}});
         }
         QJsonObject result;
         if(command=="capabilities") {
-            result={{"protocolVersion",1},{"commands",QJsonArray::fromStringList(commands)},
+            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus"}},{"commands",QJsonArray::fromStringList(commands)},
                 {"maxRequestBytes",automationRequestLimit},{"maxStepCount",maxStepCount},{"patchFormat","RFC6902"},
                 {"guard",QJsonArray{"documentId","expectedRevision"}},
                 {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get"}},
                 {"parameters",QJsonObject{
+                    {"status",QJsonObject{{"includeSelection","optional boolean; default true; false omits selection"}}},
                     {"document.get",QJsonObject{{"pointer","optional JSON Pointer string; returns result.value"}}},
                     {"document.patch",QJsonObject{{"patch","required RFC6902 operation array"}}},
                     {"file.open",QJsonObject{{"path","required string"},{"discardChanges","optional boolean; required true when dirty"}}},
@@ -214,7 +226,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         response.insert("ok",false);
         response.insert("error",QJsonObject{{"code","COMMAND_FAILED"},{"message",QString::fromUtf8(e.what())}});
     }
-    response.insert("state",automationState());
+    response.insert("state",automationState(includeSelection));
     return response;
 }
 }

@@ -48,9 +48,9 @@ int main(int argc, char** argv) {
             qputenv("LIBTHAI_DICTDIR",multra::displayPath(thai).toUtf8());
         if (parser.value("language") != "en" && parser.value("language") != "th") throw std::invalid_argument("Unknown language");
         multra::EditorWindow editor(data, parser.value("language"));
-        multra::AutomationServer automation([&editor](const auto& request){return editor.automationRequest(request);});
-        if(parser.isSet("automation") && !automation.listen(parser.value("automation"))) {
-            QTextStream(stderr)<<"Cannot start automation: "<<automation.errorString()<<'\n';
+        QString automationError;
+        if(parser.isSet("automation") && !editor.enableAutomation(parser.value("automation"), &automationError)) {
+            QTextStream(stderr)<<"Cannot start automation: "<<automationError<<'\n';
             return 2;
         }
         editor.showMaximized();

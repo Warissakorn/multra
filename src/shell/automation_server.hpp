@@ -2,6 +2,8 @@
 #include <QJsonObject>
 #include <QLocalServer>
 #include <QObject>
+#include <QSet>
+class QLocalSocket;
 #include <functional>
 #include <memory>
 
@@ -17,7 +19,9 @@ public:
     ~AutomationServer() override;
     bool listen(const QString& endpoint);
     QString errorString() const;
+    void stop();
 private:
+    QSet<QLocalSocket*> clients_;
     Handler handler_;
     std::unique_ptr<QLockFile> endpointLock_;
     QLocalServer server_;

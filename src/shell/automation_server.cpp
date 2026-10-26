@@ -25,10 +25,13 @@ AutomationServer::AutomationServer(Handler handler, QObject* parent)
     server_.setSocketOptions(QLocalServer::UserAccessOption);
     connect(&server_, &QLocalServer::newConnection, this, [this] {
         while (auto* socket = server_.nextPendingConnection()) {
+            clients_.insert(socket);
+            connect(socket, &QLocalSocket::disconnected, this, [this, socket]{clients_.remove(socket);});
             socket->setReadBufferSize(maxRequestBytes + 1);
             auto pending = std::make_shared<QByteArray>();
             connect(socket, &QLocalSocket::disconnected, socket, &QObject::deleteLater);
             const auto readRequests = [this, socket, pending] {
+                if(!server_.isListening())return;
                 while (socket->bytesAvailable() > 0) {
                     pending->append(socket->read(64 * 1024));
                     qsizetype end{};
@@ -70,7 +73,13 @@ AutomationServer::AutomationServer(Handler handler, QObject* parent)
         }
     });
 }
-AutomationServer::~AutomationServer() = default;
+AutomationServer::~AutomationServer() { stop(); }
+void AutomationServer::stop() {
+    server_.close();
+    const auto clients=clients_;clients_.clear();
+    for(auto* socket:clients)socket->abort();
+    endpointLock_.reset();
+}
 bool AutomationServer::listen(const QString& endpoint) {
     if (server_.isListening()) {
         error_ = "Automation server is already listening";

@@ -49,6 +49,7 @@ class QToolBar;
 namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
+class AutomationServer;
 struct MacroPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
@@ -70,12 +71,20 @@ public:
     void saveFile(const QString& path); // Atomic replacement; failures preserve dirty state.
     // JSON command boundary shared by the local automation server and UI integration tests.
     QJsonObject automationRequest(const QJsonObject& request);
+    bool enableAutomation(const QString& endpoint, QString* error = nullptr);
+    void disableAutomation();
+    QString automationEndpoint() const;
 protected:
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 private:
     QString automationSession_; // with History::generation(), the automation documentId
-    QJsonObject automationState();
+    QJsonObject automationState(bool includeSelection = true);
+    std::unique_ptr<AutomationServer> automationServer_;
+    QString automationEndpoint_;
+    bool automationStartupComplete_{};
+    void buildAutomationActions();
+    void refreshAutomationActions();
     History history_;
     std::filesystem::path data_;
     DisplayCatalog displayCatalog_;

@@ -1,4 +1,11 @@
 {
+  "editorAutomationEnable": "Enable AI control…",
+  "editorAutomationDisable": "Disable AI control",
+  "editorAutomationEndpoint": "AI endpoint: %1",
+  "editorAutomationEndpointPrompt": "Endpoint name (1–64 ASCII letters, digits, dots, underscores or hyphens; start with a letter or digit):",
+  "editorAutomationAlreadyEnabled": "Disable the current AI endpoint before choosing another.",
+  "editorAutomationFailed": "Cannot enable AI control: %1",
+  "editorAutomationStopped": "AI control is disabled",
   "MESO_ZONE_ROAD_UNAVAILABLE": "The Road has no compiled Meso link in this travel direction.",
   "MESO_ZONE_LINK_UNAVAILABLE": "The zone connector has no compiled Meso Link endpoint.",
   "MESO_OD_NO_PATH": "An OD connector pair has no permitted Meso path. Check its travel direction, turns and mode.",

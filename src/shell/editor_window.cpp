@@ -1,4 +1,5 @@
 #include "editor_interaction.hpp"
+#include "automation_server.hpp"
 #include "editor_window.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
@@ -187,6 +188,7 @@ QAction* EditorWindow::action(const std::string& key,const QKeySequence& shortcu
 QString EditorWindow::text(const std::string& key) const { return locales_.at(language_->currentData().toString()).value(QString::fromStdString(key)).toString(); }
 void EditorWindow::translate() {
     for(const auto& [key,a]:actions_) a->setText(text(key));
+    refreshAutomationActions();
     for(const auto& [key,w]:texts_) {
         if(auto* label=qobject_cast<QLabel*>(w)) {
             auto title=text(key);const bool english=language_->currentData().toString()=="en";

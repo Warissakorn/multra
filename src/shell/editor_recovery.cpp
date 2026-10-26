@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "automation_server.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
 #include "editor_storage.hpp"
@@ -17,6 +18,7 @@
 #include <QUuid>
 namespace multra {
 EditorWindow::~EditorWindow() {
+    disableAutomation();
     // Every worker can post to this window; cancel and join before QObject/member teardown.
     for (auto& [generation, worker] : batchWorkers_) *worker.cancel = true;
     for (auto& [generation, worker] : batchWorkers_) if (worker.thread.joinable()) worker.thread.join();
@@ -54,7 +56,7 @@ void EditorWindow::buildRecovery() {
     // Recovering another draft adopts its lock, so offer the dialog either way; without a
     // lock the timer stays stopped rather than reporting the same failure every 15 seconds.
     if(locked)startAutosave();
-    QTimer::singleShot(0,this,[this]{recoverDialog(true);});
+    QTimer::singleShot(0,this,[this]{recoverDialog(true);automationStartupComplete_=true;});
 }
 void EditorWindow::startAutosave() {
     if(recoveryLock_ && recoveryLock_->isLocked() && !autosaveTimer_.isActive())autosaveTimer_.start(15000);
