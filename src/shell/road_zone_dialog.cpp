@@ -30,7 +30,7 @@ std::optional<ZoneConnector> editRoadZoneConnector(QWidget* parent, const ZoneCo
     auto* share = new QLineEdit(QString::number(value.share, 'g', 17), &dialog); share->setObjectName("editorZoneRoadShare");
     form->addRow(text("editorRoadTable"), target); form->addRow(text("editorZoneDirection"), direction);
     form->addRow(text("editorZoneRoadTravel"), travel); form->addRow(text("editorZoneConnectorShare"), share);
-    auto* hint = new QLabel(text("editorZoneRoadMacroOnly"), &dialog); hint->setWordWrap(true); form->addRow(hint);
+    auto* hint = new QLabel(text("editorZoneRoadLevels"), &dialog); hint->setWordWrap(true); form->addRow(hint);
     auto* error = new QLabel(&dialog); error->setObjectName("editorZoneRoadError"); error->setWordWrap(true); form->addRow(error);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));

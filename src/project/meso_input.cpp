@@ -3,10 +3,12 @@
 #include "link_type_codec.hpp"
 #include "road_codec.hpp"
 #include "meso_settings.hpp"
+#include "meso_road_demand.hpp"
 #include "mode_codec.hpp"
 #include "od_demand.hpp"
 #include "demand_paths.hpp"
 #include "run.hpp"
+#include "zone_codec.hpp"
 #include "../model/demand/meso_paths.hpp"
 #include <algorithm>
 #include <map>
@@ -39,13 +41,13 @@ std::string origin(const std::string& id, const std::vector<std::string>& author
 }
 MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& data, const MesoGraph& graph, InputManifest* manifest) {
     MesoDemand out;
-    out.issues = roadZoneConnectorIssues(d.zones);
-    if (!out.issues.empty()) return out;
+    const bool graphOd = usesRoadZoneConnectors(d.zones);
     const auto def = d.definition.value_or(AuthoringDefinition{});
     std::vector<std::string> inputIds, routeIds;
     for (const auto& i : def.inputs) inputIds.push_back(i.id);
     for (const auto& r : def.routes) routeIds.push_back(r.id);
-    const auto expanded = withRoutingDecisions(d.zones.empty() ? def : withOdDemand(d, matrixModes(d, data, manifest)));
+    const auto modes = matrixModes(d, data, manifest);
+    const auto expanded = withRoutingDecisions(graphOd || d.zones.empty() ? def : withOdDemand(d, modes));
     const auto catalog = resolveDemandCatalog(expanded, data, true, manifest);
     std::set<std::string> reported;
     const auto report = [&](const std::string& code, const std::string& at) { if (reported.insert(code + at).second) out.issues.push_back({code, at}); };
@@ -139,6 +141,18 @@ MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& dat
             cls.paths.push_back(std::move(path));
         }
         out.classes.push_back(std::move(cls));
+    }
+    if (graphOd) {
+        auto od = mesoRoadOdDemand(d, graph, catalog, modes);
+        out.issues.insert(out.issues.end(), od.issues.begin(), od.issues.end());
+        for (auto& cls : od.classes) {
+            const auto at = std::lower_bound(out.classes.begin(), out.classes.end(), cls.id, [](const auto& a, const auto& id) { return a.id < id; });
+            if (at == out.classes.end() || at->id != cls.id) out.classes.insert(at, std::move(cls));
+            else for (auto& p : cls.paths) at->paths.push_back(std::move(p));
+        }
+        for (auto& cls : out.classes) std::stable_sort(cls.paths.begin(), cls.paths.end(), [](const auto& a, const auto& b) {
+            return std::tie(a.source, a.links, a.turns) < std::tie(b.source, b.links, b.turns);
+        });
     }
     return out;
 }

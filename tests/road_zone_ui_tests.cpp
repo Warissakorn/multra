@@ -2,6 +2,8 @@
 #include "road_zone_fixture.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/project/macro_run.hpp"
+#include "../src/project/meso_run.hpp"
+#include "../src/project/meso_output.hpp"
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
@@ -72,6 +74,22 @@ int main(int argc, char** argv) {
         require(!w.macroRunning() && w.macroResult() && w.macroResult()->assignment.converged, "Road Macro worker failed");
         require(w.history().revision() == start && doc().network.links.empty(), "Macro worker changed authoring data");
         require(widget<QTableWidget>(w, "editorMacroTable")->rowCount() > 0, "Road result table empty");
+        // D341: the same saved Road targets now run Meso, with an explicit path-rule note.
+        trigger(w, "editorRunMeso");
+        for (int i = 0; w.mesoRunning() && i < 6000; ++i) QTest::qWait(10);
+        const auto* meso = w.mesoResult();
+        require(!w.mesoRunning() && meso && !meso->loading.cancelled && !meso->classes.empty(), "Road Meso worker failed");
+        require(meso->odPathRule == "minimum-free-flow-time" && mesoJson(*meso)["classes"][0]["demanded"].get<double>() > 0,
+                "Road Meso silently dropped OD demand");
+        require(widget<QLabel>(w, "editorMesoNote")->text().contains("free-flow"), "Road Meso path-rule note missing");
+        require(widget<QTableWidget>(w, "editorMesoTable")->rowCount() == 4 && w.history().revision() == start,
+                "Road Meso result missing or authoring data changed");
+        const auto mesoFile = temp.filePath("meso.csv"); w.exportResults(mesoFile);
+        { QFile csv(mesoFile); require(csv.open(QIODevice::ReadOnly) && csv.readAll().contains("# OD path rule: minimum-free-flow-time"),
+                                     "Editor Meso export lost its path rule"); }
+        widget<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
+        require(widget<QLabel>(w, "editorMesoNote")->text().contains(QString::fromUtf8("ถนนว่าง")), "Thai Meso path rule missing");
+        widget<QComboBox>(w, "editorLanguage")->setCurrentIndex(0); QApplication::processEvents();
         select(*zones, "site");
         require(widget<QAction>(w, "editorAddRoadZoneConnector")->isEnabled(), "Road connector action disabled");
         const auto initial = documentJson(doc()).dump();

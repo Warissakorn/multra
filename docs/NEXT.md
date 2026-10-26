@@ -59,12 +59,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), a procedure sequence,
   remains booked until M10.2–M10.4 provide its stages (D277).
-- **Road demand — next implementation slice:** Meso OD paths for schema-57 Road zone targets.
-  Specify the path rule over its compiled graph before code; preserve connector shares, period
-  windows and PCU, with explicit path/mode refusals. The present Meso compiler reuses Micro's Link
-  chains and refuses Road targets; Micro still needs *Apply template* or a study-area cut. See
-  [ROADS_IMPLEMENTED §22](reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), RD34.
-- **M3.3.3b**, the W99 contract (ROADMAP M3.3, D177).
+- **M3.3.3b — the W99 contract before code** (ROADMAP M3.3, D177): read the following-model
+  requirements in [DRIVING_BEHAVIOUR](reference/DRIVING_BEHAVIOUR.md), then write a sourced state,
+  equation and parameter contract with hand-checkable acceptance cases. Keep the unvalidated
+  marker and the M0 plausibility/owner gates; this item does not authorize closing those gates.
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); `joinAnticipation` ships off (D255); D95 stays off.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).

@@ -193,6 +193,12 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     window) belongs to `--meso PERIOD` in M11.4.
 - **M11.5** later replaces the fixed paths with M9's loop.
 
+**Road OD (D341):** schema-57 direct Road targets opt all matrices into compiled-graph minimum
+free-flow-time paths, sharing demand equally over ties. Authored/routeless inputs keep their
+existing expansion; documents without Road targets keep the legacy OD path rule. See
+[MESO_ROAD_DEMAND](MESO_ROAD_DEMAND.md) for endpoints, modes, windows/PCU, strict pair refusals,
+result identification and rows MR1–MR6. The loading engine and its benchmark gate are unchanged.
+
 ## 7. Outputs (as amended by the owner on 2026-10-22, D300)
 
 - **The run:** the whole Micro run, `[0, definition.duration]`, with the demand Micro loads (§6). The

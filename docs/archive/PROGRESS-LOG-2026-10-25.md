@@ -2,6 +2,17 @@
 
 Entries moved whole from the live log; dates and evidence describe their own session.
 
+## 2026-10-25 — Modern sport-bike styling
+
+- **Asked:** make the motorcycle more modern. Compact angular fairing, tucked waist,
+  swept grips, tapered screen, faceted tank and a two-part stepped saddle replace the
+  rounded layout. Two separated swept LED-style strips identify the front.
+- Body unions preserve solid wheel/fairing joints and the existing physical bounds.
+  Checks cover both LED strips and centreline picking at the wheel overlaps.
+- **Verification:** Linux/Qt 6.8.2 offscreen: rendering build and four display suites
+  (appearance, canvas LOD, run presentation, lane-change display) pass. Production-painter
+  close-up inspected; architecture, file-size and documentation checks pass.
+
 ## 2026-10-25 — Refined motorcycle appearance
 
 - **Asked:** improve the motorcycle's looks. Rounded cowl, tank shoulders and tail replace

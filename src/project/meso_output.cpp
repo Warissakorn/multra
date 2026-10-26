@@ -60,6 +60,7 @@ Json mesoJson(const MesoRun& r) {
            {"settings", {{"step", r.settings.step}, {"slice", r.settings.slice}}}, {"duration", r.duration},
            {"cancelled", L.cancelled}, {"advisories", Json::array()}, {"classes", Json::array()}, {"totals", Json::object()},
            {"links", Json::array()}, {"turns", Json::array()}, {"inputManifest", r.inputManifest}};
+    if (!r.odPathRule.empty()) j["odPathRule"] = r.odPathRule;
     for (const auto& i : r.advisories) j["advisories"].push_back({{"code", i.code}, {"path", i.path}});
     for (std::size_t c = 0; c < r.classes.size(); ++c) {
         double demand = 0, entered = 0, arrived = 0;
@@ -112,6 +113,7 @@ Json mesoJson(const MesoRun& r) {
 }
 std::string mesoCsv(const MesoRun& r) {
     std::string out = std::string("# MULTRA - not yet validated. ") + kMeasure + ".\n";
+    if (!r.odPathRule.empty()) out += "# OD path rule: " + r.odPathRule + "; equal-time shortest paths share demand equally.\n";
     out += "# Step: " + csvNumber(r.settings.step) + " s; slice: " + csvNumber(r.settings.slice) + " s; duration: " + csvNumber(r.duration) + " s\n";
     out += "source,fromStation,toStation,start,end,inflow,outflow,density,travelTime,queue,spillBack\n";
     for (std::size_t l = 0; l < r.graph.links.size(); ++l) {

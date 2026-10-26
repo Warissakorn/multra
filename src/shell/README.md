@@ -5,7 +5,7 @@ commands through the same document, History and Run view. `multra-control` is it
 client. See [desktop automation](../../docs/reference/DESKTOP_AUTOMATION.md) for the protocol.
 
 `editor_zones.cpp` (M8.6a, D161) is the Zones tab: zones drawn with the Zone tool (Z) in `../editor/canvas_zones.cpp`, their connectors added to the Link selected on the canvas. `editor_od.cpp` and `od_lot_dialogs.cpp` (M8.6b, D162) are the OD matrices tab, its grid dialog and the lot dialog; Results → Parking lots is in `editor_results.cpp`.
-`road_zone_dialog` adds/edits direct Road targets for Macro with explicit travel direction and shares, through the same History command (D340). Generated Roads are excluded from its target list.
+`road_zone_dialog` adds/edits direct Road targets for Macro/Meso with explicit travel direction and shares, through the same History command (D340/D341). Generated Roads are excluded from its target list. The Meso result note identifies its minimum free-flow-time OD rule; Micro still requires generated Links.
 
 `editor_lab.cpp` opens Simulation → Behaviour Lab (D165): `behaviour_lab_window.*` (a second, non-modal window drawing the lab run on its own `EditorCanvas`, which follows one vehicle), `behaviour_lab_panel.*` and `behaviour_lab_telemetry.*`; Apply writes the tuned vehicle back through `execute`.
 

@@ -261,7 +261,7 @@ with the other seam checks.
   - a `connector` arc per turn (`source`: the Node id), uncapacitated and with time 0;
   - `MacroCompile` gains `advisories`, which `runMacro` reports ahead of demand's.
 - **Demand at this slice:** zone connectors attached to Links only. §22 adds direct Road targets
-  for Macro; Meso expansion is the next demand slice.
+  for Macro; Meso follows in [MESO_ROAD_DEMAND](MESO_ROAD_DEMAND.md) (D341).
 - **Rows:** RD4, RD16, RD19 and RD20 (Macro and Meso) are in `tests/road_coarse_tests.cpp`
   (`roadcoarse`). The rank field is checked in `macro-ui`.
 
@@ -372,8 +372,8 @@ S3 is complete with this slice.
 ## 22. Road-only Macro demand (D340)
 
 The booked seam in D310: a Macro study can attach its existing OD layer directly to Roads
-without generating Micro Links. The first slice covers Macro; Meso path expansion is a separate
-slice, since its present OD compiler uses Micro's drivable Link chains. No model parameter or
+without generating Micro Links. This first slice covers Macro; Meso follows in
+[MESO_ROAD_DEMAND](MESO_ROAD_DEMAND.md) (D341). No model parameter or
 milestone gate changes.
 
 ### Interface and storage
@@ -400,9 +400,10 @@ milestone gate changes.
   `MACRO_ZONE_ROAD_UNAVAILABLE` at `zoneConnectors[i].roadDirection`. Existing graph/template
   refusals still apply. Demand shares, modes, PCU, periods, assignment, named runs and exports
   use the existing Macro pipeline unchanged. Mixed Link/Road connector pairs can run.
-- Micro and Meso refuse Road targets with `ZONE_CONNECTOR_ROAD_REQUIRES_LINKS` at the connector;
+- At D340, Micro and Meso refused Road targets with `ZONE_CONNECTOR_ROAD_REQUIRES_LINKS` at the connector;
   this prevents a successful empty run or a partial OD expansion. A Micro study-area cut still
   keeps only its Links and takes outside demand from the selected cut source (S5).
+  D341 adds Meso's graph OD reader; Micro retains this refusal until conversion.
 - The Zones tab keeps its selected-Link actions and adds *Road connector…*. Its dialog selects
   a Link-less Road, zone direction, travel direction and share; Cancel changes nothing. Editing a Road connector can change its direction
   and share. The table names the Road and direction, and the canvas line follows the chosen end.
@@ -424,7 +425,7 @@ milestone gate changes.
 | RD31 | Assignment | A Road-only corridor with OD has exact forward/backward flows and PCU, stable replay, shared connector weights and period isolation; one-way backward and banned turns refuse; a mixed Link/Road path runs |
 | RD32 | Lifecycle | Apply remaps all four origin/destination and travel-direction combinations in one Undo/Redo; one-way refusal is atomic; split retains ends; delete preserves matrix counts; lifecycle merges only when it preserves connector endpoints |
 | RD33 | Editor | Add/Cancel, direction/share edit, Undo/Redo, endpoint drawing, generated-Road refusal and save/reopen, in English/Thai; existing Link actions/dialogs remain usable |
-| RD34 | CLI and refusals | Real CLI Macro JSON/CSV and named execution keep original source hashes and input bytes; Micro/Meso readiness and execution explicitly refuse Road targets |
+| RD34 | CLI and refusals | Real CLI Macro JSON/CSV and named execution keep original source hashes and input bytes; Micro readiness/execution refuse Road targets; D341 adds Meso success/refusal coverage (MR6) |
 
 Verification evidence and platform are recorded in PROGRESS; local Linux checks cannot close an
 owner Windows/high-DPI appearance gate.
