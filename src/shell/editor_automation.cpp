@@ -62,10 +62,11 @@ QJsonObject EditorWindow::automationState(bool includeSelection) {
     QJsonArray selection;
     if(includeSelection)for(const auto& id:canvas_->selection())selection.append(QString::fromStdString(id));
     QJsonObject state{{"instanceId",automationSession_},{"connectionReady",automationServer_!=nullptr},
-        {"startupComplete",automationStartupComplete_},{"busyReason",busyReason()?QJsonValue(busyReason()):QJsonValue(QJsonValue::Null)},
+        {"startupComplete",automationStartupComplete_},{"closing",automationClosing_},
+        {"busyReason",automationClosing_?QJsonValue("closing"):(busyReason()?QJsonValue(busyReason()):QJsonValue(QJsonValue::Null))},
         {"selectionCount",static_cast<qint64>(canvas_->selection().size())},{"documentId",automationSession_+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
         {"dirty",history_.dirty()},{"file",file_},{"canUndo",history_.canUndo()},{"canRedo",history_.canRedo()},
-        {"selection",selection},{"busy",busyReason()!=nullptr},
+        {"selection",selection},{"busy",automationClosing_ || busyReason()!=nullptr},
         {"run",QJsonObject{{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},
             {"finished",runFinished()},{"tick",static_cast<qint64>(runState_.tick)},
             {"time",runState_.time},{"seed",runSeed_->text()}}}};
@@ -85,11 +86,12 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         if(request.value("command")==QJsonValue("status") && params.contains("includeSelection") && !selectionOption.isBool())
             throw CommandError("INVALID_PARAMS","includeSelection must be a boolean");
         static const QStringList commands{"capabilities","status","document.get","document.patch",
-            "file.open","file.save","history.undo","history.redo","simulation.start","simulation.pause",
+            "file.open","file.save","file.new","app.quit","history.undo","history.redo","simulation.start","simulation.pause",
             "simulation.step","simulation.reset","results.get","results.export","view.fit","view.select","view.screenshot"};
         if(!commands.contains(command))throw CommandError("UNKNOWN_COMMAND","Unknown automation command");
         const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get";
         if(!read) {
+            if(automationClosing_)throw CommandError("CLOSING","The editor is closing; inspect status instead of sending mutations");
             const auto state=automationState(false);
             if(request.value("documentId")!=state.value("documentId") || request.value("expectedRevision")!=state.value("revision"))
                 throw CommandError("STALE_DOCUMENT","Read status and supply the current documentId and expectedRevision strings");
@@ -100,7 +102,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         }
         QJsonObject result;
         if(command=="capabilities") {
-            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus"}},{"commands",QJsonArray::fromStringList(commands)},
+            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit"}},{"commands",QJsonArray::fromStringList(commands)},
                 {"maxRequestBytes",automationRequestLimit},{"maxStepCount",maxStepCount},{"patchFormat","RFC6902"},
                 {"guard",QJsonArray{"documentId","expectedRevision"}},
                 {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get"}},
@@ -109,6 +111,8 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                     {"document.get",QJsonObject{{"pointer","optional JSON Pointer string; returns result.value"}}},
                     {"document.patch",QJsonObject{{"patch","required RFC6902 operation array"}}},
                     {"file.open",QJsonObject{{"path","required string"},{"discardChanges","optional boolean; required true when dirty"}}},
+                    {"file.new",QJsonObject{{"discardChanges","optional boolean; required true when dirty"}}},
+                    {"app.quit",QJsonObject{{"discardChanges","optional boolean; required true when dirty; reply accepts quit, caller must verify exit"}}},
                     {"file.save",QJsonObject{{"path","required string"}}},
                     {"simulation.step",QJsonObject{{"steps",QString("optional integer 1..%1; default 1").arg(maxStepCount)}}},
                     {"simulation.reset",QJsonObject{{"seed","optional unsigned 32-bit decimal string"}}},
@@ -141,6 +145,13 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             try {changed=commitChange("editorAutomationChange",[&](auto& d){d=std::move(candidate);});}
             catch(...){canvas_->setDocument(&history_.document());throw;} // as execute(); the reply keeps the issues
             result={{"changed",changed}};
+        } else if(command=="file.new" || command=="app.quit") {
+            if(params.contains("discardChanges") && !params.value("discardChanges").isBool())
+                throw CommandError("INVALID_PARAMS","discardChanges must be a boolean");
+            if(history_.dirty() && params.value("discardChanges")!=QJsonValue(true))
+                throw CommandError("UNSAVED_CHANGES","Save the document or explicitly set discardChanges to true");
+            if(command=="file.new")newFile();
+            else {beginAutomationQuit();result={{"quitAccepted",true}};}
         } else if(command=="file.open") {
             const auto path=requiredString(params,"path");
             if(history_.dirty() && params.value("discardChanges")!=QJsonValue(true))

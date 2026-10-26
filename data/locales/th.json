@@ -1,4 +1,5 @@
 {
+  "editorAutomationQuitFailed": "ยกเลิกการปิดโปรแกรมเนื่องจากส่งคำตอบไม่สำเร็จ เอกสารและสำเนากู้คืนยังอยู่",
   "editorAutomationEnable": "เปิดการควบคุมผ่าน AI…",
   "editorAutomationDisable": "ปิดการควบคุมผ่าน AI",
   "editorAutomationEndpoint": "จุดเชื่อมต่อ AI: %1",

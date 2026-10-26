@@ -6,8 +6,10 @@
 #include <QJsonParseError>
 #include <QLocalSocket>
 #include <QLockFile>
+#include <QTimer>
 #include <exception>
 #include <memory>
+#include <utility>
 
 namespace multra {
 namespace {
@@ -16,8 +18,26 @@ QJsonObject failure(const QString& code, const QString& message) {
     return {{"id", QJsonValue::Null}, {"ok", false},
             {"error", QJsonObject{{"code", code}, {"message", message}}}};
 }
-void reply(QLocalSocket* socket, const QJsonObject& response) {
-    socket->write(QJsonDocument(response).toJson(QJsonDocument::Compact) + '\n');
+void reply(QLocalSocket* socket, const QJsonObject& response, std::function<void(bool)> completion = {}) {
+    const auto bytes=QJsonDocument(response).toJson(QJsonDocument::Compact)+'\n';
+    if(!completion) {socket->write(bytes);return;}
+    // Only an armed reply allocates a monitor/timer. Never block the GUI thread waiting for I/O.
+    auto* monitor=new QObject(socket);
+    auto* deadline=new QTimer(monitor);deadline->setSingleShot(true);
+    auto done=std::make_shared<bool>(false);
+    const auto finish=[monitor,deadline,done,completion=std::move(completion)](bool delivered) {
+        if(*done)return;
+        *done=true;deadline->stop();monitor->deleteLater();completion(delivered);
+    };
+    QObject::connect(socket,&QLocalSocket::bytesWritten,monitor,[socket,finish](qint64){
+        if(socket->bytesToWrite()==0)finish(true);
+    });
+    QObject::connect(socket,&QLocalSocket::disconnected,monitor,[finish]{finish(false);});
+    QObject::connect(socket,&QLocalSocket::errorOccurred,monitor,[finish](QLocalSocket::LocalSocketError){finish(false);});
+    QObject::connect(deadline,&QTimer::timeout,monitor,[finish]{finish(false);});
+    deadline->start(5000);
+    if(socket->write(bytes)!=bytes.size())finish(false);
+    else if(socket->bytesToWrite()==0)finish(true);
 }
 }
 AutomationServer::AutomationServer(Handler handler, QObject* parent)
@@ -59,7 +79,7 @@ AutomationServer::AutomationServer(Handler handler, QObject* parent)
                             response = failure("COMMAND_FAILED", "Command failed");
                         }
                         response.insert("id", request.contains("id") ? request.value("id") : QJsonValue(QJsonValue::Null));
-                        reply(socket, response);
+                        reply(socket, response, std::exchange(afterReply_,{}));
                     }
                     if (pending->size() > maxRequestBytes) {
                         reply(socket, failure("REQUEST_TOO_LARGE", "Request exceeds 1 MiB"));
@@ -74,6 +94,7 @@ AutomationServer::AutomationServer(Handler handler, QObject* parent)
     });
 }
 AutomationServer::~AutomationServer() { stop(); }
+void AutomationServer::afterReply(std::function<void(bool)> completion) {afterReply_=std::move(completion); }
 void AutomationServer::stop() {
     server_.close();
     const auto clients=clients_;clients_.clear();

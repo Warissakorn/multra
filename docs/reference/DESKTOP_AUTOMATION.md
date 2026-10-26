@@ -95,6 +95,8 @@ and inspect again. `simulation.reset` stores its seed as the canonical decimal (
 | `status` | None | Read current document and run state |
 | `document.get` | Optional `pointer`: JSON Pointer string | Read `result.document`, or only the pointed `result.value` |
 | `document.patch` | `patch`: RFC 6902 operation array | Validate and commit one atomic, undoable document edit |
+| `file.new` | Optional `discardChanges: true` when dirty | Start an empty document in the same window |
+| `app.quit` | Optional `discardChanges: true` when dirty | Accept intentional program quit; caller separately verifies exit |
 | `file.open` | `path`; `discardChanges: true` when dirty | Open a project or supported authoring scenario in the window |
 | `file.save` | `path` | Atomically save the current project to an explicit path |
 | `history.undo` | None | Undo the previous document edit and clear its run |
@@ -264,3 +266,21 @@ Acceptance: enable after editing, refuse an occupied endpoint without losing wor
 with a connected client and pending bytes, re-enable the same endpoint, reconnect while a
 run advances, and reject stale document guards. No AI timer is added. Linux offscreen
 checks do not establish Windows focus, named-pipe or visible-desktop acceptance.
+
+## New documents and intentional quit (D345)
+
+`file.new` and `app.quit` require the existing document/revision guards and no modal,
+menu or pointer gesture. Both refuse dirty work with `UNSAVED_CHANGES` unless params
+contains the boolean `discardChanges: true`; a failed save never grants permission to
+close or discard. `file.new` uses the same reset path as File → New, clears the old run,
+Undo, selection and this window's recovery, and starts another document in the same instance.
+
+`app.quit` is an explicit end-of-program operation, not the end of an AI task or connection.
+It replies `result.quitAccepted: true`, `state.closing: true`. Closing rejects further
+stateful commands with `CLOSING` and freezes editing while the reply drains. Only after
+all reply bytes have left Qt's write buffer does the editor close without another save
+prompt and remove its own recovery. This is transport handoff, not proof the caller read
+the reply. The caller must separately observe process exit; timeout must never trigger a
+kill or blind retry. If reply writing fails or cannot drain within 5 seconds, closing is
+cancelled, editing is restored and recovery is retained. Read-only status remains available
+while closing. No timer is installed until an intentional quit reply needs draining.

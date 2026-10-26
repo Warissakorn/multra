@@ -1,4 +1,5 @@
 {
+  "editorAutomationQuitFailed": "Quit was cancelled because the reply could not be sent. Your document and recovery were kept.",
   "editorAutomationEnable": "Enable AI control…",
   "editorAutomationDisable": "Disable AI control",
   "editorAutomationEndpoint": "AI endpoint: %1",

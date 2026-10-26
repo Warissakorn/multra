@@ -83,6 +83,11 @@ private:
     std::unique_ptr<AutomationServer> automationServer_;
     QString automationEndpoint_;
     bool automationStartupComplete_{};
+    bool automationClosing_{}, automationCloseReady_{};
+    bool automationWasEnabled_{}, automationLabWasEnabled_{};
+    void beginAutomationQuit();
+    void completeAutomationQuit(bool delivered);
+    void newFile();
     void buildAutomationActions();
     void refreshAutomationActions();
     History history_;

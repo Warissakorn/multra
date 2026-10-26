@@ -3,6 +3,7 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QImage>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
@@ -129,8 +130,29 @@ int main(int argc, char** argv) {
         state = start(desktop, binary, control, endpoint, data);
         require(state.value("documentId") != firstDocument && !state.value("run").toObject().value("prepared").toBool(),
                 "Restart did not expose a fresh desktop document");
-        desktop.stop();
-        std::cout << "PASS compiled desktop entry point, control client, visible run and process restart\n";
+        // Ten normal lifecycles: quit must return a full response and a normal exit,
+        // including explicitly discarded dirty work and saved Unicode destinations.
+        for(int cycle=0;cycle<10;++cycle) {
+            if(cycle)state=start(desktop,binary,control,endpoint,data);
+            send("file.open",{{"path",QDir(data).filePath("scenarios/crossing.json")}});
+            const QJsonArray patch{QJsonObject{{"op","replace"},{"path","/network/links/0/name"},{"value","quit test"}}};
+            send("document.patch",{{"patch",patch}});
+            require(state.value("dirty").toBool(),"Quit dirty fixture not established");
+            const auto rejected=invoke(control,endpoint,{{"command","app.quit"},{"documentId",state.value("documentId")},
+                {"expectedRevision",state.value("revision")}});
+            require(rejected.exit==1 && rejected.value.value("error").toObject().value("code")=="UNSAVED_CHANGES" &&
+                desktop.process.state()==QProcess::Running,"Dirty quit did not preserve the editor");
+            if(cycle%2==0) {
+                send("file.save",{{"path",directory.filePath(QString::fromUtf8("งาน-%1.traffic.json").arg(cycle))}});
+                require(!state.value("dirty").toBool(),"Save did not clear dirty state");
+            }
+            const auto accepted=send("app.quit",cycle%2?QJsonObject{{"discardChanges",true}}:QJsonObject{});
+            require(accepted.value("result").toObject().value("quitAccepted").toBool() &&
+                state.value("closing").toBool(),"Quit lost its accepted response");
+            require(desktop.process.waitForFinished(5000) && desktop.process.exitStatus()==QProcess::NormalExit &&
+                desktop.process.exitCode()==0,"Accepted quit did not exit normally");
+        }
+        std::cout << "PASS compiled desktop, control client, visible run, restart and ten normal quit cycles\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

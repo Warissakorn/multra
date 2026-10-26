@@ -1,5 +1,7 @@
 #include "editor_window.hpp"
 #include "automation_server.hpp"
+#include "behaviour_lab_window.hpp"
+#include <QApplication>
 #include <QAction>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -12,7 +14,14 @@ bool EditorWindow::enableAutomation(const QString& endpoint, QString* error) {
         if(error)*error=text("editorAutomationAlreadyEnabled");
         return false;
     }
-    auto server=std::make_unique<AutomationServer>([this](const auto& request){return automationRequest(request);});
+    auto server=std::make_unique<AutomationServer>([this](const auto& request){
+        const auto response=automationRequest(request);
+        if(response.value("ok").toBool() && response.value("result").toObject().value("quitAccepted").toBool())
+            automationServer_->afterReply([this](bool delivered){
+                QTimer::singleShot(0,this,[this,delivered]{completeAutomationQuit(delivered);});
+            });
+        return response;
+    });
     if(!server->listen(endpoint)) {
         if(error)*error=server->errorString();
         return false;
@@ -22,6 +31,22 @@ bool EditorWindow::enableAutomation(const QString& endpoint, QString* error) {
     refreshAutomationActions();
     statusBar()->showMessage(text("editorAutomationEndpoint").arg(endpoint),10000);
     return true;
+}
+void EditorWindow::beginAutomationQuit() {
+    automationClosing_=true;automationCloseReady_=false;
+    automationWasEnabled_=isEnabled();
+    if(lab_)automationLabWasEnabled_=lab_->isEnabled();
+    setEnabled(false);if(lab_)lab_->setEnabled(false);
+}
+void EditorWindow::completeAutomationQuit(bool delivered) {
+    if(!automationClosing_)return;
+    if(!delivered) {
+        automationClosing_=false;setEnabled(automationWasEnabled_);
+        if(lab_)lab_->setEnabled(automationLabWasEnabled_);
+        statusBar()->showMessage(text("editorAutomationQuitFailed"),15000);return;
+    }
+    automationCloseReady_=true;
+    if(close())QCoreApplication::quit();
 }
 void EditorWindow::disableAutomation() {
     automationServer_.reset();automationEndpoint_.clear();refreshAutomationActions();

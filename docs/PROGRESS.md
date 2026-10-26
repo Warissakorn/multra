@@ -6,6 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Guarded New and intentional Quit (D345)
+
+- **Asked:** continue the reviewed AI workflow with New in the same window and intentional
+  Quit that preserves unsaved work unless explicitly discarded.
+- **Changed:** File → New and `file.new` share one reset path. New/Quit keep document/revision
+  guards and require boolean discard permission for dirty work. Accepted Quit freezes edits,
+  refuses subsequent mutations and closes only after transport handoff of its response. A
+  failed/stalled handoff cancels closing and restores editing; no process kill is introduced.
+  The drain monitor is allocated only for an intentional Quit reply, with a 5 s deadline.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (139.64 s).
+  Lifecycle coverage includes recovery isolation and pipelined mutation refusal;
+  compiled-process coverage checks ten clean/discard Quit cycles,
+  full responses and normal exits; transport coverage forces backpressure, disconnect and timeout.
+  Windows runtime/appearance acceptance is unrun.
+
 ## 2026-10-26 — Live AI endpoint and reconnect status (D344)
 
 - **Asked:** implement stages 1–2 of the reviewed plan: keep the shared window open, enable
@@ -190,42 +205,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   never copies the embedded image; `commitChange` is the one post-edit path; History's reset
   generation, not per-site clears, makes the documentId; the Lab uses `preferredVehicleType`.
 - **Verification:** see the PR; Linux only. The Windows refusal needs a second account.
-
-## 2026-10-25 — Visible desktop control for AI agents (D335)
-
-- **Asked:** operate the compiled Windows application through commands while the user
-  watches its native window. Added opt-in local JSONL IPC (`--automation`) and the compiled
-  `multra-control` client; no scripting runtime or separate model is required.
-- Commands inspect or atomically patch the live project, Open/Save, Undo/Redo, control
-  the visible simulation, select/frame objects, capture PNG and read/export results.
-  Session/revision guards prevent stale edits; invalid patches preserve document, History
-  and run state. Bounded stepping observes every fixed step and refreshes the canvas once.
-- Added IPC/client tests, live-widget command tests and a separate-process test host built
-  from the real desktop entry point with isolated Qt storage. Updated packaging and the
-  [Windows PowerShell workflow](reference/DESKTOP_AUTOMATION.md).
-- Shared protocol bounds keep client/server/capabilities aligned; unchanged embedded image
-  buffers remain shared across History rather than being copied into each AI edit.
-- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check`,
-  **230/230 CTest cases pass**. The host's default Fontconfig tripped two UI font-metric
-  assertions; selecting bundled `data/fonts` plus DejaVu fallback resolves both, followed by
-  the full passing run. Editor font code and the original assertions were unchanged.
-  The staged production desktop/control pair also runs from `/tmp`, advances 600 fixed steps,
-  captures its Thai window and reports the shared request/step bounds correctly.
-  Windows runtime and packaged dependency acceptance remain open; no milestone gate closes.
-
-## 2026-10-25 — Shorter heavy-vehicle cab
-
-- **Asked:** shorten the heavy-vehicle head to match the light vehicle. The owner confirmed
-  the smaller grey rigid-truck from the displayed fleet as the reference. Both truck cabs cap at
-  a nominal 2.04 m; the 12 m heavy cab was previously 2.88 m. The fixed load box extends
-  forward to keep the full 12 m body and rear bumper, without changing traffic/axle data.
-- A piecewise drawing transform applies to the body, glass, panels and lights together.
-  Tests compare the cab, glazing and lights of the 8.5 m and 12 m trucks in physical units,
-  alongside the existing bounds, glass picking, zoom and turning checks.
-- **Verification:** Linux/Qt 6.8.2 offscreen: full desktop build and all 227 CTest cases
-  pass after the cab change, including appearance, colour preferences, canvas LOD,
-  run presentation and lane-change display. Equal-length cab comparison and updated
-  gallery inspected; architecture, documentation and file-size checks pass.
 
 ## Older entries
 

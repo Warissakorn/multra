@@ -9,6 +9,8 @@
 #include <QInputDialog>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QFileInfo>
+#include <QTemporaryDir>
 #include <QLocalSocket>
 #include <QStatusBar>
 #include <QTest>
@@ -107,13 +109,56 @@ int main(int argc,char** argv) {
         require(invalid.value("error").toObject().value("code")==QJsonValue("INVALID_PARAMS"),"Invalid compact option accepted");
         QDialog modal(&w);modal.setModal(true);modal.show();QTest::qWait(5);
         require(status(w).value("busyReason")==QJsonValue("modal"),"Modal reason missing");modal.hide();
-        const auto old=status(w);w.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
+        const auto request=[&](EditorWindow& target,const QString& command,const QJsonObject& params=QJsonObject{}) {
+            const auto now=status(target);
+            return target.automationRequest({{"command",command},{"params",params},
+                {"documentId",now.value("documentId")},{"expectedRevision",now.value("revision")}});
+        };
+        w.autosaveNow();const auto recovery=w.recoveryPath();
+        require(QFileInfo::exists(recovery),"Recovery fixture missing before New");
+        other.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
+        require(request(other,"document.patch",{{"patch",patch}}).value("ok").toBool(),"Other window dirty fixture failed");
+        other.autosaveNow();const auto otherRecovery=other.recoveryPath();
+        require(QFileInfo::exists(otherRecovery),"Other window recovery fixture missing");
+        const auto old=status(w);
+        for(const auto* command:{"file.new","app.quit"}) {
+            const auto refused=request(w,command);
+            require(refused.value("error").toObject().value("code")==QJsonValue("UNSAVED_CHANGES"),"Dirty work was discarded implicitly");
+            const auto invalidDiscard=request(w,command,{{"discardChanges","true"}});
+            require(invalidDiscard.value("error").toObject().value("code")==QJsonValue("INVALID_PARAMS"),"Nonboolean discard was accepted");
+        }
+        QTemporaryDir files;require(files.isValid(),"Temporary file directory missing");
+        const auto failedSave=request(w,"file.save",{{"path",files.filePath("missing/failed.traffic.json")}});
+        require(!failedSave.value("ok").toBool()&&w.history().dirty()&&QFileInfo::exists(recovery),"Save failure damaged recovery");
+        require(request(w,"app.quit").value("error").toObject().value("code")==QJsonValue("UNSAVED_CHANGES"),"Failed save allowed quit");
+        require(w.history().document()==document&&w.isEnabled(),"Refused operations changed work or froze editor");
+        const auto fresh=send(client,"file.new",status(w),{{"discardChanges",true}});
+        require(fresh.value("documentId")!=old.value("documentId")&&fresh.value("instanceId")==instance,"New did not reset document identity");
+        require(w.history().document().network.links.empty()&&!w.history().canUndo()&&w.canvas()->selection().empty()&&
+            fresh.value("file").toString().isEmpty()&&!fresh.value("run").toObject().value("prepared").toBool(),"New retained old work");
+        require(!QFileInfo::exists(recovery)&&QFileInfo::exists(otherRecovery),"New removed wrong recovery");
         const auto stale=w.automationRequest({{"command","simulation.reset"},{"documentId",old.value("documentId")},{"expectedRevision",old.value("revision")}});
         require(stale.value("error").toObject().value("code")==QJsonValue("STALE_DOCUMENT"),"Old document guard accepted");
-        require(status(w).value("instanceId")==instance,"Open changed instance ID");
-        w.disableAutomation();
-        QElapsedTimer elapsed;elapsed.start();for(int i=0;i<1000;++i)status(w,false);
-        std::cout<<"1000 compact status requests: "<<elapsed.elapsed()<<" ms; lifecycle and reconnect passed\n";
+        send(client,"file.new",fresh); // A clean New requires no discard flag.
+        send(client,"file.open",status(w),{{"path",QString::fromStdString((data/"scenarios/crossing.json").string())}});
+        send(client,"document.patch",status(w),{{"patch",patch}});w.autosaveNow();
+        require(QFileInfo::exists(recovery),"Quit recovery fixture missing");
+        const auto quitState=status(w);
+        QJsonObject quit{{"id","quit"},{"command","app.quit"},{"documentId",quitState.value("documentId")},
+            {"expectedRevision",quitState.value("revision")},{"params",QJsonObject{{"discardChanges",true}}}};
+        auto late=quit;late["id"]="late";late["command"]="file.new";
+        client.write(QJsonDocument(quit).toJson(QJsonDocument::Compact)+'\n'+QJsonDocument(late).toJson(QJsonDocument::Compact)+'\n');
+        until([&]{return client.canReadLine();},"Quit did not return a full reply");
+        const auto accepted=QJsonDocument::fromJson(client.readLine()).object();
+        require(accepted.value("ok").toBool()&&accepted.value("result").toObject().value("quitAccepted").toBool()&&
+            accepted.value("state").toObject().value("closing").toBool(),"Quit response missing acceptance");
+        until([&]{return client.canReadLine();},"Pipelined mutation did not receive refusal");
+        const auto closing=QJsonDocument::fromJson(client.readLine()).object();
+        require(closing.value("error").toObject().value("code")==QJsonValue("CLOSING"),"Closing accepted another mutation");
+        until([&]{return !w.isVisible();},"Accepted quit did not close window");
+        require(!QFileInfo::exists(recovery)&&QFileInfo::exists(otherRecovery),"Quit removed another window recovery");
+        require(request(other,"file.new",{{"discardChanges",true}}).value("ok").toBool(),"Other window cleanup failed");
+        std::cout<<"Lifecycle, New, guarded quit, reply delivery and recovery isolation passed\n";
         return 0;
     } catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }
