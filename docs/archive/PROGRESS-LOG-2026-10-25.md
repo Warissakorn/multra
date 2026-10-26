@@ -2,6 +2,45 @@
 
 Entries moved whole from the live log; dates and evidence describe their own session.
 
+## 2026-10-25 — Named Macro run definitions (D339)
+
+- **Asked:** continue development; followed NEXT's booked named-run seam (§19 b, D277).
+- **Changed:** optional schema-56 `macroRuns` stores ordered id/name/period/settings definitions.
+  The editor manages the list in one Undo step, then selects one definition for the existing
+  staged worker. CLI `--macro-run ID` uses the same definition; JSON/CSV identify it.
+- **Boundary:** named execution uses explicit settings without editing the source document or
+  global settings. Named and global settings share a parser that rejects oversized integers before
+  narrowing (including large negatives that formerly wrapped to a legal cap). Existing unnamed
+  runs/outputs and old project schemas stay unchanged. The Macro side file still holds the latest
+  cut source per period, with original project provenance;
+  result-table restore and a general procedure sequence are separate seams.
+- **Verification (2026-10-26):** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and
+  `check` pass, **234/234 CTest cases passed**. Five focused model cases and the new/existing Macro
+  UI harnesses also pass independently. Fontconfig uses bundled Thai fonts with DejaVu Sans
+  fallback. Windows was not tested locally; no milestone gate closed.
+- **CI follow-up (2026-10-26):** [run 641](https://github.com/Warissakorn/multra/actions/runs/40248594439)
+  passed all six jobs: Linux headless/sanitizer/release/desktop and Windows core/desktop. This is
+  automated evidence for D339, not an owner appearance verdict.
+
+## 2026-10-25 — Study-area cuts preserve single vehicle types (D338)
+
+- **Asked:** continue development; followed NEXT's first open S5 items: single-type Meso gate
+  flows and CLI coverage on a study-area project.
+- **Changed:** Meso `type:` classes now retain their per-slice vehicle counts (entrance PCU divided
+  by class PCU) and vehicle type through run-time gate flows/matrices into ordinary Micro inputs.
+  Types sharing the same gates stay separate from each other and from composition classes.
+- **Boundary:** no engine, loading, stored schema, UI or catalog-ownership change. External unused
+  compositions stay unused, including with a reduced project-owned vehicle library. Unknown
+  vehicle types refuse Run; unknown class prefixes retain their advisory.
+- **Tests:** SA17 covers mixed classes, non-unit PCU, class grouping, exact input manifests,
+  source/catalog preservation, seeded replay, side-file parity and stored-field rejection. SA18
+  launches the real CLI for single, batch and comparison JSON/CSV exports with absent/fresh/stale
+  side files and exact provenance hashes.
+- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check` pass,
+  **231/231 CTest cases passed**. Fontconfig uses bundled Thai fonts with DejaVu Sans fallback, as
+  in the earlier desktop sessions. Six focused type-cut cases also pass in a separate harness.
+  Windows untested; no milestone gate closed.
+
 ## 2026-10-25 — Shipped projects reviewed; four-leg gets its 300 s cool-down (D337)
 
 - **Asked:** check the four shipped projects, then whether any is unneeded; the owner chose the

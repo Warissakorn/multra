@@ -141,7 +141,7 @@ void EditorWindow::compareWithFile(const QString& file) {
     try{ requireSameEvaluationPeriod(*baseSpec,base->scenario.duration,*alternativeSpec,alternative->scenario.duration); }
     catch(const std::invalid_argument&){ error_->setText(text("editorCompareWindows")); return; }
     auto names=std::pair{baseName(file_,history_.dirty()),alternativeName.toStdString()};
-    clearRun(); // one table at a time: this cancels any batch or comparison and the single run
+    clearRun("replacedByComparison"); // one table at a time: this cancels any batch or comparison and the single run
     error_->clear();
     const auto total=2*list->size(); // read before the call: the capture below moves the list
     startWorker(total,true,[this,names=std::move(names),seeds=std::move(*list),

@@ -1,5 +1,7 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "automation_error.hpp"
+#include <QUuid>
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QVBoxLayout>
@@ -74,7 +76,7 @@ void EditorWindow::buildRunControls() {
     for(double n:{0.5,1.,2.,5.,10.,20.})runSpeed_->addItem(QString::number(n)+"×",n);
     runSpeed_->setCurrentIndex(1);bar->addWidget(runSpeed_);
     // Reset discards the run's progress, so it trails the group behind a separator (slice b).
-    bar->addSeparator();bar->addAction(action("editorReset",{},[this]{clearRun();prepareRun();refreshRun();}));
+    bar->addSeparator();bar->addAction(action("editorReset",{},[this]{clearRun("reset");prepareRun();refreshRun();}));
     auto* faster=action("editorFaster",QKeySequence(Qt::Key_Plus),[this]{runSpeed_->setCurrentIndex(std::min(runSpeed_->count()-1,runSpeed_->currentIndex()+1));});
     auto* slower=action("editorSlower",QKeySequence(Qt::Key_Minus),[this]{runSpeed_->setCurrentIndex(std::max(0,runSpeed_->currentIndex()-1));});
     for(auto* a:{faster,slower}){a->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(a);}
@@ -83,11 +85,14 @@ void EditorWindow::buildRunControls() {
     runInfo_->setWordWrap(true);setReflowPolicy(runInfo_,QSizePolicy::Ignored);
     qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(1,new RunInfoHost(runInfo_,centralWidget()));
     canvas_->stopRequested=[this]{pauseRun();};
-    connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun();});
+    connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun("seedChanged");});
     connect(&runTimer_,&QTimer::timeout,this,[this]{tickRun();});
 }
 void EditorWindow::pauseRun(){runTimer_.stop();runCredit_=0;refreshRun();}
-void EditorWindow::clearRun(){
+void EditorWindow::clearRun(const char* reason){
+    if(!runIdentity_.id.isEmpty()) {
+        runIdentity_.lastId=runIdentity_.id;runIdentity_.lastEndReason=QString::fromLatin1(reason);runIdentity_.id.clear();
+    }
     cancelBatch(); // every edit, Undo, Open and Reset passes here, so it also ends a batch (M5.6)
     runTimer_.stop();runCredit_=0;runSnapshot_.reset();runState_={};runSummary_={};runMovements_.reset();
     runDischarge_.reset();runDischargeError_.clear();runClamps_.clear();canvas_->clearRunFrame();refreshRun();
@@ -114,11 +119,30 @@ bool EditorWindow::prepareRun() {
         // the first step, or a departure at time zero is missing from every later figure.
         runSummary_={};runClamps_.clear();observeRun();
         canvas_->setRunNetwork(runSnapshot_->network);canvas_->setRunFrame(runState_);
+        runIdentity_.id=QUuid::createUuid().toString(QUuid::WithoutBraces);
+        runIdentity_.generation=history_.generation();runIdentity_.revision=history_.revision();
         error_->clear();return true;
     }catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return false;
     }
+}
+void EditorWindow::checkAutomationRunId(const QJsonObject& params,bool required) const {
+    if(!required && !params.contains("runId"))return;
+    if(!params.value("runId").isString() || params.value("runId").toString().isEmpty())
+        throw CommandError("INVALID_PARAMS","A nonempty runId string is required",{{"path","params.runId"}});
+    if(runIdentity_.id.isEmpty() || params.value("runId").toString()!=runIdentity_.id)
+        throw CommandError("STALE_RUN","The requested single run is no longer current",{{"runId",runIdentity_.id.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(runIdentity_.id)}});
+}
+QJsonObject EditorWindow::automationRunState() const {
+    const bool active=!runIdentity_.id.isEmpty();
+    const auto nullable=[](const QString& s){return s.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(s);};
+    const QString status=!active?"idle":runFinished()?"completed":runTimer_.isActive()?"running":runState_.tick?"paused":"prepared";
+    return {{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},{"finished",runFinished()},
+        {"tick",static_cast<qint64>(runState_.tick)},{"time",runState_.time},{"seed",runSeed_->text()},
+        {"runId",nullable(runIdentity_.id)},{"status",status},{"lastRunId",nullable(runIdentity_.lastId)},
+        {"lastEndReason",runIdentity_.lastEndReason},{"sourceRevision",active?QJsonValue(QString::number(runIdentity_.revision)):QJsonValue(QJsonValue::Null)},
+        {"sourceDocumentId",active?QJsonValue(automationSession_+"-"+QString::number(runIdentity_.generation)):QJsonValue(QJsonValue::Null)}};
 }
 void EditorWindow::toggleRun(){
     if(runTimer_.isActive()){pauseRun();return;}

@@ -19,6 +19,7 @@
 #include "automation_recovery_checks.hpp"
 #include "automation_map_checks.hpp"
 #include "automation_geometry_checks.hpp"
+#include "automation_run_checks.hpp"
 using namespace multra;
 namespace {
 void require(bool ok,const char* why){if(!ok)throw std::runtime_error(why);}
@@ -65,6 +66,7 @@ int main(int argc,char** argv) {
         recoveryChecks(data);
         mapAutomationChecks(data);
         connectorAutomationChecks(data);
+        runIdentityChecks(data);
         EditorWindow w(data);w.show();QTest::qWait(20);
         w.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
         auto s=status(w);require(!s.value("connectionReady").toBool(),"Automation enabled by default");
@@ -86,13 +88,14 @@ int main(int argc,char** argv) {
         QLocalSocket client;attach(client,endpoint);
         auto connected=send(client,"status");require(connected.value("instanceId")==instance,"Attach changed instance");
         require(connected.value("connectionReady").toBool()&&connected.value("documentId")==s.value("documentId"),"Attach changed document");
-        send(client,"simulation.start",connected);
+        const auto activeRun=send(client,"simulation.start",connected).value("run").toObject().value("runId");
+        require(!activeRun.toString().isEmpty(),"Socket start did not return run ID");
         until([&]{return w.runState().tick>0;},"Run did not start");
         const auto tick=w.runState().tick;
         client.abort();
         until([&]{return w.runState().tick>tick;},"Client disconnect stopped simulation");
         attach(client,endpoint);connected=send(client,"status");
-        require(connected.value("run").toObject().value("running").toBool(),"Reattach lost running state");
+        require(connected.value("run").toObject().value("running").toBool()&&connected.value("run").toObject().value("runId")==activeRun,"Reattach lost running state or identity");
         // Incomplete bytes must never become a command after disable/re-enable.
         client.write("{\"command\":\"simulation.reset\"");client.flush();QTest::qWait(10);
         action(w,"editorAutomationDisable")->trigger();

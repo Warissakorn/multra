@@ -123,6 +123,15 @@ int main(int argc, char** argv) {
                 refused.value.value("state").toObject().value("run").toObject().value("tick") == tick,
                 "An unguarded process command changed the visible run");
 
+        const auto singleRunId=state.value("run").toObject().value("runId");
+        require(!singleRunId.toString().isEmpty(),"Compiled desktop did not identify the single run");
+        int steps=0;
+        while(!state.value("run").toObject().value("finished").toBool() && steps++<20)
+            send("simulation.step",{{"steps",200},{"runId",singleRunId}});
+        const auto csv=directory.filePath(QString::fromUtf8("รายงาน.csv"));
+        const auto exported=send("results.export",{{"path",csv},{"report","movements"},{"runId",singleRunId}});
+        require(exported.value("result").toObject().value("run").toObject().value("runId")==singleRunId&&QFileInfo(csv).size()>0,
+            "Compiled control did not export the identified run");
         desktop.stop();
         // Force-stop leaves Unix socket files and lifetime lock metadata behind.
         // A new process must recover only the abandoned endpoint, and new client
@@ -130,6 +139,9 @@ int main(int argc, char** argv) {
         state = start(desktop, binary, control, endpoint, data);
         require(state.value("documentId") != firstDocument && !state.value("run").toObject().value("prepared").toBool(),
                 "Restart did not expose a fresh desktop document");
+        const auto staleRun=invoke(control,endpoint,{{"command","results.get"},{"params",QJsonObject{{"runId",singleRunId}}}});
+        require(staleRun.exit==1&&staleRun.value.value("error").toObject().value("code")=="STALE_RUN",
+            "Restart returned results under the old run ID");
         // Ten normal lifecycles: quit must return a full response and a normal exit,
         // including explicitly discarded dirty work and saved Unicode destinations.
         for(int cycle=0;cycle<10;++cycle) {

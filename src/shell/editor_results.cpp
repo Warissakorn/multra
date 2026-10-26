@@ -225,6 +225,9 @@ std::string EditorWindow::resultsCsv() const {
     if(batch_)return markedCsv(batchCsv(batch_->report,batch_->runs),batchMarking_.marking,batchMarking_.flows);
     if(comparison_)return markedComparisonCsv(comparisonCsv(comparison_->comparison,comparison_->base,comparison_->alternative),
                                               baseMarking_.marking,alternativeMarking_.marking,baseMarking_.flows,alternativeMarking_.flows);
+    return singleRunCsv();
+}
+std::string EditorWindow::singleRunCsv() const {
     const auto report=runReport();
     if(!report || !runFinished())throw std::runtime_error("EDIT_CSV_UNFINISHED");
     return markedCsv(movementCsv(*report),runMarking_.marking,runMarking_.flows);

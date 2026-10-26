@@ -29,6 +29,7 @@
 #include <vector>
 #include <QKeySequence>
 #include <QPointer>
+#include "run_identity.hpp"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -183,7 +184,10 @@ private:
     void toggleRun();
     void stepRun();
     void tickRun();
-    void clearRun();
+    void clearRun(const char* reason = "documentChanged");
+    RunIdentity runIdentity_;
+    QJsonObject automationRunState() const;
+    void checkAutomationRunId(const QJsonObject&,bool required = false) const;
     void pauseRun();
     QTimer runTimer_;
     QElapsedTimer runElapsed_;
@@ -409,6 +413,7 @@ public:
     void exportResults(const QString& file) const;
     // The same text as tab-separated values on the clipboard (M5.6); throws when Export would.
     void copyResults() const;
+    std::string singleRunCsv() const;
     std::string resultsCsv() const; // what Export writes; throws EDIT_CSV_UNFINISHED without a finished run, batch or comparison
     bool batchRunning() const { return batchTotal_ > 0; }
     const std::optional<BatchResult>& batchResult() const { return batch_; }

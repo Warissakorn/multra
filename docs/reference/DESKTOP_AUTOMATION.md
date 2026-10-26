@@ -361,3 +361,31 @@ objectId, expected/actual coordinates, distance, tolerance and geometryPointer. 
 come from the same attachment rule/tolerance used by network validation and refer to the
 rejected candidate, never the current live geometry. Other issues retain their existing
 shape; extra details are omitted if the candidate cannot be decoded safely.
+
+## Single-run identity and explicit export (D349)
+
+A successful preparation of the existing GUI single simulation assigns `state.run.runId`.
+It stays the same across Step, Start, Pause, Resume, reconnect and completion; failed
+preparation assigns no ID. State adds status (idle/prepared/running/paused/completed),
+sourceDocumentId and sourceRevision strings, plus the latest invalidated lastRunId and
+lastEndReason (reset/seedChanged/documentChanged/replacedByBatch/replacedByComparison).
+Only one current single run is retained; this is not a job registry or historical result store.
+Edits, Undo/Redo, New/Open/recovery, seed changes, Reset and batch/comparison replacement
+invalidate the ID through the existing clearRun path. A new prepared run gets another ID.
+
+Simulation commands and results.get accept optional runId. When supplied it must name the
+current prepared run or the command returns STALE_RUN before doing work. Omitting it keeps
+existing behavior, including creating a run through Step/Start. results.get adds run metadata
+and keeps its existing partial summary/movement data and not-yet-validated marker.
+
+`results.export {path, report: "movements", runId}` explicitly exports the finished single
+run through the existing movement CSV formatter and atomic file writer, independent of
+selected tab, Macro/Meso panels, batch or comparison. runId alone also selects this explicit
+single-run path. A missing/invalid ID, mismatched run, unsupported report or unfinished run
+is refused before touching the destination. The reply names path/report/run/source identity
+and validated:false. CSV bytes/provenance markings stay identical to the GUI single export.
+
+Requests with neither report nor runId preserve legacy tab-based results.export behavior.
+Explicit identities/exports for batch, comparison, Macro and Meso remain out of this slice;
+unsupported explicit report names are rejected, never routed to a different result silently.
+No additional simulation loop, worker, timer or persistent run log is introduced.

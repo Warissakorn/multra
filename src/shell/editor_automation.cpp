@@ -63,9 +63,7 @@ QJsonObject EditorWindow::automationState(bool includeSelection) {
         {"selectionCount",static_cast<qint64>(canvas_->selection().size())},{"documentId",automationSession_+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
         {"dirty",history_.dirty()},{"file",file_},{"canUndo",history_.canUndo()},{"canRedo",history_.canRedo()},
         {"selection",selection},{"busy",automationClosing_ || busyReason()!=nullptr},
-        {"run",QJsonObject{{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},
-            {"finished",runFinished()},{"tick",static_cast<qint64>(runState_.tick)},
-            {"time",runState_.time},{"seed",runSeed_->text()}}}};
+        {"run",automationRunState()}};
     if(!includeSelection)state.remove("selection");
     return state;
 }
@@ -74,6 +72,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
     QJsonObject response{{"id",request.value("id")}};
     const auto selectionOption=request.value("params").toObject().value("includeSelection");
     const bool includeSelection=request.value("command")!=QJsonValue("status") || selectionOption!=QJsonValue(false);
+    if(automationSession_.isEmpty())automationSession_=QUuid::createUuid().toString(QUuid::WithoutBraces);
     try {
         const auto command=requiredString(request,"command");
         if(request.contains("params") && !request.value("params").isObject())
@@ -98,7 +97,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         }
         QJsonObject result;
         if(command=="capabilities") {
-            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands","connectorSuggestions","attachmentDiagnostics"}},{"commands",QJsonArray::fromStringList(commands)},
+            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands","connectorSuggestions","attachmentDiagnostics","singleRunIdentity","explicitSingleRunExport"}},{"commands",QJsonArray::fromStringList(commands)},
                 {"maxRequestBytes",automationRequestLimit},{"maxStepCount",maxStepCount},{"patchFormat","RFC6902"},
                 {"guard",QJsonArray{"documentId","expectedRevision"}},
                 {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list","map.get","map.status","connector.suggest"}},
@@ -123,7 +122,8 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                     {"simulation.reset",QJsonObject{{"seed","optional unsigned 32-bit decimal string"}}},
                     {"view.select",QJsonObject{{"ids","required array of selectable object ID strings"}}},
                     {"view.screenshot",QJsonObject{{"path","required PNG destination string"}}},
-                    {"results.export",QJsonObject{{"path","required CSV destination string; uses current Results tab"}}}}}};
+                    {"results.get",QJsonObject{{"runId","optional current single-run ID; stale IDs are rejected"}}},
+                    {"results.export",QJsonObject{{"path","required CSV destination string"},{"report","optional movements selects single-run export independent of tabs; requires runId"},{"runId","optional alone or required with report; current finished single run"}}}}}};
         } else if(command=="status") {
             result={{"validated",false}};
         } else if(command=="document.get") {
@@ -194,6 +194,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             }
             result={{"changed",changed}};
         } else if(command.startsWith("simulation.")) {
+            checkAutomationRunId(params);
             int steps=1;
             if(command=="simulation.step" && params.contains("steps")) {
                 const auto count=params.value("steps");
@@ -206,9 +207,10 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                 if(params.contains("seed")) {
                     const auto seed=requiredString(params,"seed");
                     // Validate before clearing the run; write it canonically, as the 10-character field holds it.
-                    runSeed_->setText(QString::number(parseSeed(seed.toStdString())));
+                    const auto canonical=QString::number(parseSeed(seed.toStdString()));
+                    clearRun("reset");runSeed_->setText(canonical);
                 }
-                clearRun();
+                clearRun("reset");
             } else if(command=="simulation.pause")pauseRun();
             else {
                 if(!prepareRun()) {
@@ -226,10 +228,19 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                 }
             }
         } else if(command=="results.get") {
-            result={{"validated",false},{"summary",toQt(summaryJson(runSummary()))}};
+            checkAutomationRunId(params);
+            result={{"validated",false},{"run",automationRunState()},{"summary",toQt(summaryJson(runSummary()))}};
             if(const auto report=runReport())result.insert("movement",toQt(movementJson(*report)));
         } else if(command=="results.export") {
-            exportResults(requiredString(params,"path"));
+            const auto path=requiredString(params,"path");
+            if(params.contains("runId") || params.contains("report")) {
+                if(params.contains("report") && params.value("report")!=QJsonValue("movements"))
+                    throw CommandError("INVALID_PARAMS","Explicit export supports report: movements",{{"path","params.report"}});
+                checkAutomationRunId(params,true);
+                if(!runFinished())throw CommandError("RUN_NOT_FINISHED","Only a completed single run can be exported");
+                writeEditorBytes(path,singleRunCsv(),"EDIT_CSV_WRITE");
+                result={{"path",path},{"report","movements"},{"source","single"},{"run",automationRunState()},{"validated",false}};
+            } else exportResults(path);
         } else if(command=="view.fit")canvas_->fitNetwork();
         else if(command=="view.select") {
             if(!params.value("ids").isArray())throw CommandError("INVALID_PARAMS","ids must be an array of object IDs");
