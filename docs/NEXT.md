@@ -28,13 +28,14 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## AI automation follow-up (D344–D346)
+## AI automation follow-up (D344–D347)
 
-- Next approved slices: map get/set/remove and tile readiness, geometry suggestions and
-  field-specific diagnostics, then run identity/export targeting. Reuse existing validation,
+- Next approved slices: geometry suggestions and field-specific diagnostics, then run
+  identity/export targeting. Reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked yet.
 - Windows acceptance: live endpoint enable/disable and reconnect, guarded New/Quit with full
-  reply before normal exit, and deferred recovery list/restore/discard after a crash. Ensure
+  reply before normal exit, and deferred recovery list/restore/discard after a crash, and map set/status/retry with real
+  provider access. Ensure
   live-owner drafts and unsaved current work survive refusals. Check Unicode save paths and
   focus/menu/pointer reasons. Keep packaged Windows and second-account checks below;
   Linux offscreen is not Windows evidence. AI disconnect remains distinct from quit/cancel.

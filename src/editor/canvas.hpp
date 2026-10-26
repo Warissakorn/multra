@@ -20,6 +20,7 @@ class QLabel;
 namespace multra {
 class MapLayer;
 enum class MapStatus;
+struct MapLoadState;
 class EditorCanvas : public QGraphicsView {
 public:
     enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node, road };
@@ -29,6 +30,7 @@ public:
     void setMapVisible(bool);
     // Retry the visible map's failed tiles without changing the document or camera.
     void retryMapTiles();
+    MapLoadState mapLoadState() const;
     // Unit formats for the HUD's scale and zoom labels, each with one %1 (D197).
     void setHudUnits(const QString& metres, const QString& zoom);
     void setMapStatusText(std::function<QString(MapStatus)>);

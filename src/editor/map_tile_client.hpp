@@ -24,6 +24,8 @@ public:
     QImage image(const TileKey&);
     std::size_t pending() const;
     bool hasFailures() const;
+    std::size_t loadedCount() const;
+    std::size_t failedCount() const { return failures_.size(); }
     static std::size_t wantedLimit(int tilePixels);
     std::function<void()> changed;
     void setTimeout(int milliseconds); // Explicit test seam, production default 15 s.

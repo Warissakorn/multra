@@ -117,6 +117,9 @@ MapStatus MapLayer::status() const {
     if (client_.hasFailures()) return MapStatus::networkError;
     return client_.pending()?MapStatus::loading:MapStatus::ready;
 }
+MapLoadState MapLayer::loadState() const {
+    return {status(),visible_ && settings_.has_value(),false,wanted_.size(),client_.loadedCount(),client_.pending(),client_.failedCount()};
+}
 QString MapLayer::attribution() const { return visible_ && settings_ && provider_?provider_->attribution:QString(); }
 QUrl MapLayer::attributionUrl() const { return provider_?provider_->attributionUrl:QUrl(); }
 }

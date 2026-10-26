@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "automation_error.hpp"
 #include "automation_endpoint.hpp"
 #include "editor_storage.hpp"
 #include "../project/load.hpp"
@@ -18,12 +19,6 @@
 namespace multra {
 namespace {
 constexpr int maxStepCount=200;
-struct CommandError : std::runtime_error {
-    QString code;
-    QJsonObject details;
-    CommandError(const char* code, const char* message, QJsonObject details = {})
-        : std::runtime_error(message), code(code), details(std::move(details)) {}
-};
 QJsonValue toQt(const Json& value) {
     // Wrap scalars too: QJsonDocument only accepts an array or object at the root.
     const auto bytes=Json::array({value}).dump();
@@ -86,10 +81,10 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         if(request.value("command")==QJsonValue("status") && params.contains("includeSelection") && !selectionOption.isBool())
             throw CommandError("INVALID_PARAMS","includeSelection must be a boolean");
         static const QStringList commands{"capabilities","status","document.get","document.patch",
-            "file.open","file.save","file.new","app.quit","recovery.list","recovery.restore","recovery.discard","history.undo","history.redo","simulation.start","simulation.pause",
+            "file.open","file.save","file.new","app.quit","recovery.list","recovery.restore","recovery.discard","map.get","map.set","map.remove","map.status","map.retry","history.undo","history.redo","simulation.start","simulation.pause",
             "simulation.step","simulation.reset","results.get","results.export","view.fit","view.select","view.screenshot"};
         if(!commands.contains(command))throw CommandError("UNKNOWN_COMMAND","Unknown automation command");
-        const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list";
+        const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list" || command=="map.get" || command=="map.status";
         if(!read) {
             if(automationClosing_)throw CommandError("CLOSING","The editor is closing; inspect status instead of sending mutations");
             const auto state=automationState(false);
@@ -102,15 +97,19 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         }
         QJsonObject result;
         if(command=="capabilities") {
-            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery"}},{"commands",QJsonArray::fromStringList(commands)},
+            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands"}},{"commands",QJsonArray::fromStringList(commands)},
                 {"maxRequestBytes",automationRequestLimit},{"maxStepCount",maxStepCount},{"patchFormat","RFC6902"},
                 {"guard",QJsonArray{"documentId","expectedRevision"}},
-                {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list"}},
+                {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list","map.get","map.status"}},
                 {"parameters",QJsonObject{
                     {"status",QJsonObject{{"includeSelection","optional boolean; default true; false omits selection"}}},
                     {"document.get",QJsonObject{{"pointer","optional JSON Pointer string; returns result.value"}}},
                     {"document.patch",QJsonObject{{"patch","required RFC6902 operation array"}}},
                     {"file.open",QJsonObject{{"path","required string"},{"discardChanges","optional boolean; required true when dirty"}}},
+                    {"map.set",QJsonObject{{"longitude","required finite degrees [-180,180]"},{"latitude","required finite degrees [-80,84]"},
+                        {"providerId","optional installed ID from map.get; defaults to first provider"},{"opacity","optional [0,1], default 0.7"},
+                        {"anchorWorldX","optional metres [-10000000,10000000], default 0"},{"anchorWorldY","optional metres [-10000000,10000000], default 0"},
+                        {"rotationDegrees","optional [-180,180], default 0; replaces settings, not a partial update"}}},
                     {"recovery.restore",QJsonObject{{"id","required basename from recovery.list"},{"discardChanges","optional boolean; required true when dirty"}}},
                     {"recovery.discard",QJsonObject{{"id","required basename from recovery.list"},{"confirm","required boolean true"}}},
                     {"file.new",QJsonObject{{"discardChanges","optional boolean; required true when dirty"}}},
@@ -147,6 +146,8 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             try {changed=commitChange("editorAutomationChange",[&](auto& d){d=std::move(candidate);});}
             catch(...){canvas_->setDocument(&history_.document());throw;} // as execute(); the reply keeps the issues
             result={{"changed",changed}};
+        } else if(command.startsWith("map.")) {
+            result=automationMap(command,params);
         } else if(command=="recovery.list") {
             result={{"entries",recoveryEntries()}};
         } else if(command=="recovery.restore") {

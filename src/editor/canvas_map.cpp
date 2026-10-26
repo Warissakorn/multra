@@ -35,6 +35,9 @@ void EditorCanvas::setMapProviders(std::vector<MapProvider> providers) {
 void EditorCanvas::setMapVisible(bool visible) {
     mapVisible_=visible;mapLayer_->setVisible(visible);scheduleMapUpdate();
 }
+MapLoadState EditorCanvas::mapLoadState() const {
+    auto state=mapLayer_->loadState();state.viewportPending=mapViewportTimer_.isActive();return state;
+}
 void EditorCanvas::retryMapTiles() {
     // Flush a pending pan/zoom first so only the current viewport can be retried.
     mapViewportTimer_.stop();updateMapViewport();mapLayer_->retryFailedTiles();

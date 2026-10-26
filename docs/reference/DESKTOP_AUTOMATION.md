@@ -76,7 +76,7 @@ the document and visible run. Validation failures also expose their issues.
 
 `state.documentId` identifies the current document session; `state.revision` is a
 decimal string. Keep both as strings. Every command except `capabilities`, `status`,
-`document.get`, `results.get` and `recovery.list` requires the two guard fields from the latest state.
+`document.get`, `results.get`, `recovery.list`, `map.get` and `map.status` requires the two guard fields from the latest state.
 This prevents a delayed AI edit from overwriting changes made by the user. A rejected
 guard requires a fresh inspection and a decision about whether the original edit
 still applies. Do not automatically retry it against the new revision.
@@ -95,6 +95,11 @@ and inspect again. `simulation.reset` stores its seed as the canonical decimal (
 | `status` | None | Read current document and run state |
 | `document.get` | Optional `pointer`: JSON Pointer string | Read `result.document`, or only the pointed `result.value` |
 | `document.patch` | `patch`: RFC 6902 operation array | Validate and commit one atomic, undoable document edit |
+| `map.get` | None | Read settings and installed providers, with tile state |
+| `map.status` | None | Read current viewport tile counts and readiness |
+| `map.set` | `longitude`, `latitude`; optional provider/appearance/anchor fields | Replace map settings as one Undo step |
+| `map.remove` | None | Remove map settings as one Undo step |
+| `map.retry` | None | Retry failed visible tiles without changing History |
 | `recovery.list` | None | List recovery IDs and advisory availability without opening a dialog |
 | `recovery.restore` | `id`; `discardChanges: true` when dirty | Restore an inactive draft as untitled/dirty |
 | `recovery.discard` | `id`, `confirm: true` | Delete one inactive draft under its lock |
@@ -307,3 +312,28 @@ confirmation and deletes only the named inactive draft while holding its lock. B
 this window's current draft, other live owners, missing files, paths and symlinks; IDs are
 basenames from list, never arbitrary paths. A listed draft may become busy before use.
 No command removes another editor's active draft or bulk-deletes pending recovery.
+
+## Map commands and viewport readiness (D347)
+
+`map.get` returns persisted settings (null when absent), installed provider IDs/names and
+current tile state; `map.status` returns tile state only. Both are unguarded reads and do
+not fetch tiles or rebuild the document. `map.set` replaces settings using required finite
+`longitude` [-180,180] and `latitude` [-80,84]; optional `providerId` defaults to the first
+installed provider, `opacity` to 0.7, `anchorWorldX/Y` to 0 and `rotationDegrees` to 0.
+World anchors are within ±10,000,000 m, rotation ±180 degrees, opacity [0,1]. UTM CRS is
+computed by the existing rule; clients do not patch schemaVersion or author a projection.
+Unknown keys/type/range failures include error.path and error.expected without changing work.
+
+Guarded map.set/remove use the existing map command, validation, History and run invalidation.
+A changed set shows the layer and centers on a changed geographic anchor as the settings UI
+does; no-op set keeps the camera and revision. Remove is idempotent. `map.retry` is guarded
+view state, reusing existing failed-tile retry and Retry-After behavior without an Undo entry.
+
+Tile state reports status (disabled/loading/ready/networkError/outsideStudy/unavailable/
+renderLimit), visible, viewportPending, wanted, loaded, pending, failed and ready. Counts
+refer to the current computed viewport; while viewportPending they may describe the previous
+view. ready requires a settled viewport, visible layer, status ready, at least one wanted
+tile and all wanted tiles loaded without failures. Pending includes retry waits; networkError
+can coexist with pending retries and is not necessarily terminal. Readiness means tile data
+is available to paint, not that a screenshot has already been captured. Read again after
+camera changes; no fixed sleep duration or successful external OSM access is assumed.

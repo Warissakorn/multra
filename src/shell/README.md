@@ -11,7 +11,9 @@ client. See [desktop automation](../../docs/reference/DESKTOP_AUTOMATION.md) for
 
 `editor_lab.cpp` opens Simulation → Behaviour Lab (D165): `behaviour_lab_window.*` (a second, non-modal window drawing the lab run on its own `EditorCanvas`, which follows one vehicle), `behaviour_lab_panel.*` and `behaviour_lab_telemetry.*`; Apply writes the tuned vehicle back through `execute`.
 
-`editor_map.cpp` supplies localized map settings, navigation and visibility actions.
+`editor_map.cpp` supplies localized map settings, navigation and visibility actions, plus
+map.get/set/remove/status/retry automation. UI and AI settings share the same apply path;
+read-only tile snapshots come from the existing layer/client and viewport timer.
 Its dialogs are free functions in `map_settings_dialog`; `map_location_picker` adds searchable
 country and optional province/state choices while preserving manual coordinate entry.
 

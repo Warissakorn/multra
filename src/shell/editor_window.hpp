@@ -98,6 +98,8 @@ private:
     void buildMapTranslation();
     void refreshMapActions();
     void editMapSettings();
+    bool applyMapSettings(const std::optional<MapSettings>& settings);
+    QJsonObject automationMap(const QString& command,const QJsonObject& params);
     void goToMapCoordinates();
     QTreeWidget* palette_{};
     std::map<int,QTreeWidgetItem*> paletteItems_;

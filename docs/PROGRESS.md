@@ -6,6 +6,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — AI map commands and tile readiness (D347)
+
+- **Asked:** continue with map settings and tile-loading state through commands.
+- **Changed:** map.get/status expose installed providers/settings and current viewport counts;
+  map.set takes coordinates, derives UTM and uses the same apply path as Map settings; remove
+  is idempotent, retry uses existing view-only backoff. Parameter failures include path/expected.
+  Ready requires a settled visible viewport and complete wanted tiles; read requests create
+  no fetches or new polling timers. Existing History and run invalidation remain.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (135.03 s).
+  Eleven targeted automation/map suites passed. A local HTTP tile fixture covers held loading,
+  complete tiles, failed images/retry, pending-pan readiness, hidden retry, unavailable providers,
+  invalid fields, no-op set/remove and Undo/Redo. External OSM and Windows remain unverified.
+
 ## 2026-10-26 — Deferred recovery commands (D346)
 
 - **Asked:** continue the AI workflow with recovery management that avoids blocking startup
@@ -181,48 +194,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   **231/231 CTest cases passed**. Fontconfig uses bundled Thai fonts with DejaVu Sans fallback, as
   in the earlier desktop sessions. Six focused type-cut cases also pass in a separate harness.
   Windows untested; no milestone gate closed.
-
-## 2026-10-25 — Shipped projects reviewed; four-leg gets its 300 s cool-down (D337)
-
-- **Asked:** check the four shipped projects, then whether any is unneeded; the owner chose the
-  recommendation (“ทำตามแนะนำ”): keep all four, give four-leg its cool-down, document the folder.
-- **Review:** all four regenerate byte-identical from their `tools/` builders, have unique IDs,
-  `nextId` above every ID, resolved references, and run deterministically (seed 42 twice) with
-  none overloaded at seeds 42-51. No file is redundant: four-leg is the main regression fixture, the
-  T-junction the only Yield/right-hand one, the M2.6 template the only routing-decision gate-study
-  shape, the lane-change lab the D98 development bed (8 tests, C4).
-- **Dropped owner decision found:** D201 B8 (2026-10-16) queued a 300 s cool-down for
-  `four-leg-signalised`; it left NEXT by 2026-10-20 without being done. Now
-  `fixture::shippedFourLeg()` adds it to the committed file only (schema 17 → 27); the M2.6 template
-  and in-memory variants keep the bare drawing. Seeds 42-51 had about 52 vehicles still in the
-  network at 900 s and every movement warned unfinished.
-- **Tests:** the codec and no-cool-down rows that used the committed file as their bare baseline
-  (queue counter schema 16, EP schema 22 and warm-up 0, CD1/CD6/CD7, TT8, L5) clear the cool-down
-  first; EP and CD1 now pin the committed period. `road`/`roadcatalog` skip non-`.traffic.json`
-  files so the new [`data/projects/README.md`](../data/projects/README.md) is not parsed.
-- **Verification:** Linux, GCC 13.3: headless CTest 154/154 and `check` pass; desktop (Qt 6
-  offscreen) CTest 230/230. Four-leg seeds 42-51: no movement unfinished, 504.7 vehicles completed
-  of 504.7 generated, safety clamps 0. Windows untested. No milestone gate closed.
-
-## 2026-10-25 — Review fixes: user-bound automation endpoint, gesture BUSY, car default (D336)
-
-- **Asked:** apply the review of the automation branch (D335) and of PR #190 (D333) and open one PR.
-- **Endpoint ownership:** a bare Unix name was `/tmp/<name>`, so another account could create it
-  first and receive every request; the per-user lock excluded only this user's editors. Both
-  ends now resolve `automationServerName`: on Unix a hashed socket in the owner-only runtime
-  directory. On Windows `multra-control` refuses a pipe whose server process is another user
-  (`UNTRUSTED_SERVER`).
-- **BUSY during a gesture:** a guarded command arriving while a mouse button is held is refused,
-  as under a modal dialog; a drag's release would otherwise commit over the patched document.
-- **Default type:** catalogs sort by ID, so D333's bus became the default of a new Vehicle Input,
-  the template of a new catalog type and a parking exit's placeholder. `preferredVehicleType`
-  (car, else the first) is now the one rule, also used by the Behaviour Lab.
-- **Code review follow-ups:** an open menu is `BUSY` too; a padded seed is stored canonically,
-  not truncated by the 10-character field; the endpoint lock is resolved without Qt's test mode
-  (`automationLockPath`), and the test host uses `useTestStorage()` with one fixed name; a patch
-  never copies the embedded image; `commitChange` is the one post-edit path; History's reset
-  generation, not per-site clears, makes the documentId; the Lab uses `preferredVehicleType`.
-- **Verification:** see the PR; Linux only. The Windows refusal needs a second account.
 
 ## Older entries
 
