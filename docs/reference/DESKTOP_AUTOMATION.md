@@ -389,3 +389,39 @@ Requests with neither report nor runId preserve legacy tab-based results.export 
 Explicit identities/exports for batch, comparison, Macro and Meso remain out of this slice;
 unsupported explicit report names are rejected, never routed to a different result silently.
 No additional simulation loop, worker, timer or persistent run log is introduced.
+
+## Codec-backed discovery and asynchronous run-until (D350)
+
+`document.schema {pointer?}` returns a draft-2020-12 structural schema observed from the
+current serialized document/subtree, current/latest codec versions, protected patch fields
+and the authoritative validation command. coverage is observed-shape and authoritative is
+false: absent optional fields, cross-references and semantic constraints are not inferred.
+Numbers stay number (not integer inferred from a sample), additional object fields remain
+open, and empty/null samples remain unconstrained. Discovery is bounded to 50,000 visited
+values/32 levels and reports truncated when a bound is reached. Embedded image bytes are
+excluded. This is not a complete formal schema for every supported project/version.
+
+`document.validate` accepts exactly one of patch or document. Patch follows the same protected
+field/codec/History settlement path as document.patch on a disposable History; document checks
+a complete canonical editor document through the codec. Success returns valid:true, changed
+and the resulting serialized schemaVersion, never changes the live document/run/Undo, and
+is not a promise of traffic calibration or run readiness. Errors retain existing structured
+validation/attachment diagnostics. Both discovery and validation are unguarded explicit reads.
+
+`simulation.run` is guarded, with optional current runId, until:"finished" (default) or
+until:"time" with a finite time in scenario seconds on the fixed time grid, and integer
+timeoutMs 1–300000 (default 30000). It prepares the existing single run synchronously, then replies without waiting for the
+simulation target. Compilation retains the existing GUI preparation behavior; client transport
+timeout does not cancel a submitted request. Targets are checked against the compiled snapshot before live preparation is committed; a
+time target cannot precede the current tick.
+The existing GUI timer performs at most 200 steps per callback with a best-effort 8 ms slice;
+one engine step cannot be interrupted. Observers/rendering use the existing run path.
+No second worker, simulation loop outside the GUI timer, or job registry is introduced.
+
+state.run.until reports target runId/tick/time, active, timeoutMs and outcome (none/running/
+reached/timeout/paused or the existing invalidation reason). Track completion through status
+or results.get with the runId. Duplicate active requests with identical target/deadline settings
+keep the original deadline; a different active target is refused. Pause/Step cancel the target,
+Start returns to ordinary playback, edits/reset/replacement invalidate it, and disconnecting
+or disabling automation does not cancel it. Timeout preserves the completed steps and pauses
+without changing runId. Ready results still require completion before final CSV export.

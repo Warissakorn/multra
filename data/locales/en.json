@@ -1,4 +1,5 @@
 {
+  "editorRunUntilTarget": "Running to %1 s · ",
   "RECOVERY_BUSY": "This recovery copy is owned by a live editor or its lock is unavailable.",
   "RECOVERY_INVALID_ID": "Use a recovery basename from recovery.list; paths and symbolic links are not accepted.",
   "RECOVERY_NOT_FOUND": "The recovery copy no longer exists. Refresh recovery.list.",

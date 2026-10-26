@@ -28,10 +28,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## AI automation follow-up (D344–D349)
+## AI automation follow-up (D344–D350)
 
-- Open automation work: full document schema discovery and run-until support. Explicit
-  batch/comparison/Macro/Meso identities/exports remain separate from the single-run slice.
+- Open automation work: an authoritative formal schema covering every optional/versioned
+  field remains separate from D350 observed-shape discovery plus codec dry validation.
+  Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
   Reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked yet.
 - Windows acceptance: live endpoint enable/disable and reconnect, guarded New/Quit with full

@@ -125,9 +125,17 @@ int main(int argc, char** argv) {
 
         const auto singleRunId=state.value("run").toObject().value("runId");
         require(!singleRunId.toString().isEmpty(),"Compiled desktop did not identify the single run");
-        int steps=0;
-        while(!state.value("run").toObject().value("finished").toBool() && steps++<20)
-            send("simulation.step",{{"steps",200},{"runId",singleRunId}});
+        const auto discovery=send("document.schema",{},false);
+        require(discovery.value("result").toObject().value("coverage")=="observed-shape","Compiled discovery misrepresented schema coverage");
+        const auto dry=send("document.validate",{{"patch",QJsonArray{}}},false);
+        require(dry.value("result").toObject().value("valid").toBool()&&!dry.value("result").toObject().value("changed").toBool(),"Compiled dry validation failed");
+        send("simulation.run",{{"until","finished"},{"runId",singleRunId},{"timeoutMs",10000}});
+        QElapsedTimer completion;completion.start();
+        while(!state.value("run").toObject().value("finished").toBool()) {
+            require(completion.elapsed()<10000,"Compiled run-until did not complete");
+            QTest::qWait(10);send("status",{},false);
+        }
+        require(state.value("run").toObject().value("until").toObject().value("outcome")=="reached","Compiled target did not report completion");
         const auto csv=directory.filePath(QString::fromUtf8("รายงาน.csv"));
         const auto exported=send("results.export",{{"path",csv},{"report","movements"},{"runId",singleRunId}});
         require(exported.value("result").toObject().value("run").toObject().value("runId")==singleRunId&&QFileInfo(csv).size()>0,

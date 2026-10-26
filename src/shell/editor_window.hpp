@@ -180,7 +180,9 @@ private:
     QLabel* toolHint_{};
     void buildRunControls();
     void refreshRun();
-    bool prepareRun();
+    bool prepareRun(const std::function<void(const RunSnapshot&)>& check = {});
+    void runUntil(const QJsonObject& params);
+    void endRunUntil(const char* reason);
     void toggleRun();
     void stepRun();
     void tickRun();

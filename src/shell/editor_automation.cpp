@@ -1,6 +1,7 @@
 #include "editor_window.hpp"
 #include "automation_error.hpp"
 #include "automation_geometry.hpp"
+#include "automation_document.hpp"
 #include "automation_endpoint.hpp"
 #include "editor_storage.hpp"
 #include "../project/load.hpp"
@@ -24,10 +25,6 @@ QJsonValue toQt(const Json& value) {
     // Wrap scalars too: QJsonDocument only accepts an array or object at the root.
     const auto bytes=Json::array({value}).dump();
     return QJsonDocument::fromJson(QByteArray::fromStdString(bytes)).array().at(0);
-}
-Json fromQt(const QJsonValue& value) {
-    const auto bytes=QJsonDocument(QJsonArray{value}).toJson(QJsonDocument::Compact);
-    return Json::parse(bytes.constData(),bytes.constData()+bytes.size()).at(0);
 }
 QString requiredString(const QJsonObject& object, const char* key) {
     const auto value=object.value(key);
@@ -80,11 +77,11 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         const auto params=request.value("params").toObject();
         if(request.value("command")==QJsonValue("status") && params.contains("includeSelection") && !selectionOption.isBool())
             throw CommandError("INVALID_PARAMS","includeSelection must be a boolean");
-        static const QStringList commands{"capabilities","status","document.get","document.patch",
+        static const QStringList commands{"capabilities","status","document.get","document.patch","document.schema","document.validate",
             "file.open","file.save","file.new","app.quit","recovery.list","recovery.restore","recovery.discard","map.get","map.set","map.remove","map.status","map.retry","connector.suggest","history.undo","history.redo","simulation.start","simulation.pause",
-            "simulation.step","simulation.reset","results.get","results.export","view.fit","view.select","view.screenshot"};
+            "simulation.step","simulation.reset","simulation.run","simulation.cancel","results.get","results.export","view.fit","view.select","view.screenshot"};
         if(!commands.contains(command))throw CommandError("UNKNOWN_COMMAND","Unknown automation command");
-        const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list" || command=="map.get" || command=="map.status" || command=="connector.suggest";
+        const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list" || command=="map.get" || command=="map.status" || command=="connector.suggest" || command=="document.schema" || command=="document.validate";
         if(!read) {
             if(automationClosing_)throw CommandError("CLOSING","The editor is closing; inspect status instead of sending mutations");
             const auto state=automationState(false);
@@ -97,12 +94,17 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         }
         QJsonObject result;
         if(command=="capabilities") {
-            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands","connectorSuggestions","attachmentDiagnostics","singleRunIdentity","explicitSingleRunExport"}},{"commands",QJsonArray::fromStringList(commands)},
+            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands","connectorSuggestions","attachmentDiagnostics","singleRunIdentity","explicitSingleRunExport","codecDiscovery","runUntil"}},{"commands",QJsonArray::fromStringList(commands)},
                 {"maxRequestBytes",automationRequestLimit},{"maxStepCount",maxStepCount},{"patchFormat","RFC6902"},
                 {"guard",QJsonArray{"documentId","expectedRevision"}},
-                {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list","map.get","map.status","connector.suggest"}},
+                {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list","map.get","map.status","connector.suggest","document.schema","document.validate"}},
                 {"parameters",QJsonObject{
                     {"status",QJsonObject{{"includeSelection","optional boolean; default true; false omits selection"}}},
+                    {"document.schema",QJsonObject{{"pointer","optional subtree; observed structural schema, not full codec contract"}}},
+                    {"document.validate",QJsonObject{{"patch","RFC6902 array, exclusive with document; validates through disposable History"},{"document","full canonical editor document, exclusive with patch"}}},
+                    {"simulation.run",QJsonObject{{"until","optional finished (default) or time"},{"time","required with until:time; scenario seconds on time grid"},
+                        {"runId","optional current run ID"},{"timeoutMs","optional integer 1..300000, default 30000; asynchronous"}}},
+                    {"simulation.cancel",QJsonObject{{"runId","optional current run ID; stops run-until without discarding progress"}}},
                     {"document.get",QJsonObject{{"pointer","optional JSON Pointer string; returns result.value"}}},
                     {"document.patch",QJsonObject{{"patch","required RFC6902 operation array"}}},
                     {"file.open",QJsonObject{{"path","required string"},{"discardChanges","optional boolean; required true when dirty"}}},
@@ -118,7 +120,9 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                     {"file.new",QJsonObject{{"discardChanges","optional boolean; required true when dirty"}}},
                     {"app.quit",QJsonObject{{"discardChanges","optional boolean; required true when dirty; reply accepts quit, caller must verify exit"}}},
                     {"file.save",QJsonObject{{"path","required string"}}},
-                    {"simulation.step",QJsonObject{{"steps",QString("optional integer 1..%1; default 1").arg(maxStepCount)}}},
+                    {"simulation.start",QJsonObject{{"runId","optional current run ID; switches run-until to ordinary playback"}}},
+                    {"simulation.pause",QJsonObject{{"runId","optional current run ID; pauses/cancels run-until"}}},
+                    {"simulation.step",QJsonObject{{"steps",QString("optional integer 1..%1; default 1").arg(maxStepCount)},{"runId","optional current run ID"}}},
                     {"simulation.reset",QJsonObject{{"seed","optional unsigned 32-bit decimal string"}}},
                     {"view.select",QJsonObject{{"ids","required array of selectable object ID strings"}}},
                     {"view.screenshot",QJsonObject{{"path","required PNG destination string"}}},
@@ -134,26 +138,20 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             } else result={{"document",toQt(document)}};
         } else if(command=="document.patch") {
             if(!params.value("patch").isArray())throw CommandError("INVALID_PARAMS","patch must be an RFC6902 array");
-            // The embedded image never enters the JSON: an empty stand-in that must come back
-            // unchanged, then the shared bytes are restored. No copy or compare of up to 32 MB.
-            auto imageless=history_.document();imageless.background.pngBase64=std::make_shared<const std::string>();
-            const auto original=documentJson(imageless);
-            const auto patched=original.patch(fromQt(params.value("patch")));
-            if(!patched.is_object() || !patched.contains("schemaVersion") || patched.value("format",Json{})!=original.at("format") ||
-                patched.value("revision",Json{})!=original.at("revision") || !patched.contains("background") ||
-                !patched.at("background").is_object() || patched.at("background").value("pngBase64",Json{})!=Json(""))
-                throw CommandError("PROTECTED_FIELD","Keep schemaVersion; format, revision and embedded image bytes cannot be changed");
+            Json patched;
             try {
-            auto candidate=parseDocument(patched);
-            candidate.revision=history_.revision();
-            candidate.background.pngBase64=history_.document().background.pngBase64; // Immutable, unchanged bytes stay shared across History.
-            bool changed{};
-            try {changed=commitChange("editorAutomationChange",[&](auto& d){d=std::move(candidate);});}
-            catch(...){canvas_->setDocument(&history_.document());throw;} // as execute(); the reply keeps the issues
-            result={{"changed",changed}};
+                auto candidate=parseAutomationPatch(history_.document(),params.value("patch").toArray(),&patched);
+                bool changed{};
+                try {changed=commitChange("editorAutomationChange",[&](auto& d){d=std::move(candidate);});}
+                catch(...){canvas_->setDocument(&history_.document());throw;}
+                result={{"changed",changed}};
             } catch(const ValidationError& e) {
                 throw CommandError("VALIDATION_FAILED",e.what(),{{"issues",geometryValidationIssues(e.issues,&patched)}});
             }
+        } else if(command=="document.schema") {
+            result=discoverDocument(history_.document(),params);
+        } else if(command=="document.validate") {
+            result=validateAutomationDocument(history_.document(),params);
         } else if(command=="connector.suggest") {
             result=suggestConnector(history_.document(),params);
         } else if(command.startsWith("map.")) {
@@ -193,6 +191,8 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                 clearRun();error_->clear();rejected_.clear();refresh();
             }
             result={{"changed",changed}};
+        } else if(command=="simulation.run") {
+            checkAutomationRunId(params);runUntil(params);result={{"accepted",true},{"run",automationRunState()}};
         } else if(command.startsWith("simulation.")) {
             checkAutomationRunId(params);
             int steps=1;
@@ -211,8 +211,12 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                     clearRun("reset");runSeed_->setText(canonical);
                 }
                 clearRun("reset");
-            } else if(command=="simulation.pause")pauseRun();
+            } else if(command=="simulation.pause" || command=="simulation.cancel") {
+                if(command=="simulation.cancel")endRunUntil("cancelled");
+                pauseRun();
+            }
             else {
+                if(command=="simulation.start")endRunUntil("playback");
                 if(!prepareRun()) {
                     const auto sources=studyAreaSources();
                     throw CommandError("RUN_NOT_READY","The document cannot be simulated; inspect diagnostics",

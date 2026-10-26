@@ -6,6 +6,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Codec discovery, dry validation and run-until (D350)
+
+- **Asked:** continue with schema discovery and run-until while keeping the GUI responsive.
+- **Changed:** bounded observed-shape discovery reports its non-authoritative coverage and
+  codec versions. Dry validation uses real parsing/History without editing live work; patch
+  protection is shared with real commits. A guarded run-until uses the existing timer/observers
+  and run ID, fixed-grid targets, bounded fast stepping and deadline outcomes; Pause/Cancel,
+  Step, reset and invalidation stop it. GUI text identifies the target and disables the ordinary
+  playback speed selector while it is active. No new worker, job registry or polling timer.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (164.07 s).
+  After the final fast-to-playback clock reset, rebuild and all five affected automation/run
+  suites passed again (14.60 s); documentation, file-size and architecture checks passed.
+  Tests cover codec/dry-run isolation/errors, target acceptance before stepping, exact replay,
+  GUI heartbeat, timeout, duplicate/conflicting targets, cancellation and playback transition.
+  The compiled desktop/control pair discovers/validates and runs to completion before export.
+  Full formal schemas are not claimed; preparation remains synchronous and Windows is unrun.
+
 ## 2026-10-26 — Single-run identity and explicit CSV export (D349)
 
 - **Asked:** continue with run identity and reporting independent of the selected Results tab.
