@@ -37,7 +37,7 @@ TEST(project, network_schema_keeps_envelope_api_and_reuses_versioned_definitions
     const auto envelope=projectEnvelopeSchema(),schema=projectDocumentSchema();
     CHECK(envelope.at("x-multra-coverage")=="envelope-background");
     CHECK(!envelope.contains("allOf"));
-    CHECK(schema.at("x-multra-coverage")=="envelope-background-network-link-lane");
+    CHECK(schema.at("x-multra-coverage")=="envelope-background-network-link-lane-connector-reference");
     CHECK(schema.at("x-multra-complete")==false);
     CHECK(schema.at("$defs").size()<kLatestSchema);
     CHECK(schema.at("allOf").size()<kLatestSchema);
@@ -46,7 +46,7 @@ TEST(project, network_schema_keeps_envelope_api_and_reuses_versioned_definitions
         const auto& n=networkFor(schema,v);
         CHECK(n.at("additionalProperties")==Json(v<7));
         CHECK(linkFor(schema,v).at("additionalProperties")==Json(v<7));
-        CHECK(n.at("properties").at("connectors").at("items")==Json::object());
+        CHECK(n.at("properties").at("connectors").at("items").contains("$ref"));
         const auto& l=linkFor(schema,v).at("properties");
         CHECK(l.at("linkType")== (v<50?Json(false):Json{{"type","string"}}));
         CHECK(l.at("roadId")== (v<53?Json(false):Json{{"type","string"}}));

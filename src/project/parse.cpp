@@ -76,29 +76,6 @@ std::vector<double> doubles(const Json& value, const char* name) {
     }
     return result;
 }
-int integer(const Json& value,const char* key,int fallback) {
-    if(!value.contains(key))return fallback;
-    const auto& v=member(value,key);
-    if(!v.is_number_integer() || v < -1000 || v > 1000)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
-    return v.get<int>();
-}
-std::vector<Point> points(const Json& value,int version) {
-    std::vector<Point> result;
-    for (const auto& p : array(value, "geometry")) {
-        knownFields(p,{"x","y"},"geometry["+std::to_string(result.size())+"]",version);
-        result.push_back({field<double>(p, "x"), field<double>(p, "y")});
-    }
-    return result;
-}
-LaneReference reference(const Json& value,int schemaVersion) {
-    LaneReference result{field<std::string>(value,"linkId"),field<std::string>(value,"laneId")};
-    const char* key=schemaVersion>=5?"station":"fraction";
-    const char* wrong=schemaVersion>=5?"fraction":"station";
-    if(value.contains(wrong))throw std::invalid_argument("EDIT_VERSION");
-    knownFields(value,{"linkId","laneId","station"},"reference",schemaVersion);
-    if(value.contains(key))result.station=field<double>(value,key);
-    return result;
-}
 // Below schema 5 the stored number is a fraction of the lane's own arclength. Convert it to a
 // station on the link once every link is parsed, so the attachment keeps the world position it
 // was drawn at. Signal heads share LaneReference, so they are walked too.
@@ -191,44 +168,11 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     if (side != "left" && side != "right") throw std::invalid_argument("INVALID_DRIVING_SIDE");
     network.drivingSide = side == "left" ? DrivingSide::left : DrivingSide::right;
     network.links=networkCodec::readLinks(value,schemaVersion);
-    for (const auto& c : array(value, "connectors")) {
-        const auto where="connectors["+std::to_string(network.connectors.size())+"]"; // laneChangeSide: schema 17 (D73)
-        if(schemaVersion>=21)knownFields(withoutGenerated(c,schemaVersion),{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
-            "laneBlend","name","laneWidths","laneMarkings","laneChangeSide","behaviourType"},where,schemaVersion);
-        else if(schemaVersion>=17)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType","laneBlend","name","laneWidths","laneMarkings","laneChangeSide"},where,schemaVersion);
-        else knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
-            "laneBlend","name","laneWidths","laneMarkings"},where,schemaVersion);
-        network.connectors.push_back({field<std::string>(c, "id"), reference(member(c, "from"),schemaVersion), reference(member(c, "to"),schemaVersion), points(c,schemaVersion),
-            integer(c,"fromLaneCount",1),integer(c,"toLaneCount",1),integer(c,"level",0),
-            c.contains("displayType")?field<std::string>(c,"displayType"):"default"});
-        if(present(c,"name"))network.connectors.back().name=field<std::string>(c,"name");
-        if(c.contains("laneBlend"))for(const auto& t:array(c,"laneBlend")) {
-            if(!t.is_number())throw std::invalid_argument("INVALID_GEOMETRY");
-            network.connectors.back().laneBlend.push_back(t.get<double>());
-        }
-        // Schema 6, and additive: a file that does not carry these keys leaves both vectors empty,
-        // which means "derive the width and markings from the Links", exactly as every schema 1-5
-        // file did. Nothing is converted on read, because nothing changed meaning.
-        if(c.contains("laneWidths"))for(const auto& w:array(c,"laneWidths")) {
-            if(!w.is_number())throw std::invalid_argument("INVALID_WIDTH");
-            network.connectors.back().laneWidths.push_back(w.get<double>());
-        }
-        if(c.contains("laneMarkings"))for(const auto& m:array(c,"laneMarkings")) {
-            if(!m.is_string())throw std::invalid_argument("INVALID_MARKING");
-            network.connectors.back().laneMarkings.push_back(markingFromName(m.get<std::string>()));
-        }
-        if(schemaVersion>=17 && present(c,"laneChangeSide")) {
-            const auto side=field<std::string>(c,"laneChangeSide");
-            if(side!="left" && side!="right")throw ValidationError({{"EDIT_LANE_RANGE",where+".laneChangeSide"}});
-            network.connectors.back().laneChangeSide=side=="left"?LaneSide::left:LaneSide::right;
-        }
-        if(schemaVersion>=21 && c.contains("behaviourType"))network.connectors.back().behaviourTypeId=field<std::string>(c,"behaviourType");
-        network.connectors.back().generated=generatedFlag(c,where,schemaVersion); // S4.5a, schema 54
-    }
+    network.connectors=networkCodec::readConnectors(value,schemaVersion);
     for (const auto& h : array(value, "signalHeads")) {
         knownFields(withoutGenerated(h,schemaVersion),{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
             "signalHeads["+std::to_string(network.signalHeads.size())+"]",schemaVersion);
-        network.signalHeads.push_back({field<std::string>(h, "id"), reference(member(h, "lane"),schemaVersion),
+        network.signalHeads.push_back({field<std::string>(h, "id"), networkCodec::readReference(member(h, "lane"),schemaVersion),
                                       field<double>(h, "position"), field<std::string>(h, "programId"),
                                       present(h,"connectorId")?field<std::string>(h,"connectorId"):std::string{}});
         if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");network.signalHeads.back().generated=generatedFlag(h,"signalHeads["+std::to_string(network.signalHeads.size()-1)+"]",schemaVersion);

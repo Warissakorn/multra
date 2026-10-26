@@ -406,3 +406,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D356](RECORD.md#d356) — Shared envelope/background metadata generates a partial formal schema; exact-integer CLI output and explicit codec-only token/byte constraints.
 
 [D357](RECORD.md#d357) — Codec-owned Network/Link/Lane metadata and shared versioned formal schema definitions; compatibility preserved across schemas 1–57.
+
+[D358](RECORD.md#d358) — Connector and attachment-reference schema/codec metadata, preserving fraction/station migration, defaults and diagnostics across schemas 1–57.

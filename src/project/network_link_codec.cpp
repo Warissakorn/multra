@@ -2,22 +2,20 @@
 #include <nlohmann/json.hpp>
 
 namespace multra::networkCodec {
-namespace {
-std::vector<Point> geometry(const Json& item,int version) {
+std::vector<Point> readGeometry(const Json& item,Object object,int version) {
     std::vector<Point> result;
-    for(const auto& p:value(item,Object::link,"geometry")) {
+    for(const auto& p:value(item,object,"geometry")) {
         knownFields(p,Object::point,"geometry["+std::to_string(result.size())+"]",version);
         result.push_back({value(p,Object::point,"x").get<double>(),value(p,Object::point,"y").get<double>()});
     }
     return result;
-}
 }
 std::vector<Link> readLinks(const Json& network,int version) {
     std::vector<Link> result;
     for(const auto& item:value(network,Object::network,"links")) {
         const auto path="links["+std::to_string(result.size())+"]";
         knownFields(item,Object::link,path,version);
-        Link link{value(item,Object::link,"id").get<std::string>(),geometry(item,version),{}};
+        Link link{value(item,Object::link,"id").get<std::string>(),readGeometry(item,Object::link,version),{}};
         for(const auto& lane:value(item,Object::link,"lanes")) {
             knownFields(lane,Object::lane,path+".lanes["+std::to_string(link.lanes.size())+"]",version);
             link.lanes.push_back({value(lane,Object::lane,"id").get<std::string>(),value(lane,Object::lane,"width").get<double>()});

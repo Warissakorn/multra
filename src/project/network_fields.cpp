@@ -9,7 +9,7 @@ namespace multra::networkCodec {
 namespace {
 constexpr Field networkFields[]={
     {"id",Kind::text,true},{"drivingSide",Kind::side,true},{"links",Kind::links,true},
-    {"connectors",Kind::array,true},{"signalHeads",Kind::array,true},
+    {"connectors",Kind::connectors,true},{"signalHeads",Kind::array,true},
     {"rightOfWay",Kind::unchecked,false,14},{"queueCounters",Kind::unchecked,false,16},
     {"travelTimeSections",Kind::unchecked,false,23},{"nodes",Kind::unchecked,false,48},
     {"roads",Kind::unchecked,false,roadVersion,roadVersion},
@@ -24,6 +24,17 @@ constexpr Field linkFields[]={
     {"roadId",Kind::text,false,roadVersion,roadVersion}};
 constexpr Field laneFields[]={{"id",Kind::text,true},{"width",Kind::number,true}};
 constexpr Field pointFields[]={{"x",Kind::number,true},{"y",Kind::number,true}};
+constexpr Field connectorFields[]={
+    {"id",Kind::text,true},{"from",Kind::reference,true},{"to",Kind::reference,true},
+    {"geometry",Kind::geometry,true},{"fromLaneCount",Kind::level},{"toLaneCount",Kind::level},
+    {"level",Kind::level},{"displayType",Kind::text},{"laneBlend",Kind::numbers},
+    {"name",Kind::text,false,0,0,true},{"laneWidths",Kind::numbers},{"laneMarkings",Kind::markings},
+    {"laneChangeSide",Kind::side,false,laneSideVersion,0,true},
+    {"behaviourType",Kind::text,false,behaviourVersion},{"generated",Kind::generated,false,generatedVersion}};
+constexpr Field referenceFields[]={
+    {"linkId",Kind::text,true},{"laneId",Kind::text,true},
+    {"station",Kind::number,false,stationVersion,stationVersion},
+    {"fraction",Kind::number,false,0,0,false,stationVersion}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -31,6 +42,8 @@ std::span<const Field> fields(Object object) {
     case Object::link:return linkFields;
     case Object::lane:return laneFields;
     case Object::point:return pointFields;
+    case Object::connector:return connectorFields;
+    case Object::reference:return referenceFields;
     }
     return {};
 }
@@ -39,7 +52,9 @@ void knownFields(const Json& j,Object object,const std::string& path,int version
     const auto list=fields(object);
     for(const auto& [key,unused]:j.items()) {
         (void)unused;
-        if(std::none_of(list.begin(),list.end(),[&](const auto& f){return key==f.name && version>=f.knownFrom;}))
+        if(std::none_of(list.begin(),list.end(),[&](const auto& f){
+            return key==f.name && version>=f.knownFrom && (!f.rejectFrom || version<f.rejectFrom);
+        }))
             throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path+"."+key}});
     }
 }
@@ -58,10 +73,10 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::level:
         if(!v.is_number_integer() || v < -levelLimit || v > levelLimit)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
         break;
-    case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:
+    case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:
         if(!v.is_array())expected="Expected array: ";
         break;
-    case Kind::unchecked:break;
+    case Kind::unchecked:case Kind::reference:case Kind::generated:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

@@ -60,7 +60,7 @@ inline std::vector<Case> cases() {
         // Structural success deliberately does not promise semantic model validity.
         set("/network/links/0/geometry",Json::array(),true);
         set("/network/links/0/lanes/0/width",0,true);
-        set("/network/connectors",Json::array({7}),true);
+        set("/network/connectors",Json::array({7}),false);
     }
     return result;
 }

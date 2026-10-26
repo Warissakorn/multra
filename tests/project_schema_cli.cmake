@@ -7,7 +7,7 @@ string(JSON coverage GET "${schema}" "x-multra-coverage")
 string(JSON complete GET "${schema}" "x-multra-complete")
 string(JSON open GET "${schema}" "additionalProperties")
 if(NOT dialect STREQUAL "https://json-schema.org/draft/2020-12/schema" OR
-   NOT coverage STREQUAL "envelope-background-network-link-lane" OR complete OR NOT open)
+   NOT coverage STREQUAL "envelope-background-network-link-lane-connector-reference" OR complete OR NOT open)
     message(FATAL_ERROR "Schema coverage or unknown-field policy changed")
 endif()
 string(JSON profile_count LENGTH "${schema}" "allOf")

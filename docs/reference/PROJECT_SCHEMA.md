@@ -1,7 +1,8 @@
 # Project schema inventory
 
 This is the codec ownership and version map for an editor-project schema (D355), with
-generated partial envelope/background (D356) and Network/Link/Lane contracts (D357). It describes implemented
+generated partial envelope/background (D356), Network/Link/Lane (D357), and
+Connector/attachment-reference contracts (D358). It describes implemented
 readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
@@ -129,8 +130,8 @@ historical-schema coverage.
 A generated schema needs codec-owned field metadata for requiredness, null handling,
 unknown-key policy, version gates and tagged alternatives. The inventory above does not
 supply that metadata for every nested field. Network, Link, Lane and Link geometry field metadata are implemented as described below.
-Connector, control and demand field metadata remain separate follow-ups; their semantic
-validation stays in the codec.
+Connector and attachment-reference metadata are described below. Signal/control/demand
+field metadata remain separate follow-ups; their semantic validation stays in the codec.
 
 ## Generated envelope/background schema (D356)
 
@@ -175,19 +176,20 @@ check complete documents/patches against the codec in the live desktop workflow.
 `projectDocumentSchema()` in `network_schema.hpp` composes the stable envelope-only API
 with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 `multra-project-schema` now prints this composed schema with no new arguments. Coverage
-is `envelope-background-network-link-lane` and complete remains false. Desktop observed
-schema discovery is unchanged.
+now also includes the Connector/reference extension below; complete remains false and
+desktop observed schema discovery is unchanged.
 
 The generated schema chooses rules from the document's root `schemaVersion` (1–57).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its
-own file; shared Connector/reference decoding and model geometry algorithms are unchanged.
+own file; the later Connector/reference extraction below preserves model geometry algorithms.
 
 Covered structure:
 
 - Network requires id, drivingSide (left/right), links, connectors and signalHeads. Links
-  have typed items; Connector and signal-head arrays deliberately have unconstrained items.
+  have typed items; Connector items use the extension below, while signal-head items remain
+  unconstrained.
   Other known Network properties are allowed at their existing versions, with their contents
   unchecked. Roads/overpasses retain the document's pre-53 refusal even on legacy versions.
 - Links require id, geometry and lanes. Geometry uses object points with required numeric x/y;
@@ -210,3 +212,44 @@ still require model/document validation. The schema can accept a structurally va
 geometry or zero width that the codec refuses. Unmapped Node/control/Road/demand objects
 can likewise pass the partial schema and fail the codec; schema success never establishes
 full authoring validity, run readiness or scientific validation.
+
+## Connector and attachment-reference extension (D358)
+
+The composed schema and CLI now report coverage
+`envelope-background-network-link-lane-connector-reference`, still with complete:false.
+They add versioned Connector rows, their geometry points and from/to LaneReferences.
+The reference decoder is also shared by native signal-head reads; signal-head row schemas
+remain outside this extension. The envelope-only API, CLI arguments and desktop observed
+schema response keep their existing contracts.
+
+Connector metadata supplies required id/from/to/geometry, optional lane counts, level,
+displayType, name, laneBlend, laneWidths, laneMarkings, laneChangeSide, behaviourType and
+generated. The separate Connector reader preserves original decode order and error codes.
+Geometry-point decoding is shared with Links, without changing geometry calculations.
+
+Version/presence rules:
+
+- References require string linkId/laneId. Before 5 the optional position is fraction of
+  lane arclength; from 5 it is station in metres along the Link reference polyline. The
+  wrong position key is forbidden even when null or legacy unknown fields are additive.
+  Correct position keys reject null. Both keys absent preserve source-end/target-start
+  attachment semantics. Legacy conversion/clamping and endpoint normalization still occur
+  at the original whole-network migration stage, after Connector and signal-head decoding.
+- Counts default to the model's one lane per end; level, displayType and name use their
+  model defaults. Native integer tokens and parser bounds [-1000,1000] apply to counts and
+  level. Feasible lane counts/ranges are stricter model checks, not inferred schema limits.
+- Optional laneBlend/widths/markings are arrays; absent widths/markings stay empty, meaning
+  derive from the Links. Element shapes are numeric or the existing marking-name enum.
+  Their lengths, physical ranges and geometric relationships remain codec/model checks.
+- name may be null and then stays empty. laneChangeSide is known/read from 17, accepts
+  left/right or null (null/absence means the existing kerb-side rule). behaviourType is
+  known/read from 21 and requires a string when present.
+- generated is known from 54 and, when present, must be boolean true; false is represented
+  by omission. Before 7 unknown keys remain additive/ignored, including later side/behaviour/
+  generated keys. From 7 the version's Connector/reference/point known-key lists are closed.
+
+The schema does not resolve lane IDs, enforce attachment bounds, check endpoint distances,
+validate a drivable shape, choose lane ranges or prove traffic/Vissim fidelity. In particular,
+no [0,1] limit is inferred for legacy fraction values: existing native migration remains
+responsible for their interpretation. Standard integer-valued floats can pass JSON Schema
+and fail native integer-token checks, as with the previously covered envelope/Link fields.

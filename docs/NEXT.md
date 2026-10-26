@@ -33,11 +33,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Open automation work: an authoritative formal schema covering every optional/versioned
   field remains separate from D350 observed-shape discovery plus codec dry validation.
   Use [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) for root presence rules, codec owners
-  and save-version floors. Next: read CONNECTOR_PARITY_AUDIT, then map codec-owned Connector
-  and attachment-reference fields with version defaults and known-key policy (including pre-5
-  fractions versus stations). Extend the composed partial schema only with codec parity cases,
-  preserving existing decode stages and diagnostics. Keep nested control/demand/optional-feature
-  validation in the codec until their fields are mapped.
+  and save-version floors. Next: map SignalHead row fields, including their shared lane
+  attachment references, controller/group fields and version-specific known-key/read stages.
+  Extend the composed partial schema only with codec parity cases, preserving decode stages,
+  migrations and diagnostics. Keep other signal/control/demand/optional-feature validation
+  in the codec until their fields are mapped.
   Never promote sample-derived hints to an authoritative contract.
   Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
   Reuse existing validation,
