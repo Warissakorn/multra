@@ -21,9 +21,11 @@ class NetworkSchema {
             break;
         case Kind::number:rule={{"type","number"}};break;
         case Kind::level:rule={{"type","integer"},{"minimum",-levelLimit},{"maximum",levelLimit},{"x-multra-nativeType","integer-token"}};break;
+        case Kind::group:rule={{"type","integer"},{"minimum",groupMinimum},{"maximum",groupMaximum}};break;
         case Kind::array:rule={{"type","array"},{"items",Json::object()}};break;
         case Kind::links:rule={{"type","array"},{"items",reference(Object::link,version)}};break;
         case Kind::connectors:rule={{"type","array"},{"items",reference(Object::connector,version)}};break;
+        case Kind::signalHeads:rule={{"type","array"},{"items",reference(Object::signalHead,version)}};break;
         case Kind::reference:rule=reference(Object::reference,version);break;
         case Kind::numbers:rule={{"type","array"},{"items",{{"type","number"}}}};break;
         case Kind::generated:rule={{"type","boolean"},{"const",true}};break;
@@ -39,11 +41,17 @@ class NetworkSchema {
         return rule;
     }
     Json objectSchema(Object object,int version) {
-        Json properties=Json::object(),required=Json::array();
+        Json properties=Json::object(),required=Json::array(),conditions=Json::array();
         for(const auto& field:fields(object)) {
             if(version<field.rejectBefore || (field.rejectFrom && version>=field.rejectFrom)) {properties[field.name]=false;continue;}
             if(version<field.knownFrom)continue;
             properties[field.name]=fieldSchema(field,version);
+            if(field.whenNonNull) {
+                conditions.push_back({{"if",{{"required",Json::array({field.whenNonNull})},
+                    {"properties",{{field.whenNonNull,{{"not",{{"type","null"}}}}}}}}},
+                    {"then",{{"required",Json::array({field.name})},{"properties",{{field.name,properties.at(field.name)}}}}}});
+                properties[field.name]=Json::object(); // An inactive field is ignored by the codec.
+            }
             if(field.required)required.push_back(field.name);
         }
         if(object==Object::link) {
@@ -63,7 +71,14 @@ class NetworkSchema {
             properties["name"]["default"]=defaults.name;
             for(const auto* key:{"laneBlend","laneWidths","laneMarkings"})properties[key]["default"]=Json::array();
         }
-        return {{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",version<strictVersion}};
+        if(object==Object::signalHead) {
+            const NetworkSignalHead defaults;
+            properties["name"]["default"]=defaults.name;
+            properties["connectorId"]["default"]=defaults.connectorId;
+        }
+        Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",version<strictVersion}};
+        if(!conditions.empty())result["allOf"]=std::move(conditions);
+        return result;
     }
 public:
     Json reference(Object object,int version) {
@@ -72,7 +87,7 @@ public:
         auto it=names_.find(signature);
         if(it==names_.end()) {
             const char* prefix=object==Object::network?"network":object==Object::link?"link":object==Object::lane?"lane":
-                object==Object::connector?"connector":object==Object::reference?"reference":"point";
+                object==Object::connector?"connector":object==Object::reference?"reference":object==Object::signalHead?"signalHead":"point";
             const auto name=std::string(prefix)+std::to_string(version);
             definitions_[name]=schema;
             it=names_.emplace(signature,name).first;
@@ -81,8 +96,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/geometry/attachment-reference structure. Model invariants and nested signal/control/demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference structure. Model invariants and nested signal-controller/program/control/demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

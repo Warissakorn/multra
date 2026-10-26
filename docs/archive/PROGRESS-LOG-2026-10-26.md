@@ -2,6 +2,21 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Single-run identity and explicit CSV export (D349)
+
+- **Asked:** continue with run identity and reporting independent of the selected Results tab.
+- **Changed:** successful GUI preparation assigns a single-run ID/source revision; pause/resume,
+  reconnect and completion preserve it. Existing invalidation paths retain the latest ID/reason.
+  Optional runId rejects stale simulation/results requests. Explicit movements export requires
+  a current finished single run and reuses CSV/provenance formatting plus atomic writes; legacy
+  unqualified export retains tab-based behavior. No job registry, engine RNG change or timer.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (162.59 s).
+  Six targeted automation/run suites passed. Coverage includes lifecycle/reconnect, reset/seed/
+  edit/Open/batch invalidation, stale/partial export refusing an existing destination, CSV byte
+  equality with Macro selected, and the compiled desktop/control pair exporting a named run
+  to a Unicode path and rejecting its old ID after restart. Windows remains unrun; explicit
+  other-engine/batch exports and run-until are separate work.
+
 ## 2026-10-26 — Connector proposals and candidate diagnostics (D348)
 
 - **Asked:** continue with geometry suggestions and diagnostics, preserving existing geometry.

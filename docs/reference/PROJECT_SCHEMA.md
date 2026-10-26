@@ -2,7 +2,7 @@
 
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357), and
-Connector/attachment-reference contracts (D358). It describes implemented
+Connector/attachment-reference (D358) and SignalHead contracts (D359). It describes implemented
 readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
@@ -130,7 +130,7 @@ historical-schema coverage.
 A generated schema needs codec-owned field metadata for requiredness, null handling,
 unknown-key policy, version gates and tagged alternatives. The inventory above does not
 supply that metadata for every nested field. Network, Link, Lane and Link geometry field metadata are implemented as described below.
-Connector and attachment-reference metadata are described below. Signal/control/demand
+Connector and attachment-reference metadata are described below. Signal-controller/program/control/demand
 field metadata remain separate follow-ups; their semantic validation stays in the codec.
 
 ## Generated envelope/background schema (D356)
@@ -188,8 +188,7 @@ own file; the later Connector/reference extraction below preserves model geometr
 Covered structure:
 
 - Network requires id, drivingSide (left/right), links, connectors and signalHeads. Links
-  have typed items; Connector items use the extension below, while signal-head items remain
-  unconstrained.
+  have typed items; Connector items use the extension below, while signal-head items use the extension below.
   Other known Network properties are allowed at their existing versions, with their contents
   unchecked. Roads/overpasses retain the document's pre-53 refusal even on legacy versions.
 - Links require id, geometry and lanes. Geometry uses object points with required numeric x/y;
@@ -215,11 +214,11 @@ full authoring validity, run readiness or scientific validation.
 
 ## Connector and attachment-reference extension (D358)
 
-The composed schema and CLI now report coverage
-`envelope-background-network-link-lane-connector-reference`, still with complete:false.
+D358 added Connector/reference coverage; D359 below extends the current composed coverage
+with SignalHead rows. Complete remains false.
 They add versioned Connector rows, their geometry points and from/to LaneReferences.
-The reference decoder is also shared by native signal-head reads; signal-head row schemas
-remain outside this extension. The envelope-only API, CLI arguments and desktop observed
+The reference decoder is also shared by native signal-head reads; their row schema is
+added by D359 below. The envelope-only API, CLI arguments and desktop observed
 schema response keep their existing contracts.
 
 Connector metadata supplies required id/from/to/geometry, optional lane counts, level,
@@ -253,3 +252,33 @@ validate a drivable shape, choose lane ranges or prove traffic/Vissim fidelity. 
 no [0,1] limit is inferred for legacy fraction values: existing native migration remains
 responsible for their interpretation. Standard integer-valued floats can pass JSON Schema
 and fail native integer-token checks, as with the previously covered envelope/Link fields.
+
+## SignalHead extension (D359)
+
+The composed schema/CLI coverage is
+`envelope-background-network-link-lane-connector-reference-signal-head`; complete remains
+false. SignalHead rows require id, lane (the shared versioned LaneReference), numeric position
+and string programId. programId is required even when a controller is supplied; its empty
+string is permitted structurally. name and connectorId may be absent/null and then stay empty.
+Their schema default annotations do not fill input documents. Unknown-key and generated flag
+rules follow the same pre-7 additive/from-54 true-only policy as the other covered objects.
+
+Controller/group reads are conditional, with shared metadata supplying both native decoding
+and generated JSON Schema if/then rules:
+
+- Absent/null controllerId leaves controller/group at their model defaults; groupNumber is
+  ignored regardless of its type, nullness or presence.
+- A non-null controllerId must be a string and requires groupNumber, including when the string
+  is empty. No default is inserted for either field. An integer-valued number in native int
+  range is required for the group; `1.0` is accepted, unlike integer-token-only level/count
+  fields. Non-numbers, fractional/nonfinite values and out-of-range conversion retain the
+  original errors. The schema describes mathematical integers and native int bounds.
+- These keys were known/read without an explicit schema-13 gate in the existing reader;
+  the schema preserves that compatibility instead of inventing a new refusal.
+
+The separate SignalHead reader preserves field/error ordering. Whole-network attachment
+migration and pre-13 project signal-program migration still happen in their original stages.
+The schema covers pre-migration input structure, not the resulting controller/program data.
+Controllers/groups/program references, the semantic program-versus-controller choice, valid
+head positions and geometric attachment constraints still require the model/document codec.
+Other signal-controller/program/control/demand row schemas remain separate follow-ups.

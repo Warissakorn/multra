@@ -6,6 +6,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — SignalHead structural schema and conditional groups (D359)
+
+- **Changed:** shared metadata supplies SignalHead known-key/type rules, native read conditions
+  and schema if/then constraints. SignalHead decoding moves out of the parser (now 409 lines).
+  The composed schema/CLI adds head rows; the envelope-only API and desktop observed discovery
+  stay unchanged. Controller/program contents and semantic/model checks remain codec-owned.
+- **Preserved:** absent/null controllerId ignores groupNumber; even an empty non-null controller
+  requires a group. Integer-valued floats remain accepted in native int range, without inventing
+  a schema-13 read gate. Optional text, pre-7 known-key policy, generated flags, diagnostic order,
+  attachment conversion and pre-13 signal-program migration keep their existing behavior.
+- **Verified:** 4,503 SignalHead cases have byte-identical before/after outcomes/errors/canonical
+  documents and pass independent Draft-2020-12 expectations. Four shipped projects validate
+  structurally and keep byte-identical canonical output. Five new regression cases cover defaults,
+  conditional/ignored groups, numeric boundaries, version compatibility and legacy program
+  migration; project tests pass 40/40. Release headless build and all 161 CTest entries pass,
+  including architecture, docs, CLI and file-size checks. Linux headless evidence only; no
+  engine, scientific-validation, owner or Qt/Windows gate is closed.
+
 ## 2026-10-26 — Connector and attachment-reference structural schema (D358)
 
 - **Changed:** after reading CONNECTOR_PARITY_AUDIT, extended shared metadata and composed
@@ -148,21 +166,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   GUI heartbeat, timeout, duplicate/conflicting targets, cancellation and playback transition.
   The compiled desktop/control pair discovers/validates and runs to completion before export.
   Full formal schemas are not claimed; preparation remains synchronous and Windows is unrun.
-
-## 2026-10-26 — Single-run identity and explicit CSV export (D349)
-
-- **Asked:** continue with run identity and reporting independent of the selected Results tab.
-- **Changed:** successful GUI preparation assigns a single-run ID/source revision; pause/resume,
-  reconnect and completion preserve it. Existing invalidation paths retain the latest ID/reason.
-  Optional runId rejects stale simulation/results requests. Explicit movements export requires
-  a current finished single run and reuses CSV/provenance formatting plus atomic writes; legacy
-  unqualified export retains tab-based behavior. No job registry, engine RNG change or timer.
-- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (162.59 s).
-  Six targeted automation/run suites passed. Coverage includes lifecycle/reconnect, reset/seed/
-  edit/Open/batch invalidation, stale/partial export refusing an existing destination, CSV byte
-  equality with Macro selected, and the compiled desktop/control pair exporting a named run
-  to a Unicode path and rejecting its old ID after restart. Windows remains unrun; explicit
-  other-engine/batch exports and run-until are separate work.
 
 ## Older entries
 

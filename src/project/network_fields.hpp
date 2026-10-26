@@ -1,25 +1,30 @@
 #pragma once
 #include "json.hpp"
 #include <span>
+#include <limits>
 
 namespace multra::networkCodec {
-enum class Object { network,link,lane,point,connector,reference };
-enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated };
+enum class Object { network,link,lane,point,connector,reference,signalHead };
+enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
+    const char* whenNonNull{};
 };
 inline constexpr int strictVersion=7,behaviourVersion=21,linkTypeVersion=50,roadVersion=53;
 inline constexpr int levelLimit=1000;
+inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
 std::span<const Field> fields(Object);
 // Same legacy/additive known-key policy and diagnostics as parseNetwork.
 void knownFields(const Json&,Object,const std::string& path,int version);
 const Json& value(const Json&,Object,const char* name);
+bool readCondition(const Json&,Object,const char* name);
 // Link-only decoder: leaves linkType/roadId to their existing document read stages.
 std::vector<Link> readLinks(const Json& network,int version);
 std::vector<Point> readGeometry(const Json&,Object,int version);
 LaneReference readReference(const Json&,int version);
 std::vector<Connector> readConnectors(const Json& network,int version);
+std::vector<NetworkSignalHead> readSignalHeads(const Json& network,int version);
 }

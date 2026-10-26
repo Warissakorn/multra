@@ -2,6 +2,7 @@
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
 #include <string_view>
 
@@ -9,7 +10,7 @@ namespace multra::networkCodec {
 namespace {
 constexpr Field networkFields[]={
     {"id",Kind::text,true},{"drivingSide",Kind::side,true},{"links",Kind::links,true},
-    {"connectors",Kind::connectors,true},{"signalHeads",Kind::array,true},
+    {"connectors",Kind::connectors,true},{"signalHeads",Kind::signalHeads,true},
     {"rightOfWay",Kind::unchecked,false,14},{"queueCounters",Kind::unchecked,false,16},
     {"travelTimeSections",Kind::unchecked,false,23},{"nodes",Kind::unchecked,false,48},
     {"roads",Kind::unchecked,false,roadVersion,roadVersion},
@@ -35,6 +36,12 @@ constexpr Field referenceFields[]={
     {"linkId",Kind::text,true},{"laneId",Kind::text,true},
     {"station",Kind::number,false,stationVersion,stationVersion},
     {"fraction",Kind::number,false,0,0,false,stationVersion}};
+constexpr Field signalHeadFields[]={
+    {"id",Kind::text,true},{"lane",Kind::reference,true},{"position",Kind::number,true},
+    {"programId",Kind::text,true},{"connectorId",Kind::text,false,0,0,true},
+    {"name",Kind::text,false,0,0,true},{"controllerId",Kind::text,false,0,0,true},
+    {"groupNumber",Kind::group,false,0,0,false,0,"controllerId"},
+    {"generated",Kind::generated,false,generatedVersion}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -44,6 +51,7 @@ std::span<const Field> fields(Object object) {
     case Object::point:return pointFields;
     case Object::connector:return connectorFields;
     case Object::reference:return referenceFields;
+    case Object::signalHead:return signalHeadFields;
     }
     return {};
 }
@@ -57,6 +65,11 @@ void knownFields(const Json& j,Object object,const std::string& path,int version
         }))
             throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path+"."+key}});
     }
+}
+bool readCondition(const Json& j,Object object,const char* name) {
+    for(const auto& field:fields(object))if(std::string_view(name)==field.name)
+        return !field.whenNonNull || present(j,field.whenNonNull);
+    throw std::logic_error("Unknown network codec field");
 }
 const Json& value(const Json& j,Object object,const char* name) {
     if(!j.is_object())throw std::invalid_argument(std::string("Expected an object containing: ")+name);
@@ -73,7 +86,12 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::level:
         if(!v.is_number_integer() || v < -levelLimit || v > levelLimit)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
         break;
-    case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:
+    case Kind::group:
+        if(!v.is_number()) {expected="Expected number: ";break;}
+        if(const auto n=v.get<double>();!std::isfinite(n) || n<groupMinimum || n>groupMaximum || n!=std::trunc(n))
+            throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
+        break;
+    case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:break;

@@ -36,7 +36,7 @@ stages and partial draft-2020-12 schema generation. `multra-project-schema` prin
 schema directly, retaining exact uint64 limits. Nested feature validation remains in the
 existing codecs; native integer-token and UTF-8 byte checks are annotated constraints.
 
-`network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
+`network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 roadId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
 composes envelope/background with these structural rules for schemas 1–57; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
@@ -45,4 +45,10 @@ codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 `network_connector_codec` reads Connectors and the LaneReference shared with native signal
 heads, preserving versioned fraction/station keys and diagnostics. Whole-network attachment
 migration stays in `parse.cpp`. The composed structural schema includes Connector/reference
-fields; signal/control/demand rows and geometric/physical feasibility remain codec-owned.
+fields; other signal/control/demand rows and geometric/physical feasibility remain codec-owned.
+
+`network_signal_head_codec` reads SignalHead rows through the same field metadata, including
+nullable optional text and the conditional controller/group read. A non-null controllerId
+activates groupNumber even when empty; inactive group values remain ignored. The composed
+schema includes this condition and shared LaneReferences. Signal-controller/program contents,
+ID resolution and legacy program migration remain in their original codec stages.

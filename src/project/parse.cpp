@@ -169,18 +169,7 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     network.drivingSide = side == "left" ? DrivingSide::left : DrivingSide::right;
     network.links=networkCodec::readLinks(value,schemaVersion);
     network.connectors=networkCodec::readConnectors(value,schemaVersion);
-    for (const auto& h : array(value, "signalHeads")) {
-        knownFields(withoutGenerated(h,schemaVersion),{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
-            "signalHeads["+std::to_string(network.signalHeads.size())+"]",schemaVersion);
-        network.signalHeads.push_back({field<std::string>(h, "id"), networkCodec::readReference(member(h, "lane"),schemaVersion),
-                                      field<double>(h, "position"), field<std::string>(h, "programId"),
-                                      present(h,"connectorId")?field<std::string>(h,"connectorId"):std::string{}});
-        if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");network.signalHeads.back().generated=generatedFlag(h,"signalHeads["+std::to_string(network.signalHeads.size()-1)+"]",schemaVersion);
-        if(present(h,"controllerId")) { // M2.7b, schema 13: the head shows a signal group
-            network.signalHeads.back().controllerId=field<std::string>(h,"controllerId");
-            network.signalHeads.back().groupNumber=integer(h,"groupNumber");
-        }
-    }
+    network.signalHeads=networkCodec::readSignalHeads(value,schemaVersion);
     if(schemaVersion<5)migrateAttachments(network);
     if(schemaVersion>=14 && present(value,"rightOfWay"))network.rightOfWay=rightOfWay(value.at("rightOfWay"),schemaVersion);
     if(schemaVersion>=16 && present(value,"queueCounters"))for(const auto& c:array(value,"queueCounters")) {
