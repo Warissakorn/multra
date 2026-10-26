@@ -7,7 +7,8 @@ does not end the document or run. `multra-control` is its compiled
 client. `run_identity.hpp` holds metadata of the existing GUI single run (no engine RNG or
 new timer); automation can export that identified run independently of the selected Results tab.
 `automation_document.*` supplies explicitly observed structural discovery and codec/History
-dry validation; it does not duplicate the codec with a claimed complete formal schema.
+dry validation; structural hints use the Qt-free project `observed_schema` helper. It does
+not duplicate the codec with a claimed complete formal schema.
 Run-until uses the existing GUI timer and observers with a bounded fast-step slice.
 `automation_geometry.*` previews the existing Connector authoring command on a copy
 and enriches rejected patch attachment errors without adding fields to core validation types. See [desktop automation](../../docs/reference/DESKTOP_AUTOMATION.md) for the protocol.

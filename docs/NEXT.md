@@ -32,6 +32,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 - Open automation work: an authoritative formal schema covering every optional/versioned
   field remains separate from D350 observed-shape discovery plus codec dry validation.
+  Start with an inventory of codec-owned optional fields and version rules before defining
+  schema generation; never promote sample-derived hints to an authoritative contract.
   Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
   Reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked yet.

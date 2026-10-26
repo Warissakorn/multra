@@ -398,3 +398,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D351](RECORD.md#d351) — Call-local Connector surface reuse during automatic conflict calculation, with byte-identical generated Nodes and measured Release timings.
 
 [D343](RECORD.md#d343) — Node detail and conflict-group authoring take one `automaticConflicts` list instead of one per pair; the canvas click keeps its stale check.
+
+[D354](RECORD.md#d354) — Bounded observed-schema discovery leaves unvisited array types open; Qt-free structural helper and boundary regression tests.

@@ -398,7 +398,10 @@ and the authoritative validation command. coverage is observed-shape and authori
 false: absent optional fields, cross-references and semantic constraints are not inferred.
 Numbers stay number (not integer inferred from a sample), additional object fields remain
 open, and empty/null samples remain unconstrained. Discovery is bounded to 50,000 visited
-values/32 levels and reports truncated when a bound is reached. Embedded image bytes are
+values/32 levels and reports truncated when a bound is reached. If the visit budget
+leaves array items unvisited, that array uses unconstrained items rather than excluding
+unseen types based on its visited prefix. Depth-limited containers also remain open
+without enumerating their children. Embedded image bytes are
 excluded. This is not a complete formal schema for every supported project/version.
 
 `document.validate` accepts exactly one of patch or document. Patch follows the same protected

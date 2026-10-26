@@ -22,3 +22,7 @@ Direct Road zone targets use schema 57 and Macro's compiled direction endpoints;
 
 `allocateId` checks each candidate directly against current object IDs; it shares the network/definition
 traversal with `documentIds` and additionally checks zone/mode IDs. No ID index survives an edit.
+
+`observed_schema` generates bounded, non-authoritative structural JSON hints for desktop
+automation without Qt. Exhausting the visit budget leaves unvisited array item types open;
+it does not infer required fields, codec version rules or semantic validity.

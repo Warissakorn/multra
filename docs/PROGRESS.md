@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Keep bounded schema discovery permissive (D354)
+
+- **Fixed:** observed discovery could exhaust its visit budget inside an object, then restrict
+  the enclosing array to objects despite unseen scalar siblings. Arrays with unvisited items
+  now use unconstrained item schemas. Depth-limited containers stop before scanning children.
+- **Changed:** extracted the structural generator into Qt-free project `observed_schema`, used
+  by desktop discovery. The same 50,000-value/depth-32 limits, non-authoritative metadata and
+  codec dry-validation path remain; this does not implement a complete formal document schema.
+- **Verified:** a standalone reproduction using the previous generator rejects the unseen
+  scalar shape; the revised helper accepts it. Four new headless tests cover mixed/empty/null
+  samples, nested truncation, exact visit-budget and depth boundaries. Project tests pass 16/16;
+  Release headless build and all 160 CTest entries pass, including documentation, architecture,
+  file-size and reference checks. Qt tools are unavailable locally; no desktop/Windows claim.
+
 ## 2026-10-26 — Resolve authored merge paths once per grouping call (D353)
 
 - **Found:** a sampling profile of the 16-Node benchmark put about 76 % of samples under

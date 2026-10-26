@@ -2,10 +2,10 @@
 #include "automation_error.hpp"
 #include "automation_geometry.hpp"
 #include "../commands/history.hpp"
+#include "../project/observed_schema.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <QJsonDocument>
-#include <set>
 namespace multra {
 namespace {
 Json native(const QJsonValue& value) {
@@ -15,28 +15,6 @@ Json native(const QJsonValue& value) {
 QJsonValue qt(const Json& value) {
     const auto bytes=Json::array({value}).dump();
     return QJsonDocument::fromJson(QByteArray::fromStdString(bytes)).array().at(0);
-}
-Json observed(const Json& value,int depth,int& budget,bool& truncated) {
-    if(depth>32 || --budget<0){truncated=true;return Json::object();}
-    if(value.is_null())return Json::object();
-    if(value.is_object()) {
-        Json properties=Json::object();
-        for(const auto& [key,child]:value.items()) {
-            properties[key]=observed(child,depth+1,budget,truncated);if(budget<0)break;
-        }
-        return {{"type","object"},{"properties",properties},{"additionalProperties",true}};
-    }
-    if(value.is_array()) {
-        Json variants=Json::array();std::set<std::string> seen;
-        for(const auto& item:value) {
-            auto shape=observed(item,depth+1,budget,truncated);
-            if(seen.insert(shape.dump()).second)variants.push_back(std::move(shape));
-            if(budget<0)break;
-        }
-        Json items=variants.empty()?Json::object():variants.size()==1?variants.front():Json{{"anyOf",variants}};
-        return {{"type","array"},{"items",items}};
-    }
-    return {{"type",value.is_boolean()?"boolean":value.is_number()?"number":"string"}};
 }
 }
 ProjectDocument parseAutomationPatch(const ProjectDocument& current,const QJsonArray& patch,Json* rejected) {
@@ -58,9 +36,8 @@ QJsonObject discoverDocument(const ProjectDocument& current,const QJsonObject& p
     Json value;
     try {value=pointer.isEmpty()?document:document.at(Json::json_pointer(pointer.toStdString()));}
     catch(const Json::exception&) {throw CommandError("INVALID_PARAMS","pointer must address the current document",{{"path","params.pointer"}});}
-    int budget=50000;bool truncated=false;auto schema=observed(value,0,budget,truncated);
-    schema["$schema"]="https://json-schema.org/draft/2020-12/schema";
-    return {{"schema",qt(schema)},{"coverage","observed-shape"},{"authoritative",false},{"truncated",truncated},
+    const auto observed=observeJsonSchema(value);
+    return {{"schema",qt(observed.schema)},{"coverage","observed-shape"},{"authoritative",false},{"truncated",observed.truncated},
         {"schemaVersion",qt(document.at("schemaVersion"))},{"latestSchemaVersion",kLatestSchema},{"validationCommand","document.validate"},
         {"protectedPatchFields",QJsonArray{"format","revision","background.pngBase64"}}};
 }
