@@ -200,6 +200,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   What is left in a frame is M1.23's culling and LOD.
 - **Publishing inline when a scenario has no zone (M3.2.3a):** 52.05M against 51.29M instructions
   for the three-phase loop. Reverted.
+- **Node detail from one conflict list (D343, 2026-10-26, Linux GCC 13.3, Release):** a scratch
+  harness of k unconnected four-arm coarse Nodes (`putRoad`/`applyTemplate`/`putNode`/`setNodeCoarse`,
+  then `generateNodeDetail` per Node), median of 3: k = 4 730 → 85 ms, k = 16 15,667 → 3,133 ms.
+  What is left still grows with the network: `automaticConflicts` is network-wide and recomputes
+  `connectorSurface` per pair (55,872 calls at k = 4, 65 % before D343). The per-pair probe: rebuild
+  the list before each authoring call and compare the entry with `==` (equal on all 973 pairs).
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

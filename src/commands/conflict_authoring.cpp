@@ -165,6 +165,18 @@ void removeConflictArea(ProjectDocument& d, const std::string& areaId) {
 }
 namespace multra {
 std::string authorAutomaticConflict(ProjectDocument& d, const AutomaticConflict& automatic, const PriorityDefaults& defaults) {
+    if (automatic.kind != ConflictKind::merge && automatic.kind != ConflictKind::branching &&
+        automatic.geometryKind != ConflictGeometryKind::branching) {
+        requireDefaults(defaults);
+        // Still passive? A stale click on a pair authored since is refused rather than doubled.
+        const auto now = automaticConflicts(d.network);
+        const auto current=std::find_if(now.begin(),now.end(),[&](const auto& x){return x.key==automatic.key;});
+        if(current==now.end())throw std::invalid_argument("EDIT_NO_CROSSING");
+        return detail::authorCurrentConflict(d, *current, defaults);
+    }
+    return detail::authorCurrentConflict(d, automatic, defaults);
+}
+std::string detail::authorCurrentConflict(ProjectDocument& d, const AutomaticConflict& automatic, const PriorityDefaults& defaults) {
     if(automatic.kind==ConflictKind::branching || automatic.geometryKind==ConflictGeometryKind::branching)throw std::invalid_argument("EDIT_BRANCHING_PRIORITY");
     requireDefaults(defaults);
     if (automatic.kind == ConflictKind::merge) {
@@ -176,11 +188,7 @@ std::string authorAutomaticConflict(ProjectDocument& d, const AutomaticConflict&
         }
         throw std::invalid_argument("EDIT_NO_MERGE");
     }
-    // Still passive? A stale click on a pair authored since is refused rather than doubled.
-    const auto now = automaticConflicts(d.network);
-    const auto current=std::find_if(now.begin(),now.end(),[&](const auto& x){return x.key==automatic.key;});
-    if(current==now.end())throw std::invalid_argument("EDIT_NO_CROSSING");
-    if(current->kind==ConflictKind::branching)throw std::invalid_argument("EDIT_BRANCHING_PRIORITY");
+    const auto* current = &automatic;
     // A lane's crossing areas share one waiting line before the first of them (D63): reuse the
     // line this path already waits at, moved upstream when the new area comes first.
     const auto lineFor = [&](const ConflictSide& side) {

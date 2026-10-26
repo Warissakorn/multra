@@ -2,6 +2,24 @@
 
 Entries moved whole from the live log; dates and evidence describe their own session.
 
+## 2026-10-25 — Original motorcycle and editable mixed colours (D334)
+
+- **Asked:** restore the original motorcycle and make vehicle colours editable/mixed.
+  The owner explicitly chose the pointed D333 silhouette shown in the first seven-type gallery.
+- **Built:** View → Vehicle colours, fixed or mixed palettes per type, colour picker,
+  Add/Remove, standard palette and per-type reset. Preferences save atomically as local
+  application display settings and load on restart; the editor and Behaviour Lab share them.
+  Stock swatches live in `data/vehicle-colors.json`. Custom project vehicle IDs are supported.
+- Colour selection hashes vehicle/type IDs; it consumes no engine random values and stays
+  fixed through repaint, pause, zoom and seeking. Cancel/failed saves preserve the old state.
+  Project revisions, schemas and traffic parameters are unchanged. See
+  [colour preferences](../reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334).
+- **Verification:** Linux, GCC 14.2, Qt 6.8.2 offscreen: full desktop build and all 227 CTest
+  cases pass, including picker/persistence/atomicity, actual mixed-fleet colour stability,
+  standard-palette validation and existing display/catalog suites. The seed-42 CLI example
+  remains byte-identical. Architecture, documentation and file-size checks pass. Thai dialog
+  and mixed-fleet previews inspected. No Windows/high-DPI acceptance claim.
+
 ## 2026-10-25 — Simplified motorcycle styling
 
 - **Asked:** simplify the motorcycle. One flowing body, straight handlebar, single tank

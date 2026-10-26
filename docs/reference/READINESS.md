@@ -437,7 +437,7 @@ Each row first asserts that its forcing worked (AGENTS).
   - `FILL_NODE_MAJOR_ARMS` unless exactly two arms are major and there are at most four, the
     two-way stop shape Ch. 20's ranks are written for (a reading taken: §13.1 did not name it).
 - **Areas:** for every automatic conflict between generated turns from different arms and of
-  different ranks, `authorAutomaticConflict` makes the authored areas (a merge is taken over whole).
+  different ranks, `detail::authorCurrentConflict` makes the authored areas from one list (a merge taken whole).
   Then every new area between two such turns gets the priority by rank, with `default.json`'s gap
   time and headway through `setConflictControl`, and an area a minor arm yields in gets *Stop*
   (`setAreaControl`). An area of equal ranks that a merge takeover made kept the fallback's

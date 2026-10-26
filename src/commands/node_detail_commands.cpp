@@ -184,7 +184,7 @@ void authorPriority(ProjectDocument& d, const std::map<std::string, GeneratedTur
     };
     for (const auto& conflict : automaticConflicts(d.network)) {
         if (conflict.kind == ConflictKind::branching || !decides(conflict.first, conflict.second)) continue;
-        try { authorAutomaticConflict(d, conflict, defaults); }
+        try { detail::authorCurrentConflict(d, conflict, defaults); }
         catch (const std::invalid_argument& e) { // a merge already taken over whole by an earlier pair
             const std::string code = e.what();
             if (code != "EDIT_NO_MERGE" && code != "EDIT_NO_CROSSING" && code != "EDIT_ALREADY_EXPLICIT") throw;
