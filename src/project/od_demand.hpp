@@ -19,7 +19,7 @@ class InputManifest;
 AuthoringDefinition withOdDemand(const ProjectDocument&, const std::vector<Mode>& modes = {});
 // True when some matrix names a mode: only then are modes resolved, so no other run reads data/modes/.
 bool namesMode(const ZoneLayer&);
-// Road targets currently have a Macro reader only. Micro/Meso refuse them explicitly until
+// Road targets have Macro and Meso readers. Micro refuses them explicitly until
 // Apply template remaps them to Links; a study-area Micro cut checks only its kept connectors.
 std::vector<ValidationIssue> roadZoneConnectorIssues(const ZoneLayer&);
 std::vector<Mode> matrixModes(const ProjectDocument&, const std::filesystem::path& dataDirectory, InputManifest* = nullptr);

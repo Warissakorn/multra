@@ -63,7 +63,8 @@ contract. A site driveway is drawn as its own entry and terminal Links.
 `backward`) can replace `linkId` on a Road without generated Links. Origin/destination and
 relative shares keep their meaning; travel direction is along/against the centreline. Macro
 reads the selected directed Road piece. *Apply template* remaps the connector to its generated
-Link in the same Undo step. Micro and Meso refuse Road targets until that conversion. The codec,
+Link in the same Undo step. Micro refuses Road targets until that conversion. Meso uses
+[minimum free-flow-time OD paths](MESO_ROAD_DEMAND.md) (D341). The codec,
 editor, lifecycle and rows RD30–RD34 are in [ROADS_IMPLEMENTED §22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340).
 
 ### 2.3 OdMatrix

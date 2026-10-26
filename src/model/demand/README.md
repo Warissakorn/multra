@@ -1,1 +1,3 @@
-Authoring demand: routes, inputs with intervals, compositions, routing decisions with per-interval turning proportions (M2.1.1–M2.4) and fixed-time Signal Controllers (`signal_control.*`, M2.7b). `buildScenario` compiles them into the minimal core VehicleInput/Route/SignalProgram contracts. No OD matrix.
+Authoring demand: routes, inputs with intervals, compositions, routing decisions with per-interval turning proportions (M2.1.1–M2.4) and fixed-time Signal Controllers (`signal_control.*`, M2.7b). `buildScenario` compiles them into the minimal core VehicleInput/Route/SignalProgram contracts. `zones.hpp` holds the shared Zone/OD layer; project compiles it for each level.
+
+`meso_road_paths` resolves directed zone endpoints and enumerates minimum free-flow-time paths on the compiled Meso graph, with a finite path limit and no recursive traversal. See [MESO_ROAD_DEMAND](../../../docs/reference/MESO_ROAD_DEMAND.md).

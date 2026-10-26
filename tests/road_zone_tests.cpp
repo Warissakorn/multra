@@ -182,7 +182,7 @@ TEST(roadzone, rd32_split_delete_and_merge_preserve_endpoints) {
 }
 TEST(roadzone, rd34_readiness_and_execution_refuse_unread_demand) {
     const auto d = fixture(); CHECK(runMacro(d, data(), "matrix:am").assignment.converged);
-    for (const auto level : {ReadinessLevel::micro, ReadinessLevel::meso}) {
+    for (const auto level : {ReadinessLevel::micro}) {
         const auto rows = readiness(d, data(), level);
         CHECK(std::any_of(rows.begin(), rows.end(), [](const auto& r) {
             return r.code == "ZONE_CONNECTOR_ROAD_REQUIRES_LINKS" && r.path == "zoneConnectors[0]" && r.severity == ReadinessSeverity::refusal;
@@ -190,6 +190,7 @@ TEST(roadzone, rd34_readiness_and_execution_refuse_unread_demand) {
     }
     test::throws([&] { compileDocument(d, data()); }, "ZONE_CONNECTOR_ROAD_REQUIRES_LINKS");
     test::throws([&] { withOdDemand(d); }, "ZONE_CONNECTOR_ROAD_REQUIRES_LINKS");
-    CHECK(mesoNetwork(d, data()).issues.empty()); // forcing: the network succeeds, reaching the demand refusal
-    test::throws([&] { runMeso(d, data()); }, "ZONE_CONNECTOR_ROAD_REQUIRES_LINKS");
+    const auto graph = mesoNetwork(d, data()); CHECK(graph.issues.empty());
+    const auto md = mesoDemand(d, data(), graph.graph);
+    CHECK(md.issues.empty() && !md.classes.empty()); // D341 adds the Meso reader; Micro still refuses
 }

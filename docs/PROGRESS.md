@@ -6,6 +6,30 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Meso OD demand on directed Roads (D341)
+
+- **Asked:** continue development; followed NEXT's Meso Road-OD seam after D340.
+- **Changed:** the existing schema-57 Road targets opt OD matrices into minimum free-flow-time
+  paths on the compiled Meso graph, with equal shares over tied paths. Connector shares, named
+  modes, PCU and clock/period windows are resolved from the original document/catalogs; authored
+  and routeless paths remain alongside graph OD. No LTM engine or project-schema change.
+- **Refusals:** unavailable directions, any unserved positive connector pair, unknown mode/type
+  references, missing PCU, invalid windows and path counts above 4096 block Run. Parking-lot
+  dynamics remain Micro's and refuse in this new reader. Micro still requires generated Links.
+- **Results:** Road runs identify `minimum-free-flow-time` in JSON/CSV and the English/Thai Meso
+  note. The existing worker and Road dialog now support both Macro and Meso. Source bytes and
+  ownership stay unchanged; paths keep collision-safe matrix/zone/connector identities.
+- **Tests:** nine model cases cover directional endpoints, time/turn costs, modes, all shortest
+  paths, 5000-link routes, the path cap, shares (including overflow-sized totals), windows,
+  mixed/authored/routeless demand, refusals, fluid count conservation, replay and provenance.
+  The existing `od:` path namespace preserves study-area zone identity and live/side-file parity.
+  Real CLI and editor tests run both levels and retain the Micro refusal.
+- **Compatibility:** legacy CLI CSV is byte-identical; JSON differs only in `buildCommit`.
+- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and final `check`
+  pass, **238/238 CTest cases passed**. All nine focused model cases, the expanded real CLI
+  regression and the Road editor harness also pass. Fontconfig uses bundled Thai fonts with
+  DejaVu Sans fallback. Windows untested for this change; no milestone gate closed.
+
 ## 2026-10-26 — Road-only Macro OD demand (D340)
 
 - **Asked:** continue development; followed NEXT's Road-only demand seam booked by D310.
@@ -27,6 +51,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   pass, **237/237 CTest cases passed**. Six focused model cases, the new UI harness and the
   real CLI regression also pass independently. Fontconfig uses bundled Thai fonts with DejaVu
   Sans fallback. Windows untested for this change; no milestone gate closed.
+
+- **CI follow-up (2026-10-26):** [run 642](https://github.com/Warissakorn/multra/actions/runs/40253582320)
+  passed Linux headless/sanitizer/release/desktop and Windows core/desktop. Automated evidence
+  for D340; no owner appearance gate closed.
 
 ## 2026-10-25 — Named Macro run definitions (D339)
 
@@ -172,17 +200,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Verification:** Linux/Qt 6.8.2 offscreen: rendering build and four display suites
   (appearance, canvas LOD, run presentation, lane-change display) pass. Close-up inspected;
   architecture, file-size and documentation checks pass.
-
-## 2026-10-25 — Modern sport-bike styling
-
-- **Asked:** make the motorcycle more modern. Compact angular fairing, tucked waist,
-  swept grips, tapered screen, faceted tank and a two-part stepped saddle replace the
-  rounded layout. Two separated swept LED-style strips identify the front.
-- Body unions preserve solid wheel/fairing joints and the existing physical bounds.
-  Checks cover both LED strips and centreline picking at the wheel overlaps.
-- **Verification:** Linux/Qt 6.8.2 offscreen: rendering build and four display suites
-  (appearance, canvas LOD, run presentation, lane-change display) pass. Production-painter
-  close-up inspected; architecture, file-size and documentation checks pass.
 
 ## Older entries
 

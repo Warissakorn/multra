@@ -386,3 +386,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D339](RECORD.md#d339) — Named Macro period/settings definitions at schema 56; one-list Undo/Redo, editor/CLI selection through the staged worker, unchanged original project provenance and latest source per period.
 
 [D340](RECORD.md#d340) — Directed Road zone targets at schema 57 for Macro OD; endpoint-preserving Apply/split/delete/lifecycle commands and editor, explicit Micro/Meso refusal until conversion.
+
+[D341](RECORD.md#d341) — Meso Road OD uses minimum free-flow-time graph paths with equal tie shares, modes/PCU/windows and strict pair refusals; schema 57 and legacy paths stay unchanged, rule identified in exports/editor.

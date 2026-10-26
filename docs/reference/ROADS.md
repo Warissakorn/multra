@@ -260,7 +260,8 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
   refused at the route as today, so nothing is silently dropped.
 - **As implemented (D310, §19):** Road ends within 2 m of one another, outside any Node, join as a
   simple node. Road-only Macro OD uses directed Road zone connectors at schema 57
-  ([§22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), D340); Meso still requires Link targets.
+  ([§22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), D340). Meso reads the same targets
+  through [graph OD paths](MESO_ROAD_DEMAND.md) (D341); Micro still requires Links.
 - **Byte identity:** a project without Roads, templates, `roadId`, overpasses, `coarse`, `rank` or
   `capacityBasis` keeps its schema and bytes (row RD1).
 

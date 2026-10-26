@@ -23,6 +23,7 @@ struct MesoRun {
     MesoLoading loading;
     std::vector<ValidationIssue> advisories; // the compile's, then MESO_PATH_NOT_LOADED per refused path
     Json inputManifest;                      // the files read; null without a manifest
+    std::string odPathRule;                  // Road OD only (D341); empty preserves legacy outputs
 };
 // Refused by ValidationError: the graph's issues (stage graph), then the demand's (stage demand).
 // S5.4 (D330): `watchLinks` names the Links whose Meso links keep per-path entrance counts.

@@ -414,7 +414,9 @@ run-time cut over a study area. M9–M11 keep their engine scopes and gates; no 
 
 **Road demand follow-up (D340):** schema-57 directed Road zone targets feed Macro without
 generating Links, with editor authoring and endpoint-preserving commands (RD30–RD34,
-[contract](reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340)). Meso expansion is next;
+[contract](reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340)). **Meso reader implemented
+(D341):** minimum free-flow-time paths on its graph, with shares, modes, PCU/windows and explicit
+pair refusals ([contract](reference/MESO_ROAD_DEMAND.md), MR1–MR6), using the existing schema 57.
 Micro requires generated Link targets. No milestone gate changes.
 
 **Code complete; gate open.** Contract [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md) (D153);
