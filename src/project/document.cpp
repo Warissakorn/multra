@@ -285,42 +285,48 @@ ProjectDocument parseDocument(const Json& j) {
     validateDocument(d);
     return d;
 }
+namespace {
+template<class Match, class Objects>
+bool anyObjectId(const Objects& objects, const Match& match) {
+    return std::any_of(objects.begin(), objects.end(), [&](const auto& object) { return match(object.id); });
+}
+// One traversal defines the network/definition namespace for both enumeration and allocation.
+// A membership query stops at its first match; enumeration visits every id without copying a set.
+template<class Match>
+bool anyDocumentId(const ProjectDocument& d, bool includeMacroRuns, const Match& match) {
+    if (match(d.network.id) || (includeMacroRuns && anyObjectId(d.macroRuns, match))) return true;
+    for (const auto& link : d.network.links)
+        if (match(link.id) || anyObjectId(link.lanes, match)) return true;
+    for (const auto& connector : d.network.connectors)
+        for (int i = 0; i < std::max(connector.fromLaneCount, connector.toLaneCount); ++i)
+            if (match(connectorPathId(connector, i))) return true;
+    if (anyObjectId(d.network.signalHeads, match) || anyObjectId(d.network.rightOfWay.waitingLines, match) ||
+        anyObjectId(d.network.rightOfWay.conflictAreas, match) || anyObjectId(d.network.rightOfWay.priorityRules, match) ||
+        anyObjectId(d.network.rightOfWay.stopControls, match) || anyObjectId(d.network.queueCounters, match) ||
+        anyObjectId(d.network.travelTimeSections, match) || anyObjectId(d.network.nodes, match) ||
+        anyObjectId(d.network.roads, match)) return true;
+    return d.definition && (anyObjectId(d.definition->routes, match) || anyObjectId(d.definition->inputs, match) ||
+        anyObjectId(d.definition->signalPrograms, match) || anyObjectId(d.definition->signalControllers, match) ||
+        anyObjectId(d.definition->routingDecisions, match));
+}
+bool allocatedIdExists(const ProjectDocument& d, const std::string& id) {
+    const auto match = [&](const std::string& used) { return used == id; };
+    return anyDocumentId(d, true, match) || anyObjectId(d.zones.zones, match) ||
+        anyObjectId(d.zones.zoneConnectors, match) || anyObjectId(d.zones.odMatrices, match) ||
+        anyObjectId(d.zones.parkingLots, match) || anyObjectId(d.zones.studyPeriods, match) ||
+        (d.definition && anyObjectId(d.definition->modes, match));
+}
+}
 std::set<std::string> documentIds(const ProjectDocument& d, bool includeMacroRuns) {
-    std::set<std::string> used{d.network.id};
-    if (includeMacroRuns) for (const auto& r : d.macroRuns) used.insert(r.id);
-    for (const auto& l : d.network.links) { used.insert(l.id); for (const auto& lane : l.lanes) used.insert(lane.id); }
-    for (const auto& c : d.network.connectors)
-        for(int i=0;i<std::max(c.fromLaneCount,c.toLaneCount);++i)used.insert(connectorPathId(c,i));
-    for (const auto& h : d.network.signalHeads) used.insert(h.id);
-    for (const auto& w : d.network.rightOfWay.waitingLines) used.insert(w.id);
-    for (const auto& a : d.network.rightOfWay.conflictAreas) used.insert(a.id);
-    for (const auto& r : d.network.rightOfWay.priorityRules) used.insert(r.id);
-    for (const auto& c : d.network.rightOfWay.stopControls) used.insert(c.id);
-    for (const auto& c : d.network.queueCounters) used.insert(c.id);
-    for (const auto& s : d.network.travelTimeSections) used.insert(s.id);
-    for (const auto& n : d.network.nodes) used.insert(n.id);
-    for (const auto& r : d.network.roads) used.insert(r.id);
-    if (d.definition) {
-        for (const auto& r : d.definition->routes) used.insert(r.id);
-        for (const auto& i : d.definition->inputs) used.insert(i.id);
-        for (const auto& p : d.definition->signalPrograms) used.insert(p.id);
-        for (const auto& c : d.definition->signalControllers) used.insert(c.id);
-        for (const auto& decision : d.definition->routingDecisions) used.insert(decision.id);
-    }
+    std::set<std::string> used;
+    anyDocumentId(d, includeMacroRuns, [&](const std::string& id) { used.insert(id); return false; });
     return used;
 }
 std::string allocateId(ProjectDocument& d, const std::string& prefix) {
-    auto used = documentIds(d);
-    for (const auto& z : d.zones.zones) used.insert(z.id);
-    for (const auto& c : d.zones.zoneConnectors) used.insert(c.id);
-    for (const auto& m : d.zones.odMatrices) used.insert(m.id);
-    for (const auto& l : d.zones.parkingLots) used.insert(l.id);
-    for (const auto& p : d.zones.studyPeriods) used.insert(p.id);
-    if (d.definition) for (const auto& m : d.definition->modes) used.insert(m.id);
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");
         auto id = prefix + "-" + std::to_string(d.nextId++);
-        if (!used.contains(id)) return id;
+        if (!allocatedIdExists(d, id)) return id;
     }
 }
 }

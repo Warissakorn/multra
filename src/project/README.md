@@ -19,3 +19,6 @@ Direct Road zone targets use schema 57 and Macro's compiled direction endpoints;
 `study_area_run` builds the run-time Micro cut; `study_area_meso` retains composition and single-type classes per Meso slice. Run-time-only type fields pass through `od_demand` to ordinary inputs without changing catalog ownership or stored codecs. See [STUDY_AREA_IMPLEMENTED §22](../../docs/reference/STUDY_AREA_IMPLEMENTED.md#22-single-vehicle-type-meso-cuts-and-cli-coverage-d338).
 
 `macro_run_definition` persists named Macro period/settings definitions at schema 56; `runNamedMacro` executes them without changing the document or its global settings. Results identify the chosen definition; the side file still keeps the latest source for each period. See [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md#named-macro-runs).
+
+`allocateId` checks each candidate directly against current object IDs; it shares the network/definition
+traversal with `documentIds` and additionally checks zone/mode IDs. No ID index survives an edit.

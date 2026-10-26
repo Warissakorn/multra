@@ -216,6 +216,14 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   `multra-node-detail-benchmark 16 output.json` for three timings and a document to compare.
   Baseline/after linked the same Commands/Project libraries with only the Model library replaced.
   Earlier timings taken while compiling were discarded. No Windows or Qt UI evidence.
+- **Candidate ID checks (D352, 2026-10-26, Linux GCC 14.2, Release -O3):** the retained
+  `multra-node-detail-benchmark`, no concurrent compiler: k = 4 48.39 → 45.43 ms (median of 3),
+  k = 16 2,516.11 → 2,312.06 ms (median of 6, two batches of three with before/after order
+  reversed). The two 16-Node batch medians were 2,474.01 → 2,308.22 ms and 2,558.21 → 2,315.89 ms.
+  The pooled reduction is about 8 %; the 1.5 s target is still open. Both full output documents
+  are byte-identical, with the same k = 4/16 SHA-256 values recorded above for D351.
+  Allocation now scans for each candidate without building a full `std::set`; worst-case bulk
+  allocation still scans quadratically. No persistent index or invalidation policy was added.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time
