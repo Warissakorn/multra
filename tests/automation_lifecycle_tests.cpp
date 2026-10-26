@@ -18,6 +18,7 @@
 #include <iostream>
 #include "automation_recovery_checks.hpp"
 #include "automation_map_checks.hpp"
+#include "automation_geometry_checks.hpp"
 using namespace multra;
 namespace {
 void require(bool ok,const char* why){if(!ok)throw std::runtime_error(why);}
@@ -63,6 +64,7 @@ int main(int argc,char** argv) {
         const auto data=std::filesystem::path(argv[1]);
         recoveryChecks(data);
         mapAutomationChecks(data);
+        connectorAutomationChecks(data);
         EditorWindow w(data);w.show();QTest::qWait(20);
         w.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
         auto s=status(w);require(!s.value("connectionReady").toBool(),"Automation enabled by default");

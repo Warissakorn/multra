@@ -1,5 +1,6 @@
 #include "editor_window.hpp"
 #include "automation_error.hpp"
+#include "automation_geometry.hpp"
 #include "automation_endpoint.hpp"
 #include "editor_storage.hpp"
 #include "../project/load.hpp"
@@ -81,10 +82,10 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         if(request.value("command")==QJsonValue("status") && params.contains("includeSelection") && !selectionOption.isBool())
             throw CommandError("INVALID_PARAMS","includeSelection must be a boolean");
         static const QStringList commands{"capabilities","status","document.get","document.patch",
-            "file.open","file.save","file.new","app.quit","recovery.list","recovery.restore","recovery.discard","map.get","map.set","map.remove","map.status","map.retry","history.undo","history.redo","simulation.start","simulation.pause",
+            "file.open","file.save","file.new","app.quit","recovery.list","recovery.restore","recovery.discard","map.get","map.set","map.remove","map.status","map.retry","connector.suggest","history.undo","history.redo","simulation.start","simulation.pause",
             "simulation.step","simulation.reset","results.get","results.export","view.fit","view.select","view.screenshot"};
         if(!commands.contains(command))throw CommandError("UNKNOWN_COMMAND","Unknown automation command");
-        const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list" || command=="map.get" || command=="map.status";
+        const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list" || command=="map.get" || command=="map.status" || command=="connector.suggest";
         if(!read) {
             if(automationClosing_)throw CommandError("CLOSING","The editor is closing; inspect status instead of sending mutations");
             const auto state=automationState(false);
@@ -97,15 +98,18 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         }
         QJsonObject result;
         if(command=="capabilities") {
-            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands"}},{"commands",QJsonArray::fromStringList(commands)},
+            result={{"protocolVersion",1},{"features",QJsonArray{"liveAutomation","busyReason","compactStatus","newAndQuit","deferredRecovery","mapCommands","connectorSuggestions","attachmentDiagnostics"}},{"commands",QJsonArray::fromStringList(commands)},
                 {"maxRequestBytes",automationRequestLimit},{"maxStepCount",maxStepCount},{"patchFormat","RFC6902"},
                 {"guard",QJsonArray{"documentId","expectedRevision"}},
-                {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list","map.get","map.status"}},
+                {"unguardedCommands",QJsonArray{"capabilities","status","document.get","results.get","recovery.list","map.get","map.status","connector.suggest"}},
                 {"parameters",QJsonObject{
                     {"status",QJsonObject{{"includeSelection","optional boolean; default true; false omits selection"}}},
                     {"document.get",QJsonObject{{"pointer","optional JSON Pointer string; returns result.value"}}},
                     {"document.patch",QJsonObject{{"patch","required RFC6902 operation array"}}},
                     {"file.open",QJsonObject{{"path","required string"},{"discardChanges","optional boolean; required true when dirty"}}},
+                    {"connector.suggest",QJsonObject{{"from","required object: linkId, laneId, optional station metres"},
+                        {"to","required object: linkId, laneId, optional station metres"},{"fromLaneCount","optional integer 1..12 within available lanes; default 1"},
+                        {"toLaneCount","optional integer 1..12 within available lanes; default 1; UI range narrowing is reported"}}},
                     {"map.set",QJsonObject{{"longitude","required finite degrees [-180,180]"},{"latitude","required finite degrees [-80,84]"},
                         {"providerId","optional installed ID from map.get; defaults to first provider"},{"opacity","optional [0,1], default 0.7"},
                         {"anchorWorldX","optional metres [-10000000,10000000], default 0"},{"anchorWorldY","optional metres [-10000000,10000000], default 0"},
@@ -139,6 +143,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                 patched.value("revision",Json{})!=original.at("revision") || !patched.contains("background") ||
                 !patched.at("background").is_object() || patched.at("background").value("pngBase64",Json{})!=Json(""))
                 throw CommandError("PROTECTED_FIELD","Keep schemaVersion; format, revision and embedded image bytes cannot be changed");
+            try {
             auto candidate=parseDocument(patched);
             candidate.revision=history_.revision();
             candidate.background.pngBase64=history_.document().background.pngBase64; // Immutable, unchanged bytes stay shared across History.
@@ -146,6 +151,11 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             try {changed=commitChange("editorAutomationChange",[&](auto& d){d=std::move(candidate);});}
             catch(...){canvas_->setDocument(&history_.document());throw;} // as execute(); the reply keeps the issues
             result={{"changed",changed}};
+            } catch(const ValidationError& e) {
+                throw CommandError("VALIDATION_FAILED",e.what(),{{"issues",geometryValidationIssues(e.issues,&patched)}});
+            }
+        } else if(command=="connector.suggest") {
+            result=suggestConnector(history_.document(),params);
         } else if(command.startsWith("map.")) {
             result=automationMap(command,params);
         } else if(command=="recovery.list") {
@@ -245,9 +255,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         auto error=e.details;error.insert("code",e.code);error.insert("message",QString::fromUtf8(e.what()));
         response.insert("error",error);
     } catch(const ValidationError& e) {
-        QJsonArray issues;
-        for(const auto& issue:e.issues)issues.append(QJsonObject{{"code",QString::fromStdString(issue.code)},
-            {"path",QString::fromStdString(issue.path)}});
+        const auto issues=geometryValidationIssues(e.issues);
         response.insert("ok",false);
         response.insert("error",QJsonObject{{"code","VALIDATION_FAILED"},{"message",QString::fromUtf8(e.what())},{"issues",issues}});
     } catch(const RecoveryError& e) {

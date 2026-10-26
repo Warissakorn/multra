@@ -4,7 +4,8 @@ Qt Widgets desktop: the network editor window, the application's only editing wi
 commands through the same document, History and Run view. `editor_automation_lifecycle.cpp`
 owns opt-in listener creation and the Help menu enable/disable actions; disconnecting a client
 does not end the document or run. `multra-control` is its compiled
-client. See [desktop automation](../../docs/reference/DESKTOP_AUTOMATION.md) for the protocol.
+client. `automation_geometry.*` previews the existing Connector authoring command on a copy
+and enriches rejected patch attachment errors without adding fields to core validation types. See [desktop automation](../../docs/reference/DESKTOP_AUTOMATION.md) for the protocol.
 
 `editor_zones.cpp` (M8.6a, D161) is the Zones tab: zones drawn with the Zone tool (Z) in `../editor/canvas_zones.cpp`, their connectors added to the Link selected on the canvas. `editor_od.cpp` and `od_lot_dialogs.cpp` (M8.6b, D162) are the OD matrices tab, its grid dialog and the lot dialog; Results → Parking lots is in `editor_results.cpp`.
 `road_zone_dialog` adds/edits direct Road targets for Macro/Meso with explicit travel direction and shares, through the same History command (D340/D341). Generated Roads are excluded from its target list. The Meso result note identifies its minimum free-flow-time OD rule; Micro still requires generated Links.

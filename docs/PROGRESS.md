@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Connector proposals and candidate diagnostics (D348)
+
+- **Asked:** continue with geometry suggestions and diagnostics, preserving existing geometry.
+- **Changed:** connector.suggest runs UI authoring on a copy and returns a proposed patch,
+  provisional ID and explicit requested/actual ranges. Read-only requests leave History,
+  selection and run unchanged. Rejected patch attachment issues report the candidate's
+  expected/actual positions, distance, tolerance and geometry pointer. The unchanged 0.01 m
+  validation threshold and measurements share one model helper; core types were not expanded.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (142.46 s).
+  Tests cover preview/apply/Undo/Redo, stale guards after an intervening edit, interior stations,
+  invalid inputs/duplicate connections, driving sides, range narrowing, exact JSON allocator
+  limits and candidate endpoint/reference measurements. The existing attachment tolerance
+  remains unchanged. Windows runtime/appearance remains unrun.
+
 ## 2026-10-26 — AI map commands and tile readiness (D347)
 
 - **Asked:** continue with map settings and tile-loading state through commands.

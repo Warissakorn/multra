@@ -76,7 +76,7 @@ the document and visible run. Validation failures also expose their issues.
 
 `state.documentId` identifies the current document session; `state.revision` is a
 decimal string. Keep both as strings. Every command except `capabilities`, `status`,
-`document.get`, `results.get`, `recovery.list`, `map.get` and `map.status` requires the two guard fields from the latest state.
+`document.get`, `results.get`, `recovery.list`, `map.get`, `map.status` and `connector.suggest` requires the two guard fields from the latest state.
 This prevents a delayed AI edit from overwriting changes made by the user. A rejected
 guard requires a fresh inspection and a decision about whether the original edit
 still applies. Do not automatically retry it against the new revision.
@@ -95,6 +95,7 @@ and inspect again. `simulation.reset` stores its seed as the canonical decimal (
 | `status` | None | Read current document and run state |
 | `document.get` | Optional `pointer`: JSON Pointer string | Read `result.document`, or only the pointed `result.value` |
 | `document.patch` | `patch`: RFC 6902 operation array | Validate and commit one atomic, undoable document edit |
+| `connector.suggest` | `from`, `to`; optional lane counts | Preview a UI-generated Connector and an explicit patch without editing |
 | `map.get` | None | Read settings and installed providers, with tile state |
 | `map.status` | None | Read current viewport tile counts and readiness |
 | `map.set` | `longitude`, `latitude`; optional provider/appearance/anchor fields | Replace map settings as one Undo step |
@@ -337,3 +338,26 @@ tile and all wanted tiles loaded without failures. Pending includes retry waits;
 can coexist with pending retries and is not necessarily terminal. Readiness means tile data
 is available to paint, not that a screenshot has already been captured. Read again after
 camera changes; no fixed sleep duration or successful external OSM access is assumed.
+
+## Connector proposals and attachment diagnostics (D348)
+
+`connector.suggest` is an unguarded read. Required from/to each contain linkId, laneId
+and optional station in metres along the Link reference geometry; omitted station means
+source end/target start. Optional fromLaneCount/toLaneCount are integers 1–12, bounded by
+the available contiguous lanes. The helper runs the same addConnectorRange/default-curve
+command as the UI on a document copy and validates the result. The live document, ID
+allocator, History, selection and run are unchanged. No snapping or auto-apply occurs.
+
+The result includes connector, patch and rangeAdjusted plus requested/actual lane counts.
+D75 range narrowing is reported explicitly. The returned patch tests/replaces nextId and
+adds the connector; apply it only with document.patch and the document/revision state from
+the suggestion response. IDs are provisional, not reservations. Proposals refuse allocator values outside the exact
+JSON integer range rather than return a lossy nextId patch. Conflicting edits require
+another suggestion; do not update stale guards and blindly apply an old proposal.
+
+Rejected document.patch attachment issues keep VALIDATION_FAILED and existing code/path.
+Where the rejected candidate can be decoded, DISCONNECTED_GEOMETRY additionally reports
+objectId, expected/actual coordinates, distance, tolerance and geometryPointer. Measurements
+come from the same attachment rule/tolerance used by network validation and refer to the
+rejected candidate, never the current live geometry. Other issues retain their existing
+shape; extra details are omitted if the candidate cannot be decoded safely.

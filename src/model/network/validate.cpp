@@ -1,4 +1,5 @@
 #include "network.hpp"
+#include "connector_attachment.hpp"
 #include "right_of_way.hpp"
 #include "travel_time.hpp"
 #include "nodes.hpp"
@@ -105,9 +106,8 @@ std::vector<ValidationIssue> validateNetwork(const Network& network) {
         const auto check = [&](const Link* link, const LaneReference& ref, bool end) {
             if (!link || link->geometry.size() < 2 || c.geometry.empty() || !validSide) return;
             try {
-                const auto expected = laneAttachment(network,ref,end);
                 const auto endpoint = end ? c.geometry.front() : c.geometry.back();
-                if (std::hypot(endpoint.x - expected.x, endpoint.y - expected.y) > 0.01)
+                if (measureConnectorAttachment(network,ref,end,endpoint).distance > connectorAttachmentTolerance)
                     add("DISCONNECTED_GEOMETRY", p + (end ? ".from" : ".to"));
             } catch(const std::exception&) { add("INVALID_GEOMETRY",p+(end?".from":".to")); }
         };

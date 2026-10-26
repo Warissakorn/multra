@@ -28,10 +28,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## AI automation follow-up (D344–D347)
+## AI automation follow-up (D344–D348)
 
-- Next approved slices: geometry suggestions and field-specific diagnostics, then run
-  identity/export targeting. Reuse existing validation,
+- Next approved slice: run identity/export targeting; full document schema discovery remains
+  open. Reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked yet.
 - Windows acceptance: live endpoint enable/disable and reconnect, guarded New/Quit with full
   reply before normal exit, and deferred recovery list/restore/discard after a crash, and map set/status/retry with real
