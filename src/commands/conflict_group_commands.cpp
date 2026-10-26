@@ -28,7 +28,7 @@ std::string authorConflictGroupImpl(ProjectDocument& d,const std::string& key,co
         if(at==automatic.end())throw std::invalid_argument("EDIT_NO_CROSSING");
         if(at->kind==ConflictKind::branching)continue;
         if(at->kind==ConflictKind::merge && !merges.insert(at->mergeSection).second)continue;
-        const auto created=authorAutomaticConflict(d,*at,defaults);if(first.empty())first=created;
+        const auto created=detail::authorCurrentConflict(d,*at,defaults);if(first.empty())first=created;
     }
     // A newly authored mixed site takes one owner-relative decision, including merge defaults.
     if(g.kinds.size()>1 && !first.empty()) {

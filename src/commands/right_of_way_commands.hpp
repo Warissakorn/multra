@@ -76,6 +76,13 @@ void setAreaControl(ProjectDocument&, const std::string& areaId, std::optional<S
 // the area now standing where the click was. Deleting it (removeConflictArea) makes the pair
 // automatic again. Throws EDIT_NO_CROSSING / EDIT_NO_MERGE when the pair is no longer automatic.
 std::string authorAutomaticConflict(ProjectDocument&, const AutomaticConflict&, const PriorityDefaults&);
+namespace detail {
+// The same for a loop that took `current` from automaticConflicts(d.network) and since authored
+// only right of way: no geometry moved, so `current` is still what that list says, and skipping
+// its rebuild per pair is what makes generating a Node linear in its pairs. A crossing is not
+// checked to be passive still: a caller acting on a click looks the key up in a fresh list first.
+std::string authorCurrentConflict(ProjectDocument&, const AutomaticConflict& current, const PriorityDefaults&);
+}
 // Deletes an area with its rule and the waiting lines no other area uses.
 void removeConflictArea(ProjectDocument&, const std::string& areaId);
 // Group gestures, executed once inside History. Existing lane-level commands remain available

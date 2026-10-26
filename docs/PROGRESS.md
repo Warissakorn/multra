@@ -6,6 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Node detail authors from one conflict list (D343)
+
+- **Asked:** measure-first optimization of the engine, build, docs and design (owner: "ทั้งหมด",
+  then "ทำตามแนะนำ"). The engine (0.09–0.14 ms per tick at 491–637 vehicles), docs and desktop start
+  (0.26 s) needed nothing; `types.hpp` stays the owner's deferred split (506 objects rebuilt).
+- **Found:** `generateNodeDetail` and `authorConflictGroup` authored each pair through
+  `authorAutomaticConflict`, which rebuilt `automaticConflicts` for the whole network per pair to
+  refuse a stale click: 92 % of generating a Node (callgrind). Release, one Node 65 → 12 ms; 16
+  unconnected Nodes 15.5 → 3.1 s (median of 3). `studyarea` (Debug) 50 → 16 s.
+- **Change:** both loops call `detail::authorCurrentConflict` with the entry of the list they took
+  before the first area; the canvas click keeps its check. A probe on every pair (954 node-detail,
+  19 group) found the rebuilt entry equal to the loop's; the generated documents hash identical.
+- **Verification:** Linux, GCC 13.3, desktop Debug offscreen: `check` passes (238/238).
+  No Windows run here.
+
 ## 2026-10-26 — Review fixes to D339–D341 (D342)
 
 - **Asked:** review every open PR, then improve all findings and merge (owner: "ปรับปรุงทั้งหมด และ Merge").
@@ -193,24 +208,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   pass after the cab change, including appearance, colour preferences, canvas LOD,
   run presentation and lane-change display. Equal-length cab comparison and updated
   gallery inspected; architecture, documentation and file-size checks pass.
-
-## 2026-10-25 — Original motorcycle and editable mixed colours (D334)
-
-- **Asked:** restore the original motorcycle and make vehicle colours editable/mixed.
-  The owner explicitly chose the pointed D333 silhouette shown in the first seven-type gallery.
-- **Built:** View → Vehicle colours, fixed or mixed palettes per type, colour picker,
-  Add/Remove, standard palette and per-type reset. Preferences save atomically as local
-  application display settings and load on restart; the editor and Behaviour Lab share them.
-  Stock swatches live in `data/vehicle-colors.json`. Custom project vehicle IDs are supported.
-- Colour selection hashes vehicle/type IDs; it consumes no engine random values and stays
-  fixed through repaint, pause, zoom and seeking. Cancel/failed saves preserve the old state.
-  Project revisions, schemas and traffic parameters are unchanged. See
-  [colour preferences](reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334).
-- **Verification:** Linux, GCC 14.2, Qt 6.8.2 offscreen: full desktop build and all 227 CTest
-  cases pass, including picker/persistence/atomicity, actual mixed-fleet colour stability,
-  standard-palette validation and existing display/catalog suites. The seed-42 CLI example
-  remains byte-identical. Architecture, documentation and file-size checks pass. Thai dialog
-  and mixed-fleet previews inspected. No Windows/high-DPI acceptance claim.
 
 ## Older entries
 
