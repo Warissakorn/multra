@@ -2,6 +2,39 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Guarded New and intentional Quit (D345)
+
+- **Asked:** continue the reviewed AI workflow with New in the same window and intentional
+  Quit that preserves unsaved work unless explicitly discarded.
+- **Changed:** File → New and `file.new` share one reset path. New/Quit keep document/revision
+  guards and require boolean discard permission for dirty work. Accepted Quit freezes edits,
+  refuses subsequent mutations and closes only after transport handoff of its response. A
+  failed/stalled handoff cancels closing and restores editing; no process kill is introduced.
+  The drain monitor is allocated only for an intentional Quit reply, with a 5 s deadline.
+- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (139.64 s).
+  Lifecycle coverage includes recovery isolation and pipelined mutation refusal;
+  compiled-process coverage checks ten clean/discard Quit cycles,
+  full responses and normal exits; transport coverage forces backpressure, disconnect and timeout.
+  Windows runtime/appearance acceptance is unrun.
+
+## 2026-10-26 — Live AI endpoint and reconnect status (D344)
+
+- **Asked:** implement stages 1–2 of the reviewed plan: keep the shared window open, enable
+  automation during work and report useful state without AI polling in normal use.
+- **Changed:** Help enables/disables a lazily allocated listener and displays its endpoint.
+  Disable closes clients/releases the name without touching the document, Undo, selection,
+  run or autosave. Interactive bind failure keeps the window; CLI exit-2 compatibility stays.
+  State adds instance identity, listener readiness, startup completion, structured busy reason,
+  and optional compact status; document/revision guards and existing selection defaults stay.
+- **Validation:** Debug desktop build and `check` passed, all 239 CTest entries (127.25 s),
+  including all four automation suites. The new lifecycle test uses real local sockets
+  and the menu dialog, including dirty document preservation, reconnect during playback,
+  incomplete requests on disable, occupied endpoint refusal and stale document rejection.
+  Windows runtime acceptance is unrun; Linux offscreen is not cross-platform evidence.
+- **Resource sample:** Linux offscreen automation test host, after 1.5 s settling, 2 s idle per
+  mode: disabled 61.6 MiB RSS, listener idle 61.9 MiB; both 0 CPU ticks observed. This short
+  single-process sample is not a benchmark or a zero-cost guarantee. No AI polling timer was added.
+
 ## 2026-10-26 — Node detail authors from one conflict list (D343)
 
 - **Asked:** measure-first optimization of the engine, build, docs and design (owner: "ทั้งหมด",

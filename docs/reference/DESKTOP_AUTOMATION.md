@@ -132,7 +132,7 @@ change `revision` or the `format` marker. Embedded background image bytes cannot
 replaced through this interface. Use ordinary project files to load another image.
 The document's feature schema still applies: adding a field introduced in a newer
 schema must use a schema version that accepts that field, up to the supported version
-55. `schemaVersion` can be patched but must remain present; removing it would select
+57. `schemaVersion` can be patched but must remain present; removing it would select
 the legacy scenario decoder. Saving selects the schema required by the document's
 features. Successful edits refresh
 the same canvas and invalidate the previous run, as ordinary editor edits do.
@@ -402,7 +402,9 @@ values/32 levels and reports truncated when a bound is reached. If the visit bud
 leaves array items unvisited, that array uses unconstrained items rather than excluding
 unseen types based on its visited prefix. Depth-limited containers also remain open
 without enumerating their children. Embedded image bytes are
-excluded. This is not a complete formal schema for every supported project/version.
+excluded. This is not a complete formal schema for every supported project/version. The
+[project schema inventory](PROJECT_SCHEMA.md) maps codec ownership, root presence rules
+and feature-selected save versions for the next formal-schema slice.
 
 `document.validate` accepts exactly one of patch or document. Patch follows the same protected
 field/codec/History settlement path as document.patch on a disposable History; document checks

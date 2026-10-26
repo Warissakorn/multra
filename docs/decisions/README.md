@@ -400,3 +400,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D343](RECORD.md#d343) — Node detail and conflict-group authoring take one `automaticConflicts` list instead of one per pair; the canvas click keeps its stale check.
 
 [D354](RECORD.md#d354) — Bounded observed-schema discovery leaves unvisited array types open; Qt-free structural helper and boundary regression tests.
+
+[D355](RECORD.md#d355) — Project schema ownership/version inventory and shared feature-selected writer inspection; formal nested schemas remain separate.

@@ -26,3 +26,7 @@ traversal with `documentIds` and additionally checks zone/mode IDs. No ID index 
 `observed_schema` generates bounded, non-authoritative structural JSON hints for desktop
 automation without Qt. Exhausting the visit budget leaves unvisited array item types open;
 it does not infer required fields, codec version rules or semantic validity.
+
+`documentSchemaVersion` (`document_schema.hpp`) selects the writer version directly from
+features, without serializing or validating the document. `documentJson` uses this same rule;
+input schema versions are not retained. See the [schema inventory](../../docs/reference/PROJECT_SCHEMA.md).
