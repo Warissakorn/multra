@@ -49,12 +49,6 @@ template<class T> T field(const Json& value, const char* name) {
     }
     return item.get<T>();
 }
-int integer(const Json& value, const char* name) {
-    const double n = field<double>(value, name);
-    if (!std::isfinite(n) || n < std::numeric_limits<int>::min() || n > std::numeric_limits<int>::max() ||
-        n != std::trunc(n)) throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
-    return static_cast<int>(n);
-}
 const Json& array(const Json& value, const char* name) {
     const auto& items = member(value, name);
     if (!items.is_array()) throw std::invalid_argument(std::string("Expected array: ") + name);
@@ -96,12 +90,7 @@ void migrateAttachments(Network& network) {
     for(auto& c:network.connectors){convert(c.from,true);convert(c.to,false);}
     for(auto& h:network.signalHeads)convert(h.lane,false);
 }
-SignalColor color(const std::string& text) {
-    if (text == "red") return SignalColor::red;
-    if (text == "amber") return SignalColor::amber;
-    if (text == "green") return SignalColor::green;
-    throw std::invalid_argument("INVALID_SIGNAL_COLOR");
-}
+
 }
 namespace {
 // M3.2.2, schema 14. Strict: every key known, every enum spelled out, so a control this build
@@ -318,23 +307,6 @@ Composition parseComposition(const Json& c) {
     }
     return composition;
 }
-std::vector<SignalController> parseSignalControllers(const Json& definition) {
-    std::vector<SignalController> result;
-    for (const auto& x : array(definition, "signalControllers")) {
-        const auto path = "signalControllers[" + std::to_string(result.size()) + "]";
-        knownFields(withoutGenerated(x, 54), {"id", "name", "cycle", "offset", "groups"}, path, 13); // below 54: rejectGeneratedControllersBefore54
-        SignalController c{field<std::string>(x, "id"), present(x, "name") ? field<std::string>(x, "name") : std::string{},
-                           field<double>(x, "cycle"), field<double>(x, "offset"), {}};
-        for (const auto& g : array(x, "groups")) {
-            knownFields(g, {"number", "name", "greenStart", "greenEnd", "amber"}, path + ".groups", 13);
-            c.groups.push_back({integer(g, "number"),
-                                present(g, "name") ? field<std::string>(g, "name") : std::string{},
-                                field<double>(g, "greenStart"), field<double>(g, "greenEnd"), field<double>(g, "amber")});
-        }
-        c.generated = generatedFlag(x, path, 54); result.push_back(std::move(c));
-    }
-    return result;
-}
 std::vector<RoutingDecision> parseRoutingDecisions(const Json& definition) {
     std::vector<RoutingDecision> result;
     for (const auto& x : array(definition, "routingDecisions")) {
@@ -393,12 +365,7 @@ ScenarioDefinition parseDefinition(const Json& value) {
         }
         definition.inputs.push_back(std::move(input));
     }
-    for (const auto& p : array(value, "signalPrograms")) {
-        SignalProgram program{field<std::string>(p, "id"), field<double>(p, "offset"), {}};
-        for (const auto& phase : array(p, "phases"))
-            program.phases.push_back({field<double>(phase, "duration"), color(field<std::string>(phase, "color"))});
-        definition.signalPrograms.push_back(std::move(program));
-    }
+    definition.signalPrograms=networkCodec::readSignalPrograms(value);
     if (value.contains("vehicleTypes"))
         for (const auto& t : array(value, "vehicleTypes")) definition.vehicleTypes.push_back(parseVehicleType(t));
     if (value.contains("behaviours"))

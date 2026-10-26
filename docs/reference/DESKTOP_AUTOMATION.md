@@ -405,7 +405,7 @@ without enumerating their children. Embedded image bytes are
 excluded. This is not a complete formal schema for every supported project/version. The
 [project schema inventory](PROJECT_SCHEMA.md) maps codec ownership, root presence rules
 and feature-selected save versions. `multra-project-schema` provides a separate, exact-integer
-partial formal envelope/background and Network/Link/Lane/Connector/reference/SignalHead schema; it does not change this observed-shape response.
+partial formal envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase schema; it does not change this observed-shape response.
 
 `document.validate` accepts exactly one of patch or document. Patch follows the same protected
 field/codec/History settlement path as document.patch on a disposable History; document checks

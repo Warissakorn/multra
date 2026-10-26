@@ -1,8 +1,9 @@
 # Project schema inventory
 
 This is the codec ownership and version map for an editor-project schema (D355), with
-generated partial envelope/background (D356), Network/Link/Lane (D357), and
-Connector/attachment-reference (D358) and SignalHead contracts (D359). It describes implemented
+generated partial envelope/background (D356), Network/Link/Lane (D357),
+Connector/attachment-reference (D358), SignalHead (D359) and signal control contracts (D360).
+It describes implemented
 readers/writers, rather than inferring a contract from one document. It is **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
 `document.schema` still returns non-authoritative observed shapes; `document.validate`
@@ -130,7 +131,7 @@ historical-schema coverage.
 A generated schema needs codec-owned field metadata for requiredness, null handling,
 unknown-key policy, version gates and tagged alternatives. The inventory above does not
 supply that metadata for every nested field. Network, Link, Lane and Link geometry field metadata are implemented as described below.
-Connector and attachment-reference metadata are described below. Signal-controller/program/control/demand
+Connector and attachment-reference metadata are described below. Other control/demand
 field metadata remain separate follow-ups; their semantic validation stays in the codec.
 
 ## Generated envelope/background schema (D356)
@@ -281,4 +282,34 @@ migration and pre-13 project signal-program migration still happen in their orig
 The schema covers pre-migration input structure, not the resulting controller/program data.
 Controllers/groups/program references, the semantic program-versus-controller choice, valid
 head positions and geometric attachment constraints still require the model/document codec.
-Other signal-controller/program/control/demand row schemas remain separate follow-ups.
+Other control/demand row schemas remain separate follow-ups.
+
+
+## Signal control extension (D360)
+
+The composed CLI coverage is now
+`envelope-background-network-link-lane-connector-reference-signal-head-signal-control`;
+complete remains false. An absent/null definition remains valid. A present definition object
+requires signalPrograms; signalControllers is optional, but explicit null is invalid for either
+array. Other definition fields remain open and require their existing codecs.
+
+- Controller rows require text id, numeric cycle/offset and a groups array. Group rows require
+  number, greenStart, greenEnd and amber. Both accept optional nullable text name. Their keys
+  are closed at every input version, including schemas before 7 and before 13: the existing
+  standalone reader never had a schema-13 read gate.
+- A group number accepts mathematically integral numbers, including 1.0, in native int range.
+  Zero/negative values and duplicate groups remain semantic validation concerns. Empty group
+  arrays, cyclic timing, time-step alignment and head-to-group resolution also require the
+  existing validators; this structural schema adds no timing or reference claims.
+- Controller generated is forbidden before schema 54, even if null; from 54 it must be true.
+  The standalone controller reader still accepts generated:true independently of file version;
+  parseDocument retains the earlier pre-54 guard and its diagnostic path.
+- Legacy programs require text id, numeric offset and a phases array. Each phase requires
+  numeric duration and color exactly red/amber/green. Program/phase keys remain open at every
+  version. Positive durations and valid cycles remain outside this structural contract.
+
+Shared metadata supplies native type/key reads and schema rules. Controller groups retain
+integer conversion and diagnostic order, with generated validation after groups. The program
+reader retains duration-before-color diagnostics. Pre-13 project migration stays after definition
+and network decoding; bare M0 scenarios retain their programs. The envelope-only schema API,
+writer version selection and desktop observed-shape response remain unchanged.

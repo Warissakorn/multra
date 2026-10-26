@@ -42,6 +42,18 @@ constexpr Field signalHeadFields[]={
     {"name",Kind::text,false,0,0,true},{"controllerId",Kind::text,false,0,0,true},
     {"groupNumber",Kind::group,false,0,0,false,0,"controllerId"},
     {"generated",Kind::generated,false,generatedVersion}};
+constexpr Field definitionFields[]={
+    {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers}};
+constexpr Field controllerFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
+    {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
+    {"generated",Kind::generated,false,0,generatedVersion}};
+constexpr Field groupFields[]={
+    {"number",Kind::group,true},{"name",Kind::text,false,0,0,true},
+    {"greenStart",Kind::number,true},{"greenEnd",Kind::number,true},{"amber",Kind::number,true}};
+constexpr Field programFields[]={
+    {"id",Kind::text,true},{"offset",Kind::number,true},{"phases",Kind::phases,true}};
+constexpr Field phaseFields[]={{"duration",Kind::number,true},{"color",Kind::color,true}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -52,11 +64,21 @@ std::span<const Field> fields(Object object) {
     case Object::connector:return connectorFields;
     case Object::reference:return referenceFields;
     case Object::signalHead:return signalHeadFields;
+    case Object::definition:return definitionFields;
+    case Object::signalController:return controllerFields;
+    case Object::signalGroup:return groupFields;
+    case Object::signalProgram:return programFields;
+    case Object::signalPhase:return phaseFields;
     }
     return {};
 }
+bool allowsAdditionalFields(Object object,int version) {
+    if(object==Object::signalController || object==Object::signalGroup)return false;
+    if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
+    return version<strictVersion;
+}
 void knownFields(const Json& j,Object object,const std::string& path,int version) {
-    if(version<strictVersion || !j.is_object())return;
+    if(allowsAdditionalFields(object,version) || !j.is_object())return;
     const auto list=fields(object);
     for(const auto& [key,unused]:j.items()) {
         (void)unused;
@@ -81,7 +103,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::side:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::side:case Kind::color:if(!v.is_string())expected="Expected text: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
         if(!v.is_number_integer() || v < -levelLimit || v > levelLimit)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
@@ -91,7 +113,7 @@ const Json& value(const Json& j,Object object,const char* name) {
         if(const auto n=v.get<double>();!std::isfinite(n) || n<groupMinimum || n>groupMaximum || n!=std::trunc(n))
             throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
         break;
-    case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:
+    case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:case Kind::groups:case Kind::phases:case Kind::controllers:case Kind::programs:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:break;

@@ -410,3 +410,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D358](RECORD.md#d358) — Connector and attachment-reference schema/codec metadata, preserving fraction/station migration, defaults and diagnostics across schemas 1–57.
 
 [D359](RECORD.md#d359) — SignalHead metadata and conditional controller/group schema rules, preserving native numeric conversion and legacy migration stages.
+
+[D360](RECORD.md#d360) — Signal controller/group/program/phase metadata and structural schemas preserve distinct known-key policies, numeric conversion and document migration stages.

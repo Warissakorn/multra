@@ -3,7 +3,7 @@
 
 namespace multra {
 // Partial draft-2020-12 schema for editor schemas 1..kLatestSchema.
-// Composes the stable envelope API with versioned Network/Link/Lane/Connector/SignalHead/geometry/reference fields.
-// Does not validate model invariants or nested signal-controller/program/control/demand features.
+// Composes the stable envelope API with versioned Network/Link/Lane/Connector/SignalHead/geometry/reference and signal control fields.
+// Does not validate model invariants or other control/demand features.
 nlohmann::json projectDocumentSchema();
 }

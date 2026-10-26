@@ -6,6 +6,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-26 — Signal control structural schema and codec parity (D360)
+
+- **Changed:** shared field metadata now covers definition signal-array presence, fixed-time
+  controllers/groups and legacy programs/phases. Their readers move to signal_control_codec;
+  the composed partial schema/CLI includes them using 41 definitions and 12 version profiles.
+  The envelope-only API, writer version selection and desktop observed discovery stay unchanged.
+- **Preserved:** controller/group keys stay strict at every version, program/phase keys stay
+  additive, nullable names and integer-valued float groups retain existing conversion. The
+  pre-54 generated guard, generated-value error order and pre-13 project migration keep their
+  original stages; bare M0 programs remain legacy. Timing, uniqueness, reference resolution and
+  run-readiness remain existing semantic checks. No engine or runtime signal algorithm changes.
+- **Verified:** 6,669 cases across schemas 1–57 have byte-identical before/after native results,
+  diagnostics and canonical documents, and pass independent Draft-2020-12 expectations. Four
+  shipped projects pass structural validation and retain byte-identical canonical output.
+  Five new project tests cover presence/strictness, numeric/null/error ordering, version guards,
+  migration and semantic exclusions; project coverage is 45 tests. Release headless build and
+  all 161 CTest entries pass (15.15 s), including CLI, docs, architecture and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows, scientific-validation or owner gate is closed.
+
 ## 2026-10-26 — SignalHead structural schema and conditional groups (D359)
 
 - **Changed:** shared metadata supplies SignalHead known-key/type rules, native read conditions
@@ -149,23 +168,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   documentation, reference and group-registration checks). The retained benchmark also produces
   the baseline 4-Node bytes. Toolchain: CMake 4.4.4, Ninja 1.13.2, GCC 14.2.0, JSON 3.11.3,
   installed under the workspace without system changes. No Qt UI or Windows verification.
-
-## 2026-10-26 — Codec discovery, dry validation and run-until (D350)
-
-- **Asked:** continue with schema discovery and run-until while keeping the GUI responsive.
-- **Changed:** bounded observed-shape discovery reports its non-authoritative coverage and
-  codec versions. Dry validation uses real parsing/History without editing live work; patch
-  protection is shared with real commits. A guarded run-until uses the existing timer/observers
-  and run ID, fixed-grid targets, bounded fast stepping and deadline outcomes; Pause/Cancel,
-  Step, reset and invalidation stop it. GUI text identifies the target and disables the ordinary
-  playback speed selector while it is active. No new worker, job registry or polling timer.
-- **Validation:** Debug desktop build and full `check` passed, all 239 CTest entries (164.07 s).
-  After the final fast-to-playback clock reset, rebuild and all five affected automation/run
-  suites passed again (14.60 s); documentation, file-size and architecture checks passed.
-  Tests cover codec/dry-run isolation/errors, target acceptance before stepping, exact replay,
-  GUI heartbeat, timeout, duplicate/conflicting targets, cancellation and playback transition.
-  The compiled desktop/control pair discovers/validates and runs to completion before export.
-  Full formal schemas are not claimed; preparation remains synchronous and Windows is unrun.
 
 ## Older entries
 

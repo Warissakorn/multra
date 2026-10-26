@@ -26,6 +26,14 @@ class NetworkSchema {
         case Kind::links:rule={{"type","array"},{"items",reference(Object::link,version)}};break;
         case Kind::connectors:rule={{"type","array"},{"items",reference(Object::connector,version)}};break;
         case Kind::signalHeads:rule={{"type","array"},{"items",reference(Object::signalHead,version)}};break;
+        case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
+        case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
+        case Kind::programs:rule={{"type","array"},{"items",reference(Object::signalProgram,version)}};break;
+        case Kind::phases:rule={{"type","array"},{"items",reference(Object::signalPhase,version)}};break;
+        case Kind::color: {
+            Json names=Json::array();for(const auto& entry:signalColors)names.push_back(entry.first);
+            rule={{"type","string"},{"enum",names}};break;
+        }
         case Kind::reference:rule=reference(Object::reference,version);break;
         case Kind::numbers:rule={{"type","array"},{"items",{{"type","number"}}}};break;
         case Kind::generated:rule={{"type","boolean"},{"const",true}};break;
@@ -76,7 +84,8 @@ class NetworkSchema {
             properties["name"]["default"]=defaults.name;
             properties["connectorId"]["default"]=defaults.connectorId;
         }
-        Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",version<strictVersion}};
+        Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",allowsAdditionalFields(object,version)}};
+        if(object==Object::definition)result["type"]=Json::array({"object","null"});
         if(!conditions.empty())result["allOf"]=std::move(conditions);
         return result;
     }
@@ -87,7 +96,10 @@ public:
         auto it=names_.find(signature);
         if(it==names_.end()) {
             const char* prefix=object==Object::network?"network":object==Object::link?"link":object==Object::lane?"lane":
-                object==Object::connector?"connector":object==Object::reference?"reference":object==Object::signalHead?"signalHead":"point";
+                object==Object::connector?"connector":object==Object::reference?"reference":object==Object::signalHead?"signalHead":
+                object==Object::signalController?"signalController":object==Object::signalGroup?"signalGroup":
+                object==Object::signalProgram?"signalProgram":object==Object::signalPhase?"signalPhase":
+                object==Object::definition?"definition":"point";
             const auto name=std::string(prefix)+std::to_string(version);
             definitions_[name]=schema;
             it=names_.emplace(signature,name).first;
@@ -96,15 +108,16 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference structure. Model invariants and nested signal-controller/program/control/demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase structure. Model invariants and other control/demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);
-            const auto key=ref.at("$ref").get<std::string>();
+            const auto definition=reference(Object::definition,version);
+            const auto key=ref.dump()+definition.dump();
             auto [it,inserted]=indices.emplace(key,groups.size());
             if(inserted)groups.push_back({{"if",{{"properties",{{"schemaVersion",{{"enum",Json::array()}}}}}}},
-                {"then",{{"properties",{{"network",ref}}}}}});
+                {"then",{{"properties",{{"network",ref},{"definition",definition}}}}}});
             groups[it->second]["if"]["properties"]["schemaVersion"]["enum"].push_back(version);
         }
         result["$defs"]=std::move(definitions_);result["allOf"]=std::move(groups);
