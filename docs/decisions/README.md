@@ -440,3 +440,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D373](RECORD.md#d373) — M13 A2 contract: shared lane groups (protected), critical v/c over a non-overlapping chain, back of queue with an approach speed limit; Exhibit 19-41 29/36 within ±5 %.
 
 [D374](RECORD.md#d374) — M13 A2 implemented: lane-based and shared lane groups (Ch. 31 §2), critical v/c, back of queue and storage ratio (Ch. 31 §4), approach `speedLimit`; NA9–NA14.
+
+[D375](RECORD.md#d375) — M13 A3's choices (OWNER_SITTING B25) decided on delegation ("ช่วยตัดสินใจ"): 1a–5a; A3 starts when the owner asks.

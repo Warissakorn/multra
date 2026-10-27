@@ -2,6 +2,18 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Pin the bundled UI font against installed-family collisions (D366)
+
+- **Found:** this host's installed Noto Sans Thai has no ASCII digits, while the bundled cut
+  does. Qt 6.8.2 matched the installed same-name family and used proportional fallback digits.
+- **Fixed:** renamed only bundled font naming tables to the private MULTRA Sans Thai family.
+  Every glyph, metric and layout table is byte-identical. The existing workspace assertion now
+  compares with the application's data-loaded family, retaining equal digit advances, 12 px
+  and real 600-weight checks. No font fallback or disabled assertion was added.
+- **Verified:** Release desktop target builds; workspace-ui passes (7.97 s) on Linux offscreen
+  Qt 6.8.2 with the conflicting system font still installed. Font-generation instructions are
+  updated; Windows appearance and owner gates remain separate.
+
 ## 2026-10-27 — Authored network PNG export (M1.23.2, D367)
 
 - **Changed:** File menu and command palette export the whole visible network or current view

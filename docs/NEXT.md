@@ -101,7 +101,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **Analytical junction capacity (M13, D370):** contract [NODE_ANALYSIS](reference/NODE_ANALYSIS.md);
   A1 (D372) and A2 (D373, D374: shared lane groups, critical v/c, back of queue) implemented. Next
   slice: A3 (permitted and protected-permitted turns, Ch. 31 §3), only when the owner asks; its five
-  choices are OWNER_SITTING B25, outlined with A4–A9 in NODE_ANALYSIS §12.
+  choices are decided 1a–5a (D375), outlined with A4–A9 in NODE_ANALYSIS §12.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).
 - **Owner checks on Windows:** D318's dialogs are OWNER_SITTING F4, E1's tool glyphs and click rule
   (D306) E23, and paint E22. M2.8 has only owner checks left.

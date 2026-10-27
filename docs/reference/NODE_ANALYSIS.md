@@ -403,13 +403,14 @@ through lanes are now analysed.
 Each later slice is outlined here with the questions its owner choices must settle. No formula,
 value or row is written until the slice's own contract, which follows the owner's answers and a
 reading of the formula images (BOOKS rule). Only the next slice's questions are put to the owner
-([OWNER_SITTING](../plans/OWNER_SITTING.md) B25 for A3); the others wait here.
+([OWNER_SITTING](../plans/OWNER_SITTING.md) B25 for A3, answered in D375); the others wait here.
 
 **A3: permitted and protected-permitted turns.** A turn that yields during its green to a
 conflicting movement is analysed instead of refused with `NODE_ANALYSIS_PERMITTED`, by Ch. 31 §3's
 procedure for selected lane groups: permitted green, time before the first left-turn vehicle
 arrives (HCM's left turn is the far turn), permitted saturation flow, through-car equivalent, proportion of turns in a shared lane,
-lane group saturation flow and its QAP (Steps 1–7, PDF p. 2986–3015). Questions (B25):
+lane group saturation flow and its QAP (Steps 1–7, PDF p. 2986–3015). Decided 1a–5a on the owner's
+delegation (D375, B25):
 1. **Scope.** (a, recommended) Exclusive and shared lanes, far and kerb turns (HCM's left and right,
    on either driving side as §10 maps them), pretimed.
    (b) Exclusive lanes first, shared lanes later.
