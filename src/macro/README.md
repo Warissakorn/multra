@@ -14,8 +14,8 @@ Imports nothing outside this folder; no clock, no random number, no I/O
 
 | File | Holds | Contract | Used by |
 |---|---|---|---|
-| `graph.*` | The Macro graph as plain values: links, connectors, centroid arcs and link types | [MACRO_NETWORK §3](../../docs/reference/MACRO_NETWORK.md) | model/demand (fills it), meso, project |
-| `settings.hpp` | `MacroSettings` (target gap, iteration cap) alone, so the authoring definition need not include the graph | [MACRO_NETWORK_IMPLEMENTED](../../docs/reference/MACRO_NETWORK_IMPLEMENTED.md) | model, project |
+| `graph.*` | The Macro graph as plain values: links, connectors, centroid arcs and link types | [MACRO_NETWORK §3](../../docs/reference/MACRO_NETWORK.md) | model/demand (fills it), project |
+| `settings.hpp` | `MacroSettings` (target gap, iteration cap) alone, so the authoring definition need not include the graph | [MACRO_NETWORK_IMPLEMENTED](../../docs/reference/MACRO_NETWORK_IMPLEMENTED.md) | model/demand, project |
 | `assign.*` | The assignment: BPR `macroTime`, `shortestTree` (Dijkstra, ties to the lower link index), `allOrNothing`, and `assignMacro`, multi-class Frank-Wolfe on the shared pcu load with an exact line search, the relative gap, a per-iteration record and a cancelling observer | [MACRO_NETWORK §7](../../docs/reference/MACRO_NETWORK.md) | project |
 
 ## Entry points

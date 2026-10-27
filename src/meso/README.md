@@ -15,8 +15,8 @@ paths and time-window flows.
 
 | File | Holds | Contract | Used by |
 |---|---|---|---|
-| `graph.*` | The Meso graph as plain values: links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction) and `mesoStepLimit` | [MESO_NETWORK §3, §4](../../docs/reference/MESO_NETWORK.md) | model/demand (fills it), macro, project |
-| `settings.hpp` | `MesoSettings` (step, reporting slice) alone, so the authoring definition need not include the graph | [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md) | model, project |
+| `graph.*` | The Meso graph as plain values: links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction) and `mesoStepLimit` | [MESO_NETWORK §3, §4](../../docs/reference/MESO_NETWORK.md) | model/demand (fills it) |
+| `settings.hpp` | `MesoSettings` (step, reporting slice) alone, so the authoring definition need not include the graph | [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md) | model/demand |
 | `demand.*` | The loaded demand: `MesoPath`, `MesoClass`, turn shares and entry flows | [MESO_NETWORK §6](../../docs/reference/MESO_NETWORK.md) | model/demand, project |
 | `node_model.*` | `mesoNodeFlows`, Tampère et al. (2011) §5.1, checked against the paper's Table 8 | [MESO_NETWORK §5](../../docs/reference/MESO_NETWORK.md) | this folder |
 | `link_model.*` | Yperman (2007) Eqs. 4.31 and 4.35 over `MesoCurve` cumulative counts | [MESO_NETWORK §4](../../docs/reference/MESO_NETWORK.md) | this folder |

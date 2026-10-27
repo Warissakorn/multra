@@ -17,7 +17,7 @@ May read `src/core/types.hpp` only; no model, project, Qt or I/O (`multra-check-
 | `movement.*` | `MovementAccumulator`: one run's per-movement delay and travel time, and approach queue counters (Vissim's queue-counter conditions); owns the lots report | [SIMULATION](../../docs/reference/SIMULATION.md), [BATCH](../../docs/reference/BATCH.md) | project, runner |
 | `sections.*` | Travel-time sections: each line as places on runtime segments; delay per section | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) | this folder |
 | `los.*` | Level-of-service packs as content (rule 5): per control type, the A-E delay bounds, applied to simulated section delay only | [LOS](../../docs/reference/LOS.md) | project |
-| `nodes.*` | Micro node evaluation: groups a Node's turn sections and leg queue counters | [NODES §4](../../docs/reference/NODES.md) | model/network |
+| `nodes.*` | Micro node evaluation: groups a Node's turn sections and leg queue counters | [NODES §4](../../docs/reference/NODES.md) | runner, this folder |
 | `lots.*` | Each parking lot's occupancy, flows and gate waits, from snapshots alone | [ZONES_AND_PARKING §5](../../docs/reference/ZONES_AND_PARKING.md) | this folder |
 | `discharge.*` | Per-head, per-lane queue discharge headways and start-up estimates, tick-quantised, with raw crossings and explicit unavailable reasons; not capacity, PCU or LOS | [DISCHARGE](../../docs/reference/DISCHARGE.md) | project, shell, tools |
 | `discharge_passage.*` | `dischargeMotions`: reconstructs proven motion across remaps from the observer's own prior positions, unique engine spans and terminal evidence | [DISCHARGE](../../docs/reference/DISCHARGE.md) | this folder |
