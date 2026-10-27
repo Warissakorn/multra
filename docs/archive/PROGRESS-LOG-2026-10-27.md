@@ -2,6 +2,18 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — M0 plausibility accepted by owner ruling (D369)
+
+- **Owner ruling:** "ผ่าน แบบ A" — pass, with the amber caveat on the record. The owner holds the
+  gate; the session measured and compared, and recorded the answer.
+- **Evidence** ([note](../evidence/m0-plausibility.md)): `crossing.json`, seeds 42–51, against SUMO
+  1.18 Krauss and IDM with the same geometry, timing, demand and vehicle data. MULTRA discharges at
+  1.83 s (1,967 veh/h; IDM 1.89 s, Krauss 1.42 s), stands at 7.24 m front to front, and has no
+  red passes. Its 1–3 clamps and 6–30 full-braking ticks per run all fall on amber within 40 m of
+  the line, because a bare M0 scenario holds amber as red (D147).
+- **Changed:** ROADMAP M0 is closed; OWNER_SITTING A1 is removed; M1_ACCEPTANCE, M2_PLAN G2, M3_ACCEPTANCE
+  and NEXT now say the same. The unvalidated marker (D13) stays; no code changed.
+
 ## 2026-10-27 — Documentation review fixes: owner items, a lost fix, ROADMAP headroom
 
 - **Owner items in one place:** NEXT carried Windows/owner checks that OWNER_SITTING, the only

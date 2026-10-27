@@ -6,6 +6,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
+
+- **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").
+- **Found:** speed stored in three places, no per-lane vehicle restrictions, M13 turn volumes typed
+  by hand, and M13 refusing coarse Nodes. These are put to the owner as OWNER_SITTING B27; nothing
+  is decided here. Gaps already booked (M1.22 geometry, M3.4/M6 lane-change distance, the mouth rule
+  D80) stay where they are.
+- **Changed (docs only):** VISSIM_PARITY's Nodes row no longer says "Absent entirely";
+  CONNECTOR_PARITY_AUDIT §2 is marked as a 2026-09-21 baseline with a 2026-10-27 recheck.
+
 ## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
 
 - **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want
@@ -120,15 +130,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Docs:** AGENTS gives RECORD's real size (≈95k tokens); ROADMAP M3.2.8a.1's history moves whole
   to [archive](archive/ROADMAP-implemented-2026-10-27.md#m328a1-clamp-history-d105d258)
   (ROADMAP −2,628 characters, still 494 lines).
-
-## 2026-10-27 — M0 plausibility accepted by owner ruling (D369)
-
-- **Owner ruling:** "ผ่าน แบบ A" — pass, with the amber caveat on the record. The owner holds the
-  gate; the session measured and compared, and recorded the answer.
-- **Evidence** ([note](evidence/m0-plausibility.md)): `crossing.json`, seeds 42–51, against SUMO
-  1.18 Krauss and IDM with the same geometry, timing, demand and vehicle data. MULTRA discharges at
-  1.83 s (1,967 veh/h; IDM 1.89 s, Krauss 1.42 s), stands at 7.24 m front to front, and has no
-  red passes. Its 1–3 clamps and 6–30 full-braking ticks per run all fall on amber within 40 m of
-  the line, because a bare M0 scenario holds amber as red (D147).
-- **Changed:** ROADMAP M0 is closed; OWNER_SITTING A1 is removed; M1_ACCEPTANCE, M2_PLAN G2, M3_ACCEPTANCE
-  and NEXT now say the same. The unvalidated marker (D13) stays; no code changed.
