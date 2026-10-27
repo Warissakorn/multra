@@ -418,6 +418,12 @@ One authoring network and one demand compile to three views; each engine imports
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
 passes. M8 is code complete (gate open); M9–M12 are not started; each slice begins with its
 contract and acceptance rows.
+
+**Equal weight, study-chain order (D378, 2026-10-27):** Micro, Meso and Macro carry equal weight
+([PROBLEM](PROBLEM.md) §3). Open level work follows the study chain: M10.2–M10.4 (generation,
+distribution, mode choice), then M9 (dynamic assignment), then M11.5 and the M11 gate, then M12.
+Aimsun Next is a reference for the integrated model (PROBLEM §2); a simultaneous hybrid meso–micro
+run is not booked (OWNER_SITTING B26). No gate or done-condition changes.
 **Amended 2026-10-15 ([D175](decisions/RECORD.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
 Roads with cross-section templates replace centreline-only Links; M12's stored cut becomes a
@@ -472,7 +478,7 @@ finer levels with recorded provenance and a reported volume comparison.
 
 ### M13 — Analytical junction capacity (HCM 7, D370)
 
-**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3–A9 outlined (NODE_ANALYSIS §12); **A3 implemented** (D375 choices, D376 contract, D377: [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), NA15–NA20; permitted l+sl, lr and one-lane layouts and permitted queues open); A4 next when the owner asks. A deterministic, flow-based method on the Node, beside Micro/Meso/Macro: HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
+**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3–A9 outlined (NODE_ANALYSIS §12); **A3 implemented** (D375 choices, D376 contract, D377: [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), NA15–NA20; permitted l+sl, lr and one-lane layouts and permitted queues open); A4 next when the owner asks. A deterministic, flow-based method on the Node that serves Micro, Meso and Macro and is not a fourth level (D378): HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
 
 ---
 

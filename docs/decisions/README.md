@@ -7,7 +7,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Topic | Start with these decisions |
 |---|---|
 | Desktop automation and AI control | D350, D349, D348, D347, D346, D345, D344, D336, D335 |
-| Product scope, stack, naming and owner gates | D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D378, D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Macro assignment (S2, M10.1) | D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
@@ -446,3 +446,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D376](RECORD.md#d376) — M13 A3 contract: permitted and protected-permitted turns, HCM 7 Ch. 31 §3 Steps 1–7; Exhibit 31-12 as one interval rule; NA15–NA20.
 
 [D377](RECORD.md#d377) — M13 A3 implemented: permitted and protected-permitted far turns (polygon, Step 7 B capacity, G_q2 iteration); l+sl, lr and one-lane permitted layouts refused and put to the owner; no permitted queue yet.
+
+[D378](RECORD.md#d378) — Purpose amended: Micro, Meso and Macro weighted equally, study-chain order (Macro → Meso → Micro), M13 a Node method serving them, Aimsun Next a reference in PROBLEM; supersedes D145 on "Micro first" only.

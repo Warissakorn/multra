@@ -42,7 +42,7 @@ What each study type needs, against what exists on 2026-10-09. "Partial" names t
 | Approach and intersection LOS | Intersection, TIA | Micro | **Exists** (M5.5), section-bounded |
 | Node (junction) aggregation of all movements | Intersection, corridor | Micro, Meso | Missing ([VISSIM_PARITY](../audits/VISSIM_PARITY.md) §2b; contract [NODES](../reference/NODES.md), D259) |
 | Network totals: VHT, VKT, total delay, stops, mean speed | Corridor, scenario comparison | All | Missing |
-| Scenario comparison with Welch CI | Every study (base / with-project / mitigated) | Micro first | Booked (M5.8) |
+| Scenario comparison with Welch CI | Every study (base / with-project / mitigated) | All (Micro done; Meso and Macro by the study chain, D378) | Booked (M5.8) |
 | Car-park occupancy over time, gate queue, spill-back, waiting arrivals | Development access TIA | Micro, Meso | Missing — M8 |
 | Path travel times and route shares under congestion | Corridor, network change, diversion | Micro, Meso | Partial: fixed weights only (D119) — M9 |
 | Link volume, V/C, LOS by V/C, select-link, select-zone | Regional, TIA trip distribution | Macro | Missing — M10 |
@@ -214,8 +214,10 @@ study's region, not a national model.
 
 ## 7. Order and cost
 
-Micro remains the first deliverable: the M5 table is what a study is paid for today, and the
-D143 queue corrects its known biases. M8 comes first among the new milestones because zones and
+**Amended by D378 (2026-10-27):** Micro, Meso and Macro carry equal weight, and open work follows
+the study chain, Macro → Meso → Micro: the coarser level's next slice comes first and a level's
+gate closes before a finer level depends on it. Until D378, Micro was the first deliverable (D145)
+and the D143 queue corrected its known biases; that history stands. M8 came first among the new milestones because zones and
 OD feed every level and lots answer the most common TIA question. M9 reuses Micro and needs no new
 engine. M10 is the largest new code but analytically testable. M11 needs M9's loop and M10's link
 types. M12 needs all of them.

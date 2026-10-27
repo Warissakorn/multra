@@ -58,6 +58,12 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Yperman (2007), or Boyles et al. as a citable secondary source for the LTM link model.
    **2026-10-22:** the owner supplied Yperman (2007) as a Markdown repository; the link model and the
    engine are in (D298). Boyles et al. are not needed. Only the host question remains, for later sources.
+26. **Hybrid meso–micro, and the user roles** (listed 2026-10-27, D378). Aimsun Next runs a Micro
+   area inside a Meso network in one run; MULTRA's M12 cuts a subarea and runs each level
+   separately. Book a simultaneous hybrid run (a new milestone after M12), or keep M12's cut only?
+   Also: PROBLEM §1 now names two equal roles (study engineers and consultants; transport
+   planners), with road and signal agencies doing the same work, as following from the equal
+   weight. Correct that wording? *Owner:*
 Answered 2026-10-27: **B25**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
 [D375](../decisions/RECORD.md#d375): M13 A3's choices 1a–5a ([NODE_ANALYSIS](../reference/NODE_ANALYSIS.md) §12). Numbers are not reused.
 

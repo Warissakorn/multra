@@ -6,6 +6,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
+
+- **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want
+  Micro, Meso and Macro weighted equally") and "ศึกษาจากโปรแกรม aimsun next ด้วย" ("study from the
+  Aimsun Next program as well"); then, by AskUserQuestion: the study-chain order, M13 as a Node
+  method serving the three levels, and Aimsun as a reference in PROBLEM only.
+- **Changed (docs only):** PROBLEM §1–§8 (two equal user roles, needs per level, the Node method,
+  Aimsun Next's integrated model cited from its public docs, a done sentence per level and the Node,
+  non-goals for `.ang` files and proprietary formulas, a per-level §7, §8 question 2); PRINCIPLES
+  rule 8 (each level's vocabulary); MULTI_LEVEL_MODELLING §7, ROADMAP M8–M12 and M13, NEXT's order,
+  README's lead and OWNER_SITTING B26. No code, gate or done-condition changed.
+- **Open for the owner:** B26, a simultaneous hybrid meso–micro run, and the user-role wording.
+
 ## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
 
 - **Asked:** "ทำ A3" ("do A3"), with D375's choices.
@@ -119,27 +132,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   the line, because a bare M0 scenario holds amber as red (D147).
 - **Changed:** ROADMAP M0 is closed; OWNER_SITTING A1 is removed; M1_ACCEPTANCE, M2_PLAN G2, M3_ACCEPTANCE
   and NEXT now say the same. The unvalidated marker (D13) stays; no code changed.
-
-## 2026-10-27 — Documentation review fixes: owner items, a lost fix, ROADMAP headroom
-
-- **Owner items in one place:** NEXT carried Windows/owner checks that OWNER_SITTING, the only
-  owner list, did not: D306 (now E23), D318 (F4), D333/D334 (C13), D335/D336 and D344–D350 (new
-  section H). Each carries its decision date as *listed*. NEXT now points to them. MAP10's extra
-  steps from NEXT join E11, and G1 asks about D368's leading `'`. No verdict was recorded.
-- **Lost booking restored:** D201 B3 queued a fix for `automatic_conflicts.cpp` skipping pairs on
-  different drawing levels against M3_CONTRACT §1. No queue carried it, and a test still asserts the
-  skip. NEXT books it again, failure first.
-- **Contract gap:** DESKTOP_AUTOMATION now documents `simulation.cancel` and the `cancelled`/`playback`
-  run-until outcomes the code already reports.
-- **Headroom:** ROADMAP was at 499 lines with one 3,846-character status paragraph. The S3–S5
-  paragraph and the M8 Road-demand follow-ups move whole to
-  [archive](archive/ROADMAP-implemented-2026-10-27.md); ROADMAP is 494 lines. No status, gate or
-  decision changed.
-- **Not done:** the owner-sitting R4 (b) carve-out of the items listed more than 14 days ago is the
-  owner's call, and was left as it is.
-
-## Older entries
-
-Older entries are in [`archive/`](archive/README.md), newest first. Decisions live in the
-[decision record](decisions/RECORD.md); the M0 backlog and question register are
-[archived](archive/PROGRESS-M0-backlog-and-questions.md).

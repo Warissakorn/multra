@@ -59,6 +59,14 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Windows acceptance is [OWNER_SITTING H](plans/OWNER_SITTING.md#h--desktop-automation-on-windows)
   (H1 for D335/D336, H2 for D344–D350).
 
+## Order of level work (D378)
+
+Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
+Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the next one is
+**M10.2 (trip generation)**, then M10.3–M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
+its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
+(hybrid meso–micro; the user roles) is open.
+
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner

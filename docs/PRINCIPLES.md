@@ -50,9 +50,11 @@ midpoint.
 validation messages) is stored bilingual with the data and picked at render time. A test
 enforces this by switching language and failing on leftover characters from the other one.
 
-### 8. Terminology follows Vissim, with the internal name alongside
-The audience thinks in Vissim vocabulary — "link", "connector", "conflict area", "desired
-speed distribution". Screens use those words. **Parameter names are never translated**,
+### 8. Terminology follows each level's reference, with the internal name alongside
+The audience thinks in the vocabulary of the tool or book each level is known by (D378): Vissim
+for Micro — "link", "connector", "conflict area", "desired speed distribution"; Visum and
+Aimsun Next for Meso and Macro — "zone", "OD matrix", "link type", "volume-delay function";
+HCM 7 for the Node method — "lane group", "v/c", "control delay". Screens use those words. **Parameter names are never translated**,
 because users must be able to find them in the project file and in the docs.
 
 ### 9. Every session ends with the log written and the work committed

@@ -2,6 +2,30 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Documentation review fixes: owner items, a lost fix, ROADMAP headroom
+
+- **Owner items in one place:** NEXT carried Windows/owner checks that OWNER_SITTING, the only
+  owner list, did not: D306 (now E23), D318 (F4), D333/D334 (C13), D335/D336 and D344–D350 (new
+  section H). Each carries its decision date as *listed*. NEXT now points to them. MAP10's extra
+  steps from NEXT join E11, and G1 asks about D368's leading `'`. No verdict was recorded.
+- **Lost booking restored:** D201 B3 queued a fix for `automatic_conflicts.cpp` skipping pairs on
+  different drawing levels against M3_CONTRACT §1. No queue carried it, and a test still asserts the
+  skip. NEXT books it again, failure first.
+- **Contract gap:** DESKTOP_AUTOMATION now documents `simulation.cancel` and the `cancelled`/`playback`
+  run-until outcomes the code already reports.
+- **Headroom:** ROADMAP was at 499 lines with one 3,846-character status paragraph. The S3–S5
+  paragraph and the M8 Road-demand follow-ups move whole to
+  [archive](ROADMAP-implemented-2026-10-27.md); ROADMAP is 494 lines. No status, gate or
+  decision changed.
+- **Not done:** the owner-sitting R4 (b) carve-out of the items listed more than 14 days ago is the
+  owner's call, and was left as it is.
+
+## Older entries
+
+Older entries are in [`archive/`](README.md), newest first. Decisions live in the
+[decision record](../decisions/RECORD.md); the M0 backlog and question register are
+[archived](PROGRESS-M0-backlog-and-questions.md).
+
 ## 2026-10-27 — Authored object table CSV export (M1.23.1, D365)
 
 - **Asked:** switch from schema/AI work to the recommended M1.23 native object-table CSV slice.
