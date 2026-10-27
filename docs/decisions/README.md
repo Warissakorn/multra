@@ -418,3 +418,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D362](RECORD.md#d362) — Queue-counter/measurement-line and travel-time-section structural schemas preserve nullable sources, shared control points and versioned LOS control types.
 
 [D363](RECORD.md#d363) — Base definition, Route, VehicleInput and interval metadata preserve open keys, explicit-null errors, interval totals and counted-volume migration stages.
+
+[D364](RECORD.md#d364) — RoutingDecision/share/period/type-rule metadata preserve strict/open keys, nullable fields, matrix diagnostics and document-only position gates.

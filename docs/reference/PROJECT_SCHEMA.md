@@ -3,7 +3,7 @@
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
 Connector/attachment-reference (D358), SignalHead (D359), signal control (D360),
-right-of-way (D361), measurement (D362) and base demand contracts (D363). It describes
+right-of-way (D361), measurement (D362), base demand (D363) and routing-decision contracts (D364). It describes
 implemented readers/writers, rather than inferring a contract from one document. It is
 **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
@@ -402,3 +402,31 @@ serialized bytes, catalog ownership, routing algorithms and simulation dynamics 
 Topology/reachability, catalog/reference resolution, valid demand rates/windows, lane weights
 and counted-decision semantics remain existing validators. Routing decisions and catalog row
 schemas remain separate follow-ups.
+
+
+## RoutingDecision extension (D364)
+
+The composed CLI coverage adds `-routing-decisions` to the D363 identifier; complete remains
+false. Definition routingDecisions is optional; explicit null fails. Decision rows require text
+id and a routes array. Their optional name/linkId/position/intervals use present, so null is
+ignored. TypeRules uses contains, so explicit null fails. Decision, route-share and type-rule
+keys remain strict even for files before schema 7; period rows keep open extra keys.
+
+- Route shares require text routeId and numeric relativeFlow. Optional destinationLinkId and
+  intervalFlows accept text/null and numeric-array/null respectively. Decision periods require
+  numeric startTime/endTime. Type rules require text vehicleTypeId, a numeric relativeFlows
+  array and an intervalFlows array of numeric arrays. Empty arrays/negative weights are left
+  to existing model validators, along with matrix dimensions, windows and destination topology.
+- Project files before schema 20 reject position even if null. The document guard still runs
+  before normal decoding; standalone routing reads and bare project reads keep their existing
+  position support. Schema generation and the document guard share the same version floor.
+  Type rules retain their historical reader behavior without an artificial schema-19 read gate.
+- Native error ordering and paths remain unchanged. Relative-flow cells report
+  `Expected numbers: relativeFlows`; malformed matrix rows report ROUTING_DECISION_INTERVALS;
+  nonnumeric share/matrix cells report INVALID_SHARE. Nullable periods/flows remain distinct
+  from required non-null type-rule arrays.
+
+The dedicated reader uses shared field metadata. Counted-volume synchronization remains after
+complete definition decoding, and the writer still omits derived counted intervals. No routing
+or simulation algorithm, catalog ownership, writer version rule, serialized output or desktop
+observed-schema response changes. Catalog row schemas remain separate follow-ups.

@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — RoutingDecision structural schema and unchanged counted synchronization (D364)
+
+- **Changed:** shared metadata now covers RoutingDecision rows, route shares, periods and
+  type-rule numeric matrices. Their native decoder moves to routing_codec; the parser is now
+  222 lines. The composed partial schema/CLI uses 73 shared definitions and 16 version profiles.
+  The schema and document precheck share the position version floor. Envelope-only schema and
+  desktop observed discovery stay unchanged.
+- **Preserved:** always-strict decision/share/type keys, open period keys, nullable optionals
+  and contains-based routingDecisions/typeRules null refusal. The document-only pre-20 position
+  guard still rejects null before normal decoding; bare/standalone reads retain support.
+  Numeric-vector, matrix-row and matrix-cell diagnostics retain their original order/paths.
+  Counted synchronization stays after complete definition decoding; model validators retain
+  matrix dimensions, weights, time windows and destination/run-readiness checks.
+- **Verified:** 5,073 cases across schemas 1–57 retain byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
+  validate structurally and keep byte-identical canonical output. Five new regression tests
+  cover strict/open shapes, nulls, position guards, matrix errors/semantics and counted sync;
+  an independent review found no compatibility defect. Release headless build and all 161
+  CTest entries pass (16.23 s), including CLI, docs, architecture and file-size checks. Linux
+  headless evidence only; no engine algorithm, Qt/Windows, scientific or owner gate change.
+
 ## 2026-10-26 — Base Route/VehicleInput schema and preserved demand derivation (D363)
 
 - **Changed:** shared metadata now covers definition duration/timeStep, Routes, VehicleInputs
@@ -170,20 +191,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   supported input versions and shipped-project round trips. Project tests pass 20/20; Release
   headless build and all 160 CTest entries pass, including architecture, documentation, file-size
   and reference checks. Linux only; no Qt/Windows acceptance claim.
-
-## 2026-10-26 — Keep bounded schema discovery permissive (D354)
-
-- **Fixed:** observed discovery could exhaust its visit budget inside an object, then restrict
-  the enclosing array to objects despite unseen scalar siblings. Arrays with unvisited items
-  now use unconstrained item schemas. Depth-limited containers stop before scanning children.
-- **Changed:** extracted the structural generator into Qt-free project `observed_schema`, used
-  by desktop discovery. The same 50,000-value/depth-32 limits, non-authoritative metadata and
-  codec dry-validation path remain; this does not implement a complete formal document schema.
-- **Verified:** a standalone reproduction using the previous generator rejects the unseen
-  scalar shape; the revised helper accepts it. Four new headless tests cover mixed/empty/null
-  samples, nested truncation, exact visit-budget and depth boundaries. Project tests pass 16/16;
-  Release headless build and all 160 CTest entries pass, including documentation, architecture,
-  file-size and reference checks. Qt tools are unavailable locally; no desktop/Windows claim.
 
 ## Older entries
 

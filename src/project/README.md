@@ -76,3 +76,11 @@ metadata; definition duration/timeStep use the same accessor. These rows retain 
 keys and contains-based optional reads (explicit null fails). Interval-derived totals stay
 at the original decode stage. The counted-volume version guard remains in parseDocument;
 route migration and counted synchronization still follow complete definition decoding.
+
+
+`routing_codec` reads RoutingDecision rows, route shares, time intervals and type-rule flow
+matrices through shared metadata. Decision/share/type rows remain strict at every file version;
+period rows stay open. Nullable optionals, contains-based typeRules and distinct matrix errors
+retain their read order. The document-only pre-20 position guard stays before parsing; counted
+volume synchronization follows the complete definition. Schema validation leaves matrix sizes,
+weights, time windows and destination reachability to existing model validators.

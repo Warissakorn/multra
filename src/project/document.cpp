@@ -228,7 +228,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (!j.is_object()) throw std::invalid_argument("EDIT_VERSION");
     if (j.contains("schemaVersion"))readProjectEnvelope(j,d);
     if (!present(j, "network")) throw std::invalid_argument("EDIT_NO_NETWORK");
-    if(j.contains("schemaVersion") && j.at("schemaVersion")<20 && present(j,"definition") && present(j.at("definition"),"routingDecisions") && j.at("definition").at("routingDecisions").is_array())
+    if(j.contains("schemaVersion") && j.at("schemaVersion")<networkCodec::routingPositionVersion && present(j,"definition") && present(j.at("definition"),"routingDecisions") && j.at("definition").at("routingDecisions").is_array())
         for(const auto& x:j.at("definition").at("routingDecisions"))
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;

@@ -54,14 +54,6 @@ const Json& array(const Json& value, const char* name) {
     if (!items.is_array()) throw std::invalid_argument(std::string("Expected array: ") + name);
     return items;
 }
-std::vector<double> doubles(const Json& value, const char* name) {
-    std::vector<double> result;
-    for (const auto& item : array(value, name)) {
-        if (!item.is_number()) throw std::invalid_argument(std::string("Expected numbers: ") + name);
-        result.push_back(item.get<double>());
-    }
-    return result;
-}
 // Below schema 5 the stored number is a fraction of the lane's own arclength. Convert it to a
 // station on the link once every link is parsed, so the attachment keeps the world position it
 // was drawn at. Signal heads share LaneReference, so they are walked too.
@@ -212,39 +204,6 @@ Composition parseComposition(const Json& c) {
         composition.intervals.push_back(std::move(period));
     }
     return composition;
-}
-std::vector<RoutingDecision> parseRoutingDecisions(const Json& definition) {
-    std::vector<RoutingDecision> result;
-    for (const auto& x : array(definition, "routingDecisions")) {
-        knownFields(x,{"id","name","linkId","routes","intervals","typeRules","position"},"routingDecision",20);
-        RoutingDecision decision{field<std::string>(x, "id"),
-                                 present(x, "name") ? field<std::string>(x, "name") : std::string{}, {}};
-        if (present(x, "linkId")) decision.linkId = field<std::string>(x, "linkId"); // M2.1.1
-        if(present(x,"position"))decision.position=field<double>(x,"position");
-        for (const auto& r : array(x, "routes")) {
-            knownFields(r,{"routeId","relativeFlow","destinationLinkId","intervalFlows"},"routingDecision.routes",19);
-            decision.routes.push_back({field<std::string>(r, "routeId"), field<double>(r, "relativeFlow")});
-            if (present(r, "destinationLinkId")) decision.routes.back().destinationLinkId = field<std::string>(r, "destinationLinkId");
-            if (present(r, "intervalFlows")) for (const auto& f : array(r, "intervalFlows")) { // M2.1.2
-                if (!f.is_number()) throw std::invalid_argument("INVALID_SHARE");
-                decision.routes.back().intervalFlows.push_back(f.get<double>());
-            }
-        }
-        if (present(x, "intervals")) for (const auto& i : array(x, "intervals")) // M2.1.2
-            decision.intervals.push_back({field<double>(i, "startTime"), field<double>(i, "endTime")});
-        if(x.contains("typeRules"))for(const auto& rule:array(x,"typeRules")) {
-            knownFields(rule,{"vehicleTypeId","relativeFlows","intervalFlows"},"routingDecision.typeRules",19);
-            RoutingTypeRule parsed{field<std::string>(rule,"vehicleTypeId"),doubles(rule,"relativeFlows"),{}};
-            for(const auto& row:array(rule,"intervalFlows")) {
-                if(!row.is_array())throw std::invalid_argument("ROUTING_DECISION_INTERVALS");
-                std::vector<double> flows;for(const auto& f:row){if(!f.is_number())throw std::invalid_argument("INVALID_SHARE");flows.push_back(f.get<double>());}
-                parsed.intervalFlows.push_back(std::move(flows));
-            }
-            decision.typeRules.push_back(std::move(parsed));
-        }
-        result.push_back(std::move(decision));
-    }
-    return result;
 }
 ScenarioDefinition parseDefinition(const Json& value) {
     ScenarioDefinition definition;

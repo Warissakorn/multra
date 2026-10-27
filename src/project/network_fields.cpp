@@ -45,7 +45,7 @@ constexpr Field signalHeadFields[]={
 constexpr Field definitionFields[]={
     {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers},
     {"duration",Kind::number,true},{"timeStep",Kind::number,true},
-    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true}};
+    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions}};
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -97,6 +97,16 @@ constexpr Field vehicleInputFields[]={
     {"intervals",Kind::volumeIntervals}};
 constexpr Field volumeIntervalFields[]={
     {"startTime",Kind::number,true},{"endTime",Kind::number,true},{"vehiclesPerHour",Kind::number,true}};
+constexpr Field routingDecisionFields[]={
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"linkId",Kind::text,false,0,0,true},
+    {"routes",Kind::routingRoutes,true},{"intervals",Kind::routingIntervals,false,0,0,true},
+    {"typeRules",Kind::routingTypeRules},{"position",Kind::number,false,0,routingPositionVersion,true}};
+constexpr Field routingRouteFields[]={
+    {"routeId",Kind::text,true},{"relativeFlow",Kind::number,true},
+    {"destinationLinkId",Kind::text,false,0,0,true},{"intervalFlows",Kind::numbers,false,0,0,true}};
+constexpr Field routingIntervalFields[]={{"startTime",Kind::number,true},{"endTime",Kind::number,true}};
+constexpr Field routingTypeRuleFields[]={
+    {"vehicleTypeId",Kind::text,true},{"relativeFlows",Kind::numbers,true},{"intervalFlows",Kind::numberMatrix,true}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -127,12 +137,17 @@ std::span<const Field> fields(Object object) {
     case Object::route:return routeFields;
     case Object::vehicleInput:return vehicleInputFields;
     case Object::volumeInterval:return volumeIntervalFields;
+    case Object::routingDecision:return routingDecisionFields;
+    case Object::routingRoute:return routingRouteFields;
+    case Object::routingInterval:return routingIntervalFields;
+    case Object::routingTypeRule:return routingTypeRuleFields;
     }
     return {};
 }
 bool allowsAdditionalFields(Object object,int version) {
-    if(object==Object::signalController || object==Object::signalGroup)return false;
-    if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval)return true;
+    if(object==Object::signalController || object==Object::signalGroup || object==Object::routingDecision ||
+       object==Object::routingRoute || object==Object::routingTypeRule)return false;
+    if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
 }
@@ -177,6 +192,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::stopControls:case Kind::texts:
     case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
+    case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
