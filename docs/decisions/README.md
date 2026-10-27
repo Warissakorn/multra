@@ -432,3 +432,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D369](RECORD.md#d369) — M0 plausibility accepted by owner ruling ("ผ่าน แบบ A"); caveat: bare M0 scenarios hold amber as red (1–3 clamps per run); unvalidated marker stays.
 
 [D370](RECORD.md#d370) — Analytical junction capacity (HCM 7 Ch. 19 first) booked as M13, a fourth method on the Node; contract NODE_ANALYSIS, owner choices open; no code.
+
+[D371](RECORD.md#d371) — M13 owner choices answered 1a–9a ("ใช้ตามแนะนำทั้งหมด"); A1 derives lane groups from Micro detail and refuses Nodes without it.

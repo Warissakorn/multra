@@ -16,7 +16,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   from the owner's copy (`74f4bc3`). Also slices A0–A9, rows NA1–NA8, and nine owner choices with
   recommendations. Chapter 31's Example Problem 1 is actuated and protected-permitted, so it is
   reserved for A3 + A8.
-- **Not done:** no code, no schema; the owner answers §8 and places M13 in the queue.
+- **Owner answer (D371):** "ใช้ตามแนะนำทั้งหมด", every recommendation 1a–9a. A1 derives lane groups
+  from the Node's Micro detail rather than storing them.
 
 ## 2026-10-27 — Measured optimization pass: graph-header fan-in, doc sizes
 

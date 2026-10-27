@@ -4,7 +4,7 @@ Contract before code (D145, D370). The owner asked whether MULTRA can analyse a 
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
 **Nothing here is implemented.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
-the queue. Owner choices (§8) are open; the recommended answer is marked in each.
+the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
 
@@ -88,14 +88,17 @@ is read, never copied.
   - each turn's heads, and through them its program, g/C, cycle, yellow and red.
 
   A Node without detail uses its coarse stage signal.
-- **New on the Node, schema-gated with A1 (proposed):**
-  - **Lane groups:** per in-leg, the lanes (count), which turns each serves, and whether each is
-    exclusive. A1 refuses a shared or permitted lane group with a named advisory.
+- **Lane groups, lane counts and lane widths are derived, not stored (D371).** For each lane of an
+  in-leg, A1 collects the set of turns whose paths start on it; lanes serving one turn form that
+  turn's exclusive lane group, and widths come from the Link's lanes. A1 refuses a shared or
+  permitted lane group with a named advisory. A Node without detail is refused with
+  `NODE_ANALYSIS_NEEDS_DETAIL`; stored lane groups for coarse Nodes belong to a later slice.
+- **New on the Node, schema 58 with A1:**
   - **Analysis volumes:**
     - per turn: hourly volume, PHF and %HV;
-    - optionally, per-15-minute rows, the same structure as M2.2 intervals.
-  - **Geometry adjustments:** lane width (m), grade (%), parking manoeuvres per hour, buses stopping
-    per hour, area type (CBD or not).
+    - optionally, per-15-minute rows, the same structure as M2.2 intervals (a later slice).
+  - **Approach adjustments:** grade (%), parking manoeuvres per hour, buses stopping per hour; and
+    area type (CBD or not) for the Node.
   - **Base saturation flow:**
     - default from Exhibit 19-11;
     - an override with a source string, such as "measured, M3.3.1, <date>".
@@ -156,7 +159,7 @@ is read, never copied.
 Each slice begins with its rows. Its gate is the rows passing, the marker kept, and other levels'
 bytes unchanged.
 
-## 8. Owner choices (open)
+## 8. Owner choices (answered 2026-10-27, D371: 1a–9a, "ใช้ตามแนะนำทั้งหมด")
 
 1. **Placement.**
    - **(a, recommended)** Milestone M13 with its own engine `src/analysis/`.
