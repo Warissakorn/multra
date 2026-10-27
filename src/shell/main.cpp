@@ -32,11 +32,15 @@ int main(int argc, char** argv) {
     parser.addOption({"data-dir", "Data and locale directory", "directory"});
     parser.addOption({"scenario", "Editor project or M0 authoring scenario JSON", "file"});
     parser.addOption({"language", "Interface language: en or th", "code", "en"});
+    parser.addOption({"recovery", "Startup recovery: ask or defer (never deletes drafts)", "policy", "ask"});
     parser.addOption({"automation", "Enable local JSON automation on a named endpoint", "name"});
     // --editor is kept as an accepted no-op: the editor is the application now, and a script or
     // shortcut written against the old two-window build must not start failing on an unknown flag.
     parser.addOption({"editor", "Accepted for compatibility; the editor always opens"});
     parser.process(app);
+    if(parser.value("recovery")!="ask" && parser.value("recovery")!="defer") {
+        QTextStream(stderr)<<"--recovery must be ask or defer\n";return 2;
+    }
     try {
         const auto data = parser.isSet("data-dir") ? multra::nativePath(parser.value("data-dir")) :
             multra::findDataDirectory(multra::nativePath(QCoreApplication::applicationFilePath()));
@@ -47,10 +51,10 @@ int main(int argc, char** argv) {
         if(qEnvironmentVariableIsEmpty("LIBTHAI_DICTDIR")&&std::filesystem::is_regular_file(thai/"thbrk.tri",missing))
             qputenv("LIBTHAI_DICTDIR",multra::displayPath(thai).toUtf8());
         if (parser.value("language") != "en" && parser.value("language") != "th") throw std::invalid_argument("Unknown language");
-        multra::EditorWindow editor(data, parser.value("language"));
-        multra::AutomationServer automation([&editor](const auto& request){return editor.automationRequest(request);});
-        if(parser.isSet("automation") && !automation.listen(parser.value("automation"))) {
-            QTextStream(stderr)<<"Cannot start automation: "<<automation.errorString()<<'\n';
+        multra::EditorWindow editor(data, parser.value("language"), nullptr, parser.value("recovery")=="defer");
+        QString automationError;
+        if(parser.isSet("automation") && !editor.enableAutomation(parser.value("automation"), &automationError)) {
+            QTextStream(stderr)<<"Cannot start automation: "<<automationError<<'\n';
             return 2;
         }
         editor.showMaximized();

@@ -1,4 +1,5 @@
 #include "editor_interaction.hpp"
+#include "automation_server.hpp"
 #include "editor_window.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
@@ -37,7 +38,7 @@
 #include <cmath>
 
 namespace multra {
-EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent) : QMainWindow(parent), data_(data) {
+EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent,bool deferRecovery) : QMainWindow(parent), data_(data), deferRecovery_(deferRecovery) {
     // Numbers are data a user reads back into the project file, so every widget shows Latin
     // digits whatever the system locale. setLocale as well as setDefault: the QMainWindow base has
     // already resolved the system locale, and every child and dialog inherits the window's.
@@ -65,9 +66,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     setReflowPolicy(error_,QSizePolicy::Ignored);
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
-    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard()){ clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(newProjectDocument());
-        automaticRevision_=conflictRevision_=UINT64_MAX;
-        file_.clear(); canvas_->select(""); refresh(); canvas_->fitNetwork(); } }));
+    files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard())newFile(); }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
         if(!confirmDiscard()) return;
         const auto file=QFileDialog::getOpenFileName(this,text("editorOpen"),{},text("editorFilter"));
@@ -187,6 +186,7 @@ QAction* EditorWindow::action(const std::string& key,const QKeySequence& shortcu
 QString EditorWindow::text(const std::string& key) const { return locales_.at(language_->currentData().toString()).value(QString::fromStdString(key)).toString(); }
 void EditorWindow::translate() {
     for(const auto& [key,a]:actions_) a->setText(text(key));
+    refreshAutomationActions();
     for(const auto& [key,w]:texts_) {
         if(auto* label=qobject_cast<QLabel*>(w)) {
             auto title=text(key);const bool english=language_->currentData().toString()=="en";

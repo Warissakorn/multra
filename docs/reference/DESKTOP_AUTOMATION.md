@@ -76,7 +76,7 @@ the document and visible run. Validation failures also expose their issues.
 
 `state.documentId` identifies the current document session; `state.revision` is a
 decimal string. Keep both as strings. Every command except `capabilities`, `status`,
-`document.get` and `results.get` requires the two guard fields from the latest state.
+`document.get`, `results.get`, `recovery.list`, `map.get`, `map.status` and `connector.suggest` requires the two guard fields from the latest state.
 This prevents a delayed AI edit from overwriting changes made by the user. A rejected
 guard requires a fresh inspection and a decision about whether the original edit
 still applies. Do not automatically retry it against the new revision.
@@ -95,6 +95,17 @@ and inspect again. `simulation.reset` stores its seed as the canonical decimal (
 | `status` | None | Read current document and run state |
 | `document.get` | Optional `pointer`: JSON Pointer string | Read `result.document`, or only the pointed `result.value` |
 | `document.patch` | `patch`: RFC 6902 operation array | Validate and commit one atomic, undoable document edit |
+| `connector.suggest` | `from`, `to`; optional lane counts | Preview a UI-generated Connector and an explicit patch without editing |
+| `map.get` | None | Read settings and installed providers, with tile state |
+| `map.status` | None | Read current viewport tile counts and readiness |
+| `map.set` | `longitude`, `latitude`; optional provider/appearance/anchor fields | Replace map settings as one Undo step |
+| `map.remove` | None | Remove map settings as one Undo step |
+| `map.retry` | None | Retry failed visible tiles without changing History |
+| `recovery.list` | None | List recovery IDs and advisory availability without opening a dialog |
+| `recovery.restore` | `id`; `discardChanges: true` when dirty | Restore an inactive draft as untitled/dirty |
+| `recovery.discard` | `id`, `confirm: true` | Delete one inactive draft under its lock |
+| `file.new` | Optional `discardChanges: true` when dirty | Start an empty document in the same window |
+| `app.quit` | Optional `discardChanges: true` when dirty | Accept intentional program quit; caller separately verifies exit |
 | `file.open` | `path`; `discardChanges: true` when dirty | Open a project or supported authoring scenario in the window |
 | `file.save` | `path` | Atomically save the current project to an explicit path |
 | `history.undo` | None | Undo the previous document edit and clear its run |
@@ -121,7 +132,7 @@ change `revision` or the `format` marker. Embedded background image bytes cannot
 replaced through this interface. Use ordinary project files to load another image.
 The document's feature schema still applies: adding a field introduced in a newer
 schema must use a schema version that accepts that field, up to the supported version
-55. `schemaVersion` can be patched but must remain present; removing it would select
+57. `schemaVersion` can be patched but must remain present; removing it would select
 the legacy scenario decoder. Saving selects the schema required by the document's
 features. Successful edits refresh
 the same canvas and invalidate the previous run, as ordinary editor edits do.
@@ -238,3 +249,185 @@ and vehicle playback appear in the visible window.
 The interface does not add a second model or simulation engine. Traffic results remain
 **not yet validated**; mean completed-trip delay is not HCM control delay. See
 [SIMULATION.md](SIMULATION.md) and [NETWORK_EDITOR.md](NETWORK_EDITOR.md).
+
+## Live automation lifecycle (D344)
+
+The existing editor can enable or disable local automation from Help → AI control.
+Enabling asks for an endpoint and reports it in the menu and status bar. A failed bind
+keeps the editor, document, Undo, selection and run intact. `--automation` remains supported;
+its startup bind failure still exits with code 2 for existing scripts.
+
+No server is allocated until enable is requested. Disabling closes the listener and client
+connections, releasing the endpoint. It does not cancel completed commands, stop simulation,
+change the document or disable recovery. An incomplete request is discarded; a submitted
+command may have executed even if its reply was lost. Do not retry mutations blindly.
+There is no automation polling timer, heartbeat or background JSON generation.
+
+Responses add a window-lifetime `state.instanceId`, `connectionReady` (listener active),
+`startupComplete` (startup recovery handling returned), and `busyReason` (null, modal,
+menu or pointer). Existing document/revision guards, busy boolean and protocol v1 remain.
+A fresh client uses status/capabilities and the latest response state; no persistent client
+session is required. `status` accepts `includeSelection: false` in params to omit the
+selection array and its copy; `selectionCount` remains. Other callers retain their existing
+selection response. Readiness does not imply a runnable document or absence of busy UI.
+
+Acceptance: enable after editing, refuse an occupied endpoint without losing work, disable
+with a connected client and pending bytes, re-enable the same endpoint, reconnect while a
+run advances, and reject stale document guards. No AI timer is added. Linux offscreen
+checks do not establish Windows focus, named-pipe or visible-desktop acceptance.
+
+## New documents and intentional quit (D345)
+
+`file.new` and `app.quit` require the existing document/revision guards and no modal,
+menu or pointer gesture. Both refuse dirty work with `UNSAVED_CHANGES` unless params
+contains the boolean `discardChanges: true`; a failed save never grants permission to
+close or discard. `file.new` uses the same reset path as File → New, clears the old run,
+Undo, selection and this window's recovery, and starts another document in the same instance.
+
+`app.quit` is an explicit end-of-program operation, not the end of an AI task or connection.
+It replies `result.quitAccepted: true`, `state.closing: true`. Closing rejects further
+stateful commands with `CLOSING` and freezes editing while the reply drains. Only after
+all reply bytes have left Qt's write buffer does the editor close without another save
+prompt and remove its own recovery. This is transport handoff, not proof the caller read
+the reply. The caller must separately observe process exit; timeout must never trigger a
+kill or blind retry. If reply writing fails or cannot drain within 5 seconds, closing is
+cancelled, editing is restored and recovery is retained. Read-only status remains available
+while closing. No timer is installed until an intentional quit reply needs draining.
+
+## Deferred recovery management (D346)
+
+`--recovery ask|defer` defaults to ask, including with automation. Defer skips only the
+startup prompt: autosave and File → Recover remain enabled, and no draft is deleted.
+`state.recoveryPolicy` reports the choice; status performs no recovery-directory scan.
+
+`recovery.list` is unguarded and returns `result.entries`: basename `id`, `modifiedAt`,
+`bytes` and `availability` (available, current, locked or unavailable). It reads metadata,
+not project contents. Availability is advisory; restore/discard recheck files and locks.
+Listing is explicit, with no polling or background scan. Symlinks are not offered.
+
+`recovery.restore {id, discardChanges?}` is guarded and requires explicit boolean discard
+when the current document is dirty. It validates the selected draft before replacing the
+current document, adopts its lock and opens untitled/dirty with a new documentId, so Save
+must name a destination. `recovery.discard {id, confirm: true}` is guarded, requires explicit
+confirmation and deletes only the named inactive draft while holding its lock. Both reject
+this window's current draft, other live owners, missing files, paths and symlinks; IDs are
+basenames from list, never arbitrary paths. A listed draft may become busy before use.
+No command removes another editor's active draft or bulk-deletes pending recovery.
+
+## Map commands and viewport readiness (D347)
+
+`map.get` returns persisted settings (null when absent), installed provider IDs/names and
+current tile state; `map.status` returns tile state only. Both are unguarded reads and do
+not fetch tiles or rebuild the document. `map.set` replaces settings using required finite
+`longitude` [-180,180] and `latitude` [-80,84]; optional `providerId` defaults to the first
+installed provider, `opacity` to 0.7, `anchorWorldX/Y` to 0 and `rotationDegrees` to 0.
+World anchors are within ±10,000,000 m, rotation ±180 degrees, opacity [0,1]. UTM CRS is
+computed by the existing rule; clients do not patch schemaVersion or author a projection.
+Unknown keys/type/range failures include error.path and error.expected without changing work.
+
+Guarded map.set/remove use the existing map command, validation, History and run invalidation.
+A changed set shows the layer and centers on a changed geographic anchor as the settings UI
+does; no-op set keeps the camera and revision. Remove is idempotent. `map.retry` is guarded
+view state, reusing existing failed-tile retry and Retry-After behavior without an Undo entry.
+
+Tile state reports status (disabled/loading/ready/networkError/outsideStudy/unavailable/
+renderLimit), visible, viewportPending, wanted, loaded, pending, failed and ready. Counts
+refer to the current computed viewport; while viewportPending they may describe the previous
+view. ready requires a settled viewport, visible layer, status ready, at least one wanted
+tile and all wanted tiles loaded without failures. Pending includes retry waits; networkError
+can coexist with pending retries and is not necessarily terminal. Readiness means tile data
+is available to paint, not that a screenshot has already been captured. Read again after
+camera changes; no fixed sleep duration or successful external OSM access is assumed.
+
+## Connector proposals and attachment diagnostics (D348)
+
+`connector.suggest` is an unguarded read. Required from/to each contain linkId, laneId
+and optional station in metres along the Link reference geometry; omitted station means
+source end/target start. Optional fromLaneCount/toLaneCount are integers 1–12, bounded by
+the available contiguous lanes. The helper runs the same addConnectorRange/default-curve
+command as the UI on a document copy and validates the result. The live document, ID
+allocator, History, selection and run are unchanged. No snapping or auto-apply occurs.
+
+The result includes connector, patch and rangeAdjusted plus requested/actual lane counts.
+D75 range narrowing is reported explicitly. The returned patch tests/replaces nextId and
+adds the connector; apply it only with document.patch and the document/revision state from
+the suggestion response. IDs are provisional, not reservations. Proposals refuse allocator values outside the exact
+JSON integer range rather than return a lossy nextId patch. Conflicting edits require
+another suggestion; do not update stale guards and blindly apply an old proposal.
+
+Rejected document.patch attachment issues keep VALIDATION_FAILED and existing code/path.
+Where the rejected candidate can be decoded, DISCONNECTED_GEOMETRY additionally reports
+objectId, expected/actual coordinates, distance, tolerance and geometryPointer. Measurements
+come from the same attachment rule/tolerance used by network validation and refer to the
+rejected candidate, never the current live geometry. Other issues retain their existing
+shape; extra details are omitted if the candidate cannot be decoded safely.
+
+## Single-run identity and explicit export (D349)
+
+A successful preparation of the existing GUI single simulation assigns `state.run.runId`.
+It stays the same across Step, Start, Pause, Resume, reconnect and completion; failed
+preparation assigns no ID. State adds status (idle/prepared/running/paused/completed),
+sourceDocumentId and sourceRevision strings, plus the latest invalidated lastRunId and
+lastEndReason (reset/seedChanged/documentChanged/replacedByBatch/replacedByComparison).
+Only one current single run is retained; this is not a job registry or historical result store.
+Edits, Undo/Redo, New/Open/recovery, seed changes, Reset and batch/comparison replacement
+invalidate the ID through the existing clearRun path. A new prepared run gets another ID.
+
+Simulation commands and results.get accept optional runId. When supplied it must name the
+current prepared run or the command returns STALE_RUN before doing work. Omitting it keeps
+existing behavior, including creating a run through Step/Start. results.get adds run metadata
+and keeps its existing partial summary/movement data and not-yet-validated marker.
+
+`results.export {path, report: "movements", runId}` explicitly exports the finished single
+run through the existing movement CSV formatter and atomic file writer, independent of
+selected tab, Macro/Meso panels, batch or comparison. runId alone also selects this explicit
+single-run path. A missing/invalid ID, mismatched run, unsupported report or unfinished run
+is refused before touching the destination. The reply names path/report/run/source identity
+and validated:false. CSV bytes/provenance markings stay identical to the GUI single export.
+
+Requests with neither report nor runId preserve legacy tab-based results.export behavior.
+Explicit identities/exports for batch, comparison, Macro and Meso remain out of this slice;
+unsupported explicit report names are rejected, never routed to a different result silently.
+No additional simulation loop, worker, timer or persistent run log is introduced.
+
+## Codec-backed discovery and asynchronous run-until (D350)
+
+`document.schema {pointer?}` returns a draft-2020-12 structural schema observed from the
+current serialized document/subtree, current/latest codec versions, protected patch fields
+and the authoritative validation command. coverage is observed-shape and authoritative is
+false: absent optional fields, cross-references and semantic constraints are not inferred.
+Numbers stay number (not integer inferred from a sample), additional object fields remain
+open, and empty/null samples remain unconstrained. Discovery is bounded to 50,000 visited
+values/32 levels and reports truncated when a bound is reached. If the visit budget
+leaves array items unvisited, that array uses unconstrained items rather than excluding
+unseen types based on its visited prefix. Depth-limited containers also remain open
+without enumerating their children. Embedded image bytes are
+excluded. This is not a complete formal schema for every supported project/version. The
+[project schema inventory](PROJECT_SCHEMA.md) maps codec ownership, root presence rules
+and feature-selected save versions. `multra-project-schema` provides a separate, exact-integer
+partial formal envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase and right-of-way/measurement/Route/VehicleInput/RoutingDecision schema; it does not change this observed-shape response.
+
+`document.validate` accepts exactly one of patch or document. Patch follows the same protected
+field/codec/History settlement path as document.patch on a disposable History; document checks
+a complete canonical editor document through the codec. Success returns valid:true, changed
+and the resulting serialized schemaVersion, never changes the live document/run/Undo, and
+is not a promise of traffic calibration or run readiness. Errors retain existing structured
+validation/attachment diagnostics. Both discovery and validation are unguarded explicit reads.
+
+`simulation.run` is guarded, with optional current runId, until:"finished" (default) or
+until:"time" with a finite time in scenario seconds on the fixed time grid, and integer
+timeoutMs 1–300000 (default 30000). It prepares the existing single run synchronously, then replies without waiting for the
+simulation target. Compilation retains the existing GUI preparation behavior; client transport
+timeout does not cancel a submitted request. Targets are checked against the compiled snapshot before live preparation is committed; a
+time target cannot precede the current tick.
+The existing GUI timer performs at most 200 steps per callback with a best-effort 8 ms slice;
+one engine step cannot be interrupted. Observers/rendering use the existing run path.
+No second worker, simulation loop outside the GUI timer, or job registry is introduced.
+
+state.run.until reports target runId/tick/time, active, timeoutMs and outcome (none/running/
+reached/timeout/paused or the existing invalidation reason). Track completion through status
+or results.get with the runId. Duplicate active requests with identical target/deadline settings
+keep the original deadline; a different active target is refused. Pause/Step cancel the target,
+Start returns to ordinary playback, edits/reset/replacement invalidate it, and disconnecting
+or disabling automation does not cancel it. Timeout preserves the completed steps and pauses
+without changing runId. Ready results still require completion before final CSV export.

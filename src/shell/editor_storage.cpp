@@ -4,6 +4,8 @@
 #include <QFile>
 #include <QImageReader>
 #include <QSaveFile>
+#include <QFileInfo>
+#include <QDir>
 namespace multra {
 ProjectDocument readEditorDocument(const QString& file) {
     QFile input(file);
@@ -26,6 +28,23 @@ void writeEditorDocument(const QString& file,const Json& value) {
     const auto bytes=value.dump(2)+"\n";
     if(bytes.size()>48*1024*1024)throw std::runtime_error("EDIT_FILE_TOO_LARGE");
     writeEditorBytes(file,bytes,"EDIT_FILE_WRITE");
+}
+void checkExportDestination(const QString& file,const QStringList& protectedFiles,const char* errorCode) {
+    const QFileInfo destination(file);
+#ifdef Q_OS_WIN
+    constexpr auto pathCase=Qt::CaseInsensitive;
+#else
+    constexpr auto pathCase=Qt::CaseSensitive;
+#endif
+    for(const auto& path:protectedFiles) {
+        if(path.isEmpty())continue;
+        const QFileInfo protectedFile(path);
+        const bool sameName=QDir::cleanPath(destination.absoluteFilePath()).compare(
+            QDir::cleanPath(protectedFile.absoluteFilePath()),pathCase)==0;
+        const auto canonical=destination.canonicalFilePath();
+        if(sameName || (!canonical.isEmpty() && canonical.compare(protectedFile.canonicalFilePath(),pathCase)==0))
+            throw std::runtime_error(errorCode);
+    }
 }
 void writeEditorBytes(const QString& file,const std::string& bytes,const char* errorCode) {
     QSaveFile output(file);output.setDirectWriteFallback(false);

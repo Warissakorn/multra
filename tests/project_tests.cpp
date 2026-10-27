@@ -151,3 +151,79 @@ TEST(project, file_kind_classification_survives_broken_metadata) {
         }
     std::filesystem::remove_all(directory);
 }
+
+TEST(project, allocated_ids_skip_every_existing_namespace) {
+    // Each fixture forces the candidate into a different id-owning collection, including the
+    // allocation-only zone/mode namespaces. Check the collision before checking the skip.
+    const auto append = [](auto& objects) {
+        objects.emplace_back(); objects.back().id = "taken-1";
+        CHECK(!objects.empty() && objects.back().id == "taken-1");
+    };
+    const std::vector<std::function<void(ProjectDocument&)>> fixtures{
+        [](auto& d) { d.network.id = "taken-1"; CHECK(d.network.id == "taken-1"); },
+        [&](auto& d) { append(d.macroRuns); },
+        [&](auto& d) { append(d.network.links); },
+        [&](auto& d) { d.network.links.emplace_back(); append(d.network.links.back().lanes); },
+        [&](auto& d) { append(d.network.connectors); d.network.connectors.back().fromLaneCount = 1; d.network.connectors.back().toLaneCount = 1; },
+        [&](auto& d) { append(d.network.signalHeads); },
+        [&](auto& d) { append(d.network.rightOfWay.waitingLines); },
+        [&](auto& d) { append(d.network.rightOfWay.conflictAreas); },
+        [&](auto& d) { append(d.network.rightOfWay.priorityRules); },
+        [&](auto& d) { append(d.network.rightOfWay.stopControls); },
+        [&](auto& d) { append(d.network.queueCounters); },
+        [&](auto& d) { append(d.network.travelTimeSections); },
+        [&](auto& d) { append(d.network.nodes); },
+        [&](auto& d) { append(d.network.roads); },
+        [&](auto& d) { append(d.definition->routes); },
+        [&](auto& d) { append(d.definition->inputs); },
+        [&](auto& d) { append(d.definition->signalPrograms); },
+        [&](auto& d) { append(d.definition->signalControllers); },
+        [&](auto& d) { append(d.definition->routingDecisions); },
+        [&](auto& d) { append(d.zones.zones); },
+        [&](auto& d) { append(d.zones.zoneConnectors); },
+        [&](auto& d) { append(d.zones.odMatrices); },
+        [&](auto& d) { append(d.zones.parkingLots); },
+        [&](auto& d) { append(d.zones.studyPeriods); },
+        [&](auto& d) { append(d.definition->modes); }
+    };
+    for (const auto& fixture : fixtures) {
+        ProjectDocument d; d.definition = AuthoringDefinition{};
+        fixture(d);
+        CHECK(d.nextId == 1);
+        CHECK(allocateId(d, "taken") == "taken-2");
+        CHECK(d.nextId == 3);
+    }
+}
+TEST(project, allocation_preserves_connector_path_ids_and_enumeration_scope) {
+    ProjectDocument d; d.definition = AuthoringDefinition{};
+    d.network.connectors.push_back({});
+    auto& c = d.network.connectors.back(); c.id = "range"; c.fromLaneCount = 3; c.toLaneCount = 1;
+    d.macroRuns.emplace_back(); d.macroRuns.back().id = "macro";
+    d.zones.zones.emplace_back(); d.zones.zones.back().id = "zone";
+    d.definition->modes.emplace_back(); d.definition->modes.back().id = "mode";
+    const std::set<std::string> expected{"network", "range", "range/lane-2", "range/lane-3", "macro"};
+    CHECK(documentIds(d) == expected);
+    auto withoutMacro = expected; withoutMacro.erase("macro");
+    CHECK(documentIds(d, false) == withoutMacro);
+    d.nextId = 2;
+    CHECK(allocateId(d, "range/lane") == "range/lane-4");
+    CHECK(d.nextId == 5);
+    CHECK(allocateId(d, "ถนน-ซอย") == "ถนน-ซอย-5");
+    CHECK(d.nextId == 6);
+}
+TEST(project, allocation_retains_exhaustion_and_collision_counter_semantics) {
+    const auto limit = std::numeric_limits<std::uint64_t>::max();
+    ProjectDocument d;
+    for (const auto next : {limit - 1, limit}) {
+        d.nextId = next;
+        test::throws([&] { allocateId(d, "id"); }, "EDIT_ID_LIMIT");
+        CHECK(d.nextId == next);
+    }
+    d.nextId = limit - 2; d.network.id = "id-" + std::to_string(d.nextId);
+    CHECK(documentIds(d).contains(d.network.id));
+    test::throws([&] { allocateId(d, "id"); }, "EDIT_ID_LIMIT");
+    CHECK(d.nextId == limit - 1); // A rejected candidate still consumes the counter, as before.
+    d.network.id = "network"; d.nextId = limit - 2;
+    CHECK(allocateId(d, "id") == "id-" + std::to_string(limit - 2));
+    CHECK(d.nextId == limit - 1);
+}

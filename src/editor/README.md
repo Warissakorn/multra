@@ -10,3 +10,9 @@ Run vehicle silhouettes and interior decoration are `vehicle_shape.*`, painted b
 [vehicle display contract](../../docs/reference/VEHICLE_POSE.md#plan-view-appearance-d333).
 `vehicle_color.hpp` resolves fixed or mixed body colours by stable vehicle/type ID, without
 using engine random state. User palettes are supplied by the shell's appearance preferences.
+
+
+`canvas_image` reuses an isolated authoring canvas for bounded PNG export, following the live
+level/wireframe/display settings without changing document, camera or selection. Embedded images
+are optional; live loaded map tiles paint without requests and retain attribution. See
+[network image contract](../../docs/reference/NETWORK_IMAGE.md).

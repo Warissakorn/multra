@@ -1,4 +1,5 @@
 #include "json.hpp"
+#include "network_fields.hpp"
 #include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
@@ -48,55 +49,10 @@ template<class T> T field(const Json& value, const char* name) {
     }
     return item.get<T>();
 }
-int integer(const Json& value, const char* name) {
-    const double n = field<double>(value, name);
-    if (!std::isfinite(n) || n < std::numeric_limits<int>::min() || n > std::numeric_limits<int>::max() ||
-        n != std::trunc(n)) throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
-    return static_cast<int>(n);
-}
 const Json& array(const Json& value, const char* name) {
     const auto& items = member(value, name);
     if (!items.is_array()) throw std::invalid_argument(std::string("Expected array: ") + name);
     return items;
-}
-std::vector<std::string> strings(const Json& value, const char* name) {
-    std::vector<std::string> result;
-    for (const auto& item : array(value, name)) {
-        if (!item.is_string()) throw std::invalid_argument(std::string("Expected strings: ") + name);
-        result.push_back(item.get<std::string>());
-    }
-    return result;
-}
-std::vector<double> doubles(const Json& value, const char* name) {
-    std::vector<double> result;
-    for (const auto& item : array(value, name)) {
-        if (!item.is_number()) throw std::invalid_argument(std::string("Expected numbers: ") + name);
-        result.push_back(item.get<double>());
-    }
-    return result;
-}
-int integer(const Json& value,const char* key,int fallback) {
-    if(!value.contains(key))return fallback;
-    const auto& v=member(value,key);
-    if(!v.is_number_integer() || v < -1000 || v > 1000)throw std::invalid_argument("EDIT_DISPLAY_VALUE");
-    return v.get<int>();
-}
-std::vector<Point> points(const Json& value,int version) {
-    std::vector<Point> result;
-    for (const auto& p : array(value, "geometry")) {
-        knownFields(p,{"x","y"},"geometry["+std::to_string(result.size())+"]",version);
-        result.push_back({field<double>(p, "x"), field<double>(p, "y")});
-    }
-    return result;
-}
-LaneReference reference(const Json& value,int schemaVersion) {
-    LaneReference result{field<std::string>(value,"linkId"),field<std::string>(value,"laneId")};
-    const char* key=schemaVersion>=5?"station":"fraction";
-    const char* wrong=schemaVersion>=5?"fraction":"station";
-    if(value.contains(wrong))throw std::invalid_argument("EDIT_VERSION");
-    knownFields(value,{"linkId","laneId","station"},"reference",schemaVersion);
-    if(value.contains(key))result.station=field<double>(value,key);
-    return result;
 }
 // Below schema 5 the stored number is a fraction of the lane's own arclength. Convert it to a
 // station on the link once every link is parsed, so the attachment keeps the world position it
@@ -118,182 +74,22 @@ void migrateAttachments(Network& network) {
     for(auto& c:network.connectors){convert(c.from,true);convert(c.to,false);}
     for(auto& h:network.signalHeads)convert(h.lane,false);
 }
-SignalColor color(const std::string& text) {
-    if (text == "red") return SignalColor::red;
-    if (text == "amber") return SignalColor::amber;
-    if (text == "green") return SignalColor::green;
-    throw std::invalid_argument("INVALID_SIGNAL_COLOR");
-}
-}
-namespace {
-// M3.2.2, schema 14. Strict: every key known, every enum spelled out, so a control this build
-// cannot represent fails the load rather than disappearing on the next save.
-ControlPathRef controlPath(const Json& value, const std::string& path, int version) {
-    knownFields(value,{"linkId","laneId","connectorId","fromLaneId","toLaneId"},path,version);
-    ControlPathRef ref;
-    const auto text=[&](const char* key){return present(value,key)?field<std::string>(value,key):std::string{};};
-    ref.linkId=text("linkId"); ref.laneId=text("laneId");
-    ref.connectorId=text("connectorId"); ref.fromLaneId=text("fromLaneId"); ref.toLaneId=text("toLaneId");
-    return ref;
-}
-ConflictSide conflictSide(const Json& value, const std::string& path, int version) {
-    knownFields(value,{"path","entryStation","exitStation","waitingLineId"},path,version);
-    return {controlPath(member(value,"path"),path+".path",version),field<double>(value,"entryStation"),
-            field<double>(value,"exitStation"),field<std::string>(value,"waitingLineId")};
-}
-RightOfWay rightOfWay(const Json& value, int version) {
-    // `stopControls` exists from schema 15 (M3.2.5); an older file naming it fails to load.
-    if(version>=15)knownFields(value,{"waitingLines","conflictAreas","priorityRules","stopControls"},"network.rightOfWay",version);
-    else knownFields(value,{"waitingLines","conflictAreas","priorityRules"},"network.rightOfWay",version);
-    RightOfWay row;
-    if(present(value,"waitingLines"))for(const auto& w:array(value,"waitingLines")) {
-        const auto path="rightOfWay.waitingLines["+std::to_string(row.waitingLines.size())+"]";
-        knownFields(withoutGenerated(w,version),{"id","name","point"},path,version);
-        const auto& point=member(w,"point");
-        knownFields(point,{"path","station"},path+".point",version);
-        row.waitingLines.push_back({field<std::string>(w,"id"),present(w,"name")?field<std::string>(w,"name"):"",
-            {controlPath(member(point,"path"),path+".point.path",version),field<double>(point,"station")}});row.waitingLines.back().generated=generatedFlag(w,path,version);
-    }
-    if(present(value,"conflictAreas"))for(const auto& a:array(value,"conflictAreas")) {
-        const auto path="rightOfWay.conflictAreas["+std::to_string(row.conflictAreas.size())+"]";
-        knownFields(withoutGenerated(a,version),{"id","name","kind","first","second","priority"},path,version);
-        row.conflictAreas.push_back({field<std::string>(a,"id"),present(a,"name")?field<std::string>(a,"name"):"",
-            conflictKindFromName(field<std::string>(a,"kind")),conflictSide(member(a,"first"),path+".first",version),
-            conflictSide(member(a,"second"),path+".second",version),
-            conflictPriorityFromName(field<std::string>(a,"priority"))});row.conflictAreas.back().generated=generatedFlag(a,path,version);
-    }
-    if(present(value,"priorityRules"))for(const auto& r:array(value,"priorityRules")) {
-        const auto path="rightOfWay.priorityRules["+std::to_string(row.priorityRules.size())+"]";
-        knownFields(withoutGenerated(r,version),{"id","name","conflictAreaId","gapTime","headway"},path,version);
-        row.priorityRules.push_back({field<std::string>(r,"id"),present(r,"name")?field<std::string>(r,"name"):"",
-            field<std::string>(r,"conflictAreaId"),field<double>(r,"gapTime"),field<double>(r,"headway")});row.priorityRules.back().generated=generatedFlag(r,path,version);
-    }
-    if(version>=15 && present(value,"stopControls"))for(const auto& c:array(value,"stopControls")) {
-        const auto path="rightOfWay.stopControls["+std::to_string(row.stopControls.size())+"]";
-        knownFields(withoutGenerated(c,version),{"id","name","waitingLineId","mode","conflictAreaIds"},path,version);
-        StopControl control{field<std::string>(c,"id"),present(c,"name")?field<std::string>(c,"name"):"",
-            field<std::string>(c,"waitingLineId"),stopModeFromName(field<std::string>(c,"mode")),{}};
-        for(const auto& area:array(c,"conflictAreaIds")) {
-            if(!area.is_string())throw std::invalid_argument("Expected text: conflictAreaIds");
-            control.conflictAreaIds.push_back(area.get<std::string>());
-        }
-        control.generated=generatedFlag(c,path,version);row.stopControls.push_back(std::move(control));
-    }
-    return row;
-}
+
 }
 Network parseNetwork(const Json& value, int schemaVersion) {
-    // `rightOfWay` exists from schema 14; knownFields rejects it in an older file (from 7 on).
-    // `queueCounters` exists from schema 16 (M3.2.6b), `travelTimeSections` from 23 (M5.4), `nodes` from 48 (S0.1, node_codec).
-    if(schemaVersion>=53)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections","nodes","roads","overpasses"},"network",schemaVersion); /* roads: S3.3, overpasses: S3.5, road_codec */ else if(schemaVersion>=48)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections","nodes"},"network",schemaVersion); else if(schemaVersion>=23)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters","travelTimeSections"},"network",schemaVersion);
-    else if(schemaVersion>=16)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay","queueCounters"},"network",schemaVersion);
-    else if(schemaVersion>=14)knownFields(value,{"id","drivingSide","links","connectors","signalHeads","rightOfWay"},"network",schemaVersion);
-    else knownFields(value,{"id","drivingSide","links","connectors","signalHeads"},"network",schemaVersion);
+    networkCodec::knownFields(value,networkCodec::Object::network,"network",schemaVersion);
     Network network;
-    network.id = field<std::string>(value, "id");
-    const auto side = field<std::string>(value, "drivingSide");
+    network.id = networkCodec::value(value,networkCodec::Object::network,"id").get<std::string>();
+    const auto side = networkCodec::value(value,networkCodec::Object::network,"drivingSide").get<std::string>();
     if (side != "left" && side != "right") throw std::invalid_argument("INVALID_DRIVING_SIDE");
     network.drivingSide = side == "left" ? DrivingSide::left : DrivingSide::right;
-    for (const auto& item : array(value, "links")) {
-        const auto path="links["+std::to_string(network.links.size())+"]";
-        // `behaviourType` exists from schema 21 (M3.3.2a).
-        if(schemaVersion>=53)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType","linkType","roadId"},path,schemaVersion); else if(schemaVersion>=21)knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings","behaviourType","linkType"},path,schemaVersion); // linkType: S2.1, read by readLinkTypeIds
-        else knownFields(item,{"id","geometry","lanes","level","displayType","laneOffset","name","boundaryMarkings"},path,schemaVersion);
-        Link link{field<std::string>(item, "id"), points(item,schemaVersion), {}};
-        for (const auto& lane : array(item, "lanes")) {
-            knownFields(lane,{"id","width"},path+".lanes["+std::to_string(link.lanes.size())+"]",schemaVersion);
-            link.lanes.push_back({field<std::string>(lane, "id"), field<double>(lane, "width")});
-        }
-        link.level=integer(item,"level",0);
-        if(item.contains("laneOffset"))link.laneOffset=field<double>(item,"laneOffset");
-        if(item.contains("displayType"))link.displayType=field<std::string>(item,"displayType");
-        if(present(item,"name"))link.name=field<std::string>(item,"name");
-        if(item.contains("boundaryMarkings"))for(const auto& m:array(item,"boundaryMarkings")) {
-            if(!m.is_string())throw std::invalid_argument("INVALID_MARKING");
-            link.boundaryMarkings.push_back(markingFromName(m.get<std::string>()));
-        }
-        if(schemaVersion>=21 && item.contains("behaviourType"))link.behaviourTypeId=field<std::string>(item,"behaviourType");
-        network.links.push_back(std::move(link));
-    }
-    for (const auto& c : array(value, "connectors")) {
-        const auto where="connectors["+std::to_string(network.connectors.size())+"]"; // laneChangeSide: schema 17 (D73)
-        if(schemaVersion>=21)knownFields(withoutGenerated(c,schemaVersion),{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
-            "laneBlend","name","laneWidths","laneMarkings","laneChangeSide","behaviourType"},where,schemaVersion);
-        else if(schemaVersion>=17)knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType","laneBlend","name","laneWidths","laneMarkings","laneChangeSide"},where,schemaVersion);
-        else knownFields(c,{"id","from","to","geometry","fromLaneCount","toLaneCount","level","displayType",
-            "laneBlend","name","laneWidths","laneMarkings"},where,schemaVersion);
-        network.connectors.push_back({field<std::string>(c, "id"), reference(member(c, "from"),schemaVersion), reference(member(c, "to"),schemaVersion), points(c,schemaVersion),
-            integer(c,"fromLaneCount",1),integer(c,"toLaneCount",1),integer(c,"level",0),
-            c.contains("displayType")?field<std::string>(c,"displayType"):"default"});
-        if(present(c,"name"))network.connectors.back().name=field<std::string>(c,"name");
-        if(c.contains("laneBlend"))for(const auto& t:array(c,"laneBlend")) {
-            if(!t.is_number())throw std::invalid_argument("INVALID_GEOMETRY");
-            network.connectors.back().laneBlend.push_back(t.get<double>());
-        }
-        // Schema 6, and additive: a file that does not carry these keys leaves both vectors empty,
-        // which means "derive the width and markings from the Links", exactly as every schema 1-5
-        // file did. Nothing is converted on read, because nothing changed meaning.
-        if(c.contains("laneWidths"))for(const auto& w:array(c,"laneWidths")) {
-            if(!w.is_number())throw std::invalid_argument("INVALID_WIDTH");
-            network.connectors.back().laneWidths.push_back(w.get<double>());
-        }
-        if(c.contains("laneMarkings"))for(const auto& m:array(c,"laneMarkings")) {
-            if(!m.is_string())throw std::invalid_argument("INVALID_MARKING");
-            network.connectors.back().laneMarkings.push_back(markingFromName(m.get<std::string>()));
-        }
-        if(schemaVersion>=17 && present(c,"laneChangeSide")) {
-            const auto side=field<std::string>(c,"laneChangeSide");
-            if(side!="left" && side!="right")throw ValidationError({{"EDIT_LANE_RANGE",where+".laneChangeSide"}});
-            network.connectors.back().laneChangeSide=side=="left"?LaneSide::left:LaneSide::right;
-        }
-        if(schemaVersion>=21 && c.contains("behaviourType"))network.connectors.back().behaviourTypeId=field<std::string>(c,"behaviourType");
-        network.connectors.back().generated=generatedFlag(c,where,schemaVersion); // S4.5a, schema 54
-    }
-    for (const auto& h : array(value, "signalHeads")) {
-        knownFields(withoutGenerated(h,schemaVersion),{"id","lane","position","programId","connectorId","name","controllerId","groupNumber"},
-            "signalHeads["+std::to_string(network.signalHeads.size())+"]",schemaVersion);
-        network.signalHeads.push_back({field<std::string>(h, "id"), reference(member(h, "lane"),schemaVersion),
-                                      field<double>(h, "position"), field<std::string>(h, "programId"),
-                                      present(h,"connectorId")?field<std::string>(h,"connectorId"):std::string{}});
-        if(present(h,"name"))network.signalHeads.back().name=field<std::string>(h,"name");network.signalHeads.back().generated=generatedFlag(h,"signalHeads["+std::to_string(network.signalHeads.size()-1)+"]",schemaVersion);
-        if(present(h,"controllerId")) { // M2.7b, schema 13: the head shows a signal group
-            network.signalHeads.back().controllerId=field<std::string>(h,"controllerId");
-            network.signalHeads.back().groupNumber=integer(h,"groupNumber");
-        }
-    }
+    network.links=networkCodec::readLinks(value,schemaVersion);
+    network.connectors=networkCodec::readConnectors(value,schemaVersion);
+    network.signalHeads=networkCodec::readSignalHeads(value,schemaVersion);
     if(schemaVersion<5)migrateAttachments(network);
-    if(schemaVersion>=14 && present(value,"rightOfWay"))network.rightOfWay=rightOfWay(value.at("rightOfWay"),schemaVersion);
-    if(schemaVersion>=16 && present(value,"queueCounters"))for(const auto& c:array(value,"queueCounters")) {
-        const auto path="queueCounters["+std::to_string(network.queueCounters.size())+"]";
-        knownFields(c,{"id","name","lines"},path,schemaVersion);
-        AuthoredQueueCounter counter{field<std::string>(c,"id"),present(c,"name")?field<std::string>(c,"name"):"",{}};
-        for(const auto& l:array(c,"lines")) {
-            const auto at=path+".lines["+std::to_string(counter.lines.size())+"]";
-            knownFields(l,{"referenceId","point"},at,schemaVersion);
-            MeasurementLine line;
-            if(present(l,"referenceId"))line.referenceId=field<std::string>(l,"referenceId");
-            if(present(l,"point")) {
-                const auto& point=member(l,"point");
-                knownFields(point,{"path","station"},at+".point",schemaVersion);
-                line.point=ControlPoint{controlPath(member(point,"path"),at+".point.path",schemaVersion),field<double>(point,"station")};
-            }
-            counter.lines.push_back(std::move(line));
-        }
-        network.queueCounters.push_back(std::move(counter));
-    }
-    if(schemaVersion>=23 && present(value,"travelTimeSections"))for(const auto& s:array(value,"travelTimeSections")) {
-        const auto path="travelTimeSections["+std::to_string(network.travelTimeSections.size())+"]";
-        // `controlType` from schema 24 (M5.5).
-        if(schemaVersion>=24)knownFields(s,{"id","name","start","end","controlType"},path,schemaVersion);
-        else knownFields(s,{"id","name","start","end"},path,schemaVersion);
-        const auto line=[&](const char* name) {
-            const auto& l=member(s,name);
-            knownFields(l,{"linkId","station"},path+"."+name,schemaVersion);
-            return SectionLine{field<std::string>(l,"linkId"),field<double>(l,"station")};
-        };
-        network.travelTimeSections.push_back({field<std::string>(s,"id"),present(s,"name")?field<std::string>(s,"name"):"",line("start"),line("end"),{}});
-        if(schemaVersion>=24 && present(s,"controlType"))network.travelTimeSections.back().controlType=sectionControlFromName(field<std::string>(s,"controlType"));
-    }
+    if(schemaVersion>=14 && present(value,"rightOfWay"))network.rightOfWay=networkCodec::readRightOfWay(value.at("rightOfWay"),schemaVersion);
+    network.queueCounters=networkCodec::readQueueCounters(value,schemaVersion);
+    network.travelTimeSections=networkCodec::readTravelTimeSections(value,schemaVersion);
     return network;
 }
 void requireKnownFields(const Json& value,std::initializer_list<const char*> keys,const std::string& path) {
@@ -409,87 +205,13 @@ Composition parseComposition(const Json& c) {
     }
     return composition;
 }
-std::vector<SignalController> parseSignalControllers(const Json& definition) {
-    std::vector<SignalController> result;
-    for (const auto& x : array(definition, "signalControllers")) {
-        const auto path = "signalControllers[" + std::to_string(result.size()) + "]";
-        knownFields(withoutGenerated(x, 54), {"id", "name", "cycle", "offset", "groups"}, path, 13); // below 54: rejectGeneratedControllersBefore54
-        SignalController c{field<std::string>(x, "id"), present(x, "name") ? field<std::string>(x, "name") : std::string{},
-                           field<double>(x, "cycle"), field<double>(x, "offset"), {}};
-        for (const auto& g : array(x, "groups")) {
-            knownFields(g, {"number", "name", "greenStart", "greenEnd", "amber"}, path + ".groups", 13);
-            c.groups.push_back({integer(g, "number"),
-                                present(g, "name") ? field<std::string>(g, "name") : std::string{},
-                                field<double>(g, "greenStart"), field<double>(g, "greenEnd"), field<double>(g, "amber")});
-        }
-        c.generated = generatedFlag(x, path, 54); result.push_back(std::move(c));
-    }
-    return result;
-}
-std::vector<RoutingDecision> parseRoutingDecisions(const Json& definition) {
-    std::vector<RoutingDecision> result;
-    for (const auto& x : array(definition, "routingDecisions")) {
-        knownFields(x,{"id","name","linkId","routes","intervals","typeRules","position"},"routingDecision",20);
-        RoutingDecision decision{field<std::string>(x, "id"),
-                                 present(x, "name") ? field<std::string>(x, "name") : std::string{}, {}};
-        if (present(x, "linkId")) decision.linkId = field<std::string>(x, "linkId"); // M2.1.1
-        if(present(x,"position"))decision.position=field<double>(x,"position");
-        for (const auto& r : array(x, "routes")) {
-            knownFields(r,{"routeId","relativeFlow","destinationLinkId","intervalFlows"},"routingDecision.routes",19);
-            decision.routes.push_back({field<std::string>(r, "routeId"), field<double>(r, "relativeFlow")});
-            if (present(r, "destinationLinkId")) decision.routes.back().destinationLinkId = field<std::string>(r, "destinationLinkId");
-            if (present(r, "intervalFlows")) for (const auto& f : array(r, "intervalFlows")) { // M2.1.2
-                if (!f.is_number()) throw std::invalid_argument("INVALID_SHARE");
-                decision.routes.back().intervalFlows.push_back(f.get<double>());
-            }
-        }
-        if (present(x, "intervals")) for (const auto& i : array(x, "intervals")) // M2.1.2
-            decision.intervals.push_back({field<double>(i, "startTime"), field<double>(i, "endTime")});
-        if(x.contains("typeRules"))for(const auto& rule:array(x,"typeRules")) {
-            knownFields(rule,{"vehicleTypeId","relativeFlows","intervalFlows"},"routingDecision.typeRules",19);
-            RoutingTypeRule parsed{field<std::string>(rule,"vehicleTypeId"),doubles(rule,"relativeFlows"),{}};
-            for(const auto& row:array(rule,"intervalFlows")) {
-                if(!row.is_array())throw std::invalid_argument("ROUTING_DECISION_INTERVALS");
-                std::vector<double> flows;for(const auto& f:row){if(!f.is_number())throw std::invalid_argument("INVALID_SHARE");flows.push_back(f.get<double>());}
-                parsed.intervalFlows.push_back(std::move(flows));
-            }
-            decision.typeRules.push_back(std::move(parsed));
-        }
-        result.push_back(std::move(decision));
-    }
-    return result;
-}
 ScenarioDefinition parseDefinition(const Json& value) {
     ScenarioDefinition definition;
-    definition.duration = field<double>(value, "duration");
-    definition.timeStep = field<double>(value, "timeStep");
-    for (const auto& r : array(value, "routes"))
-        definition.routes.push_back({field<std::string>(r, "id"), strings(r, "segmentIds")});
-    for (const auto& i : array(value, "inputs")) {
-        VehicleInput input{field<std::string>(i, "id"), field<std::string>(i, "routeId"),
-            field<std::string>(i, "vehicleTypeId"), field<double>(i, "vehiclesPerHour"),
-            field<double>(i, "startTime"), field<double>(i, "endTime")};
-        if (i.contains("laneShares")) input.laneShares = doubles(i, "laneShares");
-        if (i.contains("compositionId")) input.compositionId = field<std::string>(i, "compositionId");
-        if (i.contains("routingDecisionId")) input.routingDecisionId = field<std::string>(i, "routingDecisionId");
-        if (i.contains("linkId")) input.linkId = field<std::string>(i, "linkId"); // M2.1.1
-        if (i.contains("volumeFromCounts")) input.volumeFromCounts = field<bool>(i, "volumeFromCounts"); // D142
-        if (i.contains("intervals")) {
-            for (const auto& p : array(i, "intervals"))
-                input.intervals.push_back({field<double>(p, "startTime"), field<double>(p, "endTime"),
-                                           field<double>(p, "vehiclesPerHour")});
-            // The file's scalars are a convenience copy; the intervals are the source, so a
-            // hand edit that makes them disagree cannot create a second truth (hard rule 3).
-            deriveInputTotals(input);
-        }
-        definition.inputs.push_back(std::move(input));
-    }
-    for (const auto& p : array(value, "signalPrograms")) {
-        SignalProgram program{field<std::string>(p, "id"), field<double>(p, "offset"), {}};
-        for (const auto& phase : array(p, "phases"))
-            program.phases.push_back({field<double>(phase, "duration"), color(field<std::string>(phase, "color"))});
-        definition.signalPrograms.push_back(std::move(program));
-    }
+    definition.duration=networkCodec::value(value,networkCodec::Object::definition,"duration").get<double>();
+    definition.timeStep=networkCodec::value(value,networkCodec::Object::definition,"timeStep").get<double>();
+    definition.routes=networkCodec::readRoutes(value);
+    definition.inputs=networkCodec::readVehicleInputs(value);
+    definition.signalPrograms=networkCodec::readSignalPrograms(value);
     if (value.contains("vehicleTypes"))
         for (const auto& t : array(value, "vehicleTypes")) definition.vehicleTypes.push_back(parseVehicleType(t));
     if (value.contains("behaviours"))

@@ -6,7 +6,9 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 
 | Document | Scope |
 |---|---|
-| [DESKTOP_AUTOMATION.md](DESKTOP_AUTOMATION.md) | Local JSON commands for AI control of the visible desktop, Windows PowerShell workflow, document guards and atomic edits |
+| [NETWORK_IMAGE.md](NETWORK_IMAGE.md) | Authored network PNG: bounds, resolution, background/cache attribution and atomic export |
+| [OBJECT_TABLE_CSV.md](OBJECT_TABLE_CSV.md) | Authored object table CSV export: five tables, exact fields/units, Unicode/nested cells and atomic desktop writes |
+| [DESKTOP_AUTOMATION.md](DESKTOP_AUTOMATION.md) | Local JSON commands for AI control of the visible desktop, live enable/disable and reconnect (D344), guarded New and intentional Quit (D345), deferred recovery (D346), map commands/tile readiness (D347), Connector proposals/attachment diagnostics (D348), single-run identity/explicit export (D349), codec-backed discovery/dry validation and run-until (D350), Windows PowerShell workflow, document guards and atomic edits |
 | [ZONES_AND_PARKING.md](ZONES_AND_PARKING.md) | Zones, zone connectors, OD matrices and parking lots: schema 31, OD → Micro expansion, lot runtime, outputs, editor and rows (M8) |
 | [MAP_BACKGROUND.md](MAP_BACKGROUND.md) | Schema 29, UTM reference, OSM tiles, caches, paint and acceptance rows |
 | [BATCH.md](BATCH.md) | Multi-seed batches: runs, aggregate, 95 % CI, overloaded seeds and output (M5.2); scenario comparison `--compare` (M5.8, §7) |
@@ -52,6 +54,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [ENGINEERING_NOTES.md](ENGINEERING_NOTES.md) | Dated measurements, recipes, labs, test notes and the do-not-retry list (moved from NEXT 2026-10-15) |
 | [AMBER.md](AMBER.md) | Amber stop-or-go: the continuous check, `amberDeceleration`, M0 legacy and acceptance rows (M4.2) |
 | [VEHICLE_POSE.md](VEHICLE_POSE.md) | Vehicle pose — rear axle reference and continuous lane changes |
+| [PROJECT_SCHEMA.md](PROJECT_SCHEMA.md) | Project schema inventory and partial formal envelope/background/Network/Link/Lane/Connector/reference/SignalHead and signal/right-of-way control measurement and base Route/VehicleInput/RoutingDecision coverage, with version rules |
 | [NETWORK_EDITOR.md](NETWORK_EDITOR.md) | Native network editor |
 | [NETWORK_EDITOR_CONNECTORS.md](NETWORK_EDITOR_CONNECTORS.md) | Native network editor — Connectors |
 | [CONNECTOR_FOUR_POINT_MOUTH.md](CONNECTOR_FOUR_POINT_MOUTH.md) | Centred Connector axis and four-point mouths |

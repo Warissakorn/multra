@@ -33,9 +33,9 @@ std::vector<ConflictMouthBand> atMouth(const Network& n,const LaneReference& att
     return result;
 }
 }
-std::vector<ConflictMouthBand> conflictMouthBands(const Network& n,const ControlPathRef& ref,bool source,bool target) {
+std::vector<ConflictMouthBand> conflictMouthBands(const Network& n,const ControlPathRef& ref,bool source,bool target,ConnectorSurfaceCache* cache) {
     for(const auto& c:n.connectors)if(c.id==ref.connectorId) {
-        const auto surface=connectorSurface(n,c);if(surface.selfIntersecting)return {};
+        const auto surface=cache?cache->get(c):connectorSurface(n,c);if(surface.selfIntersecting)return {};
         for(const auto& pair:connectorLanePairs(n,c))if(pair.from.laneId==ref.fromLaneId && pair.to.laneId==ref.toLaneId) {
             std::vector<ConflictMouthBand> result;
             if(source && surface.source)result=atMouth(n,pair.from,*surface.source);
@@ -47,4 +47,5 @@ std::vector<ConflictMouthBand> conflictMouthBands(const Network& n,const Control
     }
     return {};
 }
+std::vector<ConflictMouthBand> conflictMouthBands(const Network& n,const ControlPathRef& ref,bool source,bool target) { return conflictMouthBands(n,ref,source,target,nullptr); }
 }

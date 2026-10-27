@@ -3,6 +3,7 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QImage>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
@@ -45,8 +46,8 @@ Reply invoke(const QString& control, const QString& endpoint, const QJsonObject&
     return {client.exitCode(), parsed.object()};
 }
 QJsonObject start(Desktop& desktop, const QString& binary, const QString& control,
-                  const QString& endpoint, const QString& data) {
-    desktop.process.start(binary, {"--automation", endpoint, "--data-dir", data});
+                  const QString& endpoint, const QString& data, const QString& recovery = "ask") {
+    desktop.process.start(binary, {"--automation", endpoint, "--data-dir", data,"--recovery",recovery});
     require(desktop.process.waitForStarted(5000), "Desktop entry point did not start");
     QElapsedTimer deadline;
     deadline.start();
@@ -122,6 +123,23 @@ int main(int argc, char** argv) {
                 refused.value.value("state").toObject().value("run").toObject().value("tick") == tick,
                 "An unguarded process command changed the visible run");
 
+        const auto singleRunId=state.value("run").toObject().value("runId");
+        require(!singleRunId.toString().isEmpty(),"Compiled desktop did not identify the single run");
+        const auto discovery=send("document.schema",{},false);
+        require(discovery.value("result").toObject().value("coverage")=="observed-shape","Compiled discovery misrepresented schema coverage");
+        const auto dry=send("document.validate",{{"patch",QJsonArray{}}},false);
+        require(dry.value("result").toObject().value("valid").toBool()&&!dry.value("result").toObject().value("changed").toBool(),"Compiled dry validation failed");
+        send("simulation.run",{{"until","finished"},{"runId",singleRunId},{"timeoutMs",10000}});
+        QElapsedTimer completion;completion.start();
+        while(!state.value("run").toObject().value("finished").toBool()) {
+            require(completion.elapsed()<10000,"Compiled run-until did not complete");
+            QTest::qWait(10);send("status",{},false);
+        }
+        require(state.value("run").toObject().value("until").toObject().value("outcome")=="reached","Compiled target did not report completion");
+        const auto csv=directory.filePath(QString::fromUtf8("รายงาน.csv"));
+        const auto exported=send("results.export",{{"path",csv},{"report","movements"},{"runId",singleRunId}});
+        require(exported.value("result").toObject().value("run").toObject().value("runId")==singleRunId&&QFileInfo(csv).size()>0,
+            "Compiled control did not export the identified run");
         desktop.stop();
         // Force-stop leaves Unix socket files and lifetime lock metadata behind.
         // A new process must recover only the abandoned endpoint, and new client
@@ -129,8 +147,33 @@ int main(int argc, char** argv) {
         state = start(desktop, binary, control, endpoint, data);
         require(state.value("documentId") != firstDocument && !state.value("run").toObject().value("prepared").toBool(),
                 "Restart did not expose a fresh desktop document");
-        desktop.stop();
-        std::cout << "PASS compiled desktop entry point, control client, visible run and process restart\n";
+        const auto staleRun=invoke(control,endpoint,{{"command","results.get"},{"params",QJsonObject{{"runId",singleRunId}}}});
+        require(staleRun.exit==1&&staleRun.value.value("error").toObject().value("code")=="STALE_RUN",
+            "Restart returned results under the old run ID");
+        // Ten normal lifecycles: quit must return a full response and a normal exit,
+        // including explicitly discarded dirty work and saved Unicode destinations.
+        for(int cycle=0;cycle<10;++cycle) {
+            if(cycle)state=start(desktop,binary,control,endpoint,data,cycle%2?"defer":"ask");
+            if(cycle)require(state.value("recoveryPolicy")==QJsonValue(cycle%2?"defer":"ask"),"CLI recovery policy was not applied");
+            send("file.open",{{"path",QDir(data).filePath("scenarios/crossing.json")}});
+            const QJsonArray patch{QJsonObject{{"op","replace"},{"path","/network/links/0/name"},{"value","quit test"}}};
+            send("document.patch",{{"patch",patch}});
+            require(state.value("dirty").toBool(),"Quit dirty fixture not established");
+            const auto rejected=invoke(control,endpoint,{{"command","app.quit"},{"documentId",state.value("documentId")},
+                {"expectedRevision",state.value("revision")}});
+            require(rejected.exit==1 && rejected.value.value("error").toObject().value("code")=="UNSAVED_CHANGES" &&
+                desktop.process.state()==QProcess::Running,"Dirty quit did not preserve the editor");
+            if(cycle%2==0) {
+                send("file.save",{{"path",directory.filePath(QString::fromUtf8("งาน-%1.traffic.json").arg(cycle))}});
+                require(!state.value("dirty").toBool(),"Save did not clear dirty state");
+            }
+            const auto accepted=send("app.quit",cycle%2?QJsonObject{{"discardChanges",true}}:QJsonObject{});
+            require(accepted.value("result").toObject().value("quitAccepted").toBool() &&
+                state.value("closing").toBool(),"Quit lost its accepted response");
+            require(desktop.process.waitForFinished(5000) && desktop.process.exitStatus()==QProcess::NormalExit &&
+                desktop.process.exitCode()==0,"Accepted quit did not exit normally");
+        }
+        std::cout << "PASS compiled desktop, control client, visible run, restart and ten normal quit cycles\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

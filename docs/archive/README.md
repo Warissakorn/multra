@@ -20,7 +20,8 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-10-25.md`](PROGRESS-LOG-2026-10-25.md) | D334, motorcycle, heavy-vehicle and van appearance | 6 |
+| [`PROGRESS-LOG-2026-10-26.md`](PROGRESS-LOG-2026-10-26.md) | D340–D343, Road demand and Node conflict authoring | 4 |
+| [`PROGRESS-LOG-2026-10-25.md`](PROGRESS-LOG-2026-10-25.md) | D339–D334, motorcycle, heavy-vehicle and van appearance | 12 |
 | [`PROGRESS-LOG-2026-10-24.md`](PROGRESS-LOG-2026-10-24.md) | D321–D331, map navigation and S4–S5 | 10 |
 | [`PROGRESS-LOG-2026-10-23.md`](PROGRESS-LOG-2026-10-23.md) | D310–D312 | 3 |
 | [`PROGRESS-LOG-2026-10-22.md`](PROGRESS-LOG-2026-10-22.md) | D299–D308 | 9 |

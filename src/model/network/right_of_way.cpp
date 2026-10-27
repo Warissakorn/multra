@@ -201,16 +201,22 @@ std::vector<MergeGroup> mergeGroups(const Network& n, const RuntimeSections& tab
         for (std::size_t p = 0; p < table.paths.size(); ++p)
             if (table.pathNext[p] == section.id) group.incoming.push_back(table.paths[p].id);
         if (group.incoming.size() < 2) continue;
-        for (const auto& area : n.rightOfWay.conflictAreas) {
-            if (area.kind != ConflictKind::merge) continue;
-            const auto a = resolveControlPath(n, table, area.first.path, area.first.entryStation);
-            const auto b = resolveControlPath(n, table, area.second.path, area.second.entryStation);
-            const auto member = [&](const std::string& s) {
-                return std::find(group.incoming.begin(), group.incoming.end(), s) != group.incoming.end();
-            };
-            if (!a.empty() && !b.empty() && a != b && member(a) && member(b)) group.explicitControl = true;
-        }
         groups.push_back(std::move(group));
+    }
+    if (groups.empty()) return groups;
+    // Geometry and path references stay fixed for this call. Resolve each authored merge once,
+    // rather than repeating the same location work for every receiving section in the network.
+    for (const auto& area : n.rightOfWay.conflictAreas) {
+        if (area.kind != ConflictKind::merge) continue;
+        const auto a = resolveControlPath(n, table, area.first.path, area.first.entryStation);
+        const auto b = resolveControlPath(n, table, area.second.path, area.second.entryStation);
+        if (a.empty() || b.empty() || a == b) continue;
+        for (auto& group : groups) {
+            const auto member = [&](const std::string& id) {
+                return std::find(group.incoming.begin(), group.incoming.end(), id) != group.incoming.end();
+            };
+            if (member(a) && member(b)) group.explicitControl = true;
+        }
     }
     return groups;
 }

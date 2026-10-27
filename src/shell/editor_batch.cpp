@@ -110,7 +110,7 @@ std::optional<std::vector<std::uint32_t>> EditorWindow::batchSeedList() {
 void EditorWindow::startBatch() {
     auto list=batchSeedList(); if(!list) return;
     auto seeds=std::move(*list);
-    clearRun(); // one table at a time: the batch replaces the single run, and this cancels any batch
+    clearRun("replacedByBatch"); // one table at a time: the batch replaces the single run, and this cancels any batch
     std::optional<RunSnapshot> snapshot; std::optional<EvaluationSpec> spec;
     const auto sources=studyAreaSources(); // S5.5a (D331)
     try{

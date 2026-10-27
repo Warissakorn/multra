@@ -2,6 +2,8 @@
 #include <QJsonObject>
 #include <QLocalServer>
 #include <QObject>
+#include <QSet>
+class QLocalSocket;
 #include <functional>
 #include <memory>
 
@@ -17,8 +19,13 @@ public:
     ~AutomationServer() override;
     bool listen(const QString& endpoint);
     QString errorString() const;
+    void stop();
+    // Arm once during a handler; completion reports transport handoff of that reply.
+    void afterReply(std::function<void(bool)> completion);
 private:
+    QSet<QLocalSocket*> clients_;
     Handler handler_;
+    std::function<void(bool)> afterReply_;
     std::unique_ptr<QLockFile> endpointLock_;
     QLocalServer server_;
     QString error_;

@@ -6,6 +6,11 @@
 #include <optional>
 namespace multra {
 enum class MapStatus { disabled, loading, ready, networkError, outsideStudy, unavailable, renderLimit };
+struct MapLoadState {
+    MapStatus status{MapStatus::disabled};
+    bool visible{}, viewportPending{};
+    std::size_t wanted{}, loaded{}, pending{}, failed{};
+};
 struct MapMesh {
     int divisions{};
     std::vector<QPointF> vertices;
@@ -27,6 +32,7 @@ public:
     // The inverse, under the same rule: nullopt without a projection or outside the overview.
     std::optional<LonLat> worldToGeographic(MetrePoint) const;
     MapStatus status() const;
+    MapLoadState loadState() const;
     QString attribution() const;
     QUrl attributionUrl() const;
     const std::set<TileKey>& wantedTiles() const { return wanted_; }

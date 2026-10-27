@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Desktop automation and AI control | D336, D335 |
+| Desktop automation and AI control | D350, D349, D348, D347, D346, D345, D344, D336, D335 |
 | Product scope, stack, naming and owner gates | D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Macro assignment (S2, M10.1) | D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
@@ -391,4 +391,40 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D342](RECORD.md#d342) — Review fixes: Meso graph OD per matrix (a Road zone opts its matrices in, others keep the legacy expansion), 1e-12 relative tie tolerance, `runDefinition` in the Macro side file, `kLatestSchema` in tests.
 
+[D353](RECORD.md#d353) — Resolve authored merge sides once per grouping call; the local Node-detail performance target is met with identical output.
+
+[D352](RECORD.md#d352) — Candidate ID membership checks share enumeration rules without rebuilding a full set per allocation.
+
+[D351](RECORD.md#d351) — Call-local Connector surface reuse during automatic conflict calculation, with byte-identical generated Nodes and measured Release timings.
+
 [D343](RECORD.md#d343) — Node detail and conflict-group authoring take one `automaticConflicts` list instead of one per pair; the canvas click keeps its stale check.
+
+[D354](RECORD.md#d354) — Bounded observed-schema discovery leaves unvisited array types open; Qt-free structural helper and boundary regression tests.
+
+[D355](RECORD.md#d355) — Project schema ownership/version inventory and shared feature-selected writer inspection; formal nested schemas remain separate.
+
+[D356](RECORD.md#d356) — Shared envelope/background metadata generates a partial formal schema; exact-integer CLI output and explicit codec-only token/byte constraints.
+
+[D357](RECORD.md#d357) — Codec-owned Network/Link/Lane metadata and shared versioned formal schema definitions; compatibility preserved across schemas 1–57.
+
+[D358](RECORD.md#d358) — Connector and attachment-reference schema/codec metadata, preserving fraction/station migration, defaults and diagnostics across schemas 1–57.
+
+[D359](RECORD.md#d359) — SignalHead metadata and conditional controller/group schema rules, preserving native numeric conversion and legacy migration stages.
+
+[D360](RECORD.md#d360) — Signal controller/group/program/phase metadata and structural schemas preserve distinct known-key policies, numeric conversion and document migration stages.
+
+[D361](RECORD.md#d361) — Right-of-way structural schemas share codec metadata, preserving nullable collections, legacy container/path decoding and schema 14/15/54 diagnostics.
+
+[D362](RECORD.md#d362) — Queue-counter/measurement-line and travel-time-section structural schemas preserve nullable sources, shared control points and versioned LOS control types.
+
+[D363](RECORD.md#d363) — Base definition, Route, VehicleInput and interval metadata preserve open keys, explicit-null errors, interval totals and counted-volume migration stages.
+
+[D364](RECORD.md#d364) — RoutingDecision/share/period/type-rule metadata preserve strict/open keys, nullable fields, matrix diagnostics and document-only position gates.
+
+[D365](RECORD.md#d365) — M1.23.1 authored object table CSV: five File-menu exports with precise values, nested JSON cells, Unicode and atomic writes.
+
+[D366](RECORD.md#d366) — Private bundled UI font family prevents installed Noto Sans Thai collisions; glyphs/metrics/layout unchanged and workspace assertions retained.
+
+[D367](RECORD.md#d367) — M1.23.2 authoring-network PNG: full/view bounds, bounded dimensions, optional backgrounds/cached map credit, no live-state mutation and atomic writes.
+
+[D368](RECORD.md#d368) — Object table CSV prefixes `'` to text cells starting with a spreadsheet formula character; numbers and JSON cells unchanged.

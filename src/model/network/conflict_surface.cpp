@@ -1,4 +1,5 @@
 #include "conflict_surface.hpp"
+#include "connector_surface.hpp"
 #include "connector_lane_mapping.hpp"
 #include <algorithm>
 #include <cmath>
@@ -7,7 +8,7 @@ namespace multra {
 namespace {
 double distance(Point a, Point b) { return std::hypot(a.x-b.x,a.y-b.y); }
 }
-std::optional<ConflictSurface> conflictSurface(const Network& n,const ControlPathRef& ref) {
+std::optional<ConflictSurface> conflictSurface(const Network& n,const ControlPathRef& ref,ConnectorSurfaceCache* cache) {
     try {
         if(!ref.linkId.empty() && ref.connectorId.empty()) {
             for(const auto& l:n.links)if(l.id==ref.linkId)
@@ -26,7 +27,7 @@ std::optional<ConflictSurface> conflictSurface(const Network& n,const ControlPat
                 index=i;
             }
             if(!index)return std::nullopt;
-            const auto rails=connectorBoundaries(n,c);
+            const auto rails=cache?cache->get(c).boundaries:connectorBoundaries(n,c);
             if(c.geometry.size()<2 || rails.size()<*index+2)return ConflictSurface{};
             ConflictSurface s{c.geometry,rails[*index],rails[*index+1],{0}};
             for(std::size_t j=1;j<c.geometry.size();++j)
@@ -65,4 +66,5 @@ double offsetControlStation(const Network& n,const ControlPathRef& ref,double st
     return m.connector?connectorAuthoringStation(*m.connector,m.path,at):matchedStation(m.lane,m.reference,at);
 }
 
+std::optional<ConflictSurface> conflictSurface(const Network& n,const ControlPathRef& ref) { return conflictSurface(n,ref,nullptr); }
 }

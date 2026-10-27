@@ -6,208 +6,195 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
-## 2026-10-26 — Node detail authors from one conflict list (D343)
+## 2026-10-27 — Authored network PNG export (M1.23.2, D367)
 
-- **Asked:** measure-first optimization of the engine, build, docs and design (owner: "ทั้งหมด",
-  then "ทำตามแนะนำ"). The engine (0.09–0.14 ms per tick at 491–637 vehicles), docs and desktop start
-  (0.26 s) needed nothing; `types.hpp` stays the owner's deferred split (506 objects rebuilt).
-- **Found:** `generateNodeDetail` and `authorConflictGroup` authored each pair through
-  `authorAutomaticConflict`, which rebuilt `automaticConflicts` for the whole network per pair to
-  refuse a stale click: 92 % of generating a Node (callgrind). Release, one Node 65 → 12 ms; 16
-  unconnected Nodes 15.5 → 3.1 s (median of 3). `studyarea` (Debug) 50 → 16 s.
-- **Change:** both loops call `detail::authorCurrentConflict` with the entry of the list they took
-  before the first area; the canvas click keeps its check. A probe on every pair (954 node-detail,
-  19 group) found the rebuilt entry equal to the loop's; the generated documents hash identical.
-- **Verification:** Linux, GCC 13.3, desktop Debug offscreen: `check` passes (238/238).
-  No Windows run here.
+- **Changed:** File menu and command palette export the whole visible network or current view
+  at chosen pixel dimensions, with optional backgrounds and English/Thai controls. An isolated
+  canvas reuses authoring display/level/wireframe rendering at output scale, excluding grid,
+  selection, drafts and Run overlays. Whole-network output is independent of live camera zoom.
+- **Safety and scope:** bounded dimensions precede allocation; encoding precedes atomic file
+  replacement. Shared CSV/PNG destination protection preserves the current project/recovery.
+  Embedded images retain orientation/opacity. Online maps use only already-loaded tiles, with
+  attribution/URL in a footer and PNG metadata; export neither downloads nor moves the camera.
+- **Verified:** Release desktop application and four selected UI targets build; network-image-ui,
+  object-export-ui, workspace-ui and results-tabs-ui pass on Linux offscreen Qt 6.8.2. The PNG
+  suite also passes after adding camera-independent output coverage. Release headless build and
+  all 161 CTest entries pass (10.70 s); docs, file sizes and diff checks pass. Unicode paths,
+  cancellation, size/protected-file refusals, embedded image orientation and cached-map/no-new-
+  request behavior are covered. Packaged Windows/high-DPI appearance and owner acceptance
+  remain open, as do other M1.23 formats/workflow and the full milestone gate.
 
-## 2026-10-26 — Review fixes to D339–D341 (D342)
+## 2026-10-27 — Pin the bundled UI font against installed-family collisions (D366)
 
-- **Asked:** review every open PR, then improve all findings and merge (owner: "ปรับปรุงทั้งหมด และ Merge").
-  PRs 193–196 merged as reviewed; this follow-up carries the fixes.
-- **Meso OD rule per matrix:** D341 switched every OD matrix to graph paths once any Road
-  connector existed. A Road connector in an unrelated zone thus turned a Link-only matrix from
-  running into `MESO_OD_NO_PATH` and changed its loading (probe: 0 → 900 trips, refused). Now a
-  matrix takes the graph rule only when one of its zones has a Road connector; the rest run the
-  legacy expansion on the document less those matrices and Road connectors. The parking refusal
-  and endpoint checks are limited to the graph-rule matrices' zones.
-- **Ties:** equal-time paths compare within a 1e-12 relative tolerance. Summing the same link
-  times in another order differed by an ulp in about 18 % of realistic detour pairs, so one of two
-  equal detours took all the demand; MR1's unit-speed integers could not show it.
-- **Macro side file:** a named run's period records `runDefinition {id, name}`, so a study-area cut
-  from the side file can name the definition behind its flows; older files still read.
-- **Tests:** `kLatestSchema` names the newest readable schema, and the 16 "next schema refuses"
-  tests use `kLatestSchema + 1` instead of a literal edited at every bump. MR7 covers the
-  per-matrix rule, parking scope and reordered ties; MA20 the side-file definition.
-- **Verification:** Linux, GCC, headless preset: full `multra-tests` pass (Qt/desktop and Windows
-  untested here; CI covers them on the PR).
+- **Found:** this host's installed Noto Sans Thai has no ASCII digits, while the bundled cut
+  does. Qt 6.8.2 matched the installed same-name family and used proportional fallback digits.
+- **Fixed:** renamed only bundled font naming tables to the private MULTRA Sans Thai family.
+  Every glyph, metric and layout table is byte-identical. The existing workspace assertion now
+  compares with the application's data-loaded family, retaining equal digit advances, 12 px
+  and real 600-weight checks. No font fallback or disabled assertion was added.
+- **Verified:** Release desktop target builds; workspace-ui passes (7.97 s) on Linux offscreen
+  Qt 6.8.2 with the conflicting system font still installed. Font-generation instructions are
+  updated; Windows appearance and owner gates remain separate.
 
-## 2026-10-26 — Meso OD demand on directed Roads (D341)
+## 2026-10-27 — Authored object table CSV export (M1.23.1, D365)
 
-- **Asked:** continue development; followed NEXT's Meso Road-OD seam after D340.
-- **Changed:** the existing schema-57 Road targets opt OD matrices into minimum free-flow-time
-  paths on the compiled Meso graph, with equal shares over tied paths. Connector shares, named
-  modes, PCU and clock/period windows are resolved from the original document/catalogs; authored
-  and routeless paths remain alongside graph OD. No LTM engine or project-schema change.
-- **Refusals:** unavailable directions, any unserved positive connector pair, unknown mode/type
-  references, missing PCU, invalid windows and path counts above 4096 block Run. Parking-lot
-  dynamics remain Micro's and refuse in this new reader. Micro still requires generated Links.
-- **Results:** Road runs identify `minimum-free-flow-time` in JSON/CSV and the English/Thai Meso
-  note. The existing worker and Road dialog now support both Macro and Meso. Source bytes and
-  ownership stay unchanged; paths keep collision-safe matrix/zone/connector identities.
-- **Tests:** nine model cases cover directional endpoints, time/turn costs, modes, all shortest
-  paths, 5000-link routes, the path cap, shares (including overflow-sized totals), windows,
-  mixed/authored/routeless demand, refusals, fluid count conservation, replay and provenance.
-  The existing `od:` path namespace preserves study-area zone identity and live/side-file parity.
-  Real CLI and editor tests run both levels and retain the Micro refusal.
-- **Compatibility:** legacy CLI CSV is byte-identical; JSON differs only in `buildCommit`.
-- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and final `check`
-  pass, **238/238 CTest cases passed**. All nine focused model cases, the expanded real CLI
-  regression and the Road editor harness also pass. Fontconfig uses bundled Thai fonts with
-  DejaVu Sans fallback. Windows untested for this change; no milestone gate closed.
+- **Asked:** switch from schema/AI work to the recommended M1.23 native object-table CSV slice.
+- **Changed:** File → Export object table (CSV), also in the palette, exports Links, Connectors,
+  inputs, routes and decisions from the current document without Run/catalog resolution. A
+  Qt-free formatter shares persisted serialization on table-only projections, keeps full numeric
+  precision, UTF-8 BOM/CRLF, authored row order and nested JSON cells. The shell selects Unicode
+  paths, writes atomically and protects project/recovery destinations without changing History,
+  revision, dirty/save state or results. A UI test caught nonexistent paths comparing equal in
+  QFileInfo; protection now compares cleaned absolute names and nonempty canonical paths.
+- **Verified:** five native regressions cover known 3–4–5 geometry, precise values, quoting/Thai,
+  optional attachments, nested demand/counts, empty tables/order and locale independence; project
+  tests pass 70/70. Twenty sample CSVs from all four shipped projects pass independent Python
+  CSV/JSON checks. Release headless build and all 161 CTest entries pass (14.09 s). A local Qt
+  6.8.2 SDK enabled a Release desktop build and object-export-ui (all five actions, unsaved edits,
+  Unicode paths, cancellation, failed writes, protection and translation) plus results-tabs-ui pass.
+- **Limit:** workspace-ui fails its existing numeric-font/tabular-digit assertion under this
+  Qt environment; a separately linked pre-D365 workspace reproduces the same failure. A direct
+  Qt font probe also disagrees with the bundled TTF's equal digit metrics. No test was weakened;
+  the issue is recorded in NEXT. Windows/packaged acceptance is OWNER_SITTING G1. This slice
+  closes no full M1.23, owner, runtime-model or scientific gate; other interchange formats remain.
 
-## 2026-10-26 — Road-only Macro OD demand (D340)
+## 2026-10-27 — RoutingDecision structural schema and unchanged counted synchronization (D364)
 
-- **Asked:** continue development; followed NEXT's Road-only demand seam booked by D310.
-- **Changed:** schema-57 zone connectors can target a Link-less Road in an explicit travel
-  direction. The Macro graph reads those endpoints, so the existing OD shares, PCU, periods,
-  assignment, named runs and exports work without generating Micro Links. The Zones tab adds a
-  Road connector dialog with English/Thai text and endpoint drawing.
-- **Lifecycle:** Apply template remaps every connector to its generated Link in one Undo step;
-  split preserves the physical end and delete cascades connectors while keeping matrix counts.
-  A two-leg merge remaps external endpoints and keeps Roads separate if a connector uses their
-  shared end. Commands retain id values across Road-vector mutation, including aliased arguments.
-- **Boundary:** Micro and Meso explicitly refuse direct Road targets, preventing a successful
-  empty or partial-demand run. Meso needs its own graph-path expansion; the Micro study-area cut
-  keeps its existing contract. Existing Link JSON and shipped project bytes remain unchanged.
-- **Tests:** RD30–RD34 cover codec/version refusals, exact directional flows, share splitting,
-  periods, mixed Link/Road paths, one-way/banned turns, lifecycle/Undo, editor worker and dialogs,
-  save/reopen, original CLI input provenance and Micro/Meso refusal.
-- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check`
-  pass, **237/237 CTest cases passed**. Six focused model cases, the new UI harness and the
-  real CLI regression also pass independently. Fontconfig uses bundled Thai fonts with DejaVu
-  Sans fallback. Windows untested for this change; no milestone gate closed.
+- **Changed:** shared metadata now covers RoutingDecision rows, route shares, periods and
+  type-rule numeric matrices. Their native decoder moves to routing_codec; the parser is now
+  222 lines. The composed partial schema/CLI uses 73 shared definitions and 16 version profiles.
+  The schema and document precheck share the position version floor. Envelope-only schema and
+  desktop observed discovery stay unchanged.
+- **Preserved:** always-strict decision/share/type keys, open period keys, nullable optionals
+  and contains-based routingDecisions/typeRules null refusal. The document-only pre-20 position
+  guard still rejects null before normal decoding; bare/standalone reads retain support.
+  Numeric-vector, matrix-row and matrix-cell diagnostics retain their original order/paths.
+  Counted synchronization stays after complete definition decoding; model validators retain
+  matrix dimensions, weights, time windows and destination/run-readiness checks.
+- **Verified:** 5,073 cases across schemas 1–57 retain byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
+  validate structurally and keep byte-identical canonical output. Five new regression tests
+  cover strict/open shapes, nulls, position guards, matrix errors/semantics and counted sync;
+  an independent review found no compatibility defect. Release headless build and all 161
+  CTest entries pass (16.23 s), including CLI, docs, architecture and file-size checks. Linux
+  headless evidence only; no engine algorithm, Qt/Windows, scientific or owner gate change.
 
-- **CI follow-up (2026-10-26):** [run 642](https://github.com/Warissakorn/multra/actions/runs/40253582320)
-  passed Linux headless/sanitizer/release/desktop and Windows core/desktop. Automated evidence
-  for D340; no owner appearance gate closed.
+## 2026-10-26 — Base Route/VehicleInput schema and preserved demand derivation (D363)
 
-## 2026-10-25 — Named Macro run definitions (D339)
+- **Changed:** shared metadata now covers definition duration/timeStep, Routes, VehicleInputs
+  and volume intervals. Demand readers move to demand_codec; the parser is now 263 lines.
+  The composed partial schema/CLI uses 67 shared definitions and 15 version profiles. Schema
+  and document prechecks share the counted-volume version floor; the envelope-only API and
+  desktop observed response stay unchanged.
+- **Preserved:** open Route/input/interval keys, contains-based null refusal, scalar-before-
+  interval diagnostics, interval-derived totals and empty-period behavior. Route migration and
+  counted-volume synchronization retain their stages after full definition decoding; bare
+  standalone reads retain their existing behavior. No catalog ownership, demand compilation,
+  simulation dynamics, writer version-selection or serialized-output change.
+- **Verified:** 6,156 cases across schemas 1–57 have byte-identical before/after native outcomes,
+  errors and canonical documents and pass independent Draft-2020-12 expectations. Four shipped
+  projects validate structurally and retain byte-identical canonical output. Five new tests
+  cover required/open fields, nulls, integer-independent numeric types, scalar derivation,
+  counted synchronization/version guards, route migration and semantic exclusions. Release
+  headless build and all 161 CTest entries pass (11.59 s), including project, CLI, docs,
+  architecture and file-size checks. Linux headless evidence only; no Qt/Windows, scientific
+  validation or owner gate is closed.
 
-- **Asked:** continue development; followed NEXT's booked named-run seam (§19 b, D277).
-- **Changed:** optional schema-56 `macroRuns` stores ordered id/name/period/settings definitions.
-  The editor manages the list in one Undo step, then selects one definition for the existing
-  staged worker. CLI `--macro-run ID` uses the same definition; JSON/CSV identify it.
-- **Boundary:** named execution uses explicit settings without editing the source document or
-  global settings. Named and global settings share a parser that rejects oversized integers before
-  narrowing (including large negatives that formerly wrapped to a legal cap). Existing unnamed
-  runs/outputs and old project schemas stay unchanged. The Macro side file still holds the latest
-  cut source per period, with original project provenance;
-  result-table restore and a general procedure sequence are separate seams.
-- **Verification (2026-10-26):** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and
-  `check` pass, **234/234 CTest cases passed**. Five focused model cases and the new/existing Macro
-  UI harnesses also pass independently. Fontconfig uses bundled Thai fonts with DejaVu Sans
-  fallback. Windows was not tested locally; no milestone gate closed.
-- **CI follow-up (2026-10-26):** [run 641](https://github.com/Warissakorn/multra/actions/runs/40248594439)
-  passed all six jobs: Linux headless/sanitizer/release/desktop and Windows core/desktop. This is
-  automated evidence for D339, not an owner appearance verdict.
+## 2026-10-26 — Queue-counter and travel-time-section structural schemas (D362)
 
-## 2026-10-25 — Study-area cuts preserve single vehicle types (D338)
+- **Changed:** shared metadata covers queue counters/measurement lines and travel-time sections/
+  section lines/controlType. Native readers move to measurement_codec at the original parser
+  stages; control points/paths share the right-of-way metadata. The composed partial schema/CLI
+  uses 62 shared definitions and 14 version profiles; the parser is now 290 lines. The old
+  incidental definition-count bound is replaced by an actual shared-ControlPoint reference check.
+- **Preserved:** schema 16/23/24 gates, nullable network arrays and optional names/sources/types,
+  empty-source decoding of non-object measurement lines, reference-before-point and section-
+  lines-before-controlType diagnostics. Exactly-one-source, owner/reference and section bounds/
+  order checks remain model validation; measurement/LOS algorithms and writer rules do not change.
+  The envelope-only API, observed desktop response and existing serialized output are unchanged.
+- **Verified:** 5,928 cases across schemas 1–57 retain byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
+  validate structurally and keep byte-identical canonical output. Five new project tests cover
+  gates/nulls, shared points, empty/ambiguous sources, diagnostics, save versions and semantic
+  exclusions. Release headless build and all 161 CTest entries pass (16.64 s), including CLI,
+  architecture, documentation and file-size checks. Linux headless evidence only; no Qt/Windows,
+  scientific-validation, LOS-validation or owner gate is closed.
 
-- **Asked:** continue development; followed NEXT's first open S5 items: single-type Meso gate
-  flows and CLI coverage on a study-area project.
-- **Changed:** Meso `type:` classes now retain their per-slice vehicle counts (entrance PCU divided
-  by class PCU) and vehicle type through run-time gate flows/matrices into ordinary Micro inputs.
-  Types sharing the same gates stay separate from each other and from composition classes.
-- **Boundary:** no engine, loading, stored schema, UI or catalog-ownership change. External unused
-  compositions stay unused, including with a reduced project-owned vehicle library. Unknown
-  vehicle types refuse Run; unknown class prefixes retain their advisory.
-- **Tests:** SA17 covers mixed classes, non-unit PCU, class grouping, exact input manifests,
-  source/catalog preservation, seeded replay, side-file parity and stored-field rejection. SA18
-  launches the real CLI for single, batch and comparison JSON/CSV exports with absent/fresh/stale
-  side files and exact provenance hashes.
-- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check` pass,
-  **231/231 CTest cases passed**. Fontconfig uses bundled Thai fonts with DejaVu Sans fallback, as
-  in the earlier desktop sessions. Six focused type-cut cases also pass in a separate harness.
-  Windows untested; no milestone gate closed.
+## 2026-10-26 — Right-of-way structural schema and preserved legacy reads (D361)
 
-## 2026-10-25 — Shipped projects reviewed; four-leg gets its 300 s cool-down (D337)
+- **Changed:** shared metadata now covers waiting lines, control points/paths, conflict areas/
+  sides, priority rules and Stop/Yield controls. Their native reads move to right_of_way_codec;
+  queue counters reuse the same path decoder. The composed partial schema/CLI uses 56 shared
+  definitions and 13 version profiles. The parser is now 319 lines; no geometry/engine changes.
+- **Preserved:** schema 14/15 gates, optional nullable collections/names, legacy non-object
+  right-of-way containers and path decoding, authored enums and generated:true-only from 54.
+  Waiting-line point-before-id diagnostics and generated checks after each row keep their order.
+  Semantic owner/path/line/area checks, bounds, positive gaps, priority cycles and run-readiness
+  remain existing validators. The envelope-only API and desktop observed response are unchanged.
+- **Verified:** 12,967 cases across schemas 1–57 retain byte-identical before/after native
+  outcomes, errors and canonical documents and pass independent Draft-2020-12 expectations.
+  All four shipped projects validate structurally and keep byte-identical canonical output.
+  Five new project tests cover gates/nulls/enums, legacy paths, diagnostics/generated ordering,
+  semantic exclusions and structural refusals; project tests pass 50/50. Release headless build
+  and all 161 CTest entries pass (13.10 s), including docs, architecture, CLI and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows, Vissim, scientific or owner gate is closed.
 
-- **Asked:** check the four shipped projects, then whether any is unneeded; the owner chose the
-  recommendation (“ทำตามแนะนำ”): keep all four, give four-leg its cool-down, document the folder.
-- **Review:** all four regenerate byte-identical from their `tools/` builders, have unique IDs,
-  `nextId` above every ID, resolved references, and run deterministically (seed 42 twice) with
-  none overloaded at seeds 42-51. No file is redundant: four-leg is the main regression fixture, the
-  T-junction the only Yield/right-hand one, the M2.6 template the only routing-decision gate-study
-  shape, the lane-change lab the D98 development bed (8 tests, C4).
-- **Dropped owner decision found:** D201 B8 (2026-10-16) queued a 300 s cool-down for
-  `four-leg-signalised`; it left NEXT by 2026-10-20 without being done. Now
-  `fixture::shippedFourLeg()` adds it to the committed file only (schema 17 → 27); the M2.6 template
-  and in-memory variants keep the bare drawing. Seeds 42-51 had about 52 vehicles still in the
-  network at 900 s and every movement warned unfinished.
-- **Tests:** the codec and no-cool-down rows that used the committed file as their bare baseline
-  (queue counter schema 16, EP schema 22 and warm-up 0, CD1/CD6/CD7, TT8, L5) clear the cool-down
-  first; EP and CD1 now pin the committed period. `road`/`roadcatalog` skip non-`.traffic.json`
-  files so the new [`data/projects/README.md`](../data/projects/README.md) is not parsed.
-- **Verification:** Linux, GCC 13.3: headless CTest 154/154 and `check` pass; desktop (Qt 6
-  offscreen) CTest 230/230. Four-leg seeds 42-51: no movement unfinished, 504.7 vehicles completed
-  of 504.7 generated, safety clamps 0. Windows untested. No milestone gate closed.
+## 2026-10-26 — Signal control structural schema and codec parity (D360)
 
-## 2026-10-25 — Review fixes: user-bound automation endpoint, gesture BUSY, car default (D336)
+- **Changed:** shared field metadata now covers definition signal-array presence, fixed-time
+  controllers/groups and legacy programs/phases. Their readers move to signal_control_codec;
+  the composed partial schema/CLI includes them using 41 definitions and 12 version profiles.
+  The envelope-only API, writer version selection and desktop observed discovery stay unchanged.
+- **Preserved:** controller/group keys stay strict at every version, program/phase keys stay
+  additive, nullable names and integer-valued float groups retain existing conversion. The
+  pre-54 generated guard, generated-value error order and pre-13 project migration keep their
+  original stages; bare M0 programs remain legacy. Timing, uniqueness, reference resolution and
+  run-readiness remain existing semantic checks. No engine or runtime signal algorithm changes.
+- **Verified:** 6,669 cases across schemas 1–57 have byte-identical before/after native results,
+  diagnostics and canonical documents, and pass independent Draft-2020-12 expectations. Four
+  shipped projects pass structural validation and retain byte-identical canonical output.
+  Five new project tests cover presence/strictness, numeric/null/error ordering, version guards,
+  migration and semantic exclusions; project coverage is 45 tests. Release headless build and
+  all 161 CTest entries pass (15.15 s), including CLI, docs, architecture and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows, scientific-validation or owner gate is closed.
 
-- **Asked:** apply the review of the automation branch (D335) and of PR #190 (D333) and open one PR.
-- **Endpoint ownership:** a bare Unix name was `/tmp/<name>`, so another account could create it
-  first and receive every request; the per-user lock excluded only this user's editors. Both
-  ends now resolve `automationServerName`: on Unix a hashed socket in the owner-only runtime
-  directory. On Windows `multra-control` refuses a pipe whose server process is another user
-  (`UNTRUSTED_SERVER`).
-- **BUSY during a gesture:** a guarded command arriving while a mouse button is held is refused,
-  as under a modal dialog; a drag's release would otherwise commit over the patched document.
-- **Default type:** catalogs sort by ID, so D333's bus became the default of a new Vehicle Input,
-  the template of a new catalog type and a parking exit's placeholder. `preferredVehicleType`
-  (car, else the first) is now the one rule, also used by the Behaviour Lab.
-- **Code review follow-ups:** an open menu is `BUSY` too; a padded seed is stored canonically,
-  not truncated by the 10-character field; the endpoint lock is resolved without Qt's test mode
-  (`automationLockPath`), and the test host uses `useTestStorage()` with one fixed name; a patch
-  never copies the embedded image; `commitChange` is the one post-edit path; History's reset
-  generation, not per-site clears, makes the documentId; the Lab uses `preferredVehicleType`.
-- **Verification:** see the PR; Linux only. The Windows refusal needs a second account.
+## 2026-10-26 — SignalHead structural schema and conditional groups (D359)
 
-## 2026-10-25 — Visible desktop control for AI agents (D335)
+- **Changed:** shared metadata supplies SignalHead known-key/type rules, native read conditions
+  and schema if/then constraints. SignalHead decoding moves out of the parser (now 409 lines).
+  The composed schema/CLI adds head rows; the envelope-only API and desktop observed discovery
+  stay unchanged. Controller/program contents and semantic/model checks remain codec-owned.
+- **Preserved:** absent/null controllerId ignores groupNumber; even an empty non-null controller
+  requires a group. Integer-valued floats remain accepted in native int range, without inventing
+  a schema-13 read gate. Optional text, pre-7 known-key policy, generated flags, diagnostic order,
+  attachment conversion and pre-13 signal-program migration keep their existing behavior.
+- **Verified:** 4,503 SignalHead cases have byte-identical before/after outcomes/errors/canonical
+  documents and pass independent Draft-2020-12 expectations. Four shipped projects validate
+  structurally and keep byte-identical canonical output. Five new regression cases cover defaults,
+  conditional/ignored groups, numeric boundaries, version compatibility and legacy program
+  migration; project tests pass 40/40. Release headless build and all 161 CTest entries pass,
+  including architecture, docs, CLI and file-size checks. Linux headless evidence only; no
+  engine, scientific-validation, owner or Qt/Windows gate is closed.
 
-- **Asked:** operate the compiled Windows application through commands while the user
-  watches its native window. Added opt-in local JSONL IPC (`--automation`) and the compiled
-  `multra-control` client; no scripting runtime or separate model is required.
-- Commands inspect or atomically patch the live project, Open/Save, Undo/Redo, control
-  the visible simulation, select/frame objects, capture PNG and read/export results.
-  Session/revision guards prevent stale edits; invalid patches preserve document, History
-  and run state. Bounded stepping observes every fixed step and refreshes the canvas once.
-- Added IPC/client tests, live-widget command tests and a separate-process test host built
-  from the real desktop entry point with isolated Qt storage. Updated packaging and the
-  [Windows PowerShell workflow](reference/DESKTOP_AUTOMATION.md).
-- Shared protocol bounds keep client/server/capabilities aligned; unchanged embedded image
-  buffers remain shared across History rather than being copied into each AI edit.
-- **Verification:** Linux, GCC 14.2 and Qt 6.8.2 offscreen: full desktop build and `check`,
-  **230/230 CTest cases pass**. The host's default Fontconfig tripped two UI font-metric
-  assertions; selecting bundled `data/fonts` plus DejaVu fallback resolves both, followed by
-  the full passing run. Editor font code and the original assertions were unchanged.
-  The staged production desktop/control pair also runs from `/tmp`, advances 600 fixed steps,
-  captures its Thai window and reports the shared request/step bounds correctly.
-  Windows runtime and packaged dependency acceptance remain open; no milestone gate closes.
+## 2026-10-26 — Connector and attachment-reference structural schema (D358)
 
-## 2026-10-25 — Shorter heavy-vehicle cab
-
-- **Asked:** shorten the heavy-vehicle head to match the light vehicle. The owner confirmed
-  the smaller grey rigid-truck from the displayed fleet as the reference. Both truck cabs cap at
-  a nominal 2.04 m; the 12 m heavy cab was previously 2.88 m. The fixed load box extends
-  forward to keep the full 12 m body and rear bumper, without changing traffic/axle data.
-- A piecewise drawing transform applies to the body, glass, panels and lights together.
-  Tests compare the cab, glazing and lights of the 8.5 m and 12 m trucks in physical units,
-  alongside the existing bounds, glass picking, zoom and turning checks.
-- **Verification:** Linux/Qt 6.8.2 offscreen: full desktop build and all 227 CTest cases
-  pass after the cab change, including appearance, colour preferences, canvas LOD,
-  run presentation and lane-change display. Equal-length cab comparison and updated
-  gallery inspected; architecture, documentation and file-size checks pass.
+- **Changed:** after reading CONNECTOR_PARITY_AUDIT, extended shared metadata and composed
+  schema/CLI coverage to implemented Connector/from/to fields. Connector decoding has its own
+  file; Link/Connector geometry-point decoding is shared. Native signal heads reuse the same
+  LaneReference reader, with whole-network fraction conversion kept at its original stage.
+  The parser is now 420 lines. No geometry algorithms or engine behavior change.
+- **Preserved:** wrong fraction/station keys refuse even null/legacy inputs; optional name/side
+  nulls, count/display defaults, pre-7 additive keys, side from 17, behaviour from 21 and
+  generated:true-only from 54 keep their existing semantics and diagnostic paths. Physical
+  lane ranges, attachment bounds, references and other signal/control/demand contents still
+  require the codec; composed coverage remains explicitly partial.
+- **Verified:** 4,275 before/after Connector cases have byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. All 3,078 prior Network
+  cases retain native outcomes and pass the expanded schema. Four shipped projects validate
+  structurally and keep byte-identical canonical output. Five new regression cases include
+  migration/shared signal references, defaults, gates, diagnostics and native integer/array
+  errors; project tests pass 35/35. Release headless build and all 161 CTest entries pass.
+  Evidence is Linux headless only; no Qt/Windows/Vissim acceptance or milestone claim.
 
 ## Older entries
 

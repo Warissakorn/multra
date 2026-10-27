@@ -13,11 +13,13 @@ cmake --build build/headless --target check
 
 | Source | Executable | Purpose |
 |---|---|---|
+| `project_schema.cpp` | `multra-project-schema` | Print a partial formal project envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase and right-of-way/measurement/Route/VehicleInput/RoutingDecision schema with exact integer bounds; `--help` explains its limits |
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
 | `desktop_control.cpp` | `multra-control` | Send a JSON command to a visible desktop's local automation endpoint; desktop build only |
 | `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
 | `check_file_sizes.cpp` | `multra-check-file-sizes` | Enforce the source-file line budget |
 | `check_docs.cpp` | `multra-check-docs` | Check maintained Markdown local links, anchors and folder indexes; supplied spec parts are excluded |
+| `node_detail_benchmark.cpp` | `multra-node-detail-benchmark` | Time F4 for unconnected four-arm Nodes; `16 output.json` prints three timings and saves the first document for byte comparison; not in `check` |
 | `validate_benchmark.cpp` | `multra-validate-benchmark` | Time `validateDocument`, which every editor command runs (D140); prints, never asserts; not in `check` |
 
 The executables are under `build/headless/bin/` or `build/desktop/bin/` for the Ninja

@@ -265,7 +265,7 @@ int main(int argc,char** argv) {
             // One face for words and numbers: the bundled one, whose digits are tabular.
             const QFontMetricsF digits(laneCount->font());bool tabular=true;
             for(QChar d='1';d<='9';d=QChar(d.unicode()+1))tabular=tabular&&digits.horizontalAdvance(d)==digits.horizontalAdvance(QChar('0'));
-            require(QFontInfo(laneCount->font()).family()==QStringLiteral("Noto Sans Thai")&&tabular&&laneCount->font().pixelSize()==12,
+            require(QFontInfo(laneCount->font()).family()==QApplication::font().family()&&tabular&&laneCount->font().pixelSize()==12,
                     "Numeric control is not the UI face with tabular digits");
             QFont semibold=laneCount->font();semibold.setWeight(QFont::DemiBold);
             require(QFontInfo(semibold).weight()==QFont::DemiBold,"The 600 weight is not a real cut");

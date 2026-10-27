@@ -29,6 +29,7 @@
 #include <vector>
 #include <QKeySequence>
 #include <QPointer>
+#include "run_identity.hpp"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -49,10 +50,11 @@ class QToolBar;
 namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
+class AutomationServer;
 struct MacroPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
-    explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr);
+    explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
     ~EditorWindow() override;
     void autosaveNow();
     void recoverFile(const QString&);
@@ -70,12 +72,25 @@ public:
     void saveFile(const QString& path); // Atomic replacement; failures preserve dirty state.
     // JSON command boundary shared by the local automation server and UI integration tests.
     QJsonObject automationRequest(const QJsonObject& request);
+    bool enableAutomation(const QString& endpoint, QString* error = nullptr);
+    void disableAutomation();
+    QString automationEndpoint() const;
 protected:
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 private:
     QString automationSession_; // with History::generation(), the automation documentId
-    QJsonObject automationState();
+    QJsonObject automationState(bool includeSelection = true);
+    std::unique_ptr<AutomationServer> automationServer_;
+    QString automationEndpoint_;
+    bool automationStartupComplete_{};
+    bool automationClosing_{}, automationCloseReady_{};
+    bool automationWasEnabled_{}, automationLabWasEnabled_{};
+    void beginAutomationQuit();
+    void completeAutomationQuit(bool delivered);
+    void newFile();
+    void buildAutomationActions();
+    void refreshAutomationActions();
     History history_;
     std::filesystem::path data_;
     DisplayCatalog displayCatalog_;
@@ -84,6 +99,8 @@ private:
     void buildMapTranslation();
     void refreshMapActions();
     void editMapSettings();
+    bool applyMapSettings(const std::optional<MapSettings>& settings);
+    QJsonObject automationMap(const QString& command,const QJsonObject& params);
     void goToMapCoordinates();
     QTreeWidget* palette_{};
     std::map<int,QTreeWidgetItem*> paletteItems_;
@@ -110,7 +127,11 @@ private:
     std::string selectedName() const;
     void createLinkDialog(const std::vector<Point>&);
     void createRangeDialog(LaneReference,LaneReference,const std::vector<Point>&);
+    bool deferRecovery_{};
     QString recoveryDirectory_, recoveryFile_;
+    QJsonArray recoveryEntries() const;
+    QString recoveryCandidate(const QString& id) const;
+    void discardRecovery(const QString& id);
     std::unique_ptr<QLockFile> recoveryLock_;
     QTimer autosaveTimer_;
     std::optional<std::uint64_t> autosavedRevision_;
@@ -159,11 +180,16 @@ private:
     QLabel* toolHint_{};
     void buildRunControls();
     void refreshRun();
-    bool prepareRun();
+    bool prepareRun(const std::function<void(const RunSnapshot&)>& check = {});
+    void runUntil(const QJsonObject& params);
+    void endRunUntil(const char* reason);
     void toggleRun();
     void stepRun();
     void tickRun();
-    void clearRun();
+    void clearRun(const char* reason = "documentChanged");
+    RunIdentity runIdentity_;
+    QJsonObject automationRunState() const;
+    void checkAutomationRunId(const QJsonObject&,bool required = false) const;
     void pauseRun();
     QTimer runTimer_;
     QElapsedTimer runElapsed_;
@@ -389,6 +415,7 @@ public:
     void exportResults(const QString& file) const;
     // The same text as tab-separated values on the clipboard (M5.6); throws when Export would.
     void copyResults() const;
+    std::string singleRunCsv() const;
     std::string resultsCsv() const; // what Export writes; throws EDIT_CSV_UNFINISHED without a finished run, batch or comparison
     bool batchRunning() const { return batchTotal_ > 0; }
     const std::optional<BatchResult>& batchResult() const { return batch_; }

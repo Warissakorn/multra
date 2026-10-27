@@ -1,5 +1,6 @@
 #include "editor_window.hpp"
 #include "editor_storage.hpp"
+#include "../project/evaluation_period.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <nlohmann/json.hpp>
 #include <QBuffer>
@@ -16,6 +17,12 @@
 #include <cmath>
 
 namespace multra {
+void EditorWindow::newFile() {
+    auto document=newProjectDocument(); // Construct before discarding any current work.
+    clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));
+    automaticRevision_=conflictRevision_=UINT64_MAX;
+    file_.clear();canvas_->select("");refresh();canvas_->fitNetwork();
+}
 void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
     clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(std::move(document));
@@ -48,7 +55,13 @@ bool EditorWindow::confirmDiscard() {
     if(answer==QMessageBox::Save)return saveDialog();
     return answer==QMessageBox::Discard;
 }
-void EditorWindow::closeEvent(QCloseEvent* event) { if(confirmDiscard()) {clearRecovery();event->accept();}else event->ignore(); }
+void EditorWindow::closeEvent(QCloseEvent* event) {
+    if(automationClosing_) {
+        if(!automationCloseReady_){event->ignore();return;}
+        clearRecovery();event->accept();return;
+    }
+    if(confirmDiscard()){clearRecovery();event->accept();}else event->ignore();
+}
 void EditorWindow::importImage() {
     const auto file=QFileDialog::getOpenFileName(this,text("editorImportImage"),{},text("editorImageFilter"));
     if(file.isEmpty())return;

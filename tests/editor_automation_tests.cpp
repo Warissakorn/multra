@@ -242,7 +242,8 @@ void workflow(const std::filesystem::path& data) {
     require(QApplication::mouseButtons() != Qt::NoButton, "Pointer gesture fixture was not established");
     const auto held = call(window, "document.patch", {{"patch", renamePatch("unsafe gesture edit")}});
     require(!held.value("ok").toBool() && held.value("error").toObject().value("code") == QJsonValue("BUSY") &&
-                held.value("state").toObject().value("busy").toBool(),
+                held.value("state").toObject().value("busy").toBool() &&
+                held.value("error").toObject().value("busyReason")==QJsonValue("pointer"),
             "Automation edited during a pointer gesture");
     require(window.history().document() == changed, "Gesture rejection changed the document");
     QTest::mouseRelease(viewport, Qt::MiddleButton, {}, centre);
@@ -256,7 +257,8 @@ void workflow(const std::filesystem::path& data) {
     QApplication::processEvents();
     require(QApplication::activePopupWidget() == &menu, "Popup menu fixture was not established");
     const auto popped = call(window, "document.patch", {{"patch", renamePatch("unsafe menu edit")}});
-    require(!popped.value("ok").toBool() && popped.value("error").toObject().value("code") == QJsonValue("BUSY"),
+    require(!popped.value("ok").toBool() && popped.value("error").toObject().value("code") == QJsonValue("BUSY") &&
+                popped.value("state").toObject().value("busyReason")==QJsonValue("menu"),
             "Automation edited beneath an open menu");
     require(window.history().document() == changed, "Menu rejection changed the document");
     menu.close();

@@ -28,6 +28,40 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
+
+- Owner selected native object-table CSV export over the schema queue. Packaged Windows
+  acceptance is [OWNER_SITTING G1](plans/OWNER_SITTING.md#g--object-interchange); no owner or
+  full M1.23 gate closes from Linux tests. Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
+  for columns/units and nested JSON conventions before extending interchange. GeoJSON,
+  imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
+- Packaged Windows PNG acceptance is OWNER_SITTING G2. Check full/current-area output,
+  active levels/wireframe, image alignment, loaded-map credit and partial-tile behavior.
+  Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
+  remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
+
+## AI automation follow-up (D344–D350)
+
+- Open automation work: an authoritative formal schema covering every optional/versioned
+  field remains separate from D350 observed-shape discovery plus codec dry validation.
+  Use [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) for root presence rules, codec owners
+  and save-version floors. Next: map project-owned Composition/type-share/interval rows,
+  preserving catalog presence/ownership, contains-based optionals and feature-selected save
+  floors 18/19 without inventing new read gates. Extend the composed partial schema only with
+  codec parity cases; keep type references, unique positive weights, valid time windows and
+  run-readiness in existing validators. Vehicle/behaviour catalogs and other optional-feature
+  fields remain codec-owned until mapped.
+  Never promote sample-derived hints to an authoritative contract.
+  Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
+  Reuse existing validation,
+  History and GUI run timer; no generic job/session subsystem is booked yet.
+- Windows acceptance: live endpoint enable/disable and reconnect, guarded New/Quit with full
+  reply before normal exit, and deferred recovery list/restore/discard after a crash, and map set/status/retry with real
+  provider access. Ensure
+  live-owner drafts and unsaved current work survive refusals. Check Unicode save paths and
+  focus/menu/pointer reasons. Keep packaged Windows and second-account checks below;
+  Linux offscreen is not Windows evidence. AI disconnect remains distinct from quit/cancel.
+
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
@@ -65,15 +99,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   marker and the M0 plausibility/owner gates; this item does not authorize closing those gates.
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); `joinAnticipation` ships off (D255); D95 stays off.
-- **Node detail, after D343** (owner booked it next; target: 16 unconnected Nodes ≤ 1.5 s, Release,
-  from 3.1 s). Re-measure first with the harness in
-  [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), then one item per commit, documents hash identical:
-  1. `automaticConflicts` recomputes `connectorSurface` per pair (55,872 calls at 4 Nodes, 65 % before
-     D343): memoise each path's surface for one call only, never across calls (D28's key problem).
-  2. `allocateId` (`src/project/document.cpp`) builds a `std::set` of every id per new object, O(N²)
-     in bulk edits: test candidates without the set; ids must stay the same.
-  - Open owner choice: `automaticConflicts` stays network-wide, so a Node's cost still grows with the
-    network. Keep, scope it to a Node's bounds, or go incremental; recommended keep until a city network.
+- **Node detail:** the booked local performance target is met after D353: 16 unconnected Nodes
+  0.609 s (Release, median of three), below 1.5 s, with byte-identical documents. No further
+  optimization is booked. Keep `multra-node-detail-benchmark 16 output.json` as the regression
+  measurement; re-profile before proposing more work.
+  - `automaticConflicts` remains network-wide. Scoping to Node bounds or incremental updates
+    would still need the owner's choice; this optimization changes neither scope nor output.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).
 - **Owner checks on Windows:** D318's dialogs at 1366×768 or 150 %; E1's tool glyphs and click rule
   (D306); paint, OWNER_SITTING E22. M2.8 has only owner checks left.

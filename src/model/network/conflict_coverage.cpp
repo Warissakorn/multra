@@ -25,9 +25,9 @@ double area(const std::vector<Point>& p) {
 // A lane surface: the two boundaries that bound it, point for point with the polyline its
 // stations are authored on.
 struct Strip { std::vector<Point> base, left, right; std::vector<double> stations{}; };
-std::optional<Strip> stripOf(const Network& n, const ControlPathRef& ref) {
+std::optional<Strip> stripOf(const Network& n, const ControlPathRef& ref, ConnectorSurfaceCache* cache = nullptr) {
     // Calculation, outlines and waiting bars share one surface source.
-    const auto surface=conflictSurface(n,ref);
+    const auto surface=conflictSurface(n,ref,cache);
     if(!surface)return std::nullopt;
     return Strip{surface->base,surface->left,surface->right,surface->stations};
 }
@@ -153,9 +153,9 @@ std::optional<std::pair<Point, Point>> waitingLineBar(const Network& n, const Co
 // D72: every place two surfaces overlap, as separate areas. Pieces that touch on BOTH paths are
 // one area; a pair that crosses twice is two. When nothing is measured the result is one element
 // whose status says why (none / unsupported / unresolved).
-std::vector<SurfaceOverlap> surfaceOverlaps(const Network& n, const ControlPathRef& first, const ControlPathRef& second) {
+std::vector<SurfaceOverlap> surfaceOverlaps(const Network& n, const ControlPathRef& first, const ControlPathRef& second, ConnectorSurfaceCache* cache) {
     SurfaceOverlap failed;
-    const auto a = stripOf(n, first), b = stripOf(n, second);
+    const auto a = stripOf(n, first, cache), b = stripOf(n, second, cache);
     if (!a || !b) return {failed};
     failed.status = SurfaceOverlap::Status::unsupported;
     try {
@@ -216,4 +216,5 @@ SurfaceOverlap surfaceOverlap(const Network& n, const ControlPathRef& first, con
     if (!a || !b) return {SurfaceOverlap::Status::unsupported, {}, {}};
     return {SurfaceOverlap::Status::overlap, *a, *b, std::move(polygons)};
 }
+std::vector<SurfaceOverlap> surfaceOverlaps(const Network& n,const ControlPathRef& a,const ControlPathRef& b) { return surfaceOverlaps(n,a,b,nullptr); }
 }

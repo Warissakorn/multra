@@ -206,6 +206,35 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   What is left still grows with the network: `automaticConflicts` is network-wide and recomputes
   `connectorSurface` per pair (55,872 calls at k = 4, 65 % before D343). The per-pair probe: rebuild
   the list before each authoring call and compare the entry with `==` (equal on all 973 pairs).
+- **Call-local Connector surfaces (D351, 2026-10-26, Linux GCC 14.2, Release -O3):** same
+  unconnected four-arm recipe, compiler paused during timings, median of 3: k = 4 74.49 →
+  60.96 ms; k = 16 3,058.83 → 2,728.20 ms. This is about 18 % / 11 % less wall time, still above
+  the 1.5 s target. Both complete generated JSON documents are byte-identical to the baseline
+  (SHA-256: k = 4 `c7231ed584fa55c7ab8fe7f9146d9db54043d88f9f819ea00505f4588f5d6e42`,
+  k = 16 `9d49beba88abaf41ccc51f6e93a0ba0c5fa513cf69113fc5243cbae68f03bd27`).
+  `tools/node_detail_benchmark.cpp` retains the drawing recipe; run
+  `multra-node-detail-benchmark 16 output.json` for three timings and a document to compare.
+  Baseline/after linked the same Commands/Project libraries with only the Model library replaced.
+  Earlier timings taken while compiling were discarded. No Windows or Qt UI evidence.
+- **Candidate ID checks (D352, 2026-10-26, Linux GCC 14.2, Release -O3):** the retained
+  `multra-node-detail-benchmark`, no concurrent compiler: k = 4 48.39 → 45.43 ms (median of 3),
+  k = 16 2,516.11 → 2,312.06 ms (median of 6, two batches of three with before/after order
+  reversed). The two 16-Node batch medians were 2,474.01 → 2,308.22 ms and 2,558.21 → 2,315.89 ms.
+  The pooled reduction is about 8 %; the 1.5 s target is still open. Both full output documents
+  are byte-identical, with the same k = 4/16 SHA-256 values recorded above for D351.
+  Allocation now scans for each candidate without building a full `std::set`; worst-case bulk
+  allocation still scans quadratically. No persistent index or invalidation policy was added.
+- **Resolve merge sides once (D353, 2026-10-26, Linux GCC 14.2, Release -O3):** a scratch
+  SIGPROF/backtrace sampler at a requested 2 ms CPU interval (1,663 before samples) put 75.9 %
+  of stacks under `mergeGroups` and 74.4 % under `resolveControlPath`. Whole benchmark sampling
+  includes setup; percentages are approximate inclusive samples, not instruction counts.
+  `mergeGroups` resolved each authored pair once per group. Reordering that pure work to once
+  per call preserves ordered incoming groups and explicit-control flags, with no retained cache.
+  Uninstrumented, no compiler running, `multra-node-detail-benchmark`: k = 4
+  41.86 → 26.94 ms, k = 16 2,193.07 → 608.73 ms (medians of three). Both full JSON files retain
+  D351's hashes above. The local 1.5 s target is met; milestone/Windows/UI gates remain unchanged.
+  An after sample (470 stacks) puts `locateChecked` at 6.4 % nearest-model-frame samples versus
+  63.4 % before. Future work needs a new profile; network-wide conflict scope is unchanged.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

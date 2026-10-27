@@ -1,5 +1,9 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "automation_error.hpp"
+#include <QUuid>
+#include <QJsonArray>
+#include <cmath>
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QVBoxLayout>
@@ -74,7 +78,7 @@ void EditorWindow::buildRunControls() {
     for(double n:{0.5,1.,2.,5.,10.,20.})runSpeed_->addItem(QString::number(n)+"×",n);
     runSpeed_->setCurrentIndex(1);bar->addWidget(runSpeed_);
     // Reset discards the run's progress, so it trails the group behind a separator (slice b).
-    bar->addSeparator();bar->addAction(action("editorReset",{},[this]{clearRun();prepareRun();refreshRun();}));
+    bar->addSeparator();bar->addAction(action("editorReset",{},[this]{clearRun("reset");prepareRun();refreshRun();}));
     auto* faster=action("editorFaster",QKeySequence(Qt::Key_Plus),[this]{runSpeed_->setCurrentIndex(std::min(runSpeed_->count()-1,runSpeed_->currentIndex()+1));});
     auto* slower=action("editorSlower",QKeySequence(Qt::Key_Minus),[this]{runSpeed_->setCurrentIndex(std::max(0,runSpeed_->currentIndex()-1));});
     for(auto* a:{faster,slower}){a->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(a);}
@@ -83,22 +87,27 @@ void EditorWindow::buildRunControls() {
     runInfo_->setWordWrap(true);setReflowPolicy(runInfo_,QSizePolicy::Ignored);
     qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(1,new RunInfoHost(runInfo_,centralWidget()));
     canvas_->stopRequested=[this]{pauseRun();};
-    connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun();});
+    connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun("seedChanged");});
     connect(&runTimer_,&QTimer::timeout,this,[this]{tickRun();});
 }
-void EditorWindow::pauseRun(){runTimer_.stop();runCredit_=0;refreshRun();}
-void EditorWindow::clearRun(){
+void EditorWindow::pauseRun(){endRunUntil("paused");runTimer_.stop();runCredit_=0;refreshRun();}
+void EditorWindow::clearRun(const char* reason){
+    endRunUntil(reason);
+    if(!runIdentity_.id.isEmpty()) {
+        runIdentity_.lastId=runIdentity_.id;runIdentity_.lastEndReason=QString::fromLatin1(reason);runIdentity_.id.clear();
+    }
     cancelBatch(); // every edit, Undo, Open and Reset passes here, so it also ends a batch (M5.6)
     runTimer_.stop();runCredit_=0;runSnapshot_.reset();runState_={};runSummary_={};runMovements_.reset();
     runDischarge_.reset();runDischargeError_.clear();runClamps_.clear();canvas_->clearRunFrame();refreshRun();
 }
-bool EditorWindow::prepareRun() {
-    if(runSnapshot_)return true;
+bool EditorWindow::prepareRun(const std::function<void(const RunSnapshot&)>& check) {
+    if(runSnapshot_){if(check)check(*runSnapshot_);return true;}
     const auto sources=studyAreaSources(); // S5.5a (D331)
     try {
         std::uint32_t seed{};
         try{seed=parseSeed(runSeed_->text().toStdString());}catch(const std::exception&){throw std::invalid_argument("invalidSeed");}
         auto snapshot=compileDocument(history_.document(),data_,nullptr,&sources);
+        if(check)check(snapshot);
         runMarking_={exportMarking(history_.document(),snapshot.studyArea),snapshot.studyArea}; // S5.5b
         auto state=createSimulation(snapshot.scenario,seed);
         const auto evaluation=evaluationSpec(history_.document(),snapshot,data_);
@@ -114,11 +123,79 @@ bool EditorWindow::prepareRun() {
         // the first step, or a departure at time zero is missing from every later figure.
         runSummary_={};runClamps_.clear();observeRun();
         canvas_->setRunNetwork(runSnapshot_->network);canvas_->setRunFrame(runState_);
+        runIdentity_.until={};
+        runIdentity_.id=QUuid::createUuid().toString(QUuid::WithoutBraces);
+        runIdentity_.generation=history_.generation();runIdentity_.revision=history_.revision();
         error_->clear();return true;
-    }catch(const std::exception& e){
+    }catch(const CommandError&){throw;}catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return false;
     }
+}
+void EditorWindow::checkAutomationRunId(const QJsonObject& params,bool required) const {
+    if(!required && !params.contains("runId"))return;
+    if(!params.value("runId").isString() || params.value("runId").toString().isEmpty())
+        throw CommandError("INVALID_PARAMS","A nonempty runId string is required",{{"path","params.runId"}});
+    if(runIdentity_.id.isEmpty() || params.value("runId").toString()!=runIdentity_.id)
+        throw CommandError("STALE_RUN","The requested single run is no longer current",{{"runId",runIdentity_.id.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(runIdentity_.id)}});
+}
+QJsonObject EditorWindow::automationRunState() const {
+    const bool active=!runIdentity_.id.isEmpty();
+    const auto nullable=[](const QString& s){return s.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(s);};
+    const QString status=!active?"idle":runFinished()?"completed":runTimer_.isActive()?"running":runState_.tick?"paused":"prepared";
+    const auto& until=runIdentity_.until;
+    QJsonObject target{{"active",until.active},{"runId",nullable(until.runId)},{"outcome",until.outcome},
+        {"targetTick",QString::number(until.targetTick)},{"timeoutMs",until.timeoutMs},
+        {"targetTime",runState_.scenario?QJsonValue(until.targetTick*runState_.scenario->timeStep):QJsonValue(QJsonValue::Null)}};
+    return {{"until",target},{"timeStep",runState_.scenario?QJsonValue(runState_.scenario->timeStep):QJsonValue(QJsonValue::Null)},
+        {"duration",runState_.scenario?QJsonValue(runState_.scenario->duration):QJsonValue(QJsonValue::Null)},{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},{"finished",runFinished()},
+        {"tick",static_cast<qint64>(runState_.tick)},{"time",runState_.time},{"seed",runSeed_->text()},
+        {"runId",nullable(runIdentity_.id)},{"status",status},{"lastRunId",nullable(runIdentity_.lastId)},
+        {"lastEndReason",runIdentity_.lastEndReason},{"sourceRevision",active?QJsonValue(QString::number(runIdentity_.revision)):QJsonValue(QJsonValue::Null)},
+        {"sourceDocumentId",active?QJsonValue(automationSession_+"-"+QString::number(runIdentity_.generation)):QJsonValue(QJsonValue::Null)}};
+}
+void EditorWindow::endRunUntil(const char* reason) {
+    if(runIdentity_.until.active) {
+        runIdentity_.until.active=false;runIdentity_.until.outcome=QString::fromLatin1(reason);
+        runCredit_=0;runElapsed_.start(); // Fast stepping must not become accumulated playback time.
+    }
+}
+void EditorWindow::runUntil(const QJsonObject& params) {
+    const auto invalid=[](const char* key,const char* expected){throw CommandError("INVALID_PARAMS",expected,{{"path",QString("params.")+key}});};
+    for(auto it=params.begin();it!=params.end();++it)
+        if(it.key()!="runId" && it.key()!="until" && it.key()!="time" && it.key()!="timeoutMs")invalid("until","Unsupported run-until field");
+    const auto mode=params.contains("until")?params.value("until"):QJsonValue("finished");
+    if(mode!=QJsonValue("finished") && mode!=QJsonValue("time"))invalid("until","Use finished or time");
+    if(mode==QJsonValue("time") && (!params.value("time").isDouble() || !std::isfinite(params.value("time").toDouble()) || params.value("time").toDouble()<0))
+        invalid("time","A finite nonnegative simulation time is required");
+    if(mode==QJsonValue("finished") && params.contains("time"))invalid("time","time requires until: time");
+    const auto timeout=params.contains("timeoutMs")?params.value("timeoutMs"):QJsonValue(30000);
+    const auto ms=timeout.toDouble();
+    if(!timeout.isDouble() || !std::isfinite(ms) || ms<1 || ms>300000 || std::floor(ms)!=ms)invalid("timeoutMs","Use integer milliseconds 1..300000");
+    std::uint64_t target{};
+    const auto check=[&](const RunSnapshot& snapshot){
+        const auto& scenario=snapshot.scenario;target=totalTicks(scenario);
+        if(mode==QJsonValue("time")) {
+            const double time=params.value("time").toDouble();const double ticks=std::round(time/scenario.timeStep);
+            if(time>scenario.duration || !onTimeGrid(time,scenario.timeStep) || !std::isfinite(ticks) || ticks>9007199254740991.)
+                invalid("time","Time must be on the scenario time grid, within duration and exact tick range");
+            target=static_cast<std::uint64_t>(ticks);
+        }
+        if(runSnapshot_ && target<runState_.tick)invalid("time","Target cannot precede the current simulation tick");
+    };
+    if(!prepareRun(check)) {
+        QJsonArray rows;for(const auto& d:diagnostics_)rows.append(QJsonObject{{"code",QString::fromStdString(d.code)},
+            {"path",QString::fromStdString(d.path)},{"objectId",QString::fromStdString(d.objectId)}});
+        throw CommandError("RUN_NOT_READY","The document cannot be simulated; inspect diagnostics",{{"diagnostics",rows}});
+    }
+    auto& goal=runIdentity_.until;
+    if(goal.active) {
+        if(goal.targetTick==target && goal.timeoutMs==static_cast<int>(ms))return;
+        throw CommandError("RUN_TARGET_ACTIVE","Pause the existing target before choosing another");
+    }
+    goal={};goal.runId=runIdentity_.id;goal.targetTick=target;goal.timeoutMs=static_cast<int>(ms);
+    goal.active=runState_.tick<target;goal.outcome=goal.active?"running":"reached";goal.deadline.start();
+    runCredit_=0;runElapsed_.start();if(goal.active)runTimer_.start(16);else runTimer_.stop();refreshRun();
 }
 void EditorWindow::toggleRun(){
     if(runTimer_.isActive()){pauseRun();return;}
@@ -134,6 +211,16 @@ void EditorWindow::stepRun(){
 }
 void EditorWindow::tickRun(){
     if(!runSnapshot_)return;
+    auto& goal=runIdentity_.until;
+    if(goal.active) {
+        QElapsedTimer slice;slice.start();int budget=200;
+        while(runTimer_.isActive() && runState_.tick<goal.targetTick && budget-->0 && slice.elapsed()<8 && !goal.deadline.hasExpired(goal.timeoutMs)) {
+            runState_=stepSimulation(std::move(runState_));observeRun();
+        }
+        if(runState_.tick>=goal.targetTick){endRunUntil("reached");runTimer_.stop();}
+        else if(goal.deadline.hasExpired(goal.timeoutMs)){endRunUntil("timeout");runTimer_.stop();}
+        canvas_->setRunFrame(runState_);refreshRun();return;
+    }
     runCredit_+=std::min(.25,runElapsed_.restart()/1000.)*runSpeed_->currentData().toDouble();
     // Bound work per callback, preserving every fixed step while keeping the UI responsive.
     int budget=200;
@@ -161,12 +248,13 @@ void EditorWindow::refreshRun(){
     for(const char* key:{"editorRunSeeds","editorCompareSeeds"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(!batchRunning());
     if(const auto e=actions_.find("editorCancelSeeds");e!=actions_.end())e->second->setEnabled(batchRunning());
+    runSpeed_->setEnabled(!runIdentity_.until.active);
     runSeed_->setAccessibleName(text("seed"));runSpeed_->setAccessibleName(text("speed"));
     if(!runSnapshot_){runInfo_->setText(text("editorRunReady"));runInfo_->setAccessibleDescription({});return;}
     // All diagnostic figures wrap above the canvas; their interpretation is in the Shortcuts dialog (F1).
     runInfo_->setAccessibleDescription(text("editorRunStatusNote"));
     const auto summary=runSummary_.summary();
-    runInfo_->setText(text("editorRunStatus").arg(runSnapshot_->revision).arg(runState_.seed)
+    runInfo_->setText((runIdentity_.until.active?text("editorRunUntilTarget").arg(runIdentity_.until.targetTick*runState_.scenario->timeStep,0,'f',1):QString())+text("editorRunStatus").arg(runSnapshot_->revision).arg(runState_.seed)
         .arg(runState_.time,0,'f',1).arg(runState_.vehicles.size()).arg(pendingCount(runState_)).arg(runState_.completed)
         .arg(summary.meanDelay?QString::number(*summary.meanDelay,'f',2):text("empty")).arg(summary.safetyClamps)
         +(runState_.lots.empty()?QString():text("editorRunParked").arg(parkedCount(runState_)))); // M8.6b: closes the count

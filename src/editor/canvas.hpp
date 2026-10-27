@@ -16,10 +16,13 @@
 #include <QTimer>
 #include "map_provider.hpp"
 class QLabel;
+class QImage;
 
 namespace multra {
 class MapLayer;
 enum class MapStatus;
+struct MapLoadState;
+struct CanvasImageOptions;
 class EditorCanvas : public QGraphicsView {
 public:
     enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node, road };
@@ -29,6 +32,7 @@ public:
     void setMapVisible(bool);
     // Retry the visible map's failed tiles without changing the document or camera.
     void retryMapTiles();
+    MapLoadState mapLoadState() const;
     // Unit formats for the HUD's scale and zoom labels, each with one %1 (D197).
     void setHudUnits(const QString& metres, const QString& zoom);
     void setMapStatusText(std::function<QString(MapStatus)>);
@@ -43,6 +47,7 @@ public:
     // centre line only. View state, never saved; vehicles keep their lane positions.
     void setWireframe(bool on) { wireframe_=on; redraw(); }
     bool wireframe() const { return wireframe_; }
+    QImage renderImage(const CanvasImageOptions&) const;
     void cycleOverlap();
     std::vector<std::pair<std::string,double>> hitObjects(Point,bool connectors = true) const;
     void setDocument(const ProjectDocument* document);

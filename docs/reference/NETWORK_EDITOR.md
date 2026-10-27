@@ -417,6 +417,14 @@ What is drawn is what is hit, band-selected and framed; the lane tabs are hidden
 rails are not drawn (lane count stays in Properties). In the Run view vehicles keep their real
 lane positions, so on a multi-lane road they sit either side of the line (D100).
 
+## Export authored data
+
+File → **Export object table (CSV)** writes Links, Connectors, inputs, routes or decisions,
+including unsaved edits without Run. See [OBJECT_TABLE_CSV](OBJECT_TABLE_CSV.md) for columns and units.
+
+File → **Export network image (PNG)** writes the whole visible network or current view area,
+with chosen pixel dimensions and optional backgrounds. See [NETWORK_IMAGE](NETWORK_IMAGE.md).
+
 ## Save, recovery and formats
 
 Save/Open uses `*.traffic.json`. Schema 3 stores format, schemaVersion, revision, nextId,
@@ -441,7 +449,10 @@ schema choice and serialized bytes stand. Unknown future versions are rejected.
 | Opened by | Editor (or `multra-cli --scenario`) | Editor |
 | Runs | Editor, or `multra-cli` | Editor after demand/catalog/runtime checks |
 
-The editor opens bare M0 authoring files and project schemas 1–30. Saving uses schema 17
+The [project schema inventory](PROJECT_SCHEMA.md) maps all optional root fields and current
+feature/version owners through schema 57.
+
+The editor opens bare M0 authoring files and project schemas 1–57. Saving uses schema 17
 by default, 18 for owned composition catalogs or embedded vehicle names, and 19 for
 composition periods or type-conditioned routing; schema 20 when a routing decision has `position`; schema 21 when the behaviour library
 or a road behaviour-type assignment is used ([DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126)); schema 22 when an evaluation period is set ([SIMULATION](SIMULATION.md#movement-evaluation-m25), D132); schema 23 when a travel-time section exists ([TRAVEL_TIME_SECTIONS](TRAVEL_TIME_SECTIONS.md), D133); schema 24 when a section has a control type ([LOS](LOS.md), D134); schema 25 when an owned behaviour is `w74` (D136); schema 26 when an input takes its volume from its decision's turning counts ([DEMAND_IMPROVEMENT](../plans/DEMAND_IMPROVEMENT.md) §7, D142); schema 27 when the evaluation period has a cool-down ([BATCH](BATCH.md) §5, D146); schema 28 when an owned behaviour carries `amberDeceleration` ([AMBER](AMBER.md), D147). From schema 21 every owned behaviour is written with its `model`, library or not (D147 found the gap). This is selected from the document's

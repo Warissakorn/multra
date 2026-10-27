@@ -111,3 +111,13 @@ Live policy: https://operations.osmfoundation.org/policies/tiles/ (checked 2026-
 
 Tests use local fake tiles, never live OSM as an automated fixture. Automated rows
 do not close MAP10 or establish engineering/survey accuracy.
+
+## AI command access (D347)
+
+The desktop automation boundary exposes map.get/set/remove and map.status/retry; see
+[DESKTOP_AUTOMATION](DESKTOP_AUTOMATION.md#map-commands-and-viewport-readiness-d347) for parameters.
+Set and settings UI share one apply path, preserving validation, History, run invalidation
+and camera rules. Tile snapshots reuse the existing client/viewport timer; querying them
+creates no requests or additional polling timer. A settled viewport and complete wanted
+tile set are required for ready; raw layer status alone can describe the prior viewport
+while the bounded pan/zoom update is pending. Local-server tests do not prove live OSM access.

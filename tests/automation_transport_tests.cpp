@@ -166,7 +166,38 @@ int main(int argc, char** argv) {
         require(!lockPath.isEmpty() && multra::automationLockPath(endpoint) == lockPath, "Test mode moved the endpoint lock");
         QStandardPaths::setTestModeEnabled(false);
         socket.disconnectFromServer();
-        std::cout << "PASS local automation framing, bounds, endpoint ownership and compiled client\n";
+        // The shutdown hook must distinguish drained output from a disconnected or stalled peer.
+        int completions{};bool delivered=false,started=false;
+        // MSVC rejects a lambda naming the object its own initializer constructs (C2326).
+        multra::AutomationServer* drainingServer{};
+        multra::AutomationServer draining([&](const QJsonObject& request){
+            started=true;
+            drainingServer->afterReply([&](bool ok){++completions;delivered=ok;});
+            return QJsonObject{{"ok",true},{"payload",request.value("large").toBool()?QString(16*1024*1024,'x'):QString("small")}};
+        });
+        drainingServer=&draining;
+        const auto drainEndpoint=endpoint+"-drain";
+        require(draining.listen(drainEndpoint),"Drain fixture did not listen");
+        QLocalSocket small;small.connectToServer(multra::automationServerName(drainEndpoint));
+        until([&]{return small.state()==QLocalSocket::ConnectedState;},"Small reply client failed");
+        small.write("{}\n");require(receive(small).value("ok").toBool(),"Small reply lost");
+        until([&]{return completions==1;},"Drained reply did not complete");
+        require(delivered,"Drained reply reported failure");small.abort();
+        for(bool disconnect:{true,false}) {
+            started=false;QLocalSocket blocked;blocked.setReadBufferSize(1);
+            blocked.connectToServer(multra::automationServerName(drainEndpoint));
+            until([&]{return blocked.state()==QLocalSocket::ConnectedState;},"Blocked client failed");
+            const int before=completions;blocked.write("{\"large\":true}\n");
+            until([&]{return started;},"Blocked reply not dispatched");
+            QTest::qWait(20);
+            require(completions==before,"Large reply did not establish backpressure");
+            if(disconnect)blocked.abort();
+            else QTest::qWait(5200);
+            until([&]{return completions==before+1;},"Failed reply did not complete exactly once");
+            require(!delivered,"Failed reply reported delivery");blocked.abort();QTest::qWait(5);
+            require(completions==before+1,"Reply completed twice");
+        }
+        std::cout << "PASS framing, endpoint ownership, compiled client and reply-drain completion/failure\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

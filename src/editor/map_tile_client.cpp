@@ -77,6 +77,9 @@ std::size_t MapTileClient::pending() const {
     }
     return n;
 }
+std::size_t MapTileClient::loadedCount() const {
+    return std::count_if(wanted_.begin(),wanted_.end(),[this](const auto& key){return images_.contains(key);});
+}
 bool MapTileClient::hasFailures() const { return !failures_.empty(); }
 void MapTileClient::pump() {
     const auto now=QDateTime::currentMSecsSinceEpoch();if(now<blockedUntil_)return;
