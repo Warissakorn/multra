@@ -1,6 +1,6 @@
 # M1 owner acceptance record
 
-**Status: M1 usability accepted by owner ruling (2026-09-25, D49); M0 plausibility open.**
+**Status: M1 usability accepted by owner ruling (2026-09-25, D49); M0 plausibility accepted by owner ruling (2026-10-27, D369).**
 The written exercise below was not passed as written — the ruling accepts M1 on the owner's
 judgment of the attempt. The owner drew a signalised
 intersection in 9 min 40 s without assistance and supplied the saved file. The time and the
@@ -68,7 +68,7 @@ These are separate from the ten-minute drawing task.
 | Four-leg geometry and turn pockets complete | Four legs: yes — two crossing dual carriageways (`link-2`/`link-11`, `link-5`/`link-8`), each Link 2 × 3.5 m lanes end to end, 8 turning Connectors (a short and a long turn per approach), through movements on the Links. **Turn pockets: none** — no Link gains a lane before the stop line. Stop lines (8 heads, 4 groups) all sit upstream of the first crossing carriageway |
 | Exact parsed-JSON save/reopen comparison | **Pass** — `parseDocument` → `documentJson` on the supplied file (schema 13, revision 45) gives JSON equal to the file and an equal document, checked 2026-09-25 against `c1e3ce9` |
 | Run / recovery / level checks | Run: the file compiles and runs (`multra-cli --project`, seed 42, 180 s, 6 safety clamps). Recovery and levels not observed |
-| M0 plausibility observation | Pending |
+| M0 plausibility observation | **Accepted by owner ruling (D369, 2026-10-27)**: "ผ่าน แบบ A"; amber held as red in bare M0 scenarios ([evidence](../evidence/m0-plausibility.md)) |
 | Friction, defects and evidence paths | The short turn (`connector-14/16/18/20`) leaves each approach's first lane 3–8 m **upstream** of that lane's head, so it bypasses the signal — **the owner confirmed this is intended** (Thai left turn at all times, 2026-09-25), so it is not a defect. Evidence: owner's `network.traffic.json`, not committed |
 | M1 gate verdict | **Accepted by owner ruling (D49, 2026-09-25)**: an engineer who has used another traffic simulator models an intersection of ordinary complexity in well under 10 minutes. As written, this attempt meets the time (< 10 min, no assistance) and the save/reopen comparison, but **not the requested geometry** (turn pockets, drawn over an aerial image). Documentation use and first-attempt status not stated |
 

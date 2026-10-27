@@ -428,3 +428,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D367](RECORD.md#d367) — M1.23.2 authoring-network PNG: full/view bounds, bounded dimensions, optional backgrounds/cached map credit, no live-state mutation and atomic writes.
 
 [D368](RECORD.md#d368) — Object table CSV prefixes `'` to text cells starting with a spreadsheet formula character; numbers and JSON cells unchanged.
+
+[D369](RECORD.md#d369) — M0 plausibility accepted by owner ruling ("ผ่าน แบบ A"); caveat: bare M0 scenarios hold amber as red (1–3 clamps per run); unvalidated marker stays.

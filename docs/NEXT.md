@@ -24,6 +24,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
   `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
+- **M0 is closed** by owner ruling (D369, [evidence](evidence/m0-plausibility.md)). Bare M0
+  scenarios still hold amber as red (D147); a change that moves the M0 baseline reopens it.
 - **Shipped projects (D337):** all four stay; [their README](../data/projects/README.md) names each
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
@@ -87,7 +89,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **M3.3.3b — the W99 contract before code** (ROADMAP M3.3, D177): read the following-model
   requirements in [DRIVING_BEHAVIOUR](reference/DRIVING_BEHAVIOUR.md), then write a sourced state,
   equation and parameter contract with hand-checkable acceptance cases. Keep the unvalidated
-  marker and the M0 plausibility/owner gates; this item does not authorize closing those gates.
+  marker (D13, D369) and the owner gates; this item does not authorize closing those gates.
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); `joinAnticipation` ships off (D255); D95 stays off.
 - **Node detail:** the booked local performance target is met after D353: 16 unconnected Nodes

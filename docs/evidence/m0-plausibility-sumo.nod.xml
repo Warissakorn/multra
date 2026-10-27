@@ -1,0 +1,5 @@
+<nodes>
+ <node id="W" x="-160" y="0"/><node id="E" x="160" y="0"/>
+ <node id="S" x="0" y="-160"/><node id="N" x="0" y="160"/>
+ <node id="C" x="0" y="0" type="traffic_light" radius="10"/>
+</nodes>

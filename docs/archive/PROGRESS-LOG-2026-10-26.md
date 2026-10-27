@@ -2,6 +2,24 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — SignalHead structural schema and conditional groups (D359)
+
+- **Changed:** shared metadata supplies SignalHead known-key/type rules, native read conditions
+  and schema if/then constraints. SignalHead decoding moves out of the parser (now 409 lines).
+  The composed schema/CLI adds head rows; the envelope-only API and desktop observed discovery
+  stay unchanged. Controller/program contents and semantic/model checks remain codec-owned.
+- **Preserved:** absent/null controllerId ignores groupNumber; even an empty non-null controller
+  requires a group. Integer-valued floats remain accepted in native int range, without inventing
+  a schema-13 read gate. Optional text, pre-7 known-key policy, generated flags, diagnostic order,
+  attachment conversion and pre-13 signal-program migration keep their existing behavior.
+- **Verified:** 4,503 SignalHead cases have byte-identical before/after outcomes/errors/canonical
+  documents and pass independent Draft-2020-12 expectations. Four shipped projects validate
+  structurally and keep byte-identical canonical output. Five new regression cases cover defaults,
+  conditional/ignored groups, numeric boundaries, version compatibility and legacy program
+  migration; project tests pass 40/40. Release headless build and all 161 CTest entries pass,
+  including architecture, docs, CLI and file-size checks. Linux headless evidence only; no
+  engine, scientific-validation, owner or Qt/Windows gate is closed.
+
 ## 2026-10-26 — Connector and attachment-reference structural schema (D358)
 
 - **Changed:** after reading CONNECTOR_PARITY_AUDIT, extended shared metadata and composed

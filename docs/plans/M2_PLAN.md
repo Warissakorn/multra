@@ -33,7 +33,7 @@ M1.12.3 was closed by M1.19. ROADMAP is the authority for each.
 | # | Item | Owner | Blocks |
 |---|---|---|---|
 | G1 | The timed four-leg / aerial-image / reopen exercise (`M1_ACCEPTANCE.md`) — **every row is still "Pending"** | Owner | M1 closure |
-| G2 | M0 plausibility observation (accelerate, queue at red, discharge at green) | Owner | M0 closure |
+| G2 | M0 plausibility observation (accelerate, queue at red, discharge at green) — **accepted by owner ruling (D369)** | Owner | M0 closure (closed) |
 | G3 | Keyboard-only equivalent of the route and input gestures (M1.26 gate) | Engineering + owner | M1.26 gate |
 | G4 | M1.22 (spline/arc, snapping, layer locks, multi-property inspector …) and M1.23 (import/export, culling/LOD) | Engineering | Their own gates; not the M1 done-condition |
 | G5 | Windows-native appearance, display scaling and the M1.12 review checklist | Owner | Honest cross-platform claim |

@@ -22,10 +22,6 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 
 ## A — Gates (first: a fail here changes what comes next)
 
-1. **M0 plausibility** (listed 2026-09-11). Open `data/scenarios/crossing.json`, Run. Do vehicles
-   accelerate, queue at red and discharge at green in a way an engineer recognises? A *no*
-   triggers D13 (fix or replace car-following) before W74/W99 or M6. Observation only, not
-   calibration. *Owner:*
 2. **M3.2.7d T-junction exercise** (listed 2026-09-26). Fill the sheet in
    [M3_ACCEPTANCE](M3_ACCEPTANCE.md) §3 on `data/projects/t-junction-priority.traffic.json`. Does
    minor-road delay respond to gap time as an engineer expects? It is what M3.2 closes on (R7).

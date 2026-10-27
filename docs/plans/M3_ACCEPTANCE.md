@@ -288,7 +288,7 @@ swept crossing overlap and no excessive braking hidden by removing a clamp event
 Three committed projects × 40 seeds keep their CLI reports identical except clamp
 counts. Their active/pending traffic is recorded, not silently excluded.
 M3.2.8a.1 carries the remaining moving and source-insertion cases in ROADMAP/NEXT.
-M0 plausibility, M3.2.7d and M6 remain open; owner rows above are not filled by tests.
+M3.2.7d and M6 remain open (M0 plausibility: D369); owner rows above are not filled by tests.
 
 ### 2026-10-04 — D108 source first-step rows (M3.2.8a.1a)
 

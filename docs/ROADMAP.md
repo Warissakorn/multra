@@ -21,7 +21,7 @@ The smallest thing that is genuinely a traffic simulator, end to end. Every laye
 
 **Done when:** `multra-desktop` shows vehicles accelerating, queueing at red, and discharging at green in a way a traffic engineer recognises as plausible — and CTest proves the same seed produces the same run on a fixed engine/toolchain.
 
-**Where that observation is made (M1.24):** open `data/scenarios/crossing.json` in the editor and use Run/Pause/Step/Reset there. Until M1.24 this said the same thing about a separate M0 window; that window is gone, the observation is not. The editor reads a bare M0 scenario, steps the unchanged core, and its run status shows the mean trip delay and the safety-clamp count the retired window showed. `scenario-run-ui` pins this path to the `multra-cli 42` baseline — 45 completed trips exactly, mean delay 31.75870154816726 to within 1e-7 (D159 seeding; 31 and 29.249359418430977 before) — so an engineer judging plausibility in the editor is judging the same run the CLI prints. **The gate itself is unchanged and still open:** no automated test closes it, and the plausibility judgement is the owner’s to make.
+**Where that observation is made (M1.24):** open `data/scenarios/crossing.json` in the editor and use Run/Pause/Step/Reset there. Until M1.24 this said the same thing about a separate M0 window; that window is gone, the observation is not. The editor reads a bare M0 scenario, steps the unchanged core, and its run status shows the mean trip delay and the safety-clamp count the retired window showed. `scenario-run-ui` pins this path to the `multra-cli 42` baseline — 45 completed trips exactly, mean delay 31.75870154816726 to within 1e-7 (D159 seeding; 31 and 29.249359418430977 before) — so an engineer judging plausibility in the editor is judging the same run the CLI prints. **Closed 2026-10-27 by owner ruling (D369):** the owner answered "ผ่าน แบบ A" after the measured run and a SUMO comparison ([evidence](evidence/m0-plausibility.md)). Caveat kept on the record: a bare M0 scenario holds amber as red, so 1–3 safety clamps per run fall on amber at the line. The unvalidated marker stays (D13).
 
 **Explicitly not in M0:** lane changing, editing anything, saving anything, LOS, multiple seeds, priority control. The slice is about the *shape*, not the feature set.
 
@@ -43,7 +43,7 @@ The Vissim modelling surface, natively: links are first class, connectors are re
 (open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
 [CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted
 by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
-an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility remains open.
+an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accepted by owner ruling (D369).
 Carve-outs are filed at their number (M1.3.1, M1.5.1, M1.11.1, M1.12.1–M1.12.3).
 
 **Done when:** an engineer draws a four-leg intersection with turn pockets from scratch, over an aerial image, in under 10 minutes, without reading documentation — and reopening the file gives back exactly what they drew.

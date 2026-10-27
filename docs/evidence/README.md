@@ -20,6 +20,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [discharge-measurement.md](discharge-measurement.md) | M3.3.1a local measurement evidence — 2026-10-06 | — |
 | [discharge-passage.md](discharge-passage.md) | M3.3.1b2b1 proven passage evidence — 2026-10-07 | — |
 | [discharge-provenance.md](discharge-provenance.md) | M3.3.1b2a local evidence — 2026-10-06 | — |
+| [m0-plausibility.md](m0-plausibility.md) | M0 plausibility: `crossing.json` seeds 42–51 against SUMO 1.18 Krauss/IDM; scripts and SUMO inputs `m0-plausibility-*` — 2026-10-27 | D369, D147 |
 | [m3.2.7-sweep.md](m3.2.7-sweep.md) | M3.2.7b — T-junction diagnostic sweep | — |
 | [m3.2.8a-clamps.md](m3.2.8a-clamps.md) | M3.2.8a — the five near-standing minor-road clamps (D105) | D105, D80, D69 |
 | [m3.2.8a-commitment.md](m3.2.8a-commitment.md) | M3.2.8a — commitment at a waiting line | D69 |

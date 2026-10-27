@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — M0 plausibility accepted by owner ruling (D369)
+
+- **Owner ruling:** "ผ่าน แบบ A" — pass, with the amber caveat on the record. The owner holds the
+  gate; the session measured and compared, and recorded the answer.
+- **Evidence** ([note](evidence/m0-plausibility.md)): `crossing.json`, seeds 42–51, against SUMO
+  1.18 Krauss and IDM with the same geometry, timing, demand and vehicle data. MULTRA discharges at
+  1.83 s (1,967 veh/h; IDM 1.89 s, Krauss 1.42 s), stands at 7.24 m front to front, and has no
+  red passes. Its 1–3 clamps and 6–30 full-braking ticks per run all fall on amber within 40 m of
+  the line, because a bare M0 scenario holds amber as red (D147).
+- **Changed:** ROADMAP M0 is closed; OWNER_SITTING A1 is removed; M1_ACCEPTANCE, M2_PLAN G2, M3_ACCEPTANCE
+  and NEXT now say the same. The unvalidated marker (D13) stays; no code changed.
+
 ## 2026-10-27 — Documentation review fixes: owner items, a lost fix, ROADMAP headroom
 
 - **Owner items in one place:** NEXT carried Windows/owner checks that OWNER_SITTING, the only
@@ -175,24 +187,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   migration and semantic exclusions; project coverage is 45 tests. Release headless build and
   all 161 CTest entries pass (15.15 s), including CLI, docs, architecture and file-size checks.
   Evidence is Linux headless only; no Qt/Windows, scientific-validation or owner gate is closed.
-
-## 2026-10-26 — SignalHead structural schema and conditional groups (D359)
-
-- **Changed:** shared metadata supplies SignalHead known-key/type rules, native read conditions
-  and schema if/then constraints. SignalHead decoding moves out of the parser (now 409 lines).
-  The composed schema/CLI adds head rows; the envelope-only API and desktop observed discovery
-  stay unchanged. Controller/program contents and semantic/model checks remain codec-owned.
-- **Preserved:** absent/null controllerId ignores groupNumber; even an empty non-null controller
-  requires a group. Integer-valued floats remain accepted in native int range, without inventing
-  a schema-13 read gate. Optional text, pre-7 known-key policy, generated flags, diagnostic order,
-  attachment conversion and pre-13 signal-program migration keep their existing behavior.
-- **Verified:** 4,503 SignalHead cases have byte-identical before/after outcomes/errors/canonical
-  documents and pass independent Draft-2020-12 expectations. Four shipped projects validate
-  structurally and keep byte-identical canonical output. Five new regression cases cover defaults,
-  conditional/ignored groups, numeric boundaries, version compatibility and legacy program
-  migration; project tests pass 40/40. Release headless build and all 161 CTest entries pass,
-  including architecture, docs, CLI and file-size checks. Linux headless evidence only; no
-  engine, scientific-validation, owner or Qt/Windows gate is closed.
 
 ## Older entries
 

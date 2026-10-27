@@ -1,0 +1,6 @@
+<routes>
+ <vType id="car" carFollowModel="Krauss" length="4.5" width="1.8" accel="2.5" decel="2" emergencyDecel="8" maxSpeed="16.67" speedFactor="norm(0.833,0.1,0.667,1)"/>
+ <route id="eastbound" edges="west east"/><route id="northbound" edges="south north"/>
+ <flow id="w" type="car" route="eastbound" begin="0" end="90" period="exp(0.25)" departSpeed="desired"/>
+ <flow id="s" type="car" route="northbound" begin="0" end="90" period="exp(0.194444)" departSpeed="desired"/>
+</routes>
