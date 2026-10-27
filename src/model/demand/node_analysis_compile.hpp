@@ -33,6 +33,7 @@ struct AnalysisLaneGroup {
     bool coupled{};                   // on an approach with a shared lane (flows from approachLaneFlows)
     int lanes{}; double laneWidth{};  // m, the mean of its lanes
     double displayedGreen{}, effectiveGreen{}, cycle{};
+    double greenStart{};              // the displayed green's start in the cycle, s (critical v/c)
     bool operator==(const AnalysisLaneGroup&) const = default;
 };
 struct NodeAnalysisCompile {

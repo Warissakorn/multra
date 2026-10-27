@@ -125,7 +125,7 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         const auto& g = greens[id];
         out.groups.push_back({std::move(members), name, inLink.id, id, kind, movement, coupled,
                               static_cast<int>(laneSet.size()), width / static_cast<double>(laneSet.size()), g.green,
-                              g.green - kStartUpLostTime + kGreenExtension, g.cycle});
+                              g.green - kStartUpLostTime + kGreenExtension, g.cycle, g.start});
     };
     for (std::size_t leg = 0; leg < m.inLegs.size(); ++leg) {
         std::vector<std::size_t> mine;

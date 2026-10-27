@@ -147,6 +147,18 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         for (const auto& [v, delay] : all) { (void)delay; out.flow += v; }
         out.delay = flowWeightedDelay(all);
         if (out.delay) out.los = signalisedLos(*out.delay, std::nullopt, pack.bounds);
+        std::set<std::size_t> analysed;
+        std::vector<CriticalInterval> intervals;
+        for (const auto& row : out.groups) {
+            if (!row.result) continue;
+            for (const auto t : row.group.turns) analysed.insert(t);
+            const double y = row.result->saturation > 0 ? row.flowRate / (row.group.lanes * row.result->saturation) : 0;
+            intervals.push_back({row.group.greenStart, row.group.displayedGreen, row.group.effectiveGreen, y});
+        }
+        if (!m.turns.empty() && analysed.size() == m.turns.size() && intervals.size() == out.groups.size()) {
+            out.critical = criticalRatio(intervals, out.groups.front().group.cycle);
+        }
+        if (!out.critical) out.advisories.push_back({"NODE_ANALYSIS_PARTIAL", path});
         run.nodes.push_back(std::move(out));
     }
     if (manifest) { manifest->validate(); run.inputManifest = manifest->json(); }

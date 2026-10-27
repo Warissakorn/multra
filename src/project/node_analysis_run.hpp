@@ -2,6 +2,7 @@
 #include "document.hpp"
 #include "input_manifest.hpp"
 #include "../model/demand/node_analysis_compile.hpp"
+#include "../analysis/critical.hpp"
 #include <array>
 #include <filesystem>
 #include <nlohmann/json.hpp>
@@ -32,6 +33,9 @@ struct AnalysedNode {
     std::vector<AnalysedLaneGroup> groups;
     std::vector<AnalysedApproach> approaches;
     double flow{}; std::optional<double> delay; std::optional<char> los;
+    // Critical v/c (Eqs. 19-30, 19-31 over a non-overlapping chain, §11); none, with NODE_ANALYSIS_PARTIAL,
+    // unless every turn of the Node is in a lane group with a result. Its chain indexes `groups`.
+    std::optional<CriticalResult> critical;
     // The compile's, then NODE_ANALYSIS_NO_VOLUME per turn without a row (a coupled approach then has no
     // lane group) and NODE_ANALYSIS_NO_CONVERGENCE per approach whose lane flows did not converge.
     std::vector<ValidationIssue> advisories;

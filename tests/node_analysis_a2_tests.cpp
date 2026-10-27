@@ -1,6 +1,7 @@
 // M13 A2 (docs/reference/NODE_ANALYSIS.md §11, D373): shared lane groups (Ch. 31 §2), protected.
-// Rows NA9, NA10, NA13 and NA14; every expected value is worked by hand from the cited equation.
+// Rows NA9 to NA11, NA13 and NA14; every expected value is worked by hand from the cited equation.
 #include "test.hpp"
+#include "../src/analysis/critical.hpp"
 #include "../src/analysis/lane_flow.hpp"
 #include "../src/analysis/signalised.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
@@ -12,6 +13,7 @@
 #include "../src/project/node_analysis_run.hpp"
 #include <cmath>
 #include <fstream>
+#include <map>
 
 using namespace multra;
 namespace {
@@ -125,6 +127,44 @@ TEST(nodeanalysis, na10_shared_saturation_and_polygon) { // NA10: Eqs. 31-61, 31
     }
     test::near(area / (q * (red + green)), shared.uniformDelay, 1e-3);
 }
+TEST(nodeanalysis, na11_critical_ratio) { // NA11: Eqs. 19-30, 19-31 over a non-overlapping chain (§11)
+    // (a) Four stages tiling C = 120 s, 25 s of green each: L = 120 - 100 = 20 s and
+    // Xc = 120/100 x (0.20 + 0.15 + 0.25 + 0.10) = 0.84, as HCM's critical path.
+    const auto tiled = criticalRatio({{0, 25, 25, 0.20}, {30, 25, 25, 0.15}, {60, 25, 25, 0.25}, {90, 25, 25, 0.10}}, 120);
+    CHECK(tiled && tiled->chain.size() == 4);
+    test::near(tiled->flowRatio, 0.70, 1e-12); test::near(tiled->lostTime, 20, 1e-12); test::near(tiled->ratio, 0.84, 1e-12);
+    // (b) A overlaps B and C, which follow each other: B + C + D (0.5) beats A + D (0.4).
+    const auto chain = criticalRatio({{0, 50, 50, 0.30}, {0, 30, 30, 0.20}, {30, 20, 20, 0.20}, {50, 50, 50, 0.10}}, 100);
+    CHECK(chain && chain->chain.size() == 3 && std::find(chain->chain.begin(), chain->chain.end(), 0u) == chain->chain.end());
+    test::near(chain->flowRatio, 0.5, 1e-12); test::near(chain->ratio, 0.5, 1e-12);
+    // A green wrapping the cycle end still blocks what it overlaps; equal Σy takes the smaller Σg.
+    const auto wrap = criticalRatio({{90, 20, 20, 0.30}, {0, 5, 5, 0.40}, {20, 30, 30, 0.30}}, 100);
+    CHECK(wrap && wrap->chain.size() == 2);
+    test::near(wrap->flowRatio, 0.7, 1e-12); test::near(wrap->ratio, 100.0 / 35 * 0.7, 1e-12);
+    const auto tie = criticalRatio({{0, 40, 40, 0.3}, {0, 20, 20, 0.3}}, 100);
+    CHECK(tie && tie->chain == std::vector<std::size_t>{1});
+    CHECK(!criticalRatio({}, 100));
+    // (c) The four-leg: split phasing, so the chain takes each approach's largest y once.
+    auto d = fourLeg();
+    setNodeAnalysis(d, d.network.nodes.front().id, volumes(150, 400, 100));
+    auto run = runNodeAnalysis(d, test::root() / "data");
+    const auto& n = run.nodes.front();
+    CHECK(n.critical && n.critical->chain.size() == 4);
+    std::map<std::string, double> largest; double green = 0;
+    for (const auto& g : n.groups) largest[g.group.inLink] = std::max(largest[g.group.inLink], g.flowRate / (g.group.lanes * g.result->saturation));
+    for (const auto i : n.critical->chain) green += n.groups[i].group.effectiveGreen;
+    double sum = 0;
+    for (const auto& [link, y] : largest) sum += y;
+    test::near(green, 100, 1e-9); // 30 + 30 + 20 + 20 s of the 120 s cycle
+    test::near(n.critical->ratio, 120 / green * sum, 1e-12);
+    CHECK(nodeAnalysisJson(run)["nodes"][0]["critical"]["laneGroups"].size() == 4);
+    // A turn left out: no Xc, NODE_ANALYSIS_PARTIAL.
+    auto a = volumes(150, 400, 100);
+    a.turns.erase(a.turns.begin());
+    setNodeAnalysis(d, d.network.nodes.front().id, a);
+    run = runNodeAnalysis(d, test::root() / "data");
+    CHECK(!run.nodes.front().critical && advised(run.nodes.front().advisories, "NODE_ANALYSIS_PARTIAL"));
+}
 TEST(nodeanalysis, na13_exhibit_19_41) { // NA13: Exhibit 19-41, PDF p. 1570-1571 (§11)
     struct Cell { double greenRatio; int lanes; double bound; double exhibit; std::optional<double> pinned; };
     // LOS B-E bounds (Exhibit 19-8); a pinned cell is one of §11's seven exceptions, at its computed value.
@@ -194,7 +234,7 @@ TEST(nodeanalysis, na_run_on_the_four_leg) { // A2 end to end on the shipped fou
     setNodeAnalysis(d, d.network.nodes.front().id, volumes(150, 400, 100));
     const auto run = runNodeAnalysis(d, test::root() / "data");
     const auto& n = run.nodes.front();
-    CHECK(n.groups.size() == 12 && n.approaches.size() == 4 && n.advisories.empty());
+    CHECK(n.groups.size() == 12 && n.approaches.size() == 4 && n.advisories.empty() && n.critical);
     test::near(n.peakHourFactor, 0.92, 0); // 2,600 veh/h entering (Exhibit 19-11)
     for (const auto& g : n.groups) {
         CHECK(!g.issue && g.result && g.los);
