@@ -26,6 +26,7 @@
 #include "../model/network/diagnostics.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
+#include <optional>
 #include <set>
 #include <limits>
 
@@ -320,8 +321,8 @@ bool anyDocumentId(const ProjectDocument& d, bool includeMacroRuns, const Match&
         anyObjectId(d.definition->signalPrograms, match) || anyObjectId(d.definition->signalControllers, match) ||
         anyObjectId(d.definition->routingDecisions, match));
 }
-bool allocatedIdExists(const ProjectDocument& d, const std::string& id) {
-    const auto match = [&](const std::string& used) { return used == id; };
+template<class Match>
+bool anyAllocatedId(const ProjectDocument& d, const Match& match) {
     return anyDocumentId(d, true, match) || anyObjectId(d.zones.zones, match) ||
         anyObjectId(d.zones.zoneConnectors, match) || anyObjectId(d.zones.odMatrices, match) ||
         anyObjectId(d.zones.parkingLots, match) || anyObjectId(d.zones.studyPeriods, match) ||
@@ -334,10 +335,16 @@ std::set<std::string> documentIds(const ProjectDocument& d, bool includeMacroRun
     return used;
 }
 std::string allocateId(ProjectDocument& d, const std::string& prefix) {
+    // The usual first candidate is free: one scan, no set. A file whose nextId trails its ids
+    // collides repeatedly, so build the set once rather than rescanning per candidate.
+    std::optional<std::set<std::string>> used;
     for (;;) {
         if (d.nextId >= std::numeric_limits<std::uint64_t>::max() - 1) throw std::invalid_argument("EDIT_ID_LIMIT");
         auto id = prefix + "-" + std::to_string(d.nextId++);
-        if (!allocatedIdExists(d, id)) return id;
+        if (used) { if (!used->contains(id)) return id; continue; }
+        if (!anyAllocatedId(d, [&](const std::string& existing) { return existing == id; })) return id;
+        used.emplace();
+        anyAllocatedId(d, [&](const std::string& existing) { used->insert(existing); return false; });
     }
 }
 }

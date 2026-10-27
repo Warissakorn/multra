@@ -32,7 +32,7 @@ for w, name in ((400, "Regular"), (600, "SemiBold")):
     # nameID 16/17 are removed and nameID 2 is the weight name.
     family = "MULTRA Sans Thai"
     names = {1: family, 3: f"{family} {name}", 4: f"{family} {name}",
-             6: f"MULTRASansThai-{name}", 16: family}
+             6: f"MULTRASansThai-{name}"}
     for record in f["name"].names:
         if record.nameID in names:
             record.string = names[record.nameID].encode(record.getEncoding())

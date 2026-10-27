@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <span>
+#include <string_view>
 
 namespace multra {
 namespace {
@@ -29,6 +30,11 @@ constexpr Column routes[]={
 constexpr Column decisions[]={
     {"id","/id"},{"name","/name"},{"linkId","/linkId"},{"position_m","/position"},
     {"routes","/routes"},{"intervals","/intervals"},{"typeRules","/typeRules"}};
+// Authored text opens in spreadsheets; a leading formula character would run as a formula there.
+std::string spreadsheetText(std::string text) {
+    if(!text.empty() && std::string_view("=+-@\t\r").find(text.front())!=std::string_view::npos)text.insert(0,1,'\'');
+    return text;
+}
 std::span<const Column> columns(ObjectTable table) {
     switch(table) {
     case ObjectTable::links:return links;
@@ -84,7 +90,7 @@ std::string objectTableCsv(const ProjectDocument& d,ObjectTable table) {
         const Json::json_pointer path(fields[i].path);
         if(row.contains(path) && !row.at(path).is_null()) {
             const auto& value=row.at(path);
-            out+=value.is_string()?csvQuoted(value.get<std::string>()):
+            out+=value.is_string()?csvQuoted(spreadsheetText(value.get<std::string>())):
                 value.is_structured()?csvQuoted(value.dump()):value.dump();
         }
         endCell(i);

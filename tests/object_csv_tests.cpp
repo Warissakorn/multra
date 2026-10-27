@@ -85,3 +85,13 @@ TEST(project, object_csv_precision_is_independent_of_global_numeric_locale) {
     try{actual=objectTableCsv(d,ObjectTable::links);}catch(...){std::locale::global(previous);throw;}
     std::locale::global(previous);CHECK(actual==expected);
 }
+TEST(project, object_csv_neutralises_leading_spreadsheet_formula_characters) {
+    auto d=fixture();
+    for(const std::string text:{"=HYPERLINK(\"x\")","+1","-2","@SUM(A1)","\tx","\rx"}) {
+        d.network.links[0].name=text;
+        CHECK(firstRow(objectTableCsv(d,ObjectTable::links)).at("name")=="'"+text);
+    }
+    d.network.links[0].name="ถนน = 1";d.network.links[0].laneOffset=-1.5;
+    const auto row=firstRow(objectTableCsv(d,ObjectTable::links));
+    CHECK(row.at("name")=="ถนน = 1");CHECK(row.at("laneOffset_m")=="-1.5"); // only leading text; numbers stay numbers
+}

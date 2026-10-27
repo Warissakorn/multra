@@ -16,6 +16,9 @@ no direct-write fallback. The open project and this window's recovery path are p
   arrays/objects are compact JSON inside quoted CSV cells. A CSV reader must parse quoting
   before passing those cells to a JSON reader. This preserves lane, geometry, period and matrix
   order without multiplying one object into many table rows.
+- A text cell starting with `=`, `+`, `-`, `@`, tab or carriage return gets a leading `'`, so a
+  spreadsheet shows it as text instead of running it as a formula (D368). Numbers and JSON cells
+  are unchanged; a reader recovering the authored text drops that one leading `'`.
 - Numbers use locale-independent JSON formatting with full stored precision, rather than the
   two-decimal result-report format. Missing/omitted values are empty cells; an authored empty
   string is a quoted empty string. Booleans are true when the writer emits a true-only flag.
@@ -52,6 +55,7 @@ implemented import format. Use Save for a complete project.
 | OC4 | Empty drafts and missing definitions export headers; global numeric locale does not change bytes |
 | OC5 | Desktop menu exports all five tables to Unicode paths without Run; cancellation and failed writes preserve document/save state |
 | OC6 | Project/recovery destinations are refused, existing bytes survive; English/Thai menus translate |
+| OC7 | Text with a leading formula character is exported with one leading `'`; numbers, JSON and mid-text characters are unchanged |
 
 Native serialization tests run headless; UI tests run offscreen on Linux and in the existing
 Windows native workflow. Platform observations must be reported separately. This slice does not

@@ -426,3 +426,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D366](RECORD.md#d366) — Private bundled UI font family prevents installed Noto Sans Thai collisions; glyphs/metrics/layout unchanged and workspace assertions retained.
 
 [D367](RECORD.md#d367) — M1.23.2 authoring-network PNG: full/view bounds, bounded dimensions, optional backgrounds/cached map credit, no live-state mutation and atomic writes.
+
+[D368](RECORD.md#d368) — Object table CSV prefixes `'` to text cells starting with a spreadsheet formula character; numbers and JSON cells unchanged.
