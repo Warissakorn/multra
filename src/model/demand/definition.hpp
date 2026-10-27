@@ -1,7 +1,7 @@
 #pragma once
 #include "../../core/types.hpp"
-#include "../../macro/graph.hpp"
-#include "../../meso/graph.hpp"
+#include "../../macro/settings.hpp"
+#include "../../meso/settings.hpp"
 #include <algorithm>
 #include <map>
 
