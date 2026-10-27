@@ -150,7 +150,7 @@ is read, never copied.
 | A0 | This contract; owner choices (§8); D370 |
 | A1 | Engine `src/analysis/` (pure, imports nothing). Ch. 19 Steps 1–9 for pretimed protected exclusive lane groups. Node fields and codec, CLI `--node-analysis`, rows NA1–NA8 |
 | A2 | Shared lane groups (Ch. 31 §2), protected only; critical v/c; back of queue and storage ratio (Ch. 31 §4); Exhibit 19-41. Contract §11 (D373), rows NA9–NA14 |
-| A3 | Permitted and protected-permitted turns: Ch. 31 §3's QAP procedure for selected lane groups, Steps 1–7 (PDF p. 2986–3015), with Ch. 31 §2's pedestrian and bicycle factors (from PDF p. 2975). Outline and questions §12 |
+| A3 | Permitted and protected-permitted turns: Ch. 31 §3's QAP procedure for selected lane groups, Steps 1–7 (PDF p. 2986–3015), with Ch. 31 §2's pedestrian and bicycle factors (from PDF p. 2975). Contract [NODE_ANALYSIS_A3](NODE_ANALYSIS_A3.md) (D376) |
 | A4 | Two-way stop control (Ch. 20) |
 | A5 | All-way stop (Ch. 21) |
 | A6 | Timing proposal: Webster cycle and splits (TP39), isolated |
@@ -410,7 +410,7 @@ conflicting movement is analysed instead of refused with `NODE_ANALYSIS_PERMITTE
 procedure for selected lane groups: permitted green, time before the first left-turn vehicle
 arrives (HCM's left turn is the far turn), permitted saturation flow, through-car equivalent, proportion of turns in a shared lane,
 lane group saturation flow and its QAP (Steps 1–7, PDF p. 2986–3015). Decided 1a–5a on the owner's
-delegation (D375, B25):
+delegation (D375, B25); contract [NODE_ANALYSIS_A3](NODE_ANALYSIS_A3.md) (D376):
 1. **Scope.** (a, recommended) Exclusive and shared lanes, far and kerb turns (HCM's left and right,
    on either driving side as §10 maps them), pretimed.
    (b) Exclusive lanes first, shared lanes later.
