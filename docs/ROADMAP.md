@@ -417,13 +417,8 @@ Design, decisions and slices: [`plans/MULTI_LEVEL_MODELLING.md`](plans/MULTI_LEV
 One authoring network and one demand compile to three views; each engine imports nothing; every
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
 passes. M8 is code complete (gate open); M9–M12 are not started; each slice begins with its
-contract and acceptance rows.
-
-**Equal weight, study-chain order (D378, 2026-10-27):** Micro, Meso and Macro carry equal weight
-([PROBLEM](PROBLEM.md) §3). Open level work follows the study chain: M10.2–M10.4 (generation,
-distribution, mode choice), then M9 (dynamic assignment), then M11.5 and the M11 gate, then M12.
-Aimsun Next is a reference for the integrated model (PROBLEM §2); a simultaneous hybrid meso–micro
-run is not booked (OWNER_SITTING B26). No gate or done-condition changes.
+contract and acceptance rows. **Equal weight (D378):** open level work follows the study chain, M10.2–M10.4,
+M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
 Roads with cross-section templates replace centreline-only Links; M12's stored cut becomes a
