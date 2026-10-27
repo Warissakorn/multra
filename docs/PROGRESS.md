@@ -6,6 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Module READMEs rewritten as maps, and checked
+
+- **Asked:** whether to document every program detail per component. Answer given: no; the
+  contracts already own behaviour, and a second detailed copy would drift. The gap was the module
+  READMEs, which read as decision histories; the owner approved rewriting them.
+- **Changed:** every `src/*/README.md` (and `src/model/demand/`, `src/model/control/`) now holds
+  purpose, dependency rule, a file table (file, what it holds, contract, used by), entry points and
+  tests, with no status or decision history. Substantive rules kept: eval's observer rules,
+  project's codec rules. Callers were derived from resolved `#include` paths. The survey found
+  `src/editor/` reading three shell and one commands header, now stated in its README.
+- **Check:** `multra-check-docs` fails when a header under `src/` is missing from its module's
+  README (nearest parent README for a folder without one), with positive and negative fixtures.
+- **Verified:** the docs, architecture and file-size checks pass; removing one row fails the docs
+  check as expected.
+
 ## 2026-10-27 — Analytical junction capacity, slice A2 (M13, D373, D374)
 
 - **Asked:** continue with A2, and finish it. The owner answered A2's three questions: all of it in
@@ -143,27 +158,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Qt font probe also disagrees with the bundled TTF's equal digit metrics. No test was weakened;
   the issue is recorded in NEXT. Windows/packaged acceptance is OWNER_SITTING G1. This slice
   closes no full M1.23, owner, runtime-model or scientific gate; other interchange formats remain.
-
-## 2026-10-27 — RoutingDecision structural schema and unchanged counted synchronization (D364)
-
-- **Changed:** shared metadata now covers RoutingDecision rows, route shares, periods and
-  type-rule numeric matrices. Their native decoder moves to routing_codec; the parser is now
-  222 lines. The composed partial schema/CLI uses 73 shared definitions and 16 version profiles.
-  The schema and document precheck share the position version floor. Envelope-only schema and
-  desktop observed discovery stay unchanged.
-- **Preserved:** always-strict decision/share/type keys, open period keys, nullable optionals
-  and contains-based routingDecisions/typeRules null refusal. The document-only pre-20 position
-  guard still rejects null before normal decoding; bare/standalone reads retain support.
-  Numeric-vector, matrix-row and matrix-cell diagnostics retain their original order/paths.
-  Counted synchronization stays after complete definition decoding; model validators retain
-  matrix dimensions, weights, time windows and destination/run-readiness checks.
-- **Verified:** 5,073 cases across schemas 1–57 retain byte-identical native outcomes/errors/
-  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
-  validate structurally and keep byte-identical canonical output. Five new regression tests
-  cover strict/open shapes, nulls, position guards, matrix errors/semantics and counted sync;
-  an independent review found no compatibility defect. Release headless build and all 161
-  CTest entries pass (16.23 s), including CLI, docs, architecture and file-size checks. Linux
-  headless evidence only; no engine algorithm, Qt/Windows, scientific or owner gate change.
 
 ## Older entries
 

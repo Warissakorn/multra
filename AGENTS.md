@@ -43,7 +43,8 @@ that still reads it.
 | Measurements, recipes, reverted ideas | [ENGINEERING_NOTES](docs/reference/ENGINEERING_NOTES.md) |
 | Toolchain setup | [BUILDING](docs/BUILDING.md) |
 
-READMEs are navigation, not status. Dated audits, plans and archive entries describe their own
+READMEs are navigation, not status. Each `src/*/README.md` is its module's map (purpose, dependency
+rule, one row per file with its contract and callers); `multra-check-docs` fails on an unmapped header. Dated audits, plans and archive entries describe their own
 date. A supplied target specification is not proof of implementation or validation. If sources
 disagree, inspect the applicable decision, code and tests; record the discrepancy rather than
 silently changing an owner gate. Index every new maintained doc in its folder README in the same
