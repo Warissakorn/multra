@@ -1,18 +1,44 @@
-Native QGraphicsView editor canvas. Reads a const ProjectDocument; gesture callbacks submit commands through the shell. Local previews never mutate the model. Pan, zoom, grid snap, selection, drawing, point/link dragging, insert/remove points, split picking and two-point measurement/calibration are implemented. Connector tools add lane-end picking, curve previews, connector selection and interior-point editing with locked endpoints.
+# src/editor
 
-OSM raster map paint and asynchronous tile client are in `map_*` and `canvas_map.cpp`; see [map contract](../../docs/reference/MAP_BACKGROUND.md).
-The screen HUD (scale bar, px/m, north from the map georeference) is `canvas_hud.cpp`, placed by `canvas_map.cpp` (D197).
-Run vehicles are drawn at lane centre + `Vehicle::lateral`, to the left of the body's heading, and a lane-change record flagged `lateral` is never slid (`canvas_run.cpp`, LATERAL §10, D203).
-`map_http_cache` owns response freshness, validation and Retry-After handling.
-`map_locations` validates the bundled country/region catalog for reference and navigation choices.
-Run vehicle silhouettes and interior decoration are `vehicle_shape.*`, painted by one reusable
-`RunVehicleItem` per vehicle. Appearance archetypes are data, separate from engine types; see
-[vehicle display contract](../../docs/reference/VEHICLE_POSE.md#plan-view-appearance-d333).
-`vehicle_color.hpp` resolves fixed or mixed body colours by stable vehicle/type ID, without
-using engine random state. User palettes are supplied by the shell's appearance preferences.
+The Qt network canvas (a native `QGraphicsView`) and everything it paints: the drawing, Run
+vehicles, the background map and the HUD. The canvas reads a const `ProjectDocument`; gesture
+callbacks hand edits to the shell, which submits them as commands. Local previews never mutate
+the model. Contracts: [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md),
+[EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md),
+[VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md),
+[MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md).
 
+## Dependencies
 
-`canvas_image` reuses an isolated authoring canvas for bounded PNG export, following the live
-level/wireframe/display settings without changing document, camera or selection. Embedded images
-are optional; live loaded map tiles paint without requests and retain attribution. See
-[network image contract](../../docs/reference/NETWORK_IMAGE.md).
+Qt Widgets and Network. Reads `src/model/`, `src/core/`, `src/geo/` and `src/project/` headers.
+Exceptions to the one-way shell → editor rule: `canvas_cursors.cpp` reads `../shell/editor_style.hpp`,
+`map_provider.cpp` and `map_locations.cpp` read `../shell/path.hpp`, and `canvas_connectors.cpp`
+reads `../commands/connector_commands.hpp` for its previews.
+
+## Files
+
+| File | Holds | Contract | Used by |
+|---|---|---|---|
+| `canvas.*` | `EditorCanvas`: pan, zoom, grid snap, selection, drawing, dragging, points, split picking, measurement and calibration, Connector tools. Split by concern into `canvas_*.cpp`: `input`, `select`, `spatial`, `cache`, `cursors`, `feedback`, `lanes`, `connectors`, `conflicts`, `heads`, `counters`, `sections`, `decisions`, `demand`, `zones`, `roads`, `rotation`, `display`, `map`, `run` (Run vehicles at lane centre + `Vehicle::lateral`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md), [VISSIM_PARITY](../../docs/audits/VISSIM_PARITY.md) | shell, tools |
+| `canvas_style.*` | Canvas colours as functions (built after `QApplication`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) | shell |
+| `ui_design_tokens.*` | The only place a hex colour literal may appear; read back by `QPalette` role | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) | shell |
+| `canvas_hud.*` | Screen HUD: scale bar, zoom in px/m, north arrow when the georeference gives one; transparent to the mouse | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | this folder |
+| `canvas_image.*` | Bounded PNG export from an isolated authoring canvas (max 8192 px per edge, 32 Mpx), following the live display settings | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) | shell |
+| `road_crossbar.*` | A Run signal state's shape at a station, readable without hue | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) | this folder |
+| `vehicle_pose.*` | Display-only pose from the front-bumper station on the whole route | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) | this folder |
+| `rear_axle_pose.*` | Rear-axle reference for a prescribed front-bumper track, no lateral slip | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) | this folder |
+| `lane_change_pose.*` | A lane change's display journey, including overlapping changes and settling | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md), [LANE_CHANGE_DURATION](../../docs/reference/LANE_CHANGE_DURATION.md) | this folder |
+| `vehicle_shape.*` | Plan-view silhouettes and interior decoration, separate from the solid hit shape | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md#plan-view-appearance-d333) | this folder |
+| `run_vehicle_item.*` | `RunVehicleItem`: one reusable scene item per Run vehicle | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) | this folder |
+| `vehicle_color.hpp` | Fixed or mixed body colours by stable vehicle or type id, never from engine random state | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) | this folder |
+| `map_provider.*` | Tile providers loaded from data, with URL template and attribution | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | shell |
+| `map_tile_client.*` | Asynchronous tile requests; callbacks on the owning UI thread | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | this folder |
+| `map_http_cache.*` | Response freshness, validation and Retry-After | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | this folder |
+| `map_layer.*` | `MapLayer`: load state, tile meshes (`map_mesh.cpp`) and painting; hidden or unavailable layers make no requests | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | shell |
+| `map_locations.*` | The bundled country and region catalog for choosing a reference; not boundaries | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | shell |
+
+## Tests
+
+The Qt `tests/*_ui_tests.cpp` executables, each registered in `src/shell/CMakeLists.txt`;
+`tests/map_*_tests.cpp`; and the pose tests `tests/vehicle_pose_tests.cpp`,
+`tests/rear_axle_pose_tests.cpp`, `tests/lane_change_pose_tests.cpp`.
