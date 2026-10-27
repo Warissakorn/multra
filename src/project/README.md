@@ -88,6 +88,7 @@ keeps its schema and bytes.
 | `side_files.*` | The `<project>.macro.json` and `<project>.meso.json` side files | [STUDY_AREA §8, §9](../../docs/reference/STUDY_AREA.md) |
 | `export_marking.*` | Program-drawn objects a study-area run rests on, and the marking every export carries | [STUDY_AREA §8, §10, §11](../../docs/reference/STUDY_AREA.md) |
 | `node_analysis_run.*` | M13: HCM on every Node that carries `analysis`; `node_analysis_output.cpp` writes the JSON and CSV | [NODE_ANALYSIS](../../docs/reference/NODE_ANALYSIS.md) |
+| `node_analysis_permitted.*` | M13 A3: one permitted or protected-permitted far-turn lane group (`analysePermitted`), the shared lane's Eq. 31-59 share for lane flows, and a protected lane group's queue service time g_s | [NODE_ANALYSIS_A3](../../docs/reference/NODE_ANALYSIS_A3.md) |
 | `object_csv.*` | Five authored object tables as CSV (UTF-8 BOM, CRLF, full precision, nested JSON cells); no compilation | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) |
 
 ## Codec rules

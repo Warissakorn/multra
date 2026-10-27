@@ -31,9 +31,12 @@ struct SignalisedLaneGroup {
     // A2: a shared lane group's s/s_th from Ch. 31 §2 (lane_flow.hpp). It replaces fLT and fRT, and
     // fLU is 1 for one shared lane (PDF p. 1469).
     std::optional<double> sharedShare;
+    // A3: f_s for the through lanes beside a shared far-turn lane whose far turn is permitted (0.91,
+    // Eq. 31-62, PDF p. 2959); 1 otherwise. It multiplies an exclusive lane group's saturation flow.
+    double throughFactor{1};
 };
 // The factors of Eq. 19-8 (PDF p. 1465) that A1 computes; fLpb, fRpb, fwz, fms and fsp are 1.
-// fShared is a shared lane group's s/s_th (A2), 1 otherwise.
+// fShared is a shared lane group's s/s_th (A2), or the through lanes' f_s (A3), 1 otherwise.
 struct SaturationFactors {
     double fw{1}, fHVg{1}, fp{1}, fbb{1}, fa{1}, fLU{1}, fLT{1}, fRT{1}, fShared{1};
     bool operator==(const SaturationFactors&) const = default;

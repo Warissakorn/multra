@@ -4,6 +4,7 @@
 #include "../model/demand/node_analysis_compile.hpp"
 #include "../analysis/critical.hpp"
 #include "../analysis/queue.hpp"
+#include "node_analysis_permitted.hpp"
 #include <array>
 #include <filesystem>
 #include <nlohmann/json.hpp>
@@ -27,6 +28,11 @@ struct AnalysedLaneGroup {
     // Back of queue (Ch. 31 §4) with its storage ratios, when the approach states a speed limit.
     std::optional<BackOfQueue> queue;
     std::optional<double> storageRatio, storageRatio95;
+    // A3: a permitted or protected-permitted far-turn lane group's terms (NODE_ANALYSIS_A3); its result
+    // above is the same one. g_s, the queue service time from the start of its effective green (s), feeds
+    // the opposing queue G_q2 of the far turns it opposes.
+    std::optional<PermittedLaneGroupResult> permitted;
+    std::optional<double> serviceTime;
 };
 struct AnalysedApproach { std::string inLink, name; double flow{}; std::optional<double> delay; std::optional<char> los; };
 struct AnalysedNode {

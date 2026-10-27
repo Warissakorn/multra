@@ -15,8 +15,9 @@ const Connector* connectorOf(const Network& n, const std::string& id) {
     const auto c = std::find_if(n.connectors.begin(), n.connectors.end(), [&](const auto& x) { return x.id == id; });
     return c == n.connectors.end() ? nullptr : &*c;
 }
-// One green interval of a program in simulation time: [start, start + green) modulo the cycle.
-struct Green { double start{}, green{}, cycle{}; bool single{}; };
+// A program's green in simulation time: its runs [start, start + length) modulo the cycle; `start` and
+// `green` are the first run's, and `single` means exactly one run.
+struct Green { double start{}, green{}, cycle{}; bool single{}; std::vector<std::pair<double, double>> runs; };
 Green greenOf(const SignalProgram& p) {
     double cycle = 0;
     for (const auto& phase : p.phases) cycle += phase.duration;
@@ -36,17 +37,72 @@ Green greenOf(const SignalProgram& p) {
         runs.back().second += runs.front().second;
         runs.erase(runs.begin());
     }
-    if (runs.size() != 1) return g;
-    // The colour at time t is the phase at (t + offset) mod C, so the run starts at its position - offset.
-    g.start = std::fmod(std::fmod(runs.front().first - p.offset, cycle) + cycle, cycle);
-    g.green = runs.front().second;
-    g.single = true;
+    // The colour at time t is the phase at (t + offset) mod C, so a run starts at its position - offset.
+    for (const auto& [first, length] : runs) g.runs.push_back({std::fmod(std::fmod(first - p.offset, cycle) + cycle, cycle), length});
+    if (g.runs.empty()) return g;
+    g.start = g.runs.front().first;
+    g.green = g.runs.front().second;
+    g.single = g.runs.size() == 1;
     return g;
 }
 bool overlap(const Green& a, const Green& b) {
-    const auto inside = [](double t, const Green& g) { return std::fmod(t - g.start + g.cycle, g.cycle) < g.green - 1e-9; };
-    return inside(a.start, b) || inside(b.start, a);
+    const auto inside = [&](double t, double start, double length) { return std::fmod(t - start + a.cycle, a.cycle) < length - 1e-9; };
+    for (const auto& [as, al] : a.runs)
+        for (const auto& [bs, bl] : b.runs)
+            if (inside(as, bs, bl) || inside(bs, as, al)) return true;
+    return false;
 }
+// Whether `g` is green at time t.
+bool greenAt(const Green& g, double t) {
+    for (const auto& [s, l] : g.runs) if (std::fmod(std::fmod(t - s, g.cycle) + g.cycle, g.cycle) < l - 1e-9) return true;
+    return false;
+}
+// NODE_ANALYSIS_A3 §1-§2: a far turn's permitted window inside the opposing green `o` (one run) and its
+// protected part, read from o's start round one cycle in 0.01 s steps (far finer than any program);
+// none when the window or the protected part is not one interval.
+std::optional<PermittedTiming> permittedTiming(const Green& subject, const Green& o) {
+    const double c = subject.cycle, os = o.runs.front().first, ol = o.runs.front().second;
+    constexpr double step = 0.01;
+    const int n = static_cast<int>(std::lround(c / step));
+    std::vector<int> kind(static_cast<std::size_t>(n)); // 0 red, 1 protected, 2 permitted
+    for (int i = 0; i < n; ++i)
+        if (greenAt(subject, os + (i + 0.5) * step)) kind[static_cast<std::size_t>(i)] = (i + 0.5) * step < ol ? 2 : 1;
+    const auto runsOf = [&](int k) { // [first, count) around the circle
+        std::vector<std::pair<int, int>> out;
+        for (int i = 0; i < n; ++i) {
+            if (kind[static_cast<std::size_t>(i)] != k) continue;
+            if (!out.empty() && out.back().first + out.back().second == i) ++out.back().second; else out.push_back({i, 1});
+        }
+        if (out.size() > 1 && out.front().first == 0 && out.back().first + out.back().second == n) {
+            out.back().second += out.front().second; out.erase(out.begin());
+        }
+        return out;
+    };
+    const auto window = runsOf(2), guarded = runsOf(1);
+    if (window.size() != 1 || guarded.size() > 1) return std::nullopt;
+    const auto at = [&](int i) { return kind[static_cast<std::size_t>(((i % n) + n) % n)]; };
+    PermittedTiming p;
+    const auto [w, wl] = window.front();
+    p.windowStart = w * step;
+    p.window = wl * step;
+    p.opposingStart = os;
+    p.opposingGreen = ol;
+    p.opensDisplay = at(w - 1) == 0;
+    p.endsDisplay = at(w + wl) == 0;
+    if (!guarded.empty()) {
+        const auto [g, gl] = guarded.front();
+        p.protectedGreen = gl * step;
+        p.protectedStart = std::fmod(os + g * step, c);
+        // Leading when, going round from the protected part, the window comes before the protected part's next start.
+        const int lead = ((w - (g + gl)) % n + n) % n, lag = ((g - (w + wl)) % n + n) % n;
+        p.leading = lead <= lag;
+        p.gap = p.leading ? lead * step : 0;
+        p.protectedOpens = at(g - 1) == 0;
+        p.protectedEnds = at(g + gl) == 0;
+    }
+    return p;
+}
+
 }
 NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, const std::vector<SignalController>& controllers,
                                         const std::vector<SignalProgram>& programs) {
@@ -93,21 +149,13 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         const auto ids = turnSignalPrograms(n, m, turns[t]);
         if (ids.empty()) { code[t] = "NODE_ANALYSIS_UNSIGNALISED"; continue; }
         const auto g = greens.find(*ids.begin());
-        if (ids.size() != 1 || g == greens.end() || !g->second.single || (cycle && std::abs(*cycle - g->second.cycle) > 1e-9)) {
+        if (ids.size() != 1 || g == greens.end() || g->second.runs.empty() || g->second.runs.size() > 2 ||
+            (cycle && std::abs(*cycle - g->second.cycle) > 1e-9)) {
             code[t] = "NODE_ANALYSIS_SIGNAL"; continue;
         }
         cycle = g->second.cycle;
         program[t] = *ids.begin();
     }
-    std::vector<bool> permitted(turns.size());
-    for (const auto& c : m.conflicts) {
-        if (c.kind == ConflictKind::branching || program[c.first].empty() || program[c.second].empty()) continue;
-        if (!overlap(greens[program[c.first]], greens[program[c.second]])) continue;
-        if (c.priority != ConflictPriority::secondYields) permitted[c.first] = true;
-        if (c.priority != ConflictPriority::firstYields) permitted[c.second] = true;
-    }
-    for (std::size_t t = 0; t < turns.size(); ++t)
-        if (code[t].empty() && permitted[t]) code[t] = "NODE_ANALYSIS_PERMITTED";
     for (std::size_t t = 0; t < turns.size(); ++t) {
         const auto& inLink = *linkOf(n, m.inLegs[turns[t].in].linkId);
         const auto& outLink = *linkOf(n, m.outLegs[turns[t].out].linkId);
@@ -118,6 +166,40 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         out.movements.push_back(std::abs(sweep) < kThrough ? LaneGroupMovement::through
                                 : sweep > 0 ? LaneGroupMovement::kerbTurn : LaneGroupMovement::farTurn);
     }
+    // The turns each turn yields to while both are green (both, when the priority is undetermined).
+    std::vector<std::set<std::size_t>> yields(turns.size());
+    for (const auto& c : m.conflicts) {
+        if (c.kind == ConflictKind::branching || program[c.first].empty() || program[c.second].empty()) continue;
+        if (!overlap(greens[program[c.first]], greens[program[c.second]])) continue;
+        if (c.priority != ConflictPriority::secondYields) yields[c.first].insert(c.second);
+        if (c.priority != ConflictPriority::firstYields) yields[c.second].insert(c.first);
+    }
+    // A3 (NODE_ANALYSIS_A3 §1): which yielding turns are analysed, and each far turn's permitted window.
+    std::vector<std::optional<PermittedTiming>> timing(turns.size());
+    std::vector<bool> kerbYield(turns.size());
+    for (std::size_t t = 0; t < turns.size(); ++t) {
+        if (!code[t].empty()) continue;
+        const bool twoRuns = !greens[program[t]].single;
+        const auto movement = out.movements[t];
+        if (yields[t].empty() || movement == LaneGroupMovement::kerbTurn) {
+            if (twoRuns) code[t] = "NODE_ANALYSIS_SIGNAL";
+            else if (!yields[t].empty()) kerbYield[t] = true;
+            continue;
+        }
+        if (movement == LaneGroupMovement::through) { code[t] = "NODE_ANALYSIS_PERMITTED"; continue; }
+        const auto first = *yields[t].begin();
+        const bool opposed = std::all_of(yields[t].begin(), yields[t].end(), [&](auto u) {
+            return out.movements[u] != LaneGroupMovement::farTurn && turns[u].in == turns[first].in && turns[u].in != turns[t].in;
+        });
+        if (!opposed) { code[t] = "NODE_ANALYSIS_PERMITTED"; continue; }
+        const auto through = std::find_if(yields[t].begin(), yields[t].end(), [&](auto u) { return out.movements[u] == LaneGroupMovement::through; });
+        const auto& o = greens[program[through != yields[t].end() ? *through : first]];
+        auto p = o.single ? permittedTiming(greens[program[t]], o) : std::nullopt;
+        if (!p) { code[t] = "NODE_ANALYSIS_SIGNAL"; continue; }
+        p->opposing.assign(yields[t].begin(), yields[t].end());
+        p->opposingLink = m.inLegs[turns[first].in].linkId;
+        timing[t] = std::move(p);
+    }
     const auto group = [&](std::vector<std::size_t> members, const std::vector<int>& laneSet, LaneGroupKind kind, LaneGroupMovement movement, bool coupled) {
         const auto& inLink = *linkOf(n, m.inLegs[turns[members.front()].in].linkId);
         std::string name;
@@ -127,9 +209,13 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         const auto first = members.front();
         const auto id = program[first];
         const auto& g = greens[id];
+        double shown = 0;
+        for (const auto& run : g.runs) shown += run.second;
+        std::optional<PermittedTiming> permitted;
+        for (const auto t : members) if (timing[t]) permitted = timing[t];
         out.groups.push_back({std::move(members), name, inLink.id, id, kind, movement, coupled,
-                              static_cast<int>(laneSet.size()), width / static_cast<double>(laneSet.size()), g.green,
-                              g.green - kStartUpLostTime + kGreenExtension, g.cycle, g.start, stopLine[first]});
+                              static_cast<int>(laneSet.size()), width / static_cast<double>(laneSet.size()), shown,
+                              shown - kStartUpLostTime + kGreenExtension, g.cycle, g.start, stopLine[first], std::move(permitted)});
     };
     for (std::size_t leg = 0; leg < m.inLegs.size(); ++leg) {
         std::vector<std::size_t> mine;
@@ -178,6 +264,16 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
                             (count[at(LaneGroupKind::leftRight)] > 0 && count[at(LaneGroupKind::sharedLeft)] + count[at(LaneGroupKind::through)] + count[at(LaneGroupKind::sharedRight)] > 0) ||
                             (count[at(LaneGroupKind::all)] > 0 && runs.size() > 1)))
             why = "NODE_ANALYSIS_LANE_LAYOUT";
+        // A permitted far turn is analysed in exclusive lanes that do not trade (no shared far lane), or in
+        // one shared far+through lane without an exclusive far lane (NODE_ANALYSIS_A3 §1).
+        const bool farShared = count[at(LaneGroupKind::sharedLeft)] + count[at(LaneGroupKind::leftRight)] + count[at(LaneGroupKind::all)] > 0;
+        if (why.empty())
+            for (const auto& r : runs) {
+                if (std::none_of(r.first.begin(), r.first.end(), [&](auto t) { return timing[t].has_value(); })) continue;
+                const auto kind = kindOf(r.first);
+                if (!(kind == LaneGroupKind::left && !farShared) && !(kind == LaneGroupKind::sharedLeft && count[at(LaneGroupKind::left)] == 0))
+                    why = "NODE_ANALYSIS_PERMITTED_LAYOUT";
+            }
         if (!why.empty()) {
             for (const auto t : mine) if (code[t].empty()) code[t] = why;
             continue;
@@ -190,7 +286,10 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         }
     }
     // Advisories in turn order, after every approach has spread its refusals.
-    for (std::size_t t = 0; t < turns.size(); ++t) if (!code[t].empty()) advise(code[t], turns[t].name);
+    for (std::size_t t = 0; t < turns.size(); ++t) {
+        if (!code[t].empty()) advise(code[t], turns[t].name);
+        else if (kerbYield[t]) advise("NODE_ANALYSIS_KERB_YIELD", turns[t].name);
+    }
     return out;
 }
 }

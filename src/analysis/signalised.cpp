@@ -46,6 +46,7 @@ SaturationFactors saturationFactors(const SignalisedLaneGroup& g) {
     // Eqs. 19-13 and 19-14 (PDF p. 1470): E_R = 1.18 and E_L = 1.05 for protected turns.
     if (g.movement == LaneGroupMovement::kerbTurn) f.fRT = 1 / 1.18;
     if (g.movement == LaneGroupMovement::farTurn) f.fLT = 1 / 1.05;
+    f.fShared = g.throughFactor;
     return f;
 }
 double progressionFactor(double p, double gc, double x) {

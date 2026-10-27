@@ -235,7 +235,7 @@ TEST(nodeanalysis, na14_shared_lane_refusals) { // NA14 (§11)
     CHECK(c.groups.size() == 12 && c.advisories.empty());
     for (const auto& g : c.groups) CHECK(g.coupled && g.cycle == 120);
     CHECK(std::count_if(c.groups.begin(), c.groups.end(), [](const auto& g) { return g.kind == LaneGroupKind::sharedRight && g.turns.size() == 2; }) == 4);
-    // A permitted far turn in a coupled approach refuses that whole approach (A3).
+    // A far turn yielding to the opposing through while both are green (A3 analyses it).
     for (auto& controller : d.definition->signalControllers)
         for (auto& group : controller.groups)
             if (group.number == 2) {
@@ -245,8 +245,12 @@ TEST(nodeanalysis, na14_shared_lane_refusals) { // NA14 (§11)
     addCrossingAreas(d, "connector-51", "connector-52", "connector-51", {3.0, 5.0});
     def = *d.definition;
     c = compileNodeAnalysis(d.network, 0, def.signalControllers, def.signalPrograms);
-    CHECK(std::count_if(c.advisories.begin(), c.advisories.end(), [](const auto& i) { return i.code == "NODE_ANALYSIS_PERMITTED"; }) == 3);
-    CHECK(c.groups.size() == 9 && std::none_of(c.groups.begin(), c.groups.end(), [](const auto& g) { return g.inLink == "link-4"; }));
+    // A3 (NODE_ANALYSIS_A3): the pocket's far turn now runs permitted in the opposing through's green.
+    CHECK(c.advisories.empty() && c.groups.size() == 12);
+    const auto pocket = std::find_if(c.groups.begin(), c.groups.end(), [](const auto& g) { return g.permitted.has_value(); });
+    CHECK(pocket != c.groups.end() && pocket->inLink == "link-4" && pocket->kind == LaneGroupKind::left);
+    CHECK(pocket->permitted->opposingLink == "link-16" && pocket->permitted->window == 30 && pocket->permitted->protectedGreen == 0);
+    CHECK(pocket->permitted->opensDisplay && pocket->permitted->endsDisplay);
     // A layout outside Exhibit 31-6: the far turn also leaves the through lanes (two shared lanes, sl and
     // a three-movement lane); every turn of that approach is refused, the others are analysed.
     d = fourLeg();

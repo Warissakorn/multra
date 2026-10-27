@@ -4,8 +4,16 @@
 #include "../src/analysis/permitted.hpp"
 #include "../src/analysis/qap.hpp"
 #include "../src/analysis/signalised.hpp"
+#include "../src/commands/node_analysis_commands.hpp"
+#include "../src/commands/node_commands.hpp"
+#include "../src/commands/right_of_way_commands.hpp"
+#include "../src/project/document.hpp"
+#include "../src/project/json.hpp"
+#include "../src/project/node_analysis_run.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <fstream>
 
 using namespace multra;
 
@@ -138,4 +146,87 @@ TEST(nodeanalysis, na18_shared_permitted_terms) {
     const double ssl = 0.7968120551652526 * 1800;
     test::near(sharedPermittedCapacity(40, ssl, 0.3, 100), 620.5046797189818, 1e-9);
     test::near(sharedPermittedCapacity(40, ssl, 0.3, 100, 10, 1650), 785.5046797189818, 1e-9);
+}
+
+namespace {
+// The shipped four-leg with signal group 2 given group 1's green and a crossing area between the West
+// pocket's far turn (connector-51) and the East through (connector-52), `yielding` giving way.
+ProjectDocument permittedFourLeg(const std::string& yielding, double eastStart = 0) {
+    std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json"); Json j; file >> j;
+    auto d = parseDocument(j);
+    putNode(d, {"", "Centre", {{-25, -25}, {25, -25}, {25, 25}, {-25, 25}}, false});
+    for (auto& controller : d.definition->signalControllers)
+        for (auto& group : controller.groups)
+            if (group.number == 2) {
+                const auto one = std::find_if(controller.groups.begin(), controller.groups.end(), [](const auto& g) { return g.number == 1; });
+                group.greenStart = one->greenStart + eastStart; group.greenEnd = one->greenEnd;
+            }
+    addCrossingAreas(d, "connector-51", "connector-52", yielding, {3.0, 5.0});
+    const std::vector<std::array<const char*, 4>> turns{{"link-4", "link-32", "link-20", "link-44"}, {"link-16", "link-44", "link-8", "link-32"},
+                                                        {"link-28", "link-20", "link-44", "link-8"}, {"link-40", "link-8", "link-32", "link-20"}};
+    NodeAnalysis a;
+    for (const auto& t : turns) {
+        a.approaches.push_back({t[0], 0, std::nullopt, 0, 50});
+        a.turns.push_back({t[0], t[1], 150, std::nullopt});
+        a.turns.push_back({t[0], t[2], 400, std::nullopt});
+        a.turns.push_back({t[0], t[3], 100, std::nullopt});
+    }
+    setNodeAnalysis(d, d.network.nodes.front().id, a);
+    return d;
+}
+bool advised(const std::vector<ValidationIssue>& list, const std::string& code) {
+    return std::any_of(list.begin(), list.end(), [&](const auto& i) { return i.code == code; });
+}
+}
+
+TEST(nodeanalysis, na19_permitted_far_turn_on_the_four_leg) {
+    // Hand check (worked independently, PR #200): PHF 0.92, C 120 s. The West pocket's far turn yields
+    // to the East through only, so v_o = 400/0.92 (Case 1 over the turns it yields to) and s_p =
+    // 968.8315 (Eq. 31-100). The East through (v 280.79, s 1855.54, g 30) clears in g_s = q r/(s - q) =
+    // 16.0475 s, so G_q2 = 18.0475, G_U = 30 - 18.0475 and g_u = G_U + 2 (Eqs. 31-94, 31-95, g_p 30).
+    // s_l = 1767.18 · 1.05 · s_p/1900 (Eq. 31-110), c = (g_u s_l + 7200)/120 (Eq. 31-119); the
+    // polygon (red 90, blocked 16.05 at 0 with two opposing lanes, g_u at s_l, 2 sneakers) gives d1.
+    const auto run = runNodeAnalysis(permittedFourLeg("connector-51"), test::root() / "data");
+    const auto& node = run.nodes.front();
+    CHECK(node.groups.size() == 12);
+    const auto far = std::find_if(node.groups.begin(), node.groups.end(), [](const auto& g) { return g.permitted.has_value(); });
+    CHECK(far != node.groups.end() && far->group.inLink == "link-4" && far->permitted->operation == "permitted");
+    test::near(far->permitted->permittedSaturation, 968.8315250430461, 1e-9);
+    test::near(far->permitted->green.unblocked, 13.952460266173187, 1e-6);
+    test::near(far->permitted->laneSaturation, 946.1608673570387, 1e-6);
+    test::near(far->result->capacity, 170.01059922672533, 1e-6);
+    test::near(far->result->uniformDelay, 55.29291655532239, 1e-6);
+    test::near(far->result->incrementalDelay, 59.00094107717402, 1e-6);
+    // Xc: its permitted interval's flow ratio uses Eq. 31-59's average (P_L 1, s_lt, E_L1, 2 sneakers).
+    CHECK(far->permitted->intervals.size() == 1);
+    test::near(far->permitted->intervals.front().flowRatio, 0.24737740482241516, 1e-6);
+    CHECK(node.critical.has_value());
+    // No queue for the permitted lane group yet (NODE_ANALYSIS_A3 §5); the others keep theirs.
+    CHECK(!far->queue && advised(node.advisories, "NODE_ANALYSIS_NO_QUEUE"));
+    CHECK(std::count_if(node.groups.begin(), node.groups.end(), [](const auto& g) { return g.queue.has_value(); }) == 11);
+    // Leading protected-permitted: East's green moved to 10-30 s, West's stays 0-30 s, so the far turn
+    // runs protected 0-10 s and permitted 10-30 s in one display (Exhibit 31-12's Lead-Lag form).
+    const auto lead = runNodeAnalysis(permittedFourLeg("connector-51", 10), test::root() / "data");
+    const auto pp = std::find_if(lead.nodes.front().groups.begin(), lead.nodes.front().groups.end(), [](const auto& g) { return g.permitted.has_value(); });
+    CHECK(pp != lead.nodes.front().groups.end() && pp->permitted->operation == "protected-permitted");
+    const auto& t = *pp->group.permitted;
+    test::near(t.window, 20, 1e-9);
+    test::near(t.protectedGreen, 10, 1e-9);
+    CHECK(t.leading && !t.opensDisplay && t.endsDisplay && t.protectedOpens && !t.protectedEnds);
+    // l_1,p 0 (continuing), e_p 2: g_p = 22; g_l = 10 - 2 = 8; Eq. 31-124 adds g_l s_lt/C to Eq. 31-119.
+    const auto& p = *pp->permitted;
+    test::near(p.green.startupLost, 0, 1e-12);
+    test::near(p.green.effective, 22, 1e-9);
+    test::near(p.protectedGreen, 8, 1e-9);
+    test::near(pp->result->capacity, (8 * 1767.180952380952 + p.green.unblocked * p.laneSaturation + 7200) / 120, 1e-6);
+    CHECK(p.intervals.size() == 2);
+}
+
+TEST(nodeanalysis, na20_refusals_and_advisories) {
+    // A through that yields is not an HCM case: its coupled approach is refused (NODE_ANALYSIS_A3 §1).
+    const auto run = runNodeAnalysis(permittedFourLeg("connector-52"), test::root() / "data");
+    const auto& node = run.nodes.front();
+    CHECK(advised(node.advisories, "NODE_ANALYSIS_PERMITTED"));
+    CHECK(node.groups.size() == 9 && !node.critical);
+    CHECK(std::none_of(node.groups.begin(), node.groups.end(), [](const auto& g) { return g.group.inLink == "link-16"; }));
 }

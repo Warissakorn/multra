@@ -10,7 +10,7 @@ double laneChangeProbability(double approachFlowPerLane) {
     const double ratio = 2 * approachFlowPerLane / (3600 / kLaneChangeHeadway) - 1;
     return std::max(0.0, 1 - ratio * ratio);
 }
-LaneFlows approachLaneFlows(const ApproachDemand& v, const std::array<int, kLaneGroupKinds>& n) {
+LaneFlows approachLaneFlows(const ApproachDemand& v, const std::array<int, kLaneGroupKinds>& n, const PermittedSharedLeft& permitted) {
     LaneFlows out;
     for (int k = 0; k < kLaneGroupKinds; ++k) out.groups[k].lanes = n[k];
     const int nl = n[at(LaneGroupKind::left)], nsl = n[at(LaneGroupKind::sharedLeft)], nt = n[at(LaneGroupKind::through)];
@@ -54,9 +54,10 @@ LaneFlows approachLaneFlows(const ApproachDemand& v, const std::array<int, kLane
         const double pr = nsr > 0 && sr > 0 ? std::min(1.0, srRight / sr) : 0;
         const double lrl = nlr > 0 && lr > 0 ? std::min(1.0, lrLeft / lr) : 0, lrr = nlr > 0 && lr > 0 ? std::min(1.0, lrRight / lr) : 0;
         // Step E: Eq. 31-63 with P_R = 0 for a protected sl lane, Eq. 31-61, Eq. 31-62 with f_s = 1, Eq. 31-63.
-        g[at(LaneGroupKind::sharedLeft)].saturationShare = 1 / (1 + pl * (el - 1));
+        g[at(LaneGroupKind::sharedLeft)].saturationShare = permitted.share && nsl > 0 ? permitted.share(pl, slLeft, out.laneChange)
+                                                                                    : 1 / (1 + pl * (el - 1));
         g[at(LaneGroupKind::sharedRight)].saturationShare = 1 / (1 + pr * (er - 1));
-        g[at(LaneGroupKind::through)].saturationShare = 1;
+        g[at(LaneGroupKind::through)].saturationShare = permitted.share && nsl == 1 ? 0.91 : 1; // f_s, Eq. 31-62
         g[at(LaneGroupKind::leftRight)].saturationShare = 1 / (1 + lrl * (el - 1) + lrr * (er - 1));
         if (!shared) { out.converged = true; break; }
         // Step F, Eq. 31-64, over the lane groups that trade.

@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <functional>
 
 // M13 A2 (docs/reference/NODE_ANALYSIS.md §11, D373): HCM 7 Ch. 31 §2's lane group flow rate on a
 // multiple-lane approach with a shared lane (Eqs. 31-46 to 31-66, PDF p. 2949-2960), protected
@@ -34,5 +35,10 @@ double laneChangeProbability(double approachFlowPerLane);
 // lanes. Lane groups that trade vehicles are the through-serving ones plus the exclusive lanes of a
 // turn that also uses a shared lane; a turn without a shared lane keeps all its flow (Eq. 31-55 with
 // v_sl,lt = 0). `converged` is false after 100 iterations.
-LaneFlows approachLaneFlows(const ApproachDemand&, const std::array<int, kLaneGroupKinds>& lanes);
+// A3 (NODE_ANALYSIS_A3 §3): a shared far-turn lane whose far turn is permitted takes its s/s_th from
+// `sharedLeftShare(P_L, v_sl,lt, P_lc)` (Eq. 31-59) in Step E, and the through lanes beside it f_s 0.91
+// (Eq. 31-62, PDF p. 2959). Without it every lane is protected, as in A2.
+struct PermittedSharedLeft { std::function<double(double farShare, double farFlow, double laneChange)> share; };
+LaneFlows approachLaneFlows(const ApproachDemand&, const std::array<int, kLaneGroupKinds>& lanes,
+                            const PermittedSharedLeft& permitted = {});
 }
