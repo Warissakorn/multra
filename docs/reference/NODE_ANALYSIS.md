@@ -150,7 +150,7 @@ is read, never copied.
 | A0 | This contract; owner choices (§8); D370 |
 | A1 | Engine `src/analysis/` (pure, imports nothing). Ch. 19 Steps 1–9 for pretimed protected exclusive lane groups. Node fields and codec, CLI `--node-analysis`, rows NA1–NA8 |
 | A2 | Shared lane groups (Ch. 31 §2), protected only; critical v/c; back of queue and storage ratio (Ch. 31 §4); Exhibit 19-41. Contract §11 (D373), rows NA9–NA14 |
-| A3 | Permitted and protected-permitted left turns (Ch. 31 §2) |
+| A3 | Permitted and protected-permitted turns: Ch. 31 §3's QAP procedure for selected lane groups, Steps 1–7 (PDF p. 2986–3015), with Ch. 31 §2's pedestrian and bicycle factors (from PDF p. 2975). Outline and questions §12 |
 | A4 | Two-way stop control (Ch. 20) |
 | A5 | All-way stop (Ch. 21) |
 | A6 | Timing proposal: Webster cycle and splits (TP39), isolated |
@@ -397,3 +397,48 @@ through lanes are now analysed.
   - Approaches 44.29 and 75.44 s; node 59.86 s (E).
   - Xc 0.726, over the four approaches' sr groups, with L 20 s.
 - **Rows:** NA9–NA14 pass in `tests/node_analysis_a2_tests.cpp`.
+
+## 12. Outlines of later slices
+
+Each later slice is outlined here with the questions its owner choices must settle. No formula,
+value or row is written until the slice's own contract, which follows the owner's answers and a
+reading of the formula images (BOOKS rule). Only the next slice's questions are put to the owner
+([OWNER_SITTING](../plans/OWNER_SITTING.md) B25 for A3); the others wait here.
+
+**A3: permitted and protected-permitted turns.** A turn that yields during its green to a
+conflicting movement is analysed instead of refused with `NODE_ANALYSIS_PERMITTED`, by Ch. 31 §3's
+procedure for selected lane groups: permitted green, time before the first left-turn vehicle
+arrives, permitted saturation flow, through-car equivalent, proportion of turns in a shared lane,
+lane group saturation flow and its QAP (Steps 1–7, PDF p. 2986–3015). Questions (B25):
+1. **Scope.** (a, recommended) Exclusive and shared lanes, left and right turns, pretimed.
+   (b) Exclusive lanes first, shared lanes later.
+2. **Recognising protected-permitted operation.** (a, recommended) Derived from the program and the
+   Node's conflicts: the part of a turn's green that overlaps the green of a movement it yields to
+   is permitted, the rest protected; no stored field. (b) A per-turn operation field.
+3. **Opposing flow.** (a, recommended) The movements the turn yields to, from Node membership's
+   conflicts. (b) Entered per approach.
+4. **Pedestrians and bicycles.** (a, recommended) Still none (fLpb = fRpb = 1), stated as a default.
+   (b) Ch. 31 §2's factors, with new pedestrian and bicycle volume inputs.
+5. **Acceptance.** Ch. 31 Example Problem 1 is actuated (A8). (a, recommended) Hand rows per
+   equation; Example Problem 1 stays the A3 + A8 case. (b) Also Example Problem 1 with its reported
+   average phase durations as pretimed inputs, labelled an approximation.
+
+**A4: two-way stop control (Ch. 20).** Capacity and delay of the minor movements at a Node whose
+control is Stop or give-way on the minor approaches. Questions: is the major street read from the
+Node's control or stored; are flared minor approaches and two-stage gap acceptance in or refused?
+
+**A5: all-way stop control (Ch. 21).** Questions: only the geometries the chapter supports, with
+the others refused; where the all-way control is read from.
+
+**A6: timing proposal (Webster, TP39), isolated.** Questions: is the proposed cycle and split
+written back as a new program (one Undo step) or only shown; where lost time per phase comes from.
+
+**A7: roundabouts (Ch. 22).** Needs merged Nodes (ROADS RD15). Questions: single-lane and two-lane
+entries only; how circulating flow is derived from the Node's turns.
+
+**A8: actuated control (Ch. 19 Step 8C, Ch. 31).** Questions: which controller and detector
+inputs are stored, and whether they reuse the Micro signal controller's fields. Corridor offsets
+(Ch. 16/18) stay a contract of their own.
+
+**A9: editor table and *Fill from model*.** Questions: where the table lives in the editor, and
+what provenance a filled volume shows.

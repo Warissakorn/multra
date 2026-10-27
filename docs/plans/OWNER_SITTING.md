@@ -58,6 +58,11 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Yperman (2007), or Boyles et al. as a citable secondary source for the LTM link model.
    **2026-10-22:** the owner supplied Yperman (2007) as a Markdown repository; the link model and the
    engine are in (D298). Boyles et al. are not needed. Only the host question remains, for later sources.
+25. **M13 A3's choices** (listed 2026-10-27). Read [NODE_ANALYSIS §12](../reference/NODE_ANALYSIS.md#12-outlines-of-later-slices)
+   A3 and answer its five questions by letter: (1) scope, (2) recognising protected-permitted
+   operation, (3) opposing flow, (4) pedestrians and bicycles, (5) acceptance; each lists (a, recommended)
+   first. A3 starts only when the owner asks; its contract and formulas follow these answers. Which
+   letters? *Owner:*
 Answered 2026-10-23: **B23**, owner: “เอาตามแนะนำ” (“as recommended”), [D315](../decisions/RECORD.md#d315):
 QM (c), M1-d with M1-b, M2-c with M2-b, not-blind cases as verification only, Boyles et al. 2025
 supplied as a Markdown repository or with `arxiv.org` allowed. Numbers are not reused.

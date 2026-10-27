@@ -6,6 +6,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Later M13 slices outlined; A3's choices put to the owner
+
+- **Asked:** whether contracts should be written ahead. Answer given and accepted ("ทำตามข้อเสนอ"):
+  a full contract only for the next slice; later slices get an outline and their open questions,
+  no formulas or values; questions known ahead go to OWNER_SITTING for one sitting.
+- **Changed:** NODE_ANALYSIS §12 outlines A3–A9 with their questions. A3's five (scope, recognising
+  protected-permitted operation, opposing flow, pedestrians and bicycles, acceptance) are
+  OWNER_SITTING B25. §7 now cites A3's real source, Ch. 31 §3 Steps 1–7 (PDF p. 2986–3015), not §2.
+  No D-row: nothing is decided, and A3 still starts only when the owner asks.
+
 ## 2026-10-27 — Module READMEs rewritten as maps, and checked
 
 - **Asked:** whether to document every program detail per component. Answer given: no; the
@@ -106,24 +116,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   decision changed.
 - **Not done:** the owner-sitting R4 (b) carve-out of the items listed more than 14 days ago is the
   owner's call, and was left as it is.
-
-## 2026-10-27 — Authored network PNG export (M1.23.2, D367)
-
-- **Changed:** File menu and command palette export the whole visible network or current view
-  at chosen pixel dimensions, with optional backgrounds and English/Thai controls. An isolated
-  canvas reuses authoring display/level/wireframe rendering at output scale, excluding grid,
-  selection, drafts and Run overlays. Whole-network output is independent of live camera zoom.
-- **Safety and scope:** bounded dimensions precede allocation; encoding precedes atomic file
-  replacement. Shared CSV/PNG destination protection preserves the current project/recovery.
-  Embedded images retain orientation/opacity. Online maps use only already-loaded tiles, with
-  attribution/URL in a footer and PNG metadata; export neither downloads nor moves the camera.
-- **Verified:** Release desktop application and four selected UI targets build; network-image-ui,
-  object-export-ui, workspace-ui and results-tabs-ui pass on Linux offscreen Qt 6.8.2. The PNG
-  suite also passes after adding camera-independent output coverage. Release headless build and
-  all 161 CTest entries pass (10.70 s); docs, file sizes and diff checks pass. Unicode paths,
-  cancellation, size/protected-file refusals, embedded image orientation and cached-map/no-new-
-  request behavior are covered. Packaged Windows/high-DPI appearance and owner acceptance
-  remain open, as do other M1.23 formats/workflow and the full milestone gate.
 
 ## 2026-10-27 — Pin the bundled UI font against installed-family collisions (D366)
 
