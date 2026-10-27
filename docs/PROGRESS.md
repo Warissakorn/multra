@@ -6,6 +6,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Measured optimization pass: graph-header fan-in, doc sizes
+
+- **Measured first** (Linux, 4 cores): the engine runs M2.6's hour in 0.40–0.45 s (Release), editor
+  redraw 0.6–0.9 ms, Run Step 2.7 ms, Node detail 0.65–0.78 s; none needed work. A Debug rebuild
+  after touching `core/types.hpp` is 540 of 575 TUs (12.5 min); its split stays with the first
+  engine slice that edits `Vehicle`/`SimState` (NEXT).
+- **Build:** `MacroSettings`/`MesoSettings` move to `macro/settings.hpp`/`meso/settings.hpp`, so the
+  authoring definition no longer includes the graphs. Touching `macro/graph.hpp` rebuilds 44 TUs
+  (was 456), `meso/graph.hpp` 48 (was 462). No behaviour change; ctest 242/242.
+- **Docs:** AGENTS gives RECORD's real size (≈95k tokens); ROADMAP M3.2.8a.1's history moves whole
+  to [archive](archive/ROADMAP-implemented-2026-10-27.md#m328a1-clamp-history-d105d258)
+  (ROADMAP −2,628 characters, still 494 lines).
+
 ## 2026-10-27 — M0 plausibility accepted by owner ruling (D369)
 
 - **Owner ruling:** "ผ่าน แบบ A" — pass, with the amber caveat on the record. The owner holds the
@@ -168,25 +181,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   semantic exclusions and structural refusals; project tests pass 50/50. Release headless build
   and all 161 CTest entries pass (13.10 s), including docs, architecture, CLI and file-size checks.
   Evidence is Linux headless only; no Qt/Windows, Vissim, scientific or owner gate is closed.
-
-## 2026-10-26 — Signal control structural schema and codec parity (D360)
-
-- **Changed:** shared field metadata now covers definition signal-array presence, fixed-time
-  controllers/groups and legacy programs/phases. Their readers move to signal_control_codec;
-  the composed partial schema/CLI includes them using 41 definitions and 12 version profiles.
-  The envelope-only API, writer version selection and desktop observed discovery stay unchanged.
-- **Preserved:** controller/group keys stay strict at every version, program/phase keys stay
-  additive, nullable names and integer-valued float groups retain existing conversion. The
-  pre-54 generated guard, generated-value error order and pre-13 project migration keep their
-  original stages; bare M0 programs remain legacy. Timing, uniqueness, reference resolution and
-  run-readiness remain existing semantic checks. No engine or runtime signal algorithm changes.
-- **Verified:** 6,669 cases across schemas 1–57 have byte-identical before/after native results,
-  diagnostics and canonical documents, and pass independent Draft-2020-12 expectations. Four
-  shipped projects pass structural validation and retain byte-identical canonical output.
-  Five new project tests cover presence/strictness, numeric/null/error ordering, version guards,
-  migration and semantic exclusions; project coverage is 45 tests. Release headless build and
-  all 161 CTest entries pass (15.15 s), including CLI, docs, architecture and file-size checks.
-  Evidence is Linux headless only; no Qt/Windows, scientific-validation or owner gate is closed.
 
 ## Older entries
 

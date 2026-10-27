@@ -2,6 +2,25 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Signal control structural schema and codec parity (D360)
+
+- **Changed:** shared field metadata now covers definition signal-array presence, fixed-time
+  controllers/groups and legacy programs/phases. Their readers move to signal_control_codec;
+  the composed partial schema/CLI includes them using 41 definitions and 12 version profiles.
+  The envelope-only API, writer version selection and desktop observed discovery stay unchanged.
+- **Preserved:** controller/group keys stay strict at every version, program/phase keys stay
+  additive, nullable names and integer-valued float groups retain existing conversion. The
+  pre-54 generated guard, generated-value error order and pre-13 project migration keep their
+  original stages; bare M0 programs remain legacy. Timing, uniqueness, reference resolution and
+  run-readiness remain existing semantic checks. No engine or runtime signal algorithm changes.
+- **Verified:** 6,669 cases across schemas 1–57 have byte-identical before/after native results,
+  diagnostics and canonical documents, and pass independent Draft-2020-12 expectations. Four
+  shipped projects pass structural validation and retain byte-identical canonical output.
+  Five new project tests cover presence/strictness, numeric/null/error ordering, version guards,
+  migration and semantic exclusions; project coverage is 45 tests. Release headless build and
+  all 161 CTest entries pass (15.15 s), including CLI, docs, architecture and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows, scientific-validation or owner gate is closed.
+
 ## 2026-10-26 — SignalHead structural schema and conditional groups (D359)
 
 - **Changed:** shared metadata supplies SignalHead known-key/type rules, native read conditions
