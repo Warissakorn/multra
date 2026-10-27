@@ -35,10 +35,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   full M1.23 gate closes from Linux tests. Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
   for columns/units and nested JSON conventions before extending interchange. GeoJSON/PNG,
   imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
-- Local Qt 6.8.2 workspace-ui has a numeric-font/tabular-digit assertion failure also reproduced
-  with the pre-D365 workspace implementation. A direct bundled-font probe shows non-tabular
-  Qt advances despite equal TTF metrics. Diagnose this environment/font issue separately;
-  do not weaken the test. Object-export-ui and results-tabs-ui are separate checks.
+- Font collision is fixed by D366's private bundled family. Next native slice is M1.23 PNG
+  export: define full-network/current-view bounds, pixel limits and background/attribution
+  behavior before coding. Keep document/History/camera state intact and use atomic writes.
 
 ## AI automation follow-up (D344–D350)
 

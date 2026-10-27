@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Pin the bundled UI font against installed-family collisions (D366)
+
+- **Found:** this host's installed Noto Sans Thai has no ASCII digits, while the bundled cut
+  does. Qt 6.8.2 matched the installed same-name family and used proportional fallback digits.
+- **Fixed:** renamed only bundled font naming tables to the private MULTRA Sans Thai family.
+  Every glyph, metric and layout table is byte-identical. The existing workspace assertion now
+  compares with the application's data-loaded family, retaining equal digit advances, 12 px
+  and real 600-weight checks. No font fallback or disabled assertion was added.
+- **Verified:** Release desktop target builds; workspace-ui passes (7.97 s) on Linux offscreen
+  Qt 6.8.2 with the conflicting system font still installed. Font-generation instructions are
+  updated; Windows appearance and owner gates remain separate.
+
 ## 2026-10-27 — Authored object table CSV export (M1.23.1, D365)
 
 - **Asked:** switch from schema/AI work to the recommended M1.23 native object-table CSV slice.
@@ -183,21 +195,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   native integer tokens and semantic exclusions; project tests pass 30/30. Release headless
   build and all 161 CTest entries pass, including CLI, architecture, docs and file-size checks.
   Evidence is Linux headless only; no Qt/Windows acceptance claim.
-
-## 2026-10-26 — Shared envelope/background metadata and formal schema (D356)
-
-- **Changed:** envelope/background field metadata now supplies the existing native read and
-  typed-validation stages plus a partial draft-2020-12 schema. `multra-project-schema` prints
-  that schema without a document or Qt, keeping exact uint64 bounds. Required fields, nulls,
-  open unknown keys, ranges and the 32 MiB image byte limit keep their existing codec behavior.
-- **Limits:** partial coverage is explicit. Native integer tokens and UTF-8 byte lengths need
-  codec checks beyond standard schema validation. Nested network/demand/optional feature rules
-  remain codec-owned; desktop observed discovery and the engine are unchanged.
-- **Verified:** project tests pass 24/24; Release headless build and all 161 CTest entries pass,
-  including the new schema CLI contract. A local independent jsonschema 4.26.0 Draft-2020-12
-  check passes 54 adversarial cases and all four shipped projects, with expected token/byte and
-  partial-coverage differences. Before/after canonical output for those four projects is
-  byte-identical. Evidence is Linux headless only; no Qt/Windows acceptance claim.
 
 ## Older entries
 

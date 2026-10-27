@@ -422,3 +422,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D364](RECORD.md#d364) — RoutingDecision/share/period/type-rule metadata preserve strict/open keys, nullable fields, matrix diagnostics and document-only position gates.
 
 [D365](RECORD.md#d365) — M1.23.1 authored object table CSV: five File-menu exports with precise values, nested JSON cells, Unicode and atomic writes.
+
+[D366](RECORD.md#d366) — Private bundled UI font family prevents installed Noto Sans Thai collisions; glyphs/metrics/layout unchanged and workspace assertions retained.

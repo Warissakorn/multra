@@ -2,6 +2,21 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Shared envelope/background metadata and formal schema (D356)
+
+- **Changed:** envelope/background field metadata now supplies the existing native read and
+  typed-validation stages plus a partial draft-2020-12 schema. `multra-project-schema` prints
+  that schema without a document or Qt, keeping exact uint64 bounds. Required fields, nulls,
+  open unknown keys, ranges and the 32 MiB image byte limit keep their existing codec behavior.
+- **Limits:** partial coverage is explicit. Native integer tokens and UTF-8 byte lengths need
+  codec checks beyond standard schema validation. Nested network/demand/optional feature rules
+  remain codec-owned; desktop observed discovery and the engine are unchanged.
+- **Verified:** project tests pass 24/24; Release headless build and all 161 CTest entries pass,
+  including the new schema CLI contract. A local independent jsonschema 4.26.0 Draft-2020-12
+  check passes 54 adversarial cases and all four shipped projects, with expected token/byte and
+  partial-coverage differences. Before/after canonical output for those four projects is
+  byte-identical. Evidence is Linux headless only; no Qt/Windows acceptance claim.
+
 ## 2026-10-26 — Project schema inventory and shared writer inspection (D355)
 
 - **Mapped:** optional root fields, absence/null/empty rules, nested codec owners and writer
