@@ -2,6 +2,21 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Project schema inventory and shared writer inspection (D355)
+
+- **Mapped:** optional root fields, absence/null/empty rules, nested codec owners and writer
+  feature floors 17–57 in PROJECT_SCHEMA. Corrected stale reader limits in the editor and
+  automation references; nested formal field metadata remains separate from observed discovery.
+- **Changed:** `documentSchemaVersion` exposes the writer's existing feature choice without
+  serialization or validation. `documentJson` uses it; no second version calculation, retained
+  input version or file-format change is introduced.
+- **Verified:** before/after canonical output for all four shipped projects is byte-identical
+  (combined SHA-256 `47cd924427e13e7d6e1a63215bde24938101b9cc079746c6393f22f9ecb35c64`).
+  Four regression cases cover feature removal/precedence, invalid-draft inspection, all 57
+  supported input versions and shipped-project round trips. Project tests pass 20/20; Release
+  headless build and all 160 CTest entries pass, including architecture, documentation, file-size
+  and reference checks. Linux only; no Qt/Windows acceptance claim.
+
 ## 2026-10-26 — Keep bounded schema discovery permissive (D354)
 
 - **Fixed:** observed discovery could exhaust its visit budget inside an object, then restrict

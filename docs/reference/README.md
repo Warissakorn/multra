@@ -6,6 +6,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 
 | Document | Scope |
 |---|---|
+| [OBJECT_TABLE_CSV.md](OBJECT_TABLE_CSV.md) | Authored object table CSV export: five tables, exact fields/units, Unicode/nested cells and atomic desktop writes |
 | [DESKTOP_AUTOMATION.md](DESKTOP_AUTOMATION.md) | Local JSON commands for AI control of the visible desktop, live enable/disable and reconnect (D344), guarded New and intentional Quit (D345), deferred recovery (D346), map commands/tile readiness (D347), Connector proposals/attachment diagnostics (D348), single-run identity/explicit export (D349), codec-backed discovery/dry validation and run-until (D350), Windows PowerShell workflow, document guards and atomic edits |
 | [ZONES_AND_PARKING.md](ZONES_AND_PARKING.md) | Zones, zone connectors, OD matrices and parking lots: schema 31, OD → Micro expansion, lot runtime, outputs, editor and rows (M8) |
 | [MAP_BACKGROUND.md](MAP_BACKGROUND.md) | Schema 29, UTM reference, OSM tiles, caches, paint and acceptance rows |

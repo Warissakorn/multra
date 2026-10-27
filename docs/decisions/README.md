@@ -420,3 +420,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D363](RECORD.md#d363) — Base definition, Route, VehicleInput and interval metadata preserve open keys, explicit-null errors, interval totals and counted-volume migration stages.
 
 [D364](RECORD.md#d364) — RoutingDecision/share/period/type-rule metadata preserve strict/open keys, nullable fields, matrix diagnostics and document-only position gates.
+
+[D365](RECORD.md#d365) — M1.23.1 authored object table CSV: five File-menu exports with precise values, nested JSON cells, Unicode and atomic writes.

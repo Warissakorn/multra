@@ -1,0 +1,6 @@
+    add_executable(multra-object-export-ui-tests ${PROJECT_SOURCE_DIR}/tests/object_export_ui_tests.cpp)
+    target_link_libraries(multra-object-export-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-object-export-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME object-export-ui COMMAND multra-object-export-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(object-export-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 60)
+    add_dependencies(check multra-object-export-ui-tests)

@@ -84,3 +84,9 @@ period rows stay open. Nullable optionals, contains-based typeRules and distinct
 retain their read order. The document-only pre-20 position guard stays before parsing; counted
 volume synchronization follows the complete definition. Schema validation leaves matrix sizes,
 weights, time windows and destination reachability to existing model validators.
+
+
+`object_csv` formats five authored object tables with UTF-8 BOM, CRLF, full numeric precision
+and nested JSON cells, sharing the persisted serializers on table-only projections. No catalog
+resolution or Run is required. The shell owns destination selection and atomic replacement.
+See [object table CSV](../../docs/reference/OBJECT_TABLE_CSV.md).

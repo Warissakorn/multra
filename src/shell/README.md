@@ -29,3 +29,9 @@ application-local display preferences shared by the editor and Behaviour Lab. Se
 [vehicle colour contract](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334).
 
 `macro_run_dialog` edits saved Macro run definitions as one Undo step and selects a named definition or project settings for the existing staged worker. Definitions are stored with the project; result tables remain session-local. See [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md#named-macro-runs).
+
+
+`object_export` supplies File → Export object table (CSV), five table actions shared with the
+command palette, Unicode destination selection and atomic writes. Export leaves History and
+run state untouched and protects this window's project/recovery files. The Qt-free formatter
+lives in project/object_csv. See [contract](../../docs/reference/OBJECT_TABLE_CSV.md).

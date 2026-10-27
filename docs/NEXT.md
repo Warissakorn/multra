@@ -28,6 +28,18 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Object interchange follow-up (M1.23.1, D365)
+
+- Owner selected native object-table CSV export over the schema queue. Packaged Windows
+  acceptance is [OWNER_SITTING G1](plans/OWNER_SITTING.md#g--object-interchange); no owner or
+  full M1.23 gate closes from Linux tests. Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
+  for columns/units and nested JSON conventions before extending interchange. GeoJSON/PNG,
+  imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
+- Local Qt 6.8.2 workspace-ui has a numeric-font/tabular-digit assertion failure also reproduced
+  with the pre-D365 workspace implementation. A direct bundled-font probe shows non-tabular
+  Qt advances despite equal TTF metrics. Diagnose this environment/font issue separately;
+  do not weaken the test. Object-export-ui and results-tabs-ui are separate checks.
+
 ## AI automation follow-up (D344–D350)
 
 - Open automation work: an authoritative formal schema covering every optional/versioned

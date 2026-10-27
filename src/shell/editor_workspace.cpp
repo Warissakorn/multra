@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "object_export.hpp"
 #include "editor_interaction.hpp"
 #include "editor_style.hpp"
 #include "vehicle_color_dialog.hpp"
@@ -61,6 +62,16 @@ void EditorWindow::buildWorkspace() {
     auto* files=findChild<QToolBar*>("editorFiles");
     for(const auto* key:{"editorRecover","editorEmbedCatalogs"})files->removeAction(actions_.at(key));
     menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs"});
+    auto* exports=new QMenu(this);exports->setObjectName("editorExportObjects");texts_["editorExportObjects"]=exports;
+    findChild<QMenu*>("editorFileMenu")->addMenu(exports);
+    for(const auto& [key,table]:{std::pair{"editorExportLinks",ObjectTable::links},
+        {"editorExportConnectors",ObjectTable::connectors},{"editorExportInputs",ObjectTable::inputs},
+        {"editorExportRoutes",ObjectTable::routes},{"editorExportDecisions",ObjectTable::decisions}}) {
+        exports->addAction(action(key,{},[this,table]{
+            try {exportObjectTableDialog(this,history_.document(),table,[this](const char* name){return text(name);},{file_,recoveryFile_});}
+            catch(const std::exception& error){showError(error);}
+        }));
+    }
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});
     menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","editorVehicleColors","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorMapRetry","editorToggleMap","editorRemoveMap"});

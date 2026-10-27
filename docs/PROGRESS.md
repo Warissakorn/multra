@@ -6,6 +6,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Authored object table CSV export (M1.23.1, D365)
+
+- **Asked:** switch from schema/AI work to the recommended M1.23 native object-table CSV slice.
+- **Changed:** File → Export object table (CSV), also in the palette, exports Links, Connectors,
+  inputs, routes and decisions from the current document without Run/catalog resolution. A
+  Qt-free formatter shares persisted serialization on table-only projections, keeps full numeric
+  precision, UTF-8 BOM/CRLF, authored row order and nested JSON cells. The shell selects Unicode
+  paths, writes atomically and protects project/recovery destinations without changing History,
+  revision, dirty/save state or results. A UI test caught nonexistent paths comparing equal in
+  QFileInfo; protection now compares cleaned absolute names and nonempty canonical paths.
+- **Verified:** five native regressions cover known 3–4–5 geometry, precise values, quoting/Thai,
+  optional attachments, nested demand/counts, empty tables/order and locale independence; project
+  tests pass 70/70. Twenty sample CSVs from all four shipped projects pass independent Python
+  CSV/JSON checks. Release headless build and all 161 CTest entries pass (14.09 s). A local Qt
+  6.8.2 SDK enabled a Release desktop build and object-export-ui (all five actions, unsaved edits,
+  Unicode paths, cancellation, failed writes, protection and translation) plus results-tabs-ui pass.
+- **Limit:** workspace-ui fails its existing numeric-font/tabular-digit assertion under this
+  Qt environment; a separately linked pre-D365 workspace reproduces the same failure. A direct
+  Qt font probe also disagrees with the bundled TTF's equal digit metrics. No test was weakened;
+  the issue is recorded in NEXT. Windows/packaged acceptance is OWNER_SITTING G1. This slice
+  closes no full M1.23, owner, runtime-model or scientific gate; other interchange formats remain.
+
 ## 2026-10-27 — RoutingDecision structural schema and unchanged counted synchronization (D364)
 
 - **Changed:** shared metadata now covers RoutingDecision rows, route shares, periods and
@@ -176,21 +198,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   check passes 54 adversarial cases and all four shipped projects, with expected token/byte and
   partial-coverage differences. Before/after canonical output for those four projects is
   byte-identical. Evidence is Linux headless only; no Qt/Windows acceptance claim.
-
-## 2026-10-26 — Project schema inventory and shared writer inspection (D355)
-
-- **Mapped:** optional root fields, absence/null/empty rules, nested codec owners and writer
-  feature floors 17–57 in PROJECT_SCHEMA. Corrected stale reader limits in the editor and
-  automation references; nested formal field metadata remains separate from observed discovery.
-- **Changed:** `documentSchemaVersion` exposes the writer's existing feature choice without
-  serialization or validation. `documentJson` uses it; no second version calculation, retained
-  input version or file-format change is introduced.
-- **Verified:** before/after canonical output for all four shipped projects is byte-identical
-  (combined SHA-256 `47cd924427e13e7d6e1a63215bde24938101b9cc079746c6393f22f9ecb35c64`).
-  Four regression cases cover feature removal/precedence, invalid-draft inspection, all 57
-  supported input versions and shipped-project round trips. Project tests pass 20/20; Release
-  headless build and all 160 CTest entries pass, including architecture, documentation, file-size
-  and reference checks. Linux only; no Qt/Windows acceptance claim.
 
 ## Older entries
 

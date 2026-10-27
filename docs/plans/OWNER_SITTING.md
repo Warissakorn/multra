@@ -255,3 +255,12 @@ nothing. Numbers are not reused.
 3. **D128 behaviour library** (listed 2026-10-07). Capture the catalogs, duplicate a behaviour,
    heavy-vehicle class, an urban type with an override on several roads, effective list,
    Undo/Redo, delete with replacement, Thai, save/reopen, run; also a `w74` run. *Owner:*
+
+## G — Object interchange
+
+1. **M1.23.1 object table CSV** (listed 2026-10-27, D365). On packaged Windows, open a project,
+   make an unsaved name edit containing Thai text, a comma and quotes, then use File → Export
+   object table (CSV) for Links, Connectors, inputs, routes and decisions. Do Unicode filenames
+   and nested JSON cells open correctly in the study's spreadsheet/CSV reader? Check an empty
+   draft, Cancel, a failed destination and refusal to overwrite this window's project/recovery;
+   confirm no dirty/revision/Undo or Run state changes. *Owner:*

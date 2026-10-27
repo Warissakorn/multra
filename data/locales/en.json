@@ -1254,5 +1254,13 @@
   "editorVehicleColorsReset": "Restore type default",
   "editorVehicleColorsNoPalette": "Add another colour to create a mixed palette.",
   "editorVehicleColorsDuplicate": "This colour is already in the palette. Choose a different colour.",
-  "editorVehicleColorSaveError": "Could not save colour preferences. Check the settings folder and try again."
+  "editorVehicleColorSaveError": "Could not save colour preferences. Check the settings folder and try again.",
+  "editorExportObjects": "Export object table (CSV)",
+  "editorExportLinks": "Links…",
+  "editorExportConnectors": "Connectors…",
+  "editorExportInputs": "Vehicle inputs…",
+  "editorExportRoutes": "Routes…",
+  "editorExportDecisions": "Routing decisions…",
+  "EDIT_OBJECT_CSV_WRITE": "Could not write the object table CSV.",
+  "EDIT_OBJECT_CSV_PROJECT": "Choose a CSV destination different from the open project and its recovery file."
 }

@@ -1254,5 +1254,13 @@
   "editorVehicleColorsReset": "คืนสีมาตรฐานของประเภทนี้",
   "editorVehicleColorsNoPalette": "เพิ่มอีกสีเพื่อสร้างชุดสีคละ",
   "editorVehicleColorsDuplicate": "มีสีนี้อยู่ในชุดแล้ว กรุณาเลือกสีอื่น",
-  "editorVehicleColorSaveError": "บันทึกการตั้งค่าสีไม่ได้ กรุณาตรวจสอบโฟลเดอร์การตั้งค่าแล้วลองใหม่"
+  "editorVehicleColorSaveError": "บันทึกการตั้งค่าสีไม่ได้ กรุณาตรวจสอบโฟลเดอร์การตั้งค่าแล้วลองใหม่",
+  "editorExportObjects": "ส่งออกตารางวัตถุ (CSV)",
+  "editorExportLinks": "Links…",
+  "editorExportConnectors": "Connectors…",
+  "editorExportInputs": "ปริมาณรถขาเข้า…",
+  "editorExportRoutes": "เส้นทาง…",
+  "editorExportDecisions": "การตัดสินใจเลือกเส้นทาง…",
+  "EDIT_OBJECT_CSV_WRITE": "ไม่สามารถบันทึกตารางวัตถุ CSV ได้",
+  "EDIT_OBJECT_CSV_PROJECT": "เลือกปลายทาง CSV ที่ไม่ใช่ไฟล์โครงการที่เปิดอยู่หรือไฟล์กู้คืนของโครงการ"
 }
