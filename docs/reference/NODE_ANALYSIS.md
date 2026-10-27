@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**A1 is implemented (§10, D372); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 is implemented (§10, D372); A2's contract is §11 (D373); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -116,7 +116,9 @@ is read, never copied.
 - **Per approach:** d and LOS.
 - **Per intersection:**
   - d and LOS;
-  - critical v/c, from Chapter 19's critical-lane-group definition, in A2.
+  - critical v/c, from Chapter 19's critical-lane-group definition, in A2 (§11).
+- **Per lane group, from A2:** its turns and turn shares (P_L, P_R); average and 95th-percentile
+  back of queue and storage ratios (§11).
 - **Each result names:**
   - the method ("HCM 7 Ch. 19, analytical") and the document revision;
   - every default used, and every refused lane group with its advisory.
@@ -147,7 +149,7 @@ is read, never copied.
 |---|---|
 | A0 | This contract; owner choices (§8); D370 |
 | A1 | Engine `src/analysis/` (pure, imports nothing). Ch. 19 Steps 1–9 for pretimed protected exclusive lane groups. Node fields and codec, CLI `--node-analysis`, rows NA1–NA8 |
-| A2 | Back of queue and storage ratio (Ch. 31 §4); critical v/c; shared lane groups (Ch. 31 §2) |
+| A2 | Shared lane groups (Ch. 31 §2), protected only; critical v/c; back of queue and storage ratio (Ch. 31 §4); Exhibit 19-41. Contract §11 (D373), rows NA9–NA14 |
 | A3 | Permitted and protected-permitted left turns (Ch. 31 §2) |
 | A4 | Two-way stop control (Ch. 20) |
 | A5 | All-way stop (Ch. 21) |
@@ -253,3 +255,121 @@ Chapter 31 §2's shared-lane procedure, outside A1. A2 reproduces the exhibit wi
   on the shipped four-leg's pocket turns (`tests/node-analysis-four-leg.traffic.json`, CLI test).
 - **Not in A1:** the editor tab and *Fill from model* (A9), and coarse Nodes (stored lane groups,
   later). The other slices are in §7.
+
+## 11. A2 contract (D373)
+
+The owner's answers on 2026-10-27:
+- "ทำครบใน PR #200" ("do it all in PR #200");
+- "ห่วงโซ่ไม่ซ้อนทับ" ("a non-overlapping chain", for critical v/c);
+- "เก็บ speed limit ต่อ approach" ("store a speed limit per approach", for queues).
+
+A2 stays **pretimed and protected**: permitted turns are A3 and actuated control is A8. Formula
+images were read on 2026-10-27; pages are the copy's PDF pages.
+
+**Lane groups become lane-based** (Ch. 19 Step 1, PDF p. 1462–1464).
+- Per in-leg, adjacent lanes serving the same single turn form one exclusive lane group, and each
+  lane serving two or more turns is its own shared lane group.
+- **Analysed layouts** are Exhibit 31-6's (PDF p. 2952): exclusive l, t, r; shared sl, sr, lr; and a
+  one-lane approach serving every turn. Any other layout gives `NODE_ANALYSIS_LANE_LAYOUT` for the
+  approach.
+- **Refusals for a shared lane:**
+  - every turn in it must be protected and share one green interval;
+  - a permitted turn in a shared lane refuses the whole approach with `NODE_ANALYSIS_PERMITTED`;
+  - two programs in one shared lane give `NODE_ANALYSIS_SIGNAL`.
+
+**Approach flow distribution** (Ch. 31 §2, Eqs. 31-46 to 31-66, PDF p. 2949–2960).
+- **Inputs:**
+  - `P_lc = 1 − (2 v_app/s_lc − 1)² ≥ 0`, with `s_lc = 3,600/3.7` and `v_app` per Eq. 31-51 (31-52 for
+    an lr lane);
+  - `E_L,m = (E_L − 1) P_lc + 1` with E_L 1.05, and `E_R,m = (E_R − 1) P_lc + 1` with E_R 1.18;
+  - fLpb = fRpb = 1 ("no pedestrian or bicycle conflict", a listed default).
+- **Iteration:** Steps B–H repeat until the shared lane flows change by less than 0.1 veh/h. A cap
+  of 100 iterations gives `NODE_ANALYSIS_NO_CONVERGENCE`.
+- **Which lane groups exchange flow:** the flow-ratio equalisation (Eq. 31-64) runs over the lane
+  groups that can trade vehicles: the through-serving lanes, plus the exclusive lanes of a turn that
+  also uses a shared lane. A turn without a shared lane keeps all its flow in its exclusive lanes;
+  that is Eq. 31-55 with `v_sl,lt = 0`.
+- **Saturation flow per lane, before Eq. 19-8's other factors:**
+  - sr: Eq. 31-61, `s_th/(1 + P_R (E_R,m − 1))`;
+  - lr: Eq. 31-63;
+  - sl (protected, split phasing): Eq. 31-63's form with `P_R = 0` (MULTRA's reading; Eq. 31-59 is
+    for permitted operation);
+  - t: Eq. 31-62 with `f_s = 1` (protected).
+- **Exclusive lane groups keep A1's factors exactly**, including fLU (Exhibit 19-15) for more than one
+  lane. A shared lane group has fLU = 1 (Ch. 19, PDF p. 1469) and its shared factor in place of fLT/fRT.
+- **Capacity and delay:** `c = N s g/C`. Uniform delay is Exhibit 31-11's polygon, which Ch. 31 §3
+  says also applies to split phasing and to shared through-and-right lane groups (PDF p. 3002,
+  3028). For one green it equals Eq. 19-19; NA10 integrates the polygon to show that.
+
+**Critical v/c** (Eqs. 19-30, 19-31, PDF p. 1485), generalised to signal-group programs.
+- Each analysed lane group has `y = v/(N s)` and its displayed green interval.
+- **Critical chain:** the set of lane groups whose displayed greens are pairwise non-overlapping
+  around the cycle, with the largest Σy (on a tie, the larger Xc).
+- **Lost time and Xc:** `L = C − Σ g` over the chain, which is Σ lt when the chain's phases tile the
+  cycle, as a dual-ring critical path does. Then `Xc = C/(C − L) · Σ y`.
+- **Status:** this is MULTRA's generalisation and equals HCM's result on a ring/barrier program. It
+  is not HCM text.
+- A Node with any refused turn has no Xc (`NODE_ANALYSIS_PARTIAL`).
+
+**Back of queue and storage ratio** (Ch. 31 §4, PDF p. 3016–3039): basic arrival–departure polygon
+(Exhibit 31-25), which PDF p. 3028 applies to every A2 lane group.
+
+| Quantity | Formula | Source |
+|---|---|---|
+| `d_a` | `[1.47 (S_a − S_s)]²/(2 · 1.47 S_a) · (1/r_a + 1/r_d)`, S_s 5 mi/h, r_a 3.5, r_d 4.0 ft/s² | Eq. 31-131, p. 3022 |
+| `S_a` | `0.90 (25.6 + 0.47 S_pl)`, S_pl the posted limit, mi/h | Eq. 31-132, p. 3023 |
+| `t_f` | Eq. 31-137 if `d_a ≤ (1 − P) g X`, else Eq. 31-138 | p. 3033 |
+| `N_f`, `Q1` | Eq. 31-139 or 31-140 (same branch); `Q1 = N_f` | p. 3034 |
+| `Q2` | `c_A d2/(3,600 N)`, `c_A = c` | Eq. 31-142, p. 3035; "conditions for use: none" (Exhibit 31-56, p. 3108) |
+| `Q3` | 0 (no initial queue) | Eqs. 31-143 to 31-148 with `Q_b = 0` |
+| `Q95` | `(Q1 + Q2) f_B% + Q3`, z 1.64, I 1 | Eqs. 31-150, 31-151 (v ≥ c), 31-153 (v < c), p. 3037–3038 |
+| `R_Q`, `R_Q95` | `L_h Q/L_a`, `L_h = 25 (1 − 0.01 P_HV) + 0.01 · 45 · P_HV` ft | Eqs. 31-154 to 31-156, p. 3038–3039 |
+
+- **Image check:** Eq. 31-151's image is clipped at its right edge after `(1.0 − e^(2−2X_A)`. The
+  copy's PDF text layer closes it with `)`, and that reading is used.
+- **Flow cap:** `q` is capped at the lane group's capacity (PDF p. 3024), so `min(1, X)`.
+- **Inputs:**
+  - **Speed limit:** a new optional `speedLimit` (km/h, finite, > 0) on the approach row, part of
+    schema 58, which is unreleased and in this PR. An approach without one has no queue, and its
+    lane groups are listed under `NODE_ANALYSIS_NO_SPEED`; every other result stays.
+  - **Storage `L_a`:** the in-leg Link's polyline length up to its leg station. Lanes run the whole
+    Link, and a pocket is its own Link.
+
+**Exhibit 19-41** (PDF p. 1570–1571).
+- **Inputs,** from its notes: 0 % HV, PHF 0.92, 12 ft, 0 % grade, pretimed C 90 s, an exclusive
+  protected left lane at g/C 0.10, right turns in a shared lane, 10 % left and 10 % right, no
+  parking or buses, and non-CBD. N through lanes means an approach of N − 1 exclusive through lanes
+  plus one sr lane.
+- **Service volume:** the largest total approach volume whose approach delay is within the letter's
+  bound and whose through lane groups have X ≤ 1. The note gives "v/c > 1.0" as an E threshold. The
+  exclusive left lane caps at 1,665 veh/h, which the exhibit exceeds, so its X is not applied.
+- **Prototype (2026-10-27):** 29 of 36 cells are within ±5 %.
+- **The seven exceptions,** computed value against the exhibit:
+
+  | Cell (g/C, lanes, LOS) | Computed | Exhibit | Deviation |
+  |---|---|---|---|
+  | 0.40, 1, B | 142 | 130 | +9 % |
+  | 0.40, 3, E | 2,193 | 2,000 | +10 % |
+  | 0.45, 3, D | 2,289 | 2,000 | +14 % |
+  | 0.45, 3, E | 2,482 | 2,250 | +10 % |
+  | 0.50, 2, D | 1,885 | 1,790 | +5 % |
+  | 0.50, 3, D | 2,490 | 2,000 | +25 % |
+  | 0.50, 3, E | 2,773 | 2,500 | +11 % |
+
+  Three of them are the exhibit's "2,000" entries, which look capped.
+- **NA13** checks the 29 cells to ±5 % and pins the seven at their computed values. Nothing is tuned
+  to close them.
+
+**Rows (A2):**
+
+| Row | Checks |
+|---|---|
+| NA9 | Lane-flow procedure by hand: t+sr converges to equal v/s; a one-lane approach; P_lc at v_app 0, s_lc/2 and above s_lc |
+| NA10 | Eqs. 31-61 and 31-63 by hand; exclusive groups keep A1's numbers exactly; Exhibit 31-11's polygon integrated equals Eq. 19-19 |
+| NA11 | Xc on a tiled four-stage program by hand; an overlapping program takes the larger chain; a refused turn gives no Xc |
+| NA12 | d_a, t_f (both branches), Q1, Q2, Q95 (v < c and v ≥ c), R_Q by hand |
+| NA13 | Exhibit 19-41: 29 cells within ±5 %, the seven above pinned |
+| NA14 | Refusals: permitted far turn in a shared lane, layout outside Exhibit 31-6, two programs in a shared lane, no speed limit |
+
+NA8 still holds. `cli-node-analysis`'s expected numbers change, because the four-leg's shared
+through lanes are now analysed.

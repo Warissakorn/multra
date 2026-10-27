@@ -6,6 +6,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Analytical junction capacity, slice A2 contract (M13, D373)
+
+- **Asked:** continue with A2. The owner answered its three questions: all of A2 in PR #200; critical
+  v/c over a non-overlapping chain of lane groups; a speed limit stored per approach for queues.
+- **Contract** NODE_ANALYSIS §11: lane-based lane groups for Exhibit 31-6's layouts (protected only)
+  with Ch. 31 §2's lane-flow procedure; critical v/c; back of queue and storage ratio (Ch. 31 §4).
+  Rows NA9–NA14. Eqs. 31-46 to 31-66, 31-131 to 31-156 and 19-30/19-31 were read from their images.
+- **Exhibit 19-41:** a prototype gives 29 of 36 cells within ±5 %; the seven others are listed with
+  their computed values, not tuned.
+
 ## 2026-10-27 — Analytical junction capacity, slice A1 (M13, D372)
 
 - **Changed:** a new pure engine `src/analysis/` computes HCM 7 Ch. 19 for pretimed, protected,
@@ -148,27 +158,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   an independent review found no compatibility defect. Release headless build and all 161
   CTest entries pass (16.23 s), including CLI, docs, architecture and file-size checks. Linux
   headless evidence only; no engine algorithm, Qt/Windows, scientific or owner gate change.
-
-## 2026-10-26 — Base Route/VehicleInput schema and preserved demand derivation (D363)
-
-- **Changed:** shared metadata now covers definition duration/timeStep, Routes, VehicleInputs
-  and volume intervals. Demand readers move to demand_codec; the parser is now 263 lines.
-  The composed partial schema/CLI uses 67 shared definitions and 15 version profiles. Schema
-  and document prechecks share the counted-volume version floor; the envelope-only API and
-  desktop observed response stay unchanged.
-- **Preserved:** open Route/input/interval keys, contains-based null refusal, scalar-before-
-  interval diagnostics, interval-derived totals and empty-period behavior. Route migration and
-  counted-volume synchronization retain their stages after full definition decoding; bare
-  standalone reads retain their existing behavior. No catalog ownership, demand compilation,
-  simulation dynamics, writer version-selection or serialized-output change.
-- **Verified:** 6,156 cases across schemas 1–57 have byte-identical before/after native outcomes,
-  errors and canonical documents and pass independent Draft-2020-12 expectations. Four shipped
-  projects validate structurally and retain byte-identical canonical output. Five new tests
-  cover required/open fields, nulls, integer-independent numeric types, scalar derivation,
-  counted synchronization/version guards, route migration and semantic exclusions. Release
-  headless build and all 161 CTest entries pass (11.59 s), including project, CLI, docs,
-  architecture and file-size checks. Linux headless evidence only; no Qt/Windows, scientific
-  validation or owner gate is closed.
 
 ## Older entries
 

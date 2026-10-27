@@ -436,3 +436,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D371](RECORD.md#d371) — M13 owner choices answered 1a–9a ("ใช้ตามแนะนำทั้งหมด"); A1 derives lane groups from Micro detail and refuses Nodes without it.
 
 [D372](RECORD.md#d372) — M13 A1: HCM 7 Ch. 19 pretimed protected exclusive lane groups on a Node (`src/analysis/`, schema 58 inputs, CLI `--node-analysis`, NA1–NA8); Exhibit 19-41 carved out to A2.
+
+[D373](RECORD.md#d373) — M13 A2 contract: shared lane groups (protected), critical v/c over a non-overlapping chain, back of queue with an approach speed limit; Exhibit 19-41 29/36 within ±5 %.

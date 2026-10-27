@@ -2,6 +2,27 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Base Route/VehicleInput schema and preserved demand derivation (D363)
+
+- **Changed:** shared metadata now covers definition duration/timeStep, Routes, VehicleInputs
+  and volume intervals. Demand readers move to demand_codec; the parser is now 263 lines.
+  The composed partial schema/CLI uses 67 shared definitions and 15 version profiles. Schema
+  and document prechecks share the counted-volume version floor; the envelope-only API and
+  desktop observed response stay unchanged.
+- **Preserved:** open Route/input/interval keys, contains-based null refusal, scalar-before-
+  interval diagnostics, interval-derived totals and empty-period behavior. Route migration and
+  counted-volume synchronization retain their stages after full definition decoding; bare
+  standalone reads retain their existing behavior. No catalog ownership, demand compilation,
+  simulation dynamics, writer version-selection or serialized-output change.
+- **Verified:** 6,156 cases across schemas 1–57 have byte-identical before/after native outcomes,
+  errors and canonical documents and pass independent Draft-2020-12 expectations. Four shipped
+  projects validate structurally and retain byte-identical canonical output. Five new tests
+  cover required/open fields, nulls, integer-independent numeric types, scalar derivation,
+  counted synchronization/version guards, route migration and semantic exclusions. Release
+  headless build and all 161 CTest entries pass (11.59 s), including project, CLI, docs,
+  architecture and file-size checks. Linux headless evidence only; no Qt/Windows, scientific
+  validation or owner gate is closed.
+
 ## 2026-10-26 — Queue-counter and travel-time-section structural schemas (D362)
 
 - **Changed:** shared metadata covers queue counters/measurement lines and travel-time sections/
