@@ -100,8 +100,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
     would still need the owner's choice; this optimization changes neither scope nor output.
 - **Analytical junction capacity (M13, D370):** contract [NODE_ANALYSIS](reference/NODE_ANALYSIS.md);
   A1 (D372) and A2 (D373, D374: shared lane groups, critical v/c, back of queue) implemented. Next
-  slice: A3 (permitted and protected-permitted turns, Ch. 31 §3), asked for by the owner; contract
-  [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md) (D376), implementing (engine, then compile/run).
+  A3 implemented (D377, [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md) §7). Open, for the owner: a permitted far
+  turn in l+sl, lr or one-lane layouts (refused, narrows D375 1a) and Q1 for permitted lane groups. A4 only when asked.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).
 - **Owner checks on Windows:** D318's dialogs are OWNER_SITTING F4, E1's tool glyphs and click rule
   (D306) E23, and paint E22. M2.8 has only owner checks left.

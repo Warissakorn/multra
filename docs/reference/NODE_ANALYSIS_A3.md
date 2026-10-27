@@ -195,3 +195,40 @@ Available capacities (Eqs. 31-118, 120, 123, 125, 127, 129) need G_max and belon
 | NA18 | Shared lane with a permitted far turn: g_f, g_diff, P_L, s_sl by Eq. 31-59 and Eq. 31-122, f_s 0.91, conservation of approach flow |
 | NA19 | Xc with permitted and protected-permitted groups; Q1 against Eqs. 31-137 to 31-140 on the basic polygon (section 5) |
 | NA20 | Refusals and advisories (section 1); a fully protected Node's results unchanged to the bit (the `cli-node-analysis` fixture stays 59.86 s, Xc 0.726); NA14's permitted shared far-turn case now analysed |
+
+## 7. As implemented (D377)
+
+Code: `src/analysis/qap.*` and `permitted.*` (pure), `src/model/demand/node_analysis_compile.*`
+(operation and timing), and `src/project/node_analysis_permitted.*` with `node_analysis_run.*`
+(the Node run). Rows NA15–NA20 pass in `tests/node_analysis_a3_tests.cpp`.
+
+**Where it differs from sections 1–5, or makes them precise:**
+- **Layouts.** A permitted far turn is analysed in either of two layouts:
+  - an exclusive far-turn lane group on an approach without a shared far lane;
+  - one shared far+through lane (sl) with no exclusive far-turn lane.
+
+  An approach that puts a permitted far turn in an l+sl, lr or one-lane (all-movement) layout is
+  refused with `NODE_ANALYSIS_PERMITTED_LAYOUT`. Section 3's equations are printed for P_L alone, so
+  a shared lane that also carries the kerb turn has no stated combination. This narrows D375's
+  1a, so it is put to the owner rather than decided here.
+- **Back of queue.** Q1 for permitted lane groups is not derived yet. They get
+  `NODE_ANALYSIS_NO_QUEUE`, and every other lane group keeps its A2 queue (section 5's fallback).
+- **Opposing flow.** v_o is the flow of exactly the turns the far turn yields to. A crossing area that
+  covers only the opposing through therefore leaves the opposing kerb turn out of v_o.
+- **Two green runs per cycle** are accepted only for a protected-permitted far turn. Any other turn
+  with two runs stays `NODE_ANALYSIS_SIGNAL`.
+- **Lane-flow share.** In the lane-flow procedure, s_th for the shared lane's Eq. 31-59 share is
+  computed at the through movement's %HV, because the lane's own %HV depends on the flows being found.
+- **Queue service time.** g_s runs from the first served period after an unserved one in the polygon.
+- **Iteration.** The G_q2 iteration stops when every value moves by less than 0.1 s. A cap of 100
+  iterations gives `NODE_ANALYSIS_NO_CONVERGENCE` at the Node.
+
+**Hand check (NA19).** The shipped four-leg with signal group 2 given group 1's green (0–30 s), and
+the West pocket's far turn yielding to the East through. PHF is 0.92 and C is 120 s.
+- v_o = 400/0.92, so s_p = 968.8315.
+- The East through clears in g_s = 16.0475 s, so G_q2 = 18.0475 and g_u = 13.9525.
+- s_l = 946.1609 and c = 170.0106 veh/h.
+- d1 = 55.2929 s (polygon) and d2 = 59.0009 s, both worked independently.
+- The flow ratio for Xc is 0.2474.
+
+The fully protected fixture is unchanged: `cli-node-analysis` still gives 59.86 s and Xc 0.726.

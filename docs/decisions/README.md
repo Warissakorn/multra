@@ -444,3 +444,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D375](RECORD.md#d375) — M13 A3's choices (OWNER_SITTING B25) decided on delegation ("ช่วยตัดสินใจ"): 1a–5a; A3 starts when the owner asks.
 
 [D376](RECORD.md#d376) — M13 A3 contract: permitted and protected-permitted turns, HCM 7 Ch. 31 §3 Steps 1–7; Exhibit 31-12 as one interval rule; NA15–NA20.
+
+[D377](RECORD.md#d377) — M13 A3 implemented: permitted and protected-permitted far turns (polygon, Step 7 B capacity, G_q2 iteration); l+sl, lr and one-lane permitted layouts refused and put to the owner; no permitted queue yet.

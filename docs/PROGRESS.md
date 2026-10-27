@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
+
+- **Asked:** "ทำ A3" ("do A3"), with D375's choices.
+- **Contract (D376):** NODE_ANALYSIS_A3, from images of Ch. 31 §3 (Eqs. 31-94 to 31-129, Exhibits 31-12
+  to 31-19) and §2's permitted terms. Exhibit 31-12's nine phase-sequence rows turned out to be one
+  rule, G_U = E − max(S_a, S_o + G_q2), once its phases are labelled (2 the opposing through).
+- **Built (D377):** a periodic queue polygon, the permitted formulas, the compile's per-turn windows,
+  and a Node run that iterates the opposing queues. Protected results are unchanged.
+- **Open for the owner:** l+sl, lr and one-lane layouts with a permitted far turn are refused (the
+  book prints no form with a kerb turn in the same lane), and permitted lane groups have no queue yet.
+- **Verified:** NA15–NA20 pass; NA19's permitted row is hand-checked (c 170.01, d1 55.29, d2 59.00).
+
 ## 2026-10-27 — M13 A3's choices decided on delegation (D375)
 
 - **Asked:** the owner answered B25 with "ช่วยตัดสินใจ" ("help decide"), as for B19 (D214).
@@ -125,28 +137,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   decision changed.
 - **Not done:** the owner-sitting R4 (b) carve-out of the items listed more than 14 days ago is the
   owner's call, and was left as it is.
-
-## 2026-10-27 — Authored object table CSV export (M1.23.1, D365)
-
-- **Asked:** switch from schema/AI work to the recommended M1.23 native object-table CSV slice.
-- **Changed:** File → Export object table (CSV), also in the palette, exports Links, Connectors,
-  inputs, routes and decisions from the current document without Run/catalog resolution. A
-  Qt-free formatter shares persisted serialization on table-only projections, keeps full numeric
-  precision, UTF-8 BOM/CRLF, authored row order and nested JSON cells. The shell selects Unicode
-  paths, writes atomically and protects project/recovery destinations without changing History,
-  revision, dirty/save state or results. A UI test caught nonexistent paths comparing equal in
-  QFileInfo; protection now compares cleaned absolute names and nonempty canonical paths.
-- **Verified:** five native regressions cover known 3–4–5 geometry, precise values, quoting/Thai,
-  optional attachments, nested demand/counts, empty tables/order and locale independence; project
-  tests pass 70/70. Twenty sample CSVs from all four shipped projects pass independent Python
-  CSV/JSON checks. Release headless build and all 161 CTest entries pass (14.09 s). A local Qt
-  6.8.2 SDK enabled a Release desktop build and object-export-ui (all five actions, unsaved edits,
-  Unicode paths, cancellation, failed writes, protection and translation) plus results-tabs-ui pass.
-- **Limit:** workspace-ui fails its existing numeric-font/tabular-digit assertion under this
-  Qt environment; a separately linked pre-D365 workspace reproduces the same failure. A direct
-  Qt font probe also disagrees with the bundled TTF's equal digit metrics. No test was weakened;
-  the issue is recorded in NEXT. Windows/packaged acceptance is OWNER_SITTING G1. This slice
-  closes no full M1.23, owner, runtime-model or scientific gate; other interchange formats remain.
 
 ## Older entries
 
