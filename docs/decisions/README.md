@@ -438,3 +438,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D372](RECORD.md#d372) — M13 A1: HCM 7 Ch. 19 pretimed protected exclusive lane groups on a Node (`src/analysis/`, schema 58 inputs, CLI `--node-analysis`, NA1–NA8); Exhibit 19-41 carved out to A2.
 
 [D373](RECORD.md#d373) — M13 A2 contract: shared lane groups (protected), critical v/c over a non-overlapping chain, back of queue with an approach speed limit; Exhibit 19-41 29/36 within ±5 %.
+
+[D374](RECORD.md#d374) — M13 A2 implemented: lane-based and shared lane groups (Ch. 31 §2), critical v/c, back of queue and storage ratio (Ch. 31 §4), approach `speedLimit`; NA9–NA14.

@@ -47,6 +47,13 @@ Json nodeAnalysisJson(const NodeAnalysisRun& r) {
                 row["progressionFactor"] = x.progression; row["uniformDelay"] = x.uniformDelay; row["incrementalDelay"] = x.incrementalDelay;
                 row["initialQueueDelay"] = x.initialQueueDelay; row["delay"] = x.delay; row["los"] = optionalLetter(g.los);
             }
+            row["queue"] = nullptr;
+            if (g.queue) {
+                const auto& q = *g.queue;
+                row["queue"] = {{"fullStopTime", q.fullStopTime}, {"first", q.first}, {"second", q.second}, {"third", q.third}, {"mean", q.mean},
+                                {"percentile95", q.percentileQueue}, {"storage", g.group.storage}, {"storageRatio", *g.storageRatio},
+                                {"storageRatio95", *g.storageRatio95}};
+            }
             node["laneGroups"].push_back(row);
         }
         for (const auto& a : n.approaches)
@@ -57,7 +64,7 @@ Json nodeAnalysisJson(const NodeAnalysisRun& r) {
 }
 std::string nodeAnalysisCsv(const NodeAnalysisRun& r) {
     std::string out = std::string("# MULTRA - not yet validated. ") + kMeasure + ".\n";
-    out += "level,node,name,kind,lanes,flowRate,farShare,kerbShare,saturationFlow,capacity,ratio,greenRatio,uniformDelay,incrementalDelay,delay,los,issue,criticalRatio\n";
+    out += "level,node,name,kind,lanes,flowRate,farShare,kerbShare,saturationFlow,capacity,ratio,greenRatio,uniformDelay,incrementalDelay,delay,los,issue,criticalRatio,queue,queue95,storageRatio,storageRatio95\n";
     for (const auto& n : r.nodes) {
         for (const auto& g : n.groups) {
             out += "laneGroup," + csvQuoted(n.name) + "," + csvQuoted(g.group.name) + "," + kindName(g.group.kind) + "," +
@@ -66,14 +73,17 @@ std::string nodeAnalysisCsv(const NodeAnalysisRun& r) {
             if (g.result) {
                 const auto& x = *g.result;
                 out += csvNumber(x.saturation) + "," + csvNumber(x.capacity) + "," + csvNumber(x.ratio) + "," + csvNumber(x.greenRatio) + "," +
-                       csvNumber(x.uniformDelay) + "," + csvNumber(x.incrementalDelay) + "," + csvNumber(x.delay) + "," + letter(g.los) + ",,\n";
+                       csvNumber(x.uniformDelay) + "," + csvNumber(x.incrementalDelay) + "," + csvNumber(x.delay) + "," + letter(g.los) + ",,";
+                if (g.queue) out += "," + csvNumber(g.queue->mean) + "," + csvNumber(g.queue->percentileQueue) + "," + csvNumber(*g.storageRatio) + "," +
+                                    csvNumber(*g.storageRatio95) + "\n";
+                else out += ",,,,\n";
             } else {
-                out += ",,,,,,,," + *g.issue + ",\n";
+                out += ",,,,,,,," + *g.issue + ",,,,,\n";
             }
         }
         for (const auto& a : n.approaches)
-            out += "approach," + csvQuoted(n.name) + "," + csvQuoted(a.name) + ",,," + csvNumber(a.flow) + ",,,,,,,,," + csvNumber(a.delay) + "," + letter(a.los) + ",,\n";
-        out += "node," + csvQuoted(n.name) + "," + csvQuoted(n.name) + ",,," + csvNumber(n.flow) + ",,,,,,,,," + csvNumber(n.delay) + "," + letter(n.los) + ",," + (n.critical ? csvNumber(n.critical->ratio) : std::string()) + "\n";
+            out += "approach," + csvQuoted(n.name) + "," + csvQuoted(a.name) + ",,," + csvNumber(a.flow) + ",,,,,,,,," + csvNumber(a.delay) + "," + letter(a.los) + ",,,,,,\n";
+        out += "node," + csvQuoted(n.name) + "," + csvQuoted(n.name) + ",,," + csvNumber(n.flow) + ",,,,,,,,," + csvNumber(n.delay) + "," + letter(n.los) + ",," + (n.critical ? csvNumber(n.critical->ratio) : std::string()) + ",,,,\n";
     }
     return out;
 }

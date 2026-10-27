@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**A1 is implemented (§10, D372); A2's contract is §11 (D373); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 (§10, D372) and A2 (§11, D373, D374) are implemented; the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -256,7 +256,7 @@ Chapter 31 §2's shared-lane procedure, outside A1. A2 reproduces the exhibit wi
 - **Not in A1:** the editor tab and *Fill from model* (A9), and coarse Nodes (stored lane groups,
   later). The other slices are in §7.
 
-## 11. A2 contract (D373)
+## 11. A2: contract (D373) and as implemented (D374)
 
 The owner's answers on 2026-10-27:
 - "ทำครบใน PR #200" ("do it all in PR #200");
@@ -332,8 +332,8 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
   - **Speed limit:** a new optional `speedLimit` (km/h, finite, > 0) on the approach row, part of
     schema 58, which is unreleased and in this PR. An approach without one has no queue, and its
     lane groups are listed under `NODE_ANALYSIS_NO_SPEED`; every other result stays.
-  - **Storage `L_a`:** the in-leg Link's polyline length up to its leg station. Lanes run the whole
-    Link, and a pocket is its own Link.
+  - **Storage `L_a`:** the in-leg Link from its start to where the lane group's first turn leaves it
+    (its Connector's `from` station, else the Link's end), the stop line. Lanes run the whole Link.
 
 **Exhibit 19-41** (PDF p. 1570–1571).
 - **Inputs,** from its notes: 0 % HV, PHF 0.92, 12 ft, 0 % grade, pretimed C 90 s, an exclusive
@@ -358,7 +358,7 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
 
   Three of them are the exhibit's "2,000" entries, which look capped.
 - **NA13** checks the 29 cells to ±5 % and pins the seven at their computed values. Nothing is tuned
-  to close them.
+  to close them. The C++ engine gives the prototype's values to 0.5 veh/h.
 
 **Rows (A2):**
 
@@ -373,3 +373,27 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
 
 NA8 still holds. `cli-node-analysis`'s expected numbers change, because the four-leg's shared
 through lanes are now analysed.
+
+**As implemented (D374).**
+- **Engine** (pure, imports nothing):
+  - `src/analysis/lane_flow.*`: `approachLaneFlows`, Ch. 31 §2. Eq. 31-64's numerator is the demand
+    the trading lane groups carry between them, so every movement is conserved; convergence needs
+    each shared lane's flow and its turns to move by less than 0.1 veh/h.
+  - `src/analysis/critical.*`: `criticalRatio`.
+  - `src/analysis/queue.*`: `approachSpeed`, `accelerationDelay`, `backOfQueue`, `storageRatio`.
+  - `signalised.*`: a shared group's `sharedShare` is `fShared` in Eq. 19-8.
+- **Compile:** lane groups carry their turns, kind, `coupled`, green start and storage. An approach
+  with a shared lane is analysed whole or refused, every turn with the same code.
+- **Run and outputs:**
+  - Per lane group: `kind`, `turns`, `flowRate`, `farTurns`, `kerbTurns`, `fShared` and `queue`
+    (t_f, Q1, Q2, Q3, Q, Q95, storage in m, R_Q, R_Q95).
+  - Per Node: `critical` (Xc, Σy, L, lane group names).
+  - The CSV adds `farShare`, `kerbShare`, `criticalRatio`, `queue`, `queue95`, `storageRatio` and
+    `storageRatio95`.
+  - New advisories: `NODE_ANALYSIS_LANE_LAYOUT`, `NO_CONVERGENCE`, `PARTIAL` and `NO_SPEED`.
+- **Four-leg** (`tests/node-analysis-four-leg.traffic.json`: 150 far, 400 through and 100 kerb veh/h
+  per approach, 50 km/h):
+  - West sr group: s 1,735.9, v 262.7 veh/h, v/s equal to the t group's 0.1513.
+  - Approaches 44.29 and 75.44 s; node 59.86 s (E).
+  - Xc 0.726, over the four approaches' sr groups, with L 20 s.
+- **Rows:** NA9–NA14 pass in `tests/node_analysis_a2_tests.cpp`.

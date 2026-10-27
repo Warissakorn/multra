@@ -100,7 +100,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 55 | Study area with selected Nodes | `study_area_codec.cpp` |
 | 56 | Named Macro run definitions | `macro_run_definition.cpp` |
 | 57 | Road-target zone connectors | `zone_codec.cpp` |
-| 58 | Node analysis inputs (M13 A1, D371) | `node_codec.cpp` |
+| 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374) | `node_codec.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from

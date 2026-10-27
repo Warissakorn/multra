@@ -66,9 +66,11 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
     const auto& turns = m.turns;
     // Each turn's lanes on its in-leg, and each in-leg lane's turns.
     std::vector<std::set<int>> lanes(turns.size());
+    std::vector<double> stopLine(turns.size()); // where the turn's first Connector leaves the in-leg, m
     std::map<std::pair<std::size_t, int>, std::set<std::size_t>> lanesTurns;
     for (std::size_t t = 0; t < turns.size(); ++t) {
         const auto& inLink = *linkOf(n, m.inLegs[turns[t].in].linkId);
+        stopLine[t] = polylineLength(inLink.geometry);
         for (const auto& path : turns[t].paths) {
             const auto first = std::find_if(path.begin(), path.end(), [&](const auto& s) { return connectorOf(n, s.objectId) != nullptr; });
             const Connector* c = first == path.end() ? nullptr : connectorOf(n, first->objectId);
@@ -76,6 +78,7 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
                                 : inLink.lanes.end();
             if (c && c->from.linkId == inLink.id && lane != inLink.lanes.end()) {
                 const int from = static_cast<int>(lane - inLink.lanes.begin());
+                if (c->from.station) stopLine[t] = std::min(stopLine[t], *c->from.station);
                 for (int k = from; k < std::min<int>(from + c->fromLaneCount, static_cast<int>(inLink.lanes.size())); ++k) lanes[t].insert(k);
             } else {
                 for (int k = 0; k < static_cast<int>(inLink.lanes.size()); ++k) lanes[t].insert(k);
@@ -121,11 +124,12 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         for (const auto t : members) name += (name.empty() ? "" : " + ") + turns[t].name;
         double width = 0;
         for (const int k : laneSet) width += inLink.lanes[static_cast<std::size_t>(k)].width;
-        const auto id = program[members.front()];
+        const auto first = members.front();
+        const auto id = program[first];
         const auto& g = greens[id];
         out.groups.push_back({std::move(members), name, inLink.id, id, kind, movement, coupled,
                               static_cast<int>(laneSet.size()), width / static_cast<double>(laneSet.size()), g.green,
-                              g.green - kStartUpLostTime + kGreenExtension, g.cycle, g.start});
+                              g.green - kStartUpLostTime + kGreenExtension, g.cycle, g.start, stopLine[first]});
     };
     for (std::size_t leg = 0; leg < m.inLegs.size(); ++leg) {
         std::vector<std::size_t> mine;

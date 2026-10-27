@@ -34,6 +34,7 @@ struct AnalysisLaneGroup {
     int lanes{}; double laneWidth{};  // m, the mean of its lanes
     double displayedGreen{}, effectiveGreen{}, cycle{};
     double greenStart{};              // the displayed green's start in the cycle, s (critical v/c)
+    double storage{};                 // m: the in-leg Link from its start to where its turns leave (queues)
     bool operator==(const AnalysisLaneGroup&) const = default;
 };
 struct NodeAnalysisCompile {

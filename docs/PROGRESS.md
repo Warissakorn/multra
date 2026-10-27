@@ -6,15 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
-## 2026-10-27 — Analytical junction capacity, slice A2 contract (M13, D373)
+## 2026-10-27 — Analytical junction capacity, slice A2 (M13, D373, D374)
 
-- **Asked:** continue with A2. The owner answered its three questions: all of A2 in PR #200; critical
-  v/c over a non-overlapping chain of lane groups; a speed limit stored per approach for queues.
-- **Contract** NODE_ANALYSIS §11: lane-based lane groups for Exhibit 31-6's layouts (protected only)
-  with Ch. 31 §2's lane-flow procedure; critical v/c; back of queue and storage ratio (Ch. 31 §4).
-  Rows NA9–NA14. Eqs. 31-46 to 31-66, 31-131 to 31-156 and 19-30/19-31 were read from their images.
-- **Exhibit 19-41:** a prototype gives 29 of 36 cells within ±5 %; the seven others are listed with
-  their computed values, not tuned.
+- **Asked:** continue with A2, and finish it. The owner answered A2's three questions: all of it in
+  PR #200; critical v/c over a non-overlapping chain; a speed limit stored per approach (D373).
+- **Changed:** `src/analysis/` gains `lane_flow` (Ch. 31 §2's lane-flow procedure, protected),
+  `critical` (Xc over the largest-Σy chain of non-overlapping greens) and `queue` (Ch. 31 §4: Q1, Q2,
+  Q95, storage ratios). Lane groups are lane-based, so shared through+kerb lanes are analysed.
+  Approaches gain `speedLimit` (schema 58). Eqs. 31-46 to 31-66, 31-131 to 31-156 and 19-30/19-31
+  were read from their images; Eq. 31-151's clipped image is completed from the PDF text layer.
+- **Exhibit 19-41:** 29 of 36 cells within ±5 %; the seven others (three are the capped-looking
+  "2,000" entries) are listed in NODE_ANALYSIS §11, not tuned. Prototyping caught a conservation
+  bug (Eq. 31-64 must distribute the trading groups' own demand) before it shipped.
+- **Verified:** Linux Debug ctest passes, including NA9–NA14 and the CLI fixture now carrying all
+  twelve turns: node 59.86 s (E), Xc 0.726, West sr v/s equal to t's 0.1513, a pocket queue's R_Q
+  0.754, each hand-checked.
 
 ## 2026-10-27 — Analytical junction capacity, slice A1 (M13, D372)
 

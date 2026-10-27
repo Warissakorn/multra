@@ -3,6 +3,7 @@
 #include "input_manifest.hpp"
 #include "../model/demand/node_analysis_compile.hpp"
 #include "../analysis/critical.hpp"
+#include "../analysis/queue.hpp"
 #include <array>
 #include <filesystem>
 #include <nlohmann/json.hpp>
@@ -23,6 +24,9 @@ struct AnalysedLaneGroup {
     std::optional<std::string> issue; // signalisedRangeIssue; then there is no result
     std::optional<SignalisedResult> result;
     std::optional<char> los;
+    // Back of queue (Ch. 31 §4) with its storage ratios, when the approach states a speed limit.
+    std::optional<BackOfQueue> queue;
+    std::optional<double> storageRatio, storageRatio95;
 };
 struct AnalysedApproach { std::string inLink, name; double flow{}; std::optional<double> delay; std::optional<char> los; };
 struct AnalysedNode {

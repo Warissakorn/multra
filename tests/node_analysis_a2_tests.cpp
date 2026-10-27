@@ -1,8 +1,9 @@
 // M13 A2 (docs/reference/NODE_ANALYSIS.md §11, D373): shared lane groups (Ch. 31 §2), protected.
-// Rows NA9 to NA11, NA13 and NA14; every expected value is worked by hand from the cited equation.
+// Rows NA9 to NA14; every expected value is worked by hand from the cited equation.
 #include "test.hpp"
 #include "../src/analysis/critical.hpp"
 #include "../src/analysis/lane_flow.hpp"
+#include "../src/analysis/queue.hpp"
 #include "../src/analysis/signalised.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
 #include "../src/commands/node_commands.hpp"
@@ -32,8 +33,9 @@ ProjectDocument fourLeg() {
 // The four-leg's twelve turns: per approach, its far turn, through and kerb turn.
 const std::vector<std::array<const char*, 4>> kTurns{{"link-4", "link-32", "link-20", "link-44"}, {"link-16", "link-44", "link-8", "link-32"},
                                                       {"link-28", "link-20", "link-44", "link-8"}, {"link-40", "link-8", "link-32", "link-20"}};
-NodeAnalysis volumes(double far, double through, double kerb) {
+NodeAnalysis volumes(double far, double through, double kerb, std::optional<double> speedLimit = 50) {
     NodeAnalysis a;
+    if (speedLimit) for (const auto& t : kTurns) a.approaches.push_back({t[0], 0, std::nullopt, 0, speedLimit});
     for (const auto& t : kTurns) {
         a.turns.push_back({t[0], t[1], far, std::nullopt});
         a.turns.push_back({t[0], t[2], through, std::nullopt});
@@ -165,6 +167,39 @@ TEST(nodeanalysis, na11_critical_ratio) { // NA11: Eqs. 19-30, 19-31 over a non-
     run = runNodeAnalysis(d, test::root() / "data");
     CHECK(!run.nodes.front().critical && advised(run.nodes.front().advisories, "NODE_ANALYSIS_PARTIAL"));
 }
+TEST(nodeanalysis, na12_back_of_queue) { // NA12: Ch. 31 §4, Eqs. 31-131 to 31-156
+    test::near(approachSpeed(40), 39.96, 1e-12);          // Eq. 31-132: 0.90 (25.6 + 18.8)
+    const double da = accelerationDelay(30);             // Eq. 31-131: 36.75^2/88.2 x (1/3.5 + 1/4)
+    test::near(da, 8.203125, 1e-12);
+    // s 1,800 veh/h/ln, g 40 s, C 100 s, P = g/C, c 720 veh/h, one lane; d2 from Eq. 19-26.
+    const auto at = [&](double v) {
+        return backOfQueue({v, 1, 1800, 40, 100, 0.4, 720, incrementalDelay(0.25, v / 720, 0.5, 1, 720), da});
+    };
+    // v 600: d_a <= (1 - P) g X = 20, so Eq. 31-137 and Eq. 31-139; f_B% from Eq. 31-153.
+    auto q = at(600);
+    test::near(q.fullStopTime, 25.8984375, 1e-9); test::near(q.first, 12.94921875, 1e-9);
+    test::near(q.second, 2.1824583655185434, 1e-9); test::near(q.third, 0, 0);
+    test::near(q.mean, 12.94921875 + 2.1824583655185434, 1e-9); test::near(q.percentileQueue, 21.51118797215157, 1e-9);
+    // v 100: d_a > 3.33, so Eqs. 31-138 and 31-140; f_B% reaches its 1.8 cap.
+    q = at(100);
+    test::near(q.fullStopTime, 3.046875, 1e-9); test::near(q.first, 1.5234375, 1e-9);
+    test::near(q.percentileQueue, 1.8 * (1.5234375 + 0.08056141752267043), 1e-9);
+    // v 800 > c: q is capped at the capacity, and f_B% takes Eq. 31-151's oversaturation term.
+    q = at(800);
+    test::near(q.first, 17.265625, 1e-9); test::near(q.second, 13.66025403784439, 1e-9);
+    test::near(q.percentileQueue, 43.123188378747436, 1e-9);
+    // Eqs. 31-154, 31-155: L_h = 25 x 0.97 + 0.45 x 3 = 25.6 ft; 5 veh in 256 ft is half full.
+    test::near(queueSpacing(3), 25.6, 1e-12);
+    test::near(storageRatio(5, 3, 256), 0.5, 1e-12);
+    // End to end: the four-leg's queues use each in-leg's length to its stop line.
+    auto d = fourLeg();
+    setNodeAnalysis(d, d.network.nodes.front().id, volumes(150, 400, 100));
+    const auto run = runNodeAnalysis(d, test::root() / "data");
+    for (const auto& g : run.nodes.front().groups) {
+        CHECK(g.queue && g.group.storage > 0);
+        test::near(*g.storageRatio, queueSpacing(3) * g.queue->mean / (g.group.storage / 0.3048), 1e-12);
+    }
+}
 TEST(nodeanalysis, na13_exhibit_19_41) { // NA13: Exhibit 19-41, PDF p. 1570-1571 (§11)
     struct Cell { double greenRatio; int lanes; double bound; double exhibit; std::optional<double> pinned; };
     // LOS B-E bounds (Exhibit 19-8); a pinned cell is one of §11's seven exceptions, at its computed value.
@@ -228,6 +263,11 @@ TEST(nodeanalysis, na14_shared_lane_refusals) { // NA14 (§11)
     setNodeAnalysis(d, d.network.nodes.front().id, a);
     const auto run = runNodeAnalysis(d, test::root() / "data");
     CHECK(advised(run.nodes.front().advisories, "NODE_ANALYSIS_NO_VOLUME") && run.nodes.front().groups.size() == 9);
+    // No speed limit: no queue and NODE_ANALYSIS_NO_SPEED, every other result kept.
+    setNodeAnalysis(d, d.network.nodes.front().id, volumes(150, 400, 100, std::nullopt));
+    const auto slow = runNodeAnalysis(d, test::root() / "data");
+    CHECK(advised(slow.nodes.front().advisories, "NODE_ANALYSIS_NO_SPEED") && slow.nodes.front().critical);
+    for (const auto& g : slow.nodes.front().groups) CHECK(g.result && !g.queue);
 }
 TEST(nodeanalysis, na_run_on_the_four_leg) { // A2 end to end on the shipped four-leg, all twelve turns
     auto d = fourLeg();

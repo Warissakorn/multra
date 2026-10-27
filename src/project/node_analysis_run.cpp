@@ -118,6 +118,16 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
             if (!row.issue) {
                 row.result = analyseSignalised(input);
                 row.los = signalisedLos(row.result->delay, row.result->ratio, pack.bounds);
+                if (approach != a.approaches.end() && approach->speedLimit) {
+                    constexpr double kMile = 1.609344, kFoot = 0.3048; // km, m: exact
+                    const auto& x = *row.result;
+                    row.queue = backOfQueue({row.flowRate, g.lanes, x.saturation, g.effectiveGreen, g.cycle, input.arrivalsOnGreen, x.capacity,
+                                             x.incrementalDelay, accelerationDelay(approachSpeed(*approach->speedLimit / kMile))});
+                    row.storageRatio = storageRatio(row.queue->mean, row.heavyPercent, g.storage / kFoot);
+                    row.storageRatio95 = storageRatio(row.queue->percentileQueue, row.heavyPercent, g.storage / kFoot);
+                } else if (std::none_of(out.advisories.begin(), out.advisories.end(), [&](const auto& i) { return i.code == "NODE_ANALYSIS_NO_SPEED" && i.path == path + ": " + g.inLink; })) {
+                    out.advisories.push_back({"NODE_ANALYSIS_NO_SPEED", path + ": " + g.inLink});
+                }
             }
             out.groups.push_back(std::move(row));
         }

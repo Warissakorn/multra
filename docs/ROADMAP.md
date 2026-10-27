@@ -472,7 +472,7 @@ finer levels with recorded provenance and a reported volume comparison.
 
 ### M13 — Analytical junction capacity (HCM 7, D370)
 
-**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 contracted** (D373: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11). A deterministic, flow-based method on the Node, beside Micro/Meso/Macro: HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
+**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3 next. A deterministic, flow-based method on the Node, beside Micro/Meso/Macro: HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
 
 ---
 

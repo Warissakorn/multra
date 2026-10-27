@@ -112,7 +112,7 @@ TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes 
     NodeAnalysis a;
     a.cbd = true; a.baseSaturationFlow = SaturationFlowSource{1750, "HCM 7 Exhibit 19-11, population < 250,000"};
     a.peakHourFactor = 0.95; a.analysisPeriod = 0.5;
-    a.approaches = {{"link-1", -2, 10, 3}};
+    a.approaches = {{"link-1", -2, 10, 3, 60}};
     a.turns = {{"link-1", "link-2", 420, 5}, {"link-3", "link-4", 300, std::nullopt}};
     setNodeAnalysis(d, id, a);
     const auto saved = documentJson(d);
@@ -124,6 +124,9 @@ TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes 
     auto bad = saved; bad["network"]["nodes"][0]["analysis"]["peakHourFactor"] = 1.2;
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
     bad = saved; bad["network"]["nodes"][0]["analysis"]["turns"][0]["vehiclesPerHour"] = -1;
+    test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
+    CHECK(saved["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] == 60.0);
+    bad = saved; bad["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] = 0;
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
     test::throws([&] { setNodeAnalysis(d, "nope", a); }, "EDIT_UNKNOWN_OBJECT");
 }

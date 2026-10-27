@@ -99,8 +99,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   - `automaticConflicts` remains network-wide. Scoping to Node bounds or incremental updates
     would still need the owner's choice; this optimization changes neither scope nor output.
 - **Analytical junction capacity (M13, D370):** contract [NODE_ANALYSIS](reference/NODE_ANALYSIS.md);
-  A1 implemented (D372). A2 contracted (D373, NODE_ANALYSIS §11) and in progress: shared lane groups
-  with Exhibit 19-41, then critical v/c, then back of queue.
+  A1 (D372) and A2 (D373, D374: shared lane groups, critical v/c, back of queue) implemented. Next
+  slice: A3 (permitted and protected-permitted left turns, Ch. 31 §2-§3), only when the owner asks.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).
 - **Owner checks on Windows:** D318's dialogs are OWNER_SITTING F4, E1's tool glyphs and click rule
   (D306) E23, and paint E22. M2.8 has only owner checks left.

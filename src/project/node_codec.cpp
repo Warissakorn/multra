@@ -88,6 +88,7 @@ Json analysisJson(const NodeAnalysis& a) {
             if (r.grade != 0) row["grade"] = r.grade;
             if (r.parkingManeuvers) row["parkingManeuvers"] = *r.parkingManeuvers;
             if (r.busesStopping != 0) row["busesStopping"] = r.busesStopping;
+            if (r.speedLimit) row["speedLimit"] = *r.speedLimit;
             list.push_back(row);
         }
         j["approaches"] = list;
@@ -138,7 +139,7 @@ NodeAnalysis parseAnalysis(const Json& j, const std::string& path) {
         } else if (key == "analysisPeriod") {
             a.analysisPeriod = number(value, at, true);
         } else if (key == "approaches") {
-            const std::vector<std::string> keys{"link", "grade", "parkingManeuvers", "busesStopping"};
+            const std::vector<std::string> keys{"link", "grade", "parkingManeuvers", "busesStopping", "speedLimit"};
             rows(value, at, keys, [&](const Json& r, const std::string& rowAt) {
                 if (!r.contains("link") || !r.at("link").is_string()) invalid(rowAt + ".link");
                 NodeAnalysisApproach row{r.at("link").get<std::string>()};
@@ -148,6 +149,7 @@ NodeAnalysis parseAnalysis(const Json& j, const std::string& path) {
                 }
                 if (r.contains("parkingManeuvers")) row.parkingManeuvers = number(r.at("parkingManeuvers"), rowAt + ".parkingManeuvers", false);
                 if (r.contains("busesStopping")) row.busesStopping = number(r.at("busesStopping"), rowAt + ".busesStopping", false);
+                if (r.contains("speedLimit")) row.speedLimit = number(r.at("speedLimit"), rowAt + ".speedLimit", true);
                 a.approaches.push_back(std::move(row));
             });
         } else if (key == "turns") {

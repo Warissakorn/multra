@@ -1457,6 +1457,24 @@
   "nodes": [
    {
     "analysis": {
+     "approaches": [
+      {
+       "link": "link-4",
+       "speedLimit": 50.0
+      },
+      {
+       "link": "link-16",
+       "speedLimit": 50.0
+      },
+      {
+       "link": "link-28",
+       "speedLimit": 50.0
+      },
+      {
+       "link": "link-40",
+       "speedLimit": 50.0
+      }
+     ],
      "turns": [
       {
        "in": "link-4",
