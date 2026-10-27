@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Analytical junction capacity booked as M13 (D370)
+
+- **Asked:** should MULTRA analyse junctions as Vistro, Synchro and SIDRA do? Answer approved by the
+  owner: yes, as a deterministic, flow-based method on the Node (macroscopic at junction scale), a
+  fourth method beside Micro, Meso and Macro, using published methods only (HCM 7, Webster).
+- **Contract** [NODE_ANALYSIS](reference/NODE_ANALYSIS.md): A1 is HCM 7 Ch. 19 Steps 1–9 for pretimed
+  protected exclusive lane groups. Eqs. 19-8, 19-19, 19-20 and 19-26 and Exhibit 19-8 were read
+  from the owner's copy (`74f4bc3`). Also slices A0–A9, rows NA1–NA8, and nine owner choices with
+  recommendations. Chapter 31's Example Problem 1 is actuated and protected-permitted, so it is
+  reserved for A3 + A8.
+- **Not done:** no code, no schema; the owner answers §8 and places M13 in the queue.
+
 ## 2026-10-27 — Measured optimization pass: graph-header fan-in, doc sizes
 
 - **Measured first** (Linux, 4 cores): the engine runs M2.6's hour in 0.40–0.45 s (Release), editor
@@ -162,25 +174,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   exclusions. Release headless build and all 161 CTest entries pass (16.64 s), including CLI,
   architecture, documentation and file-size checks. Linux headless evidence only; no Qt/Windows,
   scientific-validation, LOS-validation or owner gate is closed.
-
-## 2026-10-26 — Right-of-way structural schema and preserved legacy reads (D361)
-
-- **Changed:** shared metadata now covers waiting lines, control points/paths, conflict areas/
-  sides, priority rules and Stop/Yield controls. Their native reads move to right_of_way_codec;
-  queue counters reuse the same path decoder. The composed partial schema/CLI uses 56 shared
-  definitions and 13 version profiles. The parser is now 319 lines; no geometry/engine changes.
-- **Preserved:** schema 14/15 gates, optional nullable collections/names, legacy non-object
-  right-of-way containers and path decoding, authored enums and generated:true-only from 54.
-  Waiting-line point-before-id diagnostics and generated checks after each row keep their order.
-  Semantic owner/path/line/area checks, bounds, positive gaps, priority cycles and run-readiness
-  remain existing validators. The envelope-only API and desktop observed response are unchanged.
-- **Verified:** 12,967 cases across schemas 1–57 retain byte-identical before/after native
-  outcomes, errors and canonical documents and pass independent Draft-2020-12 expectations.
-  All four shipped projects validate structurally and keep byte-identical canonical output.
-  Five new project tests cover gates/nulls/enums, legacy paths, diagnostics/generated ordering,
-  semantic exclusions and structural refusals; project tests pass 50/50. Release headless build
-  and all 161 CTest entries pass (13.10 s), including docs, architecture, CLI and file-size checks.
-  Evidence is Linux headless only; no Qt/Windows, Vissim, scientific or owner gate is closed.
 
 ## Older entries
 

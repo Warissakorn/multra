@@ -61,7 +61,7 @@ Chapter rows name what the book offers a milestone; they do not book work. A row
 | 10, 12 Freeway facilities and basic segments; Exhibits 10-7, 12-4, 12-6 | Jam density, base capacities and speed–flow curves | **used:** S3.2's link types (D304, [ROADS](ROADS.md) §8) |
 | 13–14 Weaving, merge and diverge | Segment capacities and lengths | Future Macro and Meso link types for ramps |
 | 15, 18 Two-lane highways, urban street segments | Segment capacity and speed | ROADS §8 cites Ch. 18 for why urban street types are not shipped: their free speed is site-specific |
-| 19 Signalised intersections; Exhibits 19-8, 19-11; Eqs. 19-18, 19-19 | Base saturation flow, control delay `d = d1 + d2 + d3`, LOS | **used:** ROADS (Exhibit 19-11), LOS bounds; M6 S1-a and S2-a; Meso signals' `g = G` (D299) |
+| 19 Signalised intersections; Exhibits 19-8, 19-11; Eqs. 19-18, 19-19 | Base saturation flow, control delay `d = d1 + d2 + d3`, LOS | **used:** ROADS (Exhibit 19-11), LOS bounds; M6 S1-a and S2-a; Meso signals' `g = G` (D299); [NODE_ANALYSIS](NODE_ANALYSIS.md) Steps 1–9 (D370) |
 | 20 Two-way stop control; Exhibits 20-2, 20-17, 20-18; Eq. 20-18 | Conflicting flows by movement, base critical and follow-up headways, potential capacity | M6 U-a; **a cited `t_ij` source** for Meso priority inside a Node (MESO_NETWORK §5, D297) |
 | 21 All-way stop; Exhibit 21-8 | LOS bounds, AWSC capacity | LOS's unsignalised bounds |
 | 22 Roundabouts; Exhibits 22-8, 22-16 | Entry capacity against circulating flow | A roundabout Node in Macro or Meso; a Micro check |

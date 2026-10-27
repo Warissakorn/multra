@@ -430,3 +430,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D368](RECORD.md#d368) — Object table CSV prefixes `'` to text cells starting with a spreadsheet formula character; numbers and JSON cells unchanged.
 
 [D369](RECORD.md#d369) — M0 plausibility accepted by owner ruling ("ผ่าน แบบ A"); caveat: bare M0 scenarios hold amber as red (1–3 clamps per run); unvalidated marker stays.
+
+[D370](RECORD.md#d370) — Analytical junction capacity (HCM 7 Ch. 19 first) booked as M13, a fourth method on the Node; contract NODE_ANALYSIS, owner choices open; no code.

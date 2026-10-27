@@ -2,6 +2,25 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Right-of-way structural schema and preserved legacy reads (D361)
+
+- **Changed:** shared metadata now covers waiting lines, control points/paths, conflict areas/
+  sides, priority rules and Stop/Yield controls. Their native reads move to right_of_way_codec;
+  queue counters reuse the same path decoder. The composed partial schema/CLI uses 56 shared
+  definitions and 13 version profiles. The parser is now 319 lines; no geometry/engine changes.
+- **Preserved:** schema 14/15 gates, optional nullable collections/names, legacy non-object
+  right-of-way containers and path decoding, authored enums and generated:true-only from 54.
+  Waiting-line point-before-id diagnostics and generated checks after each row keep their order.
+  Semantic owner/path/line/area checks, bounds, positive gaps, priority cycles and run-readiness
+  remain existing validators. The envelope-only API and desktop observed response are unchanged.
+- **Verified:** 12,967 cases across schemas 1–57 retain byte-identical before/after native
+  outcomes, errors and canonical documents and pass independent Draft-2020-12 expectations.
+  All four shipped projects validate structurally and keep byte-identical canonical output.
+  Five new project tests cover gates/nulls/enums, legacy paths, diagnostics/generated ordering,
+  semantic exclusions and structural refusals; project tests pass 50/50. Release headless build
+  and all 161 CTest entries pass (13.10 s), including docs, architecture, CLI and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows, Vissim, scientific or owner gate is closed.
+
 ## 2026-10-26 — Signal control structural schema and codec parity (D360)
 
 - **Changed:** shared field metadata now covers definition signal-array presence, fixed-time
