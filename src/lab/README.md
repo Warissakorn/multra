@@ -11,12 +11,12 @@ the shell or Qt (`multra-check-architecture`), so it stays testable headless. Th
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `lab_settings.*` | `LabSettings`, every value the window edits; `defaultSettings`; `rescaleAxles` keeps explicit axle proportions consistent with a tuned length (shared by LabRun, the parameter panel and project Apply); `fitSpeedCurves` | [BEHAVIOUR_LAB §2](../../docs/reference/BEHAVIOUR_LAB.md) | shell |
-| `lab_network.*` | `buildLabDocument`: the ring built through the editor's own commands, never saved; `referenceLapLength` | [BEHAVIOUR_LAB §2](../../docs/reference/BEHAVIOUR_LAB.md) | this folder |
-| `lab_build.hpp`, `lab_oval.cpp`, `lab_urban.cpp` | Internal: the two layouts, `oval` and `urban`, and what they share (`addLoop`, `signalise`, `firstLane`, `finishDefinition`, defined in `lab_network.cpp`) | [BEHAVIOUR_LAB](../../docs/reference/BEHAVIOUR_LAB.md) | this folder |
-| `lab_run.*` | `LabRun`: compiles with `buildScenario`, marks lane chains circuits, places vehicles and steps; retunes in place (`retuneSimulation`) when only values change, restarts otherwise; `maxVehicles` | [BEHAVIOUR_LAB §2](../../docs/reference/BEHAVIOUR_LAB.md) | shell |
+| File | Holds | Contract |
+|---|---|---|
+| `lab_settings.*` | `LabSettings`, every value the window edits; `defaultSettings`; `rescaleAxles` keeps explicit axle proportions consistent with a tuned length (shared by LabRun, the parameter panel and project Apply); `fitSpeedCurves` | [BEHAVIOUR_LAB §2](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `lab_network.*` | `buildLabDocument`: the ring built through the editor's own commands, never saved; `referenceLapLength` | [BEHAVIOUR_LAB §2](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `lab_build.hpp`, `lab_oval.cpp`, `lab_urban.cpp` | Internal: the two layouts, `oval` and `urban`, and what they share (`addLoop`, `signalise`, `firstLane`, `finishDefinition`, defined in `lab_network.cpp`) | [BEHAVIOUR_LAB](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `lab_run.*` | `LabRun`: compiles with `buildScenario`, marks lane chains circuits, places vehicles and steps; retunes in place (`retuneSimulation`) when only values change, restarts otherwise; `maxVehicles` | [BEHAVIOUR_LAB §2](../../docs/reference/BEHAVIOUR_LAB.md) |
 
 ## Tests
 

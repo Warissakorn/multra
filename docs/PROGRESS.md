@@ -22,12 +22,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   contracts already own behaviour, and a second detailed copy would drift. The gap was the module
   READMEs, which read as decision histories; the owner approved rewriting them.
 - **Changed:** every `src/*/README.md` (and `src/model/demand/`, `src/model/control/`) now holds
-  purpose, dependency rule, a file table (file, what it holds, contract, used by), entry points and
+  purpose, dependency rule, a file table (file, what it holds, contract), entry points and
   tests, with no status or decision history. Substantive rules kept: eval's observer rules,
-  project's codec rules. Callers were derived from resolved `#include` paths. The survey found
-  `src/editor/` reading three shell and one commands header, now stated in its README.
+  project's codec rules. A review then dropped a hand-written "used by" column (nothing could
+  keep it true) and corrected a claimed editor/shell boundary breach: they are one target.
 - **Check:** `multra-check-docs` fails when a header under `src/` is missing from its module's
-  README (nearest parent README for a folder without one), with positive and negative fixtures.
+  README as the start of a table row (nearest parent README for a folder without one; a prose
+  mention does not count), with positive and negative fixtures.
 - **Verified:** the docs, architecture and file-size checks pass; removing one row fails the docs
   check as expected.
 

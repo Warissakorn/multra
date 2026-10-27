@@ -13,14 +13,14 @@ paths and time-window flows.
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `graph.*` | The Meso graph as plain values: links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction) and `mesoStepLimit` | [MESO_NETWORK §3, §4](../../docs/reference/MESO_NETWORK.md) | model/demand (fills it) |
-| `settings.hpp` | `MesoSettings` (step, reporting slice) alone, so the authoring definition need not include the graph | [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md) | model/demand |
-| `demand.*` | The loaded demand: `MesoPath`, `MesoClass`, turn shares and entry flows | [MESO_NETWORK §6](../../docs/reference/MESO_NETWORK.md) | model/demand, project |
-| `node_model.*` | `mesoNodeFlows`, Tampère et al. (2011) §5.1, checked against the paper's Table 8 | [MESO_NETWORK §5](../../docs/reference/MESO_NETWORK.md) | this folder |
-| `link_model.*` | Yperman (2007) Eqs. 4.31 and 4.35 over `MesoCurve` cumulative counts | [MESO_NETWORK §4](../../docs/reference/MESO_NETWORK.md) | this folder |
-| `loading.*` | `loadMeso`: three steps per time step, origins as point queues, turn splits by route composition (Eq. 5.2), `mesoNodeFlows` at every node. Signals are averaged green: each in-link's turns under one program form a Tampère §5.2 internal supply. A turn's free-flow time delays entry to the out-link, and its vehicles count against that link's storage meanwhile | [MESO_NETWORK §4-§6](../../docs/reference/MESO_NETWORK.md) | project |
+| File | Holds | Contract |
+|---|---|---|
+| `graph.*` | The Meso graph as plain values: links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction) and `mesoStepLimit` | [MESO_NETWORK §3, §4](../../docs/reference/MESO_NETWORK.md) |
+| `settings.hpp` | `MesoSettings` (step, reporting slice) alone, so the authoring definition need not include the graph | [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md) |
+| `demand.*` | The loaded demand: `MesoPath`, `MesoClass`, turn shares and entry flows | [MESO_NETWORK §6](../../docs/reference/MESO_NETWORK.md) |
+| `node_model.*` | `mesoNodeFlows`, Tampère et al. (2011) §5.1, checked against the paper's Table 8 | [MESO_NETWORK §5](../../docs/reference/MESO_NETWORK.md) |
+| `link_model.*` | Yperman (2007) Eqs. 4.31 and 4.35 over `MesoCurve` cumulative counts | [MESO_NETWORK §4](../../docs/reference/MESO_NETWORK.md) |
+| `loading.*` | `loadMeso`: three steps per time step, origins as point queues, turn splits by route composition (Eq. 5.2), `mesoNodeFlows` at every node. Signals are averaged green: each in-link's turns under one program form a Tampère §5.2 internal supply. A turn's free-flow time delays entry to the out-link, and its vehicles count against that link's storage meanwhile | [MESO_NETWORK §4-§6](../../docs/reference/MESO_NETWORK.md) |
 
 ## Entry points
 

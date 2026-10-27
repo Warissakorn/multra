@@ -12,10 +12,10 @@ thread-free.
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `batch.*` | `runSeed` (one seed observed exactly as a single run), `runSeeds`, `aggregate` in seed order, `tQuantile975`, `movementsWithUnfinished`. An optional cancellation predicate interrupts a seed at 32-tick checkpoints (`RunCancelled`); without one, replay is unchanged | [BATCH](../../docs/reference/BATCH.md) | project, shell |
-| `compare.*` | `welch` and `compareBatches`: alternative minus base, row by row, over one seed list (equal seeds are not common random numbers) | [BATCH §7](../../docs/reference/BATCH.md) | project |
+| File | Holds | Contract |
+|---|---|---|
+| `batch.*` | `runSeed` (one seed observed exactly as a single run), `runSeeds`, `aggregate` in seed order, `tQuantile975`, `movementsWithUnfinished`. An optional cancellation predicate interrupts a seed at 32-tick checkpoints (`RunCancelled`); without one, replay is unchanged | [BATCH](../../docs/reference/BATCH.md) |
+| `compare.*` | `welch` and `compareBatches`: alternative minus base, row by row, over one seed list (equal seeds are not common random numbers) | [BATCH §7](../../docs/reference/BATCH.md) |
 
 ## Tests
 

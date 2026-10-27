@@ -15,33 +15,33 @@ and then the step is unchanged to the bit.
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `types.hpp` | The runtime contract: `Scenario`, `SimState`, `Vehicle`, `SimEvent`, behaviours (`effectiveBehaviour` by front segment), `upcomingArrivals` | [SIMULATION](../../docs/reference/SIMULATION.md) | everything |
-| `simulation.*` | Public API: `createSimulation`, `stepSimulation`, `runSimulation`, `totalTicks`, `canonicalScenario`; `retuneSimulation` and `placeVehicle` (in `retune.cpp`, for the Behaviour Lab only); `signalColorAt` (in `signals.cpp`). `demand.cpp` draws arrivals | [SIMULATION](../../docs/reference/SIMULATION.md), [BEHAVIOUR_LAB §1](../../docs/reference/BEHAVIOUR_LAB.md) | editor, lab, runner, shell, tools |
-| `validate.*` | `validateScenario`, `assertValidScenario`, `onTimeGrid` | [SIMULATION](../../docs/reference/SIMULATION.md) | commands, lab, model/network, project, shell |
-| `detail.hpp` | splitmix64's finaliser and the canonical id order shared by create and retune | [SIMULATION](../../docs/reference/SIMULATION.md) | this folder |
-| `routes.*` | The run index: routes as segment indexes, `appendVehicleSpans` (the occupied spans every leader search reads) | [SIMULATION](../../docs/reference/SIMULATION.md) | editor, lab, shell, tools |
-| `routing.*` | Station route decisions: `routingIssues`, `nextRouteDecision`, `applyRouteDecision` (one seeded draw per selection) | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) | this folder |
-| `following.*` | `followingAcceleration` and `follow`, the one car-following entry every model runs through | [SIMULATION](../../docs/reference/SIMULATION.md), [W74 §6](../../docs/reference/W74.md) | tools |
-| `w74.*` | Wiedemann-74-structured car-following | [W74](../../docs/reference/W74.md) | project, shell |
-| `leaders.*` | Leader searches: `forCoveredSpans` over every lane a straddling body covers | [LATERAL §6](../../docs/reference/LATERAL.md) | this folder |
-| `lanes.*` | Lane changes: mandatory changes off stub routes, discretionary changes, keep-to-kerb (`kerbParameterIssues`), `decideLaneChanges`, `recordLaneChange` | [M3_8_CONTRACT §2](../../docs/reference/M3_8_CONTRACT.md), [OVERTAKING](../../docs/reference/OVERTAKING.md), [MERGE_DECELERATION](../../docs/reference/MERGE_DECELERATION.md) | tools |
-| `conflicts.*` | Crossing admission: zones by route distance, right of way, Stop and give-way service, commitment; `tickCap` and `relievedCap` (in `caps.cpp`) | [M3_CONTRACT §4](../../docs/reference/M3_CONTRACT.md), [COMMITMENT](../../docs/reference/COMMITMENT.md), [MERGE_CLAMPS](../../docs/reference/MERGE_CLAMPS.md), [STOP_DWELL](../../docs/reference/STOP_DWELL.md) | tools |
-| `line_state_types.hpp` | Per-vehicle state at a line kept between ticks: `StopService`, the `RedRelease` pairs | [M3_CONTRACT §5](../../docs/reference/M3_CONTRACT.md), [RED_RUNNING §3](../../docs/reference/RED_RUNNING.md) | this folder |
-| `red_running.*` | The red-runner draw, `redElapsed`, `letThrough` | [RED_RUNNING](../../docs/reference/RED_RUNNING.md) | this folder |
-| `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) | this folder |
-| `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) | project, shell |
-| `lateral_types.hpp` | `DrivingSide`, the compiled `SegmentCrossSection` | [LATERAL](../../docs/reference/LATERAL.md) | this folder |
-| `lateral.*` | The lateral key table (one list for codec, validator and serializer), lateral spans and filters | [LATERAL §3, §9](../../docs/reference/LATERAL.md) | model/network, project, shell |
-| `lateral_motion.*` | Lateral motion toward a `lateralTarget` after the longitudinal step, admitted in vehicle-id order without 2D overlap | [LATERAL §7](../../docs/reference/LATERAL.md) | this folder |
-| `speed_control.*` | Curve speed: the switch, key checks and `speedTarget` from `Segment::curvature` | [SPEED_CONTROL](../../docs/reference/SPEED_CONTROL.md) | model/network, project |
-| `speed_decision_types.hpp` | A type's desired-speed range and curve; a desired-speed decision as run | [SPEED_DISTRIBUTION](../../docs/reference/SPEED_DISTRIBUTION.md), [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) | this folder |
-| `speed_distribution.*` | Speed of a cumulative share and its inverse; moving a curve onto an edited range | [SPEED_DISTRIBUTION §3](../../docs/reference/SPEED_DISTRIBUTION.md) | lab, shell |
-| `speed_decision.*` | Desired-speed decisions crossed this tick, by route distance | [SPEED_DECISIONS §3](../../docs/reference/SPEED_DECISIONS.md) | this folder |
-| `speed_area.*` | Reduced-speed areas bounding the speed target | [SPEED_DECISIONS §7](../../docs/reference/SPEED_DECISIONS.md) | this folder |
-| `parking_types.hpp` | A parking lot as the engine runs it (ids, resolved once by the index) | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) | this folder |
-| `parking.*` | The lot runtime: gate hold, admission, dwell, departures that keep their space until inserted | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) | this folder |
+| File | Holds | Contract |
+|---|---|---|
+| `types.hpp` | The runtime contract: `Scenario`, `SimState`, `Vehicle`, `SimEvent`, behaviours (`effectiveBehaviour` by front segment), `upcomingArrivals` | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `simulation.*` | Public API: `createSimulation`, `stepSimulation`, `runSimulation`, `totalTicks`, `canonicalScenario`; `retuneSimulation` and `placeVehicle` (in `retune.cpp`, for the Behaviour Lab only); `signalColorAt` (in `signals.cpp`). `demand.cpp` draws arrivals | [SIMULATION](../../docs/reference/SIMULATION.md), [BEHAVIOUR_LAB §1](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `validate.*` | `validateScenario`, `assertValidScenario`, `onTimeGrid` | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `detail.hpp` | splitmix64's finaliser and the canonical id order shared by create and retune | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `routes.*` | The run index: routes as segment indexes, `appendVehicleSpans` (the occupied spans every leader search reads) | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `routing.*` | Station route decisions: `routingIssues`, `nextRouteDecision`, `applyRouteDecision` (one seeded draw per selection) | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
+| `following.*` | `followingAcceleration` and `follow`, the one car-following entry every model runs through | [SIMULATION](../../docs/reference/SIMULATION.md), [W74 §6](../../docs/reference/W74.md) |
+| `w74.*` | Wiedemann-74-structured car-following | [W74](../../docs/reference/W74.md) |
+| `leaders.*` | Leader searches: `forCoveredSpans` over every lane a straddling body covers | [LATERAL §6](../../docs/reference/LATERAL.md) |
+| `lanes.*` | Lane changes: mandatory changes off stub routes, discretionary changes, keep-to-kerb (`kerbParameterIssues`), `decideLaneChanges`, `recordLaneChange` | [M3_8_CONTRACT §2](../../docs/reference/M3_8_CONTRACT.md), [OVERTAKING](../../docs/reference/OVERTAKING.md), [MERGE_DECELERATION](../../docs/reference/MERGE_DECELERATION.md) |
+| `conflicts.*` | Crossing admission: zones by route distance, right of way, Stop and give-way service, commitment; `tickCap` and `relievedCap` (in `caps.cpp`) | [M3_CONTRACT §4](../../docs/reference/M3_CONTRACT.md), [COMMITMENT](../../docs/reference/COMMITMENT.md), [MERGE_CLAMPS](../../docs/reference/MERGE_CLAMPS.md), [STOP_DWELL](../../docs/reference/STOP_DWELL.md) |
+| `line_state_types.hpp` | Per-vehicle state at a line kept between ticks: `StopService`, the `RedRelease` pairs | [M3_CONTRACT §5](../../docs/reference/M3_CONTRACT.md), [RED_RUNNING §3](../../docs/reference/RED_RUNNING.md) |
+| `red_running.*` | The red-runner draw, `redElapsed`, `letThrough` | [RED_RUNNING](../../docs/reference/RED_RUNNING.md) |
+| `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) |
+| `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) |
+| `lateral_types.hpp` | `DrivingSide`, the compiled `SegmentCrossSection` | [LATERAL](../../docs/reference/LATERAL.md) |
+| `lateral.*` | The lateral key table (one list for codec, validator and serializer), lateral spans and filters | [LATERAL §3, §9](../../docs/reference/LATERAL.md) |
+| `lateral_motion.*` | Lateral motion toward a `lateralTarget` after the longitudinal step, admitted in vehicle-id order without 2D overlap | [LATERAL §7](../../docs/reference/LATERAL.md) |
+| `speed_control.*` | Curve speed: the switch, key checks and `speedTarget` from `Segment::curvature` | [SPEED_CONTROL](../../docs/reference/SPEED_CONTROL.md) |
+| `speed_decision_types.hpp` | A type's desired-speed range and curve; a desired-speed decision as run | [SPEED_DISTRIBUTION](../../docs/reference/SPEED_DISTRIBUTION.md), [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
+| `speed_distribution.*` | Speed of a cumulative share and its inverse; moving a curve onto an edited range | [SPEED_DISTRIBUTION §3](../../docs/reference/SPEED_DISTRIBUTION.md) |
+| `speed_decision.*` | Desired-speed decisions crossed this tick, by route distance | [SPEED_DECISIONS §3](../../docs/reference/SPEED_DECISIONS.md) |
+| `speed_area.*` | Reduced-speed areas bounding the speed target | [SPEED_DECISIONS §7](../../docs/reference/SPEED_DECISIONS.md) |
+| `parking_types.hpp` | A parking lot as the engine runs it (ids, resolved once by the index) | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) |
+| `parking.*` | The lot runtime: gate hold, admission, dwell, departures that keep their space until inserted | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) |
 
 ## Entry points
 

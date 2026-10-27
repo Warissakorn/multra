@@ -408,9 +408,10 @@ reading of the formula images (BOOKS rule). Only the next slice's questions are 
 **A3: permitted and protected-permitted turns.** A turn that yields during its green to a
 conflicting movement is analysed instead of refused with `NODE_ANALYSIS_PERMITTED`, by Ch. 31 §3's
 procedure for selected lane groups: permitted green, time before the first left-turn vehicle
-arrives, permitted saturation flow, through-car equivalent, proportion of turns in a shared lane,
+arrives (HCM's left turn is the far turn), permitted saturation flow, through-car equivalent, proportion of turns in a shared lane,
 lane group saturation flow and its QAP (Steps 1–7, PDF p. 2986–3015). Questions (B25):
-1. **Scope.** (a, recommended) Exclusive and shared lanes, left and right turns, pretimed.
+1. **Scope.** (a, recommended) Exclusive and shared lanes, far and kerb turns (HCM's left and right,
+   on either driving side as §10 maps them), pretimed.
    (b) Exclusive lanes first, shared lanes later.
 2. **Recognising protected-permitted operation.** (a, recommended) Derived from the program and the
    Node's conflicts: the part of a turn's green that overlaps the green of a movement it yields to

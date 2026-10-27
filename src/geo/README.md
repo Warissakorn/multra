@@ -11,11 +11,11 @@ Core, eval and headless persistence never import this module.
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `projection.*` | `GeoProjection`: geographic, Mercator and world (project) metres both ways; `insideStudy` (100 km) and the wider browsing-only `insideOverview`. Projected grid metres, not survey ground distance | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | editor, shell |
-| `projection_data.*` | `projectionDataDirectory`: finds the PROJ database shipped with the executable, independently of a `--data-dir` content override | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | shell |
-| `tile_grid.*` | XYZ tile maths: `tileBounds`, `tilePoint`, `tileAt`, `tileZoom` (256-pixel tiles) | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | editor |
+| File | Holds | Contract |
+|---|---|---|
+| `projection.*` | `GeoProjection`: geographic, Mercator and world (project) metres both ways; `insideStudy` (100 km) and the wider browsing-only `insideOverview`. Projected grid metres, not survey ground distance | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `projection_data.*` | `projectionDataDirectory`: finds the PROJ database shipped with the executable, independently of a `--data-dir` content override | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `tile_grid.*` | XYZ tile maths: `tileBounds`, `tilePoint`, `tileAt`, `tileZoom` (256-pixel tiles) | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 
 ## Tests
 

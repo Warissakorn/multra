@@ -11,21 +11,21 @@ May read `src/core/types.hpp` only; no model, project, Qt or I/O (`multra-check-
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `summary.*` | The incremental completed-trip diagnostic | [SIMULATION](../../docs/reference/SIMULATION.md) | project, runner, shell |
-| `movement.*` | `MovementAccumulator`: one run's per-movement delay and travel time, and approach queue counters (Vissim's queue-counter conditions); owns the lots report | [SIMULATION](../../docs/reference/SIMULATION.md), [BATCH](../../docs/reference/BATCH.md) | project, runner |
-| `sections.*` | Travel-time sections: each line as places on runtime segments; delay per section | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) | this folder |
-| `los.*` | Level-of-service packs as content (rule 5): per control type, the A-E delay bounds, applied to simulated section delay only | [LOS](../../docs/reference/LOS.md) | project |
-| `nodes.*` | Micro node evaluation: groups a Node's turn sections and leg queue counters | [NODES §4](../../docs/reference/NODES.md) | runner, this folder |
-| `lots.*` | Each parking lot's occupancy, flows and gate waits, from snapshots alone | [ZONES_AND_PARKING §5](../../docs/reference/ZONES_AND_PARKING.md) | this folder |
-| `discharge.*` | Per-head, per-lane queue discharge headways and start-up estimates, tick-quantised, with raw crossings and explicit unavailable reasons; not capacity, PCU or LOS | [DISCHARGE](../../docs/reference/DISCHARGE.md) | project, shell, tools |
-| `discharge_passage.*` | `dischargeMotions`: reconstructs proven motion across remaps from the observer's own prior positions, unique engine spans and terminal evidence | [DISCHARGE](../../docs/reference/DISCHARGE.md) | this folder |
-| `lane_changes.*` | Diagnostic: where mandatory lane changes happen and how long stub vehicles wait, per movement | [M3_8_CONTRACT §2](../../docs/reference/M3_8_CONTRACT.md) | project |
-| `segment_times.*` | Diagnostic: mean time from departure to each runtime segment, per movement | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag | project |
-| `stop_lines.*` | Diagnostic: how each signal head's stop line discharges (standing time in red and green, greens waited) | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag | project |
-| `arrival_phases.*` | Diagnostic: histograms of when in the cycle vehicles reach and first stop on a segment, bounded to 16 MiB in all | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag | project |
-| `dead_end_waits.*` | Diagnostic: why a stub vehicle waits at its dead end, decided once per wait | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag | project |
+| File | Holds | Contract |
+|---|---|---|
+| `summary.*` | The incremental completed-trip diagnostic | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `movement.*` | `MovementAccumulator`: one run's per-movement delay and travel time, and approach queue counters (Vissim's queue-counter conditions); owns the lots report | [SIMULATION](../../docs/reference/SIMULATION.md), [BATCH](../../docs/reference/BATCH.md) |
+| `sections.*` | Travel-time sections: each line as places on runtime segments; delay per section | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |
+| `los.*` | Level-of-service packs as content (rule 5): per control type, the A-E delay bounds, applied to simulated section delay only | [LOS](../../docs/reference/LOS.md) |
+| `nodes.*` | Micro node evaluation: groups a Node's turn sections and leg queue counters | [NODES §4](../../docs/reference/NODES.md) |
+| `lots.*` | Each parking lot's occupancy, flows and gate waits, from snapshots alone | [ZONES_AND_PARKING §5](../../docs/reference/ZONES_AND_PARKING.md) |
+| `discharge.*` | Per-head, per-lane queue discharge headways and start-up estimates, tick-quantised, with raw crossings and explicit unavailable reasons; not capacity, PCU or LOS | [DISCHARGE](../../docs/reference/DISCHARGE.md) |
+| `discharge_passage.*` | `dischargeMotions`: reconstructs proven motion across remaps from the observer's own prior positions, unique engine spans and terminal evidence | [DISCHARGE](../../docs/reference/DISCHARGE.md) |
+| `lane_changes.*` | Diagnostic: where mandatory lane changes happen and how long stub vehicles wait, per movement | [M3_8_CONTRACT §2](../../docs/reference/M3_8_CONTRACT.md) |
+| `segment_times.*` | Diagnostic: mean time from departure to each runtime segment, per movement | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
+| `stop_lines.*` | Diagnostic: how each signal head's stop line discharges (standing time in red and green, greens waited) | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
+| `arrival_phases.*` | Diagnostic: histograms of when in the cycle vehicles reach and first stop on a segment, bounded to 16 MiB in all | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
+| `dead_end_waits.*` | Diagnostic: why a stub vehicle waits at its dead end, decided once per wait | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
 
 ## Rules every observer keeps
 

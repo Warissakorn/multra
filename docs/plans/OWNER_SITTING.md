@@ -59,7 +59,8 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    **2026-10-22:** the owner supplied Yperman (2007) as a Markdown repository; the link model and the
    engine are in (D298). Boyles et al. are not needed. Only the host question remains, for later sources.
 25. **M13 A3's choices** (listed 2026-10-27). Read [NODE_ANALYSIS §12](../reference/NODE_ANALYSIS.md#12-outlines-of-later-slices)
-   A3 and answer its five questions by letter: (1) scope, (2) recognising protected-permitted
+   A3 and answer its five questions by letter (far turn = HCM's left, the right turn when driving on the
+   left): (1) scope, (2) recognising protected-permitted
    operation, (3) opposing flow, (4) pedestrians and bicycles, (5) acceptance; each lists (a, recommended)
    first. A3 starts only when the owner asks; its contract and formulas follow these answers. Which
    letters? *Owner:*

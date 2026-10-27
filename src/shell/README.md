@@ -10,8 +10,9 @@ and recovery, dialogs, the Results tabs and the optional local automation server
 ## Dependencies
 
 Everything below it: `src/editor/`, `src/commands/`, `src/project/`, `src/model/`, `src/core/`,
-`src/eval/`, `src/runner/`, `src/lab/`, `src/geo/`. Nothing includes the shell, except the
-exceptions listed in [src/editor](../editor/README.md#dependencies). Every file the shell writes is
+`src/eval/`, `src/runner/`, `src/lab/`, `src/geo/`. It shares the `multra_shell` target with
+`src/editor/` ([its dependencies](../editor/README.md#dependencies)); no other `src/` module includes the
+shell. Every file the shell writes is
 replaced atomically (`QSaveFile`).
 
 ## Files
@@ -32,42 +33,42 @@ replaced atomically (`QSaveFile`).
 
 The other headers:
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) | `main.cpp`, tools |
-| `editor_style.*` | The 20-unit toolbar and cursor glyphs; the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) | editor |
-| `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) | this folder |
-| `editor_storage.*` | Atomic replacement of any file the shell writes; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) | this folder |
-| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) | `main.cpp` |
-| `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none | editor |
-| `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) | this folder |
-| `editor_batch_cells.*` | The cells the batch and comparison tables share | [BATCH](../../docs/reference/BATCH.md) | this folder |
-| `editor_macro.*` | The Macro run: one worker over a copy of the document, stages and gap posted back | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) | this folder |
-| `editor_meso.*` | The Meso run, as the Macro one | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) | this folder |
-| `macro_run_dialog.*` | Named Macro run definitions, committed as one Undo step | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md#named-macro-runs) | this folder |
-| `run_identity.hpp` | Metadata of the GUI single run, apart from engine state | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) | this folder |
-| `signal_timing_view.*` | A controller's timing bars across one cycle, from the run's colour rule | [SIMULATION](../../docs/reference/SIMULATION.md) | this folder |
-| `behaviour_library_dialog.*` | The driving-behaviour library dialog, editing a staged copy | [DRIVING_BEHAVIOUR §9](../../docs/reference/DRIVING_BEHAVIOUR.md) | this folder |
-| `behaviour_editor.*` | One behaviour's name, model and keys | [W74](../../docs/reference/W74.md), [DRIVING_BEHAVIOUR](../../docs/reference/DRIVING_BEHAVIOUR.md) | this folder |
-| `behaviour_lab_window.*` | Simulation → Behaviour Lab: non-modal, its own `EditorCanvas` following one vehicle; Apply writes the tuned vehicle back through `execute` | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) | this folder |
-| `behaviour_lab_panel.*` | The lab's three-tab parameter panel over one `LabSettings` | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) | this folder |
-| `behaviour_lab_telemetry.*` | The followed vehicle's last 60 s as speed and gap strips | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) | this folder |
-| `demand_catalog_dialog.*` | Vehicle type and composition dialogs | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) | this folder |
-| `demand_period_editor.*` | Demand period rows, returned for the caller's History command | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) | this folder |
-| `demand_type_rules_dialog.*` | A routing decision's per-type matrices over its targets and periods | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) | this folder |
-| `od_lot_dialogs.*` | The OD matrix grid and parking-lot dialogs | [ZONES_AND_PARKING §9](../../docs/reference/ZONES_AND_PARKING.md) | this folder |
-| `road_zone_dialog.*` | Direct Road targets for Macro and Meso (Roads without generated Links only) | [ROADS_IMPLEMENTED §22](../../docs/reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) | this folder |
-| `gate_flow_dialog.*` | A study area's typed gate flows for one period and composition | [STUDY_AREA §5](../../docs/reference/STUDY_AREA.md) | this folder |
-| `map_settings_dialog.*` | Map reference and appearance (staged) and navigation | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | this folder |
-| `map_location_picker.*` | Searchable country and province shortcuts that fill the coordinate fields | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) | this folder |
-| `vehicle_color_dialog.*` | Per-type fixed or mixed body colours, saved as application-local preferences shared with the lab | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334) | this folder |
-| `object_export.*` | File → Export object table (CSV); the formatter is `src/project/object_csv` | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) | this folder |
-| `image_export.*` | File → Export network image (PNG); the canvas renders | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) | this folder |
-| `automation_server.*` | Optional local JSONL control, one object per line, dispatched on the GUI thread | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) | this folder |
-| `automation_endpoint.*` | The protocol bound and endpoint naming shared with the `multra-control` client | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) | tools |
-| `automation_error.hpp` | `CommandError`: an automation error code with details | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) | this folder |
-| `automation_document.*` | Patches, observed structural discovery and dry validation through the codec and History; no claimed complete schema | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) | this folder |
-| `automation_geometry.*` | Previews the Connector command on a copy; enriches rejected attachment errors | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) | this folder |
+| File | Holds | Contract |
+|---|---|---|
+| `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_style.*` | The 20-unit toolbar and cursor glyphs; the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
+| `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `editor_storage.*` | Atomic replacement of any file the shell writes; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
+| `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
+| `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `editor_batch_cells.*` | The cells the batch and comparison tables share | [BATCH](../../docs/reference/BATCH.md) |
+| `editor_macro.*` | The Macro run: one worker over a copy of the document, stages and gap posted back | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) |
+| `editor_meso.*` | The Meso run, as the Macro one | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) |
+| `macro_run_dialog.*` | Named Macro run definitions, committed as one Undo step | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md#named-macro-runs) |
+| `run_identity.hpp` | Metadata of the GUI single run, apart from engine state | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `signal_timing_view.*` | A controller's timing bars across one cycle, from the run's colour rule | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `behaviour_library_dialog.*` | The driving-behaviour library dialog, editing a staged copy | [DRIVING_BEHAVIOUR §9](../../docs/reference/DRIVING_BEHAVIOUR.md) |
+| `behaviour_editor.*` | One behaviour's name, model and keys | [W74](../../docs/reference/W74.md), [DRIVING_BEHAVIOUR](../../docs/reference/DRIVING_BEHAVIOUR.md) |
+| `behaviour_lab_window.*` | Simulation → Behaviour Lab: non-modal, its own `EditorCanvas` following one vehicle; Apply writes the tuned vehicle back through `execute` | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `behaviour_lab_panel.*` | The lab's three-tab parameter panel over one `LabSettings` | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `behaviour_lab_telemetry.*` | The followed vehicle's last 60 s as speed and gap strips | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `demand_catalog_dialog.*` | Vehicle type and composition dialogs | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
+| `demand_period_editor.*` | Demand period rows, returned for the caller's History command | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
+| `demand_type_rules_dialog.*` | A routing decision's per-type matrices over its targets and periods | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
+| `od_lot_dialogs.*` | The OD matrix grid and parking-lot dialogs | [ZONES_AND_PARKING §9](../../docs/reference/ZONES_AND_PARKING.md) |
+| `road_zone_dialog.*` | Direct Road targets for Macro and Meso (Roads without generated Links only) | [ROADS_IMPLEMENTED §22](../../docs/reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) |
+| `gate_flow_dialog.*` | A study area's typed gate flows for one period and composition | [STUDY_AREA §5](../../docs/reference/STUDY_AREA.md) |
+| `map_settings_dialog.*` | Map reference and appearance (staged) and navigation | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `map_location_picker.*` | Searchable country and province shortcuts that fill the coordinate fields | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `vehicle_color_dialog.*` | Per-type fixed or mixed body colours, saved as application-local preferences shared with the lab | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334) |
+| `object_export.*` | File → Export object table (CSV); the formatter is `src/project/object_csv` | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) |
+| `image_export.*` | File → Export network image (PNG); the canvas renders | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) |
+| `automation_server.*` | Optional local JSONL control, one object per line, dispatched on the GUI thread | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_endpoint.*` | The protocol bound and endpoint naming shared with the `multra-control` client | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_error.hpp` | `CommandError`: an automation error code with details | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_document.*` | Patches, observed structural discovery and dry validation through the codec and History; no claimed complete schema | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_geometry.*` | Previews the Connector command on a copy; enriches rejected attachment errors | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
 
 ## Tests
 

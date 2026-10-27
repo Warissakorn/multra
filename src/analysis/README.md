@@ -12,12 +12,12 @@ number, no I/O (`multra-check-architecture`).
 
 ## Files
 
-| File | Holds | Contract | Used by |
-|---|---|---|---|
-| `signalised.*` | One lane group's Ch. 19 result: the saturation factors of Eq. 19-8 (with `fShared` for a shared lane), capacity, v/c, uniform and incremental delay, flow-weighted approach and intersection delay, LOS by Exhibit 19-8 | [§3, §10](../../docs/reference/NODE_ANALYSIS.md) | model/demand, project |
-| `lane_flow.*` | Ch. 31 §2's lane group flow rates on an approach with a shared lane (Eqs. 31-46 to 31-66), protected only: `approachLaneFlows`, `laneChangeProbability` | [§11](../../docs/reference/NODE_ANALYSIS.md) | model/demand, project |
-| `critical.*` | The critical v/c `criticalRatio` (Eqs. 19-30, 19-31) over the non-overlapping chain of greens with the largest Σy | [§11](../../docs/reference/NODE_ANALYSIS.md) | project |
-| `queue.*` | Back of queue and storage ratio (Ch. 31 §4): `approachSpeed`, `accelerationDelay`, `backOfQueue`, `queueSpacing`, `storageRatio` | [§11](../../docs/reference/NODE_ANALYSIS.md) | project |
+| File | Holds | Contract |
+|---|---|---|
+| `signalised.*` | One lane group's Ch. 19 result: the saturation factors of Eq. 19-8 (with `fShared` for a shared lane), capacity, v/c, uniform and incremental delay, flow-weighted approach and intersection delay, LOS by Exhibit 19-8 | [§3, §10](../../docs/reference/NODE_ANALYSIS.md) |
+| `lane_flow.*` | Ch. 31 §2's lane group flow rates on an approach with a shared lane (Eqs. 31-46 to 31-66), protected only: `approachLaneFlows`, `laneChangeProbability` | [§11](../../docs/reference/NODE_ANALYSIS.md) |
+| `critical.*` | The critical v/c `criticalRatio` (Eqs. 19-30, 19-31) over the non-overlapping chain of greens with the largest Σy | [§11](../../docs/reference/NODE_ANALYSIS.md) |
+| `queue.*` | Back of queue and storage ratio (Ch. 31 §4): `approachSpeed`, `accelerationDelay`, `backOfQueue`, `queueSpacing`, `storageRatio` | [§11](../../docs/reference/NODE_ANALYSIS.md) |
 
 ## Entry points
 
