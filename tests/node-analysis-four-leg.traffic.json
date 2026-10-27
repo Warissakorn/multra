@@ -1464,9 +1464,29 @@
        "vehiclesPerHour": 150.0
       },
       {
+       "in": "link-4",
+       "out": "link-20",
+       "vehiclesPerHour": 400.0
+      },
+      {
+       "in": "link-4",
+       "out": "link-44",
+       "vehiclesPerHour": 100.0
+      },
+      {
        "in": "link-16",
        "out": "link-44",
        "vehiclesPerHour": 150.0
+      },
+      {
+       "in": "link-16",
+       "out": "link-8",
+       "vehiclesPerHour": 400.0
+      },
+      {
+       "in": "link-16",
+       "out": "link-32",
+       "vehiclesPerHour": 100.0
       },
       {
        "in": "link-28",
@@ -1474,9 +1494,29 @@
        "vehiclesPerHour": 150.0
       },
       {
+       "in": "link-28",
+       "out": "link-44",
+       "vehiclesPerHour": 400.0
+      },
+      {
+       "in": "link-28",
+       "out": "link-8",
+       "vehiclesPerHour": 100.0
+      },
+      {
        "in": "link-40",
        "out": "link-8",
        "vehiclesPerHour": 150.0
+      },
+      {
+       "in": "link-40",
+       "out": "link-32",
+       "vehiclesPerHour": 400.0
+      },
+      {
+       "in": "link-40",
+       "out": "link-20",
+       "vehiclesPerHour": 100.0
       }
      ]
     },

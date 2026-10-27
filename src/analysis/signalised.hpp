@@ -28,10 +28,14 @@ struct SignalisedLaneGroup {
     double period{0.25};             // T, h
     double incrementalFactor{0.5};   // k: 0.50 for pretimed phases (Step 8C, PDF p. 1476)
     double upstreamFiltering{1.0};   // I: 1.0 for an isolated intersection
+    // A2: a shared lane group's s/s_th from Ch. 31 §2 (lane_flow.hpp). It replaces fLT and fRT, and
+    // fLU is 1 for one shared lane (PDF p. 1469).
+    std::optional<double> sharedShare;
 };
 // The factors of Eq. 19-8 (PDF p. 1465) that A1 computes; fLpb, fRpb, fwz, fms and fsp are 1.
+// fShared is a shared lane group's s/s_th (A2), 1 otherwise.
 struct SaturationFactors {
-    double fw{1}, fHVg{1}, fp{1}, fbb{1}, fa{1}, fLU{1}, fLT{1}, fRT{1};
+    double fw{1}, fHVg{1}, fp{1}, fbb{1}, fa{1}, fLU{1}, fLT{1}, fRT{1}, fShared{1};
     bool operator==(const SaturationFactors&) const = default;
 };
 struct SignalisedResult {
@@ -44,7 +48,8 @@ struct SignalisedResult {
 // ANALYSIS_LANES (< 1), ANALYSIS_LANE_WIDTH (< 8 ft, Exhibit 19-20's note), ANALYSIS_HEAVY_VEHICLES
 // (outside 0-50 %), ANALYSIS_GRADE (outside -4 to +10 %; both PDF p. 1467), ANALYSIS_PARKING (outside
 // 0-180/h, PDF p. 1468), ANALYSIS_BUSES (outside 0-250/h, PDF p. 1469), ANALYSIS_TIMING (C <= 0, g <= 0
-// or g > C), ANALYSIS_FLOW (v < 0, s0 <= 0 or T <= 0).
+// or g > C), ANALYSIS_FLOW (v < 0, s0 <= 0, T <= 0, or a shared share outside (0, 1] or on more than
+// one lane).
 std::optional<std::string> signalisedRangeIssue(const SignalisedLaneGroup&);
 // Exhibit 19-15 (PDF p. 1444): default lane utilization for exclusive lanes; more lanes than the
 // exhibit shows take its smallest value for that movement (its note a).

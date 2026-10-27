@@ -3,11 +3,16 @@
 
 namespace multra {
 namespace {
-constexpr const char* kMeasure = "Analytical (HCM 7th ed. Ch. 19: pretimed, protected, exclusive lane groups), not simulated: "
+constexpr const char* kMeasure = "Analytical (HCM 7th ed. Ch. 19 with Ch. 31: pretimed, protected lane groups), not simulated: "
     "flow in veh/h, saturation flow in veh/h/ln, delay in s/veh";
 const char* movementName(LaneGroupMovement m) {
     return m == LaneGroupMovement::through ? "through" : m == LaneGroupMovement::kerbTurn ? "kerbTurn" : "farTurn";
 }
+const char* kindName(LaneGroupKind k) {
+    static constexpr const char* names[] = {"left", "sharedLeft", "through", "sharedRight", "right", "leftRight", "all"};
+    return names[static_cast<int>(k)];
+}
+double share(double part, double whole) { return whole > 0 ? part / whole : 0; }
 Json optionalNumber(const std::optional<double>& x) { return x ? Json(*x) : Json(nullptr); }
 Json optionalLetter(const std::optional<char>& x) { return x ? Json(std::string(1, *x)) : Json(nullptr); }
 std::string letter(const std::optional<char>& x) { return x ? std::string(1, *x) : std::string(); }
@@ -22,15 +27,16 @@ Json nodeAnalysisJson(const NodeAnalysisRun& r) {
                   {"flow", n.flow}, {"delay", optionalNumber(n.delay)}, {"los", optionalLetter(n.los)}};
         for (const auto& i : n.advisories) node["advisories"].push_back({{"code", i.code}, {"path", i.path}});
         for (const auto& g : n.groups) {
-            Json row{{"name", g.group.name}, {"in", g.group.inLink}, {"out", g.group.outLink}, {"movement", movementName(g.group.movement)},
-                     {"lanes", g.group.lanes}, {"laneWidth", g.group.laneWidth}, {"program", g.group.program},
+            Json turns = Json::array();
+            for (const auto t : g.group.turns) turns.push_back(t < n.turnNames.size() ? n.turnNames[t] : std::string());
+            Json row{{"name", g.group.name}, {"in", g.group.inLink}, {"turns", turns}, {"kind", kindName(g.group.kind)},
+                     {"movement", movementName(g.group.movement)}, {"lanes", g.group.lanes}, {"laneWidth", g.group.laneWidth}, {"program", g.group.program},
                      {"displayedGreen", g.group.displayedGreen}, {"effectiveGreen", g.group.effectiveGreen}, {"cycle", g.group.cycle},
-                     {"volume", g.volume}, {"heavyVehiclePercent", g.heavyPercent}, {"issue", g.issue ? Json(*g.issue) : Json(nullptr)}};
+                     {"flowRate", g.flowRate}, {"farTurns", g.farTurns}, {"kerbTurns", g.kerbTurns}, {"heavyVehiclePercent", g.heavyPercent}, {"issue", g.issue ? Json(*g.issue) : Json(nullptr)}};
             if (g.result) {
                 const auto& x = *g.result;
                 const auto& f = x.factors;
-                row["factors"] = {{"fw", f.fw}, {"fHVg", f.fHVg}, {"fp", f.fp}, {"fbb", f.fbb}, {"fa", f.fa}, {"fLU", f.fLU}, {"fLT", f.fLT}, {"fRT", f.fRT}};
-                row["flowRate"] = g.volume / n.peakHourFactor;
+                row["factors"] = {{"fw", f.fw}, {"fHVg", f.fHVg}, {"fp", f.fp}, {"fbb", f.fbb}, {"fa", f.fa}, {"fLU", f.fLU}, {"fLT", f.fLT}, {"fRT", f.fRT}, {"fShared", f.fShared}};
                 row["saturationFlow"] = x.saturation; row["capacity"] = x.capacity; row["ratio"] = x.ratio; row["greenRatio"] = x.greenRatio;
                 row["progressionFactor"] = x.progression; row["uniformDelay"] = x.uniformDelay; row["incrementalDelay"] = x.incrementalDelay;
                 row["initialQueueDelay"] = x.initialQueueDelay; row["delay"] = x.delay; row["los"] = optionalLetter(g.los);
@@ -45,11 +51,12 @@ Json nodeAnalysisJson(const NodeAnalysisRun& r) {
 }
 std::string nodeAnalysisCsv(const NodeAnalysisRun& r) {
     std::string out = std::string("# MULTRA - not yet validated. ") + kMeasure + ".\n";
-    out += "level,node,name,movement,lanes,flowRate,saturationFlow,capacity,ratio,greenRatio,uniformDelay,incrementalDelay,delay,los,issue\n";
+    out += "level,node,name,kind,lanes,flowRate,farShare,kerbShare,saturationFlow,capacity,ratio,greenRatio,uniformDelay,incrementalDelay,delay,los,issue\n";
     for (const auto& n : r.nodes) {
         for (const auto& g : n.groups) {
-            out += "laneGroup," + csvQuoted(n.name) + "," + csvQuoted(g.group.name) + "," + movementName(g.group.movement) + "," +
-                   std::to_string(g.group.lanes) + "," + csvNumber(g.volume / n.peakHourFactor) + ",";
+            out += "laneGroup," + csvQuoted(n.name) + "," + csvQuoted(g.group.name) + "," + kindName(g.group.kind) + "," +
+                   std::to_string(g.group.lanes) + "," + csvNumber(g.flowRate) + "," + csvNumber(share(g.farTurns, g.flowRate)) + "," +
+                   csvNumber(share(g.kerbTurns, g.flowRate)) + ",";
             if (g.result) {
                 const auto& x = *g.result;
                 out += csvNumber(x.saturation) + "," + csvNumber(x.capacity) + "," + csvNumber(x.ratio) + "," + csvNumber(x.greenRatio) + "," +
@@ -59,8 +66,8 @@ std::string nodeAnalysisCsv(const NodeAnalysisRun& r) {
             }
         }
         for (const auto& a : n.approaches)
-            out += "approach," + csvQuoted(n.name) + "," + csvQuoted(a.name) + ",,," + csvNumber(a.flow) + ",,,,,,," + csvNumber(a.delay) + "," + letter(a.los) + ",\n";
-        out += "node," + csvQuoted(n.name) + "," + csvQuoted(n.name) + ",,," + csvNumber(n.flow) + ",,,,,,," + csvNumber(n.delay) + "," + letter(n.los) + ",\n";
+            out += "approach," + csvQuoted(n.name) + "," + csvQuoted(a.name) + ",,," + csvNumber(a.flow) + ",,,,,,,,," + csvNumber(a.delay) + "," + letter(a.los) + ",\n";
+        out += "node," + csvQuoted(n.name) + "," + csvQuoted(n.name) + ",,," + csvNumber(n.flow) + ",,,,,,,,," + csvNumber(n.delay) + "," + letter(n.los) + ",\n";
     }
     return out;
 }

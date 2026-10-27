@@ -1,6 +1,8 @@
 #include "node_analysis_run.hpp"
 #include <algorithm>
 #include <cmath>
+#include <map>
+#include <set>
 #include <stdexcept>
 
 namespace multra {
@@ -42,16 +44,68 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         if (!a.baseSaturationFlow) out.defaults.push_back("baseSaturationFlow");
         const auto compiled = compileNodeAnalysis(d.network, i, def.signalControllers, def.signalPrograms);
         out.advisories = compiled.advisories;
+        const auto& m = compiled.membership;
+        for (const auto& t : m.turns) out.turnNames.push_back(t.name);
+        const auto path = "network.nodes[" + std::to_string(i) + "]";
+        const auto rowOf = [&](std::size_t t) -> const NodeAnalysisTurn* {
+            const auto& in = m.inLegs[m.turns[t].in].linkId; const auto& to = m.outLegs[m.turns[t].out].linkId;
+            const auto r = std::find_if(a.turns.begin(), a.turns.end(), [&](const auto& x) { return x.in == in && x.out == to; });
+            return r == a.turns.end() ? nullptr : &*r;
+        };
+        // Turns without a volume; a coupled approach with one is not analysed.
+        std::set<std::size_t> noVolume; std::set<std::string> skipped;
+        for (const auto& g : compiled.groups)
+            for (const auto t : g.turns)
+                if (!rowOf(t)) { noVolume.insert(t); if (g.coupled) skipped.insert(g.inLink); }
+        for (const auto t : noVolume) out.advisories.push_back({"NODE_ANALYSIS_NO_VOLUME", path + ": " + m.turns[t].name});
         bool heavyDefault = false;
+        // Per movement of an approach: the flow rate and the flow-weighted %HV (Steps 2-3).
+        struct Movement { double flow{}, heavy{}; };
+        const auto movementsOf = [&](const std::string& in) {
+            std::map<LaneGroupMovement, Movement> byMovement;
+            for (std::size_t t = 0; t < m.turns.size(); ++t) {
+                const auto* r = rowOf(t);
+                if (!r || m.inLegs[m.turns[t].in].linkId != in) continue;
+                auto& x = byMovement[compiled.movements[t]];
+                const double v = r->vehiclesPerHour / out.peakHourFactor;
+                x.heavy = x.flow + v > 0 ? (x.heavy * x.flow + r->heavyVehiclePercent.value_or(3) * v) / (x.flow + v) : 3;
+                x.flow += v;
+            }
+            return byMovement;
+        };
+        std::map<std::string, LaneFlows> laneFlows; // per coupled approach (Ch. 31 §2)
         for (const auto& g : compiled.groups) {
-            const auto turn = std::find_if(a.turns.begin(), a.turns.end(), [&](const auto& t) { return t.in == g.inLink && t.out == g.outLink; });
-            if (turn == a.turns.end()) { out.advisories.push_back({"NODE_ANALYSIS_NO_VOLUME", "network.nodes[" + std::to_string(i) + "]: " + g.name}); continue; }
+            if (!g.coupled || skipped.contains(g.inLink) || laneFlows.contains(g.inLink)) continue;
+            auto byMovement = movementsOf(g.inLink);
+            std::array<int, kLaneGroupKinds> lanes{};
+            for (const auto& h : compiled.groups) if (h.inLink == g.inLink) lanes[static_cast<int>(h.kind)] += h.lanes;
+            const auto flows = approachLaneFlows({byMovement[LaneGroupMovement::farTurn].flow, byMovement[LaneGroupMovement::through].flow,
+                                                  byMovement[LaneGroupMovement::kerbTurn].flow}, lanes);
+            if (!flows.converged) { out.advisories.push_back({"NODE_ANALYSIS_NO_CONVERGENCE", path + ": " + g.inLink}); skipped.insert(g.inLink); continue; }
+            laneFlows.emplace(g.inLink, flows);
+        }
+        for (const auto& g : compiled.groups) {
+            if (skipped.contains(g.inLink) || std::any_of(g.turns.begin(), g.turns.end(), [&](auto t) { return noVolume.contains(t); })) continue;
             const auto approach = std::find_if(a.approaches.begin(), a.approaches.end(), [&](const auto& r) { return r.link == g.inLink; });
-            AnalysedLaneGroup row{g, turn->vehiclesPerHour, turn->heavyVehiclePercent.value_or(3)};
-            heavyDefault = heavyDefault || !turn->heavyVehiclePercent;
+            AnalysedLaneGroup row{g};
+            for (const auto t : g.turns) heavyDefault = heavyDefault || !rowOf(t)->heavyVehiclePercent;
             SignalisedLaneGroup input;
-            input.lanes = g.lanes; input.movement = g.movement;
-            input.flowRate = turn->vehiclesPerHour / out.peakHourFactor; // Steps 2-3
+            if (g.coupled) {
+                const auto& f = laneFlows.at(g.inLink)[g.kind];
+                auto byMovement = movementsOf(g.inLink);
+                row.flowRate = f.flow; row.farTurns = f.farTurns; row.kerbTurns = f.kerbTurns;
+                const double through = std::max(0.0, f.flow - f.farTurns - f.kerbTurns);
+                row.heavyPercent = f.flow > 0 ? (f.farTurns * byMovement[LaneGroupMovement::farTurn].heavy + f.kerbTurns * byMovement[LaneGroupMovement::kerbTurn].heavy +
+                                                 through * byMovement[LaneGroupMovement::through].heavy) / f.flow : 3;
+                if (g.kind != LaneGroupKind::left && g.kind != LaneGroupKind::through && g.kind != LaneGroupKind::right) input.sharedShare = f.saturationShare;
+            } else {
+                const auto* r = rowOf(g.turns.front());
+                row.flowRate = r->vehiclesPerHour / out.peakHourFactor; // Steps 2-3
+                row.heavyPercent = r->heavyVehiclePercent.value_or(3);
+                if (g.movement == LaneGroupMovement::farTurn) row.farTurns = row.flowRate;
+                if (g.movement == LaneGroupMovement::kerbTurn) row.kerbTurns = row.flowRate;
+            }
+            input.lanes = g.lanes; input.movement = g.movement; input.flowRate = row.flowRate;
             input.baseSaturation = out.baseSaturationFlow; input.laneWidth = g.laneWidth; input.heavyPercent = row.heavyPercent;
             if (approach != a.approaches.end()) {
                 input.gradePercent = approach->grade; input.parkingManeuvers = approach->parkingManeuvers; input.busesStopping = approach->busesStopping;
@@ -72,7 +126,7 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         std::vector<std::pair<double, double>> all;
         for (const auto& row : out.groups) {
             if (!row.result) continue;
-            const double v = row.volume / out.peakHourFactor;
+            const double v = row.flowRate;
             all.push_back({v, row.result->delay});
             auto approach = std::find_if(out.approaches.begin(), out.approaches.end(), [&](const auto& x) { return x.inLink == row.group.inLink; });
             if (approach == out.approaches.end()) {
@@ -86,7 +140,7 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         for (auto& approach : out.approaches) {
             std::vector<std::pair<double, double>> mine;
             for (const auto& row : out.groups)
-                if (row.result && row.group.inLink == approach.inLink) mine.push_back({row.volume / out.peakHourFactor, row.result->delay});
+                if (row.result && row.group.inLink == approach.inLink) mine.push_back({row.flowRate, row.result->delay});
             approach.delay = flowWeightedDelay(mine);
             if (approach.delay) approach.los = signalisedLos(*approach.delay, std::nullopt, pack.bounds);
         }

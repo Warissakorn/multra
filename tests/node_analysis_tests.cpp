@@ -4,7 +4,6 @@
 #include "../src/analysis/signalised.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
 #include "../src/commands/node_commands.hpp"
-#include "../src/commands/right_of_way_commands.hpp"
 #include "../src/model/demand/node_analysis_compile.hpp"
 #include "../src/project/document.hpp"
 #include "../src/project/document_schema.hpp"
@@ -89,29 +88,7 @@ TEST(nodeanalysis, na6_los_bounds) { // NA6: Exhibit 19-8, PDF p. 1422
     const auto pack = loadSignalisedLosPack(test::root() / "data");
     CHECK(pack.id == "hcm7-signalised" && pack.bounds == b);
 }
-TEST(nodeanalysis, na7_refusals_name_the_turn_and_give_no_number) { // NA7
-    // The shipped four-leg: each approach's through lanes also carry its kerb turn (shared); its pocket
-    // lane carries the far turn alone, under that approach's own group (split phasing, protected).
-    auto d = shipped("four-leg-signalised.traffic.json");
-    putNode(d, box(-25, -25, 25, 25));
-    auto def = *d.definition;
-    auto c = compileNodeAnalysis(d.network, 0, def.signalControllers, def.signalPrograms);
-    CHECK(c.membership.turns.size() == 12 && c.groups.size() == 4);
-    CHECK(std::count_if(c.advisories.begin(), c.advisories.end(), [](const auto& i) { return i.code == "NODE_ANALYSIS_SHARED_LANE"; }) == 8);
-    for (const auto& g : c.groups) CHECK(g.movement == LaneGroupMovement::farTurn && g.lanes == 1 && g.cycle == 120);
-    // Give the East approach the West approach's green and draw the West far turn across the East
-    // through movement, yielding: the far turn becomes permitted and is refused.
-    for (auto& controller : d.definition->signalControllers)
-        for (auto& group : controller.groups)
-            if (group.number == 2) {
-                const auto one = std::find_if(controller.groups.begin(), controller.groups.end(), [](const auto& g) { return g.number == 1; });
-                group.greenStart = one->greenStart; group.greenEnd = one->greenEnd;
-            }
-    addCrossingAreas(d, "connector-51", "connector-52", "connector-51", {3.0, 5.0});
-    def = *d.definition;
-    c = compileNodeAnalysis(d.network, 0, def.signalControllers, def.signalPrograms);
-    CHECK(advised(c.advisories, "NODE_ANALYSIS_PERMITTED") && c.groups.size() == 3);
-    CHECK(std::none_of(c.groups.begin(), c.groups.end(), [](const auto& g) { return g.inLink == "link-4"; }));
+TEST(nodeanalysis, na7_refusals_name_the_turn_and_give_no_number) { // NA7; shared and permitted cases are NA14
     // No detail, and no signal.
     auto far = shipped("four-leg-signalised.traffic.json");
     putNode(far, box(500, 500, 520, 520));
@@ -120,38 +97,6 @@ TEST(nodeanalysis, na7_refusals_name_the_turn_and_give_no_number) { // NA7
     putNode(t, box(-25, -18, 25, 8));
     const auto tdef = t.definition.value_or(AuthoringDefinition{});
     CHECK(advised(compileNodeAnalysis(t.network, 0, tdef.signalControllers, tdef.signalPrograms).advisories, "NODE_ANALYSIS_NOT_SIGNALISED"));
-}
-TEST(nodeanalysis, na_run_on_the_four_leg_pockets) { // A1 end to end; each number from the engine rows above
-    auto d = shipped("four-leg-signalised.traffic.json");
-    putNode(d, box(-25, -25, 25, 25));
-    NodeAnalysis a;
-    a.turns = {{"link-4", "link-32", 150, std::nullopt}, {"link-16", "link-44", 150, std::nullopt},
-               {"link-28", "link-20", 150, std::nullopt}, {"link-40", "link-8", 150, std::nullopt}};
-    setNodeAnalysis(d, d.network.nodes.front().id, a);
-    const auto run = runNodeAnalysis(d, test::root() / "data");
-    CHECK(run.losPack == "hcm7-signalised" && run.nodes.size() == 1);
-    const auto& n = run.nodes.front();
-    CHECK(n.groups.size() == 4 && n.approaches.size() == 4);
-    test::near(n.peakHourFactor, 0.90, 0); // 600 veh/h entering, under 1,000 (Exhibit 19-11)
-    test::near(n.analysisPeriod, 0.25, 0); test::near(n.baseSaturationFlow, 1900, 0);
-    CHECK(n.defaults == std::vector<std::string>({"analysisPeriod", "peakHourFactor", "baseSaturationFlow", "heavyVehiclePercent"}));
-    std::vector<std::pair<double, double>> all;
-    for (const auto& g : n.groups) {
-        CHECK(!g.issue && g.result && g.los);
-        // 3.5 m (11.5 ft): fw 1; 3 % heavy vehicles, flat: fHVg 0.9766; protected far turn: 1/1.05.
-        test::near(g.result->saturation, 1900 * 0.9766 / 1.05, 1e-9);
-        test::near(g.result->greenRatio, g.group.effectiveGreen / 120, 1e-12);
-        test::near(g.group.effectiveGreen, g.group.displayedGreen, 1e-12); // l1 = e = 2 s
-        test::near(g.result->progression, 1, 1e-12);
-        all.push_back({150 / 0.90, g.result->delay});
-    }
-    for (const auto& approach : n.approaches) CHECK(approach.delay && approach.los);
-    test::near(*n.delay, *flowWeightedDelay(all), 1e-12);
-    const auto j = nodeAnalysisJson(run);
-    CHECK(j["validated"] == false && j["nodes"][0]["laneGroups"].size() == 4);
-    const auto csv = nodeAnalysisCsv(run);
-    CHECK(csv.rfind("# MULTRA - not yet validated. Analytical (HCM 7th ed. Ch. 19", 0) == 0);
-    CHECK(csv.find("\nnode,\"Centre\",\"Centre\",,,666.67,") != std::string::npos);
 }
 TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes kept
     for (const char* project : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json",

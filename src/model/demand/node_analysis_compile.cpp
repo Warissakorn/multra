@@ -83,25 +83,18 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         }
         for (const int k : lanes[t]) lanesTurns[{turns[t].in, k}].insert(t);
     }
-    // Each turn's one program, or why not.
-    std::vector<std::string> program(turns.size());
-    std::vector<bool> refused(turns.size());
+    // Each turn's one program, or why not: code[t] names why a turn is refused, empty when it is not.
+    std::vector<std::string> program(turns.size()), code(turns.size());
     std::optional<double> cycle;
     for (std::size_t t = 0; t < turns.size(); ++t) {
         const auto ids = turnSignalPrograms(n, m, turns[t]);
-        if (ids.empty()) { advise("NODE_ANALYSIS_UNSIGNALISED", turns[t].name); refused[t] = true; continue; }
+        if (ids.empty()) { code[t] = "NODE_ANALYSIS_UNSIGNALISED"; continue; }
         const auto g = greens.find(*ids.begin());
         if (ids.size() != 1 || g == greens.end() || !g->second.single || (cycle && std::abs(*cycle - g->second.cycle) > 1e-9)) {
-            advise("NODE_ANALYSIS_SIGNAL", turns[t].name); refused[t] = true; continue;
+            code[t] = "NODE_ANALYSIS_SIGNAL"; continue;
         }
         cycle = g->second.cycle;
         program[t] = *ids.begin();
-    }
-    for (std::size_t t = 0; t < turns.size(); ++t) {
-        if (refused[t]) continue;
-        if (std::any_of(lanes[t].begin(), lanes[t].end(), [&](int k) { return lanesTurns[{turns[t].in, k}].size() > 1; })) {
-            advise("NODE_ANALYSIS_SHARED_LANE", turns[t].name); refused[t] = true;
-        }
     }
     std::vector<bool> permitted(turns.size());
     for (const auto& c : m.conflicts) {
@@ -110,26 +103,90 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
         if (c.priority != ConflictPriority::secondYields) permitted[c.first] = true;
         if (c.priority != ConflictPriority::firstYields) permitted[c.second] = true;
     }
+    for (std::size_t t = 0; t < turns.size(); ++t)
+        if (code[t].empty() && permitted[t]) code[t] = "NODE_ANALYSIS_PERMITTED";
     for (std::size_t t = 0; t < turns.size(); ++t) {
-        if (refused[t] || !permitted[t]) continue;
-        advise("NODE_ANALYSIS_PERMITTED", turns[t].name); refused[t] = true;
-    }
-    for (std::size_t t = 0; t < turns.size(); ++t) {
-        if (refused[t]) continue;
         const auto& inLink = *linkOf(n, m.inLegs[turns[t].in].linkId);
         const auto& outLink = *linkOf(n, m.outLegs[turns[t].out].linkId);
         const auto d1 = directionAlong(inLink.geometry, m.inLegs[turns[t].in].station, true);
         const auto d2 = directionAlong(outLink.geometry, m.outLegs[turns[t].out].station, false);
         const double sweep = kerb * std::atan2(d1.x * d2.y - d1.y * d2.x, d1.x * d2.x + d1.y * d2.y);
         constexpr double kThrough = 3.14159265358979323846 / 4; // within 45 degrees of straight on
-        const auto movement = std::abs(sweep) < kThrough ? LaneGroupMovement::through
-                            : sweep > 0 ? LaneGroupMovement::kerbTurn : LaneGroupMovement::farTurn;
-        double width = 0;
-        for (const int k : lanes[t]) width += inLink.lanes[static_cast<std::size_t>(k)].width;
-        const auto& g = greens[program[t]];
-        out.groups.push_back({t, turns[t].name, inLink.id, outLink.id, program[t], movement, static_cast<int>(lanes[t].size()),
-                              width / static_cast<double>(lanes[t].size()), g.green, g.green - kStartUpLostTime + kGreenExtension, g.cycle});
+        out.movements.push_back(std::abs(sweep) < kThrough ? LaneGroupMovement::through
+                                : sweep > 0 ? LaneGroupMovement::kerbTurn : LaneGroupMovement::farTurn);
     }
+    const auto group = [&](std::vector<std::size_t> members, const std::vector<int>& laneSet, LaneGroupKind kind, LaneGroupMovement movement, bool coupled) {
+        const auto& inLink = *linkOf(n, m.inLegs[turns[members.front()].in].linkId);
+        std::string name;
+        for (const auto t : members) name += (name.empty() ? "" : " + ") + turns[t].name;
+        double width = 0;
+        for (const int k : laneSet) width += inLink.lanes[static_cast<std::size_t>(k)].width;
+        const auto id = program[members.front()];
+        const auto& g = greens[id];
+        out.groups.push_back({std::move(members), name, inLink.id, id, kind, movement, coupled,
+                              static_cast<int>(laneSet.size()), width / static_cast<double>(laneSet.size()), g.green,
+                              g.green - kStartUpLostTime + kGreenExtension, g.cycle});
+    };
+    for (std::size_t leg = 0; leg < m.inLegs.size(); ++leg) {
+        std::vector<std::size_t> mine;
+        for (std::size_t t = 0; t < turns.size(); ++t) if (turns[t].in == leg) mine.push_back(t);
+        if (mine.empty()) continue;
+        // The in-leg's used lanes, in order, each with its turns; adjacent lanes with the same turns run together.
+        std::vector<std::pair<std::set<std::size_t>, std::vector<int>>> runs;
+        for (const auto& [key, set] : lanesTurns) {
+            if (key.first != leg) continue;
+            if (!runs.empty() && runs.back().first == set && runs.back().second.back() + 1 == key.second) runs.back().second.push_back(key.second);
+            else runs.push_back({set, {key.second}});
+        }
+        const auto kindOf = [&](const std::set<std::size_t>& set) {
+            std::set<LaneGroupMovement> kinds;
+            for (const auto t : set) kinds.insert(out.movements[t]);
+            const bool far = kinds.contains(LaneGroupMovement::farTurn), through = kinds.contains(LaneGroupMovement::through),
+                       kerbTurn = kinds.contains(LaneGroupMovement::kerbTurn);
+            return far && through && kerbTurn ? LaneGroupKind::all : far && through ? LaneGroupKind::sharedLeft
+                 : through && kerbTurn ? LaneGroupKind::sharedRight : far && kerbTurn ? LaneGroupKind::leftRight
+                 : far ? LaneGroupKind::left : kerbTurn ? LaneGroupKind::right : LaneGroupKind::through;
+        };
+        const auto isShared = [](LaneGroupKind k) { return k == LaneGroupKind::sharedLeft || k == LaneGroupKind::sharedRight ||
+                                                           k == LaneGroupKind::leftRight || k == LaneGroupKind::all; };
+        const bool coupled = std::any_of(runs.begin(), runs.end(), [&](const auto& r) { return isShared(kindOf(r.first)); });
+        if (!coupled) { // A1: one lane group per turn, on that turn's lanes
+            for (const auto t : mine) {
+                if (!code[t].empty()) continue;
+                const auto movement = out.movements[t];
+                group({t}, std::vector<int>(lanes[t].begin(), lanes[t].end()),
+                      movement == LaneGroupMovement::farTurn ? LaneGroupKind::left : movement == LaneGroupMovement::kerbTurn ? LaneGroupKind::right
+                                                             : LaneGroupKind::through, movement, false);
+            }
+            continue;
+        }
+        // Coupled: the approach is analysed whole or not at all.
+        std::string why;
+        for (const auto t : mine) if (!code[t].empty()) { why = code[t]; break; }
+        if (why.empty())
+            for (const auto& r : runs)
+                if (std::any_of(r.first.begin(), r.first.end(), [&](auto t) { return program[t] != program[*r.first.begin()]; })) why = "NODE_ANALYSIS_SIGNAL";
+        std::array<int, kLaneGroupKinds> count{}, seen{};
+        for (const auto& r : runs) { const auto k = static_cast<int>(kindOf(r.first)); count[k] += static_cast<int>(r.second.size()); ++seen[k]; }
+        const auto at = [](LaneGroupKind k) { return static_cast<int>(k); };
+        if (why.empty() && (std::any_of(seen.begin(), seen.end(), [](int x) { return x > 1; }) ||
+                            count[at(LaneGroupKind::sharedLeft)] > 1 || count[at(LaneGroupKind::sharedRight)] > 1 || count[at(LaneGroupKind::leftRight)] > 1 ||
+                            (count[at(LaneGroupKind::leftRight)] > 0 && count[at(LaneGroupKind::sharedLeft)] + count[at(LaneGroupKind::through)] + count[at(LaneGroupKind::sharedRight)] > 0) ||
+                            (count[at(LaneGroupKind::all)] > 0 && runs.size() > 1)))
+            why = "NODE_ANALYSIS_LANE_LAYOUT";
+        if (!why.empty()) {
+            for (const auto t : mine) if (code[t].empty()) code[t] = why;
+            continue;
+        }
+        for (const auto& r : runs) {
+            const auto kind = kindOf(r.first);
+            group(std::vector<std::size_t>(r.first.begin(), r.first.end()), r.second, kind,
+                  kind == LaneGroupKind::left ? LaneGroupMovement::farTurn : kind == LaneGroupKind::right ? LaneGroupMovement::kerbTurn
+                                              : LaneGroupMovement::through, true);
+        }
+    }
+    // Advisories in turn order, after every approach has spread its refusals.
+    for (std::size_t t = 0; t < turns.size(); ++t) if (!code[t].empty()) advise(code[t], turns[t].name);
     return out;
 }
 }

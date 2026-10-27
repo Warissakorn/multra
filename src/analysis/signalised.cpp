@@ -15,6 +15,7 @@ std::optional<std::string> signalisedRangeIssue(const SignalisedLaneGroup& g) {
     if (g.busesStopping < 0 || g.busesStopping > 250) return "ANALYSIS_BUSES";
     if (!(g.cycle > 0) || !(g.effectiveGreen > 0) || g.effectiveGreen > g.cycle) return "ANALYSIS_TIMING";
     if (g.flowRate < 0 || !(g.baseSaturation > 0) || !(g.period > 0)) return "ANALYSIS_FLOW";
+    if (g.sharedShare && (g.lanes != 1 || !(*g.sharedShare > 0) || *g.sharedShare > 1)) return "ANALYSIS_FLOW";
     return std::nullopt;
 }
 double laneUtilization(LaneGroupMovement movement, int lanes) {
@@ -40,6 +41,7 @@ SaturationFactors saturationFactors(const SignalisedLaneGroup& g) {
     // Eq. 19-12 (PDF p. 1469).
     f.fbb = std::max(0.050, (n - 14.4 * g.busesStopping / 3600) / n);
     f.fa = g.cbd ? 0.90 : 1.00; // PDF p. 1469
+    if (g.sharedShare) { f.fShared = *g.sharedShare; return f; }
     f.fLU = laneUtilization(g.movement, g.lanes);
     // Eqs. 19-13 and 19-14 (PDF p. 1470): E_R = 1.18 and E_L = 1.05 for protected turns.
     if (g.movement == LaneGroupMovement::kerbTurn) f.fRT = 1 / 1.18;
@@ -61,7 +63,7 @@ SignalisedResult analyseSignalised(const SignalisedLaneGroup& g) {
     SignalisedResult r;
     r.factors = saturationFactors(g);
     const auto& f = r.factors;
-    r.saturation = g.baseSaturation * f.fw * f.fHVg * f.fp * f.fbb * f.fa * f.fLU * f.fLT * f.fRT; // Eq. 19-8
+    r.saturation = g.baseSaturation * f.fw * f.fHVg * f.fp * f.fbb * f.fa * f.fLU * f.fLT * f.fRT * f.fShared; // Eq. 19-8
     r.greenRatio = g.effectiveGreen / g.cycle;
     r.capacity = g.lanes * r.saturation * r.greenRatio; // Eq. 19-16, veh/h for the lane group
     r.ratio = r.capacity > 0 ? g.flowRate / r.capacity : 0; // Eq. 19-17

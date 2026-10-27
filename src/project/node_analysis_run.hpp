@@ -16,7 +16,9 @@ struct SignalisedLosPack { std::string id; std::array<double, 5> bounds{}; };
 SignalisedLosPack loadSignalisedLosPack(const std::filesystem::path& dataDirectory, InputManifest* = nullptr);
 struct AnalysedLaneGroup {
     AnalysisLaneGroup group;
-    double volume{}, heavyPercent{};   // the turn's hourly volume and %HV
+    // v in veh/h (hourly volume / PHF; on a coupled approach, from approachLaneFlows), its far- and
+    // kerb-turn parts, and its flow-weighted %HV.
+    double flowRate{}, farTurns{}, kerbTurns{}, heavyPercent{};
     std::optional<std::string> issue; // signalisedRangeIssue; then there is no result
     std::optional<SignalisedResult> result;
     std::optional<char> los;
@@ -26,10 +28,13 @@ struct AnalysedNode {
     std::string id, name;
     double peakHourFactor{}, analysisPeriod{}, baseSaturationFlow{}; std::string baseSaturationSource;
     std::vector<std::string> defaults; // the Exhibit 19-11 defaults this Node used
+    std::vector<std::string> turnNames; // the membership's turn names, which lane groups index
     std::vector<AnalysedLaneGroup> groups;
     std::vector<AnalysedApproach> approaches;
     double flow{}; std::optional<double> delay; std::optional<char> los;
-    std::vector<ValidationIssue> advisories; // the compile's, then NODE_ANALYSIS_NO_VOLUME per turn without one
+    // The compile's, then NODE_ANALYSIS_NO_VOLUME per turn without a row (a coupled approach then has no
+    // lane group) and NODE_ANALYSIS_NO_CONVERGENCE per approach whose lane flows did not converge.
+    std::vector<ValidationIssue> advisories;
 };
 struct NodeAnalysisRun {
     std::uint64_t revision{};
