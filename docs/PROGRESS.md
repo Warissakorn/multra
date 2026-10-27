@@ -6,6 +6,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Authored network PNG export (M1.23.2, D367)
+
+- **Changed:** File menu and command palette export the whole visible network or current view
+  at chosen pixel dimensions, with optional backgrounds and English/Thai controls. An isolated
+  canvas reuses authoring display/level/wireframe rendering at output scale, excluding grid,
+  selection, drafts and Run overlays. Whole-network output is independent of live camera zoom.
+- **Safety and scope:** bounded dimensions precede allocation; encoding precedes atomic file
+  replacement. Shared CSV/PNG destination protection preserves the current project/recovery.
+  Embedded images retain orientation/opacity. Online maps use only already-loaded tiles, with
+  attribution/URL in a footer and PNG metadata; export neither downloads nor moves the camera.
+- **Verified:** Release desktop application and four selected UI targets build; network-image-ui,
+  object-export-ui, workspace-ui and results-tabs-ui pass on Linux offscreen Qt 6.8.2. The PNG
+  suite also passes after adding camera-independent output coverage. Release headless build and
+  all 161 CTest entries pass (10.70 s); docs, file sizes and diff checks pass. Unicode paths,
+  cancellation, size/protected-file refusals, embedded image orientation and cached-map/no-new-
+  request behavior are covered. Packaged Windows/high-DPI appearance and owner acceptance
+  remain open, as do other M1.23 formats/workflow and the full milestone gate.
+
 ## 2026-10-27 — Pin the bundled UI font against installed-family collisions (D366)
 
 - **Found:** this host's installed Noto Sans Thai has no ASCII digits, while the bundled cut
@@ -177,24 +195,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   migration/shared signal references, defaults, gates, diagnostics and native integer/array
   errors; project tests pass 35/35. Release headless build and all 161 CTest entries pass.
   Evidence is Linux headless only; no Qt/Windows/Vissim acceptance or milestone claim.
-
-## 2026-10-26 — Versioned Network and Link/Lane structural schema (D357)
-
-- **Changed:** shared field metadata drives Network/Link/Lane/Link-point known-key and type
-  rules plus formal schema generation. Link reads move out of the full parser, now 476 lines,
-  with the same defaults, ordering and diagnostics. Document-stage linkType/roadId checks stay
-  in place. `projectDocumentSchema` composes the unchanged envelope-only API with network rules;
-  the CLI emits it using 18 shared definitions and 9 version profiles for schemas 1–57.
-- **Limits:** partial coverage stays explicit. Connector/control/demand/optional feature contents,
-  geometric/model validity and reference resolution still require the codec. Desktop observed
-  discovery and runtime geometry are unchanged; no milestone or owner gate is closed.
-- **Verified:** 3,078 adversarial cases produce byte-identical native outcomes/errors/canonical
-  documents before/after and pass independent Draft-2020-12 schema expectations. All four shipped
-  projects validate structurally and keep byte-identical canonical output. Six new regression
-  cases cover versioned definitions, defaults/nulls, schema-7 key paths, reference-stage gates,
-  native integer tokens and semantic exclusions; project tests pass 30/30. Release headless
-  build and all 161 CTest entries pass, including CLI, architecture, docs and file-size checks.
-  Evidence is Linux headless only; no Qt/Windows acceptance claim.
 
 ## Older entries
 

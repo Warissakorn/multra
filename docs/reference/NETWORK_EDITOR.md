@@ -417,13 +417,13 @@ What is drawn is what is hit, band-selected and framed; the lane tabs are hidden
 rails are not drawn (lane count stays in Properties). In the Run view vehicles keep their real
 lane positions, so on a multi-lane road they sit either side of the line (D100).
 
-## Export object tables
+## Export authored data
 
-File → **Export object table (CSV)** exports Links, Connectors, inputs, routes or decisions.
-Export includes unsaved edits and needs no run. Each file holds one table; geometry, lanes and
-period/matrix values use JSON cells. Thai text and full numeric precision are preserved.
-Cancel or a failed write leaves the project unchanged. For columns, units and defaults see
-[OBJECT_TABLE_CSV](OBJECT_TABLE_CSV.md). Use Save for a complete project; CSV is not a backup/import format.
+File → **Export object table (CSV)** writes Links, Connectors, inputs, routes or decisions,
+including unsaved edits without Run. See [OBJECT_TABLE_CSV](OBJECT_TABLE_CSV.md) for columns and units.
+
+File → **Export network image (PNG)** writes the whole visible network or current view area,
+with chosen pixel dimensions and optional backgrounds. See [NETWORK_IMAGE](NETWORK_IMAGE.md).
 
 ## Save, recovery and formats
 

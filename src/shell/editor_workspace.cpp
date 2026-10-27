@@ -1,5 +1,6 @@
 #include "editor_window.hpp"
 #include "object_export.hpp"
+#include "image_export.hpp"
 #include "editor_interaction.hpp"
 #include "editor_style.hpp"
 #include "vehicle_color_dialog.hpp"
@@ -28,6 +29,10 @@
 namespace multra {
 void EditorWindow::buildWorkspace() {
     buildAutomationActions();
+    action("editorExportImage",{},[this]{
+        try{exportNetworkImageDialog(this,*canvas_,[this](const char* key){return text(key);},{file_,recoveryFile_});}
+        catch(const std::exception& error){showError(error);}
+    });
     action("editorVehicleColors",{},[this]{
         try {
             const auto catalog=resolveDemandCatalog(history_.document().definition.value_or(AuthoringDefinition{}),data_,false);
@@ -61,7 +66,7 @@ void EditorWindow::buildWorkspace() {
     };
     auto* files=findChild<QToolBar*>("editorFiles");
     for(const auto* key:{"editorRecover","editorEmbedCatalogs"})files->removeAction(actions_.at(key));
-    menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs"});
+    menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs","editorExportImage"});
     auto* exports=new QMenu(this);exports->setObjectName("editorExportObjects");texts_["editorExportObjects"]=exports;
     findChild<QMenu*>("editorFileMenu")->addMenu(exports);
     for(const auto& [key,table]:{std::pair{"editorExportLinks",ObjectTable::links},

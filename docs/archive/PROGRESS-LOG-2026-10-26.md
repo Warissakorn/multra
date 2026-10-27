@@ -2,6 +2,24 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Versioned Network and Link/Lane structural schema (D357)
+
+- **Changed:** shared field metadata drives Network/Link/Lane/Link-point known-key and type
+  rules plus formal schema generation. Link reads move out of the full parser, now 476 lines,
+  with the same defaults, ordering and diagnostics. Document-stage linkType/roadId checks stay
+  in place. `projectDocumentSchema` composes the unchanged envelope-only API with network rules;
+  the CLI emits it using 18 shared definitions and 9 version profiles for schemas 1–57.
+- **Limits:** partial coverage stays explicit. Connector/control/demand/optional feature contents,
+  geometric/model validity and reference resolution still require the codec. Desktop observed
+  discovery and runtime geometry are unchanged; no milestone or owner gate is closed.
+- **Verified:** 3,078 adversarial cases produce byte-identical native outcomes/errors/canonical
+  documents before/after and pass independent Draft-2020-12 schema expectations. All four shipped
+  projects validate structurally and keep byte-identical canonical output. Six new regression
+  cases cover versioned definitions, defaults/nulls, schema-7 key paths, reference-stage gates,
+  native integer tokens and semantic exclusions; project tests pass 30/30. Release headless
+  build and all 161 CTest entries pass, including CLI, architecture, docs and file-size checks.
+  Evidence is Linux headless only; no Qt/Windows acceptance claim.
+
 ## 2026-10-26 — Shared envelope/background metadata and formal schema (D356)
 
 - **Changed:** envelope/background field metadata now supplies the existing native read and

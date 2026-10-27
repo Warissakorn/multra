@@ -264,3 +264,9 @@ nothing. Numbers are not reused.
    and nested JSON cells open correctly in the study's spreadsheet/CSV reader? Check an empty
    draft, Cancel, a failed destination and refusal to overwrite this window's project/recovery;
    confirm no dirty/revision/Undo or Run state changes. *Owner:*
+
+2. **M1.23.2 network PNG** (listed 2026-10-27, D367). On packaged Windows, export a whole
+   network and current view with Thai filenames at 100/150/200% display scaling. Check chosen
+   pixel dimensions, active level/wireframe, image rotation/opacity, background exclusion and
+   loaded online tiles with readable credit; missing tiles must not trigger export downloads.
+   Cancel at both dialogs and confirm no project/camera/History/save changes. *Owner:*

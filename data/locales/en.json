@@ -1262,5 +1262,17 @@
   "editorExportRoutes": "Routes…",
   "editorExportDecisions": "Routing decisions…",
   "EDIT_OBJECT_CSV_WRITE": "Could not write the object table CSV.",
-  "EDIT_OBJECT_CSV_PROJECT": "Choose a CSV destination different from the open project and its recovery file."
+  "EDIT_OBJECT_CSV_PROJECT": "Choose a CSV destination different from the open project and its recovery file.",
+  "editorExportImage": "Export network image (PNG)…",
+  "editorImageScope": "Area",
+  "editorImageNetwork": "Whole visible network",
+  "editorImageView": "Current view area",
+  "editorImageWidth": "Width (pixels)",
+  "editorImageHeight": "Height (pixels)",
+  "editorImageBackground": "Include background image and loaded map tiles",
+  "editorImageNote": "Exports authored roads and objects without selection, grid or running vehicles. Aspect ratio is preserved. Only loaded map tiles are included, with attribution; missing tiles are not downloaded.",
+  "EDIT_IMAGE_SIZE": "Choose 320–8192 pixels wide, 240–8192 high, with at most 32 million pixels.",
+  "EDIT_IMAGE_PROJECT": "Choose a PNG destination different from the open project and its recovery file.",
+  "EDIT_IMAGE_WRITE": "Could not write the network PNG image.",
+  "editorPngFilter": "PNG image (*.png)"
 }

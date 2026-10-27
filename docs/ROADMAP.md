@@ -75,7 +75,7 @@ M1.22.1–M1.22.2 (History dock, nudging, rotation) are implemented and do not c
 
 ### M1.23 — Interchange, document workflow and measured rendering
 
-**Open; CSV object tables implemented in M1.23.1.** Native-to-GeoJSON/CSV/PNG exports — "CSV" means the object tables (Links, Connectors, inputs, routes, decisions), as defined by D143 (R8); results CSV is M5's and exists (D104, D141); GeoJSON/OSM/Shapefile import and CRS mapping; recent files/tabs, spatial indexing/culling/LOD and optional renderer acceleration. Competitor-format imports and 3D require an explicit scope revision before implementation. **Gate:** known-coordinate import/export fixtures, multi-document recovery isolation and a reproducible real-network benchmark. Do not claim 10k/100k-object performance in advance.
+**Open; CSV object tables and PNG implemented in M1.23.1–M1.23.2.** Native-to-GeoJSON/CSV/PNG exports — "CSV" means the object tables (Links, Connectors, inputs, routes, decisions), as defined by D143 (R8); results CSV is M5's and exists (D104, D141); GeoJSON/OSM/Shapefile import and CRS mapping; recent files/tabs, spatial indexing/culling/LOD and optional renderer acceleration. Competitor-format imports and 3D require an explicit scope revision before implementation. **Gate:** known-coordinate import/export fixtures, multi-document recovery isolation and a reproducible real-network benchmark. Do not claim 10k/100k-object performance in advance.
 
 #### M1.23.1 — Authored object table CSV
 
@@ -84,6 +84,13 @@ from the current document, with exact numeric values, Unicode, nested JSON cells
 replacement. Contract/rows OC1–OC6: [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md).
 Automated/platform evidence is recorded in PROGRESS; Windows and owner acceptance remain
 separate. M1.23 stays open for its other interchange/document/rendering work and full gate.
+
+#### M1.23.2 — Authored network PNG
+
+**Implemented** (D367): full visible network/current-area PNG, bounded pixel dimensions,
+optional image/cached map backgrounds with attribution, and atomic destination writes.
+Contract/rows PI1–PI5: [NETWORK_IMAGE](reference/NETWORK_IMAGE.md). Linux/Windows evidence and
+owner acceptance stay separate; the full M1.23 gate remains open.
 
 ### M1.26–M1.27 — Carriageway demand, per-lane shares, optimization · **M1.27 closed; M1.26 implemented, gate open**
 

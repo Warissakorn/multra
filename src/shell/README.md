@@ -35,3 +35,8 @@ application-local display preferences shared by the editor and Behaviour Lab. Se
 command palette, Unicode destination selection and atomic writes. Export leaves History and
 run state untouched and protects this window's project/recovery files. The Qt-free formatter
 lives in project/object_csv. See [contract](../../docs/reference/OBJECT_TABLE_CSV.md).
+
+
+`image_export` provides File → Export network image (PNG), resolution/scope/background options
+and atomic writes. Destination protection is shared with object CSV in editor_storage; the
+canvas owns raster rendering. See [contract](../../docs/reference/NETWORK_IMAGE.md).

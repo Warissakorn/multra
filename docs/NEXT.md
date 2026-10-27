@@ -28,16 +28,17 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Object interchange follow-up (M1.23.1, D365)
+## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 
 - Owner selected native object-table CSV export over the schema queue. Packaged Windows
   acceptance is [OWNER_SITTING G1](plans/OWNER_SITTING.md#g--object-interchange); no owner or
   full M1.23 gate closes from Linux tests. Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
-  for columns/units and nested JSON conventions before extending interchange. GeoJSON/PNG,
+  for columns/units and nested JSON conventions before extending interchange. GeoJSON,
   imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
-- Font collision is fixed by D366's private bundled family. Next native slice is M1.23 PNG
-  export: define full-network/current-view bounds, pixel limits and background/attribution
-  behavior before coding. Keep document/History/camera state intact and use atomic writes.
+- Packaged Windows PNG acceptance is OWNER_SITTING G2. Check full/current-area output,
+  active levels/wireframe, image alignment, loaded-map credit and partial-tile behavior.
+  Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
+  remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
 ## AI automation follow-up (D344–D350)
 
