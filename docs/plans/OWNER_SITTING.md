@@ -139,6 +139,10 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 12. **MSVC Release timing** (listed 2026-10-14, D163/D164). On P-cores, the M2.6 CLI run: the
    compile figure (≈116 ms before D163) and the wall time (before D164). Record both numbers; a
    session cannot measure this machine. *Owner:*
+13. **D333/D334 vehicle library and colours** (listed 2026-10-24). On Windows at high DPI, run a
+   project with the seven bundled types at working and overview zoom; edit fixed and mixed type
+   colours, restart, and check the Behaviour Lab's appearance. Is each type recognisable and are
+   the colours kept? The type parameters stay illustrative until a study calibrates them. *Owner:*
 
 ## D — Right-of-way on the drawing
 
@@ -174,8 +178,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    edge; wheel over focused and unfocused settings in panels and dialogs. Do settings stay unchanged
    while panels scroll and canvas zoom works? The destination marker is presentation only. *Owner:*
 11. **MAP10 OSM background** (listed 2026-10-12, D150, [MAP_BACKGROUND](../reference/MAP_BACKGROUND.md)).
-   Set a reference on a real study, trace a known road, pan/zoom, save/reopen. Are alignment and
-   responsiveness good enough for tracing? No automated check closes survey accuracy. *Owner:*
+   Set a reference on a real study, trace a known road, pan/click without a camera jump, zoom out
+   to the overview, choose a country with and without a province, interrupt and restore the
+   connection and retry, then save/reopen, on a packaged build (its TLS/PROJ dependencies). Are
+   alignment and responsiveness good enough for tracing? Linux local-server tests and automated
+   checks do not close survey accuracy. *Owner:*
 
 13–15. **The current UI: D190 quiet canvas, D192 icons, D193 palette** (listed 2026-10-15/16;
    merged by D201, E12 dropped because slices a/b changed the workspace it asked to see unchanged).
@@ -238,6 +245,9 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    select a Link mid-run. Do the roads, markings and Connectors look as they do in Edit, and does
    the run feel quicker than before (Linux: −38 % per Step with D282 and D283)? Does the status line above
    the canvas still show all its lines at 100–200 %? *Owner:*
+23. **D306 E1 tool pointers and clicks** (listed 2026-10-22). At 100/150/200 % on Windows, use
+   each drawing tool: is its pointer glyph clear, and do plain clicks after a draft's first point
+   add points without starting anything else? *Owner:*
 
 Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now
@@ -255,6 +265,9 @@ nothing. Numbers are not reused.
 3. **D128 behaviour library** (listed 2026-10-07). Capture the catalogs, duplicate a behaviour,
    heavy-vehicle class, an urban type with an override on several roads, effective list,
    Undo/Redo, delete with replacement, Thai, save/reopen, run; also a `w74` run. *Owner:*
+4. **D318 dialogs keep their buttons on screen** (listed 2026-10-23,
+   [dialog-fit](../evidence/dialog-fit.md)). At 1366×768 and at 150 %, open the dialogs whose rows
+   can grow. Are OK/Cancel always reachable without moving the window? *Owner:*
 
 ## G — Object interchange
 
@@ -263,10 +276,26 @@ nothing. Numbers are not reused.
    object table (CSV) for Links, Connectors, inputs, routes and decisions. Do Unicode filenames
    and nested JSON cells open correctly in the study's spreadsheet/CSV reader? Check an empty
    draft, Cancel, a failed destination and refusal to overwrite this window's project/recovery;
-   confirm no dirty/revision/Undo or Run state changes. *Owner:*
+   confirm no dirty/revision/Undo or Run state changes. Does a name starting with `=` open as
+   text with one leading `'` (D368)? *Owner:*
 
 2. **M1.23.2 network PNG** (listed 2026-10-27, D367). On packaged Windows, export a whole
    network and current view with Thai filenames at 100/150/200% display scaling. Check chosen
    pixel dimensions, active level/wireframe, image rotation/opacity, background exclusion and
    loaded online tiles with readable credit; missing tiles must not trigger export downloads.
    Cancel at both dialogs and confirm no project/camera/History/save changes. *Owner:*
+
+## H — Desktop automation on Windows
+
+1. **D335/D336 desktop automation** (listed 2026-10-25,
+   [DESKTOP_AUTOMATION](../reference/DESKTOP_AUTOMATION.md)). On a newly packaged build, run its
+   PowerShell workflow: control the visible editor, watch playback, patch and Undo a Link,
+   save/reopen and capture a screenshot. Is a duplicate endpoint refused, and do Unicode file
+   paths work? From a second Windows account, does a pipe of the same name give
+   `UNTRUSTED_SERVER`? *Owner:*
+2. **D344–D350 AI control** (listed 2026-10-26). Enable and disable the live endpoint, reconnect;
+   guarded New and Quit, with the full reply read before the normal exit; after a crash, deferred
+   recovery list/restore/discard; map set/status/retry with real provider access. Do live-owner
+   drafts and unsaved work survive every refusal, and are focus/menu/pointer busy reasons right?
+   An AI disconnect must stay distinct from quit or cancel. Linux offscreen is not Windows
+   evidence. *Owner:*

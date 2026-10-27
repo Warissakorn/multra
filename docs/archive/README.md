@@ -52,6 +52,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 - [`MIGRATION-D15.md`](MIGRATION-D15.md) — former migration reference, including the original UI mapping and implementation horizon
 - [`AUTHORING_EXTENSIONS-M1.21.md`](AUTHORING_EXTENSIONS-M1.21.md) — former M1.21 reference before the codec/reversal/marking clarification
+- [`ROADMAP-implemented-2026-10-27.md`](ROADMAP-implemented-2026-10-27.md) — the M8–M12 S3–S5 status paragraph and the M8 Road-demand follow-ups (D340–D342), replaced by status lines in `ROADMAP.md` 2026-10-27
 - [`ROADMAP-implemented-2026-10-15.md`](ROADMAP-implemented-2026-10-15.md) — M0.1, M1, M2, M3.2 slice table, M3.3, M5 and M8 bodies replaced by status rows in `ROADMAP.md` 2026-10-15
 - [`ROADMAP-M1-implemented.md`](ROADMAP-M1-implemented.md) — M1's implemented slices, out of `ROADMAP.md`
 - [`ROADMAP-M1.11-M3.1-implemented.md`](ROADMAP-M1.11-M3.1-implemented.md) — M1.11, M1.11.1, M1.12 and M3.1 bodies, out of `ROADMAP.md` 2026-09-29

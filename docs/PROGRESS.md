@@ -6,6 +6,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Documentation review fixes: owner items, a lost fix, ROADMAP headroom
+
+- **Owner items in one place:** NEXT carried Windows/owner checks that OWNER_SITTING, the only
+  owner list, did not: D306 (now E23), D318 (F4), D333/D334 (C13), D335/D336 and D344–D350 (new
+  section H). Each carries its decision date as *listed*. NEXT now points to them. MAP10's extra
+  steps from NEXT join E11, and G1 asks about D368's leading `'`. No verdict was recorded.
+- **Lost booking restored:** D201 B3 queued a fix for `automatic_conflicts.cpp` skipping pairs on
+  different drawing levels against M3_CONTRACT §1. No queue carried it, and a test still asserts the
+  skip. NEXT books it again, failure first.
+- **Contract gap:** DESKTOP_AUTOMATION now documents `simulation.cancel` and the `cancelled`/`playback`
+  run-until outcomes the code already reports.
+- **Headroom:** ROADMAP was at 499 lines with one 3,846-character status paragraph. The S3–S5
+  paragraph and the M8 Road-demand follow-ups move whole to
+  [archive](archive/ROADMAP-implemented-2026-10-27.md); ROADMAP is 494 lines. No status, gate or
+  decision changed.
+- **Not done:** the owner-sitting R4 (b) carve-out of the items listed more than 14 days ago is the
+  owner's call, and was left as it is.
+
 ## 2026-10-27 — Authored network PNG export (M1.23.2, D367)
 
 - **Changed:** File menu and command palette export the whole visible network or current view
@@ -175,26 +193,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   migration; project tests pass 40/40. Release headless build and all 161 CTest entries pass,
   including architecture, docs, CLI and file-size checks. Linux headless evidence only; no
   engine, scientific-validation, owner or Qt/Windows gate is closed.
-
-## 2026-10-26 — Connector and attachment-reference structural schema (D358)
-
-- **Changed:** after reading CONNECTOR_PARITY_AUDIT, extended shared metadata and composed
-  schema/CLI coverage to implemented Connector/from/to fields. Connector decoding has its own
-  file; Link/Connector geometry-point decoding is shared. Native signal heads reuse the same
-  LaneReference reader, with whole-network fraction conversion kept at its original stage.
-  The parser is now 420 lines. No geometry algorithms or engine behavior change.
-- **Preserved:** wrong fraction/station keys refuse even null/legacy inputs; optional name/side
-  nulls, count/display defaults, pre-7 additive keys, side from 17, behaviour from 21 and
-  generated:true-only from 54 keep their existing semantics and diagnostic paths. Physical
-  lane ranges, attachment bounds, references and other signal/control/demand contents still
-  require the codec; composed coverage remains explicitly partial.
-- **Verified:** 4,275 before/after Connector cases have byte-identical native outcomes/errors/
-  canonical documents and pass independent Draft-2020-12 expectations. All 3,078 prior Network
-  cases retain native outcomes and pass the expanded schema. Four shipped projects validate
-  structurally and keep byte-identical canonical output. Five new regression cases include
-  migration/shared signal references, defaults, gates, diagnostics and native integer/array
-  errors; project tests pass 35/35. Release headless build and all 161 CTest entries pass.
-  Evidence is Linux headless only; no Qt/Windows/Vissim acceptance or milestone claim.
 
 ## Older entries
 

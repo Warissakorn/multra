@@ -2,6 +2,26 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Connector and attachment-reference structural schema (D358)
+
+- **Changed:** after reading CONNECTOR_PARITY_AUDIT, extended shared metadata and composed
+  schema/CLI coverage to implemented Connector/from/to fields. Connector decoding has its own
+  file; Link/Connector geometry-point decoding is shared. Native signal heads reuse the same
+  LaneReference reader, with whole-network fraction conversion kept at its original stage.
+  The parser is now 420 lines. No geometry algorithms or engine behavior change.
+- **Preserved:** wrong fraction/station keys refuse even null/legacy inputs; optional name/side
+  nulls, count/display defaults, pre-7 additive keys, side from 17, behaviour from 21 and
+  generated:true-only from 54 keep their existing semantics and diagnostic paths. Physical
+  lane ranges, attachment bounds, references and other signal/control/demand contents still
+  require the codec; composed coverage remains explicitly partial.
+- **Verified:** 4,275 before/after Connector cases have byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. All 3,078 prior Network
+  cases retain native outcomes and pass the expanded schema. Four shipped projects validate
+  structurally and keep byte-identical canonical output. Five new regression cases include
+  migration/shared signal references, defaults, gates, diagnostics and native integer/array
+  errors; project tests pass 35/35. Release headless build and all 161 CTest entries pass.
+  Evidence is Linux headless only; no Qt/Windows/Vissim acceptance or milestone claim.
+
 ## 2026-10-26 — Versioned Network and Link/Lane structural schema (D357)
 
 - **Changed:** shared field metadata drives Network/Link/Lane/Link-point known-key and type

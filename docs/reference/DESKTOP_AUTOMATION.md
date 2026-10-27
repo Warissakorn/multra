@@ -425,9 +425,14 @@ one engine step cannot be interrupted. Observers/rendering use the existing run 
 No second worker, simulation loop outside the GUI timer, or job registry is introduced.
 
 state.run.until reports target runId/tick/time, active, timeoutMs and outcome (none/running/
-reached/timeout/paused or the existing invalidation reason). Track completion through status
+reached/timeout/paused/cancelled/playback or the existing invalidation reason). Track completion through status
 or results.get with the runId. Duplicate active requests with identical target/deadline settings
 keep the original deadline; a different active target is refused. Pause/Step cancel the target,
 Start returns to ordinary playback, edits/reset/replacement invalidate it, and disconnecting
 or disabling automation does not cancel it. Timeout preserves the completed steps and pauses
 without changing runId. Ready results still require completion before final CSV export.
+
+`simulation.cancel` is guarded, with optional current runId. It ends an active target with
+outcome `cancelled` and pauses, keeping the completed steps and the runId; without an active
+target it only pauses. Use it to stop a run-until without discarding progress; use
+`simulation.reset` to discard the run.
