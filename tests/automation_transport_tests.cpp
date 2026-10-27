@@ -168,11 +168,14 @@ int main(int argc, char** argv) {
         socket.disconnectFromServer();
         // The shutdown hook must distinguish drained output from a disconnected or stalled peer.
         int completions{};bool delivered=false,started=false;
+        // MSVC rejects a lambda naming the object its own initializer constructs (C2326).
+        multra::AutomationServer* drainingServer{};
         multra::AutomationServer draining([&](const QJsonObject& request){
             started=true;
-            draining.afterReply([&](bool ok){++completions;delivered=ok;});
+            drainingServer->afterReply([&](bool ok){++completions;delivered=ok;});
             return QJsonObject{{"ok",true},{"payload",request.value("large").toBool()?QString(16*1024*1024,'x'):QString("small")}};
         });
+        drainingServer=&draining;
         const auto drainEndpoint=endpoint+"-drain";
         require(draining.listen(drainEndpoint),"Drain fixture did not listen");
         QLocalSocket small;small.connectToServer(multra::automationServerName(drainEndpoint));
