@@ -434,3 +434,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D370](RECORD.md#d370) — Analytical junction capacity (HCM 7 Ch. 19 first) booked as M13, a fourth method on the Node; contract NODE_ANALYSIS, owner choices open; no code.
 
 [D371](RECORD.md#d371) — M13 owner choices answered 1a–9a ("ใช้ตามแนะนำทั้งหมด"); A1 derives lane groups from Micro detail and refuses Nodes without it.
+
+[D372](RECORD.md#d372) — M13 A1: HCM 7 Ch. 19 pretimed protected exclusive lane groups on a Node (`src/analysis/`, schema 58 inputs, CLI `--node-analysis`, NA1–NA8); Exhibit 19-41 carved out to A2.

@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**Nothing here is implemented.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 is implemented (§10, D372); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -193,7 +193,7 @@ bytes unchanged.
    - **(a, recommended)** Every output carries the not-validated marker and the label "analytical
      (HCM 7), not simulated".
 
-## 9. Acceptance rows (planned, A1)
+## 9. Acceptance rows (A1; passing, D372)
 
 | Row | Checks |
 |---|---|
@@ -205,3 +205,51 @@ bytes unchanged.
 | NA6 | LOS letters at Exhibit 19-8's bounds (10, 20, 35, 55, 80 s; X > 1 → F) |
 | NA7 | A shared or permitted lane group is refused with a named advisory and no number |
 | NA8 | Every Micro, Meso and Macro output, and every project without analysis inputs, keeps its bytes |
+
+**Exhibit 19-41 (choice 8a) is carved out to A2.** Its notes (PDF p. 1570–1571) set "separate
+right-turn lane: no", so every service volume needs a shared through/right lane group. That is
+Chapter 31 §2's shared-lane procedure, outside A1. A2 reproduces the exhibit with that procedure.
+
+## 10. A1 as implemented (D372)
+
+- **Engine** `src/analysis/signalised.*`: pure, imports nothing (architecture check). Factor values,
+  each read from the copy's image or text layer on 2026-10-27:
+
+  | Factor | Value | Source |
+  |---|---|---|
+  | `fw` | 0.96 below 10.0 ft, 1.00 from 10.0 to 12.9 ft, 1.04 above; refused below 8 ft | Exhibit 19-20, PDF p. 1466 |
+  | `fHVg` | `(100 − 0.79 P_HV − 2.07 P_g)/100` downhill, `(100 − 0.78 P_HV − 0.31 P_g²)/100` otherwise; P_HV ≤ 50 %, −4 ≤ P_g ≤ 10 % | Eqs. 19-9, 19-10, PDF p. 1467 |
+  | `fp` | `(N − 0.1 − 18 N_m/3,600)/N ≥ 0.050`; 1.00 without parking; N_m ≤ 180/h | Eq. 19-11, PDF p. 1468 |
+  | `fbb` | `(N − 14.4 N_b/3,600)/N ≥ 0.050`; N_b ≤ 250/h | Eq. 19-12, PDF p. 1469 |
+  | `fa` | 0.90 in a CBD, else 1.00 | PDF p. 1469 |
+  | `fLU` | Through 1.000 / 0.952 / 0.908; left (far) 1.000 / 0.971; right (kerb) 1.000 / 0.885, by lanes; more lanes take the smallest | Exhibit 19-15, PDF p. 1444 |
+  | `fRT`, `fLT` | 1/1.18 kerb turn, 1/1.05 far turn (protected) | Eqs. 19-13, 19-14, PDF p. 1470 |
+  | Others | `fLpb`, `fRpb`, `fwz`, `fms`, `fsp` = 1 (protected, no work zone or spillback) | Eq. 19-8 |
+
+  HCM's right turn is the kerb turn and its left turn the far turn on either driving side. A turn
+  within 45° of straight on is through.
+- **Defaults** (Exhibit 19-11, PDF p. 1430–1431), listed in each result's `defaults`:
+  - s0 1,900 pc/h/ln;
+  - T 0.25 h;
+  - PHF 0.92 at ≥ 1,000 veh/h entering, else 0.90 (1.00 when T is not 0.25 h);
+  - 3 % heavy vehicles.
+
+  Effective green is g = G − l1 + e with l1 = e = 2.0 s (Eq. 19-1's definitions, PDF p. 1415), so
+  g = G. P = g/C (Eq. 19-15, PDF p. 1472, platoon ratio 1); k = 0.50 and I = 1.
+- **Inputs:** `network.nodes[i].analysis` at schema 58 (PROJECT_SCHEMA).
+  - Turns are named by in-leg and out-leg Link id.
+  - A turn without a row gives `NODE_ANALYSIS_NO_VOLUME`.
+  - Approach rows carry grade, parking and buses.
+  - `setNodeAnalysis` stores an all-default value as none.
+- **Lane groups and refusals** (`compileNodeAnalysis`): as §4. The codes are listed in
+  `node_analysis_compile.hpp`, and a method range gives `ANALYSIS_*` on the lane group with no
+  number.
+- **Run and outputs:**
+  - `runNodeAnalysis`: per lane group, approach and Node; the `hcm7-signalised` pack; the input
+    manifest.
+  - CLI `multra-cli --project F --node-analysis [--csv F]`.
+  - JSON and CSV carry `validated: false` and the method label.
+- **Rows:** NA1–NA8 in `tests/node_analysis_tests.cpp` (group `nodeanalysis`), plus an end-to-end run
+  on the shipped four-leg's pocket turns (`tests/node-analysis-four-leg.traffic.json`, CLI test).
+- **Not in A1:** the editor tab and *Fill from model* (A9), and coarse Nodes (stored lane groups,
+  later). The other slices are in §7.

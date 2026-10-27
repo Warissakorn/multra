@@ -1,6 +1,7 @@
 #pragma once
 #include "../../core/types.hpp"
 #include "control.hpp"
+#include "node_analysis.hpp"
 #include <array>
 #include <map>
 #include <optional>
@@ -144,7 +145,7 @@ struct NodeCoarse {
 // `generated` marks one the program drew, until a person edits it.
 struct Node {
     std::string id, name; std::vector<Point> polygon; bool generated{};
-    std::optional<NodeCoarse> coarse{}; // S3.6a, schema 53
+    std::optional<NodeCoarse> coarse{}; std::optional<NodeAnalysis> analysis{}; // schema 53 (S3.6a), 58 (M13 A1)
     bool operator==(const Node&) const = default;
 };
 // S3.3 (ROADS §3, D305): a Road is a centreline with a cross-section template. *Apply template*

@@ -92,8 +92,9 @@ int main(int argc, char** argv) {
         return check("#include <vector>\n#include <cmath>\n", {}) ? 0 : 1;
     }
     bool valid = true;
-    // macro: S2 (MACRO_NETWORK §7) and meso: M11 (MESO_NETWORK §1) import nothing, like core.
-    for (const auto* module : {"core", "eval", "runner", "macro", "meso"}) {
+    // macro: S2 (MACRO_NETWORK §7), meso: M11 (MESO_NETWORK §1) and analysis: M13 (NODE_ANALYSIS
+    // §7) import nothing, like core.
+    for (const auto* module : {"core", "eval", "runner", "macro", "meso", "analysis"}) {
         const auto directory = std::filesystem::path(argv[1]) / "src" / module;
         for (const auto& entry : std::filesystem::directory_iterator(directory)) {
             if (entry.path().extension() != ".hpp" && entry.path().extension() != ".cpp") continue;

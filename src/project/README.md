@@ -1,4 +1,4 @@
-Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1–57). The document persists authoring data and optional background; no compiled runtime network is saved. Empty draft networks are valid. Commands depend on this module, never the reverse. The shell owns QSaveFile atomic replacement.
+Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1–58). The document persists authoring data and optional background; no compiled runtime network is saved. Empty draft networks are valid. Commands depend on this module, never the reverse. The shell owns QSaveFile atomic replacement.
 
 `input_manifest` optionally records hashes of exact parsed project/catalog/evaluation bytes for CLI discharge studies. Collection is passed explicitly through compilation; loaders keep their legacy path when absent. `input_sha256` has no external dependency. See [measurement/provenance contract](../../docs/reference/DISCHARGE.md).
 
@@ -38,7 +38,7 @@ existing codecs; native integer-token and UTF-8 byte checks are annotated constr
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 roadId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–57; shared `$defs`
+composes envelope/background with these structural rules for schemas 1–58; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

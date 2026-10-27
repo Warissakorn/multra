@@ -2,6 +2,26 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-26 — Queue-counter and travel-time-section structural schemas (D362)
+
+- **Changed:** shared metadata covers queue counters/measurement lines and travel-time sections/
+  section lines/controlType. Native readers move to measurement_codec at the original parser
+  stages; control points/paths share the right-of-way metadata. The composed partial schema/CLI
+  uses 62 shared definitions and 14 version profiles; the parser is now 290 lines. The old
+  incidental definition-count bound is replaced by an actual shared-ControlPoint reference check.
+- **Preserved:** schema 16/23/24 gates, nullable network arrays and optional names/sources/types,
+  empty-source decoding of non-object measurement lines, reference-before-point and section-
+  lines-before-controlType diagnostics. Exactly-one-source, owner/reference and section bounds/
+  order checks remain model validation; measurement/LOS algorithms and writer rules do not change.
+  The envelope-only API, observed desktop response and existing serialized output are unchanged.
+- **Verified:** 5,928 cases across schemas 1–57 retain byte-identical native outcomes/errors/
+  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
+  validate structurally and keep byte-identical canonical output. Five new project tests cover
+  gates/nulls, shared points, empty/ambiguous sources, diagnostics, save versions and semantic
+  exclusions. Release headless build and all 161 CTest entries pass (16.64 s), including CLI,
+  architecture, documentation and file-size checks. Linux headless evidence only; no Qt/Windows,
+  scientific-validation, LOS-validation or owner gate is closed.
+
 ## 2026-10-26 — Right-of-way structural schema and preserved legacy reads (D361)
 
 - **Changed:** shared metadata now covers waiting lines, control points/paths, conflict areas/

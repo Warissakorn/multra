@@ -26,6 +26,9 @@ HCM control delay, not validated (M6)** (rule 4).
   v/c. A saturated movement shows instead as unfinished trips (D132), which the output keeps.
 - The pack is read only when some section has a control type, so other projects' input manifests
   and bytes do not change. Its `id` is written next to every letter.
+- **A second pack, not this one:** `data/los/hcm7-signalised.json` (HCM 7 Exhibit 19-8, with X > 1
+  → F for a lane group) is read only by M13's analytical node analysis, which computes HCM control
+  delay ([NODE_ANALYSIS](NODE_ANALYSIS.md) §10, D371). This page's pack and letters are unchanged.
 
 ## 2. The control type (schema 24)
 

@@ -1,0 +1,5 @@
+{
+  "id": "hcm7-signalised",
+  "description": "Level-of-service bounds after HCM 7th edition Exhibit 19-8 (PDF p. 1422), signalised intersections, motorized vehicle mode: upper control-delay bounds of A-E in s/veh, F above; a lane group with volume-to-capacity ratio above 1.0 is F whatever its delay; approaches and the intersection by delay only. Read by M13's analytical node analysis only (NODE_ANALYSIS, D371); Micro's simulated delay keeps los/hcm.json. Not validated.",
+  "bounds": [10, 20, 35, 55, 80]
+}

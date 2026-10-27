@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-27 — Analytical junction capacity, slice A1 (M13, D372)
+
+- **Changed:** a new pure engine `src/analysis/` computes HCM 7 Ch. 19 for pretimed, protected,
+  exclusive lane groups: Eq. 19-8's factors, capacity, v/c, d1/PF, d2, flow-weighted approach and
+  intersection delay, and Exhibit 19-8 letters from the new `los/hcm7-signalised.json`.
+  `compileNodeAnalysis` derives lane groups from a Node's Micro detail and reads timing from the
+  existing programs. Nodes store only volumes and adjustments (`analysis`, schema 58), and the CLI
+  gains `--node-analysis`. Results are labelled analytical and not validated.
+- **Read from the copy:** Eqs. 19-9 to 19-14 and Exhibits 19-11, 19-15 and 19-20, from their images.
+  Exhibit 19-41 assumes shared right-turn lanes, so its reproduction is carved out to A2.
+- **Verified:** Linux Debug ctest 245/245 (`nodeanalysis` NA1–NA8 plus an end-to-end four-leg run:
+  pocket turns D, node 46.69 s; hand-checked); architecture, file-size and docs checks pass. All four
+  shipped projects' `--project 42` outputs are identical to the Release build of the previous commit.
+
 ## 2026-10-27 — Analytical junction capacity booked as M13 (D370)
 
 - **Asked:** should MULTRA analyse junctions as Vistro, Synchro and SIDRA do? Answer approved by the
@@ -155,26 +169,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   headless build and all 161 CTest entries pass (11.59 s), including project, CLI, docs,
   architecture and file-size checks. Linux headless evidence only; no Qt/Windows, scientific
   validation or owner gate is closed.
-
-## 2026-10-26 — Queue-counter and travel-time-section structural schemas (D362)
-
-- **Changed:** shared metadata covers queue counters/measurement lines and travel-time sections/
-  section lines/controlType. Native readers move to measurement_codec at the original parser
-  stages; control points/paths share the right-of-way metadata. The composed partial schema/CLI
-  uses 62 shared definitions and 14 version profiles; the parser is now 290 lines. The old
-  incidental definition-count bound is replaced by an actual shared-ControlPoint reference check.
-- **Preserved:** schema 16/23/24 gates, nullable network arrays and optional names/sources/types,
-  empty-source decoding of non-object measurement lines, reference-before-point and section-
-  lines-before-controlType diagnostics. Exactly-one-source, owner/reference and section bounds/
-  order checks remain model validation; measurement/LOS algorithms and writer rules do not change.
-  The envelope-only API, observed desktop response and existing serialized output are unchanged.
-- **Verified:** 5,928 cases across schemas 1–57 retain byte-identical native outcomes/errors/
-  canonical documents and pass independent Draft-2020-12 expectations. Four shipped projects
-  validate structurally and keep byte-identical canonical output. Five new project tests cover
-  gates/nulls, shared points, empty/ambiguous sources, diagnostics, save versions and semantic
-  exclusions. Release headless build and all 161 CTest entries pass (16.64 s), including CLI,
-  architecture, documentation and file-size checks. Linux headless evidence only; no Qt/Windows,
-  scientific-validation, LOS-validation or owner gate is closed.
 
 ## Older entries
 
