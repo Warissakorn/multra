@@ -2,6 +2,7 @@
 // lane groups. Rows NA1-NA8; every expected value is worked by hand from the cited equation.
 #include "test.hpp"
 #include "../src/analysis/signalised.hpp"
+#include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/model/demand/node_analysis_compile.hpp"
@@ -9,6 +10,9 @@
 #include "../src/project/document_schema.hpp"
 #include "../src/project/json.hpp"
 #include "../src/project/node_analysis_run.hpp"
+#include "../src/model/network/node_membership.hpp"
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 
 using namespace multra;
@@ -23,6 +27,10 @@ ProjectDocument shipped(const char* project) {
     std::ifstream file(test::root() / "data/projects" / project); Json j; file >> j; return parseDocument(j);
 }
 Node box(double x0, double y0, double x1, double y1) { return {"", "Centre", {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}}, false}; }
+// The A1/A2 fixture: the shipped four-leg with a Node and every turn's volume (cli-node-analysis).
+ProjectDocument fixture() {
+    std::ifstream file(test::root() / "tests/node-analysis-four-leg.traffic.json"); Json j; file >> j; return parseDocument(j);
+}
 bool advised(const std::vector<ValidationIssue>& list, const std::string& code) {
     return std::any_of(list.begin(), list.end(), [&](const auto& i) { return i.code == code; });
 }
@@ -129,4 +137,22 @@ TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes 
     bad = saved; bad["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] = 0;
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
     test::throws([&] { setNodeAnalysis(d, "nope", a); }, "EDIT_UNKNOWN_OBJECT");
+}
+TEST(nodeanalysis, na21_a_split_approach_keeps_its_volumes) { // NA21 (D383)
+    const auto before = runNodeAnalysis(fixture(), test::root() / "data").nodes.front();
+    CHECK(before.groups.size() == 12 && before.delay); // forcing: every turn analysed
+    auto d = fixture();
+    splitLink(d, "link-4", 20); // the in-leg's end, at the Node, goes to the downstream piece
+    const auto after = runNodeAnalysis(d, test::root() / "data").nodes.front();
+    CHECK(after.groups.size() == 12 && !advised(after.advisories, "NODE_ANALYSIS_NO_VOLUME"));
+    CHECK(after.delay && before.delay && std::abs(*after.delay - *before.delay) < 1e-6);
+    const auto& a = *d.network.nodes.front().analysis;
+    CHECK(std::none_of(a.turns.begin(), a.turns.end(), [](const auto& t) { return t.in == "link-4"; }));
+    CHECK(std::none_of(a.approaches.begin(), a.approaches.end(), [](const auto& r) { return r.link == "link-4"; }));
+    // An out-leg keeps its start, and with it its id.
+    auto out = fixture();
+    splitLink(out, "link-8", 100);
+    const auto& o = *out.network.nodes.front().analysis;
+    CHECK(std::any_of(o.turns.begin(), o.turns.end(), [](const auto& t) { return t.out == "link-8"; }));
+    CHECK(runNodeAnalysis(out, test::root() / "data").nodes.front().groups.size() == 12);
 }
