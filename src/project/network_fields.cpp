@@ -24,7 +24,8 @@ constexpr Field linkFields[]={
     // Known to parseNetwork from 21, but document prechecks reject it before 50.
     {"linkType",Kind::text,false,behaviourVersion,linkTypeVersion},
     {"roadId",Kind::text,false,streetSegmentVersion,streetSegmentVersion,false,streetSegmentKeyVersion},
-    {"streetSegmentId",Kind::text,false,streetSegmentKeyVersion,streetSegmentKeyVersion}};
+    {"streetSegmentId",Kind::text,false,streetSegmentKeyVersion,streetSegmentKeyVersion},
+    {"speedLimit",Kind::number,false,linkSpeedVersion,linkSpeedVersion}};
 constexpr Field laneFields[]={{"id",Kind::text,true},{"width",Kind::number,true}};
 constexpr Field pointFields[]={{"x",Kind::number,true},{"y",Kind::number,true}};
 constexpr Field connectorFields[]={

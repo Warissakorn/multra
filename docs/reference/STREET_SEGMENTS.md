@@ -90,7 +90,8 @@ not validation.
   reversed.
 - **Apply template** (one Undo step):
   - each direction's Link sits at its offset from the centreline: half the median plus the lanes;
-  - lane widths come from the template, `linkTypeId` from it, and `boundaryMarkings` are default.
+  - lane widths come from the template, `linkTypeId` from it, the posted `speedLimit` from the
+    template's optional `speedLimit` when it has one (J1, D390), and `boundaryMarkings` are default.
   - Re-applying replaces the Links in place (`replaceLaneBundle`). Connectors are reanchored, and
     routes keep their Link ids.
 - **Detached:** a Link whose lanes or geometry are edited by hand loses `streetSegmentId` in that Command,

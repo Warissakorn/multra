@@ -44,9 +44,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   - when the answers return, fix §3/§6 from them, add the golden file if the owner allows it, and
     write UT0;
   - no UTDF writer code before then.
-- **Next session: J1** (posted speed on the Link, D379–D381; JUNCTION_TEMPLATES §9), which does not
-  wait on UTDF. Then:
-  - J2: the kerb-side pocket, `approachLayout`;
+- **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
+  cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
+  slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
+- **Next session: J2** (JUNCTION_TEMPLATES §6): the kerb-side pocket and `approachLayout` with
+  movement names; it does not wait on UTDF. Then:
   - J3–J4: templates and signals;
   - J5: transitions;
   - J6: editor surfaces;

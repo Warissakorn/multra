@@ -329,9 +329,10 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
   copy's PDF text layer closes it with `)`, and that reading is used.
 - **Flow cap:** `q` is capped at the lane group's capacity (PDF p. 3024), so `min(1, X)`.
 - **Inputs:**
-  - **Speed limit:** a new optional `speedLimit` (km/h, finite, > 0) on the approach row, part of
-    schema 58, which is unreleased and in this PR. An approach without one has no queue, and its
-    lane groups are listed under `NODE_ANALYSIS_NO_SPEED`; every other result stays.
+  - **Speed limit:** the in-leg Link's posted `speedLimit` (km/h, J1, D390, schema 60). Schemas
+    58–59 stored it on the approach row; reading such a file moves it to the Link. An in-leg without
+    one has no queue, and its lane groups are listed under `NODE_ANALYSIS_NO_SPEED`; every other
+    result stays.
   - **Storage `L_a`:** the in-leg Link from its start to where the lane group's first turn leaves it
     (its Connector's `from` station, else the Link's end), the stop line. Lanes run the whole Link.
 

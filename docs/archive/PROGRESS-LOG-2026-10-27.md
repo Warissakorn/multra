@@ -2,6 +2,14 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-28 — B28 decided on delegation (D380)
+
+- **Asked:** the owner answered B28 with "ช่วยตัดสินใจ" ("help decide"), after the session said item 1
+  reverses D373.
+- **Decided:** 1a, one posted speed on the Link, the approach speed derived with every stored value
+  migrated; 2a, D378's order rule reworded so a finer level's gate does not close before the coarser
+  one it depends on. PROBLEM §3 and MULTI_LEVEL_MODELLING §7 carry the new wording. Reasons in D380.
+
 ## 2026-10-28 — Review of D378/D379: corrections and B28
 
 - **Asked:** `/scrutinize`, then the plan was approved.

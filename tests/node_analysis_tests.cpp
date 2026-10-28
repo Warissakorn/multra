@@ -120,11 +120,12 @@ TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes 
     NodeAnalysis a;
     a.cbd = true; a.baseSaturationFlow = SaturationFlowSource{1750, "HCM 7 Exhibit 19-11, population < 250,000"};
     a.peakHourFactor = 0.95; a.analysisPeriod = 0.5;
-    a.approaches = {{"link-1", -2, 10, 3, 60}};
+    a.approaches = {{"link-1", -2, 10, 3}};
     a.turns = {{"link-1", "link-2", 420, 5}, {"link-3", "link-4", 300, std::nullopt}};
     setNodeAnalysis(d, id, a);
     const auto saved = documentJson(d);
     CHECK(saved["schemaVersion"] == 58);
+    CHECK(saved["network"]["nodes"][0]["analysis"]["approaches"][0] == Json({{"link", "link-1"}, {"grade", -2.0}, {"parkingManeuvers", 10.0}, {"busesStopping", 3.0}}));
     CHECK(saved["network"]["nodes"][0]["analysis"]["turns"][1] == Json({{"in", "link-3"}, {"out", "link-4"}, {"vehiclesPerHour", 300.0}}));
     CHECK(parseDocument(saved) == d && documentJson(parseDocument(saved)) == saved);
     auto older = saved; older["schemaVersion"] = 57;
@@ -133,8 +134,7 @@ TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes 
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
     bad = saved; bad["network"]["nodes"][0]["analysis"]["turns"][0]["vehiclesPerHour"] = -1;
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
-    CHECK(saved["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] == 60.0);
-    bad = saved; bad["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] = 0;
+    bad = saved; bad["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] = 0; // a 58 row's speed is still checked
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
     test::throws([&] { setNodeAnalysis(d, "nope", a); }, "EDIT_UNKNOWN_OBJECT");
 }
@@ -161,7 +161,7 @@ TEST(nodeanalysis, na22_stale_rows_are_named) { // NA22 (D383)
     CHECK(!advised(runNodeAnalysis(d, test::root() / "data").nodes.front().advisories, "NODE_ANALYSIS_STALE_TURN")); // forcing
     auto& a = *d.network.nodes.front().analysis;
     a.turns.push_back({"link-1", "link-20", 50}); // link-1 ends 60 m short of the Node: not a leg
-    a.approaches.push_back({"link-1", 0, std::nullopt, 0, 50});
+    a.approaches.push_back({"link-1", 0, std::nullopt, 0});
     const auto turns = a.turns.size() - 1, approaches = a.approaches.size() - 1;
     const auto run = runNodeAnalysis(d, test::root() / "data").nodes.front();
     const auto at = [&](const std::string& code, const std::string& path) {

@@ -371,7 +371,7 @@ private:
     std::string selectedMode() const;
     std::vector<std::pair<std::string, QString>> modeChoices() const;
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
-    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
+    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
     void buildLinkTypes(); void translateLinkTypes(); void refreshLinkTypes(); void editLinkType(const std::string& id);
     std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
     // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.

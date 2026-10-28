@@ -6,6 +6,7 @@
 #include "../src/analysis/queue.hpp"
 #include "../src/analysis/signalised.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
+#include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/model/demand/node_analysis_compile.hpp"
@@ -28,14 +29,14 @@ ProjectDocument fourLeg() {
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json"); Json j; file >> j;
     auto d = parseDocument(j);
     putNode(d, {"", "Centre", {{-25, -25}, {25, -25}, {25, 25}, {-25, 25}}, false});
+    for (const auto* in : {"link-4", "link-16", "link-28", "link-40"}) setLinkSpeedLimit(d, in, 50); // D390: the in-legs' posted speed
     return d;
 }
 // The four-leg's twelve turns: per approach, its far turn, through and kerb turn.
 const std::vector<std::array<const char*, 4>> kTurns{{"link-4", "link-32", "link-20", "link-44"}, {"link-16", "link-44", "link-8", "link-32"},
                                                       {"link-28", "link-20", "link-44", "link-8"}, {"link-40", "link-8", "link-32", "link-20"}};
-NodeAnalysis volumes(double far, double through, double kerb, std::optional<double> speedLimit = 50) {
+NodeAnalysis volumes(double far, double through, double kerb) {
     NodeAnalysis a;
-    if (speedLimit) for (const auto& t : kTurns) a.approaches.push_back({t[0], 0, std::nullopt, 0, speedLimit});
     for (const auto& t : kTurns) {
         a.turns.push_back({t[0], t[1], far, std::nullopt});
         a.turns.push_back({t[0], t[2], through, std::nullopt});
@@ -268,7 +269,8 @@ TEST(nodeanalysis, na14_shared_lane_refusals) { // NA14 (§11)
     const auto run = runNodeAnalysis(d, test::root() / "data");
     CHECK(advised(run.nodes.front().advisories, "NODE_ANALYSIS_NO_VOLUME") && run.nodes.front().groups.size() == 9);
     // No speed limit: no queue and NODE_ANALYSIS_NO_SPEED, every other result kept.
-    setNodeAnalysis(d, d.network.nodes.front().id, volumes(150, 400, 100, std::nullopt));
+    setNodeAnalysis(d, d.network.nodes.front().id, volumes(150, 400, 100));
+    for (const auto& t : kTurns) setLinkSpeedLimit(d, t[0], std::nullopt);
     const auto slow = runNodeAnalysis(d, test::root() / "data");
     CHECK(advised(slow.nodes.front().advisories, "NODE_ANALYSIS_NO_SPEED") && slow.nodes.front().critical);
     for (const auto& g : slow.nodes.front().groups) CHECK(g.result && !g.queue);

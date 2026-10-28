@@ -85,7 +85,7 @@ void EditorWindow::refreshCrossSections() {
 void EditorWindow::editCrossSection(const std::string& id) {
     const auto& d = history_.document();
     const auto installed = crossSectionRows();
-    CrossSection value{"", "", 2, 1, 1, 3.5, {}, 0, std::nullopt, ""};
+    CrossSection value{"", "", 2, 1, 1, 3.5, {}, 0, std::nullopt, "", std::nullopt};
     if (!id.empty()) {
         if (!ownsCrossSections(d)) return;
         const auto found = std::find_if(installed.begin(), installed.end(), [&](const auto& s) { return s.id == id; });
@@ -118,13 +118,18 @@ void EditorWindow::editCrossSection(const std::string& id) {
     const auto currentType = QString::fromStdString(value.linkType.value_or(""));
     if (type->findData(currentType) < 0) type->addItem(currentType + " " + text("editorBehaviourMissing"), currentType);
     type->setCurrentIndex(type->findData(currentType));
+    // J1 (D390): the posted speed copied onto generated Links; 0 shows "(none)" and leaves theirs alone.
+    auto* speed = new QDoubleSpinBox(&dialog); speed->setObjectName("editorCrossSectionSpeed");
+    speed->setRange(0, 200); speed->setDecimals(1); speed->setSingleStep(5); speed->setSuffix(" km/h");
+    speed->setSpecialValueText(text("editorLinkTypeNone")); speed->setValue(value.speedLimit.value_or(0));
     auto* source = new QLineEdit(QString::fromStdString(value.source), &dialog); source->setObjectName("editorCrossSectionSource");
     backward->setEnabled(value.directions == 2);
     connect(directions, &QComboBox::currentIndexChanged, &dialog, [=](int index) { backward->setEnabled(index == 1); });
     form->addRow(text("editorColumnName"), name); form->addRow(text("editorCrossSectionDirections"), directions);
     form->addRow(text("editorStreetSegmentLanesForward"), forward); form->addRow(text("editorStreetSegmentLanesBackward"), backward);
     form->addRow(text("editorStreetSegmentLaneWidth"), width); form->addRow(text("editorStreetSegmentMedian"), median);
-    form->addRow(text("editorLinkType"), type); form->addRow(text("editorLinkTypeSource"), source);
+    form->addRow(text("editorLinkType"), type); form->addRow(text("editorLinkSpeed"), speed);
+    form->addRow(text("editorLinkTypeSource"), source);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
@@ -144,6 +149,7 @@ void EditorWindow::editCrossSection(const std::string& id) {
         value.laneWidths.clear();
     const auto chosen = type->currentData().toString().toStdString();
     value.linkType = chosen.empty() ? std::nullopt : std::optional(chosen);
+    if (speed->value() != before.speedLimit.value_or(0)) value.speedLimit = speed->value() > 0 ? std::optional(speed->value()) : std::nullopt;
     value.source = source->text().toStdString();
     std::string created;
     if (execute(id.empty() ? "editorAddCrossSection" : "editorEditCrossSection", [&](auto& doc) { created = putCrossSection(doc, value, installed); })) {

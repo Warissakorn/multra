@@ -1,4 +1,5 @@
 #include "node_codec.hpp"
+#include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -88,7 +89,6 @@ Json analysisJson(const NodeAnalysis& a) {
             if (r.grade != 0) row["grade"] = r.grade;
             if (r.parkingManeuvers) row["parkingManeuvers"] = *r.parkingManeuvers;
             if (r.busesStopping != 0) row["busesStopping"] = r.busesStopping;
-            if (r.speedLimit) row["speedLimit"] = *r.speedLimit;
             list.push_back(row);
         }
         j["approaches"] = list;
@@ -104,7 +104,7 @@ Json analysisJson(const NodeAnalysis& a) {
     return j;
 }
 // Shape and sign only; the method's ranges are checked when it runs (signalisedRangeIssue).
-NodeAnalysis parseAnalysis(const Json& j, const std::string& path) {
+NodeAnalysis parseAnalysis(const Json& j, const std::string& path, int schema) {
     const auto invalid = [](const std::string& at) { throw ValidationError({{"EDIT_NODE_INVALID", at}}); };
     const auto number = [&](const Json& v, const std::string& at, bool positive) {
         if (!v.is_number() || !std::isfinite(v.get<double>()) || (positive ? !(v.get<double>() > 0) : v.get<double>() < 0)) invalid(at);
@@ -139,7 +139,9 @@ NodeAnalysis parseAnalysis(const Json& j, const std::string& path) {
         } else if (key == "analysisPeriod") {
             a.analysisPeriod = number(value, at, true);
         } else if (key == "approaches") {
-            const std::vector<std::string> keys{"link", "grade", "parkingManeuvers", "busesStopping", "speedLimit"};
+            // Below 60 the row held the posted speed, which the document read moves to the Link (D390).
+            std::vector<std::string> keys{"link", "grade", "parkingManeuvers", "busesStopping"};
+            if (schema < networkCodec::linkSpeedVersion) keys.push_back("speedLimit");
             rows(value, at, keys, [&](const Json& r, const std::string& rowAt) {
                 if (!r.contains("link") || !r.at("link").is_string()) invalid(rowAt + ".link");
                 NodeAnalysisApproach row{r.at("link").get<std::string>()};
@@ -149,7 +151,7 @@ NodeAnalysis parseAnalysis(const Json& j, const std::string& path) {
                 }
                 if (r.contains("parkingManeuvers")) row.parkingManeuvers = number(r.at("parkingManeuvers"), rowAt + ".parkingManeuvers", false);
                 if (r.contains("busesStopping")) row.busesStopping = number(r.at("busesStopping"), rowAt + ".busesStopping", false);
-                if (r.contains("speedLimit")) row.speedLimit = number(r.at("speedLimit"), rowAt + ".speedLimit", true);
+                if (r.contains("speedLimit")) number(r.at("speedLimit"), rowAt + ".speedLimit", true);
                 a.approaches.push_back(std::move(row));
             });
         } else if (key == "turns") {
@@ -205,7 +207,7 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
         node.id = j.at("id").get<std::string>(); node.name = j.at("name").get<std::string>();
         node.generated = j.contains("generated");
         if (j.contains("coarse")) node.coarse = parseCoarse(j.at("coarse"), path + ".coarse");
-        if (j.contains("analysis")) node.analysis = parseAnalysis(j.at("analysis"), path + ".analysis");
+        if (j.contains("analysis")) node.analysis = parseAnalysis(j.at("analysis"), path + ".analysis", schema);
         const auto& polygon = j.at("polygon");
         for (std::size_t k = 0; k < polygon.size(); ++k) {
             const auto& p = polygon[k];

@@ -107,6 +107,10 @@ void setLinkType(ProjectDocument& d, const std::string& id, std::optional<std::s
     if (type && type->empty()) type.reset();
     editableLink(d, id).linkTypeId = std::move(type);
 }
+void setLinkSpeedLimit(ProjectDocument& d, const std::string& id, std::optional<double> speed) {
+    if (speed && (!std::isfinite(*speed) || *speed <= 0)) throw std::invalid_argument("INVALID_LINK_SPEED");
+    editableLink(d, id).speedLimit = speed;
+}
 void changeDrivingSide(ProjectDocument& d, DrivingSide side) { d.network.drivingSide = side; anchorConnectors(d); }
 std::string oppositeLink(ProjectDocument& d, const std::string& id, double gap) {
     if (!std::isfinite(gap) || gap < 0) throw std::invalid_argument("EDIT_GAP");

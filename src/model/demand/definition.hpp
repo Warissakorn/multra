@@ -55,6 +55,7 @@ struct CrossSection {
     std::string id, name; int directions{2}, lanesForward{1}, lanesBackward{};
     double laneWidth{}; std::vector<double> laneWidths; double median{};
     std::optional<std::string> linkType; std::string source;
+    std::optional<double> speedLimit; // J1 (D390), km/h: copied onto each generated Link
     bool operator==(const CrossSection&) const = default;
 };
 struct Vdf {

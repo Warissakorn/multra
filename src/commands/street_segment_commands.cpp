@@ -127,6 +127,7 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& st
         for (std::size_t i = 0; i < w.size(); ++i) link.lanes[i].width = w[i];
         link.laneOffset = 0; link.level = road.level; link.streetSegmentId = road.id;
         if (found->linkType) link.linkTypeId = found->linkType;
+        if (found->speedLimit) link.speedLimit = found->speedLimit; // J1 (D390): the template's default
     }
     editableStreetSegment(d, streetSegmentId).links = ids; // changeLanes detached them: this re-attaches
     for (auto& c : d.zones.zoneConnectors) if (c.streetSegmentId == streetSegmentId) {

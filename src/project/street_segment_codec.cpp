@@ -163,7 +163,7 @@ void readStreetSegmentIds(const Json& network, Network& n, int schema) {
     }
 }
 CrossSection parseCrossSection(const Json& j) {
-    if (!j.is_object() || j.size() != 8u + j.contains("laneWidths") + j.contains("linkType")) broken();
+    if (!j.is_object() || j.size() != 8u + j.contains("laneWidths") + j.contains("linkType") + j.contains("speedLimit")) broken();
     CrossSection t{text(j, "id"), text(j, "name"), whole(j, "directions"), whole(j, "lanesForward"), whole(j, "lanesBackward"),
                    number(j, "laneWidth"), {}, number(j, "median"), {}, text(j, "source")};
     if (j.contains("laneWidths")) {
@@ -171,6 +171,7 @@ CrossSection parseCrossSection(const Json& j) {
         for (const auto& w : j.at("laneWidths")) { if (!w.is_number()) broken(); t.laneWidths.push_back(w.get<double>()); }
     }
     if (j.contains("linkType")) t.linkType = text(j, "linkType");
+    if (j.contains("speedLimit")) t.speedLimit = number(j, "speedLimit"); // J1 (D390), schema 60 when owned
     return t;
 }
 Json crossSectionJson(const CrossSection& t) {
@@ -178,6 +179,7 @@ Json crossSectionJson(const CrossSection& t) {
            {"laneWidth", t.laneWidth}, {"median", t.median}, {"source", t.source}};
     if (!t.laneWidths.empty()) j["laneWidths"] = t.laneWidths;
     if (t.linkType) j["linkType"] = *t.linkType;
+    if (t.speedLimit) j["speedLimit"] = *t.speedLimit;
     return j;
 }
 std::vector<CrossSection> linkLessStreetSegmentTemplates(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
@@ -215,6 +217,7 @@ std::vector<ValidationIssue> crossSectionIssues(const std::vector<ResolvedCrossS
         if (!t.laneWidths.empty() && (t.laneWidths.size() != lanes || !std::all_of(t.laneWidths.begin(), t.laneWidths.end(), positive))) bad("laneWidths");
         if (!std::isfinite(t.median) || t.median < 0) bad("median");
         if (blank(t.source)) bad("source");
+        if (t.speedLimit && !positive(*t.speedLimit)) bad("speedLimit");
         if (t.linkType && (blank(*t.linkType) || (linkTypeIds && std::find(linkTypeIds->begin(), linkTypeIds->end(), *t.linkType) == linkTypeIds->end())))
             bad("linkType");
     }

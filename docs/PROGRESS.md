@@ -6,6 +6,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Posted speed on the Link, schema 60 (D390, M14 slice J1)
+
+- **Asked:** "ทำ J1 ต่อเลย".
+- **Changed:**
+  - A Link's optional `speedLimit` (km/h, > 0, never a cap) and a cross-section template's
+    optional `speedLimit` are saved at schema 60.
+  - *Apply template* copies the template speed onto the generated Links. A split keeps the speed on
+    both pieces.
+  - The inspector's *Posted speed (km/h)* sets every selected Link in one Undo step; the
+    cross-section dialog has the field too; the object CSV has `speedLimit_kmh`.
+  - Node analysis queues read the in-leg Link's speed.
+  - A 58–59 approach row's `speedLimit` moves to the Link it names. A row naming no Link, or two
+    rows giving one Link different speeds, is refused, so no speed is lost (D380).
+- **Decided (D390):** `LinkType.freeSpeed` stays independent, and Micro does not read the posted
+  speed yet. Either would move existing results, so each needs its own contract.
+- **Verified:** desktop build, `ctest` 247/247 (246 plus `linkspeed`, JT2) and `check` on Linux
+  (offscreen); headless preset not run, and no test drives the new inspector field.
+  `multra-cli --node-analysis` on the schema-58 fixture prints the same output as before apart
+  from the build commit. Windows look is OWNER_SITTING E25.
+
 ## 2026-10-28 — UTDF probe prepared for the owner (M14 slice U0)
 
 - **Asked:** "ทำ U0".
@@ -114,11 +134,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Changed (docs only):** two PROBLEM §2 Micro rows, two ROADMAP *Later* entries, and the three
   posted-speed rules in NEXT for the 1a contract. Limits recorded in D381: no stall objects, no
   reverse motion in core, no pedestrian model, Connector topology and scale.
-
-## 2026-10-28 — B28 decided on delegation (D380)
-
-- **Asked:** the owner answered B28 with "ช่วยตัดสินใจ" ("help decide"), after the session said item 1
-  reverses D373.
-- **Decided:** 1a, one posted speed on the Link, the approach speed derived with every stored value
-  migrated; 2a, D378's order rule reworded so a finer level's gate does not close before the coarser
-  one it depends on. PROBLEM §3 and MULTI_LEVEL_MODELLING §7 carry the new wording. Reasons in D380.

@@ -170,9 +170,16 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 
 ## 9. Posted speed and the analysis panel
 
-- **Posted speed (J1):** booked by D379, confirmed by D380, shaped by D381: one optional
-  `speedLimit` (km/h) on the Link, a Micro default and never a cap; NODE_ANALYSIS's approach
-  `speedLimit` becomes derived from the in-leg. UTDF's Links and Lanes need it.
+- **Posted speed (J1, done, D390):** booked by D379, confirmed by D380, shaped by D381.
+  - One optional `speedLimit` (km/h, finite, > 0) on the Link, schema 60, never a cap.
+  - A cross-section template's optional `speedLimit` is copied onto the Links *Apply template*
+    generates; a template without one leaves a Link's own.
+  - The inspector edits it on every selected Link in one Undo step; the object CSV has
+    `speedLimit_kmh`.
+  - NODE_ANALYSIS reads the in-leg Link's. A 58–59 approach row's speed moves to its Link on read,
+    and a stray or conflicting one is refused.
+  - `LinkType.freeSpeed` stays independent (Macro, Meso). Micro does not read it yet; D381's
+    "Micro default" is its own slice. UTDF's Links and Lanes will read it.
 - **Analysis panel (J7, NODE_ANALYSIS A9's first half):** the Nodes tab's *Analysis…* edits
   `Node::analysis` per turn (named by direction and L/T/R from §6) in one Command; *Analyse* runs
   `src/analysis/` on the UI thread and fills Results → *Node analysis* (lane group v, s, c, X,
@@ -185,7 +192,7 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 |---|---|---|
 | SR | **Done (D389).** Road renamed Street segment: schema 59 writes `streetSegments`, `streetSegmentId` and a zone connector's `streetSegmentId`/`streetSegmentDirection`, and still reads `roads`/`roadId`/`roadDirection` below 59, each version refusing the other's keys; codes `ROAD_*` became `STREET_SEGMENT_*` (`EDIT_STREET_SEGMENT_*`, `SEAM_STREET_SEGMENT_*`, …); types, files, commands, tests, locale keys and strings (en "Street segment", th "ช่วงถนน"); maintained docs. RECORD, PROGRESS history and archives keep "Road" | 1 |
 | U0 | UTDF probe with the owner's Synchro 12 and Vistro 2026 (UTDF_EXPORT §8) | 1 + owner |
-| J1 | Posted speed on the Link (§9) | 1 |
+| J1 | **Done (D390).** Posted speed on the Link (§9), schema 60 | 1 |
 | J2 | Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
 | J3 | Junction template catalog and loader, `Node::junction`, the `junction` fill: pockets, cuts, Connectors, right-of-way (§3–§5) | 2 |
 | J4 | Signals from the template: presets, NEMA numbering, timing, `nemaCheck` (§8) | 1 |
@@ -194,7 +201,7 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 | J7 | Analysis panel and results (§9) | 1–2 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
-SR is done (D389); U0 is next, whose answers can change J4 and U1. About 13–16
+SR (D389) and J1 (D390) are done; U0 waits on the owner, and its answers can change J4 and U1; J2 is next. About 13–16
 sessions in all; one slice per session, each starting with its rows.
 
 ## 11. What stays out
@@ -233,7 +240,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | Row | Slice | Asserts |
 |---|---|---|
 | JT1 | SR | A street-segment document saves at 59 with only the new keys and reads back equal; the same document as a 58 file reads to it; each version refuses the other's keys at their paths; a 58 file's malformed entry is named by its own key; owned templates alone stay at 53 (`tests/street_segment_schema_tests.cpp`, **passing**) |
-| JT2 | J1 | A Link's `speedLimit` round-trips; absent keeps the bytes; Node analysis reads the in-leg's |
+| JT2 | J1 | A Link's `speedLimit` round-trips at 60; absent keeps the shipped projects' bytes; 59 refuses a Link speed and 60 an approach speed; a 58 file's approach speeds move to their Links with the same queues, and a stray or conflicting one is refused; Node analysis reads the in-leg's; a template speed reaches generated Links; a split keeps it (`tests/link_speed_tests.cpp`, **passing**) |
 | JT3 | J2 | A kerb-side pocket adds the lane on the kerb side for both `drivingSide`s; routes and heads survive |
 | JT4 | J2 | `approachLayout` names a four-leg's 12 movements by direction and L/T/R; an ambiguous pair is refused |
 | JT5 | J3 | Every invalid template in §3 is refused on load with its path |

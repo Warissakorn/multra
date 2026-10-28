@@ -18,7 +18,7 @@ struct NodeAnalysisApproach {
     std::string link; double grade{};          // %
     std::optional<double> parkingManeuvers{};  // per hour; absent: no parking
     double busesStopping{};                    // per hour
-    std::optional<double> speedLimit{};        // km/h, posted (A2 queues, D373); absent: no queue
+    // The posted speed for A2's queues (D373) is the in-leg Link's `speedLimit` from schema 60 (D390).
     bool operator==(const NodeAnalysisApproach&) const = default;
 };
 struct SaturationFlowSource {

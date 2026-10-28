@@ -13,7 +13,7 @@ constexpr Column links[]={
     {"id","/id"},{"name","/name"},{"level","/level"},{"displayType","/displayType"},
     {"laneOffset_m","/laneOffset"},{"referenceLength_m","/referenceLength"},{"laneCount","/laneCount"},
     {"geometry","/geometry"},{"lanes","/lanes"},{"boundaryMarkings","/boundaryMarkings"},
-    {"behaviourType","/behaviourType"},{"linkType","/linkType"},{"streetSegmentId","/streetSegmentId"}};
+    {"behaviourType","/behaviourType"},{"linkType","/linkType"},{"streetSegmentId","/streetSegmentId"},{"speedLimit_kmh","/speedLimit"}};
 constexpr Column connectors[]={
     {"id","/id"},{"name","/name"},{"fromLinkId","/from/linkId"},{"fromLaneId","/from/laneId"},
     {"fromStation_m","/from/station"},{"toLinkId","/to/linkId"},{"toLaneId","/to/laneId"},{"toStation_m","/to/station"},

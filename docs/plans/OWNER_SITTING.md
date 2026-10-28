@@ -277,6 +277,10 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    crossings* where a Street segment has no template. Are the warning-coloured rows and the note under the
    table readable, and is no Thai text cut off in the note, the tooltip or the toolbar? Since D389 the tab, tool
    and messages say Street segment / ช่วงถนน: do they read naturally? *Owner:*
+25. **D390 posted speed** (listed 2026-10-28). At 100/150/200 % on Windows, in Thai and English,
+    select two Links, type a speed in the inspector's *Posted speed (km/h)* and press Enter, then
+    Undo; set one in a cross-section template and apply it. Does one Undo clear both Links, and does
+    "ความเร็วกำหนด" read naturally? *Owner:*
 
 Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now

@@ -5,6 +5,7 @@
 #include "../src/analysis/qap.hpp"
 #include "../src/analysis/signalised.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
+#include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/project/document.hpp"
@@ -166,7 +167,7 @@ ProjectDocument permittedFourLeg(const std::string& yielding, double eastStart =
                                                         {"link-28", "link-20", "link-44", "link-8"}, {"link-40", "link-8", "link-32", "link-20"}};
     NodeAnalysis a;
     for (const auto& t : turns) {
-        a.approaches.push_back({t[0], 0, std::nullopt, 0, 50});
+        setLinkSpeedLimit(d, t[0], 50); // D390: the in-leg's posted speed
         a.turns.push_back({t[0], t[1], 150, std::nullopt});
         a.turns.push_back({t[0], t[2], 400, std::nullopt});
         a.turns.push_back({t[0], t[3], 100, std::nullopt});

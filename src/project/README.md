@@ -24,13 +24,14 @@ keeps its schema and bytes.
 | `network_fields.*` | Versioned known-key and type metadata shared by the row codecs (`network_link_codec.cpp`, `network_connector_codec.cpp`, `network_signal_head_codec.cpp`, `signal_control_codec.cpp`, `right_of_way_codec.cpp`, `measurement_codec.cpp`, `demand_codec.cpp`, `routing_codec.cpp`); rules below | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `json.*` | Section accessors that fail with a named, translatable code; `parseNetwork`; `output.cpp` writes the run's state and event JSON | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `observed_schema.*` | Bounded structural JSON hints for desktop automation (50,000 values, depth 32); no required fields, ranges or version rules | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
-| `node_codec.*` | `network.nodes` and each Node's `analysis` (approach `speedLimit` included) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
+| `node_codec.*` | `network.nodes` and each Node's `analysis` (an approach `speedLimit` only below 60, D390) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
 | `street_segment_codec.*` | `network.streetSegments`, a Link's `streetSegmentId`, owned `definition.crossSections` | [STREET_SEGMENTS §3, §4](../../docs/reference/STREET_SEGMENTS.md) |
 | `zone_codec.*` | The zone layer: zones, zone connectors (with direct Street segment targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `study_area_codec.*` | `studyArea` at the root | [STUDY_AREA §3, §5](../../docs/reference/STUDY_AREA.md) |
 | `study_period_codec.*` | `studyPeriods`, `definition.clockStart`, a matrix's `periodId` | [STUDY_PERIODS §3-§5](../../docs/reference/STUDY_PERIODS.md) |
 | `mode_codec.*` | Owned `definition.modes`, a matrix's `modeId`, a vehicle type's `pcu` | [STUDY_PERIODS §5-§7](../../docs/reference/STUDY_PERIODS.md) |
 | `link_type_codec.*` | A Link's `linkType`, owned `definition.linkTypes`, installed `data/link-types/` and `data/vdf/` | [MACRO_NETWORK §4, §5](../../docs/reference/MACRO_NETWORK.md) |
+| `link_speed_codec.*` | A Link's posted `speedLimit` and its schema-60 gates; moves a 58–59 approach row's speed to its Link | [JUNCTION_TEMPLATES §9](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `macro_settings.*` | `definition.macroSettings` | [MACRO_NETWORK §7](../../docs/reference/MACRO_NETWORK.md) |
 | `macro_run_definition.*` | Saved named Macro run definitions, apart from the latest result | [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md) |
 | `meso_settings.*` | `definition.mesoSettings` and a link type's `jamDensity` | [MESO_NETWORK §8](../../docs/reference/MESO_NETWORK.md) |

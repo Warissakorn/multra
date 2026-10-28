@@ -15,6 +15,7 @@
 #include "mode_codec.hpp"
 #include "link_type_codec.hpp"
 #include "street_segment_codec.hpp"
+#include "link_speed_codec.hpp"
 #include "node_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
@@ -91,7 +92,8 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesStreetSegmentKeys(d) ? 59 :
+    return usesLinkSpeedLimits(d) ? 60 :
+        usesStreetSegmentKeys(d) ? 59 :
         usesNodeAnalysis(d) ? 58 :
         usesStreetSegmentZoneConnectors(d.zones) ? 57 :
         !d.macroRuns.empty() ? 56 :
@@ -147,6 +149,7 @@ Json documentJson(const ProjectDocument& d) {
         if (l.behaviourTypeId) network["links"].back()["behaviourType"] = *l.behaviourTypeId; // M3.3.2a, schema 21
         if (l.linkTypeId) network["links"].back()["linkType"] = *l.linkTypeId; // S2.1, schema 50
         if (l.streetSegmentId) network["links"].back()["streetSegmentId"] = *l.streetSegmentId; // S3.3, schema 53
+        if (l.speedLimit) network["links"].back()["speedLimit"] = *l.speedLimit; // J1, schema 60
     }
     for (const auto& c : d.network.connectors) {
         network["connectors"].push_back({{"id", c.id}, {"from", reference(c.from)}, {"to", reference(c.to)}, {"geometry", points(c.geometry)}, {"fromLaneCount",c.fromLaneCount}, {"toLaneCount",c.toLaneCount},
@@ -243,6 +246,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
     if (version < networkCodec::streetSegmentVersion) rejectStreetSegmentFieldsBefore53(j); // S3.3
     rejectOtherStreetSegmentKeys(j, version); // D389
+    rejectLinkSpeedFields(j, version); // J1 (D390)
     if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
     if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
     if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
@@ -276,6 +280,8 @@ ProjectDocument parseDocument(const Json& j) {
     d.network.streetSegments = parseStreetSegments(j.at("network"), version); // S3.3 (STREET_SEGMENTS §3)
     d.network.overpasses = parseOverpasses(j.at("network"), version); // S3.5 (STREET_SEGMENTS §5)
     readStreetSegmentIds(j.at("network"), d.network, version);
+    readLinkSpeedLimits(j.at("network"), d.network); // J1 (D390)
+    carryApproachSpeeds(j.at("network"), d.network, version); // 58-59 approach speeds move to their Links
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
         parseRouteDestinations(j.at("definition"),version,*d.definition);

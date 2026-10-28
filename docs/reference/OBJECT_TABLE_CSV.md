@@ -31,7 +31,7 @@ no direct-write fallback. The open project and this window's recovery path are p
 
 | Table | Columns |
 |---|---|
-| Links | id, name, level, displayType, laneOffset_m, referenceLength_m, laneCount, geometry, lanes, boundaryMarkings, behaviourType, linkType, streetSegmentId (named roadId before D389) |
+| Links | id, name, level, displayType, laneOffset_m, referenceLength_m, laneCount, geometry, lanes, boundaryMarkings, behaviourType, linkType, streetSegmentId (named roadId before D389), speedLimit_kmh (J1, D390) |
 | Connectors | id, name, fromLinkId, fromLaneId, fromStation_m, toLinkId, toLaneId, toStation_m, fromLaneCount, toLaneCount, level, displayType, referenceLength_m, geometry, laneBlend, laneWidths, laneMarkings, laneChangeSide, behaviourType, generated |
 | Vehicle inputs | id, routeId, vehicleTypeId, vehiclesPerHour, startTime_s, endTime_s, laneShares, compositionId, routingDecisionId, linkId, volumeFromCounts, intervals |
 | Routes | id, segmentIds, destinationObjectId, destinationStation_m |

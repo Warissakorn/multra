@@ -17,7 +17,7 @@ struct Field {
     int rejectBefore{};bool nullable{};int rejectFrom{};
     const char* whenNonNull{};
 };
-inline constexpr int strictVersion=7,behaviourVersion=21,linkTypeVersion=50,streetSegmentVersion=53,streetSegmentKeyVersion=59;
+inline constexpr int strictVersion=7,behaviourVersion=21,linkTypeVersion=50,streetSegmentVersion=53,streetSegmentKeyVersion=59,linkSpeedVersion=60;
 // D389: schema 59 renamed the Road keys; a file below it keeps its own names, which reads and paths use.
 inline const char* streetSegmentsKey(int version) {return version<streetSegmentKeyVersion?"roads":"streetSegments";}
 inline const char* streetSegmentIdKey(int version) {return version<streetSegmentKeyVersion?"roadId":"streetSegmentId";}

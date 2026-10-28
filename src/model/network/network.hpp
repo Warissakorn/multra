@@ -19,9 +19,8 @@ struct Link {
     std::string id; std::vector<Point> geometry; std::vector<Lane> lanes;
     int level{}; std::string displayType{"default"};
     double laneOffset{}; // Bundle offset from reference geometry, in lane-order coordinates.
-    // Vissim's Name: the author's own label for this object, free text, never a key. Empty is
-    // normal and means the object is referred to by its id alone. Ordered last so that every
-    // existing brace-initialisation of a Link keeps meaning what it says.
+    // Vissim's Name: free text, never a key; empty means the id alone names it. Fields from here on
+    // are appended so every existing brace-initialisation of a Link keeps meaning what it says.
     std::string name;
     // One value per boundary in lane order (N+1), or empty for solid edges/dashed dividers.
     // Shared boundaries are authored once, not independently on the two adjacent lanes.
@@ -29,9 +28,10 @@ struct Link {
     // M3.3.2a, schema 21: a link behaviour type id; absent keeps each type's own behaviour.
     std::optional<std::string> behaviourTypeId{};
     std::optional<std::string> linkTypeId{}; // S2.1 (MACRO_NETWORK §4, D273), schema 50: Macro only
-    // S3.3 (STREET_SEGMENTS §3, D305), schema 53: the StreetSegment whose template generated this Link; cleared when the
-    // Link is edited by hand (detached).
+    // S3.3 (STREET_SEGMENTS §3, D305), schema 53: the StreetSegment whose template generated this Link; cleared on a hand edit.
     std::optional<std::string> streetSegmentId{};
+    std::optional<double> speedLimit{}; // J1 (D390), schema 60: posted, km/h; never a cap, read by Node analysis only
+
     bool operator==(const Link&) const = default;
 };
 struct LaneReference {

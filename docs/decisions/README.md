@@ -470,3 +470,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D388](RECORD.md#d388) — B30 as recommended: structural shipped junction templates, 3–4 legs, roles with per-leg overrides, all-way stop generated, yellow/all-red required; stored Node numbers, volumes from `Node::analysis`, UTM coordinates, skip-and-report.
 
 [D389](RECORD.md#d389) — Road renamed Street segment (not Segment: the engine's word); schema 59 keys `streetSegments`/`streetSegmentId`/`streetSegmentDirection`, older files read.
+
+[D390](RECORD.md#d390) — J1: posted `speedLimit` on the Link (schema 60), defaulted from the cross-section template; approach speeds move to their Links; `freeSpeed` independent; Micro does not read it yet.

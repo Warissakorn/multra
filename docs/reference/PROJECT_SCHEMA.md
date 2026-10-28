@@ -12,7 +12,7 @@ uses those existing codecs and validators.
 
 ## Envelope and presence rules
 
-The reader accepts editor schemas 1–59 (`kLatestSchema` in `document.hpp`). A missing
+The reader accepts editor schemas 1–60 (`kLatestSchema` in `document.hpp`). A missing
 `schemaVersion` selects the separate legacy scenario path, including pre-5 attachments
 and legacy signal/amber behavior. A formal editor schema must not accidentally accept
 that path as a canonical project.
@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–59 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–60 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -100,8 +100,9 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 55 | Study area with selected Nodes | `study_area_codec.cpp` |
 | 56 | Named Macro run definitions | `macro_run_definition.cpp` |
 | 57 | Street segment-target zone connectors | `zone_codec.cpp` |
-| 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374) | `node_codec.cpp` |
+| 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374, read only below 60) | `node_codec.cpp` |
 | 59 | Road renamed Street segment (D389): `network.streetSegments`, a Link's `streetSegmentId`, a zone connector's `streetSegmentId`/`streetSegmentDirection`; below 59 the same fields are `roads`, `roadId`, `roadDirection`, and each version refuses the other's | `street_segment_codec.cpp`, `zone_codec.cpp`, `network_fields.*` |
+| 60 | Posted speed (J1, D390): a Link's `speedLimit` and an owned cross-section's `speedLimit`, km/h; a 58–59 approach row's `speedLimit` moves to the Link it names, and from 60 the row refuses it | `link_speed_codec.cpp`, `network_fields.*`, `node_codec.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from
@@ -183,7 +184,7 @@ with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 now also includes the Connector/reference extension below; complete remains false and
 desktop observed schema discovery is unchanged.
 
-The generated schema chooses rules from the document's root `schemaVersion` (1–59).
+The generated schema chooses rules from the document's root `schemaVersion` (1–60).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its
@@ -197,7 +198,7 @@ Covered structure:
   unchecked. Street segments/overpasses retain the document's pre-53 refusal even on legacy versions.
 - Links require id, geometry and lanes. Geometry uses object points with required numeric x/y;
   lanes have required string id and numeric width. Optional level, displayType, laneOffset,
-  name, boundaryMarkings and versioned behaviourType/linkType/streetSegmentId (roadId below 59) get their read shapes.
+  name, boundaryMarkings and versioned behaviourType/linkType/streetSegmentId (roadId below 59)/speedLimit (from 60) get their read shapes.
 - Level is an integer token within [-1000,1000]; `x-multra-nativeType` records the native-token
   restriction. Marking names come from the existing model formatter. Model defaults supply
   schema default annotations, which do not fill or mutate input documents.
@@ -206,7 +207,7 @@ Covered structure:
   Network/Link/Lane/points; from 7 their known-key lists are closed.
 - behaviourType is read from 21; earlier legacy unknown-field behavior remains. linkType
   is known by the standalone network reader from 21 but rejected by document prechecks
-  before 50 and read in the existing later stage. roadId/streetSegmentId stay gated at 53 and 59. Those stage
+  before 50 and read in the existing later stage. roadId/streetSegmentId stay gated at 53 and 59, speedLimit at 60. Those stage
   boundaries and diagnostic paths are preserved, rather than normalized by the refactor.
 
 This is structural coverage. Nonblank/unique IDs, positive lane widths, lane counts,
