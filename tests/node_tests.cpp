@@ -116,3 +116,18 @@ TEST(nodes, polygon_runs_near_and_far) { // D384: the runs a bounding-box shortc
     CHECK(same(polygonRuns({{-20, 0}, {20, 0}}, box), {{0, 10, false}, {10, 30, true}, {30, 40, false}})); // through
     CHECK(same(polygonRuns({{-5, -5}, {5, 5}}, box), {{0, std::hypot(10.0, 10.0), true}}));       // wholly inside
 }
+TEST(nodes, overlap_at_an_edge_and_around_a_corner) { // D384: what the bounding-box filter must keep
+    const auto overlaps = [](std::vector<Point> a, std::vector<Point> b) {
+        Network n; n.id = "net";
+        n.nodes = {{"a", "", std::move(a), false}, {"b", "", std::move(b), false}};
+        const auto issues = nodeIssues(n);
+        return std::any_of(issues.begin(), issues.end(), [](const auto& i) { return i.code == "NODE_OVERLAP" && i.path == "nodes[1].polygon"; });
+    };
+    CHECK(overlaps(square(0, 0, 10), square(10, 0, 10)));  // sharing an edge
+    CHECK(overlaps(square(0, 0, 10), square(10, 10, 10))); // sharing a corner
+    CHECK(!overlaps(square(0, 0, 10), square(10.001, 0, 10)));
+    // An L whose box holds the square, though the L itself does not touch it.
+    const std::vector<Point> ell{{0, 0}, {30, 0}, {30, 5}, {5, 5}, {5, 30}, {0, 30}};
+    CHECK(!overlaps(ell, square(15, 15, 10)));
+    CHECK(overlaps(ell, square(3, 3, 10)));
+}
