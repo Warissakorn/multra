@@ -1,5 +1,6 @@
 #include "polygon.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 namespace multra {
@@ -44,6 +45,25 @@ bool polygonsOverlap(const std::vector<Point>& a, const std::vector<Point>& b) {
     return pointInPolygon(a, b.front()) || pointInPolygon(b, a.front());
 }
 std::vector<PolygonRun> polygonRuns(const std::vector<Point>& line, const std::vector<Point>& polygon) {
+    // D384: a line whose bounding box lies over a metre from the polygon's meets no edge, so its one run
+    // is outside, with the length the loop below would sum. A non-finite point takes the full path.
+    const auto finite = [](const std::vector<Point>& ps) {
+        return std::all_of(ps.begin(), ps.end(), [](Point p) { return std::isfinite(p.x) && std::isfinite(p.y); });
+    };
+    if (line.size() >= 2 && polygon.size() >= 3 && finite(line) && finite(polygon)) {
+        const auto bounds = [](const std::vector<Point>& ps) {
+            std::array<double, 4> b{ps[0].x, ps[0].y, ps[0].x, ps[0].y};
+            for (const auto& p : ps) { b[0] = std::min(b[0], p.x); b[1] = std::min(b[1], p.y); b[2] = std::max(b[2], p.x); b[3] = std::max(b[3], p.y); }
+            return b;
+        };
+        const auto l = bounds(line), g = bounds(polygon);
+        constexpr double margin = 1.0;
+        if (l[2] < g[0] - margin || l[0] > g[2] + margin || l[3] < g[1] - margin || l[1] > g[3] + margin) {
+            double length = 0.0;
+            for (std::size_t i = 0; i + 1 < line.size(); ++i) length += std::hypot(line[i + 1].x - line[i].x, line[i + 1].y - line[i].y);
+            return {{0.0, length, false}};
+        }
+    }
     std::vector<double> cuts{0.0};
     double base = 0.0;
     for (std::size_t i = 0; i + 1 < line.size(); ++i) {

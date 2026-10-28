@@ -5,6 +5,7 @@
 #include "../src/project/document.hpp"
 #include "../src/project/json.hpp"
 #include "../src/core/validate.hpp"
+#include <cmath>
 #include <fstream>
 
 using namespace multra;
@@ -99,4 +100,19 @@ TEST(nodes, n4_generated_is_written_only_when_true_and_an_edit_clears_it) { // N
     CHECK(!d.network.nodes.front().generated);
     CHECK(d.network.nodes.front().name == "Centre");
     (void)drawn;
+}
+TEST(nodes, polygon_runs_near_and_far) { // D384: the runs a bounding-box shortcut must not change
+    const auto box = square(-10, -10, 20); // [-10, 10] on both axes
+    const auto same = [](const std::vector<PolygonRun>& got, const std::vector<PolygonRun>& want) {
+        if (got.size() != want.size()) return false;
+        for (std::size_t i = 0; i < got.size(); ++i)
+            if (std::abs(got[i].from - want[i].from) > 1e-9 || std::abs(got[i].to - want[i].to) > 1e-9 || got[i].inside != want[i].inside) return false;
+        return true;
+    };
+    CHECK(same(polygonRuns({{100, 0}, {200, 0}, {200, 50}}, box), {{0, 150, false}}));           // far away
+    CHECK(same(polygonRuns({{10.5, -20}, {10.5, 20}}, box), {{0, 40, false}}));                  // half a metre outside
+    CHECK(same(polygonRuns({{10, 10}, {20, 20}}, box), {{0, std::hypot(10.0, 10.0), false}}));   // from a corner outward
+    CHECK(same(polygonRuns({{-20, 10}, {0, 10}}, box), {{0, 10, false}, {10, 20, true}}));       // along an edge
+    CHECK(same(polygonRuns({{-20, 0}, {20, 0}}, box), {{0, 10, false}, {10, 30, true}, {30, 40, false}})); // through
+    CHECK(same(polygonRuns({{-5, -5}, {5, 5}}, box), {{0, std::hypot(10.0, 10.0), true}}));       // wholly inside
 }
