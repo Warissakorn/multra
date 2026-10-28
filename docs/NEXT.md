@@ -73,14 +73,10 @@ field is optional, Micro reads it as a default and never a cap, and low site spe
 allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
 a planning-level method (otherwise back to the owner).
 
-## Road-model review follow-up (D382, D383)
+## Road-model review follow-up (D382–D384)
 
-Batches A and B are done (D382, D383). Each item below starts with a row that fails first; one system per session.
-- **C, speed (measure first):** F3 on 480 Link-less Roads takes 94.5 s (Release); callgrind puts
-  99.7 % in `applyFills` re-listing `fillOffers` per chosen offer (72 % in `nodeDetailRefusal`), 0.26 %
-  in `applyTemplate`: check only the offer being applied. Then `nodeIssues`' pairwise polygon overlap
-  (776 ms at 900 Nodes) and `settleNodes`' Road legs (428 ms): bounding boxes first.
-- **D, workflow:** *Apply template* on several selected Roads (after C); the *Find crossings* dialog
+Batches A–C are done (D382–D384). Each item below starts with a row that fails first; one system per session.
+- **D, workflow:** *Apply template* on several selected Roads (C made F3 fast enough); the *Find crossings* dialog
   warns when a junction's Road has no template (needs a desktop build).
 - **For the owner:** OWNER_SITTING B29 (generated Node size, one turn key across levels, explicit
   Road directions, partial HCM totals, HCM storage, CountSet).

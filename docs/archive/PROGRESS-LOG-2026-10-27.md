@@ -2,6 +2,14 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — M13 A3's choices decided on delegation (D375)
+
+- **Asked:** the owner answered B25 with "ช่วยตัดสินใจ" ("help decide"), as for B19 (D214).
+- **Decided:** 1a–5a. Shared and exclusive lanes, far and kerb turns; protected-permitted derived
+  from green overlap with a yielded conflict (the test A2 already uses); opposing flow from Node
+  membership; no pedestrians or bicycles, stated; hand rows, with Example Problem 1 left to A3 + A8.
+  Reasons are in D375. A3's contract and code still start only when the owner asks.
+
 ## 2026-10-27 — Later M13 slices outlined; A3's choices put to the owner
 
 - **Asked:** whether contracts should be written ahead. Answer given and accepted ("ทำตามข้อเสนอ"):

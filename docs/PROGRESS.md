@@ -6,6 +6,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Road-scale edits made fast, results unchanged (D384)
+
+- **Asked:** "ทำชุด C ต่อเลย" ("go on with batch C") of the road-model review.
+- **Changed, each measured before and after (Release, median of three):** `applyFills` checks only the
+  offer it applies (F3 on 480 Roads 96.3 s → 80 ms); `polygonRuns` skips a line whose box is over
+  1 m from the polygon's (`settleNodes` 466 → 118 ms); `nodeIssues` tests overlap only where boxes
+  meet (744 → 1.4 ms). One edit on 1,860 Roads: 1.24 s → 121 ms.
+- **Same results:** characterization rows passed before and after; documents, issues and settled
+  results compared byte for byte at each step. Numbers and fixture in ENGINEERING_NOTES.
+- **Verified:** headless build, `ctest` 164/164 and `check` on Linux.
+
 ## 2026-10-28 — Node-analysis inputs follow ordinary edits (D383)
 
 - **Asked:** "ทำชุด B ต่อเลย" ("go on with batch B") of the road-model review.
@@ -98,11 +109,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Open for the owner:** l+sl, lr and one-lane layouts with a permitted far turn are refused (the
   book prints no form with a kerb turn in the same lane), and permitted lane groups have no queue yet.
 - **Verified:** NA15–NA20 pass; NA19's permitted row is hand-checked (c 170.01, d1 55.29, d2 59.00).
-
-## 2026-10-27 — M13 A3's choices decided on delegation (D375)
-
-- **Asked:** the owner answered B25 with "ช่วยตัดสินใจ" ("help decide"), as for B19 (D214).
-- **Decided:** 1a–5a. Shared and exclusive lanes, far and kerb turns; protected-permitted derived
-  from green overlap with a yielded conflict (the test A2 already uses); opposing flow from Node
-  membership; no pedestrians or bicycles, stated; hand rows, with Example Problem 1 left to A3 + A8.
-  Reasons are in D375. A3's contract and code still start only when the owner asks.
