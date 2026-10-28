@@ -2,6 +2,16 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Later M13 slices outlined; A3's choices put to the owner
+
+- **Asked:** whether contracts should be written ahead. Answer given and accepted ("ทำตามข้อเสนอ"):
+  a full contract only for the next slice; later slices get an outline and their open questions,
+  no formulas or values; questions known ahead go to OWNER_SITTING for one sitting.
+- **Changed:** NODE_ANALYSIS §12 outlines A3–A9 with their questions. A3's five (scope, recognising
+  protected-permitted operation, opposing flow, pedestrians and bicycles, acceptance) are
+  OWNER_SITTING B25. §7 now cites A3's real source, Ch. 31 §3 Steps 1–7 (PDF p. 2986–3015), not §2.
+  No D-row: nothing is decided, and A3 still starts only when the owner asks.
+
 ## 2026-10-27 — Module READMEs rewritten as maps, and checked
 
 - **Asked:** whether to document every program detail per component. Answer given: no; the

@@ -6,6 +6,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Node-analysis inputs follow ordinary edits (D383)
+
+- **Asked:** "ทำชุด B ต่อเลย" ("go on with batch B") of the road-model review.
+- **Fixed, each with a row that failed first:** splitting an approach dropped three turns' volumes
+  while Node delay was still shown (NA21: rows now follow the in-leg's end); rows naming no turn or
+  in-leg were ignored silently (NA22: `NODE_ANALYSIS_STALE_TURN` / `_STALE_APPROACH`); a polygon
+  taking in the pockets read as needing detail (NA23: `NODE_CONNECTOR_CROSSES` is advised instead).
+- **Left:** totals under `NODE_ANALYSIS_PARTIAL` stay shown until the owner answers B29 (d);
+  batches C and D in NEXT.
+- **Verified:** headless build, `ctest` 164/164 and `check` on Linux.
+
 ## 2026-10-28 — Road-model review: four defects fixed (D382)
 
 - **Asked:** review the road network model, its workflow and its use by HCM; then "เริ่มชุด A ได้เลย"
@@ -95,13 +106,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   from green overlap with a yielded conflict (the test A2 already uses); opposing flow from Node
   membership; no pedestrians or bicycles, stated; hand rows, with Example Problem 1 left to A3 + A8.
   Reasons are in D375. A3's contract and code still start only when the owner asks.
-
-## 2026-10-27 — Later M13 slices outlined; A3's choices put to the owner
-
-- **Asked:** whether contracts should be written ahead. Answer given and accepted ("ทำตามข้อเสนอ"):
-  a full contract only for the next slice; later slices get an outline and their open questions,
-  no formulas or values; questions known ahead go to OWNER_SITTING for one sitting.
-- **Changed:** NODE_ANALYSIS §12 outlines A3–A9 with their questions. A3's five (scope, recognising
-  protected-permitted operation, opposing flow, pedestrians and bicycles, acceptance) are
-  OWNER_SITTING B25. §7 now cites A3's real source, Ch. 31 §3 Steps 1–7 (PDF p. 2986–3015), not §2.
-  No D-row: nothing is decided, and A3 still starts only when the owner asks.

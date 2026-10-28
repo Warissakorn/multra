@@ -73,14 +73,9 @@ field is optional, Micro reads it as a default and never a cap, and low site spe
 allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
 a planning-level method (otherwise back to the owner).
 
-## Road-model review follow-up (D382)
+## Road-model review follow-up (D382, D383)
 
-Batch A is done (D382). Each item below starts with a row that fails first; one system per session.
-- **B, Node analysis:** `splitLink` leaves `analysis.turns`/`approaches` naming the old in-leg, so a
-  split approach loses its volumes while Node delay and LOS are still shown (fixture
-  `node-analysis-four-leg`, `link-4` split at 20 m: 12 → 9 lane groups, 59.9 → 65.1 s). Remap the
-  in-leg to the downstream piece; add `NODE_ANALYSIS_STALE_TURN` for rows naming no leg; report the
-  membership's own code instead of `NODE_ANALYSIS_NEEDS_DETAIL` (a ±70 m polygon on that fixture).
+Batches A and B are done (D382, D383). Each item below starts with a row that fails first; one system per session.
 - **C, speed (measure first):** F3 on 480 Link-less Roads takes 94.5 s (Release); callgrind puts
   99.7 % in `applyFills` re-listing `fillOffers` per chosen offer (72 % in `nodeDetailRefusal`), 0.26 %
   in `applyTemplate`: check only the offer being applied. Then `nodeIssues`' pairwise polygon overlap

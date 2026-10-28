@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**A1 (§10, D372) and A2 (§11, D373, D374) are implemented; the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 (§10, D372) and A2 (§11, D373, D374) are implemented, with D383's fixes (§13); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -444,3 +444,17 @@ inputs are stored, and whether they reuse the Micro signal controller's fields. 
 
 **A9: editor table and *Fill from model*.** Questions: where the table lives in the editor, and
 what provenance a filled volume shows.
+
+## 13. Review fixes (D383)
+
+A review of 2026-10-28 found three ways ordinary edits left the inputs wrong without saying so; each
+row failed before its fix.
+
+| Row | Checks |
+|---|---|
+| NA21 | Splitting the A1 fixture's in-leg `link-4` keeps all 12 lane groups and the Node delay; turn `in` and approach rows follow the end at the Node to the downstream piece, as destination zone connectors do. An out-leg split keeps its id |
+| NA22 | A turn row naming no turn of the Node is `NODE_ANALYSIS_STALE_TURN` at `analysis.turns[k]`, an approach naming no in-leg `NODE_ANALYSIS_STALE_APPROACH` at `analysis.approaches[k]`; neither changes a lane group |
+| NA23 | A polygon taking in the pockets (±70 m) is advised under its membership code (`NODE_CONNECTOR_CROSSES`), not `NODE_ANALYSIS_NEEDS_DETAIL`, which stays for a Node with no turn |
+
+Still open: approach and Node delay and LOS are reported under `NODE_ANALYSIS_PARTIAL`
+([OWNER_SITTING](../plans/OWNER_SITTING.md) B29 (d)).
