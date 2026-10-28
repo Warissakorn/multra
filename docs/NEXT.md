@@ -68,7 +68,8 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
 (hybrid meso–micro; the user roles) is open.
 
 **Booked by D379 (B27, on delegation), each starting with its contract when the owner asks:** one
-posted speed on the Link (D380 confirmed it; the M13 approach `speedLimit` becomes derived), per-lane
+posted speed on the Link (D380 confirmed it; the M13 approach `speedLimit` becomes derived; D381: the
+field is optional, Micro reads it as a default and never a cap, and low site speeds are valid), per-lane
 allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
 a planning-level method (otherwise back to the owner).
 

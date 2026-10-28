@@ -452,3 +452,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D379](RECORD.md#d379) — B27 decided on delegation ("ช่วยตัดสินใจ"): one posted speed on the Link pending the owner (B28, it reverses D373), per-lane allowed modes, *Fill from model* for Node turn volumes; M13 on coarse Nodes only within an HCM 7 planning method. Bookings only.
 
 [D380](RECORD.md#d380) — B28 decided on informed delegation: D379 1a stands (posted speed on the Link; D373 approach speed derived, values migrated); D378 order rule reworded (a finer gate does not close before the coarser one).
+
+[D381](RECORD.md#d381) — Stall-level parking and pedestrians added to PROBLEM §2 as needs, booked under *Later*; the 1a posted speed optional, a Micro default, never a cap.

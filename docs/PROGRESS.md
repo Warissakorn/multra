@@ -6,6 +6,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Stall-level parking and pedestrians recorded as needs (D381)
+
+- **Asked:** would a posted speed on the Link limit Vissim-style site roads, parallel and bay
+  parking and pedestrians; then "ทำเลย" ("do it") to the offered docs change.
+- **Changed (docs only):** two PROBLEM §2 Micro rows, two ROADMAP *Later* entries, and the three
+  posted-speed rules in NEXT for the 1a contract. Limits recorded in D381: no stall objects, no
+  reverse motion in core, no pedestrian model, Connector topology and scale.
+
 ## 2026-10-28 — B28 decided on delegation (D380)
 
 - **Asked:** the owner answered B28 with "ช่วยตัดสินใจ" ("help decide"), after the session said item 1
@@ -100,19 +108,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   mention does not count), with positive and negative fixtures.
 - **Verified:** the docs, architecture and file-size checks pass; removing one row fails the docs
   check as expected.
-
-## 2026-10-27 — Analytical junction capacity, slice A2 (M13, D373, D374)
-
-- **Asked:** continue with A2, and finish it. The owner answered A2's three questions: all of it in
-  PR #200; critical v/c over a non-overlapping chain; a speed limit stored per approach (D373).
-- **Changed:** `src/analysis/` gains `lane_flow` (Ch. 31 §2's lane-flow procedure, protected),
-  `critical` (Xc over the largest-Σy chain of non-overlapping greens) and `queue` (Ch. 31 §4: Q1, Q2,
-  Q95, storage ratios). Lane groups are lane-based, so shared through+kerb lanes are analysed.
-  Approaches gain `speedLimit` (schema 58). Eqs. 31-46 to 31-66, 31-131 to 31-156 and 19-30/19-31
-  were read from their images; Eq. 31-151's clipped image is completed from the PDF text layer.
-- **Exhibit 19-41:** 29 of 36 cells within ±5 %; the seven others (three are the capped-looking
-  "2,000" entries) are listed in NODE_ANALYSIS §11, not tuned. Prototyping caught a conservation
-  bug (Eq. 31-64 must distribute the trading groups' own demand) before it shipped.
-- **Verified:** Linux Debug ctest passes, including NA9–NA14 and the CLI fixture now carrying all
-  twelve turns: node 59.86 s (E), Xc 0.726, West sr v/s equal to t's 0.1513, a pocket queue's R_Q
-  0.754, each hand-checked.

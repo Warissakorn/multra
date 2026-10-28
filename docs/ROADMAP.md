@@ -481,8 +481,8 @@ finer levels with recorded provenance and a reported volume comparison.
 
 Recorded so nobody starts them opportunistically:
 
-- Pedestrian and public-transport modelling, transit stops and crosswalks (from M5.1, D143;
-  parking and regional/macroscopic modelling moved to M8–M12 by D145)
+- Pedestrians (a 2D walking model, not lanes), public transport, transit stops, crosswalks (D143, D381)
+- Site circulation and stall-level parking: parallel/bay stalls, reversing in core (D381; M8 stays abstract)
 - Side friction: bus/songthaew stops blocking a lane, on-street parking manoeuvres, incidents
   and temporary lane closures (D177, review §3 L), with the transit work above
 - Activity-based demand and transit assignment beyond M10's four-step model

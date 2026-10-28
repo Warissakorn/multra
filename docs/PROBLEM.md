@@ -68,6 +68,8 @@ weight (D378); none is only an input to another.
 | **Motorcycles and lane sharing** — filtering, sharing a lane, forming at the stop line | Thai and much of Asia's counts are motorcycle-heavy; converting them to PCU hides the queue and start-up mechanics a signal study reports (D177; ROADMAP M3.7–M3.8). |
 | **Node evaluation** — delay/LOS/queue per movement | The table that goes into the report. |
 | **Multi-run averaging with confidence intervals** | A single stochastic run is not a result. |
+| **Site circulation and stall-level parking** — internal roads and aisles, parallel and bay stalls, entry and exit manoeuvres including reversing (D381) | Development-access studies ask whether the site's own roads, aisles and stalls work, not only whether the gate queue fits; Vissim users model them as parking spaces with routing. Not started: ROADMAP *Later*. |
+| **Pedestrians** — walking areas, crossings and their conflicts with vehicles (D381) | Site access, crosswalk and signal studies need pedestrian delay and its effect on turning traffic; Vissim users do this in Viswalk. Not started: ROADMAP *Later*, as its own two-dimensional model rather than lanes. |
 
 **Meso — the corridor over the peak**
 
