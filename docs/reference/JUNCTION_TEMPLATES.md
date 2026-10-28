@@ -6,7 +6,7 @@ engineer draws Roads; where they cross, *Find crossings* makes a Node, and a **j
 on that Node says which lanes serve which turns, the pockets and the control, from which the
 Connectors, right-of-way and signals are generated. Where two Roads meet end to end with different
 cross-sections, a **transition template** joins them. The export is [UTDF_EXPORT](UTDF_EXPORT.md).
-**Nothing here is implemented.** The open owner choices are §12.
+**Nothing here is implemented.** The owner choices are answered (§12: D387, D388).
 
 **Naming.** D387 renames Road to **Segment** everywhere, file format included, before any M14 code
 (slice SR, §10). This page says Road for today's object; the slices after SR use Segment.
@@ -207,7 +207,7 @@ templates, which wait for the owner's standard and edition (OWNER_SITTING B12).
 **Answered 2026-10-28 (D387, "เอาตามแนะนำ"):** templates on Nodes from crossing Roads instead of a
 builder; the full rename to Segment, before M14 code; transitions align per template.
 
-**Open** (OWNER_SITTING B30), recommended first:
+**Answered 2026-10-28 (D388, "B30 เอาตามแนะนำ"): JT-1a to JT-5a**, so §3–§9 state the chosen options:
 1. **JT-1 Shipped junction templates.**
    - **(a) A small structural set (P1–P4 four-leg, two-way stop three- and four-leg, with and
      without far-turn pockets), carrying no site numbers (recommended).**

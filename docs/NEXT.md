@@ -35,7 +35,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Contracts [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
   ROADMAP M14. D387: no builder tool; Roads crossing make Nodes and a junction template generates
   the detail; transitions align per template; Road becomes Segment before any M14 code.
-  **Waiting on the owner:** OWNER_SITTING B30 (JT-1–JT-5, UX-1–UX-4) and U0.
+  B30 answered as recommended (D388: JT-1a–JT-5a, UX-1a–UX-4a). **Waiting on the owner:** U0's imports.
 - **Next session: SR, the rename** (JUNCTION_TEMPLATES §10, row JT1). Characterize first: every
   shipped project and test fixture read and saved, documents compared. Then schema 59 writes
   `network.segments` and `segmentId` and reads `roads`/`roadId` below 59 (a 58 file with the new

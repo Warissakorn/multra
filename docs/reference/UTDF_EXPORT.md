@@ -99,7 +99,7 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 The golden file goes to `tests/data/utdf/` only if the owner agrees that it may be redistributed
 (GPL repository); otherwise only the field names and units are recorded here.
 
-## 9. Owner choices (open)
+## 9. Owner choices (answered 2026-10-28, D388: UX-1a to UX-4a)
 
 1. **UX-1 Node numbers.**
    - **(a) Stored optional `number`, assigned by template Apply and *Number Nodes* (recommended).**
