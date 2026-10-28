@@ -6,6 +6,7 @@
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/road_commands.hpp"
+#include "../src/model/network/roads.hpp"
 #include "../src/project/road_codec.hpp"
 #include <algorithm>
 #include <cmath>
@@ -237,4 +238,42 @@ TEST(roads, rd11_assign_template_generates_nothing) { // RD11
     assignTemplate(x, {ids[1]}, std::nullopt, {});
     CHECK(!x.network.roads[1].crossSectionId && x.network.roads[0].crossSectionId == "divided");
     CHECK(thrown([&] { auto y = h.document(); assignTemplate(y, {"missing"}, std::nullopt, {}); }) == "EDIT_UNKNOWN_OBJECT");
+}
+TEST(roads, rd32_direction_survives_a_detach) { // RD32 (D382)
+    // The forward Link detached by hand leaves the backward one first in `links`: it stays backward.
+    auto d = withRoad();
+    const auto road = d.network.roads[0].id;
+    const auto ids = applyTemplate(d, road, {});
+    changeLanes(d, ids[0], {3.5, 3.5, 3.5});
+    CHECK(d.network.roads[0].links == std::vector<std::string>{ids[1]}); // forcing: only the backward Link is listed
+    CHECK(!forwardOnRoad(d.network.roads[0], link(d, ids[1])));
+    useLinkLanes(d, ids[1]);
+    CHECK(d.network.roads[0].overrides.lanesBackward == 2 && !d.network.roads[0].overrides.lanesForward);
+    d.network.roads[0].overrides = {};
+    const auto start = link(d, ids[1]).geometry.front();
+    const auto again = applyTemplate(d, road, {});
+    CHECK(again.size() == 2 && again[1] == ids[1] && again[0] != ids[0] && again[0] != ids[1]);
+    CHECK(d.network.roads[0].links == again);
+    CHECK(link(d, ids[1]).geometry.front() == start && link(d, again[0]).geometry.front().x == 0);
+    validateDocument(d);
+    // Split with only the backward Link listed: its original id runs from the far end, so the new Road takes it.
+    auto lone = withRoad(); const auto l = applyTemplate(lone, lone.network.roads[0].id, {});
+    changeLanes(lone, l[0], {3.5, 3.5, 3.5});
+    const auto next = splitRoad(lone, lone.network.roads[0].id, 50);
+    const auto& rest = *std::find_if(lone.network.roads.begin(), lone.network.roads.end(), [&](const auto& r) { return r.id == next; });
+    CHECK(rest.links == std::vector<std::string>{l[1]});
+    validateDocument(lone);
+}
+TEST(roads, rd33_direction_on_a_u_shaped_road) { // RD33 (D382)
+    // A U whose ends point the same way: the start-to-end chord says nothing, the stations along it do.
+    ProjectDocument d;
+    putCrossSection(d, divided(), {});
+    const auto road = putRoad(d, {"", "U", {{0, 0}, {100, 0}, {100, 60}, {0, 60}}, std::string("divided"), 0, {}, {}});
+    const auto ids = applyTemplate(d, road, {});
+    const auto& r = d.network.roads[0];
+    CHECK(ids.size() == 2); // forcing: both generated
+    CHECK(forwardOnRoad(r, link(d, ids[0])) && !forwardOnRoad(r, link(d, ids[1])));
+    changeLanes(d, ids[0], {3.5, 3.5, 3.5});
+    useLinkLanes(d, ids[1]);
+    CHECK(d.network.roads[0].overrides.lanesBackward == 2 && !d.network.roads[0].overrides.lanesForward);
 }

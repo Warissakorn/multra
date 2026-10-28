@@ -2,6 +2,7 @@
 // lane groups. Rows NA1-NA8; every expected value is worked by hand from the cited equation.
 #include "test.hpp"
 #include "../src/analysis/signalised.hpp"
+#include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_analysis_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/model/demand/node_analysis_compile.hpp"
@@ -9,6 +10,9 @@
 #include "../src/project/document_schema.hpp"
 #include "../src/project/json.hpp"
 #include "../src/project/node_analysis_run.hpp"
+#include "../src/model/network/node_membership.hpp"
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 
 using namespace multra;
@@ -23,6 +27,10 @@ ProjectDocument shipped(const char* project) {
     std::ifstream file(test::root() / "data/projects" / project); Json j; file >> j; return parseDocument(j);
 }
 Node box(double x0, double y0, double x1, double y1) { return {"", "Centre", {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}}, false}; }
+// The A1/A2 fixture: the shipped four-leg with a Node and every turn's volume (cli-node-analysis).
+ProjectDocument fixture() {
+    std::ifstream file(test::root() / "tests/node-analysis-four-leg.traffic.json"); Json j; file >> j; return parseDocument(j);
+}
 bool advised(const std::vector<ValidationIssue>& list, const std::string& code) {
     return std::any_of(list.begin(), list.end(), [&](const auto& i) { return i.code == code; });
 }
@@ -129,4 +137,46 @@ TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes 
     bad = saved; bad["network"]["nodes"][0]["analysis"]["approaches"][0]["speedLimit"] = 0;
     test::throws([&] { parseDocument(bad); }, "EDIT_NODE_INVALID");
     test::throws([&] { setNodeAnalysis(d, "nope", a); }, "EDIT_UNKNOWN_OBJECT");
+}
+TEST(nodeanalysis, na21_a_split_approach_keeps_its_volumes) { // NA21 (D383)
+    const auto before = runNodeAnalysis(fixture(), test::root() / "data").nodes.front();
+    CHECK(before.groups.size() == 12 && before.delay); // forcing: every turn analysed
+    auto d = fixture();
+    splitLink(d, "link-4", 20); // the in-leg's end, at the Node, goes to the downstream piece
+    const auto after = runNodeAnalysis(d, test::root() / "data").nodes.front();
+    CHECK(after.groups.size() == 12 && !advised(after.advisories, "NODE_ANALYSIS_NO_VOLUME"));
+    CHECK(after.delay && before.delay && std::abs(*after.delay - *before.delay) < 1e-6);
+    const auto& a = *d.network.nodes.front().analysis;
+    CHECK(std::none_of(a.turns.begin(), a.turns.end(), [](const auto& t) { return t.in == "link-4"; }));
+    CHECK(std::none_of(a.approaches.begin(), a.approaches.end(), [](const auto& r) { return r.link == "link-4"; }));
+    // An out-leg keeps its start, and with it its id.
+    auto out = fixture();
+    splitLink(out, "link-8", 100);
+    const auto& o = *out.network.nodes.front().analysis;
+    CHECK(std::any_of(o.turns.begin(), o.turns.end(), [](const auto& t) { return t.out == "link-8"; }));
+    CHECK(runNodeAnalysis(out, test::root() / "data").nodes.front().groups.size() == 12);
+}
+TEST(nodeanalysis, na22_stale_rows_are_named) { // NA22 (D383)
+    auto d = fixture();
+    CHECK(!advised(runNodeAnalysis(d, test::root() / "data").nodes.front().advisories, "NODE_ANALYSIS_STALE_TURN")); // forcing
+    auto& a = *d.network.nodes.front().analysis;
+    a.turns.push_back({"link-1", "link-20", 50}); // link-1 ends 60 m short of the Node: not a leg
+    a.approaches.push_back({"link-1", 0, std::nullopt, 0, 50});
+    const auto turns = a.turns.size() - 1, approaches = a.approaches.size() - 1;
+    const auto run = runNodeAnalysis(d, test::root() / "data").nodes.front();
+    const auto at = [&](const std::string& code, const std::string& path) {
+        return std::any_of(run.advisories.begin(), run.advisories.end(), [&](const auto& i) { return i.code == code && i.path == path; });
+    };
+    CHECK(at("NODE_ANALYSIS_STALE_TURN", "network.nodes[0].analysis.turns[" + std::to_string(turns) + "]"));
+    CHECK(at("NODE_ANALYSIS_STALE_APPROACH", "network.nodes[0].analysis.approaches[" + std::to_string(approaches) + "]"));
+    CHECK(run.groups.size() == 12); // the stale rows change no lane group
+}
+TEST(nodeanalysis, na23_a_membership_issue_is_named) { // NA23 (D383)
+    auto d = fixture();
+    d.network.nodes.front().polygon = {{-70, -70}, {70, -70}, {70, 70}, {-70, 70}};
+    const auto issues = nodeMembership(d.network, d.network.nodes.front()).issues;
+    CHECK(!issues.empty()); // forcing: the polygon takes in the pockets
+    const auto advisories = compileNodeAnalysis(d.network, 0, d.definition->signalControllers, d.definition->signalPrograms).advisories;
+    CHECK(!advised(advisories, "NODE_ANALYSIS_NEEDS_DETAIL"));
+    for (const auto& code : issues) CHECK(code == "NODE_NO_TURN" || advised(advisories, code));
 }

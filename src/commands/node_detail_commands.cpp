@@ -8,6 +8,7 @@
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_detail.hpp"
 #include "../model/network/polygon.hpp"
+#include "../model/network/roads.hpp"
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -28,7 +29,7 @@ std::optional<Geometry> templateGeometry(const ProjectDocument& d, const Link& l
     const auto* road = l.roadId ? roadOf(d.network, *l.roadId) : nullptr;
     const auto* t = road ? roadTemplate(d, *road, templates) : nullptr;
     if (!t) return std::nullopt;
-    const auto k = static_cast<std::size_t>(std::find(road->links.begin(), road->links.end(), l.id) - road->links.begin());
+    const std::size_t k = forwardOnRoad(*road, l) ? 0 : 1; // D382: by geometry, not by place in `links`
     const auto links = templateLinks(d.network, *road, *t);
     if (k >= links.size()) return std::nullopt;
     return links[k].geometry;
@@ -127,9 +128,17 @@ std::optional<std::set<std::string>> majorArms(const ProjectDocument& d, const N
 std::string nodeDetailRefusal(const ProjectDocument& d, const Node& node, const NodeFillCatalogs& catalogs) {
     const auto& n = d.network;
     const auto& templates = catalogs.templates;
-    for (const auto& leg : nodeRoadLegs(n, node))
+    const auto roadLegs = nodeRoadLegs(n, node);
+    for (const auto& leg : roadLegs)
         if (const auto* r = roadOf(n, leg.roadId); r && r->links.empty()) return "FILL_NODE_ROAD_NOT_GENERATED";
-    for (const auto& leg : nodeLinkLegs(n, node))
+    // D382: a Road ending inside whose Links pass beside the polygon (a Node narrower than the
+    // carriageway) would give turns without arms.
+    const auto linkLegs = nodeLinkLegs(n, node);
+    for (const auto& leg : roadLegs)
+        if (const auto* r = roadOf(n, leg.roadId))
+            for (const auto& id : r->links)
+                if (std::none_of(linkLegs.begin(), linkLegs.end(), [&](const auto& l) { return l.linkId == id; })) return "FILL_NODE_ARM_OUTSIDE";
+    for (const auto& leg : linkLegs)
         if (!templateGeometry(d, linkOf(n, leg.linkId), templates)) return "FILL_NODE_ARM_NOT_GENERATED";
     const auto control = node.coarse && node.coarse->control ? *node.coarse->control : CoarseControl::priority;
     if (control == CoarseControl::allWayStop) return "FILL_NODE_ALL_WAY_STOP";

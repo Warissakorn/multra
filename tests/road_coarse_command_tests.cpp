@@ -133,3 +133,24 @@ TEST(roadcoarse, rd27_two_leg_node_merged_away) { // RD27
     History w; w.reset(drawn);
     CHECK(w.execute("editorAddNode", [](auto& x) { putNode(x, {"", "", square({100, 0}, 10), false}); }) && w.document().network.nodes.size() == 1);
 }
+TEST(roadcoarse, rd31_split_renames_the_far_end_only) { // RD31 (D382)
+    // A Road between two coarse Nodes: splitting it moves the far Node's references to the new Road,
+    // and the near Node keeps naming the Road it still meets.
+    ProjectDocument d;
+    putCrossSection(d, section("ns"), {});
+    const auto r = road(d, {{0, 0}, {300, 0}}), w = road(d, {{0, 100}, {0, 0}}), e = road(d, {{300, 100}, {300, 0}});
+    putNode(d, {"", "", square({0, 0}, 10), false}); putNode(d, {"", "", square({300, 0}, 10), false});
+    setNodeCoarse(d, d.network.nodes[0].id, NodeCoarse{std::nullopt, {}, {{w, r}}, std::nullopt});
+    setNodeCoarse(d, d.network.nodes[1].id, NodeCoarse{std::nullopt, {r, e}, {{r, e}}, std::nullopt});
+    History h; h.reset(d);
+    CHECK(nodeRoadLegs(h.document().network, h.document().network.nodes[1]).size() == 2); // forcing: r ends in the far Node
+    std::string next;
+    bool split = false;
+    try { split = h.execute("editorSplitRoad", [&](auto& x) { next = splitRoad(x, r, 150); }); } catch (const std::exception&) {}
+    CHECK(split);
+    if (!split) return;
+    const auto& nodes = h.document().network.nodes;
+    CHECK(nodes[0].coarse && nodes[0].coarse->bannedTurns == (std::vector<Turn>{{w, r}}));
+    CHECK(nodes[1].coarse && nodes[1].coarse->bannedTurns == (std::vector<Turn>{{next, e}}));
+    CHECK(nodes[1].coarse && nodes[1].coarse->major == (std::vector<std::string>{next, e}));
+}

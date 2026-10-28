@@ -1,13 +1,19 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
+#include "../src/commands/road_commands.hpp"
+#include "../src/editor/ui_design_tokens.hpp"
+#include "../src/project/document.hpp"
+#include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
 #include "dialog_fit_support.hpp"
 #include <QComboBox>
 #include <QDialog>
 #include <QDoubleSpinBox>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QGraphicsItem>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -19,8 +25,11 @@
 #include <QTest>
 #include <QTimer>
 #include <algorithm>
+#include <fstream>
 #include <functional>
 #include <iostream>
+#include <memory>
+#include <tuple>
 using namespace multra;
 // S3.3b (D307, ROADS §16, rows RD23-RD26): the Road editor surface. The Cross-sections tab owns and
 // edits templates; the Road tool (O) draws a centreline (Ctrl+right-click, then clicks, Enter) and
@@ -61,6 +70,34 @@ QString cell(QTableWidget* table, const std::string& id, int column) {
     for (int r = 0; r < table->rowCount(); ++r)
         if (table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) return table->item(r, column)->text();
     require(false, "Row not found: " + id); return {};
+}
+// Selects every row whose Road id is in `ids`, the first one current.
+void selectRows(QTableWidget* table, const std::vector<std::string>& ids) {
+    table->clearSelection(); bool first = true;
+    for (int r = 0; r < table->rowCount(); ++r)
+        if (std::find(ids.begin(), ids.end(), table->item(r, 0)->data(Qt::UserRole).toString().toStdString()) != ids.end()) {
+            const auto index = table->model()->index(r, 0);
+            if (first) table->selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+            table->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows); first = false;
+        }
+    QApplication::processEvents();
+    require(static_cast<std::size_t>(table->selectionModel()->selectedRows().size()) == ids.size(), "Not every row was selected");
+}
+// A second window on `doc`, saved beside the first project, so a row starts from a known network.
+std::unique_ptr<EditorWindow> openCopy(const std::filesystem::path& data, const QTemporaryDir& temp, const char* name, const ProjectDocument& doc) {
+    const auto path = temp.filePath(name).toStdString();
+    { std::ofstream out(path); out << documentJson(doc).dump(2) << "\n"; }
+    auto w = std::make_unique<EditorWindow>(data); w->show(); QTest::qWait(30);
+    w->openFile(QString::fromStdString(path)); QApplication::processEvents();
+    require(w->history().document().network.roads.size() == doc.network.roads.size(), std::string("The copy did not open: ") + name);
+    return w;
+}
+// `count` straight Roads one above the other, 40 m apart from y = `y0`, far from the fixture.
+std::vector<std::string> addRoads(ProjectDocument& doc, int count, const std::optional<std::string>& section, double y0 = 5000) {
+    std::vector<std::string> ids;
+    for (int i = 0; i < count; ++i)
+        ids.push_back(putRoad(doc, Road{"", "", {{5000, y0 + 40 * i}, {5200, y0 + 40 * i}}, section, 0, {}, {}}));
+    return ids;
 }
 std::vector<std::string> tagged(EditorWindow& w, const char* tag, int field = 1) {
     std::vector<std::string> found;
@@ -310,6 +347,74 @@ int main(int argc, char** argv) {
         trigger(w, "editorFillDefaults");
         const auto filled = std::find_if(network().roads.begin(), network().roads.end(), [&](const auto& r) { return r.id == loose.id; });
         require(filled->links.size() == 2 && w.history().revision() == unfilled + 1, "Ticking F3 did not generate the Road's Links in one step");
+
+        // RD34 (D385): Apply template on several selected rows applies each in table order in one Undo
+        // step; one refused Road leaves the whole Command unapplied.
+        {
+            auto base = doc();
+            const auto three = addRoads(base, 3, t.id);
+            const auto bareRoad = addRoads(base, 1, std::nullopt, 4960).front();
+            auto copy = openCopy(argv[1], temp, "apply-many.traffic.json", base);
+            auto* table = item<QTableWidget>(*copy, "editorRoadTable");
+            const auto& net = [&]() -> const Network& { return copy->history().document().network; };
+            const auto road = [&](const std::string& id) { return *std::find_if(net().roads.begin(), net().roads.end(), [&](const auto& r) { return r.id == id; }); };
+            const auto bytes = documentJson(copy->history().document()).dump();
+            const auto states = copy->history().states().size();
+            selectRows(table, three);
+            require(act(*copy, "editorApplyTemplate")->isEnabled(), "Apply template is disabled with three rows selected");
+            trigger(*copy, "editorApplyTemplate");
+            for (const auto& id : three) require(road(id).links.size() == 2, "Apply template skipped a selected Road: " + id);
+            require(copy->history().states().size() == states + 1, "Applying three Roads was not one Undo step");
+            trigger(*copy, "editorUndo");
+            require(documentJson(copy->history().document()).dump() == bytes, "Undo did not restore the document byte for byte");
+            selectRows(table, {three[0], three[1], bareRoad});
+            trigger(*copy, "editorApplyTemplate");
+            require(documentJson(copy->history().document()).dump() == bytes && copy->history().states().size() == states + 1,
+                    "A Road without a template did not leave the whole Command unapplied");
+            // 200 Roads in one press: timed to confirm D384's speed holds for the batch (no gate here).
+            auto large = doc();
+            const auto many = addRoads(large, 200, t.id);
+            auto big = openCopy(argv[1], temp, "apply-200.traffic.json", large);
+            selectRows(item<QTableWidget>(*big, "editorRoadTable"), many);
+            QElapsedTimer timer; timer.start();
+            trigger(*big, "editorApplyTemplate");
+            const auto ms = timer.elapsed();
+            const auto& bigRoads = big->history().document().network.roads;
+            require(std::all_of(bigRoads.begin(), bigRoads.end(), [&](const auto& r) {
+                        return std::find(many.begin(), many.end(), r.id) == many.end() || r.links.size() == 2; }),
+                    "Apply template did not generate every one of 200 Roads");
+            std::cout << "RD34: Apply template on 200 Roads took " << ms << " ms\n";
+        }
+
+        // RD35 (D385): Find crossings marks a place whose Road has neither a template nor Links, with a
+        // one-line note; Roads with a template give neither. The warning does not block Confirm.
+        const auto crossingWarning = [&](const std::optional<std::string>& section, const char* name) {
+            auto base = doc();
+            while (!base.network.roads.empty()) deleteRoad(base, base.network.roads.front().id); // their Links stay
+            putRoad(base, Road{"", "", {{5000, 7000}, {5200, 7000}}, section, 0, {}, {}});
+            putRoad(base, Road{"", "", {{5100, 6900}, {5100, 7100}}, section, 0, {}, {}});
+            auto copy = openCopy(argv[1], temp, name, base);
+            bool note = false, marked = false, tip = false; int rows = 0;
+            onDialog([&](QDialog& d) {
+                auto* table = d.findChild<QTableWidget*>("editorCrossingTable");
+                auto* label = d.findChild<QLabel*>("editorCrossingTemplateWarning");
+                rows = table->rowCount();
+                note = label && label->isVisibleTo(&d) && !label->text().isEmpty();
+                for (int r = 0; r < rows; ++r) {
+                    marked = marked || table->item(r, 3)->foreground().color() == editorDesign::semantic(editorDesign::Semantic::warning);
+                    tip = tip || !table->item(r, 3)->toolTip().isEmpty();
+                }
+            });
+            const auto nodes = copy->history().document().network.nodes.size();
+            trigger(*copy, "editorFindCrossings");
+            require(rows == 1, std::string("Find crossings did not list the one place: ") + name);
+            require(copy->history().document().network.nodes.size() == nodes + 1, "The warning blocked confirming the junction");
+            return std::tuple{note, marked, tip};
+        };
+        const auto [bareNote, bareMarked, bareTip] = crossingWarning(std::nullopt, "crossing-bare.traffic.json");
+        require(bareNote && bareMarked && bareTip, "Find crossings does not warn about a Road without a template");
+        const auto [withNote, withMarked, withTip] = crossingWarning(t.id, "crossing-template.traffic.json");
+        require(!withNote && !withMarked && !withTip, "Find crossings warns although every Road has a template");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

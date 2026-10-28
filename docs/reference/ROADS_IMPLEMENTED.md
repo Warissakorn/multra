@@ -78,7 +78,7 @@ and a detached Road shows in the table and on the canvas.
   - the pointer is the arrow with the road glyph (`EditorIcon::road`); under the tool every Road's
     centreline is a thin ink line.
 - **Roads tab** (`src/shell/editor_roads.cpp`, group *Network*): id, name, template, lanes (with
-  overrides), Links and status. Its toolbar holds the template combo, *Apply template*, *Edit road*
+  overrides), Links and status. Its toolbar holds the template combo, *Apply template* (every selected row since D385, §24), *Edit road*
   (name, template, lanes each way, lane width and median; a field at its lowest value means "from
   template" and stores no override) and *Delete road* (its Links stay).
 - **Status:** no template; unknown template (`ROAD_CROSS_SECTION_UNKNOWN`); not applied; applied; or
@@ -429,3 +429,34 @@ milestone gate changes.
 
 Verification evidence and platform are recorded in PROGRESS; local Linux checks cannot close an
 owner Windows/high-DPI appearance gate.
+
+## 23. Review fixes (D382)
+
+A review of the Road model (2026-10-28) found four defects, each reproduced by a row before its fix:
+- **Levels in *Find crossings*:** places were grouped by distance only, so a crossing above another
+  joined it. Events now group only on one level (RD30).
+- **Split and coarse values:** `splitRoad` left a coarse Node at the moved end naming the first piece,
+  refusing the Command (and *Find crossings*' batch) with `NODE_COARSE_UNKNOWN_LEG`. Those Nodes now
+  name the new Road; the near end's keep the id (`renameCoarseRoad`, shared with the lifecycle's join; RD31).
+- **A Node narrower than its arms:** a junction found before a template gave the Roads their width
+  gets a 4 m disc that the Links pass beside; F4 listed it, then failed on a gap. It is now
+  `FILL_NODE_ARM_OUTSIDE` ([READINESS](READINESS.md) RS19). The *Find crossings* dialog warns about it (§24).
+- **Direction of a generated Link:** read from the stations of its ends along the centreline
+  (`forwardOnRoad`), not from its place in `links`, which a detach shifted (RD32, RD33). Two listed
+  Links running one way are `EDIT_ROAD_DIRECTIONS`. No schema change.
+
+## 24. Road workflow (D385)
+
+Two Roads-tab steps from the same review, each with a `road-ui` row that failed first:
+- ***Apply template* on several Roads:** the action takes every selected row, in table order, in one
+  `execute`, so the batch is one Undo step. One refusal (`EDIT_ROAD_NO_TEMPLATE`,
+  `ROAD_CROSS_SECTION_UNKNOWN`, `EDIT_ROAD_DIRECTIONS`, ...) leaves the whole Command unapplied and is
+  shown as any refused edit. It is enabled with one row or more, like *Assign template*; *Edit road*
+  and *Delete road* still act on the current row. 200 Roads apply in about 150 ms (Debug desktop
+  build, Linux, table refresh included), so no further speed work was needed after D384 (RD34).
+- ***Find crossings* warns:** a place whose Roads include one with neither a template nor Links is
+  drawn in the warning colour, with a tooltip naming those Roads, and one note under the table says
+  to assign templates first, since its Node is sized without that Road's width (2 × tolerance in
+  radius when no Road there has one; F4 then refuses it with `FILL_NODE_ARM_OUTSIDE`). The note does
+  not block Confirm: §5 sets no order (RD35). Strings `editorCrossingNoTemplate` and
+  `editorCrossingNoTemplateRoad`.

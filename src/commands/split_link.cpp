@@ -80,6 +80,12 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     // M8.2: a zone connector sits at a Link end; the upstream piece keeps the start and the id.
     for(auto& c:d.zones.zoneConnectors)
         if(c.linkId==id && c.direction==ZoneDirection::destination)c.linkId=downstream.id;
+    // D383: Node analysis names an in-leg by the Link ending at the Node, so its rows follow that end;
+    // an out-leg starts there and keeps the id.
+    for (auto& node : d.network.nodes) if (node.analysis) {
+        for (auto& t : node.analysis->turns) if (t.in == id) t.in = downstream.id;
+        for (auto& r : node.analysis->approaches) if (r.link == id) r.link = downstream.id;
+    }
     // Reanchor external connectors, then create explicit one-to-one continuity connectors.
     changeGeometry(d, id, editableLink(d, id).geometry);
     for (const auto& lane : original.lanes) {

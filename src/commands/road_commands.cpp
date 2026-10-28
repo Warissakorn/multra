@@ -1,4 +1,5 @@
 #include "road_commands.hpp"
+#include "coarse_commands.hpp"
 #include "connector_commands.hpp"
 #include "demand_commands.hpp"
 #include "detail.hpp"
@@ -6,6 +7,7 @@
 #include "node_commands.hpp"
 #include "node_detail_commands.hpp"
 #include "../core/validate.hpp"
+#include "../model/network/coarse_nodes.hpp"
 #include "../model/network/roads.hpp"
 #include <algorithm>
 #include <cmath>
@@ -95,22 +97,31 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& ro
     const auto* found = roadTemplate(d, road, installed);
     if (!found) throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "network.roads[" + std::to_string(index) + "].crossSectionId"}});
     const auto generated = templateLinks(d.network, road, *found);
-    if (road.links.size() > generated.size()) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
+    // D382: each listed Link keeps the direction it runs (forwardOnRoad), whatever its place in `links`,
+    // which a detach shifts. Two Links one way, or a backward one under a one-way template, is refused.
+    std::vector<std::optional<std::string>> slot(2);
+    for (const auto& id : road.links) {
+        auto& s = slot[forwardOnRoad(road, editableLink(d, id)) ? 0 : 1];
+        if (s) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
+        s = id;
+    }
+    if (slot[1] && generated.size() < 2) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
     for (std::size_t i = 0; i < d.zones.zoneConnectors.size(); ++i) {
         const auto& c = d.zones.zoneConnectors[i];
         if (c.roadId == roadId && !c.roadForward && generated.size() < 2)
             throw ValidationError({{"ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION", "zoneConnectors[" + std::to_string(i) + "].roadDirection"}});
     }
-    std::vector<std::string> ids = road.links;
-    const auto cut = generatedCuts(d, ids, installed); // S4.5a (D323): F4's cuts stand through a re-apply
+    const auto cut = generatedCuts(d, road.links, installed); // S4.5a (D323): F4's cuts stand through a re-apply
+    std::vector<std::string> ids; // forward first
     for (std::size_t k = 0; k < generated.size(); ++k) {
         const auto& w = generated[k].widths;
-        const auto& g = k < ids.size() && cut.contains(ids[k]) ? cut.at(ids[k]) : generated[k].geometry;
-        if (k >= ids.size()) {
+        const auto& g = slot[k] && cut.contains(*slot[k]) ? cut.at(*slot[k]) : generated[k].geometry;
+        if (!slot[k]) {
             ids.push_back(addLink(d, g, static_cast<int>(w.size()), w.front()));
         } else {
-            changeLanes(d, ids[k], w); // keeps lane ids; refuses removing one in use
-            editableLink(d, ids[k]).geometry = g;
+            changeLanes(d, *slot[k], w); // keeps lane ids; refuses removing one in use
+            editableLink(d, *slot[k]).geometry = g;
+            ids.push_back(*slot[k]);
         }
         auto& link = editableLink(d, ids[k]);
         for (std::size_t i = 0; i < w.size(); ++i) link.lanes[i].width = w[i];
@@ -173,15 +184,22 @@ std::string splitRoad(ProjectDocument& d, const std::string& roadId, double stat
     for (auto& c : d.zones.zoneConnectors)
         if (c.roadId == road.id && (c.roadForward == (c.direction == ZoneDirection::destination))) c.roadId = next;
     std::vector<std::string> first, second;
-    for (std::size_t k = 0; k < road.links.size(); ++k) {
-        const auto& id = road.links[k];
+    for (const auto& id : road.links) {
+        const bool forward = forwardOnRoad(road, editableLink(d, id)); // D382: before the split, by geometry
         const auto down = splitLink(d, id, stationOfClosestPoint(editableLink(d, id).geometry, at));
         // The forward Link runs with the centreline, the backward one against it.
-        first.push_back(k == 0 ? id : down); second.push_back(k == 0 ? down : id);
+        first.push_back(forward ? id : down); second.push_back(forward ? down : id);
     }
     editableRoad(d, road.id).links = first; editableRoad(d, next).links = second; // splitLink detached them
     for (const auto& id : first) editableLink(d, id).roadId = road.id;
     for (const auto& id : second) editableLink(d, id).roadId = next;
+    // D382: a coarse Node the moved end now meets names the new Road; the near end's Nodes keep the id.
+    for (auto& node : d.network.nodes) {
+        if (!node.coarse) continue;
+        bool meetsNext = false, meetsRoad = false;
+        for (const auto& leg : nodeRoadLegs(d.network, node)) { meetsNext = meetsNext || leg.roadId == next; meetsRoad = meetsRoad || leg.roadId == road.id; }
+        if (meetsNext && !meetsRoad) renameCoarseRoad(*node.coarse, road.id, next);
+    }
     const auto pairs = d.network.overpasses;
     for (const auto& [a, b] : pairs) {
         if (a != road.id && b != road.id) continue;
@@ -264,7 +282,7 @@ void useLinkLanes(ProjectDocument& d, const std::string& linkId) {
     const auto& link = generatedLink(d, linkId);
     const auto lanes = static_cast<int>(link.lanes.size());
     auto& road = editableRoad(d, *link.roadId);
-    if (!road.links.empty() && road.links.front() == linkId) road.overrides.lanesForward = lanes;
+    if (forwardOnRoad(road, link)) road.overrides.lanesForward = lanes; // D382: by geometry
     else road.overrides.lanesBackward = lanes;
 }
 void useRoadLanes(ProjectDocument& d, const std::string& linkId, const std::vector<CrossSection>& installed) {

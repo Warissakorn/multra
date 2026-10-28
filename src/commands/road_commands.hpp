@@ -20,7 +20,8 @@ void deleteCrossSection(ProjectDocument&, const std::string& id);
 // the backward one reversed. A first apply adds them; a re-apply keeps their ids and lane ids
 // (EDIT_REFERENCED_LANE when a removed lane is in use) and reanchors Connectors. Refusals:
 // EDIT_ROAD_NO_TEMPLATE, ROAD_CROSS_SECTION_UNKNOWN at network.roads[i].crossSectionId,
-// EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently).
+// EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently) or two
+// listed Links run one way. Each listed Link keeps the direction it runs (forwardOnRoad, D382).
 // Direct Road zone connectors become Link targets in the same Command. A backward connector on
 // a one-way template is ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION before mutation (D340).
 // Returns the Road's Link ids, forward first.
@@ -48,7 +49,8 @@ void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, con
 // 0.2 m of an end): the Road keeps the first part, a new Road (same name, template, overrides and level)
 // takes the rest, and each generated Link is split by splitLink at that point. The forward Link's
 // original id stays on the first Road; the backward Link's original id, which runs from the far end,
-// goes to the new one. Overpass pairs naming the Road are copied for the new Road. Returns its id.
+// goes to the new one. Overpass pairs naming the Road are copied for the new Road, and a coarse Node
+// the moved end meets (and the near end does not) names the new Road instead (D382). Returns its id.
 // Direct Road zone connectors keep their physical endpoint in either travel direction (D340).
 std::string splitRoad(ProjectDocument&, const std::string& roadId, double station);
 enum class CrossingChoice { junction, overpass };

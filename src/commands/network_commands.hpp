@@ -25,7 +25,8 @@ void setLinkType(ProjectDocument&, const std::string& id, std::optional<std::str
 void deleteObjects(ProjectDocument&, const std::vector<std::string>& ids);
 void changeDrivingSide(ProjectDocument&, DrivingSide side);
 std::string oppositeLink(ProjectDocument&, const std::string& id, double gap);
-// Splits at a centreline distance, reconnects original lanes, remaps routes/heads.
+// Splits at a centreline distance, reconnects original lanes, remaps routes/heads, and moves Node
+// analysis rows naming it as an in-leg to the downstream piece, which keeps its end (D383).
 // Optional extra downstream lane forms a turn-pocket approach; it has no invented demand.
 std::string splitLink(ProjectDocument&, const std::string& id, double distance, bool pocket = false);
 }

@@ -105,6 +105,13 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 
 ## Working notes
 
+- **Road-scale edits (D384, 2026-10-28, Linux, Release, median of three).** Fixture: a k×k grid of
+  Roads 200 m apart, two owned templates (2+2 ranked 2, 1+1 ranked 1), every crossing confirmed
+  as a junction at 2 m. F3 on every Road (k=15, 480 Roads): 96.3 s → 80 ms. One edit renaming a
+  Road (k=30, 1,860 Roads, 900 Nodes): 1.24 s → 121 ms; within it `nodeIssues` 744 → 1.4 ms and
+  `settleNodes` 466 → 118 ms. Documents, issues and settled results compared byte for byte at each
+  step. The probe was a scratch test, not committed; what remains is `settleNodes` (Nodes × Roads
+  box tests and their legs), the first thing to measure if editing at this scale is slow again.
 - **Stale precompiled headers (2026-10-22, Linux, Ninja + GCC).** After `AuthoringDefinition` gained
   a member (D293), an incremental build left `multra_shell`'s objects and its `cmake_pch.hxx.gch`
   from the day before. Every Qt UI test then segfaulted in `drawZones`, with a document pointer

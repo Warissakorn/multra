@@ -7,6 +7,9 @@ namespace multra {
 // Node does, clears `generated`. EDIT_UNKNOWN_OBJECT when absent; the values are checked on commit
 // (coarseNodeIssues).
 void setNodeCoarse(ProjectDocument&, const std::string& id, std::optional<NodeCoarse>);
+// The Road `from` named `to` in every coarse value that names it: major, banned turns, stage turns.
+// Used by the lifecycle's join (every Node) and splitRoad (the Nodes the moved end meets, D382).
+void renameCoarseRoad(NodeCoarse&, const std::string& from, const std::string& to);
 // The coarse values a Node's Micro detail implies, or none when its membership has an issue or no
 // turn, when a leg Link belongs to no Road ending in the Node (legs are named by Road), or when every
 // value is a default:

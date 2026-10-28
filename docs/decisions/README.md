@@ -454,3 +454,11 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D380](RECORD.md#d380) — B28 decided on informed delegation: D379 1a stands (posted speed on the Link; D373 approach speed derived, values migrated); D378 order rule reworded (a finer gate does not close before the coarser one).
 
 [D381](RECORD.md#d381) — Stall-level parking and pedestrians added to PROBLEM §2 as needs, booked under *Later*; the 1a posted speed optional, a Micro default, never a cap.
+
+[D382](RECORD.md#d382) — Road-model review batch A: crossings grouped per level, `splitRoad` renames the far coarse Node, `FILL_NODE_ARM_OUTSIDE`, Link direction from stations (`forwardOnRoad`).
+
+[D383](RECORD.md#d383) — Review batch B: `splitLink` moves turn and approach rows downstream; stale Node-analysis rows reported; membership advised under its own code.
+
+[D384](RECORD.md#d384) — Review batch C: three Road-scale costs cut with byte-identical results (F3 on 480 Roads 96.3 s → 80 ms).
+
+[D385](RECORD.md#d385) — Review batch D: *Apply template* on every selected Road in one Undo step; *Find crossings* warns, without blocking, where a Road has neither template nor Links.

@@ -8,7 +8,8 @@ namespace multra {
 // M13 A1/A2 (NODE_ANALYSIS §3-§4, §11, D371, D373): a signalised Node's lane groups, derived from its
 // Micro detail and signal programs, ready for analyseSignalised. Pure, and never throws; what cannot
 // be analysed is an advisory at "network.nodes[i]" naming the turn, and that turn has no lane group:
-// - NODE_ANALYSIS_NEEDS_DETAIL: no turn (no detail, or a membership issue);
+// - NODE_ANALYSIS_NEEDS_DETAIL: no turn and no detail; a membership issue (NODE_LINK_REENTERS,
+//   NODE_CONNECTOR_CROSSES) is advised under its own code instead (D383);
 // - NODE_ANALYSIS_NOT_SIGNALISED: the Node's control is not signalised;
 // - NODE_ANALYSIS_UNSIGNALISED: a turn whose vehicles pass no head (reported, not analysed);
 // - NODE_ANALYSIS_SIGNAL: a turn under more than one program, a program with more than one green

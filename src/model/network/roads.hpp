@@ -6,11 +6,16 @@
 namespace multra {
 // Paths are "roads[i]..." and "links[i].roadId":
 // - a blank or duplicate id (INVALID_ID, DUPLICATE_ID, against every other network id);
-// - a centreline with fewer than two distinct finite points (ROAD_GEOMETRY_INVALID);
+// - a centreline with a non-finite point, fewer than two points, or two equal consecutive points
+//   (ROAD_GEOMETRY_INVALID);
 // - ROAD_LINK_MISMATCH: a `links` entry naming no Link, a Link listed twice or whose roadId is not
 //   this Road, or a Link whose roadId names no Road or a Road that does not list it.
 // S3.5: ROAD_OVERPASS_UNKNOWN at overpasses[i] for a pair naming no Road or one Road twice.
 std::vector<ValidationIssue> roadIssues(const Network&);
+// D382: whether a Road's generated Link runs forward, with the centreline: its end projects farther
+// along the centreline than its start. Read from geometry, not from the Link's place in `links`, which
+// a detach shifts; only a Link whose ends project to one station falls back to being listed first.
+bool forwardOnRoad(const Road&, const Link&);
 // S3.4 (ROADS §3, §17, D308): the mean of two opposite carriageways' centrelines, digitised along
 // `forward`; `backward` is given in its own direction of travel. Equal vertex counts pair vertex by
 // vertex, which is exact for two offsets of one reference (oppositeLink); otherwise each vertex is

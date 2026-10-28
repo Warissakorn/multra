@@ -169,3 +169,17 @@ TEST(roadcrossings, rd15_merge_nodes) { // RD15
     catch (const ValidationError& e) { CHECK(issueAt(e.issues, "NODE_LINK_REENTERS", "nodes[0]")); }
     CHECK(u == kept);
 }
+TEST(roadcrossings, rd30_levels_never_share_a_place) { // RD30 (D382)
+    // Two crossings at one x, y, one on each level: two places, each with its own level's Roads.
+    ProjectDocument d;
+    const auto a = road(d, {{-50, 0}, {50, 0}}), b = road(d, {{0, -50}, {0, 50}});
+    const auto c = road(d, {{-50, 1}, {50, 1}}, 1), e = road(d, {{1, -50}, {1, 50}}, 1);
+    const auto found = findCrossings(d.network, 2);
+    CHECK(found.size() == 2); // forcing: both are within the tolerance of one another
+    for (const auto& place : found) {
+        CHECK(place.roads.size() == 2 && place.legs == 4);
+        for (const auto& r : place.roads) CHECK(named(d, r.roadId).level == place.level);
+    }
+    CHECK(found.size() == 2 && found[0].level == 0 && found[1].level == 1);
+    (void)a; (void)b; (void)c; (void)e;
+}

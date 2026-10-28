@@ -73,6 +73,14 @@ field is optional, Micro reads it as a default and never a cap, and low site spe
 allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
 a planning-level method (otherwise back to the owner).
 
+## Road-model review follow-up (D382–D385)
+
+Batches A–D are done (D382–D385). What is left waits on the owner:
+- **On Windows:** OWNER_SITTING E24 (the Roads tab's multi-row *Apply template* and the *Find
+  crossings* warning at 100/150/200 %, Thai and English).
+- **For the owner:** OWNER_SITTING B29 (generated Node size, one turn key across levels, explicit
+  Road directions, partial HCM totals, HCM storage, CountSet).
+
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner

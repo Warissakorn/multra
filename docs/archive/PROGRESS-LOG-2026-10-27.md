@@ -2,6 +2,52 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
+
+- **Asked:** "ทำ A3" ("do A3"), with D375's choices.
+- **Contract (D376):** NODE_ANALYSIS_A3, from images of Ch. 31 §3 (Eqs. 31-94 to 31-129, Exhibits 31-12
+  to 31-19) and §2's permitted terms. Exhibit 31-12's nine phase-sequence rows turned out to be one
+  rule, G_U = E − max(S_a, S_o + G_q2), once its phases are labelled (2 the opposing through).
+- **Built (D377):** a periodic queue polygon, the permitted formulas, the compile's per-turn windows,
+  and a Node run that iterates the opposing queues. Protected results are unchanged.
+- **Open for the owner:** l+sl, lr and one-lane layouts with a permitted far turn are refused (the
+  book prints no form with a kerb turn in the same lane), and permitted lane groups have no queue yet.
+- **Verified:** NA15–NA20 pass; NA19's permitted row is hand-checked (c 170.01, d1 55.29, d2 59.00).
+
+## 2026-10-27 — M13 A3's choices decided on delegation (D375)
+
+- **Asked:** the owner answered B25 with "ช่วยตัดสินใจ" ("help decide"), as for B19 (D214).
+- **Decided:** 1a–5a. Shared and exclusive lanes, far and kerb turns; protected-permitted derived
+  from green overlap with a yielded conflict (the test A2 already uses); opposing flow from Node
+  membership; no pedestrians or bicycles, stated; hand rows, with Example Problem 1 left to A3 + A8.
+  Reasons are in D375. A3's contract and code still start only when the owner asks.
+
+## 2026-10-27 — Later M13 slices outlined; A3's choices put to the owner
+
+- **Asked:** whether contracts should be written ahead. Answer given and accepted ("ทำตามข้อเสนอ"):
+  a full contract only for the next slice; later slices get an outline and their open questions,
+  no formulas or values; questions known ahead go to OWNER_SITTING for one sitting.
+- **Changed:** NODE_ANALYSIS §12 outlines A3–A9 with their questions. A3's five (scope, recognising
+  protected-permitted operation, opposing flow, pedestrians and bicycles, acceptance) are
+  OWNER_SITTING B25. §7 now cites A3's real source, Ch. 31 §3 Steps 1–7 (PDF p. 2986–3015), not §2.
+  No D-row: nothing is decided, and A3 still starts only when the owner asks.
+
+## 2026-10-27 — Module READMEs rewritten as maps, and checked
+
+- **Asked:** whether to document every program detail per component. Answer given: no; the
+  contracts already own behaviour, and a second detailed copy would drift. The gap was the module
+  READMEs, which read as decision histories; the owner approved rewriting them.
+- **Changed:** every `src/*/README.md` (and `src/model/demand/`, `src/model/control/`) now holds
+  purpose, dependency rule, a file table (file, what it holds, contract), entry points and
+  tests, with no status or decision history. Substantive rules kept: eval's observer rules,
+  project's codec rules. A review then dropped a hand-written "used by" column (nothing could
+  keep it true) and corrected a claimed editor/shell boundary breach: they are one target.
+- **Check:** `multra-check-docs` fails when a header under `src/` is missing from its module's
+  README as the start of a table row (nearest parent README for a folder without one; a prose
+  mention does not count), with positive and negative fixtures.
+- **Verified:** the docs, architecture and file-size checks pass; removing one row fails the docs
+  check as expected.
+
 ## 2026-10-27 — Analytical junction capacity, slice A2 (M13, D373, D374)
 
 - **Asked:** continue with A2, and finish it. The owner answered A2's three questions: all of it in
