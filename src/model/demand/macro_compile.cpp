@@ -31,8 +31,8 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
         if (stations.contains(c.from.linkId)) stations[c.from.linkId].push_back(fromStation(c));
         if (stations.contains(c.to.linkId)) stations[c.to.linkId].push_back(toStation(c));
     }
-    // S3.6a/D311 (ROADS §9): Link-less Roads, Nodes without detail and their Link legs' stations.
-    auto roads = compileRoads(network, crossSections, types);
+    // S3.6a/D311 (STREET_SEGMENTS §9): Link-less StreetSegments, Nodes without detail and their Link legs' stations.
+    auto roads = compileStreetSegments(network, crossSections, types);
     for (const auto& join : roads.joins)
         for (const auto* arms : {&join.ins, &join.outs})
             for (const auto& arm : *arms) if (!arm.piece && stations.contains(arm.linkId)) stations[arm.linkId].push_back(clampStation(arm.station, lengths[arm.linkId]));
@@ -74,27 +74,27 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
             g.links.push_back(std::move(m));
         }
     }
-    // S3.6a (ROADS §9, D310): Link-less Roads' pieces after every Link's. Each piece end is its own
+    // S3.6a (STREET_SEGMENTS §9, D310): Link-less StreetSegments' pieces after every Link's. Each piece end is its own
     // node, so a turn is the only way from one piece to another and a U-turn is never offered.
     out.issues.insert(out.issues.end(), roads.issues.begin(), roads.issues.end());
     out.advisories = std::move(roads.advisories);
     std::vector<std::size_t> pieceFrom, pieceTo;
-    std::map<std::pair<std::string, bool>, std::pair<std::size_t, std::size_t>> roadEnds;
+    std::map<std::pair<std::string, bool>, std::pair<std::size_t, std::size_t>> streetSegmentEnds;
     const auto basis = [](const std::string& b) { return b.empty() ? std::string("practical") : b; };
     for (const auto& p : roads.pieces) {
-        const auto side = p.roadId + (p.forward ? ":forward@" : ":backward@");
+        const auto side = p.streetSegmentId + (p.forward ? ":forward@" : ":backward@");
         pieceFrom.push_back(g.nodes.size()); g.nodes.push_back(side + std::to_string(p.from));
         pieceTo.push_back(g.nodes.size()); g.nodes.push_back(side + std::to_string(p.to));
-        roadEnds[{p.roadId, p.forward}] = {pieceFrom.back(), pieceTo.back()};
+        streetSegmentEnds[{p.streetSegmentId, p.forward}] = {pieceFrom.back(), pieceTo.back()};
         MacroLink m;
-        m.kind = MacroArc::link; m.source = p.roadId; m.linkType = p.linkType; m.fromStation = p.from; m.toStation = p.to;
+        m.kind = MacroArc::link; m.source = p.streetSegmentId; m.linkType = p.linkType; m.fromStation = p.from; m.toStation = p.to;
         m.from = pieceFrom.back(); m.to = pieceTo.back(); m.length = p.length; m.lanes = p.lanes;
         if (p.type) {
             m.capacity = m.lanes * p.type->capacityPerLane; m.freeTime = m.length / p.type->freeSpeed; m.modes = p.type->modes;
             const auto v = std::find_if(vdfs.begin(), vdfs.end(), [&](const auto& x) { return x.id == p.type->vdfId; });
             if (v != vdfs.end()) {
                 m.alpha = v->alpha; m.beta = v->beta;
-                const auto at = "network.roads[" + std::to_string(p.road) + "].crossSectionId";
+                const auto at = "network.streetSegments[" + std::to_string(p.road) + "].crossSectionId";
                 if (basis(p.type->capacityBasis) != basis(v->capacityBasis) &&
                     std::none_of(out.issues.begin(), out.issues.end(), [&](const auto& i) { return i.path == at; }))
                     out.issues.push_back({"MACRO_CAPACITY_BASIS_MISMATCH", at});
@@ -131,10 +131,10 @@ MacroCompile compileMacroNetwork(const Network& network, const std::vector<ZoneC
     // Centroid arcs, by zone connector id.
     for (const auto* z : byId(zoneConnectors)) {
         std::size_t endpoint{};
-        if (!z->roadId.empty()) {
-            const auto end = roadEnds.find({z->roadId, z->roadForward});
-            if (end == roadEnds.end()) {
-                out.issues.push_back({"MACRO_ZONE_ROAD_UNAVAILABLE", "zoneConnectors[" + std::to_string(z - zoneConnectors.data()) + "].roadDirection"});
+        if (!z->streetSegmentId.empty()) {
+            const auto end = streetSegmentEnds.find({z->streetSegmentId, z->streetSegmentForward});
+            if (end == streetSegmentEnds.end()) {
+                out.issues.push_back({"MACRO_ZONE_STREET_SEGMENT_UNAVAILABLE", "zoneConnectors[" + std::to_string(z - zoneConnectors.data()) + "].streetSegmentDirection"});
                 continue;
             }
             endpoint = z->direction == ZoneDirection::origin ? end->second.first : end->second.second;

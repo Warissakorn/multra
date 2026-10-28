@@ -74,7 +74,7 @@ StudyAreaCut studyAreaCut(const Network& n, const std::vector<std::string>& node
 Network cutNetwork(const Network& n, const StudyAreaCut& cut, const std::vector<std::string>& nodes) {
     const Ids links(cut.links.begin(), cut.links.end()), connectors(cut.connectors.begin(), cut.connectors.end()), area(nodes.begin(), nodes.end());
     Network out; out.id = n.id; out.drivingSide = n.drivingSide;
-    for (auto l : n.links) if (links.contains(l.id)) { l.roadId.reset(); out.links.push_back(std::move(l)); }
+    for (auto l : n.links) if (links.contains(l.id)) { l.streetSegmentId.reset(); out.links.push_back(std::move(l)); }
     Ids paths; // a head names a Connector path, not the Connector
     for (const auto& c : n.connectors)
         if (connectors.contains(c.id)) {

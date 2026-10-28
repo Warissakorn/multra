@@ -2,6 +2,14 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-28 — B27 decided on delegation (D379)
+
+- **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.
+- **Decided:** 1a one posted speed on the Link, read by every level and M13 (D373's approach field
+  becomes derived); 2a per-lane allowed modes; 3a *Fill from model* for Node turn volumes; 4a only
+  within an HCM 7 planning-level method, read before the contract, else back to the owner. Reasons
+  are in D379. Bookings only: no slice starts until the owner asks.
+
 ## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
 
 - **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").

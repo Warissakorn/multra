@@ -7,8 +7,8 @@ network. Contract: [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md); as buil
 ## Dependencies
 
 Imports nothing outside this folder; no clock, no random number, no I/O
-(`multra-check-architecture`). Direct Road OD paths are filled outside the engine
-([MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md)); the engine receives ordinary class
+(`multra-check-architecture`). Direct Street segment OD paths are filled outside the engine
+([MESO_STREET_SEGMENT_DEMAND](../../docs/reference/MESO_STREET_SEGMENT_DEMAND.md)); the engine receives ordinary class
 paths and time-window flows.
 
 ## Files

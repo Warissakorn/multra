@@ -13,8 +13,9 @@ constexpr Field networkFields[]={
     {"connectors",Kind::connectors,true},{"signalHeads",Kind::signalHeads,true},
     {"rightOfWay",Kind::rightOfWay,false,14},{"queueCounters",Kind::queueCounters,false,16,0,true},
     {"travelTimeSections",Kind::travelTimeSections,false,23,0,true},{"nodes",Kind::unchecked,false,48},
-    {"roads",Kind::unchecked,false,roadVersion,roadVersion},
-    {"overpasses",Kind::unchecked,false,roadVersion,roadVersion}};
+    {"roads",Kind::unchecked,false,streetSegmentVersion,streetSegmentVersion,false,streetSegmentKeyVersion},
+    {"streetSegments",Kind::unchecked,false,streetSegmentKeyVersion,streetSegmentKeyVersion},
+    {"overpasses",Kind::unchecked,false,streetSegmentVersion,streetSegmentVersion}};
 constexpr Field linkFields[]={
     {"id",Kind::text,true},{"geometry",Kind::geometry,true},{"lanes",Kind::lanes,true},
     {"level",Kind::level},{"displayType",Kind::text},{"laneOffset",Kind::number},
@@ -22,7 +23,8 @@ constexpr Field linkFields[]={
     {"behaviourType",Kind::text,false,behaviourVersion},
     // Known to parseNetwork from 21, but document prechecks reject it before 50.
     {"linkType",Kind::text,false,behaviourVersion,linkTypeVersion},
-    {"roadId",Kind::text,false,roadVersion,roadVersion}};
+    {"roadId",Kind::text,false,streetSegmentVersion,streetSegmentVersion,false,streetSegmentKeyVersion},
+    {"streetSegmentId",Kind::text,false,streetSegmentKeyVersion,streetSegmentKeyVersion}};
 constexpr Field laneFields[]={{"id",Kind::text,true},{"width",Kind::number,true}};
 constexpr Field pointFields[]={{"x",Kind::number,true},{"y",Kind::number,true}};
 constexpr Field connectorFields[]={

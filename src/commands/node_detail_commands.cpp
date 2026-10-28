@@ -4,11 +4,11 @@
 #include "demand_commands.hpp"
 #include "../model/demand/coarse_compile.hpp"
 #include "network_commands.hpp"
-#include "road_commands.hpp"
+#include "street_segment_commands.hpp"
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_detail.hpp"
 #include "../model/network/polygon.hpp"
-#include "../model/network/roads.hpp"
+#include "../model/network/street_segments.hpp"
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -17,19 +17,19 @@
 namespace multra {
 namespace {
 using Geometry = std::vector<Point>;
-const Road* roadOf(const Network& n, const std::string& id) {
-    const auto r = std::find_if(n.roads.begin(), n.roads.end(), [&](const auto& x) { return x.id == id; });
-    return r == n.roads.end() ? nullptr : &*r;
+const StreetSegment* streetSegmentOf(const Network& n, const std::string& id) {
+    const auto r = std::find_if(n.streetSegments.begin(), n.streetSegments.end(), [&](const auto& x) { return x.id == id; });
+    return r == n.streetSegments.end() ? nullptr : &*r;
 }
 const Link& linkOf(const Network& n, const std::string& id) {
     return *std::find_if(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id; });
 }
-// A generated leg's uncut shape: what Apply template gives its Road for its direction.
+// A generated leg's uncut shape: what Apply template gives its StreetSegment for its direction.
 std::optional<Geometry> templateGeometry(const ProjectDocument& d, const Link& l, const std::vector<CrossSection>& templates) {
-    const auto* road = l.roadId ? roadOf(d.network, *l.roadId) : nullptr;
-    const auto* t = road ? roadTemplate(d, *road, templates) : nullptr;
+    const auto* road = l.streetSegmentId ? streetSegmentOf(d.network, *l.streetSegmentId) : nullptr;
+    const auto* t = road ? streetSegmentTemplate(d, *road, templates) : nullptr;
     if (!t) return std::nullopt;
-    const std::size_t k = forwardOnRoad(*road, l) ? 0 : 1; // D382: by geometry, not by place in `links`
+    const std::size_t k = forwardOnStreetSegment(*road, l) ? 0 : 1; // D382: by geometry, not by place in `links`
     const auto links = templateLinks(d.network, *road, *t);
     if (k >= links.size()) return std::nullopt;
     return links[k].geometry;
@@ -66,7 +66,7 @@ void applySpans(ProjectDocument& d, const std::map<std::string, Span>& spans, co
     for (const auto& [id, span] : spans) {
         if (!only.contains(id)) continue;
         const double length = polylineLength(span.full);
-        editableLink(d, id).geometry = polylineSpan(span.full, span.from, std::min(span.to, length)); // keeps roadId: the program's cut
+        editableLink(d, id).geometry = polylineSpan(span.full, span.from, std::min(span.to, length)); // keeps streetSegmentId: the program's cut
     }
 }
 std::vector<const Node*> generatedNodes(const Network& n, const std::string& also) {
@@ -89,7 +89,7 @@ bool nodeDetailListed(const ProjectDocument& d, const Node& node) {
     if (!simplePolygon(node.polygon) || nodeHasDetail(n, node)) return false;
     std::set<std::string> arms;
     for (const auto& leg : nodeLinkLegs(n, node)) arms.insert(legArm(linkOf(n, leg.linkId)));
-    for (const auto& leg : nodeRoadLegs(n, node)) arms.insert(leg.roadId);
+    for (const auto& leg : nodeStreetSegmentLegs(n, node)) arms.insert(leg.streetSegmentId);
     return arms.size() >= 2;
 }
 namespace {
@@ -101,7 +101,7 @@ std::set<std::string> nodeArms(const Network& n, const Node& node) {
     return arms;
 }
 // The major arms: the Node's `major`, else majorByRank over each arm's link type (its first leg
-// Link's, else its Road template's). Nothing when that decides nothing.
+// Link's, else its StreetSegment template's). Nothing when that decides nothing.
 std::optional<std::set<std::string>> majorArms(const ProjectDocument& d, const Node& node, const NodeFillCatalogs& c) {
     const auto& n = d.network;
     if (node.coarse && !node.coarse->major.empty()) return std::set<std::string>(node.coarse->major.begin(), node.coarse->major.end());
@@ -111,8 +111,8 @@ std::optional<std::set<std::string>> majorArms(const ProjectDocument& d, const N
         auto& type = typeOf[legArm(l)];
         if (type) continue;
         type = l.linkTypeId;
-        if (const auto* r = l.roadId ? roadOf(n, *l.roadId) : nullptr; !type && r)
-            if (const auto* t = roadTemplate(d, *r, c.templates)) type = t->linkType;
+        if (const auto* r = l.streetSegmentId ? streetSegmentOf(n, *l.streetSegmentId) : nullptr; !type && r)
+            if (const auto* t = streetSegmentTemplate(d, *r, c.templates)) type = t->linkType;
     }
     std::vector<std::pair<std::string, std::optional<int>>> ranks;
     for (const auto& [arm, type] : typeOf) {
@@ -128,14 +128,14 @@ std::optional<std::set<std::string>> majorArms(const ProjectDocument& d, const N
 std::string nodeDetailRefusal(const ProjectDocument& d, const Node& node, const NodeFillCatalogs& catalogs) {
     const auto& n = d.network;
     const auto& templates = catalogs.templates;
-    const auto roadLegs = nodeRoadLegs(n, node);
-    for (const auto& leg : roadLegs)
-        if (const auto* r = roadOf(n, leg.roadId); r && r->links.empty()) return "FILL_NODE_ROAD_NOT_GENERATED";
-    // D382: a Road ending inside whose Links pass beside the polygon (a Node narrower than the
+    const auto streetSegmentLegs = nodeStreetSegmentLegs(n, node);
+    for (const auto& leg : streetSegmentLegs)
+        if (const auto* r = streetSegmentOf(n, leg.streetSegmentId); r && r->links.empty()) return "FILL_NODE_STREET_SEGMENT_NOT_GENERATED";
+    // D382: a StreetSegment ending inside whose Links pass beside the polygon (a Node narrower than the
     // carriageway) would give turns without arms.
     const auto linkLegs = nodeLinkLegs(n, node);
-    for (const auto& leg : roadLegs)
-        if (const auto* r = roadOf(n, leg.roadId))
+    for (const auto& leg : streetSegmentLegs)
+        if (const auto* r = streetSegmentOf(n, leg.streetSegmentId))
             for (const auto& id : r->links)
                 if (std::none_of(linkLegs.begin(), linkLegs.end(), [&](const auto& l) { return l.linkId == id; })) return "FILL_NODE_ARM_OUTSIDE";
     for (const auto& leg : linkLegs)

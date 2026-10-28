@@ -35,7 +35,7 @@ coarser model's flows to a finer one; it does not make either one right.
     milestone and M12's remaining report (§13 marks what S5 already records for it);
   - a Meso benchmark (M11 gate);
   - Hybrid Meso–Micro, where flows feed back during a run (WORKFLOW §9 #14);
-  - demand on a Road-only arm: zone connectors attach to Links only (booked in NEXT).
+  - demand on a Street segment-only arm: zone connectors attach to Links only (booked in NEXT).
 - **Already decided, not asked again:**
   - one document, cut at run time and never stored as a second file (D175, hard rule 3);
   - a boundary flow comes from a coarser result or is typed, and the result records which
@@ -47,7 +47,7 @@ coarser model's flows to a finer one; it does not make either one right.
 
 | Item | Today | Where |
 |---|---|---|
-| Micro's extent | The whole network of Links. A Road without Links is left out and reported (`SEAM_ROAD_NOT_GENERATED`) | `src/model/network/compile.cpp`, `src/model/demand/seam_checks.*` |
+| Micro's extent | The whole network of Links. A Street segment without Links is left out and reported (`SEAM_STREET_SEGMENT_NOT_GENERATED`) | `src/model/network/compile.cpp`, `src/model/demand/seam_checks.*` |
 | Node contents | Derived on every read: the Links and Connectors inside it, its in- and out-legs, turns, conflicts and control | `nodeMembership`, `src/model/network/node_membership.hpp` |
 | Macro result | `MacroAssignment` keeps link flows per class and the gap, but **no path flows** | `src/macro/assign.hpp` |
 | Macro and Meso links | Each carries its `source` Link (or Connector) id and its stations on it | `src/macro/graph.hpp`, `src/meso/graph.hpp` |
@@ -252,8 +252,8 @@ nothing is refused silently.
   merging them would need a rule from a source.
 - **Rounding** of a cut gate matrix into Micro vehicles: M8.3's existing rule applies, unchanged.
   S5.3 checks that it does.
-- **Gates on a Road-only arm:** a kept leg must be a Link (§4). An area Node with a Link-less arm
-  gives `MICRO_AREA_NODE_COARSE`, or `SEAM_ROAD_NOT_GENERATED` for that arm.
+- **Gates on a Street segment-only arm:** a kept leg must be a Link (§4). An area Node with a Link-less arm
+  gives `MICRO_AREA_NODE_COARSE`, or `SEAM_STREET_SEGMENT_NOT_GENERATED` for that arm.
 - **M12's consistency report:** S5 records, per gate, the flow it was fed. Comparing that with
   Micro's measured throughput is M12's, not S5's.
 

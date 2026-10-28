@@ -1,12 +1,12 @@
 #pragma once
-// The study-area rows' fixture (STUDY_AREA §15): two F4 junctions on a split Road, with zones and
+// The study-area rows' fixture (STUDY_AREA §15): two F4 junctions on a split StreetSegment, with zones and
 // demand for the cuts; test values only. Shared by study_area_tests.cpp and study_area_marking_tests.cpp.
 #include "test.hpp"
 #include "../src/commands/coarse_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/node_detail_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/model/network/node_membership.hpp"
 #include "../src/model/network/study_area.hpp"
 #include "../src/project/evaluation.hpp"
@@ -36,11 +36,11 @@ inline std::vector<Point> square(Point c, double h) { return {{c.x - h, c.y - h}
 inline CrossSection section() { return {"ns", "ns", 2, 1, 1, 3.5, {}, 0, std::nullopt, "Test template"}; } // test values only (D304)
 inline const std::vector<CrossSection>& templates(const ProjectDocument& d) { return d.definition->crossSections; }
 inline NodeFillCatalogs catalogs(const ProjectDocument& d) { return {templates(d), {}, {3.0, 7.0}}; }
-inline const Road& road(const ProjectDocument& d, const std::string& id) {
-    return *std::find_if(d.network.roads.begin(), d.network.roads.end(), [&](const auto& r) { return r.id == id; });
+inline const StreetSegment& road(const ProjectDocument& d, const std::string& id) {
+    return *std::find_if(d.network.streetSegments.begin(), d.network.streetSegments.end(), [&](const auto& r) { return r.id == id; });
 }
 // Two priority junctions F4 generated: A at the origin (north, south, west arms) and B at (300, 0)
-// (north, south, east arms), joined by a Road split at x = 100 and x = 200. The middle piece M2 is a
+// (north, south, east arms), joined by a StreetSegment split at x = 100 and x = 200. The middle piece M2 is a
 // leg of neither Node. Run settings from the shipped T-junction project; one period of 600 s.
 struct Corridor { ProjectDocument d; std::string a, b, m1, m2, m3, aw, be; };
 inline Corridor corridor() {
@@ -51,12 +51,12 @@ inline Corridor corridor() {
     Corridor c; auto& d = c.d;
     d.definition = base;
     putCrossSection(d, section(), {});
-    const auto add = [&](std::vector<Point> line) { const auto id = putRoad(d, {"", "", line, std::string("ns"), 0, {}, {}}); applyTemplate(d, id, templates(d)); return id; };
+    const auto add = [&](std::vector<Point> line) { const auto id = putStreetSegment(d, {"", "", line, std::string("ns"), 0, {}, {}}); applyTemplate(d, id, templates(d)); return id; };
     const auto an = add({{0, 100}, {0, 0}}), as = add({{0, -100}, {0, 0}}); c.aw = add({{-100, 0}, {0, 0}});
     const auto bn = add({{300, 100}, {300, 0}}), bs = add({{300, -100}, {300, 0}}); c.be = add({{400, 0}, {300, 0}});
     c.m1 = add({{300, 0}, {0, 0}});
-    c.m2 = splitRoad(d, c.m1, 100);    // m1: 300 -> 200
-    c.m3 = splitRoad(d, c.m2, 100);    // m2: 200 -> 100, m3: 100 -> 0
+    c.m2 = splitStreetSegment(d, c.m1, 100);    // m1: 300 -> 200
+    c.m3 = splitStreetSegment(d, c.m2, 100);    // m2: 200 -> 100, m3: 100 -> 0
     c.a = putNode(d, {"", "A", square({0, 0}, 10), false});
     c.b = putNode(d, {"", "B", square({300, 0}, 10), false});
     setNodeCoarse(d, c.a, NodeCoarse{std::nullopt, {an, as}, {}, std::nullopt});

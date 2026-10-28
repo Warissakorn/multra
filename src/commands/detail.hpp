@@ -23,9 +23,9 @@ void pruneStopControls(RightOfWay&);
 void pruneQueueCounters(ProjectDocument&, const std::set<std::string>& links = {}, const std::set<std::string>& connectors = {});
 // True when a control names this Link: reversing it would turn every station around.
 bool controlsNameLink(const Network&, const std::string& link);
-// S3.3 (ROADS §3, D305): a Link edited by hand leaves its Road: roadId cleared, dropped from the
-// Road's links, inside the caller's command.
-void detachFromRoad(ProjectDocument&, const std::string& link);
+// S3.3 (STREET_SEGMENTS §3, D305): a Link edited by hand leaves its StreetSegment: streetSegmentId cleared, dropped from the
+// StreetSegment's links, inside the caller's command.
+void detachFromStreetSegment(ProjectDocument&, const std::string& link);
 // After splitLink cut `link` at `distance` and moved Connector ends: stations at or past the far
 // side of the 0.2 m span move to `downstream` (lane ids through `lanes`), exactly as Connector
 // ends do; a Connector lane pair whose end moved takes the downstream lane id. Throws

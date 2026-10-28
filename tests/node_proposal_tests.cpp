@@ -6,7 +6,7 @@
 #include "../src/commands/history.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/model/demand/macro_compile.hpp"
 #include "../src/model/demand/meso_compile.hpp"
 #include "../src/model/network/coarse_nodes.hpp"
@@ -99,13 +99,13 @@ TEST(nodeproposals, rs9_macro_vc_on_a_leg) { // RS9
     far.assignment.load[static_cast<std::size_t>(piece - far.graph.links.begin())] = 1.2 * piece->capacity;
     p = macroProposals(branched.d, far);
     CHECK(p.size() == 2 && p[0].end == s.b + "@150" && p[1].end == s.b + "@300");
-    // A coarse Node over Link-less Roads: its Road legs are matched the same way.
+    // A coarse Node over Link-less StreetSegments: its StreetSegment legs are matched the same way.
     ProjectDocument roads;
     const CrossSection ns{"ns", "ns", 2, 1, 1, 3.5, {}, 0, std::string("arterial"), "Test values"};
-    const auto w = putRoad(roads, {"", "", {{-100, 0}, {0, 0}}, std::string("ns"), 0, {}, {}});
-    putRoad(roads, {"", "", {{100, 0}, {0, 0}}, std::string("ns"), 0, {}, {}});
+    const auto w = putStreetSegment(roads, {"", "", {{-100, 0}, {0, 0}}, std::string("ns"), 0, {}, {}});
+    putStreetSegment(roads, {"", "", {{100, 0}, {0, 0}}, std::string("ns"), 0, {}, {}});
     putNode(roads, {"", "", {{-10, -10}, {10, -10}, {10, 10}, {-10, 10}}, false});
-    CHECK(!nodeHasDetail(roads.network, roads.network.nodes[0]) && nodeRoadLegs(roads.network, roads.network.nodes[0]).size() == 2); // forcing
+    CHECK(!nodeHasDetail(roads.network, roads.network.nodes[0]) && nodeStreetSegmentLegs(roads.network, roads.network.nodes[0]).size() == 2); // forcing
     auto coarse = macroRun(roads, {ns});
     load(coarse, w, 1.5);
     p = macroProposals(roads, coarse);

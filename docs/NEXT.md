@@ -33,18 +33,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 ## M14 — the owner's current pick (D386, D387): junction templates and UTDF export
 
 - Contracts [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
-  ROADMAP M14. D387: no builder tool; Roads crossing make Nodes and a junction template generates
-  the detail; transitions align per template; Road becomes Segment before any M14 code.
+  ROADMAP M14. D387: no builder tool; Street segments crossing make Nodes and a junction template generates
+  the detail; transitions align per template; Road became Street segment first (D389).
   B30 answered as recommended (D388: JT-1a–JT-5a, UX-1a–UX-4a). **Waiting on the owner:** U0's imports.
-- **Next session: SR, the rename** (JUNCTION_TEMPLATES §10, row JT1). Characterize first: every
-  shipped project and test fixture read and saved, documents compared. Then schema 59 writes
-  `network.segments` and `segmentId` and reads `roads`/`roadId` below 59 (a 58 file with the new
-  key is `EDIT_UNSUPPORTED_FIELD`); rename codes (`ROAD_*`, `SEAM_ROAD_*`, `MACRO_ROAD_*`,
-  `EDIT_ROAD_*`), types, files (`road_*` → `segment_*`), commands, locale keys and strings (en
-  "Segment", th "ช่วงถนน"), DESKTOP_AUTOMATION's names, and maintained docs (ROADS → SEGMENTS,
-  ROADS_IMPLEMENTED likewise). RECORD, PROGRESS history and archives keep "Road". Needs a desktop
-  build (the Roads tab and `road-ui`); `check-file-sizes` and `check-docs` after.
-- **Then U0** (UTDF_EXPORT §8): the reference-junction sheet and a hand-written UTDF for the owner
+- **SR is done (D389):** Road is Street segment (Segment was the engine's word); schema 59 renamed
+  the keys and older files still read. Owner look on Windows: OWNER_SITTING E24.
+- **Next session: U0** (UTDF_EXPORT §8): the reference-junction sheet and a hand-written UTDF for the owner
   to import into Synchro 12 and Vistro 2026; Synchro's own export as the golden file; record field
   names, units and the left-hand answer in UTDF_EXPORT §3/§6. No writer code before it.
 - Then J1 (posted speed, D379–D381), J2 (kerb-side pocket, `approachLayout`), J3–J4 (templates,
@@ -98,10 +92,10 @@ a planning-level method (otherwise back to the owner).
 ## Road-model review follow-up (D382–D385)
 
 Batches A–D are done (D382–D385). What is left waits on the owner:
-- **On Windows:** OWNER_SITTING E24 (the Roads tab's multi-row *Apply template* and the *Find
+- **On Windows:** OWNER_SITTING E24 (the Street segments tab's multi-row *Apply template* and the *Find
   crossings* warning at 100/150/200 %, Thai and English).
 - **For the owner:** OWNER_SITTING B29 (generated Node size, one turn key across levels, explicit
-  Road directions, partial HCM totals, HCM storage, CountSet).
+  Street segment directions, partial HCM totals, HCM storage, CountSet).
 
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 

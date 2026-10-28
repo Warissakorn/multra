@@ -41,15 +41,15 @@ struct LinkType {
     std::string id, name; double capacityPerLane{}, freeSpeed{}; std::string vdfId;
     std::vector<std::string> modes; std::string source;
     std::optional<JamDensity> jamDensity; // M11.2: written only when set, which makes a file schema 52
-    // S3.2 (ROADS §8, D304): the capacity its VDF was fitted to, "practical" or "ultimate"; empty means
+    // S3.2 (STREET_SEGMENTS §8, D304): the capacity its VDF was fitted to, "practical" or "ultimate"; empty means
     // practical. Written only when set, which makes an owned type schema 53.
     std::string capacityBasis{};
-    // S3.6a (ROADS §6, 4a, D310): the priority hierarchy; a higher rank is major. Absent: unranked.
+    // S3.6a (STREET_SEGMENTS §6, 4a, D310): the priority hierarchy; a higher rank is major. Absent: unranked.
     // Written only when set, which makes an owned type schema 53.
     std::optional<int> rank{};
     bool operator==(const LinkType&) const = default;
 };
-// S3.3 (ROADS §4, D305): a cross-section template. Lane widths are `laneWidth` for every lane, or
+// S3.3 (STREET_SEGMENTS §4, D305): a cross-section template. Lane widths are `laneWidth` for every lane, or
 // `laneWidths` per lane, forward lanes first (kerb to median), then backward ones.
 struct CrossSection {
     std::string id, name; int directions{2}, lanesForward{1}, lanesBackward{};

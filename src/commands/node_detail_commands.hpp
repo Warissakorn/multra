@@ -14,10 +14,10 @@ struct NodeFillCatalogs {
 };
 // Why F4 cannot fill this Node, or empty when it can. Not listed at all (also empty): a Node with
 // detail, or one with fewer than two arms. Otherwise, in this order:
-// - FILL_NODE_ROAD_NOT_GENERATED: a Road ending in the Node has no Links (F3 first);
-// - FILL_NODE_ARM_OUTSIDE: a Link of such a Road is not a leg of the Node, which is narrower than the
+// - FILL_NODE_STREET_SEGMENT_NOT_GENERATED: a StreetSegment ending in the Node has no Links (F3 first);
+// - FILL_NODE_ARM_OUTSIDE: a Link of such a StreetSegment is not a leg of the Node, which is narrower than the
 //   carriageway (D382);
-// - FILL_NODE_ARM_NOT_GENERATED: a leg Link has no Road, or its Road's template does not resolve,
+// - FILL_NODE_ARM_NOT_GENERATED: a leg Link has no StreetSegment, or its StreetSegment's template does not resolve,
 //   so its uncut shape is not known after a cut (S4.5a reads only generated arms);
 // - FILL_NODE_ALL_WAY_STOP: the Micro engine has no all-way stop;
 // - at three arms or more: FILL_NODE_PRIORITY_UNDETERMINED when neither `major` nor the arms' ranks
@@ -29,7 +29,7 @@ struct NodeFillCatalogs {
 //   (3 s); then turnGreen's FILL_NODE_TURN_UNSERVED or FILL_NODE_STAGES_SPLIT.
 bool nodeDetailListed(const ProjectDocument&, const Node&);
 std::string nodeDetailRefusal(const ProjectDocument&, const Node&, const NodeFillCatalogs&);
-// Cuts the Node's legs (keeping roadId) and adds one `generated` Connector per allowed turn. At
+// Cuts the Node's legs (keeping streetSegmentId) and adds one `generated` Connector per allowed turn. At
 // three arms or more (S4.5b, §13.4) every crossing or merge of two turns from different arms and of
 // different HCM ranks (movementRank) gets authored areas, the higher rank yielding with `priority`'s
 // numbers, and a minor arm's yielding areas Stop at their line; equal ranks stay automatic. Every

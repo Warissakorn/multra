@@ -14,7 +14,7 @@ Json turnsJson(const std::vector<std::pair<std::string, std::string>>& turns) {
     for (const auto& [in, out] : turns) list.push_back(Json::array({in, out}));
     return list;
 }
-// S3.6a (ROADS §6, D310): fields at their defaults are not written.
+// S3.6a (STREET_SEGMENTS §6, D310): fields at their defaults are not written.
 Json coarseJson(const NodeCoarse& c) {
     Json j = Json::object();
     if (c.control) j["control"] = controlName(*c.control);

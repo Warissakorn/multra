@@ -4,7 +4,7 @@
 #include "macro_input.hpp"
 #include "macro_run.hpp"
 #include "meso_input.hpp"
-#include "road_codec.hpp"
+#include "street_segment_codec.hpp"
 #include "run.hpp"
 #include "../core/validate.hpp"
 #include "../model/demand/seam_checks.hpp"
@@ -16,9 +16,9 @@ ReadinessRow located(const Network& n, const ValidationIssue& issue, ReadinessSe
     const std::string prefix = "network.";
     const auto path = issue.path.rfind(prefix, 0) == 0 ? issue.path.substr(prefix.size()) : std::string{};
     auto object = path.empty() ? std::string{} : objectIdForPath(n, path);
-    if (object.empty() && path.rfind("roads[", 0) == 0) { // Roads and Nodes are not in the Micro resolver
+    if (object.empty() && path.rfind("roads[", 0) == 0) { // StreetSegments and Nodes are not in the Micro resolver
         const auto i = std::stoul(path.substr(6));
-        if (i < n.roads.size()) object = n.roads[i].id;
+        if (i < n.streetSegments.size()) object = n.streetSegments[i].id;
     } else if (object.empty() && path.rfind("nodes[", 0) == 0) {
         const auto i = std::stoul(path.substr(6));
         if (i < n.nodes.size()) object = n.nodes[i].id;

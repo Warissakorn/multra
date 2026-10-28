@@ -29,7 +29,7 @@ void EditorWindow::fillDefaultsDialog() {
     table->setHorizontalHeaderLabels({text("editorFillFill"), text("editorColumnId"), text("editorFillValue"), text("editorFillClears"), text("editorFillSource")});
     for (int r = 0; r < table->rowCount(); ++r) {
         const auto& o = offers[static_cast<std::size_t>(r)];
-        const char* kinds[] = {"editorFillLinkType", "editorFillJamDensity", "editorFillRoadLinks", "editorFillNodeDetail"};
+        const char* kinds[] = {"editorFillLinkType", "editorFillJamDensity", "editorFillStreetSegmentLinks", "editorFillNodeDetail"};
         auto* name = new QTableWidgetItem(text(kinds[static_cast<int>(o.kind)]));
         // S4.5a (D323): a Node F4 cannot fill is listed with why, and cannot be ticked.
         name->setFlags(o.refusal.empty() ? Qt::ItemIsEnabled | Qt::ItemIsUserCheckable : Qt::NoItemFlags); name->setCheckState(Qt::Unchecked);

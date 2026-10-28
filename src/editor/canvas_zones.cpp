@@ -29,12 +29,12 @@ bool EditorCanvas::zonePress(QMouseEvent* e) {
     return true;
 }
 void EditorCanvas::commitZoneDraft() {
-    // A polygon needs three corners and a Road's centreline two points; short of that the draft stays.
+    // A polygon needs three corners and a StreetSegment's centreline two points; short of that the draft stays.
     if (zoneDraft_.size() < (tool_ == Tool::road ? 2u : 3u)) return;
     auto polygon = zoneDraft_;
     zoneDraft_.clear(); draftPointer_.reset();
     redraw();
-    const auto& committed = tool_ == Tool::node ? nodeCommitted : tool_ == Tool::road ? roadCommitted : zoneCommitted;
+    const auto& committed = tool_ == Tool::node ? nodeCommitted : tool_ == Tool::road ? streetSegmentCommitted : zoneCommitted;
     if (committed && !committed(polygon)) { zoneDraft_ = std::move(polygon); redraw(); }
 }
 void EditorCanvas::drawZones() {
@@ -75,9 +75,9 @@ void EditorCanvas::drawZones() {
                 const auto end = connector.direction == ZoneDirection::origin ? link.geometry.front() : link.geometry.back();
                 draw(end, link.level);
             }
-            for (const auto& road : document_->network.roads) {
-                if (road.id != connector.roadId || road.centreline.empty()) continue;
-                const bool atEnd = connector.roadForward == (connector.direction == ZoneDirection::destination);
+            for (const auto& road : document_->network.streetSegments) {
+                if (road.id != connector.streetSegmentId || road.centreline.empty()) continue;
+                const bool atEnd = connector.streetSegmentForward == (connector.direction == ZoneDirection::destination);
                 draw(atEnd ? road.centreline.back() : road.centreline.front(), road.level);
             }
         }
@@ -88,7 +88,7 @@ void EditorCanvas::drawZones() {
         // with no pointer yet the closing edge alone.
         std::vector<Point> pending{zoneDraft_.back()};
         if (draftPointer_) pending.push_back(*draftPointer_);
-        // A Road's centreline is open: only the edge to the pointer is still to come.
+        // A StreetSegment's centreline is open: only the edge to the pointer is still to come.
         if (tool_ != Tool::road && (zoneDraft_.size() > 1 || draftPointer_)) pending.push_back(zoneDraft_.front());
         if (pending.size() > 1) {
             QPainterPath edges(QPointF(pending[0].x, pending[0].y));

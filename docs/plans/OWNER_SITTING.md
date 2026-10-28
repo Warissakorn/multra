@@ -67,9 +67,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 29. **Road-model review follow-up** (listed 2026-10-28, [D382](../decisions/RECORD.md#d382)). Each is a
    choice, recommended first: (a) generated Nodes resize to their arms' templates, needing a "derived
    polygon" mark apart from `generated`, or keep D382's refusal only; (b) one turn key across levels,
-   Road id plus end, for coarse values and Node-analysis volumes (a schema step), or keep Link ids and
-   remap on each edit; (c) keep `forwardOnRoad` (D382) or store each Road direction explicitly, needed
-   if a Road carries a pocket and an approach one way; (d) suppress approach and Node delay and LOS
+   Street segment id plus end, for coarse values and Node-analysis volumes (a schema step), or keep Link ids and
+   remap on each edit; (c) keep `forwardOnStreetSegment` (D382) or store each Street segment direction explicitly, needed
+   if a Street segment carries a pocket and an approach one way; (d) suppress approach and Node delay and LOS
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
@@ -94,7 +94,7 @@ Answered 2026-10-23 (in chat, AskUserQuestion): **S4's four choices**, as recomm
 [D313](../decisions/RECORD.md#d313): S4-1a, S4-2a, S4-3a, S4-4a ([READINESS](../reference/READINESS.md) §8).
 
 Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD.md#d304):
-S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([ROADS](../reference/ROADS.md) §11). Numbers are not reused.
+S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([STREET_SEGMENTS](../reference/STREET_SEGMENTS.md) §11). Numbers are not reused.
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.
@@ -272,10 +272,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 23. **D306 E1 tool pointers and clicks** (listed 2026-10-22). At 100/150/200 % on Windows, use
    each drawing tool: is its pointer glyph clear, and do plain clicks after a draft's first point
    add points without starting anything else? *Owner:*
-24. **D385 Roads workflow** (listed 2026-10-28). At 100/150/200 % on Windows, in Thai and English:
-   on the Roads tab select three Roads and press *Apply template* once (one Undo step); open *Find
-   crossings* where a Road has no template. Are the warning-coloured rows and the note under the
-   table readable, and is no Thai text cut off in the note, the tooltip or the toolbar? *Owner:*
+24. **D385 Street segments workflow** (listed 2026-10-28). At 100/150/200 % on Windows, in Thai and English:
+   on the Street segments tab select three Street segments and press *Apply template* once (one Undo step); open *Find
+   crossings* where a Street segment has no template. Are the warning-coloured rows and the note under the
+   table readable, and is no Thai text cut off in the note, the tooltip or the toolbar? Since D389 the tab, tool
+   and messages say Street segment / ช่วงถนน: do they read naturally? *Owner:*
 
 Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now

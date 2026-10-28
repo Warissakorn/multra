@@ -4,8 +4,8 @@
 #include <optional>
 
 namespace multra {
-// MESO_ROAD_DEMAND (D341): one connector's first/last compiled link in its travel direction.
-// Link targets travel along their reference line; Road targets use roadForward. Trimmed Node
+// MESO_STREET_SEGMENT_DEMAND (D341): one connector's first/last compiled link in its travel direction.
+// Link targets travel along their reference line; StreetSegment targets use streetSegmentForward. Trimmed Node
 // boundaries are the compiled ends. No matching directed piece gives nullopt.
 std::optional<std::size_t> mesoZoneEndpoint(const MesoGraph&, const ZoneConnector&);
 inline constexpr std::size_t kMesoOdPathLimit = 4096;

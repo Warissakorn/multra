@@ -1,0 +1,73 @@
+#pragma once
+#include "history.hpp"
+#include "../model/network/street_segment_crossings.hpp"
+
+namespace multra {
+// S3.3 (STREET_SEGMENTS §3, §4, D305). Each runs inside one History::execute, so each is one Undo step.
+// A StreetSegment, added (empty id: allocated, prefix `road`) or replaced; its `links` are kept as stored.
+// EDIT_STREET_SEGMENT_OVERRIDE for lanes outside 1-12, a width not > 0 or a negative median.
+std::string putStreetSegment(ProjectDocument&, StreetSegment);
+// The StreetSegment and its direct zone connectors go; its Links stay as ordinary Links, without streetSegmentId.
+void deleteStreetSegment(ProjectDocument&, const std::string& id);
+// An owned template, added (empty id: allocated, prefix `cross-section`) or replaced. A project on
+// the installed data/cross-sections/ owns `installed` (the resolved ones) first.
+std::string putCrossSection(ProjectDocument&, CrossSection, const std::vector<CrossSection>& installed);
+// EDIT_CROSS_SECTIONS_NOT_OWNED on the installed catalog, EDIT_CROSS_SECTION_IN_USE while a StreetSegment
+// names it, EDIT_UNKNOWN_OBJECT when unknown.
+void deleteCrossSection(ProjectDocument&, const std::string& id);
+// Apply template: the StreetSegment's template (owned, else from `installed`) with its overrides gives one
+// Link per direction, each centred at median/2 + its width/2 from the centreline on its driving side,
+// the backward one reversed. A first apply adds them; a re-apply keeps their ids and lane ids
+// (EDIT_REFERENCED_LANE when a removed lane is in use) and reanchors Connectors. Refusals:
+// EDIT_STREET_SEGMENT_NO_TEMPLATE, STREET_SEGMENT_CROSS_SECTION_UNKNOWN at network.streetSegments[i].crossSectionId,
+// EDIT_STREET_SEGMENT_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently) or two
+// listed Links run one way. Each listed Link keeps the direction it runs (forwardOnStreetSegment, D382).
+// Direct StreetSegment zone connectors become Link targets in the same Command. A backward connector on
+// a one-way template is ZONE_CONNECTOR_STREET_SEGMENT_REQUIRES_DIRECTION before mutation (D340).
+// Returns the StreetSegment's Link ids, forward first.
+std::vector<std::string> applyTemplate(ProjectDocument&, const std::string& streetSegmentId, const std::vector<CrossSection>& installed);
+// What Apply template generates, without generating it: per direction (forward first) the Link's
+// geometry and lane widths. streetSegmentTemplate resolves a StreetSegment's template (owned, else `installed`), or null.
+struct TemplateLink { std::vector<Point> geometry; std::vector<double> widths; };
+std::vector<TemplateLink> templateLinks(const Network&, const StreetSegment&, CrossSection);
+const CrossSection* streetSegmentTemplate(const ProjectDocument&, const StreetSegment&, const std::vector<CrossSection>& installed);
+// S3.4 (STREET_SEGMENTS §3, §17, D308). Join opposite Links into a StreetSegment: `forward` and `backward` become one
+// StreetSegment with no template, its centreline the mean of their bundle centrelines (meanCentreline), and
+// both carry its streetSegmentId. Their geometry is untouched. Refusals: EDIT_STREET_SEGMENT_JOIN_TAKEN when either
+// already belongs to a StreetSegment; EDIT_STREET_SEGMENT_JOIN_LEVEL on different levels; EDIT_STREET_SEGMENT_JOIN_DIRECTION when
+// they are one Link or run the same way; EDIT_STREET_SEGMENT_JOIN_PARALLEL when their overall directions are
+// more than 15 degrees off opposite, or a centreline vertex lies farther from the other centreline
+// than half of both widths plus 30 m (the owner's tolerance, 2026-10-22). Returns the StreetSegment's id.
+inline constexpr double joinAngleDegrees = 15, joinMedianMetres = 30;
+std::string joinOppositeLinks(ProjectDocument&, const std::string& forward, const std::string& backward);
+// Assign template: sets (or, with nullopt, clears) crossSectionId on every StreetSegment in `roads` without
+// generating a Link. STREET_SEGMENT_CROSS_SECTION_UNKNOWN at `crossSectionId` for a template neither owned nor
+// in `installed`; EDIT_UNKNOWN_OBJECT for an unknown StreetSegment.
+void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, const std::optional<std::string>& crossSectionId,
+                    const std::vector<CrossSection>& installed);
+// S3.5 (STREET_SEGMENTS §5, §18, D309). Split a StreetSegment at `station` along its centreline (EDIT_SPLIT_RANGE within
+// 0.2 m of an end): the StreetSegment keeps the first part, a new StreetSegment (same name, template, overrides and level)
+// takes the rest, and each generated Link is split by splitLink at that point. The forward Link's
+// original id stays on the first StreetSegment; the backward Link's original id, which runs from the far end,
+// goes to the new one. Overpass pairs naming the StreetSegment are copied for the new StreetSegment, and a coarse Node
+// the moved end meets (and the near end does not) names the new StreetSegment instead (D382). Returns its id.
+// Direct StreetSegment zone connectors keep their physical endpoint in either travel direction (D340).
+std::string splitStreetSegment(ProjectDocument&, const std::string& streetSegmentId, double station);
+enum class CrossingChoice { junction, overpass };
+// Find crossings' batch, run inside one Command. Overpasses first: every pair of the place's StreetSegments
+// (EDIT_CROSSING_OVERPASS where a StreetSegment ends). Then each junction in order: the StreetSegments within
+// `tolerance` of the place are found again, those passing through are split there, and a `generated`
+// Node is added: a 16-gon around the place whose radius is the StreetSegments' half-width there (each generated
+// Link's distance plus half its width; a StreetSegment without Links, its template's median/2 plus its wider
+// direction) plus the widest lane, D265's rule that a derived polygon takes no number of its own;
+// twice the tolerance when nothing gives a width. Returns the new Nodes' ids.
+std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<StreetSegmentCrossing>&, const std::vector<CrossingChoice>&,
+                                        double tolerance, const std::vector<CrossSection>& installed);
+// S3.7 (STREET_SEGMENTS §7, D312): the SEAM_LANE_COUNT fixes, each one Command and changing only the side the
+// user chose. useLinkLanes: the StreetSegment's override for the Link's direction becomes the Link's lane
+// count (the StreetSegment follows Micro). useStreetSegmentLanes: Apply template again, so the StreetSegment's Links take its
+// lanes (Micro follows the StreetSegment), keeping their ids. EDIT_SEAM_NOT_GENERATED for a Link without a
+// StreetSegment; EDIT_UNKNOWN_OBJECT when unknown.
+void useLinkLanes(ProjectDocument&, const std::string& linkId);
+void useStreetSegmentLanes(ProjectDocument&, const std::string& linkId, const std::vector<CrossSection>& installed);
+}

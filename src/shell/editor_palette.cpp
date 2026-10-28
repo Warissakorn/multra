@@ -109,7 +109,7 @@ void EditorWindow::translatePalette() {
     palette_->setAccessibleName(text("editorNetworkObjects"));
     visibleLevel_->setAccessibleName(text("editorVisibleLevel"));
     canvas_->setAccessibleDescription(text("editorKeyboardHelp"));
-    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorRoadTool"};
+    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool"};
     // Icons only hides the words, never the name: tooltip and accessible text keep name and chord.
     const bool compact=actions_.at("editorPaletteIconsOnly")->isChecked();
     palette_->setRootIsDecorated(!compact);palette_->setIndentation(compact?0:editorDesign::space3);

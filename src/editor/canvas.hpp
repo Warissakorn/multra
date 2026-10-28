@@ -127,10 +127,10 @@ public:
     // S0.7 (NODES §16): the Node the shell's Nodes table has selected, drawn lit with its legs.
     void setHighlightedNode(std::string id);
     const std::string& highlightedNode() const { return highlightedNode_; }
-    // S3.3b (ROADS §16): the Road the Roads table has selected: its centreline and generated Links lit,
+    // S3.3b (STREET_SEGMENTS §16): the StreetSegment the StreetSegments table has selected: its centreline and generated Links lit,
     // in the warning colour while `detached` (a direction its template gives is no longer generated).
-    void setHighlightedRoad(std::string id, bool detached);
-    const std::string& highlightedRoad() const { return highlightedRoad_; }
+    void setHighlightedStreetSegment(std::string id, bool detached);
+    const std::string& highlightedStreetSegment() const { return highlightedStreetSegment_; }
     // M3.2.4b, the Conflict area tool (docs/audits/VISSIM_PARITY.md §2b). Only that tool hit-tests areas,
     // so a click at a junction under Select still selects the Link. A click picks an area; a click
     // on the highlighted one asks to cycle its priority; a drag on a waiting line slides it along
@@ -159,7 +159,7 @@ public:
     // has three, and the draft stays when the receiver refuses it (returns false).
     std::function<bool(std::vector<Point>)> zoneCommitted;
     std::function<bool(std::vector<Point>)> nodeCommitted; // S0.1 (NODES §6): the Node tool shares the draft
-    std::function<bool(std::vector<Point>)> roadCommitted; // S3.3b: the Road tool's centreline, open, 2+ points
+    std::function<bool(std::vector<Point>)> streetSegmentCommitted; // S3.3b: the StreetSegment tool's centreline, open, 2+ points
     const std::vector<Point>& zoneDraft() const { return zoneDraft_; }
     std::function<void(Point)> duplicateRequested;
     std::function<void(Point)> translateRequested;
@@ -255,11 +255,11 @@ private:
     void commitZoneDraft();
     void drawZones();
     void drawNodes();
-    void drawRoads();
+    void drawStreetSegments();
     bool polygonTool() const { return tool_ == Tool::zone || tool_ == Tool::node || tool_ == Tool::road; }
     void drawNodeLegs(const Node&);
     std::string highlightedNode_;
-    std::string highlightedRoad_; bool highlightedRoadDetached_{};
+    std::string highlightedStreetSegment_; bool highlightedStreetSegmentDetached_{};
     std::optional<SectionLine> sectionLineAt(Point) const;
     void drawSections();
     void drawRouteOverlay(const std::vector<std::string>&, const std::string& id, bool preview);

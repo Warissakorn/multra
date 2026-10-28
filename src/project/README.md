@@ -1,6 +1,6 @@
 # src/project
 
-Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–58), catalogs from
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–59), catalogs from
 `data/`, compilation for each level, and every run's output formats. The document persists
 authoring data and the optional background; no compiled runtime network is saved, and an empty
 draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
@@ -25,8 +25,8 @@ keeps its schema and bytes.
 | `json.*` | Section accessors that fail with a named, translatable code; `parseNetwork`; `output.cpp` writes the run's state and event JSON | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `observed_schema.*` | Bounded structural JSON hints for desktop automation (50,000 values, depth 32); no required fields, ranges or version rules | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
 | `node_codec.*` | `network.nodes` and each Node's `analysis` (approach `speedLimit` included) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
-| `road_codec.*` | `network.roads`, a Link's `roadId`, owned `definition.crossSections` | [ROADS §3, §4](../../docs/reference/ROADS.md) |
-| `zone_codec.*` | The zone layer: zones, zone connectors (with direct Road targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
+| `street_segment_codec.*` | `network.streetSegments`, a Link's `streetSegmentId`, owned `definition.crossSections` | [STREET_SEGMENTS §3, §4](../../docs/reference/STREET_SEGMENTS.md) |
+| `zone_codec.*` | The zone layer: zones, zone connectors (with direct Street segment targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `study_area_codec.*` | `studyArea` at the root | [STUDY_AREA §3, §5](../../docs/reference/STUDY_AREA.md) |
 | `study_period_codec.*` | `studyPeriods`, `definition.clockStart`, a matrix's `periodId` | [STUDY_PERIODS §3-§5](../../docs/reference/STUDY_PERIODS.md) |
 | `mode_codec.*` | Owned `definition.modes`, a matrix's `modeId`, a vehicle type's `pcu` | [STUDY_PERIODS §5-§7](../../docs/reference/STUDY_PERIODS.md) |
@@ -57,7 +57,7 @@ keeps its schema and bytes.
 | `demand_preview.*` | Expected counts from the same compiled snapshot as Run, without arrivals | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
 | `station_routing.*` | Physical stations to route distances; clips awareness-dependent lateral spans | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
 | `od_demand.*` | `withOdDemand`: OD matrices added as ordinary routes and inputs before compilation; their Run-tier checks | [ZONES_AND_PARKING §3](../../docs/reference/ZONES_AND_PARKING.md) |
-| `meso_road_demand.*` | Meso's compiled-graph OD paths for a matrix with a direct Road target; other matrices keep Micro's paths | [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) |
+| `meso_street_segment_demand.*` | Meso's compiled-graph OD paths for a matrix with a direct Street segment target; other matrices keep Micro's paths | [MESO_STREET_SEGMENT_DEMAND](../../docs/reference/MESO_STREET_SEGMENT_DEMAND.md) |
 | `parking_compile.*` | Each authored ParkingLot as the engine's lot, after `compileScenario` | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) |
 | `display.*` | `loadDisplayCatalog` | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) |
 | `diagnostics.*` | Draft issues, then runtime issues, as rows; never throws | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
@@ -94,8 +94,8 @@ keeps its schema and bytes.
 ## Codec rules
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
-roadId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–58; shared `$defs`
+streetSegmentId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
+composes envelope/background with these structural rules for schemas 1–59; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

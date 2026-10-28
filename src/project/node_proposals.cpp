@@ -20,7 +20,7 @@ std::vector<NodeProposal> propose(const Network& n, ProposalLevel level, std::ui
     for (const auto& node : n.nodes) {
         std::vector<LegEnd> ends;
         for (const auto& l : nodeLinkLegs(n, node)) ends.push_back({l.linkId, l.station, l.in});
-        for (const auto& r : nodeRoadLegs(n, node)) ends.push_back({r.roadId, r.station, r.atEnd});
+        for (const auto& r : nodeStreetSegmentLegs(n, node)) ends.push_back({r.streetSegmentId, r.station, r.atEnd});
         NodeProposal p{level, revision, node.id, {}, {}};
         for (std::size_t h = 0; h < hot.size(); ++h) {
             const auto& leg = hot[h].leg;
@@ -28,7 +28,7 @@ std::vector<NodeProposal> propose(const Network& n, ProposalLevel level, std::ui
             // need only reach the crossing from outside: its range touches the inside side.
             const auto lo = std::min(leg.fromStation, leg.toStation), hi = std::max(leg.fromStation, leg.toStation);
             const bool isLeg = std::any_of(ends.begin(), ends.end(), [&](const LegEnd& e) {
-                return e.source == leg.source && (e.insideAfter ? hi >= e.station - roadEndTolerance : lo <= e.station + roadEndTolerance);
+                return e.source == leg.source && (e.insideAfter ? hi >= e.station - streetSegmentEndTolerance : lo <= e.station + streetSegmentEndTolerance);
             });
             if (isLeg) { p.legs.push_back(leg); covered[h] = true; }
         }

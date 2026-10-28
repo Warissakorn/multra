@@ -1,13 +1,13 @@
 #include "test.hpp"
-#include "road_zone_fixture.hpp"
+#include "street_segment_zone_fixture.hpp"
 #include "study_area_fixture.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
-#include "../src/model/demand/meso_road_paths.hpp"
+#include "../src/model/demand/meso_street_segment_paths.hpp"
 #include "../src/project/demand_catalog.hpp"
 #include "../src/project/input_manifest.hpp"
 #include "../src/project/meso_output.hpp"
-#include "../src/project/meso_road_demand.hpp"
+#include "../src/project/meso_street_segment_demand.hpp"
 #include "../src/project/od_demand.hpp"
 #include "../src/project/readiness.hpp"
 #include "../src/project/zone_codec.hpp"
@@ -16,7 +16,7 @@
 using namespace multra;
 namespace {
 std::filesystem::path data() { return test::root() / "data"; }
-ProjectDocument fixture() { return test::roadZoneFixture(test::root() / "tests/macro-two-route.traffic.json"); }
+ProjectDocument fixture() { return test::streetSegmentZoneFixture(test::root() / "tests/macro-two-route.traffic.json"); }
 bool issueAt(const MesoDemand& d, const std::string& code, const std::string& path) {
     return std::any_of(d.issues.begin(), d.issues.end(), [&](const auto& i) { return i.code == code && i.path == path; });
 }
@@ -58,7 +58,7 @@ std::string isolatedInput(ProjectDocument& d, const std::string& routeId = "auth
     return id;
 }
 }
-TEST(mesoroad, mr1_endpoints_minimum_time_modes_and_ties) {
+TEST(mesostreetsegment, mr1_endpoints_minimum_time_modes_and_ties) {
     MesoGraph g; g.links = {link("road"), link("road"), link("road"), link("road")};
     g.links[0].fromStation = 0; g.links[0].toStation = 10;
     g.links[1].fromStation = 10; g.links[1].toStation = 20;
@@ -66,8 +66,8 @@ TEST(mesoroad, mr1_endpoints_minimum_time_modes_and_ties) {
     g.links[3].fromStation = 10; g.links[3].toStation = 0;
     ZoneConnector c{"c", "z", "", ZoneDirection::origin, 1, "road", true};
     CHECK(mesoZoneEndpoint(g, c) == 0); c.direction = ZoneDirection::destination; CHECK(mesoZoneEndpoint(g, c) == 1);
-    c.roadForward = false; CHECK(mesoZoneEndpoint(g, c) == 3); c.direction = ZoneDirection::origin; CHECK(mesoZoneEndpoint(g, c) == 2);
-    c.roadId.clear(); c.linkId = "road"; CHECK(mesoZoneEndpoint(g, c) == 0);
+    c.streetSegmentForward = false; CHECK(mesoZoneEndpoint(g, c) == 3); c.direction = ZoneDirection::origin; CHECK(mesoZoneEndpoint(g, c) == 2);
+    c.streetSegmentId.clear(); c.linkId = "road"; CHECK(mesoZoneEndpoint(g, c) == 0);
     c.linkId = "absent"; CHECK(!mesoZoneEndpoint(g, c));
     g.links = {link("a"), link("b"), link("c", 5), link("z")}; g.turns.clear();
     turn(g, 0, 1); turn(g, 0, 2); turn(g, 1, 3); turn(g, 2, 3); turn(g, 2, 0); // the cycle is longer
@@ -83,7 +83,7 @@ TEST(mesoroad, mr1_endpoints_minimum_time_modes_and_ties) {
     CHECK(mesoShortestOdPaths(g, 3, 0, "").empty());
     p = mesoShortestOdPaths(g, 0, 0, ""); CHECK(p.size() == 1 && p[0].links.size() == 1 && p[0].turns.empty());
 }
-TEST(mesoroad, mr1_long_routes_and_explicit_path_limit) {
+TEST(mesostreetsegment, mr1_long_routes_and_explicit_path_limit) {
     MesoGraph g;
     for (std::size_t i = 0; i < 5000; ++i) { g.links.push_back(link(std::to_string(i), 1)); if (i) turn(g, i - 1, i); }
     CHECK(g.links.size() == 5000 && g.turns.size() == 4999);
@@ -96,7 +96,7 @@ TEST(mesoroad, mr1_long_routes_and_explicit_path_limit) {
     CHECK(mesoDemand(d, data(), atLimit).issues.empty()); // forcing: the same valid endpoints reach the allowed bound
     CHECK(issueAt(mesoDemand(d, data(), over), "MESO_OD_PATH_LIMIT", "odMatrices[0].cells[0][1]"));
 }
-TEST(mesoroad, mr2_directional_flows_shares_and_clock_windows) {
+TEST(mesostreetsegment, mr2_directional_flows_shares_and_clock_windows) {
     auto d = fixture(); const auto original = documentJson(d).dump(); const auto graph = mesoNetwork(d, data()).graph;
     auto md = compile(d); CHECK(md.issues.empty() && md.classes.size() == 1 && md.classes[0].paths.size() == 2);
     test::near(md.classes[0].pcu, 1.05); test::near(trips(md), 1500);
@@ -125,7 +125,7 @@ TEST(mesoroad, mr2_directional_flows_shares_and_clock_windows) {
     auto reordered = d; std::reverse(reordered.zones.odMatrices.begin(), reordered.zones.odMatrices.end());
     std::reverse(reordered.zones.zoneConnectors.begin(), reordered.zones.zoneConnectors.end()); CHECK(compile(reordered) == md);
 }
-TEST(mesoroad, mr3_mixed_graph_and_authored_paths_coexist) {
+TEST(mesostreetsegment, mr3_mixed_graph_and_authored_paths_coexist) {
     auto d = fixture(); junction(d, 0); applyTemplate(d, "west", {});
     const auto x = isolatedInput(d);
     VehicleInput walk; walk.id = "walk"; walk.linkId = x; walk.vehicleTypeId = "car"; walk.vehiclesPerHour = 40; walk.endTime = 3600; putInput(d, walk);
@@ -133,12 +133,12 @@ TEST(mesoroad, mr3_mixed_graph_and_authored_paths_coexist) {
     CHECK(md.classes[0].id == "composition:urban-mixed" && md.classes[0].paths.size() == 3 && md.classes[1].id == "type:car");
     CHECK(std::count_if(md.classes[0].paths.begin(), md.classes[0].paths.end(), [](const auto& p) { return p.source == "authored-route"; }) == 1);
     test::near(trips(md), 1640);
-    // A Link-to-Link OD pair can traverse an intermediate Road; a Road connector on the same zone
+    // A Link-to-Link OD pair can traverse an intermediate StreetSegment; a StreetSegment connector on the same zone
     // also supplies a second valid pair. The Link pair has no Micro chain before this reader.
-    d = fixture(); putRoad(d, {"tail", "", {{200, 0}, {400, 0}}, std::string("road-section"), 0, {}, {}});
-    for (auto& c : d.zones.zoneConnectors) if (c.roadId == "east") c.roadId = "tail";
+    d = fixture(); putStreetSegment(d, {"tail", "", {{200, 0}, {400, 0}}, std::string("road-section"), 0, {}, {}});
+    for (auto& c : d.zones.zoneConnectors) if (c.streetSegmentId == "east") c.streetSegmentId = "tail";
     junction(d, 0); junction(d, 200); applyTemplate(d, "west", {}); applyTemplate(d, "tail", {});
-    auto direct = d.zones.zoneConnectors[0]; direct.id = "middle-origin"; direct.linkId.clear(); direct.roadId = "east";
+    auto direct = d.zones.zoneConnectors[0]; direct.id = "middle-origin"; direct.linkId.clear(); direct.streetSegmentId = "east";
     d.zones.zoneConnectors.push_back(direct);
     auto linkOnly = d; linkOnly.zones.zoneConnectors.pop_back(); CHECK(withOdDemand(linkOnly).inputs.empty());
     const auto graph = mesoNetwork(d, data()).graph; md = compile(d); CHECK(md.issues.empty() && md.classes[0].paths.size() == 3);
@@ -146,7 +146,7 @@ TEST(mesoroad, mr3_mixed_graph_and_authored_paths_coexist) {
     for (const auto& p : md.classes[0].paths)
         CHECK(std::any_of(p.links.begin(), p.links.end(), [&](auto l) { return graph.links[l].source == "east"; }));
 }
-TEST(mesoroad, mr3_mode_specific_paths_and_collision_free_ids) {
+TEST(mesostreetsegment, mr3_mode_specific_paths_and_collision_free_ids) {
     auto d = fixture(); const auto graph = mesoNetwork(d, data()).graph;
     const auto base = compile(d); CHECK(base.issues.empty() && base.classes[0].paths.size() == 2);
     const auto collision = base.classes[0].paths[0].source; isolatedInput(d, collision);
@@ -173,17 +173,17 @@ TEST(mesoroad, mr3_mode_specific_paths_and_collision_free_ids) {
     CHECK(modes.classes[0].paths[0].links != modes.classes[0].paths[1].links); test::near(trips(modes), 2400);
     (void)graph;
 }
-TEST(mesoroad, mr4_unavailable_and_partial_pairs_refuse) {
+TEST(mesostreetsegment, mr4_unavailable_and_partial_pairs_refuse) {
     auto d = fixture(); CHECK(compile(d).issues.empty());
     d.definition->crossSections[0].directions = 1; d.definition->crossSections[0].lanesBackward = 0;
     CHECK(mesoNetwork(d, data()).graph.links.size() == 2);
-    CHECK(issueAt(compile(d), "MESO_ZONE_ROAD_UNAVAILABLE", "zoneConnectors[2].roadDirection"));
-    test::throws([&] { runMeso(d, data()); }, "MESO_ZONE_ROAD_UNAVAILABLE");
+    CHECK(issueAt(compile(d), "MESO_ZONE_STREET_SEGMENT_UNAVAILABLE", "zoneConnectors[2].streetSegmentDirection"));
+    test::throws([&] { runMeso(d, data()); }, "MESO_ZONE_STREET_SEGMENT_UNAVAILABLE");
     d = fixture(); junction(d, 0); d.network.nodes[0].coarse = NodeCoarse{std::nullopt, {}, {{"west", "east"}}, std::nullopt};
     CHECK(mesoNetwork(d, data()).graph.turns.size() == 1);
     CHECK(issueAt(compile(d), "MESO_OD_NO_PATH", "odMatrices[0].cells[0][1]"));
-    d = fixture(); putRoad(d, {"isolated", "", {{0, 1000}, {200, 1000}}, std::string("road-section"), 0, {}, {}});
-    auto extra = d.zones.zoneConnectors[0]; extra.id = "lost-origin"; extra.roadId = "isolated"; extra.share = 3;
+    d = fixture(); putStreetSegment(d, {"isolated", "", {{0, 1000}, {200, 1000}}, std::string("road-section"), 0, {}, {}});
+    auto extra = d.zones.zoneConnectors[0]; extra.id = "lost-origin"; extra.streetSegmentId = "isolated"; extra.share = 3;
     d.zones.zoneConnectors.push_back(extra);
     const auto partial = compile(d); CHECK(!partial.classes.empty()); // forcing: one share can be served, the other cannot
     CHECK(issueAt(partial, "MESO_OD_NO_PATH", "odMatrices[0].cells[0][1]"));
@@ -191,7 +191,7 @@ TEST(mesoroad, mr4_unavailable_and_partial_pairs_refuse) {
     d = fixture(); d.zones.zoneConnectors.erase(d.zones.zoneConnectors.begin());
     CHECK(issueAt(compile(d), "OD_ZONE_NO_CONNECTOR", "odMatrices[0].cells[0][1]"));
 }
-TEST(mesoroad, mr4_references_periods_pcu_and_parking_refuse) {
+TEST(mesostreetsegment, mr4_references_periods_pcu_and_parking_refuse) {
     auto d = fixture(); CHECK(compile(d).issues.empty());
     d.definition->externalModes = false; d.definition->modes = {{"car", "", "urban-mixed"}, {"bus", "", "urban-mixed"}};
     d.definition->linkTypes[0].modes = {"car"}; d.zones.odMatrices[0].compositionId.clear(); d.zones.odMatrices[0].modeId = "bus";
@@ -206,13 +206,13 @@ TEST(mesoroad, mr4_references_periods_pcu_and_parking_refuse) {
     d = fixture(); d.zones.odMatrices[0].endTime = 1e-308; d.zones.odMatrices[0].cells[0][1] = 1e308;
     CHECK(issueAt(compile(d), "OD_CELL_INVALID", "odMatrices[0].cells[0][1]"));
     d = fixture(); d.zones.parkingLots = {{"lot", "site", 10, 0, "", 0, {{5, 1}}}};
-    CHECK(issueAt(compile(d), "MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
+    CHECK(issueAt(compile(d), "MESO_STREET_SEGMENT_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
 }
-TEST(mesoroad, mr5_loading_conserves_counts_and_original_inputs) {
+TEST(mesostreetsegment, mr5_loading_conserves_counts_and_original_inputs) {
     auto d = fixture(); d.definition->duration = 1800; d.zones.odMatrices[0].endTime = 900; d.zones.odMatrices[0].cells = {{0, 100}, {50, 0}};
     const auto original = documentJson(d).dump(); const auto before = d;
     const auto run = [&] { InputManifest manifest; manifest.record("project", original); return runMeso(d, data(), &manifest); };
-    const auto r = run(); CHECK(r.odPathRule == kMesoRoadOdPathRule && r.loading.refused.empty() && !r.loading.cancelled);
+    const auto r = run(); CHECK(r.odPathRule == kMesoStreetSegmentOdPathRule && r.loading.refused.empty() && !r.loading.cancelled);
     const auto json = mesoJson(r); CHECK(json["odPathRule"] == "minimum-free-flow-time" && json["validated"] == false);
     test::near(json["classes"][0]["demanded"].get<double>(), 150, 1e-7);
     test::near(json["classes"][0]["arrived"].get<double>(), 150, 1e-7);
@@ -239,21 +239,21 @@ TEST(mesoroad, mr5_loading_conserves_counts_and_original_inputs) {
     d.zones.odMatrices[0].vehicleTypeId = "missing-type";
     CHECK(issueAt(compile(d), "UNKNOWN_VEHICLE_TYPE", "odMatrices[0].vehicleTypeId"));
 }
-TEST(mesoroad, mr5_study_area_keeps_od_zone_identity_and_side_file_parity) {
+TEST(mesostreetsegment, mr5_study_area_keeps_od_zone_identity_and_side_file_parity) {
     auto c = studyfix::mesoCorridor(50); auto& d = c.d;
     auto section = studyfix::section(); section.id = "road-only-section"; section.linkType = "arterial";
     putCrossSection(d, section, {});
-    putRoad(d, {"road-only", "", {{0, 1000}, {200, 1000}}, std::string("road-only-section"), 0, {}, {}});
+    putStreetSegment(d, {"road-only", "", {{0, 1000}, {200, 1000}}, std::string("road-only-section"), 0, {}, {}});
     putZone(d, {"road-zone", "", studyfix::square({-10, 1000}, 5), {}});
     putZoneConnector(d, {"road-origin", "road-zone", "", ZoneDirection::origin, 1, "road-only", true});
-    // D342: the matrix takes the graph rule only when it names the Road's zone (no trips from it).
+    // D342: the matrix takes the graph rule only when it names the StreetSegment's zone (no trips from it).
     auto& matrix = d.zones.odMatrices[0]; matrix.zoneIds.push_back("road-zone");
     for (auto& row : matrix.cells) row.push_back(0);
     matrix.cells.push_back(std::vector<double>(matrix.zoneIds.size()));
     setStudyAreaNodes(d, {c.a}); d.zones.studyArea.flowSource = "meso";
     const auto cut = studyAreaCut(d.network, {c.a}); CHECK(cut.issues.empty() && !cut.links.empty());
     const auto run = runMeso(d, data(), nullptr, nullptr, &cut.links);
-    CHECK(run.odPathRule == kMesoRoadOdPathRule);
+    CHECK(run.odPathRule == kMesoStreetSegmentOdPathRule);
     CHECK(run.classes.size() == 1 && !run.loading.watched.empty() && run.loading.refused.empty());
     const auto& source = studyfix::road(d, c.aw).links[0];
     CHECK(std::find(cut.links.begin(), cut.links.end(), source) != cut.links.end());
@@ -271,27 +271,27 @@ TEST(mesoroad, mr5_study_area_keeps_od_zone_identity_and_side_file_parity) {
     const StudyAreaSources sources{nullptr, side, {}, inputSha256(side->dump())};
     CHECK(mesoGateFlows(d, data(), nullptr, &sources) == live && documentBytes(d) == before);
 }
-TEST(mesoroad, mr7_link_only_matrices_keep_their_expansion) { // D342
+TEST(mesostreetsegment, mr7_link_only_matrices_keep_their_expansion) { // D342
     auto d = fixture(); junction(d, 0); applyTemplate(d, "west", {}); applyTemplate(d, "east", {});
-    CHECK(!usesRoadZoneConnectors(d.zones));
+    CHECK(!usesStreetSegmentZoneConnectors(d.zones));
     const auto legacy = compile(d);
-    // A Road connector in a zone no matrix names changes nothing, the parking refusal included.
+    // A StreetSegment connector in a zone no matrix names changes nothing, the parking refusal included.
     auto zone = d.zones.zones[0]; zone.id = "spur-zone"; d.zones.zones.push_back(zone);
-    putRoad(d, {"spur", "", {{0, 2000}, {200, 2000}}, std::string("road-section"), 0, {}, {}});
+    putStreetSegment(d, {"spur", "", {{0, 2000}, {200, 2000}}, std::string("road-section"), 0, {}, {}});
     d.zones.zoneConnectors.push_back({"spur-in", "spur-zone", "", ZoneDirection::origin, 1, "spur", true});
-    CHECK(usesRoadZoneConnectors(d.zones) && !usesMesoGraphOd(d.zones));
+    CHECK(usesStreetSegmentZoneConnectors(d.zones) && !usesMesoGraphOd(d.zones));
     CHECK(compile(d) == legacy && runMeso(d, data()).odPathRule.empty());
     auto lot = d; lot.zones.parkingLots = {{"lot", "site", 10, 0, "", 0, {{5, 1}}}};
-    CHECK(!issueAt(compile(lot), "MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
+    CHECK(!issueAt(compile(lot), "MESO_STREET_SEGMENT_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
     // Naming that zone opts the matrix in; its zero cells add no pair.
     auto& m = d.zones.odMatrices[0]; m.zoneIds.push_back("spur-zone");
     for (auto& row : m.cells) row.push_back(0);
     m.cells.push_back(std::vector<double>(m.zoneIds.size()));
-    CHECK(mesoGraphOdMatrices(d.zones) == std::vector<bool>{true} && runMeso(d, data()).odPathRule == kMesoRoadOdPathRule);
+    CHECK(mesoGraphOdMatrices(d.zones) == std::vector<bool>{true} && runMeso(d, data()).odPathRule == kMesoStreetSegmentOdPathRule);
     lot = d; lot.zones.parkingLots = {{"lot", "site", 10, 0, "", 0, {{5, 1}}}};
-    CHECK(issueAt(compile(lot), "MESO_ROAD_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
+    CHECK(issueAt(compile(lot), "MESO_STREET_SEGMENT_OD_PARKING_UNSUPPORTED", "parkingLots[0]"));
 }
-TEST(mesoroad, mr7_equal_detours_in_another_order_share) { // D342
+TEST(mesostreetsegment, mr7_equal_detours_in_another_order_share) { // D342
     // 60 m then 70 m against 70 m then 60 m at 50 km/h: the same time, summed to different doubles.
     const double v = 50 / 3.6;
     MesoGraph g;

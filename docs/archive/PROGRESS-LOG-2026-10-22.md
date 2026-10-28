@@ -83,7 +83,7 @@ The owner answered S3's choices as recommended (1a–5a, 6b, 7a), and the catalo
 
 ## 2026-10-22 — S3.1: the Roads contract (D303, docs only)
 
-The owner chose S3 next, with values from HCM 7. [ROADS](../reference/ROADS.md) fixes the following:
+The owner chose S3 next, with values from HCM 7. [ROADS](../reference/STREET_SEGMENTS.md) fixes the following:
 - **The Road:** a centreline with a template, whose generated Links stay ordinary Links with
   `roadId`, so Micro is unchanged.
 - **Editing:** *Apply template*, detaching, *Join opposite Links* and *Assign template*.

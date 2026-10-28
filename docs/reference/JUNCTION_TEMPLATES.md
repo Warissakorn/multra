@@ -2,20 +2,21 @@
 
 Contract before code (D145), docs only. Written 2026-10-28 as a junction builder (D386), then
 rewritten the same day at the owner's direction (D387, "เอาตามแนะนำ"): **no builder tool**. The
-engineer draws Roads; where they cross, *Find crossings* makes a Node, and a **junction template**
+engineer draws Street segments; where they cross, *Find crossings* makes a Node, and a **junction template**
 on that Node says which lanes serve which turns, the pockets and the control, from which the
-Connectors, right-of-way and signals are generated. Where two Roads meet end to end with different
+Connectors, right-of-way and signals are generated. Where two Street segments meet end to end with different
 cross-sections, a **transition template** joins them. The export is [UTDF_EXPORT](UTDF_EXPORT.md).
 **Nothing here is implemented.** The owner choices are answered (§12: D387, D388).
 
-**Naming.** D387 renames Road to **Segment** everywhere, file format included, before any M14 code
-(slice SR, §10). This page says Road for today's object; the slices after SR use Segment.
+**Naming.** D387 renamed Road everywhere, file format included, before any M14 code (slice SR,
+§10). "Segment" was taken by the engine's `Segment` and its messages, so the owner chose **Street
+segment** (HCM's *urban street segment*), D389; SR is done.
 
 Rule 4 applies: every analysis result keeps the not-validated marker.
 
 ## 1. Why templates, not a builder
 
-- The chain already exists: Road → *Find crossings* (ROADS_IMPLEMENTED §18) → *Coarse values…*
+- The chain already exists: Street segment → *Find crossings* (STREET_SEGMENTS_IMPLEMENTED §18) → *Coarse values…*
   (§20) → F4 ([READINESS](READINESS.md) §13). Its one gap for HCM is lanes: F4 shares an in-leg's
   lanes kerb to far (§13.3), so a pocket, an exclusive turn lane or a shared far-through lane
   cannot be stated, and NODE_ANALYSIS lane groups and UTDF's Lanes table need exactly that.
@@ -28,7 +29,7 @@ Rule 4 applies: every analysis result keeps the not-validated marker.
 
 | Need | Existing piece |
 |---|---|
-| Junction places, overpasses, splits | `findCrossings`, `applyCrossings`, `splitRoad` (ROADS_IMPLEMENTED §18) |
+| Junction places, overpasses, splits | `findCrossings`, `applyCrossings`, `splitStreetSegment` (STREET_SEGMENTS_IMPLEMENTED §18) |
 | Major and minor legs | `Node::coarse.major`, else `majorByRank` (§19); `NODE_PRIORITY_UNDETERMINED` otherwise |
 | Leg cuts at the stop line | `nodeLegCuts` (READINESS §13.2) |
 | Connector curve, conflict areas, HCM Ch. 20 ranks, Stop on minor arms | F4 (§13.3–§13.4) |
@@ -81,15 +82,15 @@ turn" reads *right* in Thailand and *left* in the United States.
   "signal": { "cycle": 100, "phases": [ { "number": 2, "green": 38, "yellow": 3, "allRed": 2 } ] } }
 ```
 
-- **Legs** are named by Road id, as coarse values name them (B29 (b) may change the key).
+- **Legs** are named by Street segment id, as coarse values name them (B29 (b) may change the key).
   `storage` and `taper` list one value per pocket of that leg's role, far to kerb, in metres.
 - **Signal:** the cycle and, per NEMA phase the preset uses, green, yellow and all-red. All are
   required, with no default (§12 JT-5).
-- **The recipe, not the truth.** As a Road keeps its `crossSectionId` after its Links exist, the
+- **The recipe, not the truth.** As a Street segment keeps its `crossSectionId` after its Links exist, the
   Node keeps its template after the detail exists. What HCM and UTDF read is the drawing, through
   `approachLayout` (§6). A drawing that no longer matches the template is the advisory
   `SEAM_JUNCTION_DIFFERS`, with *Apply again* (replaces `generated` objects) and *Detach* (drops
-  `junction`), as `SEAM_LANE_COUNT` offers its two fixes (ROADS_IMPLEMENTED §21).
+  `junction`), as `SEAM_LANE_COUNT` offers its two fixes (STREET_SEGMENTS_IMPLEMENTED §21).
 - `coarse` and `junction` do not coexist: choosing a template clears `coarse` in the same Command;
   the template's control and phasing replace the coarse control and stages.
 
@@ -99,7 +100,7 @@ turn" reads *right* in Thailand and *left* in the United States.
   Confirm creates the Node with its template in one Undo step. End-to-end rows (§7) are new.
 - **On the Nodes tab:** *Junction template…* sets or changes the template and the site values of
   the selected Node, one Undo step.
-- **Apply** is the fill kind `junction` in *Fill defaults…*, after F3 (the Roads' Links must exist).
+- **Apply** is the fill kind `junction` in *Fill defaults…*, after F3 (the Street segments' Links must exist).
   It is offered when the Node has a template, all its legs are Link legs, the leg count matches,
   the major legs are determined, and every site value is entered; otherwise its row names the
   missing piece (`JUNCTION_STORAGE_MISSING`, `JUNCTION_TIMING_MISSING`, `JUNCTION_LEG_COUNT`, …).
@@ -130,12 +131,12 @@ NA1–NA23), UTDF's Lanes table, and `SEAM_JUNCTION_DIFFERS`. **Movement names:*
 direction is its travel bearing's nearest of N/E/S/W (`JUNCTION_DIRECTION_AMBIGUOUS` when two
 in-legs share one, with a per-Node override); turns are L/T/R by turn angle; U-turns refused.
 
-## 7. Transitions: two Roads end to end with different cross-sections
+## 7. Transitions: two Street segments end to end with different cross-sections
 
-- **Today:** Macro and Meso join free ends within 2 m (ROADS_IMPLEMENTED §19); Micro gets no
+- **Today:** Macro and Meso join free ends within 2 m (STREET_SEGMENTS_IMPLEMENTED §19); Micro gets no
   Connector. *Find crossings* lists only places of three legs or more, and the two-leg merge
-  (§20) joins only Roads with the same template.
-- **Proposed:** *Find crossings* also lists two Roads meeting end to start whose templates or
+  (§20) joins only Street segments with the same template.
+- **Proposed:** *Find crossings* also lists two Street segments meeting end to start whose templates or
   overrides differ, as a **Transition** row. Confirm makes a two-leg Node with a transition
   template; the same-template case keeps today's merge.
 - **A transition template** (`kind: "transition"`) states, per direction:
@@ -182,7 +183,7 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 
 | Slice | Scope | Sessions |
 |---|---|---|
-| SR | Rename Road to Segment: schema 59 writes `segments`/`segmentId` and still reads `roads`/`roadId` below it; codes `ROAD_*`, `SEAM_ROAD_*`, `MACRO_ROAD_*` and the like become `SEGMENT_*` (DESKTOP_AUTOMATION callers change with them); files, types and commands; en "Segment", th "ช่วงถนน"; maintained docs (RECORD and archives keep their history). Characterization first: every shipped project and fixture round-trips to the same document | 1–2 |
+| SR | **Done (D389).** Road renamed Street segment: schema 59 writes `streetSegments`, `streetSegmentId` and a zone connector's `streetSegmentId`/`streetSegmentDirection`, and still reads `roads`/`roadId`/`roadDirection` below 59, each version refusing the other's keys; codes `ROAD_*` became `STREET_SEGMENT_*` (`EDIT_STREET_SEGMENT_*`, `SEAM_STREET_SEGMENT_*`, …); types, files, commands, tests, locale keys and strings (en "Street segment", th "ช่วงถนน"); maintained docs. RECORD, PROGRESS history and archives keep "Road" | 1 |
 | U0 | UTDF probe with the owner's Synchro 12 and Vistro 2026 (UTDF_EXPORT §8) | 1 + owner |
 | J1 | Posted speed on the Link (§9) | 1 |
 | J2 | Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
@@ -193,7 +194,7 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 | J7 | Analysis panel and results (§9) | 1–2 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
-SR first (D387: before M14 code), then U0, whose answers can change J4 and U1. About 13–16
+SR is done (D389); U0 is next, whose answers can change J4 and U1. About 13–16
 sessions in all; one slice per session, each starting with its rows.
 
 ## 11. What stays out
@@ -204,8 +205,8 @@ templates, which wait for the owner's standard and edition (OWNER_SITTING B12).
 
 ## 12. Owner choices
 
-**Answered 2026-10-28 (D387, "เอาตามแนะนำ"):** templates on Nodes from crossing Roads instead of a
-builder; the full rename to Segment, before M14 code; transitions align per template.
+**Answered 2026-10-28 (D387, "เอาตามแนะนำ"):** templates on Nodes from crossing Street segments instead of a
+builder; the full rename before M14 code (to Street segment, D389); transitions align per template.
 
 **Answered 2026-10-28 (D388, "B30 เอาตามแนะนำ"): JT-1a to JT-5a**, so §3–§9 state the chosen options:
 1. **JT-1 Shipped junction templates.**
@@ -231,15 +232,15 @@ builder; the full rename to Segment, before M14 code; transitions align per temp
 
 | Row | Slice | Asserts |
 |---|---|---|
-| JT1 | SR | Every shipped project and fixture reads, saves at 59 with `segments`, and reads back to the same document; a 58 file still opens; a 58 file using `segments` is `EDIT_UNSUPPORTED_FIELD` |
+| JT1 | SR | A street-segment document saves at 59 with only the new keys and reads back equal; the same document as a 58 file reads to it; each version refuses the other's keys at their paths; a 58 file's malformed entry is named by its own key; owned templates alone stay at 53 (`tests/street_segment_schema_tests.cpp`, **passing**) |
 | JT2 | J1 | A Link's `speedLimit` round-trips; absent keeps the bytes; Node analysis reads the in-leg's |
 | JT3 | J2 | A kerb-side pocket adds the lane on the kerb side for both `drivingSide`s; routes and heads survive |
 | JT4 | J2 | `approachLayout` names a four-leg's 12 movements by direction and L/T/R; an ambiguous pair is refused |
 | JT5 | J3 | Every invalid template in §3 is refused on load with its path |
-| JT6 | J3 | Two crossing Roads, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |
+| JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |
 | JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED` |
 | JT8 | J3 | The applied junction runs in Micro (seed 42) with no refusal, and NODE_ANALYSIS finds every lane group |
 | JT9 | J4 | Each preset passes `nemaCheck`; a broken barrier, ring order or head group is named; HCM g/C per lane group equals the Node's greens over the cycle |
-| JT10 | J5 | A 3-lane Road ending into a 2-lane Road gives a Transition row; Apply with `align: kerb` drops the far lane over the taper; the same-template pair still merges |
+| JT10 | J5 | A 3-lane Street segment ending into a 2-lane Street segment gives a Transition row; Apply with `align: kerb` drops the far lane over the taper; the same-template pair still merges |
 | JT11 | J6 | Editing a generated Connector gives `SEAM_JUNCTION_DIFFERS`; *Apply again* and *Detach* each fix it in one Undo step |
 | JT12 | J7 | The panel writes `Node::analysis` in one Undo step; *Analyse* matches `--node-analysis` byte for byte |

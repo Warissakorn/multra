@@ -417,15 +417,15 @@ contract and acceptance rows. **Equal weight (D378):** open level work follows t
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
-Roads with cross-section templates replace centreline-only Links; M12's stored cut becomes a
+Street segments with cross-section templates replace centreline-only Links; M12's stored cut becomes a
 run-time cut over a study area. M9–M11 keep their engine scopes and gates; no gate moves.
 **S1 contract written** ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266): StudyPeriod, the run clock, Mode and PCU; owner choices answered (D267); **S1.1 implemented** (D268: study periods, `clockStart`, matrix `periodId`, rows SP1–SP8); **S1.2 implemented** (D269 modes in the Demand catalog, D270: the matrix `modeId`, vehicle-type `pcu`, derived mode PCU, the Modes tab, rows SP9–SP14). S1 is complete.
-**S3 complete** ([ROADS](reference/ROADS.md), D303–D312, rows RD1–RD29); **S4 complete** ([READINESS](reference/READINESS.md), D313–D317, RS1–RS10); **S4.5 complete** (D323–D325, RS11–RS18);
+**S3 complete** ([STREET_SEGMENTS](reference/STREET_SEGMENTS.md), D303–D312, rows RD1–RD29); **S4 complete** ([READINESS](reference/READINESS.md), D313–D317, RS1–RS10); **S4.5 complete** (D323–D325, RS11–RS18);
 **S5 complete** ([STUDY_AREA](reference/STUDY_AREA.md), D326–D332, SA1–SA16) with the single-type cut follow-up (D338, SA17–SA18). No milestone gate changes. Slice bodies: [archive](archive/ROADMAP-implemented-2026-10-27.md#m8m12-s3-s4-s45-and-s5-slices).
 
 ### M8 — Zones, OD matrices and parking lots
 
-**Road demand follow-ups D340–D342 implemented** (RD30–RD34, MR1–MR7; Micro requires generated Link targets; [archive](archive/ROADMAP-implemented-2026-10-27.md#m8-road-demand-follow-ups-d340d342)). No milestone gate changes.
+**Street segment demand follow-ups D340–D342 implemented** (RD30–RD34, MR1–MR7; Micro requires generated Link targets; [archive](archive/ROADMAP-implemented-2026-10-27.md#m8-road-demand-follow-ups-d340d342)). No milestone gate changes.
 
 **Code complete; gate open.** Contract [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md) (D153);
 M8.2 codec/commands (D154), M8.3 OD → routes (D155), M8.4a/b lot runtime and authored lots
@@ -473,7 +473,7 @@ finer levels with recorded provenance and a reported volume comparison.
 
 ### M14 — Junction templates and UTDF export (D386, D387)
 
-**Open; contracts written, owner choices answered (D387, D388)** ([JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), [UTDF_EXPORT](reference/UTDF_EXPORT.md)). The owner's HCM-first workflow (D387: no builder tool): Roads crossing make Nodes, a junction template on the Node generates pockets, lane-assigned Connectors, right-of-way and NEMA-numbered signals; transition templates join Roads of different cross-sections; posted speed on the Link, the Node analysis panel, and a UTDF export for Synchro 12 and Vistro 2026 (the competitor-format scope revision M1.23 requires; imports stay out). Road is renamed Segment first (slice SR). Slices SR, U0, J1–J7, U1–U3. **Done when:** rows JT1–JT12 and UT0–UT9 pass, and the owner's UT10 round trip imports the fixture into both programs with geometry, lanes, volumes and timing matching the sheet.
+**Open; contracts written, owner choices answered (D387, D388)** ([JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), [UTDF_EXPORT](reference/UTDF_EXPORT.md)). The owner's HCM-first workflow (D387: no builder tool): Street segments crossing make Nodes, a junction template on the Node generates pockets, lane-assigned Connectors, right-of-way and NEMA-numbered signals; transition templates join Street segments of different cross-sections; posted speed on the Link, the Node analysis panel, and a UTDF export for Synchro 12 and Vistro 2026 (the competitor-format scope revision M1.23 requires; imports stay out). Road was renamed Street segment first (slice SR, done, D389). Slices SR, U0, J1–J7, U1–U3. **Done when:** rows JT1–JT12 and UT0–UT9 pass, and the owner's UT10 round trip imports the fixture into both programs with geometry, lanes, volumes and timing matching the sheet.
 
 ---
 

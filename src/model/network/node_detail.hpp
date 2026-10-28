@@ -4,7 +4,7 @@
 #include <map>
 
 namespace multra {
-// A Node's arm: the Road a leg Link belongs to, else the Link itself.
+// A Node's arm: the StreetSegment a leg Link belongs to, else the Link itself.
 std::string legArm(const Link&);
 // F4-1a (§13.2): where each leg Link ends (an in-leg) or starts (an out-leg). An in-leg ends where its
 // lane surface first meets another arm's leg surface; an out-leg starts where its surface last meets

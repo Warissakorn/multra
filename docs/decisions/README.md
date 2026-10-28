@@ -468,3 +468,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D387](RECORD.md#d387) — No builder tool: junction templates on Nodes from crossing Roads generate the detail; transitions align per template; Road renamed Segment before M14 code (JUNCTION_TEMPLATES).
 
 [D388](RECORD.md#d388) — B30 as recommended: structural shipped junction templates, 3–4 legs, roles with per-leg overrides, all-way stop generated, yellow/all-red required; stored Node numbers, volumes from `Node::analysis`, UTM coordinates, skip-and-report.
+
+[D389](RECORD.md#d389) — Road renamed Street segment (not Segment: the engine's word); schema 59 keys `streetSegments`/`streetSegmentId`/`streetSegmentDirection`, older files read.

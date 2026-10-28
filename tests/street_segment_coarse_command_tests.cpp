@@ -1,11 +1,11 @@
-// S3.6b rows RD17, RD18 and RD27 (docs/reference/ROADS.md §6, §13, ROADS_IMPLEMENTED §20, D311):
+// S3.6b rows RD17, RD18 and RD27 (docs/reference/STREET_SEGMENTS.md §6, §13, STREET_SEGMENTS_IMPLEMENTED §20, D311):
 // refine, derive back and the lifecycle, each inside the Command that causes it. Each row first
 // checks its forcing.
 #include "test.hpp"
 #include "../src/commands/coarse_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/model/demand/meso_compile.hpp"
 #include "../src/model/network/coarse_nodes.hpp"
 #include "../src/model/network/node_membership.hpp"
@@ -19,7 +19,7 @@ namespace {
 using Turn = std::pair<std::string, std::string>;
 std::vector<Point> square(Point c, double h) { return {{c.x - h, c.y - h}, {c.x + h, c.y - h}, {c.x + h, c.y + h}, {c.x - h, c.y + h}}; }
 std::string road(ProjectDocument& d, std::vector<Point> centreline, std::optional<std::string> section = "ns") {
-    return putRoad(d, {"", "", std::move(centreline), std::move(section), 0, {}, {}});
+    return putStreetSegment(d, {"", "", std::move(centreline), std::move(section), 0, {}, {}});
 }
 // Test values only: no template ships (D304, 2a).
 CrossSection section(const char* id) { return {id, id, 2, 1, 1, 3.5, {}, 0, std::nullopt, "Test values"}; }
@@ -28,7 +28,7 @@ ProjectDocument shipped(const char* project) {
 }
 const Node& only(const History& h) { return h.document().network.nodes.front(); }
 }
-TEST(roadcoarse, rd17_refine) { // RD17
+TEST(streetsegmentcoarse, rd17_refine) { // RD17
     ProjectDocument d;
     putCrossSection(d, section("ns"), {});
     const auto n = road(d, {{0, 100}, {0, 0}}), e = road(d, {{100, 0}, {0, 0}}), s = road(d, {{0, -100}, {0, 0}});
@@ -51,19 +51,19 @@ TEST(roadcoarse, rd17_refine) { // RD17
     CHECK(!plain.network.nodes[0].coarse && !plain.network.nodes[0].generated);
     (void)s;
 }
-TEST(roadcoarse, rd18_derive_back) { // RD18
+TEST(streetsegmentcoarse, rd18_derive_back) { // RD18
     auto d = shipped("four-leg-signalised.traffic.json");
     if (d.definition) { d.definition->inputs.clear(); d.definition->routes.clear(); } // routes name the Connectors deleted below
     // West's 30 s green wraps past the cycle's end (117-27 s), so its stage is one across the wrap.
     d.definition->signalControllers[0].groups[0].greenStart = 117; d.definition->signalControllers[0].groups[0].greenEnd = 27;
-    // Each arm's pocket and exit as one template-less Road, its centreline ending in the Node.
+    // Each arm's pocket and exit as one template-less StreetSegment, its centreline ending in the Node.
     // (joinOppositeLinks refuses a pocket this much shorter than its exit.)
-    std::map<std::string, std::string> arm; // in-leg Link -> its Road
+    std::map<std::string, std::string> arm; // in-leg Link -> its StreetSegment
     const std::vector<std::tuple<std::string, std::string, Point>> arms{
         {"link-4", "link-8", {-1, 0}}, {"link-16", "link-20", {1, 0}}, {"link-28", "link-32", {0, -1}}, {"link-40", "link-44", {0, 1}}};
     for (const auto& [in, out, dir] : arms) {
-        const auto id = putRoad(d, {"", "", {{dir.x * 100, dir.y * 100}, {dir.x * 16, dir.y * 16}}, std::nullopt, 0, {}, {in, out}});
-        for (auto& l : d.network.links) if (l.id == in || l.id == out) l.roadId = id;
+        const auto id = putStreetSegment(d, {"", "", {{dir.x * 100, dir.y * 100}, {dir.x * 16, dir.y * 16}}, std::nullopt, 0, {}, {in, out}});
+        for (auto& l : d.network.links) if (l.id == in || l.id == out) l.streetSegmentId = id;
         arm[in] = id;
     }
     putNode(d, {"", "", square({0, 0}, 25), false});
@@ -102,7 +102,7 @@ TEST(roadcoarse, rd18_derive_back) { // RD18
     h.undo();
     CHECK(!only(h).coarse && nodeHasDetail(h.document().network, only(h)));
 }
-TEST(roadcoarse, rd27_two_leg_node_merged_away) { // RD27
+TEST(streetsegmentcoarse, rd27_two_leg_node_merged_away) { // RD27
     ProjectDocument d;
     putCrossSection(d, section("ns"), {}); putCrossSection(d, section("other"), {});
     const auto a = road(d, {{0, 0}, {100, 0}}), b = road(d, {{100, 0}, {200, 0}}), stem = road(d, {{100, 0}, {100, 100}});
@@ -110,32 +110,32 @@ TEST(roadcoarse, rd27_two_leg_node_merged_away) { // RD27
     d.network.overpasses.push_back(b < cross ? Turn{b, cross} : Turn{cross, b});
     putNode(d, {"", "", square({100, 0}, 10), false});
     History h; h.reset(d);
-    CHECK(nodeRoadLegs(h.document().network, only(h)).size() == 3); // forcing: a T
-    CHECK(h.execute("editorDeleteRoad", [&](auto& x) { deleteRoad(x, stem); }));
+    CHECK(nodeStreetSegmentLegs(h.document().network, only(h)).size() == 3); // forcing: a T
+    CHECK(h.execute("editorDeleteStreetSegment", [&](auto& x) { deleteStreetSegment(x, stem); }));
     const auto& n = h.document().network;
-    CHECK(n.nodes.empty() && n.roads.size() == 2);
-    const auto joined = std::find_if(n.roads.begin(), n.roads.end(), [&](const auto& r) { return r.id == a; });
-    CHECK(joined != n.roads.end() && joined->centreline == (std::vector<Point>{{0, 0}, {100, 0}, {200, 0}}));
+    CHECK(n.nodes.empty() && n.streetSegments.size() == 2);
+    const auto joined = std::find_if(n.streetSegments.begin(), n.streetSegments.end(), [&](const auto& r) { return r.id == a; });
+    CHECK(joined != n.streetSegments.end() && joined->centreline == (std::vector<Point>{{0, 0}, {100, 0}, {200, 0}}));
     CHECK(n.overpasses == (std::vector<Turn>{a < cross ? Turn{a, cross} : Turn{cross, a}}));
     h.undo();
-    CHECK(h.document().network.nodes.size() == 1 && h.document().network.roads.size() == 4);
+    CHECK(h.document().network.nodes.size() == 1 && h.document().network.streetSegments.size() == 4);
     // Kept: a Node with coarse values, two templates, or one drawn with two legs.
     auto kept = d; setNodeCoarse(kept, kept.network.nodes[0].id, NodeCoarse{std::nullopt, {a}, {}, std::nullopt});
     History k; k.reset(kept);
-    CHECK(k.execute("editorDeleteRoad", [&](auto& x) { deleteRoad(x, stem); }) && k.document().network.nodes.size() == 1);
+    CHECK(k.execute("editorDeleteStreetSegment", [&](auto& x) { deleteStreetSegment(x, stem); }) && k.document().network.nodes.size() == 1);
     auto mixed = d;
-    for (auto& r : mixed.network.roads) if (r.id == b) r.crossSectionId = "other";
+    for (auto& r : mixed.network.streetSegments) if (r.id == b) r.crossSectionId = "other";
     History m; m.reset(mixed);
-    CHECK(m.execute("editorDeleteRoad", [&](auto& x) { deleteRoad(x, stem); }) && m.document().network.nodes.size() == 1);
+    CHECK(m.execute("editorDeleteStreetSegment", [&](auto& x) { deleteStreetSegment(x, stem); }) && m.document().network.nodes.size() == 1);
     ProjectDocument drawn;
     putCrossSection(drawn, section("ns"), {});
     road(drawn, {{0, 0}, {100, 0}}); road(drawn, {{100, 0}, {200, 0}});
     History w; w.reset(drawn);
     CHECK(w.execute("editorAddNode", [](auto& x) { putNode(x, {"", "", square({100, 0}, 10), false}); }) && w.document().network.nodes.size() == 1);
 }
-TEST(roadcoarse, rd31_split_renames_the_far_end_only) { // RD31 (D382)
-    // A Road between two coarse Nodes: splitting it moves the far Node's references to the new Road,
-    // and the near Node keeps naming the Road it still meets.
+TEST(streetsegmentcoarse, rd31_split_renames_the_far_end_only) { // RD31 (D382)
+    // A StreetSegment between two coarse Nodes: splitting it moves the far Node's references to the new StreetSegment,
+    // and the near Node keeps naming the StreetSegment it still meets.
     ProjectDocument d;
     putCrossSection(d, section("ns"), {});
     const auto r = road(d, {{0, 0}, {300, 0}}), w = road(d, {{0, 100}, {0, 0}}), e = road(d, {{300, 100}, {300, 0}});
@@ -143,10 +143,10 @@ TEST(roadcoarse, rd31_split_renames_the_far_end_only) { // RD31 (D382)
     setNodeCoarse(d, d.network.nodes[0].id, NodeCoarse{std::nullopt, {}, {{w, r}}, std::nullopt});
     setNodeCoarse(d, d.network.nodes[1].id, NodeCoarse{std::nullopt, {r, e}, {{r, e}}, std::nullopt});
     History h; h.reset(d);
-    CHECK(nodeRoadLegs(h.document().network, h.document().network.nodes[1]).size() == 2); // forcing: r ends in the far Node
+    CHECK(nodeStreetSegmentLegs(h.document().network, h.document().network.nodes[1]).size() == 2); // forcing: r ends in the far Node
     std::string next;
     bool split = false;
-    try { split = h.execute("editorSplitRoad", [&](auto& x) { next = splitRoad(x, r, 150); }); } catch (const std::exception&) {}
+    try { split = h.execute("editorSplitStreetSegment", [&](auto& x) { next = splitStreetSegment(x, r, 150); }); } catch (const std::exception&) {}
     CHECK(split);
     if (!split) return;
     const auto& nodes = h.document().network.nodes;

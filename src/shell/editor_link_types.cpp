@@ -121,7 +121,7 @@ void EditorWindow::editLinkType(const std::string& id) {
     auto* modes = new QLineEdit(joined(value.modes), &dialog); modes->setObjectName("editorLinkTypeModes");
     modes->setPlaceholderText(text("editorLinkTypeAllModes"));
     auto* source = new QLineEdit(QString::fromStdString(value.source), &dialog); source->setObjectName("editorLinkTypeSource");
-    // S3.6a (ROADS §6, D310): the priority hierarchy; the lowest value is "none" (unranked).
+    // S3.6a (STREET_SEGMENTS §6, D310): the priority hierarchy; the lowest value is "none" (unranked).
     auto* rank = new QSpinBox(&dialog); rank->setObjectName("editorLinkTypeRank");
     rank->setRange(-1, 99); rank->setSpecialValueText(text("editorLinkTypeRankNone")); rank->setValue(value.rank.value_or(-1));
     form->addRow(text("editorColumnName"), name); form->addRow(text("editorLinkTypeCapacity"), capacity);

@@ -120,7 +120,7 @@ std::vector<Diagnostic> runtimeDiagnostics(const Network& network, const Scenari
     // S0.2 (NODES §3): a Node whose membership is refused gives no rows, and the run still runs.
     for(const auto& issue:nodeMembershipIssues(network))
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
-    for(const auto& issue:roadThroughNodeIssues(network)) // S3.6a (ROADS §6)
+    for(const auto& issue:streetSegmentThroughNodeIssues(network)) // S3.6a (STREET_SEGMENTS §6)
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:routeAmbiguityIssues(network,definition))
         result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});

@@ -53,8 +53,8 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         else valid.push_back({i, std::move(m)});
     }
     const auto station = [&](const std::string& link, double s) { return std::clamp(s, 0.0, lengths[link]); };
-    // S3.6a/D311 (ROADS §9): Link-less Roads, Nodes without detail and their Link legs.
-    auto roads = compileRoads(network, crossSections, types);
+    // S3.6a/D311 (STREET_SEGMENTS §9): Link-less StreetSegments, Nodes without detail and their Link legs.
+    auto roads = compileStreetSegments(network, crossSections, types);
     const auto fromKey = [&](const Connector& c) { return Key{c.from.linkId, station(c.from.linkId, c.from.station.value_or(lengths[c.from.linkId]))}; };
     const auto toKey = [&](const Connector& c) { return Key{c.to.linkId, station(c.to.linkId, c.to.station.value_or(0.0))}; };
     std::map<std::string, std::set<double>> stations;
@@ -106,7 +106,7 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         if (!keys.empty()) nodeOfRoot[groups.find(keys[0])] = n;
     }
     for (auto& [root, n] : std::map<Key, std::size_t>(nodeOfRoot)) { nodeOfRoot.erase(root); nodeOfRoot[groups.find(root)] = n; }
-    std::map<Key, std::size_t> joinOfRoot; // a group's root -> the Road join whose Link legs it holds
+    std::map<Key, std::size_t> joinOfRoot; // a group's root -> the StreetSegment join whose Link legs it holds
     for (std::size_t j = 0; j < roads.joins.size(); ++j) {
         std::vector<Key> keys;
         for (const auto* arms : {&roads.joins[j].ins, &roads.joins[j].outs})
@@ -201,7 +201,7 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
         turn->second.via.push_back(c->id);
     }
     for (auto& [pair, turn] : simple) byNode[turn.node].push_back(std::move(turn));
-    // S3.6a (ROADS §9, D310): Link-less Roads' pieces after every Link's; a join without Link legs
+    // S3.6a (STREET_SEGMENTS §9, D310): Link-less StreetSegments' pieces after every Link's; a join without Link legs
     // gets its node here.
     for (std::size_t j = 0; j < roads.joins.size(); ++j) {
         if (joinNode[j]) continue;
@@ -211,12 +211,12 @@ MesoCompile compileMesoNetwork(const Network& network, const std::vector<LinkTyp
     }
     const auto pieceBase = g.links.size();
     for (const auto& p : roads.pieces) {
-        MesoLink m{p.roadId, p.from, p.to, 0, 0, p.length, p.lanes, 0, 0, 0, {}};
+        MesoLink m{p.streetSegmentId, p.from, p.to, 0, 0, p.length, p.lanes, 0, 0, 0, {}};
         if (p.type) {
             m.capacityPerLane = p.type->capacityPerLane; m.freeSpeed = p.type->freeSpeed; m.modes = p.type->modes;
             if (p.type->jamDensity) m.jamDensity = p.type->jamDensity->value;
         }
-        const auto freeEnd = [&](double station) { g.nodes.push_back({p.roadId + "@" + std::to_string(station), "", "", {}, {}}); return g.nodes.size() - 1; };
+        const auto freeEnd = [&](double station) { g.nodes.push_back({p.streetSegmentId + "@" + std::to_string(station), "", "", {}, {}}); return g.nodes.size() - 1; };
         m.from = p.start ? *joinNode[*p.start] : freeEnd(p.from);
         m.to = p.end ? *joinNode[*p.end] : freeEnd(p.to);
         g.links.push_back(std::move(m));

@@ -49,13 +49,16 @@ inline std::vector<Case> cases() {
         set("/network/links/0/behaviourType","missing-type",version<7 || version>=21);
         set("/network/links/0/linkType","missing-type",version>=50);
         set("/network/links/0/linkType",nullptr,false);
-        set("/network/links/0/roadId","missing-road",version>=53);
+        set("/network/links/0/roadId","missing-road",version>=53 && version<59); // renamed at 59 (D389)
         set("/network/links/0/roadId",nullptr,false);
+        set("/network/links/0/streetSegmentId","missing-road",version>=59);
+        set("/network/links/0/streetSegmentId",nullptr,false);
         set("/network/rightOfWay",nullptr,version<7 || version>=14);
         set("/network/queueCounters",nullptr,version<7 || version>=16);
         set("/network/travelTimeSections",nullptr,version<7 || version>=23);
         set("/network/nodes",nullptr,version<7 || version>=48);
-        set("/network/roads",nullptr,version>=53);
+        set("/network/roads",nullptr,version>=53 && version<59);
+        set("/network/streetSegments",nullptr,version>=59);
         set("/network/overpasses",nullptr,version>=53);
         // Structural success deliberately does not promise semantic model validity.
         set("/network/links/0/geometry",Json::array(),true);

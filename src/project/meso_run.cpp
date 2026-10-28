@@ -1,7 +1,7 @@
 #include "meso_run.hpp"
 #include "input_manifest.hpp"
 #include "meso_settings.hpp"
-#include "meso_road_demand.hpp"
+#include "meso_street_segment_demand.hpp"
 #include "zone_codec.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
@@ -12,7 +12,7 @@ MesoRun runMeso(const ProjectDocument& d, const std::filesystem::path& data, Inp
     const auto enter = [&](MesoStage s) { if (observer && observer->stage) observer->stage(s); };
     MesoRun run;
     run.revision = d.revision; run.settings = mesoSettingsOf(d);
-    if (usesMesoGraphOd(d.zones)) run.odPathRule = kMesoRoadOdPathRule;
+    if (usesMesoGraphOd(d.zones)) run.odPathRule = kMesoStreetSegmentOdPathRule;
     run.duration = d.definition ? d.definition->duration : 0.0;
     enter(MesoStage::graph);
     auto network = mesoNetwork(d, data, manifest);

@@ -8,7 +8,7 @@ void renameNode(ProjectDocument&, const std::string& id, const std::string& name
 void deleteNode(ProjectDocument&, const std::string& id); // EDIT_UNKNOWN_OBJECT when absent
 // S0.5 (D265): adds every nodeSuggestions polygon as a `generated` Node; returns their ids.
 std::vector<std::string> suggestNodes(ProjectDocument&);
-// S3.5 (ROADS §5, D309): Merge nodes. The first Node takes the convex hull of every listed Node's
+// S3.5 (STREET_SEGMENTS §5, D309): Merge nodes. The first Node takes the convex hull of every listed Node's
 // vertices and keeps its id and name; it stays `generated` only if all were; the rest are deleted.
 // EDIT_NODE_MERGE for fewer than two or an unknown id. When an input held valid detail (its
 // nodeMembership had no issue) and the result has issues, those issues are thrown at nodes[k].

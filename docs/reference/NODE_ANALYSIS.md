@@ -32,10 +32,10 @@ the queue. Owner choices (§8) were answered on 2026-10-27 with every recommenda
 
 | Need | Already in MULTRA |
 |---|---|
-| Junction object, legs, turns, control type, per-turn g/C | Node, derived from Micro detail (NODES §3); coarse values on a Node without detail: turns, control, major/minor, stage signal (ROADS_IMPLEMENTED §19–20) |
+| Junction object, legs, turns, control type, per-turn g/C | Node, derived from Micro detail (NODES §3); coarse values on a Node without detail: turns, control, major/minor, stage signal (STREET_SEGMENTS_IMPLEMENTED §19–20) |
 | Signal timing | Fixed-time programs, heads, groups (M2.7, D359/D360). **Read, never copied** |
 | Demand by period | Counted volumes and 15-minute intervals (M2.2), compositions and PCU (S1.2), StudyPeriod (S1.1) |
-| Base saturation flow | HCM 7 Exhibit 19-11: 1,900 pc/h/ln, or 1,750 below 250,000 metro population (PDF p. 1430, already cited by [ROADS](ROADS.md) §6) |
+| Base saturation flow | HCM 7 Exhibit 19-11: 1,900 pc/h/ln, or 1,750 below 250,000 metro population (PDF p. 1430, already cited by [STREET_SEGMENTS](STREET_SEGMENTS.md) §6) |
 | Local saturation flow | Micro's queue-discharge measurement (M3.3.1) as an override with provenance ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §6) |
 | Results, comparison, export | Results tabs, scenario comparison (M5.8), `csv_format.hpp`, the marker line |
 
@@ -129,7 +129,7 @@ is read, never copied.
 
 ## 6. Workflow in the editor (target)
 
-1. Draw the junction or use a Road-generated Node. A Node with detail derives lanes and turns.
+1. Draw the junction or use a Street segment-generated Node. A Node with detail derives lanes and turns.
 2. Node → **Analysis**: lane groups, adjustments, base saturation flow.
 3. Demand:
    - enter turning counts (15-minute, PHF, %HV);
@@ -154,7 +154,7 @@ is read, never copied.
 | A4 | Two-way stop control (Ch. 20) |
 | A5 | All-way stop (Ch. 21) |
 | A6 | Timing proposal: Webster cycle and splits (TP39), isolated |
-| A7 | Roundabouts (Ch. 22), using merged Nodes (ROADS RD15) |
+| A7 | Roundabouts (Ch. 22), using merged Nodes (STREET_SEGMENTS RD15) |
 | A8 | Actuated control (Ch. 19 Step 8C, Ch. 31); then corridor offsets (Ch. 16/18) as its own contract |
 | A9 | Editor table, *Fill from model*, Micro side-by-side |
 
@@ -435,7 +435,7 @@ the others refused; where the all-way control is read from.
 **A6: timing proposal (Webster, TP39), isolated.** Questions: is the proposed cycle and split
 written back as a new program (one Undo step) or only shown; where lost time per phase comes from.
 
-**A7: roundabouts (Ch. 22).** Needs merged Nodes (ROADS RD15). Questions: single-lane and two-lane
+**A7: roundabouts (Ch. 22).** Needs merged Nodes (STREET_SEGMENTS RD15). Questions: single-lane and two-lane
 entries only; how circulating flow is derived from the Node's turns.
 
 **A8: actuated control (Ch. 19 Step 8C, Ch. 31).** Questions: which controller and detector

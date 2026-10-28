@@ -1,6 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
 #include "../src/project/document.hpp"
 #include <nlohmann/json.hpp>
@@ -31,10 +31,10 @@
 #include <memory>
 #include <tuple>
 using namespace multra;
-// S3.3b (D307, ROADS §16, rows RD23-RD26): the Road editor surface. The Cross-sections tab owns and
-// edits templates; the Road tool (O) draws a centreline (Ctrl+right-click, then clicks, Enter) and
-// applies the Roads tab's template in the same Undo step; the Roads tab edits overrides, applies and
-// deletes; a Road that lost a generated Link shows as partly detached in the table and on the canvas.
+// S3.3b (D307, STREET_SEGMENTS §16, rows RD23-RD26): the StreetSegment editor surface. The Cross-sections tab owns and
+// edits templates; the StreetSegment tool (O) draws a centreline (Ctrl+right-click, then clicks, Enter) and
+// applies the StreetSegments tab's template in the same Undo step; the StreetSegments tab edits overrides, applies and
+// deletes; a StreetSegment that lost a generated Link shows as partly detached in the table and on the canvas.
 namespace {
 void require(bool ok, const std::string& message) { if (!ok) { std::cerr << message << "\n"; throw std::runtime_error(message); } }
 QAction* act(EditorWindow& w, const char* name) { auto* a = w.findChild<QAction*>(name); require(a != nullptr, name); return a; }
@@ -71,7 +71,7 @@ QString cell(QTableWidget* table, const std::string& id, int column) {
         if (table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) return table->item(r, column)->text();
     require(false, "Row not found: " + id); return {};
 }
-// Selects every row whose Road id is in `ids`, the first one current.
+// Selects every row whose StreetSegment id is in `ids`, the first one current.
 void selectRows(QTableWidget* table, const std::vector<std::string>& ids) {
     table->clearSelection(); bool first = true;
     for (int r = 0; r < table->rowCount(); ++r)
@@ -89,14 +89,14 @@ std::unique_ptr<EditorWindow> openCopy(const std::filesystem::path& data, const 
     { std::ofstream out(path); out << documentJson(doc).dump(2) << "\n"; }
     auto w = std::make_unique<EditorWindow>(data); w->show(); QTest::qWait(30);
     w->openFile(QString::fromStdString(path)); QApplication::processEvents();
-    require(w->history().document().network.roads.size() == doc.network.roads.size(), std::string("The copy did not open: ") + name);
+    require(w->history().document().network.streetSegments.size() == doc.network.streetSegments.size(), std::string("The copy did not open: ") + name);
     return w;
 }
-// `count` straight Roads one above the other, 40 m apart from y = `y0`, far from the fixture.
-std::vector<std::string> addRoads(ProjectDocument& doc, int count, const std::optional<std::string>& section, double y0 = 5000) {
+// `count` straight StreetSegments one above the other, 40 m apart from y = `y0`, far from the fixture.
+std::vector<std::string> addStreetSegments(ProjectDocument& doc, int count, const std::optional<std::string>& section, double y0 = 5000) {
     std::vector<std::string> ids;
     for (int i = 0; i < count; ++i)
-        ids.push_back(putRoad(doc, Road{"", "", {{5000, y0 + 40 * i}, {5200, y0 + 40 * i}}, section, 0, {}, {}}));
+        ids.push_back(putStreetSegment(doc, StreetSegment{"", "", {{5000, y0 + 40 * i}, {5200, y0 + 40 * i}}, section, 0, {}, {}}));
     return ids;
 }
 std::vector<std::string> tagged(EditorWindow& w, const char* tag, int field = 1) {
@@ -121,12 +121,12 @@ int main(int argc, char** argv) {
         w.openFile(file); QApplication::processEvents();
         auto* c = w.canvas();
         auto* tabs = item<QTabWidget>(w, "editorObjectTabs");
-        auto* roads = item<QTableWidget>(w, "editorRoadTable");
+        auto* roads = item<QTableWidget>(w, "editorStreetSegmentTable");
         auto* sections = item<QTableWidget>(w, "editorCrossSectionTable");
-        auto* chosen = item<QComboBox>(w, "editorRoadTemplate");
+        auto* chosen = item<QComboBox>(w, "editorStreetSegmentTemplate");
         const auto& doc = [&]() -> const ProjectDocument& { return w.history().document(); };
         const auto& network = [&]() -> const Network& { return doc().network; };
-        require(network().roads.empty() && (!doc().definition || doc().definition->externalCrossSections), "The template already has roads or templates");
+        require(network().streetSegments.empty() && (!doc().definition || doc().definition->externalCrossSections), "The template already has roads or templates");
         require(sections->rowCount() == 0, "Installed templates are listed, but none ship (B12)");
 
         // RD23: Add on the Cross-sections tab owns the catalog and adds one template in one Undo step.
@@ -152,58 +152,58 @@ int main(int argc, char** argv) {
         onDialog([](QDialog& d) { d.findChild<QLineEdit*>("editorCrossSectionName")->setText("Urban 2+2"); });
         trigger(w, "editorEditCrossSection");
         require(doc().definition->crossSections[0].name == "Urban 2+2", "Editing the template did not commit");
-        require(chosen->findData(QString::fromStdString(t.id)) > 0, "The Road tool cannot choose the template");
+        require(chosen->findData(QString::fromStdString(t.id)) > 0, "The StreetSegment tool cannot choose the template");
 
-        // RD24: O chooses the Road tool and shows the Roads tab. With no template, Enter draws a Road
-        // without Links; with one, the Road and both directions' Links are one Undo step.
+        // RD24: O chooses the StreetSegment tool and shows the StreetSegments tab. With no template, Enter draws a StreetSegment
+        // without Links; with one, the StreetSegment and both directions' Links are one Undo step.
         QApplication::setActiveWindow(&w); key(w, Qt::Key_O);
-        require(item<QComboBox>(w, "editorTool")->currentIndex() == 14, "O did not choose the Road tool");
-        require(tabs->currentWidget()->isAncestorOf(roads), "The Road tool did not show the Roads tab");
-        require(c->cursor().shape() == Qt::BitmapCursor, "The Road tool has no glyph pointer");
+        require(item<QComboBox>(w, "editorTool")->currentIndex() == 14, "O did not choose the StreetSegment tool");
+        require(tabs->currentWidget()->isAncestorOf(roads), "The StreetSegment tool did not show the StreetSegments tab");
+        require(c->cursor().shape() == Qt::BitmapCursor, "The StreetSegment tool has no glyph pointer");
         c->fitNetwork(); QApplication::processEvents();
         const auto centre = c->mapToScene(c->viewport()->rect().center());
         const Point a{centre.x() - 200, centre.y() + 150}, m{centre.x(), centre.y() + 160}, b{centre.x() + 200, centre.y() + 150};
         chosen->setCurrentIndex(0);
         const auto links = network().links.size();
         author(w, a); key(w, Qt::Key_Return);
-        require(network().roads.empty() && c->zoneDraft().size() == 1, "One point made a Road");
+        require(network().streetSegments.empty() && c->zoneDraft().size() == 1, "One point made a StreetSegment");
         click(w, b); key(w, Qt::Key_Return);
-        require(network().roads.size() == 1 && network().roads[0].links.empty() && network().links.size() == links,
-                "A Road without a template generated Links");
-        const auto noTemplate = cell(roads, network().roads[0].id, 5);
-        require(!noTemplate.isEmpty() && cell(roads, network().roads[0].id, 4) == "0", "The bare Road has no status");
-        const auto bare = network().roads[0].id;
-        selectRow(roads, bare); trigger(w, "editorDeleteRoad");
-        require(network().roads.empty(), "Delete kept the bare Road");
+        require(network().streetSegments.size() == 1 && network().streetSegments[0].links.empty() && network().links.size() == links,
+                "A StreetSegment without a template generated Links");
+        const auto noTemplate = cell(roads, network().streetSegments[0].id, 5);
+        require(!noTemplate.isEmpty() && cell(roads, network().streetSegments[0].id, 4) == "0", "The bare StreetSegment has no status");
+        const auto bare = network().streetSegments[0].id;
+        selectRow(roads, bare); trigger(w, "editorDeleteStreetSegment");
+        require(network().streetSegments.empty(), "Delete kept the bare StreetSegment");
 
         chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
         const auto before = w.history().revision();
         author(w, a); click(w, m); click(w, b); key(w, Qt::Key_Return);
-        require(network().roads.size() == 1, "The Road tool did not draw a Road");
-        const auto road = network().roads[0];
-        require(road.centreline.size() == 3 && road.crossSectionId == t.id && road.links.size() == 2, "The Road was not drawn and applied");
+        require(network().streetSegments.size() == 1, "The StreetSegment tool did not draw a StreetSegment");
+        const auto road = network().streetSegments[0];
+        require(road.centreline.size() == 3 && road.crossSectionId == t.id && road.links.size() == 2, "The StreetSegment was not drawn and applied");
         require(network().links.size() == links + 2 && w.history().revision() == before + 1, "Drawing and applying were not one Undo step");
         for (const auto& id : road.links) {
             const auto l = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == id; });
-            require(l != network().links.end() && l->roadId == road.id && l->lanes.size() == 2, "A generated Link is not the template's");
+            require(l != network().links.end() && l->streetSegmentId == road.id && l->lanes.size() == 2, "A generated Link is not the template's");
         }
-        require(roads->currentRow() >= 0 && cell(roads, road.id, 3) == "2 + 2" && cell(roads, road.id, 4) == "2", "The new Road row is not listed and selected");
+        require(roads->currentRow() >= 0 && cell(roads, road.id, 3) == "2 + 2" && cell(roads, road.id, 4) == "2", "The new StreetSegment row is not listed and selected");
         const auto applied = cell(roads, road.id, 5);
         require(tagged(w, "road-link") == std::vector<std::string>{std::min(road.links[0], road.links[1]), std::max(road.links[0], road.links[1])},
-                "The selected Road's Links are not lit");
-        require(tagged(w, "road", 2) == std::vector<std::string>{"lit"}, "The selected Road's centreline is not lit");
+                "The selected StreetSegment's Links are not lit");
+        require(tagged(w, "road", 2) == std::vector<std::string>{"lit"}, "The selected StreetSegment's centreline is not lit");
         trigger(w, "editorUndo");
-        require(network().roads.empty() && network().links.size() == links, "Undo kept the Road or its Links");
+        require(network().streetSegments.empty() && network().links.size() == links, "Undo kept the StreetSegment or its Links");
         trigger(w, "editorRedo");
-        require(network().roads.size() == 1 && network().links.size() == links + 2, "Redo lost the Road");
+        require(network().streetSegments.size() == 1 && network().links.size() == links + 2, "Redo lost the StreetSegment");
 
         // RD25: Edit sets an override, Apply template re-applies it keeping the Link ids, and the
-        // template a Road names cannot be deleted.
+        // template a StreetSegment names cannot be deleted.
         selectRow(roads, road.id);
-        onDialog([](QDialog& d) { d.findChild<QSpinBox*>("editorRoadLanesForward")->setValue(3); });
-        trigger(w, "editorEditRoad");
-        require(network().roads[0].overrides.lanesForward == 3 && !network().roads[0].overrides.laneWidth, "The override was not stored alone");
-        // RD21 in the editor (S3.7, D312): the 2-lane forward Link under a 3-lane Road is a Micro seam;
+        onDialog([](QDialog& d) { d.findChild<QSpinBox*>("editorStreetSegmentLanesForward")->setValue(3); });
+        trigger(w, "editorEditStreetSegment");
+        require(network().streetSegments[0].overrides.lanesForward == 3 && !network().streetSegments[0].overrides.laneWidth, "The override was not stored alone");
+        // RD21 in the editor (S3.7, D312): the 2-lane forward Link under a 3-lane StreetSegment is a Micro seam;
         // Use Node applies the template to it in one step.
         int seams = 0, macroSeams = -1; bool clipped = false; int fixButtons = 0; const auto beforeFix = w.history().revision();
         onDialog([&](QDialog& d) {
@@ -225,60 +225,60 @@ int main(int argc, char** argv) {
                 "Seam checks did not list the lane count and fix it with Use Node in one step");
         selectRow(roads, road.id); trigger(w, "editorApplyTemplate");
         const auto forward = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == road.links[0]; });
-        require(network().roads[0].links == road.links && forward->lanes.size() == 3, "Re-applying did not keep the ids and add the lane");
-        require(cell(roads, road.id, 3) == "3 + 2", "The Roads tab does not show the override");
+        require(network().streetSegments[0].links == road.links && forward->lanes.size() == 3, "Re-applying did not keep the ids and add the lane");
+        require(cell(roads, road.id, 3) == "3 + 2", "The StreetSegments tab does not show the override");
         selectRow(sections, t.id);
         const auto used = w.history().revision();
         trigger(w, "editorDeleteCrossSection");
         require(w.history().revision() == used && doc().definition->crossSections.size() == 1, "A template in use was deleted");
 
-        // RD26: editing one generated Link's lanes detaches it; the Road is partly detached in the
+        // RD26: editing one generated Link's lanes detaches it; the StreetSegment is partly detached in the
         // table and lit in the warning colour on the canvas with only its remaining Link.
         trigger(w, "editorTool0");
         c->select(road.links[1]); QApplication::processEvents();
         item<QSpinBox>(w, "editorLaneCount")->setValue(1);
         item<QLineEdit>(w, "editorLaneWidths")->setText("3.5");
         trigger(w, "editorApplyLanes");
-        require(network().roads[0].links == std::vector<std::string>{road.links[0]}, "Editing the Link's lanes did not detach it");
+        require(network().streetSegments[0].links == std::vector<std::string>{road.links[0]}, "Editing the Link's lanes did not detach it");
         selectRow(roads, road.id);
         const auto status = cell(roads, road.id, 5);
-        require(status != applied && status != noTemplate && status.contains("1") && status.contains("2"), "The Roads tab does not show the Road partly detached");
-        require(tagged(w, "road", 2) == std::vector<std::string>{"detached"}, "The canvas does not draw the Road as detached");
+        require(status != applied && status != noTemplate && status.contains("1") && status.contains("2"), "The StreetSegments tab does not show the StreetSegment partly detached");
+        require(tagged(w, "road", 2) == std::vector<std::string>{"detached"}, "The canvas does not draw the StreetSegment as detached");
         require(tagged(w, "road-link") == std::vector<std::string>{road.links[0]}, "The canvas lights a detached Link");
-        trigger(w, "editorDeleteRoad");
-        require(network().roads.empty() && network().links.size() == links + 2, "Deleting the Road removed its Links");
+        trigger(w, "editorDeleteStreetSegment");
+        require(network().streetSegments.empty() && network().links.size() == links + 2, "Deleting the StreetSegment removed its Links");
         trigger(w, "editorUndo");
-        require(network().roads.size() == 1, "Undo did not restore the Road");
+        require(network().streetSegments.size() == 1, "Undo did not restore the StreetSegment");
 
         // RD10/RD11 in the editor (S3.4, D308): the two freed Links, selected forward first, join into
-        // one Road without a template; Assign template then sets it on the selected rows, with no Link
+        // one StreetSegment without a template; Assign template then sets it on the selected rows, with no Link
         // generated, in one Undo step each.
-        selectRow(roads, road.id); trigger(w, "editorDeleteRoad");
-        require(network().roads.empty(), "The fixture Road was not deleted");
+        selectRow(roads, road.id); trigger(w, "editorDeleteStreetSegment");
+        require(network().streetSegments.empty(), "The fixture StreetSegment was not deleted");
         require(!act(w, "editorJoinOppositeLinks")->isEnabled(), "Join is enabled without two Links");
         c->setSelection({road.links[0], road.links[1]}); QApplication::processEvents();
         require(act(w, "editorJoinOppositeLinks")->isEnabled(), "Join is disabled with two Links selected");
         const auto joining = w.history().revision();
         trigger(w, "editorJoinOppositeLinks");
-        require(network().roads.size() == 1 && network().roads[0].links == road.links && !network().roads[0].crossSectionId &&
-                w.history().revision() == joining + 1, "Join did not make one Road of the two Links in one step");
-        const auto joined = network().roads[0].id;
-        require(cell(roads, joined, 5) == noTemplate && roads->currentRow() >= 0, "The joined Road is not listed as without a template");
+        require(network().streetSegments.size() == 1 && network().streetSegments[0].links == road.links && !network().streetSegments[0].crossSectionId &&
+                w.history().revision() == joining + 1, "Join did not make one StreetSegment of the two Links in one step");
+        const auto joined = network().streetSegments[0].id;
+        require(cell(roads, joined, 5) == noTemplate && roads->currentRow() >= 0, "The joined StreetSegment is not listed as without a template");
         selectRow(roads, joined);
         chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
         const auto assigning = w.history().revision(); const auto count = network().links.size();
         trigger(w, "editorAssignTemplate");
-        require(network().roads[0].crossSectionId == t.id && network().links.size() == count && w.history().revision() == assigning + 1,
+        require(network().streetSegments[0].crossSectionId == t.id && network().links.size() == count && w.history().revision() == assigning + 1,
                 "Assign template did not set the template alone in one step");
-        require(network().roads[0].links == road.links, "Assigning a template changed the Road's Links");
+        require(network().streetSegments[0].links == road.links, "Assigning a template changed the StreetSegment's Links");
 
-        // RD13/RD14/RD15 in the editor (S3.5, D309): a second Road drawn across the first gives one
+        // RD13/RD14/RD15 in the editor (S3.5, D309): a second StreetSegment drawn across the first gives one
         // place in Find crossings; Junction splits both and adds a Node in one step, Overpass stores the
         // pair instead; Merge nodes on two rows leaves one Node.
         QApplication::setActiveWindow(&w); key(w, Qt::Key_O);
         const Point top{centre.x() + 50, centre.y() + 100}, bottom{centre.x() + 50, centre.y() + 220};
         author(w, top); click(w, bottom); key(w, Qt::Key_Return);
-        require(network().roads.size() == 2, "The crossing Road was not drawn");
+        require(network().streetSegments.size() == 2, "The crossing StreetSegment was not drawn");
         const auto drawn = w.history().revision(); const auto nodesBefore = network().nodes.size();
         int rows = 0, choices = 0;
         onDialog([&](QDialog& d) {
@@ -287,15 +287,15 @@ int main(int argc, char** argv) {
         });
         trigger(w, "editorFindCrossings");
         require(rows == 1 && choices == 2, "Find crossings did not list one place with Junction and Overpass");
-        require(network().roads.size() == 4 && network().nodes.size() == nodesBefore + 1 && network().nodes.back().generated &&
-                w.history().revision() == drawn + 1, "Confirming the junction did not split both Roads and add a Node in one step");
+        require(network().streetSegments.size() == 4 && network().nodes.size() == nodesBefore + 1 && network().nodes.back().generated &&
+                w.history().revision() == drawn + 1, "Confirming the junction did not split both StreetSegments and add a Node in one step");
         // RD28 (S3.6b, D311): the split's Connectors are detail, so the junction takes no coarse values.
         selectRow(item<QTableWidget>(w, "editorNodeTable"), network().nodes.back().id);
         require(!act(w, "editorEditCoarse")->isEnabled(), "Coarse values are offered on a Node with detail");
         trigger(w, "editorUndo");
         onDialog([](QDialog& d) { qobject_cast<QComboBox*>(d.findChild<QTableWidget*>("editorCrossingTable")->cellWidget(0, 5))->setCurrentIndex(1); });
         trigger(w, "editorFindCrossings");
-        require(network().overpasses.size() == 1 && network().roads.size() == 2 && network().nodes.size() == nodesBefore,
+        require(network().overpasses.size() == 1 && network().streetSegments.size() == 2 && network().nodes.size() == nodesBefore,
                 "Confirming the overpass did not store the pair alone");
         auto* nodeTable = item<QTableWidget>(w, "editorNodeTable");
         QApplication::setActiveWindow(&w); key(w, Qt::Key_N);
@@ -326,13 +326,13 @@ int main(int argc, char** argv) {
         onDialog([](QDialog& d) { auto* control = d.findChild<QComboBox*>("editorCoarseControl"); control->setCurrentIndex(control->findData(0)); });
         trigger(w, "editorEditCoarse");
         require(!network().nodes.back().coarse, "Back to the defaults did not clear the values");
-        // RS7 and RS8 in the editor (S4.3, D316): a Link-less Road with a template is offered F3 in Fill
+        // RS7 and RS8 in the editor (S4.3, D316): a Link-less StreetSegment with a template is offered F3 in Fill
         // defaults; confirming with nothing ticked changes nothing, ticking it generates its Links in one step.
         chosen->setCurrentIndex(chosen->findData(QString()));
         QApplication::setActiveWindow(&w); key(w, Qt::Key_O);
         author(w, {centre.x() - 60, centre.y() + 100}); click(w, {centre.x() - 60, centre.y() + 220}); key(w, Qt::Key_Return);
-        const auto loose = network().roads.back();
-        require(loose.links.empty() && !loose.crossSectionId, "The Road without a template was not drawn");
+        const auto loose = network().streetSegments.back();
+        require(loose.links.empty() && !loose.crossSectionId, "The StreetSegment without a template was not drawn");
         selectRow(roads, loose.id); chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
         trigger(w, "editorAssignTemplate");
         int offers = 0; const auto unfilled = w.history().revision();
@@ -345,54 +345,54 @@ int main(int argc, char** argv) {
                 if (table->item(r, 1)->text().toStdString() == loose.id) table->item(r, 0)->setCheckState(Qt::Checked);
         });
         trigger(w, "editorFillDefaults");
-        const auto filled = std::find_if(network().roads.begin(), network().roads.end(), [&](const auto& r) { return r.id == loose.id; });
-        require(filled->links.size() == 2 && w.history().revision() == unfilled + 1, "Ticking F3 did not generate the Road's Links in one step");
+        const auto filled = std::find_if(network().streetSegments.begin(), network().streetSegments.end(), [&](const auto& r) { return r.id == loose.id; });
+        require(filled->links.size() == 2 && w.history().revision() == unfilled + 1, "Ticking F3 did not generate the StreetSegment's Links in one step");
 
         // RD34 (D385): Apply template on several selected rows applies each in table order in one Undo
-        // step; one refused Road leaves the whole Command unapplied.
+        // step; one refused StreetSegment leaves the whole Command unapplied.
         {
             auto base = doc();
-            const auto three = addRoads(base, 3, t.id);
-            const auto bareRoad = addRoads(base, 1, std::nullopt, 4960).front();
+            const auto three = addStreetSegments(base, 3, t.id);
+            const auto bareStreetSegment = addStreetSegments(base, 1, std::nullopt, 4960).front();
             auto copy = openCopy(argv[1], temp, "apply-many.traffic.json", base);
-            auto* table = item<QTableWidget>(*copy, "editorRoadTable");
+            auto* table = item<QTableWidget>(*copy, "editorStreetSegmentTable");
             const auto& net = [&]() -> const Network& { return copy->history().document().network; };
-            const auto road = [&](const std::string& id) { return *std::find_if(net().roads.begin(), net().roads.end(), [&](const auto& r) { return r.id == id; }); };
+            const auto road = [&](const std::string& id) { return *std::find_if(net().streetSegments.begin(), net().streetSegments.end(), [&](const auto& r) { return r.id == id; }); };
             const auto bytes = documentJson(copy->history().document()).dump();
             const auto states = copy->history().states().size();
             selectRows(table, three);
             require(act(*copy, "editorApplyTemplate")->isEnabled(), "Apply template is disabled with three rows selected");
             trigger(*copy, "editorApplyTemplate");
-            for (const auto& id : three) require(road(id).links.size() == 2, "Apply template skipped a selected Road: " + id);
-            require(copy->history().states().size() == states + 1, "Applying three Roads was not one Undo step");
+            for (const auto& id : three) require(road(id).links.size() == 2, "Apply template skipped a selected StreetSegment: " + id);
+            require(copy->history().states().size() == states + 1, "Applying three StreetSegments was not one Undo step");
             trigger(*copy, "editorUndo");
             require(documentJson(copy->history().document()).dump() == bytes, "Undo did not restore the document byte for byte");
-            selectRows(table, {three[0], three[1], bareRoad});
+            selectRows(table, {three[0], three[1], bareStreetSegment});
             trigger(*copy, "editorApplyTemplate");
             require(documentJson(copy->history().document()).dump() == bytes && copy->history().states().size() == states + 1,
-                    "A Road without a template did not leave the whole Command unapplied");
-            // 200 Roads in one press: timed to confirm D384's speed holds for the batch (no gate here).
+                    "A StreetSegment without a template did not leave the whole Command unapplied");
+            // 200 StreetSegments in one press: timed to confirm D384's speed holds for the batch (no gate here).
             auto large = doc();
-            const auto many = addRoads(large, 200, t.id);
+            const auto many = addStreetSegments(large, 200, t.id);
             auto big = openCopy(argv[1], temp, "apply-200.traffic.json", large);
-            selectRows(item<QTableWidget>(*big, "editorRoadTable"), many);
+            selectRows(item<QTableWidget>(*big, "editorStreetSegmentTable"), many);
             QElapsedTimer timer; timer.start();
             trigger(*big, "editorApplyTemplate");
             const auto ms = timer.elapsed();
-            const auto& bigRoads = big->history().document().network.roads;
-            require(std::all_of(bigRoads.begin(), bigRoads.end(), [&](const auto& r) {
+            const auto& bigStreetSegments = big->history().document().network.streetSegments;
+            require(std::all_of(bigStreetSegments.begin(), bigStreetSegments.end(), [&](const auto& r) {
                         return std::find(many.begin(), many.end(), r.id) == many.end() || r.links.size() == 2; }),
-                    "Apply template did not generate every one of 200 Roads");
-            std::cout << "RD34: Apply template on 200 Roads took " << ms << " ms\n";
+                    "Apply template did not generate every one of 200 StreetSegments");
+            std::cout << "RD34: Apply template on 200 StreetSegments took " << ms << " ms\n";
         }
 
-        // RD35 (D385): Find crossings marks a place whose Road has neither a template nor Links, with a
-        // one-line note; Roads with a template give neither. The warning does not block Confirm.
+        // RD35 (D385): Find crossings marks a place whose StreetSegment has neither a template nor Links, with a
+        // one-line note; StreetSegments with a template give neither. The warning does not block Confirm.
         const auto crossingWarning = [&](const std::optional<std::string>& section, const char* name) {
             auto base = doc();
-            while (!base.network.roads.empty()) deleteRoad(base, base.network.roads.front().id); // their Links stay
-            putRoad(base, Road{"", "", {{5000, 7000}, {5200, 7000}}, section, 0, {}, {}});
-            putRoad(base, Road{"", "", {{5100, 6900}, {5100, 7100}}, section, 0, {}, {}});
+            while (!base.network.streetSegments.empty()) deleteStreetSegment(base, base.network.streetSegments.front().id); // their Links stay
+            putStreetSegment(base, StreetSegment{"", "", {{5000, 7000}, {5200, 7000}}, section, 0, {}, {}});
+            putStreetSegment(base, StreetSegment{"", "", {{5100, 6900}, {5100, 7100}}, section, 0, {}, {}});
             auto copy = openCopy(argv[1], temp, name, base);
             bool note = false, marked = false, tip = false; int rows = 0;
             onDialog([&](QDialog& d) {
@@ -412,9 +412,9 @@ int main(int argc, char** argv) {
             return std::tuple{note, marked, tip};
         };
         const auto [bareNote, bareMarked, bareTip] = crossingWarning(std::nullopt, "crossing-bare.traffic.json");
-        require(bareNote && bareMarked && bareTip, "Find crossings does not warn about a Road without a template");
+        require(bareNote && bareMarked && bareTip, "Find crossings does not warn about a StreetSegment without a template");
         const auto [withNote, withMarked, withTip] = crossingWarning(t.id, "crossing-template.traffic.json");
-        require(!withNote && !withMarked && !withTip, "Find crossings warns although every Road has a template");
+        require(!withNote && !withMarked && !withTip, "Find crossings warns although every StreetSegment has a template");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

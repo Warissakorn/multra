@@ -230,7 +230,7 @@ TEST(studyarea, vehicle_type_cut_fields_remain_runtime_only) {
     CHECK(!ends.origins.empty() && !ends.destinations.empty());
     d.zones.studyArea.gateFlows = {{"p", ends.origins.front(), ends.destinations.front(), "car-only", "", 120}};
     const auto saved = documentJson(d);
-    CHECK(saved["schemaVersion"] == 55 && documentJson(parseDocument(saved)) == saved);
+    CHECK(saved["schemaVersion"] == 59 && documentJson(parseDocument(saved)) == saved);
     CHECK(saved["odMatrices"].size() == 1 && saved["studyArea"]["gateFlows"].size() == 1);
     for (const bool replaceComposition : {false, true}) {
         auto matrix = saved;

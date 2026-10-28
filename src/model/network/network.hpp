@@ -29,9 +29,9 @@ struct Link {
     // M3.3.2a, schema 21: a link behaviour type id; absent keeps each type's own behaviour.
     std::optional<std::string> behaviourTypeId{};
     std::optional<std::string> linkTypeId{}; // S2.1 (MACRO_NETWORK §4, D273), schema 50: Macro only
-    // S3.3 (ROADS §3, D305), schema 53: the Road whose template generated this Link; cleared when the
+    // S3.3 (STREET_SEGMENTS §3, D305), schema 53: the StreetSegment whose template generated this Link; cleared when the
     // Link is edited by hand (detached).
-    std::optional<std::string> roadId{};
+    std::optional<std::string> streetSegmentId{};
     bool operator==(const Link&) const = default;
 };
 struct LaneReference {
@@ -129,8 +129,8 @@ struct NetworkSignalHead {
     bool generated{}; // S4.5c (D325), schema 54: F4 drew it; cleared by the first edit of it
     bool operator==(const NetworkSignalHead&) const = default;
 };
-// S3.6a (ROADS §6, D310): coarse values, stored only on a Node without detail. Turns are (in Road,
-// out Road) pairs naming the Node's legs (coarse_nodes.hpp); absent fields are the defaults.
+// S3.6a (STREET_SEGMENTS §6, D310): coarse values, stored only on a Node without detail. Turns are (in StreetSegment,
+// out StreetSegment) pairs naming the Node's legs (coarse_nodes.hpp); absent fields are the defaults.
 enum class CoarseControl { priority, signalised, allWayStop };
 struct CoarseStage { double green{}; std::vector<std::pair<std::string, std::string>> turns; bool operator==(const CoarseStage&) const = default; };
 struct CoarseSignal { double cycle{}; std::vector<CoarseStage> stages; bool operator==(const CoarseSignal&) const = default; };
@@ -148,20 +148,20 @@ struct Node {
     std::optional<NodeCoarse> coarse{}; std::optional<NodeAnalysis> analysis{}; // schema 53 (S3.6a), 58 (M13 A1)
     bool operator==(const Node&) const = default;
 };
-// S3.3 (ROADS §3, D305): a Road is a centreline with a cross-section template. *Apply template*
-// generates its directed Links (forward first), which stay ordinary Links carrying `roadId`.
-struct RoadOverrides {
+// S3.3 (STREET_SEGMENTS §3, D305): a StreetSegment is a centreline with a cross-section template. *Apply template*
+// generates its directed Links (forward first), which stay ordinary Links carrying `streetSegmentId`.
+struct StreetSegmentOverrides {
     std::optional<int> lanesForward{}, lanesBackward{};
     std::optional<double> laneWidth{}, median{};
-    bool operator==(const RoadOverrides&) const = default;
+    bool operator==(const StreetSegmentOverrides&) const = default;
 };
-struct Road {
+struct StreetSegment {
     std::string id, name; std::vector<Point> centreline;
     std::optional<std::string> crossSectionId{};
     int level{};
-    RoadOverrides overrides{};
+    StreetSegmentOverrides overrides{};
     std::vector<std::string> links{};
-    bool operator==(const Road&) const = default;
+    bool operator==(const StreetSegment&) const = default;
 };
 // DrivingSide lives in core (src/core/lateral_types.hpp) since M3.7 slice 1 (D187).
 struct Network {
@@ -174,8 +174,8 @@ struct Network {
     std::vector<AuthoredQueueCounter> queueCounters; // M3.2.6b, schema 16
     std::vector<TravelTimeSection> travelTimeSections; // M5.4, schema 23
     std::vector<Node> nodes; // S0 (NODES §2, D261), schema 48
-    std::vector<Road> roads; // S3.3 (ROADS §3, D305), schema 53
-    // S3.5 (ROADS §5, D309): Road pairs confirmed as an overpass, each sorted, so Find crossings asks once.
+    std::vector<StreetSegment> streetSegments; // S3.3 (STREET_SEGMENTS §3, D305), schema 53
+    // S3.5 (STREET_SEGMENTS §5, D309): StreetSegment pairs confirmed as an overpass, each sorted, so Find crossings asks once.
     std::vector<std::pair<std::string, std::string>> overpasses;
     bool operator==(const Network&) const = default;
 };

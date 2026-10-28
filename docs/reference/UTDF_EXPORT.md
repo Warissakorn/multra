@@ -3,7 +3,7 @@
 Contract before code (D145), docs only, written 2026-10-28. The owner approved exporting the
 network built for HCM to PTV Vistro 2026 and Synchro 12 (D386). This is the competitor-format
 scope revision that ROADMAP M1.23 requires; imports from those programs stay out. The editor side
-is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road reads Segment after its slice SR (D387). **Nothing here is implemented, and no field list
+is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). **Nothing here is implemented, and no field list
 below is verified:** U0 (§8) fixes it from files the owner's programs write and read.
 
 ## 1. Why UTDF
@@ -86,7 +86,7 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 ## 8. U0: the probe (first, before any writer)
 
 1. The session writes a **reference junction** sheet: the Thai four-leg fixture of
-   JUNCTION_TEMPLATES JT6 (two crossing Roads, kerb pockets, a shared kerb-through lane), with
+   JUNCTION_TEMPLATES JT6 (two crossing Street segments, kerb pockets, a shared kerb-through lane), with
    volumes and a P2 timing.
 2. The owner draws it in **Synchro 12**, exports UTDF (combined CSV, metric), and saves it as the
    golden file, with Synchro's HCM report.

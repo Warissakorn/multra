@@ -1,5 +1,7 @@
-#include "road_codec.hpp"
+#include "street_segment_codec.hpp"
 #include "input_manifest.hpp"
+#include "network_fields.hpp"
+#include "zone_codec.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -22,38 +24,54 @@ std::vector<std::filesystem::path> files(const std::filesystem::path& directory)
     std::sort(result.begin(), result.end());
     return result;
 }
-[[noreturn]] void invalid(const std::string& path) { throw ValidationError({{"EDIT_ROAD_INVALID", path}}); }
+[[noreturn]] void invalid(const std::string& path) { throw ValidationError({{"EDIT_STREET_SEGMENT_INVALID", path}}); }
 }
-bool usesRoadFields(const ProjectDocument& d) {
-    if (!d.network.roads.empty() || !d.network.overpasses.empty()) return true;
+bool usesStreetSegmentKeys(const ProjectDocument& d) {
+    return !d.network.streetSegments.empty() || usesStreetSegmentZoneConnectors(d.zones) ||
+           std::any_of(d.network.links.begin(), d.network.links.end(), [](const auto& l) { return l.streetSegmentId.has_value(); });
+}
+bool usesStreetSegmentFields(const ProjectDocument& d) {
+    if (!d.network.streetSegments.empty() || !d.network.overpasses.empty()) return true;
     if (std::any_of(d.network.nodes.begin(), d.network.nodes.end(), [](const auto& n) { return n.coarse.has_value(); })) return true; // S3.6a
     if (d.definition && !d.definition->externalCrossSections) return true;
-    return std::any_of(d.network.links.begin(), d.network.links.end(), [](const auto& l) { return l.roadId.has_value(); });
+    return std::any_of(d.network.links.begin(), d.network.links.end(), [](const auto& l) { return l.streetSegmentId.has_value(); });
 }
-void rejectRoadFieldsBefore53(const Json& j) {
+void rejectStreetSegmentFieldsBefore53(const Json& j) {
     const auto refuse = [](const std::string& path) { throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path}}); };
     if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("crossSections"))
         refuse("definition.crossSections");
     if (!j.contains("network") || !j.at("network").is_object()) return;
     const auto& n = j.at("network");
-    if (n.contains("roads")) refuse("network.roads");
+    for (const auto* key : {"roads", "streetSegments"}) if (n.contains(key)) refuse(std::string("network.") + key); // either name (D389)
     if (n.contains("overpasses")) refuse("network.overpasses");
     if (n.contains("nodes") && n.at("nodes").is_array())
         for (std::size_t i = 0; i < n.at("nodes").size(); ++i)
             if (n.at("nodes")[i].is_object() && n.at("nodes")[i].contains("coarse")) refuse("network.nodes[" + std::to_string(i) + "].coarse");
     if (!n.contains("links") || !n.at("links").is_array()) return;
     for (std::size_t i = 0; i < n.at("links").size(); ++i)
-        if (n.at("links")[i].is_object() && n.at("links")[i].contains("roadId")) refuse("network.links[" + std::to_string(i) + "].roadId");
+        for (const auto* key : {"roadId", "streetSegmentId"})
+            if (n.at("links")[i].is_object() && n.at("links")[i].contains(key)) refuse("network.links[" + std::to_string(i) + "]." + key);
 }
-void addRoadsJson(const Network& n, Json& network) {
+void rejectOtherStreetSegmentKeys(const Json& j, int version) {
+    if (version < 53 || !j.contains("network") || !j.at("network").is_object()) return;
+    const auto refuse = [](const std::string& path) { throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path}}); };
+    const bool renamed = version >= networkCodec::streetSegmentKeyVersion;
+    const auto& n = j.at("network");
+    if (n.contains(renamed ? "roads" : "streetSegments")) refuse(std::string("network.") + (renamed ? "roads" : "streetSegments"));
+    if (!n.contains("links") || !n.at("links").is_array()) return;
+    const char* other = renamed ? "roadId" : "streetSegmentId";
+    for (std::size_t i = 0; i < n.at("links").size(); ++i)
+        if (n.at("links")[i].is_object() && n.at("links")[i].contains(other)) refuse("network.links[" + std::to_string(i) + "]." + other);
+}
+void addStreetSegmentsJson(const Network& n, Json& network) {
     if (!n.overpasses.empty()) {
         Json pairs = Json::array();
         for (const auto& [a, b] : n.overpasses) pairs.push_back(Json::array({a, b}));
         network["overpasses"] = pairs;
     }
-    if (n.roads.empty()) return;
+    if (n.streetSegments.empty()) return;
     Json roads = Json::array();
-    for (const auto& r : n.roads) {
+    for (const auto& r : n.streetSegments) {
         Json centreline = Json::array();
         for (const auto& p : r.centreline) centreline.push_back({{"x", p.x}, {"y", p.y}});
         Json road{{"id", r.id}, {"name", r.name}, {"centreline", centreline}, {"level", r.level}, {"links", r.links}};
@@ -66,7 +84,7 @@ void addRoadsJson(const Network& n, Json& network) {
         if (!overrides.empty()) road["overrides"] = overrides;
         roads.push_back(std::move(road));
     }
-    network["roads"] = roads;
+    network["streetSegments"] = roads;
 }
 std::vector<std::pair<std::string, std::string>> parseOverpasses(const Json& network, int schema) {
     std::vector<std::pair<std::string, std::string>> pairs;
@@ -80,21 +98,22 @@ std::vector<std::pair<std::string, std::string>> parseOverpasses(const Json& net
     }
     return pairs;
 }
-std::vector<Road> parseRoads(const Json& network, int schema) {
-    std::vector<Road> roads;
-    if (schema < 53 || !network.is_object() || !network.contains("roads")) return roads;
-    const auto& values = network.at("roads");
-    if (!values.is_array() || values.empty()) invalid("network.roads"); // never written empty
+std::vector<StreetSegment> parseStreetSegments(const Json& network, int schema) {
+    std::vector<StreetSegment> roads;
+    const std::string key = networkCodec::streetSegmentsKey(schema);
+    if (schema < 53 || !network.is_object() || !network.contains(key)) return roads;
+    const auto& values = network.at(key);
+    if (!values.is_array() || values.empty()) invalid("network." + key); // never written empty
     for (std::size_t i = 0; i < values.size(); ++i) {
         const auto& j = values[i];
-        const auto path = "network.roads[" + std::to_string(i) + "]";
+        const auto path = "network." + key + "[" + std::to_string(i) + "]";
         if (!j.is_object()) invalid(path);
         for (const auto& [key, value] : j.items()) {
             (void)value;
             if (key != "id" && key != "name" && key != "centreline" && key != "level" && key != "links" && key != "crossSectionId" && key != "overrides")
                 invalid(path + "." + key);
         }
-        Road road;
+        StreetSegment road;
         if (!j.contains("id") || !j.at("id").is_string()) invalid(path + ".id");
         if (!j.contains("name") || !j.at("name").is_string()) invalid(path + ".name");
         if (!j.contains("centreline") || !j.at("centreline").is_array()) invalid(path + ".centreline");
@@ -133,13 +152,14 @@ std::vector<Road> parseRoads(const Json& network, int schema) {
     }
     return roads;
 }
-void readRoadIds(const Json& network, Network& n) {
+void readStreetSegmentIds(const Json& network, Network& n, int schema) {
+    const std::string key = networkCodec::streetSegmentIdKey(schema);
     if (!network.contains("links") || !network.at("links").is_array()) return;
     const auto& links = network.at("links");
     for (std::size_t i = 0; i < links.size() && i < n.links.size(); ++i) {
-        if (!links[i].contains("roadId")) continue;
-        if (!links[i].at("roadId").is_string()) invalid("network.links[" + std::to_string(i) + "].roadId");
-        n.links[i].roadId = links[i].at("roadId").get<std::string>();
+        if (!links[i].contains(key)) continue;
+        if (!links[i].at(key).is_string()) invalid("network.links[" + std::to_string(i) + "]." + key);
+        n.links[i].streetSegmentId = links[i].at(key).get<std::string>();
     }
 }
 CrossSection parseCrossSection(const Json& j) {
@@ -160,9 +180,9 @@ Json crossSectionJson(const CrossSection& t) {
     if (t.linkType) j["linkType"] = *t.linkType;
     return j;
 }
-std::vector<CrossSection> linkLessRoadTemplates(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
+std::vector<CrossSection> linkLessStreetSegmentTemplates(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
     std::vector<CrossSection> result;
-    if (std::none_of(d.network.roads.begin(), d.network.roads.end(), [](const auto& r) { return r.links.empty(); })) return result;
+    if (std::none_of(d.network.streetSegments.begin(), d.network.streetSegments.end(), [](const auto& r) { return r.links.empty(); })) return result;
     for (auto& r : resolveCrossSections(d.definition.value_or(AuthoringDefinition{}), data, manifest)) result.push_back(std::move(r.section));
     return result;
 }
@@ -200,15 +220,15 @@ std::vector<ValidationIssue> crossSectionIssues(const std::vector<ResolvedCrossS
     }
     return issues;
 }
-std::vector<ValidationIssue> roadDocumentIssues(const ProjectDocument& d) {
+std::vector<ValidationIssue> streetSegmentDocumentIssues(const ProjectDocument& d) {
     std::vector<ValidationIssue> issues;
     if (!d.definition || d.definition->externalCrossSections) return issues;
     const auto owned = resolveCrossSections(*d.definition, {});
     issues = crossSectionIssues(owned);
-    for (std::size_t i = 0; i < d.network.roads.size(); ++i) {
-        const auto& r = d.network.roads[i];
+    for (std::size_t i = 0; i < d.network.streetSegments.size(); ++i) {
+        const auto& r = d.network.streetSegments[i];
         if (r.crossSectionId && std::none_of(owned.begin(), owned.end(), [&](const auto& s) { return s.section.id == *r.crossSectionId; }))
-            issues.push_back({"ROAD_CROSS_SECTION_UNKNOWN", "network.roads[" + std::to_string(i) + "].crossSectionId"});
+            issues.push_back({"STREET_SEGMENT_CROSS_SECTION_UNKNOWN", "network.streetSegments[" + std::to_string(i) + "].crossSectionId"});
     }
     return issues;
 }

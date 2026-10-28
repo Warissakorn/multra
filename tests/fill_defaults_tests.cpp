@@ -3,7 +3,7 @@
 #include "test.hpp"
 #include "../src/commands/fill_commands.hpp"
 #include "../src/commands/network_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/model/demand/macro_compile.hpp"
 #include "../src/model/demand/meso_compile.hpp"
 #include "../src/model/demand/seam_checks.hpp"
@@ -34,7 +34,7 @@ bool issue(const std::vector<ValidationIssue>& issues, const std::string& code) 
 }
 TEST(filldefaults, rs5_link_type_from_its_road) { // RS5
     auto d = owned();
-    const auto road = putRoad(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
+    const auto road = putStreetSegment(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
     const auto links = applyTemplate(d, road, {});
     setLinkType(d, links[0], std::nullopt);
     const std::vector<Vdf> vdfs{{"bpr", "bpr", 0.15, 4, "Test values", ""}};
@@ -42,18 +42,18 @@ TEST(filldefaults, rs5_link_type_from_its_road) { // RS5
     const auto offers = fillOffers(d, templates(d));
     CHECK(offered(offers, FillKind::linkType, links[0]) == 1 && offers.front().value == "arterial" && offers.front().source == "template ns: Test template");
     applyFills(d, {offers.front()}, templates(d));
-    CHECK(d.network.links[0].linkTypeId == "arterial" && d.network.roads[0].links == links); // attached still
+    CHECK(d.network.links[0].linkTypeId == "arterial" && d.network.streetSegments[0].links == links); // attached still
     CHECK(!issue(compileMacroNetwork(d.network, {}, d.definition->linkTypes, {""}, vdfs).issues, "MACRO_LINK_TYPE_MISSING"));
     // A template without a type has nothing to give.
     auto untyped = owned(); putCrossSection(untyped, section("bare", std::nullopt), {});
-    const auto r = putRoad(untyped, {"", "", {{0, 0}, {100, 0}}, std::string("bare"), 0, {}, {}});
+    const auto r = putStreetSegment(untyped, {"", "", {{0, 0}, {100, 0}}, std::string("bare"), 0, {}, {}});
     applyTemplate(untyped, r, {});
     CHECK(fillOffers(untyped, templates(untyped)).empty());
 }
 TEST(filldefaults, rs6_hcm_jam_density) { // RS6
     auto d = owned();
     d.definition->linkTypes = {arterial(std::nullopt)};
-    const auto road = putRoad(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
+    const auto road = putStreetSegment(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
     applyTemplate(d, road, {});
     CHECK(issue(compileMesoNetwork(d.network, d.definition->linkTypes, {"definition.linkTypes[0]"}, {1, 60}).issues, "MESO_JAM_DENSITY_MISSING")); // forcing
     const auto offers = fillOffers(d, templates(d));
@@ -73,20 +73,20 @@ TEST(filldefaults, rs6_hcm_jam_density) { // RS6
 }
 TEST(filldefaults, rs7_road_links) { // RS7
     auto d = owned();
-    const auto road = putRoad(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
-    const auto bare = putRoad(d, {"", "", {{0, 50}, {100, 50}}, std::nullopt, 0, {}, {}});
+    const auto road = putStreetSegment(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
+    const auto bare = putStreetSegment(d, {"", "", {{0, 50}, {100, 50}}, std::nullopt, 0, {}, {}});
     const auto seams = [&] { return seamChecks(d.network, {}, templates(d), SeamLevel::micro); };
-    CHECK(seams().size() == 2); // forcing: both Roads lack Links
+    CHECK(seams().size() == 2); // forcing: both StreetSegments lack Links
     const auto offers = fillOffers(d, templates(d));
-    CHECK(offered(offers, FillKind::roadLinks, road) == 1 && offered(offers, FillKind::roadLinks, bare) == 0);
+    CHECK(offered(offers, FillKind::streetSegmentLinks, road) == 1 && offered(offers, FillKind::streetSegmentLinks, bare) == 0);
     applyFills(d, offers, templates(d));
-    CHECK(d.network.roads[0].links.size() == 2 && seams().size() == 1);
+    CHECK(d.network.streetSegments[0].links.size() == 2 && seams().size() == 1);
 }
 TEST(filldefaults, rs8_only_what_is_chosen) { // RS8
     auto d = owned();
     d.definition->linkTypes = {arterial(std::nullopt)};
-    const auto a = putRoad(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
-    const auto b = putRoad(d, {"", "", {{0, 50}, {100, 50}}, std::string("ns"), 0, {}, {}});
+    const auto a = putStreetSegment(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
+    const auto b = putStreetSegment(d, {"", "", {{0, 50}, {100, 50}}, std::string("ns"), 0, {}, {}});
     const auto bytes = documentJson(d).dump();
     const auto offers = fillOffers(d, templates(d));
     CHECK(offers.size() == 3 && documentJson(d).dump() == bytes); // forcing; listing changes nothing
@@ -95,7 +95,7 @@ TEST(filldefaults, rs8_only_what_is_chosen) { // RS8
     CHECK(h.execute("editorFillDefaults", [&](auto& x) { applyFills(x, {offers[0], offers[1]}, templates(x)); }));
     const auto& n = h.document().network;
     CHECK(h.states().size() == steps + 1 && h.document().definition->linkTypes[0].jamDensity);
-    CHECK(n.roads[0].links.size() == 2 && n.roads[1].links.empty()); // the third offer was not chosen
+    CHECK(n.streetSegments[0].links.size() == 2 && n.streetSegments[1].links.empty()); // the third offer was not chosen
     h.undo();
     CHECK(documentJson(h.document()).dump() == bytes);
     // An offer that no longer applies is refused.
@@ -106,9 +106,9 @@ TEST(filldefaults, rs8_only_what_is_chosen) { // RS8
 TEST(filldefaults, rs8b_stale_offers_and_one_list) { // RS8 (D384): what applyFills checks, offer by offer
     auto d = owned();
     d.definition->linkTypes = {arterial(std::nullopt)};
-    for (int i = 0; i < 3; ++i) putRoad(d, {"", "", {{0, 50.0 * i}, {100, 50.0 * i}}, std::string("ns"), 0, {}, {}});
+    for (int i = 0; i < 3; ++i) putStreetSegment(d, {"", "", {{0, 50.0 * i}, {100, 50.0 * i}}, std::string("ns"), 0, {}, {}});
     const auto offers = fillOffers(d, templates(d));
-    CHECK(offers.size() == 4); // forcing: one jam density, three Roads
+    CHECK(offers.size() == 4); // forcing: one jam density, three StreetSegments
     const auto stale = [&](std::vector<FillOffer> chosen) {
         auto x = d;
         try { applyFills(x, chosen, templates(x)); } catch (const std::invalid_argument& e) { return std::string(e.what()) == "EDIT_FILL_STALE"; }
@@ -119,7 +119,7 @@ TEST(filldefaults, rs8b_stale_offers_and_one_list) { // RS8 (D384): what applyFi
     CHECK(stale({offers[1], offers[1]}));       // applied once already in the same list
     auto unknown = offers[1]; unknown.objectId = "road-nope";
     CHECK(stale({unknown}));                    // names no object
-    auto kind = offers[0]; kind.kind = FillKind::roadLinks;
+    auto kind = offers[0]; kind.kind = FillKind::streetSegmentLinks;
     CHECK(stale({kind}));                       // the right object under another kind
     // One list gives the same document as one offer at a time.
     auto all = d; applyFills(all, offers, templates(all));

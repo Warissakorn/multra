@@ -48,7 +48,8 @@ TEST(project, network_schema_keeps_envelope_api_and_reuses_versioned_definitions
         CHECK(n.at("properties").at("connectors").at("items").contains("$ref"));
         const auto& l=linkFor(schema,v).at("properties");
         CHECK(l.at("linkType")== (v<50?Json(false):Json{{"type","string"}}));
-        CHECK(l.at("roadId")== (v<53?Json(false):Json{{"type","string"}}));
+        CHECK(l.at("roadId")== (v<53 || v>=59?Json(false):Json{{"type","string"}})); // renamed at 59 (D389)
+        CHECK(l.at("streetSegmentId")== (v<59?Json(false):Json{{"type","string"}}));
         CHECK(l.at("name").at("type")==Json::array({"string","null"}));
     }
 }
@@ -91,6 +92,8 @@ TEST(project, link_reference_gates_stay_in_the_existing_document_read_stages) {
     j=minimal(52);j["network"]["links"][0]["roadId"]="missing";
     CHECK(j.at("network").at("links")[0].at("roadId")=="missing");
     unsupported(j,"network.links[0].roadId");
+    j=minimal(58);j["network"]["links"][0]["streetSegmentId"]="missing"; // the key schema 59 introduced (D389)
+    unsupported(j,"network.links[0].streetSegmentId");
     j=minimal(17);j["network"]["links"][0]["level"]=1.0;
     CHECK(j.at("network").at("links")[0].at("level").is_number_float());
     test::throws([&]{parseDocument(j);},"EDIT_DISPLAY_VALUE");

@@ -25,7 +25,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
 - **Out:**
   - **M11.5:** dynamic assignment, which reuses M9's loop. M9 is not started;
   - **hybrid Meso–Micro:** WORKFLOW answer 14 keeps only a sending/receiving boundary interface (§13);
-  - **Roads and cross-section templates:** S3;
+  - **Street segments and cross-section templates:** S3;
   - **parking lots in Meso:** a later slice; Micro keeps lot dynamics until then;
   - **mid-link zone connectors:** a compile-time split, booked for M10/M11 by WORKFLOW §10, not in M11.2.
 
@@ -193,10 +193,10 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     window) belongs to `--meso PERIOD` in M11.4.
 - **M11.5** later replaces the fixed paths with M9's loop.
 
-**Road OD (D341):** schema-57 direct Road targets opt all matrices into compiled-graph minimum
+**Street segment OD (D341):** schema-57 direct Street segment targets opt all matrices into compiled-graph minimum
 free-flow-time paths, sharing demand equally over ties. Authored/routeless inputs keep their
-existing expansion; documents without Road targets keep the legacy OD path rule. See
-[MESO_ROAD_DEMAND](MESO_ROAD_DEMAND.md) for endpoints, modes, windows/PCU, strict pair refusals,
+existing expansion; documents without Street segment targets keep the legacy OD path rule. See
+[MESO_STREET_SEGMENT_DEMAND](MESO_STREET_SEGMENT_DEMAND.md) for endpoints, modes, windows/PCU, strict pair refusals,
 result identification and rows MR1–MR6. The loading engine and its benchmark gate are unchanged.
 
 ## 7. Outputs (as amended by the owner on 2026-10-22, D300)
@@ -250,9 +250,9 @@ result identification and rows MR1–MR6. The loading engine and its benchmark g
   nothing to them.
 - **Macro:** shares the graph compile and link types. Meso adds `jamDensity`, which Macro never
   reads.
-- **Roads (D310, S3.6a):** a Node without detail is a Meso node with its coarse turns (time 0,
-  g/C from its stages), and Link-less Roads are links per template direction
-  ([ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19). Such a Node is no longer `MESO_NODE_REFUSED`.
+- **Street segments (D310, S3.6a):** a Node without detail is a Meso node with its coarse turns (time 0,
+  g/C from its stages), and Link-less Street segments are links per template direction
+  ([STREET_SEGMENTS_IMPLEMENTED](STREET_SEGMENTS_IMPLEMENTED.md) §19). Such a Node is no longer `MESO_NODE_REFUSED`.
 - **The boundary interface (WORKFLOW 14):** `meso::Boundary{sending(t), receiving(t)}` per
   boundary link, so a later hybrid can couple a Micro area. It is declared in M11.3 and nothing
   else is built.

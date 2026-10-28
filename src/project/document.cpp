@@ -14,7 +14,7 @@
 #include "study_area_codec.hpp"
 #include "mode_codec.hpp"
 #include "link_type_codec.hpp"
-#include "road_codec.hpp"
+#include "street_segment_codec.hpp"
 #include "node_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
@@ -91,12 +91,13 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesNodeAnalysis(d) ? 58 :
-        usesRoadZoneConnectors(d.zones) ? 57 :
+    return usesStreetSegmentKeys(d) ? 59 :
+        usesNodeAnalysis(d) ? 58 :
+        usesStreetSegmentZoneConnectors(d.zones) ? 57 :
         !d.macroRuns.empty() ? 56 :
         usesStudyArea(d) ? 55 :
         usesGeneratedFlags(d) ? 54 :
-        usesRoadFields(d)||usesCapacityBasis(d) ? 53 :
+        usesStreetSegmentFields(d)||usesCapacityBasis(d) ? 53 :
         usesMesoFields(d) ? 52 :
         usesMacroSettings(d) ? 51 :
         usesLinkTypes(d) ? 50 :
@@ -145,7 +146,7 @@ Json documentJson(const ProjectDocument& d) {
             {"boundaryMarkings",markingNames(l.boundaryMarkings)}});
         if (l.behaviourTypeId) network["links"].back()["behaviourType"] = *l.behaviourTypeId; // M3.3.2a, schema 21
         if (l.linkTypeId) network["links"].back()["linkType"] = *l.linkTypeId; // S2.1, schema 50
-        if (l.roadId) network["links"].back()["roadId"] = *l.roadId; // S3.3, schema 53
+        if (l.streetSegmentId) network["links"].back()["streetSegmentId"] = *l.streetSegmentId; // S3.3, schema 53
     }
     for (const auto& c : d.network.connectors) {
         network["connectors"].push_back({{"id", c.id}, {"from", reference(c.from)}, {"to", reference(c.to)}, {"geometry", points(c.geometry)}, {"fromLaneCount",c.fromLaneCount}, {"toLaneCount",c.toLaneCount},
@@ -189,7 +190,7 @@ Json documentJson(const ProjectDocument& d) {
         network["travelTimeSections"] = sections;
     }
     addNodesJson(d.network, network); // S0.1, schema 48
-    addRoadsJson(d.network, network); // S3.3, schema 53
+    addStreetSegmentsJson(d.network, network); // S3.3, schema 53
     const auto& b = d.background;
     const int schema=documentSchemaVersion(d);
     Json definition = d.definition ? definitionJson(*d.definition) : Json(nullptr);
@@ -240,7 +241,8 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
-    if (version < networkCodec::roadVersion) rejectRoadFieldsBefore53(j); // S3.3
+    if (version < networkCodec::streetSegmentVersion) rejectStreetSegmentFieldsBefore53(j); // S3.3
+    rejectOtherStreetSegmentKeys(j, version); // D389
     if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
     if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
     if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
@@ -271,9 +273,9 @@ ProjectDocument parseDocument(const Json& j) {
     d.network = parseNetwork(j.at("network"), version);
     d.network.nodes = parseNodes(j.at("network"), version); // S0.1 (NODES §2)
     readLinkTypeIds(j.at("network"), d.network); // S2.1 (MACRO_NETWORK §4)
-    d.network.roads = parseRoads(j.at("network"), version); // S3.3 (ROADS §3)
-    d.network.overpasses = parseOverpasses(j.at("network"), version); // S3.5 (ROADS §5)
-    readRoadIds(j.at("network"), d.network);
+    d.network.streetSegments = parseStreetSegments(j.at("network"), version); // S3.3 (STREET_SEGMENTS §3)
+    d.network.overpasses = parseOverpasses(j.at("network"), version); // S3.5 (STREET_SEGMENTS §5)
+    readStreetSegmentIds(j.at("network"), d.network, version);
     if (present(j, "definition")) {
         d.definition = parseAuthoringDefinition(j.at("definition"));
         parseRouteDestinations(j.at("definition"),version,*d.definition);
@@ -317,7 +319,7 @@ bool anyDocumentId(const ProjectDocument& d, bool includeMacroRuns, const Match&
         anyObjectId(d.network.rightOfWay.conflictAreas, match) || anyObjectId(d.network.rightOfWay.priorityRules, match) ||
         anyObjectId(d.network.rightOfWay.stopControls, match) || anyObjectId(d.network.queueCounters, match) ||
         anyObjectId(d.network.travelTimeSections, match) || anyObjectId(d.network.nodes, match) ||
-        anyObjectId(d.network.roads, match)) return true;
+        anyObjectId(d.network.streetSegments, match)) return true;
     return d.definition && (anyObjectId(d.definition->routes, match) || anyObjectId(d.definition->inputs, match) ||
         anyObjectId(d.definition->signalPrograms, match) || anyObjectId(d.definition->signalControllers, match) ||
         anyObjectId(d.definition->routingDecisions, match));

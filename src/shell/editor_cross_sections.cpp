@@ -1,6 +1,6 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
-#include "../commands/road_commands.hpp"
+#include "../commands/street_segment_commands.hpp"
 #include "../project/link_type_codec.hpp"
 #include <QAction>
 #include <QComboBox>
@@ -18,9 +18,9 @@
 #include <QVBoxLayout>
 #include <algorithm>
 
-// S3.3b (D307, docs/reference/ROADS.md §16): the Cross-sections tab. Installed templates
+// S3.3b (D307, docs/reference/STREET_SEGMENTS.md §16): the Cross-sections tab. Installed templates
 // (data/cross-sections/; none ship, B12) are listed read-only until the first Add owns them, as on the
-// Link types tab; each change is one execute() step and a template a Road names cannot be deleted.
+// Link types tab; each change is one execute() step and a template a StreetSegment names cannot be deleted.
 namespace multra {
 namespace {
 bool ownsCrossSections(const ProjectDocument& d) { return d.definition && !d.definition->externalCrossSections; }
@@ -49,7 +49,7 @@ void EditorWindow::buildCrossSections() {
 }
 void EditorWindow::translateCrossSections() {
     crossSectionTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorCrossSectionDirections"),
-        text("editorRoadLanes"), text("editorRoadLaneWidth"), text("editorRoadMedian"), text("editorLinkType"), text("editorLinkTypeSource")});
+        text("editorStreetSegmentLanes"), text("editorStreetSegmentLaneWidth"), text("editorStreetSegmentMedian"), text("editorLinkType"), text("editorLinkTypeSource")});
     crossSectionRevision_ = UINT64_MAX;
 }
 std::string EditorWindow::selectedCrossSection() const {
@@ -122,8 +122,8 @@ void EditorWindow::editCrossSection(const std::string& id) {
     backward->setEnabled(value.directions == 2);
     connect(directions, &QComboBox::currentIndexChanged, &dialog, [=](int index) { backward->setEnabled(index == 1); });
     form->addRow(text("editorColumnName"), name); form->addRow(text("editorCrossSectionDirections"), directions);
-    form->addRow(text("editorRoadLanesForward"), forward); form->addRow(text("editorRoadLanesBackward"), backward);
-    form->addRow(text("editorRoadLaneWidth"), width); form->addRow(text("editorRoadMedian"), median);
+    form->addRow(text("editorStreetSegmentLanesForward"), forward); form->addRow(text("editorStreetSegmentLanesBackward"), backward);
+    form->addRow(text("editorStreetSegmentLaneWidth"), width); form->addRow(text("editorStreetSegmentMedian"), median);
     form->addRow(text("editorLinkType"), type); form->addRow(text("editorLinkTypeSource"), source);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));

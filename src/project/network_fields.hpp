@@ -17,7 +17,11 @@ struct Field {
     int rejectBefore{};bool nullable{};int rejectFrom{};
     const char* whenNonNull{};
 };
-inline constexpr int strictVersion=7,behaviourVersion=21,linkTypeVersion=50,roadVersion=53;
+inline constexpr int strictVersion=7,behaviourVersion=21,linkTypeVersion=50,streetSegmentVersion=53,streetSegmentKeyVersion=59;
+// D389: schema 59 renamed the Road keys; a file below it keeps its own names, which reads and paths use.
+inline const char* streetSegmentsKey(int version) {return version<streetSegmentKeyVersion?"roads":"streetSegments";}
+inline const char* streetSegmentIdKey(int version) {return version<streetSegmentKeyVersion?"roadId":"streetSegmentId";}
+inline const char* streetSegmentDirectionKey(int version) {return version<streetSegmentKeyVersion?"roadDirection":"streetSegmentDirection";}
 inline constexpr int levelLimit=1000,countedVolumeVersion=26,routingPositionVersion=20;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
@@ -31,7 +35,7 @@ std::vector<SignalProgram> readSignalPrograms(const Json& definition);
 void knownFields(const Json&,Object,const std::string& path,int version);
 const Json& value(const Json&,Object,const char* name);
 bool readCondition(const Json&,Object,const char* name);
-// Link-only decoder: leaves linkType/roadId to their existing document read stages.
+// Link-only decoder: leaves linkType/streetSegmentId to their existing document read stages.
 std::vector<Link> readLinks(const Json& network,int version);
 std::vector<Point> readGeometry(const Json&,Object,int version);
 LaneReference readReference(const Json&,int version);

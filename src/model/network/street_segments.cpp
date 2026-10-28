@@ -1,4 +1,4 @@
-#include "roads.hpp"
+#include "street_segments.hpp"
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -6,10 +6,10 @@
 #include <utility>
 
 namespace multra {
-std::vector<ValidationIssue> roadIssues(const Network& n) {
+std::vector<ValidationIssue> streetSegmentIssues(const Network& n) {
     std::vector<ValidationIssue> issues;
-    const bool linked = std::any_of(n.links.begin(), n.links.end(), [](const auto& l) { return l.roadId.has_value(); });
-    if (n.roads.empty() && !linked && n.overpasses.empty()) return issues;
+    const bool linked = std::any_of(n.links.begin(), n.links.end(), [](const auto& l) { return l.streetSegmentId.has_value(); });
+    if (n.streetSegments.empty() && !linked && n.overpasses.empty()) return issues;
     const auto add = [&](const char* code, const std::string& path) { issues.push_back({code, path}); };
     std::set<std::string> ids{n.id};
     for (const auto& l : n.links) { ids.insert(l.id); for (const auto& lane : l.lanes) ids.insert(lane.id); }
@@ -20,8 +20,8 @@ std::vector<ValidationIssue> roadIssues(const Network& n) {
     for (const auto& h : n.signalHeads) ids.insert(h.id);
     for (const auto& node : n.nodes) ids.insert(node.id);
     std::set<std::string> listed;
-    for (std::size_t i = 0; i < n.roads.size(); ++i) {
-        const auto& r = n.roads[i];
+    for (std::size_t i = 0; i < n.streetSegments.size(); ++i) {
+        const auto& r = n.streetSegments[i];
         const auto path = "roads[" + std::to_string(i) + "]";
         if (r.id.find_first_not_of(" \t\n\r") == std::string::npos) add("INVALID_ID", path + ".id");
         else if (!ids.insert(r.id).second) add("DUPLICATE_ID", path + ".id");
@@ -31,29 +31,29 @@ std::vector<ValidationIssue> roadIssues(const Network& n) {
             finite = finite && std::isfinite(p.x) && std::isfinite(p.y);
             if (distinct.empty() || !(p == distinct.back())) distinct.push_back(p);
         }
-        if (!finite || distinct.size() < 2 || distinct.size() != r.centreline.size()) add("ROAD_GEOMETRY_INVALID", path + ".centreline");
+        if (!finite || distinct.size() < 2 || distinct.size() != r.centreline.size()) add("STREET_SEGMENT_GEOMETRY_INVALID", path + ".centreline");
         for (std::size_t k = 0; k < r.links.size(); ++k) {
             const auto l = std::find_if(n.links.begin(), n.links.end(), [&](const auto& x) { return x.id == r.links[k]; });
-            if (l == n.links.end() || l->roadId != r.id || !listed.insert(r.links[k]).second)
-                add("ROAD_LINK_MISMATCH", path + ".links[" + std::to_string(k) + "]");
+            if (l == n.links.end() || l->streetSegmentId != r.id || !listed.insert(r.links[k]).second)
+                add("STREET_SEGMENT_LINK_MISMATCH", path + ".links[" + std::to_string(k) + "]");
         }
     }
     for (std::size_t i = 0; i < n.links.size(); ++i) {
         const auto& l = n.links[i];
-        if (!l.roadId) continue;
-        const auto r = std::find_if(n.roads.begin(), n.roads.end(), [&](const auto& x) { return x.id == *l.roadId; });
-        if (r == n.roads.end() || std::find(r->links.begin(), r->links.end(), l.id) == r->links.end())
-            add("ROAD_LINK_MISMATCH", "links[" + std::to_string(i) + "].roadId");
+        if (!l.streetSegmentId) continue;
+        const auto r = std::find_if(n.streetSegments.begin(), n.streetSegments.end(), [&](const auto& x) { return x.id == *l.streetSegmentId; });
+        if (r == n.streetSegments.end() || std::find(r->links.begin(), r->links.end(), l.id) == r->links.end())
+            add("STREET_SEGMENT_LINK_MISMATCH", "links[" + std::to_string(i) + "].streetSegmentId");
     }
-    // S3.5 (D309): an overpass names two different Roads.
-    const auto road = [&](const std::string& id) { return std::any_of(n.roads.begin(), n.roads.end(), [&](const auto& r) { return r.id == id; }); };
+    // S3.5 (D309): an overpass names two different StreetSegments.
+    const auto road = [&](const std::string& id) { return std::any_of(n.streetSegments.begin(), n.streetSegments.end(), [&](const auto& r) { return r.id == id; }); };
     for (std::size_t i = 0; i < n.overpasses.size(); ++i) {
         const auto& [a, b] = n.overpasses[i];
-        if (a == b || !road(a) || !road(b)) add("ROAD_OVERPASS_UNKNOWN", "overpasses[" + std::to_string(i) + "]");
+        if (a == b || !road(a) || !road(b)) add("STREET_SEGMENT_OVERPASS_UNKNOWN", "overpasses[" + std::to_string(i) + "]");
     }
     return issues;
 }
-bool forwardOnRoad(const Road& r, const Link& l) {
+bool forwardOnStreetSegment(const StreetSegment& r, const Link& l) {
     if (r.centreline.size() >= 2 && l.geometry.size() >= 2) {
         const double from = stationOfClosestPoint(r.centreline, l.geometry.front()), to = stationOfClosestPoint(r.centreline, l.geometry.back());
         if (std::abs(to - from) > 1e-9) return to > from;

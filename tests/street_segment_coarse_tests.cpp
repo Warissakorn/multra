@@ -1,17 +1,17 @@
-// S3.6a rows RD4, RD16, RD19 and RD20's Macro and Meso half (docs/reference/ROADS.md §6, §9, §13,
-// ROADS_IMPLEMENTED §19, D310): the link-type rank, the coarse codec and its checks, and Macro and
-// Meso compiling coarse Nodes and Link-less Roads. Each row first checks its forcing.
+// S3.6a rows RD4, RD16, RD19 and RD20's Macro and Meso half (docs/reference/STREET_SEGMENTS.md §6, §9, §13,
+// STREET_SEGMENTS_IMPLEMENTED §19, D310): the link-type rank, the coarse codec and its checks, and Macro and
+// Meso compiling coarse Nodes and Link-less StreetSegments. Each row first checks its forcing.
 #include "test.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/node_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/model/network/coarse_nodes.hpp"
-#include "../src/model/network/road_crossings.hpp"
+#include "../src/model/network/street_segment_crossings.hpp"
 #include "../src/model/demand/coarse_compile.hpp"
 #include "../src/model/demand/macro_compile.hpp"
 #include "../src/model/demand/meso_compile.hpp"
 #include "../src/project/link_type_codec.hpp"
-#include "../src/project/road_codec.hpp"
+#include "../src/project/street_segment_codec.hpp"
 #include <algorithm>
 #include <cmath>
 using namespace multra;
@@ -34,10 +34,10 @@ CrossSection section(const char* id, const char* linkType, int directions = 2) {
 }
 const std::vector<Vdf> vdfs{{"bpr", "bpr", 0.15, 4, "Test values", ""}};
 std::string road(ProjectDocument& d, std::vector<Point> centreline, std::optional<std::string> section) {
-    return putRoad(d, {"", "", std::move(centreline), std::move(section), 0, {}, {}});
+    return putStreetSegment(d, {"", "", std::move(centreline), std::move(section), 0, {}, {}});
 }
 std::vector<Point> square(Point c, double h) { return {{c.x - h, c.y - h}, {c.x + h, c.y - h}, {c.x + h, c.y + h}, {c.x - h, c.y + h}}; }
-// Four Link-less two-way Roads ending in one Node at the origin; legs n, e, s, w.
+// Four Link-less two-way StreetSegments ending in one Node at the origin; legs n, e, s, w.
 struct Four { ProjectDocument d; std::string n, e, s, w; };
 Four four(const char* ns = "ns", const char* ew = "ns") {
     Four f;
@@ -62,7 +62,7 @@ const MesoTurn* mesoTurn(const MesoGraph& g, const std::string& in, const std::s
     return nullptr;
 }
 }
-TEST(roadcoarse, rd4_rank) { // RD4
+TEST(streetsegmentcoarse, rd4_rank) { // RD4
     using Ranks = std::vector<std::pair<std::string, std::optional<int>>>;
     const auto major = majorByRank(Ranks{{"a", 2}, {"b", 1}, {"c", 2}, {"d", 1}});
     CHECK(major && *major == (std::vector<std::string>{"a", "c"})); // forcing: two ranks
@@ -92,18 +92,18 @@ TEST(roadcoarse, rd4_rank) { // RD4
     j["schemaVersion"] = 52;
     try { parseDocument(j); CHECK(false); } catch (const ValidationError& e) { CHECK(issueAt(e.issues, "EDIT_UNSUPPORTED_FIELD", "definition.linkTypes[0].rank")); }
 }
-TEST(roadcoarse, rd16_coarse_codec_and_checks) { // RD16
+TEST(streetsegmentcoarse, rd16_coarse_codec_and_checks) { // RD16
     auto f = four();
     f.d.network.nodes[0].coarse = NodeCoarse{CoarseControl::signalised, {f.n, f.s}, {{f.e, f.n}},
                                              CoarseSignal{90, {{40, {{f.n, f.s}, {f.s, f.n}}}, {30, {{f.e, f.w}}}}}};
     CHECK(refused(f.d).empty()); // forcing: a valid coarse Node
     auto j = documentJson(f.d);
-    CHECK(j["schemaVersion"] == 53 && j["network"]["nodes"][0]["coarse"]["control"] == "signalised");
+    CHECK(j["schemaVersion"] == 59 && j["network"]["nodes"][0]["coarse"]["control"] == "signalised");
     CHECK(parseDocument(Json::parse(j.dump())).network.nodes == f.d.network.nodes);
     // Defaults are not written: an empty coarse is an empty object.
     auto plain = f.d; plain.network.nodes[0].coarse = NodeCoarse{};
     CHECK(documentJson(plain)["network"]["nodes"][0]["coarse"] == Json::object());
-    auto old = j; old["schemaVersion"] = 52; old["network"].erase("roads");
+    auto old = j; old["schemaVersion"] = 52; old["network"].erase("streetSegments");
     try { parseDocument(old); CHECK(false); } catch (const ValidationError& e) { CHECK(issueAt(e.issues, "EDIT_UNSUPPORTED_FIELD", "network.nodes[0].coarse")); }
     auto bad = j; bad["network"]["nodes"][0]["coarse"]["control"] = "roundabout";
     try { parseDocument(bad); CHECK(false); } catch (const ValidationError& e) { CHECK(issueAt(e.issues, "EDIT_NODE_INVALID", "network.nodes[0].coarse.control")); }
@@ -127,7 +127,7 @@ TEST(roadcoarse, rd16_coarse_codec_and_checks) { // RD16
     CHECK(signalRefused([](NodeCoarse& x) { x.control = CoarseControl::priority; }));
     CHECK(!signalRefused([](NodeCoarse& x) { x.signal->stages[0].green = 60; }));
 }
-TEST(roadcoarse, rd19_coarse_compiles_in_meso_and_macro) { // RD19
+TEST(streetsegmentcoarse, rd19_coarse_compiles_in_meso_and_macro) { // RD19
     auto f = four();
     const std::vector<CrossSection> sections{section("ns", "arterial")};
     const std::vector<LinkType> types{type("arterial", std::nullopt)};
@@ -150,16 +150,16 @@ TEST(roadcoarse, rd19_coarse_compiles_in_meso_and_macro) { // RD19
     CHECK(banned.graph.turns.size() == 11 && !mesoTurn(banned.graph, f.e, f.n) && mesoTurn(banned.graph, f.n, f.e));
     CHECK(connectorArcs(macro(f.d.network, types, sections).graph) == 11);
 }
-TEST(roadcoarse, rd20_link_less_roads_compile) { // RD20 (Macro and Meso; the Micro half is S3.7)
+TEST(streetsegmentcoarse, rd20_link_less_roads_compile) { // RD20 (Macro and Meso; the Micro half is S3.7)
     ProjectDocument d;
-    // A T at a Node, then a continuation: the stem's far end meets a one-way Road end to end.
+    // A T at a Node, then a continuation: the stem's far end meets a one-way StreetSegment end to end.
     const auto a = road(d, {{-100, 0}, {0, 0}}, "two"), b = road(d, {{0, 0}, {100, 0}}, "two");
     const auto stem = road(d, {{0, 0}, {0, -100}}, "two"), tail = road(d, {{0, -101}, {0, -200}}, "one");
     putNode(d, {"", "", square({0, 0}, 10), false});
     const std::vector<CrossSection> sections{section("two", "arterial"), section("one", "arterial", 1)};
     const std::vector<LinkType> types{type("arterial", std::nullopt)};
     const auto m = meso(d.network, types, sections);
-    CHECK(m.issues.empty() && m.graph.links.size() == 7); // forcing: three two-way Roads and a one-way
+    CHECK(m.issues.empty() && m.graph.links.size() == 7); // forcing: three two-way StreetSegments and a one-way
     for (const auto& l : m.graph.links)
         if (l.source != tail) test::near(l.length, 90, 1e-9); // split at the Node's boundary
     CHECK(m.graph.turns.size() == 6 + 1); // the T's 3 x 2, and the stem continuing into the tail
@@ -171,12 +171,12 @@ TEST(roadcoarse, rd20_link_less_roads_compile) { // RD20 (Macro and Meso; the Mi
     const auto g = macro(d.network, types, sections);
     CHECK(g.issues.empty() && connectorArcs(g.graph) == 7);
     CHECK(std::count_if(g.graph.links.begin(), g.graph.links.end(), [](const auto& l) { return l.kind == MacroArc::link; }) == 7);
-    // A Link-less Road needs a template, and its template a known type.
+    // A Link-less StreetSegment needs a template, and its template a known type.
     auto bare = d; road(bare, {{500, 0}, {600, 0}}, std::nullopt);
-    CHECK(issueAt(meso(bare.network, types, sections).issues, "MACRO_ROAD_TEMPLATE_MISSING", "network.roads[4].crossSectionId"));
-    CHECK(issueAt(macro(bare.network, types, sections).issues, "MACRO_ROAD_TEMPLATE_MISSING", "network.roads[4].crossSectionId"));
-    CHECK(issueAt(meso(d.network, {type("other", 1)}, sections).issues, "MACRO_LINK_TYPE_UNKNOWN", "network.roads[0].crossSectionId"));
-    // A Road with generated Links compiles from its Links, as before.
+    CHECK(issueAt(meso(bare.network, types, sections).issues, "MACRO_STREET_SEGMENT_TEMPLATE_MISSING", "network.streetSegments[4].crossSectionId"));
+    CHECK(issueAt(macro(bare.network, types, sections).issues, "MACRO_STREET_SEGMENT_TEMPLATE_MISSING", "network.streetSegments[4].crossSectionId"));
+    CHECK(issueAt(meso(d.network, {type("other", 1)}, sections).issues, "MACRO_LINK_TYPE_UNKNOWN", "network.streetSegments[0].crossSectionId"));
+    // A StreetSegment with generated Links compiles from its Links, as before.
     auto linked = d;
     putCrossSection(linked, section("two", "arterial"), {});
     applyTemplate(linked, a, {});
@@ -184,7 +184,7 @@ TEST(roadcoarse, rd20_link_less_roads_compile) { // RD20 (Macro and Meso; the Mi
     CHECK(std::any_of(fromLinks.links.begin(), fromLinks.links.end(), [&](const auto& l) { return l.source == linked.network.links[0].id; }) && std::none_of(fromLinks.links.begin(), fromLinks.links.end(), [&](const auto& l) { return l.source == a; }));
     (void)b;
 }
-TEST(roadcoarse, rd19_coarse_over_generated_links) { // RD19 with D311: a junction over generated Links, its Connectors gone
+TEST(streetsegmentcoarse, rd19_coarse_over_generated_links) { // RD19 with D311: a junction over generated Links, its Connectors gone
     ProjectDocument d;
     putCrossSection(d, section("ns", "arterial"), {});
     const auto a = road(d, {{0, 0}, {200, 0}}, "ns"), b = road(d, {{100, -100}, {100, 100}}, "ns");
@@ -203,8 +203,8 @@ TEST(roadcoarse, rd19_coarse_over_generated_links) { // RD19 with D311: a juncti
     CHECK(m.issues.empty() && m.graph.turns.size() == 12);
     for (const auto& l : m.graph.links) CHECK(l.length < 100); // the Links' parts inside the Node are not compiled
     CHECK(connectorArcs(macro(d.network, types, {}).graph) == 12);
-    // Coarse values apply: a banned pair, by Road id.
-    const auto pieceOf = [&](const std::string& link) { for (const auto& l : d.network.links) if (l.id == link) return *l.roadId; return std::string{}; };
+    // Coarse values apply: a banned pair, by StreetSegment id.
+    const auto pieceOf = [&](const std::string& link) { for (const auto& l : d.network.links) if (l.id == link) return *l.streetSegmentId; return std::string{}; };
     const auto& first = m.graph.turns.front();
     const Turn pair{pieceOf(m.graph.links[first.in].source), pieceOf(m.graph.links[first.out].source)};
     d.network.nodes[0].coarse = NodeCoarse{std::nullopt, {}, {pair}, std::nullopt};

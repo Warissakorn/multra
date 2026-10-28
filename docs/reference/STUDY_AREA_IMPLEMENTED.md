@@ -41,7 +41,7 @@ section here.
   one Undo step. The gate-flow table and the canvas outline are S5.2b.
 - **F4 fix:** READINESS §14, amended. A leg keeps its far end, so a split arm runs.
 - **Rows:**
-  - SA1–SA6 in `studyarea`, on two F4 junctions joined by a Road split twice; seed 42 runs twice
+  - SA1–SA6 in `studyarea`, on two F4 junctions joined by a Street segment split twice; seed 42 runs twice
     with the same bytes;
   - SA3's editor part in `node-ui`.
 
@@ -64,7 +64,7 @@ section here.
   - The first stored flow decides what opens.
   - Its size is capped to the screen (`fitToScreen`, D318).
 - **Entry:** *Gate flows…* on the Nodes tab is enabled when the area runs (`studyAreaEnds` does not
-  throw) and a study period exists. Accepting it is one Undo step. A gate reads as its Road's name
+  throw) and a study period exists. Accepting it is one Undo step. A gate reads as its Street segment's name
   (else the Link's name, else its id), with "in" or "out".
 - **Canvas:** an area Node gets a light fill (`ok` at alpha 40) under its usual outline. Selection
   and the dotted outline of a `generated` Node still read.

@@ -17,8 +17,8 @@
 #include <algorithm>
 #include <set>
 
-// S3.6b (D311, docs/reference/ROADS.md §6, NODES §6): the coarse-values dialog of a Node without
-// detail. Legs are the Roads ending in it; every value is one setNodeCoarse in one Undo step, and
+// S3.6b (D311, docs/reference/STREET_SEGMENTS.md §6, NODES §6): the coarse-values dialog of a Node without
+// detail. Legs are the StreetSegments ending in it; every value is one setNodeCoarse in one Undo step, and
 // all defaults store none.
 namespace multra {
 namespace {
@@ -34,10 +34,10 @@ void EditorWindow::editCoarse(const std::string& id) {
     if (node == n.nodes.end() || nodeHasDetail(n, *node)) return;
     const auto value = node->coarse.value_or(NodeCoarse{});
     std::vector<std::string> legs;
-    for (const auto& leg : nodeRoadLegs(n, *node)) if (std::find(legs.begin(), legs.end(), leg.roadId) == legs.end()) legs.push_back(leg.roadId);
+    for (const auto& leg : nodeStreetSegmentLegs(n, *node)) if (std::find(legs.begin(), legs.end(), leg.streetSegmentId) == legs.end()) legs.push_back(leg.streetSegmentId);
     const auto label = [&](const std::string& road) {
-        const auto r = std::find_if(n.roads.begin(), n.roads.end(), [&](const auto& x) { return x.id == road; });
-        return QString::fromStdString(r == n.roads.end() || r->name.empty() ? road : r->name);
+        const auto r = std::find_if(n.streetSegments.begin(), n.streetSegments.end(), [&](const auto& x) { return x.id == road; });
+        return QString::fromStdString(r == n.streetSegments.end() || r->name.empty() ? road : r->name);
     };
     std::vector<Pair> turns;
     for (const auto& a : legs) for (const auto& b : legs) if (a != b) turns.push_back({a, b});

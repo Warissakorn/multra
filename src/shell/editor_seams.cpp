@@ -1,6 +1,6 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
-#include "../commands/road_commands.hpp"
+#include "../commands/street_segment_commands.hpp"
 #include "../model/demand/seam_checks.hpp"
 #include "../project/link_type_codec.hpp"
 #include <QComboBox>
@@ -15,7 +15,7 @@
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-// S3.7 (D312, docs/reference/ROADS.md §7): the Seam checks dialog, on demand from the Roads tab. One
+// S3.7 (D312, docs/reference/STREET_SEGMENTS.md §7): the Seam checks dialog, on demand from the StreetSegments tab. One
 // row per seamChecks row for the chosen level; a lane-count row at Micro offers Use Link and Use
 // Node, each one Undo step, and the list is checked again after it. The speed-jump threshold is a
 // display choice kept for the session.
@@ -25,7 +25,7 @@ std::string objectAt(const Network& n, const std::string& path) {
     const auto open = path.find('['), close = path.find(']');
     if (open == std::string::npos || close == std::string::npos) return {};
     const auto list = path.substr(0, open); const auto i = std::stoul(path.substr(open + 1, close - open - 1));
-    if (list == "network.roads" && i < n.roads.size()) return n.roads[i].id;
+    if (list == "network.streetSegments" && i < n.streetSegments.size()) return n.streetSegments[i].id;
     if (list == "network.links" && i < n.links.size()) return n.links[i].id;
     if (list == "network.connectors" && i < n.connectors.size()) return n.connectors[i].id;
     return {};
@@ -74,7 +74,7 @@ void EditorWindow::seamChecksDialog() {
                 execute("editorSeamUseLink", [&](auto& x) { useLinkLanes(x, id); }); QMetaObject::invokeMethod(&dialog, fill, Qt::QueuedConnection); });
             connect(useNode, &QPushButton::clicked, &dialog, [&, id] {
                 const auto installed = crossSectionRows();
-                execute("editorSeamUseNode", [&](auto& x) { useRoadLanes(x, id, installed); }); QMetaObject::invokeMethod(&dialog, fill, Qt::QueuedConnection); });
+                execute("editorSeamUseNode", [&](auto& x) { useStreetSegmentLanes(x, id, installed); }); QMetaObject::invokeMethod(&dialog, fill, Qt::QueuedConnection); });
         }
         table->resizeColumnsToContents();
         // A cell widget sits inside QTableView::item's padding (editor_style.cpp), which the content

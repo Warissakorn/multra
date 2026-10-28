@@ -1,4 +1,4 @@
-#include "meso_road_paths.hpp"
+#include "meso_street_segment_paths.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -9,8 +9,8 @@
 namespace multra {
 std::optional<std::size_t> mesoZoneEndpoint(const MesoGraph& graph, const ZoneConnector& c) {
     std::optional<std::size_t> found;
-    const auto& source = c.roadId.empty() ? c.linkId : c.roadId;
-    const bool forward = c.roadId.empty() || c.roadForward;
+    const auto& source = c.streetSegmentId.empty() ? c.linkId : c.streetSegmentId;
+    const bool forward = c.streetSegmentId.empty() || c.streetSegmentForward;
     const bool origin = c.direction == ZoneDirection::origin;
     for (std::size_t i = 0; i < graph.links.size(); ++i) {
         const auto& l = graph.links[i];

@@ -44,7 +44,7 @@ std::string splitLink(ProjectDocument& d, const std::string& id, double distance
     detail::checkSplitControls(d.network, id, distance); // M3.2.2b: refuse before changing anything
     auto downstream = original;
     downstream.id = allocateId(d, "link");
-    downstream.roadId.reset(); // S3.3: both pieces leave the Road (the upstream one through changeGeometry)
+    downstream.streetSegmentId.reset(); // S3.3: both pieces leave the StreetSegment (the upstream one through changeGeometry)
     downstream.geometry = section(original.geometry, distance + 0.1, total);
     std::map<std::string, std::pair<std::string, std::string>> replacements;
     for (auto& lane : downstream.lanes) {

@@ -1,4 +1,4 @@
-// S3.2 rows RD1 (capacity-basis part), RD2 and RD3 (docs/reference/ROADS.md §8, §13, D304): the HCM
+// S3.2 rows RD1 (capacity-basis part), RD2 and RD3 (docs/reference/STREET_SEGMENTS.md §8, §13, D304): the HCM
 // link-type catalog, the capacity basis on types and VDFs, and Macro's basis check. Each row first
 // checks its forcing.
 #include "test.hpp"
@@ -34,7 +34,7 @@ ProjectDocument chain(const std::string& type) {
     return d;
 }
 }
-TEST(roadcatalog, rd1_a_capacity_basis_is_schema_53) { // RD1 (capacity basis)
+TEST(streetsegmentcatalog, rd1_a_capacity_basis_is_schema_53) { // RD1 (capacity basis)
     auto d = chain("local");
     auto& def = demand(d); def.externalLinkTypes = false;
     def.linkTypes = {{"local", "Local", 600, 10, "bpr", {}, "Test values"}};
@@ -52,7 +52,7 @@ TEST(roadcatalog, rd1_a_capacity_basis_is_schema_53) { // RD1 (capacity basis)
         CHECK(documentJson(parseDocument(p))["schemaVersion"] == p["schemaVersion"]);
     }
 }
-TEST(roadcatalog, rd2_the_hcm_catalog) { // RD2
+TEST(streetsegmentcatalog, rd2_the_hcm_catalog) { // RD2
     const auto types = resolveLinkTypes(AuthoringDefinition{}, data());
     CHECK(types.size() == 11); // forcing: the installed catalog is read
     CHECK(linkTypeIssues(types).empty() && vdfIssues(resolveVdfs(data())).empty());
@@ -77,7 +77,7 @@ TEST(roadcatalog, rd2_the_hcm_catalog) { // RD2
         CHECK(t.source.find("Exhibit 12-4") != std::string::npos && t.jamDensity && t.jamDensity->source.find("Exhibit 10-7") != std::string::npos);
     }
 }
-TEST(roadcatalog, rd3_macro_checks_the_capacity_basis) { // RD3
+TEST(streetsegmentcatalog, rd3_macro_checks_the_capacity_basis) { // RD3
     auto installed = chain("freeway-70");
     CHECK(demand(installed).externalLinkTypes); // forcing: the installed HCM type
     const auto compiled = macroNetwork(installed, data());

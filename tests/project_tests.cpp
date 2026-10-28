@@ -173,7 +173,7 @@ TEST(project, allocated_ids_skip_every_existing_namespace) {
         [&](auto& d) { append(d.network.queueCounters); },
         [&](auto& d) { append(d.network.travelTimeSections); },
         [&](auto& d) { append(d.network.nodes); },
-        [&](auto& d) { append(d.network.roads); },
+        [&](auto& d) { append(d.network.streetSegments); },
         [&](auto& d) { append(d.definition->routes); },
         [&](auto& d) { append(d.definition->inputs); },
         [&](auto& d) { append(d.definition->signalPrograms); },

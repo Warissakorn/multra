@@ -1,12 +1,12 @@
-# Roads, cross-section templates and Nodes from crossings (S3)
+# Street segments, cross-section templates and Nodes from crossings (S3)
 
 Written 2026-10-22 (D303) as the S3.1 contract, docs only. The owner answered its seven choices
 the same day, "as recommended": 1a, 2a, 3a, 4a, 5a, 6b, 7a (D304), so §3–§9 state the chosen
 options. S3.2 to S3.5 are implemented (D304, D305, D307–D309); §14–§18 are in
-[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md). It fixes:
-- the Road object, and how it relates to the directed Links Micro already runs;
+[STREET_SEGMENTS_IMPLEMENTED](STREET_SEGMENTS_IMPLEMENTED.md). It fixes:
+- the Street segment object, and how it relates to the directed Links Micro already runs;
 - cross-section templates and *Apply template*;
-- Nodes from Road crossings;
+- Nodes from Street segment crossings;
 - S0.4's coarse Node values (moved here by D272, [NODES](NODES.md) §5);
 - seam checks;
 - link types whose values are cited from HCM 7th edition.
@@ -17,13 +17,13 @@ not validation.
 ## 1. Scope
 
 - **In S3:**
-  - the Road, the cross-section template catalog, *Apply template*, *Join opposite Links into a
-    Road*, *Assign template*, and detaching a Link from its template;
+  - the Street segment, the cross-section template catalog, *Apply template*, *Join opposite Links into a
+    Street segment*, *Assign template*, and detaching a Link from its template;
   - Nodes from crossings, with *Merge nodes*;
   - the S0.4 coarse values with refine and derive-back, the lifecycle and the two-leg merge;
   - seam checks;
   - an HCM-cited link-type catalog;
-  - the Macro and Meso compilation of Roads and coarse Nodes.
+  - the Macro and Meso compilation of Street segments and coarse Nodes.
 - **Out:**
   - imports (CSV, then GeoJSON and OSM files, DXF on demand) and control points: M10 (WORKFLOW §10);
   - the readiness panel, *Fill defaults* and Node proposals: S4;
@@ -35,15 +35,15 @@ not validation.
 
 | Item | Decision | Where |
 |---|---|---|
-| Road and template objects | Road = centreline + `crossSectionId` + overrides; templates in `data/cross-sections/` with directions, lanes per direction, widths, median, shoulders, `linkType`, source | WORKFLOW §2 (D175) |
+| Street segment and template objects | Street segment = centreline + `crossSectionId` + overrides; templates in `data/cross-sections/` with directions, lanes per direction, widths, median, shoulders, `linkType`, source | WORKFLOW §2 (D175) |
 | Template role | A creation tool first: *Apply template* rewrites both directions in one Undo step; a hand-edited Link is detached and shown as such | WORKFLOW §4, answer 4 |
-| Crossings | Nodes from Road crossings on the same level, each confirmed junction or overpass; a split updates Routes, ZoneConnectors and OD in one Undo step; *Merge nodes* | WORKFLOW §4 |
+| Crossings | Nodes from Street segment crossings on the same level, each confirmed junction or overpass; a split updates Routes, ZoneConnectors and OD in one Undo step; *Merge nodes* | WORKFLOW §4 |
 | Snap tolerance | ~8 px while drawing, 1–2 m on import, both adjustable | WORKFLOW §7, answer 8 |
 | Coarse values | On a Node without detail only: turns differing from the default, control, major/minor, stage signal; priority by `linkType` hierarchy; refine deletes them, deleting detail derives them back, each in one Command | WORKFLOW §3, answer 9; NODES §5; D260, D272 |
 | Seams | Lane counts offer *use Link / use Node*; speed jumps warn; severity depends on the level run; automatic adjustment only to defaults, inside the Command that caused it | WORKFLOW §6 |
 | Values | No value ships without a source | WORKFLOW §1.4; D267, D272 (2a) |
-| Thai cross-sections | Department of Highways and Department of Rural Roads standards; the editions are open | WORKFLOW §7; OWNER_SITTING B12 |
-| Micro and Roads | A Road Micro cannot run is left out of its run and reported as a seam | WORKFLOW §11 |
+| Thai cross-sections | Department of Highways and Department of Rural Street segments standards; the editions are open | WORKFLOW §7; OWNER_SITTING B12 |
+| Micro and Street segments | A Street segment Micro cannot run is left out of its run and reported as a seam | WORKFLOW §11 |
 
 ## 2. Today (measured from the code on 2026-10-22)
 
@@ -66,47 +66,47 @@ not validation.
   vdfId, modes, source, jamDensity?}`, with no rank. `resolveLinkTypes`
   (`src/project/link_type_codec.cpp:72`) reads the project's types, or else `data/link-types/`,
   which does not exist: none ships (D273).
-- **Missing:** a Road, a template, a hierarchy and any importer.
+- **Missing:** a Street segment, a template, a hierarchy and any importer.
 - **Reusable:**
   - geometry: `offsetGeometry`, `laneGeometry`, `replaceLaneBundle`, `trimSelfIntersections`;
   - edits: `addLink`, `splitLink` (remaps routes and heads), `oppositeLink`, `reanchorConnectors`;
   - Nodes: `suggestNodes`, `nodeMembership`;
   - commands: `History::execute`, one named Undo step.
 
-## 3. The Road (choice 1a)
+## 3. The Street segment (choice 1a)
 
 ```json
 { "id": "r1", "name": "Rama IV", "centreline": [[0,0],[400,0]], "crossSectionId": "urban-4-divided",
   "level": 0, "overrides": { "lanesForward": 3 }, "links": ["r1-f", "r1-b"] }
 ```
 
-- **Stored in `network.roads`, at schema 53:**
+- **Stored in `network.streetSegments`, at schema 53:**
   - the centreline, digitised in the forward direction;
   - `crossSectionId` and `level`;
   - `overrides`: any template field except `source`;
   - `links`: the ids of its generated Links, forward first, empty until applied.
 - **Generated Links stay ordinary Links**, so Micro reads them unchanged and every existing project
-  keeps its bytes. Each carries an optional `roadId` (schema 53), and the reverse direction is
+  keeps its bytes. Each carries an optional `streetSegmentId` (schema 53), and the reverse direction is
   reversed.
 - **Apply template** (one Undo step):
   - each direction's Link sits at its offset from the centreline: half the median plus the lanes;
   - lane widths come from the template, `linkTypeId` from it, and `boundaryMarkings` are default.
   - Re-applying replaces the Links in place (`replaceLaneBundle`). Connectors are reanchored, and
     routes keep their Link ids.
-- **Detached:** a Link whose lanes or geometry are edited by hand loses `roadId` in that Command,
-  and the Road drops it from `links`. The editor shows the Road as partly detached; nothing is
+- **Detached:** a Link whose lanes or geometry are edited by hand loses `streetSegmentId` in that Command,
+  and the Street segment drops it from `links`. The editor shows the Street segment as partly detached; nothing is
   regenerated silently.
-- **Join opposite Links into a Road** (Micro-first studies): two Links of opposite direction on the
+- **Join opposite Links into a Street segment** (Micro-first studies): two Links of opposite direction on the
   same level, roughly parallel within a tolerance (15° and half both widths plus 30 m, owner
-  2026-10-22, §17), become one Road. Its centreline is the mean of
+  2026-10-22, §17), become one Street segment. Its centreline is the mean of
   their centrelines, it has no template (`crossSectionId` absent), and they are its `links`.
-- **Assign template** sets `crossSectionId` on several Roads in one Undo step without generating
+- **Assign template** sets `crossSectionId` on several Street segments in one Undo step without generating
   Links. Generating is a separate *Apply*, so a Micro study is never rewritten by an assignment.
 - **Refusals:**
   - a centreline with fewer than two points, a non-finite one, or two equal consecutive points is
     `ROAD_GEOMETRY_INVALID`;
   - an unknown template is `ROAD_CROSS_SECTION_UNKNOWN`;
-  - a `links` entry naming a missing Link, or a Link whose `roadId` disagrees, is
+  - a `links` entry naming a missing Link, or a Link whose `streetSegmentId` disagrees, is
     `ROAD_LINK_MISMATCH`.
 
 ## 4. Cross-section templates (choice 2a)
@@ -135,15 +135,15 @@ not validation.
 ## 5. Nodes from crossings (choice 5a)
 
 - **Find crossings** is a command on demand, not on every edit. It lists every point where two
-  Roads' centrelines cross, or an endpoint lies within the snap tolerance, on the same `level`.
-  Roads on different levels never meet (WORKFLOW §4).
+  Street segments' centrelines cross, or an endpoint lies within the snap tolerance, on the same `level`.
+  Street segments on different levels never meet (WORKFLOW §4).
 - **The batch dialog** shows each crossing, with *junction* as the default and *overpass* as the
   alternative. Confirming applies every choice in **one Undo step**. For each junction:
-  - each Road is split at the crossing. The Road is split, and its generated Links are split by
+  - each Street segment is split at the crossing. The Street segment is split, and its generated Links are split by
     `splitLink`, which remaps routes and heads; ZoneConnectors and OD keep their zone ids;
   - a Node is created whose polygon is a disc of the cross-section's half-width plus a margin.
     It is `generated` until edited, as *Suggest nodes* (S0.5) makes them.
-- **An overpass** is remembered as a pair of Road ids in `network.overpasses` (schema 53), so the
+- **An overpass** is remembered as a pair of Street segment ids in `network.overpasses` (schema 53), so the
   next *Find crossings* does not ask again.
 - **Merge nodes** (for roundabouts) joins selected Nodes into one polygon, the hull of theirs, in
   one Undo step. A Node with detail inside is merged only if the result passes `nodeMembership`;
@@ -162,11 +162,11 @@ not validation.
 - **Stored only on a Node without detail** (no Link or Connector inside its polygon), at
   schema 53:
   - `control`: `priority`, `signalised` or `allWayStop`;
-  - `major`: the leg Roads that are major, absent meaning by hierarchy;
-  - `bannedTurns`: the in→out Road pairs not allowed, beyond the U-turns that are never allowed;
+  - `major`: the leg Street segments that are major, absent meaning by hierarchy;
+  - `bannedTurns`: the in→out Street segment pairs not allowed, beyond the U-turns that are never allowed;
   - `signal`: `{cycle, stages[{green, turns}]}`, required when `control` is `signalised`.
   - Defaults are absent fields (NODES §5).
-- **Legs** are the Roads that end at the Node, named by Road id and direction.
+- **Legs** are the Street segments that end at the Node, named by Street segment id and direction.
 - **Priority by hierarchy (4a):** link types gain an optional integer `rank`, where a higher rank
   is major.
   - The legs whose type has the highest rank are major.
@@ -187,7 +187,7 @@ not validation.
 - **Lifecycle:**
   - a dead-end Node stays;
   - a two-leg Node with no `coarse` and identical cross-sections on both legs is merged away,
-    joining the two Roads, by the Command that made it so;
+    joining the two Street segments, by the Command that made it so;
   - a Node with detail or `coarse` is never removed, only reported.
 - **Refusals:**
   - `coarse` on a Node with detail is `NODE_COARSE_WITH_DETAIL`;
@@ -205,16 +205,16 @@ not validation.
 
   | Check | Micro | Meso, Macro |
   |---|---|---|
-  | A Road without generated Links | `SEAM_ROAD_NOT_GENERATED`: advisory; left out of the run | Compiled from the Road (§9) |
+  | A Street segment without generated Links | `SEAM_STREET_SEGMENT_NOT_GENERATED`: advisory; left out of the run | Compiled from the Street segment (§9) |
   | A generated Link's lane count differs from the Node's leg | `SEAM_LANE_COUNT`, offering *use Link* or *use Node*, one Undo step | Advisory |
   | A free-speed jump above 20 km/h between consecutive links | Warning only | Warning only |
-  | A Link detached from its Road | Advisory | Advisory |
+  | A Link detached from its Street segment | Advisory | Advisory |
 
 - **No silent adjustment:** a seam fix changes only defaults, inside the Command the user chose.
 - The 20 km/h threshold is a display choice, not a model value, and can be changed in settings.
-- **As implemented (D312, §21):** a lane-count seam is a generated Link against its Road's lanes; a
-  speed jump is across a Connector outside every Node, or between Link-less Roads continuing; the
-  detached row is on the Road; the threshold is set in the *Seam checks* dialog for the session.
+- **As implemented (D312, §21):** a lane-count seam is a generated Link against its Street segment's lanes; a
+  speed jump is across a Connector outside every Node, or between Link-less Street segments continuing; the
+  detached row is on the Street segment; the threshold is set in the *Seam checks* dialog for the session.
 
 ## 8. HCM-cited link types (choice 6b)
 
@@ -253,34 +253,34 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 ## 9. Compile seams
 
 - **Macro and Meso** (`compileMacroNetwork`, `compileMesoNetwork`):
-  - a Road with generated Links compiles from those Links, as today;
-  - a Road without them compiles as one directed link per direction from its template's lanes,
+  - a Street segment with generated Links compiles from those Links, as today;
+  - a Street segment without them compiles as one directed link per direction from its template's lanes,
     `linkType` and the centreline length, split at its Nodes.
 - **A coarse Node** compiles as in §6. A detailed Node compiles as today (D293, S2).
-- **Micro** runs Links only. A Road without Links is `SEAM_ROAD_NOT_GENERATED`; its demand is
+- **Micro** runs Links only. A Street segment without Links is `SEAM_STREET_SEGMENT_NOT_GENERATED`; its demand is
   refused at the route as today, so nothing is silently dropped.
-- **As implemented (D310, §19):** Road ends within 2 m of one another, outside any Node, join as a
-  simple node. Road-only Macro OD uses directed Road zone connectors at schema 57
-  ([§22](ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), D340). Meso reads the same targets
-  through [graph OD paths](MESO_ROAD_DEMAND.md) (D341); Micro still requires Links.
-- **Byte identity:** a project without Roads, templates, `roadId`, overpasses, `coarse`, `rank` or
+- **As implemented (D310, §19):** Street segment ends within 2 m of one another, outside any Node, join as a
+  simple node. Street segment-only Macro OD uses directed Street segment zone connectors at schema 57
+  ([§22](STREET_SEGMENTS_IMPLEMENTED.md#22-street-segment-only-macro-demand-d340), D340). Meso reads the same targets
+  through [graph OD paths](MESO_STREET_SEGMENT_DEMAND.md) (D341); Micro still requires Links.
+- **Byte identity:** a project without Street segments, templates, `streetSegmentId`, overpasses, `coarse`, `rank` or
   `capacityBasis` keeps its schema and bytes (row RD1).
 
 ## 10. Sources
 
 - **HCM 7th edition**, read in the owner's copy (§8), Exhibits 10-7, 12-4, 12-6 and 19-11. Its
   values are national US norms for base conditions (Exhibit 12-4's text).
-- **Thai standards** (Department of Highways, Department of Rural Roads): not read. The editions
+- **Thai standards** (Department of Highways, Department of Rural Street segments): not read. The editions
   are open (B12).
 - **MULTI_LEVEL_WORKFLOW** §2–§7 and §9–§11, NODES §5 and MACRO_NETWORK §4, for the decisions
   cited in §1.
 
 ## 11. Owner choices (answered 2026-10-22, D304: 1a–5a, 6b, 7a)
 
-1. **The Road's storage.**
-   - **(a) Road plus its generated Links, stored, linked by `roadId` (recommended).** Micro is
+1. **The Street segment's storage.**
+   - **(a) Street segment plus its generated Links, stored, linked by `streetSegmentId` (recommended).** Micro is
      unchanged, and *Join opposite Links* reuses existing studies.
-   - (b) A centreline-only Road, from which Links are derived on every load. Simpler storage, but
+   - (b) A centreline-only Street segment, from which Links are derived on every load. Simpler storage, but
      every hand edit to a Micro Link would have to be an override.
 2. **Templates shipped.**
    - **(a) None until B12 names the Thai editions (recommended).**
@@ -292,7 +292,7 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 4. **Priority hierarchy.**
    - **(a) An optional `rank` on link types; ties give `NODE_PRIORITY_UNDETERMINED`
      (recommended).**
-   - (b) A rank on templates. It needs a template on every Road.
+   - (b) A rank on templates. It needs a template on every Street segment.
 5. **Crossings.**
    - **(a) Find crossings on demand, with a batch dialog and one Undo step (recommended).**
    - (b) Detection on every edit, with a prompt each time.
@@ -303,11 +303,11 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
      this.
    - (c) Ship none, and offer every HCM value as an editor preset.
 7. **Slice order.**
-   - **(a) S3.2 HCM catalog and `capacityBasis`/`rank` → S3.3 Road and templates (codec, *Apply*,
+   - **(a) S3.2 HCM catalog and `capacityBasis`/`rank` → S3.3 Street segment and templates (codec, *Apply*,
      detach) → S3.4 *Join opposite Links* and *Assign template* → S3.5 crossings, Nodes and *Merge
      nodes* → S3.6 coarse values and their compilation → S3.7 seam checks (recommended).** It
      starts with the smallest piece.
-   - (b) The Road first, and the catalog last.
+   - (b) The Street segment first, and the catalog last.
 
 ## 12. Slices
 
@@ -315,11 +315,11 @@ Read in the owner's Markdown copy of HCM 7th edition (`Warissakorn/highway-capac
 |---|---|---|
 | S3.1 | This contract. **Written (D303)** | — |
 | S3.2 | `data/link-types/` from HCM; `capacityBasis` on types and VDFs. **Implemented (D304)**. `rank` moved to S3.6 with its reader (D304) | RD1 (basis), RD2, RD3 |
-| S3.3 | `network.roads`, `data/cross-sections/`, `roadId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
-| S3.3b | The editor surface (D305): a Road tool, a Cross-sections tab, *Apply template*, and the detached display. **Implemented (D307)** | RD23–RD26 |
-| S3.4 | *Join opposite Links into a Road*; *Assign template*. **Implemented (D308)** | RD10, RD11 |
+| S3.3 | `network.streetSegments`, `data/cross-sections/`, `streetSegmentId`; *Apply template*; detach. **Implemented (D305)**: model, codec and commands | RD1, RD5–RD9 |
+| S3.3b | The editor surface (D305): a Street segment tool, a Cross-sections tab, *Apply template*, and the detached display. **Implemented (D307)** | RD23–RD26 |
+| S3.4 | *Join opposite Links into a Street segment*; *Assign template*. **Implemented (D308)** | RD10, RD11 |
 | S3.5 | *Find crossings*, overpasses, splits, generated Nodes, *Merge nodes*. **Implemented (D309)** | RD12–RD15 |
-| S3.6a | The link-type `rank`, `coarse` and its checks; Macro and Meso compile coarse Nodes and Link-less Roads. **Implemented (D310)** | RD4, RD16, RD19, RD20 (Macro, Meso) |
+| S3.6a | The link-type `rank`, `coarse` and its checks; Macro and Meso compile coarse Nodes and Link-less Street segments. **Implemented (D310)** | RD4, RD16, RD19, RD20 (Macro, Meso) |
 | S3.6b | The coarse-values dialog, refine and derive back, lifecycle; detail as the interior and Link legs compiled (D311). **Implemented (D311)** | RD17, RD18, RD27, RD28 |
 | S3.7 | Seam checks, with RD20's Micro half (D310). **Implemented (D312)**; S3 is complete | RD20 (Micro), RD21, RD22, RD29 |
 
@@ -329,44 +329,44 @@ Each row first asserts that its forcing worked (AGENTS).
 
 | Row | Case | Asserts |
 |---|---|---|
-| RD1 | Byte identity | Every shipped project and fixture keeps its schema and bytes; a Road, template, `roadId`, overpass, `coarse`, `rank` or `capacityBasis` makes the file 53, and each key below 53 is `EDIT_UNSUPPORTED_FIELD` at its path |
+| RD1 | Byte identity | Every shipped project and fixture keeps its schema and bytes; a Street segment, template, `streetSegmentId`, overpass, `coarse`, `rank` or `capacityBasis` makes the file 53, and each key below 53 is `EDIT_UNSUPPORTED_FIELD` at its path |
 | RD2 | HCM catalog | Every shipped type parses; capacities equal Exhibit 12-4's table at each FFS; `freeSpeed` = FFS × 0.44704; `jamDensity` 118.06 ± 0.01; each `source` names its exhibit and page |
 | RD3 | Capacity basis | Macro on a shipped `ultimate` type with `bpr` gives `MACRO_CAPACITY_BASIS_MISMATCH` at the link; a project-owned `practical` type runs as before; Meso runs on both |
 | RD4 | Rank | Two legs of rank 2 and two of rank 1 give the rank-2 legs as major; a tie gives `NODE_PRIORITY_UNDETERMINED` |
 | RD5 | Template codec | A project-owned template round-trips at 53; each bad field gives `INVALID_CROSS_SECTION` at it; absent means the installed directory |
 | RD6 | Apply template | A two-way 2+2 template on a straight centreline gives two Links, reversed, at offsets ±(median/2 + lane widths), with the template's widths and type, in one Undo step; Undo restores the bytes |
 | RD7 | Re-apply | Changing the template's lanes and re-applying keeps the Link ids, reanchors Connectors and keeps routes valid |
-| RD8 | Detach | Editing one generated Link's lanes clears its `roadId` and drops it from the Road's `links` in the same Command |
-| RD9 | Road refusals | `ROAD_GEOMETRY_INVALID`, `ROAD_CROSS_SECTION_UNKNOWN` and `ROAD_LINK_MISMATCH`, each at its path |
-| RD10 | Join opposite | Two opposite Links made by `oppositeLink` join into one Road whose centreline lies midway; non-parallel or same-direction Links are refused |
-| RD11 | Assign template | Assigning to three Roads is one Undo step and generates no Link |
-| RD12 | Find crossings | A grid of two Roads by two on one level gives four crossings; one Road on level 1 gives none with it |
-| RD13 | Junction split | Confirming one junction splits both Roads and their Links, remaps a route across it, creates one `generated` Node, all in one Undo step |
+| RD8 | Detach | Editing one generated Link's lanes clears its `streetSegmentId` and drops it from the Street segment's `links` in the same Command |
+| RD9 | Street segment refusals | `ROAD_GEOMETRY_INVALID`, `ROAD_CROSS_SECTION_UNKNOWN` and `ROAD_LINK_MISMATCH`, each at its path |
+| RD10 | Join opposite | Two opposite Links made by `oppositeLink` join into one Street segment whose centreline lies midway; non-parallel or same-direction Links are refused |
+| RD11 | Assign template | Assigning to three Street segments is one Undo step and generates no Link |
+| RD12 | Find crossings | A grid of two Street segments by two on one level gives four crossings; one Street segment on level 1 gives none with it |
+| RD13 | Junction split | Confirming one junction splits both Street segments and their Links, remaps a route across it, creates one `generated` Node, all in one Undo step |
 | RD14 | Overpass | An overpass is stored and not offered again; Undo removes it |
 | RD15 | Merge nodes | Four generated Nodes of a roundabout merge into one hull; a merge whose result fails `nodeMembership` is refused with its issues |
 | RD16 | Coarse codec | `coarse` round-trips at 53; on a Node with detail it is `NODE_COARSE_WITH_DETAIL`; unknown legs and bad signals give their codes |
 | RD17 | Refine | Drawing a Connector inside a coarse Node deletes `coarse` in that Command; Undo restores it |
 | RD18 | Derive back | Deleting the four-leg fixture's detail derives `control` `signalised`, its stages' greens and its banned turns, in that Command |
 | RD19 | Meso and Macro from coarse | A coarse signalised four-leg compiles in Meso with 12 turns and their stages' g/C, and in Macro with 12 connector arcs; a banned turn is absent from both |
-| RD20 | Roads without Links | A Road network without generated Links compiles in Macro and Meso with one link per direction split at Nodes; Micro reports `SEAM_ROAD_NOT_GENERATED` and refuses its routes |
+| RD20 | Street segments without Links | A Street segment network without generated Links compiles in Macro and Meso with one link per direction split at Nodes; Micro reports `SEAM_STREET_SEGMENT_NOT_GENERATED` and refuses its routes |
 | RD21 | Lane-count seam | A 3-lane Link into a 2-lane leg gives `SEAM_LANE_COUNT`; *use Link* and *use Node* each fix it in one Undo step |
 | RD22 | Speed seam | A 100 → 60 km/h jump warns at every level and refuses none |
-| RD23 | Cross-sections tab (S3.3b) | Add owns the catalog and stores every field in one Undo step; Edit commits; the Road tool can choose the template |
-| RD24 | Road tool (S3.3b) | O chooses the tool and the Roads tab; one point makes nothing; with no template Enter draws a Road without Links; with one, the Road and its two Links are one Undo step, lit on the canvas; Undo and Redo |
-| RD25 | Roads tab (S3.3b) | An override is stored alone; *Apply template* keeps the Link ids and adds the lane; a template a Road names is not deleted |
-| RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Road is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
-| RD27 | Lifecycle (S3.6b) | Deleting a T's stem merges the Node away and joins the two Roads, renaming the overpass; a Node with `coarse`, two templates, or drawn with two legs is kept |
+| RD23 | Cross-sections tab (S3.3b) | Add owns the catalog and stores every field in one Undo step; Edit commits; the Street segment tool can choose the template |
+| RD24 | Street segment tool (S3.3b) | O chooses the tool and the Street segments tab; one point makes nothing; with no template Enter draws a Street segment without Links; with one, the Street segment and its two Links are one Undo step, lit on the canvas; Undo and Redo |
+| RD25 | Street segments tab (S3.3b) | An override is stored alone; *Apply template* keeps the Link ids and adds the lane; a template a Street segment names is not deleted |
+| RD26 | Detached display (S3.3b) | Editing a generated Link's lanes detaches it; the Street segment is partly detached in the table and drawn in the warning colour with only its remaining Link lit; Delete keeps the Links |
+| RD27 | Lifecycle (S3.6b) | Deleting a T's stem merges the Node away and joins the two Street segments, renaming the overpass; a Node with `coarse`, two templates, or drawn with two legs is kept |
 | RD28 | Coarse dialog (S3.6b) | *Coarse values…* is disabled on a Node with detail; on one without, it stores a signalised stage in one step, and back to defaults stores none |
-| RD29 | Detached and continuation seams (S3.7) | A Road that lost a generated Link gives `SEAM_LINK_DETACHED` at every level; two Link-less Roads continuing at 100 → 60 km/h give `SEAM_SPEED_JUMP` |
-| RD30 | Levels (D382) | Two crossings at one x, y on levels 0 and 1 are two places, each listing only its level's Roads |
-| RD31 | Split and coarse (D382) | Splitting a Road between two coarse Nodes succeeds; the far Node names the new Road, the near one the old |
+| RD29 | Detached and continuation seams (S3.7) | A Street segment that lost a generated Link gives `SEAM_LINK_DETACHED` at every level; two Link-less Street segments continuing at 100 → 60 km/h give `SEAM_SPEED_JUMP` |
+| RD30 | Levels (D382) | Two crossings at one x, y on levels 0 and 1 are two places, each listing only its level's Street segments |
+| RD31 | Split and coarse (D382) | Splitting a Street segment between two coarse Nodes succeeds; the far Node names the new Street segment, the near one the old |
 | RD32 | Direction after a detach (D382) | With the forward Link detached, *use Link* sets `lanesBackward`, and *Apply template* keeps the backward Link's direction and adds a forward one |
-| RD33 | Direction on a U (D382) | On a U-shaped Road whose ends point the same way, each generated Link's direction is read correctly |
-| RD34 | Apply on several Roads (D385) | Three selected Roads apply in table order in one Undo step, and Undo restores the bytes; with one Road lacking a template the document is unchanged |
-| RD35 | Crossings without a template (D385) | A place with a Road that has neither a template nor Links is marked in the warning colour with a tooltip and one note; Roads with a template give neither; Confirm is not blocked |
+| RD33 | Direction on a U (D382) | On a U-shaped Street segment whose ends point the same way, each generated Link's direction is read correctly |
+| RD34 | Apply on several Street segments (D385) | Three selected Street segments apply in table order in one Undo step, and Undo restores the bytes; with one Street segment lacking a template the document is unchanged |
+| RD35 | Crossings without a template (D385) | A place with a Street segment that has neither a template nor Links is marked in the warning colour with a tooltip and one note; Street segments with a template give neither; Confirm is not blocked |
 
 ## 14–21. As implemented
 
 What each slice built (S3.2 to S3.7: files, functions, rows, mutations) is in
-[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md), with this file's section numbers, so "ROADS §16" still
+[STREET_SEGMENTS_IMPLEMENTED](STREET_SEGMENTS_IMPLEMENTED.md), with this file's section numbers, so "STREET_SEGMENTS §16" still
 names a section there.

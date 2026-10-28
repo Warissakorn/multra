@@ -1,6 +1,6 @@
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
-#include "../commands/road_commands.hpp"
+#include "../commands/street_segment_commands.hpp"
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -14,12 +14,12 @@
 #include <QVBoxLayout>
 #include <algorithm>
 
-// S3.5 (D309, docs/reference/ROADS.md §5, §18): Find crossings' batch dialog. Each place where Roads on
+// S3.5 (D309, docs/reference/STREET_SEGMENTS.md §5, §18): Find crossings' batch dialog. Each place where StreetSegments on
 // one level cross or touch is a row with Junction (the default) or Overpass, the latter only where no
-// Road ends; Confirm applies every row in one Undo step. The tolerance is ROADS §1's 1-2 m snap, 2 m by
-// default, and Refresh searches again at the value typed. A place with a Road that has neither a
+// StreetSegment ends; Confirm applies every row in one Undo step. The tolerance is STREET_SEGMENTS §1's 1-2 m snap, 2 m by
+// default, and Refresh searches again at the value typed. A place with a StreetSegment that has neither a
 // template nor Links is marked in the warning colour, with one note: its Node is sized without that
-// Road's width (2 x tolerance when no Road there has one, D382). The note does not block Confirm (D385).
+// StreetSegment's width (2 x tolerance when no StreetSegment there has one, D382). The note does not block Confirm (D385).
 namespace multra {
 void EditorWindow::findCrossingsDialog() {
     constexpr double defaultTolerance = 2;
@@ -38,13 +38,13 @@ void EditorWindow::findCrossingsDialog() {
     auto* table = new QTableWidget(0, 6, &dialog); table->setObjectName("editorCrossingTable");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers); table->verticalHeader()->hide();
     table->horizontalHeader()->setStretchLastSection(true);
-    table->setHorizontalHeaderLabels({text("editorCrossingLevel"), QStringLiteral("x"), QStringLiteral("y"), text("editorRoadTable"),
+    table->setHorizontalHeaderLabels({text("editorCrossingLevel"), QStringLiteral("x"), QStringLiteral("y"), text("editorStreetSegmentTable"),
                                       text("editorCrossingLegs"), text("editorCrossingChoice")});
     layout->addWidget(table, 1);
     auto* warning = new QLabel(&dialog); warning->setObjectName("editorCrossingTemplateWarning"); warning->setWordWrap(true);
     auto palette = warning->palette(); palette.setColor(QPalette::WindowText, editorDesign::semantic(editorDesign::Semantic::warning));
     warning->setPalette(palette); layout->addWidget(warning);
-    std::vector<RoadCrossing> found;
+    std::vector<StreetSegmentCrossing> found;
     const auto fill = [&] {
         const auto& network = history_.document().network;
         found = findCrossings(network, tolerance->value());
@@ -53,10 +53,10 @@ void EditorWindow::findCrossingsDialog() {
         for (int r = 0; r < table->rowCount(); ++r) {
             const auto& c = found[static_cast<std::size_t>(r)];
             QStringList roads, bare;
-            for (const auto& x : c.roads) {
-                roads << QString::fromStdString(x.roadId);
-                const auto road = std::find_if(network.roads.begin(), network.roads.end(), [&](const auto& y) { return y.id == x.roadId; });
-                if (road != network.roads.end() && !road->crossSectionId && road->links.empty()) bare << QString::fromStdString(x.roadId);
+            for (const auto& x : c.streetSegments) {
+                roads << QString::fromStdString(x.streetSegmentId);
+                const auto road = std::find_if(network.streetSegments.begin(), network.streetSegments.end(), [&](const auto& y) { return y.id == x.streetSegmentId; });
+                if (road != network.streetSegments.end() && !road->crossSectionId && road->links.empty()) bare << QString::fromStdString(x.streetSegmentId);
             }
             anyBare = anyBare || !bare.isEmpty();
             const QStringList values{QString::number(c.level), editorDesign::formatValue(c.at.x, 1), editorDesign::formatValue(c.at.y, 1),
@@ -66,7 +66,7 @@ void EditorWindow::findCrossingsDialog() {
                 if (col != 3) editorDesign::setNumericText(cell, true);
                 if (!bare.isEmpty()) {
                     cell->setForeground(editorDesign::semantic(editorDesign::Semantic::warning));
-                    cell->setToolTip(text("editorCrossingNoTemplateRoad").arg(bare.join(", ")));
+                    cell->setToolTip(text("editorCrossingNoTemplateStreetSegment").arg(bare.join(", ")));
                 }
                 table->setItem(r, col, cell);
             }

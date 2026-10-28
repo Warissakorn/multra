@@ -6,6 +6,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Road renamed Street segment, schema 59 (D389, M14 slice SR)
+
+- **Asked:** "เริ่มทำได้เลย" for the rename D387 booked; "Segment" turned out to be the engine's type
+  and word, so the owner chose "Street segment".
+- **Changed:** schema 59 writes `streetSegments`, `streetSegmentId` and `streetSegmentDirection`;
+  files below 59 keep their keys and still read, and each version refuses the other's at its own
+  path (JT1). Codes, types, functions, files, tests, CMake test names, locale keys and strings
+  (th "ช่วงถนน"), module maps and maintained docs follow; three reference docs renamed.
+- **Unchanged:** no behaviour; documents without the renamed keys keep their version and bytes.
+- **Verified:** desktop build (Qt 6.4.2, installed this session), `ctest` and `check` on Linux
+  (offscreen): `ctest` 246/246 (245 before plus JT1); headless preset not run. Windows look is
+  OWNER_SITTING E24.
+
 ## 2026-10-28 — M14 redirected: junction templates, transitions, Road → Segment (D387)
 
 - **Asked:** no junction builder; Roads that cross should make the junction, with a junction
@@ -103,11 +116,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Returned to the owner (B28):** 1a, because it reverses the owner's own D373 answer; and D378's
   order rule, which the current Meso and Micro work already departs from. PROBLEM §3 names those
   exceptions; §2 says the Aimsun facts come from search excerpts.
-
-## 2026-10-28 — B27 decided on delegation (D379)
-
-- **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.
-- **Decided:** 1a one posted speed on the Link, read by every level and M13 (D373's approach field
-  becomes derived); 2a per-lane allowed modes; 3a *Fill from model* for Node turn volumes; 4a only
-  within an HCM 7 planning-level method, read before the contract, else back to the owner. Reasons
-  are in D379. Bookings only: no slice starts until the owner asks.

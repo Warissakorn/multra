@@ -5,16 +5,16 @@
 #include <algorithm>
 #include <cmath>
 
-// S3.3b (D307, docs/reference/ROADS.md §16): a Road's marks. Under the Road tool every centreline is a
-// thin ink line, so the author sees what is already drawn; the Road the Roads table selects is lit:
+// S3.3b (D307, docs/reference/STREET_SEGMENTS.md §16): a StreetSegment's marks. Under the StreetSegment tool every centreline is a
+// thin ink line, so the author sees what is already drawn; the StreetSegment the StreetSegments table selects is lit:
 // its centreline with a direction arrow and its generated Links washed in the selection colour, all
 // in the warning colour while part of it is detached.
 namespace multra {
-void EditorCanvas::setHighlightedRoad(std::string id, bool detached) {
-    if (highlightedRoad_ == id && highlightedRoadDetached_ == detached) return;
-    highlightedRoad_ = std::move(id); highlightedRoadDetached_ = detached; redraw();
+void EditorCanvas::setHighlightedStreetSegment(std::string id, bool detached) {
+    if (highlightedStreetSegment_ == id && highlightedStreetSegmentDetached_ == detached) return;
+    highlightedStreetSegment_ = std::move(id); highlightedStreetSegmentDetached_ = detached; redraw();
 }
-void EditorCanvas::drawRoads() {
+void EditorCanvas::drawStreetSegments() {
     if (!document_) return;
     const auto& n = document_->network;
     const auto line = [](const std::vector<Point>& points) {
@@ -22,14 +22,14 @@ void EditorCanvas::drawRoads() {
         for (std::size_t i = 0; i < points.size(); ++i) i ? path.lineTo(points[i].x, points[i].y) : path.moveTo(points[i].x, points[i].y);
         return path;
     };
-    for (const auto& road : n.roads) {
-        const bool lit = road.id == highlightedRoad_;
+    for (const auto& road : n.streetSegments) {
+        const bool lit = road.id == highlightedStreetSegment_;
         if ((!lit && tool_ != Tool::road) || !levelVisible(road.level) || road.centreline.size() < 2) continue;
-        const QColor colour = !lit ? canvasStyle::ink() : highlightedRoadDetached_ ? canvasStyle::warning() : canvasStyle::selection();
+        const QColor colour = !lit ? canvasStyle::ink() : highlightedStreetSegmentDetached_ ? canvasStyle::warning() : canvasStyle::selection();
         QPen pen(colour, lit ? 2 : 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
         auto* item = scene_.addPath(line(road.centreline), pen);
         item->setZValue(200003); item->setData(0, QStringLiteral("road")); item->setData(1, QString::fromStdString(road.id));
-        item->setData(2, lit ? (highlightedRoadDetached_ ? QStringLiteral("detached") : QStringLiteral("lit")) : QStringLiteral("plain"));
+        item->setData(2, lit ? (highlightedStreetSegmentDetached_ ? QStringLiteral("detached") : QStringLiteral("lit")) : QStringLiteral("plain"));
         if (!lit) continue;
         // The digitised direction is the forward Link's: one arrowhead at the centreline's middle.
         const double length = polylineLength(road.centreline);

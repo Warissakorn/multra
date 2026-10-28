@@ -33,7 +33,7 @@ QJsonObject catalog(const std::filesystem::path& data,int lang) {
 struct Group {const char* key;std::vector<const char*> pages;};
 // Page contents by object name, in the spec's order (UI_PRESENTATION_SPEC §1).
 const Group groups[]={
-    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable","editorLinkTypeTable","editorRoadTable","editorCrossSectionTable"}},
+    {"editorObjectGroupNetwork",{"editorLinkTable","editorConnectorTable","editorLinkTypeTable","editorStreetSegmentTable","editorCrossSectionTable"}},
     {"editorObjectGroupControl",{"editorSignalTable","editorProgramTable","editorConflictTable"}},
     {"editorObjectGroupDemand",{"editorRouteTable","editorInputTable","editorDecisionTable","editorSpeedDecisionTable","editorReducedSpeedAreaTable","editorZoneTable","editorOdTable","editorPeriodTable","editorModeTable"}},
     {"editorObjectGroupMeasurement",{"editorCounterTable","editorSectionTable","editorNodeTable"}},

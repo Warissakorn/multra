@@ -11,7 +11,7 @@
 #include "speed_curve.hpp"
 #include "mode_codec.hpp"
 #include "link_type_codec.hpp"
-#include "road_codec.hpp"
+#include "street_segment_codec.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -373,7 +373,7 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     if(auto issues=timeTypeIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
     if(auto issues=ownedCatalogIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
     if(auto issues=linkTypeDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S2.1
-    if(auto issues=roadDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S3.3
+    if(auto issues=streetSegmentDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S3.3
     // Checked on the authored intervals, before they are expanded: an overlap is a property of
     // the table the author typed, and would otherwise surface as two core inputs that each look fine.
     if (auto periods = inputIntervalIssues(*d.definition); !periods.empty()) throw ValidationError(std::move(periods));

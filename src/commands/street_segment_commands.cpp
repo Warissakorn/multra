@@ -1,4 +1,4 @@
-#include "road_commands.hpp"
+#include "street_segment_commands.hpp"
 #include "coarse_commands.hpp"
 #include "connector_commands.hpp"
 #include "demand_commands.hpp"
@@ -8,7 +8,7 @@
 #include "node_detail_commands.hpp"
 #include "../core/validate.hpp"
 #include "../model/network/coarse_nodes.hpp"
-#include "../model/network/roads.hpp"
+#include "../model/network/street_segments.hpp"
 #include <algorithm>
 #include <cmath>
 #include <numbers>
@@ -16,34 +16,34 @@
 
 namespace multra {
 namespace {
-Road& editableRoad(ProjectDocument& d, const std::string& id) {
-    for (auto& r : d.network.roads) if (r.id == id) return r;
+StreetSegment& editableStreetSegment(ProjectDocument& d, const std::string& id) {
+    for (auto& r : d.network.streetSegments) if (r.id == id) return r;
     throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
 }
 }
-void detail::detachFromRoad(ProjectDocument& d, const std::string& link) {
-    for (auto& l : d.network.links) if (l.id == link) l.roadId.reset();
-    for (auto& r : d.network.roads) std::erase(r.links, link);
+void detail::detachFromStreetSegment(ProjectDocument& d, const std::string& link) {
+    for (auto& l : d.network.links) if (l.id == link) l.streetSegmentId.reset();
+    for (auto& r : d.network.streetSegments) std::erase(r.links, link);
 }
-std::string putRoad(ProjectDocument& d, Road road) {
+std::string putStreetSegment(ProjectDocument& d, StreetSegment road) {
     const auto& o = road.overrides;
     const auto lanes = [](const std::optional<int>& n) { return !n || (*n >= 1 && *n <= 12); };
     if (!lanes(o.lanesForward) || !lanes(o.lanesBackward) || (o.laneWidth && !(std::isfinite(*o.laneWidth) && *o.laneWidth > 0)) ||
         (o.median && !(std::isfinite(*o.median) && *o.median >= 0)))
-        throw std::invalid_argument("EDIT_ROAD_OVERRIDE");
+        throw std::invalid_argument("EDIT_STREET_SEGMENT_OVERRIDE");
     if (road.id.empty()) road.id = allocateId(d, "road");
     const auto id = road.id;
-    auto& roads = d.network.roads;
+    auto& roads = d.network.streetSegments;
     const auto found = std::find_if(roads.begin(), roads.end(), [&](const auto& r) { return r.id == id; });
     if (found != roads.end()) *found = std::move(road); else roads.push_back(std::move(road));
     return id;
 }
-void deleteRoad(ProjectDocument& d, const std::string& roadId) {
-    const auto id = editableRoad(d, roadId).id; // keep it across erase, even when the caller names a Road's id member
-    for (auto& l : d.network.links) if (l.roadId == id) l.roadId.reset();
-    std::erase_if(d.network.roads, [&](const auto& r) { return r.id == id; });
+void deleteStreetSegment(ProjectDocument& d, const std::string& streetSegmentId) {
+    const auto id = editableStreetSegment(d, streetSegmentId).id; // keep it across erase, even when the caller names a StreetSegment's id member
+    for (auto& l : d.network.links) if (l.streetSegmentId == id) l.streetSegmentId.reset();
+    std::erase_if(d.network.streetSegments, [&](const auto& r) { return r.id == id; });
     std::erase_if(d.network.overpasses, [&](const auto& p) { return p.first == id || p.second == id; }); // S3.5
-    std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.roadId == id; });
+    std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.streetSegmentId == id; });
 }
 std::string putCrossSection(ProjectDocument& d, CrossSection section, const std::vector<CrossSection>& installed) {
     auto& target = demand(d);
@@ -57,16 +57,16 @@ std::string putCrossSection(ProjectDocument& d, CrossSection section, const std:
 }
 void deleteCrossSection(ProjectDocument& d, const std::string& id) {
     if (!d.definition || d.definition->externalCrossSections) throw std::invalid_argument("EDIT_CROSS_SECTIONS_NOT_OWNED");
-    for (const auto& r : d.network.roads) if (r.crossSectionId == id) throw std::invalid_argument("EDIT_CROSS_SECTION_IN_USE");
+    for (const auto& r : d.network.streetSegments) if (r.crossSectionId == id) throw std::invalid_argument("EDIT_CROSS_SECTION_IN_USE");
     if (!std::erase_if(d.definition->crossSections, [&](const auto& s) { return s.id == id; })) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
 }
-const CrossSection* roadTemplate(const ProjectDocument& d, const Road& road, const std::vector<CrossSection>& installed) {
+const CrossSection* streetSegmentTemplate(const ProjectDocument& d, const StreetSegment& road, const std::vector<CrossSection>& installed) {
     if (!road.crossSectionId) return nullptr;
     const auto& pool = d.definition && !d.definition->externalCrossSections ? d.definition->crossSections : installed;
     const auto found = std::find_if(pool.begin(), pool.end(), [&](const auto& s) { return s.id == *road.crossSectionId; });
     return found == pool.end() ? nullptr : &*found;
 }
-std::vector<TemplateLink> templateLinks(const Network& n, const Road& road, CrossSection t) {
+std::vector<TemplateLink> templateLinks(const Network& n, const StreetSegment& road, CrossSection t) {
     const auto& o = road.overrides;
     if (o.lanesForward) t.lanesForward = *o.lanesForward;
     if (o.lanesBackward && t.directions == 2) t.lanesBackward = *o.lanesBackward;
@@ -90,26 +90,26 @@ std::vector<TemplateLink> templateLinks(const Network& n, const Road& road, Cros
     }
     return links;
 }
-std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& roadId, const std::vector<CrossSection>& installed) {
-    const auto index = static_cast<std::size_t>(&editableRoad(d, roadId) - d.network.roads.data());
-    const auto road = d.network.roads[index];
-    if (!road.crossSectionId) throw std::invalid_argument("EDIT_ROAD_NO_TEMPLATE");
-    const auto* found = roadTemplate(d, road, installed);
-    if (!found) throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "network.roads[" + std::to_string(index) + "].crossSectionId"}});
+std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& streetSegmentId, const std::vector<CrossSection>& installed) {
+    const auto index = static_cast<std::size_t>(&editableStreetSegment(d, streetSegmentId) - d.network.streetSegments.data());
+    const auto road = d.network.streetSegments[index];
+    if (!road.crossSectionId) throw std::invalid_argument("EDIT_STREET_SEGMENT_NO_TEMPLATE");
+    const auto* found = streetSegmentTemplate(d, road, installed);
+    if (!found) throw ValidationError({{"STREET_SEGMENT_CROSS_SECTION_UNKNOWN", "network.streetSegments[" + std::to_string(index) + "].crossSectionId"}});
     const auto generated = templateLinks(d.network, road, *found);
-    // D382: each listed Link keeps the direction it runs (forwardOnRoad), whatever its place in `links`,
+    // D382: each listed Link keeps the direction it runs (forwardOnStreetSegment), whatever its place in `links`,
     // which a detach shifts. Two Links one way, or a backward one under a one-way template, is refused.
     std::vector<std::optional<std::string>> slot(2);
     for (const auto& id : road.links) {
-        auto& s = slot[forwardOnRoad(road, editableLink(d, id)) ? 0 : 1];
-        if (s) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
+        auto& s = slot[forwardOnStreetSegment(road, editableLink(d, id)) ? 0 : 1];
+        if (s) throw std::invalid_argument("EDIT_STREET_SEGMENT_DIRECTIONS");
         s = id;
     }
-    if (slot[1] && generated.size() < 2) throw std::invalid_argument("EDIT_ROAD_DIRECTIONS");
+    if (slot[1] && generated.size() < 2) throw std::invalid_argument("EDIT_STREET_SEGMENT_DIRECTIONS");
     for (std::size_t i = 0; i < d.zones.zoneConnectors.size(); ++i) {
         const auto& c = d.zones.zoneConnectors[i];
-        if (c.roadId == roadId && !c.roadForward && generated.size() < 2)
-            throw ValidationError({{"ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION", "zoneConnectors[" + std::to_string(i) + "].roadDirection"}});
+        if (c.streetSegmentId == streetSegmentId && !c.streetSegmentForward && generated.size() < 2)
+            throw ValidationError({{"ZONE_CONNECTOR_STREET_SEGMENT_REQUIRES_DIRECTION", "zoneConnectors[" + std::to_string(i) + "].streetSegmentDirection"}});
     }
     const auto cut = generatedCuts(d, road.links, installed); // S4.5a (D323): F4's cuts stand through a re-apply
     std::vector<std::string> ids; // forward first
@@ -125,28 +125,28 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& ro
         }
         auto& link = editableLink(d, ids[k]);
         for (std::size_t i = 0; i < w.size(); ++i) link.lanes[i].width = w[i];
-        link.laneOffset = 0; link.level = road.level; link.roadId = road.id;
+        link.laneOffset = 0; link.level = road.level; link.streetSegmentId = road.id;
         if (found->linkType) link.linkTypeId = found->linkType;
     }
-    editableRoad(d, roadId).links = ids; // changeLanes detached them: this re-attaches
-    for (auto& c : d.zones.zoneConnectors) if (c.roadId == roadId) {
-        c.linkId = ids[c.roadForward ? 0 : 1]; c.roadId.clear(); c.roadForward = true;
+    editableStreetSegment(d, streetSegmentId).links = ids; // changeLanes detached them: this re-attaches
+    for (auto& c : d.zones.zoneConnectors) if (c.streetSegmentId == streetSegmentId) {
+        c.linkId = ids[c.streetSegmentForward ? 0 : 1]; c.streetSegmentId.clear(); c.streetSegmentForward = true;
     }
     reanchorConnectors(d);
     return ids;
 }
 std::string joinOppositeLinks(ProjectDocument& d, const std::string& forwardId, const std::string& backwardId) {
     const auto forward = editableLink(d, forwardId), backward = editableLink(d, backwardId);
-    if (forward.roadId || backward.roadId) throw std::invalid_argument("EDIT_ROAD_JOIN_TAKEN");
-    if (forward.level != backward.level) throw std::invalid_argument("EDIT_ROAD_JOIN_LEVEL");
-    if (forwardId == backwardId) throw std::invalid_argument("EDIT_ROAD_JOIN_DIRECTION");
+    if (forward.streetSegmentId || backward.streetSegmentId) throw std::invalid_argument("EDIT_STREET_SEGMENT_JOIN_TAKEN");
+    if (forward.level != backward.level) throw std::invalid_argument("EDIT_STREET_SEGMENT_JOIN_LEVEL");
+    if (forwardId == backwardId) throw std::invalid_argument("EDIT_STREET_SEGMENT_JOIN_DIRECTION");
     const auto f = linkCentreline(forward, d.network.drivingSide), b = linkCentreline(backward, d.network.drivingSide);
     const Point df{f.back().x - f.front().x, f.back().y - f.front().y}, db{b.back().x - b.front().x, b.back().y - b.front().y};
     const double nf = std::hypot(df.x, df.y), nb = std::hypot(db.x, db.y);
     if (!(nf > 0) || !(nb > 0)) throw std::invalid_argument("INVALID_GEOMETRY");
     const double cosine = (df.x * db.x + df.y * db.y) / (nf * nb);
-    if (cosine >= 0) throw std::invalid_argument("EDIT_ROAD_JOIN_DIRECTION");
-    if (cosine > -std::cos(joinAngleDegrees * std::numbers::pi / 180)) throw std::invalid_argument("EDIT_ROAD_JOIN_PARALLEL");
+    if (cosine >= 0) throw std::invalid_argument("EDIT_STREET_SEGMENT_JOIN_DIRECTION");
+    if (cosine > -std::cos(joinAngleDegrees * std::numbers::pi / 180)) throw std::invalid_argument("EDIT_STREET_SEGMENT_JOIN_PARALLEL");
     double width = 0;
     for (const auto& l : forward.lanes) width += l.width / 2;
     for (const auto& l : backward.lanes) width += l.width / 2;
@@ -156,11 +156,11 @@ std::string joinOppositeLinks(ProjectDocument& d, const std::string& forwardId, 
             return std::hypot(p.x - q.x, p.y - q.y) <= width + joinMedianMetres;
         });
     };
-    if (!within(f, b) || !within(b, f)) throw std::invalid_argument("EDIT_ROAD_JOIN_PARALLEL");
-    Road road{"", "", meanCentreline(f, b), std::nullopt, forward.level, {}, {forwardId, backwardId}};
-    const auto id = putRoad(d, std::move(road));
-    editableLink(d, forwardId).roadId = id;
-    editableLink(d, backwardId).roadId = id;
+    if (!within(f, b) || !within(b, f)) throw std::invalid_argument("EDIT_STREET_SEGMENT_JOIN_PARALLEL");
+    StreetSegment road{"", "", meanCentreline(f, b), std::nullopt, forward.level, {}, {forwardId, backwardId}};
+    const auto id = putStreetSegment(d, std::move(road));
+    editableLink(d, forwardId).streetSegmentId = id;
+    editableLink(d, backwardId).streetSegmentId = id;
     return id;
 }
 void assignTemplate(ProjectDocument& d, const std::vector<std::string>& roads, const std::optional<std::string>& crossSectionId,
@@ -168,37 +168,37 @@ void assignTemplate(ProjectDocument& d, const std::vector<std::string>& roads, c
     if (crossSectionId) {
         const auto& pool = d.definition && !d.definition->externalCrossSections ? d.definition->crossSections : installed;
         if (std::none_of(pool.begin(), pool.end(), [&](const auto& s) { return s.id == *crossSectionId; }))
-            throw ValidationError({{"ROAD_CROSS_SECTION_UNKNOWN", "crossSectionId"}});
+            throw ValidationError({{"STREET_SEGMENT_CROSS_SECTION_UNKNOWN", "crossSectionId"}});
     }
-    for (const auto& id : roads) editableRoad(d, id).crossSectionId = crossSectionId;
+    for (const auto& id : roads) editableStreetSegment(d, id).crossSectionId = crossSectionId;
 }
-std::string splitRoad(ProjectDocument& d, const std::string& roadId, double station) {
-    const auto road = editableRoad(d, roadId);
+std::string splitStreetSegment(ProjectDocument& d, const std::string& streetSegmentId, double station) {
+    const auto road = editableStreetSegment(d, streetSegmentId);
     const double length = polylineLength(road.centreline);
     if (!std::isfinite(station) || station <= 0.2 || station >= length - 0.2) throw std::invalid_argument("EDIT_SPLIT_RANGE");
     const auto at = pointAlong(road.centreline, station);
     auto rest = road; rest.id.clear(); rest.links.clear();
     rest.centreline = polylineSpan(road.centreline, station, length);
-    const auto next = putRoad(d, std::move(rest));
-    editableRoad(d, road.id).centreline = polylineSpan(road.centreline, 0, station);
+    const auto next = putStreetSegment(d, std::move(rest));
+    editableStreetSegment(d, road.id).centreline = polylineSpan(road.centreline, 0, station);
     for (auto& c : d.zones.zoneConnectors)
-        if (c.roadId == road.id && (c.roadForward == (c.direction == ZoneDirection::destination))) c.roadId = next;
+        if (c.streetSegmentId == road.id && (c.streetSegmentForward == (c.direction == ZoneDirection::destination))) c.streetSegmentId = next;
     std::vector<std::string> first, second;
     for (const auto& id : road.links) {
-        const bool forward = forwardOnRoad(road, editableLink(d, id)); // D382: before the split, by geometry
+        const bool forward = forwardOnStreetSegment(road, editableLink(d, id)); // D382: before the split, by geometry
         const auto down = splitLink(d, id, stationOfClosestPoint(editableLink(d, id).geometry, at));
         // The forward Link runs with the centreline, the backward one against it.
         first.push_back(forward ? id : down); second.push_back(forward ? down : id);
     }
-    editableRoad(d, road.id).links = first; editableRoad(d, next).links = second; // splitLink detached them
-    for (const auto& id : first) editableLink(d, id).roadId = road.id;
-    for (const auto& id : second) editableLink(d, id).roadId = next;
-    // D382: a coarse Node the moved end now meets names the new Road; the near end's Nodes keep the id.
+    editableStreetSegment(d, road.id).links = first; editableStreetSegment(d, next).links = second; // splitLink detached them
+    for (const auto& id : first) editableLink(d, id).streetSegmentId = road.id;
+    for (const auto& id : second) editableLink(d, id).streetSegmentId = next;
+    // D382: a coarse Node the moved end now meets names the new StreetSegment; the near end's Nodes keep the id.
     for (auto& node : d.network.nodes) {
         if (!node.coarse) continue;
-        bool meetsNext = false, meetsRoad = false;
-        for (const auto& leg : nodeRoadLegs(d.network, node)) { meetsNext = meetsNext || leg.roadId == next; meetsRoad = meetsRoad || leg.roadId == road.id; }
-        if (meetsNext && !meetsRoad) renameCoarseRoad(*node.coarse, road.id, next);
+        bool meetsNext = false, meetsStreetSegment = false;
+        for (const auto& leg : nodeStreetSegmentLegs(d.network, node)) { meetsNext = meetsNext || leg.streetSegmentId == next; meetsStreetSegment = meetsStreetSegment || leg.streetSegmentId == road.id; }
+        if (meetsNext && !meetsStreetSegment) renameCoarseStreetSegment(*node.coarse, road.id, next);
     }
     const auto pairs = d.network.overpasses;
     for (const auto& [a, b] : pairs) {
@@ -208,26 +208,26 @@ std::string splitRoad(ProjectDocument& d, const std::string& roadId, double stat
     }
     return next;
 }
-std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<RoadCrossing>& crossings, const std::vector<CrossingChoice>& choices,
+std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<StreetSegmentCrossing>& crossings, const std::vector<CrossingChoice>& choices,
                                         double tolerance, const std::vector<CrossSection>& installed) {
     if (crossings.size() != choices.size() || !std::isfinite(tolerance) || tolerance <= 0) throw std::invalid_argument("EDIT_CROSSING_CHOICES");
     for (std::size_t i = 0; i < crossings.size(); ++i) {
         if (choices[i] != CrossingChoice::overpass) continue;
         if (crossings[i].endpoint) throw std::invalid_argument("EDIT_CROSSING_OVERPASS");
-        const auto& roads = crossings[i].roads;
+        const auto& roads = crossings[i].streetSegments;
         for (std::size_t a = 0; a < roads.size(); ++a)
             for (std::size_t b = a + 1; b < roads.size(); ++b) {
-                const auto& x = roads[a].roadId; const auto& y = roads[b].roadId;
+                const auto& x = roads[a].streetSegmentId; const auto& y = roads[b].streetSegmentId;
                 const auto pair = x < y ? std::pair{x, y} : std::pair{y, x};
                 if (std::find(d.network.overpasses.begin(), d.network.overpasses.end(), pair) == d.network.overpasses.end())
                     d.network.overpasses.push_back(pair);
             }
     }
     const auto distance = [](Point p, Point q) { return std::hypot(p.x - q.x, p.y - q.y); };
-    // The Roads passing within the tolerance of `at` on `level`, with their stations there.
+    // The StreetSegments passing within the tolerance of `at` on `level`, with their stations there.
     const auto here = [&](Point at, int level) {
         std::vector<std::pair<std::string, double>> found;
-        for (const auto& r : d.network.roads) {
+        for (const auto& r : d.network.streetSegments) {
             if (r.level != level || r.centreline.size() < 2) continue;
             const double s = stationOfClosestPoint(r.centreline, at);
             if (distance(pointAlong(r.centreline, s), at) <= tolerance) found.emplace_back(r.id, s);
@@ -241,7 +241,7 @@ std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<Ro
         const auto at = crossings[i].at;
         double half = 0, widest = 0;
         for (const auto& [id, s] : here(at, crossings[i].level)) {
-            const auto road = editableRoad(d, id);
+            const auto road = editableStreetSegment(d, id);
             for (const auto& linkId : road.links) {
                 const auto& link = editableLink(d, linkId);
                 const auto centre = linkCentreline(link, d.network.drivingSide);
@@ -258,8 +258,8 @@ std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<Ro
         const double radius = half + widest > 0 ? half + widest : 2 * tolerance;
         // Measured before the split, whose 0.2 m continuity gap would move each piece's end off the place.
         for (const auto& [id, s] : here(at, crossings[i].level)) {
-            const double length = polylineLength(editableRoad(d, id).centreline);
-            if (s > tolerance && s < length - tolerance) splitRoad(d, id, s);
+            const double length = polylineLength(editableStreetSegment(d, id).centreline);
+            if (s > tolerance && s < length - tolerance) splitStreetSegment(d, id, s);
         }
         std::vector<Point> polygon;
         for (int k = 0; k < 16; ++k) {
@@ -274,19 +274,19 @@ namespace {
 const Link& generatedLink(const ProjectDocument& d, const std::string& linkId) {
     const auto l = std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& x) { return x.id == linkId; });
     if (l == d.network.links.end()) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
-    if (!l->roadId) throw std::invalid_argument("EDIT_SEAM_NOT_GENERATED");
+    if (!l->streetSegmentId) throw std::invalid_argument("EDIT_SEAM_NOT_GENERATED");
     return *l;
 }
 }
 void useLinkLanes(ProjectDocument& d, const std::string& linkId) {
     const auto& link = generatedLink(d, linkId);
     const auto lanes = static_cast<int>(link.lanes.size());
-    auto& road = editableRoad(d, *link.roadId);
-    if (forwardOnRoad(road, link)) road.overrides.lanesForward = lanes; // D382: by geometry
+    auto& road = editableStreetSegment(d, *link.streetSegmentId);
+    if (forwardOnStreetSegment(road, link)) road.overrides.lanesForward = lanes; // D382: by geometry
     else road.overrides.lanesBackward = lanes;
 }
-void useRoadLanes(ProjectDocument& d, const std::string& linkId, const std::vector<CrossSection>& installed) {
-    const auto road = *generatedLink(d, linkId).roadId;
+void useStreetSegmentLanes(ProjectDocument& d, const std::string& linkId, const std::vector<CrossSection>& installed) {
+    const auto road = *generatedLink(d, linkId).streetSegmentId;
     applyTemplate(d, road, installed);
 }
 }

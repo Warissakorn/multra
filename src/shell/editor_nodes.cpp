@@ -83,7 +83,7 @@ void EditorWindow::buildNodes() {
         if (!gateFlowsEditable(history_.document())) return;
         const auto& d = history_.document();
         const auto ends = studyAreaEnds(d);
-        // A gate reads as its Road (else its Link) and its end; a zone as its name.
+        // A gate reads as its StreetSegment (else its Link) and its end; a zone as its name.
         const auto label = [&](const std::string& id) {
             for (const auto* suffix : {":in", ":out"}) {
                 const std::string tail = suffix;
@@ -92,9 +92,9 @@ void EditorWindow::buildNodes() {
                 const auto l = std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& x) { return x.id == linkId; });
                 auto name = QString::fromStdString(linkId);
                 if (l != d.network.links.end() && !l->name.empty()) name = QString::fromStdString(l->name);
-                if (l != d.network.links.end() && l->roadId)
-                    for (const auto& road : d.network.roads)
-                        if (road.id == *l->roadId && !road.name.empty()) name = QString::fromStdString(road.name);
+                if (l != d.network.links.end() && l->streetSegmentId)
+                    for (const auto& road : d.network.streetSegments)
+                        if (road.id == *l->streetSegmentId && !road.name.empty()) name = QString::fromStdString(road.name);
                 return text(tail == ":in" ? "editorGateIn" : "editorGateOut").arg(name);
             }
             const auto z = std::find_if(d.zones.zones.begin(), d.zones.zones.end(), [&](const auto& x) { return x.id == id; });

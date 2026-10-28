@@ -34,9 +34,9 @@ paths, Node membership, conflicts) is computed on every read and never stored.
 | `node_suggestions.*` | *Suggest nodes*: one generated polygon per uncovered cluster of conflicts | [NODES §6](../../docs/reference/NODES.md) |
 | `node_analysis.hpp` | The analytical inputs a Micro detail does not give (schema 58): per Node, approach and turn | [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
 | `node_detail.*` | F4's plan for a coarse Node's Micro detail | [READINESS §13](../../docs/reference/READINESS.md) |
-| `coarse_nodes.*` | What a Node without Micro detail reads from the Roads around it | [ROADS §6](../../docs/reference/ROADS.md), [NODES §5](../../docs/reference/NODES.md) |
-| `roads.*` | What an authored Road means on its own | [ROADS §3](../../docs/reference/ROADS.md) |
-| `road_crossings.*` | *Find crossings*: where Roads on one level cross or touch | [ROADS §5](../../docs/reference/ROADS.md) |
+| `coarse_nodes.*` | What a Node without Micro detail reads from the Street segments around it | [STREET_SEGMENTS §6](../../docs/reference/STREET_SEGMENTS.md), [NODES §5](../../docs/reference/NODES.md) |
+| `street_segments.*` | What an authored Street segment means on its own | [STREET_SEGMENTS §3](../../docs/reference/STREET_SEGMENTS.md) |
+| `street_segment_crossings.*` | *Find crossings*: where Street segments on one level cross or touch | [STREET_SEGMENTS §5](../../docs/reference/STREET_SEGMENTS.md) |
 | `study_area.*` | The part of the network a Micro run over a study area keeps | [STUDY_AREA §4](../../docs/reference/STUDY_AREA.md) |
 
 ## Tests

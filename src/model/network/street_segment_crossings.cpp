@@ -1,4 +1,4 @@
-#include "road_crossings.hpp"
+#include "street_segment_crossings.hpp"
 #include "polygon.hpp"
 #include <algorithm>
 #include <cmath>
@@ -10,18 +10,18 @@ namespace {
 struct Event { Point at; std::size_t a, b; double stationA, stationB; };
 double distance(Point p, Point q) { return std::hypot(p.x - q.x, p.y - q.y); }
 }
-std::vector<RoadCrossing> findCrossings(const Network& n, double tolerance) {
+std::vector<StreetSegmentCrossing> findCrossings(const Network& n, double tolerance) {
     if (!std::isfinite(tolerance) || tolerance <= 0) throw std::invalid_argument("EDIT_CROSSING_TOLERANCE");
     const auto overpass = [&](const std::string& a, const std::string& b) {
         const auto pair = a < b ? std::pair{a, b} : std::pair{b, a};
         return std::find(n.overpasses.begin(), n.overpasses.end(), pair) != n.overpasses.end();
     };
     std::vector<Event> events;
-    for (std::size_t i = 0; i < n.roads.size(); ++i)
-        for (std::size_t j = i + 1; j < n.roads.size(); ++j) {
-            const auto& a = n.roads[i].centreline; const auto& b = n.roads[j].centreline;
-            if (n.roads[i].level != n.roads[j].level || a.size() < 2 || b.size() < 2 || overpass(n.roads[i].id, n.roads[j].id)) continue;
-            // Proper crossings, segment by segment, with each Road's station at the crossing.
+    for (std::size_t i = 0; i < n.streetSegments.size(); ++i)
+        for (std::size_t j = i + 1; j < n.streetSegments.size(); ++j) {
+            const auto& a = n.streetSegments[i].centreline; const auto& b = n.streetSegments[j].centreline;
+            if (n.streetSegments[i].level != n.streetSegments[j].level || a.size() < 2 || b.size() < 2 || overpass(n.streetSegments[i].id, n.streetSegments[j].id)) continue;
+            // Proper crossings, segment by segment, with each StreetSegment's station at the crossing.
             double sa = 0;
             for (std::size_t p = 1; p < a.size(); ++p) {
                 const double la = distance(a[p - 1], a[p]);
@@ -40,7 +40,7 @@ std::vector<RoadCrossing> findCrossings(const Network& n, double tolerance) {
                 }
                 sa += la;
             }
-            // An end of one Road near the other: a T, or a Road drawn just short of the one it meets.
+            // An end of one StreetSegment near the other: a T, or a StreetSegment drawn just short of the one it meets.
             for (const auto& [from, to, swap] : {std::tuple{&a, &b, false}, std::tuple{&b, &a, true}})
                 for (const double end : {0.0, polylineLength(*from)}) {
                     const auto p = pointAlong(*from, end);
@@ -58,12 +58,12 @@ std::vector<RoadCrossing> findCrossings(const Network& n, double tolerance) {
     const auto root = [&](std::size_t k) { while (group[k] != k) k = group[k] = group[group[k]]; return k; };
     for (std::size_t k = 0; k < events.size(); ++k)
         for (std::size_t m = k + 1; m < events.size(); ++m)
-            if (n.roads[events[k].a].level == n.roads[events[m].a].level && distance(events[k].at, events[m].at) <= tolerance)
+            if (n.streetSegments[events[k].a].level == n.streetSegments[events[m].a].level && distance(events[k].at, events[m].at) <= tolerance)
                 group[root(m)] = root(k);
-    std::vector<RoadCrossing> places;
+    std::vector<StreetSegmentCrossing> places;
     for (std::size_t k = 0; k < events.size(); ++k) {
         if (root(k) != k) continue;
-        RoadCrossing c; c.level = n.roads[events[k].a].level;
+        StreetSegmentCrossing c; c.level = n.streetSegments[events[k].a].level;
         std::vector<std::pair<std::size_t, double>> stations; std::size_t count = 0;
         for (std::size_t m = 0; m < events.size(); ++m) {
             if (root(m) != k) continue;
@@ -73,17 +73,17 @@ std::vector<RoadCrossing> findCrossings(const Network& n, double tolerance) {
         c.at.x /= static_cast<double>(count); c.at.y /= static_cast<double>(count);
         std::sort(stations.begin(), stations.end(), [](const auto& x, const auto& y) { return x.first < y.first; });
         for (std::size_t s = 0; s < stations.size(); ++s) {
-            if (s && stations[s].first == stations[s - 1].first) continue; // one entry per Road
-            const auto& road = n.roads[stations[s].first];
+            if (s && stations[s].first == stations[s - 1].first) continue; // one entry per StreetSegment
+            const auto& road = n.streetSegments[stations[s].first];
             const double length = polylineLength(road.centreline), station = stations[s].second;
             const bool end = station <= tolerance || station >= length - tolerance;
-            c.roads.push_back({road.id, station, end});
+            c.streetSegments.push_back({road.id, station, end});
             c.legs += end ? 1 : 2; c.endpoint = c.endpoint || end;
         }
         // A place a Node already covers was answered: a confirmed junction is not offered again.
         const bool covered = std::any_of(n.nodes.begin(), n.nodes.end(), [&](const Node& node) {
             return node.polygon.size() >= 3 && pointInPolygon(node.polygon, c.at); });
-        if (c.roads.size() >= 2 && c.legs >= 3 && !covered) places.push_back(std::move(c));
+        if (c.streetSegments.size() >= 2 && c.legs >= 3 && !covered) places.push_back(std::move(c));
     }
     std::sort(places.begin(), places.end(), [](const auto& x, const auto& y) {
         return std::tie(x.level, x.at.x, x.at.y) < std::tie(y.level, y.at.x, y.at.y);
