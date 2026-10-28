@@ -6,6 +6,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — UTDF probe prepared for the owner (M14 slice U0)
+
+- **Asked:** "ทำ U0".
+- **Found:** Synchro's documentation and PTV's Visum notes were not reachable from the session. A
+  Synchro-written UTDF 8 file in the MIT-licensed `utdf2gmns` package (PyPI) gave the real section
+  titles, headers and record names; UTDF_EXPORT §3 now lists them with that source. Its `[Network]`
+  has no driving-side record.
+- **Written:**
+  - [UTDF_PROBE](plans/UTDF_PROBE.md): the left-hand reference junction (far and kerb pockets, a
+    shared kerb-through lane, volumes, P2 at 100 s), the owner's steps and an answer table.
+  - `tests/data/utdf/u0-handwritten.csv`: what MULTRA would write for that junction.
+  - OWNER_SITTING I; UTDF_EXPORT §6 and §8.
+- **Checked:** a scratchpad script compared the file's cell counts, lanes, storage, volumes and the
+  100 s ring sums against the sheet. No code changed; no import has been tried. UT0 waits for the
+  owner's golden file.
+
 ## 2026-10-28 — Road renamed Street segment, schema 59 (D389, M14 slice SR)
 
 - **Asked:** "เริ่มทำได้เลย" for the rename D387 booked; "Segment" turned out to be the engine's type
@@ -106,13 +122,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Decided:** 1a, one posted speed on the Link, the approach speed derived with every stored value
   migrated; 2a, D378's order rule reworded so a finer level's gate does not close before the coarser
   one it depends on. PROBLEM §3 and MULTI_LEVEL_MODELLING §7 carry the new wording. Reasons in D380.
-
-## 2026-10-28 — Review of D378/D379: corrections and B28
-
-- **Asked:** `/scrutinize`, then the plan was approved.
-- **Corrected:** D379 said `seam_checks.cpp` compares two speed homes; it compares only adjacent
-  link types' `freeSpeed`. D379 now states `freeSpeed`'s Macro/Meso role and leaves its relation to
-  the posted speed to the 1a contract.
-- **Returned to the owner (B28):** 1a, because it reverses the owner's own D373 answer; and D378's
-  order rule, which the current Meso and Micro work already departs from. PROBLEM §3 names those
-  exceptions; §2 says the Aimsun facts come from search excerpts.

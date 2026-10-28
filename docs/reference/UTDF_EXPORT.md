@@ -3,8 +3,9 @@
 Contract before code (D145), docs only, written 2026-10-28. The owner approved exporting the
 network built for HCM to PTV Vistro 2026 and Synchro 12 (D386). This is the competitor-format
 scope revision that ROADMAP M1.23 requires; imports from those programs stay out. The editor side
-is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). **Nothing here is implemented, and no field list
-below is verified:** U0 (§8) fixes it from files the owner's programs write and read.
+is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). **Nothing here is implemented.** §3's
+names come from one Synchro UTDF 8 file; no import by either program has been verified. U0 (§8)
+fixes them from files the owner's programs write and read.
 
 ## 1. Why UTDF
 
@@ -27,20 +28,32 @@ From the saved document, read only, never changed by the export:
 Not exported: vehicle inputs, routes, Micro behaviour, conflict areas, Macro and Meso data, and
 results. A Node outside the rules is left out and named in the export report, never guessed.
 
-## 3. Sections (provisional, fixed by U0)
+## 3. Sections (seen in one Synchro file, fixed by U0)
 
-UTDF's combined file is one CSV with bracketed sections; each section's rows are keyed by record
-name and intersection id. The writer emits these, in this order, with the field names U0 copies
-from a Synchro 12 file:
+UTDF's combined file is one CSV with six bracketed sections. Each section starts with a title line
+and a header row. Rows are keyed by record name and intersection id (`INTID`), and the cells run by
+direction, movement or phase.
 
-| Section | MULTRA source |
-|---|---|
-| `[Network]` | Metric flag (§4), driving side if the format has one (§6), UTDF version |
-| `[Nodes]` | Node number (§5), type (signalised, unsignalised, external), X, Y (§4), name |
-| `[Links]` | Per Node and direction: upstream Node, lanes, name, distance, speed, grade, curve points |
-| `[Lanes]` | Per movement (NBL…WBR): lanes, shared, width, storage, taper, speed, protected and permitted phase, volume, PHF, heavy vehicles, bus stops, parking, ideal saturation flow |
-| `[Timeplans]` | Control type (pretimed or unsignalised), cycle, offset, reference phase |
-| `[Phases]` | Per phase 1–8: start, end, minimum green, yellow, all-red, recall |
+**Source, 2026-10-28.** The names below are copied from a Synchro-written UTDF 8 file, imperial and
+right-hand, in the MIT-licensed `utdf2gmns` 1.2.5 package from PyPI (`engine/sigma_x/UTDF8.csv`).
+- The file is CRLF, with no BOM.
+- Synchro's own documentation and PTV's Visum notes were not reachable from the session.
+- The file is not vendored here.
+
+| Section, title line | Header | MULTRA writes (source) |
+|---|---|---|
+| `[Network]`, `Network Settings` | `RECORDNAME,DATA` | `UTDFVERSION` 8, `Metric` 1 (§4), and the defaults the project has: `yellowTime`, `allRedTime`, `HV` (a fraction), `PHF`, `DefWidth`, `DefFlow` |
+| `[Nodes]`, `Node Data` | `INTID,TYPE,X,Y,Z,DESCRIPTION,CBD,Inside Radius,Outside Radius,Roundabout Lanes,Circle Speed` | the Node number (§5), `TYPE` (0 signalised, 1 external; unsignalised unknown), X and Y (§4), the name, `CBD` |
+| `[Links]`, `Link Data` | `RECORDNAME,INTID,NB,SB,EB,WB,NE,NW,SE,SW` | for each Node's inbound Link by direction: `Up ID`, `Lanes`, `Name`, `Distance`, `Speed`, `Time`, `Grade`, `Median`. External ends list the Link arriving at them |
+| `[Lanes]`, `Lane Group Data` | `RECORDNAME,INTID,NBL,NBT,NBR,SBL,…,WBR,PED,HOLD` (the sample adds `NE…`/`SW…` and second-turn columns such as `EBL2`) | `Up Node`, `Dest Node`, `Lanes`, `Shared`, `Width`, `Storage`, `Taper`, `StLanes`, `Grade`, `Speed`, `Phase1`, `PermPhase1`, `IdealFlow`, `Volume`, `PHF`, `HeavyVehicles` (per cent), `BusStops` |
+| `[Timeplans]`, `Timing Plan Settings` | `RECORDNAME,INTID,DATA` | `Control Type`, `Cycle Length`, `Reference Phase`, `Offset` |
+| `[Phases]`, `Phasing Data` | `RECORDNAME,INTID,D1,…,D8` | `BRP`, `MinGreen`, `MaxGreen`, `Yellow`, `AllRed`, `Recall`, `Start`, `End`, `Yield` |
+
+The sample carries more rows than MULTRA authors. MULTRA leaves out the detector rows, `Growth`,
+`LostTime`, `Allow RTOR`, `SatFlow*`, `Lane Group Flow`, the walk and pedestrian rows, the Link
+mandatory and positioning distances, and the curve points. The curve points are written when U1
+reaches them (§4). The codes the hand-written file guesses (shared lanes, control type, recall,
+`BRP`) are listed in [UTDF_PROBE §5](../plans/UTDF_PROBE.md#5-what-the-hand-written-file-assumes-checked-by-step-4).
 
 A field MULTRA has no value for is written empty, so the receiving program applies its own default
 and says so; the export report lists each one. MULTRA never writes a value it did not author.
@@ -70,8 +83,11 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
   unsignalised only if the user confirms, never silently.
 - Two-way stop: control type unsignalised with Stop on the minor approaches; all-way stop likewise.
 - **Left-hand traffic is the main risk.** HCM, NEMA numbering and both programs are written for
-  right-hand traffic. U0 checks whether Synchro 12 and Vistro 2026 have a left-hand setting that
-  the file can carry, and how each then names far and kerb turns. Until answered, the movement
+  right-hand traffic. The sample's `[Network]` section has no driving-side record. U0 asks the
+  owner three things about Synchro 12 and Vistro 2026 (UTDF_PROBE §4 step 5):
+  - whether each program has a left-hand setting;
+  - whether the file carries it;
+  - whether the far turn is then written under `R` or `L`. Until answered, the movement
   names are geometric (L/T/R) and the phase numbers follow JUNCTION_TEMPLATES §8's left-hand rule.
 
 ## 7. Slices
@@ -84,6 +100,10 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 | U3 | Round trip on the owner's machine (OWNER_SITTING item), fixes | UT10 |
 
 ## 8. U0: the probe (first, before any writer)
+
+**Prepared 2026-10-28; waiting on the owner.** The sheet is [UTDF_PROBE](../plans/UTDF_PROBE.md),
+MULTRA's hand-written file is [`tests/data/utdf/u0-handwritten.csv`](../../tests/data/utdf/README.md),
+and the sitting items are OWNER_SITTING I. The steps:
 
 1. The session writes a **reference junction** sheet: the Thai four-leg fixture of
    JUNCTION_TEMPLATES JT6 (two crossing Street segments, kerb pockets, a shared kerb-through lane), with

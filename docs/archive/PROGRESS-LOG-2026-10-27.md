@@ -2,6 +2,16 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-28 — Review of D378/D379: corrections and B28
+
+- **Asked:** `/scrutinize`, then the plan was approved.
+- **Corrected:** D379 said `seam_checks.cpp` compares two speed homes; it compares only adjacent
+  link types' `freeSpeed`. D379 now states `freeSpeed`'s Macro/Meso role and leaves its relation to
+  the posted speed to the 1a contract.
+- **Returned to the owner (B28):** 1a, because it reverses the owner's own D373 answer; and D378's
+  order rule, which the current Meso and Micro work already departs from. PROBLEM §3 names those
+  exceptions; §2 says the Aimsun facts come from search excerpts.
+
 ## 2026-10-28 — B27 decided on delegation (D379)
 
 - **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.

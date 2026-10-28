@@ -35,14 +35,23 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Contracts [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
   ROADMAP M14. D387: no builder tool; Street segments crossing make Nodes and a junction template generates
   the detail; transitions align per template; Road became Street segment first (D389).
-  B30 answered as recommended (D388: JT-1a–JT-5a, UX-1a–UX-4a). **Waiting on the owner:** U0's imports.
-- **SR is done (D389):** Road is Street segment (Segment was the engine's word); schema 59 renamed
-  the keys and older files still read. Owner look on Windows: OWNER_SITTING E24.
-- **Next session: U0** (UTDF_EXPORT §8): the reference-junction sheet and a hand-written UTDF for the owner
-  to import into Synchro 12 and Vistro 2026; Synchro's own export as the golden file; record field
-  names, units and the left-hand answer in UTDF_EXPORT §3/§6. No writer code before it.
-- Then J1 (posted speed, D379–D381), J2 (kerb-side pocket, `approachLayout`), J3–J4 (templates,
-  signals), J5 (transitions), J6 (editor surfaces), J7 (analysis panel), U1–U3.
+  B30 answered as recommended (D388: JT-1a–JT-5a, UX-1a–UX-4a). SR is done (D389): Road is Street
+  segment and schema 59 renamed the keys; Windows look is OWNER_SITTING E24.
+- **U0 is prepared and waiting on the owner** ([OWNER_SITTING I](plans/OWNER_SITTING.md#i--utdf-probe-m14-u0)):
+  - the sheet is [UTDF_PROBE](plans/UTDF_PROBE.md), and MULTRA's hand-written file is
+    `tests/data/utdf/u0-handwritten.csv`;
+  - UTDF_EXPORT §3 has the field names from one Synchro UTDF 8 file;
+  - when the answers return, fix §3/§6 from them, add the golden file if the owner allows it, and
+    write UT0;
+  - no UTDF writer code before then.
+- **Next session: J1** (posted speed on the Link, D379–D381; JUNCTION_TEMPLATES §9), which does not
+  wait on UTDF. Then:
+  - J2: the kerb-side pocket, `approachLayout`;
+  - J3–J4: templates and signals;
+  - J5: transitions;
+  - J6: editor surfaces;
+  - J7: the analysis panel;
+  - U1–U3, once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
   `approachLayout` and UTDF's Lanes read.
 
