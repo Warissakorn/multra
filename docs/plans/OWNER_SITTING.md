@@ -64,21 +64,10 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Also: PROBLEM §1 now names two equal roles (study engineers and consultants; transport
    planners), with road and signal agencies doing the same work, as following from the equal
    weight. Correct that wording? *Owner:*
-27. **Link, Connector and Node: one source per value** (listed 2026-10-27, review after D378). Four
-   choices, each with a recommendation; answer by number and letter:
-   1. **Speed has three homes:** `LinkType.freeSpeed` (Macro, Meso), the M13 approach `speedLimit`
-      (D373) and Micro's desired speeds. (a, recommended) one posted speed on the Link or its Road
-      template, read by every level and M13, the approach field derived through a schema step;
-      (b) keep them separate.
-   2. **Per-lane vehicle restrictions** (bus and motorcycle lanes; Vissim `BlockedVeh`, Aimsun
-      lane-level restrictions). (a, recommended) one per-lane allowed-modes field that every level
-      reads; (b) not now.
-   3. **M13 turn volumes are typed by hand** while Micro, Meso and Macro compute turn flows.
-      (a, recommended) book *Fill from model* (D371) from Micro, Meso or Macro results with the
-      source recorded; (b) keep typing only.
-   4. **M13 refuses Nodes without Micro detail** (D371), though they carry a coarse stage signal.
-      (a, recommended) let M13 analyse a coarse Node from its stage signal; (b) keep the refusal.
-   *Owner:*
+Answered 2026-10-28: **B27**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
+[D379](../decisions/RECORD.md#d379): 1a, 2a, 3a; 4 returns to the owner only if HCM 7 prints no
+planning-level method for a Node without lane detail. Bookings only; each slice starts when the owner asks. Numbers are not reused.
+
 Answered 2026-10-27: **B25**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
 [D375](../decisions/RECORD.md#d375): M13 A3's choices 1a–5a ([NODE_ANALYSIS](../reference/NODE_ANALYSIS.md) §12). Numbers are not reused.
 

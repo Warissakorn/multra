@@ -67,6 +67,11 @@ Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the 
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
+**Booked by D379 (B27, on delegation), each starting with its contract when the owner asks:** one
+posted speed on the Link (the M13 approach `speedLimit` derived through a schema step), per-lane
+allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
+a planning-level method (otherwise back to the owner).
+
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner

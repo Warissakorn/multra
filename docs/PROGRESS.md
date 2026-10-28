@@ -6,6 +6,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — B27 decided on delegation (D379)
+
+- **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.
+- **Decided:** 1a one posted speed on the Link, read by every level and M13 (D373's approach field
+  becomes derived); 2a per-lane allowed modes; 3a *Fill from model* for Node turn volumes; 4a only
+  within an HCM 7 planning-level method, read before the contract, else back to the owner. Reasons
+  are in D379. Bookings only: no slice starts until the owner asks.
+
 ## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
 
 - **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").
@@ -117,16 +125,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   reserved for A3 + A8.
 - **Owner answer (D371):** "ใช้ตามแนะนำทั้งหมด", every recommendation 1a–9a. A1 derives lane groups
   from the Node's Micro detail rather than storing them.
-
-## 2026-10-27 — Measured optimization pass: graph-header fan-in, doc sizes
-
-- **Measured first** (Linux, 4 cores): the engine runs M2.6's hour in 0.40–0.45 s (Release), editor
-  redraw 0.6–0.9 ms, Run Step 2.7 ms, Node detail 0.65–0.78 s; none needed work. A Debug rebuild
-  after touching `core/types.hpp` is 540 of 575 TUs (12.5 min); its split stays with the first
-  engine slice that edits `Vehicle`/`SimState` (NEXT).
-- **Build:** `MacroSettings`/`MesoSettings` move to `macro/settings.hpp`/`meso/settings.hpp`, so the
-  authoring definition no longer includes the graphs. Touching `macro/graph.hpp` rebuilds 44 TUs
-  (was 456), `meso/graph.hpp` 48 (was 462). No behaviour change; ctest 242/242.
-- **Docs:** AGENTS gives RECORD's real size (≈95k tokens); ROADMAP M3.2.8a.1's history moves whole
-  to [archive](archive/ROADMAP-implemented-2026-10-27.md#m328a1-clamp-history-d105d258)
-  (ROADMAP −2,628 characters, still 494 lines).

@@ -448,3 +448,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D377](RECORD.md#d377) — M13 A3 implemented: permitted and protected-permitted far turns (polygon, Step 7 B capacity, G_q2 iteration); l+sl, lr and one-lane permitted layouts refused and put to the owner; no permitted queue yet.
 
 [D378](RECORD.md#d378) — Purpose amended: Micro, Meso and Macro weighted equally, study-chain order (Macro → Meso → Micro), M13 a Node method serving them, Aimsun Next a reference in PROBLEM; supersedes D145 on "Micro first" only.
+
+[D379](RECORD.md#d379) — B27 decided on delegation ("ช่วยตัดสินใจ"): one posted speed on the Link (D373 approach field derived), per-lane allowed modes, *Fill from model* for Node turn volumes; M13 on coarse Nodes only within an HCM 7 planning method. Bookings only.

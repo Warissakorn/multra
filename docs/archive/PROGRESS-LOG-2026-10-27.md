@@ -2,6 +2,19 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Measured optimization pass: graph-header fan-in, doc sizes
+
+- **Measured first** (Linux, 4 cores): the engine runs M2.6's hour in 0.40–0.45 s (Release), editor
+  redraw 0.6–0.9 ms, Run Step 2.7 ms, Node detail 0.65–0.78 s; none needed work. A Debug rebuild
+  after touching `core/types.hpp` is 540 of 575 TUs (12.5 min); its split stays with the first
+  engine slice that edits `Vehicle`/`SimState` (NEXT).
+- **Build:** `MacroSettings`/`MesoSettings` move to `macro/settings.hpp`/`meso/settings.hpp`, so the
+  authoring definition no longer includes the graphs. Touching `macro/graph.hpp` rebuilds 44 TUs
+  (was 456), `meso/graph.hpp` 48 (was 462). No behaviour change; ctest 242/242.
+- **Docs:** AGENTS gives RECORD's real size (≈95k tokens); ROADMAP M3.2.8a.1's history moves whole
+  to [archive](ROADMAP-implemented-2026-10-27.md#m328a1-clamp-history-d105d258)
+  (ROADMAP −2,628 characters, still 494 lines).
+
 ## 2026-10-27 — M0 plausibility accepted by owner ruling (D369)
 
 - **Owner ruling:** "ผ่าน แบบ A" — pass, with the amber caveat on the record. The owner holds the
