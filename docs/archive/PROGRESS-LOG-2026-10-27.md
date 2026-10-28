@@ -2,6 +2,20 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Analytical junction capacity, slice A1 (M13, D372)
+
+- **Changed:** a new pure engine `src/analysis/` computes HCM 7 Ch. 19 for pretimed, protected,
+  exclusive lane groups: Eq. 19-8's factors, capacity, v/c, d1/PF, d2, flow-weighted approach and
+  intersection delay, and Exhibit 19-8 letters from the new `los/hcm7-signalised.json`.
+  `compileNodeAnalysis` derives lane groups from a Node's Micro detail and reads timing from the
+  existing programs. Nodes store only volumes and adjustments (`analysis`, schema 58), and the CLI
+  gains `--node-analysis`. Results are labelled analytical and not validated.
+- **Read from the copy:** Eqs. 19-9 to 19-14 and Exhibits 19-11, 19-15 and 19-20, from their images.
+  Exhibit 19-41 assumes shared right-turn lanes, so its reproduction is carved out to A2.
+- **Verified:** Linux Debug ctest 245/245 (`nodeanalysis` NA1–NA8 plus an end-to-end four-leg run:
+  pocket turns D, node 46.69 s; hand-checked); architecture, file-size and docs checks pass. All four
+  shipped projects' `--project 42` outputs are identical to the Release build of the previous commit.
+
 ## 2026-10-27 — Analytical junction capacity booked as M13 (D370)
 
 - **Asked:** should MULTRA analyse junctions as Vistro, Synchro and SIDRA do? Answer approved by the

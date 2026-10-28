@@ -115,9 +115,8 @@ assignment, the corridor model and per-movement evaluation are all first-class i
 than things worked around.
 
 **Work order follows the study chain, Macro → Meso → Micro (D378):** among open work, the coarser
-level's next slice comes first, and a level's gate is closed before a finer level depends on it.
-(Existing exceptions: Meso, M11, already uses M10.1's link types while M10.1's gate is open, and
-M13 and editor work continue; the wording is put to the owner in OWNER_SITTING B28.)
+level's next slice comes first, and a finer level's gate does not close before the gate of the
+coarser level it depends on (D380). Work at a finer level may continue meanwhile.
 The Node method serves all three levels and is not a fourth level.
 
 This is the expensive answer, chosen deliberately. See decision **D1** in

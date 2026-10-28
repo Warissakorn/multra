@@ -215,8 +215,8 @@ study's region, not a national model.
 ## 7. Order and cost
 
 **Amended by D378 (2026-10-27):** Micro, Meso and Macro carry equal weight, and open work follows
-the study chain, Macro → Meso → Micro: the coarser level's next slice comes first and a level's
-gate closes before a finer level depends on it. Until D378, Micro was the first deliverable (D145)
+the study chain, Macro → Meso → Micro: the coarser level's next slice comes first, and a finer
+level's gate does not close before the coarser level's gate it depends on (D380). Until D378, Micro was the first deliverable (D145)
 and the D143 queue corrected its known biases; that history stands. M8 came first among the new milestones because zones and
 OD feed every level and lots answer the most common TIA question. M9 reuses Micro and needs no new
 engine. M10 is the largest new code but analytically testable. M11 needs M9's loop and M10's link
