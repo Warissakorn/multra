@@ -8,6 +8,12 @@
 #include <stdexcept>
 
 namespace multra {
+void renameCoarseRoad(NodeCoarse& c, const std::string& from, const std::string& to) {
+    const auto turn = [&](std::pair<std::string, std::string>& p) { if (p.first == from) p.first = to; if (p.second == from) p.second = to; };
+    for (auto& m : c.major) if (m == from) m = to;
+    for (auto& p : c.bannedTurns) turn(p);
+    if (c.signal) for (auto& s : c.signal->stages) for (auto& p : s.turns) turn(p);
+}
 namespace {
 using Pair = std::pair<std::string, std::string>;
 bool allDefault(const NodeCoarse& c) {
@@ -86,13 +92,7 @@ void renameRoad(Network& n, const std::string& from, const std::string& to) {
         if (a != b && std::find(pairs.begin(), pairs.end(), pair) == pairs.end()) pairs.push_back(pair);
     }
     n.overpasses = std::move(pairs);
-    const auto turn = [&](Pair& p) { if (p.first == from) p.first = to; if (p.second == from) p.second = to; };
-    for (auto& node : n.nodes) {
-        if (!node.coarse) continue;
-        for (auto& m : node.coarse->major) if (m == from) m = to;
-        for (auto& p : node.coarse->bannedTurns) turn(p);
-        if (node.coarse->signal) for (auto& s : node.coarse->signal->stages) for (auto& p : s.turns) turn(p);
-    }
+    for (auto& node : n.nodes) if (node.coarse) renameCoarseRoad(*node.coarse, from, to);
 }
 // The lifecycle's join, when the Node qualifies (see the header).
 bool mergeAway(ProjectDocument& d, std::size_t k) {

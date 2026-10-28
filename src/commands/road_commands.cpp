@@ -1,4 +1,5 @@
 #include "road_commands.hpp"
+#include "coarse_commands.hpp"
 #include "connector_commands.hpp"
 #include "demand_commands.hpp"
 #include "detail.hpp"
@@ -6,6 +7,7 @@
 #include "node_commands.hpp"
 #include "node_detail_commands.hpp"
 #include "../core/validate.hpp"
+#include "../model/network/coarse_nodes.hpp"
 #include "../model/network/roads.hpp"
 #include <algorithm>
 #include <cmath>
@@ -182,6 +184,13 @@ std::string splitRoad(ProjectDocument& d, const std::string& roadId, double stat
     editableRoad(d, road.id).links = first; editableRoad(d, next).links = second; // splitLink detached them
     for (const auto& id : first) editableLink(d, id).roadId = road.id;
     for (const auto& id : second) editableLink(d, id).roadId = next;
+    // D382: a coarse Node the moved end now meets names the new Road; the near end's Nodes keep the id.
+    for (auto& node : d.network.nodes) {
+        if (!node.coarse) continue;
+        bool meetsNext = false, meetsRoad = false;
+        for (const auto& leg : nodeRoadLegs(d.network, node)) { meetsNext = meetsNext || leg.roadId == next; meetsRoad = meetsRoad || leg.roadId == road.id; }
+        if (meetsNext && !meetsRoad) renameCoarseRoad(*node.coarse, road.id, next);
+    }
     const auto pairs = d.network.overpasses;
     for (const auto& [a, b] : pairs) {
         if (a != road.id && b != road.id) continue;

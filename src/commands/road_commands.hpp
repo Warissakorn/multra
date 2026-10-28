@@ -48,7 +48,8 @@ void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, con
 // 0.2 m of an end): the Road keeps the first part, a new Road (same name, template, overrides and level)
 // takes the rest, and each generated Link is split by splitLink at that point. The forward Link's
 // original id stays on the first Road; the backward Link's original id, which runs from the far end,
-// goes to the new one. Overpass pairs naming the Road are copied for the new Road. Returns its id.
+// goes to the new one. Overpass pairs naming the Road are copied for the new Road, and a coarse Node
+// the moved end meets (and the near end does not) names the new Road instead (D382). Returns its id.
 // Direct Road zone connectors keep their physical endpoint in either travel direction (D340).
 std::string splitRoad(ProjectDocument&, const std::string& roadId, double station);
 enum class CrossingChoice { junction, overpass };
