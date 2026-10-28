@@ -2,6 +2,19 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
+
+- **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want
+  Micro, Meso and Macro weighted equally") and "ศึกษาจากโปรแกรม aimsun next ด้วย" ("study from the
+  Aimsun Next program as well"); then, by AskUserQuestion: the study-chain order, M13 as a Node
+  method serving the three levels, and Aimsun as a reference in PROBLEM only.
+- **Changed (docs only):** PROBLEM §1–§8 (two equal user roles, needs per level, the Node method,
+  Aimsun Next's integrated model cited from its public docs, a done sentence per level and the Node,
+  non-goals for `.ang` files and proprietary formulas, a per-level §7, §8 question 2); PRINCIPLES
+  rule 8 (each level's vocabulary); MULTI_LEVEL_MODELLING §7, ROADMAP M8–M12 and M13, NEXT's order,
+  README's lead and OWNER_SITTING B26. No code, gate or done-condition changed.
+- **Open for the owner:** B26, a simultaneous hybrid meso–micro run, and the user-role wording.
+
 ## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
 
 - **Asked:** "ทำ A3" ("do A3"), with D375's choices.

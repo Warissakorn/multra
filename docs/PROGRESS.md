@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — M14 booked: junction builder and UTDF export, contracts only (D386)
+
+- **Asked:** could the editor build an HCM network first and export it to PTV Vistro; then
+  Synchro too (confirmed: Vistro 2026, Synchro 12); review the network tools; "อนุมัติ ช่วยเขียน
+  รายละเอียดก่อน" ("approved, write the details first").
+- **Found:** a four-leg HCM junction needs six manual steps; Road + *Find crossings* + F4 is fast
+  but shares lanes kerb to far with no pocket, so HCM lane groups and UTDF lanes cannot come from
+  it; no cross-section template ships; there is no posted speed on the Link, no kerb-side pocket,
+  no integer Node number and no NEMA phase numbering.
+- **Written:** [JUNCTION_BUILDER](reference/JUNCTION_BUILDER.md) and
+  [UTDF_EXPORT](reference/UTDF_EXPORT.md), ROADMAP M14, OWNER_SITTING B30. UTDF's field list is
+  provisional until U0 reads files the owner's Synchro 12 and Vistro 2026 write and import;
+  left-hand traffic in both is the main open risk. No code changed.
+
 ## 2026-10-28 — Road workflow: Apply on several Roads, crossings warning (D385)
 
 - **Asked:** batch D of the road-model review, on the D382–D384 branch, whose PR is still open.
@@ -95,16 +109,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   D80) stay where they are.
 - **Changed (docs only):** VISSIM_PARITY's Nodes row no longer says "Absent entirely";
   CONNECTOR_PARITY_AUDIT §2 is marked as a 2026-09-21 baseline with a 2026-10-27 recheck.
-
-## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
-
-- **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want
-  Micro, Meso and Macro weighted equally") and "ศึกษาจากโปรแกรม aimsun next ด้วย" ("study from the
-  Aimsun Next program as well"); then, by AskUserQuestion: the study-chain order, M13 as a Node
-  method serving the three levels, and Aimsun as a reference in PROBLEM only.
-- **Changed (docs only):** PROBLEM §1–§8 (two equal user roles, needs per level, the Node method,
-  Aimsun Next's integrated model cited from its public docs, a done sentence per level and the Node,
-  non-goals for `.ang` files and proprietary formulas, a per-level §7, §8 question 2); PRINCIPLES
-  rule 8 (each level's vocabulary); MULTI_LEVEL_MODELLING §7, ROADMAP M8–M12 and M13, NEXT's order,
-  README's lead and OWNER_SITTING B26. No code, gate or done-condition changed.
-- **Open for the owner:** B26, a simultaneous hybrid meso–micro run, and the user-role wording.

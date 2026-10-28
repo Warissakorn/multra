@@ -73,6 +73,10 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
+30. **Junction builder and UTDF export** (listed 2026-10-28, [D386](../decisions/RECORD.md#d386)). Answer
+   [JUNCTION_BUILDER](../reference/JUNCTION_BUILDER.md) §11 (JB-1 to JB-7) and
+   [UTDF_EXPORT](../reference/UTDF_EXPORT.md) §9 (UX-1 to UX-4), recommended first; then run U0
+   (UTDF_EXPORT §8) on Synchro 12 and Vistro 2026, including the left-hand-traffic check. *Owner:*
 Answered 2026-10-28: **B28**, owner: “ช่วยตัดสินใจ” (“help decide”), given after being told that
 item 1 reverses D373; decided on that delegation in [D380](../decisions/RECORD.md#d380): 1a, 2a.
 Numbers are not reused.

@@ -39,12 +39,9 @@ It does not close the owner's M0 plausibility gate, M1 or M7. Body in [archive](
 
 The Vissim modelling surface, natively: links are first class, connectors are real objects, junctions are not something the user places.
 
-**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate
-(open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
-[CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted
-by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
-an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accepted by owner ruling (D369).
-Carve-outs are filed at their number (M1.3.1, M1.5.1, M1.11.1, M1.12.1–M1.12.3).
+**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate (open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
+[CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
+an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accepted by owner ruling (D369). Carve-outs are filed at their number (M1.3.1, M1.5.1, M1.11.1, M1.12.1–M1.12.3).
 
 **Done when:** an engineer draws a four-leg intersection with turn pockets from scratch, over an aerial image, in under 10 minutes, without reading documentation — and reopening the file gives back exactly what they drew.
 
@@ -75,7 +72,7 @@ M1.22.1–M1.22.2 (History dock, nudging, rotation) are implemented and do not c
 
 ### M1.23 — Interchange, document workflow and measured rendering
 
-**Open; CSV object tables and PNG implemented in M1.23.1–M1.23.2.** Native-to-GeoJSON/CSV/PNG exports — "CSV" means the object tables (Links, Connectors, inputs, routes, decisions), as defined by D143 (R8); results CSV is M5's and exists (D104, D141); GeoJSON/OSM/Shapefile import and CRS mapping; recent files/tabs, spatial indexing/culling/LOD and optional renderer acceleration. Competitor-format imports and 3D require an explicit scope revision before implementation. **Gate:** known-coordinate import/export fixtures, multi-document recovery isolation and a reproducible real-network benchmark. Do not claim 10k/100k-object performance in advance.
+**Open; CSV object tables and PNG implemented in M1.23.1–M1.23.2.** Native-to-GeoJSON/CSV/PNG exports — "CSV" means the object tables (Links, Connectors, inputs, routes, decisions), as defined by D143 (R8); results CSV is M5's and exists (D104, D141); GeoJSON/OSM/Shapefile import and CRS mapping; recent files/tabs, spatial indexing/culling/LOD and optional renderer acceleration. Competitor-format imports and 3D require an explicit scope revision before implementation; the UTDF export for Synchro and Vistro is that revision, carried by M14 (D386). **Gate:** known-coordinate import/export fixtures, multi-document recovery isolation and a reproducible real-network benchmark. Do not claim 10k/100k-object performance in advance.
 
 #### M1.23.1 — Authored object table CSV
 
@@ -325,7 +322,6 @@ the [review](audits/DRIVING_BEHAVIOUR_REVIEW.md)'s order (D177) so it consumes M
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 
-
 ### M3.3.4 — Behaviour Lab (D165)
 
 **Status:** implemented 2026-10-14, Linux only ([contract](reference/BEHAVIOUR_LAB.md), rows
@@ -474,6 +470,10 @@ finer levels with recorded provenance and a reported volume comparison.
 ### M13 — Analytical junction capacity (HCM 7, D370)
 
 **Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3–A9 outlined (NODE_ANALYSIS §12); **A3 implemented** (D375 choices, D376 contract, D377: [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), NA15–NA20; permitted l+sl, lr and one-lane layouts and permitted queues open); A4 next when the owner asks. A deterministic, flow-based method on the Node that serves Micro, Meso and Macro and is not a fourth level (D378): HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
+
+### M14 — Junction builder and UTDF export (D386)
+
+**Open; contracts written, owner choices open** ([JUNCTION_BUILDER](reference/JUNCTION_BUILDER.md), [UTDF_EXPORT](reference/UTDF_EXPORT.md)). The owner's HCM-first workflow: a lane-table junction builder writing ordinary `generated` objects, posted speed on the Link, kerb-side pockets, NEMA-numbered signal groups, the Node analysis panel, and a UTDF export for Synchro 12 and Vistro 2026 (the competitor-format scope revision M1.23 requires; imports stay out). Slices U0, J1–J5, U1–U3. **Done when:** rows JB1–JB10 and UT0–UT9 pass, and the owner's UT10 round trip imports the fixture into both programs with geometry, lanes, volumes and timing matching the sheet.
 
 ---
 

@@ -30,6 +30,19 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## M14 — the owner's current pick (D386): junction builder and UTDF export
+
+- Contracts [JUNCTION_BUILDER](reference/JUNCTION_BUILDER.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
+  ROADMAP M14. **Waiting on the owner:** OWNER_SITTING B30 (JB-1–JB-7, UX-1–UX-4) and U0.
+- **Next session: U0** (UTDF_EXPORT §8): write the reference-junction sheet (Thai four-leg, kerb
+  pockets, shared TR, P2 timing, volumes) and a hand-written UTDF of it for the owner to import into
+  Synchro 12 and Vistro 2026; ask for Synchro's own UTDF export of the same junction; record the
+  field names, units and the left-hand-traffic answer in UTDF_EXPORT §3/§6. No writer code before it.
+- Then J1 (posted speed on the Link, D379–D381), J2 (kerb-side pocket, `approachLayout`), J3–J4
+  (builder), J5 (analysis panel), U1–U3. One slice per session, each starting with its rows.
+- Watch B29 (b) and (e): a turn key across levels and HCM storage change what `approachLayout`
+  and UTDF's Lanes read.
+
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 
 - Owner selected native object-table CSV export over the schema queue. Packaged Windows
