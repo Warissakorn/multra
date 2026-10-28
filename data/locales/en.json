@@ -1192,6 +1192,8 @@
   "editorCrossingChoice": "Confirm as",
   "editorCrossingJunction": "Junction",
   "editorCrossingOverpass": "Overpass",
+  "editorCrossingNoTemplate": "Assign templates first: a marked junction has a Road without a template or Links, so its Node may be only %1 m in radius.",
+  "editorCrossingNoTemplateRoad": "%1: no template or Links yet. The Node here is sized without this Road's width.",
   "editorMergeNodes": "Merge nodes",
   "editorEditCoarse": "Coarse values…",
   "editorCoarsePriority": "Priority",

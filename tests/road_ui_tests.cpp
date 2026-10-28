@@ -1,6 +1,7 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/commands/road_commands.hpp"
+#include "../src/editor/ui_design_tokens.hpp"
 #include "../src/project/document.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -12,6 +13,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QGraphicsItem>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -27,6 +29,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <tuple>
 using namespace multra;
 // S3.3b (D307, ROADS §16, rows RD23-RD26): the Road editor surface. The Cross-sections tab owns and
 // edits templates; the Road tool (O) draws a centreline (Ctrl+right-click, then clicks, Enter) and
@@ -382,6 +385,36 @@ int main(int argc, char** argv) {
                     "Apply template did not generate every one of 200 Roads");
             std::cout << "RD34: Apply template on 200 Roads took " << ms << " ms\n";
         }
+
+        // RD35 (D385): Find crossings marks a place whose Road has neither a template nor Links, with a
+        // one-line note; Roads with a template give neither. The warning does not block Confirm.
+        const auto crossingWarning = [&](const std::optional<std::string>& section, const char* name) {
+            auto base = doc();
+            while (!base.network.roads.empty()) deleteRoad(base, base.network.roads.front().id); // their Links stay
+            putRoad(base, Road{"", "", {{5000, 7000}, {5200, 7000}}, section, 0, {}, {}});
+            putRoad(base, Road{"", "", {{5100, 6900}, {5100, 7100}}, section, 0, {}, {}});
+            auto copy = openCopy(argv[1], temp, name, base);
+            bool note = false, marked = false, tip = false; int rows = 0;
+            onDialog([&](QDialog& d) {
+                auto* table = d.findChild<QTableWidget*>("editorCrossingTable");
+                auto* label = d.findChild<QLabel*>("editorCrossingTemplateWarning");
+                rows = table->rowCount();
+                note = label && label->isVisibleTo(&d) && !label->text().isEmpty();
+                for (int r = 0; r < rows; ++r) {
+                    marked = marked || table->item(r, 3)->foreground().color() == editorDesign::semantic(editorDesign::Semantic::warning);
+                    tip = tip || !table->item(r, 3)->toolTip().isEmpty();
+                }
+            });
+            const auto nodes = copy->history().document().network.nodes.size();
+            trigger(*copy, "editorFindCrossings");
+            require(rows == 1, std::string("Find crossings did not list the one place: ") + name);
+            require(copy->history().document().network.nodes.size() == nodes + 1, "The warning blocked confirming the junction");
+            return std::tuple{note, marked, tip};
+        };
+        const auto [bareNote, bareMarked, bareTip] = crossingWarning(std::nullopt, "crossing-bare.traffic.json");
+        require(bareNote && bareMarked && bareTip, "Find crossings does not warn about a Road without a template");
+        const auto [withNote, withMarked, withTip] = crossingWarning(t.id, "crossing-template.traffic.json");
+        require(!withNote && !withMarked && !withTip, "Find crossings warns although every Road has a template");
         std::cout << "road-ui passed\n";
         return 0;
     } catch (const std::exception& e) {
