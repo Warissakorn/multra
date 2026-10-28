@@ -464,3 +464,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D385](RECORD.md#d385) — Review batch D: *Apply template* on every selected Road in one Undo step; *Find crossings* warns, without blocking, where a Road has neither template nor Links.
 
 [D386](RECORD.md#d386) — M14 booked: a lane-table junction builder and a UTDF export for Synchro 12 and Vistro 2026; contracts JUNCTION_BUILDER and UTDF_EXPORT, owner choices open.
+
+[D387](RECORD.md#d387) — No builder tool: junction templates on Nodes from crossing Roads generate the detail; transitions align per template; Road renamed Segment before M14 code (JUNCTION_TEMPLATES).

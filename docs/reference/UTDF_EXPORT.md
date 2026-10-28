@@ -1,9 +1,9 @@
-# UTDF export for Synchro 12 and Vistro 2026 (M14, D386)
+# UTDF export for Synchro 12 and Vistro 2026 (M14, D386, D387)
 
 Contract before code (D145), docs only, written 2026-10-28. The owner approved exporting the
 network built for HCM to PTV Vistro 2026 and Synchro 12 (D386). This is the competitor-format
 scope revision that ROADMAP M1.23 requires; imports from those programs stay out. The editor side
-is [JUNCTION_BUILDER](JUNCTION_BUILDER.md). **Nothing here is implemented, and no field list
+is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road reads Segment after its slice SR (D387). **Nothing here is implemented, and no field list
 below is verified:** U0 (§8) fixes it from files the owner's programs write and read.
 
 ## 1. Why UTDF
@@ -18,11 +18,11 @@ below is verified:** U0 (§8) fixes it from files the owner's programs write and
 ## 2. What is exported
 
 From the saved document, read only, never changed by the export:
-- every Node with Micro detail and a valid `approachLayout` (JUNCTION_BUILDER §5);
+- every Node with Micro detail and a valid `approachLayout` (JUNCTION_TEMPLATES §6);
 - the Links between those Nodes, and the external ends of their legs;
 - lanes, storage, taper, widths, posted speed, names, coordinates;
 - volumes, PHF and %HV from `Node::analysis` when present;
-- for signalised Nodes, the controller's timing through `nemaCheck` (JUNCTION_BUILDER §6).
+- for signalised Nodes, the controller's timing through `nemaCheck` (JUNCTION_TEMPLATES §8).
 
 Not exported: vehicle inputs, routes, Micro behaviour, conflict areas, Macro and Meso data, and
 results. A Node outside the rules is left out and named in the export report, never guessed.
@@ -58,7 +58,7 @@ and says so; the export report lists each one. MULTRA never writes a value it di
 UTDF identifies intersections by integer. MULTRA's ids are strings and a re-export must give the
 same numbers, or a study re-imported into Synchro mismatches its edits.
 - **Stored (§9 UX-1):** an optional integer `number` on the Node, written only when set, at the
-  next schema step. The builder assigns the next free one; *Number Nodes* fills the rest in one
+  next schema step. Applying a junction template assigns the next free one; *Number Nodes* fills the rest in one
   Undo step. Export refuses an unnumbered Node with `UTDF_NODE_UNNUMBERED`, naming the fill.
 - **External ends** (a leg's far end) take derived numbers above the largest Node number, in
   Link-id order; they are not stored, as nobody edits them in the target.
@@ -72,7 +72,7 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 - **Left-hand traffic is the main risk.** HCM, NEMA numbering and both programs are written for
   right-hand traffic. U0 checks whether Synchro 12 and Vistro 2026 have a left-hand setting that
   the file can carry, and how each then names far and kerb turns. Until answered, the movement
-  names are geometric (L/T/R) and the phase numbers follow JUNCTION_BUILDER §6's left-hand rule.
+  names are geometric (L/T/R) and the phase numbers follow JUNCTION_TEMPLATES §8's left-hand rule.
 
 ## 7. Slices
 
@@ -86,7 +86,8 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 ## 8. U0: the probe (first, before any writer)
 
 1. The session writes a **reference junction** sheet: the Thai four-leg fixture of
-   JUNCTION_BUILDER JB4, with lanes, volumes and a P2 timing.
+   JUNCTION_TEMPLATES JT6 (two crossing Roads, kerb pockets, a shared kerb-through lane), with
+   volumes and a P2 timing.
 2. The owner draws it in **Synchro 12**, exports UTDF (combined CSV, metric), and saves it as the
    golden file, with Synchro's HCM report.
 3. The owner imports that file into **Vistro 2026** and notes what came through, what was dropped,
@@ -101,7 +102,7 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 ## 9. Owner choices (open)
 
 1. **UX-1 Node numbers.**
-   - **(a) Stored optional `number`, assigned by the builder and *Number Nodes* (recommended).**
+   - **(a) Stored optional `number`, assigned by template Apply and *Number Nodes* (recommended).**
    - (b) Derived on each export (sorted ids): no schema step, but numbers move when Nodes change.
 2. **UX-2 Volumes.**
    - **(a) From `Node::analysis` only; a Node without it exports geometry and timing (recommended).**

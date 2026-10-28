@@ -30,18 +30,27 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M14 — the owner's current pick (D386): junction builder and UTDF export
+## M14 — the owner's current pick (D386, D387): junction templates and UTDF export
 
-- Contracts [JUNCTION_BUILDER](reference/JUNCTION_BUILDER.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
-  ROADMAP M14. **Waiting on the owner:** OWNER_SITTING B30 (JB-1–JB-7, UX-1–UX-4) and U0.
-- **Next session: U0** (UTDF_EXPORT §8): write the reference-junction sheet (Thai four-leg, kerb
-  pockets, shared TR, P2 timing, volumes) and a hand-written UTDF of it for the owner to import into
-  Synchro 12 and Vistro 2026; ask for Synchro's own UTDF export of the same junction; record the
-  field names, units and the left-hand-traffic answer in UTDF_EXPORT §3/§6. No writer code before it.
-- Then J1 (posted speed on the Link, D379–D381), J2 (kerb-side pocket, `approachLayout`), J3–J4
-  (builder), J5 (analysis panel), U1–U3. One slice per session, each starting with its rows.
-- Watch B29 (b) and (e): a turn key across levels and HCM storage change what `approachLayout`
-  and UTDF's Lanes read.
+- Contracts [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
+  ROADMAP M14. D387: no builder tool; Roads crossing make Nodes and a junction template generates
+  the detail; transitions align per template; Road becomes Segment before any M14 code.
+  **Waiting on the owner:** OWNER_SITTING B30 (JT-1–JT-5, UX-1–UX-4) and U0.
+- **Next session: SR, the rename** (JUNCTION_TEMPLATES §10, row JT1). Characterize first: every
+  shipped project and test fixture read and saved, documents compared. Then schema 59 writes
+  `network.segments` and `segmentId` and reads `roads`/`roadId` below 59 (a 58 file with the new
+  key is `EDIT_UNSUPPORTED_FIELD`); rename codes (`ROAD_*`, `SEAM_ROAD_*`, `MACRO_ROAD_*`,
+  `EDIT_ROAD_*`), types, files (`road_*` → `segment_*`), commands, locale keys and strings (en
+  "Segment", th "ช่วงถนน"), DESKTOP_AUTOMATION's names, and maintained docs (ROADS → SEGMENTS,
+  ROADS_IMPLEMENTED likewise). RECORD, PROGRESS history and archives keep "Road". Needs a desktop
+  build (the Roads tab and `road-ui`); `check-file-sizes` and `check-docs` after.
+- **Then U0** (UTDF_EXPORT §8): the reference-junction sheet and a hand-written UTDF for the owner
+  to import into Synchro 12 and Vistro 2026; Synchro's own export as the golden file; record field
+  names, units and the left-hand answer in UTDF_EXPORT §3/§6. No writer code before it.
+- Then J1 (posted speed, D379–D381), J2 (kerb-side pocket, `approachLayout`), J3–J4 (templates,
+  signals), J5 (transitions), J6 (editor surfaces), J7 (analysis panel), U1–U3.
+- Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
+  `approachLayout` and UTDF's Lanes read.
 
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 

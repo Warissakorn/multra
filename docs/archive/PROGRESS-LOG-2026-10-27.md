@@ -2,6 +2,16 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
+
+- **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").
+- **Found:** speed stored in three places, no per-lane vehicle restrictions, M13 turn volumes typed
+  by hand, and M13 refusing coarse Nodes. These are put to the owner as OWNER_SITTING B27; nothing
+  is decided here. Gaps already booked (M1.22 geometry, M3.4/M6 lane-change distance, the mouth rule
+  D80) stay where they are.
+- **Changed (docs only):** VISSIM_PARITY's Nodes row no longer says "Absent entirely";
+  CONNECTOR_PARITY_AUDIT §2 is marked as a 2026-09-21 baseline with a 2026-10-27 recheck.
+
 ## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
 
 - **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want

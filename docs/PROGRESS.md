@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — M14 redirected: junction templates, transitions, Road → Segment (D387)
+
+- **Asked:** no junction builder; Roads that cross should make the junction, with a junction
+  template that sets the turns and makes their Connectors; rename Road to Segment; how Roads of
+  different cross-sections join. Owner: "เอาตามแนะนำ" ("go with the recommendations").
+- **Written:** JUNCTION_BUILDER became [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md): templates
+  by leg role holding structure only, site values on the Node, a `junction` fill after F3, transition
+  templates aligned per template, `SEAM_JUNCTION_DIFFERS`; slice SR (the full rename, schema 59)
+  comes first. UTDF_EXPORT, ROADMAP M14, OWNER_SITTING B30 and NEXT follow. About 13–16 sessions.
+- **Found:** Micro has no join for two Roads of different cross-sections today; only Macro and
+  Meso join free ends. No code changed.
+
 ## 2026-10-28 — M14 booked: junction builder and UTDF export, contracts only (D386)
 
 - **Asked:** could the editor build an HCM network first and export it to PTV Vistro; then
@@ -15,7 +27,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   but shares lanes kerb to far with no pocket, so HCM lane groups and UTDF lanes cannot come from
   it; no cross-section template ships; there is no posted speed on the Link, no kerb-side pocket,
   no integer Node number and no NEMA phase numbering.
-- **Written:** [JUNCTION_BUILDER](reference/JUNCTION_BUILDER.md) and
+- **Written:** [JUNCTION_BUILDER](reference/JUNCTION_TEMPLATES.md) and
   [UTDF_EXPORT](reference/UTDF_EXPORT.md), ROADMAP M14, OWNER_SITTING B30. UTDF's field list is
   provisional until U0 reads files the owner's Synchro 12 and Vistro 2026 write and import;
   left-hand traffic in both is the main open risk. No code changed.
@@ -99,13 +111,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   becomes derived); 2a per-lane allowed modes; 3a *Fill from model* for Node turn volumes; 4a only
   within an HCM 7 planning-level method, read before the contract, else back to the owner. Reasons
   are in D379. Bookings only: no slice starts until the owner asks.
-
-## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
-
-- **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").
-- **Found:** speed stored in three places, no per-lane vehicle restrictions, M13 turn volumes typed
-  by hand, and M13 refusing coarse Nodes. These are put to the owner as OWNER_SITTING B27; nothing
-  is decided here. Gaps already booked (M1.22 geometry, M3.4/M6 lane-change distance, the mouth rule
-  D80) stay where they are.
-- **Changed (docs only):** VISSIM_PARITY's Nodes row no longer says "Absent entirely";
-  CONNECTOR_PARITY_AUDIT §2 is marked as a 2026-09-21 baseline with a 2026-10-27 recheck.
