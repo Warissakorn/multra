@@ -73,11 +73,11 @@ field is optional, Micro reads it as a default and never a cap, and low site spe
 allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
 a planning-level method (otherwise back to the owner).
 
-## Road-model review follow-up (D382–D384)
+## Road-model review follow-up (D382–D385)
 
-Batches A–C are done (D382–D384). Each item below starts with a row that fails first; one system per session.
-- **D, workflow:** *Apply template* on several selected Roads (C made F3 fast enough); the *Find crossings* dialog
-  warns when a junction's Road has no template (needs a desktop build).
+Batches A–D are done (D382–D385). What is left waits on the owner:
+- **On Windows:** OWNER_SITTING E24 (the Roads tab's multi-row *Apply template* and the *Find
+  crossings* warning at 100/150/200 %, Thai and English).
 - **For the owner:** OWNER_SITTING B29 (generated Node size, one turn key across levels, explicit
   Road directions, partial HCM totals, HCM storage, CountSet).
 

@@ -6,6 +6,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Road workflow: Apply on several Roads, crossings warning (D385)
+
+- **Asked:** batch D of the road-model review, on the D382–D384 branch, whose PR is still open.
+- **Changed, each with a `road-ui` row that failed first:** *Apply template* takes every selected Road
+  in table order in one Undo step, and one refusal leaves the batch unapplied (RD34; 200 Roads about
+  150 ms in a Debug desktop build); *Find crossings* marks a place whose Road has neither template
+  nor Links, with a tooltip and one note, without blocking Confirm (RD35; en/th strings).
+- **Docs:** ROADS RD34–RD35, ROADS_IMPLEMENTED §24, OWNER_SITTING E24; decision index gains D382–D385.
+- **Verified:** Qt 6.4.2 desktop build, `ctest` 245/245 and `check` on Linux (offscreen); Windows
+  and screen scale are OWNER_SITTING E24.
+
 ## 2026-10-28 — Road-scale edits made fast, results unchanged (D384)
 
 - **Asked:** "ทำชุด C ต่อเลย" ("go on with batch C") of the road-model review.
@@ -97,15 +108,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   rule 8 (each level's vocabulary); MULTI_LEVEL_MODELLING §7, ROADMAP M8–M12 and M13, NEXT's order,
   README's lead and OWNER_SITTING B26. No code, gate or done-condition changed.
 - **Open for the owner:** B26, a simultaneous hybrid meso–micro run, and the user-role wording.
-
-## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
-
-- **Asked:** "ทำ A3" ("do A3"), with D375's choices.
-- **Contract (D376):** NODE_ANALYSIS_A3, from images of Ch. 31 §3 (Eqs. 31-94 to 31-129, Exhibits 31-12
-  to 31-19) and §2's permitted terms. Exhibit 31-12's nine phase-sequence rows turned out to be one
-  rule, G_U = E − max(S_a, S_o + G_q2), once its phases are labelled (2 the opposing through).
-- **Built (D377):** a periodic queue polygon, the permitted formulas, the compile's per-turn windows,
-  and a Node run that iterates the opposing queues. Protected results are unchanged.
-- **Open for the owner:** l+sl, lr and one-lane layouts with a permitted far turn are refused (the
-  book prints no form with a kerb turn in the same lane), and permitted lane groups have no queue yet.
-- **Verified:** NA15–NA20 pass; NA19's permitted row is hand-checked (c 170.01, d1 55.29, d2 59.00).

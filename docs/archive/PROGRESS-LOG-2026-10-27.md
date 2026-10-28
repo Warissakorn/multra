@@ -2,6 +2,18 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
+
+- **Asked:** "ทำ A3" ("do A3"), with D375's choices.
+- **Contract (D376):** NODE_ANALYSIS_A3, from images of Ch. 31 §3 (Eqs. 31-94 to 31-129, Exhibits 31-12
+  to 31-19) and §2's permitted terms. Exhibit 31-12's nine phase-sequence rows turned out to be one
+  rule, G_U = E − max(S_a, S_o + G_q2), once its phases are labelled (2 the opposing through).
+- **Built (D377):** a periodic queue polygon, the permitted formulas, the compile's per-turn windows,
+  and a Node run that iterates the opposing queues. Protected results are unchanged.
+- **Open for the owner:** l+sl, lr and one-lane layouts with a permitted far turn are refused (the
+  book prints no form with a kerb turn in the same lane), and permitted lane groups have no queue yet.
+- **Verified:** NA15–NA20 pass; NA19's permitted row is hand-checked (c 170.01, d1 55.29, d2 59.00).
+
 ## 2026-10-27 — M13 A3's choices decided on delegation (D375)
 
 - **Asked:** the owner answered B25 with "ช่วยตัดสินใจ" ("help decide"), as for B19 (D214).

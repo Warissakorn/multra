@@ -362,6 +362,8 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD31 | Split and coarse (D382) | Splitting a Road between two coarse Nodes succeeds; the far Node names the new Road, the near one the old |
 | RD32 | Direction after a detach (D382) | With the forward Link detached, *use Link* sets `lanesBackward`, and *Apply template* keeps the backward Link's direction and adds a forward one |
 | RD33 | Direction on a U (D382) | On a U-shaped Road whose ends point the same way, each generated Link's direction is read correctly |
+| RD34 | Apply on several Roads (D385) | Three selected Roads apply in table order in one Undo step, and Undo restores the bytes; with one Road lacking a template the document is unchanged |
+| RD35 | Crossings without a template (D385) | A place with a Road that has neither a template nor Links is marked in the warning colour with a tooltip and one note; Roads with a template give neither; Confirm is not blocked |
 
 ## 14–21. As implemented
 
