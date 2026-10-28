@@ -156,3 +156,18 @@ TEST(nodeanalysis, na21_a_split_approach_keeps_its_volumes) { // NA21 (D383)
     CHECK(std::any_of(o.turns.begin(), o.turns.end(), [](const auto& t) { return t.out == "link-8"; }));
     CHECK(runNodeAnalysis(out, test::root() / "data").nodes.front().groups.size() == 12);
 }
+TEST(nodeanalysis, na22_stale_rows_are_named) { // NA22 (D383)
+    auto d = fixture();
+    CHECK(!advised(runNodeAnalysis(d, test::root() / "data").nodes.front().advisories, "NODE_ANALYSIS_STALE_TURN")); // forcing
+    auto& a = *d.network.nodes.front().analysis;
+    a.turns.push_back({"link-1", "link-20", 50}); // link-1 ends 60 m short of the Node: not a leg
+    a.approaches.push_back({"link-1", 0, std::nullopt, 0, 50});
+    const auto turns = a.turns.size() - 1, approaches = a.approaches.size() - 1;
+    const auto run = runNodeAnalysis(d, test::root() / "data").nodes.front();
+    const auto at = [&](const std::string& code, const std::string& path) {
+        return std::any_of(run.advisories.begin(), run.advisories.end(), [&](const auto& i) { return i.code == code && i.path == path; });
+    };
+    CHECK(at("NODE_ANALYSIS_STALE_TURN", "network.nodes[0].analysis.turns[" + std::to_string(turns) + "]"));
+    CHECK(at("NODE_ANALYSIS_STALE_APPROACH", "network.nodes[0].analysis.approaches[" + std::to_string(approaches) + "]"));
+    CHECK(run.groups.size() == 12); // the stale rows change no lane group
+}

@@ -58,6 +58,16 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
             for (const auto t : g.turns)
                 if (!rowOf(t)) { noVolume.insert(t); if (g.coupled) skipped.insert(g.inLink); }
         for (const auto t : noVolume) out.advisories.push_back({"NODE_ANALYSIS_NO_VOLUME", path + ": " + m.turns[t].name});
+        // D383: a row naming no turn or no in-leg of the Node is reported, not silently ignored.
+        if (!m.turns.empty()) {
+            for (std::size_t k = 0; k < a.turns.size(); ++k)
+                if (std::none_of(m.turns.begin(), m.turns.end(), [&](const auto& t) {
+                        return m.inLegs[t.in].linkId == a.turns[k].in && m.outLegs[t.out].linkId == a.turns[k].out; }))
+                    out.advisories.push_back({"NODE_ANALYSIS_STALE_TURN", path + ".analysis.turns[" + std::to_string(k) + "]"});
+            for (std::size_t k = 0; k < a.approaches.size(); ++k)
+                if (std::none_of(m.inLegs.begin(), m.inLegs.end(), [&](const auto& l) { return l.linkId == a.approaches[k].link; }))
+                    out.advisories.push_back({"NODE_ANALYSIS_STALE_APPROACH", path + ".analysis.approaches[" + std::to_string(k) + "]"});
+        }
         bool heavyDefault = false;
         // Per movement of an approach: the flow rate and the flow-weighted %HV (Steps 2-3).
         struct Movement { double flow{}, heavy{}; };

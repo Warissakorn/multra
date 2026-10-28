@@ -47,7 +47,9 @@ struct AnalysedNode {
     // unless every turn of the Node is in a lane group with a result. Its chain indexes `groups`.
     std::optional<CriticalResult> critical;
     // The compile's, then NODE_ANALYSIS_NO_VOLUME per turn without a row (a coupled approach then has no
-    // lane group) and NODE_ANALYSIS_NO_CONVERGENCE per approach whose lane flows did not converge.
+    // lane group) and NODE_ANALYSIS_NO_CONVERGENCE per approach whose lane flows did not converge. When the
+    // Node has turns (D383): NODE_ANALYSIS_STALE_TURN at .analysis.turns[k] naming no turn of it, and
+    // NODE_ANALYSIS_STALE_APPROACH at .analysis.approaches[k] naming no in-leg.
     std::vector<ValidationIssue> advisories;
 };
 struct NodeAnalysisRun {
