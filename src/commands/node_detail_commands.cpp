@@ -8,6 +8,7 @@
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_detail.hpp"
 #include "../model/network/polygon.hpp"
+#include "../model/network/roads.hpp"
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -28,7 +29,7 @@ std::optional<Geometry> templateGeometry(const ProjectDocument& d, const Link& l
     const auto* road = l.roadId ? roadOf(d.network, *l.roadId) : nullptr;
     const auto* t = road ? roadTemplate(d, *road, templates) : nullptr;
     if (!t) return std::nullopt;
-    const auto k = static_cast<std::size_t>(std::find(road->links.begin(), road->links.end(), l.id) - road->links.begin());
+    const std::size_t k = forwardOnRoad(*road, l) ? 0 : 1; // D382: by geometry, not by place in `links`
     const auto links = templateLinks(d.network, *road, *t);
     if (k >= links.size()) return std::nullopt;
     return links[k].geometry;

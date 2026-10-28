@@ -20,7 +20,8 @@ void deleteCrossSection(ProjectDocument&, const std::string& id);
 // the backward one reversed. A first apply adds them; a re-apply keeps their ids and lane ids
 // (EDIT_REFERENCED_LANE when a removed lane is in use) and reanchors Connectors. Refusals:
 // EDIT_ROAD_NO_TEMPLATE, ROAD_CROSS_SECTION_UNKNOWN at network.roads[i].crossSectionId,
-// EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently).
+// EDIT_ROAD_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently) or two
+// listed Links run one way. Each listed Link keeps the direction it runs (forwardOnRoad, D382).
 // Direct Road zone connectors become Link targets in the same Command. A backward connector on
 // a one-way template is ZONE_CONNECTOR_ROAD_REQUIRES_DIRECTION before mutation (D340).
 // Returns the Road's Link ids, forward first.

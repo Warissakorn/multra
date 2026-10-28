@@ -53,6 +53,13 @@ std::vector<ValidationIssue> roadIssues(const Network& n) {
     }
     return issues;
 }
+bool forwardOnRoad(const Road& r, const Link& l) {
+    if (r.centreline.size() >= 2 && l.geometry.size() >= 2) {
+        const double from = stationOfClosestPoint(r.centreline, l.geometry.front()), to = stationOfClosestPoint(r.centreline, l.geometry.back());
+        if (std::abs(to - from) > 1e-9) return to > from;
+    }
+    return !r.links.empty() && r.links.front() == l.id;
+}
 namespace {
 // The closest point of `line` to `p`, and its station along `line`.
 std::pair<Point, double> closest(const std::vector<Point>& line, Point p) {

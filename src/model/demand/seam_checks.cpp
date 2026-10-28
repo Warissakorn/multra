@@ -2,6 +2,7 @@
 #include "coarse_compile.hpp"
 #include "../network/coarse_nodes.hpp"
 #include "../network/polygon.hpp"
+#include "../network/roads.hpp"
 #include <algorithm>
 #include <cmath>
 #include <tuple>
@@ -32,7 +33,7 @@ std::optional<int> roadLanesFor(const Network& n, const std::vector<CrossSection
     const auto* r = roadOf(n, *l->roadId);
     const auto* s = r ? templateOf(templates, *r) : nullptr;
     if (!s) return std::nullopt;
-    const bool forward = !r->links.empty() && r->links.front() == linkId;
+    const bool forward = forwardOnRoad(*r, *l); // D382: by geometry, not by place in `links`
     if (!forward && s->directions < 2) return std::nullopt;
     return forward ? r->overrides.lanesForward.value_or(s->lanesForward) : r->overrides.lanesBackward.value_or(s->lanesBackward);
 }
