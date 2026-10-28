@@ -103,3 +103,26 @@ TEST(filldefaults, rs8_only_what_is_chosen) { // RS8
     try { applyFills(done, {offers[1]}, templates(done)); CHECK(false); } catch (const std::invalid_argument& e) { CHECK(std::string(e.what()) == "EDIT_FILL_STALE"); }
     (void)a; (void)b;
 }
+TEST(filldefaults, rs8b_stale_offers_and_one_list) { // RS8 (D384): what applyFills checks, offer by offer
+    auto d = owned();
+    d.definition->linkTypes = {arterial(std::nullopt)};
+    for (int i = 0; i < 3; ++i) putRoad(d, {"", "", {{0, 50.0 * i}, {100, 50.0 * i}}, std::string("ns"), 0, {}, {}});
+    const auto offers = fillOffers(d, templates(d));
+    CHECK(offers.size() == 4); // forcing: one jam density, three Roads
+    const auto stale = [&](std::vector<FillOffer> chosen) {
+        auto x = d;
+        try { applyFills(x, chosen, templates(x)); } catch (const std::invalid_argument& e) { return std::string(e.what()) == "EDIT_FILL_STALE"; }
+        return false;
+    };
+    auto changed = offers[1]; changed.value = "other";
+    CHECK(stale({changed}));                    // a field differs from the current offer
+    CHECK(stale({offers[1], offers[1]}));       // applied once already in the same list
+    auto unknown = offers[1]; unknown.objectId = "road-nope";
+    CHECK(stale({unknown}));                    // names no object
+    auto kind = offers[0]; kind.kind = FillKind::roadLinks;
+    CHECK(stale({kind}));                       // the right object under another kind
+    // One list gives the same document as one offer at a time.
+    auto all = d; applyFills(all, offers, templates(all));
+    auto each = d; for (const auto& o : offers) applyFills(each, {o}, templates(each));
+    CHECK(documentJson(all) == documentJson(each));
+}
