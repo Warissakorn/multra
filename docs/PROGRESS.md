@@ -6,6 +6,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Road-model review: four defects fixed (D382)
+
+- **Asked:** review the road network model, its workflow and its use by HCM; then "เริ่มชุด A ได้เลย"
+  ("start batch A") on the revised plan.
+- **Fixed, each with a row that failed first:** Find crossings grouped places across levels (RD30);
+  `splitRoad` left a far coarse Node naming the old Road and was refused (RD31); F4 listed a Node
+  narrower than its arms, then failed on a gap, now `FILL_NODE_ARM_OUTSIDE` (RS19); a detach made the
+  backward Link read as forward, so re-apply turned it around (RD32, RD33).
+- **Crosses the Road layer:** the direction fix also changes the lane-count seam and F4's template
+  geometry. ARCHITECTURE no longer calls Road and Node planned.
+- **Left:** batches B–D and the dialog warning in NEXT; six owner choices in OWNER_SITTING B29.
+- **Verified:** headless build, `ctest` 164/164 and `check` on Linux. No Qt here: no desktop claim.
+
 ## 2026-10-28 — Stall-level parking and pedestrians recorded as needs (D381)
 
 - **Asked:** would a posted speed on the Link limit Vissim-style site roads, parallel and bay
@@ -92,19 +105,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   protected-permitted operation, opposing flow, pedestrians and bicycles, acceptance) are
   OWNER_SITTING B25. §7 now cites A3's real source, Ch. 31 §3 Steps 1–7 (PDF p. 2986–3015), not §2.
   No D-row: nothing is decided, and A3 still starts only when the owner asks.
-
-## 2026-10-27 — Module READMEs rewritten as maps, and checked
-
-- **Asked:** whether to document every program detail per component. Answer given: no; the
-  contracts already own behaviour, and a second detailed copy would drift. The gap was the module
-  READMEs, which read as decision histories; the owner approved rewriting them.
-- **Changed:** every `src/*/README.md` (and `src/model/demand/`, `src/model/control/`) now holds
-  purpose, dependency rule, a file table (file, what it holds, contract), entry points and
-  tests, with no status or decision history. Substantive rules kept: eval's observer rules,
-  project's codec rules. A review then dropped a hand-written "used by" column (nothing could
-  keep it true) and corrected a claimed editor/shell boundary breach: they are one target.
-- **Check:** `multra-check-docs` fails when a header under `src/` is missing from its module's
-  README as the start of a table row (nearest parent README for a folder without one; a prose
-  mention does not count), with positive and negative fixtures.
-- **Verified:** the docs, architecture and file-size checks pass; removing one row fails the docs
-  check as expected.

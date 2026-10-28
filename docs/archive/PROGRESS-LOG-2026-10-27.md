@@ -2,6 +2,22 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Module READMEs rewritten as maps, and checked
+
+- **Asked:** whether to document every program detail per component. Answer given: no; the
+  contracts already own behaviour, and a second detailed copy would drift. The gap was the module
+  READMEs, which read as decision histories; the owner approved rewriting them.
+- **Changed:** every `src/*/README.md` (and `src/model/demand/`, `src/model/control/`) now holds
+  purpose, dependency rule, a file table (file, what it holds, contract), entry points and
+  tests, with no status or decision history. Substantive rules kept: eval's observer rules,
+  project's codec rules. A review then dropped a hand-written "used by" column (nothing could
+  keep it true) and corrected a claimed editor/shell boundary breach: they are one target.
+- **Check:** `multra-check-docs` fails when a header under `src/` is missing from its module's
+  README as the start of a table row (nearest parent README for a folder without one; a prose
+  mention does not count), with positive and negative fixtures.
+- **Verified:** the docs, architecture and file-size checks pass; removing one row fails the docs
+  check as expected.
+
 ## 2026-10-27 — Analytical junction capacity, slice A2 (M13, D373, D374)
 
 - **Asked:** continue with A2, and finish it. The owner answered A2's three questions: all of it in

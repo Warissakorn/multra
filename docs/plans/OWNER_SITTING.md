@@ -64,6 +64,15 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Also: PROBLEM §1 now names two equal roles (study engineers and consultants; transport
    planners), with road and signal agencies doing the same work, as following from the equal
    weight. Correct that wording? *Owner:*
+29. **Road-model review follow-up** (listed 2026-10-28, [D382](../decisions/RECORD.md#d382)). Each is a
+   choice, recommended first: (a) generated Nodes resize to their arms' templates, needing a "derived
+   polygon" mark apart from `generated`, or keep D382's refusal only; (b) one turn key across levels,
+   Road id plus end, for coarse values and Node-analysis volumes (a schema step), or keep Link ids and
+   remap on each edit; (c) keep `forwardOnRoad` (D382) or store each Road direction explicitly, needed
+   if a Road carries a pocket and an approach one way; (d) suppress approach and Node delay and LOS
+   under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
+   storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
+   Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
 Answered 2026-10-28: **B28**, owner: “ช่วยตัดสินใจ” (“help decide”), given after being told that
 item 1 reverses D373; decided on that delegation in [D380](../decisions/RECORD.md#d380): 1a, 2a.
 Numbers are not reused.

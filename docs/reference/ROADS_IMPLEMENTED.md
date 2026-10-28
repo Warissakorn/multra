@@ -429,3 +429,18 @@ milestone gate changes.
 
 Verification evidence and platform are recorded in PROGRESS; local Linux checks cannot close an
 owner Windows/high-DPI appearance gate.
+
+## 23. Review fixes (D382)
+
+A review of the Road model (2026-10-28) found four defects, each reproduced by a row before its fix:
+- **Levels in *Find crossings*:** places were grouped by distance only, so a crossing above another
+  joined it. Events now group only on one level (RD30).
+- **Split and coarse values:** `splitRoad` left a coarse Node at the moved end naming the first piece,
+  refusing the Command (and *Find crossings*' batch) with `NODE_COARSE_UNKNOWN_LEG`. Those Nodes now
+  name the new Road; the near end's keep the id (`renameCoarseRoad`, shared with the lifecycle's join; RD31).
+- **A Node narrower than its arms:** a junction found before a template gave the Roads their width
+  gets a 4 m disc that the Links pass beside; F4 listed it, then failed on a gap. It is now
+  `FILL_NODE_ARM_OUTSIDE` ([READINESS](READINESS.md) RS19). A warning in the *Find crossings* dialog is booked in NEXT.
+- **Direction of a generated Link:** read from the stations of its ends along the centreline
+  (`forwardOnRoad`), not from its place in `links`, which a detach shifted (RD32, RD33). Two listed
+  Links running one way are `EDIT_ROAD_DIRECTIONS`. No schema change.

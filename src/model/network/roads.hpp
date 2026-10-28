@@ -6,7 +6,8 @@
 namespace multra {
 // Paths are "roads[i]..." and "links[i].roadId":
 // - a blank or duplicate id (INVALID_ID, DUPLICATE_ID, against every other network id);
-// - a centreline with fewer than two distinct finite points (ROAD_GEOMETRY_INVALID);
+// - a centreline with a non-finite point, fewer than two points, or two equal consecutive points
+//   (ROAD_GEOMETRY_INVALID);
 // - ROAD_LINK_MISMATCH: a `links` entry naming no Link, a Link listed twice or whose roadId is not
 //   this Road, or a Link whose roadId names no Road or a Road that does not list it.
 // S3.5: ROAD_OVERPASS_UNKNOWN at overpasses[i] for a pair naming no Road or one Road twice.

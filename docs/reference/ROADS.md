@@ -103,7 +103,8 @@ not validation.
 - **Assign template** sets `crossSectionId` on several Roads in one Undo step without generating
   Links. Generating is a separate *Apply*, so a Micro study is never rewritten by an assignment.
 - **Refusals:**
-  - a centreline with fewer than two distinct points is `ROAD_GEOMETRY_INVALID`;
+  - a centreline with fewer than two points, a non-finite one, or two equal consecutive points is
+    `ROAD_GEOMETRY_INVALID`;
   - an unknown template is `ROAD_CROSS_SECTION_UNKNOWN`;
   - a `links` entry naming a missing Link, or a Link whose `roadId` disagrees, is
     `ROAD_LINK_MISMATCH`.
@@ -357,6 +358,10 @@ Each row first asserts that its forcing worked (AGENTS).
 | RD27 | Lifecycle (S3.6b) | Deleting a T's stem merges the Node away and joins the two Roads, renaming the overpass; a Node with `coarse`, two templates, or drawn with two legs is kept |
 | RD28 | Coarse dialog (S3.6b) | *Coarse values…* is disabled on a Node with detail; on one without, it stores a signalised stage in one step, and back to defaults stores none |
 | RD29 | Detached and continuation seams (S3.7) | A Road that lost a generated Link gives `SEAM_LINK_DETACHED` at every level; two Link-less Roads continuing at 100 → 60 km/h give `SEAM_SPEED_JUMP` |
+| RD30 | Levels (D382) | Two crossings at one x, y on levels 0 and 1 are two places, each listing only its level's Roads |
+| RD31 | Split and coarse (D382) | Splitting a Road between two coarse Nodes succeeds; the far Node names the new Road, the near one the old |
+| RD32 | Direction after a detach (D382) | With the forward Link detached, *use Link* sets `lanesBackward`, and *Apply template* keeps the backward Link's direction and adds a forward one |
+| RD33 | Direction on a U (D382) | On a U-shaped Road whose ends point the same way, each generated Link's direction is read correctly |
 
 ## 14–21. As implemented
 
