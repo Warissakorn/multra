@@ -107,7 +107,7 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 | S4.2 | The readiness panel by level, with the seam checks. **Implemented (D314)** | RS1–RS4 |
 | S4.3 | *Fill defaults* F1–F3. **Implemented (D316)** | RS5–RS8 |
 | S4.4 | Node proposals. **Implemented (D317)** | RS9, RS10 |
-| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13); S4.5a–c implemented (D323–D325), so S4.5 is complete** | RS11–RS18 |
+| S4.5 | F4, generating a coarse Node's Micro detail. **Contract written (D323, §13); S4.5a–c implemented (D323–D325), so S4.5 is complete** | RS11–RS19 |
 
 ## 8. Owner choices (answered 2026-10-23, D313: S4-1a, S4-2a, S4-3a, S4-4a)
 
@@ -386,6 +386,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | RS16 | `generated` | Written only when true; editing a Connector clears its flag; schema 54 gated |
 | RS17 | One step | Unticked changes nothing; Undo restores every byte |
 | RS18 | Runs | The four-arm fixture runs at Micro (seed 42) with no refusal, and Node evaluation has a row for every turn |
+| RS19 | Arm outside (D382) | A Node narrower than its arms' carriageways, whose Roads end inside while their Links pass beside it, is `FILL_NODE_ARM_OUTSIDE`; the same arms under a wider Node still fill |
 
 ## 14. S4.5a as implemented (D323)
 
@@ -403,9 +404,8 @@ Each row first asserts that its forcing worked (AGENTS).
   (keeping `roadId`) and adds the Connectors through `addConnectorRange`, so D75's fit narrows a
   range more than two lanes wider than its out end. `settleNodes` then refines the Node.
   - **The uncut geometry is the template's** (`templateLinks`, extracted from *Apply template*).
-    So a leg is always cut from the same shape, and *Apply template* on a Road ending in a Node that
-    holds a generated Connector cuts its Links there again (`generatedCuts`, taken before the Links change): a re-apply
-    changes no byte (RS12).
+    So a leg is always cut from the same shape, and *Apply template* on a Road ending in a Node that holds a
+    generated Connector cuts its Links there again (`generatedCuts`, taken before the Links change): a re-apply changes no byte (RS12).
 - **Readings taken:**
   - **Only generated arms in S4.5a.** §13.1 allowed an arm that is a Link without a Road. Its uncut
     shape is lost once it is cut, so a re-apply could not reproduce the cut; it is

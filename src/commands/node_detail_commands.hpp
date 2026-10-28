@@ -15,6 +15,8 @@ struct NodeFillCatalogs {
 // Why F4 cannot fill this Node, or empty when it can. Not listed at all (also empty): a Node with
 // detail, or one with fewer than two arms. Otherwise, in this order:
 // - FILL_NODE_ROAD_NOT_GENERATED: a Road ending in the Node has no Links (F3 first);
+// - FILL_NODE_ARM_OUTSIDE: a Link of such a Road is not a leg of the Node, which is narrower than the
+//   carriageway (D382);
 // - FILL_NODE_ARM_NOT_GENERATED: a leg Link has no Road, or its Road's template does not resolve,
 //   so its uncut shape is not known after a cut (S4.5a reads only generated arms);
 // - FILL_NODE_ALL_WAY_STOP: the Micro engine has no all-way stop;

@@ -127,9 +127,17 @@ std::optional<std::set<std::string>> majorArms(const ProjectDocument& d, const N
 std::string nodeDetailRefusal(const ProjectDocument& d, const Node& node, const NodeFillCatalogs& catalogs) {
     const auto& n = d.network;
     const auto& templates = catalogs.templates;
-    for (const auto& leg : nodeRoadLegs(n, node))
+    const auto roadLegs = nodeRoadLegs(n, node);
+    for (const auto& leg : roadLegs)
         if (const auto* r = roadOf(n, leg.roadId); r && r->links.empty()) return "FILL_NODE_ROAD_NOT_GENERATED";
-    for (const auto& leg : nodeLinkLegs(n, node))
+    // D382: a Road ending inside whose Links pass beside the polygon (a Node narrower than the
+    // carriageway) would give turns without arms.
+    const auto linkLegs = nodeLinkLegs(n, node);
+    for (const auto& leg : roadLegs)
+        if (const auto* r = roadOf(n, leg.roadId))
+            for (const auto& id : r->links)
+                if (std::none_of(linkLegs.begin(), linkLegs.end(), [&](const auto& l) { return l.linkId == id; })) return "FILL_NODE_ARM_OUTSIDE";
+    for (const auto& leg : linkLegs)
         if (!templateGeometry(d, linkOf(n, leg.linkId), templates)) return "FILL_NODE_ARM_NOT_GENERATED";
     const auto control = node.coarse && node.coarse->control ? *node.coarse->control : CoarseControl::priority;
     if (control == CoarseControl::allWayStop) return "FILL_NODE_ALL_WAY_STOP";

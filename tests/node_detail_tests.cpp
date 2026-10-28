@@ -353,3 +353,10 @@ TEST(nodedetail, rs18_signal_runs) { // RS18, S4.5c
     CHECK(report.nodes.size() == 1 && report.nodes[0].controlType == std::optional<std::string>("signalised"));
     CHECK(report.nodes[0].turns.size() == 12 && report.nodes[0].vehicles > 0 && report.nodes[0].issues.empty());
 }
+TEST(nodedetail, rs19_arm_outside) { // RS19 (D382)
+    // A Node narrower than its arms' carriageways: the Roads end inside, their Links pass beside it.
+    const auto d = cross(1.5);
+    CHECK(nodeRoadLegs(d.network, node(d)).size() == 4 && nodeLinkLegs(d.network, node(d)).empty()); // forcing
+    CHECK(refusal(d) == "FILL_NODE_ARM_OUTSIDE");
+    CHECK(refusal(cross()).empty()); // the same arms under a Node that holds them still fill
+}
