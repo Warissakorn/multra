@@ -1,4 +1,5 @@
 #pragma once
+#include "settings.hpp"
 #include <string>
 #include <vector>
 
@@ -41,9 +42,6 @@ struct MesoNode {
     std::vector<MesoConflict> conflicts;
     bool operator==(const MesoNode&) const = default;
 };
-// The run's step and reporting slice, s (D292 choice 7a); absent in the file = kMesoDefaults.
-struct MesoSettings { double step{}, slice{}; bool operator==(const MesoSettings&) const = default; };
-inline constexpr MesoSettings kMesoDefaults{1, 300};
 struct MesoGraph {
     std::vector<MesoNode> nodes;
     std::vector<MesoLink> links;        // in (Link id, station) order

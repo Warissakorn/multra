@@ -2,10 +2,12 @@
 
 [![Package binaries](https://github.com/Warissakorn/multra/actions/workflows/package.yml/badge.svg)](https://github.com/Warissakorn/multra/actions/workflows/package.yml)
 
-**MULTRA — Multi-Level Traffic Analysis.** A traffic microsimulator with its own **C++20 engine,
-link-based network model and Qt 6 Widgets desktop interface**, built to the modelling surface
-PTV Vissim users already know and aimed at the movement-level delay and queue output that traffic
-impact studies need. The owner chose the name in D284. The project was called TrafficSim before;
+**MULTRA — Multi-Level Traffic Analysis.** One road network and one demand, analysed at three
+equally weighted levels — **microscopic, mesoscopic and macroscopic** — with analytical (HCM 7)
+junction capacity on the Node beside them, in its own **C++20 engines, link-based network model
+and Qt 6 Widgets desktop interface** ([purpose](docs/PROBLEM.md), D378). The Micro level is built
+to the modelling surface PTV Vissim users already know; the integrated model takes Aimsun Next as
+its reference. Each level aims at the delay, queue and volume output that traffic studies need. The owner chose the name in D284. The project was called TrafficSim before;
 project files keep `"format": "TrafficSim"` so that every saved file still opens.
 
 `multra-desktop` opens the Network Editor:

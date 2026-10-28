@@ -91,7 +91,8 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesRoadZoneConnectors(d.zones) ? 57 :
+    return usesNodeAnalysis(d) ? 58 :
+        usesRoadZoneConnectors(d.zones) ? 57 :
         !d.macroRuns.empty() ? 56 :
         usesStudyArea(d) ? 55 :
         usesGeneratedFlags(d) ? 54 :

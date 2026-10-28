@@ -1,42 +1,77 @@
-Qt Widgets desktop: the network editor window, the application's only editing window since M1.24 (the Behaviour Lab, D165, is a separate tool window) — inspector, tables, Results (single run, N seeds on one worker thread — `editor_batch.cpp`, D141 — or the open project compared with a chosen file on that worker — `editor_compare.cpp`, D149), Run/Pause/Step/Reset, seed, playback speed, open/save/recovery and English/Thai UI from data/locales/.
+# src/shell
 
-`automation_server.*` accepts optional local JSONL control; `editor_automation.cpp` routes
-commands through the same document, History and Run view. `editor_automation_lifecycle.cpp`
-owns opt-in listener creation and the Help menu enable/disable actions; disconnecting a client
-does not end the document or run. `multra-control` is its compiled
-client. `run_identity.hpp` holds metadata of the existing GUI single run (no engine RNG or
-new timer); automation can export that identified run independently of the selected Results tab.
-`automation_document.*` supplies explicitly observed structural discovery and codec/History
-dry validation; structural hints use the Qt-free project `observed_schema` helper. It does
-not duplicate the codec with a claimed complete formal schema.
-Run-until uses the existing GUI timer and observers with a bounded fast-step slice.
-`automation_geometry.*` previews the existing Connector authoring command on a copy
-and enriches rejected patch attachment errors without adding fields to core validation types. See [desktop automation](../../docs/reference/DESKTOP_AUTOMATION.md) for the protocol.
+The Qt Widgets desktop application. The network editor window is the only editing window; the
+Behaviour Lab is a separate tool window. The shell owns the document, History, the Run view, files
+and recovery, dialogs, the Results tabs and the optional local automation server. Text comes from
+`data/locales/` (English and Thai). Contracts: [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md),
+[EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md),
+[DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md).
 
-`editor_zones.cpp` (M8.6a, D161) is the Zones tab: zones drawn with the Zone tool (Z) in `../editor/canvas_zones.cpp`, their connectors added to the Link selected on the canvas. `editor_od.cpp` and `od_lot_dialogs.cpp` (M8.6b, D162) are the OD matrices tab, its grid dialog and the lot dialog; Results → Parking lots is in `editor_results.cpp`.
-`road_zone_dialog` adds/edits direct Road targets for Macro/Meso with explicit travel direction and shares, through the same History command (D340/D341). Generated Roads are excluded from its target list. The Meso result note identifies its minimum free-flow-time OD rule; Micro still requires generated Links.
+## Dependencies
 
-`editor_lab.cpp` opens Simulation → Behaviour Lab (D165): `behaviour_lab_window.*` (a second, non-modal window drawing the lab run on its own `EditorCanvas`, which follows one vehicle), `behaviour_lab_panel.*` and `behaviour_lab_telemetry.*`; Apply writes the tuned vehicle back through `execute`.
+Everything below it: `src/editor/`, `src/commands/`, `src/project/`, `src/model/`, `src/core/`,
+`src/eval/`, `src/runner/`, `src/lab/`, `src/geo/`. It shares the `multra_shell` target with
+`src/editor/` ([its dependencies](../editor/README.md#dependencies)); no other `src/` module includes the
+shell. Every file the shell writes is
+replaced atomically (`QSaveFile`).
 
-`editor_map.cpp` supplies localized map settings, navigation and visibility actions, plus
-map.get/set/remove/status/retry automation. UI and AI settings share the same apply path;
-read-only tile snapshots come from the existing layer/client and viewport timer.
-Its dialogs are free functions in `map_settings_dialog`; `map_location_picker` adds searchable
-country and optional province/state choices while preserving manual coordinate entry.
+## Files
 
-`vehicle_color_dialog` edits per-type fixed or mixed body colours from View, and atomically saves
-application-local display preferences shared by the editor and Behaviour Lab. See
-[vehicle colour contract](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334).
+`editor_window.*` declares `EditorWindow`; its members are split by concern:
 
-`macro_run_dialog` edits saved Macro run definitions as one Undo step and selects a named definition or project settings for the existing staged worker. Definitions are stored with the project; result tables remain session-local. See [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md#named-macro-runs).
+| Area | Sources |
+|---|---|
+| Window, workspace, tables, inspector | `editor_window.cpp`, `editor_workspace.cpp`, `editor_tables.cpp`, `editor_inspector.cpp`, `editor_palette.cpp` (command palette), `editor_commands.cpp`, `editor_history.cpp`, `editor_input.cpp`, `editor_modes.cpp` |
+| Files and recovery | `editor_files.cpp`, `editor_recovery.cpp`, `editor_side_files.cpp`, `editor_storage.cpp` |
+| Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `editor_cross_sections.cpp`, `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
+| Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
+| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp`, `editor_speed_areas.cpp`, `editor_speed_decisions.cpp`, `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (OD matrices tab) |
+| Roads and Nodes | `editor_roads.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
+| Evaluation objects | `editor_counters.cpp`, `editor_sections.cpp` |
+| Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed), `editor_batch.cpp` (N seeds on one worker thread), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
+| Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` |
 
+The other headers:
 
-`object_export` supplies File → Export object table (CSV), five table actions shared with the
-command palette, Unicode destination selection and atomic writes. Export leaves History and
-run state untouched and protects this window's project/recovery files. The Qt-free formatter
-lives in project/object_csv. See [contract](../../docs/reference/OBJECT_TABLE_CSV.md).
+| File | Holds | Contract |
+|---|---|---|
+| `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_style.*` | The 20-unit toolbar and cursor glyphs; the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
+| `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `editor_storage.*` | Atomic replacement of any file the shell writes; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
+| `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
+| `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `editor_batch_cells.*` | The cells the batch and comparison tables share | [BATCH](../../docs/reference/BATCH.md) |
+| `editor_macro.*` | The Macro run: one worker over a copy of the document, stages and gap posted back | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) |
+| `editor_meso.*` | The Meso run, as the Macro one | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) |
+| `macro_run_dialog.*` | Named Macro run definitions, committed as one Undo step | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md#named-macro-runs) |
+| `run_identity.hpp` | Metadata of the GUI single run, apart from engine state | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `signal_timing_view.*` | A controller's timing bars across one cycle, from the run's colour rule | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `behaviour_library_dialog.*` | The driving-behaviour library dialog, editing a staged copy | [DRIVING_BEHAVIOUR §9](../../docs/reference/DRIVING_BEHAVIOUR.md) |
+| `behaviour_editor.*` | One behaviour's name, model and keys | [W74](../../docs/reference/W74.md), [DRIVING_BEHAVIOUR](../../docs/reference/DRIVING_BEHAVIOUR.md) |
+| `behaviour_lab_window.*` | Simulation → Behaviour Lab: non-modal, its own `EditorCanvas` following one vehicle; Apply writes the tuned vehicle back through `execute` | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `behaviour_lab_panel.*` | The lab's three-tab parameter panel over one `LabSettings` | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `behaviour_lab_telemetry.*` | The followed vehicle's last 60 s as speed and gap strips | [BEHAVIOUR_LAB §3](../../docs/reference/BEHAVIOUR_LAB.md) |
+| `demand_catalog_dialog.*` | Vehicle type and composition dialogs | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
+| `demand_period_editor.*` | Demand period rows, returned for the caller's History command | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
+| `demand_type_rules_dialog.*` | A routing decision's per-type matrices over its targets and periods | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
+| `od_lot_dialogs.*` | The OD matrix grid and parking-lot dialogs | [ZONES_AND_PARKING §9](../../docs/reference/ZONES_AND_PARKING.md) |
+| `road_zone_dialog.*` | Direct Road targets for Macro and Meso (Roads without generated Links only) | [ROADS_IMPLEMENTED §22](../../docs/reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) |
+| `gate_flow_dialog.*` | A study area's typed gate flows for one period and composition | [STUDY_AREA §5](../../docs/reference/STUDY_AREA.md) |
+| `map_settings_dialog.*` | Map reference and appearance (staged) and navigation | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `map_location_picker.*` | Searchable country and province shortcuts that fill the coordinate fields | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `vehicle_color_dialog.*` | Per-type fixed or mixed body colours, saved as application-local preferences shared with the lab | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334) |
+| `object_export.*` | File → Export object table (CSV); the formatter is `src/project/object_csv` | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) |
+| `image_export.*` | File → Export network image (PNG); the canvas renders | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) |
+| `automation_server.*` | Optional local JSONL control, one object per line, dispatched on the GUI thread | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_endpoint.*` | The protocol bound and endpoint naming shared with the `multra-control` client | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_error.hpp` | `CommandError`: an automation error code with details | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_document.*` | Patches, observed structural discovery and dry validation through the codec and History; no claimed complete schema | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `automation_geometry.*` | Previews the Connector command on a copy; enriches rejected attachment errors | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
 
+## Tests
 
-`image_export` provides File → Export network image (PNG), resolution/scope/background options
-and atomic writes. Destination protection is shared with object CSV in editor_storage; the
-canvas owns raster rendering. See [contract](../../docs/reference/NETWORK_IMAGE.md).
+The `tests/*_ui_tests.cpp` executables and the automation tests (`tests/automation_*_tests.cpp`,
+`tests/editor_automation_tests.cpp`, `tests/desktop_automation_process_tests.cpp`), registered in
+`src/shell/CMakeLists.txt`.

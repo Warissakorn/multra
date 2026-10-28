@@ -1,44 +1,101 @@
-Qt-free M0 loading/output and authoring ProjectDocument codec (reads schemas 1–57). The document persists authoring data and optional background; no compiled runtime network is saved. Empty draft networks are valid. Commands depend on this module, never the reverse. The shell owns QSaveFile atomic replacement.
+# src/project
 
-`input_manifest` optionally records hashes of exact parsed project/catalog/evaluation bytes for CLI discharge studies. Collection is passed explicitly through compilation; loaders keep their legacy path when absent. `input_sha256` has no external dependency. See [measurement/provenance contract](../../docs/reference/DISCHARGE.md).
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–58), catalogs from
+`data/`, compilation for each level, and every run's output formats. The document persists
+authoring data and the optional background; no compiled runtime network is saved, and an empty
+draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
 
-`evaluation_period` reads, writes and validates the M5.3 evaluation period (schema 22) and its M5.9 cool-down (schema 27, D146), and builds `newProjectDocument`.
+## Dependencies
 
-`batch_output` formats M5.2 batch reports as JSON and CSV, with the cell formats it shares with `movementCsv` in `csv_format.hpp`. `parseSeedList` (in `load`) reads `--seeds` lists. `parallel_seeds` runs the runner's `runSeed` on worker threads (D152); the runner itself stays thread-free. See [BATCH](../../docs/reference/BATCH.md).
+Reads `src/model/`, `src/core/`, `src/eval/`, `src/runner/`, `src/analysis/`, `src/macro/`,
+`src/meso/` and nlohmann/json. Never `src/commands/`, `src/editor/`, `src/shell/` or Qt
+(`multra-check-architecture`): commands depend on this module, never the reverse. The shell owns
+atomic file replacement. A new file feature is written only when used, so a document without it
+keeps its schema and bytes.
 
-`behaviour_library` reads, writes and validates the M3.3.2a project-owned behaviour library (names/model tags, vehicle classes, link behaviour types, Link/Connector assignment) and the Run refusal of assigned roads until M3.3.2b. See [contract](../../docs/reference/DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126).
+## Document and codec
 
-`map_settings`/`map_codec` persist optional schema-29 reference/settings without Qt/PROJ; old map-free bytes stand.
+| File | Holds | Contract |
+|---|---|---|
+| `document.*` | `ProjectDocument` (authoring network, definition, optional background) and `parseDocument`/`documentJson`; implemented with `parse.cpp`, `definition.cpp`, `signal_migration.cpp` (legacy programs as colour runs) and route migration to Link and Connector ids. `allocateId` and `documentIds` share one traversal; no id index survives an edit | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `document_schema.*` | `documentSchemaVersion`: the writer version chosen from features alone, the rule `documentJson` uses; input versions are not retained | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `document_envelope.*` | Envelope and background field metadata, read and validation stages, the envelope-only partial draft-2020-12 schema | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `network_schema.*` | `projectDocumentSchema`: the composed partial schema for schemas 1 to the latest, printed by `multra-project-schema` | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `network_fields.*` | Versioned known-key and type metadata shared by the row codecs (`network_link_codec.cpp`, `network_connector_codec.cpp`, `network_signal_head_codec.cpp`, `signal_control_codec.cpp`, `right_of_way_codec.cpp`, `measurement_codec.cpp`, `demand_codec.cpp`, `routing_codec.cpp`); rules below | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `json.*` | Section accessors that fail with a named, translatable code; `parseNetwork`; `output.cpp` writes the run's state and event JSON | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `observed_schema.*` | Bounded structural JSON hints for desktop automation (50,000 values, depth 32); no required fields, ranges or version rules | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `node_codec.*` | `network.nodes` and each Node's `analysis` (approach `speedLimit` included) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
+| `road_codec.*` | `network.roads`, a Link's `roadId`, owned `definition.crossSections` | [ROADS §3, §4](../../docs/reference/ROADS.md) |
+| `zone_codec.*` | The zone layer: zones, zone connectors (with direct Road targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
+| `study_area_codec.*` | `studyArea` at the root | [STUDY_AREA §3, §5](../../docs/reference/STUDY_AREA.md) |
+| `study_period_codec.*` | `studyPeriods`, `definition.clockStart`, a matrix's `periodId` | [STUDY_PERIODS §3-§5](../../docs/reference/STUDY_PERIODS.md) |
+| `mode_codec.*` | Owned `definition.modes`, a matrix's `modeId`, a vehicle type's `pcu` | [STUDY_PERIODS §5-§7](../../docs/reference/STUDY_PERIODS.md) |
+| `link_type_codec.*` | A Link's `linkType`, owned `definition.linkTypes`, installed `data/link-types/` and `data/vdf/` | [MACRO_NETWORK §4, §5](../../docs/reference/MACRO_NETWORK.md) |
+| `macro_settings.*` | `definition.macroSettings` | [MACRO_NETWORK §7](../../docs/reference/MACRO_NETWORK.md) |
+| `macro_run_definition.*` | Saved named Macro run definitions, apart from the latest result | [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md) |
+| `meso_settings.*` | `definition.mesoSettings` and a link type's `jamDensity` | [MESO_NETWORK §8](../../docs/reference/MESO_NETWORK.md) |
+| `evaluation_period.*` | The evaluation period and cool-down; `newProjectDocument` | [BATCH](../../docs/reference/BATCH.md) |
+| `behaviour_library.*` | The project-owned behaviour library: names and model tags, vehicle classes, link behaviour types, assignment | [DRIVING_BEHAVIOUR §7](../../docs/reference/DRIVING_BEHAVIOUR.md) |
+| `clamp_rules.*` | `definition.clampRules`, three booleans true when absent | [MERGE_CLAMPS §3](../../docs/reference/MERGE_CLAMPS.md) |
+| `lane_preference.*` | A vehicle type's `kerbLanes` | [LANE_PREFERENCE](../../docs/reference/LANE_PREFERENCE.md) |
+| `speed_curve.*` | A vehicle type's desired-speed range and cumulative curve | [SPEED_DISTRIBUTION](../../docs/reference/SPEED_DISTRIBUTION.md) |
+| `speed_decisions.*` | Desired-speed decisions in the file and compiled per lane | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
+| `speed_areas.*` | Reduced-speed areas in the file and compiled per lane section | [SPEED_DECISIONS §7](../../docs/reference/SPEED_DECISIONS.md) |
+| `route_destination.*` | Editor-only destination markers; compilation ignores them | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `map_settings.*` | The optional background reference and settings, without Qt or PROJ (`map_codec.cpp`) | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `counted_volumes.*` | Inputs whose volume is their entry decision's turning counts | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
+| `demand_time_types.*` | Time-dependent composition and type routing rules; the compiler emits ordinary Poisson streams | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
 
-`route_destination` validates and persists editor-only schema-30 destination markers; compilation ignores them.
-`zone_codec` persists the optional schema-31 zone layer (zones, zone connectors, OD matrices; M8.2, D154) and its structural checks; compilation does not read it until M8.3.
-`od_demand` adds the OD matrices to a copy of the definition as ordinary routes and inputs before compilation, and holds their Run-tier checks (M8.3, D155).
-Direct Road zone targets use schema 57 and Macro's compiled direction endpoints; Micro requires *Apply template* to remap them to Links. See [ROADS_IMPLEMENTED §22](../../docs/reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340). `meso_road_demand` adds Meso's compiled-graph OD paths, resolving shares, modes, periods and PCU from the same catalogs; a matrix uses them only when one of its zones has a Road target, the rest keep Micro's paths (D342). See [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md).
-`parking_compile` turns each authored ParkingLot into the engine's lot after `compileScenario` (M8.4b, D157).
+## Catalogs, compilation and checks
 
-`study_area_run` builds the run-time Micro cut; `study_area_meso` retains composition and single-type classes per Meso slice. Run-time-only type fields pass through `od_demand` to ordinary inputs without changing catalog ownership or stored codecs. See [STUDY_AREA_IMPLEMENTED §22](../../docs/reference/STUDY_AREA_IMPLEMENTED.md#22-single-vehicle-type-meso-cuts-and-cli-coverage-d338).
+| File | Holds | Contract |
+|---|---|---|
+| `load.*` | `loadScenario`, `findDataDirectory`, `parseSeedList`; load errors carry the file and a translatable code | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `run.*` | `resolveCatalogs` and compilation for a run: compositions expanded to one input per type | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
+| `demand_catalog.*` | Resolving authored catalog ownership; the type a new input starts from | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
+| `demand_paths.*` | Glue between authored demand and the routeless walk: placed decisions, `expandRouteless` | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
+| `demand_preview.*` | Expected counts from the same compiled snapshot as Run, without arrivals | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
+| `station_routing.*` | Physical stations to route distances; clips awareness-dependent lateral spans | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
+| `od_demand.*` | `withOdDemand`: OD matrices added as ordinary routes and inputs before compilation; their Run-tier checks | [ZONES_AND_PARKING §3](../../docs/reference/ZONES_AND_PARKING.md) |
+| `meso_road_demand.*` | Meso's compiled-graph OD paths for a matrix with a direct Road target; other matrices keep Micro's paths | [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) |
+| `parking_compile.*` | Each authored ParkingLot as the engine's lot, after `compileScenario` | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) |
+| `display.*` | `loadDisplayCatalog` | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) |
+| `diagnostics.*` | Draft issues, then runtime issues, as rows; never throws | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `readiness.*` | What would stop or weaken a run, per level, from the functions the runs call | [READINESS §3](../../docs/reference/READINESS.md) |
+| `node_proposals.*` | The Nodes a Macro or Meso run points at; listed, never refined | [READINESS §5, §12](../../docs/reference/READINESS.md) |
+| `input_manifest.*` | SHA-256 of the exact parsed bytes (`input_sha256.cpp`, no external dependency) for discharge studies | [DISCHARGE](../../docs/reference/DISCHARGE.md) |
 
-`macro_run_definition` persists named Macro period/settings definitions at schema 56; `runNamedMacro` executes them without changing the document or its global settings. Results identify the chosen definition; the side file still keeps the latest source for each period. See [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md#named-macro-runs).
+## Runs and outputs
 
-`allocateId` checks each candidate directly against current object IDs; it shares the network/definition
-traversal with `documentIds` and additionally checks zone/mode IDs. No ID index survives an edit.
+| File | Holds | Contract |
+|---|---|---|
+| `evaluation.*` | The queue-counter definition and `evaluationSpec`; `discharge_json.cpp` writes discharge JSON | [BATCH](../../docs/reference/BATCH.md), [DISCHARGE](../../docs/reference/DISCHARGE.md) |
+| `csv_format.*` | Cell formats every results CSV shares | [BATCH](../../docs/reference/BATCH.md) |
+| `batch_output.*` | Batch JSON and CSV | [BATCH](../../docs/reference/BATCH.md) |
+| `comparison_output.*` | Scenario comparison JSON and CSV | [BATCH §7](../../docs/reference/BATCH.md) |
+| `parallel_seeds.*` | `runSeedsParallel`: the runner's seeds on worker threads; the runner stays thread-free | [BATCH](../../docs/reference/BATCH.md) |
+| `los_output.*` | The LOS pack loader and LOS cells | [LOS](../../docs/reference/LOS.md) |
+| `node_output.*` | Each Node's turns, legs and conflicts as evaluation specs, and their rows | [NODES §4](../../docs/reference/NODES.md) |
+| `macro_input.*` | What a Macro run reads from a document | [MACRO_NETWORK §3-§6](../../docs/reference/MACRO_NETWORK.md) |
+| `macro_run.*` | One Macro run of a named period, shared by the CLI and the editor; `runNamedMacro` runs a saved definition without changing the document | [MACRO_NETWORK §7, §9](../../docs/reference/MACRO_NETWORK.md) |
+| `macro_output.*` | A Macro run's fields and one row per arc | [MACRO_NETWORK §9](../../docs/reference/MACRO_NETWORK.md) |
+| `meso_input.*` | What a Meso run reads: resolved link types, settings, `mesoDemand` | [MESO_NETWORK §3, §8](../../docs/reference/MESO_NETWORK.md) |
+| `meso_run.*` | `runMeso` over the whole Micro run | [MESO_NETWORK §7](../../docs/reference/MESO_NETWORK.md) |
+| `meso_output.*` | A Meso run's outputs by slice, in PCU | [MESO_NETWORK §7](../../docs/reference/MESO_NETWORK.md) |
+| `study_area_run.*` | The document a Micro run over a study area compiles; never saved | [STUDY_AREA §4, §5](../../docs/reference/STUDY_AREA.md) |
+| `study_area_macro.*` | Gate flows cut from Macro's assignment | [STUDY_AREA §6](../../docs/reference/STUDY_AREA.md) |
+| `study_area_meso.*` | Gate flows cut from Meso's loading, with composition and single-type classes per slice | [STUDY_AREA §7](../../docs/reference/STUDY_AREA.md) |
+| `side_files.*` | The `<project>.macro.json` and `<project>.meso.json` side files | [STUDY_AREA §8, §9](../../docs/reference/STUDY_AREA.md) |
+| `export_marking.*` | Program-drawn objects a study-area run rests on, and the marking every export carries | [STUDY_AREA §8, §10, §11](../../docs/reference/STUDY_AREA.md) |
+| `node_analysis_run.*` | M13: HCM on every Node that carries `analysis`; `node_analysis_output.cpp` writes the JSON and CSV | [NODE_ANALYSIS](../../docs/reference/NODE_ANALYSIS.md) |
+| `node_analysis_permitted.*` | M13 A3: one permitted or protected-permitted far-turn lane group (`analysePermitted`), the shared lane's Eq. 31-59 share for lane flows, and a protected lane group's queue service time g_s | [NODE_ANALYSIS_A3](../../docs/reference/NODE_ANALYSIS_A3.md) |
+| `object_csv.*` | Five authored object tables as CSV (UTF-8 BOM, CRLF, full precision, nested JSON cells); no compilation | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) |
 
-`observed_schema` generates bounded, non-authoritative structural JSON hints for desktop
-automation without Qt. Exhausting the visit budget leaves unvisited array item types open;
-it does not infer required fields, codec version rules or semantic validity.
-
-`documentSchemaVersion` (`document_schema.hpp`) selects the writer version directly from
-features, without serializing or validating the document. `documentJson` uses this same rule;
-input schema versions are not retained. See the [schema inventory](../../docs/reference/PROJECT_SCHEMA.md).
-
-`document_envelope` owns shared envelope/background field metadata, native read/validation
-stages and partial draft-2020-12 schema generation. `multra-project-schema` prints that
-schema directly, retaining exact uint64 limits. Nested feature validation remains in the
-existing codecs; native integer-token and UTF-8 byte checks are annotated constraints.
+## Codec rules
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 roadId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–57; shared `$defs`
+composes envelope/background with these structural rules for schemas 1–58; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 
@@ -85,8 +142,8 @@ retain their read order. The document-only pre-20 position guard stays before pa
 volume synchronization follows the complete definition. Schema validation leaves matrix sizes,
 weights, time windows and destination reachability to existing model validators.
 
+## Tests
 
-`object_csv` formats five authored object tables with UTF-8 BOM, CRLF, full numeric precision
-and nested JSON cells, sharing the persisted serializers on table-only projections. No catalog
-resolution or Run is required. The shell owns destination selection and atomic replacement.
-See [object table CSV](../../docs/reference/OBJECT_TABLE_CSV.md).
+`tests/project_tests.cpp`, the `*_schema_tests.cpp` and `*_codec_tests.cpp` files, `tests/batch_tests.cpp`,
+`tests/macro_*_tests.cpp`, `tests/meso_*_tests.cpp`, `tests/study_area_*_tests.cpp`,
+`tests/node_analysis_*tests.cpp`; the `project-schema-cli` and `cli-*` ctests run `multra-cli`.

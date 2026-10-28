@@ -83,6 +83,14 @@ for parity: `MarkingType::doubleLine` (§10.3 names only solid/dashed/none), and
 
 ## 2. In the supplied specification, absent here
 
+> **Baseline 2026-09-21, kept as history.** Rechecked 2026-10-27 against `network.hpp`: §7.1 and
+> §8–§9 have moved on (conflict areas, signal controllers and routing decisions exist as their own
+> objects), but the Connector itself still has no curve parameters (§3.2), no per-Connector
+> behaviour or lane-change/emergency-stop distance (§5–§6), and the Lanes tab still has no
+> `BlockedVeh`, `NoLnCh` or overtaking lane. Current behaviour is in
+> [NETWORK_EDITOR](../reference/NETWORK_EDITOR.md); open owner choices in
+> [OWNER_SITTING](../plans/OWNER_SITTING.md) B27.
+
 The whole extension block. These are **not silently dropped** — schema 7 rejects the fields on
 load with `EDIT_UNSUPPORTED_FIELD` and a field path (`parse.cpp:16-22`, pinned by
 `tests/authoring_tests.cpp:89-100`), which is the correct behaviour under hard rule 4: a field

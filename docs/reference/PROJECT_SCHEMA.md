@@ -12,7 +12,7 @@ uses those existing codecs and validators.
 
 ## Envelope and presence rules
 
-The reader accepts editor schemas 1–57 (`kLatestSchema` in `document.hpp`). A missing
+The reader accepts editor schemas 1–58 (`kLatestSchema` in `document.hpp`). A missing
 `schemaVersion` selects the separate legacy scenario path, including pre-5 attachments
 and legacy signal/amber behavior. A formal editor schema must not accidentally accept
 that path as a canonical project.
@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–57 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–58 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -100,6 +100,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 55 | Study area with selected Nodes | `study_area_codec.cpp` |
 | 56 | Named Macro run definitions | `macro_run_definition.cpp` |
 | 57 | Road-target zone connectors | `zone_codec.cpp` |
+| 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374) | `node_codec.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from
@@ -181,7 +182,7 @@ with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 now also includes the Connector/reference extension below; complete remains false and
 desktop observed schema discovery is unchanged.
 
-The generated schema chooses rules from the document's root `schemaVersion` (1–57).
+The generated schema chooses rules from the document's root `schemaVersion` (1–58).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its

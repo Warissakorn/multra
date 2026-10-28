@@ -137,6 +137,19 @@ std::vector<std::string> check(const Documents& docs, const std::set<std::string
                 errors.push_back(index+": unindexed "+path);
         }
     }
+    // Each source module's README is its map: every header starts a table row there, as `name.*` or
+    // `name.hpp`; a prose mention does not count. A folder without a README is mapped by its
+    // nearest parent's.
+    for (const auto& file:files) {
+        if (!file.starts_with("src/") || !file.ends_with(".hpp")) continue;
+        auto folder=fs::path(file).parent_path();
+        while (folder.has_parent_path() && folder!="src" && !docs.contains((folder/"README.md").generic_string()))
+            folder=folder.parent_path();
+        const auto index=(folder/"README.md").generic_string();
+        if (folder=="src" || !docs.contains(index)) { errors.push_back("Missing module map for "+file); continue; }
+        if (("\n"+docs.at(index)).find("\n| `"+fs::path(file).stem().string()+".")==std::string::npos)
+            errors.push_back(index+": unmapped "+file);
+    }
     return errors;
 }
 int selfTest() {
@@ -157,6 +170,16 @@ int selfTest() {
     if (!check(docs,files).empty()) return 1;
     docs["docs/reference/README.md"]="# Unindexed\n";
     if (check(docs,files).empty()) return 1;
+    docs["docs/reference/README.md"]="[Guide](Guide.md)\n";
+    files.insert("src/core/types.hpp"); files.insert("src/model/network/network.hpp");
+    if (check(docs,files).empty()) return 1; // no module map at all
+    docs["src/core/README.md"]="| `types.hpp` |\n"; docs["src/model/README.md"]="| `other.*` |\n";
+    files.insert("src/core/README.md"); files.insert("src/model/README.md");
+    if (check(docs,files).empty()) return 1; // network.hpp unmapped in its parent's README
+    docs["src/model/README.md"]="See `network.cpp`.\n";
+    if (check(docs,files).empty()) return 1; // a prose mention is not a row
+    docs["src/model/README.md"]="| `network.hpp` |\n";
+    if (!check(docs,files).empty()) return 1;
     std::cout << "Documentation positive/negative fixtures passed\n"; return 0;
 }
 }
@@ -176,6 +199,6 @@ int main(int argc,char** argv) {
     }
     const auto errors=check(docs,files);
     for (const auto& error:errors) std::cerr << error << '\n';
-    if (errors.empty()) std::cout << "Documentation links, anchors and maintained indexes passed\n";
+    if (errors.empty()) std::cout << "Documentation links, anchors, maintained indexes and module maps passed\n";
     return errors.empty() ? 0 : 1;
 }

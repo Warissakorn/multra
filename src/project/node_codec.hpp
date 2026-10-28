@@ -18,4 +18,6 @@ bool generatedFlag(const Json& object, const std::string& where, int schema);
 bool usesGeneratedFlags(const ProjectDocument&);
 // A file below 54 whose signal controller carries the key: EDIT_UNSUPPORTED_FIELD at its path.
 void rejectGeneratedControllersBefore54(const Json& file);
+// M13 A1 (NODE_ANALYSIS §4, D371): whether any Node carries `analysis`, which makes the file schema 58.
+bool usesNodeAnalysis(const ProjectDocument&);
 }

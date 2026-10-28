@@ -1,0 +1,4 @@
+<connections>
+ <connection from="west" to="east"/><connection from="south" to="north"/>
+ <delete from="west" to="north"/><delete from="south" to="east"/>
+</connections>

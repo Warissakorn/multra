@@ -7,7 +7,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Topic | Start with these decisions |
 |---|---|
 | Desktop automation and AI control | D350, D349, D348, D347, D346, D345, D344, D336, D335 |
-| Product scope, stack, naming and owner gates | D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
+| Product scope, stack, naming and owner gates | D378, D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Macro assignment (S2, M10.1) | D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
@@ -428,3 +428,29 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D367](RECORD.md#d367) — M1.23.2 authoring-network PNG: full/view bounds, bounded dimensions, optional backgrounds/cached map credit, no live-state mutation and atomic writes.
 
 [D368](RECORD.md#d368) — Object table CSV prefixes `'` to text cells starting with a spreadsheet formula character; numbers and JSON cells unchanged.
+
+[D369](RECORD.md#d369) — M0 plausibility accepted by owner ruling ("ผ่าน แบบ A"); caveat: bare M0 scenarios hold amber as red (1–3 clamps per run); unvalidated marker stays.
+
+[D370](RECORD.md#d370) — Analytical junction capacity (HCM 7 Ch. 19 first) booked as M13, a fourth method on the Node; contract NODE_ANALYSIS, owner choices open; no code.
+
+[D371](RECORD.md#d371) — M13 owner choices answered 1a–9a ("ใช้ตามแนะนำทั้งหมด"); A1 derives lane groups from Micro detail and refuses Nodes without it.
+
+[D372](RECORD.md#d372) — M13 A1: HCM 7 Ch. 19 pretimed protected exclusive lane groups on a Node (`src/analysis/`, schema 58 inputs, CLI `--node-analysis`, NA1–NA8); Exhibit 19-41 carved out to A2.
+
+[D373](RECORD.md#d373) — M13 A2 contract: shared lane groups (protected), critical v/c over a non-overlapping chain, back of queue with an approach speed limit; Exhibit 19-41 29/36 within ±5 %.
+
+[D374](RECORD.md#d374) — M13 A2 implemented: lane-based and shared lane groups (Ch. 31 §2), critical v/c, back of queue and storage ratio (Ch. 31 §4), approach `speedLimit`; NA9–NA14.
+
+[D375](RECORD.md#d375) — M13 A3's choices (OWNER_SITTING B25) decided on delegation ("ช่วยตัดสินใจ"): 1a–5a; A3 starts when the owner asks.
+
+[D376](RECORD.md#d376) — M13 A3 contract: permitted and protected-permitted turns, HCM 7 Ch. 31 §3 Steps 1–7; Exhibit 31-12 as one interval rule; NA15–NA20.
+
+[D377](RECORD.md#d377) — M13 A3 implemented: permitted and protected-permitted far turns (polygon, Step 7 B capacity, G_q2 iteration); l+sl, lr and one-lane permitted layouts refused and put to the owner; no permitted queue yet.
+
+[D378](RECORD.md#d378) — Purpose amended: Micro, Meso and Macro weighted equally, study-chain order (Macro → Meso → Micro), M13 a Node method serving them, Aimsun Next a reference in PROBLEM; supersedes D145 on "Micro first" only.
+
+[D379](RECORD.md#d379) — B27 decided on delegation ("ช่วยตัดสินใจ"): one posted speed on the Link pending the owner (B28, it reverses D373), per-lane allowed modes, *Fill from model* for Node turn volumes; M13 on coarse Nodes only within an HCM 7 planning method. Bookings only.
+
+[D380](RECORD.md#d380) — B28 decided on informed delegation: D379 1a stands (posted speed on the Link; D373 approach speed derived, values migrated); D378 order rule reworded (a finer gate does not close before the coarser one).
+
+[D381](RECORD.md#d381) — Stall-level parking and pedestrians added to PROBLEM §2 as needs, booked under *Later*; the 1a posted speed optional, a Micro default, never a cap.

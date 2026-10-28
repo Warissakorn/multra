@@ -1,4 +1,5 @@
 #pragma once
+#include "settings.hpp"
 #include <cstdint>
 #include <map>
 #include <string>
@@ -34,9 +35,6 @@ struct MacroClass {
     std::string id, mode; double pcu{}; std::vector<MacroCell> cells;
     bool operator==(const MacroClass&) const = default;
 };
-// The run's limits (S2.3, D275): `definition.macroSettings`, absent = kMacroDefaults.
-struct MacroSettings { double targetGap{}; int maxIterations{}; bool operator==(const MacroSettings&) const = default; };
-inline constexpr MacroSettings kMacroDefaults{1e-4, 1000}; // the target is 0.01 % (D272); the cap a numerical limit
 // May a class of `mode` (empty: a composition class, every link) use this arc?
 bool allows(const MacroLink&, const std::string& mode);
 // The nodes reachable from `from` over the arcs `mode` may use.

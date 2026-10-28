@@ -20,6 +20,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
+| [`PROGRESS-LOG-2026-10-27.md`](PROGRESS-LOG-2026-10-27.md) | D364 to D367 and D369: RoutingDecision schema, object CSV, UI font pin, network PNG export; documentation review fixes; M0 ruling; optimization pass; M13 booked, A1 and A2 (D370, D372–D374) | 10 |
 | [`PROGRESS-LOG-2026-10-26.md`](PROGRESS-LOG-2026-10-26.md) | D340–D343, Road demand and Node conflict authoring | 4 |
 | [`PROGRESS-LOG-2026-10-25.md`](PROGRESS-LOG-2026-10-25.md) | D339–D334, motorcycle, heavy-vehicle and van appearance | 12 |
 | [`PROGRESS-LOG-2026-10-24.md`](PROGRESS-LOG-2026-10-24.md) | D321–D331, map navigation and S4–S5 | 10 |
@@ -52,6 +53,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 - [`MIGRATION-D15.md`](MIGRATION-D15.md) — former migration reference, including the original UI mapping and implementation horizon
 - [`AUTHORING_EXTENSIONS-M1.21.md`](AUTHORING_EXTENSIONS-M1.21.md) — former M1.21 reference before the codec/reversal/marking clarification
+- [`ROADMAP-implemented-2026-10-27.md`](ROADMAP-implemented-2026-10-27.md) — the M8–M12 S3–S5 status paragraph and the M8 Road-demand follow-ups (D340–D342), replaced by status lines in `ROADMAP.md` 2026-10-27
 - [`ROADMAP-implemented-2026-10-15.md`](ROADMAP-implemented-2026-10-15.md) — M0.1, M1, M2, M3.2 slice table, M3.3, M5 and M8 bodies replaced by status rows in `ROADMAP.md` 2026-10-15
 - [`ROADMAP-M1-implemented.md`](ROADMAP-M1-implemented.md) — M1's implemented slices, out of `ROADMAP.md`
 - [`ROADMAP-M1.11-M3.1-implemented.md`](ROADMAP-M1.11-M3.1-implemented.md) — M1.11, M1.11.1, M1.12 and M3.1 bodies, out of `ROADMAP.md` 2026-09-29

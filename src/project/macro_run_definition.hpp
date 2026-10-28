@@ -1,6 +1,6 @@
 #pragma once
 #include "json.hpp"
-#include "../macro/graph.hpp"
+#include "../macro/settings.hpp"
 
 namespace multra {
 struct ProjectDocument;

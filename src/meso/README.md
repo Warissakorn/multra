@@ -1,5 +1,36 @@
-Meso level (M11; [contract](../../docs/reference/MESO_NETWORK.md)). Pure and Qt-free: it imports nothing outside this folder, reads no clock and draws no random number.
+# src/meso
 
-Direct Road OD paths are filled outside this engine by `project/meso_road_demand` and `model/demand/meso_road_paths` (D341, [contract](../../docs/reference/MESO_ROAD_DEMAND.md)); the engine receives ordinary class paths and time-window flows.
+The Meso level (M11): link-transmission loading of class paths on a graph compiled from the drawn
+network. Contract: [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md); as built:
+[MESO_NETWORK_IMPLEMENTED](../../docs/reference/MESO_NETWORK_IMPLEMENTED.md). Not validated (rule 4).
 
-`graph.*` holds the Meso graph as plain values (D293): links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction), `MesoSettings`, and `mesoStepLimit`. `compileMesoNetwork` in `src/model/demand/meso_compile.*` fills it from the drawn network; `src/project/meso_input.*` resolves the link types. `demand.*` holds the paths Meso loads until M9 (D295): `MesoPath`, `MesoClass`, turn shares and entry flows, filled by `mesoDemand` from Micro's authored routes through `mesoPath` (`src/model/demand/meso_paths.*`), and from routeless inputs and placed decisions through Micro's `expandRouteless` and `mesoObjectChain` (D296). `node_model.*` is the node model (D297): Tampère et al. (2011) §5.1, `mesoNodeFlows`, checked against the paper's Table 8. `link_model.*` is the link model (D298): Yperman (2007) Eqs. 4.31 and 4.35 over `MesoCurve` cumulative counts. `loading.*` is the engine, `loadMeso`: the thesis's three steps per step, origins as point queues, turn splits by route composition (Eq. 5.2) and `mesoNodeFlows` at every node; signals are averaged green (D299): each in-link's turns under one program form a Tampère §5.2 internal supply, which `mesoNodeFlows` applies as an effective capacity. A turn's free-flow time delays its vehicles' entrance to the out-link, and until then they count against its storage (D301, ours). `runMeso` (`src/project/meso_run.*`, D300) drives `loadMeso` over the whole run with a progress callback that can cancel; `src/project/meso_output.*` writes the outputs by slice. Not validated (rule 4).
+## Dependencies
+
+Imports nothing outside this folder; no clock, no random number, no I/O
+(`multra-check-architecture`). Direct Road OD paths are filled outside the engine
+([MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md)); the engine receives ordinary class
+paths and time-window flows.
+
+## Files
+
+| File | Holds | Contract |
+|---|---|---|
+| `graph.*` | The Meso graph as plain values: links (Link pieces outside every Node, with capacity, free speed and jam density), turns, nodes (a drawn Node with its membership turns and conflicts, or a simple junction) and `mesoStepLimit` | [MESO_NETWORK §3, §4](../../docs/reference/MESO_NETWORK.md) |
+| `settings.hpp` | `MesoSettings` (step, reporting slice) alone, so the authoring definition need not include the graph | [MESO_NETWORK](../../docs/reference/MESO_NETWORK.md) |
+| `demand.*` | The loaded demand: `MesoPath`, `MesoClass`, turn shares and entry flows | [MESO_NETWORK §6](../../docs/reference/MESO_NETWORK.md) |
+| `node_model.*` | `mesoNodeFlows`, Tampère et al. (2011) §5.1, checked against the paper's Table 8 | [MESO_NETWORK §5](../../docs/reference/MESO_NETWORK.md) |
+| `link_model.*` | Yperman (2007) Eqs. 4.31 and 4.35 over `MesoCurve` cumulative counts | [MESO_NETWORK §4](../../docs/reference/MESO_NETWORK.md) |
+| `loading.*` | `loadMeso`: three steps per time step, origins as point queues, turn splits by route composition (Eq. 5.2), `mesoNodeFlows` at every node. Signals are averaged green: each in-link's turns under one program form a Tampère §5.2 internal supply. A turn's free-flow time delays entry to the out-link, and its vehicles count against that link's storage meanwhile | [MESO_NETWORK §4-§6](../../docs/reference/MESO_NETWORK.md) |
+
+## Entry points
+
+`compileMesoNetwork` in `src/model/demand/meso_compile.*` builds the graph and
+`src/project/meso_input.*` resolves its link types. `mesoDemand` fills the demand from Micro's
+authored routes (`src/model/demand/meso_paths.*`) and from routeless inputs and placed decisions.
+`runMeso` (`src/project/meso_run.*`) drives `loadMeso` with a cancelling progress callback;
+`src/project/meso_output.*` writes the outputs by slice.
+
+## Tests
+
+`tests/meso_node_model_tests.cpp`, `tests/meso_loading_tests.cpp`, `tests/meso_demand_tests.cpp`,
+`tests/meso_network_tests.cpp`, `tests/meso_output_tests.cpp`.

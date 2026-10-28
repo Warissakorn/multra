@@ -11,6 +11,7 @@
 #include "../src/project/side_files.hpp"
 #include "../src/project/macro_output.hpp"
 #include "../src/project/meso_output.hpp"
+#include "../src/project/node_analysis_run.hpp"
 #include "build_info.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -194,13 +195,29 @@ int runMesoProject(const std::filesystem::path& file, const std::filesystem::pat
     std::cout << result.dump(2) << '\n';
     return std::cout ? 0 : 1;
 }
+// --node-analysis (M13 A1, NODE_ANALYSIS §5, D371): HCM 7 Ch. 19 on every Node with `analysis`.
+int runNodeAnalysisProject(const std::filesystem::path& file, const std::filesystem::path& csvFile, const std::filesystem::path& data) {
+    if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
+    InputManifest inputs;
+    const auto document = parseDocument(readInputJson(file, "project", &inputs));
+    if (!csvFile.empty() && std::filesystem::exists(csvFile))
+        throw std::invalid_argument("CSV output already exists: " + csvFile.string());
+    const auto run = runNodeAnalysis(document, data, &inputs);
+    const auto marking = exportMarking(document, {});
+    writeCsv(csvFile, markedCsv(nodeAnalysisCsv(run), marking));
+    auto result = nodeAnalysisJson(run);
+    addMarkingJson(result, marking);
+    stamp(result);
+    std::cout << result.dump(2) << '\n';
+    return std::cout ? 0 : 1;
+}
 }
 int main(int argc, char** argv) {
     try {
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
         std::optional<std::string> macroPeriod, macroRunId;
-        bool meso = false;
+        bool meso = false, nodeAnalysis = false;
         bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false;
         bool arrivalPhases = false, waitCauses = false;
         DischargeOptions discharge;
@@ -239,7 +256,9 @@ int main(int argc, char** argv) {
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
-                             "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n";
+                             "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n"
+                             "--node-analysis (with --project, alone) analyses every Node with analysis inputs by HCM 7 Ch. 19\n"
+                             "  (pretimed, protected, exclusive lane groups): analytical, not simulated (M13 A1).\n";
                 return 0;
             }
             if (discharge.consume(arg, i, argc, argv)) continue;
@@ -249,6 +268,10 @@ int main(int argc, char** argv) {
             if (arg == "--arrival-phases") { arrivalPhases = true; continue; }
             if (arg == "--wait-causes") { waitCauses = true; continue; }
             if (arg == "--meso") { if (meso) throw std::invalid_argument("Specify --meso only once"); meso = true; continue; }
+            if (arg == "--node-analysis") {
+                if (nodeAnalysis) throw std::invalid_argument("Specify --node-analysis only once");
+                nodeAnalysis = true; continue;
+            }
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
                 arg == "--threads" || arg == "--macro" || arg == "--macro-run") {
@@ -313,6 +336,9 @@ int main(int argc, char** argv) {
         if (meso && (projectFile.empty() || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
                      waitCauses || discharge.enabled))
             throw std::invalid_argument("--meso needs --project and takes only --csv and --data-dir");
+        if (nodeAnalysis && (projectFile.empty() || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes ||
+                             stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads))
+            throw std::invalid_argument("--node-analysis needs --project and takes only --csv and --data-dir");
         if (seeds) {
             if (projectFile.empty()) throw std::invalid_argument("--seeds needs --project");
             if (seedSet) throw std::invalid_argument("--seeds cannot be combined with a single seed");
@@ -325,6 +351,7 @@ int main(int argc, char** argv) {
             if (macroPeriod) return runMacroPeriod(projectFile, csvFile, data, *macroPeriod);
             if (macroRunId) return runMacroPeriod(projectFile, csvFile, data, *macroRunId, true);
             if (meso) return runMesoProject(projectFile, csvFile, data);
+            if (nodeAnalysis) return runNodeAnalysisProject(projectFile, csvFile, data);
             if (!compareFile.empty()) return runComparison(projectFile, compareFile, csvFile, data, *seeds, threads);
             if (seeds) return runBatch(projectFile, csvFile, data, *seeds, threads);
             return runProject(projectFile, csvFile, data, seed, laneChanges, segmentTimes, stopLines, arrivalPhases ? binWidth : 0, waitCauses, discharge);
