@@ -20,7 +20,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-10-27.md`](PROGRESS-LOG-2026-10-27.md) | D364 to D367 and D369: RoutingDecision schema, object CSV, UI font pin, network PNG export; documentation review fixes; M0 ruling; optimization pass | 7 |
+| [`PROGRESS-LOG-2026-10-27.md`](PROGRESS-LOG-2026-10-27.md) | D364 to D367 and D369: RoutingDecision schema, object CSV, UI font pin, network PNG export; documentation review fixes; M0 ruling; optimization pass; M13 booked (D370) | 8 |
 | [`PROGRESS-LOG-2026-10-26.md`](PROGRESS-LOG-2026-10-26.md) | D340–D343, Road demand and Node conflict authoring | 4 |
 | [`PROGRESS-LOG-2026-10-25.md`](PROGRESS-LOG-2026-10-25.md) | D339–D334, motorcycle, heavy-vehicle and van appearance | 12 |
 | [`PROGRESS-LOG-2026-10-24.md`](PROGRESS-LOG-2026-10-24.md) | D321–D331, map navigation and S4–S5 | 10 |

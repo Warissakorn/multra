@@ -2,6 +2,19 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-27 — Analytical junction capacity booked as M13 (D370)
+
+- **Asked:** should MULTRA analyse junctions as Vistro, Synchro and SIDRA do? Answer approved by the
+  owner: yes, as a deterministic, flow-based method on the Node (macroscopic at junction scale), a
+  fourth method beside Micro, Meso and Macro, using published methods only (HCM 7, Webster).
+- **Contract** [NODE_ANALYSIS](../reference/NODE_ANALYSIS.md): A1 is HCM 7 Ch. 19 Steps 1–9 for pretimed
+  protected exclusive lane groups. Eqs. 19-8, 19-19, 19-20 and 19-26 and Exhibit 19-8 were read
+  from the owner's copy (`74f4bc3`). Also slices A0–A9, rows NA1–NA8, and nine owner choices with
+  recommendations. Chapter 31's Example Problem 1 is actuated and protected-permitted, so it is
+  reserved for A3 + A8.
+- **Owner answer (D371):** "ใช้ตามแนะนำทั้งหมด", every recommendation 1a–9a. A1 derives lane groups
+  from the Node's Micro detail rather than storing them.
+
 ## 2026-10-27 — Measured optimization pass: graph-header fan-in, doc sizes
 
 - **Measured first** (Linux, 4 cores): the engine runs M2.6's hour in 0.40–0.45 s (Release), editor

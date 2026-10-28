@@ -449,4 +449,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D378](RECORD.md#d378) — Purpose amended: Micro, Meso and Macro weighted equally, study-chain order (Macro → Meso → Micro), M13 a Node method serving them, Aimsun Next a reference in PROBLEM; supersedes D145 on "Micro first" only.
 
-[D379](RECORD.md#d379) — B27 decided on delegation ("ช่วยตัดสินใจ"): one posted speed on the Link (D373 approach field derived), per-lane allowed modes, *Fill from model* for Node turn volumes; M13 on coarse Nodes only within an HCM 7 planning method. Bookings only.
+[D379](RECORD.md#d379) — B27 decided on delegation ("ช่วยตัดสินใจ"): one posted speed on the Link pending the owner (B28, it reverses D373), per-lane allowed modes, *Fill from model* for Node turn volumes; M13 on coarse Nodes only within an HCM 7 planning method. Bookings only.

@@ -6,6 +6,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-28 — Review of D378/D379: corrections and B28
+
+- **Asked:** `/scrutinize`, then the plan was approved.
+- **Corrected:** D379 said `seam_checks.cpp` compares two speed homes; it compares only adjacent
+  link types' `freeSpeed`. D379 now states `freeSpeed`'s Macro/Meso role and leaves its relation to
+  the posted speed to the 1a contract.
+- **Returned to the owner (B28):** 1a, because it reverses the owner's own D373 answer; and D378's
+  order rule, which the current Meso and Micro work already departs from. PROBLEM §3 names those
+  exceptions; §2 says the Aimsun facts come from search excerpts.
+
 ## 2026-10-28 — B27 decided on delegation (D379)
 
 - **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.
@@ -112,16 +122,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Verified:** Linux Debug ctest 245/245 (`nodeanalysis` NA1–NA8 plus an end-to-end four-leg run:
   pocket turns D, node 46.69 s; hand-checked); architecture, file-size and docs checks pass. All four
   shipped projects' `--project 42` outputs are identical to the Release build of the previous commit.
-
-## 2026-10-27 — Analytical junction capacity booked as M13 (D370)
-
-- **Asked:** should MULTRA analyse junctions as Vistro, Synchro and SIDRA do? Answer approved by the
-  owner: yes, as a deterministic, flow-based method on the Node (macroscopic at junction scale), a
-  fourth method beside Micro, Meso and Macro, using published methods only (HCM 7, Webster).
-- **Contract** [NODE_ANALYSIS](reference/NODE_ANALYSIS.md): A1 is HCM 7 Ch. 19 Steps 1–9 for pretimed
-  protected exclusive lane groups. Eqs. 19-8, 19-19, 19-20 and 19-26 and Exhibit 19-8 were read
-  from the owner's copy (`74f4bc3`). Also slices A0–A9, rows NA1–NA8, and nine owner choices with
-  recommendations. Chapter 31's Example Problem 1 is actuated and protected-permitted, so it is
-  reserved for A3 + A8.
-- **Owner answer (D371):** "ใช้ตามแนะนำทั้งหมด", every recommendation 1a–9a. A1 derives lane groups
-  from the Node's Micro detail rather than storing them.

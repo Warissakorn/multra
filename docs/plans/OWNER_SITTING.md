@@ -64,8 +64,18 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Also: PROBLEM §1 now names two equal roles (study engineers and consultants; transport
    planners), with road and signal agencies doing the same work, as following from the equal
    weight. Correct that wording? *Owner:*
+28. **Two choices only the owner can make** (listed 2026-10-28, from a review of D378/D379).
+   1. **D379 1a reverses your D373 answer** "เก็บ speed limit ต่อ approach" ("store a speed limit per
+      approach"). (a) confirm: one posted speed on the Link, the approach field derived through a
+      schema step; (b) keep the approach field as you chose it.
+   2. **D378's order rule** says a level's gate is closed before a finer level depends on it, but
+      Meso (M11) already uses M10.1's link types while M10.1's gate is open (B21), and M13 and the
+      editor continue. (a) reword: a finer level's gate does not close before the coarser level it
+      depends on; (b) keep it strict and pause Meso and Micro engine slices until the coarser gate
+      closes.
+   *Owner:*
 Answered 2026-10-28: **B27**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
-[D379](../decisions/RECORD.md#d379): 1a, 2a, 3a; 4 returns to the owner only if HCM 7 prints no
+[D379](../decisions/RECORD.md#d379): 2a, 3a; 1a waits on B28; 4 returns to the owner only if HCM 7 prints no
 planning-level method for a Node without lane detail. Bookings only; each slice starts when the owner asks. Numbers are not reused.
 
 Answered 2026-10-27: **B25**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in

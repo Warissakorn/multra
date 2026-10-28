@@ -98,7 +98,8 @@ static and dynamic OD adjustment; and traversal matrices that cut a subnetwork's
 a regional assignment ([integration tutorial](https://docs.aimsun.com/next/23.0.0/Tutorials/7_Integration/7_Integration.html),
 [hybrid meso–micro](https://docs.aimsun.com/next/24.0.0/UsersManual/HybridSimulator.html),
 [vehicle-based simulators](https://docs.aimsun.com/next/24.0.0/UsersManual/VehicleBasedSimulatorsIntro.html),
-[OD adjustment](https://docs.aimsun.com/next/24.0.0/UsersManual/ODAdjustment.html)). It is a
+[OD adjustment](https://docs.aimsun.com/next/24.0.0/UsersManual/ODAdjustment.html); taken from
+the pages' search excerpts, as the host could not be reached from the session that wrote this). It is a
 modelling surface to learn from, as Vissim is for Micro; no result is compared with it (D38, §5).
 
 ## 3. What this project is
@@ -115,6 +116,8 @@ than things worked around.
 
 **Work order follows the study chain, Macro → Meso → Micro (D378):** among open work, the coarser
 level's next slice comes first, and a level's gate is closed before a finer level depends on it.
+(Existing exceptions: Meso, M11, already uses M10.1's link types while M10.1's gate is open, and
+M13 and editor work continue; the wording is put to the owner in OWNER_SITTING B28.)
 The Node method serves all three levels and is not a fourth level.
 
 This is the expensive answer, chosen deliberately. See decision **D1** in
