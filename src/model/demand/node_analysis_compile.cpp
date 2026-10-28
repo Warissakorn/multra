@@ -112,7 +112,14 @@ NodeAnalysisCompile compileNodeAnalysis(const Network& n, std::size_t index, con
     out.membership = nodeMembership(n, node);
     const auto& m = out.membership;
     const auto advise = [&](const std::string& code, const std::string& turn) { out.advisories.push_back({code, turn.empty() ? at : at + ": " + turn}); };
-    if (!m.issues.empty() || m.turns.empty()) { advise("NODE_ANALYSIS_NEEDS_DETAIL", ""); return out; }
+    if (!m.issues.empty() || m.turns.empty()) {
+        // D383: a membership issue says why (a Link re-entering, a Connector crossing the boundary);
+        // only a Node with no turn at all needs detail.
+        bool named = false;
+        for (const auto& issue : m.issues) if (issue != "NODE_NO_TURN") { advise(issue, ""); named = true; }
+        if (!named) advise("NODE_ANALYSIS_NEEDS_DETAIL", "");
+        return out;
+    }
     if (m.control != SectionControl::signalised) { advise("NODE_ANALYSIS_NOT_SIGNALISED", ""); return out; }
     std::map<std::string, Green> greens;
     auto all = programs;

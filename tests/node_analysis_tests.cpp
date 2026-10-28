@@ -171,3 +171,12 @@ TEST(nodeanalysis, na22_stale_rows_are_named) { // NA22 (D383)
     CHECK(at("NODE_ANALYSIS_STALE_APPROACH", "network.nodes[0].analysis.approaches[" + std::to_string(approaches) + "]"));
     CHECK(run.groups.size() == 12); // the stale rows change no lane group
 }
+TEST(nodeanalysis, na23_a_membership_issue_is_named) { // NA23 (D383)
+    auto d = fixture();
+    d.network.nodes.front().polygon = {{-70, -70}, {70, -70}, {70, 70}, {-70, 70}};
+    const auto issues = nodeMembership(d.network, d.network.nodes.front()).issues;
+    CHECK(!issues.empty()); // forcing: the polygon takes in the pockets
+    const auto advisories = compileNodeAnalysis(d.network, 0, d.definition->signalControllers, d.definition->signalPrograms).advisories;
+    CHECK(!advised(advisories, "NODE_ANALYSIS_NEEDS_DETAIL"));
+    for (const auto& code : issues) CHECK(code == "NODE_NO_TURN" || advised(advisories, code));
+}
