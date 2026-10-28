@@ -16,7 +16,7 @@ struct RoadCrossing {
     bool operator==(const RoadCrossing&) const = default;
 };
 // Events for every pair of Roads on one level that is not an overpass: each proper crossing of their
-// centrelines, and each endpoint of one within `tolerance` of the other. Events within `tolerance` of
+// centrelines, and each endpoint of one within `tolerance` of the other. Events on one level within `tolerance` of
 // one another are one place, at their mean. A place is listed with two Roads or more and three legs
 // or more, so two Roads meeting end to end are not, and only where no Node already covers it (a
 // confirmed junction is not asked again). Sorted by level, then x, then y.

@@ -51,13 +51,15 @@ std::vector<RoadCrossing> findCrossings(const Network& n, double tolerance) {
                     events.push_back(swap ? Event{mid, i, j, station, end} : Event{mid, i, j, end, station});
                 }
         }
-    // Places: events within the tolerance of one another, joined transitively.
+    // Places: events on one level within the tolerance of one another, joined transitively (D382:
+    // a crossing above another at the same x, y is a place of its own).
     std::vector<std::size_t> group(events.size());
     for (std::size_t k = 0; k < events.size(); ++k) group[k] = k;
     const auto root = [&](std::size_t k) { while (group[k] != k) k = group[k] = group[group[k]]; return k; };
     for (std::size_t k = 0; k < events.size(); ++k)
         for (std::size_t m = k + 1; m < events.size(); ++m)
-            if (distance(events[k].at, events[m].at) <= tolerance) group[root(m)] = root(k);
+            if (n.roads[events[k].a].level == n.roads[events[m].a].level && distance(events[k].at, events[m].at) <= tolerance)
+                group[root(m)] = root(k);
     std::vector<RoadCrossing> places;
     for (std::size_t k = 0; k < events.size(); ++k) {
         if (root(k) != k) continue;
