@@ -1,0 +1,25 @@
+{
+  "id": "stop-4-shared",
+  "name": "Four legs, two-way stop, shared turn lanes",
+  "kind": "junction",
+  "legs": 4,
+  "control": "twoWayStop",
+  "roles": {
+    "major": [
+      {
+        "movements": "FT"
+      },
+      {
+        "movements": "TK"
+      }
+    ],
+    "minor": [
+      {
+        "movements": "FT"
+      },
+      {
+        "movements": "TK"
+      }
+    ]
+  }
+}

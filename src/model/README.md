@@ -29,6 +29,8 @@ paths, Node membership, conflicts) is computed on every read and never stored.
 | `routeless.*` | Vehicles with no route, as Vissim runs them: follow the lane, equal shares at splits | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `travel_time.*` | What an authored travel-time section means, and its checks | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |
 | `polygon.*` | Plane polygon tests shared by zones and Nodes | [NODES §2](../../docs/reference/NODES.md) |
+| `node_values.hpp` | Shared Point and Node/coarse value types; optional junction recipe and independent compass overrides | [JUNCTION_TEMPLATES §4](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `junction_templates.*` | Structural templates, partial site recipes and pure lane/role/sign validation | [JUNCTION_TEMPLATES §3–§4](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `nodes.*` | What an authored Node means: id checks; legs, turns and control are derived | [NODES §2](../../docs/reference/NODES.md) |
 | `node_membership.*` | A Node's legs, turns and conflicts, derived from the Micro detail inside its polygon on every read; refusals, never exceptions | [NODES §3](../../docs/reference/NODES.md) |
 | `node_suggestions.*` | *Suggest nodes*: one generated polygon per uncovered cluster of conflicts | [NODES §6](../../docs/reference/NODES.md) |

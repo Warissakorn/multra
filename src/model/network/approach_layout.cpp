@@ -110,6 +110,7 @@ ApproachLayout approachLayout(const Network& n, const Node& node, const Approach
         if (a.bearing < 0) a.bearing += 360;
         const auto path = "inLegs["+std::to_string(i)+"]: "+a.inLink;
         if (const auto override = overrides.find(a.inLink); override != overrides.end()) a.direction = override->second;
+        else if (const auto stored = node.approachDirections.find(a.inLink); stored != node.approachDirections.end()) a.direction = stored->second;
         else if (std::abs(std::abs(d.x)-std::abs(d.y)) < kAngleEpsilon) {
             out.issues.push_back({"JUNCTION_DIRECTION_AMBIGUOUS",path}); continue;
         } else if (std::abs(d.y) > std::abs(d.x)) a.direction = d.y > 0 ? ApproachDirection::north : ApproachDirection::south;

@@ -12,7 +12,7 @@ uses those existing codecs and validators.
 
 ## Envelope and presence rules
 
-The reader accepts editor schemas 1–60 (`kLatestSchema` in `document.hpp`). A missing
+The reader accepts editor schemas 1–61 (`kLatestSchema` in `document.hpp`). A missing
 `schemaVersion` selects the separate legacy scenario path, including pre-5 attachments
 and legacy signal/amber behavior. A formal editor schema must not accidentally accept
 that path as a canonical project.
@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–60 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–61 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -103,6 +103,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374, read only below 60) | `node_codec.cpp` |
 | 59 | Road renamed Street segment (D389): `network.streetSegments`, a Link's `streetSegmentId`, a zone connector's `streetSegmentId`/`streetSegmentDirection`; below 59 the same fields are `roads`, `roadId`, `roadDirection`, and each version refuses the other's | `street_segment_codec.cpp`, `zone_codec.cpp`, `network_fields.*` |
 | 60 | Posted speed (J1, D390): a Link's `speedLimit` and an owned cross-section's `speedLimit`, km/h; a 58–59 approach row's `speedLimit` moves to the Link it names, and from 60 the row refuses it | `link_speed_codec.cpp`, `network_fields.*`, `node_codec.cpp` |
+| 61 | Junction catalog ownership, Node recipe and independent compass overrides (J3a, D393–D395) | `junction_template_codec.cpp`, `junction_recipe_codec.cpp`, `node_codec.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from
@@ -115,7 +116,24 @@ historical-schema coverage.
 
 J2 (D391) adds no field or schema step: a pocket and taper use ordinary Link/Connector geometry,
 lane counts, `laneBlend`, `laneChangeSide` and `generated`, with their existing feature floors.
-`approachLayout` is derived only. Schema 61 remains available for J3's new stored fields.
+`approachLayout` is derived only. J3a uses schema 61 for the fields below (D393–D395):
+
+- `definition.junctionTemplates`: absent resolves installed files; a present array owns the whole
+  catalog, even empty. Every entry is strictly validated; malformed entries name their field
+  under `JUNCTION_TEMPLATE_INVALID`. Duplicate ids name the later entry's `.id`.
+- `network.nodes[i].junction`: required nonblank `templateId`, optional `major` (Street segment
+  ids), `legs` keyed by Street segment id, and `signal`. Each leg optionally holds `storage` and
+  `taper` arrays (finite positive metres or null for an unentered pocket) and a `lanes` role-row
+  override. Signal fields are optional until entered: finite positive `cycle` and `green`,
+  nonnegative `yellow` and `allRed`, unique integer phase `number` 1–8. No site defaults. Coarse
+  and junction cannot coexist. Invalid recipe shapes/signs name `EDIT_NODE_INVALID` paths.
+- `network.nodes[i].approachDirections`: map of in-leg Link ids to `N`/`E`/`S`/`W`, independent
+  of a recipe. Keys must name existing Links. Empty is omitted; a bad shape/value is `EDIT_NODE_INVALID` at its path. Splits
+  carry the key downstream, deletion removes it; recipe Street segment keys follow their end.
+- Any of these fields present below 61, even null, is `EDIT_UNSUPPORTED_FIELD` at that field.
+  Only their use raises the save floor; older feature-free file bytes are unchanged. Applicability
+  and missing-site checks are J3b; signal consistency is J4. These nested fields remain codec-owned
+  and are not added to the composed partial JSON Schema's coverage claim.
 
 - Network: Link/Lane/Connector/reference/geometry keys and version-specific defaults in
   `parse.cpp`; Node/generated keys in `node_codec.cpp`; Street segments/overpasses/cross-sections
@@ -188,7 +206,7 @@ with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 now also includes the Connector/reference extension below; complete remains false and
 desktop observed schema discovery is unchanged.
 
-The generated schema chooses rules from the document's root `schemaVersion` (1–60).
+The generated schema chooses rules from the document's root `schemaVersion` (1–61).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its

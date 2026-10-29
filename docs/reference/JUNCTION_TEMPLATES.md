@@ -7,7 +7,8 @@ on that Node says which lanes serve which turns, the pockets and the control, fr
 Connectors, right-of-way and signals are generated. Where two Street segments meet end to end with different
 cross-sections, a **transition template** joins them. The export is [UTDF_EXPORT](UTDF_EXPORT.md).
 SR and J1 are implemented; J2's interfaces and geometry are described in §6 (D391, D392).
-The template catalog, fill and editor remain later slices. The owner choices are answered
+J3a adds the template catalog and stored recipes (D393–D395); fill and editor remain later slices.
+The owner choices are answered
 (§12: D387, D388; J2 clarification on 2026-10-29).
 
 **Naming.** D387 renamed Road everywhere, file format included, before any M14 code (slice SR,
@@ -56,7 +57,7 @@ so a shipped template needs no source beyond its own description (WORKFLOW §1.4
     "minor": [ { "movements": "FT" }, { "movements": "TK" } ] } }
 ```
 
-- **`kind`:** `junction` or `transition` (§7).
+- **`kind`:** `junction` or `transition` (§7); J3a loads junction entries. Transition structure/loader support is J5.
 - **`legs`:** 3 or 4 (§12 JT-2).
 - **`control`:** `signalised` (pretimed), `twoWayStop` or `allWayStop`.
 - **Roles, not compass directions**, because leg angles differ at every site:
@@ -74,22 +75,56 @@ so a shipped template needs no source beyond its own description (WORKFLOW §1.4
 The template editor (J6) is a table per role with the geometric names beside each row, so "far
 turn" reads *right* in Thailand and *left* in the United States.
 
+**J3a catalog/loader (D393).** `resolveJunctionTemplates` (`src/project/junction_template_codec.*`)
+reads installed JSON files in filename order, with paths `catalog/junction-templates/<file>`;
+malformed JSON names the file, and invalid fields name their full path. No cache is retained.
+`definition.junctionTemplates` owns the whole catalog when present, including an empty array;
+when absent it resolves installed entries, as Link types do. Duplicate ids are refused at the
+later entry's `.id`. The installed [12 structural templates](../../data/junction-templates/README.md)
+cover P1–P4 four-leg and two-way stop three-/four-leg, each with and without major far-turn pockets.
+No storage, taper, cycle or timing numbers ship. Signalised entries require P1–P4; other controls
+carry no phasing. P2 major / P3 all roles use separate `F` rows for protected far turns (D396),
+full-width when not a pocket; `TK` remains shared. Rows and role shapes share the same validation on load and Command commit.
+
 ## 4. On the Node: the choice and its site values
 
-`Node::junction`, at the schema step of J3, written only when set:
+`Node::junction`, schema 61 (J3a, D393–D395), written only when set:
 
 ```json
-"junction": { "templateId": "signal-4-major-far-pockets",
+"junction": { "templateId": "signal-4-major-far-pockets", "major": ["r2", "r3"],
   "legs": { "r2": { "storage": [60], "taper": [20] }, "r3": { "storage": [45], "taper": [20] } },
   "signal": { "cycle": 100, "phases": [ { "number": 2, "green": 38, "yellow": 3, "allRed": 2 } ] } }
 ```
 
 - **Legs** are named by Street segment id, as coarse values name them (B29 (b) may change the key).
   `storage` and `taper` list one value per pocket of that leg's role, far to kerb, in metres.
+- **Major and asymmetric lanes (D393):** optional `major` names Street segment ids, falling back
+  to `majorByRank` when empty. Optional `junction.legs.<id>.lanes` replaces that leg's role rows,
+  with the same schema/validation and far-to-kerb order as §3. The Command `setNodeJunction`
+  carries `coarse.major` when no major is supplied, clears `coarse` and refines the Node. Detach
+  drops only `junction`. An explicit coarse edit while a recipe remains is refused; detach first.
 - **Signal:** the cycle and, per NEMA phase the preset uses, green, yellow and all-red. All are
-  required, with no default (§12 JT-5).
+  required to apply, with no default (§12 JT-5). **D395:** incomplete recipes save what is entered:
+  scalar fields are absent when empty, while `storage`/`taper` use `null` for an unentered pocket
+  slot. Entered lengths/cycle/green are finite and > 0; yellow/all-red are finite and >= 0;
+  phase numbers are unique integers 1–8. Counts/applicability are J3b's, ring/barrier timing J4's.
+  J2's pocket command still requires storage/taper >= 0.2 m. A positive smaller value can be
+  kept in a draft, but cannot generate a pocket.
+- **Directions (D394):** independent `Node.approachDirections` maps in-leg Link ids to `N`, `E`,
+  `S`, `W`, including Nodes without a template. Keys must name existing Links. `approachLayout`
+  reads it; a per-call override wins
+  for that key. A split carries the key downstream; deleting the Link removes it. It changes
+  labels only, not angles. Recipe leg ids and major follow only the moved end of a split Street
+  segment, as coarse values do; B29 (b)'s cross-level key remains undecided.
+- **Codec (D393):** the three new fields (`definition.junctionTemplates`, `Node.junction`,
+  `Node.approachDirections`) select 61 only when used. Older files still read; presence before
+  61, even `null`, is `EDIT_UNSUPPORTED_FIELD` at that field. Malformed recipes/directions and
+  coexisting coarse/recipe are `EDIT_NODE_INVALID` at their paths. No unrelated version floor
+  moves. Unknown template/leg references can remain in a draft for J3b's missing-piece offer;
+  values are never discarded on load.
 - **The recipe, not the truth.** As a Street segment keeps its `crossSectionId` after its Links exist, the
-  Node keeps its template after the detail exists. What HCM and UTDF read is the drawing, through
+  Node keeps its template after the detail exists and after detail removal; the two-leg lifecycle
+  does not erase a recipe. What HCM and UTDF read is the drawing, through
   `approachLayout` (§6). A drawing that no longer matches the template is the advisory
   `SEAM_JUNCTION_DIFFERS`, with *Apply again* (replaces `generated` objects) and *Detach* (drops
   `junction`), as `SEAM_LANE_COUNT` offers its two fixes (STREET_SEGMENTS_IMPLEMENTED §21).
@@ -159,10 +194,11 @@ EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driv
   first-lane endpoint offsets with `laneBlend`; length is not measured along the sloping lane.
 - Bearings are degrees clockwise from north, at the first departure/stop line. Refusals retain
   membership but return no approaches or movement names. Overrides are a per-call map of this
-  Node's in-leg Link ids to compass directions; J3/J6 will persist and edit the per-Node choice.
+  Node's in-leg Link ids to compass directions; J3a persists the per-Node choice (§4), J6 edits it.
   An override changes the label only, never the turn angle or the U-turn refusal.
 - No new stored fields: existing geometry, lane counts, `laneChangeSide`, `laneBlend` and
-  `generated` suffice; schema 61 is still unused. The legacy split tool's 0.2 m span and far-side
+  `generated` suffice. J3a separately uses schema 61 for recipes/catalog ownership/directions (§4).
+  The legacy split tool's 0.2 m span and far-side
   constant-width addition keep their existing behaviour. J2 adds no UI. HCM's derivation stays
   unchanged; replacing it requires the NA1–NA23 byte-parity check above.
 
@@ -229,7 +265,7 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 | U0 | UTDF probe with the owner's Synchro 12 and Vistro 2026 (UTDF_EXPORT §8) | 1 + owner |
 | J1 | **Done (D390).** Posted speed on the Link (§9), schema 60 | 1 |
 | J2 | **Done (D391, D392).** Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
-| J3 | J3a: catalog, loader, `Node::junction`, JT5; stop for review. J3b: `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8; stop for review (§3–§5) | 2 |
+| J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. J3b: `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8; stop for review (§3–§5) | 2 |
 | J4 | Signals from the template: presets, NEMA numbering, timing, `nemaCheck` (§8) | 1 |
 | J5 | Transitions (§7) | 1 |
 | J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS` | 1 |
@@ -278,7 +314,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT2 | J1 | A Link's `speedLimit` round-trips at 60; absent keeps the shipped projects' bytes; 59 refuses a Link speed and 60 an approach speed; a 58 file's approach speeds move to their Links with the same queues, and a stray or conflicting one is refused; Node analysis reads the in-leg's; a template speed reaches generated Links; a split keeps it (`tests/link_speed_tests.cpp`, **passing**) |
 | JT3 | J2 | Kerb/far pockets on both `drivingSide`s preserve original lane footprints, routes and heads (including taper/boundary heads); storage/taper read back over a bend and a later split; hand-drawn 1→2 remains ambiguous; a pocket stops at a Node-owned Connector even straight through to the next junction; generated/refine, atomic refusals, save/reopen and one Undo/Redo (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT4 | J2 | `approachLayout` names all 12 four-leg movements on both `drivingSide`s; shared lane sets/widths, duplicate directions, compass ties, overrides and 45°/135° boundaries (`tests/junction_layout_tests.cpp`, **passing**) |
-| JT5 | J3 | Every invalid template in §3 is refused on load with its path |
+| JT5 | J3a | Every invalid template in §3 is refused on load with its path (installed/owned); catalog ordering/ownership, schema-61 floors and pre-version field paths, partial recipe round-trip, coarse exclusion, direction/split and one Undo/Redo (`tests/junction_template_tests.cpp`, `tests/junction_recipe_tests.cpp`, `tests/junction_command_tests.cpp`; **passing**) |
 | JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |
 | JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED` |
 | JT8 | J3 | The applied junction runs in Micro (seed 42) with no refusal, and NODE_ANALYSIS finds every lane group |

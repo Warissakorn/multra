@@ -3,8 +3,6 @@
 #include <map>
 
 namespace multra {
-enum class PocketSide { far, kerb };
-enum class ApproachDirection { north, east, south, west };
 enum class JunctionMovement { left, through, right };
 struct LayoutMovement {
     std::size_t turn{}; // index into membership.turns
@@ -40,8 +38,7 @@ struct ApproachLayout {
 // J2 (JUNCTION_TEMPLATES §6): derived only, on a structurally valid network; never writes it. Refuses duplicate compass
 // directions, compass ties, U-turns (>= 135 degrees) and membership issues, leaving no layout.
 // Through is strictly within 45 degrees. Overrides apply to this Node's in-leg Link ids; their
-// persistence/editor belongs to J3/J6. They do not change the geometric turn angle.
+// Node.approachDirections supplies stored choices; per-call keys take precedence. Neither changes the turn angle.
 // A pocket's predecessor walk stops at a Connector with a run inside any Node, including through movements.
-using ApproachDirections = std::map<std::string, ApproachDirection>;
 ApproachLayout approachLayout(const Network&, const Node&, const ApproachDirections& = {});
 }

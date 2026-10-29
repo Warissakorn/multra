@@ -102,6 +102,7 @@ void deleteLink(ProjectDocument& d, const std::string& id) {
     detail::removeRoutesUsingSegments(d, removed);
     // M8.2 (D154): zone connectors follow their Link, as routes do; the zones stay.
     std::erase_if(d.zones.zoneConnectors, [&](const auto& c) { return c.linkId == id; });
+    for (auto& node : d.network.nodes) node.approachDirections.erase(id);
 }
 void setLinkType(ProjectDocument& d, const std::string& id, std::optional<std::string> type) {
     if (type && type->empty()) type.reset();

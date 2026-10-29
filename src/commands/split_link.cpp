@@ -83,9 +83,14 @@ std::string splitSpan(ProjectDocument& d, const std::string& id, double near, do
         if(c.linkId==id && c.direction==ZoneDirection::destination)c.linkId=downstream.id;
     // D383: Node analysis names an in-leg by the Link ending at the Node, so its rows follow that end;
     // an out-leg starts there and keeps the id.
-    for (auto& node : d.network.nodes) if (node.analysis) {
-        for (auto& t : node.analysis->turns) if (t.in == id) t.in = downstream.id;
-        for (auto& r : node.analysis->approaches) if (r.link == id) r.link = downstream.id;
+    for (auto& node : d.network.nodes) {
+        if (node.analysis) {
+            for (auto& t : node.analysis->turns) if (t.in == id) t.in = downstream.id;
+            for (auto& r : node.analysis->approaches) if (r.link == id) r.link = downstream.id;
+        }
+        if (auto direction = node.approachDirections.extract(id); !direction.empty()) {
+            direction.key() = downstream.id; node.approachDirections.insert(std::move(direction));
+        }
     }
     // Existing lane footprints are unchanged, so their external attachments still fit.
     changeGeometry(d, id, editableLink(d, id).geometry);

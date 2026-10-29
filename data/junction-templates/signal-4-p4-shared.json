@@ -1,0 +1,26 @@
+{
+  "id": "signal-4-p4-shared",
+  "name": "Four legs, P4, shared turn lanes",
+  "kind": "junction",
+  "legs": 4,
+  "control": "signalised",
+  "roles": {
+    "major": [
+      {
+        "movements": "FT"
+      },
+      {
+        "movements": "TK"
+      }
+    ],
+    "minor": [
+      {
+        "movements": "FT"
+      },
+      {
+        "movements": "TK"
+      }
+    ]
+  },
+  "phasing": "P4"
+}

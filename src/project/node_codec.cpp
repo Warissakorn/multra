@@ -1,4 +1,5 @@
 #include "node_codec.hpp"
+#include "junction_recipe_codec.hpp"
 #include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -180,6 +181,8 @@ void addNodesJson(const Network& n, Json& network) {
         if (node.generated) nodes.back()["generated"] = true;
         if (node.coarse) nodes.back()["coarse"] = coarseJson(*node.coarse);
         if (node.analysis) nodes.back()["analysis"] = analysisJson(*node.analysis);
+        if (node.junction) nodes.back()["junction"] = junctionRecipeJson(*node.junction);
+        if (!node.approachDirections.empty()) nodes.back()["approachDirections"] = approachDirectionsJson(node.approachDirections);
     }
     network["nodes"] = nodes;
 }
@@ -196,7 +199,8 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
         for (const auto& [key, value] : j.items()) {
             (void)value;
             if (key != "id" && key != "name" && key != "polygon" && key != "generated" && (key != "coarse" || schema < 53) &&
-                (key != "analysis" || schema < 58))
+                (key != "analysis" || schema < 58) &&
+                (key != "junction" || schema < 61) && (key != "approachDirections" || schema < 61))
                 invalid(path + "." + key);
         }
         Node node;
@@ -208,6 +212,8 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
         node.generated = j.contains("generated");
         if (j.contains("coarse")) node.coarse = parseCoarse(j.at("coarse"), path + ".coarse");
         if (j.contains("analysis")) node.analysis = parseAnalysis(j.at("analysis"), path + ".analysis", schema);
+        if (j.contains("junction")) node.junction = parseJunctionRecipe(j.at("junction"), path + ".junction");
+        if (j.contains("approachDirections")) node.approachDirections = parseApproachDirections(j.at("approachDirections"), path + ".approachDirections");
         const auto& polygon = j.at("polygon");
         for (std::size_t k = 0; k < polygon.size(); ++k) {
             const auto& p = polygon[k];

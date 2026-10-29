@@ -1,4 +1,5 @@
 #include "street_segment_commands.hpp"
+#include "junction_commands.hpp"
 #include "coarse_commands.hpp"
 #include "connector_commands.hpp"
 #include "demand_commands.hpp"
@@ -196,10 +197,13 @@ std::string splitStreetSegment(ProjectDocument& d, const std::string& streetSegm
     for (const auto& id : second) editableLink(d, id).streetSegmentId = next;
     // D382: a coarse Node the moved end now meets names the new StreetSegment; the near end's Nodes keep the id.
     for (auto& node : d.network.nodes) {
-        if (!node.coarse) continue;
+        if (!node.coarse && !node.junction) continue;
         bool meetsNext = false, meetsStreetSegment = false;
         for (const auto& leg : nodeStreetSegmentLegs(d.network, node)) { meetsNext = meetsNext || leg.streetSegmentId == next; meetsStreetSegment = meetsStreetSegment || leg.streetSegmentId == road.id; }
-        if (meetsNext && !meetsStreetSegment) renameCoarseStreetSegment(*node.coarse, road.id, next);
+        if (meetsNext && !meetsStreetSegment) {
+            if (node.coarse) renameCoarseStreetSegment(*node.coarse, road.id, next);
+            if (node.junction) renameJunctionStreetSegment(*node.junction, road.id, next);
+        }
     }
     const auto pairs = d.network.overpasses;
     for (const auto& [a, b] : pairs) {

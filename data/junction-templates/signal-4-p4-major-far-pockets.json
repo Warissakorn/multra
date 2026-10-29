@@ -1,0 +1,30 @@
+{
+  "id": "signal-4-p4-major-far-pockets",
+  "name": "Four legs, P4, far-turn pockets on the major",
+  "kind": "junction",
+  "legs": 4,
+  "control": "signalised",
+  "roles": {
+    "major": [
+      {
+        "movements": "F",
+        "pocket": true
+      },
+      {
+        "movements": "T"
+      },
+      {
+        "movements": "TK"
+      }
+    ],
+    "minor": [
+      {
+        "movements": "FT"
+      },
+      {
+        "movements": "TK"
+      }
+    ]
+  },
+  "phasing": "P4"
+}

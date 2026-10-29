@@ -161,7 +161,7 @@ The owner chose the tolerance (2026-10-22): 15° and half both widths plus 30 m.
   - the forward Link's original id stays on the first Street segment; the backward Link's original id,
     which starts at the far end, goes to the new Street segment;
   - overpass pairs naming the Street segment are copied for the new Street segment;
-  - a station within 0.2 m of an end is `EDIT_SPLIT_RANGE`.
+  - a station within 0.2 m of an end is `EDIT_SPLIT_RANGE`. J3a also carries a moved end's junction recipe leg/major ids (D394, JUNCTION_TEMPLATES §4).
 - **`applyCrossings(d, places, choices, tolerance, installed)`**, in one Command:
   - **Overpasses first.** Every pair of the place's Street segments is stored; where a Street segment ends there, the
     choice is `EDIT_CROSSING_OVERPASS`.
@@ -286,7 +286,7 @@ with the other seam checks.
   and the check. It touches only Nodes present before and after, and is skipped when no Link,
   Connector, Node or Street segment changed.
   - **Refine:** a coarse Node that had no detail and now has some loses `coarse` (RD17).
-  - **Derive back:** a Node that had detail and now has none, with no `coarse`, takes
+  - **Derive back:** a Node that had detail and now has none, with no `coarse` or junction recipe, takes
     `deriveCoarse` of its detail as it was, when every Street segment it names is still a leg (RD18).
   - **Lifecycle:** applies to a Node whose Street segment legs became exactly two in this Command, with no
     `coarse`, no detail and no Link leg, and whose two Street segments:
@@ -297,7 +297,7 @@ with the other seam checks.
     Such a Node is deleted and the Street segments joined. The first Street segment keeps its id and takes the second's
     centreline after its own. The second's id is renamed to the first in overpasses and in other
     Nodes' coarse values (RD27). A Node drawn with two legs is kept, as is one with detail or
-    `coarse`.
+    `coarse` or junction recipe.
 - **`deriveCoarse(d, node)`** reads `nodeMembership`. Legs are named by the Street segment of each leg Link,
   and nothing is derived if a leg Link has no Street segment ending in the Node.
   - **Control:** signalised from the heads; otherwise priority, which is absent.

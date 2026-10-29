@@ -1,0 +1,31 @@
+{
+  "id": "stop-3-major-far-pockets",
+  "name": "Three legs, two-way stop, far-turn pockets on the major",
+  "kind": "junction",
+  "legs": 3,
+  "control": "twoWayStop",
+  "roles": {
+    "major-far": [
+      {
+        "movements": "F",
+        "pocket": true
+      },
+      {
+        "movements": "T"
+      }
+    ],
+    "major-kerb": [
+      {
+        "movements": "TK"
+      }
+    ],
+    "minor": [
+      {
+        "movements": "F"
+      },
+      {
+        "movements": "K"
+      }
+    ]
+  }
+}

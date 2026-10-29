@@ -1,0 +1,29 @@
+{
+  "id": "stop-4-major-far-pockets",
+  "name": "Four legs, two-way stop, far-turn pockets on the major",
+  "kind": "junction",
+  "legs": 4,
+  "control": "twoWayStop",
+  "roles": {
+    "major": [
+      {
+        "movements": "F",
+        "pocket": true
+      },
+      {
+        "movements": "T"
+      },
+      {
+        "movements": "TK"
+      }
+    ],
+    "minor": [
+      {
+        "movements": "FT"
+      },
+      {
+        "movements": "TK"
+      }
+    ]
+  }
+}

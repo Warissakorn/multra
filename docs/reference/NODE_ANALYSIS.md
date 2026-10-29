@@ -336,6 +336,9 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
   - **Storage `L_a`:** the in-leg Link from its start to where the lane group's first turn leaves it
     (its Connector's `from` station, else the Link's end), the stop line. Lanes run the whole Link.
 
+J3a stores compass overrides independently on the Node (schema 61, D394); `approachLayout` reads
+them for labels. HCM inputs and storage still read the drawing as before, never the template recipe.
+
 J2 (D391, D392) adds a separate derived `approachLayout` for junction templates and UTDF
 ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272)).
 It recognizes a pocket's widening Connector and its reference length separately from full-width

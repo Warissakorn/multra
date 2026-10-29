@@ -1,6 +1,6 @@
 # src/project
 
-Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–59), catalogs from
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–61), catalogs from
 `data/`, compilation for each level, and every run's output formats. The document persists
 authoring data and the optional background; no compiled runtime network is saved, and an empty
 draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
@@ -24,6 +24,8 @@ keeps its schema and bytes.
 | `network_fields.*` | Versioned known-key and type metadata shared by the row codecs (`network_link_codec.cpp`, `network_connector_codec.cpp`, `network_signal_head_codec.cpp`, `signal_control_codec.cpp`, `right_of_way_codec.cpp`, `measurement_codec.cpp`, `demand_codec.cpp`, `routing_codec.cpp`); rules below | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `json.*` | Section accessors that fail with a named, translatable code; `parseNetwork`; `output.cpp` writes the run's state and event JSON | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `observed_schema.*` | Bounded structural JSON hints for desktop automation (50,000 values, depth 32); no required fields, ranges or version rules | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
+| `junction_template_codec.*` | Strict structural loader, installed/owned catalog resolution in filename order, field paths and schema-61 guards | [JUNCTION_TEMPLATES §3–§4](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `junction_recipe_codec.*` | Partial Node recipe and independent compass-direction codec, without site defaults | [JUNCTION_TEMPLATES §4](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `node_codec.*` | `network.nodes` and each Node's `analysis` (an approach `speedLimit` only below 60, D390) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
 | `street_segment_codec.*` | `network.streetSegments`, a Link's `streetSegmentId`, owned `definition.crossSections` | [STREET_SEGMENTS §3, §4](../../docs/reference/STREET_SEGMENTS.md) |
 | `zone_codec.*` | The zone layer: zones, zone connectors (with direct Street segment targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
@@ -96,7 +98,7 @@ keeps its schema and bytes.
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 streetSegmentId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–59; shared `$defs`
+composes envelope/background with these structural rules for schemas 1–61; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

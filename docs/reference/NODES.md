@@ -30,7 +30,7 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
     "generated": true } ] }
 ```
 
-- **Where it lives.** `Network::nodes`, after `travelTimeSections` (`src/model/network/network.hpp`;
+- **Where it lives.** `Network::nodes`, after `travelTimeSections` (`src/model/network/network.hpp`, Node values in `node_values.hpp`;
   new fields go last). It is network geometry, unlike zones, which sit in the demand layer.
 - **Fields:**
   - `id` comes from `allocateId(d, "node")` and is added to `documentIds`.
@@ -45,8 +45,9 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
 - **Refused on load or edit:** `INVALID_ID` and `DUPLICATE_ID`, `NODE_POLYGON_INVALID` (fewer than
   3 points, a non-finite coordinate, or a self-crossing outline), and any other key.
 - **Nodes may not overlap** (`NODE_OVERLAP`). Each piece of road then belongs to at most one Node.
-- **Edits elsewhere never move a Node.** A Node stores no references, so deleting, splitting or
-  reversing a Link needs no cascade. Membership is derived again on every read (§3).
+- **Edits elsewhere never move a Node.** Membership is derived again on every read (§3). Optional
+  inputs have their own contracts: analysis (schema 58, NODE_ANALYSIS) and the junction recipe /
+  independent compass overrides (schema 61, [JUNCTION_TEMPLATES §4](JUNCTION_TEMPLATES.md#4-on-the-node-the-choice-and-its-site-values)). Their ids follow those contracts when a Link or Street segment is split; geometry still stores no membership.
 
 ## 3. What a Node holds: derived from the Micro detail
 

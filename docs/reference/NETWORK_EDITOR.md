@@ -450,9 +450,9 @@ schema choice and serialized bytes stand. Unknown future versions are rejected.
 | Runs | Editor, or `multra-cli` | Editor after demand/catalog/runtime checks |
 
 The [project schema inventory](PROJECT_SCHEMA.md) maps all optional root fields and current
-feature/version owners through schema 58.
+feature/version owners through schema 61.
 
-The editor opens bare M0 authoring files and project schemas 1–59. Saving uses schema 17
+The editor opens bare M0 authoring files and project schemas 1–61. Saving uses schema 17
 by default, 18 for owned composition catalogs or embedded vehicle names, and 19 for
 composition periods or type-conditioned routing; schema 20 when a routing decision has `position`; schema 21 when the behaviour library
 or a road behaviour-type assignment is used ([DRIVING_BEHAVIOUR](DRIVING_BEHAVIOUR.md#7-implemented-library-and-codec-m332a-d126)); schema 22 when an evaluation period is set ([SIMULATION](SIMULATION.md#movement-evaluation-m25), D132); schema 23 when a travel-time section exists ([TRAVEL_TIME_SECTIONS](TRAVEL_TIME_SECTIONS.md), D133); schema 24 when a section has a control type ([LOS](LOS.md), D134); schema 25 when an owned behaviour is `w74` (D136); schema 26 when an input takes its volume from its decision's turning counts ([DEMAND_IMPROVEMENT](../plans/DEMAND_IMPROVEMENT.md) §7, D142); schema 27 when the evaluation period has a cool-down ([BATCH](BATCH.md) §5, D146); schema 28 when an owned behaviour carries `amberDeceleration` ([AMBER](AMBER.md), D147). From schema 21 every owned behaviour is written with its `model`, library or not (D147 found the gap). This is selected from the document's

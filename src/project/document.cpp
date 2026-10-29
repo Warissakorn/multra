@@ -17,6 +17,7 @@
 #include "street_segment_codec.hpp"
 #include "link_speed_codec.hpp"
 #include "node_codec.hpp"
+#include "junction_template_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
 #include "speed_decisions.hpp"
@@ -92,7 +93,8 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesLinkSpeedLimits(d) ? 60 :
+    return usesJunctionFields(d) ? 61 :
+        usesLinkSpeedLimits(d) ? 60 :
         usesStreetSegmentKeys(d) ? 59 :
         usesNodeAnalysis(d) ? 58 :
         usesStreetSegmentZoneConnectors(d.zones) ? 57 :
@@ -217,6 +219,7 @@ void validateDocument(const ProjectDocument& d) {
     // blocksDraft owns the "an empty network is a legal draft" rule, for this and the editor alike.
     std::erase_if(issues, [](const auto& i) { return !blocksDraft(i.code); });
     if (!issues.empty()) throw ValidationError(issues);
+    if (auto issues = junctionDocumentIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     validateProjectEnvelope(d);
     if (d.map) validateMapSettings(*d.map);
     validateAuthoredDemand(d);
@@ -238,6 +241,7 @@ ProjectDocument parseDocument(const Json& j) {
         for(const auto& x:j.at("definition").at("routingDecisions"))
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
+    if (version < 61) rejectJunctionFieldsBefore61(j); // J3a: presence, even null, at its path
     d.map=parseMapSettings(j,version);
     if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
     if (version < networkCodec::linkTypeVersion) rejectLinkTypesBefore50(j); // S2.1, before the network is read

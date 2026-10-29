@@ -1,0 +1,27 @@
+{
+  "id": "stop-3-shared",
+  "name": "Three legs, two-way stop, shared turn lanes",
+  "kind": "junction",
+  "legs": 3,
+  "control": "twoWayStop",
+  "roles": {
+    "major-far": [
+      {
+        "movements": "FT"
+      }
+    ],
+    "major-kerb": [
+      {
+        "movements": "TK"
+      }
+    ],
+    "minor": [
+      {
+        "movements": "F"
+      },
+      {
+        "movements": "K"
+      }
+    ]
+  }
+}

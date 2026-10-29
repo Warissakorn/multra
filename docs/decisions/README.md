@@ -476,3 +476,11 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D391](RECORD.md#d391) — J2: kerb/far taper + storage, route/head preservation, existing fields/legacy split retained (owner 1A); review limits the implied-route exception to generated 1→2 and stops pocket walks at Nodes, including straight through.
 
 [D392](RECORD.md#d392) — J2: NB/EB/SB/WB + L/T/R, 45°/135° boundaries, compass ties/duplicates and U-turn refusals; HCM derivation retained (owner 2A).
+
+[D393](RECORD.md#d393) — J3a: catalog ownership and schema 61; junction.major and per-leg lane overrides carry coarse's hierarchy without choosing B29's turn key.
+
+[D394](RECORD.md#d394) — J3a: Node.approachDirections independently maps Link ids to compass directions; splits carry them downstream and Street segment recipe keys follow the moved end.
+
+[D395](RECORD.md#d395) — J3a: save partial site values without defaults; omitted scalar fields and null pocket slots, with shape/sign checks before later applicability/timing checks.
+
+[D396](RECORD.md#d396) — J3a catalog: protected far turns in P2 major / P3 all roles use separate F rows, following §8's one-protected-group rule; no signal implementation.

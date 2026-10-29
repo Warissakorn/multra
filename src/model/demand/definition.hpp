@@ -1,5 +1,6 @@
 #pragma once
 #include "../../core/types.hpp"
+#include "../network/junction_templates.hpp"
 #include "../../macro/settings.hpp"
 #include "../../meso/settings.hpp"
 #include <algorithm>
@@ -196,6 +197,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     bool externalModes{true}; std::vector<Mode> modes; // S1.2 (D269): absent = data/modes/, schema 49
     bool externalLinkTypes{true}; std::vector<LinkType> linkTypes; // S2.1 (D273): absent = data/link-types/, schema 50
     bool externalCrossSections{true}; std::vector<CrossSection> crossSections; // S3.3 (D305): absent = data/cross-sections/, schema 53
+    bool externalJunctionTemplates{true}; std::vector<JunctionTemplate> junctionTemplates; // M14 J3a, schema 61
     std::optional<MacroSettings> macroSettings; // S2.3 (D275): absent = kMacroDefaults, schema 51
     std::optional<MesoSettings> mesoSettings; // M11.2 (D293): absent = kMesoDefaults, schema 52
     double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight

@@ -1,4 +1,5 @@
 #include "coarse_commands.hpp"
+#include "junction_commands.hpp"
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_membership.hpp"
 #include <algorithm>
@@ -92,7 +93,10 @@ void renameStreetSegment(Network& n, const std::string& from, const std::string&
         if (a != b && std::find(pairs.begin(), pairs.end(), pair) == pairs.end()) pairs.push_back(pair);
     }
     n.overpasses = std::move(pairs);
-    for (auto& node : n.nodes) if (node.coarse) renameCoarseStreetSegment(*node.coarse, from, to);
+    for (auto& node : n.nodes) {
+        if (node.coarse) renameCoarseStreetSegment(*node.coarse, from, to);
+        if (node.junction) renameJunctionStreetSegment(*node.junction, from, to);
+    }
 }
 // The lifecycle's join, when the Node qualifies (see the header).
 bool mergeAway(ProjectDocument& d, std::size_t k) {
@@ -100,7 +104,7 @@ bool mergeAway(ProjectDocument& d, std::size_t k) {
     const auto& node = n.nodes[k];
     const auto legs = nodeStreetSegmentLegs(n, node);
     if (legs.size() != 2 || legs[0].streetSegmentId == legs[1].streetSegmentId || legs[0].atEnd == legs[1].atEnd) return false;
-    if (node.coarse || nodeHasDetail(n, node) || !nodeLinkLegs(n, node).empty()) return false;
+    if (node.coarse || node.junction || nodeHasDetail(n, node) || !nodeLinkLegs(n, node).empty()) return false;
     const auto first = legs[0].atEnd ? legs[0].streetSegmentId : legs[1].streetSegmentId, second = legs[0].atEnd ? legs[1].streetSegmentId : legs[0].streetSegmentId;
     const auto& a = streetSegmentNamed(n, first); const auto& b = streetSegmentNamed(n, second);
     if (!a.links.empty() || !b.links.empty() || !a.crossSectionId || a.crossSectionId != b.crossSectionId || a.level != b.level ||
@@ -189,7 +193,7 @@ void settleNodes(ProjectDocument& after, const ProjectDocument& before) {
         if (!was) continue;
         const bool had = nodeHasDetail(b, *was), has = nodeHasDetail(n, node);
         if (node.coarse && was->coarse && !had && has) node.coarse.reset(); // refine
-        if (had && !has && !node.coarse) { // derive back
+        if (had && !has && !node.coarse && !node.junction) { // derive back, never over a retained recipe
             auto derived = deriveCoarse(before, *was);
             if (!derived) continue;
             const auto legs = streetSegmentLegs(n, node);
