@@ -20,7 +20,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-10-28.md`](PROGRESS-LOG-2026-10-28.md) | D381–D387, site circulation/pedestrians, Road/Node-analysis review batches A–D and the M14 contracts | 7 |
+| [`PROGRESS-LOG-2026-10-28.md`](PROGRESS-LOG-2026-10-28.md) | D381–D389, site circulation/pedestrians, Road/Node-analysis review batches A–D, M14 contracts and the Street segment rename | 8 |
 | [`PROGRESS-LOG-2026-10-27.md`](PROGRESS-LOG-2026-10-27.md) | D364 to D367 and D369: RoutingDecision schema, object CSV, UI font pin, network PNG export; documentation review fixes; M0 ruling; optimization pass; M13 booked, A1 and A2 (D370, D372–D374), A3 (D376, D377), purpose amended (D378), Link/Connector/Node review, B27 (D379), D378/D379 review and B28, B28 decided (D380) | 19 |
 | [`PROGRESS-LOG-2026-10-26.md`](PROGRESS-LOG-2026-10-26.md) | D340–D343, Road demand and Node conflict authoring | 4 |
 | [`PROGRESS-LOG-2026-10-25.md`](PROGRESS-LOG-2026-10-25.md) | D339–D334, motorcycle, heavy-vehicle and van appearance | 12 |

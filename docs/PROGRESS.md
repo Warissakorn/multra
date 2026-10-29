@@ -6,6 +6,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-29 — J4 preparation: U0 checked, timing questions and corridor booking (D403)
+
+- **Asked:** J3b a52476b approved; start J4, stop for review, no timing defaults or writer.
+  Extend J6's cross-section Command to corridors before U1; docs only for that booking.
+- **Checked before code:** JUNCTION_TEMPLATES §8/JT9, D395/D396 and U0's answer table.
+  UTDF_PROBE §6 and OWNER_SITTING I are still blank. Reported that J4 can establish MULTRA
+  contract support only, while Synchro/Vistro mapping and left-hand interchange remain unverified.
+- **Pending B32:** §8's barrier/P4 contradiction, entered allRed versus barrier-wait red,
+  and leg-number/time-zero conventions change stored timing and results. Asked the owner in
+  Thai with options/recommendations before code; no answer or default has been assumed.
+  No J4 implementation or JT9 pass is claimed.
+- **Corridor booking:** a generated Link can belong to two filled junctions; deletion also
+  removes the neighbour's leg and attached objects. §5 and NEXT now require a shared-Link
+  selection aid or corridor-aware J6 Command, keeping both ends consistent. No J6 code.
+- **Verification:** desktop build, documentation links/indexes, file-size, architecture and
+  diff checks pass. Node-analysis CLI bytes match except buildCommit. Runtime/test source is
+  unchanged; JT9, CTest and full `check` were not run for this documentation-only checkpoint.
+  Headless is not configured; Windows/manual UI was not run. J4 remains pending B32.
+
 ## 2026-10-29 — J3b review: F4 recipe parity and recovery after reopen (D402)
 
 - **Asked:** narrow the Street segment guard, explain recovery with no Undo after reopen,
@@ -187,16 +206,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Checked:** a scratchpad script compared the file's cell counts, lanes, storage, volumes and the
   100 s ring sums against the sheet. No code changed; no import has been tried. UT0 waits for the
   owner's golden file.
-
-## 2026-10-28 — Road renamed Street segment, schema 59 (D389, M14 slice SR)
-
-- **Asked:** "เริ่มทำได้เลย" for the rename D387 booked; "Segment" turned out to be the engine's type
-  and word, so the owner chose "Street segment".
-- **Changed:** schema 59 writes `streetSegments`, `streetSegmentId` and `streetSegmentDirection`;
-  files below 59 keep their keys and still read, and each version refuses the other's at its own
-  path (JT1). Codes, types, functions, files, tests, CMake test names, locale keys and strings
-  (th "ช่วงถนน"), module maps and maintained docs follow; three reference docs renamed.
-- **Unchanged:** no behaviour; documents without the renamed keys keep their version and bytes.
-- **Verified:** desktop build (Qt 6.4.2, installed this session), `ctest` and `check` on Linux
-  (offscreen): `ctest` 246/246 (245 before plus JT1); headless preset not run. Windows look is
-  OWNER_SITTING E24.

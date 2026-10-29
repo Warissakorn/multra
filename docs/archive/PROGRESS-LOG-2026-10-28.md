@@ -4,6 +4,19 @@ Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current
 
 
 
+## 2026-10-28 — Road renamed Street segment, schema 59 (D389, M14 slice SR)
+
+- **Asked:** "เริ่มทำได้เลย" for the rename D387 booked; "Segment" turned out to be the engine's type
+  and word, so the owner chose "Street segment".
+- **Changed:** schema 59 writes `streetSegments`, `streetSegmentId` and `streetSegmentDirection`;
+  files below 59 keep their keys and still read, and each version refuses the other's at its own
+  path (JT1). Codes, types, functions, files, tests, CMake test names, locale keys and strings
+  (th "ช่วงถนน"), module maps and maintained docs follow; three reference docs renamed.
+- **Unchanged:** no behaviour; documents without the renamed keys keep their version and bytes.
+- **Verified:** desktop build (Qt 6.4.2, installed this session), `ctest` and `check` on Linux
+  (offscreen): `ctest` 246/246 (245 before plus JT1); headless preset not run. Windows look is
+  OWNER_SITTING E24.
+
 ## 2026-10-28 — M14 redirected: junction templates, transitions, Road → Segment (D387)
 
 - **Asked:** no junction builder; Roads that cross should make the junction, with a junction

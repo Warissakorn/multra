@@ -73,6 +73,15 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
+32. **J4 NEMA conventions** (asked 2026-10-29, pending). The questions were presented before code;
+   recommended choices first: (a) barrier boundaries after 1,2 / 5,6 and after 3,4 / 7,8, with
+   phase numbers always determining the ring and P4 running 4 then 8 while the other ring waits,
+   or a special P4 single-sequence interpretation; (b) entered allRed is clearance, with red
+   waiting derived separately and a cycle mismatch refused, or allRed is the entire gap to the
+   next phase in that ring; (c) use the U0 sheet's rotated compass mapping (major E–W: 2 WB,
+   6 EB, 4 SB, 8 NB; major N–S: 2 NB, 6 SB, 4 WB, 8 EB), with time zero at 2/6, or the same
+   mapping with time zero at each ring's first phase (1/5 when present). *Owner:*
+
 Answered 2026-10-29: **B31**, owner: defer all-way-stop generation until A5 or U1 needs it;
 keep the fill listed but disabled (`FILL_NODE_ALL_WAY_STOP`), leave StopControl unchanged and
 use no schema 63 ([D399](../decisions/RECORD.md#d399)).

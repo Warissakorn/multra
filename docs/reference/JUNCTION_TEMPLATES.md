@@ -207,15 +207,22 @@ Apply the Street segment template, then fill the junction again** (JT15).
 place those again after the new fill. An ordinary junction re-apply also refuses with that code
 if its base lanes/widths/reference geometry no longer match the cross-section; it cannot silently
 move or resize the detached upstream Link.
+**Corridor limitation (D403):** a Link between two filled junctions is generated for both. Deleting it
+in this recovery also removes the neighbouring junction's leg; the recovery is not local to the
+selected junction. Account for both ends and attached objects before rebuilding a corridor.
 
 **Work order (D402): fill the junction before placing stationed measurements.** In particular,
 place queue-counter measurement lines and travel-time sections after the cut/pocket geometry is
 settled. Cuts and re-apply refuse stationed data they cannot keep in place; deleting the Links
 in the recovery above removes their attached objects.
 
-**Booked for J6, before U1 (D402): one Command: change cross-section through a junction.**
+**Booked for J6, before U1 (D402, D403): one Command: change cross-section through a junction.**
 The future Command must change the cross-section and regenerate junction detail while preserving
-references, in one Undo step. Until that work is implemented, the explicit recovery above remains.
+references, in one Undo step. It must handle a corridor and its shared generated Links: add a
+*Select this junction's generated Links* aid that identifies shared Links and their affected
+neighbour, or make the Command corridor-aware so both ends remain consistent. The booking is
+documentation only here; neither selection support nor the combined Command is implemented.
+Until that work is implemented, the explicit recovery and corridor limitation above remain.
 
 **Existing references (D401).** Retained in-leg heads, route ids and Link-based Node inputs
 follow the pocket and Undo restores the complete JSON, revision included. A cut that would
@@ -308,6 +315,13 @@ hand-made controller is renumbered in the existing dialog. `nemaCheck(controller
 
 Phases 2 and 6 serve the major, 4 and 8 the minor; for left-hand traffic the far turn takes the
 left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
+
+**J4 preparation, 2026-10-29:** U0's answer table is still empty. Internal NEMA support can be
+implemented against the owner's chosen contract, but Synchro/Vistro phase mapping and left-hand
+interchange remain unverified; no UTDF writer is authorized yet. Before implementation, resolve
+OWNER_SITTING B32: the barrier wording conflicts with the table, P4 places 8 on the ring-1 line,
+the meaning of barrier-wait red versus entered `allRed` is unspecified, and leg-number/time-zero
+conventions are not fixed. No answer or timing default is assumed; JT9 remains unimplemented.
 
 ## 9. Posted speed and the analysis panel
 

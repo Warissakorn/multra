@@ -47,10 +47,16 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **J3b is done; awaiting owner review. Do not start J4 without approval.** Read
-  [JUNCTION_TEMPLATES §5/§13](reference/JUNCTION_TEMPLATES.md) and D397–D402. JT6–JT8/JT13–JT15
-  cover the two-way-stop fill, safe references, exact Undo/Redo, historical F3/F4 parity and
-  the explicit limitations. The fill dialog keeps `generatedCommand=true` (owner accepted).
+- **J3b is approved at a52476b; continue J4 only, then stop for review.** The owner authorized
+  template signals. Re-read [JUNCTION_TEMPLATES §8/JT9](reference/JUNCTION_TEMPLATES.md), D395's
+  required site timing and D396's protected/permitted lane constraints. The fill dialog's
+  generatedCommand mode and JT13 remain accepted.
+- **Before J4 code: OWNER_SITTING B32 is pending.** Resolve §8's conflicting barrier/P4
+  wording, entered clearance versus barrier-wait red, and leg-number/time-zero conventions.
+  Questions were asked before writing code; record the owner's answers, fix the contract,
+  then write forcing-first JT9 tests. The node-analysis CLI baseline is
+  `/tmp/multra-j4-analysis-before.json` in this workspace. No J4 implementation or JT9 pass yet.
+  The decision index is at 500 lines; split its navigation before adding D404.
 - **B31 is answered (D399):** all-way-stop generation waits until A5 or U1 needs it. Keep the
   row listed but disabled with `FILL_NODE_ALL_WAY_STOP`; do not extend StopControl or consume
   schema 63 for it now. Link.generated uses 62; 63 remains unused. Do not re-ask B31 in J4.
@@ -63,14 +69,18 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Deleting Links removes their attached objects. Fill the junction before placing stationed
   measurements. A changed base shape cannot silently move/resize the detached upstream Link.
   HCM's existing storage/derivation remains; recipe keys and Link-based Node inputs stay separate.
-- **Only after J3b approval: J4 signals, then stop for review.** Re-read §8/JT9, NEMA group
-  numbering, protected/permitted lane constraints (D396), site timing (D395) and U0's status.
-  Report any U0 answers' effect on J4 first. Do not invent yellow/all-red values, timing defaults
-  or begin the UTDF writer. Template editor/Find crossings UI stays J6; Windows fill inspection
-  is OWNER_SITTING E26.
-- **Booked for J6, before U1 (D402): one Command: change cross-section through a junction.**
+- **U0 checked for J4:** UTDF_PROBE §6 and OWNER_SITTING I still have no answers. J4 can only
+  claim MULTRA contract checks; left-hand/phase mapping in Synchro/Vistro stays unverified and
+  may change after U0. This effect was reported before code. Do not invent yellow/all-red or
+  any timing default; do not start the UTDF writer. Template editor/Find crossings UI stays
+  J6; Windows fill inspection is OWNER_SITTING E26.
+- **Booked for J6, before U1 (D402, D403): one Command: change cross-section through a junction.**
   Change the cross-section and regenerate junction detail while preserving references in one
-  Undo step. This remains future work; retain the tested deletion/rebuild recovery until then.
+  Undo step. **Corridors are required:** a Link between two filled junctions is generated for
+  both; today's delete-and-refill recovery also removes the neighbour's leg. Add a *Select this
+  junction's generated Links* aid that identifies shared Links/affected neighbours, or make the
+  Command corridor-aware and keep both ends consistent. Docs only in J4; no J6 code or selection
+  aid is implemented yet. Retain the recovery's attached-object and shared-leg warnings.
 - Later, each only after approval: J4 signals (JT9; check U0 answers first), J5 transitions,
   J6 editor surfaces, J7 analysis panel, then U1–U3 once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,

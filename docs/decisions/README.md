@@ -496,3 +496,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D401](RECORD.md#d401) — J3b complete: clear junction refusal/recovery for Street segment Apply template, base-shape consistency and named reference protection, with no new stored field or schema step.
 
 [D402](RECORD.md#d402) — J3b review: preserve F4 + recipe Apply, document/test delete-and-refill after reopen and measurement order; book one-Command cross-section change through a junction for J6 before U1.
+
+[D403](RECORD.md#d403) — J3b approved; D402's J6 cross-section Command must handle corridors/shared generated Links, with a selection aid or corridor-aware regeneration before U1; docs only now.
