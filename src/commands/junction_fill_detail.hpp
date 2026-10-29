@@ -7,10 +7,12 @@ namespace multra::junctionDetail {
 struct Plan {
     ProjectDocument document; std::vector<ValidationIssue> issues; std::vector<JunctionLaneMismatch> laneCounts;
     std::map<std::string,GeneratedTurn> turns;
+    std::optional<SignalController> signal;
 };
 // Private, per-call copies only. No receipt, lane layout or id cache is stored on the Node.
 Plan plan(const ProjectDocument&,const Node&,const NodeFillCatalogs&);
 std::vector<ValidationIssue> restore(ProjectDocument&,const Node&,const NodeFillCatalogs&);
 const Link& link(const ProjectDocument&,const std::string&);
 std::vector<ValidationIssue> cutReferenceIssues(const ProjectDocument&,const std::vector<LegCut>&);
+void authorSignals(Plan&,const std::string& nodeId,const std::vector<std::string>& major);
 }

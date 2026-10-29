@@ -73,14 +73,10 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
-32. **J4 NEMA conventions** (asked 2026-10-29, pending). The questions were presented before code;
-   recommended choices first: (a) barrier boundaries after 1,2 / 5,6 and after 3,4 / 7,8, with
-   phase numbers always determining the ring and P4 running 4 then 8 while the other ring waits,
-   or a special P4 single-sequence interpretation; (b) entered allRed is clearance, with red
-   waiting derived separately and a cycle mismatch refused, or allRed is the entire gap to the
-   next phase in that ring; (c) use the U0 sheet's rotated compass mapping (major E–W: 2 WB,
-   6 EB, 4 SB, 8 NB; major N–S: 2 NB, 6 SB, 4 WB, 8 EB), with time zero at 2/6, or the same
-   mapping with time zero at each ring's first phase (1/5 when present). *Owner:*
+Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
+- “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
+- “allRed คือ clearance ที่กรอก; เวลาแดงรอ barrier คำนวณแยกจาก timing ของอีก ring (แนะนำ)”
+- “เริ่ม phase 2/6 ที่เวลา 0 ตาม U0; leading far turn อยู่ท้าย cycle ก่อนหน้า (แนะนำ)”
 
 Answered 2026-10-29: **B31**, owner: defer all-way-stop generation until A5 or U1 needs it;
 keep the fill listed but disabled (`FILL_NODE_ALL_WAY_STOP`), leave StopControl unchanged and
@@ -311,6 +307,15 @@ nothing. Numbers are not reused.
    including that deleting Links removes attached objects? **Fill the junction before placing
    stationed measurements**; check this order with a travel-time section and the generated-Link
    count in Problems. Recipe selection UI remains J6; use a saved recipe/automation fixture. *Owner:*
+
+27. **J4 template signals** (listed 2026-10-29, D404). On Windows at 100/150/200 %, Thai and
+   English, open a saved P1–P4 recipe with explicit site timing and inspect Fill defaults.
+   Missing yellow/allRed must leave Apply disabled; valid input creates one controller named
+   after the Node, NEMA-numbered groups and generated heads in one Undo. Compare its diagram
+   with §8: 2/6 start at zero, leading far turns are at the previous cycle's end, and P4 has
+   minor 4 then 8. Does waiting red stay separate from the recipe's entered allRed? Re-apply,
+   edit a head/controller, and attach a queue counter: replacement must name the edited or
+   attached object. This does not confirm U0 interoperability. Recipe UI remains J6. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

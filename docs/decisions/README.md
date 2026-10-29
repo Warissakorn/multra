@@ -463,38 +463,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D385](RECORD.md#d385) — Review batch D: *Apply template* on every selected Road in one Undo step; *Find crossings* warns, without blocking, where a Road has neither template nor Links.
 
-[D386](RECORD.md#d386) — M14 booked: a lane-table junction builder and a UTDF export for Synchro 12 and Vistro 2026; contracts JUNCTION_BUILDER and UTDF_EXPORT, owner choices open.
-
-[D387](RECORD.md#d387) — No builder tool: junction templates on Nodes from crossing Roads generate the detail; transitions align per template; Road renamed Segment before M14 code (JUNCTION_TEMPLATES).
-
-[D388](RECORD.md#d388) — B30 as recommended: structural shipped junction templates, 3–4 legs, roles with per-leg overrides, all-way stop generated, yellow/all-red required; stored Node numbers, volumes from `Node::analysis`, UTM coordinates, skip-and-report.
-
-[D389](RECORD.md#d389) — Road renamed Street segment (not Segment: the engine's word); schema 59 keys `streetSegments`/`streetSegmentId`/`streetSegmentDirection`, older files read.
-
-[D390](RECORD.md#d390) — J1: posted `speedLimit` on the Link (schema 60), defaulted from the cross-section template; approach speeds move to their Links; `freeSpeed` independent; Micro does not read it yet.
-
-[D391](RECORD.md#d391) — J2: kerb/far taper + storage, route/head preservation, existing fields/legacy split retained (owner 1A); review limits the implied-route exception to generated 1→2 and stops pocket walks at Nodes, including straight through.
-
-[D392](RECORD.md#d392) — J2: NB/EB/SB/WB + L/T/R, 45°/135° boundaries, compass ties/duplicates and U-turn refusals; HCM derivation retained (owner 2A).
-
-[D393](RECORD.md#d393) — J3a: schema 61, recipe major/lane overrides; review keeps coarse through choice/Detach so Macro/Meso compile stays exact, clearing it only on detail refine.
-
-[D394](RECORD.md#d394) — J3a: Node.approachDirections independently maps Link ids to compass directions; splits carry them downstream and Street segment recipe keys follow the moved end.
-
-[D395](RECORD.md#d395) — J3a: save partial site values without defaults; omitted scalar fields and null pocket slots, with shape/sign checks before later applicability/timing checks.
-
-[D396](RECORD.md#d396) — J3a catalog: protected far turns in P2 major / P3 all roles use separate F rows, following §8's one-protected-group rule; no signal implementation.
-
-[D397](RECORD.md#d397) — J3b owner: signals stay J4; JT8 uses manual test-only signals for HCM; full lane mismatch refuses Apply with existing → required counts.
-
-[D398](RECORD.md#d398) — J3b checkpoint: Link.generated at 62, program fill ownership, downstream Street segment leg association and derived-only pocket replacement; all-way-stop representation pending.
-
-[D399](RECORD.md#d399) — B31: defer D388 JT-4a all-way-stop generation until A5/U1 needs it; listed disabled, StopControl unchanged, no schema 63.
-
-[D400](RECORD.md#d400) — J3b review: retain the orthogonal-T zero-gap refusal and accepted fill History mode; JT13 compares full legacy F3/F4 documents with frozen 33a856a5 command bodies on both driving sides.
-
-[D401](RECORD.md#d401) — J3b complete: clear junction refusal/recovery for Street segment Apply template, base-shape consistency and named reference protection, with no new stored field or schema step.
-
-[D402](RECORD.md#d402) — J3b review: preserve F4 + recipe Apply, document/test delete-and-refill after reopen and measurement order; book one-Command cross-section change through a junction for J6 before U1.
-
-[D403](RECORD.md#d403) — J3b approved; D402's J6 cross-section Command must handle corridors/shared generated Links, with a selection aid or corridor-aware regeneration before U1; docs only now.
+[M14 decisions D386 onward](M14.md) — junction templates, signals, UTDF and their owner reviews.

@@ -48,7 +48,7 @@ TEST(junctionfill,jt7_every_missing_site_value_with_path) {
     CHECK(issue(signal,"JUNCTION_TIMING_MISSING","signal.cycle"));
     for (const int phase:{1,2,4,5,6,8}) for (const auto* field:{"green","yellow","allRed"})
         CHECK(issue(signal,"JUNCTION_TIMING_MISSING","phases["+std::to_string(phase)+"]."+field));
-    CHECK(issue(signal,"JUNCTION_SIGNALS_PENDING"));
+    CHECK(!issue(signal,"JUNCTION_SIGNALS_PENDING"));
 }
 TEST(junctionfill,jt7_site_counts_references_and_full_lane_mismatch) {
     auto d=cross(); const auto arm=node(d).junction->major[0];

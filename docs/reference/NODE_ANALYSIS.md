@@ -337,8 +337,10 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
     (its Connector's `from` station, else the Link's end), the stop line. Lanes run the whole Link.
 
 J3b's JT8 checks generated two-way-stop geometry, then adds a manual, test-only split signal
-through existing Commands to inspect every HCM lane group (D397). Template signal generation
-remains J4; this is not an HCM two-way-stop method (A4). The analytical derivation is unchanged.
+through existing Commands to inspect every HCM lane group (D397); this is not an HCM two-way-stop
+method (A4). J4's JT9 (D404) checks every preset's drawn green/cycle at the compiled lane groups,
+P3's protected result g/C and Micro seed 42. Existing A3 operation and effective-green rules stay
+unchanged; NEMA checks do not alter HCM or validate the analytical method.
 
 J3a stores compass overrides independently on the Node (schema 61, D394); `approachLayout` reads
 them for labels. HCM inputs and storage still read the drawing as before, never the template recipe.

@@ -47,20 +47,18 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **J3b is approved at a52476b; continue J4 only, then stop for review.** The owner authorized
-  template signals. Re-read [JUNCTION_TEMPLATES §8/JT9](reference/JUNCTION_TEMPLATES.md), D395's
-  required site timing and D396's protected/permitted lane constraints. The fill dialog's
-  generatedCommand mode and JT13 remain accepted.
-- **Before J4 code: OWNER_SITTING B32 is pending.** Resolve §8's conflicting barrier/P4
-  wording, entered clearance versus barrier-wait red, and leg-number/time-zero conventions.
-  Questions were asked before writing code; record the owner's answers, fix the contract,
-  then write forcing-first JT9 tests. The node-analysis CLI baseline is
-  `/tmp/multra-j4-analysis-before.json` in this workspace. No J4 implementation or JT9 pass yet.
-  The decision index is at 500 lines; split its navigation before adding D404.
+- **Current stop: J4 is implemented (D404, JT9 passing); await the owner's review.** Do not
+  start J5 before approval. After approval, re-read [JUNCTION_TEMPLATES §7/JT10](reference/JUNCTION_TEMPLATES.md)
+  and implement transitions only, with its own review stop. The fill dialog's generatedCommand
+  mode and JT13 remain accepted; J3b is approved at a52476b.
+- **B32 is answered (D404):** fixed numbered rings/barriers, P4 4 then 8 with derived red
+  waiting, entered allRed as clearance, exact cycle closure, rotated compass mapping and
+  2/6 time-zero anchor. §8 has the timing construction; do not re-ask these choices. All site
+  timings remain required. No timing default or writer is authorized.
 - **B31 is answered (D399):** all-way-stop generation waits until A5 or U1 needs it. Keep the
   row listed but disabled with `FILL_NODE_ALL_WAY_STOP`; do not extend StopControl or consume
   schema 63 for it now. Link.generated uses 62; 63 remains unused. Do not re-ask B31 in J4.
-- **Boundaries to retain:** signalised fills are disabled until J4 (D397); full-lane mismatch
+- **Boundaries to retain:** J4 requires complete site timing (D404); full-lane mismatch
   refuses with existing → required counts. An orthogonal T with a wide median can leave a
   touching through pair and stays `EDIT_CONNECTOR_GAP` (D400), with no invented cut length.
   Street segment Apply template over junction-generated Links is `JUNCTION_STREET_SEGMENT_DETAIL`;
@@ -73,7 +71,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   claim MULTRA contract checks; left-hand/phase mapping in Synchro/Vistro stays unverified and
   may change after U0. This effect was reported before code. Do not invent yellow/all-red or
   any timing default; do not start the UTDF writer. Template editor/Find crossings UI stays
-  J6; Windows fill inspection is OWNER_SITTING E26.
+  J6; Windows fill inspection is OWNER_SITTING E26, and signal inspection is E27.
 - **Booked for J6, before U1 (D402, D403): one Command: change cross-section through a junction.**
   Change the cross-section and regenerate junction detail while preserving references in one
   Undo step. **Corridors are required:** a Link between two filled junctions is generated for
@@ -81,8 +79,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   junction's generated Links* aid that identifies shared Links/affected neighbours, or make the
   Command corridor-aware and keep both ends consistent. Docs only in J4; no J6 code or selection
   aid is implemented yet. Retain the recovery's attached-object and shared-leg warnings.
-- Later, each only after approval: J4 signals (JT9; check U0 answers first), J5 transitions,
-  J6 editor surfaces, J7 analysis panel, then U1–U3 once U0's answers are in.
+- Later, each only after approval: J5 transitions, J6 editor surfaces, J7 analysis panel/results
+  (which may need two stops), then U1–U3 once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
   `approachLayout` and UTDF's Lanes read.
 

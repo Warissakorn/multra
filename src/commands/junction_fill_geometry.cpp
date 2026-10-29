@@ -4,6 +4,7 @@
 #include "pocket_commands.hpp"
 #include "street_segment_commands.hpp"
 #include "../model/demand/coarse_compile.hpp"
+#include "../model/demand/nema.hpp"
 #include "../model/network/approach_layout.hpp"
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_detail.hpp"
@@ -27,11 +28,6 @@ char movement(double angle) {
     if(std::abs(angle)>=3*std::numbers::pi/4)return 'U';
     return angle>0?'K':'F';
 }
-std::vector<int> phases(const std::string& preset) {
-    if(preset=="P2")return {1,2,4,5,6,8};
-    if(preset=="P3")return {1,2,3,4,5,6,7,8};
-    return {2,4,6,8};
-}
 PocketSide sideOf(const JunctionLane& row) {return row.side.value_or(row.movements=="F"?PocketSide::far:PocketSide::kerb);}
 }
 Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCatalogs& catalogs) {
@@ -48,18 +44,9 @@ Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCat
     if(type.control=="allWayStop")bad("FILL_NODE_ALL_WAY_STOP",at+".templateId"); // B31: deferred until A5 or U1 needs it
     if(const auto invalid=junctionTemplateIssues(type,at+".templateId");!invalid.empty()){result.issues=invalid;return result;}
     if(type.control=="signalised") {
-        const auto signal=recipe.signal.value_or(JunctionSignal{});
-        if(!signal.cycle)bad("JUNCTION_TIMING_MISSING",at+".signal.cycle");
-        const auto expected=phases(type.phasing);
-        for(const int number:expected) {
-            const auto p=std::find_if(signal.phases.begin(),signal.phases.end(),[&](const auto& x){return x.number==number;});
-            const auto path=at+".signal.phases["+std::to_string(number)+"]";
-            if(p==signal.phases.end()||!p->green)bad("JUNCTION_TIMING_MISSING",path+".green");
-            if(p==signal.phases.end()||!p->yellow)bad("JUNCTION_TIMING_MISSING",path+".yellow");
-            if(p==signal.phases.end()||!p->allRed)bad("JUNCTION_TIMING_MISSING",path+".allRed");
-        }
-        for(const auto& p:signal.phases)if(std::find(expected.begin(),expected.end(),p.number)==expected.end())bad("JUNCTION_SITE_COUNT",at+".signal.phases");
-        bad("JUNCTION_SIGNALS_PENDING",at+".signal"); // owner: preset execution stays J4, no interim defaults
+        auto timing=nemaTiming(type.phasing,recipe.signal.value_or(JunctionSignal{}),d.definition?d.definition->timeStep:0,at+".signal");
+        result.issues.insert(result.issues.end(),timing.issues.begin(),timing.issues.end());
+        if(timing.issues.empty())result.signal=std::move(timing.controller);
     } else if(recipe.signal)bad("JUNCTION_SITE_COUNT",at+".signal");
     const auto restored=restore(d,selected,catalogs);
     result.issues.insert(result.issues.end(),restored.begin(),restored.end());
@@ -204,6 +191,7 @@ Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCat
                 ++p;
             }
         }
+        if(result.issues.empty()&&result.signal)authorSignals(result,selected.id,{major.begin(),major.end()});
     } catch(const ValidationError& e) {result.issues.insert(result.issues.end(),e.issues.begin(),e.issues.end());}
       catch(const std::invalid_argument& e) {bad(std::string(e.what())=="EDIT_SPLIT_RANGE"?"JUNCTION_POCKET_RANGE":e.what(),at);}
     return result;

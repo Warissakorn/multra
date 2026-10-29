@@ -116,14 +116,24 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
     for(const auto& a:row.conflictAreas)if(touched(a.first.path)||touched(a.second.path)){areas.insert(a.id);if(!a.generated)edited(a.id);}
     for(const auto& r:row.priorityRules)if(areas.contains(r.conflictAreaId)&&!r.generated)edited(r.id);
     for(const auto& s:row.stopControls)if(lines.contains(s.waitingLineId)&&!s.generated)edited(s.id);
+    std::set<std::string> heads,controllers;
     for(const auto& h:d.network.signalHeads) {
         bool selected=removed.contains(h.lane.linkId);
         for(const auto& id:connectors)selected=selected||h.connectorId==id||h.connectorId.starts_with(id+"/lane-");
-        if(selected)edited(h.id); // J3b never replaces manually authored signals (J4 has not filled any).
+        if(!selected)continue;
+        heads.insert(h.id);
+        if(!h.generated||h.controllerId.empty())edited(h.id);
+        else controllers.insert(h.controllerId);
+    }
+    for(const auto& id:controllers) {
+        if(!d.definition){edited(id);continue;}
+        const auto c=std::find_if(d.definition->signalControllers.begin(),d.definition->signalControllers.end(),[&](const auto& x){return x.id==id;});
+        if(c==d.definition->signalControllers.end()||!c->generated)edited(id);
+        for(const auto& h:d.network.signalHeads)if(h.controllerId==id&&!heads.contains(h.id))edited(h.id);
     }
     for(const auto& c:d.network.connectors)if(!connectors.contains(c.id) && (removed.contains(c.from.linkId)||removed.contains(c.to.linkId)))edited(c.id);
     for(const auto& c:d.network.queueCounters)for(const auto& l:c.lines)
-        if(lines.contains(l.referenceId)||(l.point&&touched(l.point->path)))edited(c.id);
+        if(lines.contains(l.referenceId)||heads.contains(l.referenceId)||(l.point&&touched(l.point->path)))edited(c.id);
     for(const auto& s:d.network.travelTimeSections)if(removed.contains(s.start.linkId)||removed.contains(s.end.linkId))edited(s.id);
     if(d.definition) {
         const auto& def=*d.definition;
@@ -151,6 +161,8 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
     if(!issues.empty())return issues;
     // Collapse the generated pocket suffix before building it again. Original entry ids and
     // ordinary route ids stay; manually attached detail above refuses rather than being deleted.
+    std::erase_if(d.network.signalHeads,[&](const auto& h){return heads.contains(h.id);});
+    if(d.definition)std::erase_if(d.definition->signalControllers,[&](const auto& c){return controllers.contains(c.id);});
     for(const auto& a:arms) {
         auto& base=editableLink(d,a.base);
         const double total=polylineLength(a.full);

@@ -460,3 +460,7 @@ The dedicated reader uses shared field metadata. Counted-volume synchronization 
 complete definition decoding, and the writer still omits derived counted intervals. No routing
 or simulation algorithm, catalog ownership, writer version rule, serialized output or desktop
 observed-schema response changes. Catalog row schemas remain separate follow-ups.
+
+J4 (D404) introduces no stored field or schema step. Template signals use the existing
+controller/groups/heads and generated flags, while site green/yellow/allRed remain on the
+schema-61 recipe. Barrier waiting and NEMA layout/check results are derived, never saved.

@@ -4,6 +4,22 @@ Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current
 
 
 
+## 2026-10-28 — UTDF probe prepared for the owner (M14 slice U0)
+
+- **Asked:** "ทำ U0".
+- **Found:** Synchro's documentation and PTV's Visum notes were not reachable from the session. A
+  Synchro-written UTDF 8 file in the MIT-licensed `utdf2gmns` package (PyPI) gave the real section
+  titles, headers and record names; UTDF_EXPORT §3 now lists them with that source. Its `[Network]`
+  has no driving-side record.
+- **Written:**
+  - [UTDF_PROBE](../plans/UTDF_PROBE.md): the left-hand reference junction (far and kerb pockets, a
+    shared kerb-through lane, volumes, P2 at 100 s), the owner's steps and an answer table.
+  - `tests/data/utdf/u0-handwritten.csv`: what MULTRA would write for that junction.
+  - OWNER_SITTING I; UTDF_EXPORT §6 and §8.
+- **Checked:** a scratchpad script compared the file's cell counts, lanes, storage, volumes and the
+  100 s ring sums against the sheet. No code changed; no import has been tried. UT0 waits for the
+  owner's golden file.
+
 ## 2026-10-28 — Road renamed Street segment, schema 59 (D389, M14 slice SR)
 
 - **Asked:** "เริ่มทำได้เลย" for the rename D387 booked; "Segment" turned out to be the engine's type

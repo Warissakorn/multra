@@ -6,6 +6,35 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-29 — J4 template signals and NEMA checks (D404)
+
+- **Owner B32:** all recommendations selected: numbered rings and corrected barriers; P4
+  4 then 8; explicit clearance separate from derived waiting; rotated compass mapping and
+  time zero at 2/6, with leading far turns at the preceding cycle's end. U0 remains unanswered;
+  the internal implementation does not establish Synchro/Vistro interchange.
+- **Implemented:** pure timing construction from every entered green/yellow/allRed, with
+  grid, phase-set and cycle-closure refusals; read-only network/layout NEMA checks. The fill
+  generates ordinary controllers/groups/heads and overlapping-green priority, with no Stops
+  at signals. No schema step, stored layout, timing default, core or HCM-method change.
+- **Ownership:** generated signals replace safely in the fill transaction. Manual edits,
+  controller reuse outside the junction and queue measurements naming generated heads refuse
+  atomically with their ids. Exact Undo/Redo covers the whole regenerated document.
+- **Tests first:** the three initial JT9 cases failed before implementation. Extended cases
+  cover every preset/side/major axis/pocket variant, clearances versus waiting, HCM source
+  greens/P3 result g/C, Micro seed 42 and generated/reference rules. The protected-shared test
+  initially forced a lane-count error; its full-lane setup was corrected before the check.
+  A further red case exposed compass labels masking adjacent major legs; reciprocal geometric
+  through movements/bearings now establish physical opposition. A red case also keeps the
+  checker usable on hand-drawn Links without Street segment associations.
+- **Docs:** §8 records the chosen construction; the full decision index was split along M14
+  navigation before exceeding 500 lines. Windows look is E27. J6's corridor booking stays docs
+  only; neither a selection aid nor the combined Command nor UTDF writer is implemented.
+- **Verification:** desktop build, JT9 **9/9**, junctionfill **25/25**, CTest **251/251**
+  (304.08 s) and `check` **251/251** (274.93 s) pass on Linux (GCC 14.2.0, Qt 6.8.2
+  offscreen). Node-analysis CLI bytes match before/after except the single `buildCommit`.
+  Headless is not configured; Windows and manual driving of the signal fill UI were not run
+  (OWNER_SITTING E27). Existing desktop UI suites passed. Stop for J4 review before J5.
+
 ## 2026-10-29 — J4 preparation: U0 checked, timing questions and corridor booking (D403)
 
 - **Asked:** J3b a52476b approved; start J4, stop for review, no timing defaults or writer.
@@ -190,19 +219,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   (offscreen); headless preset not run, and no test drives the new inspector field.
   `multra-cli --node-analysis` on the schema-58 fixture prints the same output as before apart
   from the build commit. Windows look is OWNER_SITTING E25.
-
-## 2026-10-28 — UTDF probe prepared for the owner (M14 slice U0)
-
-- **Asked:** "ทำ U0".
-- **Found:** Synchro's documentation and PTV's Visum notes were not reachable from the session. A
-  Synchro-written UTDF 8 file in the MIT-licensed `utdf2gmns` package (PyPI) gave the real section
-  titles, headers and record names; UTDF_EXPORT §3 now lists them with that source. Its `[Network]`
-  has no driving-side record.
-- **Written:**
-  - [UTDF_PROBE](plans/UTDF_PROBE.md): the left-hand reference junction (far and kerb pockets, a
-    shared kerb-through lane, volumes, P2 at 100 s), the owner's steps and an answer table.
-  - `tests/data/utdf/u0-handwritten.csv`: what MULTRA would write for that junction.
-  - OWNER_SITTING I; UTDF_EXPORT §6 and §8.
-- **Checked:** a scratchpad script compared the file's cell counts, lanes, storage, volumes and the
-  100 s ring sums against the sheet. No code changed; no import has been tried. UT0 waits for the
-  owner's golden file.

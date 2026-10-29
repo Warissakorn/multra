@@ -14,6 +14,7 @@ As [src/model](../README.md#dependencies): pure, no Qt, JSON or I/O. The compile
 | File | Holds | Contract |
 |---|---|---|
 | `definition.hpp` | `AuthoringDefinition`: routes, inputs with intervals, compositions, routing decisions with per-interval turning proportions, Signal Controllers; the core `Route`, `VehicleInput` and `SignalProgram` are also the authoring types. Catalog presence is explicit: an empty override stays empty | [DEMAND_CATALOGS](../../../docs/reference/DEMAND_CATALOGS.md), [DEMAND_TIME_TYPES](../../../docs/reference/DEMAND_TIME_TYPES.md) |
+| `nema.*` | Pure preset timing from required site values, derived clearance/waiting and network/layout checks; no stored phase model | [JUNCTION_TEMPLATES §8](../../../docs/reference/JUNCTION_TEMPLATES.md#8-nema-numbering-of-signal-groups) |
 | `signal_control.*` | Fixed-time Signal Controllers expanded into core `SignalProgram`s (`signalGroupPrograms`, `signalGroupColorAt`, `signalGroupGreen`) and `signalControlIssues` | [SIMULATION](../../../docs/reference/SIMULATION.md) |
 | `zones.hpp` | The Zone/OD layer every level shares, including zones with capacity; compiled into ordinary inputs, so the core never sees a zone | [ZONES_AND_PARKING §2](../../../docs/reference/ZONES_AND_PARKING.md) |
 | `macro_compile.*` | `compileMacroNetwork`: the drawn network as a Macro graph | [MACRO_NETWORK §3](../../../docs/reference/MACRO_NETWORK.md) |

@@ -14,5 +14,6 @@ per lane rule (D396). A non-pocket F row is full-width; TK remains shared.
 Rows run far to kerb and use F (far turn), T (through), K (kerb turn), independent of driving side.
 Every file describes its own structure. No storage, taper or timing number ships; those are site
 values on the Node. The phasing preset selects structure, never a cycle or green time. All-way
-stop is accepted for owned templates; generating it remains refused by Micro (D388).
-Transitions and their catalog structure are J5. Applying junction recipes is J3b; the editor is J6.
+stop is accepted for owned templates; its fill remains listed but disabled until A5 or U1 (D399).
+J3b generates junction geometry; J4 applies the required site timing to the four-leg signal
+presets (D404). Transitions and their catalog structure are J5; the editor is J6.

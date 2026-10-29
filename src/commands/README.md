@@ -32,8 +32,8 @@ this module (`multra-check-architecture`).
 | `coarse_commands.*` | A Node's or Street segment's coarse values | [STREET_SEGMENTS §6](../../docs/reference/STREET_SEGMENTS.md), [NODES §5](../../docs/reference/NODES.md) |
 | `node_commands.*` | Nodes: put (replacing clears `generated`), rename, delete, merge, *Suggest nodes*; the study area's Nodes, gate flows, source and settling | [NODES §2](../../docs/reference/NODES.md), [STUDY_AREA](../../docs/reference/STUDY_AREA.md) |
 | `node_detail_commands.*` | F4: a coarse Node's Micro detail | [READINESS §13](../../docs/reference/READINESS.md) |
-| `junction_fill.*` | Template fill planning, site refusals, physical pockets and generated-only replacement | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
-| `junction_fill_detail.hpp` | Private per-call geometry/restore/reference plans; no persisted layout | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `junction_fill.*` | Template fill planning, site refusals, physical pockets, template signals and generated-only replacement | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `junction_fill_detail.hpp` | Private per-call geometry/restore/reference/signal plans; no persisted layout | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `node_detail_priority.*` | F4/J3b shared HCM ranks and generated right-of-way objects | [READINESS §13.4](../../docs/reference/READINESS.md) |
 | `junction_commands.*` | Template recipe choice/detach preserving coarse until detail refine, catalog ownership, independent directions and end-following recipe renames; each inside History | [JUNCTION_TEMPLATES §4](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `node_analysis_commands.*` | A Node's analytical inputs (`analysis`; all-default stored as none) | [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
