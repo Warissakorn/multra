@@ -1,5 +1,6 @@
 #include "approach_layout.hpp"
 #include "connector_lane_mapping.hpp"
+#include "polygon.hpp"
 #include <algorithm>
 #include <cmath>
 #include <numbers>
@@ -30,7 +31,7 @@ double referenceLength(const Network& n, const Connector& c) {
     return polylineLength(spine);
 }
 // Walk a unique, aligned predecessor chain, so an ordinary split of the pocket does not lose
-// its start. Multiple incoming paths or an intersection turn cannot invent a pocket length.
+// its start. A Node-owned Connector ends this walk even when it runs straight through the Node.
 std::optional<LayoutPocket> pocketOf(const Network& n, const Link& start, const LayoutLane& lane) {
     const Link* link = &start; std::string laneId = lane.id; double stop = lane.stopLine, storage = 0;
     std::set<std::pair<std::string,std::string>> visited;
@@ -46,6 +47,10 @@ std::optional<LayoutPocket> pocketOf(const Network& n, const Link& start, const 
         }
         if (!incoming) return {};
         const auto& c = *incoming; const auto& previous = linkOf(n,c.from.linkId);
+        for (const auto& node : n.nodes) {
+            const auto runs = polygonRuns(c.geometry,node.polygon);
+            if (std::any_of(runs.begin(),runs.end(),[](const auto& run) { return run.inside; })) return {};
+        }
         const double from = c.from.station.value_or(polylineLength(previous.geometry)), to = c.to.station.value_or(0);
         storage += stop-to;
         const auto widths = connectorLaneWidths(n,c);

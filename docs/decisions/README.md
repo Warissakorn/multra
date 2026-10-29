@@ -473,6 +473,6 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D390](RECORD.md#d390) — J1: posted `speedLimit` on the Link (schema 60), defaulted from the cross-section template; approach speeds move to their Links; `freeSpeed` independent; Micro does not read it yet.
 
-[D391](RECORD.md#d391) — J2: kerb/far pockets with separate widening taper and full-width storage; route/head preservation, derived lengths, existing schema fields and legacy split retained (owner 1A).
+[D391](RECORD.md#d391) — J2: kerb/far taper + storage, route/head preservation, existing fields/legacy split retained (owner 1A); review limits the implied-route exception to generated 1→2 and stops pocket walks at Nodes, including straight through.
 
 [D392](RECORD.md#d392) — J2: NB/EB/SB/WB + L/T/R, 45°/135° boundaries, compass ties/duplicates and U-turn refusals; HCM derivation retained (owner 2A).

@@ -2,6 +2,19 @@
 
 Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current queue.
 
+## 2026-10-28 — Road-model review: four defects fixed (D382)
+
+- **Asked:** review the road network model, its workflow and its use by HCM; then "เริ่มชุด A ได้เลย"
+  ("start batch A") on the revised plan.
+- **Fixed, each with a row that failed first:** Find crossings grouped places across levels (RD30);
+  `splitRoad` left a far coarse Node naming the old Road and was refused (RD31); F4 listed a Node
+  narrower than its arms, then failed on a gap, now `FILL_NODE_ARM_OUTSIDE` (RS19); a detach made the
+  backward Link read as forward, so re-apply turned it around (RD32, RD33).
+- **Crosses the Road layer:** the direction fix also changes the lane-count seam and F4's template
+  geometry. ARCHITECTURE no longer calls Road and Node planned.
+- **Left:** batches B–D and the dialog warning in NEXT; six owner choices in OWNER_SITTING B29.
+- **Verified:** headless build, `ctest` 164/164 and `check` on Linux. No Qt here: no desktop claim.
+
 ## 2026-10-28 — Stall-level parking and pedestrians recorded as needs (D381)
 
 - **Asked:** would a posted speed on the Link limit Vissim-style site roads, parallel and bay

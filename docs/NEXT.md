@@ -47,9 +47,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Awaiting owner review of J2. Do not start J3 without approval.** J2's pocket geometry and
+- **Awaiting owner re-review of J2. Do not start J3 without approval.** J2's pocket geometry and
   derived layout are in JUNCTION_TEMPLATES §6 (D391, D392). It adds no UI or stored fields;
   schema 61 is still unused. HCM's current derivation is retained, including B29 (e)'s storage.
+  D391's review boundaries are in §6: generated 1→2 routing only, and pocket walks stop at Nodes.
 - **After approval: J3a only** (JUNCTION_TEMPLATES §3–§4, JT5): catalog and loader plus
   `Node::junction`, with feature-selected schema 61, old-file reads and field-path version
   refusals. No fill in J3a. Fix any stored-data/UI/result choice left open by the contract with

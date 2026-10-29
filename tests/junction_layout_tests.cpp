@@ -175,6 +175,55 @@ TEST(junctionlayout, jt3_refusals_are_atomic_and_taper_connectors_refine) {
     CHECK(!h.document().network.connectors.back().generated);
     h.undo(); CHECK(documentJson(h.document()) == saved);
 }
+TEST(junctionlayout, jt3_hand_drawn_widening_keeps_implied_route_ambiguous) {
+    for (const auto side : {DrivingSide::left,DrivingSide::right}) {
+        ProjectDocument d; d.network.drivingSide = side;
+        d.network.links = {{"from",{{0,0},{100,0}},{{"a0",3.5}}},
+                           {"to",{{120,0},{220,0}},{{"b0",3.5},{"b1",3.5}}}};
+        History h; h.reset(d); std::string id;
+        h.execute("draw widening",[&](auto& doc) { id = addConnectorRange(doc,{"from","a0"},{"to","b0"},1,2); });
+        const auto& n = h.document().network; const auto& c = n.connectors.front();
+        const auto widths = connectorLaneWidths(n,c); const auto paths = connectorPaths(n,c);
+        CHECK(!c.generated && c.fromLaneCount == 1 && c.toLaneCount == 2);
+        CHECK(paths.size() == 2 && paths[0].from.laneId == paths[1].from.laneId);
+        CHECK(std::count(widths.source.begin(),widths.source.end(),0.) == 1); // forcing: hand-drawn surplus path
+        std::vector<std::string> ambiguous;
+        CHECK(routeLaneChains(n,{"from","to"},&ambiguous).empty());
+        CHECK(ambiguous == std::vector<std::string>({"a0"}));
+        CHECK(routeLaneChains(n,{"from",id,"to"}).size() == 1);
+    }
+}
+TEST(junctionlayout, jt3_pocket_does_not_continue_through_a_node_to_the_next_junction) {
+    for (const auto side : {DrivingSide::left,DrivingSide::right}) for (const auto edge : {PocketSide::kerb,PocketSide::far}) {
+        ProjectDocument d; d.network.drivingSide = side;
+        d.network.links = {{"up",{{-200,0},{-10,0}},{{"u0",3.5}}},
+                           {"between",{{10,0},{290,0}},{{"b0",3.5},{"b1",3.5}}},
+                           {"exit",{{310,0},{400,0}},{{"e0",3.5},{"e1",3.5}}}};
+        d.network.nodes = {box(),{"next","Next",{{270,-30},{330,-30},{330,30},{270,30}},false}};
+        History h; h.reset(d); std::string across;
+        h.execute("two junctions",[&](auto& doc) {
+            const auto pocket = addTurnPocket(doc,"up",60,20,edge);
+            const auto offset = editableLink(doc,pocket).laneOffset;
+            editableLink(doc,"between").laneOffset = offset;
+            editableLink(doc,"exit").laneOffset = offset;
+            const auto& lanes = editableLink(doc,pocket).lanes;
+            across = addConnectorRange(doc,{pocket,lanes.front().id},{"between","b0"},2,2);
+            addConnectorRange(doc,{"between","b0"},{"exit","e0"},2,2);
+        });
+        const auto& n = h.document().network;
+        const auto first = approachLayout(n,n.nodes[0]);
+        CHECK(first.issues.empty() && first.approaches.size() == 1);
+        CHECK(first.approaches[0].lanes[edge == PocketSide::kerb ? 0 : 1].pocket);
+        const auto member = nodeMembership(n,n.nodes[0]);
+        CHECK(std::find(member.connectors.begin(),member.connectors.end(),across) != member.connectors.end());
+        const auto& c = *std::find_if(n.connectors.begin(),n.connectors.end(),[&](const auto& x) { return x.id == across; });
+        CHECK(c.geometry.front().x < c.geometry.back().x);
+        for (const auto p : c.geometry) test::near(p.y,c.geometry.front().y,1e-12); // forcing: straight Node-owned continuation
+        const auto next = approachLayout(n,n.nodes[1]);
+        CHECK(next.issues.empty() && next.approaches.size() == 1 && next.approaches[0].inLink == "between");
+        for (const auto& lane : next.approaches[0].lanes) CHECK(!lane.pocket);
+    }
+}
 TEST(junctionlayout, jt4_duplicate_directions_are_refused_and_override_is_explicit) {
     auto d = fourLeg(DrivingSide::left);
     // Bend in0's last segment so it travels east at its stop line, as in1 does.

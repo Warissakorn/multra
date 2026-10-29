@@ -6,6 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-29 — J2 review: preserve authored ambiguity and stop pockets at Nodes (D391)
+
+- **Asked:** fix the two J2 review items, update D391, verify and push; stop again before J3a.
+- **Fixed:** only `addTurnPocket`'s still-generated 1→2 widening skips its zero-source-width
+  path in an implied Link-to-Link step. Hand-drawn/refined widenings retain pre-J2 ambiguity;
+  explicit Connector selection remains unchanged.
+- **Fixed:** `pocketOf` stops before a Connector with an inside run in any Node, including a
+  straight-through movement. A pocket lane upstream of a junction is not a pocket at the next.
+- **Rows:** both new JT3 regressions failed first after asserting their setup: a hand-drawn 1→2
+  really has a zero-width source path; the straight continuation really belongs to the first
+  Node and that Node's pocket exists. Both driving sides, and kerb/far pockets, are covered.
+- **Verified:** desktop build and focused suite 9/9 pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen).
+  Full CTest and `check` pass 248/248 each. CLI Node analysis is byte-identical apart from `buildCommit`.
+  No new UI or fields; headless is unconfigured and Windows was not run.
+
 ## 2026-10-29 — Kerb/far pockets and derived junction layouts (D391, D392, M14 J2)
 
 - **Asked:** continue J2 only on `claude/upbeat-ptolemy-qe1x84`, stop for review, no PR; owner
@@ -133,16 +148,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Left:** totals under `NODE_ANALYSIS_PARTIAL` stay shown until the owner answers B29 (d);
   batches C and D in NEXT.
 - **Verified:** headless build, `ctest` 164/164 and `check` on Linux.
-
-## 2026-10-28 — Road-model review: four defects fixed (D382)
-
-- **Asked:** review the road network model, its workflow and its use by HCM; then "เริ่มชุด A ได้เลย"
-  ("start batch A") on the revised plan.
-- **Fixed, each with a row that failed first:** Find crossings grouped places across levels (RD30);
-  `splitRoad` left a far coarse Node naming the old Road and was refused (RD31); F4 listed a Node
-  narrower than its arms, then failed on a gap, now `FILL_NODE_ARM_OUTSIDE` (RS19); a detach made the
-  backward Link read as forward, so re-apply turned it around (RD32, RD33).
-- **Crosses the Road layer:** the direction fix also changes the lane-count seam and F4's template
-  geometry. ARCHITECTURE no longer calls Road and Node planned.
-- **Left:** batches B–D and the dialog warning in NEXT; six owner choices in OWNER_SITTING B29.
-- **Verified:** headless build, `ctest` 164/164 and `check` on Linux. No Qt here: no desktop claim.

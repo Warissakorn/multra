@@ -145,14 +145,17 @@ EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driv
 - Storage and taper must each be at least 0.2 m, leaving more than 0.2 m upstream (the existing
   minimum section length). Attachments/controls within the taper are refused as in a split;
   signal heads project onto the original lane's new owner/path. Routes keep ids and order, with
-  the downstream Link inserted. For an implied Link-to-Link step, the ordinary path of one
-  widening Connector continues the lane; its zero-width surplus path does not create ambiguity.
-  Two ordinary bridges still require an authored choice. Explicit Connector selection is unchanged.
+  the downstream Link inserted. For an implied Link-to-Link step, only `addTurnPocket`'s
+  still-`generated` 1→2 Connector continues the ordinary lane without counting its zero-source-width
+  surplus path. A hand-drawn or refined widening remains ambiguous, as before J2; so do two
+  ordinary bridges. Explicit Connector selection is unchanged (D391, J2 review).
 - Layout lanes are in Link order, **kerb to far**, with lane id, width, stop-line station, the
   membership turn indices and optional pocket `{side, storage, taper, connector}`. Template lane
   rows run the other way (§3). A pocket starts at a Connector path with zero source width;
   ordinary aligned predecessors are walked across a later split, stopping at multiple incoming
-  paths or a junction turn. The taper's reference spine is recovered by removing the stored
+  paths, a junction turn, or **any Connector with a run inside a Node**, including a straight-through
+  movement (D391, J2 review). A pocket is never carried through one junction to the next.
+  The taper's reference spine is recovered by removing the stored
   first-lane endpoint offsets with `laneBlend`; length is not measured along the sloping lane.
 - Bearings are degrees clockwise from north, at the first departure/stop line. Refusals retain
   membership but return no approaches or movement names. Overrides are a per-call map of this
@@ -273,7 +276,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 |---|---|---|
 | JT1 | SR | A street-segment document saves at 59 with only the new keys and reads back equal; the same document as a 58 file reads to it; each version refuses the other's keys at their paths; a 58 file's malformed entry is named by its own key; owned templates alone stay at 53 (`tests/street_segment_schema_tests.cpp`, **passing**) |
 | JT2 | J1 | A Link's `speedLimit` round-trips at 60; absent keeps the shipped projects' bytes; 59 refuses a Link speed and 60 an approach speed; a 58 file's approach speeds move to their Links with the same queues, and a stray or conflicting one is refused; Node analysis reads the in-leg's; a template speed reaches generated Links; a split keeps it (`tests/link_speed_tests.cpp`, **passing**) |
-| JT3 | J2 | Kerb/far pockets on both `drivingSide`s preserve original lane footprints, routes and heads (including taper/boundary heads); storage/taper read back over a bend and a later split; generated/refine, atomic refusals, save/reopen and one Undo/Redo (`tests/junction_layout_tests.cpp`, **passing**) |
+| JT3 | J2 | Kerb/far pockets on both `drivingSide`s preserve original lane footprints, routes and heads (including taper/boundary heads); storage/taper read back over a bend and a later split; hand-drawn 1→2 remains ambiguous; a pocket stops at a Node-owned Connector even straight through to the next junction; generated/refine, atomic refusals, save/reopen and one Undo/Redo (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT4 | J2 | `approachLayout` names all 12 four-leg movements on both `drivingSide`s; shared lane sets/widths, duplicate directions, compass ties, overrides and 45°/135° boundaries (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT5 | J3 | Every invalid template in §3 is refused on load with its path |
 | JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |

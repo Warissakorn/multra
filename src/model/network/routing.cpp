@@ -226,12 +226,13 @@ std::vector<FamilyChain> routeLaneFamily(const Network& network, const Connector
                 for (const auto& connector : network.connectors) {
                     const auto& paths = pathsOf(connector);
                     std::optional<ConnectorLaneWidths> widths;
-                    if (!paths.empty() && connector.fromLaneCount < connector.toLaneCount) widths = connectorLaneWidths(network,connector);
+                    if (!paths.empty() && connector.generated && connector.fromLaneCount == 1 && connector.toLaneCount == 2)
+                        widths = connectorLaneWidths(network,connector);
                     for (std::size_t p = 0; p < paths.size(); ++p) {
                         const auto& path = paths[p];
-                        // J2: a widening taper has a second path closing to zero on this source
-                        // lane's edge. The implied continuation is its ordinary lane, not that
-                        // new lane. Two separate ordinary bridges still require an authored choice.
+                        // J2: only addTurnPocket's generated 1->2 taper continues along its
+                        // ordinary lane. Hand-drawn widenings and separate ordinary bridges
+                        // keep their ambiguity and require an authored choice.
                         if (widths && widths->source[p] == 0) continue;
                         if (path.from.laneId == chain.at.laneId && path.to.linkId == link->id) {
                             if (bridge && bridge->id != path.id) twoWays = true;

@@ -339,7 +339,8 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
 J2 (D391, D392) adds a separate derived `approachLayout` for junction templates and UTDF
 ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272)).
 It recognizes a pocket's widening Connector and its reference length separately from full-width
-storage, including across an ordinary later split. This slice keeps HCM's lane-group, movement,
+storage, including across an ordinary later split. Its pocket walk stops at a Connector inside
+any Node, even straight through (D391 review). This slice keeps HCM's lane-group, movement,
 storage and refusal derivation unchanged: adoption needs byte parity on NA1–NA23, and B29 (e)'s
 HCM storage choice still waits on the owner.
 
