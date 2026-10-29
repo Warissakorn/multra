@@ -336,6 +336,13 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
   - **Storage `L_a`:** the in-leg Link from its start to where the lane group's first turn leaves it
     (its Connector's `from` station, else the Link's end), the stop line. Lanes run the whole Link.
 
+J2 (D391, D392) adds a separate derived `approachLayout` for junction templates and UTDF
+([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272)).
+It recognizes a pocket's widening Connector and its reference length separately from full-width
+storage, including across an ordinary later split. This slice keeps HCM's lane-group, movement,
+storage and refusal derivation unchanged: adoption needs byte parity on NA1–NA23, and B29 (e)'s
+HCM storage choice still waits on the owner.
+
 **Exhibit 19-41** (PDF p. 1570–1571).
 - **Inputs,** from its notes: 0 % HV, PHF 0.92, 12 ft, 0 % grade, pretimed C 90 s, an exclusive
   protected left lane at g/C 0.10, right turns in a shared lane, 10 % left and 10 % right, no

@@ -1,12 +1,14 @@
 # Junction templates and the HCM study workflow (M14, D386, D387)
 
-Contract before code (D145), docs only. Written 2026-10-28 as a junction builder (D386), then
+Contract before code (D145). Written 2026-10-28 as a junction builder (D386), then
 rewritten the same day at the owner's direction (D387, "เอาตามแนะนำ"): **no builder tool**. The
 engineer draws Street segments; where they cross, *Find crossings* makes a Node, and a **junction template**
 on that Node says which lanes serve which turns, the pockets and the control, from which the
 Connectors, right-of-way and signals are generated. Where two Street segments meet end to end with different
 cross-sections, a **transition template** joins them. The export is [UTDF_EXPORT](UTDF_EXPORT.md).
-**Nothing here is implemented.** The owner choices are answered (§12: D387, D388).
+SR and J1 are implemented; J2's interfaces and geometry are described in §6 (D391, D392).
+The template catalog, fill and editor remain later slices. The owner choices are answered
+(§12: D387, D388; J2 clarification on 2026-10-29).
 
 **Naming.** D387 renamed Road everywhere, file format included, before any M14 code (slice SR,
 §10). "Segment" was taken by the engine's `Segment` and its messages, so the owner chose **Street
@@ -34,7 +36,7 @@ Rule 4 applies: every analysis result keeps the not-validated marker.
 | Leg cuts at the stop line | `nodeLegCuts` (READINESS §13.2) |
 | Connector curve, conflict areas, HCM Ch. 20 ranks, Stop on minor arms | F4 (§13.3–§13.4) |
 | Controller, groups, heads | `SignalController`, `SignalGroup{number, greenStart, greenEnd, amber}` (D359, D360), F4's heads (§13.5) |
-| Pockets | `splitLink` + add lane (median side only today) |
+| Pockets | `addTurnPocket`, kerb or far with a widening taper (J2); legacy `splitLink` keeps its constant-width far-side addition |
 | One Undo step, `generated`, refine | `History::execute`, `settleGenerated`, `settleNodes` |
 | Offer and apply | *Fill defaults…* (`fillOffers`, `applyFills`), as F3 and F4 |
 | Lane groups and HCM | `src/analysis/` (NODE_ANALYSIS A1–A3), `Node::analysis` (schema 58) |
@@ -105,9 +107,9 @@ turn" reads *right* in Thailand and *left* in the United States.
   the major legs are determined, and every site value is entered; otherwise its row names the
   missing piece (`JUNCTION_STORAGE_MISSING`, `JUNCTION_TIMING_MISSING`, `JUNCTION_LEG_COUNT`, …).
   Applying, in one Command, every object `generated`:
-  1. **Pockets:** each pocket's in-leg Link is split at storage + taper from where its stop line
-     will be, and the downstream piece gains the lane on the template's side: far (today's tool)
-     or **kerb (new, J2)**; Thailand's exclusive left-turn lanes are kerb-side.
+  1. **Pockets (D391):** the in-leg ends storage + taper before the intended stop line; a widening
+     Connector spans the taper, and a downstream Link carries the full-width lane over the
+     storage. The side is far or kerb; Thailand's exclusive left-turn lanes are kerb-side.
   2. **Cuts** by `nodeLegCuts`.
   3. **Connectors:** one per (lane row, movement), adjacent rows with the same movement merged into
      one multi-lane Connector; the far turn lands on the out-leg's far lanes, the others from the
@@ -121,7 +123,8 @@ turn" reads *right* in Thailand and *left* in the United States.
 
 ## 6. The lane layout, derived and never stored (D272)
 
-`approachLayout(network, node)` (pure, `src/model/network/`) reads, per in-leg:
+`approachLayout(network, node, overrides = {})` (pure, `src/model/network/approach_layout.*`)
+reads, per in-leg:
 - each lane's movements, from the Connectors leaving it;
 - each pocket's storage, from its start to the stop line, and taper;
 - the in-leg's bearing, from its last segment before the cut.
@@ -129,7 +132,36 @@ turn" reads *right* in Thailand and *left* in the United States.
 It serves NODE_ANALYSIS's lane groups (replacing its derivation only if byte-identical on
 NA1–NA23), UTDF's Lanes table, and `SEAM_JUNCTION_DIFFERS`. **Movement names:** an approach's
 direction is its travel bearing's nearest of N/E/S/W (`JUNCTION_DIRECTION_AMBIGUOUS` when two
-in-legs share one, with a per-Node override); turns are L/T/R by turn angle; U-turns refused.
+in-legs share one or a bearing ties two directions). **D392, owner chose 2A:** absolute turn angle
+< 45° is T; 45° to < 135° is L or R; >= 135° is refused as `JUNCTION_UTURN`. Names are NBL/NBT/NBR,
+EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driving side.
+
+**J2 interface and geometry (D391, owner chose 1A):**
+- `addTurnPocket(document, link, storage, taper, side)` (`pocket_commands.hpp`, implemented in
+  `split_link.cpp`) runs inside one `History::execute`. The current Link end is the intended stop
+  line. The upstream id stays; the returned downstream Link adds its lane at index 0 for kerb,
+  at the end for far. Original lanes keep their footprints. The outer continuity Connector
+  widens 1→2, and every new taper/continuity Connector is `generated`; a hand edit refines it.
+- Storage and taper must each be at least 0.2 m, leaving more than 0.2 m upstream (the existing
+  minimum section length). Attachments/controls within the taper are refused as in a split;
+  signal heads project onto the original lane's new owner/path. Routes keep ids and order, with
+  the downstream Link inserted. For an implied Link-to-Link step, the ordinary path of one
+  widening Connector continues the lane; its zero-width surplus path does not create ambiguity.
+  Two ordinary bridges still require an authored choice. Explicit Connector selection is unchanged.
+- Layout lanes are in Link order, **kerb to far**, with lane id, width, stop-line station, the
+  membership turn indices and optional pocket `{side, storage, taper, connector}`. Template lane
+  rows run the other way (§3). A pocket starts at a Connector path with zero source width;
+  ordinary aligned predecessors are walked across a later split, stopping at multiple incoming
+  paths or a junction turn. The taper's reference spine is recovered by removing the stored
+  first-lane endpoint offsets with `laneBlend`; length is not measured along the sloping lane.
+- Bearings are degrees clockwise from north, at the first departure/stop line. Refusals retain
+  membership but return no approaches or movement names. Overrides are a per-call map of this
+  Node's in-leg Link ids to compass directions; J3/J6 will persist and edit the per-Node choice.
+  An override changes the label only, never the turn angle or the U-turn refusal.
+- No new stored fields: existing geometry, lane counts, `laneChangeSide`, `laneBlend` and
+  `generated` suffice; schema 61 is still unused. The legacy split tool's 0.2 m span and far-side
+  constant-width addition keep their existing behaviour. J2 adds no UI. HCM's derivation stays
+  unchanged; replacing it requires the NA1–NA23 byte-parity check above.
 
 ## 7. Transitions: two Street segments end to end with different cross-sections
 
@@ -193,15 +225,15 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 | SR | **Done (D389).** Road renamed Street segment: schema 59 writes `streetSegments`, `streetSegmentId` and a zone connector's `streetSegmentId`/`streetSegmentDirection`, and still reads `roads`/`roadId`/`roadDirection` below 59, each version refusing the other's keys; codes `ROAD_*` became `STREET_SEGMENT_*` (`EDIT_STREET_SEGMENT_*`, `SEAM_STREET_SEGMENT_*`, …); types, files, commands, tests, locale keys and strings (en "Street segment", th "ช่วงถนน"); maintained docs. RECORD, PROGRESS history and archives keep "Road" | 1 |
 | U0 | UTDF probe with the owner's Synchro 12 and Vistro 2026 (UTDF_EXPORT §8) | 1 + owner |
 | J1 | **Done (D390).** Posted speed on the Link (§9), schema 60 | 1 |
-| J2 | Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
-| J3 | Junction template catalog and loader, `Node::junction`, the `junction` fill: pockets, cuts, Connectors, right-of-way (§3–§5) | 2 |
+| J2 | **Done (D391, D392).** Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
+| J3 | J3a: catalog, loader, `Node::junction`, JT5; stop for review. J3b: `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8; stop for review (§3–§5) | 2 |
 | J4 | Signals from the template: presets, NEMA numbering, timing, `nemaCheck` (§8) | 1 |
 | J5 | Transitions (§7) | 1 |
 | J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS` | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
-SR (D389) and J1 (D390) are done; U0 waits on the owner, and its answers can change J4 and U1; J2 is next. About 13–16
+U0 waits on the owner, and its answers can change J4 and U1. About 13–16
 sessions in all; one slice per session, each starting with its rows.
 
 ## 11. What stays out
@@ -241,8 +273,8 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 |---|---|---|
 | JT1 | SR | A street-segment document saves at 59 with only the new keys and reads back equal; the same document as a 58 file reads to it; each version refuses the other's keys at their paths; a 58 file's malformed entry is named by its own key; owned templates alone stay at 53 (`tests/street_segment_schema_tests.cpp`, **passing**) |
 | JT2 | J1 | A Link's `speedLimit` round-trips at 60; absent keeps the shipped projects' bytes; 59 refuses a Link speed and 60 an approach speed; a 58 file's approach speeds move to their Links with the same queues, and a stray or conflicting one is refused; Node analysis reads the in-leg's; a template speed reaches generated Links; a split keeps it (`tests/link_speed_tests.cpp`, **passing**) |
-| JT3 | J2 | A kerb-side pocket adds the lane on the kerb side for both `drivingSide`s; routes and heads survive |
-| JT4 | J2 | `approachLayout` names a four-leg's 12 movements by direction and L/T/R; an ambiguous pair is refused |
+| JT3 | J2 | Kerb/far pockets on both `drivingSide`s preserve original lane footprints, routes and heads (including taper/boundary heads); storage/taper read back over a bend and a later split; generated/refine, atomic refusals, save/reopen and one Undo/Redo (`tests/junction_layout_tests.cpp`, **passing**) |
+| JT4 | J2 | `approachLayout` names all 12 four-leg movements on both `drivingSide`s; shared lane sets/widths, duplicate directions, compass ties, overrides and 45°/135° boundaries (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT5 | J3 | Every invalid template in §3 is refused on load with its path |
 | JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |
 | JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED` |

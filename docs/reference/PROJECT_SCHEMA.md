@@ -113,6 +113,10 @@ historical-schema coverage.
 
 ## Nested coverage that a formal schema must preserve
 
+J2 (D391) adds no field or schema step: a pocket and taper use ordinary Link/Connector geometry,
+lane counts, `laneBlend`, `laneChangeSide` and `generated`, with their existing feature floors.
+`approachLayout` is derived only. Schema 61 remains available for J3's new stored fields.
+
 - Network: Link/Lane/Connector/reference/geometry keys and version-specific defaults in
   `parse.cpp`; Node/generated keys in `node_codec.cpp`; Street segments/overpasses/cross-sections
   in `street_segment_codec.cpp`. Geometry point and polygon representations differ by object.

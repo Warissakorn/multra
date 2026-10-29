@@ -106,9 +106,9 @@ projects a Ctrl+right-click onto that centreline. Splitting produces upstream an
 links with explicit continuity connectors across a 0.2 m span. Existing routes expand
 in travel order and attached external connectors are reanchored.
 
-Split + add downstream lane also adds a median-side lane to the downstream portion.
-This is a constant-width turn-pocket approach, not a variable-width taper. The new lane
-has no invented demand, turn movement or lane change; author its connections explicitly.
+Split + add downstream lane adds a constant-width median-side lane, with no variable-width
+taper, demand, turn movement or lane change; author its connections explicitly.
+J2's command-only `addTurnPocket` draws a kerb/far taper + storage (D391; [JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272)). It keeps routes/heads in one Undo; its editor is J6.
 
 For a signal-bearing split, each head's original lane position is projected onto the
 original centreline to decide which portion owns it. Its world position is then

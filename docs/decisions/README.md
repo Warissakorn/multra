@@ -472,3 +472,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D389](RECORD.md#d389) — Road renamed Street segment (not Segment: the engine's word); schema 59 keys `streetSegments`/`streetSegmentId`/`streetSegmentDirection`, older files read.
 
 [D390](RECORD.md#d390) — J1: posted `speedLimit` on the Link (schema 60), defaulted from the cross-section template; approach speeds move to their Links; `freeSpeed` independent; Micro does not read it yet.
+
+[D391](RECORD.md#d391) — J2: kerb/far pockets with separate widening taper and full-width storage; route/head preservation, derived lengths, existing schema fields and legacy split retained (owner 1A).
+
+[D392](RECORD.md#d392) — J2: NB/EB/SB/WB + L/T/R, 45°/135° boundaries, compass ties/duplicates and U-turn refusals; HCM derivation retained (owner 2A).

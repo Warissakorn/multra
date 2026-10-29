@@ -19,6 +19,7 @@ this module (`multra-check-architecture`).
 | `history.*` | `History`: execute, Undo, Redo over bounded document snapshots | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `detail.hpp` | Internal: the route and input clean-up both removal paths share | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
 | `network_commands.*` | Link and lane edits: geometry and widths (`link_geometry_commands.cpp`), reverse, splitting (`split_link.cpp`), pockets, opposite carriageways, reference-safe deletion (`delete_objects.cpp`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `pocket_commands.hpp` | `addTurnPocket` (`split_link.cpp`): kerb/far pockets with a separate widening taper, inside one History transaction | [JUNCTION_TEMPLATES §6](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `connector_commands.*` | Connector creation, interior points, retargeting, curve/straight reset, the added or dropped lane's side, deletion; Link and lane edits share its reanchoring | [NETWORK_EDITOR_CONNECTORS](../../docs/reference/NETWORK_EDITOR_CONNECTORS.md) |
 | `conflict_follow.*` | Re-derives each authored conflict area's extents after the drawing changes (an area is a setting on an overlap, not a place) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
 | `right_of_way_commands.*` | Right-of-way controls, conflict areas (`conflict_authoring.cpp`) and conflict groups (`conflict_group_commands.cpp`) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md), [GIVE_WAY_STOP](../../docs/reference/GIVE_WAY_STOP.md) |

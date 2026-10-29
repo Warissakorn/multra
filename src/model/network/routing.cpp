@@ -223,12 +223,22 @@ std::vector<FamilyChain> routeLaneFamily(const Network& network, const Connector
                 // serve the same lane pair, the author has to name the one they mean.
                 std::optional<ConnectorPath> bridge;
                 bool twoWays = false;
-                for (const auto& connector : network.connectors)
-                    for (const auto& path : pathsOf(connector))
+                for (const auto& connector : network.connectors) {
+                    const auto& paths = pathsOf(connector);
+                    std::optional<ConnectorLaneWidths> widths;
+                    if (!paths.empty() && connector.fromLaneCount < connector.toLaneCount) widths = connectorLaneWidths(network,connector);
+                    for (std::size_t p = 0; p < paths.size(); ++p) {
+                        const auto& path = paths[p];
+                        // J2: a widening taper has a second path closing to zero on this source
+                        // lane's edge. The implied continuation is its ordinary lane, not that
+                        // new lane. Two separate ordinary bridges still require an authored choice.
+                        if (widths && widths->source[p] == 0) continue;
                         if (path.from.laneId == chain.at.laneId && path.to.linkId == link->id) {
                             if (bridge && bridge->id != path.id) twoWays = true;
                             if (!bridge) bridge = path;
                         }
+                    }
+                }
                 if (twoWays && ambiguous) ambiguous->push_back(chain.at.laneId);
                 if (twoWays) continue;
                 if (!bridge) { stop(carried, chain); continue; }

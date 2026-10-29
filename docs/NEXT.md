@@ -47,9 +47,17 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Next session: J2** (JUNCTION_TEMPLATES §6): the kerb-side pocket and `approachLayout` with
-  movement names; it does not wait on UTDF. Then:
-  - J3–J4: templates and signals;
+- **Awaiting owner review of J2. Do not start J3 without approval.** J2's pocket geometry and
+  derived layout are in JUNCTION_TEMPLATES §6 (D391, D392). It adds no UI or stored fields;
+  schema 61 is still unused. HCM's current derivation is retained, including B29 (e)'s storage.
+- **After approval: J3a only** (JUNCTION_TEMPLATES §3–§4, JT5): catalog and loader plus
+  `Node::junction`, with feature-selected schema 61, old-file reads and field-path version
+  refusals. No fill in J3a. Fix any stored-data/UI/result choice left open by the contract with
+  the owner before coding. The J2 layout accepts per-Node direction overrides as a per-call
+  map keyed by in-leg Link id; J3 must settle their stored home and map recipe legs to Link legs
+  without pre-empting B29 (b). Stop for review after J3a. Then, each only after approval:
+  - J3b: the `junction` fill, JT6–JT8; D391 requires actual taper geometry + full-width storage;
+  - J4: template signals, JT9; check any U0 answers first;
   - J5: transitions;
   - J6: editor surfaces;
   - J7: the analysis panel;

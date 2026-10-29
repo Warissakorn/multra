@@ -325,6 +325,11 @@ with the other seam checks.
 
 ## 21. S3.7 as implemented (D312)
 
+M14 J2 (D391) adds command-only kerb/far pockets with a separate taper and a derived
+`approachLayout` ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272)).
+It changes no Street segment/coarse-Node storage or lifecycle rule above. The junction recipe
+and its fill are J3a/J3b; the *Find crossings* template column and editor are J6.
+
 S3 is complete with this slice.
 
 - **`seamChecks(network, types, templates, level, speedJump)`** (`src/model/demand/seam_checks.*`,
