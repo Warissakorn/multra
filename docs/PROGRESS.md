@@ -6,6 +6,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-29 — J3a review: keep coarse until detail refine (D393)
+
+- **Asked:** keep coarse beside the template recipe so choosing/Detach cannot change Macro/Meso
+  before the fill; update D393, verify, push and stop again before J3b.
+- **Fixed:** `setNodeJunction` still carries coarse.major when no major is supplied, and leaves
+  coarse untouched for both choice and Detach. Document validation accepts coarse plus recipe.
+  The existing detail-refine rule alone handles the transition; no J3b fill was implemented.
+- **Rows:** a forcing-first signalised coarse Node with a banned turn compares the entire Meso
+  and Macro graphs and diagnostics before/after selection, Detach, save/reopen and Undo, on both
+  driving sides. The setup first proves that removing coarse changes both compiles. Updated JT5
+  checks coexistence/round-trip and coarse disappearing only when actual interior detail appears.
+  Three checks failed before the implementation fix. No new schema field or UI.
+- **Verified:** desktop build, JT5 19/19, CTest 249/249 and `check` 249/249 pass on Linux
+  (GCC 14.2.0, Qt 6.8.2 offscreen). Node-analysis CLI bytes match before/after except `buildCommit`.
+  Headless is not configured; Windows and manual UI driving were not run. Owner re-review is next.
+
 ## 2026-10-29 — Junction catalog and Node recipes, J3a (D393–D396)
 
 - **Asked:** continue after J2 review; stop again after J3a, no PR. Owner approved all three
@@ -148,14 +164,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Docs:** ROADS RD34–RD35, ROADS_IMPLEMENTED §24, OWNER_SITTING E24; decision index gains D382–D385.
 - **Verified:** Qt 6.4.2 desktop build, `ctest` 245/245 and `check` on Linux (offscreen); Windows
   and screen scale are OWNER_SITTING E24.
-
-## 2026-10-28 — Road-scale edits made fast, results unchanged (D384)
-
-- **Asked:** "ทำชุด C ต่อเลย" ("go on with batch C") of the road-model review.
-- **Changed, each measured before and after (Release, median of three):** `applyFills` checks only the
-  offer it applies (F3 on 480 Roads 96.3 s → 80 ms); `polygonRuns` skips a line whose box is over
-  1 m from the polygon's (`settleNodes` 466 → 118 ms); `nodeIssues` tests overlap only where boxes
-  meet (744 → 1.4 ms). One edit on 1,860 Roads: 1.24 s → 121 ms.
-- **Same results:** characterization rows passed before and after; documents, issues and settled
-  results compared byte for byte at each step. Numbers and fixture in ENGINEERING_NOTES.
-- **Verified:** headless build, `ctest` 164/164 and `check` on Linux.

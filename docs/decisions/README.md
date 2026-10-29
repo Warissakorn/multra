@@ -477,7 +477,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D392](RECORD.md#d392) — J2: NB/EB/SB/WB + L/T/R, 45°/135° boundaries, compass ties/duplicates and U-turn refusals; HCM derivation retained (owner 2A).
 
-[D393](RECORD.md#d393) — J3a: catalog ownership and schema 61; junction.major and per-leg lane overrides carry coarse's hierarchy without choosing B29's turn key.
+[D393](RECORD.md#d393) — J3a: schema 61, recipe major/lane overrides; review keeps coarse through choice/Detach so Macro/Meso compile stays exact, clearing it only on detail refine.
 
 [D394](RECORD.md#d394) — J3a: Node.approachDirections independently maps Link ids to compass directions; splits carry them downstream and Street segment recipe keys follow the moved end.
 

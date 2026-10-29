@@ -120,7 +120,6 @@ std::vector<ValidationIssue> junctionDocumentIssues(const ProjectDocument& d) {
     for (std::size_t i = 0; i < d.network.nodes.size(); ++i) {
         const auto& node = d.network.nodes[i]; const auto path = "network.nodes["+std::to_string(i)+"]";
         if (node.junction) {
-            if (node.coarse) issues.push_back({"EDIT_NODE_INVALID",path+".junction"});
             auto rows = junctionRecipeIssues(*node.junction,path+".junction");
             issues.insert(issues.end(),rows.begin(),rows.end());
         }

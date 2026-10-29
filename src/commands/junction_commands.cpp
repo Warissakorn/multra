@@ -11,10 +11,7 @@ Node& nodeOf(ProjectDocument& d, const std::string& id) {
 }
 void setNodeJunction(ProjectDocument& d, const std::string& id, std::optional<NodeJunction> value) {
     auto& node = nodeOf(d,id);
-    if (value) {
-        if (value->major.empty() && node.coarse) value->major = node.coarse->major;
-        node.coarse.reset();
-    }
+    if (value && value->major.empty() && node.coarse) value->major = node.coarse->major;
     node.junction = std::move(value); node.generated = false;
 }
 void setNodeApproachDirections(ProjectDocument& d, const std::string& id, ApproachDirections directions) {

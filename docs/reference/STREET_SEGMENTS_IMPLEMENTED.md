@@ -286,6 +286,8 @@ with the other seam checks.
   and the check. It touches only Nodes present before and after, and is skipped when no Link,
   Connector, Node or Street segment changed.
   - **Refine:** a coarse Node that had no detail and now has some loses `coarse` (RD17).
+    A junction recipe may coexist with coarse values until then; template choice/Detach keep
+    coarse and the Macro/Meso compile unchanged (D393 review).
   - **Derive back:** a Node that had detail and now has none, with no `coarse` or junction recipe, takes
     `deriveCoarse` of its detail as it was, when every Street segment it names is still a leg (RD18).
   - **Lifecycle:** applies to a Node whose Street segment legs became exactly two in this Command, with no

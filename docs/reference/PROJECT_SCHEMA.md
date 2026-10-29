@@ -126,7 +126,8 @@ lane counts, `laneBlend`, `laneChangeSide` and `generated`, with their existing 
   `taper` arrays (finite positive metres or null for an unentered pocket) and a `lanes` role-row
   override. Signal fields are optional until entered: finite positive `cycle` and `green`,
   nonnegative `yellow` and `allRed`, unique integer phase `number` 1–8. No site defaults. Coarse
-  and junction cannot coexist. Invalid recipe shapes/signs name `EDIT_NODE_INVALID` paths.
+  and junction may coexist before detail (D393 review); choosing/detaching a recipe keeps coarse,
+  and detail refine clears it. Invalid recipe shapes/signs name `EDIT_NODE_INVALID` paths.
 - `network.nodes[i].approachDirections`: map of in-leg Link ids to `N`/`E`/`S`/`W`, independent
   of a recipe. Keys must name existing Links. Empty is omitted; a bad shape/value is `EDIT_NODE_INVALID` at its path. Splits
   carry the key downstream, deletion removes it; recipe Street segment keys follow their end.

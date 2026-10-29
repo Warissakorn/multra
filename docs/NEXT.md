@@ -47,10 +47,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Awaiting owner review of J3a. Do not start J3b without approval.** The catalog/loader,
+- **Awaiting owner re-review of J3a. Do not start J3b without approval.** The catalog/loader,
   Node recipe and independent compass overrides use feature-selected schema 61 (D393–D395,
   JUNCTION_TEMPLATES §3–§4; JT5); 62 is the next unused schema step. J2's physical taper/storage
   and route/pocket boundaries stay D391/D392. No fill or new editor surface ships in J3a, and HCM's derivation/storage is retained.
+  D393 review: template choice/Detach keep coarse; Macro/Meso still read its control, bans and
+  stages. Only the existing no-detail → detail refine rule clears it, when the fill adds detail.
 - **After approval: J3b only** (JUNCTION_TEMPLATES §5, JT6–JT8), then stop for review:
   - implement the `junction` fill after F3, its missing-piece offers and atomic apply/re-apply;
   - read `junction.major`, else rank; `junction.legs.<Street segment id>.lanes`, else role rows;

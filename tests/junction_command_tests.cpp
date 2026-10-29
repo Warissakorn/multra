@@ -8,6 +8,8 @@
 #include "../src/project/junction_template_codec.hpp"
 #include "../src/model/network/approach_layout.hpp"
 #include "../src/model/network/coarse_nodes.hpp"
+#include "../src/model/demand/macro_compile.hpp"
+#include "../src/model/demand/meso_compile.hpp"
 using namespace multra;
 namespace {
 std::string nameOf(const Network& n, const Node& node, const ApproachDirections& overrides = {}) {
@@ -23,7 +25,7 @@ ProjectDocument through() {
     return d;
 }
 }
-TEST(junctiontemplates, jt5_choice_carries_major_clears_coarse_and_is_one_undo) {
+TEST(junctiontemplates, jt5_choice_carries_major_preserves_coarse_and_is_one_undo) {
     ProjectDocument d; d.network.nodes.push_back({"n","Site",{{-20,-20},{20,-20},{20,20},{-20,20}},true,NodeCoarse{}});
     // No detail: coarse and its explicit hierarchy can legally exist before choosing a recipe.
     d.network.streetSegments = {{"r","Arm",{{-200,0},{0,0}}}};
@@ -32,7 +34,7 @@ TEST(junctiontemplates, jt5_choice_carries_major_clears_coarse_and_is_one_undo) 
     CHECK(d.network.nodes[0].coarse->major == std::vector<std::string>{"r"}); // forcing
     CHECK(h.execute("junction",[&](auto& doc) { setNodeJunction(doc,"n",NodeJunction{"t"}); }));
     const auto& node = h.document().network.nodes[0];
-    CHECK(!node.coarse && node.junction && !node.generated);
+    CHECK(node.coarse == d.network.nodes[0].coarse && node.junction && !node.generated);
     CHECK(node.junction->major == std::vector<std::string>{"r"});
     CHECK(h.states().size() == 2);
     const auto after = documentJson(h.document()); CHECK(after.at("schemaVersion") == 61);
@@ -41,7 +43,75 @@ TEST(junctiontemplates, jt5_choice_carries_major_clears_coarse_and_is_one_undo) 
     h.redo(); CHECK(documentJson(h.document()) == after);
     h.execute("detach",[&](auto& doc) { setNodeJunction(doc,"n",std::nullopt); });
     CHECK(!h.document().network.nodes[0].junction);
+    CHECK(h.document().network.nodes[0].coarse == d.network.nodes[0].coarse);
     h.undo(); CHECK(documentJson(h.document()) == after);
+    CHECK(!nodeHasDetail(h.document().network,h.document().network.nodes[0])); // forcing before refine
+    h.execute("detail",[&](auto& doc) {
+        addLink(doc,{{-5,-5},{5,5}},1,3.5);
+        CHECK(nodeHasDetail(doc.network,doc.network.nodes[0])); // forcing: actual interior detail
+    });
+    CHECK(!h.document().network.nodes[0].coarse && h.document().network.nodes[0].junction);
+    h.undo(); CHECK(documentJson(h.document()) == after);
+}
+TEST(junctiontemplates, jt5_choice_and_detach_preserve_coarse_signalised_macro_meso_compile) {
+    const std::vector<CrossSection> sections{{"section","Test",2,1,1,3.5,{},0,"type","Test values"}};
+    const std::vector<LinkType> types{{"type","Test",1000,10,"bpr",{},"Test values",JamDensity{150,"Test values"}}};
+    const std::vector<Vdf> vdfs{{"bpr","bpr",0.15,4,"Test values"}};
+    const auto compile = [&](const Network& n) {
+        return std::pair{compileMesoNetwork(n,types,{"types[0]"},{1,60},{},sections),
+                         compileMacroNetwork(n,{},types,{"types[0]"},vdfs,sections)};
+    };
+    const auto connectors = [](const MacroGraph& g) {
+        return std::count_if(g.links.begin(),g.links.end(),[](const auto& arc) { return arc.kind == MacroArc::connector; });
+    };
+    for (const auto side : {DrivingSide::left,DrivingSide::right}) {
+        ProjectDocument d; d.network.drivingSide = side;
+        d.network.streetSegments = {{"north","N",{{0,100},{0,0}},"section"},
+                                    {"east","E",{{100,0},{0,0}},"section"},
+                                    {"south","S",{{0,-100},{0,0}},"section"},
+                                    {"west","W",{{-100,0},{0,0}},"section"}};
+        d.network.nodes.push_back({"site","Site",{{-10,-10},{10,-10},{10,10},{-10,10}},true,
+            NodeCoarse{CoarseControl::signalised,{"north","south"},{{"east","north"}},
+                CoarseSignal{90,{{30,{{"north","south"},{"south","north"}}},
+                                 {20,{{"east","west"},{"west","east"}}}}}}});
+        const auto before = compile(d.network);
+        CHECK(!nodeHasDetail(d.network,d.network.nodes[0])); // forcing: a coarse junction
+        CHECK(before.first.issues.empty() && before.first.advisories.empty());
+        CHECK(before.second.issues.empty() && before.second.advisories.empty());
+        CHECK(before.first.graph.links.size() == 8 && before.first.graph.turns.size() == 11);
+        CHECK(connectors(before.second.graph) == 11);
+        const auto node = std::find_if(before.first.graph.nodes.begin(),before.first.graph.nodes.end(),
+            [](const auto& n) { return n.nodeId == "site"; });
+        CHECK(node != before.first.graph.nodes.end() && node->control == "signalised");
+        CHECK(std::any_of(before.first.graph.turns.begin(),before.first.graph.turns.end(),[](const auto& t) {
+            return t.signal == "node:site" && t.green == 30.0/90;
+        }));
+        auto noCoarse = d.network; noCoarse.nodes[0].coarse.reset();
+        const auto lost = compile(noCoarse);
+        CHECK(lost.first.graph.turns.size() == 12 && connectors(lost.second.graph) == 12); // forcing: the ban matters
+        CHECK(lost.first.graph != before.first.graph && lost.second.graph != before.second.graph);
+        const auto unchanged = [&](const ProjectDocument& doc) {
+            const auto current = compile(doc.network);
+            CHECK(current.first.graph == before.first.graph && current.second.graph == before.second.graph);
+            CHECK(current.first.issues == before.first.issues && current.first.advisories == before.first.advisories);
+            CHECK(current.second.issues == before.second.issues && current.second.advisories == before.second.advisories);
+        };
+        History h; h.reset(d); const auto original = documentJson(d);
+        h.execute("choose template",[&](auto& doc) { setNodeJunction(doc,"site",NodeJunction{"stop-4-shared"}); });
+        CHECK(h.document().network.nodes[0].junction->templateId == "stop-4-shared"); // forcing: selection happened
+        unchanged(h.document());
+        CHECK(h.document().network.nodes[0].coarse == d.network.nodes[0].coarse);
+        CHECK(h.document().network.nodes[0].junction->major == d.network.nodes[0].coarse->major);
+        const auto selected = documentJson(h.document());
+        const auto reopened = parseDocument(selected);
+        CHECK(documentJson(reopened) == selected); unchanged(reopened);
+        h.execute("detach",[&](auto& doc) { setNodeJunction(doc,"site",std::nullopt); });
+        CHECK(!h.document().network.nodes[0].junction);
+        CHECK(h.document().network.nodes[0].coarse == d.network.nodes[0].coarse);
+        unchanged(h.document());
+        h.undo(); CHECK(documentJson(h.document()) == selected); unchanged(h.document());
+        h.undo(); CHECK(documentJson(h.document()) == original);
+    }
 }
 TEST(junctiontemplates, jt5_catalog_capture_is_atomic_and_owned_empty_never_falls_back) {
     const auto installed = resolveJunctionTemplates(AuthoringDefinition{},test::root()/"data");

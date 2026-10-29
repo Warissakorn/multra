@@ -49,7 +49,7 @@ TEST(junctiontemplates, jt5_each_new_field_is_refused_before_61_at_its_path_even
         refused([&] { parseDocument(j); },"EDIT_UNSUPPORTED_FIELD",path);
     }
 }
-TEST(junctiontemplates, jt5_recipe_shape_sign_and_coarse_exclusion_have_field_paths) {
+TEST(junctiontemplates, jt5_recipe_shape_sign_paths_and_coarse_coexistence) {
     const std::vector<std::pair<std::string,Json>> cases{
         {"/junction/templateId"," "}, {"/junction/extra",true}, {"/junction/major",{"r2","r2"}},
         {"/junction/legs/r2/storage/0",-1}, {"/junction/legs/r2/taper/0",0},
@@ -72,8 +72,8 @@ TEST(junctiontemplates, jt5_recipe_shape_sign_and_coarse_exclusion_have_field_pa
         refused([&] { parseDocument(j); },"EDIT_NODE_INVALID",path);
     }
     auto j = file(); j["network"]["nodes"][0]["coarse"] = Json::object();
-    CHECK(j["network"]["nodes"][0].contains("coarse"));
-    refused([&] { parseDocument(j); },"EDIT_NODE_INVALID","network.nodes[0].junction");
+    CHECK(j["network"]["nodes"][0].contains("coarse") && j["network"]["nodes"][0].contains("junction"));
+    CHECK(documentJson(parseDocument(j)) == j);
 }
 TEST(junctiontemplates, jt5_no_feature_keeps_older_file_version_and_bytes) {
     ProjectDocument d; d.definition.emplace(); const auto original = documentJson(d);

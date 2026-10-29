@@ -2,7 +2,7 @@
 #include "../project/document.hpp"
 namespace multra {
 // J3a: called inside History::execute. Choice carries an existing coarse.major when no major
-// is supplied, clears coarse and refines the Node; detach only drops the recipe.
+// is supplied. Coarse stays until detail refine; these edits clear generated. Detach drops only the recipe.
 void setNodeJunction(ProjectDocument&, const std::string& node, std::optional<NodeJunction>);
 void setNodeApproachDirections(ProjectDocument&, const std::string& node, ApproachDirections);
 void putJunctionTemplateCatalog(ProjectDocument&, std::vector<JunctionTemplate>);

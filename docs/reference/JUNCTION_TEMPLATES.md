@@ -101,8 +101,8 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
 - **Major and asymmetric lanes (D393):** optional `major` names Street segment ids, falling back
   to `majorByRank` when empty. Optional `junction.legs.<id>.lanes` replaces that leg's role rows,
   with the same schema/validation and far-to-kerb order as §3. The Command `setNodeJunction`
-  carries `coarse.major` when no major is supplied, clears `coarse` and refines the Node. Detach
-  drops only `junction`. An explicit coarse edit while a recipe remains is refused; detach first.
+  carries `coarse.major` when no major is supplied and keeps the existing `coarse` unchanged.
+  A manual choice clears `generated`; Detach drops only `junction` and also keeps `coarse`.
 - **Signal:** the cycle and, per NEMA phase the preset uses, green, yellow and all-red. All are
   required to apply, with no default (§12 JT-5). **D395:** incomplete recipes save what is entered:
   scalar fields are absent when empty, while `storage`/`taper` use `null` for an unentered pocket
@@ -118,9 +118,9 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
   segment, as coarse values do; B29 (b)'s cross-level key remains undecided.
 - **Codec (D393):** the three new fields (`definition.junctionTemplates`, `Node.junction`,
   `Node.approachDirections`) select 61 only when used. Older files still read; presence before
-  61, even `null`, is `EDIT_UNSUPPORTED_FIELD` at that field. Malformed recipes/directions and
-  coexisting coarse/recipe are `EDIT_NODE_INVALID` at their paths. No unrelated version floor
-  moves. Unknown template/leg references can remain in a draft for J3b's missing-piece offer;
+  61, even `null`, is `EDIT_UNSUPPORTED_FIELD` at that field. Malformed recipes/directions
+  are `EDIT_NODE_INVALID` at their paths. Coarse and recipe may coexist; no unrelated version
+  floor moves. Unknown template/leg references can remain in a draft for J3b's missing-piece offer;
   values are never discarded on load.
 - **The recipe, not the truth.** As a Street segment keeps its `crossSectionId` after its Links exist, the
   Node keeps its template after the detail exists and after detail removal; the two-leg lifecycle
@@ -128,8 +128,11 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
   `approachLayout` (§6). A drawing that no longer matches the template is the advisory
   `SEAM_JUNCTION_DIFFERS`, with *Apply again* (replaces `generated` objects) and *Detach* (drops
   `junction`), as `SEAM_LANE_COUNT` offers its two fixes (STREET_SEGMENTS_IMPLEMENTED §21).
-- `coarse` and `junction` do not coexist: choosing a template clears `coarse` in the same Command;
-  the template's control and phasing replace the coarse control and stages.
+- **D393 review:** `coarse` and `junction` coexist before detail. Choosing or detaching a template
+  does not change the Macro/Meso compile: control, banned turns and stages still come from
+  `coarse`. When the J3b fill creates detail, the existing `settleNodes` refine rule clears
+  `coarse` in that same Command, with the recipe retained. Undo restores both. The rule refusing
+  coarse values on a Node that already has detail is unchanged (STREET_SEGMENTS_IMPLEMENTED §20).
 
 ## 5. Choosing and applying
 
@@ -314,7 +317,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT2 | J1 | A Link's `speedLimit` round-trips at 60; absent keeps the shipped projects' bytes; 59 refuses a Link speed and 60 an approach speed; a 58 file's approach speeds move to their Links with the same queues, and a stray or conflicting one is refused; Node analysis reads the in-leg's; a template speed reaches generated Links; a split keeps it (`tests/link_speed_tests.cpp`, **passing**) |
 | JT3 | J2 | Kerb/far pockets on both `drivingSide`s preserve original lane footprints, routes and heads (including taper/boundary heads); storage/taper read back over a bend and a later split; hand-drawn 1→2 remains ambiguous; a pocket stops at a Node-owned Connector even straight through to the next junction; generated/refine, atomic refusals, save/reopen and one Undo/Redo (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT4 | J2 | `approachLayout` names all 12 four-leg movements on both `drivingSide`s; shared lane sets/widths, duplicate directions, compass ties, overrides and 45°/135° boundaries (`tests/junction_layout_tests.cpp`, **passing**) |
-| JT5 | J3a | Every invalid template in §3 is refused on load with its path (installed/owned); catalog ordering/ownership, schema-61 floors and pre-version field paths, partial recipe round-trip, coarse exclusion, direction/split and one Undo/Redo (`tests/junction_template_tests.cpp`, `tests/junction_recipe_tests.cpp`, `tests/junction_command_tests.cpp`; **passing**) |
+| JT5 | J3a | Every invalid template in §3 is refused on load with its path (installed/owned); catalog ordering/ownership, schema-61 floors and pre-version field paths, partial recipe/coarse round-trip, exact Macro/Meso compile parity for a coarse signalised Node with a banned turn before/after choice and Detach (both driving sides), detail refine, direction/split and one Undo/Redo (`tests/junction_template_tests.cpp`, `tests/junction_recipe_tests.cpp`, `tests/junction_command_tests.cpp`; **passing**) |
 | JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |
 | JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED` |
 | JT8 | J3 | The applied junction runs in Micro (seed 42) with no refusal, and NODE_ANALYSIS finds every lane group |

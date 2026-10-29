@@ -2,6 +2,17 @@
 
 Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current queue.
 
+## 2026-10-28 — Road-scale edits made fast, results unchanged (D384)
+
+- **Asked:** "ทำชุด C ต่อเลย" ("go on with batch C") of the road-model review.
+- **Changed, each measured before and after (Release, median of three):** `applyFills` checks only the
+  offer it applies (F3 on 480 Roads 96.3 s → 80 ms); `polygonRuns` skips a line whose box is over
+  1 m from the polygon's (`settleNodes` 466 → 118 ms); `nodeIssues` tests overlap only where boxes
+  meet (744 → 1.4 ms). One edit on 1,860 Roads: 1.24 s → 121 ms.
+- **Same results:** characterization rows passed before and after; documents, issues and settled
+  results compared byte for byte at each step. Numbers and fixture in ENGINEERING_NOTES.
+- **Verified:** headless build, `ctest` 164/164 and `check` on Linux.
+
 ## 2026-10-28 — Node-analysis inputs follow ordinary edits (D383)
 
 - **Asked:** "ทำชุด B ต่อเลย" ("go on with batch B") of the road-model review.
