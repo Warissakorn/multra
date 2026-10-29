@@ -8,7 +8,7 @@ Connectors, right-of-way and signals are generated. Where two Street segments me
 cross-sections, a **transition template** joins them. The export is [UTDF_EXPORT](UTDF_EXPORT.md).
 SR and J1 are implemented; J2's interfaces and geometry are described in §6 (D391, D392).
 J3a adds the template catalog and stored recipes (D393–D395). J3b is implemented
-(D398–D401): the two-way-stop fill, named refusals and legacy-fill parity below. All-way-stop
+(D398–D402): the two-way-stop fill, named refusals and legacy-fill parity below. All-way-stop
 generation is deferred by the owner until A5 or U1 needs it (D399).
 The editor recipe surfaces remain J6.
 The owner choices are answered
@@ -170,7 +170,7 @@ The number of non-pocket rows must equal the in-leg's full lane count; otherwise
 `JUNCTION_LANE_COUNT` lists existing → required counts. The owner changes the cross-section or
 per-leg lane override before Apply; the fill never resizes those full lanes implicitly.
 
-**J3b implementation (D398–D401).** `junctionFillStatus` and
+**J3b implementation (D398–D402).** `junctionFillStatus` and
 `generateJunction` are per-call plans and Commands in `src/commands/junction_fill*`. F3 comes
 first. The `junction` offer lists every missing storage/taper slot and timing component with
 its code and path, extra/inapplicable site values, unknown legs/templates, unresolved major
@@ -195,13 +195,27 @@ pair touching, because that direction meets no other arm's lane surface. The cut
 end, so the zero-length Connector is refused as `EDIT_CONNECTOR_GAP`. The offer is disabled
 and changes nothing. No artificial cut distance is introduced; skew three-leg cases pass.
 
-**Street segment Apply template after a fill (D401).** A Street segment whose Links are
-junction-generated, or which meets template-bound junction detail, refuses with
-`JUNCTION_STREET_SEGMENT_DETAIL` before changing a lane. This also protects a detached recipe's
-generated Links. Return to the state before the junction fill (Undo or an earlier saved
-copy), apply the Street segment's cross-section, then fill the junction again. An ordinary
-junction re-apply also refuses with that code if its base lanes/widths/reference geometry no
-longer match the cross-section; it cannot silently move or resize the detached upstream Link.
+**Street segment Apply template after a fill (D401, corrected by D402).** A Street segment
+holding junction-generated Links (`Link.generated`) refuses with `JUNCTION_STREET_SEGMENT_DETAIL`
+before changing a lane, including after recipe detach. Choosing a recipe on existing F4 detail
+does not establish junction-fill ownership: F3 → F4 → recipe → change laneWidth → Apply template
+keeps its pre-J3b behaviour on both driving sides (JT14).
+If Undo is available, return before the junction fill and Apply the cross-section there.
+The recovery also works after reopen, with no Undo: **delete the junction's generated Links,
+Apply the Street segment template, then fill the junction again** (JT15).
+**Deleting Links also removes objects attached to them**, including stationed measurements;
+place those again after the new fill. An ordinary junction re-apply also refuses with that code
+if its base lanes/widths/reference geometry no longer match the cross-section; it cannot silently
+move or resize the detached upstream Link.
+
+**Work order (D402): fill the junction before placing stationed measurements.** In particular,
+place queue-counter measurement lines and travel-time sections after the cut/pocket geometry is
+settled. Cuts and re-apply refuse stationed data they cannot keep in place; deleting the Links
+in the recovery above removes their attached objects.
+
+**Booked for J6, before U1 (D402): one Command: change cross-section through a junction.**
+The future Command must change the cross-section and regenerate junction detail while preserving
+references, in one Undo step. Until that work is implemented, the explicit recovery above remains.
 
 **Existing references (D401).** Retained in-leg heads, route ids and Link-based Node inputs
 follow the pocket and Undo restores the complete JSON, revision included. A cut that would
@@ -321,10 +335,10 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 | U0 | UTDF probe with the owner's Synchro 12 and Vistro 2026 (UTDF_EXPORT §8) | 1 + owner |
 | J1 | **Done (D390).** Posted speed on the Link (§9), schema 60 | 1 |
 | J2 | **Done (D391, D392).** Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
-| J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. **J3b done (D398–D401):** `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8/JT13; all-way-stop generation deferred (D399); stop for review (§3–§5) | 2 |
+| J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. **J3b done (D398–D402):** `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8/JT13–JT15; all-way-stop generation deferred (D399); stop for review (§3–§5) | 2 |
 | J4 | Signals from the template: presets, NEMA numbering, timing, `nemaCheck` (§8) | 1 |
 | J5 | Transitions (§7) | 1 |
-| J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS` | 1 |
+| J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS`; booked one-Command cross-section change through a junction (§5), before U1 | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
@@ -381,3 +395,5 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT11 | J6 | Editing a generated Connector gives `SEAM_JUNCTION_DIFFERS`; *Apply again* and *Detach* each fix it in one Undo step |
 | JT12 | J7 | The panel writes `Node::analysis` in one Undo step; *Analyse* matches `--node-analysis` byte for byte |
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |
+| JT14 | J3b review | F3 → F4 on a coarse Node → choose a recipe → change laneWidth → Apply template matches the complete pre-J3b document and one Undo/Redo on both driving sides, with and without recipe pockets (`tests/junction_fill_completion_tests.cpp`, **passing**) |
+| JT15 | J3b review | Reopen without Undo, delete the junction's generated Links, Apply the changed cross-section and fill again: `checkLayout` passes on both driving sides, recipe survives, attached travel-time measurement is removed, and every Command has complete JSON Undo/Redo (`tests/junction_fill_completion_tests.cpp`, **passing**) |

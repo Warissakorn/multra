@@ -1299,5 +1299,5 @@
   "JUNCTION_MOVEMENT_MISSING": "A lane row has no matching out-leg.",
   "JUNCTION_EDITED": "Junction fill cannot replace edited or attached detail.",
   "MICRO_GENERATED_LINKS_IN_AREA": "This study-area Node has %1 Links cut or drawn by the program. Review them before relying on Micro results; exports are marked.",
-  "JUNCTION_STREET_SEGMENT_DETAIL": "This Street segment has junction detail. Return to before the junction fill (Undo or reopen an earlier copy), apply the Street segment template, then fill the junction again."
+  "JUNCTION_STREET_SEGMENT_DETAIL": "This Street segment has junction-generated Links. Delete the junction's generated Links, Apply the Street segment template, then fill the junction again. Deleting Links also removes objects attached to them."
 }

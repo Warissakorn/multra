@@ -3,6 +3,8 @@
 #include "../src/commands/demand_commands.hpp"
 #include "../src/model/network/node_detail.hpp"
 #include "../src/commands/zone_commands.hpp"
+#include "../src/commands/right_of_way_commands.hpp"
+#include "reference/j3b/api.hpp"
 using namespace multra;
 using namespace junctionTest;
 TEST(junctionfill,jt7_all_way_stop_is_listed_disabled_and_writes_nothing) {
@@ -236,5 +238,55 @@ TEST(junctionfill,jt7_reapply_checks_directions_on_both_pocket_pieces_before_col
             CHECK(merged.size()==1&&merged.begin()->second==direction&&link(h.document(),merged.begin()->first).streetSegmentId==arm);
             h.undo();CHECK(bytes(h.document())==before);
         }
+    }
+}
+TEST(junctionfill,jt14_f4_then_recipe_keeps_street_segment_template_editable) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right})for(const bool pockets:{false,true}) {
+        auto d=cross(side,pockets);const auto recipe=*node(d).junction;
+        setNodeJunction(d,node(d).id,std::nullopt);node(d).coarse=NodeCoarse{std::nullopt,recipe.major,{}};
+        CHECK(d.network.links.size()==8&&!nodeHasDetail(d.network,node(d))&&!node(d).junction);
+        History h;h.reset(d);const auto c=catalogs(d);
+        auto f4=fillOffers(d,c);std::erase_if(f4,[](const auto& row){return row.kind!=FillKind::nodeDetail;});
+        CHECK(f4.size()==1&&f4[0].refusal.empty());
+        CHECK(h.execute("fill",[&](auto& x){applyFills(x,f4,c);},true));
+        CHECK(nodeHasDetail(h.document().network,node(h.document()))&&!node(h.document()).junction);
+        CHECK(std::none_of(h.document().network.links.begin(),h.document().network.links.end(),[](const auto& l){return l.generated;}));
+        CHECK(h.execute("recipe",[&](auto& x){setNodeJunction(x,node(x).id,recipe);}));
+        CHECK(h.execute("cross-section",[](auto& x){auto t=x.definition->crossSections[0];t.laneWidth=3.8;putCrossSection(x,t,{});}));
+        CHECK(node(h.document()).junction==recipe&&h.document().definition->crossSections[0].laneWidth==3.8);
+        const auto before=bytes(h.document());History reference;reference.reset(h.document());
+        CHECK(reference.execute("template",[&](auto& x){for(const auto& r:x.network.streetSegments)legacy_applyTemplate(x,r.id,c.templates);}));
+        CHECK(std::all_of(reference.document().network.links.begin(),reference.document().network.links.end(),[](const auto& l){return l.lanes[0].width==3.8;}));
+        CHECK(h.execute("template",[&](auto& x){for(const auto& r:x.network.streetSegments)applyTemplate(x,r.id,c.templates);}));
+        CHECK(bytes(h.document())==bytes(reference.document()));
+        const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+    }
+}
+TEST(junctionfill,jt15_reopen_delete_generated_links_apply_cross_section_and_refill) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History original;original.reset(cross(side));apply(original);checkLayout(original.document());
+        const auto recipe=node(original.document()).junction;const auto attached=original.document().network.links[0].id;
+        std::string measurement;
+        CHECK(original.execute("measurement",[&](auto& x){measurement=putTravelTimeSection(x,{"","After fill",{attached,5},{attached,15},{}});}));
+        CHECK(original.execute("cross-section",[](auto& x){auto t=x.definition->crossSections[0];t.laneWidth=3.8;putCrossSection(x,t,{});}));
+        History h;h.reset(parseDocument(Json::parse(bytes(original.document()).dump())));
+        CHECK(!h.canUndo()&&h.document().network.travelTimeSections.size()==1&&h.document().network.travelTimeSections[0].id==measurement);
+        std::vector<std::string> generated;
+        for(const auto& l:h.document().network.links)if(l.generated)generated.push_back(l.id);
+        CHECK(generated.size()==h.document().network.links.size()&&std::find(generated.begin(),generated.end(),attached)!=generated.end());
+        const auto reopened=bytes(h.document());const auto road=h.document().network.streetSegments[0].id;
+        test::throws([&]{h.execute("template",[&](auto& x){applyTemplate(x,road,x.definition->crossSections);});},"JUNCTION_STREET_SEGMENT_DETAIL");
+        CHECK(!h.canUndo()&&bytes(h.document())==reopened);
+        CHECK(h.execute("delete",[&](auto& x){deleteObjects(x,generated);}));
+        CHECK(h.document().network.links.empty()&&h.document().network.travelTimeSections.empty()&&!nodeHasDetail(h.document().network,node(h.document())));
+        CHECK(node(h.document()).junction==recipe);
+        const auto deleted=bytes(h.document());h.undo();CHECK(bytes(h.document())==reopened);h.redo();CHECK(bytes(h.document())==deleted);
+        CHECK(h.execute("template",[](auto& x){for(const auto& r:x.network.streetSegments)applyTemplate(x,r.id,x.definition->crossSections);}));
+        CHECK(h.document().network.links.size()==8&&std::all_of(h.document().network.links.begin(),h.document().network.links.end(),[](const auto& l){return l.lanes[0].width==3.8&&!l.generated;}));
+        const auto beforeFill=bytes(h.document());
+        h.undo();CHECK(bytes(h.document())==deleted);h.redo();CHECK(bytes(h.document())==beforeFill);
+        apply(h);checkLayout(h.document());
+        CHECK(node(h.document()).junction==recipe&&h.document().network.travelTimeSections.empty());
+        const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==beforeFill);h.redo();CHECK(bytes(h.document())==after);
     }
 }

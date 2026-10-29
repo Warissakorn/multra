@@ -48,7 +48,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
 - **J3b is done; awaiting owner review. Do not start J4 without approval.** Read
-  [JUNCTION_TEMPLATES §5/§13](reference/JUNCTION_TEMPLATES.md) and D397–D401. JT6–JT8/JT13
+  [JUNCTION_TEMPLATES §5/§13](reference/JUNCTION_TEMPLATES.md) and D397–D402. JT6–JT8/JT13–JT15
   cover the two-way-stop fill, safe references, exact Undo/Redo, historical F3/F4 parity and
   the explicit limitations. The fill dialog keeps `generatedCommand=true` (owner accepted).
 - **B31 is answered (D399):** all-way-stop generation waits until A5 or U1 needs it. Keep the
@@ -57,15 +57,20 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **Boundaries to retain:** signalised fills are disabled until J4 (D397); full-lane mismatch
   refuses with existing → required counts. An orthogonal T with a wide median can leave a
   touching through pair and stays `EDIT_CONNECTOR_GAP` (D400), with no invented cut length.
-  Street segment Apply template after junction detail is `JUNCTION_STREET_SEGMENT_DETAIL`:
-  return before the junction fill (Undo or an earlier copy), Apply the cross-section, fill
-  again. A changed base shape cannot silently move/resize the detached upstream Link (D401).
+  Street segment Apply template over junction-generated Links is `JUNCTION_STREET_SEGMENT_DETAIL`;
+  F4 detail plus a chosen recipe alone keeps Apply available (D402). After reopen without Undo,
+  delete the junction's generated Links, Apply the Street segment template, then fill again.
+  Deleting Links removes their attached objects. Fill the junction before placing stationed
+  measurements. A changed base shape cannot silently move/resize the detached upstream Link.
   HCM's existing storage/derivation remains; recipe keys and Link-based Node inputs stay separate.
 - **Only after J3b approval: J4 signals, then stop for review.** Re-read §8/JT9, NEMA group
   numbering, protected/permitted lane constraints (D396), site timing (D395) and U0's status.
   Report any U0 answers' effect on J4 first. Do not invent yellow/all-red values, timing defaults
   or begin the UTDF writer. Template editor/Find crossings UI stays J6; Windows fill inspection
   is OWNER_SITTING E26.
+- **Booked for J6, before U1 (D402): one Command: change cross-section through a junction.**
+  Change the cross-section and regenerate junction detail while preserving references in one
+  Undo step. This remains future work; retain the tested deletion/rebuild recovery until then.
 - Later, each only after approval: J4 signals (JT9; check U0 answers first), J5 transitions,
   J6 editor surfaces, J7 analysis panel, then U1–U3 once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,

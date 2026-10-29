@@ -296,9 +296,12 @@ nothing. Numbers are not reused.
    Thai and English, inspect the Junction template row, all missing-value codes/paths and
    existing → required full-lane counts. Unticked/disabled rows must change nothing; Apply,
    Undo/Redo and Apply again must preserve generated flags, and a named manual edit must block
-   replacement. Apply a Street segment template after the junction fill: does its named refusal
-   clearly explain Undo/earlier copy → cross-section → junction fill? Check the generated-Link
-   count in Problems too. Recipe selection UI remains J6; use a saved recipe/automation fixture. *Owner:*
+   replacement. After F4, choose a recipe and change laneWidth: Street segment Apply template
+   must still work. After a junction fill and reopen without Undo, does the named refusal clearly
+   explain delete the junction's generated Links → Apply the Street segment template → fill again,
+   including that deleting Links removes attached objects? **Fill the junction before placing
+   stationed measurements**; check this order with a travel-time section and the generated-Link
+   count in Problems. Recipe selection UI remains J6; use a saved recipe/automation fixture. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

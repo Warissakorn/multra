@@ -494,3 +494,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D400](RECORD.md#d400) — J3b review: retain the orthogonal-T zero-gap refusal and accepted fill History mode; JT13 compares full legacy F3/F4 documents with frozen 33a856a5 command bodies on both driving sides.
 
 [D401](RECORD.md#d401) — J3b complete: clear junction refusal/recovery for Street segment Apply template, base-shape consistency and named reference protection, with no new stored field or schema step.
+
+[D402](RECORD.md#d402) — J3b review: preserve F4 + recipe Apply, document/test delete-and-refill after reopen and measurement order; book one-Command cross-section change through a junction for J6 before U1.

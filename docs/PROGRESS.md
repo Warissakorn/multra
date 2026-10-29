@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-29 — J3b review: F4 recipe parity and recovery after reopen (D402)
+
+- **Asked:** narrow the Street segment guard, explain recovery with no Undo after reopen,
+  document measurement order and book the one-Command junction cross-section change in J6
+  before U1. JT13 is accepted unchanged; stop before J4.
+- **Fixed:** only the segment's junction-generated Links trigger its Apply refusal. Choosing
+  a recipe on F4 detail keeps the existing laneWidth Apply behaviour. The native test first
+  fails with the over-broad junction code and compares complete documents against the isolated
+  pre-J3b Apply implementation, with/without recipe pockets on both driving sides.
+- **Recovery:** after reopen without Undo, delete the junction's generated Links, Apply the
+  Street segment template and fill again. JT15 checks the recipe, changed widths, checkLayout
+  and exact Undo/Redo; deletion removes the attached travel-time measurement. English/Thai
+  text states that cascade. §5 and OWNER_SITTING E26 say to fill before stationed measurements.
+- **Scope:** no new stored field or schema; StopControl, JT13 and its frozen references stay
+  unchanged. The future reference-preserving one-Command change is booked, not implemented.
+- **Verification:** desktop build, junctionfill **25/25**, CTest **250/250** (274.60 s) and
+  `check` **250/250** (263.19 s) pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen).
+  Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
+  Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
+  Existing desktop UI suites passed. J4 was not started.
+
 ## 2026-10-29 — J3b complete: safe fills, historical parity and explicit deferrals (D399–D401)
 
 - **Owner review:** B31 defers D388 JT-4a generation until A5 or U1 needs it; the row stays
@@ -179,15 +200,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Verified:** desktop build (Qt 6.4.2, installed this session), `ctest` and `check` on Linux
   (offscreen): `ctest` 246/246 (245 before plus JT1); headless preset not run. Windows look is
   OWNER_SITTING E24.
-
-## 2026-10-28 — M14 redirected: junction templates, transitions, Road → Segment (D387)
-
-- **Asked:** no junction builder; Roads that cross should make the junction, with a junction
-  template that sets the turns and makes their Connectors; rename Road to Segment; how Roads of
-  different cross-sections join. Owner: "เอาตามแนะนำ" ("go with the recommendations").
-- **Written:** JUNCTION_BUILDER became [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md): templates
-  by leg role holding structure only, site values on the Node, a `junction` fill after F3, transition
-  templates aligned per template, `SEAM_JUNCTION_DIFFERS`; slice SR (the full rename, schema 59)
-  comes first. UTDF_EXPORT, ROADMAP M14, OWNER_SITTING B30 and NEXT follow. About 13–16 sessions.
-- **Found:** Micro has no join for two Roads of different cross-sections today; only Macro and
-  Meso join free ends. No code changed.

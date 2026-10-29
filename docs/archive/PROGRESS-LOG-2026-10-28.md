@@ -4,6 +4,18 @@ Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current
 
 
 
+## 2026-10-28 — M14 redirected: junction templates, transitions, Road → Segment (D387)
+
+- **Asked:** no junction builder; Roads that cross should make the junction, with a junction
+  template that sets the turns and makes their Connectors; rename Road to Segment; how Roads of
+  different cross-sections join. Owner: "เอาตามแนะนำ" ("go with the recommendations").
+- **Written:** JUNCTION_BUILDER became [JUNCTION_TEMPLATES](../reference/JUNCTION_TEMPLATES.md): templates
+  by leg role holding structure only, site values on the Node, a `junction` fill after F3, transition
+  templates aligned per template, `SEAM_JUNCTION_DIFFERS`; slice SR (the full rename, schema 59)
+  comes first. UTDF_EXPORT, ROADMAP M14, OWNER_SITTING B30 and NEXT follow. About 13–16 sessions.
+- **Found:** Micro has no join for two Roads of different cross-sections today; only Macro and
+  Meso join free ends. No code changed.
+
 ## 2026-10-28 — M14 booked: junction builder and UTDF export, contracts only (D386)
 
 - **Asked:** could the editor build an HCM network first and export it to PTV Vistro; then
