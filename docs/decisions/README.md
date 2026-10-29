@@ -488,3 +488,9 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D397](RECORD.md#d397) — J3b owner: signals stay J4; JT8 uses manual test-only signals for HCM; full lane mismatch refuses Apply with existing → required counts.
 
 [D398](RECORD.md#d398) — J3b checkpoint: Link.generated at 62, program fill ownership, downstream Street segment leg association and derived-only pocket replacement; all-way-stop representation pending.
+
+[D399](RECORD.md#d399) — B31: defer D388 JT-4a all-way-stop generation until A5/U1 needs it; listed disabled, StopControl unchanged, no schema 63.
+
+[D400](RECORD.md#d400) — J3b review: retain the orthogonal-T zero-gap refusal and accepted fill History mode; JT13 compares full legacy F3/F4 documents with frozen 33a856a5 command bodies on both driving sides.
+
+[D401](RECORD.md#d401) — J3b complete: clear junction refusal/recovery for Street segment Apply template, base-shape consistency and named reference protection, with no new stored field or schema step.

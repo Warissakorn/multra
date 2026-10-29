@@ -3,6 +3,21 @@
 Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current queue.
 
 
+
+## 2026-10-28 — M14 booked: junction builder and UTDF export, contracts only (D386)
+
+- **Asked:** could the editor build an HCM network first and export it to PTV Vistro; then
+  Synchro too (confirmed: Vistro 2026, Synchro 12); review the network tools; "อนุมัติ ช่วยเขียน
+  รายละเอียดก่อน" ("approved, write the details first").
+- **Found:** a four-leg HCM junction needs six manual steps; Road + *Find crossings* + F4 is fast
+  but shares lanes kerb to far with no pocket, so HCM lane groups and UTDF lanes cannot come from
+  it; no cross-section template ships; there is no posted speed on the Link, no kerb-side pocket,
+  no integer Node number and no NEMA phase numbering.
+- **Written:** [JUNCTION_BUILDER](../reference/JUNCTION_TEMPLATES.md) and
+  [UTDF_EXPORT](../reference/UTDF_EXPORT.md), ROADMAP M14, OWNER_SITTING B30. UTDF's field list is
+  provisional until U0 reads files the owner's Synchro 12 and Vistro 2026 write and import;
+  left-hand traffic in both is the main open risk. No code changed.
+
 ## 2026-10-28 — Road workflow: Apply on several Roads, crossings warning (D385)
 
 - **Asked:** batch D of the road-model review, on the D382–D384 branch, whose PR is still open.

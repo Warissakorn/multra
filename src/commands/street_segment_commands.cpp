@@ -21,6 +21,16 @@ StreetSegment& editableStreetSegment(ProjectDocument& d, const std::string& id) 
     for (auto& r : d.network.streetSegments) if (r.id == id) return r;
     throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
 }
+bool hasJunctionDetail(const ProjectDocument& d,const StreetSegment& road) {
+    // J3b marks cut/pocket Links, including after recipe detach or Node deletion.
+    for(const auto& l:d.network.links)
+        if(l.generated&&std::find(road.links.begin(),road.links.end(),l.id)!=road.links.end())return true;
+    for(const auto& node:d.network.nodes) {
+        if(!node.junction||!nodeHasDetail(d.network,node))continue;
+        for(const auto& leg:nodeStreetSegmentLegs(d.network,node))if(leg.streetSegmentId==road.id)return true;
+    }
+    return false;
+}
 }
 void detail::detachFromStreetSegment(ProjectDocument& d, const std::string& link) {
     for (auto& l : d.network.links) if (l.id == link) l.streetSegmentId.reset();
@@ -97,6 +107,8 @@ std::vector<std::string> applyTemplate(ProjectDocument& d, const std::string& st
     if (!road.crossSectionId) throw std::invalid_argument("EDIT_STREET_SEGMENT_NO_TEMPLATE");
     const auto* found = streetSegmentTemplate(d, road, installed);
     if (!found) throw ValidationError({{"STREET_SEGMENT_CROSS_SECTION_UNKNOWN", "network.streetSegments[" + std::to_string(index) + "].crossSectionId"}});
+    if(hasJunctionDetail(d,road))throw ValidationError({{"JUNCTION_STREET_SEGMENT_DETAIL",
+        "network.streetSegments["+std::to_string(index)+"].crossSectionId"}});
     const auto generated = templateLinks(d.network, road, *found);
     // D382: each listed Link keeps the direction it runs (forwardOnStreetSegment), whatever its place in `links`,
     // which a detach shifts. Two Links one way, or a backward one under a one-way template, is refused.

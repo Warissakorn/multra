@@ -22,6 +22,8 @@ void deleteCrossSection(ProjectDocument&, const std::string& id);
 // EDIT_STREET_SEGMENT_NO_TEMPLATE, STREET_SEGMENT_CROSS_SECTION_UNKNOWN at network.streetSegments[i].crossSectionId,
 // EDIT_STREET_SEGMENT_DIRECTIONS when it would drop a direction (a routed Link is never deleted silently) or two
 // listed Links run one way. Each listed Link keeps the direction it runs (forwardOnStreetSegment, D382).
+// JUNCTION_STREET_SEGMENT_DETAIL on junction-generated/template-bound detail: return before the
+// junction fill (Undo/earlier copy), Apply the Street segment template, then fill again (D401).
 // Direct StreetSegment zone connectors become Link targets in the same Command. A backward connector on
 // a one-way template is ZONE_CONNECTOR_STREET_SEGMENT_REQUIRES_DIRECTION before mutation (D340).
 // Returns the StreetSegment's Link ids, forward first.

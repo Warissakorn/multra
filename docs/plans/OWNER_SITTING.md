@@ -73,13 +73,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
-31. **J3b all-way-stop representation** (asked 2026-10-29, pending). D388 asks for generated
-   Stop on every arm, with Micro refusing it. Existing StopControl requires yielding Conflict
-   areas; it cannot represent an independent stop line. Recommended: extend StopControl to
-   allow a line without conflictAreaIds at the next unused schema step (63 after the Link
-   checkpoint uses 62), draw every arm's stops, and retain the
-   Micro refusal. Alternative: defer all-way-stop generation and keep the fill disabled. No
-   representation has been chosen or implemented; do not silently change D388.
+Answered 2026-10-29: **B31**, owner: defer all-way-stop generation until A5 or U1 needs it;
+keep the fill listed but disabled (`FILL_NODE_ALL_WAY_STOP`), leave StopControl unchanged and
+use no schema 63 ([D399](../decisions/RECORD.md#d399)).
 
 Answered 2026-10-28: **B30**, owner: “B30 เอาตามแนะนำ” (“B30 as recommended”): JT-1a–JT-5a and
 UX-1a–UX-4a ([D388](../decisions/RECORD.md#d388)); U0 is a session plus the owner's import check.
@@ -296,11 +292,13 @@ choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earli
 [M3.2.10](../ROADMAP.md#m3210--owner-looks-carved-out-of-the-sitting-d201). They stay unchecked and close
 nothing. Numbers are not reused.
 
-26. **J3b Fill defaults checkpoint** (listed 2026-10-29, D397/D398). On Windows at 100/150/200 %, in
+26. **J3b Fill defaults** (listed 2026-10-29, D397/D398). On Windows at 100/150/200 %, in
    Thai and English, inspect the Junction template row, all missing-value codes/paths and
    existing → required full-lane counts. Unticked/disabled rows must change nothing; Apply,
    Undo/Redo and Apply again must preserve generated flags, and a named manual edit must block
-   replacement. Check the generated-Link count in Problems too. Recipe selection UI remains J6; use a saved recipe/automation fixture. *Owner:*
+   replacement. Apply a Street segment template after the junction fill: does its named refusal
+   clearly explain Undo/earlier copy → cross-section → junction fill? Check the generated-Link
+   count in Problems too. Recipe selection UI remains J6; use a saved recipe/automation fixture. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

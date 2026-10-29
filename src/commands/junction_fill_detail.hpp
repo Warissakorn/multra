@@ -1,6 +1,7 @@
 #pragma once
 #include "junction_fill.hpp"
 #include "node_detail_priority.hpp"
+#include "../model/network/node_detail.hpp"
 #include <set>
 namespace multra::junctionDetail {
 struct Plan {
@@ -11,4 +12,5 @@ struct Plan {
 Plan plan(const ProjectDocument&,const Node&,const NodeFillCatalogs&);
 std::vector<ValidationIssue> restore(ProjectDocument&,const Node&,const NodeFillCatalogs&);
 const Link& link(const ProjectDocument&,const std::string&);
+std::vector<ValidationIssue> cutReferenceIssues(const ProjectDocument&,const std::vector<LegCut>&);
 }

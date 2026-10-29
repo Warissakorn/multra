@@ -1297,6 +1297,7 @@
   "JUNCTION_POCKET_LAYOUT": "The pocket geometry cannot reproduce these lane rows and lengths.",
   "JUNCTION_MOVEMENT_AMBIGUOUS": "More than one out-leg has the same movement.",
   "JUNCTION_MOVEMENT_MISSING": "A lane row has no matching out-leg.",
-  "JUNCTION_EDITED": "A person has edited or attached detail; Apply again cannot replace it.",
-  "MICRO_GENERATED_LINKS_IN_AREA": "This study-area Node has %1 Links cut or drawn by the program. Review them before relying on Micro results; exports are marked."
+  "JUNCTION_EDITED": "Junction fill cannot replace edited or attached detail.",
+  "MICRO_GENERATED_LINKS_IN_AREA": "This study-area Node has %1 Links cut or drawn by the program. Review them before relying on Micro results; exports are marked.",
+  "JUNCTION_STREET_SEGMENT_DETAIL": "This Street segment has junction detail. Return to before the junction fill (Undo or reopen an earlier copy), apply the Street segment template, then fill the junction again."
 }

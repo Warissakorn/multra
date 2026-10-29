@@ -47,33 +47,25 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Continue the same J3b; it is not complete. Do not start J4 or another slice.** The owner
-  approved starting J3b after J3a review and answered two scope choices (D397): signals stay J4
-  (disabled offer; JT8 manual signals only in the HCM test); full-lane mismatch refuses Apply,
-  with existing → required counts, so the owner fixes cross-section/override explicitly.
-- **Owner B31 is pending** ([OWNER_SITTING](plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each)).
-  D388 wants generated Stop on every arm, with Micro refusal; existing StopControl requires a
-  yielding Conflict area. Recommended: allow an independent waiting-line Stop with no areas,
-  at the next unused schema step; alternative: explicitly defer all-way-stop generation. The
-  question was asked before that model change. Do not infer an answer or call D388 implemented.
-- **Checkpoint (D398) to build on:** junction offers/plans, two-way-stop pockets/cuts/lane-range
-  Connectors and shared F4 ranks; generated-only replacement and named edited-detail refusals.
-  Link.generated selects 62; 63 is next unused after this checkpoint. No stored layout/receipt.
-  Final storage Links retain Street segment association, base pieces detach; recipe arm ids
-  remain separate from Link-based directions/analysis. Coarse remains until existing detail refine.
-- **Next steps within J3b, after B31's answer:**
-  - implement and test the approved all-way-stop representation, path/version guards, generated
-    Stops on every arm and Micro refusal; or record the owner's explicit deferral in §5/§12;
-  - complete JT6–JT8 coverage/review for rank fallback, source/reference safety and re-apply
-    after a Street segment cross-section change (including the detached original upstream Link); maintain one Undo and byte-exact save/reopen. Do not invent signal defaults;
-  - re-read JUNCTION_TEMPLATES §5/§13 and READINESS §13.6, keep the legacy F4 share unchanged;
-  - rerun desktop build, CTest and check; headless only if configured. Compare node-analysis CLI
-    before/after (the baseline is /tmp/multra-j3b-analysis-before.json in this workspace);
-  - finish all-way-stop scope and remaining rows, commit/push this branch, then stop for J3b owner review.
-  - Keep existing geometry refusals: an orthogonal T with a wide median can leave a major
-    through pair touching (no other lane surface met), so `EDIT_CONNECTOR_GAP` disables it.
-    The skew-T roles pass; changing the cut rule needs an owner choice, not an arbitrary gap.
-  - Windows inspection of the fill rows is OWNER_SITTING E26; recipe selection/editor remains J6.
+- **J3b is done; awaiting owner review. Do not start J4 without approval.** Read
+  [JUNCTION_TEMPLATES §5/§13](reference/JUNCTION_TEMPLATES.md) and D397–D401. JT6–JT8/JT13
+  cover the two-way-stop fill, safe references, exact Undo/Redo, historical F3/F4 parity and
+  the explicit limitations. The fill dialog keeps `generatedCommand=true` (owner accepted).
+- **B31 is answered (D399):** all-way-stop generation waits until A5 or U1 needs it. Keep the
+  row listed but disabled with `FILL_NODE_ALL_WAY_STOP`; do not extend StopControl or consume
+  schema 63 for it now. Link.generated uses 62; 63 remains unused. Do not re-ask B31 in J4.
+- **Boundaries to retain:** signalised fills are disabled until J4 (D397); full-lane mismatch
+  refuses with existing → required counts. An orthogonal T with a wide median can leave a
+  touching through pair and stays `EDIT_CONNECTOR_GAP` (D400), with no invented cut length.
+  Street segment Apply template after junction detail is `JUNCTION_STREET_SEGMENT_DETAIL`:
+  return before the junction fill (Undo or an earlier copy), Apply the cross-section, fill
+  again. A changed base shape cannot silently move/resize the detached upstream Link (D401).
+  HCM's existing storage/derivation remains; recipe keys and Link-based Node inputs stay separate.
+- **Only after J3b approval: J4 signals, then stop for review.** Re-read §8/JT9, NEMA group
+  numbering, protected/permitted lane constraints (D396), site timing (D395) and U0's status.
+  Report any U0 answers' effect on J4 first. Do not invent yellow/all-red values, timing defaults
+  or begin the UTDF writer. Template editor/Find crossings UI stays J6; Windows fill inspection
+  is OWNER_SITTING E26.
 - Later, each only after approval: J4 signals (JT9; check U0 answers first), J5 transitions,
   J6 editor surfaces, J7 analysis panel, then U1–U3 once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,

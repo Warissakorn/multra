@@ -6,6 +6,7 @@
 #include "../model/network/polygon.hpp"
 #include "../model/network/street_segments.hpp"
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
 namespace multra::junctionDetail {
 const Link& link(const ProjectDocument& d,const std::string& id) {
@@ -20,6 +21,18 @@ bool inside(const Connector& c,const Node& node) {
 }
 bool inAnyNode(const Connector& c,const Network& n) {
     return std::any_of(n.nodes.begin(),n.nodes.end(),[&](const auto& node){return inside(c,node);});
+}
+bool baseMatchesTemplate(const Link& l,const TemplateLink& expected) {
+    if(l.lanes.size()!=expected.widths.size()||std::abs(l.laneOffset)>1e-6)return false;
+    for(std::size_t i=0;i<l.lanes.size();++i)if(std::abs(l.lanes[i].width-expected.widths[i])>1e-6)return false;
+    const auto first=stationOfClosestPoint(expected.geometry,l.geometry.front());
+    const auto last=stationOfClosestPoint(expected.geometry,l.geometry.back());
+    if(!(last>first))return false;
+    const auto span=polylineSpan(expected.geometry,first,last);
+    if(span.size()!=l.geometry.size())return false;
+    for(std::size_t i=0;i<span.size();++i)
+        if(std::hypot(span[i].x-l.geometry[i].x,span[i].y-l.geometry[i].y)>1e-6)return false;
+    return true;
 }
 void renameEnd(ProjectDocument& d,const std::string& from,const std::string& to) {
     for(auto& node:d.network.nodes) {
@@ -77,8 +90,24 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
             cursor=parent;
         }
         if(removed.contains(cursor)){edited(cursor);continue;} // A cyclic predecessor chain cannot own an approach.
+        if(!baseMatchesTemplate(link(d,cursor),templates[direction])) {
+            const auto index=static_cast<std::size_t>(road-d.network.streetSegments.begin());
+            issues.push_back({"JUNCTION_STREET_SEGMENT_DETAIL","network.streetSegments["+std::to_string(index)+"].crossSectionId"});
+            continue;
+        }
         if(cursor!=original.id)replacements[original.id]=cursor;
         arms.push_back({road->id,cursor,leg.in,templates[direction].geometry});
+    }
+    if(!issues.empty())return issues;
+    // Intermediate pocket Links also follow the final base, for a far+kerb sequence.
+    for(const auto& id:removed)if(!replacements.contains(id)) {
+        std::string cursor=id;
+        while(removed.contains(cursor)) {
+            const auto c=std::find_if(d.network.connectors.begin(),d.network.connectors.end(),[&](const auto& x){return x.to.linkId==cursor&&connectors.contains(x.id)&&!inAnyNode(x,d.network);});
+            if(c==d.network.connectors.end())break;
+            cursor=c->from.linkId;
+        }
+        if(!removed.contains(cursor))replacements[id]=cursor;
     }
     const auto touched=[&](const ControlPathRef& p){return connectors.contains(p.connectorId)||removed.contains(p.linkId);};
     const auto& row=d.network.rightOfWay;
@@ -100,10 +129,24 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
         const auto& def=*d.definition;
         for(const auto& r:def.routes)for(const auto& id:r.segmentIds)if(connectors.contains(id))edited(r.id);
         for(const auto& i:def.inputs)if(removed.contains(i.linkId))edited(i.id);
-        for(const auto& q:def.routingDecisions)if(removed.contains(q.linkId))edited(q.id);
+        for(const auto& q:def.routingDecisions) {
+            if(removed.contains(q.linkId))edited(q.id);
+            for(const auto& target:q.routes)if(removed.contains(target.destinationLinkId))edited(q.id);
+        }
         for(const auto& q:def.speedDecisions)if(removed.contains(q.linkId))edited(q.id);
         for(const auto& q:def.reducedSpeedAreas)if(removed.contains(q.linkId))edited(q.id);
         for(const auto& [id,end]:def.routeDestinations)if(removed.contains(end.objectId))edited(id);
+    }
+    for(const auto& c:d.zones.zoneConnectors)
+        if(c.direction==ZoneDirection::origin&&removed.contains(c.linkId))edited(c.id);
+    for(const auto& n:d.network.nodes) {
+        auto merged=n.approachDirections;
+        for(const auto& [from,to]:replacements) {
+            const auto a=n.approachDirections.find(from);if(a==n.approachDirections.end())continue;
+            // Two removed pocket pieces can collide even when the base had no override.
+            const auto [b,inserted]=merged.emplace(to,a->second);
+            if(!inserted&&b->second!=a->second)edited(n.id+".approachDirections");
+        }
     }
     if(!issues.empty())return issues;
     // Collapse the generated pocket suffix before building it again. Original entry ids and
@@ -116,16 +159,6 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
         base.geometry=polylineSpan(a.full,first,last); base.streetSegmentId=a.id;
     }
     for(auto& r:d.network.streetSegments)for(auto& id:r.links)if(replacements.contains(id))id=replacements.at(id);
-    // Intermediate pocket Links also follow the final base, for a far+kerb sequence.
-    for(const auto& id:removed)if(!replacements.contains(id)) {
-        std::string cursor=id;
-        while(removed.contains(cursor)) {
-            const auto c=std::find_if(d.network.connectors.begin(),d.network.connectors.end(),[&](const auto& x){return x.to.linkId==cursor&&connectors.contains(x.id)&&!inAnyNode(x,d.network);});
-            if(c==d.network.connectors.end())break;
-            cursor=c->from.linkId;
-        }
-        if(!removed.contains(cursor))replacements[id]=cursor;
-    }
     for(const auto& [from,to]:replacements)renameEnd(d,from,to);
     if(d.definition)for(auto& r:d.definition->routes) {
         std::vector<std::string> ids;

@@ -326,6 +326,12 @@ with the other seam checks.
 - **Mutations caught:** refine off, banned turns not derived, the wrapped stage not merged, the
   lifecycle on any two-leg Node, and D310's detail.
 
+**J3b (D401):** Street segment *Apply template* on junction-generated Links or template-bound
+junction detail refuses `JUNCTION_STREET_SEGMENT_DETAIL`. Undo the junction fill (or reopen
+an earlier copy), apply the cross-section, then fill again. Re-apply cannot silently change
+base geometry after a cross-section edit. Legacy F3/F4 documents remain identical to the
+pre-J3b implementations (JUNCTION_TEMPLATES JT13).
+
 ## 21. S3.7 as implemented (D312)
 
 M14 J2 (D391) adds command-only kerb/far pockets with a separate taper and a derived

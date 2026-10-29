@@ -45,7 +45,7 @@ Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCat
     const auto found=std::find_if(pool.begin(),pool.end(),[&](const auto& t){return t.id==recipe.templateId;});
     if(found==pool.end()){bad("JUNCTION_TEMPLATE_UNKNOWN",at+".templateId");return result;}
     const auto type=*found;
-    if(type.control=="allWayStop")bad("FILL_NODE_ALL_WAY_STOP",at+".templateId"); // representation awaiting owner
+    if(type.control=="allWayStop")bad("FILL_NODE_ALL_WAY_STOP",at+".templateId"); // B31: deferred until A5 or U1 needs it
     if(const auto invalid=junctionTemplateIssues(type,at+".templateId");!invalid.empty()){result.issues=invalid;return result;}
     if(type.control=="signalised") {
         const auto signal=recipe.signal.value_or(JunctionSignal{});
@@ -139,6 +139,8 @@ Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCat
     }
     const auto cuts=nodeLegCuts(measured,selected,{});
     if(!cuts.reason.empty()){bad(cuts.reason,at);return result;}
+    result.issues=cutReferenceIssues(d,cuts.cuts);
+    if(!result.issues.empty())return result;
     try {
         for(const auto& cut:cuts.cuts) {
             auto& l=editableLink(d,cut.linkId); l.geometry=cut.geometry; l.generated=true;
