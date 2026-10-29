@@ -12,7 +12,7 @@ uses those existing codecs and validators.
 
 ## Envelope and presence rules
 
-The reader accepts editor schemas 1–61 (`kLatestSchema` in `document.hpp`). A missing
+The reader accepts editor schemas 1–62 (`kLatestSchema` in `document.hpp`). A missing
 `schemaVersion` selects the separate legacy scenario path, including pre-5 attachments
 and legacy signal/amber behavior. A formal editor schema must not accidentally accept
 that path as a canonical project.
@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–61 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–62 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -104,6 +104,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 59 | Road renamed Street segment (D389): `network.streetSegments`, a Link's `streetSegmentId`, a zone connector's `streetSegmentId`/`streetSegmentDirection`; below 59 the same fields are `roads`, `roadId`, `roadDirection`, and each version refuses the other's | `street_segment_codec.cpp`, `zone_codec.cpp`, `network_fields.*` |
 | 60 | Posted speed (J1, D390): a Link's `speedLimit` and an owned cross-section's `speedLimit`, km/h; a 58–59 approach row's `speedLimit` moves to the Link it names, and from 60 the row refuses it | `link_speed_codec.cpp`, `network_fields.*`, `node_codec.cpp` |
 | 61 | Junction catalog ownership, Node recipe and independent compass overrides (J3a, D393–D395) | `junction_template_codec.cpp`, `junction_recipe_codec.cpp`, `node_codec.cpp` |
+| 62 | Link `generated`, written only when true (J3b checkpoint, D398); older files still read, presence before 62 is refused at `network.links[i].generated` | `network_link_codec.cpp`, `network_fields.*`, `document.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from
@@ -116,7 +117,10 @@ historical-schema coverage.
 
 J2 (D391) adds no field or schema step: a pocket and taper use ordinary Link/Connector geometry,
 lane counts, `laneBlend`, `laneChangeSide` and `generated`, with their existing feature floors.
-`approachLayout` is derived only. J3a uses schema 61 for the fields below (D393–D395):
+`approachLayout` is derived only. J3b adds the same generated/refine flag to cut and pocket Links
+at 62; false is omitted, invalid values use `EDIT_GENERATED_INVALID` at the flag.
+A fill Command preserves program ownership during re-generation; an ordinary edit clears it.
+J3a uses schema 61 for the fields below (D393–D395):
 
 - `definition.junctionTemplates`: absent resolves installed files; a present array owns the whole
   catalog, even empty. Every entry is strictly validated; malformed entries name their field
@@ -207,7 +211,7 @@ with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 now also includes the Connector/reference extension below; complete remains false and
 desktop observed schema discovery is unchanged.
 
-The generated schema chooses rules from the document's root `schemaVersion` (1–61).
+The generated schema chooses rules from the document's root `schemaVersion` (1–62).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its

@@ -25,7 +25,8 @@ public:
     std::uint64_t generation() const { return generation_; }
     void markSaved() { saved_ = revision(); }
     void markUnsaved() { saved_ = ~std::uint64_t{}; } // A recovered document requires an explicit save.
-    bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& change);
+    // A fill re-generates program-owned objects; manual commands retain the normal refine pass.
+    bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& change, bool generatedCommand = false);
     void undo();
     void redo();
 private:

@@ -11,6 +11,7 @@ struct NodeFillCatalogs {
     std::vector<CrossSection> templates;
     std::vector<LinkType> types;
     PriorityDefaults priority;
+    std::vector<JunctionTemplate> junctionTemplates{};
 };
 // Why F4 cannot fill this Node, or empty when it can. Not listed at all (also empty): a Node with
 // detail, or one with fewer than two arms. Otherwise, in this order:

@@ -344,7 +344,7 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
   controller.
 - **S5 reads it** ("`generated` objects inside the study area count as missing for Micro", export
   marking); F4 only writes it.
-- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears; choosing or detaching a junction template keeps it (D393 review). J2's pocket Connectors use these same `generated`/refine rules ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272), D391); its fill remains J3b. A J3a junction recipe survives refine/derive-back and the two-leg lifecycle (D393).
+- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears; choosing or detaching a junction template keeps it (D393 review). J2's pocket Connectors use these same `generated`/refine rules ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272), D391); its fill is J3b (in progress; JUNCTION_TEMPLATES §5). A J3a junction recipe survives refine/derive-back and the two-leg lifecycle (D393).
 
 ### 13.7 Owner choices (answered 2026-10-23, D323: F4-1a to F4-6a)
 

@@ -205,6 +205,9 @@ nothing is refused silently.
 - **Micro readiness** (the Problems tab, READINESS §3) lists one warning
   `MICRO_GENERATED_IN_AREA` per area Node holding `generated` objects, at `nodes[i]`, with the
   count by kind (Connectors, right-of-way objects, heads, controller). The run still starts.
+  J3b adds `MICRO_GENERATED_LINKS_IN_AREA` for generated cut/pocket Links, counted once per
+  Node among its interior Links and boundary legs. Those Links also enter export marking;
+  feature-free projects keep their existing counts and bytes (D398).
 - With no study area, the rule reads the whole network as the area, since Micro runs all of it.
 - Selecting the row lights the Node, as the Nodes tab does (D288).
 

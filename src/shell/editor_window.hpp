@@ -485,8 +485,8 @@ private:
     void translate();
     // The one post-edit path: History, then the run/error/refresh follow-up. Throws on refusal;
     // execute() shows the error instead, automation returns it.
-    bool commitChange(const std::string& name, const std::function<void(ProjectDocument&)>& action);
-    bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& action);
+    bool commitChange(const std::string& name, const std::function<void(ProjectDocument&)>& action, bool generatedCommand = false);
+    bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& action, bool generatedCommand = false);
     std::string lastHeadSignal_; // "c:<controller>#<group>" or "p:<program>" the last head took; the next defaults to it
     void showError(const std::exception& error);
     bool confirmDiscard();

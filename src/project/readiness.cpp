@@ -44,9 +44,11 @@ std::vector<ReadinessRow> readiness(const ProjectDocument& d, const std::filesys
             for (std::size_t i = 0; i < n.nodes.size(); ++i) {
                 const auto& node = n.nodes[i];
                 if (!area.empty() && std::find(area.begin(), area.end(), node.id) == area.end()) continue;
-                if (const auto c = generatedInNode(d, node); c.total() > 0)
+                const auto c=generatedInNode(d,node);
+                if (c.connectors+c.rightOfWay+c.heads+c.controllers > 0)
                     rows.push_back({"MICRO_GENERATED_IN_AREA", "nodes[" + std::to_string(i) + "]", node.id, {}, ReadinessSeverity::warning,
                                     {c.connectors, c.rightOfWay, c.heads, c.controllers}});
+                if(c.links>0)rows.push_back({"MICRO_GENERATED_LINKS_IN_AREA","nodes["+std::to_string(i)+"]",node.id,{},ReadinessSeverity::warning,{c.links}});
             }
         } else if (level == ReadinessLevel::meso) {
             const auto network = mesoNetwork(d, data);

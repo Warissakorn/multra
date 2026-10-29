@@ -484,3 +484,7 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D395](RECORD.md#d395) — J3a: save partial site values without defaults; omitted scalar fields and null pocket slots, with shape/sign checks before later applicability/timing checks.
 
 [D396](RECORD.md#d396) — J3a catalog: protected far turns in P2 major / P3 all roles use separate F rows, following §8's one-protected-group rule; no signal implementation.
+
+[D397](RECORD.md#d397) — J3b owner: signals stay J4; JT8 uses manual test-only signals for HCM; full lane mismatch refuses Apply with existing → required counts.
+
+[D398](RECORD.md#d398) — J3b checkpoint: Link.generated at 62, program fill ownership, downstream Street segment leg association and derived-only pocket replacement; all-way-stop representation pending.

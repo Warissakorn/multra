@@ -112,7 +112,7 @@ std::vector<std::string> duplicateObjects(ProjectDocument& d,const std::vector<s
         const auto old=l.id;l.id=allocateId(d,"link");links[old]=l.id;
         for(auto& lane:l.lanes){const auto oldLane=lane.id;lane.id=allocateId(d,"lane");lanes[oldLane]=lane.id;}
         for(auto& p:l.geometry){p.x+=offset.x;p.y+=offset.y;}
-        l.streetSegmentId.reset(); // S3.3: a copy belongs to no StreetSegment
+        l.streetSegmentId.reset(); l.generated=false; // A copy is the person's, as for Connectors.
         created.push_back(l.id);d.network.links.push_back(std::move(l));
     }
     for(auto c:source.connectors)if(chosen.contains(c.id) || (links.contains(c.from.linkId) && links.contains(c.to.linkId))) {

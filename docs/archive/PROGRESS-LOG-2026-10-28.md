@@ -2,6 +2,18 @@
 
 Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current queue.
 
+
+## 2026-10-28 — Road workflow: Apply on several Roads, crossings warning (D385)
+
+- **Asked:** batch D of the road-model review, on the D382–D384 branch, whose PR is still open.
+- **Changed, each with a `road-ui` row that failed first:** *Apply template* takes every selected Road
+  in table order in one Undo step, and one refusal leaves the batch unapplied (RD34; 200 Roads about
+  150 ms in a Debug desktop build); *Find crossings* marks a place whose Road has neither template
+  nor Links, with a tooltip and one note, without blocking Confirm (RD35; en/th strings).
+- **Docs:** ROADS RD34–RD35, ROADS_IMPLEMENTED §24, OWNER_SITTING E24; decision index gains D382–D385.
+- **Verified:** Qt 6.4.2 desktop build, `ctest` 245/245 and `check` on Linux (offscreen); Windows
+  and screen scale are OWNER_SITTING E24.
+
 ## 2026-10-28 — Road-scale edits made fast, results unchanged (D384)
 
 - **Asked:** "ทำชุด C ต่อเลย" ("go on with batch C") of the road-model review.

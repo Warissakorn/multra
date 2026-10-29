@@ -2,6 +2,7 @@
 #include "network_commands.hpp"
 #include "street_segment_commands.hpp"
 #include "node_detail_commands.hpp"
+#include "junction_fill.hpp"
 #include "../model/network/node_detail.hpp"
 #include "detail.hpp"
 #include <algorithm>
@@ -50,6 +51,18 @@ std::optional<FillOffer> nodeDetailOffer(const ProjectDocument& d, const Node& n
     const auto turns = refusal.empty() ? nodeTurnConnectors(d.network, node).size() : 0;
     return FillOffer{FillKind::nodeDetail, node.id, refusal.empty() ? std::to_string(turns) : "", nodeDetailSource, "NODE_NO_TURN", std::move(refusal)};
 }
+std::optional<FillOffer> junctionOffer(const ProjectDocument& d,const Node& node,const NodeFillCatalogs& catalogs) {
+    if(!node.junction)return std::nullopt;
+    auto status=junctionFillStatus(d,node,catalogs);
+    std::string counts;
+    for(const auto& c:status.laneCounts) {
+        if(!counts.empty())counts+="\n";
+        counts+=c.arm+": "+std::to_string(c.actual)+" → "+std::to_string(c.required);
+    }
+    return FillOffer{FillKind::junction,node.id,counts.empty()?node.junction->templateId:counts,
+        "template "+node.junction->templateId+" (JUNCTION_TEMPLATES 5)","NODE_NO_TURN",
+        status.issues.empty()?std::string{}:status.issues.front().code,std::move(status.issues)};
+}
 bool ownsTypes(const ProjectDocument& d) { return d.definition && !d.definition->externalLinkTypes; }
 // The current offer of `kind` for the object named `id`, or none.
 std::optional<FillOffer> currentOffer(const ProjectDocument& d, FillKind kind, const std::string& id, const NodeFillCatalogs& catalogs) {
@@ -62,6 +75,7 @@ std::optional<FillOffer> currentOffer(const ProjectDocument& d, FillKind kind, c
         break;
     case FillKind::streetSegmentLinks: if (const auto r = named(n.streetSegments); r != n.streetSegments.end()) return streetSegmentLinksOffer(*r, catalogs.templates); break;
     case FillKind::nodeDetail: if (const auto x = named(n.nodes); x != n.nodes.end()) return nodeDetailOffer(d, *x, catalogs); break;
+    case FillKind::junction: if(const auto x=named(n.nodes);x!=n.nodes.end())return junctionOffer(d,*x,catalogs);break;
     }
     return std::nullopt;
 }
@@ -73,6 +87,7 @@ std::vector<FillOffer> fillOffers(const ProjectDocument& d, const NodeFillCatalo
     for (const auto& l : n.links) add(linkTypeOffer(n, l, catalogs.templates));
     if (ownsTypes(d)) for (const auto& t : d.definition->linkTypes) add(jamOffer(t));
     for (const auto& r : n.streetSegments) add(streetSegmentLinksOffer(r, catalogs.templates));
+    for (const auto& node : n.nodes) add(junctionOffer(d,node,catalogs));
     for (const auto& node : n.nodes) add(nodeDetailOffer(d, node, catalogs));
     return offers;
 }
@@ -89,6 +104,7 @@ void applyFills(ProjectDocument& d, const std::vector<FillOffer>& chosen, const 
             break;
         case FillKind::streetSegmentLinks: applyTemplate(d, offer.objectId, templates); break;
         case FillKind::nodeDetail: generateNodeDetail(d, offer.objectId, catalogs); break;
+        case FillKind::junction: generateJunction(d,offer.objectId,catalogs);break;
         }
     }
 }

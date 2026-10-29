@@ -6,6 +6,31 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-29 — J3b fill checkpoint, owner choices and all-way-stop question (D397, D398)
+
+- **Scope:** continue J3b only. The owner kept signals in J4 and selected a named refusal with
+  existing → required counts when full lanes differ. JT8 uses the two-way-stop fill in Micro,
+  then manual Commands for test-only signals to inspect HCM lane groups. No preset execution,
+  timing defaults, template editor, transition or UTDF writer is introduced.
+- **Implementation:** pure per-call plans list missing site values/codes/paths and build cuts,
+  physical pockets and merged movement ranges. The junction offer follows F3; F4 cannot bypass
+  a recipe. Shared F4 right-of-way ranks remain unchanged. Recipe arm ids stay; the final storage
+  Link keeps the Street segment association. Re-apply walks generated predecessors and refuses
+  named edited detail/attachments. Link.generated uses feature-selected 62, older field paths
+  refuse it, and fill transactions preserve program ownership while manual edits refine it.
+  Coarse still disappears only through the existing detail transition, with recipe retained.
+- **Unfinished:** D388 requires generated all-way stop, but existing StopControl cannot name an
+  independent stop line. OWNER_SITTING B31 asks whether to extend that representation or defer
+  generation. Until answered it is disabled with F4's existing code. This checkpoint does not
+  complete J3b or authorize J4; remaining work is in NEXT. Windows look is E26.
+- **Rows/verification:** the first six JT6–JT8 checkpoint cases failed before implementation. Extra red cases
+  exposed missing Link export marking and a copied Link retaining generated; both are fixed.
+  Desktop build, new checkpoint cases **10/10**, desktop CTest **250/250** (242.41 s) and
+  `check` **250/250** (221.90 s) pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen). The JSON
+  comparisons include revision for exact Undo/Redo. Node-analysis CLI bytes match before/after
+  except buildCommit. Headless is not configured; Windows and the new junction-specific UI
+  rows were not driven. Existing desktop UI suites passed. No J3b completion/gate is claimed.
+
 ## 2026-10-29 — J3a review: keep coarse until detail refine (D393)
 
 - **Asked:** keep coarse beside the template recipe so choosing/Detach cannot change Macro/Meso
@@ -153,14 +178,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   [UTDF_EXPORT](reference/UTDF_EXPORT.md), ROADMAP M14, OWNER_SITTING B30. UTDF's field list is
   provisional until U0 reads files the owner's Synchro 12 and Vistro 2026 write and import;
   left-hand traffic in both is the main open risk. No code changed.
-
-## 2026-10-28 — Road workflow: Apply on several Roads, crossings warning (D385)
-
-- **Asked:** batch D of the road-model review, on the D382–D384 branch, whose PR is still open.
-- **Changed, each with a `road-ui` row that failed first:** *Apply template* takes every selected Road
-  in table order in one Undo step, and one refusal leaves the batch unapplied (RD34; 200 Roads about
-  150 ms in a Debug desktop build); *Find crossings* marks a place whose Road has neither template
-  nor Links, with a tooltip and one note, without blocking Confirm (RD35; en/th strings).
-- **Docs:** ROADS RD34–RD35, ROADS_IMPLEMENTED §24, OWNER_SITTING E24; decision index gains D382–D385.
-- **Verified:** Qt 6.4.2 desktop build, `ctest` 245/245 and `check` on Linux (offscreen); Windows
-  and screen scale are OWNER_SITTING E24.

@@ -10,7 +10,8 @@ namespace multra {
 // priority rules, stop controls), signal heads, and the controllers those heads show.
 struct GeneratedCount {
     std::size_t connectors{}, rightOfWay{}, heads{}, controllers{};
-    std::size_t total() const { return connectors + rightOfWay + heads + controllers; }
+    std::size_t links{}; // J3b's generated cuts/pockets, including legs crossing the boundary
+    std::size_t total() const { return connectors + rightOfWay + heads + controllers + links; }
     bool operator==(const GeneratedCount&) const = default;
 };
 // Inside the Node, as nodeMembership reads it; priority rules and stop controls by the conflict

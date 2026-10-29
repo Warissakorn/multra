@@ -7,7 +7,9 @@ on that Node says which lanes serve which turns, the pockets and the control, fr
 Connectors, right-of-way and signals are generated. Where two Street segments meet end to end with different
 cross-sections, a **transition template** joins them. The export is [UTDF_EXPORT](UTDF_EXPORT.md).
 SR and J1 are implemented; J2's interfaces and geometry are described in §6 (D391, D392).
-J3a adds the template catalog and stored recipes (D393–D395); fill and editor remain later slices.
+J3a adds the template catalog and stored recipes (D393–D395). J3b is in progress: the
+two-way-stop fill checkpoint is described below; all-way-stop representation awaits the owner.
+The editor recipe surfaces remain J6.
 The owner choices are answered
 (§12: D387, D388; J2 clarification on 2026-10-29).
 
@@ -159,6 +161,33 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
 - **Apply again** replaces only objects still `generated` and refuses, naming them, when a person
   has edited one (`JUNCTION_EDITED`). Undo restores every byte.
 
+**J3b scope confirmed by the owner (D397).** Signalised templates remain listed but disabled
+with `JUNCTION_SIGNALS_PENDING` until J4. Missing cycle/phase values still get their own
+`JUNCTION_TIMING_MISSING` paths. JT8 uses the two-way-stop fill for Micro, then the existing
+manual signal Commands only in the test to check HCM lane groups. It does not execute a preset.
+The number of non-pocket rows must equal the in-leg's full lane count; otherwise
+`JUNCTION_LANE_COUNT` lists existing → required counts. The owner changes the cross-section or
+per-leg lane override before Apply; the fill never resizes those full lanes implicitly.
+
+**Checkpoint implementation (D398, not a completed J3b).** `junctionFillStatus` and
+`generateJunction` are per-call plans and Commands in `src/commands/junction_fill*`. F3 comes
+first. The `junction` offer lists every missing storage/taper slot and timing component with
+its code and path, extra/inapplicable site values, unknown legs/templates, unresolved major
+arms and geometry refusals. F4's lane sharing is not offered on a Node carrying a recipe.
+The planner measures cuts with the final widths, then creates the physical taper/storage and
+movement ranges. Full lanes keep their footprints. The final storage Link keeps the leg's
+Street segment association; detached upstream pieces and the new Links carry `generated`
+(schema 62), as do cuts and Connectors. Generated Links enter S5's warnings/export marking. Recipe arm ids stay unchanged; Link-based inputs follow
+the downstream end through the existing split rules. No applied layout/receipt is stored.
+Re-apply walks generated pocket predecessors, stopping at a junction, reconstructs the base
+leg from its cross-section, and refuses named manual detail/attachments instead of deleting
+it. A fill transaction preserves generated ownership during re-generation; manual Commands
+refine it. The existing `settleNodes` transition alone clears coarse after detail appears. Existing geometry
+refusals remain: a three-leg cut meeting no other surface keeps its end ([READINESS](READINESS.md) §13.2), and a zero
+through-Connector gap is `EDIT_CONNECTOR_GAP`; no arbitrary cut distance is invented.
+All-way-stop is temporarily disabled with F4's `FILL_NODE_ALL_WAY_STOP` pending the owner's
+choice in OWNER_SITTING B31; D388's desired generated all-way stop has not shipped here.
+
 ## 6. The lane layout, derived and never stored (D272)
 
 `approachLayout(network, node, overrides = {})` (pure, `src/model/network/approach_layout.*`)
@@ -268,7 +297,7 @@ left-turn numbers. U0 confirms what both programs read (UTDF_EXPORT §6).
 | U0 | UTDF probe with the owner's Synchro 12 and Vistro 2026 (UTDF_EXPORT §8) | 1 + owner |
 | J1 | **Done (D390).** Posted speed on the Link (§9), schema 60 | 1 |
 | J2 | **Done (D391, D392).** Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
-| J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. J3b: `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8; stop for review (§3–§5) | 2 |
+| J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. J3b **in progress**: `junction` fill checkpoint, pockets, cuts, Connectors, right-of-way, JT6–JT8; all-way-stop representation pending; stop for review (§3–§5) | 2 |
 | J4 | Signals from the template: presets, NEMA numbering, timing, `nemaCheck` (§8) | 1 |
 | J5 | Transitions (§7) | 1 |
 | J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS` | 1 |
@@ -318,9 +347,9 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT3 | J2 | Kerb/far pockets on both `drivingSide`s preserve original lane footprints, routes and heads (including taper/boundary heads); storage/taper read back over a bend and a later split; hand-drawn 1→2 remains ambiguous; a pocket stops at a Node-owned Connector even straight through to the next junction; generated/refine, atomic refusals, save/reopen and one Undo/Redo (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT4 | J2 | `approachLayout` names all 12 four-leg movements on both `drivingSide`s; shared lane sets/widths, duplicate directions, compass ties, overrides and 45°/135° boundaries (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT5 | J3a | Every invalid template in §3 is refused on load with its path (installed/owned); catalog ordering/ownership, schema-61 floors and pre-version field paths, partial recipe/coarse round-trip, exact Macro/Meso compile parity for a coarse signalised Node with a banned turn before/after choice and Detach (both driving sides), detail refine, direction/split and one Undo/Redo (`tests/junction_template_tests.cpp`, `tests/junction_recipe_tests.cpp`, `tests/junction_command_tests.cpp`; **passing**) |
-| JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic |
-| JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED` |
-| JT8 | J3 | The applied junction runs in Micro (seed 42) with no refusal, and NODE_ANALYSIS finds every lane group |
+| JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic; four-leg far/kerb pockets and skew three-leg roles (`tests/junction_fill_tests.cpp`, checkpoint cases **passing**; J3b remains in progress) |
+| JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED`; full-lane counts, schema-62 paths, manual refine/copy/split, generated replacement and S5 marking (`tests/junction_fill_tests.cpp`, checkpoint cases **passing**; all-way-stop pending) |
+| JT8 | J3 | The applied two-way-stop junction runs in Micro (seed 42) with no refusal on both driving sides. Existing manual signal Commands, used only in this test (D397), let NODE_ANALYSIS find all 10 lane groups and 12 turns (`tests/junction_fill_run_tests.cpp`, **passing**); template signals remain J4 |
 | JT9 | J4 | Each preset passes `nemaCheck`; a broken barrier, ring order or head group is named; HCM g/C per lane group equals the Node's greens over the cycle |
 | JT10 | J5 | A 3-lane Street segment ending into a 2-lane Street segment gives a Transition row; Apply with `align: kerb` drops the far lane over the taper; the same-template pair still merges |
 | JT11 | J6 | Editing a generated Connector gives `SEAM_JUNCTION_DIFFERS`; *Apply again* and *Detach* each fix it in one Undo step |

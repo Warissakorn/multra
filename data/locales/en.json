@@ -1281,5 +1281,22 @@
   "EDIT_IMAGE_SIZE": "Choose 320–8192 pixels wide, 240–8192 high, with at most 32 million pixels.",
   "EDIT_IMAGE_PROJECT": "Choose a PNG destination different from the open project and its recovery file.",
   "EDIT_IMAGE_WRITE": "Could not write the network PNG image.",
-  "editorPngFilter": "PNG image (*.png)"
+  "editorPngFilter": "PNG image (*.png)",
+  "editorFillJunction": "Junction template",
+  "JUNCTION_TEMPLATE_UNKNOWN": "The junction template does not resolve.",
+  "JUNCTION_TIMING_MISSING": "Enter the site signal timing.",
+  "JUNCTION_SIGNALS_PENDING": "Signalised template generation is not available yet.",
+  "JUNCTION_STORAGE_MISSING": "Enter the pocket storage length.",
+  "JUNCTION_TAPER_MISSING": "Enter the pocket taper length.",
+  "JUNCTION_LANE_COUNT": "Full lane count differs (existing → required).",
+  "JUNCTION_LEG_COUNT": "The number of junction legs does not match the template.",
+  "JUNCTION_MAJOR_ARMS": "Choose exactly two existing major legs.",
+  "JUNCTION_LEG_UNKNOWN": "A recipe leg does not match an existing Street segment leg.",
+  "JUNCTION_SITE_COUNT": "The number of site values does not match the selected template.",
+  "JUNCTION_POCKET_RANGE": "The storage and taper do not fit the approach.",
+  "JUNCTION_POCKET_LAYOUT": "The pocket geometry cannot reproduce these lane rows and lengths.",
+  "JUNCTION_MOVEMENT_AMBIGUOUS": "More than one out-leg has the same movement.",
+  "JUNCTION_MOVEMENT_MISSING": "A lane row has no matching out-leg.",
+  "JUNCTION_EDITED": "A person has edited or attached detail; Apply again cannot replace it.",
+  "MICRO_GENERATED_LINKS_IN_AREA": "This study-area Node has %1 Links cut or drawn by the program. Review them before relying on Micro results; exports are marked."
 }

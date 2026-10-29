@@ -93,7 +93,8 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesJunctionFields(d) ? 61 :
+    return std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
+        usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
         usesStreetSegmentKeys(d) ? 59 :
         usesNodeAnalysis(d) ? 58 :
@@ -148,6 +149,7 @@ Json documentJson(const ProjectDocument& d) {
         for (const auto& lane : l.lanes) lanes.push_back({{"id", lane.id}, {"width", lane.width}});
         network["links"].push_back({{"id", l.id}, {"geometry", points(l.geometry)}, {"lanes", lanes}, {"level",l.level}, {"displayType",l.displayType}, {"laneOffset",l.laneOffset}, {"name",l.name},
             {"boundaryMarkings",markingNames(l.boundaryMarkings)}});
+        generated(network["links"],l.generated);
         if (l.behaviourTypeId) network["links"].back()["behaviourType"] = *l.behaviourTypeId; // M3.3.2a, schema 21
         if (l.linkTypeId) network["links"].back()["linkType"] = *l.linkTypeId; // S2.1, schema 50
         if (l.streetSegmentId) network["links"].back()["streetSegmentId"] = *l.streetSegmentId; // S3.3, schema 53

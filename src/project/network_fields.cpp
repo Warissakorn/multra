@@ -25,7 +25,8 @@ constexpr Field linkFields[]={
     {"linkType",Kind::text,false,behaviourVersion,linkTypeVersion},
     {"roadId",Kind::text,false,streetSegmentVersion,streetSegmentVersion,false,streetSegmentKeyVersion},
     {"streetSegmentId",Kind::text,false,streetSegmentKeyVersion,streetSegmentKeyVersion},
-    {"speedLimit",Kind::number,false,linkSpeedVersion,linkSpeedVersion}};
+    {"speedLimit",Kind::number,false,linkSpeedVersion,linkSpeedVersion},
+    {"generated",Kind::generated,false,62,62}};
 constexpr Field laneFields[]={{"id",Kind::text,true},{"width",Kind::number,true}};
 constexpr Field pointFields[]={{"x",Kind::number,true},{"y",Kind::number,true}};
 constexpr Field connectorFields[]={

@@ -47,23 +47,33 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Awaiting owner re-review of J3a. Do not start J3b without approval.** The catalog/loader,
-  Node recipe and independent compass overrides use feature-selected schema 61 (D393–D395,
-  JUNCTION_TEMPLATES §3–§4; JT5); 62 is the next unused schema step. J2's physical taper/storage
-  and route/pocket boundaries stay D391/D392. No fill or new editor surface ships in J3a, and HCM's derivation/storage is retained.
-  D393 review: template choice/Detach keep coarse; Macro/Meso still read its control, bans and
-  stages. Only the existing no-detail → detail refine rule clears it, when the fill adds detail.
-- **After approval: J3b only** (JUNCTION_TEMPLATES §5, JT6–JT8), then stop for review:
-  - implement the `junction` fill after F3, its missing-piece offers and atomic apply/re-apply;
-  - read `junction.major`, else rank; `junction.legs.<Street segment id>.lanes`, else role rows;
-    keep recipe keys separate from Link-based `approachDirections` and analysis inputs (B29 (b));
-  - missing scalar values and null pocket slots are incomplete, never defaults. Validate site
-    counts and role assignment; D391 requires actual taper geometry + full-width storage;
-  - preserve/remap recipe arm ids through cuts/pockets, including splitLink's Street segment
-    detach rules; keep generated/refine and one Undo; reject edited generated detail by name;
-  - settle any stored-data/UI/result choice left open with the owner before coding;
-  - signals/preset execution, NEMA and timing consistency remain J4. If JT8 needs a signalised
-    template before J4, narrow that acceptance setup explicitly; do not invent timing defaults.
+- **Continue the same J3b; it is not complete. Do not start J4 or another slice.** The owner
+  approved starting J3b after J3a review and answered two scope choices (D397): signals stay J4
+  (disabled offer; JT8 manual signals only in the HCM test); full-lane mismatch refuses Apply,
+  with existing → required counts, so the owner fixes cross-section/override explicitly.
+- **Owner B31 is pending** ([OWNER_SITTING](plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each)).
+  D388 wants generated Stop on every arm, with Micro refusal; existing StopControl requires a
+  yielding Conflict area. Recommended: allow an independent waiting-line Stop with no areas,
+  at the next unused schema step; alternative: explicitly defer all-way-stop generation. The
+  question was asked before that model change. Do not infer an answer or call D388 implemented.
+- **Checkpoint (D398) to build on:** junction offers/plans, two-way-stop pockets/cuts/lane-range
+  Connectors and shared F4 ranks; generated-only replacement and named edited-detail refusals.
+  Link.generated selects 62; 63 is next unused after this checkpoint. No stored layout/receipt.
+  Final storage Links retain Street segment association, base pieces detach; recipe arm ids
+  remain separate from Link-based directions/analysis. Coarse remains until existing detail refine.
+- **Next steps within J3b, after B31's answer:**
+  - implement and test the approved all-way-stop representation, path/version guards, generated
+    Stops on every arm and Micro refusal; or record the owner's explicit deferral in §5/§12;
+  - complete JT6–JT8 coverage/review for rank fallback, source/reference safety and re-apply
+    after a Street segment cross-section change (including the detached original upstream Link); maintain one Undo and byte-exact save/reopen. Do not invent signal defaults;
+  - re-read JUNCTION_TEMPLATES §5/§13 and READINESS §13.6, keep the legacy F4 share unchanged;
+  - rerun desktop build, CTest and check; headless only if configured. Compare node-analysis CLI
+    before/after (the baseline is /tmp/multra-j3b-analysis-before.json in this workspace);
+  - finish all-way-stop scope and remaining rows, commit/push this branch, then stop for J3b owner review.
+  - Keep existing geometry refusals: an orthogonal T with a wide median can leave a major
+    through pair touching (no other lane surface met), so `EDIT_CONNECTOR_GAP` disables it.
+    The skew-T roles pass; changing the cut rule needs an owner choice, not an arbitrary gap.
+  - Windows inspection of the fill rows is OWNER_SITTING E26; recipe selection/editor remains J6.
 - Later, each only after approval: J4 signals (JT9; check U0 answers first), J5 transitions,
   J6 editor surfaces, J7 analysis panel, then U1–U3 once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,

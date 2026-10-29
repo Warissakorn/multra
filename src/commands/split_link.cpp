@@ -41,6 +41,7 @@ std::string splitSpan(ProjectDocument& d, const std::string& id, double near, do
             throw std::invalid_argument("EDIT_SPLIT_CONTROL");
     detail::checkSplitControls(d.network, id, near, far); // M3.2.2b: refuse before changing anything
     auto downstream = original;
+    downstream.generated = false; // A manual split is refined; J3b marks its own generated pieces.
     downstream.id = allocateId(d, "link");
     downstream.streetSegmentId.reset(); // S3.3: both pieces leave the StreetSegment (the upstream one through changeGeometry)
     downstream.geometry = section(original.geometry, far, total);

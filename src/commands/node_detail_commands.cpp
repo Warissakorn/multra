@@ -1,4 +1,5 @@
 #include "node_detail_commands.hpp"
+#include "node_detail_priority.hpp"
 #include "connector_commands.hpp"
 #include "right_of_way_commands.hpp"
 #include "demand_commands.hpp"
@@ -86,6 +87,7 @@ bool holdsGeneratedDetail(const Network& n, const Node& node) {
 }
 bool nodeDetailListed(const ProjectDocument& d, const Node& node) {
     const auto& n = d.network;
+    if (node.junction) return false; // J3b: F4 must not bypass the selected lane recipe.
     if (!simplePolygon(node.polygon) || nodeHasDetail(n, node)) return false;
     std::set<std::string> arms;
     for (const auto& leg : nodeLinkLegs(n, node)) arms.insert(legArm(linkOf(n, leg.linkId)));
@@ -172,50 +174,7 @@ template<class T> std::set<std::string> idsOf(const std::vector<T>& list) {
 template<class T> void markNew(std::vector<T>& list, const std::set<std::string>& before) {
     for (auto& x : list) if (!before.contains(x.id)) x.generated = true;
 }
-// S4.5b (§13.4): who gives way between the generated turns, by HCM rank.
-// At a signal (S4.5c) `stages` holds the stages the turn is green in; two turns decide only when green together.
-// `order` is the turn's place in drawing order, the tie-break a merge's areas share.
-struct GeneratedTurn { std::string inArm; int rank{}; bool minor{}; std::vector<std::size_t> stages; bool signal{}; std::size_t order{}; };
-bool greenTogether(const GeneratedTurn& x, const GeneratedTurn& y) {
-    if (!x.signal) return true;
-    return std::any_of(x.stages.begin(), x.stages.end(), [&](auto s) { return std::find(y.stages.begin(), y.stages.end(), s) != y.stages.end(); });
-}
-void authorPriority(ProjectDocument& d, const std::map<std::string, GeneratedTurn>& turns, const PriorityDefaults& defaults) {
-    auto& row = d.network.rightOfWay;
-    const auto lines = idsOf(row.waitingLines), areas = idsOf(row.conflictAreas), rules = idsOf(row.priorityRules), stops = idsOf(row.stopControls);
-    const auto turnOf = [&](const ConflictSide& s) -> const GeneratedTurn* {
-        const auto t = turns.find(s.path.connectorId);
-        return t == turns.end() ? nullptr : &t->second;
-    };
-    const auto decides = [&](const ConflictSide& a, const ConflictSide& b) {
-        const auto *x = turnOf(a), *y = turnOf(b);
-        return x && y && x->inArm != y->inArm && x->rank != y->rank && greenTogether(*x, *y);
-    };
-    for (const auto& conflict : automaticConflicts(d.network)) {
-        if (conflict.kind == ConflictKind::branching || !decides(conflict.first, conflict.second)) continue;
-        try { detail::authorCurrentConflict(d, conflict, defaults); }
-        catch (const std::invalid_argument& e) { // a merge already taken over whole by an earlier pair
-            const std::string code = e.what();
-            if (code != "EDIT_NO_MERGE" && code != "EDIT_NO_CROSSING" && code != "EDIT_ALREADY_EXPLICIT") throw;
-        }
-    }
-    std::vector<std::string> stopping;
-    const auto added = row.conflictAreas; // setConflictControl edits the list
-    for (const auto& a : added) {
-        if (areas.contains(a.id) || !turnOf(a.first) || !turnOf(a.second)) continue;
-        // A merge is taken over whole, so its pairs need one order or they can cycle: rank, then
-        // drawing order, for every pair of it. A crossing was authored only where ranks decide.
-        const bool merge = a.kind == ConflictKind::merge;
-        if (!merge && !decides(a.first, a.second)) continue;
-        const auto key = [&](const ConflictSide& side) { return std::pair{turnOf(side)->rank, turnOf(side)->order}; };
-        const bool firstYields = key(a.first) > key(a.second);
-        setConflictControl(d, a.id, a.name, firstYields ? ConflictPriority::firstYields : ConflictPriority::secondYields,
-                           defaults.gapTime, defaults.headway);
-        if (decides(a.first, a.second) && (firstYields ? turnOf(a.first) : turnOf(a.second))->minor) stopping.push_back(a.id);
-    }
-    for (const auto& id : stopping) setAreaControl(d, id, StopMode::stop);
-    markNew(row.waitingLines, lines); markNew(row.conflictAreas, areas); markNew(row.priorityRules, rules); markNew(row.stopControls, stops);
-}
+
 }
 std::vector<std::string> generateNodeDetail(ProjectDocument& d, const std::string& nodeId, const NodeFillCatalogs& catalogs) {
     const auto& templates = catalogs.templates;
@@ -259,7 +218,7 @@ std::vector<std::string> generateNodeDetail(ProjectDocument& d, const std::strin
         }
         turns[ids.back()] = std::move(turn);
     }
-    if (major) authorPriority(d, turns, catalogs.priority);
+    if (major) authorNodePriority(d, turns, catalogs.priority);
     if (signalised) { // S4.5c (§13.5): the controller, and a head at the start of every path of each turn
         const auto heads = idsOf(d.network.signalHeads);
         const auto controllers = d.definition ? idsOf(d.definition->signalControllers) : std::set<std::string>{};
@@ -303,6 +262,7 @@ template<class T> void settle(std::vector<T>& after, const std::vector<T>& befor
 }
 void settleGenerated(ProjectDocument& after, const ProjectDocument& before) {
     auto& a = after.network; const auto& b = before.network;
+    settle(a.links, b.links); // J3b's cuts and pockets, schema 62
     settle(a.connectors, b.connectors);
     settle(a.rightOfWay.waitingLines, b.rightOfWay.waitingLines);
     settle(a.rightOfWay.conflictAreas, b.rightOfWay.conflictAreas);

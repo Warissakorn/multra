@@ -16,10 +16,11 @@ namespace multra {
 // - F4 nodeDetail (S4.5a, READINESS §13, D323): a coarse Node over generated Links; its legs cut
 //   and one generated Connector per allowed turn (clears NODE_NO_TURN). `value` is the Connector
 //   count. A Node F4 cannot fill is still listed, with `refusal` naming why (nodeDetailRefusal).
-// Offers come in kind order, then in document order. Listing changes nothing.
-enum class FillKind { linkType, jamDensity, streetSegmentLinks, nodeDetail };
+// J3b junction is after F3, before legacy F4; within each kind, document order. Listing changes nothing.
+enum class FillKind { linkType, jamDensity, streetSegmentLinks, nodeDetail, junction };
 struct FillOffer {
     FillKind kind{}; std::string objectId, value, source, clears, refusal;
+    std::vector<ValidationIssue> issues{}; // junction: every reason, with its site/object path
     bool operator==(const FillOffer&) const = default;
 };
 inline constexpr double hcmJamDensity = 118.0605; // pc/km/ln: 190 pc/mi/ln / 1.609344 (STREET_SEGMENTS §8)
@@ -29,7 +30,8 @@ extern const char* const hcmJamDensitySource;
 std::vector<FillOffer> fillOffers(const ProjectDocument&, const NodeFillCatalogs&);
 std::vector<FillOffer> fillOffers(const ProjectDocument&, const std::vector<CrossSection>& templates);
 extern const char* const nodeDetailSource;
-// Applies `chosen` only; an offer that no longer applies is EDIT_FILL_STALE, and one with a refusal
+// Apply inside History::execute(..., true) to preserve program ownership. Applies `chosen` only;
+// an offer that no longer applies is EDIT_FILL_STALE, and one with a refusal
 // throws that refusal.
 void applyFills(ProjectDocument&, const std::vector<FillOffer>& chosen, const NodeFillCatalogs&);
 void applyFills(ProjectDocument&, const std::vector<FillOffer>& chosen, const std::vector<CrossSection>& templates);

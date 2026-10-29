@@ -30,6 +30,7 @@ struct Link {
     // S3.3 (STREET_SEGMENTS §3, D305), schema 53: the StreetSegment whose template generated this Link; cleared on a hand edit.
     std::optional<std::string> streetSegmentId{};
     std::optional<double> speedLimit{}; // J1 (D390), schema 60: posted, km/h; never a cap, read by Node analysis only
+    bool generated{}; // J3b, schema 62: template-generated cut/pocket; cleared by a manual edit
 
     bool operator==(const Link&) const = default;
 };
