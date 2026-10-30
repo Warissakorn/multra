@@ -473,3 +473,6 @@ The J5 review (D407) enlarges only a still-generated transition Node's existing 
 Fill, preserving its generated flag; it adds no stored field or schema step.
 J6 (D410/D411) reuses existing recipes/catalogs, generated fields and cross-section overrides.
 Affected-object previews, corridor sets and inferred pocket-prefix associations are never stored.
+J6's catalog form captures the resolved whole catalog: including installed transitions selects
+63; junction-only owned data and Node recipes keep 61. Draft/empty/null/zero shapes are unchanged.
+B36 (D412) changes only when the existing Node.generated is cleared, never introduces a flag reset.

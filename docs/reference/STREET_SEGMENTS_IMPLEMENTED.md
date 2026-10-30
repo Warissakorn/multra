@@ -195,6 +195,8 @@ creates the upstream taper. While that Node is still generated, Fill enlarges it
 contain both tapers and Connectors in the same Undo; a person's polygon still refuses outside
 tapers at its polygon path (D407). Enlargement refuses newly captured Link legs at those Links
 with `TRANSITION_POLYGON_CAPTURES`; shorten the taper or draw the polygon by hand (D408).
+J6 provides Node site forms and keeps generated ownership for same-template site numbers (D412);
+its corridor Command rebuilds every shared end, with compact affected-set previews (D414).
 The same-template two-leg lifecycle below stays unchanged.
 
 ## 19. S3.6a as implemented (D310)

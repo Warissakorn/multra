@@ -344,7 +344,7 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
   controller.
 - **S5 reads it** ("`generated` objects inside the study area count as missing for Micro", export
   marking); F4 only writes it.
-- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears; choosing or detaching a junction template keeps it (D393 review). J2's pocket Connectors use these same `generated`/refine rules ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272), D391); its geometry fill is J3b, template signals J4, and transition cuts/Connectors/merges J5 (JUNCTION_TEMPLATES §5/§7/§8, D398–D407). J5's fill also enlarges a still-generated Node polygon; a person's polygon keeps the outside refusal (D407). A J3a junction recipe survives refine/derive-back and the two-leg lifecycle (D393).
+- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears; choosing or detaching a junction template keeps it (D393 review). J2's pocket Connectors use these same `generated`/refine rules ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272), D391); its geometry fill is J3b, template signals J4, and transition cuts/Connectors/merges J5 (JUNCTION_TEMPLATES §5/§7/§8, D398–D407). J5's fill also enlarges a still-generated Node polygon; a person's polygon keeps the outside refusal (D407). A J3a junction recipe survives refine/derive-back and the two-leg lifecycle (D393); B36 keeps current Node.generated for same-template site-only edits, never restoring it after a structural/template/polygon edit (D412).
 
 ### 13.7 Owner choices (answered 2026-10-23, D323: F4-1a to F4-6a)
 

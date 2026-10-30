@@ -2,6 +2,11 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
 #include "gate_flow_dialog.hpp"
+#include "junction_catalog_dialog.hpp"
+#include "junction_recipe_dialog.hpp"
+#include "../commands/junction_commands.hpp"
+#include "../project/junction_template_codec.hpp"
+#include "../project/link_type_codec.hpp"
 #include "../project/study_area_run.hpp"
 #include "../model/network/coarse_nodes.hpp"
 #include "../model/network/node_membership.hpp"
@@ -68,6 +73,28 @@ void EditorWindow::buildNodes() {
     }));
     // S3.6b (D311): the coarse values of a Node without detail.
     bar->addAction(action("editorEditCoarse", {}, [this] { const auto id = selectedNode(); if (!id.empty()) editCoarse(id); }));
+    bar->addAction(action("editorJunctionTemplates",{},[this] {
+        try {
+            std::vector<JunctionTemplate> entries;for(auto& t:resolveJunctionTemplates(history_.document().definition.value_or(AuthoringDefinition{}),data_))entries.push_back(std::move(t.type));
+            const auto result=editJunctionCatalog(this,entries,history_.document().network.drivingSide,[this](const char* key){return text(key);});
+            if(result)execute("editorJunctionTemplates",[&](auto& d){putJunctionTemplateCatalog(d,*result);});
+        }catch(const std::exception& e){showError(e);}
+    }));
+    bar->addAction(action("editorNodeJunction",{},[this] {
+        const auto id=selectedNode();if(id.empty())return;
+        try {
+            const auto& d=history_.document();NodeFillCatalogs catalogs{crossSectionRows(),{},priorityDefaults()};
+            try {for(auto& t:resolveLinkTypes(d.definition.value_or(AuthoringDefinition{}),data_))catalogs.types.push_back(std::move(t.type));}
+            catch(const std::exception&) {} // As Fill defaults: an unreadable type catalog supplies no ranks.
+            for(auto& t:resolveJunctionTemplates(d.definition.value_or(AuthoringDefinition{}),data_))catalogs.junctionTemplates.push_back(std::move(t.type));
+            const auto result=editJunctionRecipe(this,d,id,catalogs,[this](const char* key){return text(key);});if(!result)return;
+            execute("editorNodeJunction",[&](auto& doc){
+                const auto n=std::find_if(doc.network.nodes.begin(),doc.network.nodes.end(),[&](const auto& x){return x.id==id;});
+                if(n->junction!=result->recipe)setNodeJunction(doc,id,result->recipe);
+                if(n->approachDirections!=result->directions)setNodeApproachDirections(doc,id,result->directions);
+            });
+        }catch(const std::exception& e){showError(e);}
+    }));
     // S3.5 (D309): the selected rows become one Node, the hull of theirs, in one Undo step.
     bar->addAction(action("editorMergeNodes", {}, [this] {
         std::vector<std::string> ids;
@@ -185,7 +212,7 @@ void EditorWindow::refreshNodes() {
     }
     canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit
     const bool chosen = !selectedNode().empty();
-    for (const auto* key : {"editorRenameNode", "editorDeleteNode"}) actions_.at(key)->setEnabled(chosen);
+    for (const auto* key : {"editorRenameNode", "editorDeleteNode", "editorNodeJunction"}) actions_.at(key)->setEnabled(chosen);
     const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));

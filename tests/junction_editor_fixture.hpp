@@ -7,13 +7,14 @@
 namespace junctionEditorTest {
 using namespace multra;
 using namespace junctionTest;
-inline ProjectDocument corridor(DrivingSide side,bool pockets=false,bool filled=true) {
+inline ProjectDocument corridor(DrivingSide side,bool pockets=false,bool filled=true,bool third=false) {
     auto d=cross(side,false);d.network=Network{"corridor",side,{},{},{},{}};
     putStreetSegment(d,{"ew","EW",{{-330,0},{330,0}},std::string("test"),0,{},{}});
     putStreetSegment(d,{"west","West",{{-120,-180},{-120,180}},std::string("test"),0,{},{}});
     putStreetSegment(d,{"east","East",{{120,-180},{120,180}},std::string("test"),0,{},{}});
-    const auto found=findCrossings(d.network,2);CHECK(found.size()==2&&found[0].legs==4&&found[1].legs==4);
-    applyCrossings(d,found,{CrossingChoice::junction,CrossingChoice::junction},2,d.definition->crossSections);
+    if(third)putStreetSegment(d,{"middle","Middle",{{0,-180},{0,180}},std::string("test"),0,{},{}});
+    const auto found=findCrossings(d.network,2);CHECK(found.size()==(third?3u:2u)&&found[0].legs==4&&found[1].legs==4);
+    applyCrossings(d,found,std::vector<CrossingChoice>(found.size(),CrossingChoice::junction),2,d.definition->crossSections);
     for(auto& n:d.network.nodes) {
         double x=0;for(const auto p:n.polygon)x+=p.x;x/=static_cast<double>(n.polygon.size());
         n.polygon={{x-30,-30},{x+30,-30},{x+30,30},{x-30,30}};
@@ -25,18 +26,18 @@ inline ProjectDocument corridor(DrivingSide side,bool pockets=false,bool filled=
         setNodeJunction(d,n.id,recipe);
     }
     for(const auto& r:d.network.streetSegments)applyTemplate(d,r.id,d.definition->crossSections);
-    if(filled){const auto c=catalogs(d);for(const auto& n:d.network.nodes)generateJunction(d,n.id,c);}
-    CHECK(d.network.nodes.size()==2&&(!filled?d.network.connectors.empty():pockets?d.network.connectors.size()>24:d.network.connectors.size()==24));
+    if(filled){const auto c=catalogs(d);const auto nodes=d.network.nodes;for(const auto& n:nodes)generateJunction(d,n.id,c);}
+    const auto turns=third?36u:24u;CHECK(d.network.nodes.size()==(third?3u:2u)&&(!filled?d.network.connectors.empty():pockets?d.network.connectors.size()>turns:d.network.connectors.size()==turns));
     return d;
 }
 inline std::string shared(const ProjectDocument& d) {
     for(const auto& r:d.network.streetSegments) {
         if(r.centreline.front().y!=0||r.centreline.back().y!=0)continue;
-        bool both=true;for(const auto& n:d.network.nodes) {
+        int connected=0;for(const auto& n:d.network.nodes) {
             const auto legs=nodeStreetSegmentLegs(d.network,n);
-            both=both&&std::any_of(legs.begin(),legs.end(),[&](const auto& a){return a.streetSegmentId==r.id;});
+            if(std::any_of(legs.begin(),legs.end(),[&](const auto& a){return a.streetSegmentId==r.id;}))++connected;
         }
-        if(both)return r.id;
+        if(connected>=2)return r.id;
     }
     throw std::runtime_error("No shared Street segment in corridor fixture");
 }

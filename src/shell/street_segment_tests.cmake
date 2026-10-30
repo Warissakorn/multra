@@ -19,3 +19,13 @@
     add_test(NAME junction-ui COMMAND multra-junction-ui-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(junction-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
     add_dependencies(check multra-junction-ui-tests)
+
+    add_executable(multra-junction-forms-ui-tests ../../tests/junction_forms_ui_tests.cpp)
+    target_link_libraries(multra-junction-forms-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_compile_definitions(multra-junction-forms-ui-tests PRIVATE MULTRA_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+    target_precompile_headers(multra-junction-forms-ui-tests REUSE_FROM multra_shell)
+    foreach(form catalog recipe)
+        add_test(NAME junction-${form}-ui COMMAND multra-junction-forms-ui-tests "${PROJECT_SOURCE_DIR}/data" ${form})
+        set_tests_properties(junction-${form}-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    endforeach()
+    add_dependencies(check multra-junction-forms-ui-tests)

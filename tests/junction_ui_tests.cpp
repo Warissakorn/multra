@@ -2,6 +2,7 @@
 #include "ui_test_storage.hpp"
 #include "dialog_fit_support.hpp"
 #include "../src/shell/editor_window.hpp"
+#include "../src/shell/junction_preview_dialog.hpp"
 #include <QAction>
 #include <QApplication>
 #include <QDialog>
@@ -10,6 +11,7 @@
 #include <QTableWidget>
 #include <QTabWidget>
 #include <QLineEdit>
+#include <QLabel>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <fstream>
@@ -37,8 +39,11 @@ int main(int argc,char** argv) {
                         bool previewed=false;std::string previewError;
                         QTimer::singleShot(0,[&]{auto* preview=qobject_cast<QDialog*>(QApplication::activeModalWidget());try {
                             CHECK(preview&&preview->objectName()=="editorJunctionPreviewDialog");previewed=true;
-                            auto* objects=preview->findChild<QTableWidget*>("editorJunctionPreviewTable");CHECK(objects&&objects->rowCount()>1);
-                            bool listed=false;for(int r=0;r<objects->rowCount();++r)listed=listed||objects->item(r,1)->text().toStdString()==id;CHECK(listed);
+                            auto* summary=preview->findChild<QLabel*>("editorJunctionObjectCount");CHECK(summary&&!summary->text().isEmpty());
+                            auto* main=preview->findChild<QTableWidget*>("editorJunctionPreviewTable");CHECK(main&&main->rowCount()==1);
+                            auto* objects=preview->findChild<QTableWidget*>("editorJunctionDetailTable");CHECK(objects&&objects->isHidden());
+                            auto* show=preview->findChild<QPushButton*>("editorJunctionShowDetail");CHECK(show);show->click();CHECK(!objects->isHidden());
+                            bool listed=false;for(int r=0;r<objects->rowCount();++r)listed=listed||objects->item(r,0)->text().toStdString()==id;CHECK(listed);
                             requireFitsScreen(*preview);auto* buttons=preview->findChild<QDialogButtonBox*>();CHECK(buttons&&buttons->button(QDialogButtonBox::Ok)->isEnabled());
                             if(accept)buttons->button(QDialogButtonBox::Ok)->click();else preview->reject();
                         }catch(const std::exception& e){previewError=e.what();if(preview)preview->reject();}});
@@ -74,7 +79,7 @@ int main(int argc,char** argv) {
                     if(!accept){dialog->reject();return;}
                     QTimer::singleShot(0,[&]{auto* preview=qobject_cast<QDialog*>(QApplication::activeModalWidget());try {
                         CHECK(preview&&preview->objectName()=="editorJunctionPreviewDialog");previewed=true;
-                        auto* affected=preview->findChild<QTableWidget*>("editorJunctionPreviewTable");CHECK(affected&&affected->rowCount()>2);
+                        auto* affected=preview->findChild<QTableWidget*>("editorJunctionPreviewTable");CHECK(affected&&affected->rowCount()==2);
                         for(const auto& n:w.history().document().network.nodes){bool found=false;for(int r=0;r<affected->rowCount();++r)found=found||affected->item(r,1)->text().toStdString()==n.id;CHECK(found);}
                         requireFitsScreen(*preview);auto* apply=preview->findChild<QDialogButtonBox*>();CHECK(apply&&apply->button(QDialogButtonBox::Ok)->isEnabled());apply->button(QDialogButtonBox::Ok)->click();
                     }catch(const std::exception& e){previewError=e.what();if(preview)preview->reject();}});
@@ -88,6 +93,14 @@ int main(int argc,char** argv) {
             const auto& roads=w.history().document().network.streetSegments;const auto r=std::find_if(roads.begin(),roads.end(),[&](const auto& r){return r.id==road;});CHECK(r!=roads.end()&&r->overrides.laneWidth==3.75);
             auto* undo=w.findChild<QAction*>("editorUndo");CHECK(undo);undo->trigger();QApplication::processEvents();CHECK(documentJson(w.history().document())==before);
         }
-        std::cout<<"JT11/JT16 seam and corridor previews, Cancel and one Undo passed on both driving sides\n";
+        JunctionEditPreview many;many.nodes={"junction-a","junction-b","junction-c"};for(int i=0;i<446;++i)many.objects.push_back("object-"+std::to_string(i));CHECK(many.nodes.size()==3&&many.objects.size()==446);
+        Json locale;{std::ifstream f(std::filesystem::path(argv[1])/"locales/en.json");f>>locale;CHECK(!locale.empty());}
+        bool counted=false;std::string countError;
+        QTimer::singleShot(0,[&]{auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());try {
+            CHECK(dialog);auto* main=dialog->findChild<QTableWidget*>("editorJunctionPreviewTable");CHECK(main&&main->rowCount()==3);
+            auto* count=dialog->findChild<QLabel*>("editorJunctionObjectCount");CHECK(count&&count->text().contains("446"));auto* detail=dialog->findChild<QTableWidget*>("editorJunctionDetailTable");CHECK(detail&&detail->isHidden()&&detail->rowCount()==446);counted=true;requireFitsScreen(*dialog);dialog->reject();
+        }catch(const std::exception& e){countError=e.what();if(dialog)dialog->reject();}});
+        CHECK(!confirmJunctionEdit(nullptr,many,[&](const char* key){return QString::fromStdString(locale.at(key).get<std::string>());}));CHECK(counted);if(!countError.empty())throw std::runtime_error(countError);
+        std::cout<<"JT11/JT16 seam/corridor previews, compact 3-Node/446-object count, Cancel and one Undo passed\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }

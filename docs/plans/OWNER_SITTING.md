@@ -122,7 +122,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    require manual enlargement after entering taper. *Owner:* keep the current flag for
    same-template site-only edits (taper, pocket storage/taper and timing values). Another
    template, Detach and any polygon edit retain D393's clearing rule; never set a cleared flag
-   back to true. Implement with the remaining Node forms; do not re-ask B36.
+   back to true. Implemented in the J6 setter/forms; do not re-ask B36.
 
 Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
@@ -385,7 +385,7 @@ nothing. Numbers are not reused.
    missing/range/outside messages and dialog buttons on a small screen. Recipe editing remains
    J6; fill before placing stationed measurements. *Owner:*
 
-29. **J6 crossing/seam/corridor surfaces** (listed 2026-10-30, D410, D411). On Windows at
+29. **J6 template/recipe/crossing/seam/corridor surfaces** (listed 2026-10-30, D410–D414). On Windows at
    100/150/200 %, Thai/English: Junction rows have an optional blank Template chooser filtered
    by leg count; Overpass disables it and Transition still needs an explicit choice. Cancel
    and Confirm/Undo preserve the expected complete document. Refine a generated Connector:
@@ -394,8 +394,17 @@ nothing. Numbers are not reused.
    Change cross-section through junctions on a segment shared by two filled Nodes: the preview
    lists both, one Apply keeps both ends complete, and one Undo restores both. An edited neighbour
    or attached generated-head measurement must name the refusal and disable Apply. Check a
-   revision-zero reopened project's object tables and dialog fit on a small screen. Template
-   catalog/Node recipe forms are still pending, including B36; this is not final J6 acceptance. *Owner:*
+   revision-zero reopened project's object tables and dialog fit on a small screen. A three-junction
+   preview shows Node names and object counts; expand all detail ids, then Cancel or Apply/Undo.
+   In Nodes → Junction templates…, edit/add a project copy: lane rows run far to kerb with Thai
+   geometric turn names, through-pocket/invalid movement rows disable Confirm, transition align
+   is explicit, and Cancel/Undo keep installed data unchanged. In Junction template…, change
+   template and inspect retained incompatible site values; Fill stays disabled until explicitly
+   corrected/cleared. Check major, lane override, direction, per-pocket values and NEMA timing:
+   empty means missing, yellow/allRed zero is entered, no site default. Find crossings → F3 →
+   taper entry → Fill needs no manual polygon edit while generated; after a polygon edit,
+   entering new numbers must not restore generated. Test the road-32 outgoing-lanes refusal's
+   recovery text and fixed footer/scrolling rows in every new nested dialog. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

@@ -6,6 +6,38 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J6 forms, B36 and complete review rows (D412, D414)
+
+- **Finished:** Nodes → Junction templates… stages structural role rows, geometric turn labels,
+  project-owned capture, Add/Edit and loader validation; Junction template… stages major/lane
+  overrides, independent directions, per-pocket storage/taper and NEMA cycle/phase numbers.
+  Each accepted catalog/Node edit is one Command/Undo; nested dialogs stage only. Cancel changes nothing. Existing catalog/schema
+  rules stay, including 63 when the captured whole catalog contains transitions.
+- **Drafts:** switching templates retains every entered site value, lists inapplicable/missing
+  items and keeps Fill disabled. Explicit clear/remove actions correct the draft; empty is
+  missing and entered yellow/allRed zero survives. No timing or length default.
+- **B36 implemented:** the existing setter retains current Node.generated for same-template
+  site numbers. Template/Detach, major/lane structure and polygon edits clear it; it never
+  resurrects ownership. The form calls the independent direction setter only when changed.
+  Find crossings → F3 → taper form → Fill enlarges the still-generated polygon in one Undo.
+- **Preview/seams:** affected Nodes and unique object counts replace hundreds of visible rows;
+  all ids remain expandable before Apply. Complete three-junction closure/shared pockets and
+  three-leg roles pass. Pure comparison detects missing Stops/priority and uncovered automatic
+  conflicts through the existing generation rules; no runtime/HCM priority changed.
+- **Tests first:** B36 and missing-control native rows, both missing form actions and compact
+  preview assertions failed before implementation. Additional rows cover explicit draft
+  correction, actual catalog movement/mixed-transition edits, schema/JSON reopen and full Undo.
+  Compile/setup errors are not product reds: Qt's slots macro required a different local name;
+  the three-Node fixture now iterates copied Node ids as generation replaces its document.
+- **Docs:** contracts/JT11/JT16, D414/index, schemas/readiness/module maps, B36/E29 and NEXT
+  updated; oldest whole entry archived, retaining ten. J6 awaits owner review, no J4T/writer.
+- **Verification:** targeted native **18/18** and junction-ui/catalog-ui/recipe-ui pass;
+  forms run on both driving sides and English/Thai, crossing/seam/corridor on both sides.
+  Desktop build, CTest **257/257** (251.60 s, parallel 5) and check **257/257** (248.32 s)
+  pass, including architecture/file-size/docs guards and frozen JT13. CLI node-analysis matches
+  except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured and
+  Windows/manual UI not run (E29). Captures/logs: `/workspace/j6-forms/`.
+
 ## 2026-10-30 — J6 review: actionable corridor conflict refusal (D412, D413)
 
 - **Owner:** carry-over 85329d1 accepted; continue J6. B36 keeps the current generated flag for
@@ -212,24 +244,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   diff checks pass. Node-analysis CLI bytes match except buildCommit. Runtime/test source is
   unchanged; JT9, CTest and full `check` were not run for this documentation-only checkpoint.
   Headless is not configured; Windows/manual UI was not run. J4 remains pending B32.
-
-## 2026-10-29 — J3b review: F4 recipe parity and recovery after reopen (D402)
-
-- **Asked:** narrow the Street segment guard, explain recovery with no Undo after reopen,
-  document measurement order and book the one-Command junction cross-section change in J6
-  before U1. JT13 is accepted unchanged; stop before J4.
-- **Fixed:** only the segment's junction-generated Links trigger its Apply refusal. Choosing
-  a recipe on F4 detail keeps the existing laneWidth Apply behaviour. The native test first
-  fails with the over-broad junction code and compares complete documents against the isolated
-  pre-J3b Apply implementation, with/without recipe pockets on both driving sides.
-- **Recovery:** after reopen without Undo, delete the junction's generated Links, Apply the
-  Street segment template and fill again. JT15 checks the recipe, changed widths, checkLayout
-  and exact Undo/Redo; deletion removes the attached travel-time measurement. English/Thai
-  text states that cascade. §5 and OWNER_SITTING E26 say to fill before stationed measurements.
-- **Scope:** no new stored field or schema; StopControl, JT13 and its frozen references stay
-  unchanged. The future reference-preserving one-Command change is booked, not implemented.
-- **Verification:** desktop build, junctionfill **25/25**, CTest **250/250** (274.60 s) and
-  `check` **250/250** (263.19 s) pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen).
-  Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
-  Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
-  Existing desktop UI suites passed. J4 was not started.

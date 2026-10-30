@@ -15,8 +15,9 @@ void exitLaneCount(DrivingSide side) {
         CHECK(change.overrides!=road->overrides&&link(d,road->links[0]).lanes.size()==2);
         auto fresh=corridor(side,false,false);auto& r=*std::find_if(fresh.network.streetSegments.begin(),fresh.network.streetSegments.end(),[&](const auto& x){return x.id==change.streetSegmentId;});
         r.overrides=change.overrides;applyTemplate(fresh,r.id,fresh.definition->crossSections);
-        const auto c=catalogs(fresh);for(const auto& n:fresh.network.nodes)generateJunction(fresh,n.id,c);
-        CHECK(seams(fresh).empty()); // The drawing matches; whole-document validation may still refuse it.
+        const auto c=catalogs(fresh);const auto nodes=fresh.network.nodes;for(const auto& n:nodes)generateJunction(fresh,n.id,c);
+        CHECK(seams(fresh).empty());
+        test::throws([&]{validateDocument(fresh);},"INVALID_RANGE"); // Matching seams are not whole-document validity.
         History h;h.reset(d);const auto before=bytes(d);
         const auto preview=junctionCrossSectionPreview(d,{change},catalogs(d));
         CHECK(preview.nodes.size()==2&&bytes(h.document())==before);
@@ -168,5 +169,77 @@ TEST(junctioneditor,jt11_template_change_preserves_incompatible_site_draft) {
         const auto out=offers(h.document());CHECK(out.size()==1&&!out[0].refusal.empty()&&issue(out[0].issues,"JUNCTION_SITE_COUNT"));
         const auto after=bytes(h.document());CHECK(bytes(parseDocument(after))==after);
         h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+    }
+}
+TEST(junctioneditor,jt11_b36_site_edits_keep_generated_without_resurrection) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;transitionTest::findAndGenerate(h,side,30);CHECK(node(h.document()).generated);
+        auto recipe=*node(h.document()).junction;recipe.legs["west"].taper={60};recipe.legs["east"].taper={60};
+        const auto before=bytes(h.document());CHECK(recipe!=*node(h.document()).junction);
+        CHECK(h.execute("Site tapers",[&](auto& d){setNodeJunction(d,node(d).id,recipe);}));
+        CHECK(node(h.document()).generated);const auto entered=bytes(h.document());const auto polygon=node(h.document()).polygon;
+        apply(h);CHECK(node(h.document()).generated&&node(h.document()).polygon!=polygon);
+        h.undo();CHECK(bytes(h.document())==entered);h.undo();CHECK(bytes(h.document())==before);h.redo();
+        CHECK(node(h.document()).generated);CHECK(h.execute("Other template",[&](auto& d){chooseNodeJunctionTemplate(d,node(d).id,std::string("transition-far"));}));CHECK(!node(h.document()).generated);h.undo();CHECK(node(h.document()).generated);
+        CHECK(h.execute("Detach",[&](auto& d){chooseNodeJunctionTemplate(d,node(d).id,std::nullopt);}));CHECK(!node(h.document()).generated&&!node(h.document()).junction);h.undo();CHECK(node(h.document()).generated);
+        CHECK(h.execute("Polygon",[&](auto& d){auto n=node(d);n.polygon[0].x-=1;putNode(d,n);}));
+        CHECK(!node(h.document()).generated);recipe.legs["west"].taper={50};
+        CHECK(h.execute("Site after polygon",[&](auto& d){setNodeJunction(d,node(d).id,recipe);}));CHECK(!node(h.document()).generated);
+        CHECK(h.execute("Other template",[&](auto& d){chooseNodeJunctionTemplate(d,node(d).id,std::string("transition-far"));}));CHECK(!node(h.document()).generated);
+        CHECK(h.execute("Detach",[&](auto& d){chooseNodeJunctionTemplate(d,node(d).id,std::nullopt);}));CHECK(!node(h.document()).generated&&!node(h.document()).junction);
+    }
+}
+TEST(junctioneditor,jt16_three_junction_closure_rebuilds_every_end) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        auto d=corridor(side,false,true,true);CHECK(d.network.nodes.size()==3&&d.network.connectors.size()==36&&seams(d).empty());
+        const auto id=shared(d);const auto& road=*std::find_if(d.network.streetSegments.begin(),d.network.streetSegments.end(),[&](const auto& r){return r.id==id;});
+        JunctionCrossSectionChange change{id,road.crossSectionId,road.overrides};change.overrides.laneWidth=3.75;CHECK(change.overrides!=road.overrides);
+        History h;h.reset(d);const auto before=bytes(d);const auto preview=junctionCrossSectionPreview(d,{change},catalogs(d));CHECK(preview.nodes.size()==3&&preview.objects.size()>100&&preview.issues.empty());
+        CHECK(h.execute("Three-junction corridor",[&](auto& x){changeJunctionCrossSections(x,{change},catalogs(x));},true));CHECK(seams(h.document()).empty()&&h.document().network.connectors.size()==36);
+        const auto after=bytes(h.document());CHECK(bytes(parseDocument(after))==after);h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+    }
+}
+TEST(junctioneditor,jt11_three_leg_pocket_comparison_uses_geometric_roles) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        auto d=cross(side);const auto west=d.network.streetSegments[1];CHECK(west.id=="ew"&&west.links.size()==2);
+        for(const auto& id:west.links)deleteLink(d,id);
+        deleteStreetSegment(d,west.id);
+        for(auto& r:d.network.streetSegments) {
+            if(r.centreline.front().x==0&&r.centreline.back().x==0){r.overrides.lanesForward=1;r.overrides.lanesBackward=1;}
+            if(r.centreline.back().x>0)r.centreline.back().y=-104;
+        }
+        for(const auto& r:d.network.streetSegments)applyTemplate(d,r.id,d.definition->crossSections);
+        auto& recipe=*node(d).junction;recipe.templateId="stop-3-major-far-pockets";recipe.legs.clear();
+        const auto far=std::find_if(d.network.streetSegments.begin(),d.network.streetSegments.end(),[&](const auto& r){return r.centreline.front().x==0&&r.centreline.back().x==0&&((r.centreline.front().y<0)==(side==DrivingSide::left));});CHECK(far!=d.network.streetSegments.end());
+        recipe.legs[far->id]={{47.5},{13.25},{}};CHECK(nodeStreetSegmentLegs(d.network,node(d)).size()==3);
+        History h;h.reset(d);apply(h);CHECK(seams(h.document()).empty());
+        auto changed=h.document();node(changed).junction->legs[far->id].storage={48.5};CHECK(node(changed).junction!=node(h.document()).junction);CHECK(issue(seams(changed),"SEAM_JUNCTION_DIFFERS"));
+    }
+}
+TEST(junctioneditor,jt11_b36_pocket_and_timing_site_values_keep_current_flag) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        auto d=junctionSignalTest::signalCross(side,"P2",false,true);const auto recipe=*node(d).junction;d.network.nodes.clear();const auto found=findCrossings(d.network,2);CHECK(found.size()==1);
+        History h;h.reset(d);CHECK(h.execute("Find crossings",[&](auto& x){const auto c=catalogs(x);applyCrossings(x,found,{CrossingChoice::junction},2,c.templates,{recipe},c.junctionTemplates);}));CHECK(node(h.document()).generated);
+        auto values=recipe;values.legs.begin()->second.storage[0]=50;values.legs.begin()->second.taper[0]=15;values.signal->phases[0].green=31;CHECK(values!=recipe);
+        const auto before=bytes(h.document());CHECK(h.execute("Site values",[&](auto& x){setNodeJunction(x,node(x).id,values);}));CHECK(node(h.document()).generated);h.undo();CHECK(bytes(h.document())==before);h.redo();
+        values.legs.begin()->second.lanes=std::vector<JunctionLane>{{"F",true},{"T"},{"TK"}};
+        CHECK(h.execute("Lane override",[&](auto& x){setNodeJunction(x,node(x).id,values);}));CHECK(!node(h.document()).generated);
+    }
+}
+TEST(junctioneditor,jt11_catalog_change_and_missing_stop_are_seams) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;h.reset(cross(side,false));apply(h);CHECK(seams(h.document()).empty());
+        auto list=catalogs(h.document()).junctionTemplates;
+        auto t=std::find_if(list.begin(),list.end(),[](const auto& x){return x.id=="stop-4-shared";});CHECK(t!=list.end());
+        t->roles["major"][0].movements="F";CHECK(junctionTemplateIssues(*t,"test").empty());
+        const auto before=bytes(h.document());CHECK(h.execute("Edit catalog",[&](auto& d){putJunctionTemplateCatalog(d,list);}));
+        CHECK(issue(seams(h.document()),"SEAM_JUNCTION_DIFFERS"));h.undo();CHECK(bytes(h.document())==before);
+        CHECK(h.execute("Remove controls",[](auto& d){d.network.rightOfWay={};}));CHECK(h.document().network.rightOfWay.empty());
+        CHECK(issue(seams(h.document()),"SEAM_JUNCTION_DIFFERS"));h.undo();CHECK(bytes(h.document())==before);
+        const auto count=h.document().network.rightOfWay.stopControls.size();CHECK(count>0);const auto stop=h.document().network.rightOfWay.stopControls.front().id;
+        CHECK(h.execute("Delete stop",[&](auto& d){std::erase_if(d.network.rightOfWay.stopControls,[&](const auto& s){return s.id==stop;});}));
+        CHECK(h.document().network.rightOfWay.stopControls.size()+1==count);
+        CHECK(std::none_of(h.document().network.rightOfWay.stopControls.begin(),h.document().network.rightOfWay.stopControls.end(),[&](const auto& s){return s.id==stop;}));
+        CHECK(issue(seams(h.document()),"SEAM_JUNCTION_DIFFERS"));h.undo();CHECK(bytes(h.document())==before);
     }
 }

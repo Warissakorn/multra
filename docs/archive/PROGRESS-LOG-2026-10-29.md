@@ -126,3 +126,24 @@ Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current
   Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
   Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
   Existing desktop UI suites passed. J4 was not started.
+
+## 2026-10-29 — J3b review: F4 recipe parity and recovery after reopen (D402)
+
+- **Asked:** narrow the Street segment guard, explain recovery with no Undo after reopen,
+  document measurement order and book the one-Command junction cross-section change in J6
+  before U1. JT13 is accepted unchanged; stop before J4.
+- **Fixed:** only the segment's junction-generated Links trigger its Apply refusal. Choosing
+  a recipe on F4 detail keeps the existing laneWidth Apply behaviour. The native test first
+  fails with the over-broad junction code and compares complete documents against the isolated
+  pre-J3b Apply implementation, with/without recipe pockets on both driving sides.
+- **Recovery:** after reopen without Undo, delete the junction's generated Links, Apply the
+  Street segment template and fill again. JT15 checks the recipe, changed widths, checkLayout
+  and exact Undo/Redo; deletion removes the attached travel-time measurement. English/Thai
+  text states that cascade. §5 and OWNER_SITTING E26 say to fill before stationed measurements.
+- **Scope:** no new stored field or schema; StopControl, JT13 and its frozen references stay
+  unchanged. The future reference-preserving one-Command change is booked, not implemented.
+- **Verification:** desktop build, junctionfill **25/25**, CTest **250/250** (274.60 s) and
+  `check` **250/250** (263.19 s) pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen).
+  Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
+  Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
+  Existing desktop UI suites passed. J4 was not started.

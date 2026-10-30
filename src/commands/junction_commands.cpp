@@ -8,11 +8,21 @@ Node& nodeOf(ProjectDocument& d, const std::string& id) {
     if (node == d.network.nodes.end()) throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
     return *node;
 }
+bool sameStructure(const NodeJunction& a,const NodeJunction& b) {
+    if(a.templateId!=b.templateId||a.major!=b.major)return false;
+    const auto lanes=[](const NodeJunction& r){std::map<std::string,std::vector<JunctionLane>> out;
+        for(const auto& [id,leg]:r.legs)if(leg.lanes)out[id]=*leg.lanes;
+        return out;};
+    return lanes(a)==lanes(b);
+}
 }
 void setNodeJunction(ProjectDocument& d, const std::string& id, std::optional<NodeJunction> value) {
     auto& node = nodeOf(d,id);
     if (value && value->major.empty() && node.coarse) value->major = node.coarse->major;
-    node.junction = std::move(value); node.generated = false;
+    auto previous=node.junction;
+    if(previous&&previous->major.empty()&&node.coarse)previous->major=node.coarse->major;
+    if(!previous||!value||!sameStructure(*previous,*value))node.generated=false;
+    node.junction = std::move(value); // B36: site edits keep the current flag, never restore it.
 }
 void chooseNodeJunctionTemplate(ProjectDocument& d,const std::string& id,const std::optional<std::string>& type) {
     if(!type){setNodeJunction(d,id,std::nullopt);return;}

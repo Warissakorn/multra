@@ -3,6 +3,8 @@
 #include "nema.hpp"
 #include "../network/approach_layout.hpp"
 #include "../network/coarse_nodes.hpp"
+#include "../network/node_detail.hpp"
+#include "../network/right_of_way.hpp"
 #include "../network/polygon.hpp"
 #include "../network/street_segments.hpp"
 #include <algorithm>
@@ -76,6 +78,30 @@ bool differs(const Network& n,const Node& node,const JunctionTemplate& type,cons
             ranks.emplace_back(*l->streetSegmentId,rank);
         }
         if(const auto m=majorByRank(ranks))major.insert(m->begin(),m->end());else return true;
+    }
+    if(type.control=="twoWayStop") {
+        struct Turn {std::string arm;int rank{};};std::map<std::string,Turn> turns;
+        for(const auto& c:n.connectors)if(connectors.contains(c.id)) {
+            const auto *in=linkOf(n,c.from.linkId),*out=linkOf(n,c.to.linkId);if(!in||!out)return true;
+            const auto a=generatedStreetSegment(n,*in),b=generatedStreetSegment(n,*out);if(!a||!b)return true;
+            const auto u=directionAlong(in->geometry,polylineLength(in->geometry),true),v=directionAlong(out->geometry,0,false);
+            const double angle=(n.drivingSide==DrivingSide::left?1.:-1.)*std::atan2(u.x*v.y-u.y*v.x,u.x*v.x+u.y*v.y);
+            turns[c.id]={*a,movementRank(major.contains(*a),major.contains(*b),angle,static_cast<std::size_t>(type.legs))};
+        }
+        // The same passive crossings/automatic merges that generation would take over.
+        // No blanket "must have a Stop": a non-conflicting owned layout can need none.
+        for(const auto& c:automaticConflicts(n))if(c.kind!=ConflictKind::branching&&turns.contains(c.first.path.connectorId)&&turns.contains(c.second.path.connectorId)) {
+            const auto& x=turns.at(c.first.path.connectorId);const auto& y=turns.at(c.second.path.connectorId);
+            if(x.arm!=y.arm&&x.rank!=y.rank)return true;
+        }
+        for(const auto& a:n.rightOfWay.conflictAreas)if(areas.contains(a.id)&&turns.contains(a.first.path.connectorId)&&turns.contains(a.second.path.connectorId)) {
+            const auto& x=turns.at(a.first.path.connectorId);const auto& y=turns.at(a.second.path.connectorId);
+            if(x.arm==y.arm||x.rank==y.rank)continue;
+            const auto& yielding=x.rank>y.rank?a.first:a.second;const auto& turn=x.rank>y.rank?x:y;
+            if(a.priority!=(x.rank>y.rank?ConflictPriority::firstYields:ConflictPriority::secondYields))return true;
+            if(std::none_of(n.rightOfWay.priorityRules.begin(),n.rightOfWay.priorityRules.end(),[&](const auto& r){return r.conflictAreaId==a.id;}))return true;
+            if(!major.contains(turn.arm)&&std::none_of(n.rightOfWay.stopControls.begin(),n.rightOfWay.stopControls.end(),[&](const auto& s){return s.waitingLineId==yielding.waitingLineId&&s.mode==StopMode::stop&&std::find(s.conflictAreaIds.begin(),s.conflictAreaIds.end(),a.id)!=s.conflictAreaIds.end();}))return true;
+        }
     }
     for(const auto& stop:n.rightOfWay.stopControls)if(lines.contains(stop.waitingLineId)) {
         const auto w=std::find_if(n.rightOfWay.waitingLines.begin(),n.rightOfWay.waitingLines.end(),[&](const auto& w){return w.id==stop.waitingLineId;});

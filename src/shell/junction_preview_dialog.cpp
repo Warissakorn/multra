@@ -10,11 +10,15 @@ namespace multra {
 bool confirmJunctionEdit(QWidget* parent,const JunctionEditPreview& p,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorJunctionPreviewDialog");dialog.setWindowTitle(text("editorJunctionAffected"));
     auto* body=scrollingBody(dialog);auto* layout=new QVBoxLayout(body);
-    auto* table=new QTableWidget(static_cast<int>(p.nodes.size()+p.objects.size()),2,body);table->setObjectName("editorJunctionPreviewTable");
+    auto* count=new QLabel(text("editorJunctionObjectCount").arg(p.nodes.size()).arg(p.objects.size()),body);count->setObjectName("editorJunctionObjectCount");layout->addWidget(count);
+    auto* table=new QTableWidget(static_cast<int>(p.nodes.size()),2,body);table->setObjectName("editorJunctionPreviewTable");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);table->setHorizontalHeaderLabels({text("editorColumnName"),text("editorColumnId")});
     int row=0;for(const auto& id:p.nodes){table->setItem(row,0,new QTableWidgetItem(text("editorNodeTable")));table->setItem(row++,1,new QTableWidgetItem(QString::fromStdString(id)));}
-    for(const auto& id:p.objects){table->setItem(row,0,new QTableWidgetItem(text("editorJunctionObjects")));table->setItem(row++,1,new QTableWidgetItem(QString::fromStdString(id)));}
     table->resizeColumnsToContents();layout->addWidget(table);
+    auto* show=new QPushButton(text("editorJunctionShowDetail"),body);show->setObjectName("editorJunctionShowDetail");show->setCheckable(true);layout->addWidget(show);
+    auto* detail=new QTableWidget(static_cast<int>(p.objects.size()),1,body);detail->setObjectName("editorJunctionDetailTable");detail->setEditTriggers(QAbstractItemView::NoEditTriggers);detail->setHorizontalHeaderLabels({text("editorColumnId")});
+    row=0;for(const auto& id:p.objects)detail->setItem(row++,0,new QTableWidgetItem(QString::fromStdString(id)));detail->resizeColumnsToContents();layout->addWidget(detail);detail->hide();
+    QObject::connect(show,&QPushButton::toggled,detail,&QWidget::setVisible);
     auto* issues=new QLabel(body);issues->setObjectName("editorJunctionPreviewIssues");issues->setWordWrap(true);QStringList reasons;
     for(const auto& issue:p.issues)reasons<<text(issue.code.c_str())+" — "+QString::fromStdString(issue.path);
     issues->setText(reasons.join('\n'));layout->addWidget(issues);

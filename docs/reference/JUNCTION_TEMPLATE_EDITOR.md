@@ -30,7 +30,12 @@ The layout and HCM results continue to come from the drawing, never the recipe.
   zero yellow/all-red is an entered value. Preserve incompatible values when switching templates.
   **B36 answered (D412):** site-only edits on the same template preserve the current
   `Node.generated`; changing template, Detach and polygon edits clear it as in D393.
-  Never restore a cleared flag. The setter/form implementation follows in the remaining J6 work.
+  Never restore a cleared flag. Major/lane-override choices remain structural edits (D393).
+  Directions are edited independently and clear ownership only when actually changed.
+  The form stages all edits, lists Fill's missing/inapplicable fields, and saves a partial draft
+  without applying it. Per-leg values and NEMA timing use separate scrolling dialogs; explicit
+  clear/remove actions are required to discard entered values. New site fields open empty;
+  existing entered values remain.
 - **Seam checks:** `SEAM_JUNCTION_DIFFERS` is advisory at every level, at `network.nodes[i]`.
   Apply again shows the replacement list; Cancel changes nothing. Detach drops only the recipe,
   keeps coarse/drawing, and removes the advisory in one Undo. The explicit action is distinct
@@ -38,6 +43,8 @@ The layout and HCM results continue to come from the drawing, never the recipe.
 - **Change cross-section through junctions:** stage the selected Street segment's cross-section
   id/overrides, then show the complete affected shared-Link component before one Apply.
   The ordinary Apply template guard remains. The combined action is not delete-and-refill.
+  Its preview shows the Node list and unique object count, with an expandable full id list;
+  a three-Node / 446-object preview does not open as hundreds of visible rows (D414).
 
 ## 3. Pure comparison and private plans
 
@@ -74,7 +81,8 @@ and refused Apply leave document, saved state and Undo/Redo unchanged; no geomet
   with complete JSON Undo/Redo. A measured generated signal head still refuses with its counter.
   A recipe timing or transition taper change differs from the unchanged drawing. **Passing.**
   Changing only the template id preserves all incompatible entered site values; Fill stays
-  disabled and save/reopen plus Undo/Redo retain the draft. The Node form itself is still pending.
+  disabled and save/reopen plus Undo/Redo retain the draft. Catalog changes, a three-leg pocket,
+  missing Stops and uncovered automatic conflicts are compared using the existing priority rules.
 - **JT11, crossing UI:** optional blank Junction chooser, matching templates only, one Undo,
   no site defaults; Transition's required selector and Cancel stay. Driven on both sides. **Passing.**
 - **JT11, seam UI:** replacement preview/Cancel, Apply again and Detach with one Undo on both
@@ -87,7 +95,20 @@ and refused Apply leave document, saved state and Undo/Redo unchanged; no geomet
 - **JT16, corridor UI:** staged override with no invented values; affected set includes both
   Nodes, Cancel is unchanged, Apply and one Undo restore the complete document. Both sides,
   screen fit and revision-zero project reopen. **Passing.**
-- Template catalog/Node recipe forms remain to be completed; J6 is not closed by these rows.
+- **JT11, catalog UI:** Add from selected/Edit, far-to-kerb role rows with geometric left/right
+  names, invalid row/through-pocket refusal, project-owned capture and exact Undo/Cancel/reopen.
+  Accepted movement edits and mixed transition directions use the existing loader/schema floors.
+  **Passing**, both driving sides and English/Thai (`tests/junction_forms_ui_tests.cpp`).
+- **JT11, Node UI:** template/draft preservation and explicit correction; major, lane overrides,
+  independent compass directions, per-pocket storage/taper and NEMA cycle/phase fields.
+  Missing fields stay absent, entered yellow/all-red zero survives, Fill refuses incomplete
+  drafts. Find crossings → F3 → taper form → Fill enlarges the generated polygon, with no
+  manual polygon edit. **Passing**, both driving sides/locales; B36 never resurrects ownership.
+- **JT16, chain:** the affected set reaches all three junctions through two shared Links,
+  rebuilds every end and passes save/reopen/full JSON Undo/Redo on both sides. **Passing.**
+
+J6 is implemented and awaits owner review. Native `junctioneditor` has 18 passing cases;
+junction-ui/catalog-ui/recipe-ui and transition-ui cover the surfaces (full-run evidence in PROGRESS).
 
 Headless/Windows evidence is reported separately; Linux offscreen tests do not close the owner look.
 No J4T, UTDF writer, HCM method or posted-speed cap is part of J6.

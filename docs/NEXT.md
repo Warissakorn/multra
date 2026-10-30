@@ -47,40 +47,26 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Current work: J6 is open; J5 is approved at d5e2bbe (D409).** The first carry-over is
-  implemented: the transition plan disables an overlapping grown-polygon offer with
-  `NODE_OVERLAP` naming the neighbouring Node, before Apply. JT10's preview row passes on
-  both driving sides; preview/refusal preserves the complete document and History.
-- **J6 checkpoint (D410/D411): B35 is answered; do not ask it again.** Commands/pure seam
-  comparison, all-level Readiness, the general Find crossings column, explicit seam preview/
-  repair/Detach and staged corridor cross-section UI are implemented. See
-  [JUNCTION_TEMPLATE_EDITOR](reference/JUNCTION_TEMPLATE_EDITOR.md) for interfaces and rows.
-  `junctioneditor` has 11 native cases; `junction-ui` and the extended `transition-ui` exercise
-  both driving sides. No final J6 approval is claimed; the catalog and Node forms remain.
-- **Next, continue J6 from the remaining forms, tests first.** No new authorization is needed.
-  1. Add the free-function template catalog editor: project-owned capture via
-     `putJunctionTemplateCatalog`, structural fields and role lane tables with geometric names,
-     Add/Edit/validation/Cancel and one Undo, reusing the loader and schema-61/63 ownership rules.
-  2. Finish Nodes → Junction template… with major/leg overrides, per-pocket storage/taper and
-     cycle/NEMA phase fields. Use `chooseNodeJunctionTemplate` to keep every entered value;
-     display incompatible rows for explicit correction, with Fill disabled. Empty is missing,
-     yellow/all-red zero is an entered value; no timing or length default.
-  3. **B36 is answered (D412); implement it tests first with the forms.** Same-template site-only
-     taper, pocket storage/taper and timing edits preserve the current `Node.generated`.
-     Another template, Detach and polygon edits clear it as D393 requires. Never set a cleared
-     flag back to true. Check Find crossings → taper entry → Fill enlargement on both sides.
-  4. Add catalog-mutation, three-leg/shared-pocket and missing-control probes to the pure
-     comparator before final J6 sign-off, alongside the new form acceptance rows.
-  5. Add native/Qt form rows on both sides, preserve draft/Cancel/Undo and pre-fill Macro/Meso
-     parity, then desktop build → CTest → check (headless only if configured), update docs/E29,
-     and stop for final J6 review. Keep frozen JT13 files untouched.
-  6. Replace the long corridor object-id table with grouped detail or counts and an inspectable
-     replacement list; a three-junction preview must remain readable (owner review of da7240d).
-- **Corridor review fix (D413):** east exit road-32 with three outgoing lanes refuses with
-  `JUNCTION_REBUILD_CONFLICT` at the changed Street segment and actionable recovery, unchanged
-  document/History. The fresh drawing matches its recipe but also fails whole-document conflict
-  range validation. No geometry clamp or internal core index is exposed. Incoming three lanes
-  still reports `JUNCTION_LANE_COUNT`; JT16 checks both driving sides.
+- **J6 is implemented; stop for owner review (D409–D414).** Carry-over 85329d1 is accepted.
+  The first da7240d review-fix commit is 3ec3d39d (D413): road-32's three outgoing lanes refuse
+  with JUNCTION_REBUILD_CONFLICT at the changed Street segment, unchanged document/History;
+  three incoming lanes keep JUNCTION_LANE_COUNT. No invalid geometry is clamped or published.
+- **B35/B36 are answered and implemented; do not ask them again.** Explicit seam replacement
+  lists affected detail and retains reference guards; the complete shared-Link corridor is rebuilt
+  atomically; incompatible site values remain an explicit draft. Site-only taper/storage/timing
+  edits on the same template preserve the current Node.generated. Another template, Detach,
+  structural major/lane choices and polygon edits clear it; no cleared flag is restored.
+- **J6 review covers** the project-owned catalog editor, far-to-kerb role rows/geometric names,
+  optional Find crossings choice, Nodes → Junction template… with major/lanes/directions and
+  pocket/timing dialogs, all-level seams and explicit Apply again/Detach. The preview lists
+  Nodes and object counts, with all ids expandable. Three-junction closure and shared pockets,
+  missing controls, catalog/three-leg mutations, missing versus entered zero, draft correction,
+  Cancel, reopen and complete Undo/Redo have acceptance rows. See
+  [JUNCTION_TEMPLATE_EDITOR](reference/JUNCTION_TEMPLATE_EDITOR.md); Windows look is E29.
+- **Next action: wait for the owner's J6 review.** Fix requested changes in J6, repeat the required
+  checks and report; do not start another slice. Only after approval begin J7 (§9/JT12),
+  re-reading its contract and deciding any owner-visible/result/storage choice before coding.
+  Keep frozen JT13 untouched. No J4T or UTDF writer work during J6.
 - **Retain J5's contract:** taper entirely upstream, Transition-only selector, two symmetric
   installed templates and owned mixed directions (D406). A generated polygon enlarges in the
   Fill's single Undo; a person's polygon keeps TRANSITION_TAPER_OUTSIDE (D407). New Link legs
