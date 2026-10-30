@@ -199,6 +199,10 @@ pair touching, because that direction meets no other arm's lane surface. The cut
 end, so the zero-length Connector is refused as `EDIT_CONNECTOR_GAP`. The offer is disabled
 and changes nothing. No artificial cut distance is introduced; skew three-leg cases pass.
 
+**J6a correction (D415).** Ordinary Fill and corridor rebuild support three exit lanes. Exact
+endpoint station conversion fixes a one-rounding-unit conflict overrun; D413's refusal is
+removed. Authored extents and the core validator are unchanged; JT16/JT17 cover both sides.
+
 **Street segment Apply template after a fill (D401, corrected by D402).** A Street segment
 holding junction-generated Links (`Link.generated`) refuses with `JUNCTION_STREET_SEGMENT_DETAIL`
 before changing a lane, including after recipe detach. Choosing a recipe on existing F4 detail
@@ -430,7 +434,8 @@ This is documentation only in J5; J4's four-leg implementation and required site
 | J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. **J3b done (D398–D402):** `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8/JT13–JT15; all-way-stop generation deferred (D399); stop for review (§3–§5) | 2 |
 | J4 | **Done (D404, JT9 passing).** Signals from the template: P1–P4, NEMA numbering, required site timing and `nemaCheck` (§8); stop for review | 1 |
 | J5 | **Approved at d5e2bbe (D406–D408, JT10 passing).** Upstream transitions and the Transition-only selector (§7) | 1 |
-| J6 | **Implemented, awaiting review (D409–D414):** overlap carry-over accepted; template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36 implemented; compact affected-set preview, named conflict-range refusal (D413). JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
+| J6 | **Approved at 3ec3d39/09b0689 (D409–D414):** template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36, compact previews; JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
+| J6a | **Implemented, awaiting review (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
 | J4T | Booked before U1 (B33, D405): one protected signalised T preset and its NEMA support (§8); separate review, no code in J5 | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
@@ -490,4 +495,5 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |
 | JT14 | J3b review | F3 → F4 on a coarse Node → choose a recipe → change laneWidth → Apply template matches the complete pre-J3b document and one Undo/Redo on both driving sides, with and without recipe pockets (`tests/junction_fill_completion_tests.cpp`, **passing**) |
 | JT15 | J3b review | Reopen without Undo, delete the junction's generated Links, Apply the changed cross-section and fill again: `checkLayout` passes on both driving sides, recipe survives, attached travel-time measurement is removed, and every Command has complete JSON Undo/Redo (`tests/junction_fill_completion_tests.cpp`, **passing**) |
-| JT16 | J6 | Shared Links/pockets rebuild both ends and the complete three-junction chain on both sides; retained references survive reopen, edited neighbour refuses atomically, with preview/Cancel and full JSON Undo/Redo. Compact 3-Node/446-object preview exposes all ids on request. East exit 3 outgoing lanes gives actionable `JUNCTION_REBUILD_CONFLICT`, no mutation/internal index; 3 incoming lanes keeps `JUNCTION_LANE_COUNT`. Native/Qt **passing** (`tests/junction_editor_tests.cpp`, `tests/junction_ui_tests.cpp`) |
+| JT16 | J6 / J6a | Shared Links/pockets rebuild both ends and the complete three-junction chain on both sides; retained references survive reopen, edited neighbour refuses atomically, with preview/Cancel and full JSON Undo/Redo. Compact 3-Node/446-object preview exposes all ids on request. East exit 3 outgoing lanes rebuilds and validates (D415); 3 incoming lanes keeps `JUNCTION_LANE_COUNT`. Native/Qt **passing** (`tests/junction_editor_tests.cpp`, `tests/junction_ui_tests.cpp`) |
+| JT17 | J6a | Exact polyline endpoint conversion; single-junction 3-lane-exit controls at x=0 and x=200; ordinary History Fill of -200/0/200 corridor and atomic cross-section rebuild, both driving sides, with valid whole document, unchanged preview, seam parity, save/reopen and exact JSON Undo/Redo. D413 refusal removed (`tests/junction_corridor_conflict_tests.cpp`, **passing**, 9 cases) |

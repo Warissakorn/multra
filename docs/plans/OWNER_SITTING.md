@@ -403,8 +403,9 @@ nothing. Numbers are not reused.
    corrected/cleared. Check major, lane override, direction, per-pocket values and NEMA timing:
    empty means missing, yellow/allRed zero is entered, no site default. Find crossings → F3 →
    taper entry → Fill needs no manual polygon edit while generated; after a polygon edit,
-   entering new numbers must not restore generated. Test the road-32 outgoing-lanes refusal's
-   recovery text and fixed footer/scrolling rows in every new nested dialog. *Owner:*
+   entering new numbers must not restore generated. J6a/D415 removes the road-32 exit-lane
+   refusal: three outgoing lanes must Fill/rebuild, including a three-junction corridor, with
+   one Undo. Inspect fixed footer/scrolling rows in every new nested dialog. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

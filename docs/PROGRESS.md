@@ -6,6 +6,30 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
+
+- **Owner:** J6 at 3ec3d39/09b0689 is approved. Diagnose ordinary Fill's pre-existing
+  conflict-range failure before J4T; stop for this slice's review, no UTDF writer.
+- **Cause:** matchedStation's terminal subtraction/interpolation can return a runtime exit
+  one rounding unit past the path: 22.315802608466722 versus 22.31580260846672 m.
+  The three-junction repro and translated single junction fail on both sides; the origin
+  single-junction control passes. This is numerical conversion, not a corridor/geometry limit.
+- **Fixed:** exact endpoint returns in the shared converter; interior interpolation and
+  existing outside clamping stay. Ordinary History Fill and atomic corridor rebuild succeed
+  with three exit lanes, including the former road-32 fixture. Remove D413's temporary code
+  translation and locale strings. Core/whole-document validators and authored extents stay;
+  no new field/schema, timing default, conflict algorithm or ownership rule.
+- **Tests first:** JT17's endpoint/translated/corridor rows and rewritten JT16 success rows
+  failed before the correction (18 passed, 9 failed); both origin controls already passed.
+  Native junctioneditor is now **27/27**, including nine JT17 cases, both driving sides,
+  three-junction closure, preview parity, save/reopen and exact JSON Undo/Redo per Command.
+- **Docs:** supersede D413 with D415/index, update §5/JT16/JT17, editor/M3 station contracts,
+  approved J6/current J6a queue, E29 and ROADMAP; archive the oldest entry whole, keeping ten.
+- **Verification:** desktop build, CTest **257/257** (280.06 s, parallel 5), and check
+  **257/257** (277.28 s) pass, including frozen JT13, docs/file-size/architecture guards.
+  Node-analysis CLI raw bytes match except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen;
+  headless unconfigured, Windows/manual UI not run. Evidence: `/workspace/j6a-review/`.
+
 ## 2026-10-30 — J6 forms, B36 and complete review rows (D412, D414)
 
 - **Finished:** Nodes → Junction templates… stages structural role rows, geometric turn labels,
@@ -225,22 +249,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   offscreen). Node-analysis CLI bytes match before/after except the single `buildCommit`.
   Headless is not configured; Windows and manual driving of the signal fill UI were not run
   (OWNER_SITTING E27). Existing desktop UI suites passed. Stop for J4 review before J5.
-
-## 2026-10-29 — J4 preparation: U0 checked, timing questions and corridor booking (D403)
-
-- **Asked:** J3b a52476b approved; start J4, stop for review, no timing defaults or writer.
-  Extend J6's cross-section Command to corridors before U1; docs only for that booking.
-- **Checked before code:** JUNCTION_TEMPLATES §8/JT9, D395/D396 and U0's answer table.
-  UTDF_PROBE §6 and OWNER_SITTING I are still blank. Reported that J4 can establish MULTRA
-  contract support only, while Synchro/Vistro mapping and left-hand interchange remain unverified.
-- **Pending B32:** §8's barrier/P4 contradiction, entered allRed versus barrier-wait red,
-  and leg-number/time-zero conventions change stored timing and results. Asked the owner in
-  Thai with options/recommendations before code; no answer or default has been assumed.
-  No J4 implementation or JT9 pass is claimed.
-- **Corridor booking:** a generated Link can belong to two filled junctions; deletion also
-  removes the neighbour's leg and attached objects. §5 and NEXT now require a shared-Link
-  selection aid or corridor-aware J6 Command, keeping both ends consistent. No J6 code.
-- **Verification:** desktop build, documentation links/indexes, file-size, architecture and
-  diff checks pass. Node-analysis CLI bytes match except buildCommit. Runtime/test source is
-  unchanged; JT9, CTest and full `check` were not run for this documentation-only checkpoint.
-  Headless is not configured; Windows/manual UI was not run. J4 remains pending B32.

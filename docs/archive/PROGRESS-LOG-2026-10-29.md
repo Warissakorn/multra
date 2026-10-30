@@ -147,3 +147,22 @@ Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current
   Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
   Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
   Existing desktop UI suites passed. J4 was not started.
+
+## 2026-10-29 — J4 preparation: U0 checked, timing questions and corridor booking (D403)
+
+- **Asked:** J3b a52476b approved; start J4, stop for review, no timing defaults or writer.
+  Extend J6's cross-section Command to corridors before U1; docs only for that booking.
+- **Checked before code:** JUNCTION_TEMPLATES §8/JT9, D395/D396 and U0's answer table.
+  UTDF_PROBE §6 and OWNER_SITTING I are still blank. Reported that J4 can establish MULTRA
+  contract support only, while Synchro/Vistro mapping and left-hand interchange remain unverified.
+- **Pending B32:** §8's barrier/P4 contradiction, entered allRed versus barrier-wait red,
+  and leg-number/time-zero conventions change stored timing and results. Asked the owner in
+  Thai with options/recommendations before code; no answer or default has been assumed.
+  No J4 implementation or JT9 pass is claimed.
+- **Corridor booking:** a generated Link can belong to two filled junctions; deletion also
+  removes the neighbour's leg and attached objects. §5 and NEXT now require a shared-Link
+  selection aid or corridor-aware J6 Command, keeping both ends consistent. No J6 code.
+- **Verification:** desktop build, documentation links/indexes, file-size, architecture and
+  diff checks pass. Node-analysis CLI bytes match except buildCommit. Runtime/test source is
+  unchanged; JT9, CTest and full `check` were not run for this documentation-only checkpoint.
+  Headless is not configured; Windows/manual UI was not run. J4 remains pending B32.

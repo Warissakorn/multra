@@ -67,12 +67,13 @@ The special restoration mode permits the requested cross-section change; ordinar
 keeps its template/base-match and edited-detail guards. A hand-edited neighbour refuses the
 whole corridor Command. Existing stationed/reference guards remain and preserve retained data.
 
-**Conflict-range limitation (D413).** A matching seam is not whole-document validity. Increasing
-the east exit stub's outgoing lanes to three can leave an invalid generated conflict range,
-also on a fresh fill. The corridor preview/Command returns `JUNCTION_REBUILD_CONFLICT` at the
-changed Street segment, rather than a core `INVALID_RANGE@conflictZones[...]` index. Keep the
-current outgoing lane count or choose another cross-section/lane layout, then retry. Preview
-and refused Apply leave document, saved state and Undo/Redo unchanged; no geometry is clamped.
+**J6a correction (D415, supersedes D413).** Three outgoing lanes are supported by ordinary
+Fill and corridor rebuild. The former failure was numerical: `matchedStation` could map an
+exact Connector endpoint one rounding unit beyond the runtime lane path's length. This also
+affects a translated single junction; a single junction at the origin was the passing control.
+Exact endpoints now map directly to zero/full target length, with interior conversion unchanged.
+The D413 refusal and locale strings are removed. Whole-document validation remains unchanged;
+no authored extent is clamped or tolerance added to the core validator.
 
 ## 4. Acceptance and implementation status
 
@@ -89,8 +90,8 @@ and refused Apply leave document, saved state and Undo/Redo unchanged; no geomet
   driving sides; screen fit. **Passing.** Readiness uses the same pure advisory at all three levels.
 - **JT16, corridor Command:** a changed shared segment rebuilds both filled junctions, including
   pockets at both ends, on both driving sides. Retained input/measurement references survive
-  reopen and rebuild; a manually edited neighbour refuses atomically. Exit-lane conflict ranges
-  have the named refusal above on both sides; incoming mismatch keeps `JUNCTION_LANE_COUNT`.
+  reopen and rebuild; a manually edited neighbour refuses atomically. Three exit lanes now
+  rebuild and validate on both sides (D415); incoming mismatch keeps `JUNCTION_LANE_COUNT`.
   **Passing.**
 - **JT16, corridor UI:** staged override with no invented values; affected set includes both
   Nodes, Cancel is unchanged, Apply and one Undo restore the complete document. Both sides,
@@ -107,7 +108,10 @@ and refused Apply leave document, saved state and Undo/Redo unchanged; no geomet
 - **JT16, chain:** the affected set reaches all three junctions through two shared Links,
   rebuilds every end and passes save/reopen/full JSON Undo/Redo on both sides. **Passing.**
 
-J6 is implemented and awaits owner review. Native `junctioneditor` has 18 passing cases;
+J6 was approved at 3ec3d39/09b0689. J6a awaits review: JT17 covers exact endpoint conversion,
+single-junction controls at zero and x=200, and ordinary History Fill/rebuild of the three-Node
+corridor on both sides, with save/reopen and one Undo/Redo per Command. **Passing.**
+Native `junctioneditor` has 27 passing cases;
 junction-ui/catalog-ui/recipe-ui and transition-ui cover the surfaces (full-run evidence in PROGRESS).
 
 Headless/Windows evidence is reported separately; Linux offscreen tests do not close the owner look.

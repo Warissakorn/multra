@@ -47,26 +47,20 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **J6 is implemented; stop for owner review (D409–D414).** Carry-over 85329d1 is accepted.
-  The first da7240d review-fix commit is 3ec3d39d (D413): road-32's three outgoing lanes refuse
-  with JUNCTION_REBUILD_CONFLICT at the changed Street segment, unchanged document/History;
-  three incoming lanes keep JUNCTION_LANE_COUNT. No invalid geometry is clamped or published.
-- **B35/B36 are answered and implemented; do not ask them again.** Explicit seam replacement
-  lists affected detail and retains reference guards; the complete shared-Link corridor is rebuilt
-  atomically; incompatible site values remain an explicit draft. Site-only taper/storage/timing
-  edits on the same template preserve the current Node.generated. Another template, Detach,
-  structural major/lane choices and polygon edits clear it; no cleared flag is restored.
-- **J6 review covers** the project-owned catalog editor, far-to-kerb role rows/geometric names,
-  optional Find crossings choice, Nodes → Junction template… with major/lanes/directions and
-  pocket/timing dialogs, all-level seams and explicit Apply again/Detach. The preview lists
-  Nodes and object counts, with all ids expandable. Three-junction closure and shared pockets,
-  missing controls, catalog/three-leg mutations, missing versus entered zero, draft correction,
-  Cancel, reopen and complete Undo/Redo have acceptance rows. See
-  [JUNCTION_TEMPLATE_EDITOR](reference/JUNCTION_TEMPLATE_EDITOR.md); Windows look is E29.
-- **Next action: wait for the owner's J6 review.** Fix requested changes in J6, repeat the required
-  checks and report; do not start another slice. Only after approval begin J7 (§9/JT12),
-  re-reading its contract and deciding any owner-visible/result/storage choice before coding.
-  Keep frozen JT13 untouched. No J4T or UTDF writer work during J6.
+- **Current slice: J6a, stop for owner review (D415).** J6 at 3ec3d39/09b0689 is approved.
+  J6a fixes the pre-existing ordinary Fill conflict-range failure and the same corridor rebuild
+  case by exact polyline endpoint conversion. D413's refusal/locale strings are removed, with
+  whole-document validation unchanged. JT16/JT17 cover both driving sides, origin/translated
+  single-junction controls, ordinary three-junction Fill and atomic corridor rebuild.
+- **Next action: wait for J6a review.** Fix any requested changes in this same slice, repeat
+  build/CTest/check, push and report. No J4T or UTDF writer during J6a. After approval, follow
+  the owner's next pick: J4T is booked before U1; J7 (§9/JT12) remains a separate slice.
+- **Retain B35/B36 (D410/D412):** listed explicit seam replacement and reference guards,
+  automatic complete shared-Link closure, explicit incompatible drafts with no site defaults.
+  Same-template site-only edits preserve the current Node.generated; template/Detach,
+  structural major/lane choices and polygon edits clear it, never restoring a cleared flag.
+  OWNER_SITTING E29 retains Windows appearance/Undo checks for all J6 surfaces and the now
+  supported three-lane exit. Do not re-ask answered choices or change frozen JT13.
 - **Retain J5's contract:** taper entirely upstream, Transition-only selector, two symmetric
   installed templates and owned mixed directions (D406). A generated polygon enlarges in the
   Fill's single Undo; a person's polygon keeps TRANSITION_TAPER_OUTSIDE (D407). New Link legs
@@ -97,17 +91,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   claim MULTRA contract checks; left-hand/phase mapping in Synchro/Vistro stays unverified and
   may change after U0. This effect was reported before code. Do not invent yellow/all-red or
   any timing default; do not start the UTDF writer. Template editor/Find crossings UI is
-  current J6 work; Windows fill inspection is OWNER_SITTING E26, and signal inspection is E27.
-- **Booked for J6, before U1 (D402, D403): one Command: change cross-section through a junction.**
-  Change the cross-section and regenerate junction detail while preserving references in one
-  Undo step. **Corridors are required:** a Link between two filled junctions is generated for
-  both; today's delete-and-refill recovery also removes the neighbour's leg. Add a *Select this
-  junction's generated Links* aid that identifies shared Links/affected neighbours, or make the
-  Command corridor-aware and keep both ends consistent. D410 chose the corridor-aware Command,
-  now implemented with shared-pocket handling and reference tests (JT16); no separate selection
-  aid is needed. Retain the fallback recovery's attached-object and shared-leg warnings.
-- After J6 review/approval: J7 analysis panel/results (which may need two stops), then U1–U3
-  once U0's answers are in. Do not start J4T or the UTDF writer during J6.
+  approved J6 work; Windows fill inspection is OWNER_SITTING E26, and signal inspection is E27.
+- The one-Command cross-section change through complete shared-Link corridors is implemented
+  (D402/D403/D410/D411); keep retained references and ordinary Apply guards. J6a removes the
+  erroneous three-exit-lane limit without changing the corridor's ownership or atomicity rules.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
   `approachLayout` and UTDF's Lanes read.
 

@@ -1325,7 +1325,6 @@
   "SEAM_JUNCTION_DIFFERS": "The junction drawing differs from its template.",
   "editorJunctionApplyAgain": "Apply again…",
   "editorJunctionDetach": "Detach template",
-  "JUNCTION_REBUILD_CONFLICT": "These outgoing lanes produce an invalid junction conflict range. Keep the current outgoing lane count or choose another cross-section/lane layout, then retry. Nothing was changed.",
   "editorJunctionAffected": "Affected junctions and detail",
   "editorJunctionReplace": "Replace the listed detail",
   "editorJunctionObjects": "Detail objects",

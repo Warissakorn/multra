@@ -196,7 +196,8 @@ std::vector<Point> linkCentreline(const Link&, DrivingSide);
 // Polylines derived from one reference share a vertex for vertex correspondence, because
 // offsetGeometry emits one point per input point. A station on one therefore names a
 // cross-section on the other: this is what keeps the mouth of a multi-lane Connector square
-// on a curve, where the outer lane is the longer one. Stations outside `from` are clamped.
+// on a curve, where the outer lane is the longer one. Exact endpoints map exactly to 0 and
+// polylineLength(to); stations outside `from` retain the same endpoint clamping.
 double matchedStation(const std::vector<Point>& from, const std::vector<Point>& to, double station);
 // Directed segment at a station. At a vertex, arriving=true selects the preceding segment;
 // departing selects the following one. Does not average opposite directions into zero.
