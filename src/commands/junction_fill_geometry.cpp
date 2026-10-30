@@ -44,11 +44,12 @@ Plan planNormalized(const ProjectDocument& original,const Node& selected,const N
     if(type.kind=="transition")return transitionPlan(original,selected,catalogs,type);
     if(type.control=="allWayStop")bad("FILL_NODE_ALL_WAY_STOP",at+".templateId"); // B31: deferred until A5 or U1 needs it
     if(const auto invalid=junctionTemplateIssues(type,at+".templateId");!invalid.empty()){result.issues=invalid;return result;}
-    if(type.control=="signalised") {
+    if(type.control=="signalised"&&type.legs!=3) {
+        result.signalPhases=nemaPhases(type.phasing);
         auto timing=nemaTiming(type.phasing,recipe.signal.value_or(JunctionSignal{}),d.definition?d.definition->timeStep:0,at+".signal");
         result.issues.insert(result.issues.end(),timing.issues.begin(),timing.issues.end());
         if(timing.issues.empty())result.signal=std::move(timing.controller);
-    } else if(recipe.signal)bad("JUNCTION_SITE_COUNT",at+".signal");
+    } else if(type.control!="signalised"&&recipe.signal)bad("JUNCTION_SITE_COUNT",at+".signal");
     const auto restored=restore(d,selected,catalogs);
     result.issues.insert(result.issues.end(),restored.begin(),restored.end());
     if(!restored.empty())return result;
@@ -112,6 +113,15 @@ Plan planNormalized(const ProjectDocument& original,const Node& selected,const N
                 if((side==PocketSide::far?j<i:j>i)&&!arm.rows[j].pocket)bad("JUNCTION_POCKET_LAYOUT",path+".lanes["+std::to_string(i)+"]");
         }
     }
+    if(type.control=="signalised"&&type.legs==3) {
+        const auto current=std::find_if(n.nodes.begin(),n.nodes.end(),[&](const auto& x){return x.id==selected.id;});
+        auto phases=nemaSitePhases(type.phasing,n,*current,{major.begin(),major.end()});
+        result.signalPhases=std::move(phases.numbers);result.issues.insert(result.issues.end(),phases.issues.begin(),phases.issues.end());
+        if(phases.issues.empty()) {
+            auto timing=nemaTiming(type.phasing,recipe.signal.value_or(JunctionSignal{}),d.definition?d.definition->timeStep:0,at+".signal",result.signalPhases);
+            result.issues.insert(result.issues.end(),timing.issues.begin(),timing.issues.end());if(timing.issues.empty())result.signal=std::move(timing.controller);
+        }
+    }
     if(!result.issues.empty())return result;
     // Measure the stop lines on the final, full-width lane surfaces, preserving the base
     // lanes' footprint. Only the copy is widened here; actual pockets retain a taper upstream.
@@ -125,7 +135,7 @@ Plan planNormalized(const ProjectDocument& original,const Node& selected,const N
             replaceLaneBundle(l,std::move(lanes),kerb);
         }
     }
-    const auto cuts=nodeLegCuts(measured,selected,{});
+    const auto cuts=type.legs==3?tLegCuts(std::move(measured),n,selected,major):nodeLegCuts(measured,selected,{});
     if(!cuts.reason.empty()){bad(cuts.reason,at);return result;}
     result.issues=cutReferenceIssues(d,cuts.cuts);
     if(!result.issues.empty())return result;

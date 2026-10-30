@@ -27,7 +27,7 @@ NemaPhaseMap nemaApproachPhases(const Network& n,const ApproachLayout& layout,co
     }
     const bool ew=directions==std::set{ApproachDirection::east,ApproachDirection::west};
     const bool ns=directions==std::set{ApproachDirection::north,ApproachDirection::south};
-    if(!layout.issues.empty()||layout.approaches.size()!=4||(!ew&&!ns)||through!=2||!opposed){r.issues.push_back({"NEMA_MAJOR_PAIR","layout"});return r;}
+    if(!layout.issues.empty()||(layout.approaches.size()!=3&&layout.approaches.size()!=4)||(!ew&&!ns)||through!=2||!opposed){r.issues.push_back({"NEMA_MAJOR_PAIR","layout"});return r;}
     for(const auto& a:layout.approaches)r.through[a.inLink]=nemaThroughPhase(a.direction,ew);
     return r;
 }
@@ -37,7 +37,7 @@ std::vector<ValidationIssue> nemaCheck(const SignalController& c,const NemaLayou
     const auto bad=[&](const char* code,const std::string& at){
         if(std::none_of(issues.begin(),issues.end(),[&](const auto& x){return x.code==code&&x.path==at;}))issues.push_back({code,at});
     };
-    if(!layout.issues.empty()||layout.approaches.size()!=4){bad("NEMA_LAYOUT","layout");return issues;}
+    if(!layout.issues.empty()||(layout.approaches.size()!=3&&layout.approaches.size()!=4)){bad("NEMA_LAYOUT","layout");return issues;}
     if(!(c.cycle>0)||!std::isfinite(c.cycle)){bad("NEMA_TIMING",c.id+".cycle");return issues;}
     std::map<int,const SignalGroup*> groups;
     for(const auto& g:c.groups) {
@@ -45,7 +45,7 @@ std::vector<ValidationIssue> nemaCheck(const SignalController& c,const NemaLayou
         if(g.number<1||g.number>8||!groups.emplace(g.number,&g).second)bad("NEMA_PHASE_NUMBER",at);
         if(!std::isfinite(g.greenStart)||!std::isfinite(g.greenEnd)||!std::isfinite(g.amber)||g.greenStart<0||g.greenStart>=c.cycle||g.greenEnd<0||g.greenEnd>=c.cycle||g.greenStart==g.greenEnd||g.amber<0||signalGroupGreen(c,g)+g.amber>c.cycle+1e-6)bad("NEMA_TIMING",at);
     }
-    for(const int number:{2,4,6,8})if(!groups.contains(number))bad("NEMA_PHASE_NUMBER",c.id+".groups");
+    for(const int number:layout.approaches.size()==3?std::vector<int>{2,6}:std::vector<int>{2,4,6,8})if(!groups.contains(number))bad("NEMA_PHASE_NUMBER",c.id+".groups");
     if(!issues.empty())return issues;
     const auto delta=[&](double a,double b){double x=std::fmod(b-a+c.cycle,c.cycle);return std::abs(x)<1e-9?0.:x;};
     for(const int ring:{0,1}) {
@@ -54,7 +54,7 @@ std::vector<ValidationIssue> nemaCheck(const SignalController& c,const NemaLayou
         double travelled=0;
         for(std::size_t i=0;i<ordered.size();++i) {
             const auto& a=*ordered[i];const auto& b=*ordered[(i+1)%ordered.size()];
-            const double distance=delta(a.greenStart,b.greenStart);travelled+=distance;
+            const double distance=ordered.size()==1?c.cycle:delta(a.greenStart,b.greenStart);travelled+=distance;
             if(distance+1e-6<signalGroupGreen(c,a)+a.amber)bad("NEMA_RING_ORDER",c.id+".groups["+std::to_string(a.number)+"]");
         }
         if(std::abs(travelled-c.cycle)>1e-6)bad("NEMA_RING_ORDER",c.id+".ring["+std::to_string(ring+1)+"]");
@@ -89,6 +89,7 @@ std::vector<ValidationIssue> nemaCheck(const SignalController& c,const NemaLayou
         // The through-angle bound is D392's 45 degrees, independent of labels or Street segments.
         if(a6==layout.approaches.end()||std::abs(std::remainder(a2->bearing-a6->bearing,360.))<=135.)bad("NEMA_MAJOR_PAIR","layout");
     }
+    std::set<int> used;
     for(const auto& a:layout.approaches) {
         const int own=nemaThroughPhase(a.direction,ew),far=nemaFarPhase(own),opposing=own<=4?own+4:own-4;
         for(const auto& lane:a.lanes) {
@@ -97,7 +98,8 @@ std::vector<ValidationIssue> nemaCheck(const SignalController& c,const NemaLayou
                 const auto movement=std::find_if(layout.movements.begin(),layout.movements.end(),[&](const auto& x){return x.turn==t;});
                 if(movement==layout.movements.end())continue;
                 const bool isFar=(movement->movement==JunctionMovement::right&&n.drivingSide==DrivingSide::left)||(movement->movement==JunctionMovement::left&&n.drivingSide==DrivingSide::right);
-                const int expected=isFar&&groups.contains(far)?far:own,actual=numbers[t];
+                const bool protectedFar=layout.approaches.size()==3?own==2||own==6:groups.contains(far);
+                const int expected=isFar&&protectedFar?far:own,actual=numbers[t];used.insert(expected);
                 if(actual!=expected)bad("NEMA_HEAD_GROUP",movement->name);
                 if(actual==0||!groups.contains(actual))continue;
                 const bool permitted=isFar&&actual==own&&groups.contains(opposing)&&overlaps(*groups.at(own),*groups.at(opposing),false);
@@ -106,6 +108,7 @@ std::vector<ValidationIssue> nemaCheck(const SignalController& c,const NemaLayou
             if(protectedGroups.size()>1||permittedGroups.size()>1)bad("NEMA_LANE_GROUP",lane.id);
         }
     }
+    if(layout.approaches.size()==3&&(used.size()!=4||groups.size()!=used.size()||std::any_of(used.begin(),used.end(),[&](int k){return !groups.contains(k);})))bad("NEMA_PHASE_NUMBER",c.id+".groups");
     return issues;
 }
 }

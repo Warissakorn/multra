@@ -68,6 +68,14 @@ std::optional<LayoutPocket> pocketOf(const Network& n, const Link& start, const 
 }
 constexpr double kAngleEpsilon = 1e-12; // exact boundary angles after trig round-off
 }
+std::optional<ApproachDirection> approachDirection(const Node& node,const Link& link,double station,const ApproachDirections& overrides) {
+    if(const auto x=overrides.find(link.id);x!=overrides.end())return x->second;
+    if(const auto x=node.approachDirections.find(link.id);x!=node.approachDirections.end())return x->second;
+    const auto d=directionAlong(link.geometry,station,true);
+    if(std::abs(std::abs(d.x)-std::abs(d.y))<kAngleEpsilon)return {};
+    if(std::abs(d.y)>std::abs(d.x))return d.y>0?ApproachDirection::north:ApproachDirection::south;
+    return d.x>0?ApproachDirection::east:ApproachDirection::west;
+}
 ApproachLayout approachLayout(const Network& n, const Node& node, const ApproachDirections& overrides) {
     ApproachLayout out; out.membership = nodeMembership(n,node);
     const auto& m = out.membership;
@@ -109,12 +117,11 @@ ApproachLayout approachLayout(const Network& n, const Node& node, const Approach
         a.bearing = std::atan2(d.x,d.y)*180/std::numbers::pi;
         if (a.bearing < 0) a.bearing += 360;
         const auto path = "inLegs["+std::to_string(i)+"]: "+a.inLink;
-        if (const auto override = overrides.find(a.inLink); override != overrides.end()) a.direction = override->second;
-        else if (const auto stored = node.approachDirections.find(a.inLink); stored != node.approachDirections.end()) a.direction = stored->second;
-        else if (std::abs(std::abs(d.x)-std::abs(d.y)) < kAngleEpsilon) {
+        const auto direction=approachDirection(node,link,stop,overrides);
+        if(!direction) {
             out.issues.push_back({"JUNCTION_DIRECTION_AMBIGUOUS",path}); continue;
-        } else if (std::abs(d.y) > std::abs(d.x)) a.direction = d.y > 0 ? ApproachDirection::north : ApproachDirection::south;
-        else a.direction = d.x > 0 ? ApproachDirection::east : ApproachDirection::west;
+        }
+        a.direction=*direction;
         if (!compass.emplace(a.direction,i).second) out.issues.push_back({"JUNCTION_DIRECTION_AMBIGUOUS",path});
     }
     for (std::size_t t = 0; t < m.turns.size(); ++t) {

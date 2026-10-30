@@ -2,7 +2,6 @@
 #include "dialog_fit.hpp"
 #include "../commands/junction_commands.hpp"
 #include "../model/network/coarse_nodes.hpp"
-#include "../model/demand/nema.hpp"
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -38,14 +37,14 @@ std::optional<JunctionRecipeEdit> editJunctionRecipe(QWidget* parent,const Proje
         const bool has=type->currentIndex()>0;draft.templateId=type->currentData().toString().toStdString();
         const auto shape=has?junctionRecipeIssues(draft,"junction"):std::vector<ValidationIssue>{};buttons->button(QDialogButtonBox::Ok)->setEnabled(shape.empty());
         edit->setEnabled(has&&!selected().empty());clear->setEnabled(has&&draft.legs.contains(selected()));timing->setEnabled(has);clearSignal->setEnabled(has&&draft.signal.has_value());
-        QStringList phases;const auto t=std::find_if(catalogs.junctionTemplates.begin(),catalogs.junctionTemplates.end(),[&](const auto& t){return t.id==draft.templateId;});
-        if(t!=catalogs.junctionTemplates.end())for(const int n:nemaPhases(t->phasing))phases<<QString::number(n);
-        required->setText(phases.empty()?QString():text("editorJunctionRequiredPhases").arg(phases.join(", ")));
+        required->clear();
         if(!shape.empty()){issues->setText(junctionIssueText(shape,text));return;}
         if(!has){issues->setText(text("editorJunctionNone"));return;}
         try {auto candidate=original;setNodeJunction(candidate,id,draft);if(directions!=at->approachDirections)setNodeApproachDirections(candidate,id,directions);
             const auto& node=*std::find_if(candidate.network.nodes.begin(),candidate.network.nodes.end(),[&](const auto& n){return n.id==id;});
             const auto status=junctionFillStatus(candidate,node,catalogs);issues->setText(status.issues.empty()?text("editorJunctionFillReady"):text("editorJunctionFillBlocked")+'\n'+junctionIssueText(status.issues,text));
+            QStringList phases;for(const int n:status.signalPhases)phases<<QString::number(n);
+            required->setText(phases.empty()?QString():text("editorJunctionRequiredPhases").arg(phases.join(", ")));
         }catch(const std::exception& e){issues->setText(text("editorJunctionFillBlocked")+" — "+QString::fromUtf8(e.what()));}
     };
     refresh=[&] {

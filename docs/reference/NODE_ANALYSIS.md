@@ -33,7 +33,7 @@ the queue. Owner choices (§8) were answered on 2026-10-27 with every recommenda
 | Need | Already in MULTRA |
 |---|---|
 | Junction object, legs, turns, control type, per-turn g/C | Node, derived from Micro detail (NODES §3); coarse values on a Node without detail: turns, control, major/minor, stage signal (STREET_SEGMENTS_IMPLEMENTED §19–20) |
-| Signal timing | Fixed-time programs, heads, groups (M2.7, D359/D360). **Read, never copied** |
+| Signal timing | Fixed-time programs, heads, groups (M2.7, D359/D360). **Read, never copied**; J4T checks all six protected T movements against entered g/C ([JUNCTION_SIGNALS](JUNCTION_SIGNALS.md), D416), with no method change |
 | Demand by period | Counted volumes and 15-minute intervals (M2.2), compositions and PCU (S1.2), StudyPeriod (S1.1) |
 | Base saturation flow | HCM 7 Exhibit 19-11: 1,900 pc/h/ln, or 1,750 below 250,000 metro population (PDF p. 1430, already cited by [STREET_SEGMENTS](STREET_SEGMENTS.md) §6) |
 | Local saturation flow | Micro's queue-discharge measurement (M3.3.1) as an override with provenance ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §6) |

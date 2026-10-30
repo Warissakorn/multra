@@ -11,7 +11,8 @@ J3a adds the template catalog and stored recipes (D393–D395). J3b is implement
 (D398–D402): the two-way-stop fill, named refusals and legacy-fill parity below. All-way-stop
 generation is deferred by the owner until A5 or U1 needs it (D399).
 J4 generates P1–P4 signals from required site timing and checks their NEMA layout (§8, D404).
-The editor recipe surfaces remain J6.
+J4T adds the protected three-stage T and measured T template cuts (D416).
+The editor recipe surfaces are implemented in J6.
 The owner choices are answered
 (§12: D387, D388; J2 clarification on 2026-10-29).
 
@@ -84,7 +85,7 @@ reads installed JSON files in filename order, with paths `catalog/junction-templ
 malformed JSON names the file, and invalid fields name their full path. No cache is retained.
 `definition.junctionTemplates` owns the whole catalog when present, including an empty array;
 when absent it resolves installed entries, as Link types do. Duplicate ids are refused at the
-later entry's `.id`. The installed [12 junction and two transition templates](../../data/junction-templates/README.md)
+later entry's `.id`. The installed [13 junction and two transition templates](../../data/junction-templates/README.md)
 cover P1–P4 four-leg and two-way stop three-/four-leg, each with and without major far-turn pockets.
 No storage, taper, cycle or timing numbers ship. Signalised entries require P1–P4; other controls
 carry no phasing. P2 major / P3 all roles use separate `F` rows for protected far turns (D396),
@@ -187,17 +188,17 @@ the downstream end through the existing split rules. No applied layout/receipt i
 Re-apply walks generated pocket predecessors, stopping at a junction, reconstructs the base
 leg from its cross-section, and refuses named manual detail/attachments instead of deleting
 it. A fill transaction preserves generated ownership during re-generation; manual Commands
-refine it. The existing `settleNodes` transition alone clears coarse after detail appears. Existing geometry
-refusals remain: a three-leg cut meeting no other surface keeps its end ([READINESS](READINESS.md) §13.2), and a zero
-through-Connector gap is `EDIT_CONNECTOR_GAP`; no arbitrary cut distance is invented.
+refine it. The existing `settleNodes` transition alone clears coarse after detail appears. Ordinary F4 still keeps a leg end when no other surface meets it ([READINESS](READINESS.md) §13.2).
+T template fills use the measuring-copy correction below; a remaining zero through-Connector
+gap still refuses with `EDIT_CONNECTOR_GAP`, without inventing a cut distance.
 **All-way stop (D399, B31 answered).** The fill stays listed but disabled with
 `FILL_NODE_ALL_WAY_STOP`; D388 JT-4a's generation waits until A5 or U1 needs it.
 StopControl is unchanged and schema 63 is not used. Signal generation is implemented in J4 (§8).
 
-**Known limitation (D400).** An orthogonal T with a wide median can leave a major through
-pair touching, because that direction meets no other arm's lane surface. The cut keeps its
-end, so the zero-length Connector is refused as `EDIT_CONNECTOR_GAP`. The offer is disabled
-and changes nothing. No artificial cut distance is introduced; skew three-leg cases pass.
+**T template cuts (D416, supersedes D400 for templates).** The private full-width measuring
+copy extends the stem to the far major pavement edge before the existing overlap cuts.
+Only cuts on the original Link are published, with stations mapped back before reference
+checks. No distance default or F4 change; [details/JT19](JUNCTION_SIGNALS.md#t-template-cut-measurement-jt19-b37d416).
 
 **J6a correction (D415).** Ordinary Fill and corridor rebuild support three exit lanes. Exact
 endpoint station conversion fixes a one-rounding-unit conflict overrun; D413's refusal is
@@ -347,63 +348,10 @@ preview and a refused Command leave the document/History unchanged.
 
 ## 8. NEMA numbering of signal groups
 
-B32 answered as recommended in all three choices (D404). J4 implements the shipped four-leg
-P1–P4 set (§3). **A group's number is its NEMA
-phase**; existing controllers/groups/heads remain the only stored signal model. The pure
-`nemaCheck(controller, layout)` reports `NEMA_*` failures for a derived network/layout view.
-Hand-made controllers keep running in Micro/HCM independently of that export check.
-
-- Ring 1 is 1,2 | 3,4 and ring 2 is 5,6 | 7,8, in cyclic order. The barriers separate those
-  two pairs, after 2/6 and after 4/8; both rings must clear a half before the other half opens.
-- Every used phase requires the Node's green, yellow and allRed, with no defaults (D395).
-  **allRed is entered clearance.** Red waiting for a barrier or P4's other approach is derived
-  separately from the other phases; it does not replace or inflate the entered clearance.
-- Each lane may carry only one protected group and at most one permitted group. A permitted
-  turn uses its approach's through group and the existing yielding Conflict areas. Operation
-  remains derived from actual green/conflict overlap (NODE_ANALYSIS_A3), never stored.
-  Protected far turns use the odd group immediately before the opposing through group;
-  D396's separate lanes are required for P2 major / P3 all approaches.
-
-| Preset | Ring 1 | Ring 2 | Far turns |
-|---|---|---|---|
-| P1 Two-phase | 2 \| 4 | 6 \| 8 | permitted with opposing through |
-| P2 Protected far turns on the major | 1,2 \| 4 | 5,6 \| 8 | major leading protected; minor permitted |
-| P3 Protected far turns, all legs | 1,2 \| 3,4 | 5,6 \| 7,8 | protected leading |
-| P4 Split phasing on the minor | 2 \| 4, then wait | 6 \| wait, then 8 | major permitted; each minor approach alone |
-
-The vertical bars within the ring cells are barriers.
-
-**Numbering and anchor (D404).** For major E–W: 2 WB, 6 EB, 4 SB, 8 NB. For major N–S,
-rotate the whole mapping: 2 NB, 6 SB, 4 WB, 8 EB. The major pair must be opposite compass
-approaches with reciprocal geometric through movements; direction overrides label the layout
-and cannot create physical opposition (§6). Far means right in left-hand traffic and
-left in right-hand traffic, with the same odd phase numbers. **2 and 6 start at cycle time 0**;
-leading 1/5 run at the end of the preceding cycle. The controller offset is zero by this
-reference convention, not a site timing default.
-
-**Timing construction (D404).** Let S_n = entered green + yellow + allRed for phase n, with
-an absent preset phase contributing zero to these structural expressions only. The through
-half lasts T = max(S_2,S_6). The minor half lasts M = max(S_4,S_8) for P1/P2,
-max(S_3+S_4,S_7+S_8) for P3, and S_4+S_8 for P4. The leading tail lasts
-L = max(S_1,S_5). **Require cycle = T+M+L**, refusing a mismatch rather than assigning spare time.
-2/6 start at 0; 1/5 start at cycle−S_1/S_5 so both have completed clearance at 0.
-P1/P2 minor greens start at T. P3 starts 3/7 at T and 4/8 after its ring's 3/7 slot.
-P4 starts 4 at T, then 8 at T+S_4; the other ring waits red. Green lengths and yellows stay
-exactly the entered values. The difference between clearance completion and the next green
-is derived waiting. All numbers must lie on the project's time-step grid for a fill.
-
-U0's answer table remains empty: internal NEMA checks do not establish Synchro/Vistro
-interchange or left-hand support there. UTDF_EXPORT §6 still waits on the probe; no writer
-is included in J4.
-
-**Signalised T limitation and booking (B33, D405).** The shipped catalog has no signalised
-three-leg entry, and `nemaApproachPhases` currently requires four approaches (`NEMA_MAJOR_PAIR`).
-Book **J4T before U1**: one protected three-stage T preset (major through pair, separate
-protected far turn from the major, minor alone). Keep 2/6 for major through, 1 or 5 for its
-protected far turn, and 4 or 8 for the minor leg; omit unused phases. Keep the 2/6 time-zero
-anchor and leading far phase at the preceding cycle's end. B33's recommendations are answered;
-J4T still needs its contract/acceptance rows and a separate implementation/review session.
-This is documentation only in J5; J4's four-leg implementation and required site timing stay.
+The complete signal contract is [JUNCTION_SIGNALS](JUNCTION_SIGNALS.md): four-leg P1–P4
+(D404) and the protected three-stage T (B33/D405, B37/D416). Site timing remains required;
+2/6 start at zero, the leading far ends the preceding cycle, and unused T phases are omitted.
+T uses existing P2 plus legs=3, with two full lanes per arm; no new schema or timing default.
 
 ## 9. Posted speed and the analysis panel
 
@@ -437,7 +385,7 @@ This is documentation only in J5; J4's four-leg implementation and required site
 | J6 | **Approved at 3ec3d39/09b0689 (D409–D414):** template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36, compact previews; JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
 | J6a | **Implemented, awaiting review (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
-| J4T | Booked before U1 (B33, D405): one protected signalised T preset and its NEMA support (§8); separate review, no code in J5 | 1 |
+| J4T | **Implemented, awaiting review** (D405/D416): protected signalised T, compass NEMA subset, template T cuts, JT18/JT19; separate review | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
 U0 waits on the owner, and its answers can change J4 and U1. About 14–17
@@ -486,7 +434,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT4 | J2 | `approachLayout` names all 12 four-leg movements on both `drivingSide`s; shared lane sets/widths, duplicate directions, compass ties, overrides and 45°/135° boundaries (`tests/junction_layout_tests.cpp`, **passing**) |
 | JT5 | J3a | Every invalid template in §3 is refused on load with its path (installed/owned); catalog ordering/ownership, schema-61 floors and pre-version field paths, partial recipe/coarse round-trip, exact Macro/Meso compile parity for a coarse signalised Node with a banned turn before/after choice and Detach (both driving sides), detail refine, direction/split and one Undo/Redo (`tests/junction_template_tests.cpp`, `tests/junction_recipe_tests.cpp`, `tests/junction_command_tests.cpp`; **passing**) |
 | JT6 | J3 | Two crossing Street segments, Find crossings with a template, Apply: `approachLayout` gives the template's lanes and the Node's storage back exactly, for left- and right-hand traffic; four-leg far/kerb pockets and skew three-leg roles (`tests/junction_fill_tests.cpp`, `tests/junction_fill_completion_tests.cpp`, **passing**) |
-| JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED`; full-lane counts, schema-62 paths, manual refine/copy/split, generated replacement, S5 marking, rank fallback, named cut/reference refusals, orthogonal-T limitation, guarded Street segment Apply template and Undo → cross-section → fill recovery (`tests/junction_fill_tests.cpp`, `tests/junction_fill_completion_tests.cpp`, **passing**; all-way-stop generation deferred) |
+| JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED`; full-lane counts, schema-62 paths, manual refine/copy/split, generated replacement, S5 marking, rank fallback, named cut/reference refusals, guarded Street segment Apply template and Undo → cross-section → fill recovery (`tests/junction_fill_tests.cpp`, `tests/junction_fill_completion_tests.cpp`, **passing**; all-way-stop generation deferred) |
 | JT8 | J3 | The applied two-way-stop junction runs in Micro (seed 42) with no refusal on both driving sides. Existing manual signal Commands, used only in this test (D397), let NODE_ANALYSIS find all 10 lane groups and 12 turns (`tests/junction_fill_run_tests.cpp`, **passing**); template signals are covered separately by JT9 |
 | JT9 | J4 | P1–P4 on both driving sides, both major axes and pocket variants: exact entered timing, clearance/wait split, missing/grid/cycle refusals, broken barrier/ring/head and protected-lane codes; compiled HCM g/C, P3 protected result and Micro seed 42; generated/refine and safe replacement with full JSON Undo/Redo (`tests/junction_signal*_tests.cpp`, **passing**, 9 cases) |
 | JT10 | J5 / J6 carry-over | 3→2 Transition row, upstream taper and kerb/far/mixed mapping on both driving sides; Find crossings → applyCrossings → F3 → 15/30/60 m tapers → Fill enlarges the generated polygon to contain Connector rails, with unchanged preview, save/reopen, re-apply and one exact JSON Undo/Redo; an edited polygon refuses atomically at its polygon path. At 60 m in left-hand traffic, a side road (-40,112) → (-40,12), mirrored for right-hand traffic, would add two Link legs: refuse at each captured Link without document/History/save-state changes; y=25 stays outside and fills with one Undo. Neighbour overlap keeps NODE_OVERLAP; its preview disables the offer, names the neighbour, and direct generation also refuses before publication, on both driving sides. Schema-63/older-field guards; missing/bounds/unused-site refusals; same-template lifecycle merge; generated replacement/refine, stationed-head protection; ordinary Micro compilation and existing HCM refusal. Required selector, Cancel and one Undo driven in Qt (`tests/transition_tests.cpp`, `tests/transition_reference_tests.cpp`, `tests/transition_ui_tests.cpp`; **passing**, 14 native cases plus UI on both sides) |
@@ -497,3 +445,5 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT15 | J3b review | Reopen without Undo, delete the junction's generated Links, Apply the changed cross-section and fill again: `checkLayout` passes on both driving sides, recipe survives, attached travel-time measurement is removed, and every Command has complete JSON Undo/Redo (`tests/junction_fill_completion_tests.cpp`, **passing**) |
 | JT16 | J6 / J6a | Shared Links/pockets rebuild both ends and the complete three-junction chain on both sides; retained references survive reopen, edited neighbour refuses atomically, with preview/Cancel and full JSON Undo/Redo. Compact 3-Node/446-object preview exposes all ids on request. East exit 3 outgoing lanes rebuilds and validates (D415); 3 incoming lanes keeps `JUNCTION_LANE_COUNT`. Native/Qt **passing** (`tests/junction_editor_tests.cpp`, `tests/junction_ui_tests.cpp`) |
 | JT17 | J6a | Exact polyline endpoint conversion; single-junction 3-lane-exit controls at x=0 and x=200; ordinary History Fill of -200/0/200 corridor and atomic cross-section rebuild, both driving sides, with valid whole document, unchanged preview, seam parity, save/reopen and exact JSON Undo/Redo. D413 refusal removed (`tests/junction_corridor_conflict_tests.cpp`, **passing**, 9 cases) |
+| JT18 | J4T | Protected three-stage T, both sides/all stem directions, literal U0 compass check, required site timing/omitted phases, NEMA/refusal guards, HCM/Micro, drafts/Node form, generated/refine and full Undo/reopen ([contract](JUNCTION_SIGNALS.md); **passing**) |
+| JT19 | J4T | T template full-width measuring extension, both sides, signals/two-way stop, original footprints/reference guards, legacy F4/JT13 unchanged and one Undo ([contract](JUNCTION_SIGNALS.md); **passing**) |

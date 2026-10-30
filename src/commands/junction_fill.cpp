@@ -24,7 +24,7 @@ Plan plan(const ProjectDocument& original,const Node& node,const NodeFillCatalog
 }
 }
 JunctionFillStatus junctionFillStatus(const ProjectDocument& d,const Node& node,const NodeFillCatalogs& catalogs) {
-    auto p=junctionDetail::plan(d,node,catalogs);return {std::move(p.issues),std::move(p.laneCounts)};
+    auto p=junctionDetail::plan(d,node,catalogs);return {std::move(p.issues),std::move(p.laneCounts),std::move(p.signalPhases)};
 }
 std::vector<ValidationIssue> junctionFillIssues(const ProjectDocument& d,const Node& node,const NodeFillCatalogs& catalogs) {
     return junctionFillStatus(d,node,catalogs).issues;

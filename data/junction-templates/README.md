@@ -5,6 +5,8 @@ Each JSON file is a catalog entry; the loader reads filenames in order. Project-
 `definition.junctionTemplates` replaces this whole catalog, including when it is empty.
 
 - Four legs, signalised: P1, P2, P3 and P4, each with shared turn lanes or major far-turn pockets.
+- Three legs, signalised: one protected three-stage P2 subset, two full incoming lanes on every
+  arm (major-far F|T, major-kerb T|K, minor F|K), no site numbers (D416).
 - Three and four legs, two-way stop: each with shared turn lanes or major far-turn pockets.
 - Three-leg roles are major-far, major-kerb and minor; four-leg roles are major and minor.
 - Two transition entries: kerb/kerb and far/far. Owned entries can mix forward/backward alignments
@@ -18,4 +20,5 @@ Every file describes its own structure. No storage, taper or timing number ships
 values on the Node. The phasing preset selects structure, never a cycle or green time. All-way
 stop is accepted for owned templates; its fill remains listed but disabled until A5 or U1 (D399).
 J3b generates junction geometry; J4 applies the required site timing to the four-leg signal
-presets (D404). J5 adds transition structure and the required Transition-only selector; the recipe editor is J6.
+presets (D404); J4T adds the T subset and measured T template cuts
+([JUNCTION_SIGNALS](../../docs/reference/JUNCTION_SIGNALS.md), D416). J5 adds transition structure and the required Transition-only selector; the recipe editor is J6.

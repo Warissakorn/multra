@@ -462,9 +462,9 @@ complete definition decoding, and the writer still omits derived counted interva
 or simulation algorithm, catalog ownership, writer version rule, serialized output or desktop
 observed-schema response changes. Catalog row schemas remain separate follow-ups.
 
-J4 (D404) introduces no stored field or schema step. Template signals use the existing
-controller/groups/heads and generated flags, while site green/yellow/allRed remain on the
-schema-61 recipe. Barrier waiting and NEMA layout/check results are derived, never saved.
+J4 (D404) and J4T (D416) add no stored field or schema step. Signals use existing controllers,
+groups, heads and generated flags; T uses P2 + legs=3. Site timing stays on schema-61 recipes.
+Barrier waiting, required phase numbers and NEMA layout/check results are derived, never saved.
 
 J5 stores no duplicate Node kind or applied layout. A transition using installed catalog data
 keeps its existing recipe/taper fields at 61 (generated Links at 62); only new owned catalog

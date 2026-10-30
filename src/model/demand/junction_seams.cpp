@@ -33,9 +33,21 @@ bool differs(const Network& n,const Node& node,const JunctionTemplate& type,cons
     for(const auto& id:signalIds) {const auto c=std::find_if(controllers.begin(),controllers.end(),[&](const auto& c){return c.id==id;});if(c==controllers.end()||!c->generated)return true;}
     if((type.control=="signalised")!=!signalIds.empty())return true;
     const auto& recipe=*node.junction;
+    std::set<std::string> major(recipe.major.begin(),recipe.major.end());
+    if(type.kind!="transition"&&major.empty()) {
+        std::vector<std::pair<std::string,std::optional<int>>> ranks;
+        for(const auto& a:layout.approaches)if(const auto* l=linkOf(n,a.inLink);l&&l->streetSegmentId) {
+            std::optional<int> rank;for(const auto& t:types)if(l->linkTypeId==t.id)rank=t.rank;
+            ranks.emplace_back(*l->streetSegmentId,rank);
+        }
+        if(const auto m=majorByRank(ranks))major.insert(m->begin(),m->end());else return true;
+    }
+
     if(type.control=="signalised") {
         if(signalIds.size()!=1)return true;
-        const auto expected=nemaTiming(type.phasing,recipe.signal.value_or(JunctionSignal{}),timeStep);
+        NemaPhaseSet phases;
+        if(type.legs==3){phases=nemaSitePhases(type.phasing,n,node,{major.begin(),major.end()});if(!phases.issues.empty())return true;}
+        const auto expected=nemaTiming(type.phasing,recipe.signal.value_or(JunctionSignal{}),timeStep,"junction.signal",phases.numbers);
         if(!expected.issues.empty())return true;
         const auto& actual=*std::find_if(controllers.begin(),controllers.end(),[&](const auto& c){return c.id==*signalIds.begin();});
         if(actual.cycle!=expected.controller.cycle||actual.offset!=expected.controller.offset||actual.groups.size()!=expected.controller.groups.size())return true;
@@ -70,15 +82,6 @@ bool differs(const Network& n,const Node& node,const JunctionTemplate& type,cons
     }
     if(type.control=="allWayStop")return true; // Generation is deferred by B31/D399.
     if(layout.approaches.size()!=static_cast<std::size_t>(type.legs))return true;
-    std::set<std::string> major(recipe.major.begin(),recipe.major.end());
-    if(major.empty()) {
-        std::vector<std::pair<std::string,std::optional<int>>> ranks;
-        for(const auto& a:layout.approaches)if(const auto* l=linkOf(n,a.inLink);l&&l->streetSegmentId) {
-            std::optional<int> rank;for(const auto& t:types)if(l->linkTypeId==t.id)rank=t.rank;
-            ranks.emplace_back(*l->streetSegmentId,rank);
-        }
-        if(const auto m=majorByRank(ranks))major.insert(m->begin(),m->end());else return true;
-    }
     if(type.control=="twoWayStop") {
         struct Turn {std::string arm;int rank{};};std::map<std::string,Turn> turns;
         for(const auto& c:n.connectors)if(connectors.contains(c.id)) {

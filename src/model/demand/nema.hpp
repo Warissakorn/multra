@@ -12,7 +12,10 @@ struct NemaTiming {
 };
 std::vector<int> nemaPhases(const std::string& preset);
 NemaTiming nemaTiming(const std::string& preset,const JunctionSignal&,double timeStep,
-                      const std::string& path="junction.signal");
+                      const std::string& path="junction.signal",const std::vector<int>& activePhases={});
+struct NemaPhaseSet { std::vector<int> numbers; std::vector<ValidationIssue> issues; };
+// T/P2 selects only its physical major far and existing minor; usable before Fill or timing.
+NemaPhaseSet nemaSitePhases(const std::string& preset,const Network&,const Node&,const std::vector<std::string>& major);
 struct NemaPhaseMap { std::map<std::string,int> through; std::vector<ValidationIssue> issues; };
 NemaPhaseMap nemaApproachPhases(const Network&,const ApproachLayout&,const std::vector<std::string>& major);
 int nemaThroughPhase(ApproachDirection,bool eastWest);

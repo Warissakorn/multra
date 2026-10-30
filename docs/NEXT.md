@@ -47,14 +47,18 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Current slice: J6a, stop for owner review (D415).** J6 at 3ec3d39/09b0689 is approved.
-  J6a fixes the pre-existing ordinary Fill conflict-range failure and the same corridor rebuild
-  case by exact polyline endpoint conversion. D413's refusal/locale strings are removed, with
-  whole-document validation unchanged. JT16/JT17 cover both driving sides, origin/translated
-  single-junction controls, ordinary three-junction Fill and atomic corridor rebuild.
-- **Next action: wait for J6a review.** Fix any requested changes in this same slice, repeat
-  build/CTest/check, push and report. No J4T or UTDF writer during J6a. After approval, follow
-  the owner's next pick: J4T is booked before U1; J7 (§9/JT12) remains a separate slice.
+- **J4T is implemented; stop for owner review (D405/D416).** J6 and J6a are
+  approved, including e1eaad8's exact endpoint conversion and accepted byte parity.
+  B37 is answered: two full incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3,
+  and a stem extension only in the T template's measuring copy, for both controls. No defaults
+  or new schema. The full signal/T-cut contract is [JUNCTION_SIGNALS](reference/JUNCTION_SIGNALS.md).
+- **Next action: wait for J4T review.** JT18/JT19 pass; fix any requested changes in this
+  same slice, repeat build/CTest/check, commit/push and report. Required phase numbers must match
+  between Fill, the Node form and seam comparison, including incomplete timing; all four
+  stem directions/both driving sides include literal U0 compass checks and single-phase rings.
+  The original F4 and frozen JT13 remain unchanged. No UTDF writer or next slice before review.
+  After approval follow the owner's pick; J7 (§9/JT12) remains a separate slice and U0 still
+  blocks U1. OWNER_SITTING E30 is the Windows look for the T preset/required phase subset.
 - **Retain B35/B36 (D410/D412):** listed explicit seam replacement and reference guards,
   automatic complete shared-Link closure, explicit incompatible drafts with no site defaults.
   Same-template site-only edits preserve the current Node.generated; template/Detach,
@@ -68,9 +72,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   are introduced by the preview carry-over. New owned transition structure uses schema 63;
   existing recipe fields retain their earlier floors. J4 is approved at 5ab3ea3, J3b at a52476b;
   the fill dialog's generatedCommand mode and frozen JT13 remain accepted.
-- **B33 is answered (D405):** book J4T before U1: one protected three-stage signalised T
-  preset, existing compass NEMA numbers with unused phases omitted, 2/6 at zero. Its own
-  contract/rows and implementation review come in a separate slice; docs only during J5.
+- **Retain B33/B37 (D405/D416):** only the protected three-stage T preset; compass-based
+  2/6 major through, 1 or 5 physical major far, 4 or 8 existing minor; unused phases omitted.
+  Both numbered rings stay, including one-phase rings. Major through starts at zero, minor
+  alone follows, leading major far ends the preceding cycle; all site timing is entered.
 - **B32 is answered (D404):** fixed numbered rings/barriers, P4 4 then 8 with derived red
   waiting, entered allRed as clearance, exact cycle closure, rotated compass mapping and
   2/6 time-zero anchor. §8 has the timing construction; do not re-ask these choices. All site
@@ -79,8 +84,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   row listed but disabled with `FILL_NODE_ALL_WAY_STOP`; do not extend StopControl or consume
   schema 63 for all-way stop. Link.generated uses 62; J5 transition structure uses 63. Do not re-ask B31 in J4.
 - **Boundaries to retain:** J4 requires complete site timing (D404); full-lane mismatch
-  refuses with existing → required counts. An orthogonal T with a wide median can leave a
-  touching through pair and stays `EDIT_CONNECTOR_GAP` (D400), with no invented cut length.
+  refuses with existing → required counts. T templates supersede D400 with the
+  measured stem extension (D416), without an invented cut length or change to ordinary F4.
   Street segment Apply template over junction-generated Links is `JUNCTION_STREET_SEGMENT_DETAIL`;
   F4 detail plus a chosen recipe alone keeps Apply available (D402). After reopen without Undo,
   delete the junction's generated Links, Apply the Street segment template, then fill again.

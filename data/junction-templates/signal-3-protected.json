@@ -1,0 +1,13 @@
+{
+  "id": "signal-3-protected",
+  "name": "Three legs, protected three-stage",
+  "kind": "junction",
+  "legs": 3,
+  "control": "signalised",
+  "phasing": "P2",
+  "roles": {
+    "major-far": [{ "movements": "F" }, { "movements": "T" }],
+    "major-kerb": [{ "movements": "T" }, { "movements": "K" }],
+    "minor": [{ "movements": "F" }, { "movements": "K" }]
+  }
+}

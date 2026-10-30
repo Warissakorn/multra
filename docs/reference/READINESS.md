@@ -282,7 +282,7 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
 - **Cut (F4-1a):** each in-leg Link ends where its lane surface first meets another arm's leg
   surface, its stop line in a drawn junction; each out-leg Link starts where its surface last meets
   one. The opposite Link of the same Street segment is not another arm. A leg meeting no other arm keeps its
-  end. The cut takes no number.
+  end. The cut takes no number. T template fills separately extend the stem only in their measuring copy ([JUNCTION_SIGNALS](JUNCTION_SIGNALS.md), D416); ordinary F4 stays unchanged.
 - **The cut keeps `streetSegmentId`:** the program made the Link and edits it. *Apply template* on a Street segment
   ending in a Node with detail cuts its Links the same way, so a re-apply after F4 changes no byte.
 

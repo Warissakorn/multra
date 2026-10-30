@@ -9,10 +9,15 @@ std::vector<int> nemaPhases(const std::string& p) {
     if(p=="P1"||p=="P4")return {2,4,6,8};
     return {};
 }
-NemaTiming nemaTiming(const std::string& preset,const JunctionSignal& site,double step,const std::string& path) {
+NemaTiming nemaTiming(const std::string& preset,const JunctionSignal& site,double step,const std::string& path,const std::vector<int>& active) {
     NemaTiming r;
     const auto bad=[&](const char* code,const std::string& at){r.issues.push_back({code,at});};
-    const auto expected=nemaPhases(preset);
+    const auto expected=active.empty()?nemaPhases(preset):active;
+    if(!active.empty()) {
+        const std::set numbers(active.begin(),active.end());
+        if(preset!="P2"||numbers.size()!=4||std::vector<int>(numbers.begin(),numbers.end())!=active||!numbers.contains(2)||!numbers.contains(6)||
+           (numbers.contains(1)+numbers.contains(5))!=1||(numbers.contains(4)+numbers.contains(8))!=1){bad("NEMA_PRESET",path);return r;}
+    }
     if(expected.empty()){bad("NEMA_PRESET",path);return r;}
     const auto grid=[&](double x){return step>0&&std::isfinite(step)&&std::abs(x/step-std::round(x/step))<1e-6;};
     const auto value=[&](const std::optional<double>& x,bool positive,const std::string& at) {
@@ -43,7 +48,7 @@ NemaTiming nemaTiming(const std::string& preset,const JunctionSignal& site,doubl
         bad("NEMA_CYCLE",path+".cycle");return r;
     }
     start[2]=start[6]=0;
-    if(phases.contains(1)){start[1]=cycle-s(1);start[5]=cycle-s(5);}
+    for(const int n:{1,5})if(phases.contains(n))start[n]=cycle-s(n);
     if(preset=="P3") {start[3]=start[7]=through;start[4]=through+s(3);start[8]=through+s(7);}
     else {start[4]=through;start[8]=preset=="P4"?through+s(4):through;}
     const auto wrap=[&](double x){auto v=std::fmod(x,cycle);if(v<0)v+=cycle;return cycle-v<1e-9?0.:v;};

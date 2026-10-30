@@ -19,7 +19,7 @@ inline ProjectDocument signalCross(DrivingSide side,const std::string& preset,bo
     auto d=cross(side,false);auto c=catalogs(d);
     const auto t=std::find_if(c.junctionTemplates.begin(),c.junctionTemplates.end(),[&](const auto& x){
         bool has=false;for(const auto& [role,rows]:x.roles){(void)role;for(const auto& row:rows)has=has||row.pocket;}
-        return x.phasing==preset&&has==pockets;
+        return x.legs==4&&x.phasing==preset&&has==pockets;
     });
     CHECK(t!=c.junctionTemplates.end());NodeJunction recipe;recipe.templateId=t->id;recipe.signal=timing(preset);
     for(auto& road:d.network.streetSegments) {

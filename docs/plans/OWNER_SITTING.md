@@ -83,7 +83,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    omit phases without movements. Anchor 2/6 at zero, with the leading far phase at the preceding
    cycle's end, rather than compacting the numbers. *Owner:* “เริ่มแบบ protected สามช่วงหนึ่ง preset
    (แนะนำ)”; “คงหมายเลขตามทิศและละเฟสที่ไม่ใช้ (แนะนำ)”. Book the small **J4T** slice before U1,
-   with its own acceptance rows and review. Documentation only during J5; no timing defaults.
+   with its own acceptance rows and review. Implemented in J4T after B37/D416; no timing defaults.
 
 34. **J5 transition construction** (asked and answered 2026-10-30, [D406](../decisions/RECORD.md#d406)). §7 had left geometry
    placement and the J5/J6 selection boundary open. Recommended choices first:
@@ -183,6 +183,13 @@ Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
 ([D178](../decisions/RECORD.md#d178): order accepted, keep-left default, standard motorcycle values for now).
 Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
 ([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
+
+37. **J4T structure and T cuts** (answered 2026-10-30, [D416](../decisions/RECORD.md#d416)).
+   Owner selected every recommendation before code: two full incoming lanes on each arm,
+   major-far F|T, major-kerb T|K, minor F|K; reuse P2 + legs=3 without a new enum/schema;
+   include the measuring-copy stem extension to the far major pavement for both signalised
+   and two-way-stop T templates, retaining ordinary F4. Missing timing remains missing;
+   unused phases remain omitted. No further B37 question is pending.
 
 ## C — Run view (the 125 % screen)
 
@@ -406,6 +413,17 @@ nothing. Numbers are not reused.
    entering new numbers must not restore generated. J6a/D415 removes the road-32 exit-lane
    refusal: three outgoing lanes must Fill/rebuild, including a three-junction corridor, with
    one Undo. Inspect fixed footer/scrolling rows in every new nested dialog. *Owner:*
+
+30. **J4T protected signalised T** (listed 2026-10-30, D416). On Windows at 100/150/200 %,
+   Thai/English: Find crossings on a T, choose the protected three-stage entry, F3 with 2+2
+   lanes, select both major arms and inspect the four required phase numbers in Junction
+   template…. Check north/south/east/west stems on both driving sides. Missing values disable
+   Fill without adding timing; save/reopen retains a draft. Enter actual site timings: 2/6
+   start at zero, minor alone follows, major far ends the preceding cycle. For the U0-style
+   E–W/north-stem check, left-hand WBR=5 and SB=4; right-hand EBL=1 and SB=4. There are no
+   spare phase groups. Inspect the six turns, protected F lane, T cut ends, full Undo and
+   re-apply/refine guard. Confirm ordinary F4's behaviour and four-leg UI remain unchanged.
+   Automated Linux tests do not supply this Windows verdict. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

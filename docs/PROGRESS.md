@@ -6,6 +6,36 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J4T protected T, phase subset and measuring cuts (D416)
+
+- **Owner:** J6/J6a approved. B33 fixes three stages/compass numbering; B37 selected two full
+  incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3, and a measuring-copy stem
+  extension for both signalised and two-way-stop T templates. Ordinary F4 remains unchanged.
+- **Implemented:** one installed protected T; only major through 2/6, physical major far 1/5,
+  existing minor 4/8. Both numbered rings remain, including a one-phase ring. No timing
+  defaults: cycle/green/yellow/allRed are entered; clearance/waiting stay separate and cycle
+  closes exactly. Required numbers derive before timing is complete; Fill, form and seams
+  share that set. No new enum, stored field, schema or HCM procedure.
+- **Cuts:** extend only the full-width measuring stem to the far major painted boundary,
+  then use the existing overlap cuts. Published geometry/stations are on the original Links,
+  with reference/outside/refine guards and one Undo. D400 is superseded for templates only.
+- **Tests first:** seven new signal/T rows failed on the old catalog/mapping/cuts, while all
+  nine JT9 cases passed; the former orthogonal-T refusal row failed on its new success assert.
+  UI digit extraction was corrected after its first assert included the explanatory suffix;
+  re-running the original form proves the missing four-phase subset before restoring the fix.
+  A catalog fixture now explicitly selects a four-leg entry rather than assuming it is first.
+- **Coverage:** both sides/four compass stems, literal U0 numbers, single-ring waiting,
+  missing/unused/grid/cycle/protected-lane guards, physical opposition versus labels, manual
+  controller/checker cases, pocket drafts/re-apply, retained/refused references, full Undo/reopen,
+  HCM's six movement greens and Micro seed 42. Node form is driven in English/Thai.
+- **Docs:** signal contract split before the root page's 500-line limit; JT18/JT19, D416/index,
+  schema/readiness/module maps, B37/E30, ROADMAP and NEXT updated; oldest whole entry archived.
+- **Verification:** desktop build and CTest **257/257** (279.81 s, parallel 5) pass; native
+  junctionsignals **19/19**, junctionfill **25/25**, junctiontemplates **19/19**, junctioneditor
+  **27/27** and both-locale Qt forms pass. CLI raw bytes match except buildCommit. Check
+  **257/257** (280.92 s) passes. U0 has no answers; no writer/interchange claim or J7 work. Linux only; headless
+  unconfigured, Windows/manual UI not run (E30). Evidence: `/workspace/j4t-review/`.
+
 ## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
 
 - **Owner:** J6 at 3ec3d39/09b0689 is approved. Diagnose ordinary Fill's pre-existing
@@ -220,32 +250,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   whitespace checks pass on Linux. CTest, the full `check` target and headless were not run
   for this documentation-only checkpoint. No Windows or manual UI run; no new UI or stored field.
   The build stays green at the approved J4 implementation while B34 is pending.
-
-## 2026-10-29 — J4 template signals and NEMA checks (D404)
-
-- **Owner B32:** all recommendations selected: numbered rings and corrected barriers; P4
-  4 then 8; explicit clearance separate from derived waiting; rotated compass mapping and
-  time zero at 2/6, with leading far turns at the preceding cycle's end. U0 remains unanswered;
-  the internal implementation does not establish Synchro/Vistro interchange.
-- **Implemented:** pure timing construction from every entered green/yellow/allRed, with
-  grid, phase-set and cycle-closure refusals; read-only network/layout NEMA checks. The fill
-  generates ordinary controllers/groups/heads and overlapping-green priority, with no Stops
-  at signals. No schema step, stored layout, timing default, core or HCM-method change.
-- **Ownership:** generated signals replace safely in the fill transaction. Manual edits,
-  controller reuse outside the junction and queue measurements naming generated heads refuse
-  atomically with their ids. Exact Undo/Redo covers the whole regenerated document.
-- **Tests first:** the three initial JT9 cases failed before implementation. Extended cases
-  cover every preset/side/major axis/pocket variant, clearances versus waiting, HCM source
-  greens/P3 result g/C, Micro seed 42 and generated/reference rules. The protected-shared test
-  initially forced a lane-count error; its full-lane setup was corrected before the check.
-  A further red case exposed compass labels masking adjacent major legs; reciprocal geometric
-  through movements/bearings now establish physical opposition. A red case also keeps the
-  checker usable on hand-drawn Links without Street segment associations.
-- **Docs:** §8 records the chosen construction; the full decision index was split along M14
-  navigation before exceeding 500 lines. Windows look is E27. J6's corridor booking stays docs
-  only; neither a selection aid nor the combined Command nor UTDF writer is implemented.
-- **Verification:** desktop build, JT9 **9/9**, junctionfill **25/25**, CTest **251/251**
-  (304.08 s) and `check` **251/251** (274.93 s) pass on Linux (GCC 14.2.0, Qt 6.8.2
-  offscreen). Node-analysis CLI bytes match before/after except the single `buildCommit`.
-  Headless is not configured; Windows and manual driving of the signal fill UI were not run
-  (OWNER_SITTING E27). Existing desktop UI suites passed. Stop for J4 review before J5.

@@ -104,7 +104,7 @@ TEST(junctionfill,jt6_adjacent_rows_merge_and_land_at_the_stated_edge) {
         }
     }
 }
-TEST(junctionfill,jt7_orthogonal_t_wide_median_keeps_zero_gap_refusal) {
+TEST(junctionfill,jt19_orthogonal_t_wide_median_template_cuts_fill_in_one_undo) {
     for(const auto side:{DrivingSide::left,DrivingSide::right}) {
         auto d=cross(side);const auto west=d.network.streetSegments[1];deleteObjects(d,west.links);deleteStreetSegment(d,west.id);
         for(auto& r:d.network.streetSegments)if(r.centreline.front().x==0&&r.centreline.back().x==0)r.overrides.lanesForward=r.overrides.lanesBackward=1;
@@ -114,9 +114,10 @@ TEST(junctionfill,jt7_orthogonal_t_wide_median_keeps_zero_gap_refusal) {
             return r.centreline.front().x==0&&r.centreline.back().x==0&&((r.centreline.front().y<0)==(side==DrivingSide::left));});
         CHECK(far!=d.network.streetSegments.end()&&d.definition->crossSections[0].median==8&&nodeStreetSegmentLegs(d.network,node(d)).size()==3);
         recipe.legs[far->id]={{47.5},{13.25},std::nullopt};const auto before=bytes(d);const auto rows=offers(d);
-        CHECK(rows.size()==1&&rows[0].refusal=="EDIT_CONNECTOR_GAP");
-        History h;h.reset(d);test::throws([&]{h.execute("fill",[&](auto& x){applyFills(x,rows,catalogs(x));},true);},"EDIT_CONNECTOR_GAP");
-        CHECK(bytes(h.document())==before&&!h.canUndo());
+        CHECK(rows.size()==1&&rows[0].refusal.empty());
+        History h;h.reset(d);apply(h);validateDocument(h.document());
+        CHECK(approachLayout(h.document().network,node(h.document())).movements.size()==6);
+        const auto after=bytes(h.document());CHECK(bytes(parseDocument(after))==after);h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
     }
 }
 TEST(junctionfill,jt7_cut_cannot_move_a_manual_head_at_the_tail_or_on_an_out_leg) {

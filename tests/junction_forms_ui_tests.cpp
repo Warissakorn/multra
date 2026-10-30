@@ -1,5 +1,6 @@
 #include "junction_editor_fixture.hpp"
 #include "junction_signal_fixture.hpp"
+#include "junction_t_fixture.hpp"
 #include "transition_fixture.hpp"
 #include "dialog_fit_support.hpp"
 #include "ui_test_storage.hpp"
@@ -13,6 +14,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QTableWidget>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -33,7 +35,7 @@ void catalog(EditorWindow& w) {
     auto* action=child<QAction>(&w,"editorJunctionTemplates");CHECK(action->isEnabled());
     const auto before=documentJson(w.history().document());CHECK(w.history().document().definition->externalJunctionTemplates);
     for(const bool save:{false,true}) {
-        modal([&](QDialog* d){CHECK(d->objectName()=="editorJunctionCatalogDialog");auto* t=child<QTableWidget>(d,"editorJunctionCatalogTable");CHECK(t->rowCount()==14);select(t,"stop-4-shared");
+        modal([&](QDialog* d){CHECK(d->objectName()=="editorJunctionCatalogDialog");auto* t=child<QTableWidget>(d,"editorJunctionCatalogTable");CHECK(t->rowCount()==15);select(t,"stop-4-shared");
             modal([&](QDialog* entry){CHECK(entry->objectName()=="editorJunctionTemplateDialog");auto* name=child<QLineEdit>(entry,"editorJunctionTemplateName");name->setText("Owner template name");
                 auto* lanes=child<QTableWidget>(entry,"editorJunctionRole_major");CHECK(lanes->rowCount()==2);auto* moves=qobject_cast<QComboBox*>(lanes->cellWidget(0,0));CHECK(moves&&moves->currentData()=="FT");
                 choose(moves,"K");auto* buttons=entry->findChild<QDialogButtonBox*>();CHECK(buttons&&!buttons->button(QDialogButtonBox::Ok)->isEnabled());choose(moves,"FT");
@@ -43,7 +45,7 @@ void catalog(EditorWindow& w) {
         },[&]{action->trigger();});
         if(!save)CHECK(documentJson(w.history().document())==before);
     }
-    const auto& def=*w.history().document().definition;CHECK(!def.externalJunctionTemplates&&def.junctionTemplates.size()==14);
+    const auto& def=*w.history().document().definition;CHECK(!def.externalJunctionTemplates&&def.junctionTemplates.size()==15);
     CHECK(std::any_of(def.junctionTemplates.begin(),def.junctionTemplates.end(),[](const auto& t){return t.id=="stop-4-shared"&&t.name=="Owner template name"&&t.roles.at("major")[0].movements=="F";}));
     CHECK(documentJson(w.history().document()).at("schemaVersion")==63);
     CHECK(documentJson(parseDocument(documentJson(w.history().document())))==documentJson(w.history().document()));
@@ -51,7 +53,7 @@ void catalog(EditorWindow& w) {
     modal([&](QDialog* d){select(child<QTableWidget>(d,"editorJunctionCatalogTable"),"stop-4-shared");
         modal([&](QDialog* entry){auto* id=child<QLineEdit>(entry,"editorJunctionTemplateId");CHECK(id->text().isEmpty());CHECK(!entry->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->isEnabled());id->setText("owner-copy");child<QLineEdit>(entry,"editorJunctionTemplateName")->setText("Owner copy");accept(entry);},[&]{child<QPushButton>(d,"editorJunctionCatalogAdd")->click();});accept(d);
     },[&]{action->trigger();});
-    CHECK(w.history().document().definition->junctionTemplates.size()==15);child<QAction>(&w,"editorUndo")->trigger();CHECK(documentJson(w.history().document())==before);
+    CHECK(w.history().document().definition->junctionTemplates.size()==16);child<QAction>(&w,"editorUndo")->trigger();CHECK(documentJson(w.history().document())==before);
     modal([&](QDialog* d){select(child<QTableWidget>(d,"editorJunctionCatalogTable"),"transition-kerb");
         modal([&](QDialog* entry){CHECK(!child<QComboBox>(entry,"editorJunctionTemplateLegs")->isEnabled());choose(child<QComboBox>(entry,"editorJunctionAlign_backward"),"far");accept(entry);},[&]{child<QPushButton>(d,"editorJunctionCatalogEdit")->click();});accept(d);
     },[&]{action->trigger();});
@@ -99,6 +101,21 @@ void transition(EditorWindow& w,const QString& file,DrivingSide side) {
     History filled;filled.reset(w.history().document());junctionTest::apply(filled);CHECK(junctionTest::node(filled.document()).generated&&junctionTest::node(filled.document()).polygon!=n.polygon);
     child<QAction>(&w,"editorUndo")->trigger();CHECK(documentJson(w.history().document())==before);
 }
+void tRecipe(EditorWindow& w,const QString& file,DrivingSide side) {
+    for(const int stem:{0,2}) {
+        auto d=junctionTTest::junction(side,stem,true);junctionTest::node(d).junction->signal.reset();
+        {std::ofstream f(file.toStdString());f<<documentJson(d).dump();CHECK(f.good());}
+        w.openFile(file);QApplication::processEvents();auto* table=child<QTableWidget>(&w,"editorNodeTable");CHECK(table->rowCount()==1);table->selectRow(0);QApplication::processEvents();
+        const auto before=documentJson(w.history().document());QStringList expected;for(const auto& p:junctionTTest::site(side,stem).phases)expected<<QString::number(p.number);
+        CHECK(!w.history().document().network.nodes[0].junction->signal&&expected.size()==4);
+        modal([&](QDialog* dialog){const auto actual=child<QLabel>(dialog,"editorJunctionRequiredPhases")->text();
+            auto matches=QRegularExpression("[0-9]+").globalMatch(actual);QStringList shown;while(matches.hasNext())shown<<matches.next().captured();
+            CHECK(shown==expected);
+            dialog->reject();},[&]{child<QAction>(&w,"editorNodeJunction")->trigger();});
+        CHECK(documentJson(w.history().document())==before);
+    }
+}
+
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);useTestStorage();
@@ -107,7 +124,7 @@ int main(int argc,char** argv) {
             const auto d=std::string(argv[2])=="catalog"?junctionTest::cross(side,false):junctionSignalTest::signalCross(side,"P2",false,true);
             const auto file=temp.filePath("forms.traffic.json");{std::ofstream f(file.toStdString());f<<documentJson(d).dump();CHECK(f.good());}
             EditorWindow w(argv[1],language);w.show();w.openFile(file);QApplication::processEvents();
-            if(std::string(argv[2])=="catalog")catalog(w);else {recipe(w);transition(w,file,side);}
+            if(std::string(argv[2])=="catalog")catalog(w);else {recipe(w);transition(w,file,side);tRecipe(w,file,side);}
         }
         std::cout<<argv[2]<<" JT11 forms passed on both driving sides and locales\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}

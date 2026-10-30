@@ -115,7 +115,7 @@ TEST(junctiontemplates, jt5_choice_and_detach_preserve_coarse_signalised_macro_m
 }
 TEST(junctiontemplates, jt5_catalog_capture_is_atomic_and_owned_empty_never_falls_back) {
     const auto installed = resolveJunctionTemplates(AuthoringDefinition{},test::root()/"data");
-    CHECK(installed.size() == 14); // forcing
+    CHECK(installed.size() == 15); // forcing
     History h; h.reset(ProjectDocument{}); const auto before = documentJson(h.document());
     h.execute("catalog",[&](auto& d) { putJunctionTemplateCatalog(d,{installed[0].type}); });
     CHECK(h.document().definition && !h.document().definition->externalJunctionTemplates);
@@ -125,7 +125,8 @@ TEST(junctiontemplates, jt5_catalog_capture_is_atomic_and_owned_empty_never_fall
     h.undo(); CHECK(documentJson(h.document()) == before); h.redo();
     h.execute("empty",[&](auto& d) { putJunctionTemplateCatalog(d,{}); });
     CHECK(resolveJunctionTemplates(*h.document().definition,test::root()/"data").empty());
-    auto bad = installed[0].type; bad.roles.at("major")[0].movements = "FK";
+    const auto four=std::find_if(installed.begin(),installed.end(),[](const auto& e){return e.type.legs==4;});CHECK(four!=installed.end());
+    auto bad = four->type; bad.roles.at("major")[0].movements = "FK";
     CHECK(bad.roles.at("major")[0].movements == "FK");
     const auto empty = documentJson(h.document());
     test::throws([&] { h.execute("invalid",[&](auto& d) { putJunctionTemplateCatalog(d,{bad}); }); },"JUNCTION_TEMPLATE_INVALID");

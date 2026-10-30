@@ -35,6 +35,9 @@ struct ApproachLayout {
     std::vector<LayoutMovement> movements;
     std::vector<ValidationIssue> issues;
 };
+// Shared compass labelling for drawn layouts and a recipe's required phases before detail.
+std::optional<ApproachDirection> approachDirection(const Node&,const Link&,double station,
+                                                  const ApproachDirections& = {});
 // J2 (JUNCTION_TEMPLATES §6): derived only, on a structurally valid network; never writes it. Refuses duplicate compass
 // directions, compass ties, U-turns (>= 135 degrees) and membership issues, leaving no layout.
 // Through is strictly within 45 degrees. Overrides apply to this Node's in-leg Link ids; their

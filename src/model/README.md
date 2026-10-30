@@ -36,7 +36,7 @@ paths, Node membership, conflicts) is computed on every read and never stored.
 | `node_suggestions.*` | *Suggest nodes*: one generated polygon per uncovered cluster of conflicts | [NODES §6](../../docs/reference/NODES.md) |
 | `node_analysis.hpp` | The analytical inputs a Micro detail does not give (schema 58): per Node, approach and turn | [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
 | `node_detail.*` | F4's plan for a coarse Node's Micro detail | [READINESS §13](../../docs/reference/READINESS.md) |
-| `approach_layout.*` | Derived approach lanes, pocket geometry and compass movement names | [JUNCTION_TEMPLATES §6](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `approach_layout.*` | Derived approach lanes, pockets/movements and shared compass labelling, also used by required T phase selection | [JUNCTION_TEMPLATES §6](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `coarse_nodes.*` | What a Node without Micro detail reads from the Street segments around it | [STREET_SEGMENTS §6](../../docs/reference/STREET_SEGMENTS.md), [NODES §5](../../docs/reference/NODES.md) |
 | `street_segments.*` | Authored Street segments, direction and generated detached-pocket association through unique continuity, stopping at Nodes | [STREET_SEGMENTS §3](../../docs/reference/STREET_SEGMENTS.md), [JUNCTION_TEMPLATE_EDITOR §3](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md#3-pure-comparison-and-private-plans) |
 | `street_segment_crossings.*` | *Find crossings*: where Street segments on one level cross or touch | [STREET_SEGMENTS §5](../../docs/reference/STREET_SEGMENTS.md) |
