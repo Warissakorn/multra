@@ -22,7 +22,7 @@ inline NodeFillCatalogs catalogs(const ProjectDocument& d) {
     for (const auto& t:resolveJunctionTemplates(*d.definition,test::root()/"data")) c.junctionTemplates.push_back(t.type);
     return c;
 }
-inline ProjectDocument cross(DrivingSide side=DrivingSide::left, bool pockets=true) {
+inline ProjectDocument cross(DrivingSide side=DrivingSide::left, bool pockets=true,bool spacious=true,bool attachRecipe=true) {
     std::ifstream f(test::root()/"data/projects/t-junction-priority.traffic.json"); Json j; f>>j;
     CHECK(f.good() || f.eof());
     ProjectDocument d; d.definition=*parseDocument(j).definition;
@@ -38,14 +38,14 @@ inline ProjectDocument cross(DrivingSide side=DrivingSide::left, bool pockets=tr
     const auto ids=applyCrossings(d,places,{CrossingChoice::junction},2,def.crossSections);
     CHECK(ids.size()==1 && d.network.streetSegments.size()==4);
     // A deliberately authored polygon with room for a kerb-side pocket as well as the base arms.
-    node(d).polygon={{-30,-30},{30,-30},{30,30},{-30,30}};
+    if(spacious)node(d).polygon={{-30,-30},{30,-30},{30,30},{-30,30}};
     for (const auto& r:d.network.streetSegments) applyTemplate(d,r.id,def.crossSections);
     NodeJunction recipe; recipe.templateId=pockets?"stop-4-major-far-pockets":"stop-4-shared";
     for (const auto& r:d.network.streetSegments) if (r.centreline.front().x==0 && r.centreline.back().x==0) {
         recipe.major.push_back(r.id);
         if (pockets) recipe.legs[r.id]={{47.5},{13.25},std::nullopt};
     }
-    setNodeJunction(d,ids[0],recipe);
+    if(attachRecipe)setNodeJunction(d,ids[0],recipe);
     CHECK(!nodeHasDetail(d.network,node(d)) && nodeLinkLegs(d.network,node(d)).size()==8);
     return d;
 }

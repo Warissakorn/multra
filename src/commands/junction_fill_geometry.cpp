@@ -30,7 +30,7 @@ char movement(double angle) {
 }
 PocketSide sideOf(const JunctionLane& row) {return row.side.value_or(row.movements=="F"?PocketSide::far:PocketSide::kerb);}
 }
-Plan planNormalized(const ProjectDocument& original,const Node& selected,const NodeFillCatalogs& catalogs) {
+Plan planNormalized(const ProjectDocument& original,const Node& selected,const NodeFillCatalogs& catalogs,bool explicitPolygonFit) {
     Plan result; result.document=original;
     auto& d=result.document; auto& n=d.network;
     const auto at=root(original,selected);
@@ -185,9 +185,12 @@ Plan planNormalized(const ProjectDocument& original,const Node& selected,const N
             }
         }
         if(!result.issues.empty())return result;
+        fitJunctionPolygon(result,selected,cuts.cuts,explicitPolygonFit);
+        if(!result.issues.empty())return result;
         const auto current=std::find_if(n.nodes.begin(),n.nodes.end(),[&](const auto& x){return x.id==selected.id;});
         const auto layout=approachLayout(n,*current);
-        result.issues.insert(result.issues.end(),layout.issues.begin(),layout.issues.end());
+        const auto issues=fillLayoutIssues(n,*current,layout.issues);
+        result.issues.insert(result.issues.end(),issues.begin(),issues.end());
         // Storage must remain outside the Node, so a widening taper cannot become a turn or
         // disappear from the derived pocket walk. Check the actual row order after both sides.
         for(const auto& [id,arm]:arms) {

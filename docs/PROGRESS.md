@@ -6,6 +6,35 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J4T: real Find crossings Fill and explicit polygon preview (D417)
+
+- **Owner B38:** extend the chosen fit policy to every three-/four-leg junction template.
+  Generated polygons fit automatically; a false flag uses explicit previewed Fit polygon +
+  Fill, one Undo, never restoring true. First template choice keeps current ownership through
+  the crossing column or later Node form; switching template/Detach/polygon edits still clear it.
+- **Implemented:** share D407's original/cut/Connector surface hull and widest-lane padding
+  with transitions, retaining new-Link-leg and neighbour-overlap guards. Named fit-required
+  recovery opens old/proposed outlines; Cancel is unchanged. Preview and Command share a
+  private plan and retain edited-detail/reference refusals. Remaining NODE_CONNECTOR_CROSSES
+  names both Node and each crossing Connector. No field/schema, timing default or F4 change.
+- **Tests first:** original JT20 fails three cases; the all-template/first-choice/diagnostic
+  extension has 11 real failures after correcting a no-op setup assert and rank-aware seams.
+  The explicit-action Qt row also fails before the button/dialog exists. Normal T fixtures now
+  keep the natural polygon; deliberately roomy pocket/reference cases remain explicit.
+- **Coverage:** junctionsignals 40/40 (21 JT20), junctionfill 25/25 including frozen JT13,
+  junctiontemplates 19/19, junctioneditor 27/27 and transitions 14/14. Natural shared/pocket
+  four-leg and signalised T run through both entry paths on both sides; explicit fit covers
+  both T controls/four stems and four-leg pockets, guards/refinement, exact Undo and reopen.
+  Qt drives later first choice → Fill for all three families, explicit preview Cancel/Apply,
+  required phases and nested site forms in English/Thai on both sides. The authored transition
+  fixture now declares its polygon non-generated instead of relying on old first-choice clearing.
+- **Verification:** desktop build 103 tasks, CTest **257/257** (283.98 s, parallel 5), targeted
+  suites 6/6 (30.70 s). One-Node CLI raw bytes match before/after B38 and the pre-J4T baseline
+  except only root buildCommit. Check **257/257** (281.54 s) passes. Linux offscreen only; headless is
+  unconfigured, Windows/manual appearance remains E30. U0 has no answers; no J7/writer started.
+- **Docs:** §5/JT20, signal/editor/schema/readiness contracts, D417/index, B38/E30 and module
+  maps updated; old out-of-repo evidence paths removed. Oldest PROGRESS entry archived whole.
+
 ## 2026-10-30 — J4T core checkpoint; natural polygon choice pending (D416, B38)
 
 - **Owner:** J6/J6a approved. B33 fixes three stages/compass numbering; B37 selected two full
@@ -40,7 +69,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   junctionsignals **19/19**, junctionfill **25/25**, junctiontemplates **19/19**, junctioneditor
   **27/27** and both-locale Qt forms pass. CLI raw bytes match except buildCommit. Check
   **257/257** (280.92 s) passes. U0 has no answers; no writer/interchange claim or J7 work. Linux only; headless
-  unconfigured, Windows/manual UI not run (E30). Evidence: `/workspace/j4t-review/`.
+  unconfigured, Windows/manual UI not run (E30).
   After restoring the core fixtures, the checkpoint desktop build and targeted signal/recipe
   tests pass **2/2** (7.74 s); docs/file-size/diff guards pass. B38 remains unanswered.
 
@@ -242,19 +271,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   driving sides pass. CTest **253/253** (253.04 s) and `check` **253/253** (241.42 s) pass. CLI output
   matches before/after except the single `buildCommit`. Headless is not configured. Linux,
   GCC 14.2.0/Qt 6.8.2 offscreen; Windows/manual UI were not run (E28). Stop for J5 review.
-
-## 2026-10-30 — J5 preparation and signalised T booking (D405)
-
-- **Asked:** J4 5ab3ea3 approved; start J5 transitions, then stop for review. Add B33 for
-  signalised T templates as documentation only, proposing a small slice before U1.
-- **B33 answered:** one protected three-stage preset first, retaining J4's compass NEMA
-  numbers, omitting unused phases and keeping the 2/6 zero anchor. Recorded D405 and booked
-  J4T before U1 with its own contract/rows and review; no T code is added during J5.
-- **Before transition code:** re-read §7/JT10, D387/D388, crossings, lifecycle, F4 cuts and
-  generated rules. §7 does not fix where taper is placed or how template selection crosses
-  the J5/J6 boundary. B34 asks those choices and the initial directional catalog/structure,
-  with concrete recommendations; no answer is assumed. JT10 remains unimplemented and 63 unused.
-- **Verification:** desktop build and standalone documentation, file-size, architecture and
-  whitespace checks pass on Linux. CTest, the full `check` target and headless were not run
-  for this documentation-only checkpoint. No Windows or manual UI run; no new UI or stored field.
-  The build stays green at the approved J4 implementation while B34 is pending.

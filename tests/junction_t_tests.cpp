@@ -73,7 +73,7 @@ TEST(junctionsignals,jt18_timing_missing_unused_wait_and_lane_guards) {
         CHECK(issue(nemaTiming("P2",s,0.1,"junction.signal",numbers.numbers).issues,"JUNCTION_TIMING_MISSING"));
         node(d).junction->signal.reset();const auto missing=junctionFillStatus(d,node(d),catalogs(d));
         CHECK(missing.signalPhases==numbers.numbers&&std::count_if(missing.issues.begin(),missing.issues.end(),[](const auto& i){return i.code=="JUNCTION_TIMING_MISSING";})==13);
-        auto pocket=junction(side);std::string far;
+        auto pocket=junction(side,0,false,true);std::string far;
         for(const auto& leg:nodeLinkLegs(pocket.network,node(pocket)))if(leg.in) {
             const auto& l=link(pocket,leg.linkId);const auto u=directionAlong(l.geometry,polylineLength(l.geometry),true);
             if(u.x==(side==DrivingSide::left?-1.:1.))far=*l.streetSegmentId;

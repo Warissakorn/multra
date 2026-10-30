@@ -465,6 +465,8 @@ observed-schema response changes. Catalog row schemas remain separate follow-ups
 J4 (D404) and J4T (D416) add no stored field or schema step. Signals use existing controllers,
 groups, heads and generated flags; T uses P2 + legs=3. Site timing stays on schema-61 recipes.
 Barrier waiting, required phase numbers and NEMA layout/check results are derived, never saved.
+B38/D417 reuses the existing Node polygon/generated fields; explicit Fit is a transient Command,
+not a stored option or schema step. Older false flags remain false, without a migration.
 
 J5 stores no duplicate Node kind or applied layout. A transition using installed catalog data
 keeps its existing recipe/taper fields at 61 (generated Links at 62); only new owned catalog

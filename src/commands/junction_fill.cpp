@@ -5,16 +5,16 @@
 #include <stdexcept>
 namespace multra {
 namespace junctionDetail {
-Plan plan(const ProjectDocument& original,const Node& node,const NodeFillCatalogs& catalogs) {
+Plan plan(const ProjectDocument& original,const Node& node,const NodeFillCatalogs& catalogs,bool explicitPolygonFit) {
     std::map<std::string,std::string> inferred;
     for(const auto& leg:nodeLinkLegs(original.network,node)) {
         const auto& l=link(original,leg.linkId);
         if(!l.streetSegmentId)if(const auto road=generatedStreetSegment(original.network,l))inferred.emplace(l.id,*road);
     }
-    if(inferred.empty())return planNormalized(original,node,catalogs);
+    if(inferred.empty())return planNormalized(original,node,catalogs,explicitPolygonFit);
     auto normalized=original;
     for(auto& l:normalized.network.links)if(inferred.contains(l.id))l.streetSegmentId=inferred.at(l.id);
-    auto result=planNormalized(normalized,node,catalogs);
+    auto result=planNormalized(normalized,node,catalogs,explicitPolygonFit);
     for(auto& l:result.document.network.links)if(inferred.contains(l.id)) {
         const auto& roads=result.document.network.streetSegments;
         const auto r=std::find_if(roads.begin(),roads.end(),[&](const auto& r){return r.id==inferred.at(l.id);});

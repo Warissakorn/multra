@@ -28,8 +28,8 @@ The layout and HCM results continue to come from the drawing, never the recipe.
 - **Nodes → Junction template…:** edit template, major arms, optional per-leg lane rows,
   pocket storage/taper and optional NEMA timing in one Undo. Empty input is missing, not zero;
   zero yellow/all-red is an entered value. Preserve incompatible values when switching templates.
-  **B36 answered (D412):** site-only edits on the same template preserve the current
-  `Node.generated`; changing template, Detach and polygon edits clear it as in D393.
+  **B36/B38 answered (D412/D417):** first template choice and site-only edits on the same
+  template preserve current `Node.generated`; switching template, Detach and polygon edits clear it.
   Never restore a cleared flag. Major/lane-override choices remain structural edits (D393).
   Directions are edited independently and clear ownership only when actually changed.
   The form stages all edits, lists Fill's missing/inapplicable fields, and saves a partial draft

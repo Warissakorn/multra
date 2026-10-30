@@ -3,8 +3,6 @@
 #include "network_commands.hpp"
 #include "right_of_way_commands.hpp"
 #include "../model/network/coarse_nodes.hpp"
-#include "../model/network/connector_surface.hpp"
-#include "../model/network/node_suggestions.hpp"
 #include "../model/network/polygon.hpp"
 #include "../model/network/street_segments.hpp"
 #include <algorithm>
@@ -18,28 +16,7 @@ template<class T> std::set<std::string> ids(const std::vector<T>& list) {
 template<class T> void mark(std::vector<T>& list,const std::set<std::string>& old) {
     for(auto& x:list)if(!old.contains(x.id))x.generated=true;
 }
-void containTransition(const Network& n,Node& node,const std::vector<std::string>& connectors,const std::vector<LegCut>& cuts) {
-    std::vector<Point> points;
-    double pad=0;
-    for(const auto& id:connectors) {
-        const auto& c=*std::find_if(n.connectors.begin(),n.connectors.end(),[&](const auto& x){return x.id==id;});
-        points.insert(points.end(),c.geometry.begin(),c.geometry.end());
-        const auto surface=connectorSurface(n,c);
-        points.insert(points.end(),surface.outline.begin(),surface.outline.end());
-        for(const auto& rail:surface.boundaries)points.insert(points.end(),rail.begin(),rail.end());
-        for(const auto& l:n.links)if(l.id==c.from.linkId||l.id==c.to.linkId)
-            for(const auto& lane:l.lanes)pad=std::max(pad,lane.width);
-    }
-    for(const auto& cut:cuts)points.push_back(cut.geometry.back());
-    // As for suggested Nodes, pad by the widest attached lane. The cut must remain
-    // strictly inside so the incoming Link still crosses the Node's boundary.
-    auto vertices=node.polygon;const double diagonal=pad/std::sqrt(2.);
-    for(const auto p:points)
-        for(const auto& [dx,dy]:{std::pair{pad,0.}, {-pad,0.}, {0.,pad}, {0.,-pad},
-                {diagonal,diagonal}, {diagonal,-diagonal}, {-diagonal,diagonal}, {-diagonal,-diagonal}})
-            vertices.push_back({p.x+dx,p.y+dy});
-    node.polygon=convexHull(std::move(vertices));
-}
+
 }
 Plan transitionPlan(const ProjectDocument& original,const Node& node,const NodeFillCatalogs& catalogs,const JunctionTemplate& type) {
     Plan p;p.document=original;auto& d=p.document;auto& n=d.network;
@@ -118,14 +95,8 @@ Plan transitionPlan(const ProjectDocument& original,const Node& node,const NodeF
         }
         if(!p.issues.empty())return p;
         if(node.generated) {
-            containTransition(n,n.nodes[index],connectors,cuts);
-            for(const auto& other:n.nodes)if(other.id!=node.id&&polygonsOverlap(n.nodes[index].polygon,other.polygon))
-                bad("NODE_OVERLAP",other.id);
-            const auto grownLegs=nodeLinkLegs(n,n.nodes[index]);
-            for(const auto& leg:links)if(std::none_of(grownLegs.begin(),grownLegs.end(),[&](const auto& l){return l.linkId==leg.linkId&&l.in==leg.in;}))
-                bad("FILL_NODE_ARM_OUTSIDE",leg.linkId);
-            for(const auto& leg:grownLegs)if(std::none_of(links.begin(),links.end(),[&](const auto& l){return l.linkId==leg.linkId&&l.in==leg.in;}))
-                bad("TRANSITION_POLYGON_CAPTURES",leg.linkId);
+            containNodeDetail(n,n.nodes[index],connectors,cuts);
+            p.issues=polygonGrowthIssues(n,n.nodes[index],links,"TRANSITION_POLYGON_CAPTURES");
             if(!p.issues.empty())return p;
         }
         auto& row=n.rightOfWay;const auto lines=ids(row.waitingLines),areas=ids(row.conflictAreas),rules=ids(row.priorityRules);

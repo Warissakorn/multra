@@ -87,8 +87,8 @@ only in the full-width measuring copy until they reach the far major pavement ed
 along the stem's terminal tangent. Major painted boundary endpoints determine that extent;
 there is no cut-distance number. Run the existing surface-overlap cuts on that copy.
 Map cut stations back to the actual Link before checking references. Stored cut geometry must
-remain on the original Link: no measuring extension is published. Street segment centrelines,
-Node polygon and ordinary F4/nodeLegCuts remain unchanged; the existing outside/reference
+remain on the original Link: no measuring extension is published. Street segment centrelines
+and ordinary F4/nodeLegCuts remain unchanged; B38's polygon fit (§5) is separate. Existing outside/reference
 refusals and generated/refine/one-Undo rules still apply. This replaces D400's zero-gap
 limitation for T template fills, with no change to legacy F3/F4 or their frozen JT13 bytes.
 
@@ -104,18 +104,19 @@ limitation for T template fills, with no change to legacy F3/F4 or their frozen 
   measuring copy only, retained base footprints/references, unchanged preview/Street segments,
   generated flags, repeat Fill and exact Undo/Redo; legacy JT13 unchanged. **Passing.**
 
-J4T core is checkpointed at b7be7c94; the slice is not complete. Native junctionsignals has 19 passing cases
-(nine JT9, seven JT18, three JT19); junctionfill has 25 including the updated JT19 case and
-frozen JT13. Catalog/recipe Qt tests pass on both driving sides and both locales. U0 has no answers; no writer or
-Synchro/Vistro interoperability claim is included.
+J4T is implemented and awaits owner review. Native junctionsignals has 40 passing cases
+(nine JT9, seven JT18, three JT19, 21 JT20); junctionfill has 25 including the updated JT19
+case and frozen JT13. Catalog/recipe Qt tests pass on both driving sides/locales, including
+later first choice and real Fill for all three template families. U0 has no answers; no writer
+or Synchro/Vistro interoperability claim is included.
 
-## Natural polygon blocker (JT20, B38 pending)
+## Natural polygon workflow (JT20, B38/D417)
 
-JT18/JT19 above use authored roomy polygons. With the unedited 16-gon/radius 14.5 m from
-Find crossings, the full-lane T has Connector endpoint geometry outside the polygon and
-Fill refuses NODE_CONNECTOR_CROSSES on both driving sides. Selecting template/major can
-clear Node.generated even without a polygon edit (D393/B36), so the transition-only D407
-rule cannot silently be assumed for every T. B38 asks whether to fit generated Nodes,
-provide an explicit previewed Fit polygon + Fill for cleared flags, or retain a named
-manual-polygon recovery. No choice is inferred. Existing ownership, capture/overlap guards,
-reference protection and one Undo must remain. JT20's real-workflow acceptance is pending.
+The owner extended the [§5 polygon-fit policy](JUNCTION_TEMPLATES.md#junction-polygon-fit-b38d417)
+to every junction template, including four legs. JT20 uses untouched Find crossings polygons
+for stop-4-shared, stop-4-major-far-pockets and signal-3-protected on both driving sides,
+through the crossing column and later Node form. First template choice retains the current
+flag; false flags use explicit previewed Fit polygon + Fill and are never restored to true.
+Capture/overlap/refinement/reference guards, saved-state preservation and one Undo remain.
+JT20 is **passing**, including automatic/explicit fitting, no flag resurrection, exact Undo/Redo,
+save/reopen and remaining Connector refusals with Node/Connector paths.

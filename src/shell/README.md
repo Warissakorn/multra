@@ -43,6 +43,7 @@ The other headers:
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `junction_preview_dialog.*` | Affected Node/detail list and named refusals before explicit seam/corridor replacement | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
+| `junction_polygon_dialog.*` | Original/proposed junction polygon outlines, named refusals and explicit Fit + Fill confirmation | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `junction_cross_section_dialog.*` | Staged cross-section id/override form; blank values inherit, Cancel mutates nothing | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `junction_form_widgets.*` | Far-to-kerb lane rows, geometric labels and optional site-number fields | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `junction_catalog_dialog.*` | Staged structural template/role editor and project catalog capture | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |

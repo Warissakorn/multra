@@ -16,20 +16,21 @@ inline JunctionSignal site(DrivingSide side,int stem) {
     for(const int n:std::set{2,6,minor(stem),leading(side,stem)})s.phases.push_back({n,n%2?10.:n==2||n==6?40.:38.,3,1});
     return s; // U0's entered test timing, never a product default.
 }
-inline ProjectDocument junction(DrivingSide side,int stem=0,bool installed=false) {
+inline ProjectDocument junction(DrivingSide side,int stem=0,bool installed=false,bool spacious=false,bool attachRecipe=true) {
     auto d=cross(side,false);d.network=Network{"signal-t",side,{},{},{},{}};
     const bool ew=stem%2==0;const std::array<Point,4> ends{{{0,180},{180,0},{0,-180},{-180,0}}};
     putStreetSegment(d,{"main","Main",ew?std::vector<Point>{{-180,0},{180,0}}:std::vector<Point>{{0,-180},{0,180}},std::string("test"),0,{},{}});
     putStreetSegment(d,{"stem","Stem",{ends.at(static_cast<std::size_t>(stem)),{0,0}},std::string("test"),0,{},{}});
     const auto found=findCrossings(d.network,2);CHECK(found.size()==1&&found[0].legs==3);
     applyCrossings(d,found,{CrossingChoice::junction},2,d.definition->crossSections);
-    node(d).polygon={{-30,-30},{30,-30},{30,30},{-30,30}};
+    if(spacious)node(d).polygon={{-30,-30},{30,-30},{30,30},{-30,30}};
     for(const auto& r:d.network.streetSegments)applyTemplate(d,r.id,d.definition->crossSections);
     if(!installed)putJunctionTemplateCatalog(d,{type()});
     NodeJunction r;r.templateId=type().id;r.signal=site(side,stem);
     for(const auto& road:d.network.streetSegments)if(road.id!="stem")r.major.push_back(road.id);
     CHECK(r.major.size()==2&&nodeLinkLegs(d.network,node(d)).size()==6&&!nodeHasDetail(d.network,node(d)));
-    setNodeJunction(d,node(d).id,r);return d;
+    if(attachRecipe)setNodeJunction(d,node(d).id,r);
+    return d;
 }
 inline auto seams(const ProjectDocument& d) {
     return junctionSeamIssues(d.network,catalogs(d).junctionTemplates,{},d.definition->signalControllers,d.definition->timeStep);

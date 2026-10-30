@@ -34,7 +34,7 @@ TEST(junctiontemplates, jt5_choice_carries_major_preserves_coarse_and_is_one_und
     CHECK(d.network.nodes[0].coarse->major == std::vector<std::string>{"r"}); // forcing
     CHECK(h.execute("junction",[&](auto& doc) { setNodeJunction(doc,"n",NodeJunction{"t"}); }));
     const auto& node = h.document().network.nodes[0];
-    CHECK(node.coarse == d.network.nodes[0].coarse && node.junction && !node.generated);
+    CHECK(node.coarse == d.network.nodes[0].coarse && node.junction && node.generated); // B38's first-choice amendment
     CHECK(node.junction->major == std::vector<std::string>{"r"});
     CHECK(h.states().size() == 2);
     const auto after = documentJson(h.document()); CHECK(after.at("schemaVersion") == 61);

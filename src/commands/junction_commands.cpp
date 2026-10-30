@@ -21,7 +21,7 @@ void setNodeJunction(ProjectDocument& d, const std::string& id, std::optional<No
     if (value && value->major.empty() && node.coarse) value->major = node.coarse->major;
     auto previous=node.junction;
     if(previous&&previous->major.empty()&&node.coarse)previous->major=node.coarse->major;
-    if(!previous||!value||!sameStructure(*previous,*value))node.generated=false;
+    if(!value||(previous&&!sameStructure(*previous,*value)))node.generated=false;
     node.junction = std::move(value); // B36: site edits keep the current flag, never restore it.
 }
 void chooseNodeJunctionTemplate(ProjectDocument& d,const std::string& id,const std::optional<std::string>& type) {

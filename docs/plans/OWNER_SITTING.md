@@ -191,14 +191,13 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    and two-way-stop T templates, retaining ordinary F4. Missing timing remains missing;
    unused phases remain omitted. No further B37 question is pending.
 
-38. **J4T natural polygon** (asked 2026-10-30; pending). The real Find crossings 16-gon has
-   radius 14.5 m; T Connector endpoints leave/re-enter it and Fill refuses on both sides.
-   Template/major choice can clear generated without a polygon edit (D393/B36). Recommended:
-   automatic fitting while generated; explicit previewed Fit polygon + Fill when cleared,
-   never restoring true, with capture/overlap guards and one Undo. Alternatives: auto-fit
-   generated only, manual polygon recovery otherwise; or retain the polygon and give a named
-   refusal/recovery for all T fills. Core b7be7c94 is green on roomy polygons; JT20 awaits this
-   choice. Diagnostics/patch: `/workspace/j4t-review/`. *Owner:*
+38. **Junction polygons and first template choice** (answered 2026-10-30, [D417](../decisions/RECORD.md#d417)).
+   Owner selected fitting for **every junction template**, including four legs: automatic while
+   generated, explicit previewed Fit polygon + Fill when false, capture/overlap guards and one
+   Undo, never restoring true. B36 amended: first template choice keeps the current flag in
+   Find crossings and the later Node form; switching template, Detach and polygon edits clear
+   it. Remaining Fill NODE_CONNECTOR_CROSSES must name Node/Connector. JT20 covers the real
+   untouched polygon through both entry paths, both driving sides and all three template families.
 
 ## C — Run view (the 125 % screen)
 
@@ -423,7 +422,7 @@ nothing. Numbers are not reused.
    refusal: three outgoing lanes must Fill/rebuild, including a three-junction corridor, with
    one Undo. Inspect fixed footer/scrolling rows in every new nested dialog. *Owner:*
 
-30. **J4T protected signalised T** (listed 2026-10-30, D416; real-workflow polygon policy pending B38). On Windows at 100/150/200 %,
+30. **J4T protected signalised T and polygon fitting** (listed 2026-10-30, D416/D417). On Windows at 100/150/200 %,
    Thai/English: Find crossings on a T, choose the protected three-stage entry, F3 with 2+2
    lanes, select both major arms and inspect the four required phase numbers in Junction
    template…. Check north/south/east/west stems on both driving sides. Missing values disable
@@ -431,7 +430,11 @@ nothing. Numbers are not reused.
    start at zero, minor alone follows, major far ends the preceding cycle. For the U0-style
    E–W/north-stem check, left-hand WBR=5 and SB=4; right-hand EBL=1 and SB=4. There are no
    spare phase groups. Inspect the six turns, protected F lane, T cut ends, full Undo and
-   re-apply/refine guard. Confirm ordinary F4's behaviour and four-leg UI remain unchanged.
+   re-apply/refine guard. Confirm ordinary F4 and four-leg signal numbering keep their behaviour.
+   With the untouched Find crossings polygon, also check shared/pocket four-leg templates,
+   choosing in the column or later Node form. First choice keeps the flag; generated Fill fits
+   automatically. After a polygon edit, Fit polygon + Fill previews dashed old/solid new outlines;
+   Cancel is unchanged, Apply is one Undo and keeps false. Capture/overlap disables preview Apply.
    Automated Linux tests do not supply this Windows verdict. *Owner:*
 
 ## F — Dialogs: demand and behaviour

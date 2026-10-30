@@ -1377,5 +1377,10 @@
   "editorJunctionFillBlocked": "Fill defaults is disabled until these items are corrected:",
   "editorJunctionRequiredPhases": "Required NEMA phases: %1. Enter green, yellow and allRed for each; no timing defaults.",
   "editorJunctionObjectCount": "%1 junctions, %2 detail objects",
-  "editorJunctionShowDetail": "Show / hide all detail ids"
+  "editorJunctionShowDetail": "Show / hide all detail ids",
+  "JUNCTION_POLYGON_FIT_REQUIRED": "This junction's Connectors need a larger polygon. Use Fit polygon + Fill to preview it, or draw the polygon by hand and fill again.",
+  "JUNCTION_POLYGON_CAPTURES": "Fitting this polygon would capture this Link. Shorten a pocket/taper or draw the polygon by hand, then fill again.",
+  "editorJunctionFitPolygon": "Fit polygon + Fill",
+  "editorJunctionPolygon": "Polygon",
+  "editorJunctionPolygonNote": "Node %1: dashed outline = current polygon; solid outline = fitted polygon (metres). Apply fits the polygon and fills this junction in one Undo step."
 }

@@ -11,7 +11,7 @@ J3a adds the template catalog and stored recipes (D393–D395). J3b is implement
 (D398–D402): the two-way-stop fill, named refusals and legacy-fill parity below. All-way-stop
 generation is deferred by the owner until A5 or U1 needs it (D399).
 J4 generates P1–P4 signals from required site timing and checks their NEMA layout (§8, D404).
-J4T adds the protected three-stage T and measured T template cuts (D416).
+J4T adds the protected three-stage T, measured T template cuts and all-junction polygon fitting (D416/D417).
 The editor recipe surfaces are implemented in J6.
 The owner choices are answered
 (§12: D387, D388; J2 clarification on 2026-10-29).
@@ -107,7 +107,8 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
   to `majorByRank` when empty. Optional `junction.legs.<id>.lanes` replaces that leg's role rows,
   with the same schema/validation and far-to-kerb order as §3. The Command `setNodeJunction`
   carries `coarse.major` when no major is supplied and keeps the existing `coarse` unchanged.
-  B36/D412 keeps current `generated` for same-template site-only edits; another template,
+  B38/D417 keeps current `generated` for the first template choice, including one made later
+  in the Node form; B36/D412 keeps it for same-template site-only edits. Another template,
   Detach and polygon edits clear it, never setting it back. Detach also keeps `coarse`.
 - **Signal:** the cycle and, per NEMA phase the preset uses, green, yellow and all-red. All are
   required to apply, with no default (§12 JT-5). **D395:** incomplete recipes save what is entered:
@@ -165,6 +166,30 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
 - **Ordinary Fill's Apply again** replaces only objects still `generated` and refuses, naming them, when a person
   has edited one (`JUNCTION_EDITED`). Undo restores every byte.
   D410 separately authorizes the seam's explicit replacement list ([J6 contract](JUNCTION_TEMPLATE_EDITOR.md)).
+
+### Junction polygon fit (B38/D417)
+
+Every three-/four-leg junction template uses this policy, including pocket and signalised
+templates. The original Find crossings polygon must work without a manual enlargement.
+If a movement Connector's spine or painted surface leaves the polygon, take the convex hull
+of the original polygon, cut points, movement Connector spines and rails, padded by the widest
+attached lane, as in D407. A roomy/already-fitted polygon stays unchanged; Street segment
+centrelines and ordinary F4 retain their rules.
+
+While `Node.generated` is true, Fill fits automatically in its single Command/Undo. A cleared
+flag makes ordinary Fill refuse `JUNCTION_POLYGON_FIT_REQUIRED` at the polygon; its row offers
+explicit **Fit polygon + Fill**. The read-only preview shows old/proposed outlines and every
+refusal. Cancel changes nothing; Apply fits and fills in one Undo, retaining the current flag,
+including false. This authorizes fitting only; edited-detail/reference guards still refuse.
+
+Before enabling Apply, compare Link legs before/after growth by Link id and entry/exit direction.
+Newly captured legs refuse `JUNCTION_POLYGON_CAPTURES` at each Link; the recovery is to shorten
+a pocket/taper or draw the polygon by hand. Lost arms still refuse `FILL_NODE_ARM_OUTSIDE`;
+overlap refuses `NODE_OVERLAP` at the neighbour. Preview and Command share the private plan,
+and refusals preserve document, History and saved state. Any remaining
+`NODE_CONNECTOR_CROSSES` from Fill names both the Node and each crossing Connector.
+No new stored field/schema, timing default or flag resurrection is introduced. J5 transitions
+retain §7's existing generated/edited-polygon rule.
 
 **J3b scope confirmed by the owner (D397).** Signalised templates were listed but disabled in
 J3b; J4 (D404) now applies their required site timing and ordinary generated controllers/heads
@@ -385,7 +410,7 @@ T uses existing P2 plus legs=3, with two full lanes per arm; no new schema or ti
 | J6 | **Approved at 3ec3d39/09b0689 (D409–D414):** template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36, compact previews; JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
 | J6a | **Implemented, awaiting review (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
-| J4T | **Core checkpoint b7be7c94; B38 pending** (D405/D416): protected signalised T, compass NEMA subset, template T cuts, JT18/JT19 on authored polygons; natural-polygon JT20 pending; separate review | 1 |
+| J4T | **Implemented; owner review pending** (D405/D416/D417): protected signalised T, compass NEMA subset, measured T cuts and all-junction polygon fitting; JT18–JT20 **passing** | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
 U0 waits on the owner, and its answers can change J4 and U1. About 14–17
@@ -447,4 +472,4 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT17 | J6a | Exact polyline endpoint conversion; single-junction 3-lane-exit controls at x=0 and x=200; ordinary History Fill of -200/0/200 corridor and atomic cross-section rebuild, both driving sides, with valid whole document, unchanged preview, seam parity, save/reopen and exact JSON Undo/Redo. D413 refusal removed (`tests/junction_corridor_conflict_tests.cpp`, **passing**, 9 cases) |
 | JT18 | J4T | Protected three-stage T, both sides/all stem directions, literal U0 compass check, required site timing/omitted phases, NEMA/refusal guards, HCM/Micro, drafts/Node form, generated/refine and full Undo/reopen ([contract](JUNCTION_SIGNALS.md); **passing**) |
 | JT19 | J4T | T template full-width measuring extension, both sides, signals/two-way stop, original footprints/reference guards, legacy F4/JT13 unchanged and one Undo ([contract](JUNCTION_SIGNALS.md); **passing**) |
-| JT20 | J4T | Real Find crossings polygon without a manual enlargement: policy and positive/refusal rows await B38; both driving sides, four stems and one Undo ([blocker](JUNCTION_SIGNALS.md#natural-polygon-blocker-jt20-b38-pending); **pending**) |
+| JT20 | J4T | Untouched Find crossings polygon: shared/pocket four-leg and signalised T, both sides, crossing column/later Node form; first-choice flag parity, automatic/explicit previewed Fit, captures/overlap/named refusals, refinement/reopen and one Undo ([§5](#junction-polygon-fit-b38d417); **passing**) |

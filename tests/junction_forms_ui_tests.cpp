@@ -115,6 +115,67 @@ void tRecipe(EditorWindow& w,const QString& file,DrivingSide side) {
         CHECK(documentJson(w.history().document())==before);
     }
 }
+void tPolygon(EditorWindow& w,const QString& file,DrivingSide side) {
+    auto source=junctionTTest::junction(side,0,true,false);putNode(source,source.network.nodes[0]);
+    {std::ofstream f(file.toStdString());f<<documentJson(source).dump();CHECK(f.good());}
+    w.openFile(file);QApplication::processEvents();const auto before=documentJson(w.history().document());
+    CHECK(!w.history().document().network.nodes[0].generated&&w.history().document().network.nodes[0].polygon.size()==16);
+    for(const bool save:{false,true}) {
+        modal([&](QDialog* fill){auto* table=child<QTableWidget>(fill,"editorFillTable");int row=-1;
+            for(int r=0;r<table->rowCount();++r)if(table->item(r,1)->text().toStdString()==source.network.nodes[0].id)row=r;
+            CHECK(row>=0&&!(table->item(row,0)->flags()&Qt::ItemIsEnabled));
+            auto* fit=qobject_cast<QPushButton*>(table->cellWidget(row,5));CHECK(fit&&fit->isEnabled());
+            modal([&](QDialog* preview){CHECK(preview->objectName()=="editorJunctionPolygonDialog");CHECK(child<QWidget>(preview,"editorJunctionPolygonView"));
+                CHECK(child<QLabel>(preview,"editorJunctionPolygonIssues")->text().isEmpty());CHECK(documentJson(w.history().document())==before);
+                if(save)accept(preview);else preview->reject();
+            },[&]{fit->click();});
+            if(!save)fill->reject();
+        },[&]{child<QAction>(&w,"editorFillDefaults")->trigger();});
+        if(!save)CHECK(documentJson(w.history().document())==before);
+    }
+    const auto& d=w.history().document();CHECK(!d.network.nodes[0].generated&&d.network.nodes[0].polygon!=source.network.nodes[0].polygon);
+    CHECK(approachLayout(d.network,d.network.nodes[0]).issues.empty()&&d.network.signalHeads.size()==6);
+    child<QAction>(&w,"editorUndo")->trigger();CHECK(documentJson(w.history().document())==before);
+}
+void naturalLaterChoice(EditorWindow& w,const QString& file,DrivingSide side) {
+    for(const auto* id:{"stop-4-shared","stop-4-major-far-pockets","signal-3-protected"}) {
+        const bool t=std::string(id)=="signal-3-protected",pocket=std::string(id)=="stop-4-major-far-pockets";
+        const auto source=t?junctionTTest::junction(side,0,true,false,false):junctionTest::cross(side,false,false,false);
+        CHECK(source.network.nodes[0].generated&&!source.network.nodes[0].junction&&source.network.nodes[0].polygon.size()==16);
+        {std::ofstream f(file.toStdString());f<<documentJson(source).dump();CHECK(f.good());}
+        w.openFile(file);QApplication::processEvents();child<QTableWidget>(&w,"editorNodeTable")->selectRow(0);QApplication::processEvents();
+        const auto before=documentJson(w.history().document());std::set<std::string> major;
+        for(const auto& r:source.network.streetSegments) {
+            const bool ew=r.centreline.front().y==0&&r.centreline.back().y==0;if(ew==t)major.insert(r.id);
+        }
+        CHECK(major.size()==2);
+        modal([&](QDialog* d){choose(child<QComboBox>(d,"editorJunctionRecipeTemplate"),id);auto* legs=child<QTableWidget>(d,"editorJunctionRecipeLegs");
+            for(int r=0;r<legs->rowCount();++r)if(major.contains(legs->item(r,0)->data(Qt::UserRole).toString().toStdString()))legs->item(r,1)->setCheckState(Qt::Checked);
+            if(pocket)for(const auto& arm:major) {select(legs,arm);
+                modal([&](QDialog* leg){child<QPushButton>(leg,"editorJunctionAddSlot")->click();auto* lengths=child<QTableWidget>(leg,"editorJunctionLengths");CHECK(lengths->rowCount()==1);
+                    qobject_cast<QLineEdit*>(lengths->cellWidget(0,0))->setText("47.5");qobject_cast<QLineEdit*>(lengths->cellWidget(0,1))->setText("13.25");accept(leg);
+                },[&]{child<QPushButton>(d,"editorJunctionLegValues")->click();});
+            }
+            if(t)modal([&](QDialog* timing){child<QLineEdit>(timing,"editorJunctionCycle")->setText("100");auto* phases=child<QTableWidget>(timing,"editorJunctionPhases");CHECK(phases->rowCount()==0);
+                for(const auto& p:junctionTTest::site(side,0).phases) {child<QPushButton>(timing,"editorJunctionAddPhase")->click();const int row=phases->rowCount()-1;
+                    auto* number=qobject_cast<QComboBox*>(phases->cellWidget(row,0));CHECK(number->findData(p.number)>0);number->setCurrentIndex(number->findData(p.number));
+                    for(const auto& [col,value]:{std::pair{1,*p.green},std::pair{2,*p.yellow},std::pair{3,*p.allRed}})qobject_cast<QLineEdit*>(phases->cellWidget(row,col))->setText(QString::number(value));
+                }accept(timing);
+            },[&]{child<QPushButton>(d,"editorJunctionTiming")->click();});
+            accept(d);
+        },[&]{child<QAction>(&w,"editorNodeJunction")->trigger();});
+        const auto recipe=documentJson(w.history().document());CHECK(w.history().document().network.nodes[0].generated&&recipe!=before);
+        modal([&](QDialog* fill){auto* table=child<QTableWidget>(fill,"editorFillTable");bool found=false;
+            for(int row=0;row<table->rowCount();++row)if(table->item(row,1)->text().toStdString()==source.network.nodes[0].id) {
+                CHECK(table->item(row,0)->flags()&Qt::ItemIsEnabled);table->item(row,0)->setCheckState(Qt::Checked);found=true;
+            }CHECK(found);accept(fill);
+        },[&]{child<QAction>(&w,"editorFillDefaults")->trigger();});
+        const auto& d=w.history().document();const auto layout=approachLayout(d.network,d.network.nodes[0]);
+        CHECK(d.network.nodes[0].generated&&d.network.nodes[0].polygon!=source.network.nodes[0].polygon&&layout.issues.empty()&&layout.movements.size()==(t?6u:12u));
+        child<QAction>(&w,"editorUndo")->trigger();CHECK(documentJson(w.history().document())==recipe);
+        child<QAction>(&w,"editorUndo")->trigger();CHECK(documentJson(w.history().document())==before);
+    }
+}
 
 }
 int main(int argc,char** argv) {
@@ -124,7 +185,7 @@ int main(int argc,char** argv) {
             const auto d=std::string(argv[2])=="catalog"?junctionTest::cross(side,false):junctionSignalTest::signalCross(side,"P2",false,true);
             const auto file=temp.filePath("forms.traffic.json");{std::ofstream f(file.toStdString());f<<documentJson(d).dump();CHECK(f.good());}
             EditorWindow w(argv[1],language);w.show();w.openFile(file);QApplication::processEvents();
-            if(std::string(argv[2])=="catalog")catalog(w);else {recipe(w);transition(w,file,side);tRecipe(w,file,side);}
+            if(std::string(argv[2])=="catalog")catalog(w);else {recipe(w);transition(w,file,side);tRecipe(w,file,side);tPolygon(w,file,side);naturalLaterChoice(w,file,side);}
         }
         std::cout<<argv[2]<<" JT11 forms passed on both driving sides and locales\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}

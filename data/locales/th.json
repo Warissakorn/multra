@@ -1377,5 +1377,10 @@
   "editorJunctionFillBlocked": "Fill defaults ยังใช้ไม่ได้จนกว่าจะแก้รายการต่อไปนี้:",
   "editorJunctionRequiredPhases": "ต้องใช้ NEMA phase: %1 กรอก green, yellow และ allRed ทุก phase โดยไม่มีค่าเวลาเริ่มต้น",
   "editorJunctionObjectCount": "%1 ทางแยก, วัตถุรายละเอียด %2 รายการ",
-  "editorJunctionShowDetail": "แสดง / ซ่อน ID รายละเอียดทั้งหมด"
+  "editorJunctionShowDetail": "แสดง / ซ่อน ID รายละเอียดทั้งหมด",
+  "JUNCTION_POLYGON_FIT_REQUIRED": "Connector ของแยกนี้ต้องการ polygon ที่ใหญ่ขึ้น ใช้ ปรับ polygon + Fill เพื่อดูตัวอย่าง หรือวาด polygon ด้วยตนเองแล้ว Fill อีกครั้ง",
+  "JUNCTION_POLYGON_CAPTURES": "polygon ที่ขยายจะจับ Link นี้เข้ามา ให้ลดความยาว pocket/taper หรือวาด polygon ด้วยตนเอง แล้ว Fill อีกครั้ง",
+  "editorJunctionFitPolygon": "ปรับ polygon + Fill",
+  "editorJunctionPolygon": "Polygon",
+  "editorJunctionPolygonNote": "Node %1: เส้นประ = polygon ปัจจุบัน; เส้นทึบ = polygon ที่ปรับ (เมตร) Apply จะปรับ polygon และ Fill แยกนี้ใน Undo เดียว"
 }

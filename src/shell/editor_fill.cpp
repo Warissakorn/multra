@@ -1,4 +1,6 @@
 #include "editor_window.hpp"
+#include "junction_polygon_dialog.hpp"
+#include "dialog_fit.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/fill_commands.hpp"
 #include "../project/link_type_codec.hpp"
@@ -24,13 +26,14 @@ void EditorWindow::fillDefaultsDialog() {
         for(auto& t:resolveJunctionTemplates(history_.document().definition.value_or(AuthoringDefinition{}),data_))catalogs.junctionTemplates.push_back(std::move(t.type));}
     catch(const std::exception& e) {showError(e);return;}
     const auto offers = fillOffers(history_.document(), catalogs);
+    std::optional<std::string> fitNode;
     QDialog dialog(this); dialog.setObjectName("editorFillDialog"); dialog.setWindowTitle(text("editorFillDefaults"));
     auto* layout = new QVBoxLayout(&dialog);
     layout->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
-    auto* table = new QTableWidget(static_cast<int>(offers.size()), 5, &dialog); table->setObjectName("editorFillTable");
+    auto* table = new QTableWidget(static_cast<int>(offers.size()), 6, &dialog); table->setObjectName("editorFillTable");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers); table->verticalHeader()->hide();
     table->horizontalHeader()->setStretchLastSection(true);
-    table->setHorizontalHeaderLabels({text("editorFillFill"), text("editorColumnId"), text("editorFillValue"), text("editorFillClears"), text("editorFillSource")});
+    table->setHorizontalHeaderLabels({text("editorFillFill"), text("editorColumnId"), text("editorFillValue"), text("editorFillClears"), text("editorFillSource"),text("editorJunctionPolygon")});
     for (int r = 0; r < table->rowCount(); ++r) {
         const auto& o = offers[static_cast<std::size_t>(r)];
         const char* kinds[] = {"editorFillLinkType", "editorFillJamDensity", "editorFillStreetSegmentLinks", "editorFillNodeDetail", "editorFillJunction"};
@@ -47,6 +50,13 @@ void EditorWindow::fillDefaultsDialog() {
         }
         const QStringList values{QString::fromStdString(o.objectId), value, text(o.clears), QString::fromStdString(o.source)};
         for (int c = 0; c < values.size(); ++c) table->setItem(r, c + 1, new QTableWidgetItem(values[c]));
+        if(std::any_of(o.issues.begin(),o.issues.end(),[](const auto& i){return i.code=="JUNCTION_POLYGON_FIT_REQUIRED";})) {
+            auto* fit=new QPushButton(text("editorJunctionFitPolygon")+QStringLiteral("…"),table);table->setCellWidget(r,5,fit);
+            connect(fit,&QPushButton::clicked,&dialog,[&,id=o.objectId] {
+                const auto p=junctionPolygonPreview(history_.document(),id,catalogs);
+                if(confirmJunctionPolygonFit(&dialog,p,[&](const char* key){return text(key);})) {fitNode=id;dialog.accept();}
+            });
+        }
     }
     table->resizeColumnsToContents();
     table->resizeRowsToContents();
@@ -61,7 +71,12 @@ void EditorWindow::fillDefaultsDialog() {
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     layout->addWidget(buttons);
     dialog.resize(editorDesign::space3 * 60, editorDesign::space3 * 22);
+    fitToScreen(dialog);
     if (dialog.exec() != QDialog::Accepted) return;
+    if(fitNode) {
+        execute("editorJunctionFitPolygon",[&](auto& d){fitJunctionPolygonAndFill(d,*fitNode,catalogs);},true);
+        recheck();return;
+    }
     std::vector<FillOffer> chosen;
     for (int r = 0; r < table->rowCount(); ++r)
         if (table->item(r, 0)->checkState() == Qt::Checked) chosen.push_back(offers[static_cast<std::size_t>(r)]);

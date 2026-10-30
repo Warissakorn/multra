@@ -47,30 +47,22 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Current slice: J4T, core checkpoint b7be7c94 (D405/D416); not complete.** J6/J6a are
-  approved. The T preset, four-phase subset and measuring cuts pass on authored roomy Nodes,
-  but the final real-workflow check finds B38: the untouched Find crossings polygon is a
-  16-gon of radius 14.5 m; T Connector endpoints leave/re-enter it (NODE_CONNECTOR_CROSSES)
-  on both sides. Selecting template/major can already clear Node.generated under D393/B36.
-- **Next action: wait for B38 before changing polygon policy.** OWNER_SITTING B38 has the
-  options/recommendation. Do not infer consent, reset generated to true or silently grow an
-  edited polygon. If growth is chosen, retain new-Link-leg/Node-overlap preview guards and
-  one Undo, for both T controls. Keep ordinary F4, frozen JT13 and required site timing.
-- **Precise repro/tests:** `/workspace/j4t-review/natural-workflow.patch` removes the authored
-  60 m square from normal T tests (with temporary diagnostic capture); workflow-targets.log
-  and natural-0/1.json preserve the failing originals/candidates. In junction_t_fixture.hpp,
-  skip the explicit polygon assignment for the normal two-lane T. Both JT18 compass tests
-  and the installed re-apply test then fail; roomy pocket fixtures stay deliberate.
-  Restore the failing-first natural-polygon row as JT20 once B38 is answered, remove temporary
-  instrumentation, implement the selected policy, and repeat desktop build/CTest/check/CLI.
-- **JT18/JT19 pass on authored polygons; JT20 is pending B38.** The Node form lists only the
-  four required phases, including incomplete timing. Native junctionsignals 19/19 and the
-  prior full CTest/check 257/257 are evidence for the core checkpoint, not real-workflow
-  completion. Current tests were restored to green while the owner choice is pending.
-  Stop for J4T review only after JT20 is resolved. No J7 or UTDF writer; U0 is still unanswered.
+- **Stop for owner review of J4T (D405/D416/D417).** JT18–JT20 pass: protected three-stage
+  signalised T with compass NEMA subset and required site timing; measured T cuts; B38 polygon
+  fitting for every three-/four-leg junction template. No next slice before owner approval.
+- **Review B38/JT20:** automatic fitting while generated, explicit old/proposed-outline Fit
+  polygon + Fill when false, new-Link-leg/Node-overlap preview guards and one Undo. First
+  template choice keeps current ownership through the crossing column or later Node form;
+  switching template, Detach and polygon edits still clear it, never restoring false to true.
+  Remaining Fill NODE_CONNECTOR_CROSSES names both Node and Connector. Natural shared/pocket
+  four-leg and signalised T run through both entry paths on both driving sides; Qt also drives
+  later first choice → Fill, explicit Cancel/Apply and site forms in English/Thai.
+- **Owner checks still open:** Windows appearance/Undo at OWNER_SITTING E30, and U0 imports
+  in section I. No timing defaults, new stored fields/schema or interchange claim. No J7 or
+  UTDF writer is authorized before review; U0 still has no answers.
 - **Retain B35/B36 (D410/D412):** listed explicit seam replacement and reference guards,
   automatic complete shared-Link closure, explicit incompatible drafts with no site defaults.
-  Same-template site-only edits preserve the current Node.generated; template/Detach,
+  First choice and same-template site-only edits preserve current Node.generated; switching template/Detach,
   structural major/lane choices and polygon edits clear it, never restoring a cleared flag.
   OWNER_SITTING E29 retains Windows appearance/Undo checks for all J6 surfaces and the now
   supported three-lane exit. Do not re-ask answered choices or change frozen JT13.

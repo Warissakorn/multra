@@ -22,7 +22,7 @@ inline ProjectDocument ready(DrivingSide side=DrivingSide::left,const std::strin
     auto d=source(side);
     CHECK(d.network.links.size()==4&&d.network.links[0].lanes.size()==3&&d.network.links[2].lanes.size()==2);
     putJunctionTemplateCatalog(d,{parseJunctionTemplate(typeJson(forward,backward),"test")});
-    const auto id=putNode(d,{"","Transition",{{-60,-50},{60,-50},{60,50},{-60,50}},true});
+    const auto id=putNode(d,{"","Transition",{{-60,-50},{60,-50},{60,50},{-60,50}},false}); // authored polygon
     NodeJunction recipe;recipe.templateId="transition-test";
     recipe.legs["west"].taper={30};recipe.legs["east"].taper={40};
     setNodeJunction(d,id,recipe);return d;
