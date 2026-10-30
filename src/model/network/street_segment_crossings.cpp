@@ -83,7 +83,15 @@ std::vector<StreetSegmentCrossing> findCrossings(const Network& n, double tolera
         // A place a Node already covers was answered: a confirmed junction is not offered again.
         const bool covered = std::any_of(n.nodes.begin(), n.nodes.end(), [&](const Node& node) {
             return node.polygon.size() >= 3 && pointInPolygon(node.polygon, c.at); });
-        if (c.streetSegments.size() >= 2 && c.legs >= 3 && !covered) places.push_back(std::move(c));
+        if(c.streetSegments.size()==2&&c.legs==2) {
+            const auto& a=n.streetSegments[stations[0].first];
+            const auto& b=*std::find_if(n.streetSegments.begin(),n.streetSegments.end(),[&](const auto& r){return r.id==c.streetSegments[1].streetSegmentId;});
+            const auto sa=c.streetSegments[0].station,sb=c.streetSegments[1].station;
+            const bool ends=(sa<=tolerance&&sb>=polylineLength(b.centreline)-tolerance)||
+                            (sb<=tolerance&&sa>=polylineLength(a.centreline)-tolerance);
+            c.transition=ends&&(a.crossSectionId!=b.crossSectionId||a.overrides!=b.overrides);
+        }
+        if (c.streetSegments.size() >= 2 && (c.legs >= 3||c.transition) && !covered) places.push_back(std::move(c));
     }
     std::sort(places.begin(), places.end(), [](const auto& x, const auto& y) {
         return std::tie(x.level, x.at.x, x.at.y) < std::tie(y.level, y.at.x, y.at.y);

@@ -115,7 +115,7 @@ TEST(junctiontemplates, jt5_choice_and_detach_preserve_coarse_signalised_macro_m
 }
 TEST(junctiontemplates, jt5_catalog_capture_is_atomic_and_owned_empty_never_falls_back) {
     const auto installed = resolveJunctionTemplates(AuthoringDefinition{},test::root()/"data");
-    CHECK(installed.size() == 12); // forcing
+    CHECK(installed.size() == 14); // forcing
     History h; h.reset(ProjectDocument{}); const auto before = documentJson(h.document());
     h.execute("catalog",[&](auto& d) { putJunctionTemplateCatalog(d,{installed[0].type}); });
     CHECK(h.document().definition && !h.document().definition->externalJunctionTemplates);

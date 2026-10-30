@@ -56,7 +56,7 @@ void assignTemplate(ProjectDocument&, const std::vector<std::string>& roads, con
 // the moved end meets (and the near end does not) names the new StreetSegment instead (D382). Returns its id.
 // Direct StreetSegment zone connectors keep their physical endpoint in either travel direction (D340).
 std::string splitStreetSegment(ProjectDocument&, const std::string& streetSegmentId, double station);
-enum class CrossingChoice { junction, overpass };
+enum class CrossingChoice { junction, overpass, transition };
 // Find crossings' batch, run inside one Command. Overpasses first: every pair of the place's StreetSegments
 // (EDIT_CROSSING_OVERPASS where a StreetSegment ends). Then each junction in order: the StreetSegments within
 // `tolerance` of the place are found again, those passing through are split there, and a `generated`
@@ -66,6 +66,11 @@ enum class CrossingChoice { junction, overpass };
 // twice the tolerance when nothing gives a width. Returns the new Nodes' ids.
 std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<StreetSegmentCrossing>&, const std::vector<CrossingChoice>&,
                                         double tolerance, const std::vector<CrossSection>& installed);
+// J5: Transition rows require an explicitly selected transition recipe (no taper default).
+// The older overload preserves Junction/Overpass behaviour; no general junction chooser here.
+std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<StreetSegmentCrossing>&, const std::vector<CrossingChoice>&,
+    double tolerance, const std::vector<CrossSection>& installed, const std::vector<std::optional<NodeJunction>>& recipes,
+    const std::vector<JunctionTemplate>& installedJunctions);
 // S3.7 (STREET_SEGMENTS §7, D312): the SEAM_LANE_COUNT fixes, each one Command and changing only the side the
 // user chose. useLinkLanes: the StreetSegment's override for the Link's direction becomes the Link's lane
 // count (the StreetSegment follows Micro). useStreetSegmentLanes: Apply template again, so the StreetSegment's Links take its

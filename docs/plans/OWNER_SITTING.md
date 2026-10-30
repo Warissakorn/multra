@@ -85,7 +85,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    (แนะนำ)”; “คงหมายเลขตามทิศและละเฟสที่ไม่ใช้ (แนะนำ)”. Book the small **J4T** slice before U1,
    with its own acceptance rows and review. Documentation only during J5; no timing defaults.
 
-34. **J5 transition construction** (asked 2026-10-30, pending before code). §7 leaves geometry
+34. **J5 transition construction** (asked and answered 2026-10-30, [D406](../decisions/RECORD.md#d406)). §7 had left geometry
    placement and the J5/J6 selection boundary open. Recommended choices first:
    (a) centre the entered taper on the Street segment join, half along each centreline; keep
    the road alignment, and refuse if Links are too short or the Node does not contain it,
@@ -96,8 +96,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    directions, versus shipping all four combinations. Proposed stored structure:
    `directions.forward.align` / `directions.backward.align`, forward following the end-to-start
    centrelines; `junction.legs.<id>.taper[0]` serves that incoming leg. New stored transition
-   structure uses feature-selected schema 63. No choice is assumed and no transition code or
-   JT10 implementation is started. *Owner:*
+   structure uses feature-selected schema 63. *Owner:* taper entirely upstream before the join;
+   Transition-only selector in J5; two symmetric installed templates, with owned mixed directions.
+   The owner selected (b)/(c)'s recommendations and changed (a) to upstream; see §7 for the contract.
 
 Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
@@ -342,6 +343,16 @@ nothing. Numbers are not reused.
    minor 4 then 8. Does waiting red stay separate from the recipe's entered allRed? Re-apply,
    edit a head/controller, and attach a queue counter: replacement must name the edited or
    attached object. This does not confirm U0 interoperability. Recipe UI remains J6. *Owner:*
+
+28. **J5 transitions** (listed 2026-10-30, D406). On Windows at 100/150/200 %, Thai and English,
+   draw end-to-start 3-lane and 2-lane Street segments. Find crossings must show Transition,
+   initially unselected, with Confirm disabled until its template is chosen. Cancel changes
+   nothing; Confirm creates the recipe-bearing Node in one Undo, with no taper default. Use a
+   saved recipe with explicit tapers, enlarge the polygon if needed, run F3 then Fill defaults,
+   and inspect both driving sides: the whole taper is upstream, kerb alignment drops the far
+   lane, far alignment drops the kerb lane, and one Undo restores the full document. Inspect
+   missing/range/outside messages and dialog buttons on a small screen. Recipe editing remains
+   J6; fill before placing stationed measurements. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

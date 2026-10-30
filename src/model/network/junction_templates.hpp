@@ -22,6 +22,7 @@ struct JunctionTemplate {
     int legs{4};
     std::string control, phasing;
     std::map<std::string, std::vector<JunctionLane>> roles;
+    std::map<std::string, PocketSide> directions; // transition: forward/backward align, no default
     bool operator==(const JunctionTemplate&) const = default;
 };
 struct JunctionLeg {

@@ -61,7 +61,7 @@ so a shipped template needs no source beyond its own description (WORKFLOW §1.4
     "minor": [ { "movements": "FT" }, { "movements": "TK" } ] } }
 ```
 
-- **`kind`:** `junction` or `transition` (§7); J3a loads junction entries. Transition structure/loader support is J5.
+- **`kind`:** `junction` or `transition` (§7); J3a loads junction entries; J5 adds transition structure/loader support (§7).
 - **`legs`:** 3 or 4 (§12 JT-2).
 - **`control`:** `signalised` (pretimed), `twoWayStop` or `allWayStop`.
 - **Roles, not compass directions**, because leg angles differ at every site:
@@ -84,7 +84,7 @@ reads installed JSON files in filename order, with paths `catalog/junction-templ
 malformed JSON names the file, and invalid fields name their full path. No cache is retained.
 `definition.junctionTemplates` owns the whole catalog when present, including an empty array;
 when absent it resolves installed entries, as Link types do. Duplicate ids are refused at the
-later entry's `.id`. The installed [12 structural templates](../../data/junction-templates/README.md)
+later entry's `.id`. The installed [12 junction and two transition templates](../../data/junction-templates/README.md)
 cover P1–P4 four-leg and two-way stop three-/four-leg, each with and without major far-turn pockets.
 No storage, taper, cycle or timing numbers ship. Signalised entries require P1–P4; other controls
 carry no phasing. P2 major / P3 all roles use separate `F` rows for protected far turns (D396),
@@ -283,10 +283,10 @@ EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driv
 
 ## 7. Transitions: two Street segments end to end with different cross-sections
 
-- **Today:** Macro and Meso join free ends within 2 m (STREET_SEGMENTS_IMPLEMENTED §19); Micro gets no
+- **Before J5:** Macro and Meso join free ends within 2 m (STREET_SEGMENTS_IMPLEMENTED §19); Micro gets no
   Connector. *Find crossings* lists only places of three legs or more, and the two-leg merge
   (§20) joins only Street segments with the same template.
-- **Proposed:** *Find crossings* also lists two Street segments meeting end to start whose templates or
+- **J5:** *Find crossings* also lists two Street segments meeting end to start whose templates or
   overrides differ, as a **Transition** row. Confirm makes a two-leg Node with a transition
   template; the same-template case keeps today's merge.
 - **A transition template** (`kind: "transition"`) states, per direction:
@@ -297,9 +297,30 @@ EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driv
   last aligned lane (or the added lanes diverging from it), and one Connector per aligned lane.
   F4's merge areas apply. No HCM; UTDF exports the Node as a plain node between segments.
 
-**J5 preparation, 2026-10-30:** OWNER_SITTING B34 is pending before code: taper placement,
-the Transition-only selector versus J6, and the initial per-direction catalog/structure.
-JT10 remains unimplemented; schema 63 is not consumed by this documentation checkpoint.
+**B34 answered (D406).** Put the entire entered taper in the incoming arm, before the join,
+measured along that Street segment's centreline. Keep the existing alignment; refuse a Link
+that is too short or a Node that cannot contain the taper. Forward follows the end-to-start
+centrelines; backward is the reverse. `junction.legs.<id>.taper[0]` serves that incoming arm.
+The installed set begins with two templates, kerb/kerb and far/far; owned entries can mix them:
+`{ "id": "transition-kerb", "name": "Kerb aligned", "kind": "transition", "legs": 2,
+"directions": { "forward": { "align": "kerb" }, "backward": { "align": "kerb" } } }`.
+There are no control, phasing or lane-role fields on a transition. New stored transition
+structure selects schema 63 and is refused before it at its field path; existing recipe fields
+keep their earlier floors when no new structure is stored. No duplicate Node kind is stored.
+Find crossings gets a required selector only for Transition rows in J5, initially unselected;
+general junction selection and the recipe editor remain J6. JT10 is **passing**; stop for J5 review.
+
+**J5 implementation.** The existing junction fill dispatches transition entries to a per-call
+plan; no applied layout is stored. It preserves full lane widths/ids, marks the program's cut
+Links and new Connectors/merge controls generated, and reuses the generated-only restoration
+and named reference guards from §5. Aligned lanes are drawn first; extra lanes retain the
+existing merge drawing-order/default rules. The entered taper is the cut retreat on the
+incoming centreline, not the Connector's curved arc length. Re-apply and Undo cover the entire
+document. F3 is required; missing taper, inadequate Link/Node space, unmatched directions and
+inapplicable site fields refuse without mutation. One-way matching arms need only their
+incoming taper. Equal-section free ends are not new Transition rows, and the existing
+same-template two-leg lifecycle still merges when a Node becomes eligible (STREET_SEGMENTS_IMPLEMENTED §20). No HCM
+transition method or UTDF writer is added; existing node analysis keeps its unsignalised refusal.
 
 ## 8. NEMA numbering of signal groups
 
@@ -389,7 +410,7 @@ This is documentation only in J5; J4's four-leg implementation and required site
 | J2 | **Done (D391, D392).** Kerb-side pocket; `approachLayout` and movement names (§6) | 1 |
 | J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. **J3b done (D398–D402):** `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8/JT13–JT15; all-way-stop generation deferred (D399); stop for review (§3–§5) | 2 |
 | J4 | **Done (D404, JT9 passing).** Signals from the template: P1–P4, NEMA numbering, required site timing and `nemaCheck` (§8); stop for review | 1 |
-| J5 | Transitions (§7) | 1 |
+| J5 | **Done (D406, JT10 passing).** Upstream transitions and the Transition-only selector (§7); stop for review | 1 |
 | J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS`; booked one-Command cross-section change through a junction (§5), before U1 | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
 | J4T | Booked before U1 (B33, D405): one protected signalised T preset and its NEMA support (§8); separate review, no code in J5 | 1 |
@@ -444,7 +465,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED`; full-lane counts, schema-62 paths, manual refine/copy/split, generated replacement, S5 marking, rank fallback, named cut/reference refusals, orthogonal-T limitation, guarded Street segment Apply template and Undo → cross-section → fill recovery (`tests/junction_fill_tests.cpp`, `tests/junction_fill_completion_tests.cpp`, **passing**; all-way-stop generation deferred) |
 | JT8 | J3 | The applied two-way-stop junction runs in Micro (seed 42) with no refusal on both driving sides. Existing manual signal Commands, used only in this test (D397), let NODE_ANALYSIS find all 10 lane groups and 12 turns (`tests/junction_fill_run_tests.cpp`, **passing**); template signals are covered separately by JT9 |
 | JT9 | J4 | P1–P4 on both driving sides, both major axes and pocket variants: exact entered timing, clearance/wait split, missing/grid/cycle refusals, broken barrier/ring/head and protected-lane codes; compiled HCM g/C, P3 protected result and Micro seed 42; generated/refine and safe replacement with full JSON Undo/Redo (`tests/junction_signal*_tests.cpp`, **passing**, 9 cases) |
-| JT10 | J5 | A 3-lane Street segment ending into a 2-lane Street segment gives a Transition row; Apply with `align: kerb` drops the far lane over the taper; the same-template pair still merges |
+| JT10 | J5 | 3→2 Transition row, upstream taper and kerb/far/mixed mapping on both driving sides; schema-63/older-field guards; missing/bounds/unused-site refusals; same-template lifecycle merge; generated replacement/refine, stationed-head protection and exact JSON Undo/Redo; ordinary Micro compilation and existing HCM refusal. Required selector, Cancel and one Undo driven in Qt (`tests/transition_tests.cpp`, `tests/transition_reference_tests.cpp`, `tests/transition_ui_tests.cpp`; **passing**, 9 native cases plus UI on both sides) |
 | JT11 | J6 | Editing a generated Connector gives `SEAM_JUNCTION_DIFFERS`; *Apply again* and *Detach* each fix it in one Undo step |
 | JT12 | J7 | The panel writes `Node::analysis` in one Undo step; *Analyse* matches `--node-analysis` byte for byte |
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |

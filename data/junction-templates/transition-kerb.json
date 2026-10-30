@@ -1,0 +1,10 @@
+{
+  "id": "transition-kerb",
+  "name": "Transition, kerb aligned",
+  "kind": "transition",
+  "legs": 2,
+  "directions": {
+    "forward": { "align": "kerb" },
+    "backward": { "align": "kerb" }
+  }
+}

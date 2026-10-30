@@ -181,12 +181,17 @@ The owner chose the tolerance (2026-10-22): 15° and half both widths plus 30 m.
     those issues are thrown at `nodes[k]` and nothing changes.
 - **Editor:**
   - **Street segments tab: *Find crossings*** opens a dialog with the snap tolerance (2 m), *Search again* and
-    one row per place (level, x, y, Street segments, legs, and Junction or Overpass). Confirm is one Undo
+    one row per place (level, x, y, Street segments, legs, and Junction, Overpass or Transition). Confirm is one Undo
     step, and the status bar counts both kinds. With nothing to confirm, the status bar says so.
   - **Nodes tab: *Merge nodes*** works on the selected rows (the table now takes several), with the
     current row first.
 - **Rows:** RD12–RD15 in `tests/street_segment_crossing_tests.cpp` (`roadcrossings`), with their editor
   part in `road-ui`.
+
+J5 adds differing end-to-start pairs as Transition rows, with an explicit template selector
+and no default selection (D406, [JUNCTION_TEMPLATES §7](JUNCTION_TEMPLATES.md#7-transitions-two-street-segments-end-to-end-with-different-cross-sections)).
+Confirm creates the recipe-bearing two-leg Node in the same Command; F3 then the junction fill
+creates the upstream taper. The same-template two-leg lifecycle below stays unchanged.
 
 ## 19. S3.6a as implemented (D310)
 

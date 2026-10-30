@@ -7,6 +7,8 @@ Each JSON file is a catalog entry; the loader reads filenames in order. Project-
 - Four legs, signalised: P1, P2, P3 and P4, each with shared turn lanes or major far-turn pockets.
 - Three and four legs, two-way stop: each with shared turn lanes or major far-turn pockets.
 - Three-leg roles are major-far, major-kerb and minor; four-leg roles are major and minor.
+- Two transition entries: kerb/kerb and far/far. Owned entries can mix forward/backward alignments
+  (D406); taper is required per incoming Node leg, with no shipped site length.
 
 P2 separates the major far turn; P3 separates every far turn, as required by the one-protected-group
 per lane rule (D396). A non-pocket F row is full-width; TK remains shared.
@@ -16,4 +18,4 @@ Every file describes its own structure. No storage, taper or timing number ships
 values on the Node. The phasing preset selects structure, never a cycle or green time. All-way
 stop is accepted for owned templates; its fill remains listed but disabled until A5 or U1 (D399).
 J3b generates junction geometry; J4 applies the required site timing to the four-leg signal
-presets (D404). Transitions and their catalog structure are J5; the editor is J6.
+presets (D404). J5 adds transition structure and the required Transition-only selector; the recipe editor is J6.

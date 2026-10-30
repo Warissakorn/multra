@@ -1310,5 +1310,13 @@
   "NEMA_RING_ORDER": "The phases overlap or run out of order within this NEMA ring.",
   "NEMA_BARRIER": "A phase opens before both rings have cleared the other side of the barrier.",
   "NEMA_HEAD_GROUP": "This head or movement does not match the controller and phase of its NEMA approach.",
-  "NEMA_LANE_GROUP": "A lane has more than one protected group or more than one permitted group."
+  "NEMA_LANE_GROUP": "A lane has more than one protected group or more than one permitted group.",
+  "editorTransitionTemplate": "Transition template",
+  "editorCrossingTransition": "Transition",
+  "editorTransitionNone": "Select a transition template…",
+  "editorFindCrossingsTransitionsDone": "Created %1 junctions and %2 transitions; recorded %3 overpasses.",
+  "TRANSITION_TEMPLATE_REQUIRED": "Choose a transition template before confirming this row.",
+  "TRANSITION_ARMS": "A transition needs matching directions on two Street segments joined end to start.",
+  "TRANSITION_TAPER_RANGE": "The transition taper must fit in the incoming Street segment.",
+  "TRANSITION_TAPER_OUTSIDE": "The Node must contain the entire incoming transition taper. Enlarge its polygon or enter a shorter taper."
 }

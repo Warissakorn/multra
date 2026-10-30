@@ -93,7 +93,8 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
+    return usesTransitionFields(d) ? 63 :
+        std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
         usesStreetSegmentKeys(d) ? 59 :
@@ -244,6 +245,7 @@ ProjectDocument parseDocument(const Json& j) {
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
     if (version < 61) rejectJunctionFieldsBefore61(j); // J3a: presence, even null, at its path
+    if (version < 63) rejectTransitionFieldsBefore63(j);
     d.map=parseMapSettings(j,version);
     if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
     if (version < networkCodec::linkTypeVersion) rejectLinkTypesBefore50(j); // S2.1, before the network is read

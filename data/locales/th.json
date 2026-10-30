@@ -1310,5 +1310,13 @@
   "NEMA_RING_ORDER": "เฟสซ้อนกันหรือลำดับไม่ถูกต้องภายใน ring NEMA นี้",
   "NEMA_BARRIER": "เฟสเริ่มก่อนทั้งสอง ring ผ่านช่วงก่อน barrier ครบ",
   "NEMA_HEAD_GROUP": "หัวสัญญาณหรือทิศทางนี้ไม่ตรงกับตัวควบคุมและเฟส NEMA ของขาเข้า",
-  "NEMA_LANE_GROUP": "หนึ่งช่องจราจรมี protected group หรือ permitted group มากกว่าหนึ่งกลุ่ม"
+  "NEMA_LANE_GROUP": "หนึ่งช่องจราจรมี protected group หรือ permitted group มากกว่าหนึ่งกลุ่ม",
+  "editorTransitionTemplate": "แบบช่วงเปลี่ยนหน้าตัด",
+  "editorCrossingTransition": "ช่วงเปลี่ยนหน้าตัด",
+  "editorTransitionNone": "เลือกแบบช่วงเปลี่ยนหน้าตัด…",
+  "editorFindCrossingsTransitionsDone": "สร้างทางแยก %1 จุด และช่วงเปลี่ยนหน้าตัด %2 จุด; บันทึกทางข้ามต่างระดับ %3 จุด",
+  "TRANSITION_TEMPLATE_REQUIRED": "เลือกแบบช่วงเปลี่ยนหน้าตัดก่อนยืนยันแถวนี้",
+  "TRANSITION_ARMS": "ช่วงเปลี่ยนหน้าตัดต้องมีทิศทางที่ต่อกันได้บนช่วงถนนสองช่วงซึ่งต่อปลายกับต้น",
+  "TRANSITION_TAPER_RANGE": "taper ต้องอยู่ในช่วงถนนขาเข้าทั้งหมด",
+  "TRANSITION_TAPER_OUTSIDE": "Node ต้องครอบ taper ในขาเข้าทั้งหมด ให้ขยายรูป Node หรือกรอก taper ที่สั้นลง"
 }

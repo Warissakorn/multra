@@ -31,7 +31,20 @@ std::vector<ValidationIssue> junctionTemplateIssues(const JunctionTemplate& t, c
     const auto bad = [&](const std::string& field) { issues.push_back({"JUNCTION_TEMPLATE_INVALID",path+"."+field}); };
     if (blank(t.id)) bad("id");
     if (blank(t.name)) bad("name");
-    if (t.kind != "junction") bad("kind"); // transition structure is J5
+    if (t.kind == "transition") {
+        if(t.legs!=2)bad("legs");
+        if(!t.control.empty())bad("control");
+        if(!t.phasing.empty())bad("phasing");
+        if(!t.roles.empty())bad("roles");
+        for(const auto* direction:{"forward","backward"})if(!t.directions.contains(direction))bad(std::string("directions.")+direction+".align");
+        for(const auto& [direction,side]:t.directions) {
+            if(direction!="forward"&&direction!="backward")bad("directions."+direction);
+            if(side!=PocketSide::kerb&&side!=PocketSide::far)bad("directions."+direction+".align");
+        }
+        return issues;
+    }
+    if (t.kind != "junction") bad("kind");
+    if (!t.directions.empty())bad("directions");
     if (t.legs != 3 && t.legs != 4) bad("legs");
     if (t.control != "signalised" && t.control != "twoWayStop" && t.control != "allWayStop") bad("control");
     const std::set<std::string> presets{"P1","P2","P3","P4"};

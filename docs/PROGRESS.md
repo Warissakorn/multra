@@ -6,6 +6,30 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J5 transition implementation (D406)
+
+- **Owner B34:** taper entirely upstream, Transition-only selector in J5, two symmetric
+  installed alignments and owned mixed directions. J4T remains documentation only (D405).
+- **Implemented:** strict transition catalog shape and schema-63 field guards; old recipe
+  fields keep their existing floors. Differing end-to-start pairs are Transition rows; the
+  selector starts empty and Confirm needs a choice. Confirm and fill each use one Command.
+- **Geometry:** cut the incoming arm at its entered centreline taper, keep the outgoing start,
+  map aligned lanes one-to-one, then merge/diverge the extra lanes on the opposite side.
+  Existing merge order/defaults, generated/refine and named reference protection apply.
+  No Node kind/layout is duplicated, no site length is defaulted, no core/HCM method changes.
+- **Tests first:** the first three JT10 cases failed on the loader, missing row and fill.
+  Extended cases cover both driving sides, mixed alignment, one-way/unused site values,
+  bounds/missing values, generated replacement/refine, stationed heads and full JSON Undo.
+- **Docs/UI:** PROJECT_SCHEMA, street workflow, module maps and OWNER_SITTING E28 updated.
+  Street segment/transition Qt test registration was split before the 500-line limit.
+- **Fixture corrections:** allocate new Node ids through the API; a detailed two-leg layout
+  still has approaches, while HCM refuses its unsignalised control. Micro compilation needs
+  inputs and emits conflict zones for authored merges, not legacy priority rules.
+- **Verification:** desktop build, native JT10 **9/9**, and the new Qt selector test on both
+  driving sides pass. CTest **253/253** (253.04 s) and `check` **253/253** (241.42 s) pass. CLI output
+  matches before/after except the single `buildCommit`. Headless is not configured. Linux,
+  GCC 14.2.0/Qt 6.8.2 offscreen; Windows/manual UI were not run (E28). Stop for J5 review.
+
 ## 2026-10-30 — J5 preparation and signalised T booking (D405)
 
 - **Asked:** J4 5ab3ea3 approved; start J5 transitions, then stop for review. Add B33 for
@@ -195,23 +219,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Verified:** desktop build and focused suite 9/9 pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen).
   Full CTest and `check` pass 248/248 each. CLI Node analysis is byte-identical apart from `buildCommit`.
   No new UI or fields; headless is unconfigured and Windows was not run.
-
-## 2026-10-29 — Kerb/far pockets and derived junction layouts (D391, D392, M14 J2)
-
-- **Asked:** continue J2 only on `claude/upbeat-ptolemy-qe1x84`, stop for review, no PR; owner
-  approved the two clarifications ("ได้ เอาตามแนะนำ"): physical taper then storage, 45°/135° naming.
-- **Changed:** `addTurnPocket` draws a kerb/far widening taper and full-width storage, on both
-  driving sides, inside one Command. Original lane footprints, route/head ids, external heads,
-  boundary/taper heads and one-step Undo/Redo survive. The legacy split tool is unchanged.
-  An implied route continues along the ordinary path of a widening Connector, preserving its
-  old outer lane; two ordinary bridges remain ambiguous, explicit Connector selection unchanged.
-- **Derived:** `approachLayout` gives lane turns/widths/stop lines, pocket storage/taper (also over
-  a bend and a later split), travel bearings and NB/EB/SB/WB + L/T/R. Duplicate/tied directions
-  and U-turns are refused; per-call direction overrides change only labels. J3/J6 own persistence/UI.
-- **Decided:** D391 uses existing geometry/fields and generated/refine, so no schema step; 61 is
-  still unused. D392 fixes 45°/135° boundaries; HCM's current lane-group/storage derivation is
-  retained pending NA1–NA23 byte parity and B29 (e).
-- **Verified:** Linux desktop build (CMake 3.31.6, GCC 14.2.0, Qt 6.8.2 offscreen), CTest
-  **248/248** (247 + `junctionlayout`, seven new cases). JT3/JT4 failed before implementation;
-  `check` also passes 248/248. `multra-cli --node-analysis` output is byte-identical before/after except
-  `buildCommit`. No new UI or Windows appearance claim; headless has no configured build.

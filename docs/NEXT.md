@@ -47,11 +47,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **J4 is approved at 5ab3ea3; work on J5 transitions only, then stop for review.** Re-read
-  [JUNCTION_TEMPLATES §7/JT10](reference/JUNCTION_TEMPLATES.md) before implementation. Resolve
-  [OWNER_SITTING B34](plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each): taper placement
-  and transition selection/catalog questions asked on 2026-10-30, before code. JT10 is not
-  implemented; no transition field/schema/code is added at this checkpoint.
+- **Current stop: J5 is implemented (D406, JT10 passing); await the owner's review.** Do not
+  start J6 or J4T before approval. J4 is approved at 5ab3ea3. B34 is answered: taper entirely
+  upstream, Transition-only selector, two symmetric installed templates and owned mixed directions;
+  [JUNCTION_TEMPLATES §7](reference/JUNCTION_TEMPLATES.md) is the contract. Do not re-ask these choices.
+  New owned transition structure uses schema 63; existing recipe fields keep their earlier floors.
   The fill dialog's generatedCommand mode and JT13 remain accepted; J3b is approved at a52476b.
 - **B33 is answered (D405):** book J4T before U1: one protected three-stage signalised T
   preset, existing compass NEMA numbers with unused phases omitted, 2/6 at zero. Its own
@@ -62,7 +62,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   timings remain required. No timing default or writer is authorized.
 - **B31 is answered (D399):** all-way-stop generation waits until A5 or U1 needs it. Keep the
   row listed but disabled with `FILL_NODE_ALL_WAY_STOP`; do not extend StopControl or consume
-  schema 63 for it now. Link.generated uses 62; 63 remains unused. Do not re-ask B31 in J4.
+  schema 63 for all-way stop. Link.generated uses 62; J5 transition structure uses 63. Do not re-ask B31 in J4.
 - **Boundaries to retain:** J4 requires complete site timing (D404); full-lane mismatch
   refuses with existing → required counts. An orthogonal T with a wide median can leave a
   touching through pair and stays `EDIT_CONNECTOR_GAP` (D400), with no invented cut length.
@@ -84,7 +84,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   junction's generated Links* aid that identifies shared Links/affected neighbours, or make the
   Command corridor-aware and keep both ends consistent. Docs only in J4; no J6 code or selection
   aid is implemented yet. Retain the recovery's attached-object and shared-leg warnings.
-- Later, each only after approval: J5 transitions, J6 editor surfaces, J7 analysis panel/results
+- Later, each only after approval: J6 editor surfaces, J7 analysis panel/results
   (which may need two stops), then U1–U3 once U0's answers are in.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
   `approachLayout` and UTDF's Lanes read.

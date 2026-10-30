@@ -41,6 +41,7 @@ Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCat
     const auto found=std::find_if(pool.begin(),pool.end(),[&](const auto& t){return t.id==recipe.templateId;});
     if(found==pool.end()){bad("JUNCTION_TEMPLATE_UNKNOWN",at+".templateId");return result;}
     const auto type=*found;
+    if(type.kind=="transition")return transitionPlan(original,selected,catalogs,type);
     if(type.control=="allWayStop")bad("FILL_NODE_ALL_WAY_STOP",at+".templateId"); // B31: deferred until A5 or U1 needs it
     if(const auto invalid=junctionTemplateIssues(type,at+".templateId");!invalid.empty()){result.issues=invalid;return result;}
     if(type.control=="signalised") {

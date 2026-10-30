@@ -1,0 +1,13 @@
+    # S3.3b (D307): the StreetSegment tool, the StreetSegments and Cross-sections tabs.
+    add_executable(multra-street-segment-ui-tests ../../tests/street_segment_ui_tests.cpp)
+    target_link_libraries(multra-street-segment-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-street-segment-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME street-segment-ui COMMAND multra-street-segment-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(street-segment-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check multra-street-segment-ui-tests)
+    add_executable(multra-transition-ui-tests ../../tests/transition_ui_tests.cpp)
+    target_link_libraries(multra-transition-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-transition-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME transition-ui COMMAND multra-transition-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(transition-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check multra-transition-ui-tests)

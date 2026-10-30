@@ -80,7 +80,7 @@ TEST(junctiontemplates, jt5_valid_templates_keep_structure_and_optional_side) {
 TEST(junctiontemplates, jt5_installed_structural_set_is_deterministic) {
     AuthoringDefinition d; InputManifest manifest;
     const auto a = resolveJunctionTemplates(d,test::root()/"data",&manifest);
-    CHECK(a.size() == 12);
+    CHECK(a.size() == 14);
     std::set<std::string> ids, presets;
     std::string previous;
     for (const auto& [t,path] : a) {
@@ -92,7 +92,7 @@ TEST(junctiontemplates, jt5_installed_structural_set_is_deterministic) {
     }
     CHECK(presets == std::set<std::string>{"P1","P2","P3","P4"});
     CHECK(resolveJunctionTemplates(d,test::root()/"data").size() == a.size());
-    CHECK(manifest.json().at("files").size() == 12);
+    CHECK(manifest.json().at("files").size() == 14);
 }
 TEST(junctiontemplates, jt5_installed_and_owned_invalid_entries_keep_their_paths) {
     CatalogDirectory catalog;
@@ -123,7 +123,7 @@ TEST(junctiontemplates, jt5_duplicate_ids_and_broken_json_are_refused_by_filenam
 }
 TEST(junctiontemplates, jt5_shipped_protected_far_turns_have_separate_rows) {
     const auto templates = resolveJunctionTemplates(AuthoringDefinition{},test::root()/"data");
-    CHECK(templates.size() == 12); // forcing: the installed set, not an absent catalog
+    CHECK(templates.size() == 14); // forcing: the installed set, not an absent catalog
     std::size_t checked = 0;
     for (const auto& [t,path] : templates) {
         (void)path;

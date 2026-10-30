@@ -56,9 +56,24 @@ Json junctionLanesJson(const std::vector<JunctionLane>& lanes) {
     return j;
 }
 JunctionTemplate parseJunctionTemplate(const Json& j, const std::string& path) {
-    keys(j,{"id","name","kind","legs","control","phasing","roles"},path);
+    keys(j,{"id","name","kind","legs","control","phasing","roles","directions"},path);
     JunctionTemplate t;
     t.id = text(j,"id",path); t.name = text(j,"name",path); t.kind = text(j,"kind",path);
+    if(t.kind=="transition") {
+        keys(j,{"id","name","kind","legs","directions"},path);
+        if(!j.contains("legs")||!j.at("legs").is_number_integer()||j.at("legs")!=2)invalid(path+".legs");
+        t.legs=2;
+        if(!j.contains("directions")||!j.at("directions").is_object())invalid(path+".directions");
+        for(const auto& [direction,row]:j.at("directions").items()) {
+            const auto at=path+".directions."+direction;
+            keys(row,{"align"},at);const auto side=text(row,"align",at);
+            if(side!="kerb"&&side!="far")invalid(at+".align");
+            t.directions[direction]=side=="kerb"?PocketSide::kerb:PocketSide::far;
+        }
+        if(auto issues=junctionTemplateIssues(t,path);!issues.empty())throw ValidationError(std::move(issues));
+        return t;
+    }
+    if(j.contains("directions"))invalid(path+".directions");
     if (!j.contains("legs") || !j.at("legs").is_number_integer() || (j.at("legs") != 3 && j.at("legs") != 4)) invalid(path+".legs");
     t.legs = j.at("legs").get<int>(); t.control = text(j,"control",path);
     if (j.contains("phasing")) {
@@ -71,6 +86,11 @@ JunctionTemplate parseJunctionTemplate(const Json& j, const std::string& path) {
     return t;
 }
 Json junctionTemplateJson(const JunctionTemplate& t) {
+    if(t.kind=="transition") {
+        Json j{{"id",t.id},{"name",t.name},{"kind",t.kind},{"legs",t.legs},{"directions",Json::object()}};
+        for(const auto& [direction,side]:t.directions)j["directions"][direction]={{"align",side==PocketSide::kerb?"kerb":"far"}};
+        return j;
+    }
     Json j{{"id",t.id},{"name",t.name},{"kind",t.kind},{"legs",t.legs},{"control",t.control},{"roles",Json::object()}};
     if (!t.phasing.empty()) j["phasing"] = t.phasing;
     for (const auto& [role,rows] : t.roles) j["roles"][role] = junctionLanesJson(rows);
@@ -105,6 +125,22 @@ std::vector<ResolvedJunctionTemplate> resolveJunctionTemplates(const AuthoringDe
 bool usesJunctionFields(const ProjectDocument& d) {
     return (d.definition && !d.definition->externalJunctionTemplates) ||
         std::any_of(d.network.nodes.begin(),d.network.nodes.end(),[](const auto& n) { return n.junction || !n.approachDirections.empty(); });
+}
+bool usesTransitionFields(const ProjectDocument& d) {
+    return d.definition&&!d.definition->externalJunctionTemplates&&
+        std::any_of(d.definition->junctionTemplates.begin(),d.definition->junctionTemplates.end(),[](const auto& t){return t.kind=="transition"||!t.directions.empty();});
+}
+void rejectTransitionFieldsBefore63(const Json& j) {
+    if(!j.contains("definition")||!j.at("definition").is_object())return;
+    const auto& def=j.at("definition");
+    if(!def.contains("junctionTemplates")||!def.at("junctionTemplates").is_array())return;
+    const auto& templates=def.at("junctionTemplates");
+    for(std::size_t i=0;i<templates.size();++i) {
+        const auto& t=templates[i];if(!t.is_object())continue;
+        const auto at="definition.junctionTemplates["+std::to_string(i)+"]";
+        if(t.contains("directions"))throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",at+".directions"}});
+        if(t.contains("kind")&&t.at("kind")=="transition")throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",at+".kind"}});
+    }
 }
 void rejectJunctionFieldsBefore61(const Json& j) {
     const auto refuse = [](const std::string& path) { throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path}}); };

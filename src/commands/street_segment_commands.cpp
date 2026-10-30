@@ -223,6 +223,26 @@ std::string splitStreetSegment(ProjectDocument& d, const std::string& streetSegm
 }
 std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<StreetSegmentCrossing>& crossings, const std::vector<CrossingChoice>& choices,
                                         double tolerance, const std::vector<CrossSection>& installed) {
+    return applyCrossings(d,crossings,choices,tolerance,installed,{},{});
+}
+std::vector<std::string> applyCrossings(ProjectDocument& d,const std::vector<StreetSegmentCrossing>& crossings,const std::vector<CrossingChoice>& choices,
+    double tolerance,const std::vector<CrossSection>& installed,const std::vector<std::optional<NodeJunction>>& recipes,
+    const std::vector<JunctionTemplate>& installedJunctions) {
+    if(!recipes.empty()&&recipes.size()!=crossings.size())throw std::invalid_argument("EDIT_CROSSING_CHOICES");
+    const auto& junctionPool=d.definition&&!d.definition->externalJunctionTemplates?d.definition->junctionTemplates:installedJunctions;
+    for(std::size_t i=0;i<crossings.size()&&i<choices.size();++i) {
+        const bool transition=choices[i]==CrossingChoice::transition;
+        if(choices[i]!=CrossingChoice::junction&&choices[i]!=CrossingChoice::overpass&&!transition)throw std::invalid_argument("EDIT_CROSSING_CHOICES");
+        if(transition!=crossings[i].transition)throw std::invalid_argument("EDIT_CROSSING_CHOICES");
+        if(!transition) {
+            if(!recipes.empty()&&recipes[i])throw std::invalid_argument("EDIT_CROSSING_CHOICES");
+            continue;
+        }
+        if(recipes.empty()||!recipes[i])throw std::invalid_argument("TRANSITION_TEMPLATE_REQUIRED");
+        const auto t=std::find_if(junctionPool.begin(),junctionPool.end(),[&](const auto& x){return x.id==recipes[i]->templateId;});
+        if(t==junctionPool.end()||t->kind!="transition")throw std::invalid_argument("TRANSITION_TEMPLATE_REQUIRED");
+        if(auto issues=junctionTemplateIssues(*t,"transition.template");!issues.empty())throw ValidationError(std::move(issues));
+    }
     if (crossings.size() != choices.size() || !std::isfinite(tolerance) || tolerance <= 0) throw std::invalid_argument("EDIT_CROSSING_CHOICES");
     for (std::size_t i = 0; i < crossings.size(); ++i) {
         if (choices[i] != CrossingChoice::overpass) continue;
@@ -250,7 +270,7 @@ std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<St
     const auto& pool = d.definition && !d.definition->externalCrossSections ? d.definition->crossSections : installed;
     std::vector<std::string> nodes;
     for (std::size_t i = 0; i < crossings.size(); ++i) {
-        if (choices[i] != CrossingChoice::junction) continue;
+        if (choices[i] != CrossingChoice::junction&&choices[i]!=CrossingChoice::transition) continue;
         const auto at = crossings[i].at;
         double half = 0, widest = 0;
         for (const auto& [id, s] : here(at, crossings[i].level)) {
@@ -279,7 +299,9 @@ std::vector<std::string> applyCrossings(ProjectDocument& d, const std::vector<St
             const double angle = 2 * std::numbers::pi * k / 16;
             polygon.push_back({at.x + radius * std::cos(angle), at.y + radius * std::sin(angle)});
         }
-        nodes.push_back(putNode(d, {"", "", std::move(polygon), true}));
+        Node value{"", "", std::move(polygon), true};
+        if(choices[i]==CrossingChoice::transition)value.junction=recipes[i];
+        nodes.push_back(putNode(d,std::move(value)));
     }
     return nodes;
 }

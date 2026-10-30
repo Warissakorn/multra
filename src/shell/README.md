@@ -74,4 +74,4 @@ The other headers:
 
 The `tests/*_ui_tests.cpp` executables and the automation tests (`tests/automation_*_tests.cpp`,
 `tests/editor_automation_tests.cpp`, `tests/desktop_automation_process_tests.cpp`), registered in
-`src/shell/CMakeLists.txt`.
+`src/shell/CMakeLists.txt`; Street segment/transition UI test targets are in `street_segment_tests.cmake`.
