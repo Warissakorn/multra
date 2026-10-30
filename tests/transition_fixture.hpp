@@ -27,6 +27,17 @@ inline ProjectDocument ready(DrivingSide side=DrivingSide::left,const std::strin
     recipe.legs["west"].taper={30};recipe.legs["east"].taper={40};
     setNodeJunction(d,id,recipe);return d;
 }
+inline void findAndGenerate(History& h,DrivingSide side,double taper,const std::string& templateId="transition-kerb") {
+    h.reset(source(side,false));const auto found=findCrossings(h.document().network,2);
+    CHECK(found.size()==1&&found[0].transition&&found[0].legs==2);
+    NodeJunction recipe;recipe.templateId=templateId;
+    CHECK(h.execute("Find crossings",[&](auto& d){const auto c=catalogs(d);
+        applyCrossings(d,found,{CrossingChoice::transition},2,c.templates,{recipe},c.junctionTemplates);}));
+    CHECK(h.document().network.nodes.size()==1&&node(h.document()).generated);
+    CHECK(h.execute("F3",[&](auto& d){for(const auto& r:d.network.streetSegments)applyTemplate(d,r.id,catalogs(d).templates);},true));
+    // Site data only; the generated polygon is untouched. The recipe editor remains J6.
+    CHECK(h.execute("Site tapers",[&](auto& d){for(const auto& r:d.network.streetSegments)node(d).junction->legs[r.id].taper={taper};}));
+}
 inline std::size_t laneIndex(const Link& l,const std::string& id) {
     const auto p=std::find_if(l.lanes.begin(),l.lanes.end(),[&](const auto& x){return x.id==id;});
     CHECK(p!=l.lanes.end());return static_cast<std::size_t>(p-l.lanes.begin());

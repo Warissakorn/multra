@@ -344,13 +344,15 @@ nothing. Numbers are not reused.
    edit a head/controller, and attach a queue counter: replacement must name the edited or
    attached object. This does not confirm U0 interoperability. Recipe UI remains J6. *Owner:*
 
-28. **J5 transitions** (listed 2026-10-30, D406). On Windows at 100/150/200 %, Thai and English,
+28. **J5 transitions** (listed/revised 2026-10-30, D406, D407). On Windows at 100/150/200 %, Thai and English,
    draw end-to-start 3-lane and 2-lane Street segments. Find crossings must show Transition,
    initially unselected, with Confirm disabled until its template is chosen. Cancel changes
    nothing; Confirm creates the recipe-bearing Node in one Undo, with no taper default. Use a
-   saved recipe with explicit tapers, enlarge the polygon if needed, run F3 then Fill defaults,
-   and inspect both driving sides: the whole taper is upstream, kerb alignment drops the far
-   lane, far alignment drops the kerb lane, and one Undo restores the full document. Inspect
+   saved recipe with explicit 15/30/60 m tapers, run F3 then Fill defaults: no manual polygon edit
+   is needed while the Node is generated. Inspect both driving sides: the enlarged polygon covers
+   both tapers and Connectors, the whole taper is upstream, kerb alignment drops the far lane,
+   far alignment drops the kerb lane, and one Undo restores the polygon and full document. Edit
+   a polygon, then request a longer taper: outside refusal must name that polygon. Inspect
    missing/range/outside messages and dialog buttons on a small screen. Recipe editing remains
    J6; fill before placing stationed measurements. *Owner:*
 

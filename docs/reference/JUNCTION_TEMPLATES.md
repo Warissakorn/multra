@@ -299,7 +299,8 @@ EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driv
 
 **B34 answered (D406).** Put the entire entered taper in the incoming arm, before the join,
 measured along that Street segment's centreline. Keep the existing alignment; refuse a Link
-that is too short or a Node that cannot contain the taper. Forward follows the end-to-start
+that is too short. D407 supersedes the original Node-space refusal for a still-generated Node:
+the fill enlarges its polygon; a person's polygon still refuses. Forward follows the end-to-start
 centrelines; backward is the reverse. `junction.legs.<id>.taper[0]` serves that incoming arm.
 The installed set begins with two templates, kerb/kerb and far/far; owned entries can mix them:
 `{ "id": "transition-kerb", "name": "Kerb aligned", "kind": "transition", "legs": 2,
@@ -316,11 +317,20 @@ Links and new Connectors/merge controls generated, and reuses the generated-only
 and named reference guards from §5. Aligned lanes are drawn first; extra lanes retain the
 existing merge drawing-order/default rules. The entered taper is the cut retreat on the
 incoming centreline, not the Connector's curved arc length. Re-apply and Undo cover the entire
-document. F3 is required; missing taper, inadequate Link/Node space, unmatched directions and
+document. F3 is required; missing taper, inadequate Link/edited-Node space, unmatched directions and
 inapplicable site fields refuse without mutation. One-way matching arms need only their
 incoming taper. Equal-section free ends are not new Transition rows, and the existing
 same-template two-leg lifecycle still merges when a Node becomes eligible (STREET_SEGMENTS_IMPLEMENTED §20). No HCM
 transition method or UTDF writer is added; existing node analysis keeps its unsignalised refusal.
+
+**J5 review (D407).** A Node from Find crossings that is still `generated` needs no manual polygon
+edit: Fill enlarges it to the convex hull of its original polygon and both tapers' cut points,
+Connector spines and painted rails, padded by the widest attached lane as for suggested Nodes.
+This keeps the cuts inside and the external Link ends outside; inadequate arm space still refuses.
+The polygon remains generated. Preview changes nothing; polygon, Links, Connectors and controls
+apply in the same Command and one Undo. If `Node.generated` is false, no polygon is enlarged:
+`TRANSITION_TAPER_OUTSIDE` names `network.nodes[index].polygon`; enlarge that polygon or shorten
+the entered taper. Recipe selection/refine keeps its existing ownership rules. No new field or schema.
 
 ## 8. NEMA numbering of signal groups
 
@@ -465,7 +475,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT7 | J3 | Each missing site value is listed with its code and not applicable; Undo restores every byte; *Apply again* after a person's edit is `JUNCTION_EDITED`; full-lane counts, schema-62 paths, manual refine/copy/split, generated replacement, S5 marking, rank fallback, named cut/reference refusals, orthogonal-T limitation, guarded Street segment Apply template and Undo → cross-section → fill recovery (`tests/junction_fill_tests.cpp`, `tests/junction_fill_completion_tests.cpp`, **passing**; all-way-stop generation deferred) |
 | JT8 | J3 | The applied two-way-stop junction runs in Micro (seed 42) with no refusal on both driving sides. Existing manual signal Commands, used only in this test (D397), let NODE_ANALYSIS find all 10 lane groups and 12 turns (`tests/junction_fill_run_tests.cpp`, **passing**); template signals are covered separately by JT9 |
 | JT9 | J4 | P1–P4 on both driving sides, both major axes and pocket variants: exact entered timing, clearance/wait split, missing/grid/cycle refusals, broken barrier/ring/head and protected-lane codes; compiled HCM g/C, P3 protected result and Micro seed 42; generated/refine and safe replacement with full JSON Undo/Redo (`tests/junction_signal*_tests.cpp`, **passing**, 9 cases) |
-| JT10 | J5 | 3→2 Transition row, upstream taper and kerb/far/mixed mapping on both driving sides; schema-63/older-field guards; missing/bounds/unused-site refusals; same-template lifecycle merge; generated replacement/refine, stationed-head protection and exact JSON Undo/Redo; ordinary Micro compilation and existing HCM refusal. Required selector, Cancel and one Undo driven in Qt (`tests/transition_tests.cpp`, `tests/transition_reference_tests.cpp`, `tests/transition_ui_tests.cpp`; **passing**, 9 native cases plus UI on both sides) |
+| JT10 | J5 | 3→2 Transition row, upstream taper and kerb/far/mixed mapping on both driving sides; Find crossings → applyCrossings → F3 → 15/30/60 m tapers → Fill enlarges the generated polygon to contain Connector rails, with unchanged preview, save/reopen, re-apply and one exact JSON Undo/Redo; an edited polygon refuses atomically at its polygon path. Schema-63/older-field guards; missing/bounds/unused-site refusals; same-template lifecycle merge; generated replacement/refine, stationed-head protection; ordinary Micro compilation and existing HCM refusal. Required selector, Cancel and one Undo driven in Qt (`tests/transition_tests.cpp`, `tests/transition_reference_tests.cpp`, `tests/transition_ui_tests.cpp`; **passing**, 11 native cases plus UI on both sides) |
 | JT11 | J6 | Editing a generated Connector gives `SEAM_JUNCTION_DIFFERS`; *Apply again* and *Detach* each fix it in one Undo step |
 | JT12 | J7 | The panel writes `Node::analysis` in one Undo step; *Analyse* matches `--node-analysis` byte for byte |
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |

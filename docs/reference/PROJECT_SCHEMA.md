@@ -469,3 +469,5 @@ schema-61 recipe. Barrier waiting and NEMA layout/check results are derived, nev
 J5 stores no duplicate Node kind or applied layout. A transition using installed catalog data
 keeps its existing recipe/taper fields at 61 (generated Links at 62); only new owned catalog
 structure selects 63. Old junction templates still write their earlier shapes and floors.
+The J5 review (D407) enlarges only a still-generated transition Node's existing polygon during
+Fill, preserving its generated flag; it adds no stored field or schema step.

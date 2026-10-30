@@ -6,6 +6,29 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J5 review: generated transition polygon (D407)
+
+- **Fixed:** the real Find crossings → Transition → F3 → explicit tapers → Fill workflow
+  enlarges a still-generated Node polygon around both tapers and Connector rails, with its
+  Links, Connectors and controls in the same Command and one Undo. A person's polygon stays
+  unchanged and refuses outside tapers at `network.nodes[index].polygon`.
+- **Envelope:** reuse the convex hull and widest-attached-lane padding convention from
+  suggested Nodes (D265); preserve the old polygon and generated flag, keep external legs,
+  and retain atomic reference guards. No new stored field/schema, timing default or core change.
+- **Tests first:** the new end-to-end JT10 row failed on the actual generated polygon on
+  both driving sides; the edited-polygon and existing outside row failed on the missing
+  polygon path. All 11 native cases now pass, including 15/30/60 m, kerb/far, painted rails,
+  unchanged preview, re-apply, save/reopen and complete JSON Undo/Redo. No ±60 m fixture is used
+  for the new workflow. Frozen JT13 files are unchanged.
+- **Docs:** §7/JT10, generated/schema/street references, D407/index and Windows E28 updated:
+  no manual polygon edit is needed for a generated Node. Archived the oldest whole PROGRESS
+  entry, retaining ten. Stop for J5 review; no J6, J4T or UTDF writer work.
+- **Verified:** desktop build, JT10 **11/11** and Qt transition selector on both driving
+  sides pass on Linux (GCC 14.2.0/Qt 6.8.2 offscreen). CTest **253/253** (450.41 s) and
+  `check` **253/253** (241.64 s) pass, including architecture, file-size and documentation
+  guards. CLI node-analysis output matches except `buildCommit`. Headless is not configured;
+  Windows and manual UI driving were not run (E28).
+
 ## 2026-10-30 — J5 transition implementation (D406)
 
 - **Owner B34:** taper entirely upstream, Transition-only selector in J5, two symmetric
@@ -204,18 +227,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   (GCC 14.2.0, Qt 6.8.2 offscreen). CLI Node analysis before/after is byte-identical except
   `buildCommit`. Headless is not configured; Windows and manual UI driving were not run.
   No new editor surface.
-
-## 2026-10-29 — J2 review: preserve authored ambiguity and stop pockets at Nodes (D391)
-
-- **Asked:** fix the two J2 review items, update D391, verify and push; stop again before J3a.
-- **Fixed:** only `addTurnPocket`'s still-generated 1→2 widening skips its zero-source-width
-  path in an implied Link-to-Link step. Hand-drawn/refined widenings retain pre-J2 ambiguity;
-  explicit Connector selection remains unchanged.
-- **Fixed:** `pocketOf` stops before a Connector with an inside run in any Node, including a
-  straight-through movement. A pocket lane upstream of a junction is not a pocket at the next.
-- **Rows:** both new JT3 regressions failed first after asserting their setup: a hand-drawn 1→2
-  really has a zero-width source path; the straight continuation really belongs to the first
-  Node and that Node's pocket exists. Both driving sides, and kerb/far pockets, are covered.
-- **Verified:** desktop build and focused suite 9/9 pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen).
-  Full CTest and `check` pass 248/248 each. CLI Node analysis is byte-identical apart from `buildCommit`.
-  No new UI or fields; headless is unconfigured and Windows was not run.

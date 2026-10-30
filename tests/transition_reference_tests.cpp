@@ -1,6 +1,7 @@
 #include "transition_fixture.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/model/network/polygon.hpp"
+#include "../src/model/network/connector_surface.hpp"
 using namespace multra;
 using namespace transitionTest;
 TEST(transitions,jt10_confirm_requires_explicit_template_and_keeps_site_empty) {
@@ -17,6 +18,40 @@ TEST(transitions,jt10_confirm_requires_explicit_template_and_keeps_site_empty) {
         const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
     }
 }
+TEST(transitions,jt10_find_crossings_fill_enlarges_generated_polygon_in_one_undo) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right})for(const double taper:{15.,30.,60.})for(const auto* type:{"transition-kerb","transition-far"}) {
+        History h;findAndGenerate(h,side,taper,type);const auto& beforeNode=node(h.document());
+        CHECK(beforeNode.generated&&h.document().network.links.size()==4&&nodeLinkLegs(h.document().network,beforeNode).size()==4);
+        CHECK(!pointInPolygon(beforeNode.polygon,{-taper,0})&&!pointInPolygon(beforeNode.polygon,{taper,0}));
+        const auto polygon=beforeNode.polygon;const auto before=bytes(h.document());
+        const auto out=offers(h.document());CHECK(out.size()==1&&out[0].refusal.empty());CHECK(bytes(h.document())==before);
+        apply(h);const auto& d=h.document();const auto& n=d.network;const auto& grown=node(d);
+        CHECK(grown.generated&&grown.polygon!=polygon&&simplePolygon(grown.polygon));
+        for(const auto p:polygon)CHECK(pointInPolygon(grown.polygon,p));
+        CHECK(n.connectors.size()==6&&nodeLinkLegs(n,grown).size()==4);
+        for(const auto& c:n.connectors) {
+            const auto runs=polygonRuns(c.geometry,grown.polygon);CHECK(runs.size()==1&&runs[0].inside);
+            const auto surface=connectorSurface(n,c);CHECK(!surface.boundaries.empty());
+            for(const auto& rail:surface.boundaries)for(const auto p:rail)CHECK(pointInPolygon(grown.polygon,p));
+            const auto& from=link(d,c.from.linkId);test::near(from.geometry.back().x,from.streetSegmentId==std::optional<std::string>{"west"}?-taper:taper);
+        }
+        const auto layout=approachLayout(n,grown);CHECK(layout.issues.empty()&&layout.approaches.size()==2&&layout.movements.size()==2);
+        const auto enlarged=grown.polygon;const auto after=bytes(d);CHECK(bytes(parseDocument(after))==after);
+        h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+        apply(h);CHECK(node(h.document()).polygon==enlarged&&h.document().network.connectors.size()==6);
+    }
+}
+TEST(transitions,jt10_edited_generated_polygon_refuses_at_polygon_atomically) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;findAndGenerate(h,side,30);
+        CHECK(h.execute("Edit polygon",[&](auto& d){auto value=node(d);value.polygon[0].x-=1;putNode(d,value);}));
+        CHECK(!node(h.document()).generated&&!pointInPolygon(node(h.document()).polygon,{-30,0}));
+        const auto before=bytes(h.document());const auto out=offers(h.document());
+        CHECK(out.size()==1&&issue(out[0].issues,"TRANSITION_TAPER_OUTSIDE","network.nodes[0].polygon"));
+        test::throws([&]{h.execute("Fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"TRANSITION_TAPER_OUTSIDE");
+        CHECK(bytes(h.document())==before);h.undo();CHECK(node(h.document()).generated);
+    }
+}
 TEST(transitions,jt10_missing_short_and_outside_tapers_are_atomic) {
     for(const auto side:{DrivingSide::left,DrivingSide::right})for(const int change:{0,1,2}) {
         auto d=ready(side);auto& value=node(d).junction->legs["west"].taper[0];
@@ -26,7 +61,7 @@ TEST(transitions,jt10_missing_short_and_outside_tapers_are_atomic) {
         CHECK(change==0?!value:change==1?*value==200:!pointInPolygon(node(d).polygon,{-*value,0}));
         const auto before=bytes(d);History h;h.reset(d);const auto out=offers(d);CHECK(out.size()==1);
         const std::string code=change==0?"JUNCTION_TAPER_MISSING":change==1?"TRANSITION_TAPER_RANGE":"TRANSITION_TAPER_OUTSIDE";
-        CHECK(issue(out[0].issues,code,"taper[0]"));
+        CHECK(issue(out[0].issues,code,change==2?"network.nodes[0].polygon":"taper[0]"));
         test::throws([&]{h.execute("fill",[&](auto& x){generateJunction(x,node(x).id,catalogs(x));},true);},code);
         CHECK(!h.canUndo()&&bytes(h.document())==before);
     }

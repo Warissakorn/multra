@@ -1318,5 +1318,5 @@
   "TRANSITION_TEMPLATE_REQUIRED": "Choose a transition template before confirming this row.",
   "TRANSITION_ARMS": "A transition needs matching directions on two Street segments joined end to start.",
   "TRANSITION_TAPER_RANGE": "The transition taper must fit in the incoming Street segment.",
-  "TRANSITION_TAPER_OUTSIDE": "The Node must contain the entire incoming transition taper. Enlarge its polygon or enter a shorter taper."
+  "TRANSITION_TAPER_OUTSIDE": "The edited Node polygon must contain the entire incoming taper and its Connectors. Enlarge the polygon or enter a shorter taper."
 }
