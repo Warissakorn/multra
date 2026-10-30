@@ -47,20 +47,25 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Current stop: J5's polygon capture guard is implemented (D408, JT10 passing); await the owner's review.**
-  Find crossings → F3 → explicit 15/30/60 m tapers → Fill now enlarges a still-generated Node's
-  polygon with its Connectors in one Undo, on both driving sides. A person's polygon remains
-  `TRANSITION_TAPER_OUTSIDE` at `network.nodes[index].polygon`; no manual enlargement is needed
-  for a generated Node (OWNER_SITTING E28). Enlargement refuses any new Link leg with
-  `TRANSITION_POLYGON_CAPTURES` at the captured Link: shorten the taper or draw the polygon
-  by hand. Refusal leaves document/History unchanged; neighbouring-Node `NODE_OVERLAP` stays.
-  The side-road y=12 refusal and y=25 outside control pass on both driving sides. No new
-  field/schema. Do not start J6 or J4T before
-  approval. J4 is approved at 5ab3ea3. B34 is answered: taper entirely
-  upstream, Transition-only selector, two symmetric installed templates and owned mixed directions;
-  [JUNCTION_TEMPLATES §7](reference/JUNCTION_TEMPLATES.md) is the contract. Do not re-ask these choices.
-  New owned transition structure uses schema 63; existing recipe fields keep their earlier floors.
-  The fill dialog's generatedCommand mode and JT13 remain accepted; J3b is approved at a52476b.
+- **Current work: J6 is open; J5 is approved at d5e2bbe (D409).** The first carry-over is
+  implemented: the transition plan disables an overlapping grown-polygon offer with
+  `NODE_OVERLAP` naming the neighbouring Node, before Apply. JT10's preview row passes on
+  both driving sides; preview/refusal preserves the complete document and History.
+- **Before main J6 code: await OWNER_SITTING B35's three answers.** §5/JT7's edited-detail
+  refusal conflicts with JT11's Apply-again repair. Also choose automatic discovery versus
+  owner selection of the complete affected corridor set, and keeping versus explicitly clearing
+  incompatible entered pocket/phase values on a template change. Recommendations were asked
+  in Thai with options; none is an answer. The approved overlap carry-over is independent.
+  Then record the answers, update §5/JT11 and the booked corridor acceptance rows, write failing
+  tests first, and implement template editor, general Find crossings column, Junction template…,
+  SEAM_JUNCTION_DIFFERS and the one-Command cross-section change through shared Links (D402/D403).
+- **Retain J5's contract:** taper entirely upstream, Transition-only selector, two symmetric
+  installed templates and owned mixed directions (D406). A generated polygon enlarges in the
+  Fill's single Undo; a person's polygon keeps TRANSITION_TAPER_OUTSIDE (D407). New Link legs
+  refuse at their Links with TRANSITION_POLYGON_CAPTURES (D408). No defaults or new field/schema
+  are introduced by the preview carry-over. New owned transition structure uses schema 63;
+  existing recipe fields retain their earlier floors. J4 is approved at 5ab3ea3, J3b at a52476b;
+  the fill dialog's generatedCommand mode and frozen JT13 remain accepted.
 - **B33 is answered (D405):** book J4T before U1: one protected three-stage signalised T
   preset, existing compass NEMA numbers with unused phases omitted, 2/6 at zero. Its own
   contract/rows and implementation review come in a separate slice; docs only during J5.
@@ -83,8 +88,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **U0 checked for J4:** UTDF_PROBE §6 and OWNER_SITTING I still have no answers. J4 can only
   claim MULTRA contract checks; left-hand/phase mapping in Synchro/Vistro stays unverified and
   may change after U0. This effect was reported before code. Do not invent yellow/all-red or
-  any timing default; do not start the UTDF writer. Template editor/Find crossings UI stays
-  J6; Windows fill inspection is OWNER_SITTING E26, and signal inspection is E27.
+  any timing default; do not start the UTDF writer. Template editor/Find crossings UI is
+  current J6 work; Windows fill inspection is OWNER_SITTING E26, and signal inspection is E27.
 - **Booked for J6, before U1 (D402, D403): one Command: change cross-section through a junction.**
   Change the cross-section and regenerate junction detail while preserving references in one
   Undo step. **Corridors are required:** a Link between two filled junctions is generated for
@@ -92,8 +97,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   junction's generated Links* aid that identifies shared Links/affected neighbours, or make the
   Command corridor-aware and keep both ends consistent. Docs only in J4; no J6 code or selection
   aid is implemented yet. Retain the recovery's attached-object and shared-leg warnings.
-- Later, each only after approval: J6 editor surfaces, J7 analysis panel/results
-  (which may need two stops), then U1–U3 once U0's answers are in.
+- After J6 review/approval: J7 analysis panel/results (which may need two stops), then U1–U3
+  once U0's answers are in. Do not start J4T or the UTDF writer during J6.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
   `approachLayout` and UTDF's Lanes read.
 

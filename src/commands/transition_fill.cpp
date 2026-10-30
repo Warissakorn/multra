@@ -119,6 +119,8 @@ Plan transitionPlan(const ProjectDocument& original,const Node& node,const NodeF
         if(!p.issues.empty())return p;
         if(node.generated) {
             containTransition(n,n.nodes[index],connectors,cuts);
+            for(const auto& other:n.nodes)if(other.id!=node.id&&polygonsOverlap(n.nodes[index].polygon,other.polygon))
+                bad("NODE_OVERLAP",other.id);
             const auto grownLegs=nodeLinkLegs(n,n.nodes[index]);
             for(const auto& leg:links)if(std::none_of(grownLegs.begin(),grownLegs.end(),[&](const auto& l){return l.linkId==leg.linkId&&l.in==leg.in;}))
                 bad("FILL_NODE_ARM_OUTSIDE",leg.linkId);

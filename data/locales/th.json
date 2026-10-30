@@ -1319,5 +1319,6 @@
   "TRANSITION_ARMS": "ช่วงเปลี่ยนหน้าตัดต้องมีทิศทางที่ต่อกันได้บนช่วงถนนสองช่วงซึ่งต่อปลายกับต้น",
   "TRANSITION_TAPER_RANGE": "taper ต้องอยู่ในช่วงถนนขาเข้าทั้งหมด",
   "TRANSITION_TAPER_OUTSIDE": "polygon ของ Node ที่แก้ไขแล้วต้องครอบ taper ในขาเข้าและ Connectors ทั้งหมด ให้ขยาย polygon หรือกรอก taper ที่สั้นลง",
-  "TRANSITION_POLYGON_CAPTURES": "การขยาย polygon ของ transition จะครอบขาของ Link เพิ่ม ให้ลดความยาว taper หรือวาด polygon ของ Node เอง"
+  "TRANSITION_POLYGON_CAPTURES": "การขยาย polygon ของ transition จะครอบขาของ Link เพิ่ม ให้ลดความยาว taper หรือวาด polygon ของ Node เอง",
+  "NODE_OVERLAP": "polygon ของ Node ต้องไม่ทับกัน"
 }

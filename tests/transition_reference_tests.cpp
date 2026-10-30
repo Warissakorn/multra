@@ -98,6 +98,25 @@ TEST(transitions,jt10_generated_polygon_keeps_neighbour_overlap_refusal) {
         CHECK(bytes(h.document())==before&&h.states().size()==states&&!h.dirty()&&!h.canRedo());
     }
 }
+TEST(transitions,jt10_generated_polygon_overlap_disables_offer_before_apply) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;findAndGenerate(h,side,60);
+        History isolated;isolated.reset(h.document());apply(isolated);
+        const std::vector<Point> neighbour{{-42,-2},{-38,-2},{-38,2},{-42,2}};
+        CHECK(!polygonsOverlap(node(h.document()).polygon,neighbour)&&polygonsOverlap(node(isolated.document()).polygon,neighbour));
+        std::string neighbourId;
+        CHECK(h.execute("Neighbour",[&](auto& d){neighbourId=putNode(d,{"","Neighbour",neighbour,false});}));
+        CHECK(h.document().network.nodes.size()==2&&!neighbourId.empty()&&node(h.document()).generated);
+        h.markSaved();const auto before=bytes(h.document());const auto states=h.states().size();
+        const auto out=offers(h.document());CHECK(out.size()==1);
+        CHECK(!out[0].refusal.empty());
+        CHECK(std::any_of(out[0].issues.begin(),out[0].issues.end(),[&](const auto& i){return i.code=="NODE_OVERLAP"&&i.path==neighbourId;}));
+        CHECK(bytes(h.document())==before&&h.states().size()==states&&!h.dirty()&&!h.canRedo());
+        auto direct=h.document();
+        test::throws([&]{generateJunction(direct,node(direct).id,catalogs(direct));},"NODE_OVERLAP");
+        CHECK(bytes(direct)==before);
+    }
+}
 TEST(transitions,jt10_missing_short_and_outside_tapers_are_atomic) {
     for(const auto side:{DrivingSide::left,DrivingSide::right})for(const int change:{0,1,2}) {
         auto d=ready(side);auto& value=node(d).junction->legs["west"].taper[0];

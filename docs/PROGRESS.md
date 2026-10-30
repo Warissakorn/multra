@@ -6,6 +6,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J6 first carry-over: overlap preview (D409)
+
+- **Owner:** J5 d5e2bbe approved; start J6 including the D402/D403 corridor Command. First
+  commit must make a transition's neighbour-overlap refusal visible before Apply.
+- **Implemented:** after containTransition, compare the private polygon with the other Nodes
+  using the existing overlap predicate. NODE_OVERLAP names each neighbour, disabling the Fill
+  offer; the whole-document validator remains a backstop. Add Thai/English text for the code.
+- **Tests first:** the new JT10 row failed on the enabled offer after proving that the original
+  polygons were disjoint and the planned enlargement overlaps, on both driving sides. All
+  14 native cases now pass, including unchanged preview/History and direct generation refusing
+  before publishing a document. No new field/schema or geometry policy; frozen JT13 untouched.
+- **Main J6:** re-read §3–§5/§10/JT11, D402/D403 and the seam/ownership contracts. Asked B35's
+  three choices before main code: Apply-again versus edited-detail refusal, the affected
+  corridor set, and incompatible entered site values. Recommendations are not answers; await
+  the owner while finishing the independent carry-over. No J4T or UTDF writer work.
+- **Docs:** §7/JT10, J6 status, E28, B35, D409/index and NEXT updated. Archived the oldest
+  whole PROGRESS entry, retaining ten. Main J6 remains pending the B35 answers.
+- **Verified:** desktop build, JT10 **14/14**, Qt transition selector on both driving sides,
+  CTest **253/253** (253.57 s, parallel 5) and `check` **253/253** (253.16 s) pass, including
+  architecture/file-size/docs guards. CLI node-analysis matches except `buildCommit`.
+  Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured; Windows/manual UI not run (E28).
+
 ## 2026-10-30 — J5 review: refuse polygon captures (D408)
 
 - **Fixed:** after generated transition polygon enlargement, every resulting Link leg must
@@ -211,19 +233,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   comparisons include revision for exact Undo/Redo. Node-analysis CLI bytes match before/after
   except buildCommit. Headless is not configured; Windows and the new junction-specific UI
   rows were not driven. Existing desktop UI suites passed. No J3b completion/gate is claimed.
-
-## 2026-10-29 — J3a review: keep coarse until detail refine (D393)
-
-- **Asked:** keep coarse beside the template recipe so choosing/Detach cannot change Macro/Meso
-  before the fill; update D393, verify, push and stop again before J3b.
-- **Fixed:** `setNodeJunction` still carries coarse.major when no major is supplied, and leaves
-  coarse untouched for both choice and Detach. Document validation accepts coarse plus recipe.
-  The existing detail-refine rule alone handles the transition; no J3b fill was implemented.
-- **Rows:** a forcing-first signalised coarse Node with a banned turn compares the entire Meso
-  and Macro graphs and diagnostics before/after selection, Detach, save/reopen and Undo, on both
-  driving sides. The setup first proves that removing coarse changes both compiles. Updated JT5
-  checks coexistence/round-trip and coarse disappearing only when actual interior detail appears.
-  Three checks failed before the implementation fix. No new schema field or UI.
-- **Verified:** desktop build, JT5 19/19, CTest 249/249 and `check` 249/249 pass on Linux
-  (GCC 14.2.0, Qt 6.8.2 offscreen). Node-analysis CLI bytes match before/after except `buildCommit`.
-  Headless is not configured; Windows and manual UI driving were not run. Owner re-review is next.

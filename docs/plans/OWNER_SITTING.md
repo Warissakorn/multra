@@ -100,6 +100,19 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Transition-only selector in J5; two symmetric installed templates, with owned mixed directions.
    The owner selected (b)/(c)'s recommendations and changed (a) to upstream; see §7 for the contract.
 
+35. **J6 contract choices** (asked 2026-10-30; pending, [D409](../decisions/RECORD.md#d409)).
+   JUNCTION_TEMPLATES §5/JT7 refuses replacement after a person's detail edit, but JT11 requires
+   Apply again to repair that seam. Recommended: an explicit seam action lists/replaces edited
+   detail in one Undo, retaining ordinary Fill's refusal and named reference guards; alternative:
+   retain refusal everywhere and revise JT11 to offer Detach only. For D402/D403's corridor
+   Command, recommend discovering/regenerating the full affected shared-Link component, with
+   an affected-Node list before Apply and atomic refusal if references cannot be preserved;
+   alternative: require the owner to select a complete affected set. When a template change
+   makes entered pocket/phase values inapplicable, recommend keeping all values in an explicit
+   draft until corrected; alternative: list and clear incompatible values in the same Undo.
+   No timing/length default. *Owner:* pending; recommendations are not answers. The overlap
+   preview carry-over is independent and implemented first; main J6 code waits for these choices.
+
 Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
 - “allRed คือ clearance ที่กรอก; เวลาแดงรอ barrier คำนวณแยกจาก timing ของอีก ring (แนะนำ)”
@@ -344,7 +357,7 @@ nothing. Numbers are not reused.
    edit a head/controller, and attach a queue counter: replacement must name the edited or
    attached object. This does not confirm U0 interoperability. Recipe UI remains J6. *Owner:*
 
-28. **J5 transitions** (listed/revised 2026-10-30, D406–D408). On Windows at 100/150/200 %, Thai and English,
+28. **J5 transitions / J6 overlap preview** (listed/revised 2026-10-30, D406–D409). On Windows at 100/150/200 %, Thai and English,
    draw end-to-start 3-lane and 2-lane Street segments. Find crossings must show Transition,
    initially unselected, with Confirm disabled until its template is chosen. Cancel changes
    nothing; Confirm creates the recipe-bearing Node in one Undo, with no taper default. Use a
@@ -357,7 +370,7 @@ nothing. Numbers are not reused.
    TRANSITION_POLYGON_CAPTURES and offer shorter taper/manual polygon recovery, without changing
    the document or Undo. Its y=25 control stays outside and fills; mirror the road's y values
    for right-hand traffic to test the same incoming-arm side. A neighbouring Node overlap
-   must still refuse NODE_OVERLAP. Inspect
+   must already disable the Fill offer with NODE_OVERLAP naming that Node, before Apply. Inspect
    missing/range/outside messages and dialog buttons on a small screen. Recipe editing remains
    J6; fill before placing stationed measurements. *Owner:*
 
