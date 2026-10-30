@@ -1325,6 +1325,7 @@
   "SEAM_JUNCTION_DIFFERS": "รายละเอียดที่วาดของทางแยกต่างจากแบบสำเร็จ",
   "editorJunctionApplyAgain": "ใช้แบบสำเร็จอีกครั้ง…",
   "editorJunctionDetach": "แยกจากแบบสำเร็จ",
+  "JUNCTION_REBUILD_CONFLICT": "จำนวนช่องขาออกนี้สร้างช่วง conflict ของทางแยกที่ถูกต้องไม่ได้ ให้คงจำนวนช่องขาออกเดิม หรือเลือกหน้าตัด/การจัดช่องอื่น แล้วลองใหม่ ยังไม่มีการเปลี่ยนข้อมูล",
   "editorJunctionAffected": "ทางแยกและรายละเอียดที่ได้รับผล",
   "editorJunctionReplace": "แทนที่รายละเอียดตามรายการ",
   "editorJunctionObjects": "วัตถุรายละเอียด",

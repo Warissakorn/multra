@@ -28,9 +28,9 @@ The layout and HCM results continue to come from the drawing, never the recipe.
 - **Nodes → Junction template…:** edit template, major arms, optional per-leg lane rows,
   pocket storage/taper and optional NEMA timing in one Undo. Empty input is missing, not zero;
   zero yellow/all-red is an entered value. Preserve incompatible values when switching templates.
-  **B36 is pending:** whether site-only edits on the same template preserve `Node.generated`.
-  D393's new-template/Detach ownership rule and manual polygon ownership remain unchanged
-  until the owner answers; do not implement a different rule by assumption.
+  **B36 answered (D412):** site-only edits on the same template preserve the current
+  `Node.generated`; changing template, Detach and polygon edits clear it as in D393.
+  Never restore a cleared flag. The setter/form implementation follows in the remaining J6 work.
 - **Seam checks:** `SEAM_JUNCTION_DIFFERS` is advisory at every level, at `network.nodes[i]`.
   Apply again shows the replacement list; Cancel changes nothing. Detach drops only the recipe,
   keeps coarse/drawing, and removes the advisory in one Undo. The explicit action is distinct
@@ -60,6 +60,13 @@ The special restoration mode permits the requested cross-section change; ordinar
 keeps its template/base-match and edited-detail guards. A hand-edited neighbour refuses the
 whole corridor Command. Existing stationed/reference guards remain and preserve retained data.
 
+**Conflict-range limitation (D413).** A matching seam is not whole-document validity. Increasing
+the east exit stub's outgoing lanes to three can leave an invalid generated conflict range,
+also on a fresh fill. The corridor preview/Command returns `JUNCTION_REBUILD_CONFLICT` at the
+changed Street segment, rather than a core `INVALID_RANGE@conflictZones[...]` index. Keep the
+current outgoing lane count or choose another cross-section/lane layout, then retry. Preview
+and refused Apply leave document, saved state and Undo/Redo unchanged; no geometry is clamped.
+
 ## 4. Acceptance and implementation status
 
 - **JT11, Commands/comparison:** refined Connector gives the advisory on both driving sides;
@@ -74,7 +81,9 @@ whole corridor Command. Existing stationed/reference guards remain and preserve 
   driving sides; screen fit. **Passing.** Readiness uses the same pure advisory at all three levels.
 - **JT16, corridor Command:** a changed shared segment rebuilds both filled junctions, including
   pockets at both ends, on both driving sides. Retained input/measurement references survive
-  reopen and rebuild; a manually edited neighbour refuses atomically. **Passing.**
+  reopen and rebuild; a manually edited neighbour refuses atomically. Exit-lane conflict ranges
+  have the named refusal above on both sides; incoming mismatch keeps `JUNCTION_LANE_COUNT`.
+  **Passing.**
 - **JT16, corridor UI:** staged override with no invented values; affected set includes both
   Nodes, Cancel is unchanged, Apply and one Undo restore the complete document. Both sides,
   screen fit and revision-zero project reopen. **Passing.**

@@ -99,3 +99,30 @@ Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current
   **248/248** (247 + `junctionlayout`, seven new cases). JT3/JT4 failed before implementation;
   `check` also passes 248/248. `multra-cli --node-analysis` output is byte-identical before/after except
   `buildCommit`. No new UI or Windows appearance claim; headless has no configured build.
+
+## 2026-10-29 — J3b complete: safe fills, historical parity and explicit deferrals (D399–D401)
+
+- **Owner review:** B31 defers D388 JT-4a generation until A5 or U1 needs it; the row stays
+  disabled (`FILL_NODE_ALL_WAY_STOP`). StopControl and schema 63 are untouched. The owner kept
+  the orthogonal-T/wide-median `EDIT_CONNECTOR_GAP` limitation and accepted the fill dialog's
+  generatedCommand mode, requesting historical F3/F4 parity.
+- **Finished:** Street segment Apply template over junction detail now refuses with a junction
+  code and explicit Undo/earlier-copy → cross-section → junction fill instructions. Re-apply
+  refuses if the base's shape no longer matches the cross-section, keeping the detached
+  upstream Link intact. The tested recovery changes the full lane count before a new fill,
+  whose complete output undoes in one step. Node recipes/Link keys stay D393/D394's; no new
+  stored field or analytical method.
+- **Reference protection:** cuts refuse named stationed data they would truncate or rebase;
+  re-apply refuses new pocket origins/routing targets and conflicting direction keys, including
+  two removed pocket pieces with no base override. Retained heads, route ids, volumes/directions
+  and zone destinations survive, with complete JSON Undo.
+  Red tests exposed the old generic lane error, changed-base/head movement and reference losses.
+- **Rows:** JT6–JT8 and new JT13 pass in 23 junctionfill cases. The test-only command bodies are
+  frozen from 33a856a5, checked unchanged apart from include/symbol isolation; F3/F4 priority and
+  signalised/banned-turn outputs match in the same build on both driving sides, with complete
+  IDs/revision/flags and F4 Street segment re-apply. No TypeScript baseline was regenerated.
+- **Verification:** desktop build, CTest **250/250** (276.85 s) and `check` **250/250**
+  (260.54 s) pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen), with junctionfill **23/23**.
+  Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
+  Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
+  Existing desktop UI suites passed. J4 was not started.

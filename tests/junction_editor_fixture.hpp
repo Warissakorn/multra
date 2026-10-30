@@ -7,7 +7,7 @@
 namespace junctionEditorTest {
 using namespace multra;
 using namespace junctionTest;
-inline ProjectDocument corridor(DrivingSide side,bool pockets=false) {
+inline ProjectDocument corridor(DrivingSide side,bool pockets=false,bool filled=true) {
     auto d=cross(side,false);d.network=Network{"corridor",side,{},{},{},{}};
     putStreetSegment(d,{"ew","EW",{{-330,0},{330,0}},std::string("test"),0,{},{}});
     putStreetSegment(d,{"west","West",{{-120,-180},{-120,180}},std::string("test"),0,{},{}});
@@ -25,8 +25,8 @@ inline ProjectDocument corridor(DrivingSide side,bool pockets=false) {
         setNodeJunction(d,n.id,recipe);
     }
     for(const auto& r:d.network.streetSegments)applyTemplate(d,r.id,d.definition->crossSections);
-    const auto c=catalogs(d);for(const auto& n:d.network.nodes)generateJunction(d,n.id,c);
-    CHECK(d.network.nodes.size()==2&&(pockets?d.network.connectors.size()>24:d.network.connectors.size()==24));
+    if(filled){const auto c=catalogs(d);for(const auto& n:d.network.nodes)generateJunction(d,n.id,c);}
+    CHECK(d.network.nodes.size()==2&&(!filled?d.network.connectors.empty():pockets?d.network.connectors.size()>24:d.network.connectors.size()==24));
     return d;
 }
 inline std::string shared(const ProjectDocument& d) {

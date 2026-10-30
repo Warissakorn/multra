@@ -106,7 +106,8 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
   to `majorByRank` when empty. Optional `junction.legs.<id>.lanes` replaces that leg's role rows,
   with the same schema/validation and far-to-kerb order as §3. The Command `setNodeJunction`
   carries `coarse.major` when no major is supplied and keeps the existing `coarse` unchanged.
-  A manual choice clears `generated`; Detach drops only `junction` and also keeps `coarse`.
+  B36/D412 keeps current `generated` for same-template site-only edits; another template,
+  Detach and polygon edits clear it, never setting it back. Detach also keeps `coarse`.
 - **Signal:** the cycle and, per NEMA phase the preset uses, green, yellow and all-red. All are
   required to apply, with no default (§12 JT-5). **D395:** incomplete recipes save what is entered:
   scalar fields are absent when empty, while `storage`/`taper` use `null` for an unentered pocket
@@ -429,7 +430,7 @@ This is documentation only in J5; J4's four-leg implementation and required site
 | J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. **J3b done (D398–D402):** `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8/JT13–JT15; all-way-stop generation deferred (D399); stop for review (§3–§5) | 2 |
 | J4 | **Done (D404, JT9 passing).** Signals from the template: P1–P4, NEMA numbering, required site timing and `nemaCheck` (§8); stop for review | 1 |
 | J5 | **Approved at d5e2bbe (D406–D408, JT10 passing).** Upstream transitions and the Transition-only selector (§7) | 1 |
-| J6 | **In progress (D409–D411):** overlap carry-over; Commands, crossing column, seam/Readiness and corridor UI implemented. Template catalog/Node recipe forms remain; B35 answered, B36 pending. [Detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md); not ready for final J6 review | 1 |
+| J6 | **In progress (D409–D413):** overlap carry-over accepted; Commands, crossing column, seam/Readiness and corridor UI implemented. Template catalog/Node forms remain; B35/B36 answered. Corridor conflict-range refusal is named (D413). [Detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md); not ready for final J6 review | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
 | J4T | Booked before U1 (B33, D405): one protected signalised T preset and its NEMA support (§8); separate review, no code in J5 | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
@@ -489,4 +490,4 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |
 | JT14 | J3b review | F3 → F4 on a coarse Node → choose a recipe → change laneWidth → Apply template matches the complete pre-J3b document and one Undo/Redo on both driving sides, with and without recipe pockets (`tests/junction_fill_completion_tests.cpp`, **passing**) |
 | JT15 | J3b review | Reopen without Undo, delete the junction's generated Links, Apply the changed cross-section and fill again: `checkLayout` passes on both driving sides, recipe survives, attached travel-time measurement is removed, and every Command has complete JSON Undo/Redo (`tests/junction_fill_completion_tests.cpp`, **passing**) |
-| JT16 | J6 | The cross-section Command discovers both ends of shared Links, including pockets, and rebuilds the corridor on both driving sides; retained input/measurement references survive reopen, edited neighbour refuses atomically; preview/Cancel and one full JSON Undo/Redo. Native/Qt **passing** (`tests/junction_editor_tests.cpp`, `tests/junction_ui_tests.cpp`) |
+| JT16 | J6 | The cross-section Command discovers both ends of shared Links, including pockets, and rebuilds the corridor on both driving sides; retained input/measurement references survive reopen, edited neighbour refuses atomically; preview/Cancel and one full JSON Undo/Redo. East exit 3 outgoing lanes gives actionable `JUNCTION_REBUILD_CONFLICT`, no mutation/internal code; 3 incoming lanes keeps `JUNCTION_LANE_COUNT`. Native/Qt **passing** (`tests/junction_editor_tests.cpp`, `tests/junction_ui_tests.cpp`) |

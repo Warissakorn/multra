@@ -65,16 +65,22 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
      cycle/NEMA phase fields. Use `chooseNodeJunctionTemplate` to keep every entered value;
      display incompatible rows for explicit correction, with Fill disabled. Empty is missing,
      yellow/all-red zero is an entered value; no timing or length default.
-  3. **B36 is pending before changing the site-only ownership rule.** Current `setNodeJunction`
-     clears `Node.generated` even when only the same template's taper changes, preventing J5's
-     automatic enlargement. The owner was asked whether site-only edits should retain the flag
-     while new-template/Detach/polygon edits retain D393's rule. Do not infer the answer or
-     implement that flag policy before it arrives; the catalog editor is independent.
+  3. **B36 is answered (D412); implement it tests first with the forms.** Same-template site-only
+     taper, pocket storage/taper and timing edits preserve the current `Node.generated`.
+     Another template, Detach and polygon edits clear it as D393 requires. Never set a cleared
+     flag back to true. Check Find crossings → taper entry → Fill enlargement on both sides.
   4. Add catalog-mutation, three-leg/shared-pocket and missing-control probes to the pure
      comparator before final J6 sign-off, alongside the new form acceptance rows.
   5. Add native/Qt form rows on both sides, preserve draft/Cancel/Undo and pre-fill Macro/Meso
      parity, then desktop build → CTest → check (headless only if configured), update docs/E29,
      and stop for final J6 review. Keep frozen JT13 files untouched.
+  6. Replace the long corridor object-id table with grouped detail or counts and an inspectable
+     replacement list; a three-junction preview must remain readable (owner review of da7240d).
+- **Corridor review fix (D413):** east exit road-32 with three outgoing lanes refuses with
+  `JUNCTION_REBUILD_CONFLICT` at the changed Street segment and actionable recovery, unchanged
+  document/History. The fresh drawing matches its recipe but also fails whole-document conflict
+  range validation. No geometry clamp or internal core index is exposed. Incoming three lanes
+  still reports `JUNCTION_LANE_COUNT`; JT16 checks both driving sides.
 - **Retain J5's contract:** taper entirely upstream, Transition-only selector, two symmetric
   installed templates and owned mixed directions (D406). A generated polygon enlarges in the
   Fill's single Undo; a person's polygon keeps TRANSITION_TAPER_OUTSIDE (D407). New Link legs

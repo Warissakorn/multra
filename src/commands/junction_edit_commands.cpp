@@ -69,6 +69,20 @@ void associatePocketBases(ProjectDocument& d,const std::set<std::string>& roads)
         if(const auto road=generatedStreetSegment(d.network,l);road&&roads.contains(*road))l.streetSegmentId=*road;
 }
 struct EditPlan {ProjectDocument document;JunctionEditPreview preview;};
+void validateRebuild(const ProjectDocument& d,const std::vector<JunctionCrossSectionChange>& changes) {
+    try {validateDocument(d);}
+    catch(const ValidationError& e) {
+        std::vector<ValidationIssue> issues;bool conflictRange=false;
+        for(const auto& issue:e.issues) {
+            if(!changes.empty()&&issue.code=="INVALID_RANGE"&&issue.path.starts_with("conflictZones["))conflictRange=true;
+            else issues.push_back(issue);
+        }
+        // Core indices are not authoring objects. Name the staged Street segments, with a
+        // recoverable junction refusal; retain every other validator issue unchanged.
+        if(conflictRange)for(const auto& change:changes)issues.push_back({"JUNCTION_REBUILD_CONFLICT",change.streetSegmentId});
+        throw ValidationError(std::move(issues));
+    }
+}
 EditPlan makePlan(const ProjectDocument& original,const std::vector<JunctionCrossSectionChange>& changes,const std::optional<std::string>& reapply,const NodeFillCatalogs& catalogs) {
     EditPlan p{original,{}};
     try {
@@ -95,7 +109,7 @@ EditPlan makePlan(const ProjectDocument& original,const std::vector<JunctionCros
             }
             for(const auto& id:p.preview.nodes)generateJunction(p.document,id,catalogs);
         }
-        validateDocument(p.document);
+        validateRebuild(p.document,changes);
     } catch(const ValidationError& e){p.preview.issues=e.issues;}
       catch(const std::invalid_argument& e){p.preview.issues.push_back({e.what(),reapply.value_or("network.streetSegments")});}
     return p;

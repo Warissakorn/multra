@@ -114,13 +114,15 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    replacement with the list and reference guards; automatic complete corridor discovery;
    preserve every entered site value as an explicit draft. Do not re-ask B35.
 
-36. **J6 site-only edit ownership** (asked 2026-10-30; pending). `setNodeJunction` currently
+36. **J6 site-only edit ownership** (answered 2026-10-30, [D412](../decisions/RECORD.md#d412)). `setNodeJunction` currently
    clears `Node.generated` for every recipe edit, so entering a Transition's taper in the new
    form would disable J5's generated-polygon enlargement. Recommend keeping the flag for
    site-only edits on the same template, while a new template/Detach keeps D393's clearing
    rule and polygon edits still clear it; alternative: retain clearing on every edit and
-   require manual enlargement after entering taper. *Owner:* pending. Node recipe forms and
-   this flag rule are not implemented by assumption; see [J6 §2](../reference/JUNCTION_TEMPLATE_EDITOR.md#2-editor-surfaces).
+   require manual enlargement after entering taper. *Owner:* keep the current flag for
+   same-template site-only edits (taper, pocket storage/taper and timing values). Another
+   template, Detach and any polygon edit retain D393's clearing rule; never set a cleared flag
+   back to true. Implement with the remaining Node forms; do not re-ask B36.
 
 Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”

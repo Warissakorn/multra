@@ -6,6 +6,30 @@
 #include "../src/project/readiness.hpp"
 using namespace multra;
 using namespace junctionEditorTest;
+namespace {
+void exitLaneCount(DrivingSide side) {
+        auto d=corridor(side);const auto road=std::find_if(d.network.streetSegments.begin(),d.network.streetSegments.end(),[](const auto& r){return r.id=="road-32";});
+        CHECK(road!=d.network.streetSegments.end()&&seams(d).empty());
+        test::near(road->centreline.front().x,120);test::near(road->centreline.back().x,330);
+        JunctionCrossSectionChange change{road->id,road->crossSectionId,road->overrides};change.overrides.lanesForward=3;
+        CHECK(change.overrides!=road->overrides&&link(d,road->links[0]).lanes.size()==2);
+        auto fresh=corridor(side,false,false);auto& r=*std::find_if(fresh.network.streetSegments.begin(),fresh.network.streetSegments.end(),[&](const auto& x){return x.id==change.streetSegmentId;});
+        r.overrides=change.overrides;applyTemplate(fresh,r.id,fresh.definition->crossSections);
+        const auto c=catalogs(fresh);for(const auto& n:fresh.network.nodes)generateJunction(fresh,n.id,c);
+        CHECK(seams(fresh).empty()); // The drawing matches; whole-document validation may still refuse it.
+        History h;h.reset(d);const auto before=bytes(d);
+        const auto preview=junctionCrossSectionPreview(d,{change},catalogs(d));
+        CHECK(preview.nodes.size()==2&&bytes(h.document())==before);
+        CHECK(issue(preview.issues,"JUNCTION_REBUILD_CONFLICT",change.streetSegmentId));
+        CHECK(!issue(preview.issues,"INVALID_RANGE"));
+        test::throws([&]{h.execute("Change exit lanes",[&](auto& x){changeJunctionCrossSections(x,{change},catalogs(x));},true);},"JUNCTION_REBUILD_CONFLICT");
+        CHECK(bytes(h.document())==before&&!h.canUndo()&&!h.canRedo()&&!h.dirty());
+        auto incoming=change;incoming.overrides=road->overrides;incoming.overrides.lanesBackward=3;
+        CHECK(issue(junctionCrossSectionPreview(d,{incoming},catalogs(d)).issues,"JUNCTION_LANE_COUNT"));
+}
+}
+TEST(junctioneditor,jt16_exit_lane_count_left_has_actionable_refusal) {exitLaneCount(DrivingSide::left);}
+TEST(junctioneditor,jt16_exit_lane_count_right_has_actionable_refusal) {exitLaneCount(DrivingSide::right);}
 TEST(junctioneditor,jt11_explicit_reapply_and_detach_fix_refined_connector) {
     for(const auto side:{DrivingSide::left,DrivingSide::right}) {
         History h;h.reset(cross(side,false));apply(h);CHECK(seams(h.document()).empty());
