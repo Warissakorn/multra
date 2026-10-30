@@ -47,10 +47,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Current stop: J4 is implemented (D404, JT9 passing); await the owner's review.** Do not
-  start J5 before approval. After approval, re-read [JUNCTION_TEMPLATES §7/JT10](reference/JUNCTION_TEMPLATES.md)
-  and implement transitions only, with its own review stop. The fill dialog's generatedCommand
-  mode and JT13 remain accepted; J3b is approved at a52476b.
+- **J4 is approved at 5ab3ea3; work on J5 transitions only, then stop for review.** Re-read
+  [JUNCTION_TEMPLATES §7/JT10](reference/JUNCTION_TEMPLATES.md) before implementation. Resolve
+  [OWNER_SITTING B34](plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each): taper placement
+  and transition selection/catalog questions asked on 2026-10-30, before code. JT10 is not
+  implemented; no transition field/schema/code is added at this checkpoint.
+  The fill dialog's generatedCommand mode and JT13 remain accepted; J3b is approved at a52476b.
+- **B33 is answered (D405):** book J4T before U1: one protected three-stage signalised T
+  preset, existing compass NEMA numbers with unused phases omitted, 2/6 at zero. Its own
+  contract/rows and implementation review come in a separate slice; docs only during J5.
 - **B32 is answered (D404):** fixed numbered rings/barriers, P4 4 then 8 with derived red
   waiting, entered allRed as clearance, exact cycle closure, rotated compass mapping and
   2/6 time-zero anchor. §8 has the timing construction; do not re-ask these choices. All site

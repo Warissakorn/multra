@@ -6,6 +6,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J5 preparation and signalised T booking (D405)
+
+- **Asked:** J4 5ab3ea3 approved; start J5 transitions, then stop for review. Add B33 for
+  signalised T templates as documentation only, proposing a small slice before U1.
+- **B33 answered:** one protected three-stage preset first, retaining J4's compass NEMA
+  numbers, omitting unused phases and keeping the 2/6 zero anchor. Recorded D405 and booked
+  J4T before U1 with its own contract/rows and review; no T code is added during J5.
+- **Before transition code:** re-read §7/JT10, D387/D388, crossings, lifecycle, F4 cuts and
+  generated rules. §7 does not fix where taper is placed or how template selection crosses
+  the J5/J6 boundary. B34 asks those choices and the initial directional catalog/structure,
+  with concrete recommendations; no answer is assumed. JT10 remains unimplemented and 63 unused.
+- **Verification:** desktop build and standalone documentation, file-size, architecture and
+  whitespace checks pass on Linux. CTest, the full `check` target and headless were not run
+  for this documentation-only checkpoint. No Windows or manual UI run; no new UI or stored field.
+  The build stays green at the approved J4 implementation while B34 is pending.
+
 ## 2026-10-29 — J4 template signals and NEMA checks (D404)
 
 - **Owner B32:** all recommendations selected: numbered rings and corrected barriers; P4
@@ -199,23 +215,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   **248/248** (247 + `junctionlayout`, seven new cases). JT3/JT4 failed before implementation;
   `check` also passes 248/248. `multra-cli --node-analysis` output is byte-identical before/after except
   `buildCommit`. No new UI or Windows appearance claim; headless has no configured build.
-
-## 2026-10-28 — Posted speed on the Link, schema 60 (D390, M14 slice J1)
-
-- **Asked:** "ทำ J1 ต่อเลย".
-- **Changed:**
-  - A Link's optional `speedLimit` (km/h, > 0, never a cap) and a cross-section template's
-    optional `speedLimit` are saved at schema 60.
-  - *Apply template* copies the template speed onto the generated Links. A split keeps the speed on
-    both pieces.
-  - The inspector's *Posted speed (km/h)* sets every selected Link in one Undo step; the
-    cross-section dialog has the field too; the object CSV has `speedLimit_kmh`.
-  - Node analysis queues read the in-leg Link's speed.
-  - A 58–59 approach row's `speedLimit` moves to the Link it names. A row naming no Link, or two
-    rows giving one Link different speeds, is refused, so no speed is lost (D380).
-- **Decided (D390):** `LinkType.freeSpeed` stays independent, and Micro does not read the posted
-  speed yet. Either would move existing results, so each needs its own contract.
-- **Verified:** desktop build, `ctest` 247/247 (246 plus `linkspeed`, JT2) and `check` on Linux
-  (offscreen); headless preset not run, and no test drives the new inspector field.
-  `multra-cli --node-analysis` on the schema-58 fixture prints the same output as before apart
-  from the build commit. Windows look is OWNER_SITTING E25.

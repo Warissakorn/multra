@@ -297,6 +297,10 @@ EBL/EBT/EBR, SBL/SBT/SBR and WBL/WBT/WBR. L/R are geometric, independent of driv
   last aligned lane (or the added lanes diverging from it), and one Connector per aligned lane.
   F4's merge areas apply. No HCM; UTDF exports the Node as a plain node between segments.
 
+**J5 preparation, 2026-10-30:** OWNER_SITTING B34 is pending before code: taper placement,
+the Transition-only selector versus J6, and the initial per-direction catalog/structure.
+JT10 remains unimplemented; schema 63 is not consumed by this documentation checkpoint.
+
 ## 8. NEMA numbering of signal groups
 
 B32 answered as recommended in all three choices (D404). J4 implements the shipped four-leg
@@ -348,6 +352,15 @@ U0's answer table remains empty: internal NEMA checks do not establish Synchro/V
 interchange or left-hand support there. UTDF_EXPORT §6 still waits on the probe; no writer
 is included in J4.
 
+**Signalised T limitation and booking (B33, D405).** The shipped catalog has no signalised
+three-leg entry, and `nemaApproachPhases` currently requires four approaches (`NEMA_MAJOR_PAIR`).
+Book **J4T before U1**: one protected three-stage T preset (major through pair, separate
+protected far turn from the major, minor alone). Keep 2/6 for major through, 1 or 5 for its
+protected far turn, and 4 or 8 for the minor leg; omit unused phases. Keep the 2/6 time-zero
+anchor and leading far phase at the preceding cycle's end. B33's recommendations are answered;
+J4T still needs its contract/acceptance rows and a separate implementation/review session.
+This is documentation only in J5; J4's four-leg implementation and required site timing stay.
+
 ## 9. Posted speed and the analysis panel
 
 - **Posted speed (J1, done, D390):** booked by D379, confirmed by D380, shaped by D381.
@@ -379,9 +392,10 @@ is included in J4.
 | J5 | Transitions (§7) | 1 |
 | J6 | Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS`; booked one-Command cross-section change through a junction (§5), before U1 | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
+| J4T | Booked before U1 (B33, D405): one protected signalised T preset and its NEMA support (§8); separate review, no code in J5 | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
-U0 waits on the owner, and its answers can change J4 and U1. About 13–16
+U0 waits on the owner, and its answers can change J4 and U1. About 14–17
 sessions in all; one slice per session, each starting with its rows.
 
 ## 11. What stays out

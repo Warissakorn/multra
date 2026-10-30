@@ -73,6 +73,32 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
+33. **Signalised T templates** (asked and answered 2026-10-30, [D405](../decisions/RECORD.md#d405)).
+   The shipped catalog has no signalised three-leg entry, and `nemaApproachPhases` requires four
+   approaches (`NEMA_MAJOR_PAIR`), although signalised T junctions are common in Thailand.
+   Which preset(s), and which NEMA numbers? Recommended and selected: one protected three-stage
+   preset first (major through pair, separate protected far turn from the major, minor alone),
+   rather than also shipping a permitted two-stage preset now. Keep J4's compass numbers:
+   2/6 major through, 1 or 5 for its protected far turn, and 4 or 8 for the existing minor leg;
+   omit phases without movements. Anchor 2/6 at zero, with the leading far phase at the preceding
+   cycle's end, rather than compacting the numbers. *Owner:* “เริ่มแบบ protected สามช่วงหนึ่ง preset
+   (แนะนำ)”; “คงหมายเลขตามทิศและละเฟสที่ไม่ใช้ (แนะนำ)”. Book the small **J4T** slice before U1,
+   with its own acceptance rows and review. Documentation only during J5; no timing defaults.
+
+34. **J5 transition construction** (asked 2026-10-30, pending before code). §7 leaves geometry
+   placement and the J5/J6 selection boundary open. Recommended choices first:
+   (a) centre the entered taper on the Street segment join, half along each centreline; keep
+   the road alignment, and refuse if Links are too short or the Node does not contain it,
+   versus placing the whole taper upstream or downstream;
+   (b) add a required template selector only for Transition rows in Find crossings in J5,
+   initially unselected, versus Commands only until J6 supplies the selector;
+   (c) ship two symmetric templates (kerb/kerb and far/far), with owned templates able to mix
+   directions, versus shipping all four combinations. Proposed stored structure:
+   `directions.forward.align` / `directions.backward.align`, forward following the end-to-start
+   centrelines; `junction.legs.<id>.taper[0]` serves that incoming leg. New stored transition
+   structure uses feature-selected schema 63. No choice is assumed and no transition code or
+   JT10 implementation is started. *Owner:*
+
 Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
 - “allRed คือ clearance ที่กรอก; เวลาแดงรอ barrier คำนวณแยกจาก timing ของอีก ring (แนะนำ)”
