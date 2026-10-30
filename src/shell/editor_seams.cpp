@@ -3,6 +3,11 @@
 #include "../commands/street_segment_commands.hpp"
 #include "../model/demand/seam_checks.hpp"
 #include "../project/link_type_codec.hpp"
+#include "../project/junction_template_codec.hpp"
+#include "../model/demand/junction_seams.hpp"
+#include "../commands/junction_edit_commands.hpp"
+#include "../commands/junction_commands.hpp"
+#include "junction_preview_dialog.hpp"
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -14,6 +19,8 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <algorithm>
+#include <tuple>
 
 // S3.7 (D312, docs/reference/STREET_SEGMENTS.md §7): the Seam checks dialog, on demand from the StreetSegments tab. One
 // row per seamChecks row for the chosen level; a lane-count row at Micro offers Use Link and Use
@@ -28,6 +35,7 @@ std::string objectAt(const Network& n, const std::string& path) {
     if (list == "network.streetSegments" && i < n.streetSegments.size()) return n.streetSegments[i].id;
     if (list == "network.links" && i < n.links.size()) return n.links[i].id;
     if (list == "network.connectors" && i < n.connectors.size()) return n.connectors[i].id;
+    if (list == "network.nodes" && i < n.nodes.size()) return n.nodes[i].id;
     return {};
 }
 }
@@ -55,7 +63,13 @@ void EditorWindow::seamChecksDialog() {
         catch (const std::exception&) {} // an unreadable catalog skips the speed check; Run reports it
         const auto sections = crossSectionRows();
         const auto chosen = static_cast<SeamLevel>(level->currentData().toInt());
-        const auto rows = seamChecks(d.network, types, sections, chosen, jump->value());
+        auto rows = seamChecks(d.network, types, sections, chosen, jump->value());
+        NodeFillCatalogs catalogs{sections,types,priorityDefaults()};
+        try {for(const auto& t:resolveJunctionTemplates(d.definition.value_or(AuthoringDefinition{}),data_))catalogs.junctionTemplates.push_back(t.type);}
+        catch(const std::exception& e){showError(e);return;}
+        const auto junctions=junctionSeamIssues(d.network,catalogs.junctionTemplates,types,d.definition?d.definition->signalControllers:std::vector<SignalController>{},d.definition?d.definition->timeStep:0);
+        for(const auto& issue:junctions)rows.push_back({issue.code,issue.path,SeamSeverity::advisory});
+        std::sort(rows.begin(),rows.end(),[](const auto& a,const auto& b){return std::tie(a.code,a.path)<std::tie(b.code,b.path);});
         table->setRowCount(static_cast<int>(rows.size()));
         for (int r = 0; r < table->rowCount(); ++r) {
             const auto& row = rows[static_cast<std::size_t>(r)];
@@ -64,6 +78,21 @@ void EditorWindow::seamChecksDialog() {
                                      text(row.code), QString::fromStdString(id)};
             for (int c = 0; c < values.size(); ++c) table->setItem(r, c, new QTableWidgetItem(values[c]));
             table->setCellWidget(r, 3, nullptr);
+            if(row.code=="SEAM_JUNCTION_DIFFERS") {
+                auto* fixes=new QWidget(table);auto* buttons=new QHBoxLayout(fixes);buttons->setContentsMargins(0,0,0,0);
+                auto* again=new QPushButton(text("editorJunctionApplyAgain"),fixes);again->setObjectName("editorJunctionApplyAgain");
+                auto* detach=new QPushButton(text("editorJunctionDetach"),fixes);detach->setObjectName("editorJunctionDetach");
+                buttons->addWidget(again);buttons->addWidget(detach);table->setCellWidget(r,3,fixes);
+                connect(again,&QPushButton::clicked,&dialog,[&,id,catalogs] {
+                    const auto preview=junctionReapplyPreview(history_.document(),id,catalogs);
+                    if(!confirmJunctionEdit(&dialog,preview,[this](const char* key){return text(key);}))return;
+                    if(execute("editorJunctionApplyAgain",[&](auto& x){reapplyJunction(x,id,catalogs);},true))fill();
+                });
+                connect(detach,&QPushButton::clicked,&dialog,[&,id] {
+                    if(execute("editorJunctionDetach",[&](auto& x){setNodeJunction(x,id,std::nullopt);}))fill();
+                });
+                continue;
+            }
             if (row.code != "SEAM_LANE_COUNT" || chosen != SeamLevel::micro) continue;
             auto* fixes = new QWidget(table); auto* buttons = new QHBoxLayout(fixes); buttons->setContentsMargins(0, 0, 0, 0);
             auto* useLink = new QPushButton(text("editorSeamUseLink"), fixes); useLink->setObjectName("editorSeamUseLink");

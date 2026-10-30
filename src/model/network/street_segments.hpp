@@ -16,6 +16,9 @@ std::vector<ValidationIssue> streetSegmentIssues(const Network&);
 // along the centreline than its start. Read from geometry, not from the Link's place in `links`, which
 // a detach shifts; only a Link whose ends project to one station falls back to being listed first.
 bool forwardOnStreetSegment(const StreetSegment&, const Link&);
+// J6: resolve a generated detached pocket prefix through its unique continuity chain.
+// Stop at any Node-owned Connector; no association/receipt is stored on the prefix.
+std::optional<std::string> generatedStreetSegment(const Network&,const Link&);
 // S3.4 (STREET_SEGMENTS §3, §17, D308): the mean of two opposite carriageways' centrelines, digitised along
 // `forward`; `backward` is given in its own direction of travel. Equal vertex counts pair vertex by
 // vertex, which is exact for two offsets of one reference (oppositeLink); otherwise each vertex is

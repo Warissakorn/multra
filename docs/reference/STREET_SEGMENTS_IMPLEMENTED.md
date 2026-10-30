@@ -355,6 +355,8 @@ S3 is complete with this slice.
 - **`seamChecks(network, types, templates, level, speedJump)`** (`src/model/demand/seam_checks.*`,
   pure). The caller resolves link types and templates. It returns rows `{code, path, severity}`
   sorted by code and path; none refuses a run or changes the document.
+  J6 also composes `junctionSeamIssues` into this dialog and Readiness as an advisory at every
+  level; its explicit repair and the corridor-aware cross-section action are in [the J6 contract](JUNCTION_TEMPLATE_EDITOR.md).
 
   | Code | Path | Micro | Meso, Macro |
   |---|---|---|---|

@@ -30,7 +30,7 @@ char movement(double angle) {
 }
 PocketSide sideOf(const JunctionLane& row) {return row.side.value_or(row.movements=="F"?PocketSide::far:PocketSide::kerb);}
 }
-Plan plan(const ProjectDocument& original,const Node& selected,const NodeFillCatalogs& catalogs) {
+Plan planNormalized(const ProjectDocument& original,const Node& selected,const NodeFillCatalogs& catalogs) {
     Plan result; result.document=original;
     auto& d=result.document; auto& n=d.network;
     const auto at=root(original,selected);

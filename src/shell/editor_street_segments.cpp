@@ -2,6 +2,9 @@
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/street_segment_commands.hpp"
 #include "../project/street_segment_codec.hpp"
+#include "../project/link_type_codec.hpp"
+#include "../project/junction_template_codec.hpp"
+#include "junction_cross_section_dialog.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QDialog>
@@ -82,6 +85,20 @@ void EditorWindow::buildStreetSegments() {
     }));
     bar->addAction(action("editorFindCrossings", {}, [this] { findCrossingsDialog(); })); // S3.5 (D309)
     bar->addAction(action("editorSeamChecks", {}, [this] { seamChecksDialog(); })); // S3.7 (D312)
+    bar->addAction(action("editorJunctionCrossSection",{},[this] {
+        const auto id=selectedStreetSegment();if(id.empty())return;
+        try {
+            const auto& d=history_.document();const auto& roads=d.network.streetSegments;
+            const auto r=std::find_if(roads.begin(),roads.end(),[&](const auto& r){return r.id==id;});if(r==roads.end())return;
+            NodeFillCatalogs catalogs{crossSectionRows(),{},priorityDefaults()};
+            for(const auto& t:resolveLinkTypes(d.definition.value_or(AuthoringDefinition{}),data_))catalogs.types.push_back(t.type);
+            for(const auto& t:resolveJunctionTemplates(d.definition.value_or(AuthoringDefinition{}),data_))catalogs.junctionTemplates.push_back(t.type);
+            const auto changed=editJunctionCrossSection(this,*r,catalogs.templates,[this](const char* key){return text(key);});if(!changed)return;
+            const auto preview=junctionCrossSectionPreview(history_.document(),{*changed},catalogs);
+            if(!confirmJunctionEdit(this,preview,[this](const char* key){return text(key);}))return;
+            execute("editorJunctionCrossSection",[&](auto& x){changeJunctionCrossSections(x,{*changed},catalogs);},true);
+        }catch(const std::exception& e){showError(e);}
+    }));
     bar->addAction(action("editorEditStreetSegment", {}, [this] { const auto id = selectedStreetSegment(); if (!id.empty()) editStreetSegment(id); }));
     bar->addAction(action("editorDeleteStreetSegment", {}, [this] {
         const auto id = selectedStreetSegment(); if (id.empty()) return;
@@ -181,7 +198,7 @@ void EditorWindow::refreshStreetSegments() {
     const auto road = std::find_if(roads.begin(), roads.end(), [&](const auto& x) { return x.id == id; });
     canvas_->setHighlightedStreetSegment(road == roads.end() ? std::string{} : id,
                                 road != roads.end() && streetSegmentStatus(*road, sections) == StreetSegmentStatus::detached);
-    for (const auto* key : {"editorEditStreetSegment", "editorDeleteStreetSegment"}) actions_.at(key)->setEnabled(road != roads.end());
+    for (const auto* key : {"editorEditStreetSegment", "editorDeleteStreetSegment","editorJunctionCrossSection"}) actions_.at(key)->setEnabled(road != roads.end());
     for (const auto* key : {"editorApplyTemplate", "editorAssignTemplate"}) actions_.at(key)->setEnabled(!selectedStreetSegmentRows().empty());
     actions_.at("editorJoinOppositeLinks")->setEnabled(selectedLinks().size() == 2);
 }

@@ -6,6 +6,36 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-30 — J6 command/seam/corridor checkpoint (D410, D411)
+
+- **B35 answered:** all recommendations selected: explicit listed seam replacement with
+  reference guards, automatic complete shared-Link closure, preserve incompatible site drafts.
+- **Implemented:** private previews/atomic explicit re-apply and corridor cross-section Commands;
+  restore both ends before F3/regeneration, including pockets. Preserve retained measurements/
+  inputs, refuse edited neighbours or measured generated heads atomically, and keep ordinary
+  Fill/Apply guards. A unique generated pocket-prefix query stops at Nodes; no association is saved.
+- **Seams:** pure lane/movement/pocket/transition/control/timing comparison; the same advisory
+  in Micro/Meso/Macro Readiness. Changed major control is detected even when lane rows match.
+  Template-id changes keep all entered site fields as a draft, with disabled Fill and full Undo.
+- **UI:** optional matching Junction template column; explicit seam replacement list, Cancel,
+  Apply again/Detach; staged corridor overrides and complete affected-set preview in one Undo.
+  Linux Qt drives both sides. Reopening a revision-zero document now invalidates the touched
+  object-table caches; otherwise the valid corridor file's Street segment table stayed empty.
+- **Tests first:** initial JT11/JT16 cases failed, then targeted timing/control/readiness,
+  crossing and Qt preview cases failed before their fixes. Positive pocket corridors required
+  resolving the detached out-leg; an input fixture's mutually exclusive route target and a
+  nested-modal test's lifetime were corrected after forcing assertions identified setup errors.
+- **Checkpoint:** template catalog/Node recipe forms are not complete. B36 asks the same-template
+  site-edit generated flag rule; no answer is assumed. NEXT names the remaining free-function
+  forms and tests. Pause at the context boundary, not final J6 approval. No J4T/UTDF writer.
+- **Docs:** J6 detail split before the 500-line limit; B35/B36, D410/D411/index, E29, schemas,
+  readiness and module maps updated. Archive the oldest whole entry, retaining ten.
+- **Verified:** desktop build, native `junctioneditor` **11/11**, Qt crossing/seam/corridor
+  rows on both driving sides, CTest **255/255** (247.09 s, parallel 5) and `check` **255/255**
+  (245.20 s) pass, including architecture/file-size/docs guards. CLI node-analysis matches
+  except `buildCommit`. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured;
+  Windows/manual UI not run (E29). Logs and comparison: `/workspace/j6-main/`.
+
 ## 2026-10-30 — J6 first carry-over: overlap preview (D409)
 
 - **Owner:** J5 d5e2bbe approved; start J6 including the D402/D403 corridor Command. First
@@ -208,28 +238,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Node-analysis CLI bytes match before/after except `buildCommit`. Headless is not configured;
   Windows and manual driving of the new junction UI were not run (OWNER_SITTING E26).
   Existing desktop UI suites passed. J4 was not started.
-
-## 2026-10-29 — J3b fill checkpoint, owner choices and all-way-stop question (D397, D398)
-
-- **Scope:** continue J3b only. The owner kept signals in J4 and selected a named refusal with
-  existing → required counts when full lanes differ. JT8 uses the two-way-stop fill in Micro,
-  then manual Commands for test-only signals to inspect HCM lane groups. No preset execution,
-  timing defaults, template editor, transition or UTDF writer is introduced.
-- **Implementation:** pure per-call plans list missing site values/codes/paths and build cuts,
-  physical pockets and merged movement ranges. The junction offer follows F3; F4 cannot bypass
-  a recipe. Shared F4 right-of-way ranks remain unchanged. Recipe arm ids stay; the final storage
-  Link keeps the Street segment association. Re-apply walks generated predecessors and refuses
-  named edited detail/attachments. Link.generated uses feature-selected 62, older field paths
-  refuse it, and fill transactions preserve program ownership while manual edits refine it.
-  Coarse still disappears only through the existing detail transition, with recipe retained.
-- **Unfinished:** D388 requires generated all-way stop, but existing StopControl cannot name an
-  independent stop line. OWNER_SITTING B31 asks whether to extend that representation or defer
-  generation. Until answered it is disabled with F4's existing code. This checkpoint does not
-  complete J3b or authorize J4; remaining work is in NEXT. Windows look is E26.
-- **Rows/verification:** the first six JT6–JT8 checkpoint cases failed before implementation. Extra red cases
-  exposed missing Link export marking and a copied Link retaining generated; both are fixed.
-  Desktop build, new checkpoint cases **10/10**, desktop CTest **250/250** (242.41 s) and
-  `check` **250/250** (221.90 s) pass on Linux (GCC 14.2.0, Qt 6.8.2 offscreen). The JSON
-  comparisons include revision for exact Undo/Redo. Node-analysis CLI bytes match before/after
-  except buildCommit. Headless is not configured; Windows and the new junction-specific UI
-  rows were not driven. Existing desktop UI suites passed. No J3b completion/gate is claimed.

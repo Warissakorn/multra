@@ -130,7 +130,7 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
   Node keeps its template after the detail exists and after detail removal; the two-leg lifecycle
   does not erase a recipe. What HCM and UTDF read is the drawing, through
   `approachLayout` (§6). A drawing that no longer matches the template is the advisory
-  `SEAM_JUNCTION_DIFFERS`, with *Apply again* (replaces `generated` objects) and *Detach* (drops
+  `SEAM_JUNCTION_DIFFERS`, with explicit *Apply again* (D410, lists edited detail before replacement) and *Detach* (drops
   `junction`), as `SEAM_LANE_COUNT` offers its two fixes (STREET_SEGMENTS_IMPLEMENTED §21).
 - **D393 review:** `coarse` and `junction` coexist before detail. Choosing or detaching a template
   does not change the Macro/Meso compile: control, banned turns and stages still come from
@@ -160,8 +160,9 @@ full-width when not a pocket; `TK` remains shared. Rows and role shapes share th
      for `allWayStop` when generation is implemented (deferred, D399).
   5. **Signals:** one controller named after the Node, a group per NEMA phase numbered by that
      phase (§8), timing from the Node's values, a head at the start of every Connector path.
-- **Apply again** replaces only objects still `generated` and refuses, naming them, when a person
+- **Ordinary Fill's Apply again** replaces only objects still `generated` and refuses, naming them, when a person
   has edited one (`JUNCTION_EDITED`). Undo restores every byte.
+  D410 separately authorizes the seam's explicit replacement list ([J6 contract](JUNCTION_TEMPLATE_EDITOR.md)).
 
 **J3b scope confirmed by the owner (D397).** Signalised templates were listed but disabled in
 J3b; J4 (D404) now applies their required site timing and ordinary generated controllers/heads
@@ -218,13 +219,11 @@ place queue-counter measurement lines and travel-time sections after the cut/poc
 settled. Cuts and re-apply refuse stationed data they cannot keep in place; deleting the Links
 in the recovery above removes their attached objects.
 
-**Booked for J6, before U1 (D402, D403): one Command: change cross-section through a junction.**
-The future Command must change the cross-section and regenerate junction detail while preserving
-references, in one Undo step. It must handle a corridor and its shared generated Links: add a
-*Select this junction's generated Links* aid that identifies shared Links and their affected
-neighbour, or make the Command corridor-aware so both ends remain consistent. The booking is
-documentation only here; neither selection support nor the combined Command is implemented.
-Until that work is implemented, the explicit recovery and corridor limitation above remain.
+**J6 combined action (D402, D403, D410): change cross-section through junctions.**
+The Command/preview and UI discover the complete shared-Link component, list its Nodes/detail,
+restore every end and regenerate the corridor in one Undo, preserving references or refusing all.
+Use this action before the deletion recovery; its guards and acceptance are in the
+[J6 contract](JUNCTION_TEMPLATE_EDITOR.md). Catalog/Node recipe forms remain unfinished.
 
 **Existing references (D401).** Retained in-leg heads, route ids and Link-based Node inputs
 follow the pocket and Undo restores the complete JSON, revision included. A cut that would
@@ -430,7 +429,7 @@ This is documentation only in J5; J4's four-leg implementation and required site
 | J3 | **J3a done (D393–D396):** catalog, loader, `Node::junction`, directions, JT5; stop for review. **J3b done (D398–D402):** `junction` fill, pockets, cuts, Connectors, right-of-way, JT6–JT8/JT13–JT15; all-way-stop generation deferred (D399); stop for review (§3–§5) | 2 |
 | J4 | **Done (D404, JT9 passing).** Signals from the template: P1–P4, NEMA numbering, required site timing and `nemaCheck` (§8); stop for review | 1 |
 | J5 | **Approved at d5e2bbe (D406–D408, JT10 passing).** Upstream transitions and the Transition-only selector (§7) | 1 |
-| J6 | **Started (D409):** overlap preview carry-over done. Template editor, *Find crossings* column, *Junction template…*, `SEAM_JUNCTION_DIFFERS`; booked corridor-aware one-Command cross-section change (§5), before U1. Main implementation waits for OWNER_SITTING B35's choices | 1 |
+| J6 | **In progress (D409–D411):** overlap carry-over; Commands, crossing column, seam/Readiness and corridor UI implemented. Template catalog/Node recipe forms remain; B35 answered, B36 pending. [Detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md); not ready for final J6 review | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
 | J4T | Booked before U1 (B33, D405): one protected signalised T preset and its NEMA support (§8); separate review, no code in J5 | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
@@ -485,8 +484,9 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT8 | J3 | The applied two-way-stop junction runs in Micro (seed 42) with no refusal on both driving sides. Existing manual signal Commands, used only in this test (D397), let NODE_ANALYSIS find all 10 lane groups and 12 turns (`tests/junction_fill_run_tests.cpp`, **passing**); template signals are covered separately by JT9 |
 | JT9 | J4 | P1–P4 on both driving sides, both major axes and pocket variants: exact entered timing, clearance/wait split, missing/grid/cycle refusals, broken barrier/ring/head and protected-lane codes; compiled HCM g/C, P3 protected result and Micro seed 42; generated/refine and safe replacement with full JSON Undo/Redo (`tests/junction_signal*_tests.cpp`, **passing**, 9 cases) |
 | JT10 | J5 / J6 carry-over | 3→2 Transition row, upstream taper and kerb/far/mixed mapping on both driving sides; Find crossings → applyCrossings → F3 → 15/30/60 m tapers → Fill enlarges the generated polygon to contain Connector rails, with unchanged preview, save/reopen, re-apply and one exact JSON Undo/Redo; an edited polygon refuses atomically at its polygon path. At 60 m in left-hand traffic, a side road (-40,112) → (-40,12), mirrored for right-hand traffic, would add two Link legs: refuse at each captured Link without document/History/save-state changes; y=25 stays outside and fills with one Undo. Neighbour overlap keeps NODE_OVERLAP; its preview disables the offer, names the neighbour, and direct generation also refuses before publication, on both driving sides. Schema-63/older-field guards; missing/bounds/unused-site refusals; same-template lifecycle merge; generated replacement/refine, stationed-head protection; ordinary Micro compilation and existing HCM refusal. Required selector, Cancel and one Undo driven in Qt (`tests/transition_tests.cpp`, `tests/transition_reference_tests.cpp`, `tests/transition_ui_tests.cpp`; **passing**, 14 native cases plus UI on both sides) |
-| JT11 | J6 | Editing a generated Connector gives `SEAM_JUNCTION_DIFFERS`; *Apply again* and *Detach* each fix it in one Undo step |
+| JT11 | J6 | Refined Connector gives `SEAM_JUNCTION_DIFFERS` at every level; explicit replacement preview/Cancel, Apply again and Detach each preserve references or refuse, with full JSON Undo/Redo. Changed timing, major control and transition taper differ from the drawing. Find crossings chooses an optional matching junction recipe in one Undo, no site defaults. Native and Qt rows **passing**; catalog/Node forms still unfinished ([J6 status](JUNCTION_TEMPLATE_EDITOR.md)) |
 | JT12 | J7 | The panel writes `Node::analysis` in one Undo step; *Analyse* matches `--node-analysis` byte for byte |
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |
 | JT14 | J3b review | F3 → F4 on a coarse Node → choose a recipe → change laneWidth → Apply template matches the complete pre-J3b document and one Undo/Redo on both driving sides, with and without recipe pockets (`tests/junction_fill_completion_tests.cpp`, **passing**) |
 | JT15 | J3b review | Reopen without Undo, delete the junction's generated Links, Apply the changed cross-section and fill again: `checkLayout` passes on both driving sides, recipe survives, attached travel-time measurement is removed, and every Command has complete JSON Undo/Redo (`tests/junction_fill_completion_tests.cpp`, **passing**) |
+| JT16 | J6 | The cross-section Command discovers both ends of shared Links, including pockets, and rebuilds the corridor on both driving sides; retained input/measurement references survive reopen, edited neighbour refuses atomically; preview/Cancel and one full JSON Undo/Redo. Native/Qt **passing** (`tests/junction_editor_tests.cpp`, `tests/junction_ui_tests.cpp`) |

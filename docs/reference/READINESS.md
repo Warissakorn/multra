@@ -31,7 +31,7 @@ not that its results are right.
 | Micro | `runDiagnostics`: draft, runtime and advisory rows; *Recheck* in the Problems tab | `src/model/network/diagnostics.*`, `editor_diagnostics.cpp` |
 | Meso | Refusals only when *Run Meso* fails: `mesoNetwork` then `mesoDemand` issues, by stage | `src/project/meso_input.*`, `meso_run.*` |
 | Macro | Refusals only when *Run Macro* fails, per period: `macroNetwork` then `macroDemand` | `src/project/macro_input.*`, `macro_run.*` |
-| Seams | *Seam checks…* on the Street segments tab, by level (D312) | `src/model/demand/seam_checks.*` |
+| Seams | *Seam checks…* on the Street segments tab, by level (D312); J6 adds the same pure junction advisory to the panel at every level (D410) | `src/model/demand/seam_checks.*`, `junction_seams.*` |
 
 So a Meso or Macro study learns what is missing one refusal at a time, by running.
 

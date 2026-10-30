@@ -67,7 +67,8 @@ enum class CrossingChoice { junction, overpass, transition };
 std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<StreetSegmentCrossing>&, const std::vector<CrossingChoice>&,
                                         double tolerance, const std::vector<CrossSection>& installed);
 // J5: Transition rows require an explicitly selected transition recipe (no taper default).
-// The older overload preserves Junction/Overpass behaviour; no general junction chooser here.
+// J6 also accepts an optional, leg-count-matching junction recipe. Overpass has no recipe.
+// The older overload preserves Junction/Overpass behaviour.
 std::vector<std::string> applyCrossings(ProjectDocument&, const std::vector<StreetSegmentCrossing>&, const std::vector<CrossingChoice>&,
     double tolerance, const std::vector<CrossSection>& installed, const std::vector<std::optional<NodeJunction>>& recipes,
     const std::vector<JunctionTemplate>& installedJunctions);

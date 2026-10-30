@@ -42,6 +42,8 @@ The other headers:
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `junction_preview_dialog.*` | Affected Node/detail list and named refusals before explicit seam/corridor replacement | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
+| `junction_cross_section_dialog.*` | Staged cross-section id/override form; blank values inherit, Cancel mutates nothing | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `editor_batch_cells.*` | The cells the batch and comparison tables share | [BATCH](../../docs/reference/BATCH.md) |
 | `editor_macro.*` | The Macro run: one worker over a copy of the document, stages and gap posted back | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) |
 | `editor_meso.*` | The Meso run, as the Macro one | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) |

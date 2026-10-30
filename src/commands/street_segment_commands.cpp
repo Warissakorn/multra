@@ -235,7 +235,13 @@ std::vector<std::string> applyCrossings(ProjectDocument& d,const std::vector<Str
         if(choices[i]!=CrossingChoice::junction&&choices[i]!=CrossingChoice::overpass&&!transition)throw std::invalid_argument("EDIT_CROSSING_CHOICES");
         if(transition!=crossings[i].transition)throw std::invalid_argument("EDIT_CROSSING_CHOICES");
         if(!transition) {
-            if(!recipes.empty()&&recipes[i])throw std::invalid_argument("EDIT_CROSSING_CHOICES");
+            if(!recipes.empty()&&recipes[i]) {
+                if(choices[i]==CrossingChoice::overpass)throw std::invalid_argument("EDIT_CROSSING_CHOICES");
+                const auto t=std::find_if(junctionPool.begin(),junctionPool.end(),[&](const auto& x){return x.id==recipes[i]->templateId;});
+                if(t==junctionPool.end()||t->kind!="junction")throw ValidationError({{"JUNCTION_TEMPLATE_UNKNOWN",recipes[i]->templateId}});
+                if(t->legs!=crossings[i].legs)throw ValidationError({{"JUNCTION_LEG_COUNT",recipes[i]->templateId}});
+                if(auto issues=junctionTemplateIssues(*t,"junction.template");!issues.empty())throw ValidationError(std::move(issues));
+            }
             continue;
         }
         if(recipes.empty()||!recipes[i])throw std::invalid_argument("TRANSITION_TEMPLATE_REQUIRED");
@@ -300,7 +306,7 @@ std::vector<std::string> applyCrossings(ProjectDocument& d,const std::vector<Str
             polygon.push_back({at.x + radius * std::cos(angle), at.y + radius * std::sin(angle)});
         }
         Node value{"", "", std::move(polygon), true};
-        if(choices[i]==CrossingChoice::transition)value.junction=recipes[i];
+        if(!recipes.empty()&&choices[i]!=CrossingChoice::overpass)value.junction=recipes[i];
         nodes.push_back(putNode(d,std::move(value)));
     }
     return nodes;

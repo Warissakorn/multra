@@ -10,7 +10,7 @@ namespace multra {
 // - meso: mesoNetwork's issues, then, when the graph compiles, mesoDemand's (runMeso's stages);
 // - macro: for `period` (macroPeriodName; empty or unknown: the first period), macroNetwork's
 //   issues, then macroDemand's; no period at all is MACRO_PERIOD_UNKNOWN, as runMacro refuses;
-// then each level's advisories, then seamChecks for that level (warnings and advisories). A catalog
+// then each level's advisories, seamChecks and junctionSeamIssues (warnings/advisories). A runtime catalog
 // that cannot be read is one EDIT_CATALOG_READ refusal. Never throws; changes nothing.
 enum class ReadinessLevel { micro, meso, macro };
 enum class ReadinessSeverity { refusal, warning, advisory };

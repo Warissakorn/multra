@@ -23,6 +23,7 @@ As [src/model](../README.md#dependencies): pure, no Qt, JSON or I/O. The compile
 | `meso_paths.*` | `mesoPath`: one authored route as Meso links and turns | [MESO_NETWORK §6](../../../docs/reference/MESO_NETWORK.md) |
 | `meso_street_segment_paths.*` | Directed zone endpoints and minimum free-flow-time paths on the compiled Meso graph, with a finite path limit, a 1e-12 relative tie tolerance and no recursion | [MESO_STREET_SEGMENT_DEMAND](../../../docs/reference/MESO_STREET_SEGMENT_DEMAND.md) |
 | `seam_checks.*` | Seam checks between StreetSegments and Micro detail, run on demand; each row an issue with a severity for the level run, none refusing | [STREET_SEGMENTS §7](../../../docs/reference/STREET_SEGMENTS.md) |
+| `junction_seams.*` | Pure recipe/drawing advisory: refined detail, movements, pockets, transition taper/alignment and NEMA timing | [JUNCTION_TEMPLATE_EDITOR §3](../../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md#3-pure-comparison-and-private-plans) |
 | `node_analysis_compile.*` | A signalised Node's lane groups from its Micro detail and signal programs, ready for `analyseSignalised`; what cannot be analysed is an advisory | [NODE_ANALYSIS §3, §4, §11](../../../docs/reference/NODE_ANALYSIS.md) |
 
 ## Tests

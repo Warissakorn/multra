@@ -1,4 +1,5 @@
 #include "street_segments.hpp"
+#include "polygon.hpp"
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -59,6 +60,28 @@ bool forwardOnStreetSegment(const StreetSegment& r, const Link& l) {
         if (std::abs(to - from) > 1e-9) return to > from;
     }
     return !r.links.empty() && r.links.front() == l.id;
+}
+std::optional<std::string> generatedStreetSegment(const Network& n,const Link& link) {
+    if(link.streetSegmentId)return link.streetSegmentId;
+    if(!link.generated)return std::nullopt;
+    std::set<std::string> seen;std::string cursor=link.id;
+    while(seen.insert(cursor).second) {
+        std::optional<std::string> target;
+        for(const auto& c:n.connectors)if(c.from.linkId==cursor&&!c.from.station&&!c.to.station) {
+            bool owned=false;
+            for(const auto& node:n.nodes){const auto runs=polygonRuns(c.geometry,node.polygon);owned=owned||std::any_of(runs.begin(),runs.end(),[](const auto& r){return r.inside;});}
+            if(owned)continue;
+            if(target&&*target!=c.to.linkId)return std::nullopt;
+            target=c.to.linkId;
+        }
+        if(!target)return std::nullopt;
+        const auto l=std::find_if(n.links.begin(),n.links.end(),[&](const auto& l){return l.id==*target;});
+        if(l==n.links.end())return std::nullopt;
+        if(l->streetSegmentId)return l->streetSegmentId;
+        if(!l->generated)return std::nullopt;
+        cursor=l->id;
+    }
+    return std::nullopt;
 }
 namespace {
 // The closest point of `line` to `p`, and its station along `line`.

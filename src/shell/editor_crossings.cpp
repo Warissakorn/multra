@@ -44,7 +44,7 @@ void EditorWindow::findCrossingsDialog() {
     table->setEditTriggers(QAbstractItemView::NoEditTriggers); table->verticalHeader()->hide();
     table->horizontalHeader()->setStretchLastSection(true);
     table->setHorizontalHeaderLabels({text("editorCrossingLevel"), QStringLiteral("x"), QStringLiteral("y"), text("editorStreetSegmentTable"),
-                                      text("editorCrossingLegs"), text("editorCrossingChoice"),text("editorTransitionTemplate")});
+                                      text("editorCrossingLegs"), text("editorCrossingChoice"),text("editorJunctionTemplateColumn")});
     layout->addWidget(table, 1);
     auto* warning = new QLabel(&dialog); warning->setObjectName("editorCrossingTemplateWarning"); warning->setWordWrap(true);
     auto palette = warning->palette(); palette.setColor(QPalette::WindowText, editorDesign::semantic(editorDesign::Semantic::warning));
@@ -89,16 +89,17 @@ void EditorWindow::findCrossingsDialog() {
             choice->addItem(text(c.transition?"editorCrossingTransition":"editorCrossingJunction"),static_cast<int>(c.transition?CrossingChoice::transition:CrossingChoice::junction));
             if (!c.endpoint&&!c.transition) choice->addItem(text("editorCrossingOverpass"), static_cast<int>(CrossingChoice::overpass));
             table->setCellWidget(r, 5, choice);
-            if(c.transition) {
-                auto* select=new QComboBox(table);select->setObjectName("editorTransitionTemplate");
+            {
+                auto* select=new QComboBox(table);select->setObjectName(c.transition?"editorTransitionTemplate":"editorJunctionTemplateChoice");
                 select->addItem(text("editorTransitionNone"),QString());
-                for(const auto& t:templates)if(t.kind=="transition")select->addItem(QString::fromStdString(t.name),QString::fromStdString(t.id));
+                for(const auto& t:templates)if(c.transition?t.kind=="transition":t.kind=="junction"&&t.legs==c.legs)select->addItem(QString::fromStdString(t.name),QString::fromStdString(t.id));
                 table->setCellWidget(r,6,select);
                 connect(select,&QComboBox::currentIndexChanged,&dialog,validate);
-            } else table->setItem(r,6,new QTableWidgetItem);
+                connect(choice,&QComboBox::currentIndexChanged,&dialog,[=]{select->setEnabled(choice->currentData().toInt()!=static_cast<int>(CrossingChoice::overpass));});
+            }
 
         }
-        table->setColumnHidden(6,std::none_of(found.begin(),found.end(),[](const auto& c){return c.transition;}));
+        table->setColumnHidden(6,false);
         validate();
         table->resizeColumnsToContents();
         warning->setText(text("editorCrossingNoTemplate").arg(editorDesign::formatValue(2 * tolerance->value(), 1)));
@@ -117,8 +118,9 @@ void EditorWindow::findCrossingsDialog() {
     std::vector<CrossingChoice> choices;std::vector<std::optional<NodeJunction>> recipes;
     for (int r = 0; r < table->rowCount(); ++r) {
         choices.push_back(static_cast<CrossingChoice>(qobject_cast<QComboBox*>(table->cellWidget(r,5))->currentData().toInt()));
-        if(choices.back()==CrossingChoice::transition) {
-            NodeJunction recipe;recipe.templateId=qobject_cast<QComboBox*>(table->cellWidget(r,6))->currentData().toString().toStdString();recipes.push_back(recipe);
+        const auto selected=qobject_cast<QComboBox*>(table->cellWidget(r,6))->currentData().toString().toStdString();
+        if(choices.back()!=CrossingChoice::overpass&&!selected.empty()) {
+            NodeJunction recipe;recipe.templateId=selected;recipes.push_back(recipe);
         } else recipes.push_back(std::nullopt);
     }
     const auto installed = crossSectionRows();

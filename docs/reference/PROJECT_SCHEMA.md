@@ -471,3 +471,5 @@ keeps its existing recipe/taper fields at 61 (generated Links at 62); only new o
 structure selects 63. Old junction templates still write their earlier shapes and floors.
 The J5 review (D407) enlarges only a still-generated transition Node's existing polygon during
 Fill, preserving its generated flag; it adds no stored field or schema step.
+J6 (D410/D411) reuses existing recipes/catalogs, generated fields and cross-section overrides.
+Affected-object previews, corridor sets and inferred pocket-prefix associations are never stored.

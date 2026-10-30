@@ -1299,7 +1299,7 @@
   "JUNCTION_MOVEMENT_MISSING": "A lane row has no matching out-leg.",
   "JUNCTION_EDITED": "Junction fill cannot replace edited or attached detail.",
   "MICRO_GENERATED_LINKS_IN_AREA": "This study-area Node has %1 Links cut or drawn by the program. Review them before relying on Micro results; exports are marked.",
-  "JUNCTION_STREET_SEGMENT_DETAIL": "This Street segment has junction-generated Links. Delete the junction's generated Links, Apply the Street segment template, then fill the junction again. Deleting Links also removes objects attached to them.",
+  "JUNCTION_STREET_SEGMENT_DETAIL": "This Street segment has junction-generated Links. Use Change cross-section through junctions… to rebuild the affected corridor in one Undo. Alternatively, delete the junction's generated Links, Apply the Street segment template, then fill the junction again. Deleting Links also removes objects attached to them and shared Links affect neighbouring junctions.",
   "NEMA_PRESET": "This junction phasing preset is not supported.",
   "NEMA_TIMING": "The NEMA phase has invalid timing.",
   "NEMA_GRID": "Every entered signal time must be on the project time-step grid.",
@@ -1320,5 +1320,14 @@
   "TRANSITION_TAPER_RANGE": "The transition taper must fit in the incoming Street segment.",
   "TRANSITION_TAPER_OUTSIDE": "The edited Node polygon must contain the entire incoming taper and its Connectors. Enlarge the polygon or enter a shorter taper.",
   "TRANSITION_POLYGON_CAPTURES": "Enlarging the transition polygon would capture another Link leg. Shorten the taper or draw the Node polygon by hand.",
-  "NODE_OVERLAP": "Node polygons must not overlap."
+  "NODE_OVERLAP": "Node polygons must not overlap.",
+  "editorJunctionTemplateColumn": "Template",
+  "SEAM_JUNCTION_DIFFERS": "The junction drawing differs from its template.",
+  "editorJunctionApplyAgain": "Apply again…",
+  "editorJunctionDetach": "Detach template",
+  "editorJunctionAffected": "Affected junctions and detail",
+  "editorJunctionReplace": "Replace the listed detail",
+  "editorJunctionObjects": "Detail objects",
+  "editorJunctionCrossSection": "Change cross-section through junctions…",
+  "editorJunctionInherit": "From template"
 }

@@ -51,14 +51,30 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   implemented: the transition plan disables an overlapping grown-polygon offer with
   `NODE_OVERLAP` naming the neighbouring Node, before Apply. JT10's preview row passes on
   both driving sides; preview/refusal preserves the complete document and History.
-- **Before main J6 code: await OWNER_SITTING B35's three answers.** §5/JT7's edited-detail
-  refusal conflicts with JT11's Apply-again repair. Also choose automatic discovery versus
-  owner selection of the complete affected corridor set, and keeping versus explicitly clearing
-  incompatible entered pocket/phase values on a template change. Recommendations were asked
-  in Thai with options; none is an answer. The approved overlap carry-over is independent.
-  Then record the answers, update §5/JT11 and the booked corridor acceptance rows, write failing
-  tests first, and implement template editor, general Find crossings column, Junction template…,
-  SEAM_JUNCTION_DIFFERS and the one-Command cross-section change through shared Links (D402/D403).
+- **J6 checkpoint (D410/D411): B35 is answered; do not ask it again.** Commands/pure seam
+  comparison, all-level Readiness, the general Find crossings column, explicit seam preview/
+  repair/Detach and staged corridor cross-section UI are implemented. See
+  [JUNCTION_TEMPLATE_EDITOR](reference/JUNCTION_TEMPLATE_EDITOR.md) for interfaces and rows.
+  `junctioneditor` has 11 native cases; `junction-ui` and the extended `transition-ui` exercise
+  both driving sides. No final J6 approval is claimed; the catalog and Node forms remain.
+- **Next, continue J6 from the remaining forms, tests first.** No new authorization is needed.
+  1. Add the free-function template catalog editor: project-owned capture via
+     `putJunctionTemplateCatalog`, structural fields and role lane tables with geometric names,
+     Add/Edit/validation/Cancel and one Undo, reusing the loader and schema-61/63 ownership rules.
+  2. Finish Nodes → Junction template… with major/leg overrides, per-pocket storage/taper and
+     cycle/NEMA phase fields. Use `chooseNodeJunctionTemplate` to keep every entered value;
+     display incompatible rows for explicit correction, with Fill disabled. Empty is missing,
+     yellow/all-red zero is an entered value; no timing or length default.
+  3. **B36 is pending before changing the site-only ownership rule.** Current `setNodeJunction`
+     clears `Node.generated` even when only the same template's taper changes, preventing J5's
+     automatic enlargement. The owner was asked whether site-only edits should retain the flag
+     while new-template/Detach/polygon edits retain D393's rule. Do not infer the answer or
+     implement that flag policy before it arrives; the catalog editor is independent.
+  4. Add catalog-mutation, three-leg/shared-pocket and missing-control probes to the pure
+     comparator before final J6 sign-off, alongside the new form acceptance rows.
+  5. Add native/Qt form rows on both sides, preserve draft/Cancel/Undo and pre-fill Macro/Meso
+     parity, then desktop build → CTest → check (headless only if configured), update docs/E29,
+     and stop for final J6 review. Keep frozen JT13 files untouched.
 - **Retain J5's contract:** taper entirely upstream, Transition-only selector, two symmetric
   installed templates and owned mixed directions (D406). A generated polygon enlarges in the
   Fill's single Undo; a person's polygon keeps TRANSITION_TAPER_OUTSIDE (D407). New Link legs
@@ -95,8 +111,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Undo step. **Corridors are required:** a Link between two filled junctions is generated for
   both; today's delete-and-refill recovery also removes the neighbour's leg. Add a *Select this
   junction's generated Links* aid that identifies shared Links/affected neighbours, or make the
-  Command corridor-aware and keep both ends consistent. Docs only in J4; no J6 code or selection
-  aid is implemented yet. Retain the recovery's attached-object and shared-leg warnings.
+  Command corridor-aware and keep both ends consistent. D410 chose the corridor-aware Command,
+  now implemented with shared-pocket handling and reference tests (JT16); no separate selection
+  aid is needed. Retain the fallback recovery's attached-object and shared-leg warnings.
 - After J6 review/approval: J7 analysis panel/results (which may need two stops), then U1–U3
   once U0's answers are in. Do not start J4T or the UTDF writer during J6.
 - Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,

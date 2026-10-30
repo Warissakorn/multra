@@ -100,7 +100,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Transition-only selector in J5; two symmetric installed templates, with owned mixed directions.
    The owner selected (b)/(c)'s recommendations and changed (a) to upstream; see §7 for the contract.
 
-35. **J6 contract choices** (asked 2026-10-30; pending, [D409](../decisions/RECORD.md#d409)).
+35. **J6 contract choices** (asked and answered 2026-10-30, [D410](../decisions/RECORD.md#d410)).
    JUNCTION_TEMPLATES §5/JT7 refuses replacement after a person's detail edit, but JT11 requires
    Apply again to repair that seam. Recommended: an explicit seam action lists/replaces edited
    detail in one Undo, retaining ordinary Fill's refusal and named reference guards; alternative:
@@ -110,8 +110,17 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    alternative: require the owner to select a complete affected set. When a template change
    makes entered pocket/phase values inapplicable, recommend keeping all values in an explicit
    draft until corrected; alternative: list and clear incompatible values in the same Undo.
-   No timing/length default. *Owner:* pending; recommendations are not answers. The overlap
-   preview carry-over is independent and implemented first; main J6 code waits for these choices.
+   No timing/length default. *Owner:* all three recommended options selected: explicit seam
+   replacement with the list and reference guards; automatic complete corridor discovery;
+   preserve every entered site value as an explicit draft. Do not re-ask B35.
+
+36. **J6 site-only edit ownership** (asked 2026-10-30; pending). `setNodeJunction` currently
+   clears `Node.generated` for every recipe edit, so entering a Transition's taper in the new
+   form would disable J5's generated-polygon enlargement. Recommend keeping the flag for
+   site-only edits on the same template, while a new template/Detach keeps D393's clearing
+   rule and polygon edits still clear it; alternative: retain clearing on every edit and
+   require manual enlargement after entering taper. *Owner:* pending. Node recipe forms and
+   this flag rule are not implemented by assumption; see [J6 §2](../reference/JUNCTION_TEMPLATE_EDITOR.md#2-editor-surfaces).
 
 Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
@@ -373,6 +382,18 @@ nothing. Numbers are not reused.
    must already disable the Fill offer with NODE_OVERLAP naming that Node, before Apply. Inspect
    missing/range/outside messages and dialog buttons on a small screen. Recipe editing remains
    J6; fill before placing stationed measurements. *Owner:*
+
+29. **J6 crossing/seam/corridor surfaces** (listed 2026-10-30, D410, D411). On Windows at
+   100/150/200 %, Thai/English: Junction rows have an optional blank Template chooser filtered
+   by leg count; Overpass disables it and Transition still needs an explicit choice. Cancel
+   and Confirm/Undo preserve the expected complete document. Refine a generated Connector:
+   Seam checks and Readiness show the same advisory at all three levels. Apply again lists
+   detail before replacement, Cancel is unchanged, Detach keeps the drawing, and Undo is one step.
+   Change cross-section through junctions on a segment shared by two filled Nodes: the preview
+   lists both, one Apply keeps both ends complete, and one Undo restores both. An edited neighbour
+   or attached generated-head measurement must name the refusal and disable Apply. Check a
+   revision-zero reopened project's object tables and dialog fit on a small screen. Template
+   catalog/Node recipe forms are still pending, including B36; this is not final J6 acceptance. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

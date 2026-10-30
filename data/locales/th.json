@@ -1299,7 +1299,7 @@
   "JUNCTION_MOVEMENT_MISSING": "แถวช่องจราจรไม่มีขาออกที่ตรงกัน",
   "JUNCTION_EDITED": "การสร้างรายละเอียดทางแยกไม่สามารถแทนที่วัตถุที่แก้ไขหรือเพิ่มไว้ด้วยมือ",
   "MICRO_GENERATED_LINKS_IN_AREA": "Node ในพื้นที่ศึกษานี้มี Link ที่โปรแกรมตัดหรือสร้าง %1 รายการ ควรตรวจก่อนใช้ผล Micro และไฟล์ส่งออกจะมีเครื่องหมายกำกับ",
-  "JUNCTION_STREET_SEGMENT_DETAIL": "ช่วงถนนนี้มี Link ที่โปรแกรมสร้างให้ทางแยก ให้ลบ Link ที่โปรแกรมสร้างให้ทางแยก ใช้แบบหน้าตัดกับช่วงถนน แล้วสร้างรายละเอียดทางแยกอีกครั้ง การลบ Link จะลบวัตถุที่ผูกอยู่ด้วย",
+  "JUNCTION_STREET_SEGMENT_DETAIL": "ช่วงถนนนี้มี Link ที่โปรแกรมสร้างให้ทางแยก ใช้ เปลี่ยนหน้าตัดผ่านทางแยก… เพื่อสร้างใหม่ครบทั้งแนวถนนใน Undo เดียว หรือให้ลบ Link ที่โปรแกรมสร้างให้ทางแยก ใช้แบบหน้าตัดกับช่วงถนน แล้วสร้างรายละเอียดทางแยกอีกครั้ง การลบ Link จะลบวัตถุที่ผูกอยู่ด้วย และ Link ที่ใช้ร่วมกันกระทบทางแยกข้างเคียง",
   "NEMA_PRESET": "ไม่รองรับรูปแบบเฟสของทางแยกนี้",
   "NEMA_TIMING": "เวลาเฟส NEMA ไม่ถูกต้อง",
   "NEMA_GRID": "เวลาสัญญาณทุกค่าต้องตรงกับช่วง timeStep ของโครงการ",
@@ -1320,5 +1320,14 @@
   "TRANSITION_TAPER_RANGE": "taper ต้องอยู่ในช่วงถนนขาเข้าทั้งหมด",
   "TRANSITION_TAPER_OUTSIDE": "polygon ของ Node ที่แก้ไขแล้วต้องครอบ taper ในขาเข้าและ Connectors ทั้งหมด ให้ขยาย polygon หรือกรอก taper ที่สั้นลง",
   "TRANSITION_POLYGON_CAPTURES": "การขยาย polygon ของ transition จะครอบขาของ Link เพิ่ม ให้ลดความยาว taper หรือวาด polygon ของ Node เอง",
-  "NODE_OVERLAP": "polygon ของ Node ต้องไม่ทับกัน"
+  "NODE_OVERLAP": "polygon ของ Node ต้องไม่ทับกัน",
+  "editorJunctionTemplateColumn": "แบบสำเร็จ",
+  "SEAM_JUNCTION_DIFFERS": "รายละเอียดที่วาดของทางแยกต่างจากแบบสำเร็จ",
+  "editorJunctionApplyAgain": "ใช้แบบสำเร็จอีกครั้ง…",
+  "editorJunctionDetach": "แยกจากแบบสำเร็จ",
+  "editorJunctionAffected": "ทางแยกและรายละเอียดที่ได้รับผล",
+  "editorJunctionReplace": "แทนที่รายละเอียดตามรายการ",
+  "editorJunctionObjects": "วัตถุรายละเอียด",
+  "editorJunctionCrossSection": "เปลี่ยนหน้าตัดผ่านทางแยก…",
+  "editorJunctionInherit": "ใช้ค่าจากแบบสำเร็จ"
 }

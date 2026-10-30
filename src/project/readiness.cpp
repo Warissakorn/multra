@@ -5,9 +5,11 @@
 #include "macro_run.hpp"
 #include "meso_input.hpp"
 #include "street_segment_codec.hpp"
+#include "junction_template_codec.hpp"
 #include "run.hpp"
 #include "../core/validate.hpp"
 #include "../model/demand/seam_checks.hpp"
+#include "../model/demand/junction_seams.hpp"
 #include <algorithm>
 
 namespace multra {
@@ -81,6 +83,9 @@ std::vector<ReadinessRow> readiness(const ProjectDocument& d, const std::filesys
         const auto seamLevel = level == ReadinessLevel::micro ? SeamLevel::micro : level == ReadinessLevel::meso ? SeamLevel::meso : SeamLevel::macro;
         for (const auto& s : seamChecks(n, types, templates, seamLevel))
             rows.push_back(located(n, {s.code, s.path}, s.severity == SeamSeverity::warning ? ReadinessSeverity::warning : ReadinessSeverity::advisory));
+        std::vector<JunctionTemplate> junctions;
+        try {for(auto& t:resolveJunctionTemplates(def,data))junctions.push_back(std::move(t.type));}catch(const std::exception&) {}
+        add(rows,n,junctionSeamIssues(n,junctions,types,def.signalControllers,def.timeStep),ReadinessSeverity::advisory);
     } catch (const ValidationError& e) {
         add(rows, n, e.issues, ReadinessSeverity::refusal);
     } catch (const std::exception& e) {

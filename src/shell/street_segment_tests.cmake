@@ -11,3 +11,11 @@
     add_test(NAME transition-ui COMMAND multra-transition-ui-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(transition-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
     add_dependencies(check multra-transition-ui-tests)
+
+    add_executable(multra-junction-ui-tests ../../tests/junction_ui_tests.cpp)
+    target_link_libraries(multra-junction-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_compile_definitions(multra-junction-ui-tests PRIVATE MULTRA_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+    target_precompile_headers(multra-junction-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME junction-ui COMMAND multra-junction-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(junction-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check multra-junction-ui-tests)

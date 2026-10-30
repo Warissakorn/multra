@@ -46,7 +46,7 @@ void renameEnd(ProjectDocument& d,const std::string& from,const std::string& to)
     for(auto& c:d.zones.zoneConnectors)if(c.linkId==from)c.linkId=to;
 }
 }
-std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const NodeFillCatalogs& catalogs) {
+std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const NodeFillCatalogs& catalogs,bool crossSectionChange) {
     std::vector<ValidationIssue> issues;
     std::set<std::string> connectors,removed;
     const auto edited=[&](const std::string& id){issues.push_back({"JUNCTION_EDITED",id});};
@@ -77,7 +77,7 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
             if(bridges.empty())break;
             const auto parent=bridges.front()->from.linkId;
             const auto& upstream=link(d,parent);
-            if(upstream.streetSegmentId)break; // Another arm/junction, not this pocket's detached upstream piece.
+            if(upstream.streetSegmentId&&(!crossSectionChange||*upstream.streetSegmentId!=road->id))break;
             bool unique=true;
             for(const auto* c:bridges) {
                 if(c->from.linkId!=parent)unique=false;
@@ -90,7 +90,7 @@ std::vector<ValidationIssue> restore(ProjectDocument& d,const Node& node,const N
             cursor=parent;
         }
         if(removed.contains(cursor)){edited(cursor);continue;} // A cyclic predecessor chain cannot own an approach.
-        if(!baseMatchesTemplate(link(d,cursor),templates[direction])) {
+        if(!crossSectionChange&&!baseMatchesTemplate(link(d,cursor),templates[direction])) {
             const auto index=static_cast<std::size_t>(road-d.network.streetSegments.begin());
             issues.push_back({"JUNCTION_STREET_SEGMENT_DETAIL","network.streetSegments["+std::to_string(index)+"].crossSectionId"});
             continue;

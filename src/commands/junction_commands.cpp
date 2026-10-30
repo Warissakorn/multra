@@ -14,6 +14,11 @@ void setNodeJunction(ProjectDocument& d, const std::string& id, std::optional<No
     if (value && value->major.empty() && node.coarse) value->major = node.coarse->major;
     node.junction = std::move(value); node.generated = false;
 }
+void chooseNodeJunctionTemplate(ProjectDocument& d,const std::string& id,const std::optional<std::string>& type) {
+    if(!type){setNodeJunction(d,id,std::nullopt);return;}
+    auto recipe=nodeOf(d,id).junction.value_or(NodeJunction{});recipe.templateId=*type;
+    setNodeJunction(d,id,std::move(recipe));
+}
 void setNodeApproachDirections(ProjectDocument& d, const std::string& id, ApproachDirections directions) {
     auto& node = nodeOf(d,id);
     node.approachDirections = std::move(directions); node.generated = false;
