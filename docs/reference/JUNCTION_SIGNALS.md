@@ -104,7 +104,18 @@ limitation for T template fills, with no change to legacy F3/F4 or their frozen 
   measuring copy only, retained base footprints/references, unchanged preview/Street segments,
   generated flags, repeat Fill and exact Undo/Redo; legacy JT13 unchanged. **Passing.**
 
-J4T is implemented and awaits owner review. Native junctionsignals has 19 passing cases
+J4T core is checkpointed at b7be7c94; the slice is not complete. Native junctionsignals has 19 passing cases
 (nine JT9, seven JT18, three JT19); junctionfill has 25 including the updated JT19 case and
 frozen JT13. Catalog/recipe Qt tests pass on both driving sides and both locales. U0 has no answers; no writer or
 Synchro/Vistro interoperability claim is included.
+
+## Natural polygon blocker (JT20, B38 pending)
+
+JT18/JT19 above use authored roomy polygons. With the unedited 16-gon/radius 14.5 m from
+Find crossings, the full-lane T has Connector endpoint geometry outside the polygon and
+Fill refuses NODE_CONNECTOR_CROSSES on both driving sides. Selecting template/major can
+clear Node.generated even without a polygon edit (D393/B36), so the transition-only D407
+rule cannot silently be assumed for every T. B38 asks whether to fit generated Nodes,
+provide an explicit previewed Fit polygon + Fill for cleared flags, or retain a named
+manual-polygon recovery. No choice is inferred. Existing ownership, capture/overlap guards,
+reference protection and one Undo must remain. JT20's real-workflow acceptance is pending.

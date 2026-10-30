@@ -385,7 +385,7 @@ T uses existing P2 plus legs=3, with two full lanes per arm; no new schema or ti
 | J6 | **Approved at 3ec3d39/09b0689 (D409–D414):** template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36, compact previews; JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
 | J6a | **Implemented, awaiting review (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
 | J7 | Analysis panel and results (§9) | 1–2 |
-| J4T | **Implemented, awaiting review** (D405/D416): protected signalised T, compass NEMA subset, template T cuts, JT18/JT19; separate review | 1 |
+| J4T | **Core checkpoint b7be7c94; B38 pending** (D405/D416): protected signalised T, compass NEMA subset, template T cuts, JT18/JT19 on authored polygons; natural-polygon JT20 pending; separate review | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
 U0 waits on the owner, and its answers can change J4 and U1. About 14–17
@@ -447,3 +447,4 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT17 | J6a | Exact polyline endpoint conversion; single-junction 3-lane-exit controls at x=0 and x=200; ordinary History Fill of -200/0/200 corridor and atomic cross-section rebuild, both driving sides, with valid whole document, unchanged preview, seam parity, save/reopen and exact JSON Undo/Redo. D413 refusal removed (`tests/junction_corridor_conflict_tests.cpp`, **passing**, 9 cases) |
 | JT18 | J4T | Protected three-stage T, both sides/all stem directions, literal U0 compass check, required site timing/omitted phases, NEMA/refusal guards, HCM/Micro, drafts/Node form, generated/refine and full Undo/reopen ([contract](JUNCTION_SIGNALS.md); **passing**) |
 | JT19 | J4T | T template full-width measuring extension, both sides, signals/two-way stop, original footprints/reference guards, legacy F4/JT13 unchanged and one Undo ([contract](JUNCTION_SIGNALS.md); **passing**) |
+| JT20 | J4T | Real Find crossings polygon without a manual enlargement: policy and positive/refusal rows await B38; both driving sides, four stems and one Undo ([blocker](JUNCTION_SIGNALS.md#natural-polygon-blocker-jt20-b38-pending); **pending**) |

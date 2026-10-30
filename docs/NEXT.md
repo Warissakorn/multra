@@ -47,18 +47,27 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **J4T is implemented; stop for owner review (D405/D416).** J6 and J6a are
-  approved, including e1eaad8's exact endpoint conversion and accepted byte parity.
-  B37 is answered: two full incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3,
-  and a stem extension only in the T template's measuring copy, for both controls. No defaults
-  or new schema. The full signal/T-cut contract is [JUNCTION_SIGNALS](reference/JUNCTION_SIGNALS.md).
-- **Next action: wait for J4T review.** JT18/JT19 pass; fix any requested changes in this
-  same slice, repeat build/CTest/check, commit/push and report. Required phase numbers must match
-  between Fill, the Node form and seam comparison, including incomplete timing; all four
-  stem directions/both driving sides include literal U0 compass checks and single-phase rings.
-  The original F4 and frozen JT13 remain unchanged. No UTDF writer or next slice before review.
-  After approval follow the owner's pick; J7 (§9/JT12) remains a separate slice and U0 still
-  blocks U1. OWNER_SITTING E30 is the Windows look for the T preset/required phase subset.
+- **Current slice: J4T, core checkpoint b7be7c94 (D405/D416); not complete.** J6/J6a are
+  approved. The T preset, four-phase subset and measuring cuts pass on authored roomy Nodes,
+  but the final real-workflow check finds B38: the untouched Find crossings polygon is a
+  16-gon of radius 14.5 m; T Connector endpoints leave/re-enter it (NODE_CONNECTOR_CROSSES)
+  on both sides. Selecting template/major can already clear Node.generated under D393/B36.
+- **Next action: wait for B38 before changing polygon policy.** OWNER_SITTING B38 has the
+  options/recommendation. Do not infer consent, reset generated to true or silently grow an
+  edited polygon. If growth is chosen, retain new-Link-leg/Node-overlap preview guards and
+  one Undo, for both T controls. Keep ordinary F4, frozen JT13 and required site timing.
+- **Precise repro/tests:** `/workspace/j4t-review/natural-workflow.patch` removes the authored
+  60 m square from normal T tests (with temporary diagnostic capture); workflow-targets.log
+  and natural-0/1.json preserve the failing originals/candidates. In junction_t_fixture.hpp,
+  skip the explicit polygon assignment for the normal two-lane T. Both JT18 compass tests
+  and the installed re-apply test then fail; roomy pocket fixtures stay deliberate.
+  Restore the failing-first natural-polygon row as JT20 once B38 is answered, remove temporary
+  instrumentation, implement the selected policy, and repeat desktop build/CTest/check/CLI.
+- **JT18/JT19 pass on authored polygons; JT20 is pending B38.** The Node form lists only the
+  four required phases, including incomplete timing. Native junctionsignals 19/19 and the
+  prior full CTest/check 257/257 are evidence for the core checkpoint, not real-workflow
+  completion. Current tests were restored to green while the owner choice is pending.
+  Stop for J4T review only after JT20 is resolved. No J7 or UTDF writer; U0 is still unanswered.
 - **Retain B35/B36 (D410/D412):** listed explicit seam replacement and reference guards,
   automatic complete shared-Link closure, explicit incompatible drafts with no site defaults.
   Same-template site-only edits preserve the current Node.generated; template/Detach,

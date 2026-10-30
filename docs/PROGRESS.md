@@ -6,7 +6,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
-## 2026-10-30 — J4T protected T, phase subset and measuring cuts (D416)
+## 2026-10-30 — J4T core checkpoint; natural polygon choice pending (D416, B38)
 
 - **Owner:** J6/J6a approved. B33 fixes three stages/compass numbering; B37 selected two full
   incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3, and a measuring-copy stem
@@ -30,11 +30,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   HCM's six movement greens and Micro seed 42. Node form is driven in English/Thai.
 - **Docs:** signal contract split before the root page's 500-line limit; JT18/JT19, D416/index,
   schema/readiness/module maps, B37/E30, ROADMAP and NEXT updated; oldest whole entry archived.
+- **Final workflow finding (B38):** removing the fixture's authored 60 m square exposes
+  NODE_CONNECTOR_CROSSES with the actual 14.5 m-radius Find crossings polygon on both sides.
+  The T core is committed at b7be7c94 but the slice is not complete. Template/major selection
+  can already clear generated, so another polygon policy is an owner choice. Asked before
+  implementing growth; JT20 is pending. Preserve the failing patch and original/candidate
+  JSON in the evidence directory; restore the roomy tests to green while awaiting B38.
 - **Verification:** desktop build and CTest **257/257** (279.81 s, parallel 5) pass; native
   junctionsignals **19/19**, junctionfill **25/25**, junctiontemplates **19/19**, junctioneditor
   **27/27** and both-locale Qt forms pass. CLI raw bytes match except buildCommit. Check
   **257/257** (280.92 s) passes. U0 has no answers; no writer/interchange claim or J7 work. Linux only; headless
   unconfigured, Windows/manual UI not run (E30). Evidence: `/workspace/j4t-review/`.
+  After restoring the core fixtures, the checkpoint desktop build and targeted signal/recipe
+  tests pass **2/2** (7.74 s); docs/file-size/diff guards pass. B38 remains unanswered.
 
 ## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
 
