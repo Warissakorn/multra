@@ -131,7 +131,10 @@ int main(int argc,char** argv) {
                 require(window.width()<=size.width()&&window.height()<=size.height(),"A group forced the window larger");
                 const auto view=canvas->viewport()->size();
                 if(size.width()==1024)require(view.width()>=400&&view.height()>=250,"Small-window canvas is unusable with a group");
-                else require(view.width()>=700&&view.height()>=350,"Wide canvas crowded out by a group");
+                else {
+                    if(view.width()<700||view.height()<350)std::cerr<<group.key<<" locale "<<lang<<": "<<view.width()<<" x "<<view.height()<<'\n';
+                    require(view.width()>=700&&view.height()>=350,"Wide canvas crowded out by a group");
+                }
                 require(window.rect().contains(QRect(combo->mapTo(&window,QPoint()),combo->size())),"Selector outside window");
                 require(combo->mapTo(tabs,QPoint(combo->width(),0)).x()<=tabs->tabBar()->mapTo(tabs,QPoint()).x(),"Selector overlaps the page strip");
             }

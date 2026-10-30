@@ -4,6 +4,9 @@
 #include "gate_flow_dialog.hpp"
 #include "junction_catalog_dialog.hpp"
 #include "junction_recipe_dialog.hpp"
+#include "node_analysis_dialog.hpp"
+#include "node_analysis_panel.hpp"
+#include "../commands/node_analysis_commands.hpp"
 #include "../commands/junction_commands.hpp"
 #include "../project/junction_template_codec.hpp"
 #include "../project/link_type_codec.hpp"
@@ -21,6 +24,7 @@
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QTableWidget>
+#include <QTabWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <algorithm>
@@ -73,6 +77,20 @@ void EditorWindow::buildNodes() {
     }));
     // S3.6b (D311): the coarse values of a Node without detail.
     bar->addAction(action("editorEditCoarse", {}, [this] { const auto id = selectedNode(); if (!id.empty()) editCoarse(id); }));
+    bar->addAction(action("editorNodeAnalysis",{},[this] {
+        const auto id=selectedNode();if(id.empty())return;
+        try {
+            const auto& doc=history_.document();const auto n=std::find_if(doc.network.nodes.begin(),doc.network.nodes.end(),[&](const auto& n){return n.id==id;});
+            const auto result=editNodeAnalysis(this,doc,id,[this](const char* key){return text(key);});
+            if(result&&*result!=n->analysis.value_or(NodeAnalysis{}))execute("editorNodeAnalysis",[&](auto& d){setNodeAnalysis(d,id,*result);});
+        }catch(const std::exception& e){showError(e);}
+    }));
+    bar->addAction(action("editorAnalyseNodes",{},[this] {
+        try {
+            auto* panel=static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"));panel->analyse();
+            objects_->setCurrentWidget(resultsPage_);resultsTabs_->setCurrentWidget(panel);refresh();
+        }catch(const std::exception& e){showError(e);}
+    }));
     bar->addAction(action("editorJunctionTemplates",{},[this] {
         try {
             std::vector<JunctionTemplate> entries;for(auto& t:resolveJunctionTemplates(history_.document().definition.value_or(AuthoringDefinition{}),data_))entries.push_back(std::move(t.type));
@@ -212,7 +230,7 @@ void EditorWindow::refreshNodes() {
     }
     canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit
     const bool chosen = !selectedNode().empty();
-    for (const auto* key : {"editorRenameNode", "editorDeleteNode", "editorNodeJunction"}) actions_.at(key)->setEnabled(chosen);
+    for (const auto* key : {"editorRenameNode", "editorDeleteNode", "editorNodeJunction", "editorNodeAnalysis"}) actions_.at(key)->setEnabled(chosen);
     const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));

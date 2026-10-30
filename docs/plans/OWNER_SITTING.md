@@ -184,20 +184,13 @@ Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
 Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
 ([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
 
-37. **J4T structure and T cuts** (answered 2026-10-30, [D416](../decisions/RECORD.md#d416)).
-   Owner selected every recommendation before code: two full incoming lanes on each arm,
-   major-far F|T, major-kerb T|K, minor F|K; reuse P2 + legs=3 without a new enum/schema;
-   include the measuring-copy stem extension to the far major pavement for both signalised
-   and two-way-stop T templates, retaining ordinary F4. Missing timing remains missing;
-   unused phases remain omitted. No further B37 question is pending.
+37–38. **J4T structure/cuts and polygon fitting:** answered and approved; [whole items B37–B38](../archive/OWNER_SITTING-B37-B38-2026-10-31.md), D416/D417.
 
-38. **Junction polygons and first template choice** (answered 2026-10-30, [D417](../decisions/RECORD.md#d417)).
-   Owner selected fitting for **every junction template**, including four legs: automatic while
-   generated, explicit previewed Fit polygon + Fill when false, capture/overlap guards and one
-   Undo, never restoring true. B36 amended: first template choice keeps the current flag in
-   Find crossings and the later Node form; switching template, Detach and polygon edits clear
-   it. Remaining Fill NODE_CONNECTOR_CROSSES must name Node/Connector. JT20 covers the real
-   untouched polygon through both entry paths, both driving sides and all three template families.
+39. **J7 analysis source** (answered 2026-10-31, [D418](../decisions/RECORD.md#d418)).
+   Owner chose current snapshot as recommended. Use the file's exact bytes when it still
+   parses to the current document; otherwise use current Save bytes and label the result
+   as an unsaved snapshot at Analyse. Saving that unchanged snapshot must give byte-identical
+   CLI JSON/CSV, preserving existing CLI outputs. No automatic Save or new stored field.
 
 ## C — Run view (the 125 % screen)
 
@@ -436,6 +429,14 @@ nothing. Numbers are not reused.
    automatically. After a polygon edit, Fit polygon + Fill previews dashed old/solid new outlines;
    Cancel is unchanged, Apply is one Undo and keeps false. Capture/overlap disables preview Apply.
    Automated Linux tests do not supply this Windows verdict. *Owner:*
+
+31. **J7 Node analysis** (listed 2026-10-31, D418). On Windows at 100/150/200 %, Thai/English:
+   Nodes → Analysis… shows compass L/T/R names, hourly volumes, %HV, Node settings and approach
+   adjustments. Blank volume differs from entered zero; blank optional fields stay defaults.
+   Check scrolling/fixed footer, Cancel, stale-row review/clear and one Undo. Analyse fills
+   Results → Node analysis with all figures, missing-number blanks, localized refusals and the
+   analytical/not-validated marker. Inspect source snapshot, stale-after-edit/Undo, CSV/Copy,
+   and byte parity with CLI after Save. No formula or Fill-from-model change. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

@@ -12,7 +12,8 @@
 #include "../src/project/macro_output.hpp"
 #include "../src/project/meso_output.hpp"
 #include "../src/project/node_analysis_run.hpp"
-#include "build_info.hpp"
+#include "../src/project/node_analysis_report.hpp"
+#include "../src/project/build_metadata.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
@@ -123,9 +124,7 @@ void writeCsv(const std::filesystem::path& csvFile, const std::string& text) {
     if (!csv) throw std::runtime_error("Failed writing CSV output");
 }
 void stamp(Json& result) {
-    result["engineVersion"] = std::string(MULTRA_VERSION) + "-cpp-m0";
-    result["buildCommit"] = MULTRA_BUILD_COMMIT;
-    result["compiler"] = MULTRA_COMPILER;
+    addBuildMetadata(result);
 }
 int runBatch(const std::filesystem::path& file, const std::filesystem::path& csvFile,
              const std::filesystem::path& data, const std::vector<std::uint32_t>& seeds, unsigned threads) {
@@ -202,12 +201,9 @@ int runNodeAnalysisProject(const std::filesystem::path& file, const std::filesys
     const auto document = parseDocument(readInputJson(file, "project", &inputs));
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
-    const auto run = runNodeAnalysis(document, data, &inputs);
-    const auto marking = exportMarking(document, {});
-    writeCsv(csvFile, markedCsv(nodeAnalysisCsv(run), marking));
-    auto result = nodeAnalysisJson(run);
-    addMarkingJson(result, marking);
-    stamp(result);
+    const auto report = analyseNodeAnalysisDocument(document, data, inputs);
+    writeCsv(csvFile, nodeAnalysisReportCsv(report));
+    auto result = nodeAnalysisReportJson(report);
     std::cout << result.dump(2) << '\n';
     return std::cout ? 0 : 1;
 }

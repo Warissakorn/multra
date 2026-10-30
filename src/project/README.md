@@ -74,6 +74,8 @@ keeps its schema and bytes.
 |---|---|---|
 | `evaluation.*` | The queue-counter definition and `evaluationSpec`; `discharge_json.cpp` writes discharge JSON | [BATCH](../../docs/reference/BATCH.md), [DISCHARGE](../../docs/reference/DISCHARGE.md) |
 | `csv_format.*` | Cell formats every results CSV shares | [BATCH](../../docs/reference/BATCH.md) |
+| `node_analysis_report.*` | Captured-input analytical report shared by CLI/editor, exact manifest bytes and stale/generated export marking | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
+| `build_metadata.*` | Shared engine/build/compiler JSON stamping, preserving CLI output | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `batch_output.*` | Batch JSON and CSV | [BATCH](../../docs/reference/BATCH.md) |
 | `comparison_output.*` | Scenario comparison JSON and CSV | [BATCH §7](../../docs/reference/BATCH.md) |
 | `parallel_seeds.*` | `runSeedsParallel`: the runner's seeds on worker threads; the runner stays thread-free | [BATCH](../../docs/reference/BATCH.md) |

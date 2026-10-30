@@ -47,19 +47,23 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Stop for owner review of J4T (D405/D416/D417).** JT18–JT20 pass: protected three-stage
-  signalised T with compass NEMA subset and required site timing; measured T cuts; B38 polygon
-  fitting for every three-/four-leg junction template. No next slice before owner approval.
-- **Review B38/JT20:** automatic fitting while generated, explicit old/proposed-outline Fit
-  polygon + Fill when false, new-Link-leg/Node-overlap preview guards and one Undo. First
-  template choice keeps current ownership through the crossing column or later Node form;
-  switching template, Detach and polygon edits still clear it, never restoring false to true.
-  Remaining Fill NODE_CONNECTOR_CROSSES names both Node and Connector. Natural shared/pocket
-  four-leg and signalised T run through both entry paths on both driving sides; Qt also drives
-  later first choice → Fill, explicit Cancel/Apply and site forms in English/Thai.
-- **Owner checks still open:** Windows appearance/Undo at OWNER_SITTING E30, and U0 imports
-  in section I. No timing defaults, new stored fields/schema or interchange claim. No J7 or
-  UTDF writer is authorized before review; U0 still has no answers.
+- **Stop for owner review: J7, NODE_ANALYSIS A9 first half.** J4T b7be7c9/fd87e02/4433ffe,
+  including B38/D417, is approved. Owner review confirms natural polygons through both entry
+  paths/both sides, 200/90/60/40 m corridors and the correct short-pocket refusal. Preserve it.
+- **J7 contract:** JUNCTION_TEMPLATES §9/JT12 and [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md).
+  Nodes → Analysis… edits existing Node::analysis in one Undo, naming turns via §6. Analyse
+  runs the existing analytical method synchronously on the UI thread; Results → Node analysis
+  and CSV show groups/totals/refusals/defaults, markers and revision staleness. No formulas,
+  new fields/schema, Fill from model, timing proposal or Micro side-by-side.
+- **B39/D418 answered:** use current snapshot. Exact saved bytes when they still parse to
+  the current document; otherwise current Save bytes, labelled unsaved at Analyse. Record/parse
+  those same bytes; an unchanged snapshot saved later matches real CLI JSON/CSV byte for byte.
+  Preserve CLI outputs and per-platform text-stream endings. Do not re-ask this choice.
+- **Await J7 approval; do not start another slice.** JT12 covers both sides/locales, exact
+  saved/unsaved/external-file CLI JSON/CSV, D383, Undo/reopen and exports. If the owner requests
+  changes, keep them in J7, re-verify and report again. OWNER_SITTING E31 is the Windows look.
+  No Fill from model, timing proposal, Micro side-by-side or UTDF writer is authorized; U0
+  remains unanswered. After approval, take the owner's next explicit pick.
 - **Retain B35/B36 (D410/D412):** listed explicit seam replacement and reference guards,
   automatic complete shared-Link closure, explicit incompatible drafts with no site defaults.
   First choice and same-template site-only edits preserve current Node.generated; switching template/Detach,

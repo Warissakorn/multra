@@ -54,8 +54,8 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     const Page results[]={{"editorMovementTable","editorResultsTabMovements"},
         {"editorDischargeTable","editorResultsTabDischarge"},{"editorClampTable","editorResultsTabClamps"},
         {"editorLotTable","editorResultsTabLots"},{"editorNodeResultTable","editorResultsTabNodes"},{"editorMacroTable","editorResultsTabMacro"},
-        {"editorMesoTable","editorResultsTabMeso"}}; // M11.4 (D300)
-    require(tabs->count()==22 && inner->count()==7,"Tab inventory changed");
+        {"editorMesoTable","editorResultsTabMeso"},{"editorNodeAnalysisPanel","editorResultsTabNodeAnalysis"}}; // J7/D418
+    require(tabs->count()==22 && inner->count()==8,"Tab inventory changed");
     QList<QWidget*> original,originalInner;
     for(int i=0;i<tabs->count();++i)original<<tabs->widget(i);
     for(int i=0;i<inner->count();++i)originalInner<<inner->widget(i);

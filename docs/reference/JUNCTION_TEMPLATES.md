@@ -394,7 +394,8 @@ T uses existing P2 plus legs=3, with two full lanes per arm; no new schema or ti
   `Node::analysis` per turn (named by direction and L/T/R from §6) in one Command; *Analyse* runs
   `src/analysis/` on the UI thread and fills Results → *Node analysis* (lane group v, s, c, X,
   g/C, d, LOS, back of queue; approach and intersection d and LOS; refusals with locale strings,
-  D383), with CSV through `csv_format.hpp` and the marker line.
+  D383), with CSV through `csv_format.hpp` and the marker line. The detailed form, snapshot,
+  staleness and parity contract is [NODE_ANALYSIS_EDITOR](NODE_ANALYSIS_EDITOR.md), D418.
 
 ## 10. Slices
 
@@ -408,9 +409,9 @@ T uses existing P2 plus legs=3, with two full lanes per arm; no new schema or ti
 | J4 | **Done (D404, JT9 passing).** Signals from the template: P1–P4, NEMA numbering, required site timing and `nemaCheck` (§8); stop for review | 1 |
 | J5 | **Approved at d5e2bbe (D406–D408, JT10 passing).** Upstream transitions and the Transition-only selector (§7) | 1 |
 | J6 | **Approved at 3ec3d39/09b0689 (D409–D414):** template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36, compact previews; JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
-| J6a | **Implemented, awaiting review (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
-| J7 | Analysis panel and results (§9) | 1–2 |
-| J4T | **Implemented; owner review pending** (D405/D416/D417): protected signalised T, compass NEMA subset, measured T cuts and all-junction polygon fitting; JT18–JT20 **passing** | 1 |
+| J6a | **Approved at e1eaad8 (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
+| J7 | **Implemented; review pending (D418, JT12 passing).** Analysis form and results (§9 / A9 first half); current-snapshot provenance, exact CLI JSON/CSV and one Undo | 1–2 |
+| J4T | **Approved at 4433ffed** (D405/D416/D417): protected signalised T, compass NEMA subset, measured T cuts and all-junction polygon fitting; JT18–JT20 **passing** | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
 U0 waits on the owner, and its answers can change J4 and U1. About 14–17
@@ -464,7 +465,7 @@ builder; the full rename before M14 code (to Street segment, D389); transitions 
 | JT9 | J4 | P1–P4 on both driving sides, both major axes and pocket variants: exact entered timing, clearance/wait split, missing/grid/cycle refusals, broken barrier/ring/head and protected-lane codes; compiled HCM g/C, P3 protected result and Micro seed 42; generated/refine and safe replacement with full JSON Undo/Redo (`tests/junction_signal*_tests.cpp`, **passing**, 9 cases) |
 | JT10 | J5 / J6 carry-over | 3→2 Transition row, upstream taper and kerb/far/mixed mapping on both driving sides; Find crossings → applyCrossings → F3 → 15/30/60 m tapers → Fill enlarges the generated polygon to contain Connector rails, with unchanged preview, save/reopen, re-apply and one exact JSON Undo/Redo; an edited polygon refuses atomically at its polygon path. At 60 m in left-hand traffic, a side road (-40,112) → (-40,12), mirrored for right-hand traffic, would add two Link legs: refuse at each captured Link without document/History/save-state changes; y=25 stays outside and fills with one Undo. Neighbour overlap keeps NODE_OVERLAP; its preview disables the offer, names the neighbour, and direct generation also refuses before publication, on both driving sides. Schema-63/older-field guards; missing/bounds/unused-site refusals; same-template lifecycle merge; generated replacement/refine, stationed-head protection; ordinary Micro compilation and existing HCM refusal. Required selector, Cancel and one Undo driven in Qt (`tests/transition_tests.cpp`, `tests/transition_reference_tests.cpp`, `tests/transition_ui_tests.cpp`; **passing**, 14 native cases plus UI on both sides) |
 | JT11 | J6 | Catalog Add/Edit/role validation and owned capture; Node template/major/lanes/directions/pocket/timing forms preserve drafts, missing versus entered zero, Cancel and one Undo. B36 keeps ownership only for site edits, never resurrects it; taper entry still allows generated polygon enlargement. Refined detail, catalog/major/timing/pocket/transition changes and missing controls give advisory `SEAM_JUNCTION_DIFFERS` at all levels; explicit preview/Apply again/Detach preserve references or refuse. Optional crossing choice has no site defaults. Native/Qt both sides, forms in both locales **passing** ([J6 detail](JUNCTION_TEMPLATE_EDITOR.md)) |
-| JT12 | J7 | The panel writes `Node::analysis` in one Undo step; *Analyse* matches `--node-analysis` byte for byte |
+| JT12 | J7 | Both sides/locales: compass turn inputs, missing/zero, sourced settings/approaches, codec/refusal/stale-row handling, Cancel/Undo/reopen; synchronous all-configured-Node Analyse and read-only figures/markers. Exact saved/current-snapshot CLI JSON/CSV parity, external file changes, stale/Undo/reset and protected exports ([contract](NODE_ANALYSIS_EDITOR.md); **passing**, 8 Qt cases) |
 | JT13 | J3b | F3 and F4 (priority/signalised with a banned turn), both driving sides, and Street segment re-apply after F4 produce the same complete document as the frozen `33a856a5` implementations under the old/manual History path; compare against `generatedCommand=true`, including IDs, revision and flags (`tests/junction_fill_parity_tests.cpp`, **passing**) |
 | JT14 | J3b review | F3 → F4 on a coarse Node → choose a recipe → change laneWidth → Apply template matches the complete pre-J3b document and one Undo/Redo on both driving sides, with and without recipe pockets (`tests/junction_fill_completion_tests.cpp`, **passing**) |
 | JT15 | J3b review | Reopen without Undo, delete the junction's generated Links, Apply the changed cross-section and fill again: `checkLayout` passes on both driving sides, recipe survives, attached travel-time measurement is removed, and every Command has complete JSON Undo/Redo (`tests/junction_fill_completion_tests.cpp`, **passing**) |

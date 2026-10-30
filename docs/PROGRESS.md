@@ -6,6 +6,43 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-31 — J7: Node analysis form, snapshot and Results (D418)
+
+- **Owner:** J4T approved, including natural polygons, both entry paths/sides, 200/90/60/40 m
+  corridors, correct short-pocket refusal and unchanged shipped/analysis bytes. J7 is A9 first
+  half only. B39 answered: current snapshot, exact saved bytes when equal; otherwise exact Save
+  bytes labelled unsaved at Analyse, with CLI parity after saving the unchanged snapshot.
+- **Implemented:** staged compass L/T/R turn volumes/%HV, Node PHF/period/CBD/sourced saturation
+  and approach adjustments; missing differs from zero. Existing codec checks shape/sign, HCM
+  checks its ranges on Analyse. Stale/extra rows are preserved and explicitly clearable.
+  setNodeAnalysis is one Command/Undo, Cancel/no-op unchanged. No lane/timing copy or new schema.
+- **Results:** shared project report/metadata/marking for CLI and GUI; synchronous calculation
+  over exactly recorded/parsed bytes. Separate group, approach, intersection, defaults/source
+  and localized refusal tables; unavailable figures blank. Partial totals retain D383's existing
+  warning. Source revision, captured-snapshot note, stale/Undo freshness, generation reset and
+  marked CSV/Copy; protect active project/recovery from export. No Window-header growth.
+- **Tests first:** initial fixture incorrectly assumed the template switch kept generated;
+  corrected the forcing assert before proving missing actions on all four side/locale pairs.
+  Extended form tests then exposed the missing source requirement for a saturation override;
+  fixed in UI without tightening older-file decoding. All 8 JT12 form/result cases pass.
+  The 28 actual CLI subprocess runs match JSON/CSV for non-canonical saved bytes, unsaved-then-saved
+  snapshots, external-file changes, method/queue refusals, multiple/empty configured Nodes;
+  plus defaults/zero, Cancel, exact Undo/reopen, explicit stale-row clearing and export guards.
+- **Verification:** the first full CTest run was 253/258: the old seven-tab expectation and
+  four layout cases failed. Updated the tab inventory and made the hidden page ignore minimum
+  size, with reflow labels; retained canvas/layout thresholds. Those six targeted suites then
+  passed (25.31 s), including JT12. Desktop build and CTest **258/258** (290.45 s, parallel 5)
+  pass; check **258/258** (297.74 s) also passes, with architecture/file-size/docs guards.
+  The one-Node before/final CLI bytes match except buildCommit.
+  The first build exhausted local
+  disk on debug executables; stripped debug sections and used a local-only strip-debug linker
+  cache flag, retaining debug objects and source/FP flags. No tracked build flag changed.
+  Linux offscreen only; headless unconfigured, Windows/manual UI remains E31. U0 unanswered;
+  no UTDF writer, Fill from model, timing proposal or Micro side-by-side.
+- **Docs:** editor contract/index, §9/JT12, Node-analysis/schema, D418/index, B39/E31, module maps,
+  ROADMAP/NEXT updated. Answered B37/B38 archived whole to keep OWNER_SITTING under 500 lines;
+  oldest PROGRESS entry archived whole, ten live entries retained.
+
 ## 2026-10-30 — J4T: real Find crossings Fill and explicit polygon preview (D417)
 
 - **Owner B38:** extend the chosen fit policy to every three-/four-leg junction template.
@@ -247,27 +284,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `check` **253/253** (241.64 s) pass, including architecture, file-size and documentation
   guards. CLI node-analysis output matches except `buildCommit`. Headless is not configured;
   Windows and manual UI driving were not run (E28).
-
-## 2026-10-30 — J5 transition implementation (D406)
-
-- **Owner B34:** taper entirely upstream, Transition-only selector in J5, two symmetric
-  installed alignments and owned mixed directions. J4T remains documentation only (D405).
-- **Implemented:** strict transition catalog shape and schema-63 field guards; old recipe
-  fields keep their existing floors. Differing end-to-start pairs are Transition rows; the
-  selector starts empty and Confirm needs a choice. Confirm and fill each use one Command.
-- **Geometry:** cut the incoming arm at its entered centreline taper, keep the outgoing start,
-  map aligned lanes one-to-one, then merge/diverge the extra lanes on the opposite side.
-  Existing merge order/defaults, generated/refine and named reference protection apply.
-  No Node kind/layout is duplicated, no site length is defaulted, no core/HCM method changes.
-- **Tests first:** the first three JT10 cases failed on the loader, missing row and fill.
-  Extended cases cover both driving sides, mixed alignment, one-way/unused site values,
-  bounds/missing values, generated replacement/refine, stationed heads and full JSON Undo.
-- **Docs/UI:** PROJECT_SCHEMA, street workflow, module maps and OWNER_SITTING E28 updated.
-  Street segment/transition Qt test registration was split before the 500-line limit.
-- **Fixture corrections:** allocate new Node ids through the API; a detailed two-leg layout
-  still has approaches, while HCM refuses its unsignalised control. Micro compilation needs
-  inputs and emits conflict zones for authored merges, not legacy priority rules.
-- **Verification:** desktop build, native JT10 **9/9**, and the new Qt selector test on both
-  driving sides pass. CTest **253/253** (253.04 s) and `check` **253/253** (241.42 s) pass. CLI output
-  matches before/after except the single `buildCommit`. Headless is not configured. Linux,
-  GCC 14.2.0/Qt 6.8.2 offscreen; Windows/manual UI were not run (E28). Stop for J5 review.

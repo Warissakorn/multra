@@ -89,7 +89,7 @@ add_library(multra_project STATIC src/project/load.cpp src/project/parse.cpp src
 # D152: the seed scheduler's worker threads live here; runner stays thread-free (check_architecture).
 find_package(Threads REQUIRED)
 target_sources(multra_project PRIVATE src/project/macro_run_definition.cpp src/project/observed_schema.cpp src/project/document_envelope.cpp src/project/network_fields.cpp src/project/network_link_codec.cpp src/project/network_connector_codec.cpp src/project/network_signal_head_codec.cpp src/project/signal_control_codec.cpp src/project/right_of_way_codec.cpp src/project/measurement_codec.cpp src/project/demand_codec.cpp src/project/routing_codec.cpp src/project/object_csv.cpp src/project/network_schema.cpp)
-target_sources(multra_project PRIVATE src/project/meso_street_segment_demand.cpp src/project/node_analysis_run.cpp src/project/node_analysis_permitted.cpp src/project/node_analysis_output.cpp)
+target_sources(multra_project PRIVATE src/project/meso_street_segment_demand.cpp src/project/node_analysis_run.cpp src/project/node_analysis_permitted.cpp src/project/node_analysis_output.cpp src/project/node_analysis_report.cpp src/project/build_metadata.cpp)
 target_link_libraries(multra_project PUBLIC multra_model multra_eval multra_runner Threads::Threads
     nlohmann_json::nlohmann_json PRIVATE multra_options)
 
@@ -132,6 +132,8 @@ add_custom_target(multra-build-info
     COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -DOUTPUT=${CMAKE_BINARY_DIR}/generated/build_info.hpp
             -P ${PROJECT_SOURCE_DIR}/cmake/build_info.cmake
     BYPRODUCTS ${CMAKE_BINARY_DIR}/generated/build_info.hpp)
+target_include_directories(multra_project PRIVATE ${CMAKE_BINARY_DIR}/generated)
+add_dependencies(multra_project multra-build-info)
 add_executable(multra-cli tools/run_simulation.cpp)
 target_link_libraries(multra-cli PRIVATE multra_project multra_options)
 target_include_directories(multra-cli PRIVATE ${CMAKE_BINARY_DIR}/generated)

@@ -462,6 +462,9 @@ complete definition decoding, and the writer still omits derived counted interva
 or simulation algorithm, catalog ownership, writer version rule, serialized output or desktop
 observed-schema response changes. Catalog row schemas remain separate follow-ups.
 
+J7/D418 edits the existing schema-58 `Node.analysis` fields only. Snapshot provenance and
+analytical Results are session state, not new project fields or a schema step.
+
 J4 (D404) and J4T (D416) add no stored field or schema step. Signals use existing controllers,
 groups, heads and generated flags; T uses P2 + legs=3. Site timing stays on schema-61 recipes.
 Barrier waiting, required phase numbers and NEMA layout/check results are derived, never saved.

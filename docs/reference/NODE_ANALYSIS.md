@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**A1 (§10, D372) and A2 (§11, D373, D374) are implemented, with D383's fixes (§13); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 (§10, D372), A2 (§11, D373/D374), A3 (D377) and J7's A9 first half (D418) are implemented, with D383's fixes (§13).** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -95,7 +95,7 @@ is read, never copied.
   `NODE_ANALYSIS_NEEDS_DETAIL`; stored lane groups for coarse Nodes belong to a later slice.
 - **New on the Node, schema 58 with A1:**
   - **Analysis volumes:**
-    - per turn: hourly volume, PHF and %HV;
+    - per turn: hourly volume and %HV; PHF is per Node in the existing stored model;
     - optionally, per-15-minute rows, the same structure as M2.2 intervals (a later slice).
   - **Approach adjustments:** grade (%), parking manoeuvres per hour, buses stopping per hour; and
     area type (CBD or not) for the Node.
@@ -123,11 +123,11 @@ is read, never copied.
   - the method ("HCM 7 Ch. 19, analytical") and the document revision;
   - every default used, and every refused lane group with its advisory.
 - **Format.** JSON and CSV through the shared formatters, with the not-validated marker line.
-  Results → *Node analysis* table, and the Node's own row. A result is stale when the revision
+  Results → *Node analysis* table, and the Node's own row ([editor/snapshot contract](NODE_ANALYSIS_EDITOR.md)). A result is stale when the revision
   changes (WORKFLOW §5).
 - **No Micro, Meso or Macro output changes.** A project without analysis inputs keeps its bytes.
 
-## 6. Workflow in the editor (target)
+## 6. Workflow in the editor
 
 1. Draw the junction or use a Street segment-generated Node. A Node with detail derives lanes and turns.
 2. Node → **Analysis**: lane groups, adjustments, base saturation flow.
@@ -253,8 +253,8 @@ Chapter 31 §2's shared-lane procedure, outside A1. A2 reproduces the exhibit wi
   - JSON and CSV carry `validated: false` and the method label.
 - **Rows:** NA1–NA8 in `tests/node_analysis_tests.cpp` (group `nodeanalysis`), plus an end-to-end run
   on the shipped four-leg's pocket turns (`tests/node-analysis-four-leg.traffic.json`, CLI test).
-- **Not in A1:** the editor tab and *Fill from model* (A9), and coarse Nodes (stored lane groups,
-  later). The other slices are in §7.
+- **Later than A1:** J7 implements the editor tab (A9 first half); *Fill from model* and coarse
+  Nodes (stored lane groups) remain later. The other slices are in §7.
 
 ## 11. A2: contract (D373) and as implemented (D374)
 
@@ -460,8 +460,9 @@ entries only; how circulating flow is derived from the Node's turns.
 inputs are stored, and whether they reuse the Micro signal controller's fields. Corridor offsets
 (Ch. 16/18) stay a contract of their own.
 
-**A9: editor table and *Fill from model*.** Questions: where the table lives in the editor, and
-what provenance a filled volume shows.
+**A9: editor table and *Fill from model*.** J7 implements the first half via the Nodes tab and
+Results → Node analysis; [editor/snapshot contract](NODE_ANALYSIS_EDITOR.md), D418/JT12. Provenance
+for *Fill from model* stays a later owner choice.
 
 ## 13. Review fixes (D383)
 
