@@ -2,6 +2,28 @@
 
 Whole entries moved from [PROGRESS](../PROGRESS.md); historical, not the current queue.
 
+## 2026-10-29 — Junction catalog and Node recipes, J3a (D393–D396)
+
+- **Asked:** continue after J2 review; stop again after J3a, no PR. Owner approved all three
+  clarifications ("เอาตามแนะนำ"): major/lane override home, independent Link-keyed compass
+  overrides, and partial site values with no defaults.
+- **Changed:** strict structural catalog/loader, filename/field diagnostics, 12 installed
+  junction templates with no site numbers; owned catalog presence includes an empty array.
+  A further forcing-first catalog row separates protected far turns for P2/P3 (D396, §8); no
+  phasing/signal implementation is included.
+  Schema 61 stores the recipe and directions only when used; older files still read and fields
+  before 61 refuse at their paths, even null. Node value types were split from the 500-line header.
+- **Commands:** choosing carries coarse major and clears coarse in one Undo; detach, catalog
+  capture and directions are undoable. Link splits carry direction ids downstream; Street segment
+  splits carry recipe keys at the moved end. Recipe Nodes survive detail removal / two-leg
+  lifecycle. Fill, signals and editor stay J3b/J4/J6; HCM storage and B29 keys are unchanged.
+- **Rows:** JT5 forcing-first load failures, ownership/order, malformed JSON/duplicate ids,
+  schema floors/paths, partial recipes, coarse exclusion, Commands/Undo and direction/lifecycle.
+- **Verified:** desktop build, JT5 18/18, CTest 249/249 and `check` 249/249 pass on Linux
+  (GCC 14.2.0, Qt 6.8.2 offscreen). CLI Node analysis before/after is byte-identical except
+  `buildCommit`. Headless is not configured; Windows and manual UI driving were not run.
+  No new editor surface.
+
 ## 2026-10-29 — J2 review: preserve authored ambiguity and stop pockets at Nodes (D391)
 
 - **Asked:** fix the two J2 review items, update D391, verify and push; stop again before J3a.

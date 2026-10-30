@@ -47,11 +47,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
   cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
   slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Current stop: J5's review fix is implemented (D407, JT10 passing); await the owner's review.**
+- **Current stop: J5's polygon capture guard is implemented (D408, JT10 passing); await the owner's review.**
   Find crossings → F3 → explicit 15/30/60 m tapers → Fill now enlarges a still-generated Node's
   polygon with its Connectors in one Undo, on both driving sides. A person's polygon remains
   `TRANSITION_TAPER_OUTSIDE` at `network.nodes[index].polygon`; no manual enlargement is needed
-  for a generated Node (OWNER_SITTING E28). No new field/schema. Do not start J6 or J4T before
+  for a generated Node (OWNER_SITTING E28). Enlargement refuses any new Link leg with
+  `TRANSITION_POLYGON_CAPTURES` at the captured Link: shorten the taper or draw the polygon
+  by hand. Refusal leaves document/History unchanged; neighbouring-Node `NODE_OVERLAP` stays.
+  The side-road y=12 refusal and y=25 outside control pass on both driving sides. No new
+  field/schema. Do not start J6 or J4T before
   approval. J4 is approved at 5ab3ea3. B34 is answered: taper entirely
   upstream, Transition-only selector, two symmetric installed templates and owned mixed directions;
   [JUNCTION_TEMPLATES §7](reference/JUNCTION_TEMPLATES.md) is the contract. Do not re-ask these choices.

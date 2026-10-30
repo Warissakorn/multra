@@ -122,6 +122,8 @@ Plan transitionPlan(const ProjectDocument& original,const Node& node,const NodeF
             const auto grownLegs=nodeLinkLegs(n,n.nodes[index]);
             for(const auto& leg:links)if(std::none_of(grownLegs.begin(),grownLegs.end(),[&](const auto& l){return l.linkId==leg.linkId&&l.in==leg.in;}))
                 bad("FILL_NODE_ARM_OUTSIDE",leg.linkId);
+            for(const auto& leg:grownLegs)if(std::none_of(links.begin(),links.end(),[&](const auto& l){return l.linkId==leg.linkId&&l.in==leg.in;}))
+                bad("TRANSITION_POLYGON_CAPTURES",leg.linkId);
             if(!p.issues.empty())return p;
         }
         auto& row=n.rightOfWay;const auto lines=ids(row.waitingLines),areas=ids(row.conflictAreas),rules=ids(row.priorityRules);

@@ -52,6 +52,52 @@ TEST(transitions,jt10_edited_generated_polygon_refuses_at_polygon_atomically) {
         CHECK(bytes(h.document())==before);h.undo();CHECK(node(h.document()).generated);
     }
 }
+TEST(transitions,jt10_generated_polygon_capture_refusal_and_outside_control) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right})for(const double endY:{12.,25.}) {
+        History h;findAndGenerate(h,side,60);
+        History isolated;isolated.reset(h.document());apply(isolated);
+        const auto grown=node(isolated.document()).polygon;
+        const double lateral=side==DrivingSide::left?1.:-1.; // Mirror the side road with the expanded incoming arm.
+        CHECK(h.execute("Side road and F3",[&](auto& d){
+            putStreetSegment(d,{"side","Side",{{-40,112*lateral},{-40,endY*lateral}},std::string("test"),0,{},{}});
+            applyTemplate(d,"side",catalogs(d).templates);
+        },true));
+        const auto sideLinks=h.document().network.streetSegments.back().links;
+        CHECK(sideLinks.size()==2&&node(h.document()).generated);
+        CHECK(nodeStreetSegmentLegs(h.document().network,node(h.document())).size()==2&&nodeLinkLegs(h.document().network,node(h.document())).size()==4);
+        auto prospective=h.document().network;prospective.nodes[0].polygon=grown;
+        const auto captured=nodeLinkLegs(prospective,prospective.nodes[0]);
+        const bool capture=endY==12;
+        CHECK(nodeStreetSegmentLegs(prospective,prospective.nodes[0]).size()==(capture?3u:2u)&&captured.size()==(capture?6u:4u));
+        for(const auto& id:sideLinks)CHECK(std::any_of(captured.begin(),captured.end(),[&](const auto& l){return l.linkId==id;})==capture);
+        h.markSaved();const auto before=bytes(h.document());const auto states=h.states().size();const auto undoName=h.undoName();
+        const auto out=offers(h.document());CHECK(out.size()==1&&bytes(h.document())==before);
+        if(capture) {
+            for(const auto& id:sideLinks)CHECK(issue(out[0].issues,"TRANSITION_POLYGON_CAPTURES",id));
+            test::throws([&]{h.execute("Fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"TRANSITION_POLYGON_CAPTURES");
+            CHECK(bytes(h.document())==before&&h.states().size()==states&&h.undoName()==undoName&&!h.dirty()&&!h.canRedo());
+            h.undo();CHECK(h.document().network.streetSegments.size()==2);h.redo();CHECK(bytes(h.document())==before);
+        } else {
+            CHECK(out[0].refusal.empty());apply(h);
+            CHECK(nodeStreetSegmentLegs(h.document().network,node(h.document())).size()==2&&nodeLinkLegs(h.document().network,node(h.document())).size()==4);
+            for(const auto& c:h.document().network.connectors)for(const auto& id:sideLinks)CHECK(c.from.linkId!=id&&c.to.linkId!=id);
+            const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+        }
+    }
+}
+TEST(transitions,jt10_generated_polygon_keeps_neighbour_overlap_refusal) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;findAndGenerate(h,side,60);
+        History isolated;isolated.reset(h.document());apply(isolated);
+        const std::vector<Point> neighbour{{-42,-2},{-38,-2},{-38,2},{-42,2}};
+        CHECK(!polygonsOverlap(node(h.document()).polygon,neighbour)&&polygonsOverlap(node(isolated.document()).polygon,neighbour));
+        CHECK(h.execute("Neighbour",[&](auto& d){putNode(d,{"","Neighbour",neighbour,false});}));
+        CHECK(h.document().network.nodes.size()==2&&node(h.document()).generated);
+        h.markSaved();const auto before=bytes(h.document());const auto states=h.states().size();
+        test::throws([&]{h.execute("Fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"NODE_OVERLAP");
+        CHECK(bytes(h.document())==before&&h.states().size()==states&&!h.dirty()&&!h.canRedo());
+    }
+}
 TEST(transitions,jt10_missing_short_and_outside_tapers_are_atomic) {
     for(const auto side:{DrivingSide::left,DrivingSide::right})for(const int change:{0,1,2}) {
         auto d=ready(side);auto& value=node(d).junction->legs["west"].taper[0];

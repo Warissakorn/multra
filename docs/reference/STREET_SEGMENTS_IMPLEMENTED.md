@@ -193,7 +193,9 @@ and no default selection (D406, [JUNCTION_TEMPLATES §7](JUNCTION_TEMPLATES.md#7
 Confirm creates the recipe-bearing two-leg Node in the same Command; F3 then the junction fill
 creates the upstream taper. While that Node is still generated, Fill enlarges its polygon to
 contain both tapers and Connectors in the same Undo; a person's polygon still refuses outside
-tapers at its polygon path (D407). The same-template two-leg lifecycle below stays unchanged.
+tapers at its polygon path (D407). Enlargement refuses newly captured Link legs at those Links
+with `TRANSITION_POLYGON_CAPTURES`; shorten the taper or draw the polygon by hand (D408).
+The same-template two-leg lifecycle below stays unchanged.
 
 ## 19. S3.6a as implemented (D310)
 
