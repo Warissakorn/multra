@@ -46,6 +46,7 @@ The other headers:
 | `junction_polygon_dialog.*` | Original/proposed junction polygon outlines, named refusals and explicit Fit + Fill confirmation | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `node_analysis_dialog.*` | Staged turn/approach/settings inputs, missing/zero distinction, stored-codec validation and explicit stale-row clearing | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `node_analysis_fill_dialog.*` | Explicit window/HV selection and sourced whole-set before/after preview, staged until the Analysis form confirms | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_manual_dialog.*` | Explicit per-Node manual-count window preview/confirmation, shared comparison guards and no document mutation | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `node_analysis_panel.*` | Self-owned analytical Results page, snapshot provenance, CLI-identical exports and captured-batch Micro comparison | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `junction_cross_section_dialog.*` | Staged cross-section id/override form; blank values inherit, Cancel mutates nothing | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `junction_form_widgets.*` | Far-to-kerb lane rows, geometric labels and optional site-number fields | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |

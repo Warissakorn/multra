@@ -471,6 +471,8 @@ A9 adds only `analysis.modelSource` at 64: closed `kind: micro-demand`, source `
 paths/type ids are unique and nonempty, times finite with 0 ≤ start < end. This is historical
 provenance, with no live binding or copied geometry/timing. Demand-row/T/PHF Commands clear an
 unchanged old claim; Undo restores it. Site-only adjustments retain it. Old files do not migrate.
+B41/D422 manual-count windows and row source labels are comparison session state only;
+confirmation changes no project bytes, History or schema (65 remains unused).
 
 J4 (D404) and J4T (D416) add no stored field or schema step. Signals use existing controllers,
 groups, heads and generated flags; T uses P2 + legs=3. Site timing stays on schema-61 recipes.

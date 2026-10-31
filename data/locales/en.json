@@ -1496,5 +1496,12 @@
   "editorAnalysisLevel": "Level",
   "editorAnalysisIntersection": "Intersection",
   "editorAnalysisHcmDelay": "HCM control d (s/veh)",
-  "editorAnalysisMicroDelay": "Micro section d (s/veh)"
+  "editorAnalysisMicroDelay": "Micro section d (s/veh)",
+  "editorAnalysisManualWindow": "Confirm manual count window…",
+  "editorAnalysisManualStart": "start (run s)",
+  "editorAnalysisManualEnd": "end (run s)",
+  "editorAnalysisManualNote": "Manual counts: enter and confirm the count window for this Node. It must match the completed batch evaluation (%1–%2 s) and this Node’s T (%3 h). This confirmation is for the current analysis capture only; nothing is stored in the project.",
+  "editorAnalysisCountsSource": "Counts source",
+  "editorAnalysisManualCounts": "Manual counts",
+  "editorAnalysisModelCounts": "Model demand"
 }

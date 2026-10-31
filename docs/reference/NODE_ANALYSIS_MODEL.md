@@ -1,10 +1,10 @@
 # Node analysis: Fill from model and Micro comparison (A9 second half)
 
-**A9 second-half contract (D419–D421); Fill/provenance and model-window comparison implemented.** The owner approved J7 (`fe827c8`) on 2026-10-31
+**A9 second-half contract (D419–D422); Fill/provenance and model/manual Micro comparison implemented.** The owner approved J7 (`fe827c8`) on 2026-10-31
 and selected the rest of [NODE_ANALYSIS §6/§12](NODE_ANALYSIS.md#6-workflow-in-the-editor).
 The six choices below are [OWNER_SITTING B40](../plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each).
-All six B40 choices are answered. B41 asks how manually entered counts acquire a comparison
-window; that manual-count confirmation remains pending. Model-filled Nodes already carry an explicit window.
+All B40 choices and B41 are answered. Model-filled Nodes carry an explicit window; manual
+counts use an explicit per-Node confirmation for the current analysis capture only (D422).
 Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
 
 ## Boundaries already settled
@@ -92,12 +92,12 @@ weights. Potential parking release follows initial occupancy, gate demand and lo
 connections; a provably empty lot without gate demand does not block unrelated demand.
 The preview refuses an affected release instead of counting zero-rate exit placeholders.
 
-## B41: manual-count comparison window (pending)
+## B41: manual-count comparison window
 
 A manually entered Node, or one whose Fill provenance was cleared by a demand edit, has no
-start/end even when T matches a batch. Recommended: explicit session-only confirmation of
-that count window before comparison, matching batch evaluation start/end and Node T, labelled
-manual counts. Alternative: compare only Nodes retaining a Fill window. No answer is assumed.
+start/end even when T matches a batch. **Owner, 2026-10-31:** explicit session-only confirmation
+of that count window before comparison, matching batch evaluation start/end and Node T, labelled
+manual counts. Nothing is stored (recommended option selected).
 
 ## Staged Fill and provenance (D421)
 
@@ -124,14 +124,28 @@ site-only edits retain it. Undo restores the whole claim. Re-Fill records a new 
 The Analysis source line, results settings, JSON and CSV expose retained provenance; outputs
 without it keep their old bytes. Existing manual count entry remains available.
 
-## Micro side by side (D420/D421)
+## Micro side by side (D420–D422)
 
 Run seeds explicitly, wait for completion, then Analyse and open Results → Node analysis →
 **Micro side by side**. The page reuses the completed batch; it launches no job. Captured Node
 ids and ordered in-Link ids map batch positions, including duplicate Node names. Its source
 must equal Analyse's decoded document, and the confirmed count window and T must match batch
-evaluation start/end. Model-filled Nodes use their retained window. Without one,
-`NODE_MICRO_NO_WINDOW` names the Node while B41 awaits an answer; no window is inferred from T.
+evaluation start/end. Model-filled Nodes use their retained window. For manual counts,
+**Confirm manual count window…** selects a Node by id/name and stages explicit start/end in run
+seconds. The dialog shows the batch window and that Node’s effective T; fields start blank
+unless that Node was already confirmed for this capture. Confirm stays disabled for a missing,
+non-finite, reversed or mismatched window/T, with localized `NODE_MICRO_NO_WINDOW` or
+`NODE_MICRO_WINDOW` naming the Node. The same project comparison function validates preview and
+results; neither path calculates a second set of analytical or Micro values.
+
+Cancel keeps any existing confirmation. Confirm stores only that Node’s window in the Results
+page’s session state, with no Command/Undo entry, project field or schema step. Other manual
+Nodes still need their own confirmation; matching names or matching T never supplies one.
+Node/approach rows show **Manual counts** or **Model demand** in a separate source column.
+CSV appends `countsSource` with locale-independent quoted `manual counts` / `model demand`;
+analytical JSON/CSV retain their existing format. Re-Analyse starts a new capture and clears
+confirmations. Batch replacement/cancellation, edits/Undo and New/reopen clear them as well.
+Before confirmation `NODE_MICRO_NO_WINDOW` names the Node; no window is inferred from T.
 
 Rows show Node/approach HCM control delay and LOS beside Micro simulated section/travel-time
 delay, seed n, 95% CI half-width, vehicles and unfinished. Missing estimates stay blank.
@@ -149,8 +163,8 @@ subtabs retain their CLI-identical CSV and the report JSON remains analytical in
 
 ## Acceptance coverage
 
-NA24–NA30 are **passing for the answered B40 scope**, on both driving sides; UI cases cover
-English and Thai. B41's manual-window confirmation remains unimplemented and A9 awaits review.
+NA24–NA30 are **passing**, including B41, on both driving sides; UI cases cover English and
+Thai. A9 is implemented and awaits owner review; this does not close an M13 method/Windows gate.
 Every new feature row failed before implementation; forcing setup is asserted first.
 
 | Row | Passing coverage |
@@ -159,13 +173,14 @@ Every new feature row failed before implementation; forcing setup is asserted fi
 | NA25 | Explicit window, StudyPeriod/clock placement, HV weighting/zero policy, T/PHF replacement; invalid/unresolved sources refuse without mutation or dropped demand |
 | NA26 | Provenance schema-64 round-trip and early-field paths, unchanged older files, exact raw source SHA, demand-edit clear/site-only retain, Undo and reopen |
 | NA27 | Both sides/locales: before/after, Cancel/no-op, one Undo/Redo, Save/reopen, retained adjustments/saturation, consistent drawn-row clearing |
-| NA28 | Real completed batches: exact Node/approach HCM and Micro values including n/CI/unfinished/blanks, duplicate-name id mapping, distinct measure labels |
-| NA29 | Snapshot/window mismatch, unconfirmed window, stale edit/Undo, reopen, cancellation/incomplete/no batch; no stale comparison or implicit run |
-| NA30 | Shared-format marker/CSV, real CLI JSON/CSV parity with sourced inputs, unchanged source-absent fixture/project/level outputs |
+| NA28 | Real completed batches: exact Node/approach HCM and Micro values including n/CI/unfinished/blanks, duplicate-name id mapping, manual/model source labels, per-Node explicit manual windows |
+| NA29 | Snapshot/window mismatch, unconfirmed window, stale edit/Undo, reopen, cancellation/incomplete/no batch; manual window/T mismatches, Cancel/no storage, per-capture reset, no stale comparison or implicit run |
+| NA30 | Shared-format marker/CSV, real CLI JSON/CSV parity, manual confirmation leaves saved bytes/History unchanged, quoted countsSource, unchanged source-absent outputs |
 
 Native tests: `node_model_demand_tests.cpp`, `node_model_demand_edge_tests.cpp`,
 `node_model_stub_tests.cpp`, `node_analysis_source_tests.cpp`, `node_analysis_comparison_tests.cpp`.
-Qt: `node_analysis_fill_ui_tests.cpp` and `node_analysis_micro_ui_tests.cpp`, retaining JT12's
+Qt: `node_analysis_fill_ui_tests.cpp` (4 cases) and `node_analysis_micro_ui_tests.cpp`
+(4 model + 4 manual cases), retaining JT12's
 `node_analysis_ui_tests.cpp` real-CLI coverage. Six D420 cases include shipped m2.6 plus Suggest
 nodes, the 1200 veh/h pocket's 720/240/240 hand count, and differing complete exits, both sides.
 Full verification is in PROGRESS; Windows/high-DPI/manual appearance remains OWNER_SITTING E32.
@@ -176,6 +191,7 @@ Full verification is in PROGRESS; Windows/high-DPI/manual appearance remains OWN
 and clock rules. `node_model_demand` owns preview, `node_analysis_fill` its replacement,
 `node_analysis_source_codec` the stored claim, and `node_analysis_comparison` report matching/CSV.
 `runner/batch` and `project/parallel_seeds` own existing runs/estimates. The free
-`shell/node_analysis_fill_dialog`, Analysis form, self-owned `node_analysis_panel` and
+`shell/node_analysis_fill_dialog`, `node_analysis_manual_dialog`, Analysis form, self-owned
+`node_analysis_panel` and
 `editor_batch` stage/present them; `commands/node_analysis_commands` owns edits. EditorWindow's
 header remains at 500 lines. No generic job subsystem or new per-turn simulation statistic.

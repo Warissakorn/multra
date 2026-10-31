@@ -12,7 +12,7 @@ NodeAnalysisMicroSource nodeAnalysisMicroSource(const ProjectDocument& d,const N
     }
     return out;
 }
-NodeAnalysisComparison compareNodeAnalysis(const NodeAnalysisReport& a,const NodeAnalysisMicroSource& source,const BatchReport& b,const MovementReport& evaluation) {
+NodeAnalysisComparison compareNodeAnalysis(const NodeAnalysisReport& a,const NodeAnalysisMicroSource& source,const BatchReport& b,const MovementReport& evaluation,const std::vector<NodeAnalysisManualWindow>& confirmed) {
     NodeAnalysisComparison out;out.revision=a.run.revision;out.start=evaluation.warmup;out.end=evaluation.evaluationEnd;out.seeds=b.seeds;out.marking=a.marking;
     if(a.run.inputManifest.is_object())for(const auto& f:a.run.inputManifest.at("files"))if(f.at("logicalPath")=="project")out.projectSha256=f.at("sha256").get<std::string>();
     const auto issue=[&](const char* code,const std::string& path){out.issues.push_back({code,path});};
@@ -22,19 +22,23 @@ NodeAnalysisComparison compareNodeAnalysis(const NodeAnalysisReport& a,const Nod
     if(evaluation.time+1e-8<end){issue("NODE_MICRO_UNFINISHED","batch");return out;}
     if(source.keys.size()!=b.nodes.size()){issue("NODE_MICRO_MAPPING","nodes");return out;}
     for(const auto& n:a.run.nodes) {
-        if(!n.modelSource){issue("NODE_MICRO_NO_WINDOW",n.id);continue;}
-        const auto& window=*n.modelSource;
-        if(std::abs(window.start-out.start)>1e-8||std::abs(window.end-out.end)>1e-8||std::abs(n.analysisPeriod*3600-(out.end-out.start))>1e-8){issue("NODE_MICRO_WINDOW",n.id);continue;}
+        const auto manual=std::find_if(confirmed.begin(),confirmed.end(),[&](const auto& w){return w.nodeId==n.id;});
+        if(!n.modelSource&&manual==confirmed.end()){issue("NODE_MICRO_NO_WINDOW",n.id);continue;}
+        const double start=n.modelSource?n.modelSource->start:manual->start,end=n.modelSource?n.modelSource->end:manual->end;
+        const bool manualCounts=!n.modelSource;
+        if((manualCounts&&std::count_if(confirmed.begin(),confirmed.end(),[&](const auto& w){return w.nodeId==n.id;})!=1)||
+            !std::isfinite(start)||!std::isfinite(end)||start<0||end<=start||!std::isfinite(n.analysisPeriod)||
+            std::abs(start-out.start)>1e-8||std::abs(end-out.end)>1e-8||std::abs(n.analysisPeriod*3600-(out.end-out.start))>1e-8){issue("NODE_MICRO_WINDOW",n.id);continue;}
         const auto key=std::find_if(source.keys.begin(),source.keys.end(),[&](const auto& k){return k.id==n.id;});
         if(key==source.keys.end()){issue("NODE_MICRO_MAPPING",n.id);continue;}
         const auto index=static_cast<std::size_t>(key-source.keys.begin());const auto& micro=b.nodes[index];
         if(key->inLinks.size()!=micro.legs.size()){issue("NODE_MICRO_MAPPING",n.id);continue;}
-        out.rows.push_back({n.id,{},n.name,{},n.delay,n.los,micro.delay,micro.vehicles,micro.unfinished});
+        out.rows.push_back({n.id,{},n.name,{},n.delay,n.los,micro.delay,micro.vehicles,micro.unfinished,manualCounts});
         for(std::size_t k=0;k<key->inLinks.size();++k) {
             const auto& link=key->inLinks[k];const auto& leg=micro.legs[k];
             const auto approach=std::find_if(n.approaches.begin(),n.approaches.end(),[&](const auto& x){return x.inLink==link;});
             out.rows.push_back({n.id,link,n.name,leg.name,approach==n.approaches.end()?std::nullopt:approach->delay,
-                approach==n.approaches.end()?std::nullopt:approach->los,leg.delay,leg.vehicles,leg.unfinished});
+                approach==n.approaches.end()?std::nullopt:approach->los,leg.delay,leg.vehicles,leg.unfinished,manualCounts});
         }
         for(const auto& warning:n.advisories)if(warning.code=="NODE_ANALYSIS_PARTIAL")out.issues.push_back(warning);
     }
@@ -47,10 +51,10 @@ std::string nodeAnalysisComparisonCsv(const NodeAnalysisComparison& r,bool stale
     out+='\n';
     if(!r.projectSha256.empty())out+="# Project SHA-256: "+r.projectSha256+"\n";
     for(const auto& issue:r.issues)out+="# "+issue.code+","+csvQuoted(issue.path)+"\n";
-    out+="level,node,nodeId,approach,inLink,analyticalDelay_s,analyticalLos,micro_n,microDelay_s,microCi95_s,microVehicles_mean,microUnfinished_mean\n";
+    out+="level,node,nodeId,approach,inLink,analyticalDelay_s,analyticalLos,micro_n,microDelay_s,microCi95_s,microVehicles_mean,microUnfinished_mean,countsSource\n";
     for(const auto& row:r.rows)out+=(row.inLink.empty()?std::string("node"):std::string("approach"))+","+csvQuoted(row.nodeName)+","+csvQuoted(row.nodeId)+","+csvQuoted(row.approachName)+","+csvQuoted(row.inLink)+","+
         csvNumber(row.analyticalDelay)+","+(row.analyticalLos?std::string(1,*row.analyticalLos):std::string())+","+std::to_string(row.microDelay.n)+","+
-        csvNumber(row.microDelay.mean)+","+csvNumber(row.microDelay.halfWidth95)+","+csvNumber(row.vehicles.mean)+","+csvNumber(row.unfinished.mean)+"\n";
+        csvNumber(row.microDelay.mean)+","+csvNumber(row.microDelay.halfWidth95)+","+csvNumber(row.vehicles.mean)+","+csvNumber(row.unfinished.mean)+","+csvQuoted(row.manualCounts?"manual counts":"model demand")+"\n";
     auto marking=r.marking;if(stale&&std::find(marking.stale.begin(),marking.stale.end(),"project")==marking.stale.end())marking.stale.push_back("project");
     return markedCsv(std::move(out),marking);
 }

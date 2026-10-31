@@ -144,10 +144,10 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    named unresolved-demand refusals (D419). Owner selected explicit window/T/PHF=1 replacement
    and reuse of a completed batch on 2026-10-31 (D420). Do not re-ask these choices.
 
-41. **A9 manual-count comparison window** (asked 2026-10-31). A manual Node has T but no start/end.
-   [Contract](../reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window-pending):
-   recommend explicit session-only confirmation, matching the batch window/T and labelled manual,
-   versus comparison only with retained Fill provenance. *Owner:*
+41. **A9 manual-count comparison window** (answered 2026-10-31, D422). Owner selected
+   [explicit session-only confirmation](../reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window),
+   matching batch evaluation start/end and Node T, labelled manual counts. Nothing is stored.
+   Checkpoints a6d0a25/d663bf5 are accepted so far; finish A9, then stop for review.
 
 ## C — Run view (the 125 % screen)
 
@@ -396,15 +396,17 @@ nothing. Numbers are not reused.
    and byte parity with CLI after Save. On the next dialog touch, keep a cleared drawn approach
    row visible like a drawn turn row (owner review, 2026-10-31). No J7 formula change. *Owner:*
 
-32. **A9 Fill from model / Micro side by side** (listed 2026-10-31, D421). On Windows at
+32. **A9 Fill from model / Micro side by side** (listed 2026-10-31, D421/D422). On Windows at
     100/150/200 %, Thai and English, on both driving sides: open Nodes → Analysis… → Fill from
     model…, choose explicit times or StudyPeriod and HV types, inspect before/after/T/PHF and
     source SHA, Cancel then Confirm (one Undo). Check drawn turn/approach Clear keeps the row
     visible. Run seeds, wait, Analyse → Micro side by side: read distinct HCM/Micro labels,
     source/window/seeds, n/CI/unfinished, blank values and localized refusal text. Change inputs,
     Undo, cancel a batch, reopen, and Export/Copy: old comparisons must disappear and the CSV
-    marker/quoted numbers must remain. B41 manual-count confirmation is still pending. Are
-    tables, wrapping notes, scrollbars and fixed footers readable without clipping? *Owner:*
+    marker/quoted numbers must remain. For manual counts, select a Node and explicitly confirm its
+    window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
+    CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
+    field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

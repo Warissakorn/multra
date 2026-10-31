@@ -470,3 +470,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D420](RECORD.md#d420) — A9 B40 timing/batch choices answered; resolve stubs through all agreeing complete compiled lane-change targets, with origin fallback only without targets.
 
 [D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.
+
+[D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.

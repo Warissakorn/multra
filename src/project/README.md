@@ -78,7 +78,7 @@ keeps its schema and bytes.
 | `node_model_demand.*` | Expected scheduled demand through drawn Node turns from the same compiled Micro inputs, explicit period/HV types and captured-input manifest | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `node_analysis_fill.*` | Stages a sourced whole-set Node analysis replacement with explicit T/PHF, retaining site adjustments | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `node_analysis_source_codec.*` | Closed schema-64 model-demand provenance, feature selection and typed validation | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
-| `node_analysis_comparison.*` | Snapshot/window-checked analytical/Micro report values, captured id/position matching and comparison CSV | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_comparison.*` | Snapshot/window-checked analytical/Micro values, per-Node manual confirmations, captured id matching and source-labelled CSV | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `build_metadata.*` | Shared engine/build/compiler JSON stamping, preserving CLI output | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `batch_output.*` | Batch JSON and CSV | [BATCH](../../docs/reference/BATCH.md) |
 | `comparison_output.*` | Scenario comparison JSON and CSV | [BATCH §7](../../docs/reference/BATCH.md) |

@@ -6,6 +6,38 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-31 — A9 finish: explicit manual-count comparison windows (D422)
+
+- **Owner B41:** explicit per-Node session-only confirmation before comparison, matching batch
+  start/end and Node T, labelled manual counts, nothing stored. Checkpoints a6d0a25/d663bf5 are
+  accepted so far: m2.6 totals 2040 veh/h over all three reviewed windows, source-64 reopen,
+  manual-edit schema/source clearing and exact Undo, CBD/source retention and old-output parity.
+- **Implemented:** Results → Node analysis → Micro side by side → Confirm manual count window…
+  selects a Node by id/name and shows batch window/effective T. Required start/end preview uses
+  the same project comparison guards as the result. Missing/non-finite/reversed/mismatched or
+  duplicate confirmations refuse with localized named Node paths; no duration/name inference.
+  Cancel keeps prior state, Confirm replaces only that Node’s session window. No project field,
+  schema step, Command/revision or implicit run. Re-Analyse, batch changes/cancel, edits/Undo
+  and New/reopen clear confirmations; saved project and analytical report bytes stay unchanged.
+- **Presentation:** Node/approach rows label Manual counts versus Model demand in both locales.
+  The comparison CSV alone appends quoted countsSource through shared formatters and marking;
+  HCM/CLI formats, values, missing estimates, n/CI/unfinished and distinct measures stay as before.
+- **Tests first:** both native manual cases fail on missing rows after asserting real completed
+  batches/entered T; all four UI cases fail on the missing confirmation button. A test setup
+  compile error (multiplying an optional T without dereferencing) was fixed before recording
+  product reds. Coverage includes absolute-window mismatch with equal duration, correct window
+  with wrong T, wrong/duplicate ids, labels, Cancel, no History/Save change, CSV equality,
+  re-Analyse, edit/Undo, new batches and reopen, on both driving sides and English/Thai.
+- **Verification:** native nodeanalysis 46/46, Micro UI 8/8, Fill UI 4/4 and JT12 UI 8/8
+  pass, including expanded lifecycle rows. Desktop build (108 tasks) and CTest 260/260
+  (303.56 s, parallel 5) pass; check 260/260 (301.67 s) also passes with architecture,
+  file-size and documentation guards. Five legacy project/CSV comparisons are byte-exact and raw JSON is
+  exact except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured,
+  Windows/manual/high-DPI appearance not driven (E32). No HCM/core/other-level algorithm change.
+- **Docs:** D422/index, answered B41/E32, contracts/schema/module maps and ROADMAP/NEXT updated.
+  Oldest PROGRESS entry archived whole, ten live entries retained. A9 is implemented and stops
+  for owner review; no open A9 contract question, M13 gate closure or UTDF writer. U0 unanswered.
+
 ## 2026-10-31 — A9 staged Fill, source schema and Micro comparison (D421)
 
 - **Implemented answered B40:** Analysis → Fill from model… stages explicit window/HV choices,
@@ -279,33 +311,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   parallel 5) and check **255/255** (246.21 s), including docs/file-size/architecture guards.
   CLI node-analysis matches except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless
   unconfigured, Windows/manual UI not run. No final J6 approval, J4T or UTDF writer work.
-
-## 2026-10-30 — J6 command/seam/corridor checkpoint (D410, D411)
-
-- **B35 answered:** all recommendations selected: explicit listed seam replacement with
-  reference guards, automatic complete shared-Link closure, preserve incompatible site drafts.
-- **Implemented:** private previews/atomic explicit re-apply and corridor cross-section Commands;
-  restore both ends before F3/regeneration, including pockets. Preserve retained measurements/
-  inputs, refuse edited neighbours or measured generated heads atomically, and keep ordinary
-  Fill/Apply guards. A unique generated pocket-prefix query stops at Nodes; no association is saved.
-- **Seams:** pure lane/movement/pocket/transition/control/timing comparison; the same advisory
-  in Micro/Meso/Macro Readiness. Changed major control is detected even when lane rows match.
-  Template-id changes keep all entered site fields as a draft, with disabled Fill and full Undo.
-- **UI:** optional matching Junction template column; explicit seam replacement list, Cancel,
-  Apply again/Detach; staged corridor overrides and complete affected-set preview in one Undo.
-  Linux Qt drives both sides. Reopening a revision-zero document now invalidates the touched
-  object-table caches; otherwise the valid corridor file's Street segment table stayed empty.
-- **Tests first:** initial JT11/JT16 cases failed, then targeted timing/control/readiness,
-  crossing and Qt preview cases failed before their fixes. Positive pocket corridors required
-  resolving the detached out-leg; an input fixture's mutually exclusive route target and a
-  nested-modal test's lifetime were corrected after forcing assertions identified setup errors.
-- **Checkpoint:** template catalog/Node recipe forms are not complete. B36 asks the same-template
-  site-edit generated flag rule; no answer is assumed. NEXT names the remaining free-function
-  forms and tests. Pause at the context boundary, not final J6 approval. No J4T/UTDF writer.
-- **Docs:** J6 detail split before the 500-line limit; B35/B36, D410/D411/index, E29, schemas,
-  readiness and module maps updated. Archive the oldest whole entry, retaining ten.
-- **Verified:** desktop build, native `junctioneditor` **11/11**, Qt crossing/seam/corridor
-  rows on both driving sides, CTest **255/255** (247.09 s, parallel 5) and `check` **255/255**
-  (245.20 s) pass, including architecture/file-size/docs guards. CLI node-analysis matches
-  except `buildCommit`. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured;
-  Windows/manual UI not run (E29). Logs and comparison: `/workspace/j6-main/`.

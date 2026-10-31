@@ -1496,5 +1496,12 @@
   "editorAnalysisLevel": "ระดับ",
   "editorAnalysisIntersection": "ทางแยก",
   "editorAnalysisHcmDelay": "HCM control d (s/veh)",
-  "editorAnalysisMicroDelay": "Micro section d (s/veh)"
+  "editorAnalysisMicroDelay": "Micro section d (s/veh)",
+  "editorAnalysisManualWindow": "ยืนยันช่วงเวลาของ counts ที่กรอกเอง…",
+  "editorAnalysisManualStart": "start (run s)",
+  "editorAnalysisManualEnd": "end (run s)",
+  "editorAnalysisManualNote": "Counts ที่กรอกเอง: ระบุและยืนยันช่วงเวลาของ Node นี้ ให้ตรงกับช่วง evaluation ของ batch ที่เสร็จแล้ว (%1–%2 s) และ T ของ Node (%3 h) การยืนยันใช้เฉพาะผล Analyse ชุดปัจจุบัน ไม่บันทึกลง project",
+  "editorAnalysisCountsSource": "ที่มาของ counts",
+  "editorAnalysisManualCounts": "Counts ที่กรอกเอง",
+  "editorAnalysisModelCounts": "Demand จากแบบจำลอง"
 }

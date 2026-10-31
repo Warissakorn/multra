@@ -2,6 +2,36 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-30 — J6 command/seam/corridor checkpoint (D410, D411)
+
+- **B35 answered:** all recommendations selected: explicit listed seam replacement with
+  reference guards, automatic complete shared-Link closure, preserve incompatible site drafts.
+- **Implemented:** private previews/atomic explicit re-apply and corridor cross-section Commands;
+  restore both ends before F3/regeneration, including pockets. Preserve retained measurements/
+  inputs, refuse edited neighbours or measured generated heads atomically, and keep ordinary
+  Fill/Apply guards. A unique generated pocket-prefix query stops at Nodes; no association is saved.
+- **Seams:** pure lane/movement/pocket/transition/control/timing comparison; the same advisory
+  in Micro/Meso/Macro Readiness. Changed major control is detected even when lane rows match.
+  Template-id changes keep all entered site fields as a draft, with disabled Fill and full Undo.
+- **UI:** optional matching Junction template column; explicit seam replacement list, Cancel,
+  Apply again/Detach; staged corridor overrides and complete affected-set preview in one Undo.
+  Linux Qt drives both sides. Reopening a revision-zero document now invalidates the touched
+  object-table caches; otherwise the valid corridor file's Street segment table stayed empty.
+- **Tests first:** initial JT11/JT16 cases failed, then targeted timing/control/readiness,
+  crossing and Qt preview cases failed before their fixes. Positive pocket corridors required
+  resolving the detached out-leg; an input fixture's mutually exclusive route target and a
+  nested-modal test's lifetime were corrected after forcing assertions identified setup errors.
+- **Checkpoint:** template catalog/Node recipe forms are not complete. B36 asks the same-template
+  site-edit generated flag rule; no answer is assumed. NEXT names the remaining free-function
+  forms and tests. Pause at the context boundary, not final J6 approval. No J4T/UTDF writer.
+- **Docs:** J6 detail split before the 500-line limit; B35/B36, D410/D411/index, E29, schemas,
+  readiness and module maps updated. Archive the oldest whole entry, retaining ten.
+- **Verified:** desktop build, native `junctioneditor` **11/11**, Qt crossing/seam/corridor
+  rows on both driving sides, CTest **255/255** (247.09 s, parallel 5) and `check` **255/255**
+  (245.20 s) pass, including architecture/file-size/docs guards. CLI node-analysis matches
+  except `buildCommit`. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured;
+  Windows/manual UI not run (E29). Logs and comparison: `/workspace/j6-main/`.
+
 ## 2026-10-30 — J6 first carry-over: overlap preview (D409)
 
 - **Owner:** J5 d5e2bbe approved; start J6 including the D402/D403 corridor Command. First
