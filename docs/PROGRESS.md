@@ -6,6 +6,41 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-10-31 — A9 native expected-demand preview checkpoint (D419)
+
+- **Owner:** J7 fe827c8 approved: real CLI/editor JSON/CSV parity for saved and unsaved
+  Save-representation snapshots; shipped projects/node analysis unchanged except buildCommit.
+  M14 junction slices are complete; U0 remains unanswered and no writer starts.
+- **B40:** asked six contract choices before code. Owner chose expected Micro demand, explicit
+  HV types, whole-set replacement/provenance cleared by later manual demand edits, and named
+  unresolved-demand refusals (1/4/5/6). T/PHF and the comparison action (2/3) remain unanswered;
+  their recommendations are not assumed. Schema 64 is booked for provenance, not consumed.
+- **Independent implementation:** read-only expected-demand preview captures/parses the same
+  bytes, reuses the compiler, integrates requested input intervals and maps complete runtime
+  traversals to derived turns. Use reference-to-lane stations and exact compiler origins for
+  entry-lane stubs; never multiply a turn by possible lane paths. Explicit HV weighting, zero
+  rows/retained optional %HV and source revision/manifest; no sampled traffic or achieved counts.
+  Refuse partial/unresolved traversals and affected potential parking releases, including
+  lot-to-lot sources. A provably empty lot without gate demand stays harmless.
+- **Tests:** NA24's direct interval/lane/stub rows failed against the empty interface on both
+  sides before implementation. Extended guards exposed a parking fixture without its required
+  gate; fixed the forcing setup. The empty-lot control then failed on an overbroad refusal,
+  before its guard fix. Eight new native cases cover those paths, clock-placed OD/compositions,
+  scheduled decision intervals, invalid requests/HV types, partial routes and runtime choices.
+  Native nodeanalysis now passes 32/32, including existing method rows.
+- **Unfinished:** no stored field/codec/version, Fill dialog/Command, T/PHF policy or Micro
+  comparison. Both-locale UI rows and NA26–NA30 are still planned, not claimed. E31 records the
+  cheap drawn-approach clear inconsistency for the next dialog touch; J7 approval stays intact.
+- **Verification:** desktop build, CTest 258/258 (280.29 s) and check 258/258 (283.04 s) pass.
+  A separate non-PCH header compile caught a missing complete Json include; fixed it, then
+  passed standalone compilation, another desktop build and native nodeanalysis 32/32.
+  Architecture/file-size/docs guards pass. Linux offscreen only, including existing JT12
+  en/th cases; this is not a claim of the still-unimplemented new UI rows.
+  The configured four-leg fixture and four shipped projects retain project bytes, and their
+  before/after --node-analysis JSON bytes differ only in buildCommit. No Windows/manual
+  verdict; headless is unconfigured. NEXT names the two pending answers and exact remaining work.
+  B39 and the oldest PROGRESS entry moved whole to indexed archives; ten live entries retained.
+
 ## 2026-10-31 — J7: Node analysis form, snapshot and Results (D418)
 
 - **Owner:** J4T approved, including natural polygons, both entry paths/sides, 200/90/60/40 m
@@ -261,26 +296,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   architecture, file-size and documentation guards. CLI node-analysis matches except
   `buildCommit`. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless is not configured, and
   Windows/manual UI driving were not run (E28).
-
-## 2026-10-30 — J5 review: generated transition polygon (D407)
-
-- **Fixed:** the real Find crossings → Transition → F3 → explicit tapers → Fill workflow
-  enlarges a still-generated Node polygon around both tapers and Connector rails, with its
-  Links, Connectors and controls in the same Command and one Undo. A person's polygon stays
-  unchanged and refuses outside tapers at `network.nodes[index].polygon`.
-- **Envelope:** reuse the convex hull and widest-attached-lane padding convention from
-  suggested Nodes (D265); preserve the old polygon and generated flag, keep external legs,
-  and retain atomic reference guards. No new stored field/schema, timing default or core change.
-- **Tests first:** the new end-to-end JT10 row failed on the actual generated polygon on
-  both driving sides; the edited-polygon and existing outside row failed on the missing
-  polygon path. All 11 native cases now pass, including 15/30/60 m, kerb/far, painted rails,
-  unchanged preview, re-apply, save/reopen and complete JSON Undo/Redo. No ±60 m fixture is used
-  for the new workflow. Frozen JT13 files are unchanged.
-- **Docs:** §7/JT10, generated/schema/street references, D407/index and Windows E28 updated:
-  no manual polygon edit is needed for a generated Node. Archived the oldest whole PROGRESS
-  entry, retaining ten. Stop for J5 review; no J6, J4T or UTDF writer work.
-- **Verified:** desktop build, JT10 **11/11** and Qt transition selector on both driving
-  sides pass on Linux (GCC 14.2.0/Qt 6.8.2 offscreen). CTest **253/253** (450.41 s) and
-  `check` **253/253** (241.64 s) pass, including architecture, file-size and documentation
-  guards. CLI node-analysis output matches except `buildCommit`. Headless is not configured;
-  Windows and manual UI driving were not run (E28).

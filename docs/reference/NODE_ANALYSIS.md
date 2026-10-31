@@ -461,8 +461,10 @@ inputs are stored, and whether they reuse the Micro signal controller's fields. 
 (Ch. 16/18) stay a contract of their own.
 
 **A9: editor table and *Fill from model*.** J7 implements the first half via the Nodes tab and
-Results → Node analysis; [editor/snapshot contract](NODE_ANALYSIS_EDITOR.md), D418/JT12. Provenance
-for *Fill from model* stays a later owner choice.
+Results → Node analysis; [editor/snapshot contract](NODE_ANALYSIS_EDITOR.md), D418/JT12, approved
+at `fe827c8`. The owner selected its second half on 2026-10-31: [Fill-from-model/Micro contract
+questions and rows](NODE_ANALYSIS_MODEL.md), B40/D419. An independent native expected-demand
+preview is implemented; T/PHF and comparison choices remain unanswered, with no stored provenance yet.
 
 ## 13. Review fixes (D383)
 

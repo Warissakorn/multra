@@ -186,11 +186,11 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 
 37–38. **J4T structure/cuts and polygon fitting:** answered and approved; [whole items B37–B38](../archive/OWNER_SITTING-B37-B38-2026-10-31.md), D416/D417.
 
-39. **J7 analysis source** (answered 2026-10-31, [D418](../decisions/RECORD.md#d418)).
-   Owner chose current snapshot as recommended. Use the file's exact bytes when it still
-   parses to the current document; otherwise use current Save bytes and label the result
-   as an unsaved snapshot at Analyse. Saving that unchanged snapshot must give byte-identical
-   CLI JSON/CSV, preserving existing CLI outputs. No automatic Save or new stored field.
+39. **J7 analysis source:** answered and approved; [whole B39](../archive/OWNER_SITTING-B39-2026-10-31.md), D418.
+
+40. **A9 Fill from model and Micro comparison** (2026-10-31, D419; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-choices-awaiting-the-owner)).
+   Owner chose expected Micro demand, explicit HV types, full replacement/provenance and
+   named unresolved-demand refusals. Window/T/PHF and batch reuse remain unanswered. *Owner:*
 
 ## C — Run view (the 125 % screen)
 
@@ -436,7 +436,8 @@ nothing. Numbers are not reused.
    Check scrolling/fixed footer, Cancel, stale-row review/clear and one Undo. Analyse fills
    Results → Node analysis with all figures, missing-number blanks, localized refusals and the
    analytical/not-validated marker. Inspect source snapshot, stale-after-edit/Undo, CSV/Copy,
-   and byte parity with CLI after Save. No formula or Fill-from-model change. *Owner:*
+   and byte parity with CLI after Save. On the next dialog touch, keep a cleared drawn approach
+   row visible like a drawn turn row (owner review, 2026-10-31). No J7 formula change. *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

@@ -30,83 +30,51 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M14 — the owner's current pick (D386, D387): junction templates and UTDF export
+## M13 — current pick: A9 second half (Fill from model, Micro side-by-side)
 
-- Contracts [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md) and [UTDF_EXPORT](reference/UTDF_EXPORT.md);
-  ROADMAP M14. D387: no builder tool; Street segments crossing make Nodes and a junction template generates
-  the detail; transitions align per template; Road became Street segment first (D389).
-  B30 answered as recommended (D388: JT-1a–JT-5a, UX-1a–UX-4a). SR is done (D389): Road is Street
-  segment and schema 59 renamed the keys; Windows look is OWNER_SITTING E24.
-- **U0 is prepared and waiting on the owner** ([OWNER_SITTING I](plans/OWNER_SITTING.md#i--utdf-probe-m14-u0)):
-  - the sheet is [UTDF_PROBE](plans/UTDF_PROBE.md), and MULTRA's hand-written file is
-    `tests/data/utdf/u0-handwritten.csv`;
-  - UTDF_EXPORT §3 has the field names from one Synchro UTDF 8 file;
-  - when the answers return, fix §3/§6 from them, add the golden file if the owner allows it, and
-    write UT0;
-  - no UTDF writer code before then.
-- **J1 is done (D390):** the posted `speedLimit` is on the Link (schema 60), defaulted from the
-  cross-section template; 58–59 approach speeds move to their Links. Micro does not read it yet (a
-  slice of its own, D381); `freeSpeed` stays Macro's and Meso's. Owner look: OWNER_SITTING E25.
-- **Stop for owner review: J7, NODE_ANALYSIS A9 first half.** J4T b7be7c9/fd87e02/4433ffe,
-  including B38/D417, is approved. Owner review confirms natural polygons through both entry
-  paths/both sides, 200/90/60/40 m corridors and the correct short-pocket refusal. Preserve it.
-- **J7 contract:** JUNCTION_TEMPLATES §9/JT12 and [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md).
-  Nodes → Analysis… edits existing Node::analysis in one Undo, naming turns via §6. Analyse
-  runs the existing analytical method synchronously on the UI thread; Results → Node analysis
-  and CSV show groups/totals/refusals/defaults, markers and revision staleness. No formulas,
-  new fields/schema, Fill from model, timing proposal or Micro side-by-side.
-- **B39/D418 answered:** use current snapshot. Exact saved bytes when they still parse to
-  the current document; otherwise current Save bytes, labelled unsaved at Analyse. Record/parse
-  those same bytes; an unchanged snapshot saved later matches real CLI JSON/CSV byte for byte.
-  Preserve CLI outputs and per-platform text-stream endings. Do not re-ask this choice.
-- **Await J7 approval; do not start another slice.** JT12 covers both sides/locales, exact
-  saved/unsaved/external-file CLI JSON/CSV, D383, Undo/reopen and exports. If the owner requests
-  changes, keep them in J7, re-verify and report again. OWNER_SITTING E31 is the Windows look.
-  No Fill from model, timing proposal, Micro side-by-side or UTDF writer is authorized; U0
-  remains unanswered. After approval, take the owner's next explicit pick.
-- **Retain B35/B36 (D410/D412):** listed explicit seam replacement and reference guards,
-  automatic complete shared-Link closure, explicit incompatible drafts with no site defaults.
-  First choice and same-template site-only edits preserve current Node.generated; switching template/Detach,
-  structural major/lane choices and polygon edits clear it, never restoring a cleared flag.
-  OWNER_SITTING E29 retains Windows appearance/Undo checks for all J6 surfaces and the now
-  supported three-lane exit. Do not re-ask answered choices or change frozen JT13.
-- **Retain J5's contract:** taper entirely upstream, Transition-only selector, two symmetric
-  installed templates and owned mixed directions (D406). A generated polygon enlarges in the
-  Fill's single Undo; a person's polygon keeps TRANSITION_TAPER_OUTSIDE (D407). New Link legs
-  refuse at their Links with TRANSITION_POLYGON_CAPTURES (D408). No defaults or new field/schema
-  are introduced by the preview carry-over. New owned transition structure uses schema 63;
-  existing recipe fields retain their earlier floors. J4 is approved at 5ab3ea3, J3b at a52476b;
-  the fill dialog's generatedCommand mode and frozen JT13 remain accepted.
-- **Retain B33/B37 (D405/D416):** only the protected three-stage T preset; compass-based
-  2/6 major through, 1 or 5 physical major far, 4 or 8 existing minor; unused phases omitted.
-  Both numbered rings stay, including one-phase rings. Major through starts at zero, minor
-  alone follows, leading major far ends the preceding cycle; all site timing is entered.
-- **B32 is answered (D404):** fixed numbered rings/barriers, P4 4 then 8 with derived red
-  waiting, entered allRed as clearance, exact cycle closure, rotated compass mapping and
-  2/6 time-zero anchor. §8 has the timing construction; do not re-ask these choices. All site
-  timings remain required. No timing default or writer is authorized.
-- **B31 is answered (D399):** all-way-stop generation waits until A5 or U1 needs it. Keep the
-  row listed but disabled with `FILL_NODE_ALL_WAY_STOP`; do not extend StopControl or consume
-  schema 63 for all-way stop. Link.generated uses 62; J5 transition structure uses 63. Do not re-ask B31 in J4.
-- **Boundaries to retain:** J4 requires complete site timing (D404); full-lane mismatch
-  refuses with existing → required counts. T templates supersede D400 with the
-  measured stem extension (D416), without an invented cut length or change to ordinary F4.
-  Street segment Apply template over junction-generated Links is `JUNCTION_STREET_SEGMENT_DETAIL`;
-  F4 detail plus a chosen recipe alone keeps Apply available (D402). After reopen without Undo,
-  delete the junction's generated Links, Apply the Street segment template, then fill again.
-  Deleting Links removes their attached objects. Fill the junction before placing stationed
-  measurements. A changed base shape cannot silently move/resize the detached upstream Link.
-  HCM's existing storage/derivation remains; recipe keys and Link-based Node inputs stay separate.
-- **U0 checked for J4:** UTDF_PROBE §6 and OWNER_SITTING I still have no answers. J4 can only
-  claim MULTRA contract checks; left-hand/phase mapping in Synchro/Vistro stays unverified and
-  may change after U0. This effect was reported before code. Do not invent yellow/all-red or
-  any timing default; do not start the UTDF writer. Template editor/Find crossings UI is
-  approved J6 work; Windows fill inspection is OWNER_SITTING E26, and signal inspection is E27.
-- The one-Command cross-section change through complete shared-Link corridors is implemented
-  (D402/D403/D410/D411); keep retained references and ordinary Apply guards. J6a removes the
-  erroneous three-exit-lane limit without changing the corridor's ownership or atomicity rules.
-- Watch B29 (b) and (e): a turn key across levels and HCM storage change what `Node::junction`,
-  `approachLayout` and UTDF's Lanes read.
+- **J7 `fe827c8` is approved.** The owner's review confirms byte-identical editor/real CLI
+  JSON and CSV for saved and unsaved Save-representation snapshots, and unchanged shipped
+  projects/node analysis except buildCommit. Preserve D418 and the accepted JT12 behaviour.
+- **Read first:** [NODE_ANALYSIS](reference/NODE_ANALYSIS.md) §4–§6/§12,
+  [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md),
+  [A9 contract questions](reference/NODE_ANALYSIS_MODEL.md), D371/D379/D383/D418/D419 by anchor,
+  and BATCH/NODES/STUDY_PERIODS for the reused demand, evaluation and clock rules.
+- **Before dependent code, await OWNER_SITTING B40 choices 2/3.** Selected-window/T/PHF policy
+  and reuse of the existing batch versus a new ten-seed action remain unanswered. Do not assume
+  either recommendation. Owner chose expected Micro demand, explicit HV types, whole-set
+  replacement/provenance cleared on manual demand edits, and named unresolved-demand refusals
+  (D419). Schema 64 is approved for the future provenance field but is not consumed yet.
+- **Independent native preview is implemented:** `project/node_model_demand.*` records exact
+  bytes, reuses the Micro compiler and maps determined complete traversals without mutation.
+  NA24 and native NA25 coverage pass on both sides; UI/provenance/command/comparison are still
+  unfinished. Preserve compiler origin mapping for entry-lane stubs, lane-station coverage,
+  explicit-HV/zero rules and runtime/parking guards. Do not claim this checkpoint completes A9.
+- After the answers: finalize that contract, then finish NA25–NA30 as failing tests with forcing
+  assertions first, on both driving sides and both locales. Reuse compilation, existing HCM
+  analysis, batch statistics, Commands and shared CSV/marking. New fields use a feature-selected
+  schema step (next 64), read older files and refuse early fields at their paths.
+- At the next dialog touch, cheaply make removal of drawn approach rows match drawn turn rows
+  (stay visible with cleared values); retain explicit stale-row removal. This is E31's small
+  carry-over, not a reopening of J7 approval. Keep the Window header within 500 lines.
+- Verify desktop build, ctest and check; headless if configured. Compare before/after CLI and
+  legacy outputs, keep quantities distinct, document Windows/manual limits, commit/push the
+  same branch, then **stop for A9 owner review**. No timing proposal, coarse HCM or UTDF writer.
+
+## M14 — junction slices complete; UTDF awaits U0
+
+- SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
+  [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
+  including natural polygon fitting, ownership, site drafts and corridor/reference guards.
+- **U0 is waiting on the owner** ([OWNER_SITTING I](plans/OWNER_SITTING.md#i--utdf-probe-m14-u0)):
+  [UTDF_PROBE](plans/UTDF_PROBE.md) has the import sheet; `tests/data/utdf/u0-handwritten.csv`
+  is the hand-written file. No answers have arrived. **Do not start U1 or any UTDF writer.**
+  When answers arrive, revise UTDF_EXPORT §3/§6 from them, add the allowed golden file and UT0,
+  and report any effect on compass/NEMA mapping before further signal work.
+- All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
+  is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
+  (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
+- Windows appearance remains OWNER_SITTING E24–E31; Linux tests do not close those items.
+  Watch B29's turn keys, HCM storage and partial-total questions; do not silently settle them.
 
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 

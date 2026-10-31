@@ -410,7 +410,7 @@ T uses existing P2 plus legs=3, with two full lanes per arm; no new schema or ti
 | J5 | **Approved at d5e2bbe (D406–D408, JT10 passing).** Upstream transitions and the Transition-only selector (§7) | 1 |
 | J6 | **Approved at 3ec3d39/09b0689 (D409–D414):** template catalog/Node forms, crossing column, seam/Readiness, explicit repair and corridor UI. B35/B36, compact previews; JT11/JT16 **passing**; [detailed contract/status](JUNCTION_TEMPLATE_EDITOR.md) | 1 |
 | J6a | **Approved at e1eaad8 (D415):** fix endpoint conversion for ordinary Fill/corridor exit lanes; remove D413's refusal. JT17 **passing** | 1 |
-| J7 | **Implemented; review pending (D418, JT12 passing).** Analysis form and results (§9 / A9 first half); current-snapshot provenance, exact CLI JSON/CSV and one Undo | 1–2 |
+| J7 | **Approved at fe827c8 (D418, JT12 passing).** Analysis form and results (§9 / A9 first half); current-snapshot provenance, exact CLI JSON/CSV and one Undo. A9's second half is [separate work](NODE_ANALYSIS_MODEL.md) | 1–2 |
 | J4T | **Approved at 4433ffed** (D405/D416/D417): protected signalised T, compass NEMA subset, measured T cuts and all-junction polygon fitting; JT18–JT20 **passing** | 1 |
 | U1–U3 | UTDF writer and round trip (UTDF_EXPORT §7) | 3–4 |
 
