@@ -2,6 +2,7 @@
 #include "editor_storage.hpp"
 #include "editor_interaction.hpp"
 #include "../project/node_analysis_report.hpp"
+#include "../project/node_analysis_comparison.hpp"
 #include "../model/network/approach_layout.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QFile>
@@ -47,9 +48,14 @@ struct NodeAnalysisPanel::Data {
     QLabel *note{},*source{},*freshness{};
     QTabWidget* tabs{};
     QTableWidget *groups{},*approaches{},*nodes{},*issues{},*defaults{};
+    QWidget* microPage{};QLabel* microNote{};QTableWidget* micro{};
+    std::optional<NodeAnalysisMicroSource> microSource;
+    std::optional<NodeAnalysisComparison> comparison;
+    std::uint64_t microBatchGeneration{},microDocumentGeneration{};
     bool valid() const {return report&&generation==context.generation();}
     bool stale() const {return valid()&&report->run.revision!=context.document().revision;}
     void render();
+    void renderMicro();
 };
 NodeAnalysisPanel::NodeAnalysisPanel(QWidget* parent,NodeAnalysisContext context):QWidget(parent),d_(std::make_unique<Data>()) {
     setObjectName("editorNodeAnalysisPanel");d_->context=std::move(context);auto* b=new QVBoxLayout(this);
@@ -63,25 +69,30 @@ NodeAnalysisPanel::NodeAnalysisPanel(QWidget* parent,NodeAnalysisContext context
     d_->groups=table(this,"editorAnalysisGroupResults");d_->approaches=table(this,"editorAnalysisApproachResults");
     d_->nodes=table(this,"editorAnalysisNodeResults");d_->issues=table(this,"editorAnalysisIssues");d_->defaults=table(this,"editorAnalysisDefaults");
     for(auto* t:{d_->groups,d_->approaches,d_->nodes,d_->issues,d_->defaults})d_->tabs->addTab(t,{});
+    d_->microPage=new QWidget(this);d_->microPage->setObjectName("editorAnalysisMicroPanel");
+    auto* microBox=new QVBoxLayout(d_->microPage);microBox->setContentsMargins(0,0,0,0);
+    d_->microNote=label(d_->microPage,"editorAnalysisMicroNote");microBox->addWidget(d_->microNote);
+    d_->micro=table(d_->microPage,"editorAnalysisMicroResults");microBox->addWidget(d_->micro,1);d_->tabs->addTab(d_->microPage,{});
     translate();
+    connect(d_->tabs,&QTabWidget::currentChanged,this,[this]{if(d_->context.presentationChanged)d_->context.presentationChanged();});
 }
 NodeAnalysisPanel::~NodeAnalysisPanel()=default;
 void NodeAnalysisPanel::analyse() {
     Q_ASSERT(QThread::currentThread()==thread());
-    const auto& current=d_->context.document();const auto path=d_->context.file();std::string bytes;bool saved=false;
-    if(!path.isEmpty()) {
-        QFile file(path);if(file.open(QIODevice::ReadOnly)&&file.size()<=static_cast<qint64>(kEditorDocumentByteLimit)) {
-            const auto captured=file.readAll().toStdString();
-            try {if(parseDocument(Json::parse(captured))==current){bytes=captured;saved=true;}}catch(const std::exception&) {} // external changes use the current snapshot
-        }
-    }
-    if(!saved)bytes=editorDocumentBytes(documentJson(current)); // shared Save representation, not an automatic Save
-    auto report=analyseNodeAnalysisInput(bytes,d_->context.data);
-    d_->report=std::move(report);d_->generation=d_->context.generation();d_->snapshot=!saved;d_->file=path;d_->render();refresh();
+    const auto path=d_->context.file();const auto captured=captureEditorDocument(d_->context.document(),path);
+    auto report=analyseNodeAnalysisInput(captured.bytes,d_->context.data);
+    d_->report=std::move(report);d_->generation=d_->context.generation();d_->snapshot=!captured.saved;d_->file=path;d_->render();refresh();
 }
 bool NodeAnalysisPanel::hasResult() const {return d_->valid();}
+bool NodeAnalysisPanel::exportable() const {
+    return hasResult()&&(d_->tabs->currentWidget()!=d_->microPage||(d_->comparison&&!d_->comparison->rows.empty()));
+}
+void NodeAnalysisPanel::captureMicroSource(const ProjectDocument& doc,const Network& network,std::uint64_t batchGeneration) {
+    d_->microSource=nodeAnalysisMicroSource(doc,network);d_->microBatchGeneration=batchGeneration;d_->microDocumentGeneration=d_->context.generation();
+}
 std::string NodeAnalysisPanel::csv() const {
-    if(!hasResult())throw std::runtime_error("EDIT_CSV_UNFINISHED");
+    if(!exportable())throw std::runtime_error("EDIT_CSV_UNFINISHED");
+    if(d_->tabs->currentWidget()==d_->microPage)return nativeText(nodeAnalysisComparisonCsv(*d_->comparison,d_->stale()));
     return nativeText(nodeAnalysisReportCsv(*d_->report,d_->stale()));
 }
 std::string NodeAnalysisPanel::json() const {
@@ -90,6 +101,8 @@ std::string NodeAnalysisPanel::json() const {
 }
 void NodeAnalysisPanel::refresh() {
     if(d_->report&&!d_->valid()){d_->report.reset();d_->render();}
+    if(d_->microSource&&d_->microDocumentGeneration!=d_->context.generation())d_->microSource.reset();
+    d_->renderMicro();
     const auto& text=d_->context.text;d_->note->setText(text("editorAnalysisMarker"));
     if(!d_->report){d_->source->clear();d_->freshness->setText(text("editorAnalysisEmpty"));return;}
     const auto revision=QString::number(d_->report->run.revision);
@@ -103,13 +116,35 @@ void NodeAnalysisPanel::refresh() {
 }
 void NodeAnalysisPanel::translate() {
     const auto& text=d_->context.text;int i=0;
-    for(const auto* key:{"editorAnalysisLaneGroups","editorAnalysisApproaches","editorAnalysisIntersections","editorAnalysisRefusals","editorAnalysisDefaults"})d_->tabs->setTabText(i++,text(key));
+    for(const auto* key:{"editorAnalysisLaneGroups","editorAnalysisApproaches","editorAnalysisIntersections","editorAnalysisRefusals","editorAnalysisDefaults","editorAnalysisMicro"})d_->tabs->setTabText(i++,text(key));
     d_->groups->setColumnCount(12);d_->groups->setHorizontalHeaderLabels({text("editorAnalysisNode"),text("editorAnalysisMovement"),text("editorAnalysisV"),text("editorAnalysisS"),text("editorAnalysisC"),text("editorAnalysisX"),text("editorAnalysisGreenRatio"),text("editorAnalysisD"),text("editorAnalysisLos"),text("editorAnalysisQ"),text("editorAnalysisQ95"),text("editorAnalysisRefusals")});
     d_->approaches->setColumnCount(5);d_->approaches->setHorizontalHeaderLabels({text("editorAnalysisNode"),text("editorAnalysisApproach"),text("editorAnalysisV"),text("editorAnalysisD"),text("editorAnalysisLos")});
     d_->nodes->setColumnCount(5);d_->nodes->setHorizontalHeaderLabels({text("editorAnalysisNode"),text("editorAnalysisV"),text("editorAnalysisD"),text("editorAnalysisLos"),text("editorAnalysisXc")});
     d_->issues->setColumnCount(4);d_->issues->setHorizontalHeaderLabels({text("editorAnalysisNode"),text("editorAnalysisCode"),text("editorAnalysisRefusals"),text("editorAnalysisPath")});
     d_->defaults->setColumnCount(4);d_->defaults->setHorizontalHeaderLabels({text("editorAnalysisNode"),text("editorAnalysisSetting"),text("editorFillValue"),text("editorFillSource")});
+    d_->micro->setColumnCount(11);d_->micro->setHorizontalHeaderLabels({text("editorAnalysisLevel"),text("editorAnalysisNode"),text("editorAnalysisApproach"),text("editorAnalysisHcmDelay"),text("editorAnalysisLos"),text("editorResultsVehicles"),text("editorResultsN"),text("editorAnalysisMicroDelay"),text("editorResultsCi"),text("editorResultsUnfinished"),text("editorAnalysisPath")});
     d_->render();refresh();
+}
+void NodeAnalysisPanel::Data::renderMicro() {
+    micro->setRowCount(0);comparison.reset();const auto& text=context.text;
+    QString note=text("editorAnalysisMicroNote");
+    const auto view=context.microBatch?context.microBatch():NodeAnalysisMicroBatchView{};
+    if(!valid()||!microSource||!view.report||!view.evaluation||view.generation!=microBatchGeneration) {
+        microNote->setText(note+'\n'+text("NODE_MICRO_BATCH_REQUIRED"));return;
+    }
+    comparison=compareNodeAnalysis(*report,*microSource,*view.report,*view.evaluation);
+    QStringList seeds;for(const auto seed:comparison->seeds)seeds<<QString::number(seed);
+    note+='\n'+text("editorAnalysisMicroSource").arg(QString::number(comparison->revision),QString::number(comparison->start,'g',12),QString::number(comparison->end,'g',12),seeds.join(", "));
+    if(!comparison->projectSha256.empty())note+='\n'+QString::fromStdString(comparison->projectSha256);
+    for(const auto& issue:comparison->issues)note+='\n'+text(issue.code.c_str())+" ("+QString::fromStdString(issue.path)+")";
+    microNote->setText(note);
+    for(const auto& row:comparison->rows) {
+        const int r=micro->rowCount();micro->insertRow(r);cell(micro,r,0,text(row.inLink.empty()?"editorAnalysisIntersection":"editorAnalysisApproach"));
+        cell(micro,r,1,QString::fromStdString(row.nodeName.empty()?row.nodeId:row.nodeName));cell(micro,r,2,QString::fromStdString(row.approachName));
+        figure(micro,r,3,row.analyticalDelay);cell(micro,r,4,letter(row.analyticalLos));figure(micro,r,5,row.vehicles.mean);
+        auto* n=new QTableWidgetItem(QString::number(row.microDelay.n));n->setData(Qt::UserRole,QVariant::fromValue<qulonglong>(row.microDelay.n));editorDesign::setNumericText(n,true);micro->setItem(r,6,n);
+        figure(micro,r,7,row.microDelay.mean);figure(micro,r,8,row.microDelay.halfWidth95);figure(micro,r,9,row.unfinished.mean);cell(micro,r,10,QString::fromStdString(row.inLink.empty()?row.nodeId:row.inLink));
+    }
 }
 void NodeAnalysisPanel::Data::render() {
     for(auto* t:{groups,approaches,nodes,issues,defaults})t->setRowCount(0);
@@ -145,6 +180,7 @@ void NodeAnalysisPanel::Data::render() {
         for(const auto& a:n.advisories)issue(n,a.code,a.path);
         const auto setting=[&](const QString& name,const QString& value,const QString& source) {const int r=defaults->rowCount();defaults->insertRow(r);cell(defaults,r,0,title);cell(defaults,r,1,name);cell(defaults,r,2,value);cell(defaults,r,3,source);};
         setting(text("editorAnalysisSaturation"),QString::number(n.baseSaturationFlow,'g',17),QString::fromStdString(n.baseSaturationSource));
+        if(n.modelSource){const auto& s=*n.modelSource;setting(text("editorAnalysisModelSource"),QString::number(s.start,'g',12)+"–"+QString::number(s.end,'g',12)+" s",QString::fromStdString(s.projectSha256));}
         for(const auto& used:n.defaults)setting(QString::fromStdString(used),used=="peakHourFactor"?QString::number(n.peakHourFactor,'g',17):used=="analysisPeriod"?QString::number(n.analysisPeriod,'g',17):QString(),text("editorAnalysisMethodDefault"));
     }
 }

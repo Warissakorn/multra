@@ -6,4 +6,6 @@ namespace multra {
 // none) and, as any edit of a Node does, clears `generated`. EDIT_UNKNOWN_OBJECT when absent. The
 // method's ranges are checked when the analysis runs, not here.
 void setNodeAnalysis(ProjectDocument&, const std::string& id, std::optional<NodeAnalysis>);
+// Clear an unchanged provenance claim when a Command edits the demand rows, T or PHF.
+void settleNodeAnalysisSources(ProjectDocument&,const ProjectDocument& before);
 }

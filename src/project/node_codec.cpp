@@ -1,4 +1,5 @@
 #include "node_codec.hpp"
+#include "node_analysis_source_codec.hpp"
 #include "junction_recipe_codec.hpp"
 #include "network_fields.hpp"
 #include "../core/validate.hpp"
@@ -83,6 +84,7 @@ Json analysisJson(const NodeAnalysis& a) {
     if (a.baseSaturationFlow) j["baseSaturationFlow"] = {{"value", a.baseSaturationFlow->value}, {"source", a.baseSaturationFlow->source}};
     if (a.peakHourFactor) j["peakHourFactor"] = *a.peakHourFactor;
     if (a.analysisPeriod) j["analysisPeriod"] = *a.analysisPeriod;
+    if (a.modelSource) j["modelSource"] = nodeAnalysisSourceJson(*a.modelSource);
     if (!a.approaches.empty()) {
         Json list = Json::array();
         for (const auto& r : a.approaches) {
@@ -127,7 +129,9 @@ NodeAnalysis parseAnalysis(const Json& j, const std::string& path, int schema) {
     NodeAnalysis a;
     for (const auto& [key, value] : j.items()) {
         const auto at = path + "." + key;
-        if (key == "cbd") {
+        if (key == "modelSource") {
+            a.modelSource = parseNodeAnalysisSource(value,at,schema);
+        } else if (key == "cbd") {
             if (!value.is_boolean() || !value.get<bool>()) invalid(at);
             a.cbd = true;
         } else if (key == "baseSaturationFlow") {

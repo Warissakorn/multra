@@ -51,6 +51,7 @@ struct AnalysedNode {
     // Node has turns (D383): NODE_ANALYSIS_STALE_TURN at .analysis.turns[k] naming no turn of it, and
     // NODE_ANALYSIS_STALE_APPROACH at .analysis.approaches[k] naming no in-leg.
     std::vector<ValidationIssue> advisories;
+    std::optional<NodeAnalysisModelSource> modelSource;
 };
 struct NodeAnalysisRun {
     std::uint64_t revision{};

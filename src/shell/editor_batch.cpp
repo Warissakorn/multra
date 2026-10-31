@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "editor_batch_cells.hpp"
+#include "node_analysis_panel.hpp"
 #include "../project/batch_output.hpp"
 #include "../project/parallel_seeds.hpp"
 #include "../project/load.hpp"
@@ -122,6 +123,8 @@ void EditorWindow::startBatch() {
         showError(e);revealObjectPage(objectPages_.at("editorProblemTable"));return;
     }
     error_->clear();
+    static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->captureMicroSource(
+        history_.document(),snapshot->network,batchGeneration_+1);
     const auto total=seeds.size(); // read before the call: the capture below moves `seeds`
     startWorker(total,false,[this,scenario=std::move(snapshot->scenario),spec=std::move(*spec),seeds=std::move(seeds)](const auto& progress, const auto& cancelled)
         -> std::function<void()> {

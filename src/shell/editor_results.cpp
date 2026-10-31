@@ -92,7 +92,9 @@ void EditorWindow::buildResults() {
     macro_=std::make_unique<MacroPanel>(); buildMacro(bar,tab(macro_->note,"editorMacroNote","editorResultsTabMacro")); // S2.4
     meso_=std::make_unique<MesoPanel>(); buildMeso(bar,tab(meso_->note,"editorMesoNote","editorResultsTabMeso")); // M11.4
     auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
-        [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);}});
+        [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);},
+        [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchGeneration_};},
+        [this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabNodeAnalysis",analysis);resultsTabs_->addTab(analysis,{});
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){

@@ -244,7 +244,7 @@ void EditorWindow::refreshRun(){
     refreshMeso(); // M11.4: and the Meso ones
     const auto analysis=resultPages_.find("editorResultsTabNodeAnalysis");
     auto* panel=analysis==resultPages_.end()?nullptr:static_cast<NodeAnalysisPanel*>(analysis->second);if(panel)panel->refresh();
-    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->hasResult():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
+    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
         :runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);

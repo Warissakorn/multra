@@ -12,7 +12,7 @@ uses those existing codecs and validators.
 
 ## Envelope and presence rules
 
-The reader accepts editor schemas 1–63 (`kLatestSchema` in `document.hpp`). A missing
+The reader accepts editor schemas 1–64 (`kLatestSchema` in `document.hpp`). A missing
 `schemaVersion` selects the separate legacy scenario path, including pre-5 attachments
 and legacy signal/amber behavior. A formal editor schema must not accidentally accept
 that path as a canonical project.
@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–63 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–64 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -106,6 +106,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 61 | Junction catalog ownership, Node recipe and independent compass overrides (J3a, D393–D395) | `junction_template_codec.cpp`, `junction_recipe_codec.cpp`, `node_codec.cpp` |
 | 62 | Link `generated`, written only when true (J3b checkpoint, D398); older files still read, presence before 62 is refused at `network.links[i].generated` | `network_link_codec.cpp`, `network_fields.*`, `document.cpp` |
 | 63 | Owned transition template structure: `kind: transition`, `legs: 2`, and `directions.forward.align` / `directions.backward.align` (J5, D406); presence before 63 is refused at `directions` or `kind` | `junction_template_codec.cpp`, `document.cpp` |
+| 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from
@@ -212,7 +213,7 @@ with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 now also includes the Connector/reference extension below; complete remains false and
 desktop observed schema discovery is unchanged.
 
-The generated schema chooses rules from the document's root `schemaVersion` (1–63).
+The generated schema chooses rules from the document's root `schemaVersion` (1–64).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its
@@ -464,6 +465,12 @@ observed-schema response changes. Catalog row schemas remain separate follow-ups
 
 J7/D418 edits the existing schema-58 `Node.analysis` fields only. Snapshot provenance and
 analytical Results are session state, not new project fields or a schema step.
+A9 adds only `analysis.modelSource` at 64: closed `kind: micro-demand`, source `revision`,
+`projectSha256`, run-second `start`/`end`, explicit `heavyVehicleTypes` (empty means none),
+`files[{logicalPath,sha256}]`, and optional nonempty `fallbacks`. Hashes are lowercase SHA-256;
+paths/type ids are unique and nonempty, times finite with 0 ≤ start < end. This is historical
+provenance, with no live binding or copied geometry/timing. Demand-row/T/PHF Commands clear an
+unchanged old claim; Undo restores it. Site-only adjustments retain it. Old files do not migrate.
 
 J4 (D404) and J4T (D416) add no stored field or schema step. Signals use existing controllers,
 groups, heads and generated flags; T uses P2 + legs=3. Site timing stays on schema-61 recipes.

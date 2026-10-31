@@ -30,40 +30,41 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M13 — current pick: A9 second half (Fill from model, Micro side-by-side)
+## M13 — A9 checkpoint for owner review; B41 remains pending
 
-- **J7 `fe827c8` is approved.** The owner's review confirms byte-identical editor/real CLI
-  JSON and CSV for saved and unsaved Save-representation snapshots, and unchanged shipped
-  projects/node analysis except buildCommit. Preserve D418 and the accepted JT12 behaviour.
+- **Stop for review; no new slice.** J7 `fe827c8` and native A9 `8f8a98d` are approved. This
+  follow-up implements the answered B40 scope: D420 fixes deterministic compiled lane-change
+  stubs; D421 adds the staged Fill form, feature-selected schema-64 provenance and completed
+  Micro-batch comparison for model-filled Nodes. Do not silently call B41 answered or close A9.
+- **Owner B41 still needs an answer:** how manual counts, or counts whose source was cleared by
+  a demand edit, acquire a comparison window. Recommended: explicit session-only confirmation
+  matching batch start/end and T, labelled manual counts. Alternative: only Nodes retaining
+  Fill provenance compare. The question is in [OWNER_SITTING B41](plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each)
+  and [NODE_ANALYSIS_MODEL](reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window-pending).
+  No answer is assumed; current missing-window rows refuse `NODE_MICRO_NO_WINDOW` without guessing.
+- **If B41 selects confirmation:** first add failing native/Qt rows on both sides/locales;
+  stage an explicit session-only count window on the comparison page, keyed to its captured
+  analysis/document generation. Require exact batch window and T, label manual versus model,
+  retain no new project field and never infer start/end from T. Keep B40's completed explicit
+  batch, captured id mapping, n/CI/unfinished and distinct-measure/CSV rules. If B41 chooses the
+  alternative, record it and finalize the missing-window scope/tests/docs. An owner correction
+  stays in A9, re-verify and push, then stop again.
 - **Read first:** [NODE_ANALYSIS](reference/NODE_ANALYSIS.md) §4–§6/§12,
   [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md),
-  [A9 contract questions](reference/NODE_ANALYSIS_MODEL.md), D371/D379/D383/D418/D419 by anchor,
-  and BATCH/NODES/STUDY_PERIODS for the reused demand, evaluation and clock rules.
-- **B40 is fully answered (D419/D420).** Use expected compiled Micro demand, explicit HV types,
-  full-set replacement/provenance, explicit start/end with StudyPeriod/clockStart shortcut,
-  T = window hours and PHF = 1, all shown before Confirm. Reuse a completed, explicitly
-  requested batch for Node/approach comparison with n/CI/unfinished; no subtraction or turn
-  matching. Schema 64 is approved for provenance. No new run action or timing default.
-- **B41 is pending only for manual-count comparison windows.** The recommended session-only
-  window confirmation is not an answer; do not silently exclude manual counts or infer zero.
-  Fill UI/provenance and generated/stored-field tests can proceed independently.
-- **Independent native preview is implemented:** `project/node_model_demand.*` records exact
-  bytes, reuses the Micro compiler and maps determined complete traversals without mutation.
-  NA24 and native NA25 coverage pass on both sides; UI/provenance/command/comparison are still
-  unfinished. Preserve compiler origin mapping for entry-lane stubs, lane-station coverage,
-  explicit-HV/zero rules and runtime/parking guards. D420 resolves singleton-origin stubs through
-  all compiled lane-change targets; differing/partial terminal traversals still refuse. Six
-  both-side native review cases pass. Do not claim the native checkpoint completes A9.
-- Finish the agreed contract and NA25–NA30 as failing tests with forcing
-  assertions first, on both driving sides and both locales. Reuse compilation, existing HCM
-  analysis, batch statistics, Commands and shared CSV/marking. New fields use a feature-selected
-  schema step (next 64), read older files and refuse early fields at their paths.
-- At the next dialog touch, cheaply make removal of drawn approach rows match drawn turn rows
-  (stay visible with cleared values); retain explicit stale-row removal. This is E31's small
-  carry-over, not a reopening of J7 approval. Keep the Window header within 500 lines.
-- Verify desktop build, ctest and check; headless if configured. Compare before/after CLI and
-  legacy outputs, keep quantities distinct, document Windows/manual limits, commit/push the
-  same branch, then **stop for A9 owner review**. No timing proposal, coarse HCM or UTDF writer.
+  [NODE_ANALYSIS_MODEL](reference/NODE_ANALYSIS_MODEL.md), D383/D418–D421 by anchor, and BATCH,
+  NODES/STUDY_PERIODS for source/evaluation/clock rules. All six B40 choices are answered; do not
+  re-ask them. No timing default/proposal, new HCM method, coarse HCM or UTDF writer.
+- **Preserve:** exact saved/Save-snapshot CLI JSON/CSV parity; T=window hours and PHF=1 shown
+  before Confirm; explicit HV policy; whole-set replacement and historical provenance, cleared
+  by demand edits and restored by Undo. Parent Confirm is the sole Command. Drawn approach
+  clearing now matches drawn turns (E31 carry-over fixed); stale rows remain explicitly cleared.
+- **Micro lifecycle:** the self-owned Results panel captures ids/document at Run seeds compile;
+  cancelled/replaced/edited/reopened batches cannot compare. Undo restores inputs, not a run.
+  There is no new job/cache subsystem. Keep Window header ≤500 lines. Model-source schema 64
+  is consumed; the next available schema is 65, only if a future stored feature needs it.
+- **Verification:** desktop build/ctest/check, conditional headless, actual CLI parity and
+  old-output byte checks; evidence in PROGRESS. Windows/high-DPI/manual appearance remains
+  [OWNER_SITTING E32](plans/OWNER_SITTING.md) (with E31 still open).
 
 ## M14 — junction slices complete; UTDF awaits U0
 
@@ -78,7 +79,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
   is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
   (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
-- Windows appearance remains OWNER_SITTING E24–E31; Linux tests do not close those items.
+- Windows appearance remains OWNER_SITTING E24–E32; Linux tests do not close those items.
   Watch B29's turn keys, HCM storage and partial-total questions; do not silently settle them.
 
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)

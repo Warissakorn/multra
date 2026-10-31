@@ -1,10 +1,10 @@
 # Node analysis: Fill from model and Micro comparison (A9 second half)
 
-**A9 second-half contract (D419/D420); native preview implemented, UI in progress.** The owner approved J7 (`fe827c8`) on 2026-10-31
+**A9 second-half contract (D419–D421); Fill/provenance and model-window comparison implemented.** The owner approved J7 (`fe827c8`) on 2026-10-31
 and selected the rest of [NODE_ANALYSIS §6/§12](NODE_ANALYSIS.md#6-workflow-in-the-editor).
 The six choices below are [OWNER_SITTING B40](../plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each).
 All six B40 choices are answered. B41 asks how manually entered counts acquire a comparison
-window; implement independent Fill/provenance work while that comparison-only choice is pending.
+window; that manual-count confirmation remains pending. Model-filled Nodes already carry an explicit window.
 Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
 
 ## Boundaries already settled
@@ -17,14 +17,14 @@ Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
   not new delay formulas, a seed or a clock in `src/analysis/`.
 - Every stored edit is a Command with one Undo. Preview and comparison do not mutate the
   document. New stored fields require a feature-selected version, older reads and a refusal
-  before the field's version at its own path; the next available step is 64.
+  before the field's version at its own path; 64 is selected only when `analysis.modelSource` is present.
 - Read actual Micro demand through its compiler/catalog resolution, with no second routing
   interpretation. Never infer an HCM heavy-vehicle classification from a type's name, length
   or PCU: the current catalog has no such classification.
 - Macro/Meso result imports, timing proposals, coarse HCM and the UTDF writer are outside this
   request. U0 still has no answers. Existing other-level outputs and files keep their bytes.
 
-## B40: choices awaiting the owner
+## B40: answered choices
 
 1. **Demand source.** NODE_ANALYSIS §6 says Micro routes/inputs; D379 also books volumes from
    Micro/Meso/Macro results. Recommended: expected demand from Micro's compiled routes, inputs,
@@ -66,7 +66,7 @@ Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
    source for these cases. Revisit this boundary if choice 1 selects finished results.
    **Owner, 2026-10-31:** “รองรับ demand ที่แน่นอน; ปฏิเสธกรณีที่ยังต้องจำลอง (แนะนำ)”.
 
-## Native preview implemented at this checkpoint
+## Expected-demand preview
 
 `previewNodeModelDemand` records/parses the same captured project bytes and calls the existing
 Micro compiler with a manifest. Its mandatory start/end request is in run seconds within the
@@ -82,8 +82,8 @@ legacy scheduled routing intervals and OD/StudyPeriod placement are the compiler
 
 The preview returns every current turn, including zero, an explicit count-weighted %HV for
 positive demand, the source revision and exact project/catalog manifest. Zero retains the
-old optional %HV; explicitly selecting no HV types gives 0 % on positive flows. No stored
-field, schema step, mutation, dialog, T/PHF adjustment or comparison is implemented yet.
+old optional %HV; explicitly selecting no HV types gives 0 % on positive flows. The preview
+only returns values; the staged form and Command below publish them.
 
 Named refusals identify invalid windows/HV choices, omitted OD demand, out-of-area Nodes,
 partial or ambiguous traversals, cycles and unresolved runtime contributions. A positioned
@@ -99,41 +99,83 @@ start/end even when T matches a batch. Recommended: explicit session-only confir
 that count window before comparison, matching batch evaluation start/end and Node T, labelled
 manual counts. Alternative: compare only Nodes retaining a Fill window. No answer is assumed.
 
-## Draft acceptance coverage
+## Staged Fill and provenance (D421)
 
-NA24's native coverage and the independent native guards of NA25 are implemented; the remaining
-rows are **planned**, not passing. Finalize unanswered choices and write failing tests before
-their implementation, asserting forcing setup first. Both driving sides are covered natively;
-English/Thai UI cases still await implementation and are not claimed by this checkpoint.
+Nodes → Analysis… → **Fill from model…** has explicit start/end in run seconds and a StudyPeriod
+shortcut placed by subtracting `clockStart`. There is no chosen period or HV type by default;
+reopening a sourced Fill offers its previous explicit selections. Preview captures exact saved
+bytes when they still parse to the staged document, otherwise its Save representation. The
+before/after table shows every current turn, explicit zero and old stale rows being removed,
+plus T → window hours and PHF → 1. Named localized refusals disable Confirm; changed window or
+HV choices invalidate the preview. No run is launched or sampled.
 
-| Row | Coverage to settle against B40 |
+Child Confirm stages values in Analysis; only parent Confirm calls `setNodeAnalysis` through
+History, in one Undo. Cancel at either level is unchanged. Site adjustments and sourced
+saturation stay. Drawn turn/approach clear actions both keep the row visible for re-entry;
+explicitly cleared stale rows disappear. Unchanged input creates no History entry.
+
+`analysis.modelSource` is a historical claim, not a live demand binding. Schema 64 stores kind
+`micro-demand`, captured revision/project SHA-256, start/end, explicit HV ids, manifest file
+logical paths/hashes and optional fallbacks. Closed codec rules reject unknown/missing/bad
+values and refuse the field before 64 at its own path (including null). Earlier files keep
+their feature-selected schema/bytes. Stored results or copied geometry/timing are not added.
+Demand-row, %HV, T or PHF edits with the same old claim clear it in the Command/History boundary;
+site-only edits retain it. Undo restores the whole claim. Re-Fill records a new snapshot.
+The Analysis source line, results settings, JSON and CSV expose retained provenance; outputs
+without it keep their old bytes. Existing manual count entry remains available.
+
+## Micro side by side (D420/D421)
+
+Run seeds explicitly, wait for completion, then Analyse and open Results → Node analysis →
+**Micro side by side**. The page reuses the completed batch; it launches no job. Captured Node
+ids and ordered in-Link ids map batch positions, including duplicate Node names. Its source
+must equal Analyse's decoded document, and the confirmed count window and T must match batch
+evaluation start/end. Model-filled Nodes use their retained window. Without one,
+`NODE_MICRO_NO_WINDOW` names the Node while B41 awaits an answer; no window is inferred from T.
+
+Rows show Node/approach HCM control delay and LOS beside Micro simulated section/travel-time
+delay, seed n, 95% CI half-width, vehicles and unfinished. Missing estimates stay blank.
+No turn matching, subtraction, new delay formula or equivalence claim is made. Distinct measure
+labels and the not-yet-validated marker stay visible. Source revision/hash, evaluation window
+and seed list are shown. Mismatched/unfinished sources produce localized named refusals;
+`NODE_ANALYSIS_PARTIAL` remains visible under D383, without changing B29(d).
+
+Editing, Undo, seed replacement, cancellation and New/reopen discard the existing batch under
+its normal lifecycle. Undo restores inputs/provenance but does not resurrect a discarded run.
+Opening another document also clears the analysis capture, including revision-zero files.
+The active Micro subtab exports its shared comparison CSV, with C-locale numbers, quoted cells,
+marker and generated/stale marking; no comparable rows means Export/Copy is disabled. Analytical
+subtabs retain their CLI-identical CSV and the report JSON remains analytical in every subtab.
+
+## Acceptance coverage
+
+NA24–NA30 are **passing for the answered B40 scope**, on both driving sides; UI cases cover
+English and Thai. B41's manual-window confirmation remains unimplemented and A9 awaits review.
+Every new feature row failed before implementation; forcing setup is asserted first.
+
+| Row | Passing coverage |
 |---|---|
-| NA24 | Hand-counted complete routes through a Node, multiple lane paths/compositions, time-varying input shares, and no double counting of one traversal; volume zero differs from missing |
-| NA25 | Explicit window, StudyPeriod/clock placement, %HV policy and T/PHF conversion; invalid/unresolved sources refuse without any mutation or silently omitted demand |
-| NA26 | Provenance round-trip/version floor, unchanged older files, source identity and the chosen manual-edit/re-Fill rule; existing D383 stale rows remain explicit |
-| NA27 | Both sides/locales: staged before/after, Cancel/no-op, exact one Undo/Redo, Save/reopen and retained adjustments/saturation; drawn turn/approach clear controls behave consistently |
-| NA28 | A real completed batch: Node/approach side-by-side values equal existing HCM and batch reports, including n/CI/unfinished/missing values and distinct measure labels; no approximate movement matching |
-| NA29 | Snapshot/window mismatch, stale edits, Undo, New/reopen, cancelled/incomplete batch and no result cannot masquerade as a fresh comparison; source and seed list remain visible |
-| NA30 | CSV uses shared formatters/marker; analytical CLI parity, shipped projects and Micro/Meso/Macro output bytes remain unchanged when the new feature is absent |
+| NA24 | Hand-counted complete routes, lane paths/compositions, intervals, one count per traversal, explicit zero; deterministic compiled lane-change stubs and ambiguous control |
+| NA25 | Explicit window, StudyPeriod/clock placement, HV weighting/zero policy, T/PHF replacement; invalid/unresolved sources refuse without mutation or dropped demand |
+| NA26 | Provenance schema-64 round-trip and early-field paths, unchanged older files, exact raw source SHA, demand-edit clear/site-only retain, Undo and reopen |
+| NA27 | Both sides/locales: before/after, Cancel/no-op, one Undo/Redo, Save/reopen, retained adjustments/saturation, consistent drawn-row clearing |
+| NA28 | Real completed batches: exact Node/approach HCM and Micro values including n/CI/unfinished/blanks, duplicate-name id mapping, distinct measure labels |
+| NA29 | Snapshot/window mismatch, unconfirmed window, stale edit/Undo, reopen, cancellation/incomplete/no batch; no stale comparison or implicit run |
+| NA30 | Shared-format marker/CSV, real CLI JSON/CSV parity with sourced inputs, unchanged source-absent fixture/project/level outputs |
 
-The native cases in `tests/node_model_demand_tests.cpp` and
-`tests/node_model_demand_edge_tests.cpp` cover direct interval/lane/stub counts, clock-placed
-OD/compositions, scheduled decision shares, invalid requests/types, deferred routing, partial
-routes and parking (including the empty-lot control), on both driving sides. D420 adds six
-rows in `tests/node_model_stub_tests.cpp`: the shipped m2.6 study with a suggested Node, a
-hand-counted m2.6-style pocket, and a positive-demand stub with different complete Node exits,
-on both sides. UI/provenance,
-schema-64 version tests and completed-batch comparison remain unfinished.
+Native tests: `node_model_demand_tests.cpp`, `node_model_demand_edge_tests.cpp`,
+`node_model_stub_tests.cpp`, `node_analysis_source_tests.cpp`, `node_analysis_comparison_tests.cpp`.
+Qt: `node_analysis_fill_ui_tests.cpp` and `node_analysis_micro_ui_tests.cpp`, retaining JT12's
+`node_analysis_ui_tests.cpp` real-CLI coverage. Six D420 cases include shipped m2.6 plus Suggest
+nodes, the 1200 veh/h pocket's 720/240/240 hand count, and differing complete exits, both sides.
+Full verification is in PROGRESS; Windows/high-DPI/manual appearance remains OWNER_SITTING E32.
 
-## Code entry points and next dialog touch
+## Code entry points
 
-`project/compileDocument`, `demand_preview`, `demand_paths` and `evaluationSpec` own compiled
-demand and evaluation windows. `runner/batch` and `project/parallel_seeds` already own Micro
-runs/estimates. `shell/node_analysis_dialog`, `node_analysis_panel`, `editor_nodes` and
-`editor_batch` are the existing UI surfaces; `commands/node_analysis_commands` owns edits.
-Keep `EditorWindow` at its existing 500-line header limit by using free dialogs/self-owned pages.
-
-J7's minor E31 finding is booked for the next touch of the dialog: removing a drawn approach
-currently hides the row until reopen, while removing a drawn turn leaves cleared fields.
-Make drawn rows consistent cheaply, preserving explicit stale-row removal and one Undo; this
-does not widen the approved J7 slice.
+`project/compileDocument`, `demand_preview`, `demand_paths` and `evaluationSpec` own compilation
+and clock rules. `node_model_demand` owns preview, `node_analysis_fill` its replacement,
+`node_analysis_source_codec` the stored claim, and `node_analysis_comparison` report matching/CSV.
+`runner/batch` and `project/parallel_seeds` own existing runs/estimates. The free
+`shell/node_analysis_fill_dialog`, Analysis form, self-owned `node_analysis_panel` and
+`editor_batch` stage/present them; `commands/node_analysis_commands` owns edits. EditorWindow's
+header remains at 500 lines. No generic job subsystem or new per-turn simulation statistic.

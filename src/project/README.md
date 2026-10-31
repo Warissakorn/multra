@@ -1,6 +1,6 @@
 # src/project
 
-Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–63), catalogs from
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–64), catalogs from
 `data/`, compilation for each level, and every run's output formats. The document persists
 authoring data and the optional background; no compiled runtime network is saved, and an empty
 draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
@@ -76,6 +76,9 @@ keeps its schema and bytes.
 | `csv_format.*` | Cell formats every results CSV shares | [BATCH](../../docs/reference/BATCH.md) |
 | `node_analysis_report.*` | Captured-input analytical report shared by CLI/editor, exact manifest bytes and stale/generated export marking | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `node_model_demand.*` | Expected scheduled demand through drawn Node turns from the same compiled Micro inputs, explicit period/HV types and captured-input manifest | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_fill.*` | Stages a sourced whole-set Node analysis replacement with explicit T/PHF, retaining site adjustments | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_source_codec.*` | Closed schema-64 model-demand provenance, feature selection and typed validation | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_comparison.*` | Snapshot/window-checked analytical/Micro report values, captured id/position matching and comparison CSV | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `build_metadata.*` | Shared engine/build/compiler JSON stamping, preserving CLI output | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `batch_output.*` | Batch JSON and CSV | [BATCH](../../docs/reference/BATCH.md) |
 | `comparison_output.*` | Scenario comparison JSON and CSV | [BATCH §7](../../docs/reference/BATCH.md) |
@@ -101,7 +104,7 @@ keeps its schema and bytes.
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 streetSegmentId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–63; shared `$defs`
+composes envelope/background with these structural rules for schemas 1–64; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

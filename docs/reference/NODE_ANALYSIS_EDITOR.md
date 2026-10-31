@@ -20,7 +20,8 @@ manual-Node ownership rule (clear generated); Undo restores it. A saturation ove
 both value and source text in the form; older empty-source files remain readable. Stored shape/sign validation is the existing codec;
 method-range refusals stay with Analyse. Lane groups/geometry/timing remain derived. Stale turn
 and approach rows are kept and flagged with D383's codes; only explicit removal clears them.
-No *Fill from model*, counted intervals, timing proposal or Micro side-by-side is included.
+A9’s second half adds [Fill/provenance and Micro comparison](NODE_ANALYSIS_MODEL.md) without
+changing this snapshot/report contract. Counted intervals and timing proposals remain later work.
 
 ## Snapshot and byte parity (B39/D418)
 

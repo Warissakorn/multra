@@ -81,7 +81,7 @@ void EditorWindow::buildNodes() {
         const auto id=selectedNode();if(id.empty())return;
         try {
             const auto& doc=history_.document();const auto n=std::find_if(doc.network.nodes.begin(),doc.network.nodes.end(),[&](const auto& n){return n.id==id;});
-            const auto result=editNodeAnalysis(this,doc,id,[this](const char* key){return text(key);});
+            const auto result=editNodeAnalysis(this,doc,id,[this](const char* key){return text(key);},data_,file_);
             if(result&&*result!=n->analysis.value_or(NodeAnalysis{}))execute("editorNodeAnalysis",[&](auto& d){setNodeAnalysis(d,id,*result);});
         }catch(const std::exception& e){showError(e);}
     }));

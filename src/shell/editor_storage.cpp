@@ -29,6 +29,16 @@ std::string editorDocumentBytes(const Json& value) {
     if(bytes.size()>kEditorDocumentByteLimit)throw std::runtime_error("EDIT_FILE_TOO_LARGE");
     return bytes;
 }
+EditorDocumentSnapshot captureEditorDocument(const ProjectDocument& d,const QString& path) {
+    if(!path.isEmpty()) {
+        QFile f(path);
+        if(f.open(QIODevice::ReadOnly)&&f.size()<=static_cast<qint64>(kEditorDocumentByteLimit)) {
+            const auto bytes=f.readAll().toStdString();
+            try{if(parseDocument(Json::parse(bytes))==d)return {bytes,true};}catch(const std::exception&){}
+        }
+    }
+    return {editorDocumentBytes(documentJson(d)),false};
+}
 void writeEditorDocument(const QString& file,const Json& value) {writeEditorBytes(file,editorDocumentBytes(value),"EDIT_FILE_WRITE");}
 void checkExportDestination(const QString& file,const QStringList& protectedFiles,const char* errorCode) {
     const QFileInfo destination(file);

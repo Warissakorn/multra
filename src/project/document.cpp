@@ -17,6 +17,7 @@
 #include "street_segment_codec.hpp"
 #include "link_speed_codec.hpp"
 #include "node_codec.hpp"
+#include "node_analysis_source_codec.hpp"
 #include "junction_template_codec.hpp"
 #include "counted_volumes.hpp"
 #include "route_destination.hpp"
@@ -93,7 +94,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesTransitionFields(d) ? 63 :
+    return usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -218,6 +219,7 @@ Json documentJson(const ProjectDocument& d) {
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
+    validateNodeAnalysisSources(d);
     auto issues = validateNetwork(d.network);
     // blocksDraft owns the "an empty network is a legal draft" rule, for this and the editor alike.
     std::erase_if(issues, [](const auto& i) { return !blocksDraft(i.code); });

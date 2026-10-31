@@ -9,6 +9,8 @@ struct RecoveryError : std::runtime_error {using std::runtime_error::runtime_err
 ProjectDocument readEditorDocument(const QString&);
 inline constexpr std::size_t kEditorDocumentByteLimit=48*1024*1024;
 std::string editorDocumentBytes(const Json&); // exact bounded Save representation, also used by J7 snapshots
+struct EditorDocumentSnapshot {std::string bytes;bool saved{};};
+EditorDocumentSnapshot captureEditorDocument(const ProjectDocument&,const QString& file);
 void writeEditorDocument(const QString&,const Json&);
 // Reject aliases of the active project/recovery before any export write.
 void checkExportDestination(const QString&,const QStringList&,const char* errorCode);

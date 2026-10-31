@@ -468,3 +468,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D419](RECORD.md#d419) — A9 B40 partly answered: expected Micro demand, explicit HV classification, whole-set sourced replacement and unresolved-demand refusal; native preview checkpoint, T/PHF/comparison pending.
 
 [D420](RECORD.md#d420) — A9 B40 timing/batch choices answered; resolve stubs through all agreeing complete compiled lane-change targets, with origin fallback only without targets.
+
+[D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.

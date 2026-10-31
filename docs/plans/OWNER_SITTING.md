@@ -139,7 +139,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 
 39. **J7 analysis source:** answered and approved; [whole B39](../archive/OWNER_SITTING-B39-2026-10-31.md), D418.
 
-40. **A9 Fill from model and Micro comparison** (2026-10-31, D419; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-choices-awaiting-the-owner)).
+40. **A9 Fill from model and Micro comparison** (2026-10-31, D419; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-answered-choices)).
    Owner chose expected Micro demand, explicit HV types, full replacement/provenance and
    named unresolved-demand refusals (D419). Owner selected explicit window/T/PHF=1 replacement
    and reuse of a completed batch on 2026-10-31 (D420). Do not re-ask these choices.
@@ -395,6 +395,16 @@ nothing. Numbers are not reused.
    analytical/not-validated marker. Inspect source snapshot, stale-after-edit/Undo, CSV/Copy,
    and byte parity with CLI after Save. On the next dialog touch, keep a cleared drawn approach
    row visible like a drawn turn row (owner review, 2026-10-31). No J7 formula change. *Owner:*
+
+32. **A9 Fill from model / Micro side by side** (listed 2026-10-31, D421). On Windows at
+    100/150/200 %, Thai and English, on both driving sides: open Nodes → Analysis… → Fill from
+    model…, choose explicit times or StudyPeriod and HV types, inspect before/after/T/PHF and
+    source SHA, Cancel then Confirm (one Undo). Check drawn turn/approach Clear keeps the row
+    visible. Run seeds, wait, Analyse → Micro side by side: read distinct HCM/Micro labels,
+    source/window/seeds, n/CI/unfinished, blank values and localized refusal text. Change inputs,
+    Undo, cancel a batch, reopen, and Export/Copy: old comparisons must disappear and the CSV
+    marker/quoted numbers must remain. B41 manual-count confirmation is still pending. Are
+    tables, wrapping notes, scrollbars and fixed footers readable without clipping? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

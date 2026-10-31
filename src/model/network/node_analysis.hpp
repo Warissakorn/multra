@@ -1,4 +1,5 @@
 #pragma once
+#include "node_analysis_source.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,6 +33,7 @@ struct NodeAnalysis {
     std::optional<double> analysisPeriod{}; // h; absent: 0.25
     std::vector<NodeAnalysisApproach> approaches{};
     std::vector<NodeAnalysisTurn> turns{};
+    std::optional<NodeAnalysisModelSource> modelSource{}; // schema 64, A9 Fill from model
     bool operator==(const NodeAnalysis&) const = default;
 };
 }

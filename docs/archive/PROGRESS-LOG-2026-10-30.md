@@ -2,6 +2,28 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-30 — J6 first carry-over: overlap preview (D409)
+
+- **Owner:** J5 d5e2bbe approved; start J6 including the D402/D403 corridor Command. First
+  commit must make a transition's neighbour-overlap refusal visible before Apply.
+- **Implemented:** after containTransition, compare the private polygon with the other Nodes
+  using the existing overlap predicate. NODE_OVERLAP names each neighbour, disabling the Fill
+  offer; the whole-document validator remains a backstop. Add Thai/English text for the code.
+- **Tests first:** the new JT10 row failed on the enabled offer after proving that the original
+  polygons were disjoint and the planned enlargement overlaps, on both driving sides. All
+  14 native cases now pass, including unchanged preview/History and direct generation refusing
+  before publishing a document. No new field/schema or geometry policy; frozen JT13 untouched.
+- **Main J6:** re-read §3–§5/§10/JT11, D402/D403 and the seam/ownership contracts. Asked B35's
+  three choices before main code: Apply-again versus edited-detail refusal, the affected
+  corridor set, and incompatible entered site values. Recommendations are not answers; await
+  the owner while finishing the independent carry-over. No J4T or UTDF writer work.
+- **Docs:** §7/JT10, J6 status, E28, B35, D409/index and NEXT updated. Archived the oldest
+  whole PROGRESS entry, retaining ten. Main J6 remains pending the B35 answers.
+- **Verified:** desktop build, JT10 **14/14**, Qt transition selector on both driving sides,
+  CTest **253/253** (253.57 s, parallel 5) and `check` **253/253** (253.16 s) pass, including
+  architecture/file-size/docs guards. CLI node-analysis matches except `buildCommit`.
+  Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured; Windows/manual UI not run (E28).
+
 ## 2026-10-30 — J5 review: refuse polygon captures (D408)
 
 - **Fixed:** after generated transition polygon enlargement, every resulting Link leg must

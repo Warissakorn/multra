@@ -32,6 +32,7 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         if (!node.analysis) continue;
         const auto& a = *node.analysis;
         AnalysedNode out{node.id, node.name};
+        out.modelSource=a.modelSource;
         // Exhibit 19-11 (PDF p. 1430-1431) defaults for whatever the Node does not state.
         out.analysisPeriod = a.analysisPeriod.value_or(0.25);
         if (!a.analysisPeriod) out.defaults.push_back("analysisPeriod");

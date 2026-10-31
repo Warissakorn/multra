@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**A1 (§10, D372), A2 (§11, D373/D374), A3 (D377) and J7's A9 first half (D418) are implemented, with D383's fixes (§13).** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 (§10, D372), A2 (§11, D373/D374), A3 (D377) and J7's A9 first half (D418) are implemented, with D383's fixes (§13). A9 Fill/provenance and model-window Micro comparison are implemented (D421), with B41 pending.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -463,8 +463,9 @@ inputs are stored, and whether they reuse the Micro signal controller's fields. 
 **A9: editor table and *Fill from model*.** J7 implements the first half via the Nodes tab and
 Results → Node analysis; [editor/snapshot contract](NODE_ANALYSIS_EDITOR.md), D418/JT12, approved
 at `fe827c8`. The owner selected its second half on 2026-10-31: [Fill-from-model/Micro contract
-questions and rows](NODE_ANALYSIS_MODEL.md), B40/D419. An independent native expected-demand
-preview is implemented; T/PHF and comparison choices remain unanswered, with no stored provenance yet.
+contract and passing NA24–NA30 rows](NODE_ANALYSIS_MODEL.md), B40/D419–D421. Explicit window/HV
+Fill stages a sourced schema-64 replacement in one Undo; completed Micro batches compare Node/approach
+rows with distinct measure labels. B41 manual-count window confirmation remains pending; no inference from T.
 
 ## 13. Review fixes (D383)
 

@@ -40,7 +40,7 @@ this module (`multra-check-architecture`).
 | `node_detail_priority.*` | F4/J3b shared HCM ranks and generated right-of-way objects | [READINESS §13.4](../../docs/reference/READINESS.md) |
 | `junction_commands.*` | Recipe choice/detach preserving coarse, B36 site-only ownership preservation without resurrection, catalog ownership, independent directions and end-following renames; each inside History | [JUNCTION_TEMPLATES §4](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `junction_edit_commands.*` | Read-only replacement/affected-corridor previews and atomic explicit seam repair/cross-section rebuild; ordinary Fill guards remain | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
-| `node_analysis_commands.*` | A Node's analytical inputs (`analysis`; all-default stored as none) | [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
+| `node_analysis_commands.*` | A Node's analytical inputs (`analysis`; all-default stored as none); sourced demand edits clear historical Fill provenance | [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
 | `fill_commands.*` | *Fill defaults*: each fill writes a field from a value the project already cites, listed with its source, applied only when chosen | [READINESS §4](../../docs/reference/READINESS.md) |
 | `map_commands.*` | Sets or removes the background reference atomically; never moves network geometry | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 | `macro_run_commands.*` | Replaces the ordered named Macro run list, allocating missing ids | [MACRO_NETWORK_IMPLEMENTED](../../docs/reference/MACRO_NETWORK_IMPLEMENTED.md) |

@@ -91,6 +91,9 @@ find_package(Threads REQUIRED)
 target_sources(multra_project PRIVATE src/project/macro_run_definition.cpp src/project/observed_schema.cpp src/project/document_envelope.cpp src/project/network_fields.cpp src/project/network_link_codec.cpp src/project/network_connector_codec.cpp src/project/network_signal_head_codec.cpp src/project/signal_control_codec.cpp src/project/right_of_way_codec.cpp src/project/measurement_codec.cpp src/project/demand_codec.cpp src/project/routing_codec.cpp src/project/object_csv.cpp src/project/network_schema.cpp)
 target_sources(multra_project PRIVATE src/project/meso_street_segment_demand.cpp src/project/node_analysis_run.cpp src/project/node_analysis_permitted.cpp src/project/node_analysis_output.cpp src/project/node_analysis_report.cpp src/project/build_metadata.cpp)
 target_sources(multra_project PRIVATE src/project/node_model_demand.cpp)
+target_sources(multra_project PRIVATE src/project/node_analysis_fill.cpp)
+target_sources(multra_project PRIVATE src/project/node_analysis_source_codec.cpp)
+target_sources(multra_project PRIVATE src/project/node_analysis_comparison.cpp)
 target_link_libraries(multra_project PUBLIC multra_model multra_eval multra_runner Threads::Threads
     nlohmann_json::nlohmann_json PRIVATE multra_options)
 
@@ -245,6 +248,8 @@ if(BUILD_TESTING)
     target_link_libraries(multra-tests PRIVATE multra_lab multra_commands multra_options)
     target_sources(multra-tests PRIVATE tests/node_model_demand_tests.cpp tests/node_model_demand_edge_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_model_stub_tests.cpp)
+    target_sources(multra-tests PRIVATE tests/node_analysis_source_tests.cpp)
+    target_sources(multra-tests PRIVATE tests/node_analysis_comparison_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_editor_tests.cpp tests/junction_corridor_conflict_tests.cpp tests/transition_tests.cpp tests/transition_reference_tests.cpp tests/junction_layout_tests.cpp tests/junction_template_tests.cpp tests/junction_recipe_tests.cpp tests/junction_command_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_fill_tests.cpp tests/junction_fill_run_tests.cpp tests/junction_signal_tests.cpp tests/junction_t_tests.cpp tests/junction_polygon_tests.cpp tests/junction_signal_reference_tests.cpp tests/junction_signal_run_tests.cpp tests/junction_fill_completion_tests.cpp tests/junction_fill_parity_tests.cpp
         tests/reference/j3b/street_segment_commands.cpp tests/reference/j3b/node_detail_commands.cpp tests/reference/j3b/fill_commands.cpp)
