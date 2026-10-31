@@ -2,6 +2,28 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-30 — J5 review: refuse polygon captures (D408)
+
+- **Fixed:** after generated transition polygon enlargement, every resulting Link leg must
+  already have been a leg, with the same entry/exit direction. New legs refuse with
+  `TRANSITION_POLYGON_CAPTURES` at each captured Link. Thai/English recovery says to shorten
+  the taper or draw the Node polygon by hand. Existing missing-arm and NODE_OVERLAP guards stay.
+- **Tests first:** JT10 failed on the owner's real side-road setup before the guard. The
+  forcing asserts establish original 2 Street segment / 4 Link legs and prospective 3 / 6
+  membership before checking the refusal; 60 m and both driving sides are covered, with the
+  side road mirrored for right-hand traffic. The y=25 control stays outside and fills with
+  one complete JSON Undo/Redo. A neighbouring Node still refuses NODE_OVERLAP.
+- **Atomicity:** capture refusal preserves the complete document, revision, saved state and
+  Undo/Redo history. Planning/preview publish nothing. No stored field/schema, taper/envelope
+  geometry policy, core, HCM, J6/J4T or UTDF writer changes; frozen JT13 files remain untouched.
+- **Docs:** §7/JT10, Street segment workflow, command map, E28, D408/index and NEXT updated.
+  Archived the oldest whole PROGRESS entry, retaining ten. Stop for J5 review.
+- **Verified:** desktop build, JT10 **13/13**, Qt transition selector on both driving sides,
+  CTest **253/253** (238.25 s, parallel 5) and `check` **253/253** (234.08 s) pass, including
+  architecture, file-size and documentation guards. CLI node-analysis matches except
+  `buildCommit`. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless is not configured, and
+  Windows/manual UI driving were not run (E28).
+
 ## 2026-10-30 — J5 review: generated transition polygon (D407)
 
 - **Fixed:** the real Find crossings → Transition → F3 → explicit tapers → Fill workflow

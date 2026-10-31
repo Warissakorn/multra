@@ -39,17 +39,22 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md),
   [A9 contract questions](reference/NODE_ANALYSIS_MODEL.md), D371/D379/D383/D418/D419 by anchor,
   and BATCH/NODES/STUDY_PERIODS for the reused demand, evaluation and clock rules.
-- **Before dependent code, await OWNER_SITTING B40 choices 2/3.** Selected-window/T/PHF policy
-  and reuse of the existing batch versus a new ten-seed action remain unanswered. Do not assume
-  either recommendation. Owner chose expected Micro demand, explicit HV types, whole-set
-  replacement/provenance cleared on manual demand edits, and named unresolved-demand refusals
-  (D419). Schema 64 is approved for the future provenance field but is not consumed yet.
+- **B40 is fully answered (D419/D420).** Use expected compiled Micro demand, explicit HV types,
+  full-set replacement/provenance, explicit start/end with StudyPeriod/clockStart shortcut,
+  T = window hours and PHF = 1, all shown before Confirm. Reuse a completed, explicitly
+  requested batch for Node/approach comparison with n/CI/unfinished; no subtraction or turn
+  matching. Schema 64 is approved for provenance. No new run action or timing default.
+- **B41 is pending only for manual-count comparison windows.** The recommended session-only
+  window confirmation is not an answer; do not silently exclude manual counts or infer zero.
+  Fill UI/provenance and generated/stored-field tests can proceed independently.
 - **Independent native preview is implemented:** `project/node_model_demand.*` records exact
   bytes, reuses the Micro compiler and maps determined complete traversals without mutation.
   NA24 and native NA25 coverage pass on both sides; UI/provenance/command/comparison are still
   unfinished. Preserve compiler origin mapping for entry-lane stubs, lane-station coverage,
-  explicit-HV/zero rules and runtime/parking guards. Do not claim this checkpoint completes A9.
-- After the answers: finalize that contract, then finish NA25–NA30 as failing tests with forcing
+  explicit-HV/zero rules and runtime/parking guards. D420 resolves singleton-origin stubs through
+  all compiled lane-change targets; differing/partial terminal traversals still refuse. Six
+  both-side native review cases pass. Do not claim the native checkpoint completes A9.
+- Finish the agreed contract and NA25–NA30 as failing tests with forcing
   assertions first, on both driving sides and both locales. Reuse compilation, existing HCM
   analysis, batch statistics, Commands and shared CSV/marking. New fields use a feature-selected
   schema step (next 64), read older files and refuse early fields at their paths.

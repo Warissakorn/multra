@@ -466,3 +466,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [M14 decisions D386 onward](M14.md) — junction templates, signals, UTDF and their owner reviews.
 
 [D419](RECORD.md#d419) — A9 B40 partly answered: expected Micro demand, explicit HV classification, whole-set sourced replacement and unresolved-demand refusal; native preview checkpoint, T/PHF/comparison pending.
+
+[D420](RECORD.md#d420) — A9 B40 timing/batch choices answered; resolve stubs through all agreeing complete compiled lane-change targets, with origin fallback only without targets.

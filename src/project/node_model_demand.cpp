@@ -84,18 +84,35 @@ NodeModelDemand previewNodeModelDemand(std::string_view bytes,const std::string&
     std::map<std::string,Traversal> walks;
     for(const auto& r:snapshot.scenario.routes)walks.emplace(r.id,traversal(r,spans,m));
     std::set<std::string> stubs;for(const auto& dead:snapshot.scenario.routeDeadEnds)stubs.insert(dead.routeId);
-    // A compiled entry-lane stub is scheduled demand for its authored route, even if a
-    // simulated vehicle later fails its mandatory lane change. Use only an unambiguous complete
-    // family from the compiler's exact origin mapping, never an id-prefix guess or lane count.
+    // A stub is scheduled demand even if a simulated vehicle fails its lane change. Follow
+    // every compiled target (including further stubs); all complete Node traversals must agree.
+    // Only a stub without targets uses the existing exact-origin fallback. Stage all results
+    // before installing them so neither route nor lane-change enumeration order selects a turn.
+    std::vector<std::pair<std::string,Traversal>> resolved;
     for(const auto& dead:snapshot.scenario.routeDeadEnds) {
-        const auto origin=snapshot.routeOrigins.find(dead.routeId);if(origin==snapshot.routeOrigins.end())continue;
-        std::optional<Traversal> complete;bool ambiguous=false;
-        for(const auto& [id,other]:snapshot.routeOrigins)if(other==origin->second&&!stubs.contains(id)&&!walks.at(id).partial) {
-            const auto& w=walks.at(id);
-            if(!complete)complete=w;else if(complete->turns!=w.turns)ambiguous=true;
+        std::optional<Traversal> complete;bool valid=true,touches=false;
+        const auto candidate=[&](const Traversal& w) {
+            touches=touches||w.touches;
+            if(w.partial)valid=false;
+            if(!complete)complete=w;else if(complete->turns!=w.turns)valid=false;
+        };
+        std::vector<std::string> queue{dead.routeId};std::set<std::string> visited;
+        for(std::size_t k=0;k<queue.size();++k)if(visited.insert(queue[k]).second) {
+            const auto id=queue[k];touches=touches||walks.at(id).touches;
+            if(!stubs.contains(id)){candidate(walks.at(id));continue;}
+            bool targets=false;
+            for(const auto& change:snapshot.scenario.laneChanges)if(change.fromRouteId==id){queue.push_back(change.toRouteId);targets=true;}
+            if(targets)continue;
+            const auto origin=snapshot.routeOrigins.find(id);bool family=false;
+            if(origin!=snapshot.routeOrigins.end())for(const auto& [other,name]:snapshot.routeOrigins)
+                if(name==origin->second&&!stubs.contains(other)){candidate(walks.at(other));family=true;}
+            if(!family)candidate(walks.at(id));
         }
-        if(complete&&!ambiguous)walks.at(dead.routeId)=*complete;
+        auto result=complete.value_or(walks.at(dead.routeId));
+        if(!valid||!complete)result.partial=result.partial||touches;
+        resolved.emplace_back(dead.routeId,std::move(result));
     }
+    for(auto& [id,result]:resolved)walks.at(id)=std::move(result);
     const auto reachable=[&](const std::string& root) {
         std::set<std::string> seen;std::vector<std::string> queue{root};
         for(std::size_t k=0;k<queue.size();++k)if(seen.insert(queue[k]).second)

@@ -1,10 +1,10 @@
 # Node analysis: Fill from model and Micro comparison (A9 second half)
 
-**Partial contract and native preview checkpoint (D419), not the complete A9 slice.** The owner approved J7 (`fe827c8`) on 2026-10-31
+**A9 second-half contract (D419/D420); native preview implemented, UI in progress.** The owner approved J7 (`fe827c8`) on 2026-10-31
 and selected the rest of [NODE_ANALYSIS §6/§12](NODE_ANALYSIS.md#6-workflow-in-the-editor).
 The six choices below are [OWNER_SITTING B40](../plans/OWNER_SITTING.md#b--decisions-in-chat-one-line-each).
-Choices 1/4/5/6 are answered; 2/3 remain pending. Implement only independent agreed parts;
-settle the remaining questions before their T/PHF, comparison or stored-field behaviour.
+All six B40 choices are answered. B41 asks how manually entered counts acquire a comparison
+window; implement independent Fill/provenance work while that comparison-only choice is pending.
 Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
 
 ## Boundaries already settled
@@ -37,11 +37,15 @@ Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
    run-time interval and divide by its hours. Preview replacement of T with that duration and
    PHF with 1, avoiding a second peak adjustment. Alternative: replace volume only and retain
    T/PHF. The window, clock placement and values changed must be visible before Confirm.
+   **Owner, 2026-10-31:** explicit start/end (StudyPeriod placed by clockStart), replace T with
+   window duration and PHF with 1, shown before Confirm; recommended option selected.
 3. **Micro comparison.** Recommended: reuse a completed, explicitly requested Run seeds batch
    (for example 42–51); compare only Node and approach rows from the same snapshot and
    evaluation window. Show HCM control delay beside Micro mean travel-time delay, seed n,
    confidence interval and unfinished vehicles. No subtraction, claim of equivalence or
    estimated turn/lane-group matching. Alternative: a separate ten-seed analysis action.
+   **Owner, 2026-10-31:** reuse a completed, explicitly requested Run seeds batch; Node/approach
+   rows only, n/CI/unfinished, no subtraction/equivalence/turn matching; recommended option selected.
 4. **Heavy vehicles.** Recommended: an explicit user selection of HCM-heavy vehicle types,
    expected-count-weighted %HV per turn, recording that selection in provenance. Do not guess
    the selection. A zero-volume turn retains its existing optional %HV. Alternative: Fill
@@ -68,8 +72,11 @@ Status and the queue remain in [ROADMAP](../ROADMAP.md) and [NEXT](../NEXT.md).
 Micro compiler with a manifest. Its mandatory start/end request is in run seconds within the
 demand horizon, excluding cool-down. Runtime sections and Connector ownership map complete
 traversals to derived turns; station coverage uses the existing reference-to-lane mapping.
-An entry-lane stub counts as the unambiguous complete family given by the compiler's exact
-route-origin mapping: expected demand is not the throughput achieved after a lane change.
+An entry-lane stub follows every compiled lane-change target, recursively through further
+stubs; all complete Node traversals must agree. Targets take precedence over a broader origin
+family. Only a stub without targets uses the compiler's exact-origin fallback. Cycles are
+visited once, and staged resolution is independent of route/edge order (D420). Expected demand
+is not the throughput achieved after a lane change.
 Each traversal counts once, not once for every lane/possible path. Inputs/composition shares,
 legacy scheduled routing intervals and OD/StudyPeriod placement are the compiler's values.
 
@@ -84,6 +91,13 @@ choice that changes no Node traversal is harmless; otherwise do not guess passag
 weights. Potential parking release follows initial occupancy, gate demand and lot-to-lot
 connections; a provably empty lot without gate demand does not block unrelated demand.
 The preview refuses an affected release instead of counting zero-rate exit placeholders.
+
+## B41: manual-count comparison window (pending)
+
+A manually entered Node, or one whose Fill provenance was cleared by a demand edit, has no
+start/end even when T matches a batch. Recommended: explicit session-only confirmation of
+that count window before comparison, matching batch evaluation start/end and Node T, labelled
+manual counts. Alternative: compare only Nodes retaining a Fill window. No answer is assumed.
 
 ## Draft acceptance coverage
 
@@ -102,10 +116,13 @@ English/Thai UI cases still await implementation and are not claimed by this che
 | NA29 | Snapshot/window mismatch, stale edits, Undo, New/reopen, cancelled/incomplete batch and no result cannot masquerade as a fresh comparison; source and seed list remain visible |
 | NA30 | CSV uses shared formatters/marker; analytical CLI parity, shipped projects and Micro/Meso/Macro output bytes remain unchanged when the new feature is absent |
 
-The eight new native cases in `tests/node_model_demand_tests.cpp` and
+The native cases in `tests/node_model_demand_tests.cpp` and
 `tests/node_model_demand_edge_tests.cpp` cover direct interval/lane/stub counts, clock-placed
 OD/compositions, scheduled decision shares, invalid requests/types, deferred routing, partial
-routes and parking (including the empty-lot control), on both driving sides. UI/provenance,
+routes and parking (including the empty-lot control), on both driving sides. D420 adds six
+rows in `tests/node_model_stub_tests.cpp`: the shipped m2.6 study with a suggested Node, a
+hand-counted m2.6-style pocket, and a positive-demand stub with different complete Node exits,
+on both sides. UI/provenance,
 schema-64 version tests and completed-batch comparison remain unfinished.
 
 ## Code entry points and next dialog touch
