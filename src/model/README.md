@@ -29,14 +29,18 @@ paths, Node membership, conflicts) is computed on every read and never stored.
 | `routeless.*` | Vehicles with no route, as Vissim runs them: follow the lane, equal shares at splits | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `travel_time.*` | What an authored travel-time section means, and its checks | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |
 | `polygon.*` | Plane polygon tests shared by zones and Nodes | [NODES §2](../../docs/reference/NODES.md) |
+| `node_values.hpp` | Shared Point and Node/coarse value types; optional junction recipe and independent compass overrides | [JUNCTION_TEMPLATES §4](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `junction_templates.*` | Junction/transition templates, directional alignments, partial site recipes and pure validation | [JUNCTION_TEMPLATES §3–§4](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `nodes.*` | What an authored Node means: id checks; legs, turns and control are derived | [NODES §2](../../docs/reference/NODES.md) |
 | `node_membership.*` | A Node's legs, turns and conflicts, derived from the Micro detail inside its polygon on every read; refusals, never exceptions | [NODES §3](../../docs/reference/NODES.md) |
 | `node_suggestions.*` | *Suggest nodes*: one generated polygon per uncovered cluster of conflicts | [NODES §6](../../docs/reference/NODES.md) |
 | `node_analysis.hpp` | The analytical inputs a Micro detail does not give (schema 58): per Node, approach and turn | [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
+| `node_analysis_source.hpp` | Captured model-demand provenance values for Node analysis (schema 64), without a live binding | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `node_detail.*` | F4's plan for a coarse Node's Micro detail | [READINESS §13](../../docs/reference/READINESS.md) |
-| `coarse_nodes.*` | What a Node without Micro detail reads from the Roads around it | [ROADS §6](../../docs/reference/ROADS.md), [NODES §5](../../docs/reference/NODES.md) |
-| `roads.*` | What an authored Road means on its own | [ROADS §3](../../docs/reference/ROADS.md) |
-| `road_crossings.*` | *Find crossings*: where Roads on one level cross or touch | [ROADS §5](../../docs/reference/ROADS.md) |
+| `approach_layout.*` | Derived approach lanes, pockets/movements and shared compass labelling, also used by required T phase selection | [JUNCTION_TEMPLATES §6](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `coarse_nodes.*` | What a Node without Micro detail reads from the Street segments around it | [STREET_SEGMENTS §6](../../docs/reference/STREET_SEGMENTS.md), [NODES §5](../../docs/reference/NODES.md) |
+| `street_segments.*` | Authored Street segments, direction and generated detached-pocket association through unique continuity, stopping at Nodes | [STREET_SEGMENTS §3](../../docs/reference/STREET_SEGMENTS.md), [JUNCTION_TEMPLATE_EDITOR §3](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md#3-pure-comparison-and-private-plans) |
+| `street_segment_crossings.*` | *Find crossings*: where Street segments on one level cross or touch | [STREET_SEGMENTS §5](../../docs/reference/STREET_SEGMENTS.md) |
 | `study_area.*` | The part of the network a Micro run over a study area keeps | [STUDY_AREA §4](../../docs/reference/STUDY_AREA.md) |
 
 ## Tests

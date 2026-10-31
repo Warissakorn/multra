@@ -121,7 +121,7 @@ void EditorWindow::editLinkType(const std::string& id) {
     auto* modes = new QLineEdit(joined(value.modes), &dialog); modes->setObjectName("editorLinkTypeModes");
     modes->setPlaceholderText(text("editorLinkTypeAllModes"));
     auto* source = new QLineEdit(QString::fromStdString(value.source), &dialog); source->setObjectName("editorLinkTypeSource");
-    // S3.6a (ROADS §6, D310): the priority hierarchy; the lowest value is "none" (unranked).
+    // S3.6a (STREET_SEGMENTS §6, D310): the priority hierarchy; the lowest value is "none" (unranked).
     auto* rank = new QSpinBox(&dialog); rank->setObjectName("editorLinkTypeRank");
     rank->setRange(-1, 99); rank->setSpecialValueText(text("editorLinkTypeRankNone")); rank->setValue(value.rank.value_or(-1));
     form->addRow(text("editorColumnName"), name); form->addRow(text("editorLinkTypeCapacity"), capacity);
@@ -162,6 +162,20 @@ void EditorWindow::buildLinkTypeField(QFormLayout* form) {
         if (links.empty()) return;
         execute("editorApplyLinkType", [&](auto& d) { for (const auto& id : links) setLinkType(d, id, chosen.empty() ? std::nullopt : std::optional(chosen)); });
     });
+    // J1 (D390): the posted speed, km/h, on every selected Link as one Undo step; empty clears it.
+    linkSpeed_ = new QLineEdit(this); linkSpeed_->setObjectName("editorLinkSpeed"); label(form, "editorLinkSpeed", linkSpeed_);
+    connect(linkSpeed_, &QLineEdit::editingFinished, this, [this] {
+        const auto typed = linkSpeed_->text().trimmed();
+        bool ok = typed.isEmpty();
+        const auto speed = ok ? std::nullopt : std::optional(typed.toDouble(&ok));
+        std::vector<std::string> links;
+        const auto& n = history_.document().network;
+        for (const auto& id : canvas_->selection())
+            if (std::any_of(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id && l.speedLimit != speed; })) links.push_back(id);
+        if (!ok) { showError(std::invalid_argument("INVALID_LINK_SPEED")); refreshLinkTypeField(); return; }
+        if (links.empty()) return;
+        execute("editorApplyLinkSpeed", [&](auto& d) { for (const auto& id : links) setLinkSpeedLimit(d, id, speed); });
+    });
 }
 void EditorWindow::refreshLinkTypeField() {
     if (!linkType_) return;
@@ -177,5 +191,11 @@ void EditorWindow::refreshLinkTypeField() {
     if (linkType_->findData(value) < 0) linkType_->addItem(value + " " + text("editorBehaviourMissing"), value);
     linkType_->setCurrentIndex(linkType_->findData(value));
     linkType_->setEnabled(link);
+    std::optional<double> speed; bool seen = false;
+    for (const auto& id : canvas_->selection())
+        for (const auto& l : d.network.links) if (l.id == id && !seen) { speed = l.speedLimit; seen = true; }
+    const QSignalBlocker blockSpeed(linkSpeed_);
+    linkSpeed_->setText(speed ? QString::number(*speed) : QString());
+    linkSpeed_->setEnabled(link);
 }
 }

@@ -26,7 +26,7 @@ replaced atomically (`QSaveFile`).
 | Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `editor_cross_sections.cpp`, `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
 | Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
 | Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp`, `editor_speed_areas.cpp`, `editor_speed_decisions.cpp`, `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (OD matrices tab) |
-| Roads and Nodes | `editor_roads.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
+| Street segments and Nodes | `editor_street_segments.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
 | Evaluation objects | `editor_counters.cpp`, `editor_sections.cpp` |
 | Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed), `editor_batch.cpp` (N seeds on one worker thread), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
 | Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` |
@@ -38,10 +38,20 @@ The other headers:
 | `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `editor_style.*` | The 20-unit toolbar and cursor glyphs; the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
-| `editor_storage.*` | Atomic replacement of any file the shell writes; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `junction_preview_dialog.*` | Affected Node/detail list and named refusals before explicit seam/corridor replacement | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
+| `junction_polygon_dialog.*` | Original/proposed junction polygon outlines, named refusals and explicit Fit + Fill confirmation | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `node_analysis_dialog.*` | Staged turn/approach/settings inputs, missing/zero distinction, stored-codec validation and explicit stale-row clearing | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
+| `node_analysis_fill_dialog.*` | Explicit window/HV selection and sourced whole-set before/after preview, staged until the Analysis form confirms | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_manual_dialog.*` | Explicit per-Node manual-count window preview/confirmation, shared comparison guards and no document mutation | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_panel.*` | Self-owned analytical Results page, snapshot provenance, CLI-identical exports and captured-batch Micro comparison | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
+| `junction_cross_section_dialog.*` | Staged cross-section id/override form; blank values inherit, Cancel mutates nothing | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
+| `junction_form_widgets.*` | Far-to-kerb lane rows, geometric labels and optional site-number fields | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
+| `junction_catalog_dialog.*` | Staged structural template/role editor and project catalog capture | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
+| `junction_recipe_dialog.*`, `junction_site_dialogs.cpp` | Node recipe, independent directions, per-leg overrides/pockets and NEMA timing drafts | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `editor_batch_cells.*` | The cells the batch and comparison tables share | [BATCH](../../docs/reference/BATCH.md) |
 | `editor_macro.*` | The Macro run: one worker over a copy of the document, stages and gap posted back | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) |
 | `editor_meso.*` | The Meso run, as the Macro one | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) |
@@ -57,7 +67,7 @@ The other headers:
 | `demand_period_editor.*` | Demand period rows, returned for the caller's History command | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
 | `demand_type_rules_dialog.*` | A routing decision's per-type matrices over its targets and periods | [DEMAND_TIME_TYPES](../../docs/reference/DEMAND_TIME_TYPES.md) |
 | `od_lot_dialogs.*` | The OD matrix grid and parking-lot dialogs | [ZONES_AND_PARKING §9](../../docs/reference/ZONES_AND_PARKING.md) |
-| `road_zone_dialog.*` | Direct Road targets for Macro and Meso (Roads without generated Links only) | [ROADS_IMPLEMENTED §22](../../docs/reference/ROADS_IMPLEMENTED.md#22-road-only-macro-demand-d340), [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) |
+| `street_segment_zone_dialog.*` | Direct Street segment targets for Macro and Meso (Street segments without generated Links only) | [STREET_SEGMENTS_IMPLEMENTED §22](../../docs/reference/STREET_SEGMENTS_IMPLEMENTED.md#22-street-segment-only-macro-demand-d340), [MESO_STREET_SEGMENT_DEMAND](../../docs/reference/MESO_STREET_SEGMENT_DEMAND.md) |
 | `gate_flow_dialog.*` | A study area's typed gate flows for one period and composition | [STUDY_AREA §5](../../docs/reference/STUDY_AREA.md) |
 | `map_settings_dialog.*` | Map reference and appearance (staged) and navigation | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 | `map_location_picker.*` | Searchable country and province shortcuts that fill the coordinate fields | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
@@ -74,4 +84,4 @@ The other headers:
 
 The `tests/*_ui_tests.cpp` executables and the automation tests (`tests/automation_*_tests.cpp`,
 `tests/editor_automation_tests.cpp`, `tests/desktop_automation_process_tests.cpp`), registered in
-`src/shell/CMakeLists.txt`.
+`src/shell/CMakeLists.txt`; Street segment/transition UI test targets are in `street_segment_tests.cmake`.

@@ -1,10 +1,12 @@
 #include "zone_codec.hpp"
 #include "../core/validate.hpp"
 #include "document.hpp"
+#include "network_fields.hpp"
 #include "study_period_codec.hpp"
 #include "../model/network/polygon.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <set>
 #include <stdexcept>
@@ -36,19 +38,20 @@ Zone parseZone(const Json& j) {
     for (const auto& [name, value] : j.at("attributes").items()) z.attributes[name] = number(value);
     return z;
 }
-ZoneConnector parseConnector(const Json& j) {
-    const bool road = j.is_object() && j.contains("roadId");
-    if (road) exactKeys(j, {"id", "zoneId", "roadId", "roadDirection", "direction", "share"});
+ZoneConnector parseConnector(const Json& j, int schema) {
+    const auto idKey = networkCodec::streetSegmentIdKey(schema), directionKey = networkCodec::streetSegmentDirectionKey(schema);
+    const bool road = j.is_object() && j.contains(idKey);
+    if (road) exactKeys(j, {"id", "zoneId", idKey, directionKey, "direction", "share"});
     else exactKeys(j, {"id", "zoneId", "linkId", "direction", "share"});
     const auto direction = text(j, "direction");
     if (direction != "origin" && direction != "destination") invalid();
     ZoneConnector c{text(j, "id"), text(j, "zoneId"), road ? "" : text(j, "linkId"),
             direction == "origin" ? ZoneDirection::origin : ZoneDirection::destination, number(j.at("share"))};
     if (road) {
-        c.roadId = text(j, "roadId");
-        const auto travel = text(j, "roadDirection");
-        if (c.roadId.empty() || (travel != "forward" && travel != "backward")) invalid();
-        c.roadForward = travel == "forward";
+        c.streetSegmentId = text(j, idKey);
+        const auto travel = text(j, directionKey);
+        if (c.streetSegmentId.empty() || (travel != "forward" && travel != "backward")) invalid();
+        c.streetSegmentForward = travel == "forward";
     }
     return c;
 }
@@ -112,8 +115,8 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
         auto& out = document[kConnectors] = Json::array();
         for (const auto& c : layer.zoneConnectors) {
             Json row{{"id", c.id}, {"zoneId", c.zoneId}, {"direction", directionName(c.direction)}, {"share", c.share}};
-            if (c.roadId.empty()) row["linkId"] = c.linkId;
-            else { row["roadId"] = c.roadId; row["roadDirection"] = c.roadForward ? "forward" : "backward"; }
+            if (c.streetSegmentId.empty()) row["linkId"] = c.linkId;
+            else { row["streetSegmentId"] = c.streetSegmentId; row["streetSegmentDirection"] = c.streetSegmentForward ? "forward" : "backward"; }
             out.push_back(std::move(row));
         }
     }
@@ -146,15 +149,22 @@ ZoneLayer parseZoneLayer(const Json& document, int schema) {
                 if (document.at(kConnectors)[i].contains(key))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "zoneConnectors[" + std::to_string(i) + "]." + key}});
     parseArray(document, kZones, schema, layer.zones, parseZone);
-    parseArray(document, kConnectors, schema, layer.zoneConnectors, parseConnector);
+    // D389: the other version's keys are refused by name rather than as an unknown shape.
+    if (document.contains(kConnectors) && document.at(kConnectors).is_array())
+        for (std::size_t i = 0; i < document.at(kConnectors).size(); ++i)
+            for (const auto* key : schema < networkCodec::streetSegmentKeyVersion ? std::array{"streetSegmentId", "streetSegmentDirection"}
+                                                                                   : std::array{"roadId", "roadDirection"})
+                if (document.at(kConnectors)[i].contains(key))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", std::string(kConnectors) + "[" + std::to_string(i) + "]." + key}});
+    parseArray(document, kConnectors, schema, layer.zoneConnectors, [&](const Json& j) { return parseConnector(j, schema); });
     std::size_t matrix = 0;
     parseArray(document, kMatrices, schema, layer.odMatrices,
                [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]"); });
     parseArray(document, kLots, schema, layer.parkingLots, parseLot);
     return layer;
 }
-bool usesRoadZoneConnectors(const ZoneLayer& layer) {
-    return std::any_of(layer.zoneConnectors.begin(), layer.zoneConnectors.end(), [](const auto& c) { return !c.roadId.empty(); });
+bool usesStreetSegmentZoneConnectors(const ZoneLayer& layer) {
+    return std::any_of(layer.zoneConnectors.begin(), layer.zoneConnectors.end(), [](const auto& c) { return !c.streetSegmentId.empty(); });
 }
 std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
     std::vector<ValidationIssue> issues;
@@ -186,13 +196,13 @@ std::vector<ValidationIssue> zoneLayerIssues(const ProjectDocument& d) {
         const auto& c = layer.zoneConnectors[i];const auto path = "zoneConnectors[" + std::to_string(i) + "]";
         id(c.id, path);
         if (!zones.contains(c.zoneId)) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".zoneId"});
-        if (c.linkId.empty() == c.roadId.empty() || (c.roadId.empty() && !c.roadForward))
+        if (c.linkId.empty() == c.streetSegmentId.empty() || (c.streetSegmentId.empty() && !c.streetSegmentForward))
             issues.push_back({"ZONE_CONNECTOR_TARGET_INVALID", path});
-        if (c.roadId.empty() && !links.contains(c.linkId)) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".linkId"});
-        if (!c.roadId.empty()) {
-            const auto road = std::find_if(d.network.roads.begin(), d.network.roads.end(), [&](const auto& r) { return r.id == c.roadId; });
-            if (road == d.network.roads.end()) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".roadId"});
-            else if (!road->links.empty()) issues.push_back({"ZONE_CONNECTOR_ROAD_HAS_LINKS", path + ".roadId"});
+        if (c.streetSegmentId.empty() && !links.contains(c.linkId)) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".linkId"});
+        if (!c.streetSegmentId.empty()) {
+            const auto road = std::find_if(d.network.streetSegments.begin(), d.network.streetSegments.end(), [&](const auto& r) { return r.id == c.streetSegmentId; });
+            if (road == d.network.streetSegments.end()) issues.push_back({"ZONE_CONNECTOR_UNKNOWN_REF", path + ".streetSegmentId"});
+            else if (!road->links.empty()) issues.push_back({"ZONE_CONNECTOR_STREET_SEGMENT_HAS_LINKS", path + ".streetSegmentId"});
         }
         if (!std::isfinite(c.share) || c.share <= 0) issues.push_back({"ZONE_CONNECTOR_SHARE_INVALID", path + ".share"});
     }

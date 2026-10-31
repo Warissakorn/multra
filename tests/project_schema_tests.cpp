@@ -33,10 +33,10 @@ TEST(project, schema_inspection_selects_features_without_mutating_the_document) 
 }
 TEST(project, schema_inspection_does_not_promise_draft_validity) {
     ProjectDocument d;
-    ZoneConnector c;c.id="missing-zone-target";c.roadId="missing-road";
+    ZoneConnector c;c.id="missing-zone-target";c.streetSegmentId="missing-road";
     d.zones.zoneConnectors.push_back(c);
-    CHECK(!d.zones.zoneConnectors.front().roadId.empty());
-    CHECK(documentSchemaVersion(d)==57);
+    CHECK(!d.zones.zoneConnectors.front().streetSegmentId.empty());
+    CHECK(documentSchemaVersion(d)==59); // D389: street-segment keys
     test::throws([&]{validateDocument(d);});
 }
 TEST(project, schema_input_version_is_not_retained_as_the_output_version) {

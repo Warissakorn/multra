@@ -1,7 +1,10 @@
 #include "editor_window.hpp"
+#include "junction_polygon_dialog.hpp"
+#include "dialog_fit.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/fill_commands.hpp"
 #include "../project/link_type_codec.hpp"
+#include "../project/junction_template_codec.hpp"
 #include <QDialog>
 #include <algorithm>
 #include <QDialogButtonBox>
@@ -19,26 +22,44 @@ void EditorWindow::fillDefaultsDialog() {
     NodeFillCatalogs catalogs{crossSectionRows(), {}, priorityDefaults()};
     try { for (auto& t : resolveLinkTypes(history_.document().definition.value_or(AuthoringDefinition{}), data_)) catalogs.types.push_back(std::move(t.type)); }
     catch (const std::exception&) {} // an unreadable catalog ranks nothing: F4 then asks for major arms
+    try {if(std::any_of(history_.document().network.nodes.begin(),history_.document().network.nodes.end(),[](const auto& n){return n.junction.has_value();}))
+        for(auto& t:resolveJunctionTemplates(history_.document().definition.value_or(AuthoringDefinition{}),data_))catalogs.junctionTemplates.push_back(std::move(t.type));}
+    catch(const std::exception& e) {showError(e);return;}
     const auto offers = fillOffers(history_.document(), catalogs);
+    std::optional<std::string> fitNode;
     QDialog dialog(this); dialog.setObjectName("editorFillDialog"); dialog.setWindowTitle(text("editorFillDefaults"));
     auto* layout = new QVBoxLayout(&dialog);
     layout->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
-    auto* table = new QTableWidget(static_cast<int>(offers.size()), 5, &dialog); table->setObjectName("editorFillTable");
+    auto* table = new QTableWidget(static_cast<int>(offers.size()), 6, &dialog); table->setObjectName("editorFillTable");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers); table->verticalHeader()->hide();
     table->horizontalHeader()->setStretchLastSection(true);
-    table->setHorizontalHeaderLabels({text("editorFillFill"), text("editorColumnId"), text("editorFillValue"), text("editorFillClears"), text("editorFillSource")});
+    table->setHorizontalHeaderLabels({text("editorFillFill"), text("editorColumnId"), text("editorFillValue"), text("editorFillClears"), text("editorFillSource"),text("editorJunctionPolygon")});
     for (int r = 0; r < table->rowCount(); ++r) {
         const auto& o = offers[static_cast<std::size_t>(r)];
-        const char* kinds[] = {"editorFillLinkType", "editorFillJamDensity", "editorFillRoadLinks", "editorFillNodeDetail"};
+        const char* kinds[] = {"editorFillLinkType", "editorFillJamDensity", "editorFillStreetSegmentLinks", "editorFillNodeDetail", "editorFillJunction"};
         auto* name = new QTableWidgetItem(text(kinds[static_cast<int>(o.kind)]));
         // S4.5a (D323): a Node F4 cannot fill is listed with why, and cannot be ticked.
         name->setFlags(o.refusal.empty() ? Qt::ItemIsEnabled | Qt::ItemIsUserCheckable : Qt::NoItemFlags); name->setCheckState(Qt::Unchecked);
         table->setItem(r, 0, name);
-        const auto value = !o.refusal.empty() ? text(o.refusal) : o.kind == FillKind::nodeDetail ? text("editorFillConnectors").arg(QString::fromStdString(o.value)) : QString::fromStdString(o.value);
+        auto value = !o.refusal.empty() ? text(o.refusal) : o.kind == FillKind::nodeDetail ? text("editorFillConnectors").arg(QString::fromStdString(o.value)) : QString::fromStdString(o.value);
+        if(!o.issues.empty()) {
+            QStringList reasons;
+            for(const auto& issue:o.issues)reasons<<text(issue.code)+" — "+QString::fromStdString(issue.path);
+            value=reasons.join('\n');
+            if(std::any_of(o.issues.begin(),o.issues.end(),[](const auto& x){return x.code=="JUNCTION_LANE_COUNT";}))value+='\n'+QString::fromStdString(o.value);
+        }
         const QStringList values{QString::fromStdString(o.objectId), value, text(o.clears), QString::fromStdString(o.source)};
         for (int c = 0; c < values.size(); ++c) table->setItem(r, c + 1, new QTableWidgetItem(values[c]));
+        if(std::any_of(o.issues.begin(),o.issues.end(),[](const auto& i){return i.code=="JUNCTION_POLYGON_FIT_REQUIRED";})) {
+            auto* fit=new QPushButton(text("editorJunctionFitPolygon")+QStringLiteral("…"),table);table->setCellWidget(r,5,fit);
+            connect(fit,&QPushButton::clicked,&dialog,[&,id=o.objectId] {
+                const auto p=junctionPolygonPreview(history_.document(),id,catalogs);
+                if(confirmJunctionPolygonFit(&dialog,p,[&](const char* key){return text(key);})) {fitNode=id;dialog.accept();}
+            });
+        }
     }
     table->resizeColumnsToContents();
+    table->resizeRowsToContents();
     layout->addWidget(table);
     auto* none = new QLabel(text("editorFillNone"), &dialog); none->setObjectName("editorFillNone"); none->setVisible(offers.empty());
     layout->addWidget(none);
@@ -50,12 +71,17 @@ void EditorWindow::fillDefaultsDialog() {
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     layout->addWidget(buttons);
     dialog.resize(editorDesign::space3 * 60, editorDesign::space3 * 22);
+    fitToScreen(dialog);
     if (dialog.exec() != QDialog::Accepted) return;
+    if(fitNode) {
+        execute("editorJunctionFitPolygon",[&](auto& d){fitJunctionPolygonAndFill(d,*fitNode,catalogs);},true);
+        recheck();return;
+    }
     std::vector<FillOffer> chosen;
     for (int r = 0; r < table->rowCount(); ++r)
         if (table->item(r, 0)->checkState() == Qt::Checked) chosen.push_back(offers[static_cast<std::size_t>(r)]);
     if (chosen.empty()) return;
-    execute("editorFillDefaults", [&](auto& d) { applyFills(d, chosen, catalogs); });
+    execute("editorFillDefaults", [&](auto& d) { applyFills(d, chosen, catalogs); },true);
     recheck();
 }
 }

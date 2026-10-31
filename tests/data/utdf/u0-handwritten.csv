@@ -1,0 +1,106 @@
+[Network]
+Network Settings
+RECORDNAME,DATA
+UTDFVERSION,8
+Metric,1
+yellowTime,3.0
+allRedTime,1.0
+HV,0.05
+PHF,0.92
+DefWidth,3.25
+DefFlow,1900
+
+[Nodes]
+Node Data
+INTID,TYPE,X,Y,Z,DESCRIPTION,CBD,Inside Radius,Outside Radius,Roundabout Lanes,Circle Speed
+1,0,1000,1000,0,Main St & Side St,0,,,,
+2,1,1000,1300,0,,,,,,
+3,1,1300,1000,0,,,,,,
+4,1,1000,700,0,,,,,,
+5,1,700,1000,0,,,,,,
+
+[Links]
+Link Data
+RECORDNAME,INTID,NB,SB,EB,WB,NE,NW,SE,SW
+Up ID,1,4,2,5,3,,,,
+Lanes,1,2,2,2,2,,,,
+Name,1,Side St,Side St,Main St,Main St,,,,
+Distance,1,300,300,300,300,,,,
+Speed,1,50,50,60,60,,,,
+Time,1,21.6,21.6,18.0,18.0,,,,
+Grade,1,0,0,0,0,,,,
+Median,1,0.0,0.0,2.0,2.0,,,,
+Up ID,2,1,,,,,,,
+Lanes,2,2,,,,,,,
+Name,2,Side St,,,,,,,
+Distance,2,300,,,,,,,
+Speed,2,50,,,,,,,
+Time,2,21.6,,,,,,,
+Grade,2,0,,,,,,,
+Median,2,0.0,,,,,,,
+Up ID,3,,,1,,,,,
+Lanes,3,,,2,,,,,
+Name,3,,,Main St,,,,,
+Distance,3,,,300,,,,,
+Speed,3,,,60,,,,,
+Time,3,,,18.0,,,,,
+Grade,3,,,0,,,,,
+Median,3,,,2.0,,,,,
+Up ID,4,,1,,,,,,
+Lanes,4,,2,,,,,,
+Name,4,,Side St,,,,,,
+Distance,4,,300,,,,,,
+Speed,4,,50,,,,,,
+Time,4,,21.6,,,,,,
+Grade,4,,0,,,,,,
+Median,4,,0.0,,,,,,
+Up ID,5,,,,1,,,,
+Lanes,5,,,,2,,,,
+Name,5,,,,Main St,,,,
+Distance,5,,,,300,,,,
+Speed,5,,,,60,,,,
+Time,5,,,,18.0,,,,
+Grade,5,,,,0,,,,
+Median,5,,,,2.0,,,,
+
+[Lanes]
+Lane Group Data
+RECORDNAME,INTID,NBL,NBT,NBR,SBL,SBT,SBR,EBL,EBT,EBR,WBL,WBT,WBR,PED,HOLD
+Up Node,1,4,4,4,2,2,2,5,5,5,3,3,3,,
+Dest Node,1,5,2,3,3,4,5,2,3,4,4,5,2,,
+Lanes,1,1,2,0,1,2,0,0,2,1,0,2,1,,
+Shared,1,0,2,,0,2,,,1,0,,1,0,,
+Width,1,3.25,3.25,3.25,3.25,3.25,3.25,3.25,3.25,3.25,3.25,3.25,3.25,,
+Storage,1,40,,,40,,,,,60,,,60,,
+Taper,1,15,,,15,,,,,20,,,20,,
+StLanes,1,1,,,1,,,,,1,,,1,,
+Grade,1,,0,,,0,,,0,,,0,,,
+Speed,1,,50,,,50,,,60,,,60,,,
+Phase1,1,,8,,,4,,,6,1,,2,5,,
+PermPhase1,1,8,,,4,,,,,,,,,,
+IdealFlow,1,1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,,
+Volume,1,90,300,110,80,280,120,120,900,200,100,850,180,,
+PHF,1,0.92,0.92,0.92,0.92,0.92,0.92,0.92,0.92,0.92,0.92,0.92,0.92,,
+HeavyVehicles,1,5,5,5,5,5,5,5,5,5,5,5,5,,
+BusStops,1,0,0,0,0,0,0,0,0,0,0,0,0,,
+
+[Timeplans]
+Timing Plan Settings
+RECORDNAME,INTID,DATA
+Control Type,1,0
+Cycle Length,1,100.0
+Reference Phase,1,206
+Offset,1,0.0
+
+[Phases]
+Phasing Data
+RECORDNAME,INTID,D1,D2,D3,D4,D5,D6,D7,D8
+BRP,1,111,112,211,212,121,122,221,222
+MinGreen,1,10,40,,38,10,40,,38
+MaxGreen,1,10,40,,38,10,40,,38
+Yellow,1,3.0,3.0,,3.0,3.0,3.0,,3.0
+AllRed,1,1.0,1.0,,1.0,1.0,1.0,,1.0
+Recall,1,3,3,,3,3,3,,3
+Start,1,86,0,,44,86,0,,44
+End,1,0,44,,86,0,44,,86
+Yield,1,96,40,,82,96,40,,82

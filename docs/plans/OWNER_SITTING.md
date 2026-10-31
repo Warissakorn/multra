@@ -67,12 +67,25 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 29. **Road-model review follow-up** (listed 2026-10-28, [D382](../decisions/RECORD.md#d382)). Each is a
    choice, recommended first: (a) generated Nodes resize to their arms' templates, needing a "derived
    polygon" mark apart from `generated`, or keep D382's refusal only; (b) one turn key across levels,
-   Road id plus end, for coarse values and Node-analysis volumes (a schema step), or keep Link ids and
-   remap on each edit; (c) keep `forwardOnRoad` (D382) or store each Road direction explicitly, needed
-   if a Road carries a pocket and an approach one way; (d) suppress approach and Node delay and LOS
+   Street segment id plus end, for coarse values and Node-analysis volumes (a schema step), or keep Link ids and
+   remap on each edit; (c) keep `forwardOnStreetSegment` (D382) or store each Street segment direction explicitly, needed
+   if a Street segment carries a pocket and an approach one way; (d) suppress approach and Node delay and LOS
    under `NODE_ANALYSIS_PARTIAL` for the approaches missing a turn, or keep showing them; (e) HCM
    storage traced upstream to the previous Node or pocket start, or the in-leg Link's length; (f)
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
+33–36. **J4T/J5/J6 choices:** answered and approved; [whole B33–B36](../archive/OWNER_SITTING-B33-B36-2026-10-31.md).
+
+Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
+- “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
+- “allRed คือ clearance ที่กรอก; เวลาแดงรอ barrier คำนวณแยกจาก timing ของอีก ring (แนะนำ)”
+- “เริ่ม phase 2/6 ที่เวลา 0 ตาม U0; leading far turn อยู่ท้าย cycle ก่อนหน้า (แนะนำ)”
+
+Answered 2026-10-29: **B31**, owner: defer all-way-stop generation until A5 or U1 needs it;
+keep the fill listed but disabled (`FILL_NODE_ALL_WAY_STOP`), leave StopControl unchanged and
+use no schema 63 ([D399](../decisions/RECORD.md#d399)).
+
+Answered 2026-10-28: **B30**, owner: “B30 เอาตามแนะนำ” (“B30 as recommended”): JT-1a–JT-5a and
+UX-1a–UX-4a ([D388](../decisions/RECORD.md#d388)); U0 is a session plus the owner's import check.
 Answered 2026-10-28: **B28**, owner: “ช่วยตัดสินใจ” (“help decide”), given after being told that
 item 1 reverses D373; decided on that delegation in [D380](../decisions/RECORD.md#d380): 1a, 2a.
 Numbers are not reused.
@@ -92,7 +105,7 @@ Answered 2026-10-23 (in chat, AskUserQuestion): **S4's four choices**, as recomm
 [D313](../decisions/RECORD.md#d313): S4-1a, S4-2a, S4-3a, S4-4a ([READINESS](../reference/READINESS.md) §8).
 
 Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD.md#d304):
-S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([ROADS](../reference/ROADS.md) §11). Numbers are not reused.
+S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([STREET_SEGMENTS](../reference/STREET_SEGMENTS.md) §11). Numbers are not reused.
 
 Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.
@@ -121,6 +134,20 @@ Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
 ([D178](../decisions/RECORD.md#d178): order accepted, keep-left default, standard motorcycle values for now).
 Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
 ([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
+
+37–38. **J4T structure/cuts and polygon fitting:** answered and approved; [whole items B37–B38](../archive/OWNER_SITTING-B37-B38-2026-10-31.md), D416/D417.
+
+39. **J7 analysis source:** answered and approved; [whole B39](../archive/OWNER_SITTING-B39-2026-10-31.md), D418.
+
+40. **A9 Fill from model and Micro comparison** (2026-10-31, D419; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-answered-choices)).
+   Owner chose expected Micro demand, explicit HV types, full replacement/provenance and
+   named unresolved-demand refusals (D419). Owner selected explicit window/T/PHF=1 replacement
+   and reuse of a completed batch on 2026-10-31 (D420). Do not re-ask these choices.
+
+41. **A9 manual-count comparison window** (answered 2026-10-31, D422). Owner selected
+   [explicit session-only confirmation](../reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window),
+   matching batch evaluation start/end and Node T, labelled manual counts. Nothing is stored.
+   Checkpoints a6d0a25/d663bf5 are accepted so far; finish A9, then stop for review.
 
 ## C — Run view (the 125 % screen)
 
@@ -270,16 +297,116 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 23. **D306 E1 tool pointers and clicks** (listed 2026-10-22). At 100/150/200 % on Windows, use
    each drawing tool: is its pointer glyph clear, and do plain clicks after a draft's first point
    add points without starting anything else? *Owner:*
-24. **D385 Roads workflow** (listed 2026-10-28). At 100/150/200 % on Windows, in Thai and English:
-   on the Roads tab select three Roads and press *Apply template* once (one Undo step); open *Find
-   crossings* where a Road has no template. Are the warning-coloured rows and the note under the
-   table readable, and is no Thai text cut off in the note, the tooltip or the toolbar? *Owner:*
+24. **D385 Street segments workflow** (listed 2026-10-28). At 100/150/200 % on Windows, in Thai and English:
+   on the Street segments tab select three Street segments and press *Apply template* once (one Undo step); open *Find
+   crossings* where a Street segment has no template. Are the warning-coloured rows and the note under the
+   table readable, and is no Thai text cut off in the note, the tooltip or the toolbar? Since D389 the tab, tool
+   and messages say Street segment / ช่วงถนน: do they read naturally? *Owner:*
+25. **D390 posted speed** (listed 2026-10-28). At 100/150/200 % on Windows, in Thai and English,
+    select two Links, type a speed in the inspector's *Posted speed (km/h)* and press Enter, then
+    Undo; set one in a cross-section template and apply it. Does one Undo clear both Links, and does
+    "ความเร็วกำหนด" read naturally? *Owner:*
 
 Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now
 [M1.29](../ROADMAP.md#m129--owner-looks-carved-out-of-the-sitting-d201) and
 [M3.2.10](../ROADMAP.md#m3210--owner-looks-carved-out-of-the-sitting-d201). They stay unchecked and close
 nothing. Numbers are not reused.
+
+26. **J3b Fill defaults** (listed 2026-10-29, D397/D398). On Windows at 100/150/200 %, in
+   Thai and English, inspect the Junction template row, all missing-value codes/paths and
+   existing → required full-lane counts. Unticked/disabled rows must change nothing; Apply,
+   Undo/Redo and Apply again must preserve generated flags, and a named manual edit must block
+   replacement. After F4, choose a recipe and change laneWidth: Street segment Apply template
+   must still work. After a junction fill and reopen without Undo, does the named refusal clearly
+   explain delete the junction's generated Links → Apply the Street segment template → fill again,
+   including that deleting Links removes attached objects? **Fill the junction before placing
+   stationed measurements**; check this order with a travel-time section and the generated-Link
+   count in Problems. Recipe selection UI remains J6; use a saved recipe/automation fixture. *Owner:*
+
+27. **J4 template signals** (listed 2026-10-29, D404). On Windows at 100/150/200 %, Thai and
+   English, open a saved P1–P4 recipe with explicit site timing and inspect Fill defaults.
+   Missing yellow/allRed must leave Apply disabled; valid input creates one controller named
+   after the Node, NEMA-numbered groups and generated heads in one Undo. Compare its diagram
+   with §8: 2/6 start at zero, leading far turns are at the previous cycle's end, and P4 has
+   minor 4 then 8. Does waiting red stay separate from the recipe's entered allRed? Re-apply,
+   edit a head/controller, and attach a queue counter: replacement must name the edited or
+   attached object. This does not confirm U0 interoperability. Recipe UI remains J6. *Owner:*
+
+28. **J5 transitions / J6 overlap preview** (listed/revised 2026-10-30, D406–D409). On Windows at 100/150/200 %, Thai and English,
+   draw end-to-start 3-lane and 2-lane Street segments. Find crossings must show Transition,
+   initially unselected, with Confirm disabled until its template is chosen. Cancel changes
+   nothing; Confirm creates the recipe-bearing Node in one Undo, with no taper default. Use a
+   saved recipe with explicit 15/30/60 m tapers, run F3 then Fill defaults: no manual polygon edit
+   is needed while the Node is generated. Inspect both driving sides: the enlarged polygon covers
+   both tapers and Connectors, the whole taper is upstream, kerb alignment drops the far lane,
+   far alignment drops the kerb lane, and one Undo restores the polygon and full document. Edit
+   a polygon, then request a longer taper: outside refusal must name that polygon. With a 60 m
+   taper in left-hand traffic, add a side road (-40,112) → (-40,12) and F3: Fill must name the captured Links with
+   TRANSITION_POLYGON_CAPTURES and offer shorter taper/manual polygon recovery, without changing
+   the document or Undo. Its y=25 control stays outside and fills; mirror the road's y values
+   for right-hand traffic to test the same incoming-arm side. A neighbouring Node overlap
+   must already disable the Fill offer with NODE_OVERLAP naming that Node, before Apply. Inspect
+   missing/range/outside messages and dialog buttons on a small screen. Recipe editing remains
+   J6; fill before placing stationed measurements. *Owner:*
+
+29. **J6 template/recipe/crossing/seam/corridor surfaces** (listed 2026-10-30, D410–D414). On Windows at
+   100/150/200 %, Thai/English: Junction rows have an optional blank Template chooser filtered
+   by leg count; Overpass disables it and Transition still needs an explicit choice. Cancel
+   and Confirm/Undo preserve the expected complete document. Refine a generated Connector:
+   Seam checks and Readiness show the same advisory at all three levels. Apply again lists
+   detail before replacement, Cancel is unchanged, Detach keeps the drawing, and Undo is one step.
+   Change cross-section through junctions on a segment shared by two filled Nodes: the preview
+   lists both, one Apply keeps both ends complete, and one Undo restores both. An edited neighbour
+   or attached generated-head measurement must name the refusal and disable Apply. Check a
+   revision-zero reopened project's object tables and dialog fit on a small screen. A three-junction
+   preview shows Node names and object counts; expand all detail ids, then Cancel or Apply/Undo.
+   In Nodes → Junction templates…, edit/add a project copy: lane rows run far to kerb with Thai
+   geometric turn names, through-pocket/invalid movement rows disable Confirm, transition align
+   is explicit, and Cancel/Undo keep installed data unchanged. In Junction template…, change
+   template and inspect retained incompatible site values; Fill stays disabled until explicitly
+   corrected/cleared. Check major, lane override, direction, per-pocket values and NEMA timing:
+   empty means missing, yellow/allRed zero is entered, no site default. Find crossings → F3 →
+   taper entry → Fill needs no manual polygon edit while generated; after a polygon edit,
+   entering new numbers must not restore generated. J6a/D415 removes the road-32 exit-lane
+   refusal: three outgoing lanes must Fill/rebuild, including a three-junction corridor, with
+   one Undo. Inspect fixed footer/scrolling rows in every new nested dialog. *Owner:*
+
+30. **J4T protected signalised T and polygon fitting** (listed 2026-10-30, D416/D417). On Windows at 100/150/200 %,
+   Thai/English: Find crossings on a T, choose the protected three-stage entry, F3 with 2+2
+   lanes, select both major arms and inspect the four required phase numbers in Junction
+   template…. Check north/south/east/west stems on both driving sides. Missing values disable
+   Fill without adding timing; save/reopen retains a draft. Enter actual site timings: 2/6
+   start at zero, minor alone follows, major far ends the preceding cycle. For the U0-style
+   E–W/north-stem check, left-hand WBR=5 and SB=4; right-hand EBL=1 and SB=4. There are no
+   spare phase groups. Inspect the six turns, protected F lane, T cut ends, full Undo and
+   re-apply/refine guard. Confirm ordinary F4 and four-leg signal numbering keep their behaviour.
+   With the untouched Find crossings polygon, also check shared/pocket four-leg templates,
+   choosing in the column or later Node form. First choice keeps the flag; generated Fill fits
+   automatically. After a polygon edit, Fit polygon + Fill previews dashed old/solid new outlines;
+   Cancel is unchanged, Apply is one Undo and keeps false. Capture/overlap disables preview Apply.
+   Automated Linux tests do not supply this Windows verdict. *Owner:*
+
+31. **J7 Node analysis** (listed 2026-10-31, D418). On Windows at 100/150/200 %, Thai/English:
+   Nodes → Analysis… shows compass L/T/R names, hourly volumes, %HV, Node settings and approach
+   adjustments. Blank volume differs from entered zero; blank optional fields stay defaults.
+   Check scrolling/fixed footer, Cancel, stale-row review/clear and one Undo. Analyse fills
+   Results → Node analysis with all figures, missing-number blanks, localized refusals and the
+   analytical/not-validated marker. Inspect source snapshot, stale-after-edit/Undo, CSV/Copy,
+   and byte parity with CLI after Save. On the next dialog touch, keep a cleared drawn approach
+   row visible like a drawn turn row (owner review, 2026-10-31). No J7 formula change. *Owner:*
+
+32. **A9 Fill from model / Micro side by side** (listed 2026-10-31, D421/D422). On Windows at
+    100/150/200 %, Thai and English, on both driving sides: open Nodes → Analysis… → Fill from
+    model…, choose explicit times or StudyPeriod and HV types, inspect before/after/T/PHF and
+    source SHA, Cancel then Confirm (one Undo). Check drawn turn/approach Clear keeps the row
+    visible. Run seeds, wait, Analyse → Micro side by side: read distinct HCM/Micro labels,
+    source/window/seeds, n/CI/unfinished, blank values and localized refusal text. Change inputs,
+    Undo, cancel a batch, reopen, and Export/Copy: old comparisons must disappear and the CSV
+    marker/quoted numbers must remain. For manual counts, select a Node and explicitly confirm its
+    window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
+    CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
+    field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
 
 ## F — Dialogs: demand and behaviour
 
@@ -325,3 +452,18 @@ nothing. Numbers are not reused.
    drafts and unsaved work survive every refusal, and are focus/menu/pointer busy reasons right?
    An AI disconnect must stay distinct from quit or cancel. Linux offscreen is not Windows
    evidence. *Owner:*
+
+## I — UTDF probe (M14 U0)
+
+The junction, the steps and the answer table are on [UTDF_PROBE](UTDF_PROBE.md). Write each answer
+there (§6) verbatim and dated; these items only say what must hold.
+
+1. **Synchro 12 golden file** (listed 2026-10-28, D386). Draw UTDF_PROBE §1–§3 and export a metric
+   UTDF combined file. Does Synchro's HCM 7 report run without errors, and is the export saved as
+   `u0-synchro.csv`? *Owner:*
+2. **Vistro 2026 import** (listed 2026-10-28). Import `u0-synchro.csv`. Does Vistro take the
+   lanes, pockets, volumes and timing as drawn? *Owner:*
+3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`
+   into both programs. Does either refuse it, or draw something other than §1–§3? *Owner:*
+4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
+   it in the UTDF file? *Owner:*

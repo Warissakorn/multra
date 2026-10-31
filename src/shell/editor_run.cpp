@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "node_analysis_panel.hpp"
 #include "automation_error.hpp"
 #include <QUuid>
 #include <QJsonArray>
@@ -241,7 +242,9 @@ void EditorWindow::refreshRun(){
     actions_.at("editorStep")->setEnabled(!runTimer_.isActive());
     refreshMacro(); // S2.4: its actions and stale note follow every refresh
     refreshMeso(); // M11.4: and the Meso ones
-    const bool exportable=macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
+    const auto analysis=resultPages_.find("editorResultsTabNodeAnalysis");
+    auto* panel=analysis==resultPages_.end()?nullptr:static_cast<NodeAnalysisPanel*>(analysis->second);if(panel)panel->refresh();
+    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
         :runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);

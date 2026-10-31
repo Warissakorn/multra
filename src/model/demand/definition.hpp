@@ -1,5 +1,6 @@
 #pragma once
 #include "../../core/types.hpp"
+#include "../network/junction_templates.hpp"
 #include "../../macro/settings.hpp"
 #include "../../meso/settings.hpp"
 #include <algorithm>
@@ -41,20 +42,21 @@ struct LinkType {
     std::string id, name; double capacityPerLane{}, freeSpeed{}; std::string vdfId;
     std::vector<std::string> modes; std::string source;
     std::optional<JamDensity> jamDensity; // M11.2: written only when set, which makes a file schema 52
-    // S3.2 (ROADS §8, D304): the capacity its VDF was fitted to, "practical" or "ultimate"; empty means
+    // S3.2 (STREET_SEGMENTS §8, D304): the capacity its VDF was fitted to, "practical" or "ultimate"; empty means
     // practical. Written only when set, which makes an owned type schema 53.
     std::string capacityBasis{};
-    // S3.6a (ROADS §6, 4a, D310): the priority hierarchy; a higher rank is major. Absent: unranked.
+    // S3.6a (STREET_SEGMENTS §6, 4a, D310): the priority hierarchy; a higher rank is major. Absent: unranked.
     // Written only when set, which makes an owned type schema 53.
     std::optional<int> rank{};
     bool operator==(const LinkType&) const = default;
 };
-// S3.3 (ROADS §4, D305): a cross-section template. Lane widths are `laneWidth` for every lane, or
+// S3.3 (STREET_SEGMENTS §4, D305): a cross-section template. Lane widths are `laneWidth` for every lane, or
 // `laneWidths` per lane, forward lanes first (kerb to median), then backward ones.
 struct CrossSection {
     std::string id, name; int directions{2}, lanesForward{1}, lanesBackward{};
     double laneWidth{}; std::vector<double> laneWidths; double median{};
     std::optional<std::string> linkType; std::string source;
+    std::optional<double> speedLimit; // J1 (D390), km/h: copied onto each generated Link
     bool operator==(const CrossSection&) const = default;
 };
 struct Vdf {
@@ -195,6 +197,7 @@ struct AuthoringDefinition : ScenarioDefinition {
     bool externalModes{true}; std::vector<Mode> modes; // S1.2 (D269): absent = data/modes/, schema 49
     bool externalLinkTypes{true}; std::vector<LinkType> linkTypes; // S2.1 (D273): absent = data/link-types/, schema 50
     bool externalCrossSections{true}; std::vector<CrossSection> crossSections; // S3.3 (D305): absent = data/cross-sections/, schema 53
+    bool externalJunctionTemplates{true}; std::vector<JunctionTemplate> junctionTemplates; // M14 J3a, schema 61
     std::optional<MacroSettings> macroSettings; // S2.3 (D275): absent = kMacroDefaults, schema 51
     std::optional<MesoSettings> mesoSettings; // M11.2 (D293): absent = kMesoDefaults, schema 52
     double clockStart{}; // S1.1 (STUDY_PERIODS §4), schema 49: the clock time of run time 0, seconds since midnight

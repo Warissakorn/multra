@@ -18,9 +18,9 @@ MesoCompile mesoNetwork(const ProjectDocument&, const std::filesystem::path& dat
 // vehicles change lanes onto, split equally. Refused: MESO_PATH_UNMAPPED at `definition.routes[j]`
 // (or the routeless input), or at `odMatrices[k]` for its routes; MODE_PCU_MISSING at the input or
 // matrix; the walk's blocking issues at `definition.inputs[i].…`.
-// D341 (MESO_ROAD_DEMAND): a direct Road target opts all matrices into compiled-graph minimum
+// D341 (MESO_STREET_SEGMENT_DEMAND): a direct StreetSegment target opts all matrices into compiled-graph minimum
 // free-flow-time paths, with equal shares over ties. Authored paths still expand as above;
-// mesoRoadOdDemand supplies the graph OD, its PCU/windows and explicit path/refusal checks.
+// mesoStreetSegmentOdDemand supplies the graph OD, its PCU/windows and explicit path/refusal checks.
 struct MesoDemand { std::vector<MesoClass> classes; std::vector<ValidationIssue> issues; bool operator==(const MesoDemand&) const = default; };
 MesoDemand mesoDemand(const ProjectDocument&, const std::filesystem::path& dataDirectory, const MesoGraph&, InputManifest* = nullptr);
 }

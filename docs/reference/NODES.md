@@ -17,7 +17,7 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
 - **Specified here, implemented later:** coarse values for a Node without Micro detail, and the
   refine and derive-back Commands. They have no consumer until Macro compiles (S2, M10.1), so
   they land with S3 (§5, slice S0.4; moved from S2 by D272).
-- **Out:** Roads and cross-section templates (S3); Nodes created from Road crossings, and the
+- **Out:** Street segments and cross-section templates (S3); Nodes created from Street segment crossings, and the
   derived-disc form of a Node with no polygon (S3); Readiness and *Fill defaults* (S4); the
   run-time cut (S5); any Macro or Meso value.
 
@@ -30,7 +30,7 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
     "generated": true } ] }
 ```
 
-- **Where it lives.** `Network::nodes`, after `travelTimeSections` (`src/model/network/network.hpp`;
+- **Where it lives.** `Network::nodes`, after `travelTimeSections` (`src/model/network/network.hpp`, Node values in `node_values.hpp`;
   new fields go last). It is network geometry, unlike zones, which sit in the demand layer.
 - **Fields:**
   - `id` comes from `allocateId(d, "node")` and is added to `documentIds`.
@@ -45,8 +45,9 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
 - **Refused on load or edit:** `INVALID_ID` and `DUPLICATE_ID`, `NODE_POLYGON_INVALID` (fewer than
   3 points, a non-finite coordinate, or a self-crossing outline), and any other key.
 - **Nodes may not overlap** (`NODE_OVERLAP`). Each piece of road then belongs to at most one Node.
-- **Edits elsewhere never move a Node.** A Node stores no references, so deleting, splitting or
-  reversing a Link needs no cascade. Membership is derived again on every read (§3).
+- **Edits elsewhere never move a Node.** Membership is derived again on every read (§3). Optional
+  inputs have their own contracts: analysis (schema 58, NODE_ANALYSIS) and the junction recipe /
+  independent compass overrides (schema 61, [JUNCTION_TEMPLATES §4](JUNCTION_TEMPLATES.md#4-on-the-node-the-choice-and-its-site-values)). Their ids follow those contracts when a Link or Street segment is split; geometry still stores no membership.
 
 ## 3. What a Node holds: derived from the Micro detail
 
@@ -66,7 +67,7 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
   junction. A leg is named after its Link (Name, else id).
 - **Pass-through.** A crossing Link counts only when something inside connects to it: an internal
   Connector ends on it inside its span, or a conflict area inside has a side on it. Otherwise it is
-  ignored, such as an overpass or a road on another `level`. Roads on different levels therefore
+  ignored, such as an overpass or a road on another `level`. Street segments on different levels therefore
   never form a turn.
 - **Refusals** are reported as advisory diagnostics; the Node then gives no rows, and the run still
   runs:
@@ -122,14 +123,14 @@ helper, extracted from `conflict_groups.cpp` and `zone_codec.cpp`. The boundary 
 
 ## 5. Coarse values and lifecycle (slice S0.4, landing with S3.6)
 
-S3's contract specifies the fields, readers and refusals: [ROADS](ROADS.md) §6 (D303).
+S3's contract specifies the fields, readers and refusals: [STREET_SEGMENTS](STREET_SEGMENTS.md) §6 (D303).
 S3.6a implements the fields, checks and the Macro and Meso compile (D310,
-[ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19); S3.6b refine, derive back, the lifecycle and the
+[STREET_SEGMENTS_IMPLEMENTED](STREET_SEGMENTS_IMPLEMENTED.md) §19); S3.6b refine, derive back, the lifecycle and the
 Nodes tab's *Coarse values…* dialog (D311, §20). Detail is the interior: a Connector inside, or a
 Link wholly inside; Links reaching in are legs.
 
 The owner moved S0.4 to S3 (D272, [MACRO_NETWORK](MACRO_NETWORK.md) §10): Macro compiles a Node's
-interior from its detail, and Nodes without detail first arise from Roads. This amends D260's 5a.
+interior from its detail, and Nodes without detail first arise from Street segments. This amends D260's 5a.
 
 
 - **Coarse values** are stored only on a Node with no Micro detail (no internal Link or Connector):
@@ -147,7 +148,7 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 - **Lifecycle:**
   - a dead-end Node stays;
   - a two-leg Node with only default values is merged away by the Command that made it so (from S3,
-    when Roads exist);
+    when Street segments exist);
   - a Node with detail or authored values is never removed automatically, only reported.
 
 ## 6. Editor (slices S0.1, S0.5)
@@ -161,9 +162,9 @@ interior from its detail, and Nodes without detail first arise from Roads. This 
 - **Nodes panel.** A table of Nodes with name, control type, legs, turns and issues. Rename and
   delete are each one Undo step. Selecting a row highlights the polygon and its legs.
 - **Moving a vertex** is one Undo step and clears `generated`.
-- **Merge nodes** (S3.5, D309; [ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §18) replaces the selected rows with the convex hull of
+- **Merge nodes** (S3.5, D309; [STREET_SEGMENTS_IMPLEMENTED](STREET_SEGMENTS_IMPLEMENTED.md) §18) replaces the selected rows with the convex hull of
   their polygons in one Undo step, refused when a Node that held valid detail would gain an issue.
-- **Coarse values…** (S3.6b, D311; ROADS_IMPLEMENTED §20) edits a Node without detail: control, major
+- **Coarse values…** (S3.6b, D311; STREET_SEGMENTS_IMPLEMENTED §20) edits a Node without detail: control, major
   legs, allowed turns and stages, in one Undo step.
 - **Suggest nodes** (S0.5, D265) draws one `generated` polygon around each junction no Node covers
   yet, as one Undo step for the whole set. D259 named `conflictGroups`, but a `ConflictGroup` is one

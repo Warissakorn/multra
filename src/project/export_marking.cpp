@@ -43,6 +43,10 @@ GeneratedCount generatedInNode(const ProjectDocument& d, const Node& node) {
     const std::set<std::string> connectors(m.connectors.begin(), m.connectors.end()), areas(m.conflictAreas.begin(), m.conflictAreas.end()),
         waiting(m.waitingLines.begin(), m.waitingLines.end()), heads(m.signalHeads.begin(), m.signalHeads.end());
     GeneratedCount c;
+    std::set<std::string> links(m.links.begin(),m.links.end());
+    for(const auto& leg:m.inLegs)links.insert(leg.linkId);
+    for(const auto& leg:m.outLegs)links.insert(leg.linkId);
+    for(const auto& x:n.links)c.links+=x.generated&&links.contains(x.id);
     for (const auto& x : n.connectors) c.connectors += x.generated && connectors.contains(x.id);
     const auto& r = n.rightOfWay;
     for (const auto& x : r.waitingLines) c.rightOfWay += x.generated && waiting.contains(x.id);
@@ -59,7 +63,7 @@ std::size_t generatedInArea(const ProjectDocument& d) {
     const auto& area = d.zones.studyArea.nodes;
     if (area.empty()) {
         const auto& n = d.network; const auto& r = n.rightOfWay;
-        return flagged(n.connectors) + flagged(r.waitingLines) + flagged(r.conflictAreas) + flagged(r.priorityRules) +
+        return flagged(n.links) + flagged(n.connectors) + flagged(r.waitingLines) + flagged(r.conflictAreas) + flagged(r.priorityRules) +
                flagged(r.stopControls) + flagged(n.signalHeads) + (d.definition ? flagged(d.definition->signalControllers) : 0);
     }
     std::size_t total = 0;

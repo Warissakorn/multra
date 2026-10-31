@@ -6,105 +6,308 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
-## 2026-10-28 — Road workflow: Apply on several Roads, crossings warning (D385)
+## 2026-10-31 — A9 finish: explicit manual-count comparison windows (D422)
 
-- **Asked:** batch D of the road-model review, on the D382–D384 branch, whose PR is still open.
-- **Changed, each with a `road-ui` row that failed first:** *Apply template* takes every selected Road
-  in table order in one Undo step, and one refusal leaves the batch unapplied (RD34; 200 Roads about
-  150 ms in a Debug desktop build); *Find crossings* marks a place whose Road has neither template
-  nor Links, with a tooltip and one note, without blocking Confirm (RD35; en/th strings).
-- **Docs:** ROADS RD34–RD35, ROADS_IMPLEMENTED §24, OWNER_SITTING E24; decision index gains D382–D385.
-- **Verified:** Qt 6.4.2 desktop build, `ctest` 245/245 and `check` on Linux (offscreen); Windows
-  and screen scale are OWNER_SITTING E24.
+- **Owner B41:** explicit per-Node session-only confirmation before comparison, matching batch
+  start/end and Node T, labelled manual counts, nothing stored. Checkpoints a6d0a25/d663bf5 are
+  accepted so far: m2.6 totals 2040 veh/h over all three reviewed windows, source-64 reopen,
+  manual-edit schema/source clearing and exact Undo, CBD/source retention and old-output parity.
+- **Implemented:** Results → Node analysis → Micro side by side → Confirm manual count window…
+  selects a Node by id/name and shows batch window/effective T. Required start/end preview uses
+  the same project comparison guards as the result. Missing/non-finite/reversed/mismatched or
+  duplicate confirmations refuse with localized named Node paths; no duration/name inference.
+  Cancel keeps prior state, Confirm replaces only that Node’s session window. No project field,
+  schema step, Command/revision or implicit run. Re-Analyse, batch changes/cancel, edits/Undo
+  and New/reopen clear confirmations; saved project and analytical report bytes stay unchanged.
+- **Presentation:** Node/approach rows label Manual counts versus Model demand in both locales.
+  The comparison CSV alone appends quoted countsSource through shared formatters and marking;
+  HCM/CLI formats, values, missing estimates, n/CI/unfinished and distinct measures stay as before.
+- **Tests first:** both native manual cases fail on missing rows after asserting real completed
+  batches/entered T; all four UI cases fail on the missing confirmation button. A test setup
+  compile error (multiplying an optional T without dereferencing) was fixed before recording
+  product reds. Coverage includes absolute-window mismatch with equal duration, correct window
+  with wrong T, wrong/duplicate ids, labels, Cancel, no History/Save change, CSV equality,
+  re-Analyse, edit/Undo, new batches and reopen, on both driving sides and English/Thai.
+- **Verification:** native nodeanalysis 46/46, Micro UI 8/8, Fill UI 4/4 and JT12 UI 8/8
+  pass, including expanded lifecycle rows. Desktop build (108 tasks) and CTest 260/260
+  (303.56 s, parallel 5) pass; check 260/260 (301.67 s) also passes with architecture,
+  file-size and documentation guards. Five legacy project/CSV comparisons are byte-exact and raw JSON is
+  exact except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured,
+  Windows/manual/high-DPI appearance not driven (E32). No HCM/core/other-level algorithm change.
+- **Docs:** D422/index, answered B41/E32, contracts/schema/module maps and ROADMAP/NEXT updated.
+  Oldest PROGRESS entry archived whole, ten live entries retained. A9 is implemented and stops
+  for owner review; no open A9 contract question, M13 gate closure or UTDF writer. U0 unanswered.
 
-## 2026-10-28 — Road-scale edits made fast, results unchanged (D384)
+## 2026-10-31 — A9 staged Fill, source schema and Micro comparison (D421)
 
-- **Asked:** "ทำชุด C ต่อเลย" ("go on with batch C") of the road-model review.
-- **Changed, each measured before and after (Release, median of three):** `applyFills` checks only the
-  offer it applies (F3 on 480 Roads 96.3 s → 80 ms); `polygonRuns` skips a line whose box is over
-  1 m from the polygon's (`settleNodes` 466 → 118 ms); `nodeIssues` tests overlap only where boxes
-  meet (744 → 1.4 ms). One edit on 1,860 Roads: 1.24 s → 121 ms.
-- **Same results:** characterization rows passed before and after; documents, issues and settled
-  results compared byte for byte at each step. Numbers and fixture in ENGINEERING_NOTES.
-- **Verified:** headless build, `ctest` 164/164 and `check` on Linux.
+- **Implemented answered B40:** Analysis → Fill from model… stages explicit window/HV choices,
+  StudyPeriod minus clockStart, all-turn before/after including zero/stale removal, T=window
+  hours and PHF=1. Child Confirm stages only; parent Confirm is one Command/Undo. Preserve
+  adjustments/saturation, and make drawn approach Clear stay visible like drawn turns (E31).
+- **Provenance:** feature-selected schema 64, closed/version-gated historical source fields,
+  exact captured project SHA plus compiler manifest file hashes/fallbacks and explicit choices.
+  Older/source-absent files keep their schema/bytes. Command and raw History demand-row/T/PHF
+  edits clear an unchanged claim; site-only edits retain it, Undo restores it. Source is exposed
+  in the form/settings and conditional analytical JSON/CSV, with no method or old-format change.
+- **Micro:** reuse the explicitly requested completed batch. Capture decoded source and ordered
+  Node/in-Link ids at compile; duplicate names are harmless. Match source/window/T, present
+  Node/approach HCM and Micro measures beside each other with n/CI/unfinished/blanks, and
+  localized named refusals. Shared comparison CSV keeps marker/marking; active-view export is
+  disabled without rows. No implicit run, subtraction, turn matching or new delay formula.
+  Edits/Undo, seed changes, cancellation and reopen discard comparisons under batch lifecycle.
+- **Failure first:** source codec/replacement cases failed before schema/T/PHF implementation;
+  both-locale/side Fill and Micro suites failed on missing controls, native comparison on empty
+  rows. Compile/setup mistakes (missing hash include, helper name colliding with namespace test,
+  requiring completed vehicles where a valid seed had none) were corrected before claiming reds.
+- **Coverage:** native nodeanalysis 44/44; new Qt Fill 4/4 and Micro 4/4, both sides/locales,
+  retaining JT12 8/8 and real CLI source-64 JSON/CSV parity. Exact snapshot source, site retention,
+  staged Cancel/no-op, one Undo/Redo/reopen, demand-edit clearing, batch/window/stale/refusal and
+  actual export cases pass. Legacy five project/report byte comparisons pass: project/CSV exact,
+  raw JSON exact after replacing only buildCommit. No core/HCM/Micro/Meso/Macro algorithm change.
+- **Pending:** B41 manual-count window confirmation remains unanswered; no window is inferred
+  from T, and manual missing-window rows give NODE_MICRO_NO_WINDOW. This is an A9 checkpoint for
+  review, not a claim that B41 or A9's remaining contract is closed. U0 unanswered; no UTDF writer.
+- **Verification:** desktop build passes (210 tasks). CTest 260/260 (289.67 s, parallel 5) and check
+  260/260 (285.80 s), with architecture/file-size/docs guards, pass. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless unconfigured, Windows/manual
+  appearance not driven (E32). Docs/schema/module maps, D421/index, ROADMAP/NEXT and owner sheet
+  updated. Oldest PROGRESS entry archived whole, ten live entries retained.
 
-## 2026-10-28 — Node-analysis inputs follow ordinary edits (D383)
+## 2026-10-31 — A9 review: resolve compiled lane-change stubs (D420)
 
-- **Asked:** "ทำชุด B ต่อเลย" ("go on with batch B") of the road-model review.
-- **Fixed, each with a row that failed first:** splitting an approach dropped three turns' volumes
-  while Node delay was still shown (NA21: rows now follow the in-leg's end); rows naming no turn or
-  in-leg were ignored silently (NA22: `NODE_ANALYSIS_STALE_TURN` / `_STALE_APPROACH`); a polygon
-  taking in the pockets read as needing detail (NA23: `NODE_CONNECTOR_CROSSES` is advised instead).
-- **Left:** totals under `NODE_ANALYSIS_PARTIAL` stay shown until the owner answers B29 (d);
-  batches C and D in NEXT.
-- **Verified:** headless build, `ctest` 164/164 and `check` on Linux.
+- **Owner:** native preview accepted so far; remaining B40 choices answered as recommended:
+  explicit window/StudyPeriod placement, replace T with duration and PHF with 1 before Confirm;
+  reuse completed requested batches for Node/approach n/CI/unfinished, keeping quantities distinct.
+  B41 asks the manual-count window only; no answer is assumed. U0 remains unanswered, no writer.
+- **Failure first:** shipped m2.6 plus Suggest nodes refused its singleton-origin path-4 stub,
+  as did the hand-counted pocket on both sides. Corrected the ambiguous fixture's forcing setup
+  to enter on a real source and give positive stub demand two complete, different Node exits.
+- **Fixed:** follow every compiled laneChanges target through further stubs and accept only
+  agreeing complete traversals. A stub with targets cannot fall back to a broader origin family.
+  Target-free stubs retain the exact-origin fallback. Visit graph cycles once; stage all results
+  before installation, and copy queue ids before appending so vector growth cannot alter a choice.
+  Determined demand totals are conserved; different/partial target traversals still refuse.
+- **Tests:** six new both-side cases cover real m2.6 windows, the 1200 veh/h pocket's hand totals
+  720/240/240 and the ambiguous control. Native nodeanalysis 38/38 passes. No stored field/schema,
+  method, geometry or level output change. Desktop build, CTest 258/258 (274.43 s) and check
+  258/258 (270.13 s) pass, with architecture/file-size/docs guards. Five fixture/project JSON
+  reports differ only in buildCommit; CSV and project bytes are unchanged. Linux offscreen;
+  headless unconfigured, Windows/manual not run.
+- **Docs:** native contract, B40 answers/B41, D420/index and NEXT updated; B33–B36 and oldest
+  PROGRESS entry archived whole, ten live entries retained. Next remains the rest of A9.
 
-## 2026-10-28 — Road-model review: four defects fixed (D382)
+## 2026-10-31 — A9 native expected-demand preview checkpoint (D419)
 
-- **Asked:** review the road network model, its workflow and its use by HCM; then "เริ่มชุด A ได้เลย"
-  ("start batch A") on the revised plan.
-- **Fixed, each with a row that failed first:** Find crossings grouped places across levels (RD30);
-  `splitRoad` left a far coarse Node naming the old Road and was refused (RD31); F4 listed a Node
-  narrower than its arms, then failed on a gap, now `FILL_NODE_ARM_OUTSIDE` (RS19); a detach made the
-  backward Link read as forward, so re-apply turned it around (RD32, RD33).
-- **Crosses the Road layer:** the direction fix also changes the lane-count seam and F4's template
-  geometry. ARCHITECTURE no longer calls Road and Node planned.
-- **Left:** batches B–D and the dialog warning in NEXT; six owner choices in OWNER_SITTING B29.
-- **Verified:** headless build, `ctest` 164/164 and `check` on Linux. No Qt here: no desktop claim.
+- **Owner:** J7 fe827c8 approved: real CLI/editor JSON/CSV parity for saved and unsaved
+  Save-representation snapshots; shipped projects/node analysis unchanged except buildCommit.
+  M14 junction slices are complete; U0 remains unanswered and no writer starts.
+- **B40:** asked six contract choices before code. Owner chose expected Micro demand, explicit
+  HV types, whole-set replacement/provenance cleared by later manual demand edits, and named
+  unresolved-demand refusals (1/4/5/6). T/PHF and the comparison action (2/3) remain unanswered;
+  their recommendations are not assumed. Schema 64 is booked for provenance, not consumed.
+- **Independent implementation:** read-only expected-demand preview captures/parses the same
+  bytes, reuses the compiler, integrates requested input intervals and maps complete runtime
+  traversals to derived turns. Use reference-to-lane stations and exact compiler origins for
+  entry-lane stubs; never multiply a turn by possible lane paths. Explicit HV weighting, zero
+  rows/retained optional %HV and source revision/manifest; no sampled traffic or achieved counts.
+  Refuse partial/unresolved traversals and affected potential parking releases, including
+  lot-to-lot sources. A provably empty lot without gate demand stays harmless.
+- **Tests:** NA24's direct interval/lane/stub rows failed against the empty interface on both
+  sides before implementation. Extended guards exposed a parking fixture without its required
+  gate; fixed the forcing setup. The empty-lot control then failed on an overbroad refusal,
+  before its guard fix. Eight new native cases cover those paths, clock-placed OD/compositions,
+  scheduled decision intervals, invalid requests/HV types, partial routes and runtime choices.
+  Native nodeanalysis now passes 32/32, including existing method rows.
+- **Unfinished:** no stored field/codec/version, Fill dialog/Command, T/PHF policy or Micro
+  comparison. Both-locale UI rows and NA26–NA30 are still planned, not claimed. E31 records the
+  cheap drawn-approach clear inconsistency for the next dialog touch; J7 approval stays intact.
+- **Verification:** desktop build, CTest 258/258 (280.29 s) and check 258/258 (283.04 s) pass.
+  A separate non-PCH header compile caught a missing complete Json include; fixed it, then
+  passed standalone compilation, another desktop build and native nodeanalysis 32/32.
+  Architecture/file-size/docs guards pass. Linux offscreen only, including existing JT12
+  en/th cases; this is not a claim of the still-unimplemented new UI rows.
+  The configured four-leg fixture and four shipped projects retain project bytes, and their
+  before/after --node-analysis JSON bytes differ only in buildCommit. No Windows/manual
+  verdict; headless is unconfigured. NEXT names the two pending answers and exact remaining work.
+  B39 and the oldest PROGRESS entry moved whole to indexed archives; ten live entries retained.
 
-## 2026-10-28 — Stall-level parking and pedestrians recorded as needs (D381)
+## 2026-10-31 — J7: Node analysis form, snapshot and Results (D418)
 
-- **Asked:** would a posted speed on the Link limit Vissim-style site roads, parallel and bay
-  parking and pedestrians; then "ทำเลย" ("do it") to the offered docs change.
-- **Changed (docs only):** two PROBLEM §2 Micro rows, two ROADMAP *Later* entries, and the three
-  posted-speed rules in NEXT for the 1a contract. Limits recorded in D381: no stall objects, no
-  reverse motion in core, no pedestrian model, Connector topology and scale.
+- **Owner:** J4T approved, including natural polygons, both entry paths/sides, 200/90/60/40 m
+  corridors, correct short-pocket refusal and unchanged shipped/analysis bytes. J7 is A9 first
+  half only. B39 answered: current snapshot, exact saved bytes when equal; otherwise exact Save
+  bytes labelled unsaved at Analyse, with CLI parity after saving the unchanged snapshot.
+- **Implemented:** staged compass L/T/R turn volumes/%HV, Node PHF/period/CBD/sourced saturation
+  and approach adjustments; missing differs from zero. Existing codec checks shape/sign, HCM
+  checks its ranges on Analyse. Stale/extra rows are preserved and explicitly clearable.
+  setNodeAnalysis is one Command/Undo, Cancel/no-op unchanged. No lane/timing copy or new schema.
+- **Results:** shared project report/metadata/marking for CLI and GUI; synchronous calculation
+  over exactly recorded/parsed bytes. Separate group, approach, intersection, defaults/source
+  and localized refusal tables; unavailable figures blank. Partial totals retain D383's existing
+  warning. Source revision, captured-snapshot note, stale/Undo freshness, generation reset and
+  marked CSV/Copy; protect active project/recovery from export. No Window-header growth.
+- **Tests first:** initial fixture incorrectly assumed the template switch kept generated;
+  corrected the forcing assert before proving missing actions on all four side/locale pairs.
+  Extended form tests then exposed the missing source requirement for a saturation override;
+  fixed in UI without tightening older-file decoding. All 8 JT12 form/result cases pass.
+  The 28 actual CLI subprocess runs match JSON/CSV for non-canonical saved bytes, unsaved-then-saved
+  snapshots, external-file changes, method/queue refusals, multiple/empty configured Nodes;
+  plus defaults/zero, Cancel, exact Undo/reopen, explicit stale-row clearing and export guards.
+- **Verification:** the first full CTest run was 253/258: the old seven-tab expectation and
+  four layout cases failed. Updated the tab inventory and made the hidden page ignore minimum
+  size, with reflow labels; retained canvas/layout thresholds. Those six targeted suites then
+  passed (25.31 s), including JT12. Desktop build and CTest **258/258** (290.45 s, parallel 5)
+  pass; check **258/258** (297.74 s) also passes, with architecture/file-size/docs guards.
+  The one-Node before/final CLI bytes match except buildCommit.
+  The first build exhausted local
+  disk on debug executables; stripped debug sections and used a local-only strip-debug linker
+  cache flag, retaining debug objects and source/FP flags. No tracked build flag changed.
+  Linux offscreen only; headless unconfigured, Windows/manual UI remains E31. U0 unanswered;
+  no UTDF writer, Fill from model, timing proposal or Micro side-by-side.
+- **Docs:** editor contract/index, §9/JT12, Node-analysis/schema, D418/index, B39/E31, module maps,
+  ROADMAP/NEXT updated. Answered B37/B38 archived whole to keep OWNER_SITTING under 500 lines;
+  oldest PROGRESS entry archived whole, ten live entries retained.
 
-## 2026-10-28 — B28 decided on delegation (D380)
+## 2026-10-30 — J4T: real Find crossings Fill and explicit polygon preview (D417)
 
-- **Asked:** the owner answered B28 with "ช่วยตัดสินใจ" ("help decide"), after the session said item 1
-  reverses D373.
-- **Decided:** 1a, one posted speed on the Link, the approach speed derived with every stored value
-  migrated; 2a, D378's order rule reworded so a finer level's gate does not close before the coarser
-  one it depends on. PROBLEM §3 and MULTI_LEVEL_MODELLING §7 carry the new wording. Reasons in D380.
+- **Owner B38:** extend the chosen fit policy to every three-/four-leg junction template.
+  Generated polygons fit automatically; a false flag uses explicit previewed Fit polygon +
+  Fill, one Undo, never restoring true. First template choice keeps current ownership through
+  the crossing column or later Node form; switching template/Detach/polygon edits still clear it.
+- **Implemented:** share D407's original/cut/Connector surface hull and widest-lane padding
+  with transitions, retaining new-Link-leg and neighbour-overlap guards. Named fit-required
+  recovery opens old/proposed outlines; Cancel is unchanged. Preview and Command share a
+  private plan and retain edited-detail/reference refusals. Remaining NODE_CONNECTOR_CROSSES
+  names both Node and each crossing Connector. No field/schema, timing default or F4 change.
+- **Tests first:** original JT20 fails three cases; the all-template/first-choice/diagnostic
+  extension has 11 real failures after correcting a no-op setup assert and rank-aware seams.
+  The explicit-action Qt row also fails before the button/dialog exists. Normal T fixtures now
+  keep the natural polygon; deliberately roomy pocket/reference cases remain explicit.
+- **Coverage:** junctionsignals 40/40 (21 JT20), junctionfill 25/25 including frozen JT13,
+  junctiontemplates 19/19, junctioneditor 27/27 and transitions 14/14. Natural shared/pocket
+  four-leg and signalised T run through both entry paths on both sides; explicit fit covers
+  both T controls/four stems and four-leg pockets, guards/refinement, exact Undo and reopen.
+  Qt drives later first choice → Fill for all three families, explicit preview Cancel/Apply,
+  required phases and nested site forms in English/Thai on both sides. The authored transition
+  fixture now declares its polygon non-generated instead of relying on old first-choice clearing.
+- **Verification:** desktop build 103 tasks, CTest **257/257** (283.98 s, parallel 5), targeted
+  suites 6/6 (30.70 s). One-Node CLI raw bytes match before/after B38 and the pre-J4T baseline
+  except only root buildCommit. Check **257/257** (281.54 s) passes. Linux offscreen only; headless is
+  unconfigured, Windows/manual appearance remains E30. U0 has no answers; no J7/writer started.
+- **Docs:** §5/JT20, signal/editor/schema/readiness contracts, D417/index, B38/E30 and module
+  maps updated; old out-of-repo evidence paths removed. Oldest PROGRESS entry archived whole.
 
-## 2026-10-28 — Review of D378/D379: corrections and B28
+## 2026-10-30 — J4T core checkpoint; natural polygon choice pending (D416, B38)
 
-- **Asked:** `/scrutinize`, then the plan was approved.
-- **Corrected:** D379 said `seam_checks.cpp` compares two speed homes; it compares only adjacent
-  link types' `freeSpeed`. D379 now states `freeSpeed`'s Macro/Meso role and leaves its relation to
-  the posted speed to the 1a contract.
-- **Returned to the owner (B28):** 1a, because it reverses the owner's own D373 answer; and D378's
-  order rule, which the current Meso and Micro work already departs from. PROBLEM §3 names those
-  exceptions; §2 says the Aimsun facts come from search excerpts.
+- **Owner:** J6/J6a approved. B33 fixes three stages/compass numbering; B37 selected two full
+  incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3, and a measuring-copy stem
+  extension for both signalised and two-way-stop T templates. Ordinary F4 remains unchanged.
+- **Implemented:** one installed protected T; only major through 2/6, physical major far 1/5,
+  existing minor 4/8. Both numbered rings remain, including a one-phase ring. No timing
+  defaults: cycle/green/yellow/allRed are entered; clearance/waiting stay separate and cycle
+  closes exactly. Required numbers derive before timing is complete; Fill, form and seams
+  share that set. No new enum, stored field, schema or HCM procedure.
+- **Cuts:** extend only the full-width measuring stem to the far major painted boundary,
+  then use the existing overlap cuts. Published geometry/stations are on the original Links,
+  with reference/outside/refine guards and one Undo. D400 is superseded for templates only.
+- **Tests first:** seven new signal/T rows failed on the old catalog/mapping/cuts, while all
+  nine JT9 cases passed; the former orthogonal-T refusal row failed on its new success assert.
+  UI digit extraction was corrected after its first assert included the explanatory suffix;
+  re-running the original form proves the missing four-phase subset before restoring the fix.
+  A catalog fixture now explicitly selects a four-leg entry rather than assuming it is first.
+- **Coverage:** both sides/four compass stems, literal U0 numbers, single-ring waiting,
+  missing/unused/grid/cycle/protected-lane guards, physical opposition versus labels, manual
+  controller/checker cases, pocket drafts/re-apply, retained/refused references, full Undo/reopen,
+  HCM's six movement greens and Micro seed 42. Node form is driven in English/Thai.
+- **Docs:** signal contract split before the root page's 500-line limit; JT18/JT19, D416/index,
+  schema/readiness/module maps, B37/E30, ROADMAP and NEXT updated; oldest whole entry archived.
+- **Final workflow finding (B38):** removing the fixture's authored 60 m square exposes
+  NODE_CONNECTOR_CROSSES with the actual 14.5 m-radius Find crossings polygon on both sides.
+  The T core is committed at b7be7c94 but the slice is not complete. Template/major selection
+  can already clear generated, so another polygon policy is an owner choice. Asked before
+  implementing growth; JT20 is pending. Preserve the failing patch and original/candidate
+  JSON in the evidence directory; restore the roomy tests to green while awaiting B38.
+- **Verification:** desktop build and CTest **257/257** (279.81 s, parallel 5) pass; native
+  junctionsignals **19/19**, junctionfill **25/25**, junctiontemplates **19/19**, junctioneditor
+  **27/27** and both-locale Qt forms pass. CLI raw bytes match except buildCommit. Check
+  **257/257** (280.92 s) passes. U0 has no answers; no writer/interchange claim or J7 work. Linux only; headless
+  unconfigured, Windows/manual UI not run (E30).
+  After restoring the core fixtures, the checkpoint desktop build and targeted signal/recipe
+  tests pass **2/2** (7.74 s); docs/file-size/diff guards pass. B38 remains unanswered.
 
-## 2026-10-28 — B27 decided on delegation (D379)
+## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
 
-- **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.
-- **Decided:** 1a one posted speed on the Link, read by every level and M13 (D373's approach field
-  becomes derived); 2a per-lane allowed modes; 3a *Fill from model* for Node turn volumes; 4a only
-  within an HCM 7 planning-level method, read before the contract, else back to the owner. Reasons
-  are in D379. Bookings only: no slice starts until the owner asks.
+- **Owner:** J6 at 3ec3d39/09b0689 is approved. Diagnose ordinary Fill's pre-existing
+  conflict-range failure before J4T; stop for this slice's review, no UTDF writer.
+- **Cause:** matchedStation's terminal subtraction/interpolation can return a runtime exit
+  one rounding unit past the path: 22.315802608466722 versus 22.31580260846672 m.
+  The three-junction repro and translated single junction fail on both sides; the origin
+  single-junction control passes. This is numerical conversion, not a corridor/geometry limit.
+- **Fixed:** exact endpoint returns in the shared converter; interior interpolation and
+  existing outside clamping stay. Ordinary History Fill and atomic corridor rebuild succeed
+  with three exit lanes, including the former road-32 fixture. Remove D413's temporary code
+  translation and locale strings. Core/whole-document validators and authored extents stay;
+  no new field/schema, timing default, conflict algorithm or ownership rule.
+- **Tests first:** JT17's endpoint/translated/corridor rows and rewritten JT16 success rows
+  failed before the correction (18 passed, 9 failed); both origin controls already passed.
+  Native junctioneditor is now **27/27**, including nine JT17 cases, both driving sides,
+  three-junction closure, preview parity, save/reopen and exact JSON Undo/Redo per Command.
+- **Docs:** supersede D413 with D415/index, update §5/JT16/JT17, editor/M3 station contracts,
+  approved J6/current J6a queue, E29 and ROADMAP; archive the oldest entry whole, keeping ten.
+- **Verification:** desktop build, CTest **257/257** (280.06 s, parallel 5), and check
+  **257/257** (277.28 s) pass, including frozen JT13, docs/file-size/architecture guards.
+  Node-analysis CLI raw bytes match except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen;
+  headless unconfigured, Windows/manual UI not run. Evidence: `/workspace/j6a-review/`.
 
-## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
+## 2026-10-30 — J6 forms, B36 and complete review rows (D412, D414)
 
-- **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").
-- **Found:** speed stored in three places, no per-lane vehicle restrictions, M13 turn volumes typed
-  by hand, and M13 refusing coarse Nodes. These are put to the owner as OWNER_SITTING B27; nothing
-  is decided here. Gaps already booked (M1.22 geometry, M3.4/M6 lane-change distance, the mouth rule
-  D80) stay where they are.
-- **Changed (docs only):** VISSIM_PARITY's Nodes row no longer says "Absent entirely";
-  CONNECTOR_PARITY_AUDIT §2 is marked as a 2026-09-21 baseline with a 2026-10-27 recheck.
+- **Finished:** Nodes → Junction templates… stages structural role rows, geometric turn labels,
+  project-owned capture, Add/Edit and loader validation; Junction template… stages major/lane
+  overrides, independent directions, per-pocket storage/taper and NEMA cycle/phase numbers.
+  Each accepted catalog/Node edit is one Command/Undo; nested dialogs stage only. Cancel changes nothing. Existing catalog/schema
+  rules stay, including 63 when the captured whole catalog contains transitions.
+- **Drafts:** switching templates retains every entered site value, lists inapplicable/missing
+  items and keeps Fill disabled. Explicit clear/remove actions correct the draft; empty is
+  missing and entered yellow/allRed zero survives. No timing or length default.
+- **B36 implemented:** the existing setter retains current Node.generated for same-template
+  site numbers. Template/Detach, major/lane structure and polygon edits clear it; it never
+  resurrects ownership. The form calls the independent direction setter only when changed.
+  Find crossings → F3 → taper form → Fill enlarges the still-generated polygon in one Undo.
+- **Preview/seams:** affected Nodes and unique object counts replace hundreds of visible rows;
+  all ids remain expandable before Apply. Complete three-junction closure/shared pockets and
+  three-leg roles pass. Pure comparison detects missing Stops/priority and uncovered automatic
+  conflicts through the existing generation rules; no runtime/HCM priority changed.
+- **Tests first:** B36 and missing-control native rows, both missing form actions and compact
+  preview assertions failed before implementation. Additional rows cover explicit draft
+  correction, actual catalog movement/mixed-transition edits, schema/JSON reopen and full Undo.
+  Compile/setup errors are not product reds: Qt's slots macro required a different local name;
+  the three-Node fixture now iterates copied Node ids as generation replaces its document.
+- **Docs:** contracts/JT11/JT16, D414/index, schemas/readiness/module maps, B36/E29 and NEXT
+  updated; oldest whole entry archived, retaining ten. J6 awaits owner review, no J4T/writer.
+- **Verification:** targeted native **18/18** and junction-ui/catalog-ui/recipe-ui pass;
+  forms run on both driving sides and English/Thai, crossing/seam/corridor on both sides.
+  Desktop build, CTest **257/257** (251.60 s, parallel 5) and check **257/257** (248.32 s)
+  pass, including architecture/file-size/docs guards and frozen JT13. CLI node-analysis matches
+  except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured and
+  Windows/manual UI not run (E29). Captures/logs: `/workspace/j6-forms/`.
 
-## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
+## 2026-10-30 — J6 review: actionable corridor conflict refusal (D412, D413)
 
-- **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want
-  Micro, Meso and Macro weighted equally") and "ศึกษาจากโปรแกรม aimsun next ด้วย" ("study from the
-  Aimsun Next program as well"); then, by AskUserQuestion: the study-chain order, M13 as a Node
-  method serving the three levels, and Aimsun as a reference in PROBLEM only.
-- **Changed (docs only):** PROBLEM §1–§8 (two equal user roles, needs per level, the Node method,
-  Aimsun Next's integrated model cited from its public docs, a done sentence per level and the Node,
-  non-goals for `.ang` files and proprietary formulas, a per-level §7, §8 question 2); PRINCIPLES
-  rule 8 (each level's vocabulary); MULTI_LEVEL_MODELLING §7, ROADMAP M8–M12 and M13, NEXT's order,
-  README's lead and OWNER_SITTING B26. No code, gate or done-condition changed.
-- **Open for the owner:** B26, a simultaneous hybrid meso–micro run, and the user-role wording.
+- **Owner:** carry-over 85329d1 accepted; continue J6. B36 keeps the current generated flag for
+  same-template site values, clears it for another template/Detach/polygon, never restores it.
+  The remaining setter/forms implement that answer after this deliberately small review commit.
+- **Fixed:** road-32's three outgoing lanes now refuse with JUNCTION_REBUILD_CONFLICT at the
+  staged Street segment and Thai/English recovery: keep the outgoing lane count or choose
+  another section/layout. Only final core conflict-range indices are translated; other issues
+  and all validation/reference guards remain. No invalid geometry is published or clamped.
+- **Tests first:** both driving sides fail on the missing named refusal before implementation.
+  The fresh fixture fills with matching seams but whole-document validation also finds a
+  conflict range; matching a recipe is not proof of runtime validity. Initial exact coordinate
+  equality in the test was corrected to a numeric tolerance before claiming the product red.
+  Preview/Apply preserve complete JSON, saved state and Undo/Redo; incoming three lanes retain
+  JUNCTION_LANE_COUNT. The existing successful corridor cases remain.
+- **Docs:** B36/D412, D413/index, JT16/known limitation and NEXT updated; oldest entry archived
+  whole, keeping ten. Main J6 forms and the compact affected-set preview remain authorized.
+- **Verified:** desktop build, native junctioneditor **13/13**, CTest **255/255** (247.76 s,
+  parallel 5) and check **255/255** (246.21 s), including docs/file-size/architecture guards.
+  CLI node-analysis matches except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless
+  unconfigured, Windows/manual UI not run. No final J6 approval, J4T or UTDF writer work.

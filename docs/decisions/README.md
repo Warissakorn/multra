@@ -462,3 +462,13 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D384](RECORD.md#d384) — Review batch C: three Road-scale costs cut with byte-identical results (F3 on 480 Roads 96.3 s → 80 ms).
 
 [D385](RECORD.md#d385) — Review batch D: *Apply template* on every selected Road in one Undo step; *Find crossings* warns, without blocking, where a Road has neither template nor Links.
+
+[M14 decisions D386 onward](M14.md) — junction templates, signals, UTDF and their owner reviews.
+
+[D419](RECORD.md#d419) — A9 B40 partly answered: expected Micro demand, explicit HV classification, whole-set sourced replacement and unresolved-demand refusal; native preview checkpoint, T/PHF/comparison pending.
+
+[D420](RECORD.md#d420) — A9 B40 timing/batch choices answered; resolve stubs through all agreeing complete compiled lane-change targets, with origin fallback only without targets.
+
+[D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.
+
+[D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.

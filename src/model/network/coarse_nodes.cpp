@@ -35,17 +35,17 @@ std::vector<LinkLeg> nodeLinkLegs(const Network& n, const Node& node) {
     }
     return legs;
 }
-std::vector<RoadLeg> nodeRoadLegs(const Network& n, const Node& node) {
-    std::vector<RoadLeg> legs;
+std::vector<StreetSegmentLeg> nodeStreetSegmentLegs(const Network& n, const Node& node) {
+    std::vector<StreetSegmentLeg> legs;
     if (!simplePolygon(node.polygon)) return legs;
-    for (const auto& r : n.roads) {
+    for (const auto& r : n.streetSegments) {
         if (r.centreline.size() < 2) continue;
         const auto runs = polygonRuns(r.centreline, node.polygon);
         if (runs.size() < 2) continue;
         if (runs.front().inside) legs.push_back({r.id, false, runs.front().to});
         if (runs.back().inside) legs.push_back({r.id, true, runs.back().from});
     }
-    std::sort(legs.begin(), legs.end(), [](const auto& a, const auto& b) { return std::tie(a.roadId, a.atEnd) < std::tie(b.roadId, b.atEnd); });
+    std::sort(legs.begin(), legs.end(), [](const auto& a, const auto& b) { return std::tie(a.streetSegmentId, a.atEnd) < std::tie(b.streetSegmentId, b.atEnd); });
     return legs;
 }
 std::vector<ValidationIssue> coarseNodeIssues(const Network& n) {
@@ -57,7 +57,7 @@ std::vector<ValidationIssue> coarseNodeIssues(const Network& n) {
         const auto at = "nodes[" + std::to_string(i) + "].coarse";
         if (nodeHasDetail(n, node)) issues.push_back({"NODE_COARSE_WITH_DETAIL", at});
         std::set<std::string> legs;
-        for (const auto& leg : nodeRoadLegs(n, node)) legs.insert(leg.roadId);
+        for (const auto& leg : nodeStreetSegmentLegs(n, node)) legs.insert(leg.streetSegmentId);
         const auto known = [&](const std::string& id) { return legs.contains(id); };
         for (std::size_t k = 0; k < c.major.size(); ++k)
             if (!known(c.major[k])) issues.push_back({"NODE_COARSE_UNKNOWN_LEG", at + ".major[" + std::to_string(k) + "]"});
@@ -84,15 +84,15 @@ std::vector<ValidationIssue> coarseNodeIssues(const Network& n) {
     }
     return issues;
 }
-std::vector<ValidationIssue> roadThroughNodeIssues(const Network& n) {
+std::vector<ValidationIssue> streetSegmentThroughNodeIssues(const Network& n) {
     std::vector<ValidationIssue> issues;
     for (std::size_t i = 0; i < n.nodes.size(); ++i) {
         if (!simplePolygon(n.nodes[i].polygon)) continue;
-        for (const auto& r : n.roads) {
+        for (const auto& r : n.streetSegments) {
             if (r.centreline.size() < 2) continue;
             const auto runs = polygonRuns(r.centreline, n.nodes[i].polygon);
             if (runs.size() >= 3 && std::any_of(runs.begin() + 1, runs.end() - 1, [](const auto& x) { return x.inside; })) {
-                issues.push_back({"NODE_ROAD_THROUGH", "nodes[" + std::to_string(i) + "]"});
+                issues.push_back({"NODE_STREET_SEGMENT_THROUGH", "nodes[" + std::to_string(i) + "]"});
                 break;
             }
         }

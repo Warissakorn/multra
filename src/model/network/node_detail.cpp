@@ -6,7 +6,7 @@
 #include <limits>
 
 namespace multra {
-std::string legArm(const Link& l) { return l.roadId ? *l.roadId : l.id; }
+std::string legArm(const Link& l) { return l.streetSegmentId ? *l.streetSegmentId : l.id; }
 namespace {
 const Link* linkOf(const Network& n, const std::string& id) {
     const auto found = std::find_if(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id; });

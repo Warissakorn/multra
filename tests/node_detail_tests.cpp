@@ -7,7 +7,7 @@
 #include "../src/commands/fill_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/node_detail_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/model/network/coarse_nodes.hpp"
 #include "../src/model/network/node_membership.hpp"
 #include "../src/project/evaluation.hpp"
@@ -24,19 +24,19 @@ CrossSection section() { return {"ns", "ns", 2, 1, 1, 3.5, {}, 0, std::nullopt, 
 const std::vector<CrossSection>& templates(const ProjectDocument& d) { return d.definition->crossSections; }
 // data/priority-rules/default.json's gap time and headway (F4-4a); no link type is ranked.
 NodeFillCatalogs catalogs(const ProjectDocument& d) { return {templates(d), {}, {3.0, 7.0}}; }
-// Four Roads ending at the origin (north, east, south, west), each generated (F3), under one coarse
-// Node of half-width `half` whose major arms are north and south when `majors`. The north Road's
+// Four StreetSegments ending at the origin (north, east, south, west), each generated (F3), under one coarse
+// Node of half-width `half` whose major arms are north and south when `majors`. The north StreetSegment's
 // forward direction has `northLanes` lanes. `base` gives the definition (catalogs, behaviour).
 ProjectDocument cross(double half = 10, int northLanes = 1, bool majors = true, std::optional<AuthoringDefinition> base = std::nullopt) {
     ProjectDocument d;
     d.definition = base.value_or(AuthoringDefinition{});
     putCrossSection(d, section(), {});
-    RoadOverrides north; if (northLanes != 1) north.lanesForward = northLanes;
-    for (const auto& [line, o] : std::vector<std::pair<std::vector<Point>, RoadOverrides>>{
+    StreetSegmentOverrides north; if (northLanes != 1) north.lanesForward = northLanes;
+    for (const auto& [line, o] : std::vector<std::pair<std::vector<Point>, StreetSegmentOverrides>>{
              {{{0, 100}, {0, 0}}, north}, {{{100, 0}, {0, 0}}, {}}, {{{0, -100}, {0, 0}}, {}}, {{{-100, 0}, {0, 0}}, {}}})
-        applyTemplate(d, putRoad(d, {"", "", line, std::string("ns"), 0, o, {}}), templates(d));
+        applyTemplate(d, putStreetSegment(d, {"", "", line, std::string("ns"), 0, o, {}}), templates(d));
     putNode(d, {"", "", square({0, 0}, half), false});
-    if (majors) setNodeCoarse(d, d.network.nodes[0].id, NodeCoarse{std::nullopt, {d.network.roads[0].id, d.network.roads[2].id}, {}, std::nullopt});
+    if (majors) setNodeCoarse(d, d.network.nodes[0].id, NodeCoarse{std::nullopt, {d.network.streetSegments[0].id, d.network.streetSegments[2].id}, {}, std::nullopt});
     return d;
 }
 const Node& node(const ProjectDocument& d) { return d.network.nodes.front(); }
@@ -44,17 +44,17 @@ const Link& link(const ProjectDocument& d, const std::string& id) {
     return *std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& l) { return l.id == id; });
 }
 using Turn = std::pair<std::string, std::string>;
-// Every turn from `from` (a Road index of cross(): 0 north, 1 east, 2 south, 3 west) to another arm.
+// Every turn from `from` (a StreetSegment index of cross(): 0 north, 1 east, 2 south, 3 west) to another arm.
 std::vector<Turn> turnsFrom(const ProjectDocument& d, std::initializer_list<int> from) {
     std::vector<Turn> turns;
     for (const int a : from) for (std::size_t b = 0; b < 4; ++b)
-        if (static_cast<int>(b) != a) turns.push_back({d.network.roads[static_cast<std::size_t>(a)].id, d.network.roads[b].id});
+        if (static_cast<int>(b) != a) turns.push_back({d.network.streetSegments[static_cast<std::size_t>(a)].id, d.network.streetSegments[b].id});
     return turns;
 }
 // The Node signalised with these stages, north and south major unless `majors` is false.
 void signalise(ProjectDocument& d, double cycle, std::vector<CoarseStage> stages, bool majors = true) {
     std::vector<std::string> major;
-    if (majors) major = {d.network.roads[0].id, d.network.roads[2].id};
+    if (majors) major = {d.network.streetSegments[0].id, d.network.streetSegments[2].id};
     setNodeCoarse(d, d.network.nodes[0].id, NodeCoarse{CoarseControl::signalised, major, {}, CoarseSignal{cycle, std::move(stages)}});
 }
 // Two 40 s stages in a 90 s cycle: north-south, then east-west (intergreen 5 s).
@@ -73,12 +73,12 @@ TEST(nodedetail, rs11_offers) { // RS11
     CHECK(std::find(issues.begin(), issues.end(), "NODE_NO_TURN") != issues.end());
     const auto offers = nodeOffers(d);
     CHECK(offers.size() == 1 && offers[0].refusal.empty() && offers[0].value == "12" && offers[0].clears == "NODE_NO_TURN");
-    // A Link-less Road ending in the Node: F3 comes first.
-    auto bare = d; putRoad(bare, {"", "", {{70, 70}, {0, 0}}, std::string("ns"), 0, {}, {}});
-    CHECK(refusal(bare) == "FILL_NODE_ROAD_NOT_GENERATED");
+    // A Link-less StreetSegment ending in the Node: F3 comes first.
+    auto bare = d; putStreetSegment(bare, {"", "", {{70, 70}, {0, 0}}, std::string("ns"), 0, {}, {}});
+    CHECK(refusal(bare) == "FILL_NODE_STREET_SEGMENT_NOT_GENERATED");
     // A hand-drawn arm: its uncut shape is not known after a cut.
-    auto hand = d; deleteRoad(hand, hand.network.roads[0].id);
-    CHECK(!hand.network.links[0].roadId && refusal(hand) == "FILL_NODE_ARM_NOT_GENERATED");
+    auto hand = d; deleteStreetSegment(hand, hand.network.streetSegments[0].id);
+    CHECK(!hand.network.links[0].streetSegmentId && refusal(hand) == "FILL_NODE_ARM_NOT_GENERATED");
     auto stop = d; setNodeCoarse(stop, node(stop).id, NodeCoarse{CoarseControl::allWayStop, {}, {}, std::nullopt});
     CHECK(refusal(stop) == "FILL_NODE_ALL_WAY_STOP");
     // Signals (S4.5c): offered once laid out; refused when they cannot be.
@@ -97,20 +97,20 @@ TEST(nodedetail, rs11_offers) { // RS11
     // A polygon smaller than the crossing roads: the stop line would stand outside it.
     CHECK(refusal(cross(3)) == "FILL_NODE_CUT_OUTSIDE");
     auto banned = d; auto all = *node(banned).coarse;
-    for (const auto& a : banned.network.roads) for (const auto& b : banned.network.roads) if (a.id != b.id) all.bannedTurns.push_back({a.id, b.id});
+    for (const auto& a : banned.network.streetSegments) for (const auto& b : banned.network.streetSegments) if (a.id != b.id) all.bannedTurns.push_back({a.id, b.id});
     setNodeCoarse(banned, node(banned).id, all);
     CHECK(refusal(banned) == "FILL_NODE_NO_TURN");
     // A refused offer cannot be applied, and a Node with detail is not listed.
     // Major and minor: undetermined without `major` or ranks; HCM's ranks need exactly two major arms.
     auto open = cross(10, 1, false);
     CHECK(refusal(open) == "FILL_NODE_PRIORITY_UNDETERMINED");
-    auto one = d; setNodeCoarse(one, node(one).id, NodeCoarse{std::nullopt, {one.network.roads[0].id}, {}, std::nullopt});
+    auto one = d; setNodeCoarse(one, node(one).id, NodeCoarse{std::nullopt, {one.network.streetSegments[0].id}, {}, std::nullopt});
     CHECK(refusal(one) == "FILL_NODE_MAJOR_ARMS");
     // The arms' link-type ranks decide when the Node names none.
     auto ranked = open; auto rankedCatalogs = catalogs(ranked);
     rankedCatalogs.types = {{"main", "Main", 1000, 10, "bpr", {}, "Test", std::nullopt, {}, 2}, {"side", "Side", 800, 10, "bpr", {}, "Test", std::nullopt, {}, 1}};
-    for (std::size_t k = 0; k < ranked.network.roads.size(); ++k)
-        for (const auto& id : ranked.network.roads[k].links)
+    for (std::size_t k = 0; k < ranked.network.streetSegments.size(); ++k)
+        for (const auto& id : ranked.network.streetSegments[k].links)
             for (auto& l : ranked.network.links) if (l.id == id) l.linkTypeId = k % 2 == 0 ? "main" : "side";
     const auto rankedOffers = fillOffers(ranked, rankedCatalogs);
     CHECK(std::any_of(rankedOffers.begin(), rankedOffers.end(), [](const auto& o) { return o.kind == FillKind::nodeDetail && o.refusal.empty(); }));
@@ -120,23 +120,23 @@ TEST(nodedetail, rs11_offers) { // RS11
 }
 TEST(nodedetail, rs12_cuts) { // RS12
     auto d = cross();
-    const auto north = d.network.roads[0];
-    CHECK(polylineLength(link(d, north.links[0]).geometry) == 100); // forcing: the leg runs to the Road's end
+    const auto north = d.network.streetSegments[0];
+    CHECK(polylineLength(link(d, north.links[0]).geometry) == 100); // forcing: the leg runs to the StreetSegment's end
     generateNodeDetail(d, node(d).id, catalogs(d));
     // The north in-leg (x in [0, 3.5]) meets the east-west arms' surfaces at y = 3.5; its out-leg starts there.
     const auto& in = link(d, north.links[0]);
     const auto& out = link(d, north.links[1]);
     test::near(in.geometry.back().y, 3.5, 1e-6); test::near(out.geometry.front().y, 3.5, 1e-6);
-    CHECK(in.roadId == north.id && out.roadId == north.id && d.network.roads[0].links == north.links);
+    CHECK(in.streetSegmentId == north.id && out.streetSegmentId == north.id && d.network.streetSegments[0].links == north.links);
     for (const auto& l : d.network.links) test::near(polylineLength(l.geometry), 96.5, 1e-6);
     // Apply template again cuts the same way: no byte changes.
     const auto bytes = documentJson(d).dump();
-    for (const auto& r : d.network.roads) applyTemplate(d, r.id, templates(d));
+    for (const auto& r : d.network.streetSegments) applyTemplate(d, r.id, templates(d));
     CHECK(documentJson(d).dump() == bytes);
 }
 TEST(nodedetail, rs13_turns) { // RS13
     auto d = cross(10, 2);
-    auto banned = d.network.roads;
+    auto banned = d.network.streetSegments;
     setNodeCoarse(d, node(d).id, NodeCoarse{std::nullopt, {banned[0].id, banned[2].id}, {{banned[1].id, banned[0].id}}, std::nullopt});
     CHECK(link(d, banned[0].links[0]).lanes.size() == 2 && node(d).coarse); // forcing: two lanes from the north, one ban
     const auto ids = generateNodeDetail(d, node(d).id, catalogs(d));
@@ -148,7 +148,7 @@ TEST(nodedetail, rs13_turns) { // RS13
     const auto northIn = link(d, banned[0].links[0]);
     std::map<std::string, std::pair<std::string, int>> from;
     for (const auto& c : d.network.connectors)
-        if (c.from.linkId == northIn.id) from[link(d, c.to.linkId).roadId.value()] = {c.from.laneId, c.fromLaneCount};
+        if (c.from.linkId == northIn.id) from[link(d, c.to.linkId).streetSegmentId.value()] = {c.from.laneId, c.fromLaneCount};
     CHECK(from.size() == 3);
     CHECK(from[banned[1].id] == std::pair(northIn.lanes[0].id, 1));
     CHECK(from[banned[2].id] == std::pair(northIn.lanes[0].id, 2));
@@ -157,10 +157,10 @@ TEST(nodedetail, rs13_turns) { // RS13
 TEST(nodedetail, rs16_generated) { // RS16
     auto d = cross();
     const auto plain = documentJson(d);
-    CHECK(plain.at("schemaVersion") == 53); // forcing: no generated object yet
+    CHECK(plain.at("schemaVersion") == 59 && plain.dump().find("\"generated\"") == std::string::npos); // forcing: no generated object yet (59: street segments, D389)
     generateNodeDetail(d, node(d).id, catalogs(d));
     const auto j = documentJson(d);
-    CHECK(j.at("schemaVersion") == 54 && j.at("network").at("connectors")[0].at("generated") == true);
+    CHECK(j.at("schemaVersion") == 59 && j.at("network").at("connectors")[0].at("generated") == true);
     CHECK(parseDocument(j).network.connectors == d.network.connectors);
     auto older = j; older["schemaVersion"] = 53;
     test::throws([&] { parseDocument(older); }, "EDIT_UNSUPPORTED_FIELD");
@@ -188,7 +188,7 @@ TEST(nodedetail, rs17_one_step) { // RS17
 }
 TEST(nodedetail, rs14_priority) { // RS14
     auto d = cross();
-    const auto roads = d.network.roads; // north, east, south, west; north and south major
+    const auto roads = d.network.streetSegments; // north, east, south, west; north and south major
     CHECK(d.network.rightOfWay.empty() && node(d).coarse->major.size() == 2); // forcing: nothing authored, two major arms
     generateNodeDetail(d, node(d).id, catalogs(d));
     const auto& row = d.network.rightOfWay;
@@ -199,7 +199,7 @@ TEST(nodedetail, rs14_priority) { // RS14
     for (const auto& w : row.waitingLines) CHECK(w.generated);
     const auto armOf = [&](const std::string& connector) {
         const auto c = std::find_if(d.network.connectors.begin(), d.network.connectors.end(), [&](const auto& x) { return x.id == connector; });
-        return link(d, c->from.linkId).roadId.value();
+        return link(d, c->from.linkId).streetSegmentId.value();
     };
     const auto major = [&](const std::string& arm) { return arm == roads[0].id || arm == roads[2].id; };
     // Stop stands only on minor arms' lines; a major through never yields.
@@ -236,9 +236,9 @@ TEST(nodedetail, rs18_runs) { // RS18
     auto d = cross(10, 1, true, base);
     generateNodeDetail(d, node(d).id, catalogs(d));
     CHECK(nodeMembership(d.network, node(d)).turns.size() == 12); // forcing: the detail is there
-    for (const auto& r : d.network.roads) {
+    for (const auto& r : d.network.streetSegments) {
         VehicleInput input{"", "", "car", 300, 0, 600};
-        input.linkId = r.links[0]; // each Road's forward Link enters the Node
+        input.linkId = r.links[0]; // each StreetSegment's forward Link enters the Node
         putInput(d, input);
     }
     const auto data = test::root() / "data";
@@ -270,7 +270,7 @@ TEST(nodedetail, rs15_signal) { // RS15
     CHECK(d.network.rightOfWay.stopControls.empty() && !d.network.rightOfWay.conflictAreas.empty());
     const auto turnOf = [&](const std::string& connector) {
         const auto x = std::find_if(d.network.connectors.begin(), d.network.connectors.end(), [&](const auto& y) { return y.id == connector; });
-        return Turn{link(d, x->from.linkId).roadId.value(), link(d, x->to.linkId).roadId.value()};
+        return Turn{link(d, x->from.linkId).streetSegmentId.value(), link(d, x->to.linkId).streetSegmentId.value()};
     };
     const auto inNs = [&](const Turn& t) { return std::find(nsTurns.begin(), nsTurns.end(), t) != nsTurns.end(); };
     // A merge is taken over whole, so only crossings follow the stages.
@@ -316,7 +316,7 @@ TEST(nodedetail, rs16_signal_generated) { // RS16, S4.5c
     twoStages(d);
     generateNodeDetail(d, node(d).id, catalogs(d));
     const auto j = documentJson(d);
-    CHECK(j.at("schemaVersion") == 54 && j.at("network").at("signalHeads")[0].at("generated") == true); // forcing
+    CHECK(j.at("schemaVersion") == 59 && j.at("network").at("signalHeads")[0].at("generated") == true); // forcing
     CHECK(j.at("definition").at("signalControllers")[0].at("generated") == true);
     const auto back = parseDocument(j);
     CHECK(back.network.signalHeads == d.network.signalHeads && back.definition->signalControllers == d.definition->signalControllers);
@@ -342,7 +342,7 @@ TEST(nodedetail, rs18_signal_runs) { // RS18, S4.5c
     twoStages(d);
     generateNodeDetail(d, node(d).id, catalogs(d));
     CHECK(d.definition->signalControllers.size() == 1); // forcing: the signal is there
-    for (const auto& r : d.network.roads) {
+    for (const auto& r : d.network.streetSegments) {
         VehicleInput input{"", "", "car", 300, 0, 600};
         input.linkId = r.links[0];
         putInput(d, input);
@@ -354,9 +354,9 @@ TEST(nodedetail, rs18_signal_runs) { // RS18, S4.5c
     CHECK(report.nodes[0].turns.size() == 12 && report.nodes[0].vehicles > 0 && report.nodes[0].issues.empty());
 }
 TEST(nodedetail, rs19_arm_outside) { // RS19 (D382)
-    // A Node narrower than its arms' carriageways: the Roads end inside, their Links pass beside it.
+    // A Node narrower than its arms' carriageways: the StreetSegments end inside, their Links pass beside it.
     const auto d = cross(1.5);
-    CHECK(nodeRoadLegs(d.network, node(d)).size() == 4 && nodeLinkLegs(d.network, node(d)).empty()); // forcing
+    CHECK(nodeStreetSegmentLegs(d.network, node(d)).size() == 4 && nodeLinkLegs(d.network, node(d)).empty()); // forcing
     CHECK(refusal(d) == "FILL_NODE_ARM_OUTSIDE");
     CHECK(refusal(cross()).empty()); // the same arms under a Node that holds them still fill
 }

@@ -1,4 +1,5 @@
 #include "network_fields.hpp"
+#include "node_codec.hpp"
 #include <nlohmann/json.hpp>
 
 namespace multra::networkCodec {
@@ -14,6 +15,8 @@ std::vector<Link> readLinks(const Json& network,int version) {
     std::vector<Link> result;
     for(const auto& item:value(network,Object::network,"links")) {
         const auto path="links["+std::to_string(result.size())+"]";
+        if(version<62 && item.is_object() && item.contains("generated"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD","network."+path+".generated"}});
         knownFields(item,Object::link,path,version);
         Link link{value(item,Object::link,"id").get<std::string>(),readGeometry(item,Object::link,version),{}};
         for(const auto& lane:value(item,Object::link,"lanes")) {
@@ -29,6 +32,7 @@ std::vector<Link> readLinks(const Json& network,int version) {
             link.boundaryMarkings.push_back(markingFromName(m.get<std::string>()));
         }
         if(version>=behaviourVersion && item.contains("behaviourType"))link.behaviourTypeId=value(item,Object::link,"behaviourType").get<std::string>();
+        link.generated=generatedFlag(item,"network."+path,version);
         result.push_back(std::move(link));
     }
     return result;

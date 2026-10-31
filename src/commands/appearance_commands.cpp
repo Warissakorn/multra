@@ -53,7 +53,7 @@ void translateObjects(ProjectDocument& d,const std::vector<std::string>& ids,Poi
         for(auto& p:l.geometry){p.x+=offset.x;p.y+=offset.y;}
         moved.insert(l.id);
     }
-    for(const auto& id:moved)detail::detachFromRoad(d,id); // S3.3: moved by hand
+    for(const auto& id:moved)detail::detachFromStreetSegment(d,id); // S3.3: moved by hand
     // A Link or a Connector carries geometry of its own; a selection of neither is a gesture with
     // no meaning rather than a move of zero objects. Say so instead of silently doing nothing.
     bool carries=!moved.empty();
@@ -84,7 +84,7 @@ void rotateObjects(ProjectDocument& d,const std::vector<std::string>& ids,Point 
     const std::set<std::string> rotating(objects.begin(),objects.end());
     for(auto& l:d.network.links)if(rotating.contains(l.id))
         for(auto& p:l.geometry)p=rotatePoint(p,pivot,degrees);
-    for(const auto& id:objects)detail::detachFromRoad(d,id); // S3.3: no-op for anything but a generated Link
+    for(const auto& id:objects)detail::detachFromStreetSegment(d,id); // S3.3: no-op for anything but a generated Link
     for(auto& c:d.network.connectors)if(rotating.contains(c.id))
         for(auto& p:c.geometry)p=rotatePoint(p,pivot,degrees);
     std::vector<std::string> detached;
@@ -112,7 +112,7 @@ std::vector<std::string> duplicateObjects(ProjectDocument& d,const std::vector<s
         const auto old=l.id;l.id=allocateId(d,"link");links[old]=l.id;
         for(auto& lane:l.lanes){const auto oldLane=lane.id;lane.id=allocateId(d,"lane");lanes[oldLane]=lane.id;}
         for(auto& p:l.geometry){p.x+=offset.x;p.y+=offset.y;}
-        l.roadId.reset(); // S3.3: a copy belongs to no Road
+        l.streetSegmentId.reset(); l.generated=false; // A copy is the person's, as for Connectors.
         created.push_back(l.id);d.network.links.push_back(std::move(l));
     }
     for(auto c:source.connectors)if(chosen.contains(c.id) || (links.contains(c.from.linkId) && links.contains(c.to.linkId))) {

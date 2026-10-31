@@ -1,4 +1,5 @@
 #pragma once
+#include "node_analysis_source.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -18,7 +19,7 @@ struct NodeAnalysisApproach {
     std::string link; double grade{};          // %
     std::optional<double> parkingManeuvers{};  // per hour; absent: no parking
     double busesStopping{};                    // per hour
-    std::optional<double> speedLimit{};        // km/h, posted (A2 queues, D373); absent: no queue
+    // The posted speed for A2's queues (D373) is the in-leg Link's `speedLimit` from schema 60 (D390).
     bool operator==(const NodeAnalysisApproach&) const = default;
 };
 struct SaturationFlowSource {
@@ -32,6 +33,7 @@ struct NodeAnalysis {
     std::optional<double> analysisPeriod{}; // h; absent: 0.25
     std::vector<NodeAnalysisApproach> approaches{};
     std::vector<NodeAnalysisTurn> turns{};
+    std::optional<NodeAnalysisModelSource> modelSource{}; // schema 64, A9 Fill from model
     bool operator==(const NodeAnalysis&) const = default;
 };
 }

@@ -30,6 +30,51 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## M13 — A9 implemented; stop for owner review
+
+- **Stop here; do not start another slice.** The owner accepted checkpoints `a6d0a25` and
+  `d663bf5` so far, including shipped demand totals, schema-64 reopen, exact Undo/source
+  clearing and unchanged old outputs. B41 is answered: explicit per-Node session-only manual
+  count window, matching batch evaluation start/end and Node T, labelled manual counts; no
+  stored field. D422 finishes that path and NA24–NA30; A9 now awaits the owner's final review.
+- **If the owner requests changes:** keep them in A9. Read [NODE_ANALYSIS_MODEL](reference/NODE_ANALYSIS_MODEL.md),
+  [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md), NODE_ANALYSIS §4–§6/§12,
+  D383/D418–D422 by anchor, and BATCH/NODES/STUDY_PERIODS for reused evaluation/clock rules.
+  All B40/B41 choices are answered; no further contract question is pending.
+- **Preserve:** current saved/Save-representation capture and exact analytical CLI JSON/CSV;
+  staged explicit model window/HV choices, T=window hours/PHF=1, whole-set preview and one Undo;
+  historical source fields at feature-selected 64 with old-file/version-path handling. Demand
+  edits clear the claim and Undo restores it; site-only edits retain it. Schema 65 is unused.
+- **Manual comparison:** Confirm manual count window… selects one Node and shows its effective
+  T/batch window before Confirm. Validate through the same comparison function; missing,
+  non-finite/reversed/mismatched windows or T refuse. No inference from duration, name matching,
+  History edit, stored confirmation or implicit run. Re-Analyse, batch replacement/cancel,
+  edits/Undo and New/reopen clear confirmations. Node/approach source labels and CSV
+  countsSource distinguish manual counts/model demand; analytical export format stays unchanged.
+- **Verification after any correction:** desktop build/ctest/check, conditional headless, real
+  CLI parity and old-output byte checks; both driving sides/locales, then commit/push the same
+  branch and stop again. Keep Window header ≤500 lines. Windows/high-DPI/manual appearance is
+  [OWNER_SITTING E32](plans/OWNER_SITTING.md), with E31's cleared-approach carry-over fixed.
+- After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. U0
+  still has no answers, so U1/the UTDF writer remains blocked; no M13/M14 milestone gate closes
+  merely from these Linux tests or implementation review.
+
+## M14 — junction slices complete; UTDF awaits U0
+
+- SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
+  [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
+  including natural polygon fitting, ownership, site drafts and corridor/reference guards.
+- **U0 is waiting on the owner** ([OWNER_SITTING I](plans/OWNER_SITTING.md#i--utdf-probe-m14-u0)):
+  [UTDF_PROBE](plans/UTDF_PROBE.md) has the import sheet; `tests/data/utdf/u0-handwritten.csv`
+  is the hand-written file. No answers have arrived. **Do not start U1 or any UTDF writer.**
+  When answers arrive, revise UTDF_EXPORT §3/§6 from them, add the allowed golden file and UT0,
+  and report any effect on compass/NEMA mapping before further signal work.
+- All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
+  is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
+  (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
+- Windows appearance remains OWNER_SITTING E24–E32; Linux tests do not close those items.
+  Watch B29's turn keys, HCM storage and partial-total questions; do not silently settle them.
+
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 
 - Owner selected native object-table CSV export over the schema queue. Packaged Windows
@@ -76,10 +121,10 @@ a planning-level method (otherwise back to the owner).
 ## Road-model review follow-up (D382–D385)
 
 Batches A–D are done (D382–D385). What is left waits on the owner:
-- **On Windows:** OWNER_SITTING E24 (the Roads tab's multi-row *Apply template* and the *Find
+- **On Windows:** OWNER_SITTING E24 (the Street segments tab's multi-row *Apply template* and the *Find
   crossings* warning at 100/150/200 %, Thai and English).
 - **For the owner:** OWNER_SITTING B29 (generated Node size, one turn key across levels, explicit
-  Road directions, partial HCM totals, HCM storage, CountSet).
+  Street segment directions, partial HCM totals, HCM storage, CountSet).
 
 ## Next session — the owner's pick (S5 is complete, D327–D332)
 

@@ -21,7 +21,7 @@ StudyAreaCut studyAreaCut(const Network&, const std::vector<std::string>& nodes)
 // The network holding only the kept set: the Links and Connectors; the heads, waiting lines,
 // conflict areas, priority rules and Stop controls standing on them (a rule or a control only with
 // its area or line); the queue counters and travel-time sections measured on them; the area Nodes.
-// Roads and overpasses go and `roadId` is cleared, since a Road's Links are no longer whole. Ids are
+// StreetSegments and overpasses go and `streetSegmentId` is cleared, since a StreetSegment's Links are no longer whole. Ids are
 // the original ones.
 Network cutNetwork(const Network&, const StudyAreaCut&, const std::vector<std::string>& nodes);
 }

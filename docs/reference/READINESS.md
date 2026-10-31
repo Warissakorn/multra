@@ -31,7 +31,7 @@ not that its results are right.
 | Micro | `runDiagnostics`: draft, runtime and advisory rows; *Recheck* in the Problems tab | `src/model/network/diagnostics.*`, `editor_diagnostics.cpp` |
 | Meso | Refusals only when *Run Meso* fails: `mesoNetwork` then `mesoDemand` issues, by stage | `src/project/meso_input.*`, `meso_run.*` |
 | Macro | Refusals only when *Run Macro* fails, per period: `macroNetwork` then `macroDemand` | `src/project/macro_input.*`, `macro_run.*` |
-| Seams | *Seam checks…* on the Roads tab, by level (D312) | `src/model/demand/seam_checks.*` |
+| Seams | *Seam checks…* on the Street segments tab, by level (D312); J6 adds the same pure junction advisory to the panel at every level (D410) | `src/model/demand/seam_checks.*`, `junction_seams.*` |
 
 So a Meso or Macro study learns what is missing one refusal at a time, by running.
 
@@ -66,9 +66,9 @@ So a Meso or Macro study learns what is missing one refusal at a time, by runnin
 
   | Fill | Clears | Value and source |
   |---|---|---|
-  | **F1** Link type from its Road | `MACRO_LINK_TYPE_MISSING` on a Link with `roadId` | The Road's template `linkType`, so the source is the template's `source` |
-  | **F2** Jam density | `MESO_JAM_DENSITY_MISSING` on a project-owned type | 190 pc/mi/ln = 118.06 pc/km/ln, HCM 7th ed. Exhibit 10-7 (ROADS §8), source written with it |
-  | **F3** Generate a Road's Links | `SEAM_ROAD_NOT_GENERATED` (Micro) | *Apply template* (D305); the Links carry `roadId` |
+  | **F1** Link type from its Street segment | `MACRO_LINK_TYPE_MISSING` on a Link with `streetSegmentId` | The Street segment's template `linkType`, so the source is the template's `source` |
+  | **F2** Jam density | `MESO_JAM_DENSITY_MISSING` on a project-owned type | 190 pc/mi/ln = 118.06 pc/km/ln, HCM 7th ed. Exhibit 10-7 (STREET_SEGMENTS §8), source written with it |
+  | **F3** Generate a Street segment's Links | `SEAM_STREET_SEGMENT_NOT_GENERATED` (Micro) | *Apply template* (D305); the Links carry `streetSegmentId` |
   | **F4** Generate a coarse Node's Micro detail | A coarse Node in a Micro run | One Connector per allowed turn, heads from its stages, conflict areas from major and minor, all `generated` |
 
   - **F1–F3** are small and use values the project already cites.
@@ -137,12 +137,12 @@ Each row first asserts that its forcing worked (AGENTS).
 | Row | Case | Asserts |
 |---|---|---|
 | RS1 | Byte identity | Opening the panel or listing fills changes no byte and no revision |
-| RS2 | Agreement | For each level, on the shipped projects and a Road-only fixture, the panel has a refusal row exactly when the run is refused, with the same codes and paths |
+| RS2 | Agreement | For each level, on the shipped projects and a Street segment-only fixture, the panel has a refusal row exactly when the run is refused, with the same codes and paths |
 | RS3 | Seams in the panel | A lane-count seam shows at Micro as a warning and at Meso as an advisory, as `seamChecks` gives |
 | RS4 | Stale | An edit after *Recheck* marks the panel stale; *Recheck* renews it |
-| RS5 | F1 | A generated Link without a type gets its Road template's type, and Macro's refusal for it goes, in one Undo step; the Link stays attached |
+| RS5 | F1 | A generated Link without a type gets its Street segment template's type, and Macro's refusal for it goes, in one Undo step; the Link stays attached |
 | RS6 | F2 | An owned type without jam density gets 118.06 with the HCM source, and Meso's refusal goes; an installed type is not offered |
-| RS7 | F3 | A Link-less Road gets its Links, and Micro's not-generated row goes |
+| RS7 | F3 | A Link-less Street segment gets its Links, and Micro's not-generated row goes |
 | RS8 | Chosen only | Unticked fills change nothing, and Undo removes every ticked one at once |
 | RS9 | Proposals | A Macro result with v/c 1.2 on a Node's leg proposes that Node; v/c 0.9 does not; a Meso result with spill-back on a leg proposes it; an edit makes both stale |
 | RS10 | No Node | A link end with v/c ≥ 1 and no Node is listed by its end, with *Suggest nodes* offered |
@@ -161,9 +161,9 @@ Each row first asserts that its forcing worked (AGENTS).
   - **Exceptions:** an unreadable catalog is one refusal row named by the exception (for example
     `EDIT_CATALOG_READ`).
   - **Objects:** paths under `network.` resolve to an object id (Links, lanes, Connectors, heads,
-    Roads and Nodes). Links and Connectors are selectable on the canvas.
+    Street segments and Nodes). Links and Connectors are selectable on the canvas.
 - **Agreement (RS2)** is checked against the runs themselves. The fixtures are the shipped projects,
-  a Road-only fixture, a typed two-route OD network with and without PCUs, and four-leg with an
+  a Street segment-only fixture, a typed two-route OD network with and without PCUs, and four-leg with an
   empty Node. Each run is stopped by an observer once past its refusals.
   - **Meso and Macro:** the panel's refusals equal the run's, by code and path.
   - **Micro:** the panel has a refusal exactly when `compileDocument` refuses. Micro's rows carry
@@ -187,8 +187,8 @@ Each row first asserts that its forcing worked (AGENTS).
 
 - **`fillOffers(document, templates)`** and **`applyFills(document, chosen, templates)`**
   (`src/commands/fill_commands.*`). The templates are the resolved cross-sections, the list the
-  Roads tab uses. Offers come in kind order, then in document order, and listing changes nothing.
-  - **F1, a Link's type from its Road:** a Link with `roadId` and no type, whose Road's template
+  Street segments tab uses. Offers come in kind order, then in document order, and listing changes nothing.
+  - **F1, a Link's type from its Street segment:** a Link with `streetSegmentId` and no type, whose Street segment's template
     names a type.
     - The value is that type; the source is "template <id>: <its source>".
     - `setLinkType` keeps the Link attached.
@@ -198,7 +198,7 @@ Each row first asserts that its forcing worked (AGENTS).
     - It is offered only when the value passes `linkTypeIssues`' jam-density rule for that type, so
       a fill never trades one refusal for another.
     - Installed types are never offered.
-  - **F3, a Road's Links:** a Road without Links whose template resolves; *Apply template*.
+  - **F3, a Street segment's Links:** a Street segment without Links whose template resolves; *Apply template*.
   - **Applying:** only the chosen offers are applied, each checked against a fresh listing. An offer
     that no longer applies is `EDIT_FILL_STALE`.
 - **Editor:** *Fill defaults…* sits beside the Problems tab's level selector. It opens a dialog with
@@ -207,7 +207,7 @@ Each row first asserts that its forcing worked (AGENTS).
   - With no offer, a note says so and Confirm is disabled.
 - **Rows:**
   - RS5–RS8 in `tests/fill_defaults_tests.cpp` (`filldefaults`);
-  - the editor part is in `road-ui`: F3 offered for an assigned Link-less Road, nothing changed
+  - the editor part is in `road-ui`: F3 offered for an assigned Link-less Street segment, nothing changed
     while unticked, and the Links generated in one step once ticked.
 - **Mutations caught:**
   - F1 detaching the Link;
@@ -223,8 +223,8 @@ Each row first asserts that its forcing worked (AGENTS).
   - **Hot arcs:**
     - Macro: a `link` arc with capacity and load / capacity ≥ 1.0, `macroJson`'s V/C;
     - Meso: a link with spill-back in at least one slice (`mesoLinkSlices`), counted in slices.
-  - **A Node's leg:** the arc's source names one of the Node's `nodeLinkLegs` or `nodeRoadLegs`,
-    and its station range reaches that leg's crossing from the outside, within `roadEndTolerance`.
+  - **A Node's leg:** the arc's source names one of the Node's `nodeLinkLegs` or `nodeStreetSegmentLegs`,
+    and its station range reaches that leg's crossing from the outside, within `streetSegmentEndTolerance`.
     Macro keeps a detailed Node's Links whole while Meso cuts them at the boundary; the range rule
     serves both, and a piece of the same Link away from the Node is not its leg.
   - **No Node:** a hot arc no Node claims gives one row per end that is a junction (a Macro node
@@ -240,7 +240,7 @@ Each row first asserts that its forcing worked (AGENTS).
     Node: *Suggest nodes* finds junctions with conflicts, so a plain diverge needs a drawn Node.
 - **Rows:**
   - RS9 and RS10 in `tests/node_proposal_tests.cpp` (`nodeproposals`), on a split-and-merge network
-    with a detailed Node, and a coarse Node over two Roads;
+    with a detailed Node, and a coarse Node over two Street segments;
   - the editor part is in `macro-ui`: the rows after *Run Macro*, the no-Node hint, none once a
     Node is drawn (stale), and the Node proposed and selectable after a new run.
 - **Mutations caught:**
@@ -263,8 +263,8 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
 - **It clears** `NODE_NO_TURN` at `nodes[i]`, which Micro reports today for a Node without detail
   whose legs are Links (membership finds legs and no turn).
 - **Offered** for a Node without detail (`nodeHasDetail` false) when all of these hold:
-  - every leg is a Link leg (`nodeLinkLegs`), at least two arms, each arm a Road or a Link without
-    one. A Link-less Road leg is not offered; its row names F3, which comes first;
+  - every leg is a Link leg (`nodeLinkLegs`), at least two arms, each arm a Street segment or a Link without
+    one. A Link-less Street segment leg is not offered; its row names F3, which comes first;
   - control is `priority` or `signalised`. `allWayStop` is not offered: the Micro engine has no
     all-way stop (`FILL_NODE_ALL_WAY_STOP`);
   - at a priority Node of three arms or more, major and minor are determined (`major`, else
@@ -274,16 +274,16 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
 - A Node not offered lists its reason code in the *Fill defaults…* dialog, unticked and disabled,
   so the user learns what to fix. Listing still changes nothing (RS1).
 - **Turns** are the coarse allowed turns: every (in arm, out arm) pair of different arms minus
-  `bannedTurns`, as `compileRoads` takes them. U-turns are never generated.
+  `bannedTurns`, as `compileStreetSegments` takes them. U-turns are never generated.
 
 ### 13.2 Where the legs end (F4-1)
 
-- Today a generated Link runs to its Road's end, near the Node's centre, so the legs overlap inside.
+- Today a generated Link runs to its Street segment's end, near the Node's centre, so the legs overlap inside.
 - **Cut (F4-1a):** each in-leg Link ends where its lane surface first meets another arm's leg
   surface, its stop line in a drawn junction; each out-leg Link starts where its surface last meets
-  one. The opposite Link of the same Road is not another arm. A leg meeting no other arm keeps its
-  end. The cut takes no number.
-- **The cut keeps `roadId`:** the program made the Link and edits it. *Apply template* on a Road
+  one. The opposite Link of the same Street segment is not another arm. A leg meeting no other arm keeps its
+  end. The cut takes no number. T template fills separately extend the stem only in their measuring copy ([JUNCTION_SIGNALS](JUNCTION_SIGNALS.md), D416); ordinary F4 stays unchanged.
+- **The cut keeps `streetSegmentId`:** the program made the Link and edits it. *Apply template* on a Street segment
   ending in a Node with detail cuts its Links the same way, so a re-apply after F4 changes no byte.
 
 ### 13.3 Connectors and lanes (F4-2)
@@ -344,7 +344,7 @@ program and heads". Rule 4 applies: generated detail runs; it is not a calibrate
   controller.
 - **S5 reads it** ("`generated` objects inside the study area count as missing for Micro", export
   marking); F4 only writes it.
-- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears.
+- `settleNodes` refines the Node in the same Command: its `coarse` goes as the detail appears; choosing or detaching a junction template keeps it (D393 review). J2's pocket Connectors use these same `generated`/refine rules ([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272), D391); its geometry fill is J3b, template signals J4, and transition cuts/Connectors/merges J5 (JUNCTION_TEMPLATES §5/§7/§8, D398–D407). J5's fill also enlarges a still-generated Node polygon; a person's polygon keeps the outside refusal (D407). A J3a junction recipe survives refine/derive-back and the two-leg lifecycle (D393); B36/B38 keeps current Node.generated for first template choice and same-template site edits; all junction templates fit generated polygons or offer explicit previewed Fit when false, never restoring true (D412/D417, JUNCTION_TEMPLATES §5).
 
 ### 13.7 Owner choices (answered 2026-10-23, D323: F4-1a to F4-6a)
 
@@ -378,15 +378,15 @@ Each row first asserts that its forcing worked (AGENTS).
 
 | Row | Case | Asserts |
 |---|---|---|
-| RS11 | Offers | A four-arm coarse Node over F3's Links is offered, clearing `NODE_NO_TURN`; a Node with detail, a Link-less Road leg, `allWayStop`, undetermined priority, a cut outside, split stages and a short intergreen are listed with their codes and not applicable |
-| RS12 | Cuts | Each leg ends or starts where its surface meets another arm's; `roadId` kept; *Apply template* again changes no byte |
+| RS11 | Offers | A four-arm coarse Node over F3's Links is offered, clearing `NODE_NO_TURN`; a Node with detail, a Link-less Street segment leg, `allWayStop`, undetermined priority, a cut outside, split stages and a short intergreen are listed with their codes and not applicable |
+| RS12 | Cuts | Each leg ends or starts where its surface meets another arm's; `streetSegmentId` kept; *Apply template* again changes no byte |
 | RS13 | Turns | One Connector per allowed turn, none for a banned turn or a U-turn; a two-lane approach shares by §13.3; `nodeMembership` then gives exactly the coarse turns, with no issue |
 | RS14 | Priority | Minor arms yield with Stop to major through; equal ranks stay automatic; deleting the generated detail derives back the same `major` and `bannedTurns` |
 | RS15 | Signal | The controller's cycle and each group's green follow §13.5; derive back gives the same stages |
 | RS16 | `generated` | Written only when true; editing a Connector clears its flag; schema 54 gated |
 | RS17 | One step | Unticked changes nothing; Undo restores every byte |
 | RS18 | Runs | The four-arm fixture runs at Micro (seed 42) with no refusal, and Node evaluation has a row for every turn |
-| RS19 | Arm outside (D382) | A Node narrower than its arms' carriageways, whose Roads end inside while their Links pass beside it, is `FILL_NODE_ARM_OUTSIDE`; the same arms under a wider Node still fill |
+| RS19 | Arm outside (D382) | A Node narrower than its arms' carriageways, whose Street segments end inside while their Links pass beside it, is `FILL_NODE_ARM_OUTSIDE`; the same arms under a wider Node still fill |
 
 ## 14. S4.5a as implemented (D323)
 
@@ -401,13 +401,13 @@ Each row first asserts that its forcing worked (AGENTS).
     overlap the resolver cannot measure `FILL_NODE_CUT_UNMEASURED`;
   - `nodeTurnConnectors(network, node)` gives §13.3's turns and lane ranges.
 - **The command** (`src/commands/node_detail_commands.*`): `generateNodeDetail` cuts the legs
-  (keeping `roadId`) and adds the Connectors through `addConnectorRange`, so D75's fit narrows a
+  (keeping `streetSegmentId`) and adds the Connectors through `addConnectorRange`, so D75's fit narrows a
   range more than two lanes wider than its out end. `settleNodes` then refines the Node.
   - **The uncut geometry is the template's** (`templateLinks`, extracted from *Apply template*).
-    So a leg is always cut from the same shape, and *Apply template* on a Road ending in a Node that holds a
+    So a leg is always cut from the same shape, and *Apply template* on a Street segment ending in a Node that holds a
     generated Connector cuts its Links there again (`generatedCuts`, taken before the Links change): a re-apply changes no byte (RS12).
 - **Readings taken:**
-  - **Only generated arms in S4.5a.** §13.1 allowed an arm that is a Link without a Road. Its uncut
+  - **Only generated arms in S4.5a.** §13.1 allowed an arm that is a Link without a Street segment. Its uncut
     shape is lost once it is cut, so a re-apply could not reproduce the cut; it is
     `FILL_NODE_ARM_NOT_GENERATED` until a need is shown.
   - **Signalised Nodes** are `FILL_NODE_SIGNALISED` until S4.5c. **Undetermined priority** is not
@@ -423,16 +423,16 @@ Each row first asserts that its forcing worked (AGENTS).
   RS15 and RS18 wait for S4.5b and S4.5c.
 
 - **Amended by S5.2a (D327):** a leg keeps its current end away from the Node. A leg that
-  `splitRoad` had split there is 0.1 m shorter than its template, and rebuilding it from the
+  `splitStreetSegment` had split there is 0.1 m shorter than its template, and rebuilding it from the
   template stranded the split's Connector 0.1 m short of the end (`UNSUPPORTED_CONNECTOR_POSITION`
-  at Run). Found by SA1's corridor, two F4 junctions joined by a split Road.
+  at Run). Found by SA1's corridor, two F4 junctions joined by a split Street segment.
 
 ## 15. S4.5b as implemented (D324)
 
 - **Ranks** (`movementRank`, `node_detail.*`): through is a turn to the other arm of the same class,
   major to major or minor to minor; otherwise the turn's sweep sign makes it a kerb or a far turn.
 - **Major arms:** the Node's `major`, else `majorByRank` over each arm's link type (its first leg
-  Link's, else its Road template's). At three arms or more, F4 is refused:
+  Link's, else its Street segment template's). At three arms or more, F4 is refused:
   - `FILL_NODE_PRIORITY_UNDETERMINED` when neither decides;
   - `FILL_NODE_MAJOR_ARMS` unless exactly two arms are major and there are at most four, the
     two-way stop shape Ch. 20's ranks are written for (a reading taken: §13.1 did not name it).

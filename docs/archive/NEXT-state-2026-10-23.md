@@ -76,14 +76,14 @@ What shipped is in [PROGRESS](../PROGRESS.md), its [archive](../archive/README.m
     before any shipped behaviour carries the keys;
   - **M3.3.3b, the W99 contract** (ROADMAP M3.3 "Next", D177);
   - **the clamps:** the 5 left on M2.6 (pull-out 1, late catch-up 4) and the lane lab's 1;
-  - **S3** ([ROADS](../reference/ROADS.md), D303, D304): the owner chose 1a–5a, 6b, 7a. S3.2 is in:
+  - **S3** ([ROADS](../reference/STREET_SEGMENTS.md), D303, D304): the owner chose 1a–5a, 6b, 7a. S3.2 is in:
     eleven HCM link types and the capacity basis. S3.3 is in (D305): Roads, owned templates,
     `roadId`, *Apply template* and detaching. S3.3b is in (D307): the Road tool (O), the Roads and
     Cross-sections tabs and the detached display. S3.4 is in (D308): *Join opposite Links* and
     *Assign template*. S3.5 is in (D309): *Find crossings*, overpasses, junction splits and
     *Merge nodes*. S3.6a is in (D310): the link-type `rank`, `coarse` on Nodes without detail
     with its checks, and Macro and Meso compiling coarse Nodes and Link-less Roads
-    ([ROADS_IMPLEMENTED](../reference/ROADS_IMPLEMENTED.md) §19). S3.6b is in (D311): the *Coarse
+    ([ROADS_IMPLEMENTED](../reference/STREET_SEGMENTS_IMPLEMENTED.md) §19). S3.6b is in (D311): the *Coarse
     values…* dialog, refine, derive back and the two-leg lifecycle, with detail revised to the
     junction's interior and Link legs compiled (§20).
     S3.7 is in (D312): seam checks on demand, with *Use Link* / *Use Node* (§21). **S3 is complete.**

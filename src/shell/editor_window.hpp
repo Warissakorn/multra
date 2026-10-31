@@ -324,17 +324,17 @@ private:
     // S4.4 (D317): Node proposals from the Macro and Meso results, editor_proposals.cpp.
     QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
     void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
-    // S3.3b (ROADS §16, D307): the Roads and Cross-sections tabs and the Road tool's commit.
-    QTableWidget* roadTable_{}; QComboBox* roadTemplate_{}; std::uint64_t roadRevision_{UINT64_MAX};
+    // S3.3b (STREET_SEGMENTS §16, D307): the StreetSegments and Cross-sections tabs and the StreetSegment tool's commit.
+    QTableWidget* streetSegmentTable_{}; QComboBox* streetSegmentTemplate_{}; std::uint64_t streetSegmentRevision_{UINT64_MAX};
     QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
-    enum class RoadStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
+    enum class StreetSegmentStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
     std::vector<CrossSection> crossSectionRows() const;
-    RoadStatus roadStatus(const Road&, const std::vector<CrossSection>&) const;
-    void buildRoads(); void translateRoads(); void refreshRoads(); void showRoads(); void editRoad(const std::string& id);
+    StreetSegmentStatus streetSegmentStatus(const StreetSegment&, const std::vector<CrossSection>&) const;
+    void buildStreetSegments(); void translateStreetSegments(); void refreshStreetSegments(); void showStreetSegments(); void editStreetSegment(const std::string& id);
     void findCrossingsDialog(); // S3.5 (D309)
     void seamChecksDialog(); // S3.7 (D312): editor_seams.cpp
-    double seamSpeedJump_{20}; // km/h, a display choice kept for the session (ROADS §7)
-    std::string selectedRoad() const; std::vector<std::string> selectedRoadRows() const; std::vector<std::string> selectedLinks() const;
+    double seamSpeedJump_{20}; // km/h, a display choice kept for the session (STREET_SEGMENTS §7)
+    std::string selectedStreetSegment() const; std::vector<std::string> selectedStreetSegmentRows() const; std::vector<std::string> selectedLinks() const;
     void buildCrossSections(); void translateCrossSections(); void refreshCrossSections(); void editCrossSection(const std::string& id);
     std::string selectedCrossSection() const;
     std::string selectedNode() const;
@@ -371,7 +371,7 @@ private:
     std::string selectedMode() const;
     std::vector<std::pair<std::string, QString>> modeChoices() const;
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
-    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
+    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
     void buildLinkTypes(); void translateLinkTypes(); void refreshLinkTypes(); void editLinkType(const std::string& id);
     std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
     // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
@@ -485,8 +485,8 @@ private:
     void translate();
     // The one post-edit path: History, then the run/error/refresh follow-up. Throws on refusal;
     // execute() shows the error instead, automation returns it.
-    bool commitChange(const std::string& name, const std::function<void(ProjectDocument&)>& action);
-    bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& action);
+    bool commitChange(const std::string& name, const std::function<void(ProjectDocument&)>& action, bool generatedCommand = false);
+    bool execute(const std::string& name, const std::function<void(ProjectDocument&)>& action, bool generatedCommand = false);
     std::string lastHeadSignal_; // "c:<controller>#<group>" or "p:<program>" the last head took; the next defaults to it
     void showError(const std::exception& error);
     bool confirmDiscard();

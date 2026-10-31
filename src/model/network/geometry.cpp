@@ -133,6 +133,10 @@ std::vector<Point> linkCentreline(const Link& link,DrivingSide side) {
 double matchedStation(const std::vector<Point>& from,const std::vector<Point>& to,double station) {
     if(from.size()!=to.size() || from.size()<2)throw std::invalid_argument("INVALID_GEOMETRY");
     if(!std::isfinite(station))throw std::invalid_argument("INVALID_GEOMETRY");
+    // Exact ends must stay exact: subtracting all preceding legs, then multiplying/dividing
+    // on the last one can put a terminal conflict one ulp beyond the runtime path length.
+    if(station<=0)return 0;
+    if(station>=polylineLength(from))return polylineLength(to);
     double remaining=std::max(0.,station),matched=0;
     for(std::size_t i=1;i<from.size();++i) {
         const double length=std::hypot(from[i].x-from[i-1].x,from[i].y-from[i-1].y);

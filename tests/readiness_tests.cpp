@@ -8,7 +8,7 @@
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/zone_commands.hpp"
 #include "../src/project/demand_catalog.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include "../src/project/json.hpp"
 #include "../src/project/macro_run.hpp"
 #include "../src/project/meso_run.hpp"
@@ -42,13 +42,13 @@ template <class F> std::optional<std::set<std::pair<std::string, std::string>>> 
     catch (const std::exception& e) { return std::set<std::pair<std::string, std::string>>{{e.what(), ""}}; }
     return std::set<std::pair<std::string, std::string>>{};
 }
-// A Road-only fixture: one Link-less Road with an owned template and a typed, jam-density link type.
-ProjectDocument roadOnly() {
+// A StreetSegment-only fixture: one Link-less StreetSegment with an owned template and a typed, jam-density link type.
+ProjectDocument streetSegmentOnly() {
     ProjectDocument d;
     d.definition = AuthoringDefinition{}; d.definition->externalLinkTypes = false;
     d.definition->linkTypes = {{"arterial", "Arterial", 1000, 10, "bpr", {}, "Test values", JamDensity{150, "Test value"}}};
     putCrossSection(d, {"ns", "ns", 2, 1, 1, 3.5, {}, 0, std::string("arterial"), "Test values"}, {});
-    putRoad(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
+    putStreetSegment(d, {"", "", {{0, 0}, {100, 0}}, std::string("ns"), 0, {}, {}});
     return d;
 }
 std::string laneOf(const ProjectDocument& d, const std::string& link) {
@@ -90,7 +90,7 @@ TEST(readiness, rs2_refusal_rows_agree_with_the_runs) { // RS2
     std::vector<std::pair<std::string, ProjectDocument>> projects;
     for (const auto* p : {"four-leg-signalised.traffic.json", "lane-change-lab.traffic.json", "m2.6-study-template.traffic.json", "t-junction-priority.traffic.json"})
         projects.emplace_back(p, shipped(p));
-    projects.emplace_back("road-only", roadOnly());
+    projects.emplace_back("road-only", streetSegmentOnly());
     projects.emplace_back("twin", twin(true));
     projects.emplace_back("twin without PCUs", twin(false));
     // A runnable drawing with an advisory: an empty Node far from the junction (NODE_NO_TURN).
@@ -125,8 +125,8 @@ TEST(readiness, rs2_refusal_rows_agree_with_the_runs) { // RS2
     CHECK(demandStage >= 2 && advisoryOnly >= 1); // forcing: a demand-stage refusal at Meso and Macro, and a runnable Micro advisory
 }
 TEST(readiness, rs3_seams_by_level) { // RS3
-    auto d = roadOnly();
-    applyTemplate(d, d.network.roads[0].id, {});
+    auto d = streetSegmentOnly();
+    applyTemplate(d, d.network.streetSegments[0].id, {});
     auto narrowed = d.definition->crossSections[0]; narrowed.lanesForward = 2; narrowed.lanesBackward = 2;
     putCrossSection(d, narrowed, {});
     const auto has = [](const std::vector<ReadinessRow>& rows, ReadinessSeverity s) {
@@ -137,10 +137,10 @@ TEST(readiness, rs3_seams_by_level) { // RS3
     CHECK(has(readiness(d, data(), ReadinessLevel::meso), ReadinessSeverity::advisory) == 2);
     const auto row = std::find_if(micro.begin(), micro.end(), [](const auto& r) { return r.code == "SEAM_LANE_COUNT"; });
     CHECK(row->objectId == d.network.links[0].id && row->selectId == d.network.links[0].id); // the canvas can select it
-    // A Road without Links shows at Micro only.
-    const auto bare = roadOnly();
+    // A StreetSegment without Links shows at Micro only.
+    const auto bare = streetSegmentOnly();
     const auto notGenerated = [](const std::vector<ReadinessRow>& rows) {
-        return std::any_of(rows.begin(), rows.end(), [](const auto& r) { return r.code == "SEAM_ROAD_NOT_GENERATED"; });
+        return std::any_of(rows.begin(), rows.end(), [](const auto& r) { return r.code == "SEAM_STREET_SEGMENT_NOT_GENERATED"; });
     };
     CHECK(notGenerated(readiness(bare, data(), ReadinessLevel::micro)) && !notGenerated(readiness(bare, data(), ReadinessLevel::meso)));
 }

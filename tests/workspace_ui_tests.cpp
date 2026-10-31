@@ -43,7 +43,7 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     struct Page {const char* content;const char* label;};
     const Page pages[]={
         {"editorLinkTable","editorLinkTable"},{"editorConnectorTable","editorConnectorTable"},{"editorLinkTypeTable","editorLinkTypeTable"},
-        {"editorRoadTable","editorRoadTable"},{"editorCrossSectionTable","editorCrossSectionTable"}, // S3.3b (D307)
+        {"editorStreetSegmentTable","editorStreetSegmentTable"},{"editorCrossSectionTable","editorCrossSectionTable"}, // S3.3b (D307)
         {"editorSignalTable","editorSignalTable"},{"editorProblemTable","editorProblemTable"},
         {"editorRouteTable","editorRouteTable"},{"editorInputTable","editorInputTable"},
         {"editorProgramTable","editorProgramTable"},{"editorDecisionTable","editorDecisionTable"},
@@ -54,8 +54,8 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
     const Page results[]={{"editorMovementTable","editorResultsTabMovements"},
         {"editorDischargeTable","editorResultsTabDischarge"},{"editorClampTable","editorResultsTabClamps"},
         {"editorLotTable","editorResultsTabLots"},{"editorNodeResultTable","editorResultsTabNodes"},{"editorMacroTable","editorResultsTabMacro"},
-        {"editorMesoTable","editorResultsTabMeso"}}; // M11.4 (D300)
-    require(tabs->count()==22 && inner->count()==7,"Tab inventory changed");
+        {"editorMesoTable","editorResultsTabMeso"},{"editorNodeAnalysisPanel","editorResultsTabNodeAnalysis"}}; // J7/D418
+    require(tabs->count()==22 && inner->count()==8,"Tab inventory changed");
     QList<QWidget*> original,originalInner;
     for(int i=0;i<tabs->count();++i)original<<tabs->widget(i);
     for(int i=0;i<inner->count();++i)originalInner<<inner->widget(i);
@@ -82,7 +82,7 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
         }
     }
     for(const auto& target:{std::pair{9,"editorConflictTable"},std::pair{10,"editorCounterTable"},
-                            std::pair{11,"editorSectionTable"},std::pair{12,"editorZoneTable"},std::pair{13,"editorNodeTable"},std::pair{14,"editorRoadTable"}}) {
+                            std::pair{11,"editorSectionTable"},std::pair{12,"editorZoneTable"},std::pair{13,"editorNodeTable"},std::pair{14,"editorStreetSegmentTable"}}) {
         item<QComboBox>(window,"editorTool")->setCurrentIndex(target.first);settle();
         require(tabs->currentWidget()==test::tabPage(tabs,item<QWidget>(window,target.second)),
                 "Tool navigated to a positional tab");
@@ -144,7 +144,7 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
         {"editorPaletteDemand",{6,7,12}},{"editorPaletteMeasurement",{10,11,13}},{"editorPaletteTools",{3,4}}};
     const char* chords[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z","N","O"};
     const char* names[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect",
-        "editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorRoadTool"};
+        "editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool"};
     std::vector<int> order;for(const auto& g:groups)order.insert(order.end(),g.modes.begin(),g.modes.end());
     auto* language=item<QComboBox>(window,"editorLanguage");QApplication::setActiveWindow(&window);
     int namesWidth=0;

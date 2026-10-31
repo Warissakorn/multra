@@ -31,7 +31,7 @@ candidates that the contract checks against the source before any value enters `
 | **Vehicle type** (changed) | `pcu` + source; **no default** (Macro refuses `MODE_PCU_MISSING`) | — |
 | **Zone** (changed) | kind `internal` / `gate` | — |
 | **Cross-section template** (new, `data/cross-sections/`) | directions, lanes per direction, widths, median, shoulders, `linkType`, source | — |
-| **Road** (new) | centreline + `crossSectionId` + overrides | Macro/Meso: one directed link per direction. Micro: lane Links generated from the template and stored as today |
+| **Street segment** (new) | centreline + `crossSectionId` + overrides | Macro/Meso: one directed link per direction. Micro: lane Links generated from the template and stored as today |
 | **Node** (new; merges M5.1 evaluation nodes) | polygon (absent = derived disc); **only without detail:** turns differing from default, control, major/minor, stage signal | **with detail:** legs, turns, lanes, g/C, conflicts from the Links, Connectors, conflict areas and heads inside the polygon |
 | **Study area** (new) | the Nodes where Micro results are wanted (a Node set, not a polygon: [D326](../decisions/RECORD.md#d326), [STUDY_AREA](../reference/STUDY_AREA.md)) | run-time subarea cut |
 | **CountSet** (new) | one count store, **merged with D142 decision counts** | — |
@@ -56,18 +56,18 @@ and heads. Coarse values are deleted in the same Command; **deleting the detail 
 coarse values from it** in that Command, so nothing is lost and there is one owner.
 
 **Lifecycle.** A dead-end Node stays (zones and gates use it). A two-leg Node with only default
-values and identical cross-sections is merged away, joining the Roads, in the Command that made
+values and identical cross-sections is merged away, joining the Street segments, in the Command that made
 it so. A Node with detail or authored values is never removed automatically; it is reported.
 
-## 4. Road and the cross-section
+## 4. Street segment and the cross-section
 
 - The template is a **creation tool** at first: *Apply template* rewrites both directions in one
   Undo step; a hand-edited Link is detached from its template and shown as such.
 - **Turn pockets and approach widening belong to the Node**, not the cross-section. A
-  cross-section change mid-road is two Roads joined by an uncontrolled Node.
-- *Join opposite Links into a Road* serves Micro-first studies; *Assign template* sets many Roads
+  cross-section change mid-road is two Street segments joined by an uncontrolled Node.
+- *Join opposite Links into a Street segment* serves Micro-first studies; *Assign template* sets many Street segments
   at once (required when no OSM tags exist).
-- **Nodes come from Road crossings on the same level**, each confirmed *junction / overpass*;
+- **Nodes come from Street segment crossings on the same level**, each confirmed *junction / overpass*;
   endpoints snap within a screen tolerance while drawing and a metric tolerance on import;
   splitting at a crossing updates Routes, ZoneConnectors and OD in one Undo; *Merge nodes* serves
   roundabouts. OSM data (online or file) uses OSM topology, never geometric crossings.
@@ -84,7 +84,7 @@ it so. A Node with detail or authored values is never removed automatically; it 
 | Step | Content |
 |---|---|
 | 0 | StudyPeriods, modes/PCU, counts (CSV), study area, control points and EPSG |
-| 1 | Reference image (OSM tiles, or image + world file) → draw Roads or import CSV / GeoJSON / OSM (online or file) / DXF later → Nodes from crossings → assign templates → refine only the Nodes that need it |
+| 1 | Reference image (OSM tiles, or image + world file) → draw Street segments or import CSV / GeoJSON / OSM (online or file) / DXF later → Nodes from crossings → assign templates → refine only the Nodes that need it |
 | 2 | OD per StudyPeriod: typed or imported, trip generation, or **derived from existing inputs and routes**. Expanding the area warns about `gate` zones now inside the network |
 | 3 | Readiness per level, *Fill defaults*, seam checks; `generated` objects inside the study area count as missing for Micro |
 | 4 | Run any level. Boundary flows are **cut at run time** from the latest coarser result, or typed by the user; the result records its document revision and every input result, and becomes *stale* when they change |
@@ -109,7 +109,7 @@ Steps 0 and 2–8 never need the network.
 |---|---|---|
 | Calibration report | GEH < 5 for ≥ 85 % of counts **or** the flow test (±100 veh/h below 700; ±15 % for 700–2,700; ±400 veh/h above 2,700); criteria in `data/` | UK DMRB Vol. 12a as reported by secondary sources; the original wording and its current successor guidance must be read |
 | Saturation flow | Local measurement first — the existing queue-discharge tool (M3.3.1) can measure it and feed a Node override; HCM base 1,900 pc/h/ln as the cited fallback | HCM; local studies range ~1,550–2,000 |
-| Cross-sections | Thai design standards (Department of Highways, Department of Rural Roads) | edition to be named by the owner or an engineer |
+| Cross-sections | Thai design standards (Department of Highways, Department of Rural Street segments) | edition to be named by the owner or an engineer |
 | PCU | One value per vehicle type, cited, **flagged uncertain for motorcycles** (values depend on position in the green; Bangkok data in Powell 2000 report 0 in the first 6 s and ~0.53–0.65 later); tied to R3 | Thai source to be chosen by an expert |
 | Coordinates | WGS 84 / UTM 47N (EPSG:32647) by default, 48N (EPSG:32648) east of 102°E; EPSG stored per project; **every import names its EPSG**, so legacy Indian 1975 data (EPSG:24047/24048) converts instead of landing hundreds of metres off | EPSG registry |
 | Snap tolerance | ~8 px while drawing, 1–2 m on import, both adjustable | to be tested with users |
@@ -131,7 +131,7 @@ Steps 0 and 2–8 never need the network.
 | 1 | Change D145's direction | Yes; recorded as D175, M8 not reopened |
 | 2 | Offline first | Yes |
 | 3 | Node polygon first, merged with M5.1 | Yes |
-| 4 | Road + cross-section templates | Yes; creation tool first |
+| 4 | Street segment + cross-section templates | Yes; creation tool first |
 | 5 | Sources | As §7; the Thai editions remain open (OWNER_SITTING B12) |
 | 6 | Coordinates | As §7 |
 | 7 | Import formats | CSV, then GeoJSON and OSM files; DXF on demand |
@@ -150,7 +150,7 @@ Steps 0 and 2–8 never need the network.
 | S0 | **Node** contract and object (polygon, Micro mapping, coarse values, lifecycle) — merges M5.1's evaluation nodes. Contract written: [NODES](../reference/NODES.md) (D259); S0.1–S0.3 and S0.5 implemented (D261, D263–D265); S0.4 lands with S3 (D272) |
 | S1 | StudyPeriod + mode/PCU (schema change with byte-identical schema-31 saves). Contract written: [STUDY_PERIODS](../reference/STUDY_PERIODS.md) (D266); owner choices answered (D267); S1.1 implemented (D268); S1.2 implemented (D269, D270) |
 | S2 | Macro compiles from a detailed network (M10.1). Contract written: [MACRO_NETWORK](../reference/MACRO_NETWORK.md) (D271); owner choices answered (D272); S2.1–S2.4 implemented (D273–D277) |
-| S3 | Road + templates + Nodes from crossings + seam checks + *Assign template*. Contract written: [ROADS](../reference/ROADS.md) (D303); owner choices answered (D304); S3.2 implemented (D304) |
+| S3 | Street segment + templates + Nodes from crossings + seam checks + *Assign template*. Contract written: [STREET_SEGMENTS](../reference/STREET_SEGMENTS.md) (D303); owner choices answered (D304); S3.2 implemented (D304) |
 | S4 | Readiness panel + *Fill defaults* + Node proposals. Contract written and answered: [READINESS](../reference/READINESS.md) (D313); implemented (D314, D316, D317) |
 | S5 | Micro on part of the network + run-time cut + stale marking (replaces M12's stored cut). Contract written and answered: [STUDY_AREA](../reference/STUDY_AREA.md) (D326) |
 
@@ -166,7 +166,7 @@ ODME as its own milestone after M10.
 
 | D145 text | Replaced by |
 |---|---|
-| Centreline-only Links, refused by Micro (§3.1) | Roads; Micro leaves them out of its run and reports the seams |
+| Centreline-only Links, refused by Micro (§3.1) | Street segments; Micro leaves them out of its run and reports the seams |
 | Node reused from M5.1 as if it existed (§3.1) | S0 builds it |
 | Subarea cut stored with provenance (§3.6, M12) | Study area + run-time cut + stale marking |
 | Matrix period bound to the run's duration (ZONES_AND_PARKING §2.3) | StudyPeriod; each level checks its own run tier |

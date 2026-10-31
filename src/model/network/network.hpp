@@ -1,13 +1,12 @@
 #pragma once
 #include "../../core/types.hpp"
 #include "control.hpp"
-#include "node_analysis.hpp"
+#include "node_values.hpp"
 #include <array>
 #include <map>
 #include <optional>
 
 namespace multra {
-struct Point { double x{}, y{}; bool operator==(const Point&) const = default; };
 enum class MarkingType { solid, dashed, none, doubleLine };
 // The driver's left or right, looking along the direction of travel.
 enum class LaneSide { left, right };
@@ -19,9 +18,8 @@ struct Link {
     std::string id; std::vector<Point> geometry; std::vector<Lane> lanes;
     int level{}; std::string displayType{"default"};
     double laneOffset{}; // Bundle offset from reference geometry, in lane-order coordinates.
-    // Vissim's Name: the author's own label for this object, free text, never a key. Empty is
-    // normal and means the object is referred to by its id alone. Ordered last so that every
-    // existing brace-initialisation of a Link keeps meaning what it says.
+    // Vissim's Name: free text, never a key; empty means the id alone names it. Fields from here on
+    // are appended so every existing brace-initialisation of a Link keeps meaning what it says.
     std::string name;
     // One value per boundary in lane order (N+1), or empty for solid edges/dashed dividers.
     // Shared boundaries are authored once, not independently on the two adjacent lanes.
@@ -29,9 +27,11 @@ struct Link {
     // M3.3.2a, schema 21: a link behaviour type id; absent keeps each type's own behaviour.
     std::optional<std::string> behaviourTypeId{};
     std::optional<std::string> linkTypeId{}; // S2.1 (MACRO_NETWORK §4, D273), schema 50: Macro only
-    // S3.3 (ROADS §3, D305), schema 53: the Road whose template generated this Link; cleared when the
-    // Link is edited by hand (detached).
-    std::optional<std::string> roadId{};
+    // S3.3 (STREET_SEGMENTS §3, D305), schema 53: the StreetSegment whose template generated this Link; cleared on a hand edit.
+    std::optional<std::string> streetSegmentId{};
+    std::optional<double> speedLimit{}; // J1 (D390), schema 60: posted, km/h; never a cap, read by Node analysis only
+    bool generated{}; // J3b, schema 62: template-generated cut/pocket; cleared by a manual edit
+
     bool operator==(const Link&) const = default;
 };
 struct LaneReference {
@@ -129,39 +129,20 @@ struct NetworkSignalHead {
     bool generated{}; // S4.5c (D325), schema 54: F4 drew it; cleared by the first edit of it
     bool operator==(const NetworkSignalHead&) const = default;
 };
-// S3.6a (ROADS §6, D310): coarse values, stored only on a Node without detail. Turns are (in Road,
-// out Road) pairs naming the Node's legs (coarse_nodes.hpp); absent fields are the defaults.
-enum class CoarseControl { priority, signalised, allWayStop };
-struct CoarseStage { double green{}; std::vector<std::pair<std::string, std::string>> turns; bool operator==(const CoarseStage&) const = default; };
-struct CoarseSignal { double cycle{}; std::vector<CoarseStage> stages; bool operator==(const CoarseSignal&) const = default; };
-struct NodeCoarse {
-    std::optional<CoarseControl> control{};  // absent: priority
-    std::vector<std::string> major{};        // empty: by the link-type rank
-    std::vector<std::pair<std::string, std::string>> bannedTurns{};
-    std::optional<CoarseSignal> signal{};    // required when signalised
-    bool operator==(const NodeCoarse&) const = default;
-};
-// S0 (NODES §2): a polygon over a junction. It references nothing; what lies inside is derived.
-// `generated` marks one the program drew, until a person edits it.
-struct Node {
-    std::string id, name; std::vector<Point> polygon; bool generated{};
-    std::optional<NodeCoarse> coarse{}; std::optional<NodeAnalysis> analysis{}; // schema 53 (S3.6a), 58 (M13 A1)
-    bool operator==(const Node&) const = default;
-};
-// S3.3 (ROADS §3, D305): a Road is a centreline with a cross-section template. *Apply template*
-// generates its directed Links (forward first), which stay ordinary Links carrying `roadId`.
-struct RoadOverrides {
+// S3.3 (STREET_SEGMENTS §3, D305): a StreetSegment is a centreline with a cross-section template. *Apply template*
+// generates its directed Links (forward first), which stay ordinary Links carrying `streetSegmentId`.
+struct StreetSegmentOverrides {
     std::optional<int> lanesForward{}, lanesBackward{};
     std::optional<double> laneWidth{}, median{};
-    bool operator==(const RoadOverrides&) const = default;
+    bool operator==(const StreetSegmentOverrides&) const = default;
 };
-struct Road {
+struct StreetSegment {
     std::string id, name; std::vector<Point> centreline;
     std::optional<std::string> crossSectionId{};
     int level{};
-    RoadOverrides overrides{};
+    StreetSegmentOverrides overrides{};
     std::vector<std::string> links{};
-    bool operator==(const Road&) const = default;
+    bool operator==(const StreetSegment&) const = default;
 };
 // DrivingSide lives in core (src/core/lateral_types.hpp) since M3.7 slice 1 (D187).
 struct Network {
@@ -174,8 +155,8 @@ struct Network {
     std::vector<AuthoredQueueCounter> queueCounters; // M3.2.6b, schema 16
     std::vector<TravelTimeSection> travelTimeSections; // M5.4, schema 23
     std::vector<Node> nodes; // S0 (NODES §2, D261), schema 48
-    std::vector<Road> roads; // S3.3 (ROADS §3, D305), schema 53
-    // S3.5 (ROADS §5, D309): Road pairs confirmed as an overpass, each sorted, so Find crossings asks once.
+    std::vector<StreetSegment> streetSegments; // S3.3 (STREET_SEGMENTS §3, D305), schema 53
+    // S3.5 (STREET_SEGMENTS §5, D309): StreetSegment pairs confirmed as an overpass, each sorted, so Find crossings asks once.
     std::vector<std::pair<std::string, std::string>> overpasses;
     bool operator==(const Network&) const = default;
 };
@@ -215,7 +196,8 @@ std::vector<Point> linkCentreline(const Link&, DrivingSide);
 // Polylines derived from one reference share a vertex for vertex correspondence, because
 // offsetGeometry emits one point per input point. A station on one therefore names a
 // cross-section on the other: this is what keeps the mouth of a multi-lane Connector square
-// on a curve, where the outer lane is the longer one. Stations outside `from` are clamped.
+// on a curve, where the outer lane is the longer one. Exact endpoints map exactly to 0 and
+// polylineLength(to); stations outside `from` retain the same endpoint clamping.
 double matchedStation(const std::vector<Point>& from, const std::vector<Point>& to, double station);
 // Directed segment at a station. At a vertex, arriving=true selects the preceding segment;
 // departing selects the following one. Does not average opposite directions into zero.

@@ -1,0 +1,183 @@
+#include "transition_fixture.hpp"
+#include "../src/commands/demand_commands.hpp"
+#include "../src/model/network/polygon.hpp"
+#include "../src/model/network/connector_surface.hpp"
+using namespace multra;
+using namespace transitionTest;
+TEST(transitions,jt10_confirm_requires_explicit_template_and_keeps_site_empty) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        auto d=source(side,false);const auto found=findCrossings(d.network,2);
+        CHECK(found.size()==1&&found[0].transition&&found[0].legs==2);
+        const auto before=bytes(d);History h;h.reset(d);const auto c=catalogs(d);
+        test::throws([&]{h.execute("confirm",[&](auto& x){applyCrossings(x,found,{CrossingChoice::transition},2,c.templates,{},c.junctionTemplates);});},"TRANSITION_TEMPLATE_REQUIRED");
+        CHECK(!h.canUndo()&&bytes(h.document())==before);
+        NodeJunction r;r.templateId="transition-kerb";
+        CHECK(h.execute("confirm",[&](auto& x){applyCrossings(x,found,{CrossingChoice::transition},2,c.templates,{r},c.junctionTemplates);}));
+        CHECK(h.document().network.nodes.size()==1&&node(h.document()).generated&&node(h.document()).junction==r);
+        CHECK(node(h.document()).junction->legs.empty()&&documentSchemaVersion(h.document())==61);
+        const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+    }
+}
+TEST(transitions,jt10_find_crossings_fill_enlarges_generated_polygon_in_one_undo) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right})for(const double taper:{15.,30.,60.})for(const auto* type:{"transition-kerb","transition-far"}) {
+        History h;findAndGenerate(h,side,taper,type);const auto& beforeNode=node(h.document());
+        CHECK(beforeNode.generated&&h.document().network.links.size()==4&&nodeLinkLegs(h.document().network,beforeNode).size()==4);
+        CHECK(!pointInPolygon(beforeNode.polygon,{-taper,0})&&!pointInPolygon(beforeNode.polygon,{taper,0}));
+        const auto polygon=beforeNode.polygon;const auto before=bytes(h.document());
+        const auto out=offers(h.document());CHECK(out.size()==1&&out[0].refusal.empty());CHECK(bytes(h.document())==before);
+        apply(h);const auto& d=h.document();const auto& n=d.network;const auto& grown=node(d);
+        CHECK(grown.generated&&grown.polygon!=polygon&&simplePolygon(grown.polygon));
+        for(const auto p:polygon)CHECK(pointInPolygon(grown.polygon,p));
+        CHECK(n.connectors.size()==6&&nodeLinkLegs(n,grown).size()==4);
+        for(const auto& c:n.connectors) {
+            const auto runs=polygonRuns(c.geometry,grown.polygon);CHECK(runs.size()==1&&runs[0].inside);
+            const auto surface=connectorSurface(n,c);CHECK(!surface.boundaries.empty());
+            for(const auto& rail:surface.boundaries)for(const auto p:rail)CHECK(pointInPolygon(grown.polygon,p));
+            const auto& from=link(d,c.from.linkId);test::near(from.geometry.back().x,from.streetSegmentId==std::optional<std::string>{"west"}?-taper:taper);
+        }
+        const auto layout=approachLayout(n,grown);CHECK(layout.issues.empty()&&layout.approaches.size()==2&&layout.movements.size()==2);
+        const auto enlarged=grown.polygon;const auto after=bytes(d);CHECK(bytes(parseDocument(after))==after);
+        h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+        apply(h);CHECK(node(h.document()).polygon==enlarged&&h.document().network.connectors.size()==6);
+    }
+}
+TEST(transitions,jt10_edited_generated_polygon_refuses_at_polygon_atomically) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;findAndGenerate(h,side,30);
+        CHECK(h.execute("Edit polygon",[&](auto& d){auto value=node(d);value.polygon[0].x-=1;putNode(d,value);}));
+        CHECK(!node(h.document()).generated&&!pointInPolygon(node(h.document()).polygon,{-30,0}));
+        const auto before=bytes(h.document());const auto out=offers(h.document());
+        CHECK(out.size()==1&&issue(out[0].issues,"TRANSITION_TAPER_OUTSIDE","network.nodes[0].polygon"));
+        test::throws([&]{h.execute("Fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"TRANSITION_TAPER_OUTSIDE");
+        CHECK(bytes(h.document())==before);h.undo();CHECK(node(h.document()).generated);
+    }
+}
+TEST(transitions,jt10_generated_polygon_capture_refusal_and_outside_control) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right})for(const double endY:{12.,25.}) {
+        History h;findAndGenerate(h,side,60);
+        History isolated;isolated.reset(h.document());apply(isolated);
+        const auto grown=node(isolated.document()).polygon;
+        const double lateral=side==DrivingSide::left?1.:-1.; // Mirror the side road with the expanded incoming arm.
+        CHECK(h.execute("Side road and F3",[&](auto& d){
+            putStreetSegment(d,{"side","Side",{{-40,112*lateral},{-40,endY*lateral}},std::string("test"),0,{},{}});
+            applyTemplate(d,"side",catalogs(d).templates);
+        },true));
+        const auto sideLinks=h.document().network.streetSegments.back().links;
+        CHECK(sideLinks.size()==2&&node(h.document()).generated);
+        CHECK(nodeStreetSegmentLegs(h.document().network,node(h.document())).size()==2&&nodeLinkLegs(h.document().network,node(h.document())).size()==4);
+        auto prospective=h.document().network;prospective.nodes[0].polygon=grown;
+        const auto captured=nodeLinkLegs(prospective,prospective.nodes[0]);
+        const bool capture=endY==12;
+        CHECK(nodeStreetSegmentLegs(prospective,prospective.nodes[0]).size()==(capture?3u:2u)&&captured.size()==(capture?6u:4u));
+        for(const auto& id:sideLinks)CHECK(std::any_of(captured.begin(),captured.end(),[&](const auto& l){return l.linkId==id;})==capture);
+        h.markSaved();const auto before=bytes(h.document());const auto states=h.states().size();const auto undoName=h.undoName();
+        const auto out=offers(h.document());CHECK(out.size()==1&&bytes(h.document())==before);
+        if(capture) {
+            for(const auto& id:sideLinks)CHECK(issue(out[0].issues,"TRANSITION_POLYGON_CAPTURES",id));
+            test::throws([&]{h.execute("Fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"TRANSITION_POLYGON_CAPTURES");
+            CHECK(bytes(h.document())==before&&h.states().size()==states&&h.undoName()==undoName&&!h.dirty()&&!h.canRedo());
+            h.undo();CHECK(h.document().network.streetSegments.size()==2);h.redo();CHECK(bytes(h.document())==before);
+        } else {
+            CHECK(out[0].refusal.empty());apply(h);
+            CHECK(nodeStreetSegmentLegs(h.document().network,node(h.document())).size()==2&&nodeLinkLegs(h.document().network,node(h.document())).size()==4);
+            for(const auto& c:h.document().network.connectors)for(const auto& id:sideLinks)CHECK(c.from.linkId!=id&&c.to.linkId!=id);
+            const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+        }
+    }
+}
+TEST(transitions,jt10_generated_polygon_keeps_neighbour_overlap_refusal) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;findAndGenerate(h,side,60);
+        History isolated;isolated.reset(h.document());apply(isolated);
+        const std::vector<Point> neighbour{{-42,-2},{-38,-2},{-38,2},{-42,2}};
+        CHECK(!polygonsOverlap(node(h.document()).polygon,neighbour)&&polygonsOverlap(node(isolated.document()).polygon,neighbour));
+        CHECK(h.execute("Neighbour",[&](auto& d){putNode(d,{"","Neighbour",neighbour,false});}));
+        CHECK(h.document().network.nodes.size()==2&&node(h.document()).generated);
+        h.markSaved();const auto before=bytes(h.document());const auto states=h.states().size();
+        test::throws([&]{h.execute("Fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"NODE_OVERLAP");
+        CHECK(bytes(h.document())==before&&h.states().size()==states&&!h.dirty()&&!h.canRedo());
+    }
+}
+TEST(transitions,jt10_generated_polygon_overlap_disables_offer_before_apply) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;findAndGenerate(h,side,60);
+        History isolated;isolated.reset(h.document());apply(isolated);
+        const std::vector<Point> neighbour{{-42,-2},{-38,-2},{-38,2},{-42,2}};
+        CHECK(!polygonsOverlap(node(h.document()).polygon,neighbour)&&polygonsOverlap(node(isolated.document()).polygon,neighbour));
+        std::string neighbourId;
+        CHECK(h.execute("Neighbour",[&](auto& d){neighbourId=putNode(d,{"","Neighbour",neighbour,false});}));
+        CHECK(h.document().network.nodes.size()==2&&!neighbourId.empty()&&node(h.document()).generated);
+        h.markSaved();const auto before=bytes(h.document());const auto states=h.states().size();
+        const auto out=offers(h.document());CHECK(out.size()==1);
+        CHECK(!out[0].refusal.empty());
+        CHECK(std::any_of(out[0].issues.begin(),out[0].issues.end(),[&](const auto& i){return i.code=="NODE_OVERLAP"&&i.path==neighbourId;}));
+        CHECK(bytes(h.document())==before&&h.states().size()==states&&!h.dirty()&&!h.canRedo());
+        auto direct=h.document();
+        test::throws([&]{generateJunction(direct,node(direct).id,catalogs(direct));},"NODE_OVERLAP");
+        CHECK(bytes(direct)==before);
+    }
+}
+TEST(transitions,jt10_missing_short_and_outside_tapers_are_atomic) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right})for(const int change:{0,1,2}) {
+        auto d=ready(side);auto& value=node(d).junction->legs["west"].taper[0];
+        if(change==0)value.reset();
+        if(change==1)value=200;
+        if(change==2)value=70;
+        CHECK(change==0?!value:change==1?*value==200:!pointInPolygon(node(d).polygon,{-*value,0}));
+        const auto before=bytes(d);History h;h.reset(d);const auto out=offers(d);CHECK(out.size()==1);
+        const std::string code=change==0?"JUNCTION_TAPER_MISSING":change==1?"TRANSITION_TAPER_RANGE":"TRANSITION_TAPER_OUTSIDE";
+        CHECK(issue(out[0].issues,code,change==2?"network.nodes[0].polygon":"taper[0]"));
+        test::throws([&]{h.execute("fill",[&](auto& x){generateJunction(x,node(x).id,catalogs(x));},true);},code);
+        CHECK(!h.canUndo()&&bytes(h.document())==before);
+    }
+}
+TEST(transitions,jt10_reapply_refine_and_stationed_head_protection) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;h.reset(ready(side));apply(h);const auto before=bytes(h.document());apply(h);
+        CHECK(h.document().network.connectors.size()==6&&!h.document().network.rightOfWay.conflictAreas.empty());
+        const auto after=bytes(h.document());h.undo();CHECK(bytes(h.document())==before);h.redo();CHECK(bytes(h.document())==after);
+        const auto id=h.document().network.connectors[0].id;
+        CHECK(h.execute("manual",[&](auto& d){editableConnector(d,id).name="Manual";}));
+        CHECK(!h.document().network.connectors[0].generated);
+        const auto manual=bytes(h.document());CHECK(issue(offers(h.document())[0].issues,"JUNCTION_EDITED",id));
+        test::throws([&]{h.execute("fill",[&](auto& d){generateJunction(d,node(d).id,catalogs(d));},true);},"JUNCTION_EDITED");CHECK(bytes(h.document())==manual);
+        auto d=ready(side);const auto& l=d.network.links[0];NetworkSignalHead head;head.lane={l.id,l.lanes[0].id};head.position=190;
+        const auto headId=putSignalHead(d,head);CHECK(d.network.signalHeads.back().position>polylineLength(l.geometry)-30);
+        CHECK(issue(offers(d)[0].issues,"JUNCTION_EDITED",headId));
+    }
+}
+TEST(transitions,jt10_mixed_alignments_and_width_only_transition) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        History h;h.reset(ready(side,"kerb","far"));apply(h);
+        for(const auto& c:h.document().network.connectors) {
+            const auto& from=link(h.document(),c.from.linkId);const auto& to=link(h.document(),c.to.linkId);
+            const auto i=laneIndex(from,c.from.laneId),j=laneIndex(to,c.to.laneId);
+            CHECK(from.streetSegmentId=="west"?j==std::min(i,std::size_t{1}):i==(j==0?0:j-1));
+        }
+        auto d=source(side,false);d.network.streetSegments[0].overrides={};d.network.streetSegments[1].overrides.laneWidth=4;
+        CHECK(d.network.streetSegments[0].overrides!=d.network.streetSegments[1].overrides);
+        const auto found=findCrossings(d.network,2);CHECK(found.size()==1&&found[0].transition);
+    }
+}
+TEST(transitions,jt10_invalid_transition_fields_and_old_junction_floor) {
+    for(const auto& [pointer,value]:std::vector<std::pair<std::string,Json>>{{"/directions/forward/align","left"},{"/directions/backward/align",nullptr},{"/control","priority"},{"/legs",3}}) {
+        auto j=typeJson();j[Json::json_pointer(pointer)]=value;CHECK(j[Json::json_pointer(pointer)]==value&&j!=typeJson());
+        bool caught=false;try{parseJunctionTemplate(j,"t");}catch(const ValidationError& e){caught=true;CHECK(issue(e.issues,"JUNCTION_TEMPLATE_INVALID"));}CHECK(caught);
+    }
+    ProjectDocument d;d.definition.emplace();putJunctionTemplateCatalog(d,{});CHECK(documentSchemaVersion(d)==61);
+    CHECK(bytes(parseDocument(bytes(d)))==bytes(d));
+}
+TEST(transitions,jt10_one_way_and_unused_site_values) {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        auto d=source(side,false);d.definition->crossSections[0].directions=1;d.definition->crossSections[0].lanesBackward=0;
+        for(const auto& r:d.network.streetSegments)applyTemplate(d,r.id,d.definition->crossSections);
+        CHECK(d.network.links.size()==2);
+        putJunctionTemplateCatalog(d,{parseJunctionTemplate(typeJson(),"t")});
+        putNode(d,{"","",{{-60,-50},{60,-50},{60,50},{-60,50}},true});
+        NodeJunction r;r.templateId="transition-test";r.legs["west"].taper={30};setNodeJunction(d,node(d).id,r);
+        History h;h.reset(d);apply(h);CHECK(h.document().network.connectors.size()==3);
+        r.legs["east"].taper={40};setNodeJunction(d,node(d).id,r);
+        CHECK(node(d).junction->legs.at("east").taper.size()==1&&nodeLinkLegs(d.network,node(d)).size()==2);
+        CHECK(issue(offers(d)[0].issues,"JUNCTION_SITE_COUNT","east.taper"));
+    }
+}

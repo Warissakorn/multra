@@ -126,7 +126,7 @@ void EditorWindow::refreshMeso() {
     if (meso_->running && meso_->steps) lines << text("editorMesoProgress").arg(meso_->step).arg(meso_->steps);
     if (r) {
         const auto j = mesoJson(*r);
-        if (!r->odPathRule.empty()) lines << text("editorMesoRoadOdPaths");
+        if (!r->odPathRule.empty()) lines << text("editorMesoStreetSegmentOdPaths");
         lines << text("editorMesoSummary").arg(r->duration, 0, 'f', 0).arg(r->settings.step, 0, 'g', 3)
                      .arg(j["totals"]["vht"].get<double>(), 0, 'f', 1).arg(j["totals"]["delay"].get<double>(), 0, 'f', 1);
     }

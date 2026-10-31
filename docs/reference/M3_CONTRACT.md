@@ -11,6 +11,8 @@ whole drawing, lane-changing or Vissim-fidelity claim follows from these types.
 All runtime distances are metres, times seconds, speeds m/s. Positions measure vehicle
 front bumpers; rear position is front distance minus vehicle length. Values must be finite.
 Numeric tolerances are named numerical constants, never concealed calibration parameters.
+Station conversion maps exact polyline endpoints exactly to the selected path endpoints
+(D415); terminal conflicts must not extend one rounding unit past the runtime path length.
 
 Authored controls belong to the project network. Runtime segments, route incidence,
 occupancy and reservations are derived and are never persisted as editable network data.

@@ -23,7 +23,7 @@ passes.
 - **Out:**
   - trip generation, distribution, mode choice (M10.2–M10.4);
   - skims, select-link and canvas volume bands (M10.5);
-  - Roads, cross-section templates and centreline-only Links (S3);
+  - Street segments, cross-section templates and centreline-only Links (S3);
   - Node delay in Macro (D175 answer 10);
   - Meso (M11).
 
@@ -126,7 +126,7 @@ passes.
   **the capacity the VDF uses**, and its `source` must say which capacity it is.
   - The primary 1964 text has not been read. It is to be checked before any value enters `data/`.
 - **Shipped:** no type (choice 2a), as with PCU (D267). The editor offers project-owned types.
-  **Amended by S3.2 (D304, [ROADS](ROADS.md) §8):** `data/link-types/` ships eleven HCM 7 types
+  **Amended by S3.2 (D304, [STREET_SEGMENTS](STREET_SEGMENTS.md) §8):** `data/link-types/` ships eleven HCM 7 types
   (freeway and multilane, Exhibit 12-4), each with `capacityBasis` `ultimate`. A type or VDF may
   carry `capacityBasis` (`practical` or `ultimate`, empty = practical). Macro refuses a Link whose
   type and VDF differ, as `MACRO_CAPACITY_BASIS_MISMATCH` at its `linkType`, so the HCM types need
@@ -135,7 +135,7 @@ passes.
 ## 5. VDF data
 
 ```json
-{ "id": "bpr", "form": "bpr", "alpha": 0.15, "beta": 4, "source": "Bureau of Public Roads, Traffic Assignment Manual (1964)" }
+{ "id": "bpr", "form": "bpr", "alpha": 0.15, "beta": 4, "source": "Bureau of Public Street segments, Traffic Assignment Manual (1964)" }
 ```
 
 - **Shipped:** `data/vdf/bpr.json`, D158's choice, with `capacityBasis` `practical` (S3.2, D304).
@@ -245,11 +245,11 @@ passes.
   against M10.1's first reader.
 - **What M10.1 actually reads.** It compiles a Node's interior from its Micro detail (§3). A Node
   without detail (no internal Link or Connector) joins nothing in this graph, because Links join
-  only through Connectors. Nodes without detail first arise from Roads (S3).
+  only through Connectors. Nodes without detail first arise from Street segments (S3).
 - **Answered (D272, 6a):** S0.4 moves to S3, so no field is stored before its reader. This amends
   D260's answer 5a ("with S2").
-- **Implemented (D310, S3.6a):** a Node without detail and the Link-less Roads ending in it compile
-  as Road pieces joined by one `connector` arc per allowed turn ([ROADS_IMPLEMENTED](ROADS_IMPLEMENTED.md) §19).
+- **Implemented (D310, S3.6a):** a Node without detail and the Link-less Street segments ending in it compile
+  as Street segment pieces joined by one `connector` arc per allowed turn ([STREET_SEGMENTS_IMPLEMENTED](STREET_SEGMENTS_IMPLEMENTED.md) §19).
 
 ## 11. Benchmark (choice 7)
 
@@ -358,7 +358,7 @@ Each row first asserts that its forcing worked (AGENTS).
 - **M10.2–M10.5** read the same graph and demand: generation and distribution fill matrices,
   mode choice splits them, skims come from §7's shortest paths.
 - **S3:**
-  - Roads give Nodes without detail, and S0.4 lands with them (choice 6a);
+  - Street segments give Nodes without detail, and S0.4 lands with them (choice 6a);
   - the `linkType` hierarchy gives a coarse Node's priority (NODES §5).
 - **S5:** the run-time cut reads §9's link flows.
 - **M6:** gains the Macro benchmark kind (D145 design §3.7).

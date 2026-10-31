@@ -1,6 +1,6 @@
 #pragma once
 // S0 (NODES §2, D259-D261): what an authored Node means. Its legs, turns and control are derived
-// from the network inside its polygon (NODES §3, slice S0.2); nothing here references other objects.
+// from the network inside its polygon (NODES §3, slice S0.2). Optional inputs are separate from membership.
 #include "right_of_way.hpp"
 
 namespace multra {

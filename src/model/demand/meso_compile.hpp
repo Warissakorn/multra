@@ -22,9 +22,9 @@ namespace multra {
 // Advised (D297): MESO_PRIORITY_IGNORED at `network.nodes[i]` for a valid Node with conflicts, since the
 // node model has no node supply constraints for them yet; (D299) MESO_SIGNAL_AMBIGUOUS there for a
 // valid Node with a turn whose heads show two programs, which then stays unsignalised.
-// S3.6a (ROADS §9, D310): a Node without detail is not refused; it and the Link-less Roads compile as
-// compileRoads says (coarse_compile.hpp), after every Link: one MesoLink per piece (`source` = the
-// Road id), one node per join and per free piece end, and the joins' turns. Its refusals and
+// S3.6a (STREET_SEGMENTS §9, D310): a Node without detail is not refused; it and the Link-less StreetSegments compile as
+// compileStreetSegments says (coarse_compile.hpp), after every Link: one MesoLink per piece (`source` = the
+// StreetSegment id), one node per join and per free piece end, and the joins' turns. Its refusals and
 // advisories are added to these.
 // Signals (D299): each Node turn takes the one program its heads show and its g/C from `greenShares`
 // (program id, as headProgramId, to effective green over cycle; mesoGreenShares fills it).

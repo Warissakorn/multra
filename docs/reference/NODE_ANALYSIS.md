@@ -3,7 +3,7 @@
 Contract before code (D145, D370). The owner asked whether MULTRA can analyse a junction the way
 Vistro, Synchro or SIDRA do. This page fixes what that means here: the level, what it reuses, the
 first method, its inputs and outputs, the owner choices, the slices and the acceptance rows.
-**A1 (§10, D372) and A2 (§11, D373, D374) are implemented, with D383's fixes (§13); the rest is not.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
+**A1 (§10, D372), A2 (§11, D373/D374), A3 (D377) and J7's A9 first half (D418) are implemented, with D383's fixes (§13). A9 Fill/provenance and model/manual-window Micro comparison are implemented (D421/D422), awaiting review.** [ROADMAP](../ROADMAP.md) M13 owns status, [NEXT](../NEXT.md) owns
 the queue. Owner choices (§8) were answered on 2026-10-27 with every recommendation (D371).
 
 ## 1. What it is and where it sits
@@ -32,10 +32,10 @@ the queue. Owner choices (§8) were answered on 2026-10-27 with every recommenda
 
 | Need | Already in MULTRA |
 |---|---|
-| Junction object, legs, turns, control type, per-turn g/C | Node, derived from Micro detail (NODES §3); coarse values on a Node without detail: turns, control, major/minor, stage signal (ROADS_IMPLEMENTED §19–20) |
-| Signal timing | Fixed-time programs, heads, groups (M2.7, D359/D360). **Read, never copied** |
+| Junction object, legs, turns, control type, per-turn g/C | Node, derived from Micro detail (NODES §3); coarse values on a Node without detail: turns, control, major/minor, stage signal (STREET_SEGMENTS_IMPLEMENTED §19–20) |
+| Signal timing | Fixed-time programs, heads, groups (M2.7, D359/D360). **Read, never copied**; J4T checks all six protected T movements against entered g/C ([JUNCTION_SIGNALS](JUNCTION_SIGNALS.md), D416), with no method change |
 | Demand by period | Counted volumes and 15-minute intervals (M2.2), compositions and PCU (S1.2), StudyPeriod (S1.1) |
-| Base saturation flow | HCM 7 Exhibit 19-11: 1,900 pc/h/ln, or 1,750 below 250,000 metro population (PDF p. 1430, already cited by [ROADS](ROADS.md) §6) |
+| Base saturation flow | HCM 7 Exhibit 19-11: 1,900 pc/h/ln, or 1,750 below 250,000 metro population (PDF p. 1430, already cited by [STREET_SEGMENTS](STREET_SEGMENTS.md) §6) |
 | Local saturation flow | Micro's queue-discharge measurement (M3.3.1) as an override with provenance ([MULTI_LEVEL_WORKFLOW](../plans/MULTI_LEVEL_WORKFLOW.md) §6) |
 | Results, comparison, export | Results tabs, scenario comparison (M5.8), `csv_format.hpp`, the marker line |
 
@@ -95,7 +95,7 @@ is read, never copied.
   `NODE_ANALYSIS_NEEDS_DETAIL`; stored lane groups for coarse Nodes belong to a later slice.
 - **New on the Node, schema 58 with A1:**
   - **Analysis volumes:**
-    - per turn: hourly volume, PHF and %HV;
+    - per turn: hourly volume and %HV; PHF is per Node in the existing stored model;
     - optionally, per-15-minute rows, the same structure as M2.2 intervals (a later slice).
   - **Approach adjustments:** grade (%), parking manoeuvres per hour, buses stopping per hour; and
     area type (CBD or not) for the Node.
@@ -123,13 +123,13 @@ is read, never copied.
   - the method ("HCM 7 Ch. 19, analytical") and the document revision;
   - every default used, and every refused lane group with its advisory.
 - **Format.** JSON and CSV through the shared formatters, with the not-validated marker line.
-  Results → *Node analysis* table, and the Node's own row. A result is stale when the revision
+  Results → *Node analysis* table, and the Node's own row ([editor/snapshot contract](NODE_ANALYSIS_EDITOR.md)). A result is stale when the revision
   changes (WORKFLOW §5).
 - **No Micro, Meso or Macro output changes.** A project without analysis inputs keeps its bytes.
 
-## 6. Workflow in the editor (target)
+## 6. Workflow in the editor
 
-1. Draw the junction or use a Road-generated Node. A Node with detail derives lanes and turns.
+1. Draw the junction or use a Street segment-generated Node. A Node with detail derives lanes and turns.
 2. Node → **Analysis**: lane groups, adjustments, base saturation flow.
 3. Demand:
    - enter turning counts (15-minute, PHF, %HV);
@@ -154,7 +154,7 @@ is read, never copied.
 | A4 | Two-way stop control (Ch. 20) |
 | A5 | All-way stop (Ch. 21) |
 | A6 | Timing proposal: Webster cycle and splits (TP39), isolated |
-| A7 | Roundabouts (Ch. 22), using merged Nodes (ROADS RD15) |
+| A7 | Roundabouts (Ch. 22), using merged Nodes (STREET_SEGMENTS RD15) |
 | A8 | Actuated control (Ch. 19 Step 8C, Ch. 31); then corridor offsets (Ch. 16/18) as its own contract |
 | A9 | Editor table, *Fill from model*, Micro side-by-side |
 
@@ -253,8 +253,8 @@ Chapter 31 §2's shared-lane procedure, outside A1. A2 reproduces the exhibit wi
   - JSON and CSV carry `validated: false` and the method label.
 - **Rows:** NA1–NA8 in `tests/node_analysis_tests.cpp` (group `nodeanalysis`), plus an end-to-end run
   on the shipped four-leg's pocket turns (`tests/node-analysis-four-leg.traffic.json`, CLI test).
-- **Not in A1:** the editor tab and *Fill from model* (A9), and coarse Nodes (stored lane groups,
-  later). The other slices are in §7.
+- **Later than A1:** J7 implements the editor tab; A9 implements *Fill from model* (D421/D422). Coarse
+  Nodes (stored lane groups) remain later. The other slices are in §7.
 
 ## 11. A2: contract (D373) and as implemented (D374)
 
@@ -329,11 +329,29 @@ images were read on 2026-10-27; pages are the copy's PDF pages.
   copy's PDF text layer closes it with `)`, and that reading is used.
 - **Flow cap:** `q` is capped at the lane group's capacity (PDF p. 3024), so `min(1, X)`.
 - **Inputs:**
-  - **Speed limit:** a new optional `speedLimit` (km/h, finite, > 0) on the approach row, part of
-    schema 58, which is unreleased and in this PR. An approach without one has no queue, and its
-    lane groups are listed under `NODE_ANALYSIS_NO_SPEED`; every other result stays.
+  - **Speed limit:** the in-leg Link's posted `speedLimit` (km/h, J1, D390, schema 60). Schemas
+    58–59 stored it on the approach row; reading such a file moves it to the Link. An in-leg without
+    one has no queue, and its lane groups are listed under `NODE_ANALYSIS_NO_SPEED`; every other
+    result stays.
   - **Storage `L_a`:** the in-leg Link from its start to where the lane group's first turn leaves it
     (its Connector's `from` station, else the Link's end), the stop line. Lanes run the whole Link.
+
+J3b's JT8 checks generated two-way-stop geometry, then adds a manual, test-only split signal
+through existing Commands to inspect every HCM lane group (D397); this is not an HCM two-way-stop
+method (A4). J4's JT9 (D404) checks every preset's drawn green/cycle at the compiled lane groups,
+P3's protected result g/C and Micro seed 42. Existing A3 operation and effective-green rules stay
+unchanged; NEMA checks do not alter HCM or validate the analytical method.
+
+J3a stores compass overrides independently on the Node (schema 61, D394); `approachLayout` reads
+them for labels. HCM inputs and storage still read the drawing as before, never the template recipe.
+
+J2 (D391, D392) adds a separate derived `approachLayout` for junction templates and UTDF
+([JUNCTION_TEMPLATES §6](JUNCTION_TEMPLATES.md#6-the-lane-layout-derived-and-never-stored-d272)).
+It recognizes a pocket's widening Connector and its reference length separately from full-width
+storage, including across an ordinary later split. Its pocket walk stops at a Connector inside
+any Node, even straight through (D391 review). This slice keeps HCM's lane-group, movement,
+storage and refusal derivation unchanged: adoption needs byte parity on NA1–NA23, and B29 (e)'s
+HCM storage choice still waits on the owner.
 
 **Exhibit 19-41** (PDF p. 1570–1571).
 - **Inputs,** from its notes: 0 % HV, PHF 0.92, 12 ft, 0 % grade, pretimed C 90 s, an exclusive
@@ -435,15 +453,20 @@ the others refused; where the all-way control is read from.
 **A6: timing proposal (Webster, TP39), isolated.** Questions: is the proposed cycle and split
 written back as a new program (one Undo step) or only shown; where lost time per phase comes from.
 
-**A7: roundabouts (Ch. 22).** Needs merged Nodes (ROADS RD15). Questions: single-lane and two-lane
+**A7: roundabouts (Ch. 22).** Needs merged Nodes (STREET_SEGMENTS RD15). Questions: single-lane and two-lane
 entries only; how circulating flow is derived from the Node's turns.
 
 **A8: actuated control (Ch. 19 Step 8C, Ch. 31).** Questions: which controller and detector
 inputs are stored, and whether they reuse the Micro signal controller's fields. Corridor offsets
 (Ch. 16/18) stay a contract of their own.
 
-**A9: editor table and *Fill from model*.** Questions: where the table lives in the editor, and
-what provenance a filled volume shows.
+**A9: editor table and *Fill from model*.** J7 implements the first half via the Nodes tab and
+Results → Node analysis; [editor/snapshot contract](NODE_ANALYSIS_EDITOR.md), D418/JT12, approved
+at `fe827c8`. The owner selected its second half on 2026-10-31: [Fill-from-model/Micro contract
+contract and passing NA24–NA30 rows](NODE_ANALYSIS_MODEL.md), B40/B41, D419–D422. Explicit window/HV
+Fill stages a sourced schema-64 replacement in one Undo; completed Micro batches compare Node/approach
+rows with distinct measure labels. Manual counts require per-Node session-only window confirmation
+matching the batch and T (D422); no inference from T or stored manual window.
 
 ## 13. Review fixes (D383)
 

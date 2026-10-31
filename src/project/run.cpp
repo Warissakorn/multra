@@ -42,7 +42,7 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         std::vector<Diagnostic> od;
         for(const auto& issue:odDemandIssues(d,data))od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
         if (std::any_of(od.begin(), od.end(), [](const auto& row) {
-                return row.code == "OD_ROUTE_SEARCH_LIMIT" || row.code == "ZONE_CONNECTOR_ROAD_REQUIRES_LINKS"; }))
+                return row.code == "OD_ROUTE_SEARCH_LIMIT" || row.code == "ZONE_CONNECTOR_STREET_SEGMENT_REQUIRES_LINKS"; }))
             return od; // expansion is deliberately refused; retain the structured cell diagnostic
         for(const auto& gap:odDemandGaps(d))od.push_back({"OD_SKIPPED_DEMAND",gap.path,{},{},DiagnosticSeverity::advisory});
         const auto expanded=withOdDemand(d,matrixModes(d,data));const auto& def=expanded;

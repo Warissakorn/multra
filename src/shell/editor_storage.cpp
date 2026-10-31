@@ -9,7 +9,7 @@
 namespace multra {
 ProjectDocument readEditorDocument(const QString& file) {
     QFile input(file);
-    if(!input.open(QIODevice::ReadOnly) || input.size()>48*1024*1024)throw std::runtime_error("EDIT_FILE_READ");
+    if(!input.open(QIODevice::ReadOnly) || input.size()>static_cast<qint64>(kEditorDocumentByteLimit))throw std::runtime_error("EDIT_FILE_READ");
     const auto bytes=input.readAll();
     ProjectDocument document;
     try {document=parseDocument(Json::parse(bytes.constData(),bytes.constData()+bytes.size()));}
@@ -24,11 +24,22 @@ ProjectDocument readEditorDocument(const QString& file) {
     }
     return document;
 }
-void writeEditorDocument(const QString& file,const Json& value) {
+std::string editorDocumentBytes(const Json& value) {
     const auto bytes=value.dump(2)+"\n";
-    if(bytes.size()>48*1024*1024)throw std::runtime_error("EDIT_FILE_TOO_LARGE");
-    writeEditorBytes(file,bytes,"EDIT_FILE_WRITE");
+    if(bytes.size()>kEditorDocumentByteLimit)throw std::runtime_error("EDIT_FILE_TOO_LARGE");
+    return bytes;
 }
+EditorDocumentSnapshot captureEditorDocument(const ProjectDocument& d,const QString& path) {
+    if(!path.isEmpty()) {
+        QFile f(path);
+        if(f.open(QIODevice::ReadOnly)&&f.size()<=static_cast<qint64>(kEditorDocumentByteLimit)) {
+            const auto bytes=f.readAll().toStdString();
+            try{if(parseDocument(Json::parse(bytes))==d)return {bytes,true};}catch(const std::exception&){}
+        }
+    }
+    return {editorDocumentBytes(documentJson(d)),false};
+}
+void writeEditorDocument(const QString& file,const Json& value) {writeEditorBytes(file,editorDocumentBytes(value),"EDIT_FILE_WRITE");}
 void checkExportDestination(const QString& file,const QStringList& protectedFiles,const char* errorCode) {
     const QFileInfo destination(file);
 #ifdef Q_OS_WIN

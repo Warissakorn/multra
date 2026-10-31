@@ -23,16 +23,16 @@ void pruneStopControls(RightOfWay&);
 void pruneQueueCounters(ProjectDocument&, const std::set<std::string>& links = {}, const std::set<std::string>& connectors = {});
 // True when a control names this Link: reversing it would turn every station around.
 bool controlsNameLink(const Network&, const std::string& link);
-// S3.3 (ROADS §3, D305): a Link edited by hand leaves its Road: roadId cleared, dropped from the
-// Road's links, inside the caller's command.
-void detachFromRoad(ProjectDocument&, const std::string& link);
-// After splitLink cut `link` at `distance` and moved Connector ends: stations at or past the far
-// side of the 0.2 m span move to `downstream` (lane ids through `lanes`), exactly as Connector
+// S3.3 (STREET_SEGMENTS §3, D305): a Link edited by hand leaves its StreetSegment: streetSegmentId cleared, dropped from the
+// StreetSegment's links, inside the caller's command.
+void detachFromStreetSegment(ProjectDocument&, const std::string& link);
+// After splitLink/addTurnPocket cut `link` across [near, far] and moved Connector ends: stations
+// at or past `far` move to `downstream` (lane ids through `lanes`), exactly as Connector
 // ends do; a Connector lane pair whose end moved takes the downstream lane id. Throws
 // EDIT_SPLIT_CONTROL, before changing anything, when a waiting line or a side lies in or across
 // the span -- the first slice rejects rather than guess (M3_CONTRACT.md §1).
-void checkSplitControls(const Network&, const std::string& link, double distance);
-void splitControls(ProjectDocument&, const std::string& link, const std::string& downstream, double distance,
+void checkSplitControls(const Network&, const std::string& link, double near, double far);
+void splitControls(ProjectDocument&, const std::string& link, const std::string& downstream, double far,
                    const std::map<std::string, std::string>& lanes);
 // duplicateObjects: copies each waiting line, area and rule whose every owner was copied, with
 // fresh ids and its references remapped once. A Connector lane pair needs both end Links copied,

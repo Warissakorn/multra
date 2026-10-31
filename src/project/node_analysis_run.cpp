@@ -32,6 +32,7 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         if (!node.analysis) continue;
         const auto& a = *node.analysis;
         AnalysedNode out{node.id, node.name};
+        out.modelSource=a.modelSource;
         // Exhibit 19-11 (PDF p. 1430-1431) defaults for whatever the Node does not state.
         out.analysisPeriod = a.analysisPeriod.value_or(0.25);
         if (!a.analysisPeriod) out.defaults.push_back("analysisPeriod");
@@ -82,6 +83,10 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
                 x.flow += v;
             }
             return byMovement;
+        };
+        const auto postedSpeed = [&](const std::string& in) -> std::optional<double> {
+            const auto l = std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& x) { return x.id == in; });
+            return l == d.network.links.end() ? std::nullopt : l->speedLimit;
         };
         const auto approachOf = [&](const std::string& in) {
             return std::find_if(a.approaches.begin(), a.approaches.end(), [&](const auto& r) { return r.link == in; });
@@ -192,14 +197,13 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
                         row.serviceTime = protectedServiceTime(input, *row.result);
                     }
                     row.los = signalisedLos(row.result->delay, row.result->ratio, pack.bounds);
-                    const auto approach = approachOf(g.inLink);
                     if (g.permitted) {
                         adviseOnce("NODE_ANALYSIS_NO_QUEUE", path + ": " + g.name); // A3: Q1 of these polygons is not derived yet
-                    } else if (approach != a.approaches.end() && approach->speedLimit) {
+                    } else if (const auto speed = postedSpeed(g.inLink)) { // D390: the in-leg Link's
                         constexpr double kMile = 1.609344, kFoot = 0.3048; // km, m: exact
                         const auto& x = *row.result;
                         row.queue = backOfQueue({row.flowRate, input.lanes, x.saturation, g.effectiveGreen, g.cycle, input.arrivalsOnGreen, x.capacity,
-                                                 x.incrementalDelay, accelerationDelay(approachSpeed(*approach->speedLimit / kMile))});
+                                                 x.incrementalDelay, accelerationDelay(approachSpeed(*speed / kMile))});
                         row.storageRatio = storageRatio(row.queue->mean, row.heavyPercent, g.storage / kFoot);
                         row.storageRatio95 = storageRatio(row.queue->percentileQueue, row.heavyPercent, g.storage / kFoot);
                     } else {

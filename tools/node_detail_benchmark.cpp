@@ -3,7 +3,7 @@
 #include "../src/commands/coarse_commands.hpp"
 #include "../src/commands/node_commands.hpp"
 #include "../src/commands/node_detail_commands.hpp"
-#include "../src/commands/road_commands.hpp"
+#include "../src/commands/street_segment_commands.hpp"
 #include <nlohmann/json.hpp>
 #include <chrono>
 #include <fstream>
@@ -21,7 +21,7 @@ ProjectDocument drawing(int count) {
         for (const auto& line : std::vector<std::vector<Point>>{
                  {{x, 100}, {x, 0}}, {{x + 100, 0}, {x, 0}},
                  {{x, -100}, {x, 0}}, {{x - 100, 0}, {x, 0}}}) {
-            const auto id = putRoad(d, {"", "", line, std::string("ns"), 0, {}, {}});
+            const auto id = putStreetSegment(d, {"", "", line, std::string("ns"), 0, {}, {}});
             roads.push_back(id);
             applyTemplate(d, id, d.definition->crossSections);
         }

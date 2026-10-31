@@ -12,7 +12,7 @@ uses those existing codecs and validators.
 
 ## Envelope and presence rules
 
-The reader accepts editor schemas 1–58 (`kLatestSchema` in `document.hpp`). A missing
+The reader accepts editor schemas 1–64 (`kLatestSchema` in `document.hpp`). A missing
 `schemaVersion` selects the separate legacy scenario path, including pre-5 attachments
 and legacy signal/amber behavior. A formal editor schema must not accidentally accept
 that path as a canonical project.
@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–58 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–64 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -95,12 +95,18 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 50 | Link type assignment or owned link types | `link_type_codec.cpp` |
 | 51 | Macro settings | `macro_settings.cpp` |
 | 52 | Meso settings or owned jam density | `meso_settings.cpp`, `link_type_codec.cpp` |
-| 53 | Roads, roadId, owned cross-sections, overpasses or capacity-basis/rank fields | `road_codec.cpp`, `link_type_codec.cpp` |
+| 53 | Street segments (`roads`), `roadId`, owned cross-sections, overpasses or capacity-basis/rank fields | `street_segment_codec.cpp`, `link_type_codec.cpp` |
 | 54 | Generated flags | `node_codec.cpp`, `parse.cpp`, `definition.cpp` |
 | 55 | Study area with selected Nodes | `study_area_codec.cpp` |
 | 56 | Named Macro run definitions | `macro_run_definition.cpp` |
-| 57 | Road-target zone connectors | `zone_codec.cpp` |
-| 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374) | `node_codec.cpp` |
+| 57 | Street segment-target zone connectors | `zone_codec.cpp` |
+| 58 | Node analysis inputs (M13 A1, D371; an approach's `speedLimit`, km/h, A2, D374, read only below 60) | `node_codec.cpp` |
+| 59 | Road renamed Street segment (D389): `network.streetSegments`, a Link's `streetSegmentId`, a zone connector's `streetSegmentId`/`streetSegmentDirection`; below 59 the same fields are `roads`, `roadId`, `roadDirection`, and each version refuses the other's | `street_segment_codec.cpp`, `zone_codec.cpp`, `network_fields.*` |
+| 60 | Posted speed (J1, D390): a Link's `speedLimit` and an owned cross-section's `speedLimit`, km/h; a 58–59 approach row's `speedLimit` moves to the Link it names, and from 60 the row refuses it | `link_speed_codec.cpp`, `network_fields.*`, `node_codec.cpp` |
+| 61 | Junction catalog ownership, Node recipe and independent compass overrides (J3a, D393–D395) | `junction_template_codec.cpp`, `junction_recipe_codec.cpp`, `node_codec.cpp` |
+| 62 | Link `generated`, written only when true (J3b checkpoint, D398); older files still read, presence before 62 is refused at `network.links[i].generated` | `network_link_codec.cpp`, `network_fields.*`, `document.cpp` |
+| 63 | Owned transition template structure: `kind: transition`, `legs: 2`, and `directions.forward.align` / `directions.backward.align` (J5, D406); presence before 63 is refused at `directions` or `kind` | `junction_template_codec.cpp`, `document.cpp` |
+| 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
 Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
 fraction attachments converted to metre stations on read, pre-8 routes migrate from
@@ -111,9 +117,34 @@ historical-schema coverage.
 
 ## Nested coverage that a formal schema must preserve
 
+J2 (D391) adds no field or schema step: a pocket and taper use ordinary Link/Connector geometry,
+lane counts, `laneBlend`, `laneChangeSide` and `generated`, with their existing feature floors.
+`approachLayout` is derived only. J3b adds the same generated/refine flag to cut and pocket Links
+at 62; false is omitted, invalid values use `EDIT_GENERATED_INVALID` at the flag.
+A fill Command preserves program ownership during re-generation; an ordinary edit clears it.
+J3a uses schema 61 for the fields below (D393–D395):
+
+- `definition.junctionTemplates`: absent resolves installed files; a present array owns the whole
+  catalog, even empty. Every entry is strictly validated; malformed entries name their field
+  under `JUNCTION_TEMPLATE_INVALID`. Duplicate ids name the later entry's `.id`.
+- `network.nodes[i].junction`: required nonblank `templateId`, optional `major` (Street segment
+  ids), `legs` keyed by Street segment id, and `signal`. Each leg optionally holds `storage` and
+  `taper` arrays (finite positive metres or null for an unentered pocket) and a `lanes` role-row
+  override. Signal fields are optional until entered: finite positive `cycle` and `green`,
+  nonnegative `yellow` and `allRed`, unique integer phase `number` 1–8. No site defaults. Coarse
+  and junction may coexist before detail (D393 review); choosing/detaching a recipe keeps coarse,
+  and detail refine clears it. Invalid recipe shapes/signs name `EDIT_NODE_INVALID` paths.
+- `network.nodes[i].approachDirections`: map of in-leg Link ids to `N`/`E`/`S`/`W`, independent
+  of a recipe. Keys must name existing Links. Empty is omitted; a bad shape/value is `EDIT_NODE_INVALID` at its path. Splits
+  carry the key downstream, deletion removes it; recipe Street segment keys follow their end.
+- Any of these fields present below 61, even null, is `EDIT_UNSUPPORTED_FIELD` at that field.
+  Only their use raises the save floor; older feature-free file bytes are unchanged. Applicability
+  and missing-site checks are J3b; signal consistency is J4. These nested fields remain codec-owned
+  and are not added to the composed partial JSON Schema's coverage claim.
+
 - Network: Link/Lane/Connector/reference/geometry keys and version-specific defaults in
-  `parse.cpp`; Node/generated keys in `node_codec.cpp`; Roads/overpasses/cross-sections
-  in `road_codec.cpp`. Geometry point and polygon representations differ by object.
+  `parse.cpp`; Node/generated keys in `node_codec.cpp`; Street segments/overpasses/cross-sections
+  in `street_segment_codec.cpp`. Geometry point and polygon representations differ by object.
 - Controls: right-of-way paths/sides, waiting lines, conflict areas, rules, Stop/Yield,
   queue counters and travel-time sections in `parse.cpp`; signal controller/group/program
   shapes in `model/demand/signal_control.cpp` and `definition.cpp`.
@@ -122,8 +153,8 @@ historical-schema coverage.
   from a present empty override. Owned behaviours need explicit model tags from 21;
   prototype and W74 parameter sets are distinct.
 - Zones: exact row shapes; an OD matrix takes periodId **or** startTime/endTime, and
-  modeId **or** compositionId. A zone connector takes linkId **or** roadId/roadDirection;
-  Road targets require 57. See [ZONES_AND_PARKING](ZONES_AND_PARKING.md) and
+  modeId **or** compositionId. A zone connector takes linkId **or** streetSegmentId/streetSegmentDirection (roadId/roadDirection below 59);
+  Street segment targets require 57. See [ZONES_AND_PARKING](ZONES_AND_PARKING.md) and
   [STUDY_PERIODS](STUDY_PERIODS.md).
 - Settings: exact map/reference keys and UTM agreement, Macro/Meso settings and numeric
   bounds, named Macro definitions and their settings, study-area nodes/flow source/gate
@@ -182,7 +213,7 @@ with Network, Link, Lane and Link geometry-point metadata from `network_fields`.
 now also includes the Connector/reference extension below; complete remains false and
 desktop observed schema discovery is unchanged.
 
-The generated schema chooses rules from the document's root `schemaVersion` (1–58).
+The generated schema chooses rules from the document's root `schemaVersion` (1–64).
 Identical structures share `$defs`, and identical network profiles share conditional version
 groups. Reference names are implementation details; consumers follow `$ref`. The same
 metadata drives native known-key checks and Link/Lane field reads. Link decoding has its
@@ -193,10 +224,10 @@ Covered structure:
 - Network requires id, drivingSide (left/right), links, connectors and signalHeads. Links
   have typed items; Connector items use the extension below, while signal-head items use the extension below.
   Other known Network properties are allowed at their existing versions, with their contents
-  unchecked. Roads/overpasses retain the document's pre-53 refusal even on legacy versions.
+  unchecked. Street segments/overpasses retain the document's pre-53 refusal even on legacy versions.
 - Links require id, geometry and lanes. Geometry uses object points with required numeric x/y;
   lanes have required string id and numeric width. Optional level, displayType, laneOffset,
-  name, boundaryMarkings and versioned behaviourType/linkType/roadId get their read shapes.
+  name, boundaryMarkings and versioned behaviourType/linkType/streetSegmentId (roadId below 59)/speedLimit (from 60) get their read shapes.
 - Level is an integer token within [-1000,1000]; `x-multra-nativeType` records the native-token
   restriction. Marking names come from the existing model formatter. Model defaults supply
   schema default annotations, which do not fill or mutate input documents.
@@ -205,13 +236,13 @@ Covered structure:
   Network/Link/Lane/points; from 7 their known-key lists are closed.
 - behaviourType is read from 21; earlier legacy unknown-field behavior remains. linkType
   is known by the standalone network reader from 21 but rejected by document prechecks
-  before 50 and read in the existing later stage. roadId stays gated at 53. Those stage
+  before 50 and read in the existing later stage. roadId/streetSegmentId stay gated at 53 and 59, speedLimit at 60. Those stage
   boundaries and diagnostic paths are preserved, rather than normalized by the refactor.
 
 This is structural coverage. Nonblank/unique IDs, positive lane widths, lane counts,
-geometry validity, marking-count relationships and behaviour/type/Road reference resolution
+geometry validity, marking-count relationships and behaviour/type/Street segment reference resolution
 still require model/document validation. The schema can accept a structurally valid empty
-geometry or zero width that the codec refuses. Unmapped Node/control/Road/demand objects
+geometry or zero width that the codec refuses. Unmapped Node/control/Street segment/demand objects
 can likewise pass the partial schema and fail the codec; schema success never establishes
 full authoring validity, run readiness or scientific validation.
 
@@ -431,3 +462,31 @@ The dedicated reader uses shared field metadata. Counted-volume synchronization 
 complete definition decoding, and the writer still omits derived counted intervals. No routing
 or simulation algorithm, catalog ownership, writer version rule, serialized output or desktop
 observed-schema response changes. Catalog row schemas remain separate follow-ups.
+
+J7/D418 edits the existing schema-58 `Node.analysis` fields only. Snapshot provenance and
+analytical Results are session state, not new project fields or a schema step.
+A9 adds only `analysis.modelSource` at 64: closed `kind: micro-demand`, source `revision`,
+`projectSha256`, run-second `start`/`end`, explicit `heavyVehicleTypes` (empty means none),
+`files[{logicalPath,sha256}]`, and optional nonempty `fallbacks`. Hashes are lowercase SHA-256;
+paths/type ids are unique and nonempty, times finite with 0 ≤ start < end. This is historical
+provenance, with no live binding or copied geometry/timing. Demand-row/T/PHF Commands clear an
+unchanged old claim; Undo restores it. Site-only adjustments retain it. Old files do not migrate.
+B41/D422 manual-count windows and row source labels are comparison session state only;
+confirmation changes no project bytes, History or schema (65 remains unused).
+
+J4 (D404) and J4T (D416) add no stored field or schema step. Signals use existing controllers,
+groups, heads and generated flags; T uses P2 + legs=3. Site timing stays on schema-61 recipes.
+Barrier waiting, required phase numbers and NEMA layout/check results are derived, never saved.
+B38/D417 reuses the existing Node polygon/generated fields; explicit Fit is a transient Command,
+not a stored option or schema step. Older false flags remain false, without a migration.
+
+J5 stores no duplicate Node kind or applied layout. A transition using installed catalog data
+keeps its existing recipe/taper fields at 61 (generated Links at 62); only new owned catalog
+structure selects 63. Old junction templates still write their earlier shapes and floors.
+The J5 review (D407) enlarges only a still-generated transition Node's existing polygon during
+Fill, preserving its generated flag; it adds no stored field or schema step.
+J6 (D410/D411) reuses existing recipes/catalogs, generated fields and cross-section overrides.
+Affected-object previews, corridor sets and inferred pocket-prefix associations are never stored.
+J6's catalog form captures the resolved whole catalog: including installed transitions selects
+63; junction-only owned data and Node recipes keep 61. Draft/empty/null/zero shapes are unchanged.
+B36 (D412) changes only when the existing Node.generated is cleared, never introduces a flag reset.

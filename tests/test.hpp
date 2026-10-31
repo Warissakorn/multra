@@ -83,6 +83,20 @@ inline multra::SimState finish(multra::SimState state) {
     while (state.tick < multra::totalTicks(*state.scenario)) state = multra::stepSimulation(state);
     return state;
 }
+// A saved document as a file of an older schema holds it: below 59 the street-segment keys are
+// `roads`, `roadId` and `roadDirection` (D389). Only the version and those keys change.
+inline multra::Json atSchema(multra::Json j, int version) {
+    j["schemaVersion"] = version;
+    if (version >= 59) return j;
+    const auto rename = [](multra::Json& o, const char* from, const char* to) {
+        if (o.is_object() && o.contains(from)) { o[to] = o.at(from); o.erase(from); }
+    };
+    rename(j["network"], "streetSegments", "roads");
+    for (auto& l : j["network"]["links"]) rename(l, "streetSegmentId", "roadId");
+    if (j.contains("zoneConnectors"))
+        for (auto& c : j["zoneConnectors"]) { rename(c, "streetSegmentId", "roadId"); rename(c, "streetSegmentDirection", "roadDirection"); }
+    return j;
+}
 }
 #define CHECK(...) test::require(static_cast<bool>((__VA_ARGS__)), #__VA_ARGS__, __FILE__, __LINE__)
 #define TEST(group, name) static void group##_##name(); \

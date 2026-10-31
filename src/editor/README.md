@@ -20,7 +20,7 @@ and `canvas_connectors.cpp` reads `../commands/connector_commands.hpp` for its p
 
 | File | Holds | Contract |
 |---|---|---|
-| `canvas.*` | `EditorCanvas`: pan, zoom, grid snap, selection, drawing, dragging, points, split picking, measurement and calibration, Connector tools. Split by concern into `canvas_*.cpp`: `input`, `select`, `spatial`, `cache`, `cursors`, `feedback`, `lanes`, `connectors`, `conflicts`, `heads`, `counters`, `sections`, `decisions`, `demand`, `zones`, `roads`, `rotation`, `display`, `map`, `run` (Run vehicles at lane centre + `Vehicle::lateral`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md), [VISSIM_PARITY](../../docs/audits/VISSIM_PARITY.md) |
+| `canvas.*` | `EditorCanvas`: pan, zoom, grid snap, selection, drawing, dragging, points, split picking, measurement and calibration, Connector tools. Split by concern into `canvas_*.cpp`: `input`, `select`, `spatial`, `cache`, `cursors`, `feedback`, `lanes`, `connectors`, `conflicts`, `heads`, `counters`, `sections`, `decisions`, `demand`, `zones`, `streetSegments`, `rotation`, `display`, `map`, `run` (Run vehicles at lane centre + `Vehicle::lateral`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md), [VISSIM_PARITY](../../docs/audits/VISSIM_PARITY.md) |
 | `canvas_style.*` | Canvas colours as functions (built after `QApplication`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `ui_design_tokens.*` | The only place a hex colour literal may appear; read back by `QPalette` role | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `canvas_hud.*` | Screen HUD: scale bar, zoom in px/m, north arrow when the georeference gives one; transparent to the mouse | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |

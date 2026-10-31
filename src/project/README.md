@@ -1,6 +1,6 @@
 # src/project
 
-Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–58), catalogs from
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–64), catalogs from
 `data/`, compilation for each level, and every run's output formats. The document persists
 authoring data and the optional background; no compiled runtime network is saved, and an empty
 draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
@@ -24,13 +24,16 @@ keeps its schema and bytes.
 | `network_fields.*` | Versioned known-key and type metadata shared by the row codecs (`network_link_codec.cpp`, `network_connector_codec.cpp`, `network_signal_head_codec.cpp`, `signal_control_codec.cpp`, `right_of_way_codec.cpp`, `measurement_codec.cpp`, `demand_codec.cpp`, `routing_codec.cpp`); rules below | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `json.*` | Section accessors that fail with a named, translatable code; `parseNetwork`; `output.cpp` writes the run's state and event JSON | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `observed_schema.*` | Bounded structural JSON hints for desktop automation (50,000 values, depth 32); no required fields, ranges or version rules | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
-| `node_codec.*` | `network.nodes` and each Node's `analysis` (approach `speedLimit` included) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
-| `road_codec.*` | `network.roads`, a Link's `roadId`, owned `definition.crossSections` | [ROADS §3, §4](../../docs/reference/ROADS.md) |
-| `zone_codec.*` | The zone layer: zones, zone connectors (with direct Road targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
+| `junction_template_codec.*` | Strict structural loader, installed/owned catalog resolution in filename order, field paths and schema-61/63 guards | [JUNCTION_TEMPLATES §3–§4](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `junction_recipe_codec.*` | Partial Node recipe and independent compass-direction codec, without site defaults | [JUNCTION_TEMPLATES §4](../../docs/reference/JUNCTION_TEMPLATES.md) |
+| `node_codec.*` | `network.nodes` and each Node's `analysis` (an approach `speedLimit` only below 60, D390) | [NODES §2](../../docs/reference/NODES.md), [NODE_ANALYSIS §4](../../docs/reference/NODE_ANALYSIS.md) |
+| `street_segment_codec.*` | `network.streetSegments`, a Link's `streetSegmentId`, owned `definition.crossSections` | [STREET_SEGMENTS §3, §4](../../docs/reference/STREET_SEGMENTS.md) |
+| `zone_codec.*` | The zone layer: zones, zone connectors (with direct Street segment targets), OD matrices, parking lots, and their structural checks | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `study_area_codec.*` | `studyArea` at the root | [STUDY_AREA §3, §5](../../docs/reference/STUDY_AREA.md) |
 | `study_period_codec.*` | `studyPeriods`, `definition.clockStart`, a matrix's `periodId` | [STUDY_PERIODS §3-§5](../../docs/reference/STUDY_PERIODS.md) |
 | `mode_codec.*` | Owned `definition.modes`, a matrix's `modeId`, a vehicle type's `pcu` | [STUDY_PERIODS §5-§7](../../docs/reference/STUDY_PERIODS.md) |
 | `link_type_codec.*` | A Link's `linkType`, owned `definition.linkTypes`, installed `data/link-types/` and `data/vdf/` | [MACRO_NETWORK §4, §5](../../docs/reference/MACRO_NETWORK.md) |
+| `link_speed_codec.*` | A Link's posted `speedLimit` and its schema-60 gates; moves a 58–59 approach row's speed to its Link | [JUNCTION_TEMPLATES §9](../../docs/reference/JUNCTION_TEMPLATES.md) |
 | `macro_settings.*` | `definition.macroSettings` | [MACRO_NETWORK §7](../../docs/reference/MACRO_NETWORK.md) |
 | `macro_run_definition.*` | Saved named Macro run definitions, apart from the latest result | [MACRO_NETWORK §21](../../docs/reference/MACRO_NETWORK.md) |
 | `meso_settings.*` | `definition.mesoSettings` and a link type's `jamDensity` | [MESO_NETWORK §8](../../docs/reference/MESO_NETWORK.md) |
@@ -57,7 +60,7 @@ keeps its schema and bytes.
 | `demand_preview.*` | Expected counts from the same compiled snapshot as Run, without arrivals | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
 | `station_routing.*` | Physical stations to route distances; clips awareness-dependent lateral spans | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
 | `od_demand.*` | `withOdDemand`: OD matrices added as ordinary routes and inputs before compilation; their Run-tier checks | [ZONES_AND_PARKING §3](../../docs/reference/ZONES_AND_PARKING.md) |
-| `meso_road_demand.*` | Meso's compiled-graph OD paths for a matrix with a direct Road target; other matrices keep Micro's paths | [MESO_ROAD_DEMAND](../../docs/reference/MESO_ROAD_DEMAND.md) |
+| `meso_street_segment_demand.*` | Meso's compiled-graph OD paths for a matrix with a direct Street segment target; other matrices keep Micro's paths | [MESO_STREET_SEGMENT_DEMAND](../../docs/reference/MESO_STREET_SEGMENT_DEMAND.md) |
 | `parking_compile.*` | Each authored ParkingLot as the engine's lot, after `compileScenario` | [ZONES_AND_PARKING §4](../../docs/reference/ZONES_AND_PARKING.md) |
 | `display.*` | `loadDisplayCatalog` | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) |
 | `diagnostics.*` | Draft issues, then runtime issues, as rows; never throws | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
@@ -71,6 +74,12 @@ keeps its schema and bytes.
 |---|---|---|
 | `evaluation.*` | The queue-counter definition and `evaluationSpec`; `discharge_json.cpp` writes discharge JSON | [BATCH](../../docs/reference/BATCH.md), [DISCHARGE](../../docs/reference/DISCHARGE.md) |
 | `csv_format.*` | Cell formats every results CSV shares | [BATCH](../../docs/reference/BATCH.md) |
+| `node_analysis_report.*` | Captured-input analytical report shared by CLI/editor, exact manifest bytes and stale/generated export marking | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
+| `node_model_demand.*` | Expected scheduled demand through drawn Node turns from the same compiled Micro inputs, explicit period/HV types and captured-input manifest | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_fill.*` | Stages a sourced whole-set Node analysis replacement with explicit T/PHF, retaining site adjustments | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_source_codec.*` | Closed schema-64 model-demand provenance, feature selection and typed validation | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `node_analysis_comparison.*` | Snapshot/window-checked analytical/Micro values, per-Node manual confirmations, captured id matching and source-labelled CSV | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `build_metadata.*` | Shared engine/build/compiler JSON stamping, preserving CLI output | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `batch_output.*` | Batch JSON and CSV | [BATCH](../../docs/reference/BATCH.md) |
 | `comparison_output.*` | Scenario comparison JSON and CSV | [BATCH §7](../../docs/reference/BATCH.md) |
 | `parallel_seeds.*` | `runSeedsParallel`: the runner's seeds on worker threads; the runner stays thread-free | [BATCH](../../docs/reference/BATCH.md) |
@@ -94,8 +103,8 @@ keeps its schema and bytes.
 ## Codec rules
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
-roadId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–58; shared `$defs`
+streetSegmentId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
+composes envelope/background with these structural rules for schemas 1–64; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

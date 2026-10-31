@@ -20,7 +20,10 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-10-27.md`](PROGRESS-LOG-2026-10-27.md) | D364 to D367 and D369: RoutingDecision schema, object CSV, UI font pin, network PNG export; documentation review fixes; M0 ruling; optimization pass; M13 booked, A1 and A2 (D370, D372–D374) | 10 |
+| [`PROGRESS-LOG-2026-10-30.md`](PROGRESS-LOG-2026-10-30.md) | D405–D411, J5/polygon reviews, T booking and J6 overlap/command checkpoints | 6 |
+| [`PROGRESS-LOG-2026-10-29.md`](PROGRESS-LOG-2026-10-29.md) | D391–D404, junction pockets, catalog/review, J3b fill/review and J4 signals | 9 |
+| [`PROGRESS-LOG-2026-10-28.md`](PROGRESS-LOG-2026-10-28.md) | D381–D390, site circulation/pedestrians, Road/Node-analysis review batches A–D, M14 contracts, Street segment rename, UTDF probe and posted speed | 10 |
+| [`PROGRESS-LOG-2026-10-27.md`](PROGRESS-LOG-2026-10-27.md) | D364 to D367 and D369: RoutingDecision schema, object CSV, UI font pin, network PNG export; documentation review fixes; M0 ruling; optimization pass; M13 booked, A1 and A2 (D370, D372–D374), A3 (D376, D377), purpose amended (D378), Link/Connector/Node review, B27 (D379), D378/D379 review and B28, B28 decided (D380) | 19 |
 | [`PROGRESS-LOG-2026-10-26.md`](PROGRESS-LOG-2026-10-26.md) | D340–D343, Road demand and Node conflict authoring | 4 |
 | [`PROGRESS-LOG-2026-10-25.md`](PROGRESS-LOG-2026-10-25.md) | D339–D334, motorcycle, heavy-vehicle and van appearance | 12 |
 | [`PROGRESS-LOG-2026-10-24.md`](PROGRESS-LOG-2026-10-24.md) | D321–D331, map navigation and S4–S5 | 10 |
@@ -50,6 +53,12 @@ Add newly archived entries to the top of the newest file, or start a new one.
 | [`PROGRESS-M0-backlog-and-questions.md`](PROGRESS-M0-backlog-and-questions.md) | M0 checklist and question register | 1 |
 
 ## Other docs
+
+- [`OWNER_SITTING-B33-B36-2026-10-31.md`](OWNER_SITTING-B33-B36-2026-10-31.md) — whole answered T/transition/J6 contract and ownership choices, archived after approval
+
+- [`OWNER_SITTING-B39-2026-10-31.md`](OWNER_SITTING-B39-2026-10-31.md) — whole answered J7 current-snapshot item, archived after owner approval
+
+- [`OWNER_SITTING-B37-B38-2026-10-31.md`](OWNER_SITTING-B37-B38-2026-10-31.md) — whole answered J4T structure/cuts and polygon-fitting items, archived after owner approval
 
 - [`MIGRATION-D15.md`](MIGRATION-D15.md) — former migration reference, including the original UI mapping and implementation horizon
 - [`AUTHORING_EXTENSIONS-M1.21.md`](AUTHORING_EXTENSIONS-M1.21.md) — former M1.21 reference before the codec/reversal/marking clarification

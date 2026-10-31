@@ -9,7 +9,7 @@ namespace multra {
 // - A hot arc: a Macro `link` arc with capacity and load / capacity >= 1.0 (macroJson's V/C), or a
 //   Meso link with spill-back in at least one slice (mesoLinkSlices).
 // - A hot arc is a leg of a Node when its source names one of the Node's nodeLinkLegs or
-//   nodeRoadLegs and its station range reaches that leg's crossing, within roadEndTolerance, from
+//   nodeStreetSegmentLegs and its station range reaches that leg's crossing, within streetSegmentEndTolerance, from
 //   the outside: Macro keeps a detailed Node's Links whole, Meso cuts them at the boundary.
 // - A hot arc that is a leg of no Node gives a row per end that is a junction (a Macro node with a
 //   Connector arc, a Meso node with turns and no Node), named `<source>@<station>`; boundary ends none.

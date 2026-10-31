@@ -171,8 +171,7 @@ bool controlsNameLink(const Network& n, const std::string& link) {
     for (const auto& s : n.travelTimeSections) named = named || s.start.linkId == link || s.end.linkId == link;
     return named;
 }
-void checkSplitControls(const Network& n, const std::string& link, double distance) {
-    const double near = distance - 0.1, far = distance + 0.1;
+void checkSplitControls(const Network& n, const std::string& link, double near, double far) {
     for (const auto& w : n.rightOfWay.waitingLines)
         if (w.point.path.connectorId.empty() && w.point.path.linkId == link && w.point.station > near && w.point.station < far)
             throw std::invalid_argument("EDIT_SPLIT_CONTROL");
@@ -188,9 +187,8 @@ void checkSplitControls(const Network& n, const std::string& link, double distan
         for (const auto* l : {&s.start, &s.end})
             if (l->linkId == link && l->station > near && l->station < far) throw std::invalid_argument("EDIT_SPLIT_CONTROL");
 }
-void splitControls(ProjectDocument& d, const std::string& link, const std::string& downstream, double distance,
+void splitControls(ProjectDocument& d, const std::string& link, const std::string& downstream, double far,
                    const std::map<std::string, std::string>& lanes) {
-    const double far = distance + 0.1;
     std::map<std::string, const Connector*> connectors;
     for (const auto& c : d.network.connectors) connectors[c.id] = &c;
     eachPath(d.network, [&](ControlPathRef& p, const std::vector<double*>& stations) {

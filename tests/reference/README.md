@@ -18,3 +18,7 @@ These are frozen migration evidence. Do not update them when a native test fails
 Since D159 the engine mixes the seed before its first draw; `reference_tests.cpp` replays these
 fixtures with `SeedStart::raw`, the TypeScript mapping, and the files were not modified.
 See `../../docs/reference/MIGRATION.md` for tolerances and the limits of sampled trajectory checks.
+
+## Other historical references
+
+- [F3/F4 before J3b](j3b/README.md): isolated historical command implementations, not TypeScript fixtures.

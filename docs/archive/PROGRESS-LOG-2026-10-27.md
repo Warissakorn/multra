@@ -2,6 +2,55 @@
 
 Whole session entries moved from [PROGRESS](../PROGRESS.md).
 
+## 2026-10-28 — B28 decided on delegation (D380)
+
+- **Asked:** the owner answered B28 with "ช่วยตัดสินใจ" ("help decide"), after the session said item 1
+  reverses D373.
+- **Decided:** 1a, one posted speed on the Link, the approach speed derived with every stored value
+  migrated; 2a, D378's order rule reworded so a finer level's gate does not close before the coarser
+  one it depends on. PROBLEM §3 and MULTI_LEVEL_MODELLING §7 carry the new wording. Reasons in D380.
+
+## 2026-10-28 — Review of D378/D379: corrections and B28
+
+- **Asked:** `/scrutinize`, then the plan was approved.
+- **Corrected:** D379 said `seam_checks.cpp` compares two speed homes; it compares only adjacent
+  link types' `freeSpeed`. D379 now states `freeSpeed`'s Macro/Meso role and leaves its relation to
+  the posted speed to the 1a contract.
+- **Returned to the owner (B28):** 1a, because it reverses the owner's own D373 answer; and D378's
+  order rule, which the current Meso and Micro work already departs from. PROBLEM §3 names those
+  exceptions; §2 says the Aimsun facts come from search excerpts.
+
+## 2026-10-28 — B27 decided on delegation (D379)
+
+- **Asked:** the owner answered B27 with "ช่วยตัดสินใจ" ("help decide"), as for B19 and B25.
+- **Decided:** 1a one posted speed on the Link, read by every level and M13 (D373's approach field
+  becomes derived); 2a per-lane allowed modes; 3a *Fill from model* for Node turn volumes; 4a only
+  within an HCM 7 planning-level method, read before the contract, else back to the owner. Reasons
+  are in D379. Bookings only: no slice starts until the owner asks.
+
+## 2026-10-27 — Link, Connector and Node reviewed; stale audit rows fixed
+
+- **Asked:** "รีวิว link connector และ node" ("review Link, Connector and Node"), then "ทำ A" ("do A").
+- **Found:** speed stored in three places, no per-lane vehicle restrictions, M13 turn volumes typed
+  by hand, and M13 refusing coarse Nodes. These are put to the owner as OWNER_SITTING B27; nothing
+  is decided here. Gaps already booked (M1.22 geometry, M3.4/M6 lane-change distance, the mouth rule
+  D80) stay where they are.
+- **Changed (docs only):** VISSIM_PARITY's Nodes row no longer says "Absent entirely";
+  CONNECTOR_PARITY_AUDIT §2 is marked as a 2026-09-21 baseline with a 2026-10-27 recheck.
+
+## 2026-10-27 — Purpose amended: Micro, Meso and Macro weighted equally (D378)
+
+- **Asked:** after a review of the purpose, "ต้องการให้น้ำหนัก micro meso Marco เท่ากัน" ("I want
+  Micro, Meso and Macro weighted equally") and "ศึกษาจากโปรแกรม aimsun next ด้วย" ("study from the
+  Aimsun Next program as well"); then, by AskUserQuestion: the study-chain order, M13 as a Node
+  method serving the three levels, and Aimsun as a reference in PROBLEM only.
+- **Changed (docs only):** PROBLEM §1–§8 (two equal user roles, needs per level, the Node method,
+  Aimsun Next's integrated model cited from its public docs, a done sentence per level and the Node,
+  non-goals for `.ang` files and proprietary formulas, a per-level §7, §8 question 2); PRINCIPLES
+  rule 8 (each level's vocabulary); MULTI_LEVEL_MODELLING §7, ROADMAP M8–M12 and M13, NEXT's order,
+  README's lead and OWNER_SITTING B26. No code, gate or done-condition changed.
+- **Open for the owner:** B26, a simultaneous hybrid meso–micro run, and the user-role wording.
+
 ## 2026-10-27 — M13 A3: permitted and protected-permitted far turns (D376, D377)
 
 - **Asked:** "ทำ A3" ("do A3"), with D375's choices.

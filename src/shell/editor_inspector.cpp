@@ -127,7 +127,7 @@ void EditorWindow::buildInspector() {
         auto* b=new QToolButton(body);b->setToolButtonStyle(Qt::ToolButtonTextOnly);b->setDefaultAction(action(key,{},callback));form->addRow(b);
     };
     auto heading=[&](const std::string& key){auto* h=new ReflowLabel(body);h->setObjectName(QString::fromStdString(key));h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};
-    heading("editorRoadProperties");
+    heading("editorStreetSegmentProperties");
     count_=new QSpinBox(body);count_->setRange(1,12);count_->setValue(2);label(form,"editorLaneCount",count_);
     width_=number(0.1,20,3.5);label(form,"editorDefaultWidth",width_);
     widths_=new QLineEdit(body);label(form,"editorLaneWidths",widths_);

@@ -6,6 +6,7 @@
 #include "editor_storage.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
+#include "node_analysis_panel.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/meso_output.hpp"
 #include "../project/batch_output.hpp"
@@ -90,13 +91,18 @@ void EditorWindow::buildResults() {
     nodeResultTable_=resultTable(page,"editorNodeResultTable",10); tab(nodeResultNote_,"editorNodeResultsNote","editorResultsTabNodes")->addWidget(nodeResultTable_,1); // S0.6
     macro_=std::make_unique<MacroPanel>(); buildMacro(bar,tab(macro_->note,"editorMacroNote","editorResultsTabMacro")); // S2.4
     meso_=std::make_unique<MesoPanel>(); buildMeso(bar,tab(meso_->note,"editorMesoNote","editorResultsTabMeso")); // M11.4
+    auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
+        [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);},
+        [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchGeneration_};},
+        [this]{refreshRun();}});
+    resultPages_.emplace("editorResultsTabNodeAnalysis",analysis);resultsTabs_->addTab(analysis,{});
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
         table->horizontalHeader()->setSectionResizeMode(column,QHeaderView::Stretch);
     }
     buildBatch(bar,movementsBox); // M5.6: the N-seed table takes the single run's place
-    connect(resultsTabs_,&QTabWidget::currentChanged,this,[this]{refreshResults();});
+    connect(resultsTabs_,&QTabWidget::currentChanged,this,[this]{refreshResults();refreshRun();});
     addObjectPage(page,"editorResultsTable");
 }
 void EditorWindow::translateResults() {
@@ -106,6 +112,7 @@ void EditorWindow::translateResults() {
                                             text("editorResultsQueueMax")});
     translateBatch();
     for(const auto& [key,page]:resultPages_)resultsTabs_->setTabText(resultsTabs_->indexOf(page),text(key));
+    static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->translate();
     lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
         text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
         text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});
@@ -123,6 +130,7 @@ void EditorWindow::refreshResults() {
     if(!resultsPage_ || !resultsPage_->isVisible())return;
     // Only the inner tab on show is rebuilt; switching tabs refreshes the new one.
     refreshDischarge(); refreshClamps(); refreshLots(); refreshResultNodes();
+    static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->refresh();
     refreshBatch(); // M5.6/M5.8b: a running or finished batch or comparison takes the single run's place
     if(batchShown())return;
     if(!movementTable_->isVisible())return;
@@ -214,6 +222,8 @@ bool EditorWindow::runFinished() const {
     return runState_.scenario && runState_.tick>=totalTicks(*runState_.scenario);
 }
 std::string EditorWindow::resultsCsv() const {
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis"))
+        return static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->csv();
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
         if(const auto* r=macroResult())return markedCsv(macroCsv(*r),exportMarking(history_.document(),{},macroStale())); // S5.5b
         throw std::runtime_error("EDIT_CSV_UNFINISHED");
@@ -233,6 +243,8 @@ std::string EditorWindow::singleRunCsv() const {
     return markedCsv(movementCsv(*report),runMarking_.marking,runMarking_.flows);
 }
 void EditorWindow::exportResults(const QString& file) const {
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis"))
+        checkExportDestination(file,{file_,recoveryFile_},"EDIT_ANALYSIS_EXPORT_PROTECTED");
     writeEditorBytes(file,resultsCsv(),"EDIT_CSV_WRITE");
 }
 void EditorWindow::copyResults() const {

@@ -3,11 +3,11 @@
 #include "study_area_fixture.hpp"
 TEST(studyarea, sa1_byte_identity) { // SA1
     auto c = corridor();
-    CHECK(c.d.zones.studyArea.nodes.empty() && documentJson(c.d)["schemaVersion"] == 54); // forcing: F4's flags make it 54
+    CHECK(c.d.zones.studyArea.nodes.empty() && documentJson(c.d)["schemaVersion"] == 59); // forcing: the fixture's street segments make it 59 (D389)
     CHECK(!documentJson(c.d).contains("studyArea"));
     const auto bytes = saved(c.d);
     CHECK(saved(parseDocument(Json::parse(bytes))) == bytes);
-    auto j = Json::parse(bytes);
+    auto j = test::atSchema(Json::parse(bytes), 54); // the study area came at 55
     j["studyArea"] = {{"nodes", {c.a}}, {"flowSource", "typed"}};
     test::throws([&] { parseDocument(j); }, "EDIT_UNSUPPORTED_FIELD");
     // No study area: compileDocument takes its old path, the whole network.
@@ -21,7 +21,7 @@ TEST(studyarea, sa2_codec) { // SA2
     setStudyAreaNodes(d, {c.a});
     d.zones.studyArea.gateFlows = {{"p", entryGateName("x"), exitGateName("y"), "car-only", "", 120}};
     const auto j = documentJson(d);
-    CHECK(j["schemaVersion"] == 55 && j["studyArea"]["nodes"] == Json::array({c.a}) && j["studyArea"]["flowSource"] == "typed");
+    CHECK(j["schemaVersion"] == 59 && j["studyArea"]["nodes"] == Json::array({c.a}) && j["studyArea"]["flowSource"] == "typed");
     CHECK(j["studyArea"]["gateFlows"][0]["compositionId"] == "car-only" && !j["studyArea"]["gateFlows"][0].contains("modeId"));
     CHECK(parseDocument(j).zones.studyArea == d.zones.studyArea);
     const auto bad = [&](auto edit) { auto x = d; edit(x); return refusal([&] { validateDocument(x); }); };
@@ -78,7 +78,7 @@ TEST(studyarea, sa4_kept_set) { // SA4
     for (const auto& id : road(c.d, c.m2).links) CHECK(!b.contains(id));
     // The cut network keeps only the kept objects, with their right-of-way.
     const auto cutA = cutNetwork(n, a, {c.a});
-    CHECK(cutA.links.size() == a.links.size() && cutA.nodes.size() == 1 && cutA.roads.empty());
+    CHECK(cutA.links.size() == a.links.size() && cutA.nodes.size() == 1 && cutA.streetSegments.empty());
     CHECK(!cutA.rightOfWay.conflictAreas.empty() && cutA.rightOfWay.conflictAreas.size() < n.rightOfWay.conflictAreas.size());
 }
 TEST(studyarea, sa5_typed_run) { // SA5
@@ -90,7 +90,7 @@ TEST(studyarea, sa5_typed_run) { // SA5
     const auto cut = studyAreaCut(d.network, {c.a});
     const auto entries = ids(cut.entryGates);
     // From every entry gate to every exit gate of another arm (no U-turn is drawn): 60 veh/h each.
-    const auto arm = [&](const std::string& id) { return *std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& l) { return l.id == id; })->roadId; };
+    const auto arm = [&](const std::string& id) { return *std::find_if(d.network.links.begin(), d.network.links.end(), [&](const auto& l) { return l.id == id; })->streetSegmentId; };
     for (const auto& in : cut.entryGates) for (const auto& out : cut.exitGates)
         if (arm(in) != arm(out)) d.zones.studyArea.gateFlows.push_back({"p", entryGateName(in), exitGateName(out), "car-only", "", 60});
     std::vector<ValidationIssue> ignored;

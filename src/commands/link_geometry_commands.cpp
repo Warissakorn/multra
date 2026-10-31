@@ -61,7 +61,7 @@ void reverseLink(ProjectDocument& d,const std::string& id) {
     std::reverse(link.lanes.begin(),link.lanes.end());
     std::reverse(link.boundaryMarkings.begin(),link.boundaryMarkings.end());
     link.laneOffset=-link.laneOffset;
-    detail::detachFromRoad(d,id); // S3.3
+    detail::detachFromStreetSegment(d,id); // S3.3
 }
 void changeLinkMarkings(ProjectDocument& d,const std::string& id,const std::vector<MarkingType>& markings) {
     auto& link=editableLink(d,id);

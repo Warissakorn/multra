@@ -1,9 +1,9 @@
 #include "meso_input.hpp"
 #include "demand_catalog.hpp"
 #include "link_type_codec.hpp"
-#include "road_codec.hpp"
+#include "street_segment_codec.hpp"
 #include "meso_settings.hpp"
-#include "meso_road_demand.hpp"
+#include "meso_street_segment_demand.hpp"
 #include "mode_codec.hpp"
 #include "od_demand.hpp"
 #include "demand_paths.hpp"
@@ -22,7 +22,7 @@ MesoCompile mesoNetwork(const ProjectDocument& d, const std::filesystem::path& d
     std::vector<LinkType> types; std::vector<std::string> paths;
     for (const auto& r : resolved) { types.push_back(r.type); paths.push_back(r.path); }
     auto out = compileMesoNetwork(d.network, types, paths, mesoSettingsOf(d), mesoGreenShares(def.signalControllers, def.signalPrograms),
-                                  linkLessRoadTemplates(d, data, manifest));
+                                  linkLessStreetSegmentTemplates(d, data, manifest));
     std::vector<std::string> modeIds;
     for (const auto& m : resolveModes(def, data, manifest)) modeIds.push_back(m.mode.id);
     const auto issues = linkTypeIssues(resolved, &modeIds);
@@ -42,7 +42,7 @@ std::string origin(const std::string& id, const std::vector<std::string>& author
 MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& data, const MesoGraph& graph, InputManifest* manifest) {
     MesoDemand out;
     const bool graphOd = usesMesoGraphOd(d.zones); // D342: per matrix
-    const auto stripped = usesRoadZoneConnectors(d.zones) ? std::optional{withoutGraphOd(d)} : std::nullopt;
+    const auto stripped = usesStreetSegmentZoneConnectors(d.zones) ? std::optional{withoutGraphOd(d)} : std::nullopt;
     const auto& linkOd = stripped ? *stripped : d;
     const auto def = d.definition.value_or(AuthoringDefinition{});
     std::vector<std::string> inputIds, routeIds;
@@ -145,7 +145,7 @@ MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& dat
         out.classes.push_back(std::move(cls));
     }
     if (graphOd) {
-        auto od = mesoRoadOdDemand(d, graph, catalog, modes);
+        auto od = mesoStreetSegmentOdDemand(d, graph, catalog, modes);
         out.issues.insert(out.issues.end(), od.issues.begin(), od.issues.end());
         for (auto& cls : od.classes) {
             const auto at = std::lower_bound(out.classes.begin(), out.classes.end(), cls.id, [](const auto& a, const auto& id) { return a.id < id; });

@@ -88,11 +88,11 @@ std::optional<std::pair<double, double>> odMatrixWindow(const ProjectDocument& d
 bool namesMode(const ZoneLayer& layer) {
     return std::any_of(layer.odMatrices.begin(), layer.odMatrices.end(), [](const auto& m) { return !m.modeId.empty(); });
 }
-std::vector<ValidationIssue> roadZoneConnectorIssues(const ZoneLayer& layer) {
+std::vector<ValidationIssue> streetSegmentZoneConnectorIssues(const ZoneLayer& layer) {
     std::vector<ValidationIssue> issues;
     for (std::size_t i = 0; i < layer.zoneConnectors.size(); ++i)
-        if (!layer.zoneConnectors[i].roadId.empty())
-            issues.push_back({"ZONE_CONNECTOR_ROAD_REQUIRES_LINKS", "zoneConnectors[" + std::to_string(i) + "]"});
+        if (!layer.zoneConnectors[i].streetSegmentId.empty())
+            issues.push_back({"ZONE_CONNECTOR_STREET_SEGMENT_REQUIRES_LINKS", "zoneConnectors[" + std::to_string(i) + "]"});
     return issues;
 }
 std::vector<Mode> matrixModes(const ProjectDocument& d, const std::filesystem::path& data, InputManifest* manifest) {
@@ -107,7 +107,7 @@ std::string compositionOf(const OdMatrix& m, const std::vector<Mode>& modes) {
 }
 }
 AuthoringDefinition withOdDemand(const ProjectDocument& d, const std::vector<Mode>& modes) {
-    if (auto issues = roadZoneConnectorIssues(d.zones); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = streetSegmentZoneConnectorIssues(d.zones); !issues.empty()) throw ValidationError(std::move(issues));
     auto result = d.definition.value_or(AuthoringDefinition{});
     if (d.zones.empty()) return result;
     ChainFinder finder(d.network);
@@ -181,7 +181,7 @@ std::vector<OdDemandGap> odDemandGaps(const ProjectDocument& d) {
     return gaps;
 }
 std::vector<ValidationIssue> odDemandIssues(const ProjectDocument& d, const std::filesystem::path& data) {
-    auto issues = roadZoneConnectorIssues(d.zones);
+    auto issues = streetSegmentZoneConnectorIssues(d.zones);
     if (!issues.empty()) return issues;
     if (d.zones.empty()) return issues;
     const auto& layer = d.zones;

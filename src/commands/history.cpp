@@ -2,6 +2,7 @@
 #include "coarse_commands.hpp"
 #include "node_detail_commands.hpp"
 #include "node_commands.hpp"
+#include "node_analysis_commands.hpp"
 #include "conflict_follow.hpp"
 #include "../project/counted_volumes.hpp"
 #include <algorithm>
@@ -34,14 +35,15 @@ void History::reset(ProjectDocument document) {
     document_ = std::move(document); undo_.clear(); redo_.clear(); saved_ = revision(); nextRevision_ = revision() + 1;
     ++generation_;
 }
-bool History::execute(const std::string& name, const std::function<void(ProjectDocument&)>& change) {
+bool History::execute(const std::string& name, const std::function<void(ProjectDocument&)>& change, bool generatedCommand) {
     auto candidate = document_;
     change(candidate);
     followGeometry(candidate, document_.network); // D86: authored areas stay on their overlap
     if (candidate.definition) syncCountedVolumes(*candidate.definition); // D142: counts edited, volume follows
-    settleGenerated(candidate, document_); // S4.5a (D323): an edited generated Connector is the person's
+    if (!generatedCommand) settleGenerated(candidate, document_); // Manual edits refine; fills keep program ownership.
     settleNodes(candidate, document_); // S3.6b (D311): refine, derive back and the lifecycle, in this Command
     settleStudyArea(candidate); // S5.2a (D327): a deleted or merged-away Node leaves the study area
+    settleNodeAnalysisSources(candidate,document_);
     validateDocument(candidate); // Failed commands leave model, history, saved state untouched.
     // Value comparison, not serialisation: documentJson-ing both documents on every edit cost
     // more than the command and its validation together on a large network.

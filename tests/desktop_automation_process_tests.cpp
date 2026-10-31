@@ -91,7 +91,11 @@ int main(int argc, char** argv) {
                 request.insert("expectedRevision", state.value("revision"));
             }
             const auto reply = invoke(control, endpoint, request);
-            require(reply.exit == 0 && reply.value.value("ok").toBool(), "Compiled desktop command failed");
+            if (reply.exit != 0 || !reply.value.value("ok").toBool()) {
+                const auto error = reply.value.value("error").toObject();
+                throw std::runtime_error(("Compiled desktop command failed: " + command + " exit " + QString::number(reply.exit) + " " +
+                                          error.value("code").toString() + " " + error.value("message").toString()).toStdString());
+            }
             require(reply.value.value("id") == id, "Compiled desktop did not echo request ID");
             state = reply.value.value("state").toObject();
             return reply.value;

@@ -1,5 +1,6 @@
 #include "node_analysis_run.hpp"
 #include "csv_format.hpp"
+#include "node_analysis_source_codec.hpp"
 
 namespace multra {
 namespace {
@@ -31,6 +32,7 @@ Json nodeAnalysisJson(const NodeAnalysisRun& r) {
             node["critical"] = {{"ratio", n.critical->ratio}, {"flowRatio", n.critical->flowRatio}, {"lostTime", n.critical->lostTime},
                                 {"laneGroups", names}};
         }
+        if(n.modelSource)node["modelSource"]=nodeAnalysisSourceJson(*n.modelSource);
         for (const auto& i : n.advisories) node["advisories"].push_back({{"code", i.code}, {"path", i.path}});
         for (const auto& g : n.groups) {
             Json turns = Json::array();
@@ -96,6 +98,11 @@ std::string nodeAnalysisCsv(const NodeAnalysisRun& r) {
         for (const auto& a : n.approaches)
             out += "approach," + csvQuoted(n.name) + "," + csvQuoted(a.name) + ",,," + csvNumber(a.flow) + ",,,,,,,,," + csvNumber(a.delay) + "," + letter(a.los) + ",,,,,,,,\n";
         out += "node," + csvQuoted(n.name) + "," + csvQuoted(n.name) + ",,," + csvNumber(n.flow) + ",,,,,,,,," + csvNumber(n.delay) + "," + letter(n.los) + ",," + (n.critical ? csvNumber(n.critical->ratio) : std::string()) + ",,,,,,\n";
+    }
+    bool sources=false;for(const auto& n:r.nodes)if(n.modelSource)sources=true;
+    if(sources) {
+        out+="\n# Model demand sources\nnode,modelSource\n";
+        for(const auto& n:r.nodes)if(n.modelSource)out+=csvQuoted(n.name)+","+csvQuoted(nodeAnalysisSourceJson(*n.modelSource).dump())+"\n";
     }
     return out;
 }

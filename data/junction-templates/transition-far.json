@@ -1,0 +1,10 @@
+{
+  "id": "transition-far",
+  "name": "Transition, far aligned",
+  "kind": "transition",
+  "legs": 2,
+  "directions": {
+    "forward": { "align": "far" },
+    "backward": { "align": "far" }
+  }
+}

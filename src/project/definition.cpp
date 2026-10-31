@@ -11,7 +11,8 @@
 #include "speed_curve.hpp"
 #include "mode_codec.hpp"
 #include "link_type_codec.hpp"
-#include "road_codec.hpp"
+#include "street_segment_codec.hpp"
+#include "junction_template_codec.hpp"
 #include "../model/demand/signal_control.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -44,6 +45,13 @@ AuthoringDefinition parseAuthoringDefinition(const Json& j) {
     if(!d.externalCrossSections) {
         if(!j.at("crossSections").is_array())throw std::invalid_argument("EDIT_CATALOG_READ");
         for(const auto& t:j.at("crossSections"))d.crossSections.push_back(parseCrossSection(t));
+    }
+    d.externalJunctionTemplates = !j.contains("junctionTemplates");
+    if (!d.externalJunctionTemplates) {
+        if (!j.at("junctionTemplates").is_array()) throw ValidationError({{"JUNCTION_TEMPLATE_INVALID","definition.junctionTemplates"}});
+        const auto& entries = j.at("junctionTemplates");
+        for (std::size_t i = 0; i < entries.size(); ++i)
+            d.junctionTemplates.push_back(parseJunctionTemplate(entries[i],"definition.junctionTemplates["+std::to_string(i)+"]"));
     }
     if(!d.externalVehicleTypes)for(const auto& t:j.at("vehicleTypes"))if(t.contains("name")) {
         if(!t.at("name").is_string())throw std::invalid_argument("EDIT_CATALOG_READ");
@@ -212,6 +220,10 @@ Json definitionJson(const AuthoringDefinition& d) {
         j["crossSections"]=Json::array();
         for(const auto& t:d.crossSections)j["crossSections"].push_back(crossSectionJson(t));
     }
+    if (!d.externalJunctionTemplates) {
+        j["junctionTemplates"] = Json::array();
+        for (const auto& t : d.junctionTemplates) j["junctionTemplates"].push_back(junctionTemplateJson(t));
+    }
     return j;
 }
 void migrateRoutesToObjects(const Network& network, AuthoringDefinition& definition) {
@@ -373,7 +385,7 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     if(auto issues=timeTypeIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
     if(auto issues=ownedCatalogIssues(*d.definition);!issues.empty())throw ValidationError(std::move(issues));
     if(auto issues=linkTypeDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S2.1
-    if(auto issues=roadDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S3.3
+    if(auto issues=streetSegmentDocumentIssues(d);!issues.empty())throw ValidationError(std::move(issues)); // S3.3
     // Checked on the authored intervals, before they are expanded: an overlap is a property of
     // the table the author typed, and would otherwise surface as two core inputs that each look fine.
     if (auto periods = inputIntervalIssues(*d.definition); !periods.empty()) throw ValidationError(std::move(periods));

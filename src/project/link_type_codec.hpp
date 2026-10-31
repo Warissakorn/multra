@@ -9,7 +9,7 @@ class InputManifest;
 // which is what makes a file schema 50; below 50 each is EDIT_UNSUPPORTED_FIELD at its path.
 bool usesLinkTypes(const ProjectDocument&);
 void rejectLinkTypesBefore50(const Json& file);
-// S3.2 (ROADS §8, D304): an owned type's `capacityBasis` (or S3.6a's `rank`, D310) makes the file
+// S3.2 (STREET_SEGMENTS §8, D304): an owned type's `capacityBasis` (or S3.6a's `rank`, D310) makes the file
 // schema 53; below 53 it is EDIT_UNSUPPORTED_FIELD at its path. An empty basis means "practical".
 bool usesCapacityBasis(const ProjectDocument&);
 void rejectCapacityBasisBefore53(const Json& file);

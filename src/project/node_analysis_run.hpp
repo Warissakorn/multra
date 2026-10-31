@@ -11,7 +11,7 @@
 
 namespace multra {
 // M13 A1 (NODE_ANALYSIS §3-§5, D371): HCM 7 Ch. 19 on every Node that carries `analysis`. Analytical,
-// not simulated, not validated. Shared by the CLI and, later, the editor.
+// not simulated, not validated. Shared by the CLI and editor through node_analysis_report.
 // The LOS pack: data/los/hcm7-signalised.json, HCM 7 Exhibit 19-8 (PDF p. 1422) — five increasing
 // upper bounds of A-E in s/veh, F above or when a lane group's X > 1. EDIT_CATALOG_READ otherwise.
 // data/los/hcm.json (6th edition, Micro) is a different pack and stays untouched (D371, 7a).
@@ -51,6 +51,7 @@ struct AnalysedNode {
     // Node has turns (D383): NODE_ANALYSIS_STALE_TURN at .analysis.turns[k] naming no turn of it, and
     // NODE_ANALYSIS_STALE_APPROACH at .analysis.approaches[k] naming no in-leg.
     std::vector<ValidationIssue> advisories;
+    std::optional<NodeAnalysisModelSource> modelSource;
 };
 struct NodeAnalysisRun {
     std::uint64_t revision{};

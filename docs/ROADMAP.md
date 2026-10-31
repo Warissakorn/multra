@@ -39,12 +39,9 @@ It does not close the owner's M0 plausibility gate, M1 or M7. Body in [archive](
 
 The Vissim modelling surface, natively: links are first class, connectors are real objects, junctions are not something the user places.
 
-**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate
-(open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
-[CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted
-by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
-an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accepted by owner ruling (D369).
-Carve-outs are filed at their number (M1.3.1, M1.5.1, M1.11.1, M1.12.1–M1.12.3).
+**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate (open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
+[CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
+an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accepted by owner ruling (D369). Carve-outs are filed at their number (M1.3.1, M1.5.1, M1.11.1, M1.12.1–M1.12.3).
 
 **Done when:** an engineer draws a four-leg intersection with turn pockets from scratch, over an aerial image, in under 10 minutes, without reading documentation — and reopening the file gives back exactly what they drew.
 
@@ -75,7 +72,7 @@ M1.22.1–M1.22.2 (History dock, nudging, rotation) are implemented and do not c
 
 ### M1.23 — Interchange, document workflow and measured rendering
 
-**Open; CSV object tables and PNG implemented in M1.23.1–M1.23.2.** Native-to-GeoJSON/CSV/PNG exports — "CSV" means the object tables (Links, Connectors, inputs, routes, decisions), as defined by D143 (R8); results CSV is M5's and exists (D104, D141); GeoJSON/OSM/Shapefile import and CRS mapping; recent files/tabs, spatial indexing/culling/LOD and optional renderer acceleration. Competitor-format imports and 3D require an explicit scope revision before implementation. **Gate:** known-coordinate import/export fixtures, multi-document recovery isolation and a reproducible real-network benchmark. Do not claim 10k/100k-object performance in advance.
+**Open; CSV object tables and PNG implemented in M1.23.1–M1.23.2.** Native-to-GeoJSON/CSV/PNG exports — "CSV" means the object tables (Links, Connectors, inputs, routes, decisions), as defined by D143 (R8); results CSV is M5's and exists (D104, D141); GeoJSON/OSM/Shapefile import and CRS mapping; recent files/tabs, spatial indexing/culling/LOD and optional renderer acceleration. Competitor-format imports and 3D require an explicit scope revision before implementation; the UTDF export for Synchro and Vistro is that revision, carried by M14 (D386). **Gate:** known-coordinate import/export fixtures, multi-document recovery isolation and a reproducible real-network benchmark. Do not claim 10k/100k-object performance in advance.
 
 #### M1.23.1 — Authored object table CSV
 
@@ -325,7 +322,6 @@ the [review](audits/DRIVING_BEHAVIOUR_REVIEW.md)'s order (D177) so it consumes M
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 
-
 ### M3.3.4 — Behaviour Lab (D165)
 
 **Status:** implemented 2026-10-14, Linux only ([contract](reference/BEHAVIOUR_LAB.md), rows
@@ -421,15 +417,15 @@ contract and acceptance rows. **Equal weight (D378):** open level work follows t
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
-Roads with cross-section templates replace centreline-only Links; M12's stored cut becomes a
+Street segments with cross-section templates replace centreline-only Links; M12's stored cut becomes a
 run-time cut over a study area. M9–M11 keep their engine scopes and gates; no gate moves.
 **S1 contract written** ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266): StudyPeriod, the run clock, Mode and PCU; owner choices answered (D267); **S1.1 implemented** (D268: study periods, `clockStart`, matrix `periodId`, rows SP1–SP8); **S1.2 implemented** (D269 modes in the Demand catalog, D270: the matrix `modeId`, vehicle-type `pcu`, derived mode PCU, the Modes tab, rows SP9–SP14). S1 is complete.
-**S3 complete** ([ROADS](reference/ROADS.md), D303–D312, rows RD1–RD29); **S4 complete** ([READINESS](reference/READINESS.md), D313–D317, RS1–RS10); **S4.5 complete** (D323–D325, RS11–RS18);
+**S3 complete** ([STREET_SEGMENTS](reference/STREET_SEGMENTS.md), D303–D312, rows RD1–RD29); **S4 complete** ([READINESS](reference/READINESS.md), D313–D317, RS1–RS10); **S4.5 complete** (D323–D325, RS11–RS18);
 **S5 complete** ([STUDY_AREA](reference/STUDY_AREA.md), D326–D332, SA1–SA16) with the single-type cut follow-up (D338, SA17–SA18). No milestone gate changes. Slice bodies: [archive](archive/ROADMAP-implemented-2026-10-27.md#m8m12-s3-s4-s45-and-s5-slices).
 
 ### M8 — Zones, OD matrices and parking lots
 
-**Road demand follow-ups D340–D342 implemented** (RD30–RD34, MR1–MR7; Micro requires generated Link targets; [archive](archive/ROADMAP-implemented-2026-10-27.md#m8-road-demand-follow-ups-d340d342)). No milestone gate changes.
+**Street segment demand follow-ups D340–D342 implemented** (RD30–RD34, MR1–MR7; Micro requires generated Link targets; [archive](archive/ROADMAP-implemented-2026-10-27.md#m8-road-demand-follow-ups-d340d342)). No milestone gate changes.
 
 **Code complete; gate open.** Contract [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md) (D153);
 M8.2 codec/commands (D154), M8.3 OD → routes (D155), M8.4a/b lot runtime and authored lots
@@ -473,7 +469,11 @@ finer levels with recorded provenance and a reported volume comparison.
 
 ### M13 — Analytical junction capacity (HCM 7, D370)
 
-**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3–A9 outlined (NODE_ANALYSIS §12); **A3 implemented** (D375 choices, D376 contract, D377: [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), NA15–NA20; permitted l+sl, lr and one-lane layouts and permitted queues open); A4 next when the owner asks. A deterministic, flow-based method on the Node that serves Micro, Meso and Macro and is not a fourth level (D378): HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
+**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3–A9 outlined (NODE_ANALYSIS §12); **A3 implemented** (D375 choices, D376 contract, D377: [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), NA15–NA20; permitted l+sl, lr and one-lane layouts and permitted queues open); J7 implements A9’s editor first half (D418/JT12): input form, current-snapshot analysis and Results/CSV, without a method change; approved at `fe827c8`. The owner selected A9’s Fill-from-model/Micro second half; D419/D420 settle B40 and native expected demand. D421/D422 implement [Fill/schema-64 provenance and model/manual-window Micro comparison](reference/NODE_ANALYSIS_MODEL.md), with NA24–NA30 passing after B40/B41 answers; A9 awaits owner review. A4 stays unselected. A deterministic, flow-based method on the Node that serves Micro, Meso and Macro and is not a fourth level (D378): HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
+
+### M14 — Junction templates and UTDF export (D386, D387)
+
+**Open; contracts written, owner choices answered (D387, D388)** ([JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), [UTDF_EXPORT](reference/UTDF_EXPORT.md)). The owner's HCM-first workflow (D387: no builder tool): Street segments crossing make Nodes, a junction template on the Node generates pockets, lane-assigned Connectors, right-of-way and NEMA-numbered signals; transition templates join Street segments of different cross-sections; posted speed on the Link, the Node analysis panel, and a UTDF export for Synchro 12 and Vistro 2026 (the competitor-format scope revision M1.23 requires; imports stay out). Road was renamed Street segment first (slice SR, done, D389). U0's probe is prepared and waits on the owner's imports ([UTDF_PROBE](plans/UTDF_PROBE.md)). J1 is done: the posted speed is on the Link (schema 60, D390). J2 is done: command-only kerb/far pockets with measured taper/storage, route/head preservation and derived compass movement names (D391, D392; JT3–JT4); J3a is done: structural catalog/loader, Node recipes and independent directions at schema 61 (D393–D396; JT5); its review is approved. J3b is done (D398–D402; JT6–JT8/JT13–JT15), approved by the owner at a52476b: two-way-stop fill and safe replacement/refusals. J4 is done and approved at 5ab3ea3: B32's chosen two-ring timing, head groups and NEMA checks (D404; JT9 passing). B33 selects one protected three-stage signalised T preset with compass NEMA numbers, booked as J4T before U1 (D405; documentation only during J5); B31 defers all-way-stop generation until A5 or U1 needs it, with no StopControl or schema change (D399). J6 also books one Command to change a cross-section through a junction before U1, with corridor/shared-Link handling or a selection aid (D402, D403). J5 and its review fixes are approved at d5e2bbe: upstream transitions, schema-63 owned structure, the required Transition-only selector and JT10 passing; Fill enlarges a still-generated transition polygon in one Undo, while a person's polygon keeps the named outside refusal; newly captured Link legs refuse at those Links with shorter-taper/manual-polygon recovery (D406–D408). J6 is approved at 3ec3d39/09b0689: accepted overlap carry-over (D409), B35/B36 (D410/D412), catalog/Node forms, optional crossing choice, seam/Readiness and explicit repair, complete corridor cross-section rebuild including shared pockets and a three-junction chain, and compact previews (D411/D414; JT11/JT16 passing). J6a is approved at e1eaad8: exact endpoint station conversion fixes ordinary Fill and corridor rebuild with three exit lanes, superseding D413's refusal (D415; JT17 passing). J4T is approved at b7be7c9/fd87e02/4433ffe: protected T/P2 subset, measured T cuts and all-junction polygon fitting (D416/D417; JT18–JT20 passing). B38 fits generated polygons automatically and false flags through explicit previewed Fit + Fill, with capture/overlap guards and one Undo; first template choice keeps current ownership through either entry path, never resurrecting false. J7 is approved at `fe827c8` (D418/JT12): Analysis inputs, source snapshots, synchronous HCM Results and CLI-identical exports. The junction slices are complete; U1 still waits on the owner’s U0 answers, with no UTDF writer authorized. Slices SR, U0, J1–J7, J6a, J4T, U1–U3. **Done when:** rows JT1–JT20 and UT0–UT9 pass, and the owner's UT10 round trip imports the fixture into both programs with geometry, lanes, volumes and timing matching the sheet.
 
 ---
 
