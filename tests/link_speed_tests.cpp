@@ -8,7 +8,6 @@
 #include "../src/project/node_analysis_run.hpp"
 #include <cmath>
 #include <fstream>
-#include <iostream>
 using namespace multra;
 namespace {
 Json file(const std::filesystem::path& path) { std::ifstream in(test::root() / path); Json j; in >> j; return j; }
@@ -25,15 +24,10 @@ bool refusedAt(const Json& j, const std::string& code, const std::string& path) 
 }
 std::vector<double> queues(const ProjectDocument& d) {
     std::vector<double> out;
+    // Keep the run alive: ranging over runNodeAnalysis(...).nodes.front().groups binds through
+    // front(), so the temporary dies before the loop (read garbage on MSVC Release).
     const auto run = runNodeAnalysis(d, test::root() / "data");
     for (const auto& g : run.nodes.front().groups) out.push_back(g.queue ? g.queue->mean : -1);
-    if (out.size() != 12 || std::any_of(out.begin(), out.end(), [](double q) { return !(q >= 0); })) {
-        // A platform-only failure needs the run itself in the log, not just the CHECK expression.
-        for (const auto& g : run.nodes.front().groups)
-            std::cerr << "  group " << g.group.name << " inLink " << g.group.inLink << " queue " << (g.queue ? std::to_string(g.queue->mean) : "none")
-                      << " issue " << g.issue.value_or("") << '\n';
-        for (const auto& a : run.nodes.front().advisories) std::cerr << "  advisory " << a.code << " at " << a.path << '\n';
-    }
     return out;
 }
 }
