@@ -39,8 +39,10 @@ void EditorCanvas::setRunFollow(std::optional<std::uint64_t> vehicleId, bool hea
 }
 void EditorCanvas::setRunFrame(const SimState& frame) {
     // Scenarios are owned immutable snapshots, not mutable documents/revisions.
+    const bool started=frame.scenario && !runFrame_.scenario;
     if(frame.scenario!=runFrame_.scenario){runAxlePaths_.clear();runLaneChangePaths_.clear();dropRunVehicles(true);}
     runFrame_=frame;
+    if(started && document_){redraw();return;} // D423: the static scene drops edit-only decoration once, then bakes
     if(!runLayerBaked_)bakeRunLayer();
     drawRunItems();
 }

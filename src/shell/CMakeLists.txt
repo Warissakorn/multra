@@ -154,6 +154,7 @@ if(BUILD_TESTING)
     add_test(NAME canvas-lod-ui COMMAND multra-canvas-lod-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(canvas-lod-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 60)
     add_dependencies(check multra-canvas-lod-tests)
+    include(canvas_style_tests.cmake) # D423
     add_executable(multra-station-routing-ui-tests ../../tests/station_routing_ui_tests.cpp)
     target_link_libraries(multra-station-routing-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
     add_test(NAME station-routing-ui COMMAND multra-station-routing-ui-tests "${PROJECT_SOURCE_DIR}/data")

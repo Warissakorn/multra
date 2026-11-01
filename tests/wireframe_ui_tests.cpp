@@ -53,7 +53,8 @@ int main(int argc, char** argv) {
         // 1. Ctrl+A on the canvas swaps every surface and marking for one centre line per object.
         c->setFocus(); QTest::keyClick(c, Qt::Key_A, Qt::ControlModifier);
         require(toggle->isChecked() && c->wireframe(), "Ctrl+A did not turn the wireframe on");
-        require(count(*c, "road-surface") == 0 && count(*c, "road-marking") == 0 && count(*c, "connector-mouth-edge") == 0,
+        require(count(*c, "road-surface") == 0 && count(*c, "road-marking") == 0 && count(*c, "connector-mouth-edge") == 0 &&
+                count(*c, "road-kerb") == 0 && count(*c, "node-surface") == 0,
                 "Wireframe still draws lane surfaces or markings");
         require(count(*c, "centre-line") == static_cast<int>(network.links.size() + network.connectors.size()),
                 "Wireframe does not draw exactly one centre line per Link and Connector");

@@ -19,7 +19,8 @@ using namespace multra;
 namespace {
 void require(bool ok,const std::string& message){if(!ok)throw std::runtime_error(message);}
 void settle(){QApplication::processEvents();QTest::qWait(20);}
-bool decoration(const QString& tag){return tag==QStringLiteral("road-marking")||tag==QStringLiteral("connector-mouth-edge");}
+// D423: the kerb is lane decoration too.
+bool decoration(const QString& tag){return tag==QStringLiteral("road-marking")||tag==QStringLiteral("connector-mouth-edge")||tag==QStringLiteral("road-kerb")||tag==QStringLiteral("connector-guide");}
 std::map<QString,int> tags(EditorCanvas& canvas) {
     std::map<QString,int> out;
     for(auto* item:canvas.scene()->items())++out[item->data(0).toString()];
@@ -51,7 +52,13 @@ int main(int argc,char** argv) {
         view(canvas,QTransform::fromScale(at,-at));
         const auto full=tags(canvas);
         require(full.count("road-marking")&&full.at("road-marking")>0,"No lane markings at 3 px per lane");
-        require(full.count("connector-mouth-edge")&&full.at("connector-mouth-edge")>0,"No mouth edges at 3 px per lane");
+        require(full.count("road-kerb")&&full.at("road-kerb")>0,"No kerb at 3 px per lane");
+        const int fullDecoration=markings(canvas);
+        // D423: only a Connector being worked on draws its mouth edges; select one to see them.
+        const auto connectorId=fixture["connectors"].front()["id"].get<std::string>();
+        canvas.select(connectorId);canvas.redraw();settle();
+        require(tags(canvas).count("connector-mouth-edge")&&tags(canvas).at("connector-mouth-edge")>0,"No mouth edges at 3 px per lane");
+        canvas.select("");canvas.redraw();settle();
         if(argc>2)require(canvas.viewport()->grab().save(QString::fromUtf8(argv[2])+"-at-3px.png"),"Screenshot failed");
         const auto kept=essential(canvas);
         view(canvas,QTransform::fromScale(under,-under));
@@ -62,7 +69,7 @@ int main(int argc,char** argv) {
         require(kept.count("road-surface")&&kept.count("stop-line"),"Fixture lost its surfaces or heads");
         // 6. Rotation and flip read the same rotation-safe scale.
         for(const double s:{at,under}) {
-            const int expected=s==at?full.at("road-marking")+full.at("connector-mouth-edge"):0;
+            const int expected=s==at?fullDecoration:0;
             view(canvas,QTransform().rotate(37)*QTransform::fromScale(s,-s));
             require(markings(canvas)==expected,"A rotated view decides the markings differently");
             view(canvas,QTransform::fromScale(s,s));

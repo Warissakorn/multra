@@ -398,6 +398,7 @@ private:
     // (tagged "centre-line") with its selection feedback riding it.
     QPainterPath centreStroke(const std::vector<Point>&, double pixels) const;
     void drawCentreLine(const std::string& id, const std::vector<Point>&, const QColor&, double z);
+    void addKerb(const QPainterPath& surface, double level, double laneWidth, const std::string& id); // D423
     // A filled arrowhead of constant screen size, centred on `at` and pointing along `angle`.
     void addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);
     // True once a move is visibly under way: the lane tabs, which follow the committed document,
