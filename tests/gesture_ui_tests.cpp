@@ -110,6 +110,7 @@ int main(int argc,char** argv) {
         const auto beforeMove=w.history().document();
         QTest::mouseClick(c->viewport(),Qt::LeftButton,{},pixel(c,{-50,0}));
         require(w.history().document()==beforeMove,"A click on a selected object moved something");
+        c->snap=true; // D428: Snap starts off; this exact 10 m x 5 m move is a snapped drag
         c->setSelection({links[0].id,links[1].id});
         drag(c,{-50,0},{-40,5},Qt::LeftButton);
         const auto& after=w.history().document().network;

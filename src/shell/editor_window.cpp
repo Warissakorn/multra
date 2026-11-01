@@ -92,7 +92,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         if(box.exec()==QMessageBox::Yes) execute("editorDeleteLink",[&](auto& d){deleteLink(d,id);});
     });
     auto* snap=action("editorSnap",{},[this]{canvas_->snap=actions_.at("editorSnap")->isChecked();});
-    snap->setCheckable(true); snap->setChecked(true); tools->addAction(snap);
+    snap->setCheckable(true); snap->setChecked(false); tools->addAction(snap); // D428: off by default
     grid_=new QDoubleSpinBox(this); grid_->setRange(0.1,100); grid_->setValue(1); grid_->setSuffix(" m"); grid_->setObjectName("editorGrid");grid_->setMaximumWidth(86); tools->addWidget(grid_);
     coordinates_=new ReflowLabel(this);coordinates_->setObjectName("editorCoordinates");
     coordinates_->setProperty("numeric",true);coordinates_->setFont(editorDesign::numericFont());

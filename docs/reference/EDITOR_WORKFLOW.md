@@ -46,7 +46,7 @@ clearing history; New/Open/recovery begin a fresh history. The history is not sa
 ## Keyboard moves and cancellation
 
 In **Select (S)** with the canvas focused, arrow keys move selected Links/Connectors by the grid
-interval with Snap on, or by one metre with Snap off. **Shift** multiplies the step by ten.
+interval with Snap on, or by one metre with Snap off (the default, D428). **Shift** multiplies the step by ten.
 Up means increasing world Y; Right means increasing X. Each key step is one undoable edit.
 Text/spin fields keep their normal arrow-key behavior. Ctrl/Alt/Meta arrows do not move objects.
 

@@ -89,7 +89,7 @@ public:
     void clearSelection(bool cancelGesture = true);       // includes table-owned highlights
     std::function<void()> selectionCleared;
     void removeVertex();
-    bool snap{true};
+    bool snap{false}; // D428: off by default (owner, 2026-11-01)
     double grid{1};
     std::function<void(const std::vector<Point>&)> createLinkGesture;
     std::function<void(LaneReference,LaneReference,const std::vector<Point>&)> createRangeGesture;

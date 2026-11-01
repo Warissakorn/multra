@@ -65,7 +65,7 @@ selected objects after confirmation.
 
 The world uses metres, x east/right and y north/up. Right-button or middle-button drag
 pans; the wheel zooms at the pointer. F fits the network and background. Grid spacing
-is in metres, and Snap affects drawing/dragging. Measuring and calibration bypass snap.
+is in metres; Snap (off by default, D428) affects drawing/dragging. Measuring and calibration bypass snap.
 
 | Shortcut | Action |
 |---|---|
