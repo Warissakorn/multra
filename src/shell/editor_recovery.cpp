@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "automation_server.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"

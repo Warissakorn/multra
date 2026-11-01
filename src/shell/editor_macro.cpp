@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "editor_macro.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "macro_run_dialog.hpp"
 #include "../commands/macro_run_commands.hpp"
 #include "../editor/ui_design_tokens.hpp"

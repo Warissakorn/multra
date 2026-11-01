@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "node_analysis_panel.hpp"
 #include "automation_error.hpp"
 #include <QUuid>

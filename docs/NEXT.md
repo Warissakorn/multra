@@ -38,7 +38,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
   `docs/images/canvas-labels-after/`.
 - Owner-requested editor fixes (/optimize-program, 2026-11-01): pan repaints the background, so a
-  run's roads stay under their vehicles (D427). Snap starts off (D428). Snap off by default, a compact closable message
+  run's roads stay under their vehicles (D427). Snap starts off (D428). The message line is one closable row (D429). Snap off by default, a compact closable message
   line, true-size lane dashes per display type and a dockable canvas follow, one commit each.
 
 ## M13 — A9 implemented; stop for owner review

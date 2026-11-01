@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "editor_batch_cells.hpp"
 #include "node_analysis_panel.hpp"
 #include "../project/batch_output.hpp"

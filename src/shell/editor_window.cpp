@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "automation_server.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
 #include "behaviour_lab_window.hpp"
@@ -62,8 +63,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     auto* scope=new ReflowLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope; layout->addWidget(scope);
     setReflowPolicy(scope,QSizePolicy::Ignored);
     canvas_=new EditorCanvas(central);canvas_->setDisplayCatalog(displayCatalog_); layout->addWidget(canvas_,1);
-    error_=new ReflowLabel(central); error_->setObjectName("editorError"); error_->setWordWrap(true);
-    setReflowPolicy(error_,QSizePolicy::Ignored);
+    error_=new MessageLabel(central); error_->setObjectName("editorError"); // D429: two lines at most, closable
     layout->addWidget(error_); setCentralWidget(central);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
     files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard())newFile(); }));
@@ -226,6 +226,7 @@ void EditorWindow::translate() {
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
     language_->setAccessibleName(text("language"));
     texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
+    error_->setMoreText(text("editorMessageMore"));error_->setCloseText(text("editorMessageClose"));
     buildMapTranslation();error_->clear(); refresh();
 }
 bool EditorWindow::commitChange(const std::string& name,const std::function<void(ProjectDocument&)>& change,bool generatedCommand) {

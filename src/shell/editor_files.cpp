@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "editor_storage.hpp"
 #include "../project/evaluation_period.hpp"
 #include "../editor/ui_design_tokens.hpp"

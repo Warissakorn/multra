@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "behaviour_lab_window.hpp"
 #include "../project/demand_catalog.hpp"
 #include "../core/speed_distribution.hpp"
