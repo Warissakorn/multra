@@ -63,7 +63,7 @@ void EditorCanvas::drawZones() {
         item->setData(0, QStringLiteral("zone")); item->setData(1, QString::fromStdString(zone.id));
         const auto c = centroid(zone.polygon);
         addLabel(QString::fromStdString(zone.name.empty() ? zone.id : zone.name), c, QGuiApplication::font(),
-                 canvasStyle::ink(), -149, {}, {}, CanvasLabel::zone, false); // D424
+                 canvasStyle::ink(), -149, {}, {}, CanvasLabel::zone, false, CanvasLabel::Style::halo); // D424
         for (const auto& connector : layer.zoneConnectors) {
             if (connector.zoneId != zone.id) continue;
             const auto draw = [&](Point end, int level) {
@@ -144,7 +144,7 @@ void EditorCanvas::drawNodes() {
         if (inArea) item->setData(2, QStringLiteral("area"));
         const auto c = centroid(node.polygon);
         addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), c, QGuiApplication::font(),
-                 canvasStyle::ink(), 200006, {}, {}, CanvasLabel::node, lit); // D424
+                 canvasStyle::ink(), 200006, {}, {}, CanvasLabel::node, lit, CanvasLabel::Style::halo); // D424
         if (lit) drawNodeLegs(node);
     }
 }

@@ -49,6 +49,25 @@ selected/hovered origin Link, pins its label. Images:
 [before](../images/canvas-labels-before/four-leg-1.5px-th.png),
 [after](../images/canvas-labels-after/four-leg-1.5px-th.png).
 
+## Slice B2 — Vistro-like boxed labels (done, D425)
+
+The owner asked for labels like PTV Vistro's, spec first, and answered two questions: which labels
+are boxed (input rates/periods and the decision names that sit beside them) and how they look (a
+white box in a grey frame). No full Vistro manual was available; the public release notes say only
+that Vistro's movement-volume texts keep a fixed size under zoom, and the sibling Visum graphics
+offer framed labels and hiding overlaps. The spec below is MULTRA's own design in that spirit.
+
+| Part | Spec |
+|---|---|
+| Box | Fixed screen size (ignores zoom). Base (white) fill, 1 px Dark (grey) frame, 3 px corners, 4/2 px padding. Text in the Text role: `numericFont()` for inputs, the UI font for decisions. Content as before ("500 veh/h", "500 คัน/ชม.", "4 periods", the decision's name or id). |
+| Pinned | While the origin Link is selected or hovered (D424), the frame is 1.5 px in the accent colour and the box always shows. |
+| Leader | A 1 px cosmetic Dark line from the anchor (input crossbar end, decision diamond) to the nearest point of the frame, always drawn with its box, never hit (`label-leader`, z just under the box). |
+| Placement | D424's pass. A box tries eight directions (E, W, N, S, NE, NW, SE, SW) at 12 px, then at 32 px, and takes the first place whose rectangle (2 px margin) meets no placed label; else it hides with its leader. Pinned first, then input > decision > Node > zone. Node and zone names stay halo text with their four places. |
+| Unchanged | A click on a box still opens its input; hits, files and results are untouched. |
+
+Images: [before](../images/canvas-labels-before/four-leg-0.9px-en.png),
+[after](../images/canvas-labels-after/four-leg-0.9px-en.png).
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing

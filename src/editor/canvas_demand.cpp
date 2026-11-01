@@ -239,7 +239,8 @@ void EditorCanvas::drawDemandOverlay() {
         // D424: placed beside the input's bar with every other label. An input has no selection of
         // its own on the canvas, so its label always shows while its origin road is selected or hovered.
         addLabel(text,at,editorDesign::numericFont(),editorDesign::role(QPalette::Text),200006,
-                 QStringLiteral("input-volume"),input.id,CanvasLabel::input,isSelected(origin) || origin==hoverObject_);
+                 QStringLiteral("input-volume"),input.id,CanvasLabel::input,isSelected(origin) || origin==hoverObject_,
+                 CanvasLabel::Style::box); // D425
     }
     drawPositionedDecisions();
     // M2.1.1: a routing decision placed on a Link draws as a diamond a little way along it, where
@@ -257,7 +258,7 @@ void EditorCanvas::drawDemandOverlay() {
         marker->setData(1,QString::fromStdString(decision.id));
         addLabel(QString::fromStdString(decision.name.empty()?decision.id:decision.name),at,QGuiApplication::font(),
                  editorDesign::role(QPalette::Text),200006,QStringLiteral("decision-label"),{},CanvasLabel::decision,
-                 isSelected(decision.linkId) || decision.linkId==hoverObject_);
+                 isSelected(decision.linkId) || decision.linkId==hoverObject_,CanvasLabel::Style::box);
     }
     if(document_->definition && !highlightedRoute_.empty())
         for(const auto& route:document_->definition->routes)if(route.id==highlightedRoute_)

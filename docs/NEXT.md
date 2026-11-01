@@ -30,11 +30,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Canvas style — slices A and B done; stop for owner review
+## Canvas style — slices A, B and B2 done; stop for owner review
 
 - Owner-directed and separate from M13/M14: [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill
   answers and slices A–E. Slice A (road surface, kerb, junction layers) is D423; slice B (label
-  halo and screen-space placement) is D424. Slice C (run vehicles) starts after the owner reviews
+  halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
+  with leaders) is D425. Slice C (run vehicles) starts after the owner reviews
   `docs/images/canvas-labels-after/`.
 
 ## M13 — A9 implemented; stop for owner review

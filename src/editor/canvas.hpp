@@ -1,4 +1,5 @@
 #pragma once
+#include "canvas_labels.hpp"
 #include <cmath>
 #include "../project/document.hpp"
 #include "../model/network/display.hpp"
@@ -23,7 +24,6 @@ class MapLayer;
 enum class MapStatus;
 struct MapLoadState;
 struct CanvasImageOptions;
-class CanvasLabel;
 class EditorCanvas : public QGraphicsView {
 public:
     enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node, road };
@@ -402,7 +402,7 @@ private:
     void addKerb(const QPainterPath& surface, double level, double laneWidth, const std::string& id); // D423
     // D424: canvas labels are registered for one screen-space placement pass per redraw.
     CanvasLabel* addLabel(const QString& text, Point anchor, const QFont& font, const QBrush& brush, double z,
-                          const QString& tag, const std::string& id, int priority, bool pinned);
+                          const QString& tag, const std::string& id, int priority, bool pinned, CanvasLabel::Style style);
     void placeLabels();
     std::vector<CanvasLabel*> labels_;
     // A filled arrowhead of constant screen size, centred on `at` and pointing along `angle`.

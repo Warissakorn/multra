@@ -1,10 +1,13 @@
-// Canvas style slice B (D424): canvas labels carry a Base halo and are placed in screen space --
-// right, left, above, below their anchor -- so no two overprint; a label with no free side hides
-// unless its object is selected. Placement is per redraw and drawing only.
+// Canvas style slices B/B2 (D424, D425): Node and zone names carry a Base halo; input rates and
+// decision names are white boxes in a grey frame on a leader. All are placed in screen space so no
+// two overprint; a label with no free place hides unless pinned. Placement is per redraw, drawing only.
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/editor/canvas_labels.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
+#include "../src/editor/canvas_style.hpp"
+#include <QGraphicsLineItem>
+#include <cmath>
 #include <QApplication>
 #include <QImage>
 #include <QPainter>
@@ -24,13 +27,35 @@ std::vector<CanvasLabel*> labels(EditorCanvas& c,const char* tag) {
     return out;
 }
 QRectF screen(EditorCanvas& c,CanvasLabel* l) {
-    return l->deviceTransform(c.viewportTransform()).mapRect(l->QGraphicsSimpleTextItem::boundingRect());
+    return l->deviceTransform(c.viewportTransform()).mapRect(l->frame());
 }
-// Today's single placement: the text's left edge a gap right of the anchor, centred on it.
+// D424's halo placement before boxes: the text's left edge a gap right of the anchor, centred on it.
 QRectF rightOf(EditorCanvas& c,CanvasLabel* l) {
-    const auto text=l->QGraphicsSimpleTextItem::boundingRect();
+    const auto text=l->textRect();
     const QPointF at=c.mapFromScene(l->anchor());
     return QRectF(at+QPointF(editorDesign::space2,-text.height()/2),text.size());
+}
+// D425's first box place: 12 px east of the anchor, centred on it.
+QRectF eastBox(EditorCanvas& c,CanvasLabel* l) {
+    const auto box=l->frame();
+    const QPointF at=c.mapFromScene(l->anchor());
+    return QRectF(at+QPointF(12,-box.height()/2),box.size());
+}
+// Every visible box hangs on a leader from its anchor to its frame; a hidden one takes it along.
+void leaders(EditorCanvas& c) {
+    for(auto* l:labels(c,nullptr))if(l->style()==CanvasLabel::Style::box) {
+        auto* leader=l->leader();require(leader&&leader->data(0).toString()=="label-leader","A box has no leader");
+        require(leader->isVisible()==l->isVisible(),"A leader outlives its hidden box");
+        if(!l->isVisible())continue;
+        const auto line=leader->line();
+        const QPointF a=c.mapFromScene(line.p1()),b=c.mapFromScene(line.p2());
+        require(QLineF(a,c.mapFromScene(l->anchor())).length()<1.5,"A leader does not start at its anchor");
+        const auto frame=screen(c,l);
+        const double dx=std::max({frame.left()-b.x(),0.,b.x()-frame.right()}),dy=std::max({frame.top()-b.y(),0.,b.y()-frame.bottom()});
+        const bool onEdge=std::hypot(dx,dy)<1.5&&(std::abs(b.x()-frame.left())<1.5||std::abs(b.x()-frame.right())<1.5||
+                                                  std::abs(b.y()-frame.top())<1.5||std::abs(b.y()-frame.bottom())<1.5);
+        require(onEdge,"A leader does not end on its box frame");
+    }
 }
 bool overlapping(const std::vector<QRectF>& rects) {
     for(std::size_t i=0;i<rects.size();++i)for(std::size_t j=i+1;j<rects.size();++j)if(rects[i].intersects(rects[j]))return true;
@@ -61,6 +86,21 @@ int main(int argc,char** argv) {
             }
             require(base>40&&text>10,"A label is not text on a Base halo");
         }
+        // 1b. Box: a white box in a grey frame (accent when pinned), then the text.
+        for(const bool pin:{false,true}) {
+            CanvasLabel label(QStringLiteral("950 veh/h"),editorDesign::numericFont(),{},CanvasLabel::input,pin,CanvasLabel::Style::box);
+            label.setBrush(editorDesign::role(QPalette::Text));
+            const auto bounds=label.boundingRect();
+            QImage image(bounds.size().toSize()+QSize(2,2),QImage::Format_ARGB32);image.fill(QColor("#49596d"));
+            QPainter painter(&image);painter.translate(-bounds.topLeft()+QPointF(1,1));label.paint(&painter,nullptr,nullptr);painter.end();
+            const auto frame=label.frame().translated(-bounds.topLeft()+QPointF(1,1));
+            const QColor inside=image.pixelColor(QPoint(int(frame.left())+2,int(frame.center().y())));
+            const QColor edge=image.pixelColor(QPoint(int(frame.center().x()),int(frame.top())));
+            require(inside==editorDesign::role(QPalette::Base),"A box is not filled white");
+            const QColor want=pin?canvasStyle::selection():editorDesign::role(QPalette::Dark);
+            require(std::abs(edge.red()-want.red())+std::abs(edge.green()-want.green())+std::abs(edge.blue()-want.blue())<60,
+                    "A box frame is not grey, or accent when pinned");
+        }
         EditorWindow window(data);window.resize(1360,860);window.show();settle();
         window.openFile(QString::fromStdString((data/"projects/four-leg-signalised.traffic.json").string()));settle();
         auto& canvas=*window.canvas();
@@ -78,8 +118,10 @@ int main(int argc,char** argv) {
         require(overlapping(before),"Setup: the shipped labels no longer collide at 1.5 px/m");
         // ...and placed, no two visible labels meet; every input is shown or hidden, none lost.
         require(!overlapping(visible(canvas)),"Placed labels still overprint");
+        leaders(canvas);
+        for(auto* l:rates)require(l->style()==CanvasLabel::Style::box,"An input rate is not a box");
         CanvasLabel* moved=nullptr;
-        for(auto* l:rates)if(!l->isVisible()||l->transform().dx()<0||l->transform().dy()!=-l->QGraphicsSimpleTextItem::boundingRect().height()/2)moved=l;
+        for(auto* l:rates)if(!l->isVisible()||screen(canvas,l).toAlignedRect()!=eastBox(canvas,l).toAlignedRect())moved=l;
         require(moved,"No label left its right-hand place");
         // 3. A hidden label is not clickable; a visible one still opens its input.
         for(auto* l:rates)if(l->isVisible()) {
@@ -99,7 +141,7 @@ int main(int argc,char** argv) {
         canvas.select(origin);canvas.redraw();settle();
         bool pinned=false;
         for(auto* l:labels(canvas,"input-volume"))if(l->data(1).toString().toStdString()==id)
-            pinned=l->isVisible()&&l->pinned()&&screen(canvas,l).toAlignedRect()==rightOf(canvas,l).toAlignedRect();
+            pinned=l->isVisible()&&l->pinned()&&screen(canvas,l).toAlignedRect()==eastBox(canvas,l).toAlignedRect();
         require(pinned,"A selected input's label is not shown at its right");
         canvas.clearSelection(false);canvas.redraw();settle();
         // 5. Thai text, a rotated and a flipped view: still no overprint.
@@ -109,12 +151,15 @@ int main(int argc,char** argv) {
             view(canvas,t,centre);
             require(static_cast<int>(labels(canvas,"input-volume").size())==inputs,"A view lost a rate label");
             require(!overlapping(visible(canvas)),"Labels overprint in a Thai, rotated, flipped or far view");
+            leaders(canvas);
         }
         // 6. The template's period counts and decision names share the pass.
         window.openFile(QString::fromStdString((data/"projects/m2.6-study-template.traffic.json").string()));settle();
         view(canvas,QTransform::fromScale(1,-1),centre);
         require(!labels(canvas,"decision-label").empty()&&!labels(canvas,"input-volume").empty(),"Template lost its labels");
         require(!overlapping(visible(canvas)),"Decision and period labels overprint");
+        leaders(canvas);
+        for(auto* l:labels(canvas,"decision-label"))require(l->style()==CanvasLabel::Style::box,"A decision name is not a box");
         std::cout<<"Canvas labels: halo, screen-space placement, pinned selection, clicks and views passed\n";
         return 0;
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
