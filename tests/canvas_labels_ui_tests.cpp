@@ -32,13 +32,13 @@ QRectF screen(EditorCanvas& c,CanvasLabel* l) {
 // D424's halo placement before boxes: the text's left edge a gap right of the anchor, centred on it.
 QRectF rightOf(EditorCanvas& c,CanvasLabel* l) {
     const auto text=l->textRect();
-    const QPointF at=c.mapFromScene(l->anchor());
+    const QPointF at=c.viewportTransform().map(l->anchor());
     return QRectF(at+QPointF(editorDesign::space2,-text.height()/2),text.size());
 }
 // D425's first box place: 12 px east of the anchor, centred on it.
 QRectF eastBox(EditorCanvas& c,CanvasLabel* l) {
     const auto box=l->frame();
-    const QPointF at=c.mapFromScene(l->anchor());
+    const QPointF at=c.viewportTransform().map(l->anchor());
     return QRectF(at+QPointF(12,-box.height()/2),box.size());
 }
 // Every visible box hangs on a leader from its anchor to its frame; a hidden one takes it along.
@@ -48,14 +48,18 @@ void leaders(EditorCanvas& c) {
         require(leader->isVisible()==l->isVisible(),"A leader outlives its hidden box");
         if(!l->isVisible())continue;
         const auto line=leader->line();
-        const QPointF a=c.mapFromScene(line.p1()),b=c.mapFromScene(line.p2());
-        require(QLineF(a,c.mapFromScene(l->anchor())).length()<1.5,"A leader does not start at its anchor");
+        const QPointF a=c.viewportTransform().map(line.p1()),b=c.viewportTransform().map(line.p2());
+        require(QLineF(a,c.viewportTransform().map(l->anchor())).length()<1.5,"A leader does not start at its anchor");
         const auto frame=screen(c,l);
         const double dx=std::max({frame.left()-b.x(),0.,b.x()-frame.right()}),dy=std::max({frame.top()-b.y(),0.,b.y()-frame.bottom()});
         const bool onEdge=std::hypot(dx,dy)<1.5&&(std::abs(b.x()-frame.left())<1.5||std::abs(b.x()-frame.right())<1.5||
                                                   std::abs(b.y()-frame.top())<1.5||std::abs(b.y()-frame.bottom())<1.5);
         require(onEdge,"A leader does not end on its box frame");
     }
+}
+// Equal to within half a pixel per edge: what placement computed is what was painted.
+bool same(const QRectF& a,const QRectF& b) {
+    return std::abs(a.left()-b.left())<=.5&&std::abs(a.top()-b.top())<=.5&&std::abs(a.right()-b.right())<=.5&&std::abs(a.bottom()-b.bottom())<=.5;
 }
 bool overlapping(const std::vector<QRectF>& rects) {
     for(std::size_t i=0;i<rects.size();++i)for(std::size_t j=i+1;j<rects.size();++j)if(rects[i].intersects(rects[j]))return true;
@@ -121,7 +125,7 @@ int main(int argc,char** argv) {
         leaders(canvas);
         for(auto* l:rates)require(l->style()==CanvasLabel::Style::box,"An input rate is not a box");
         CanvasLabel* moved=nullptr;
-        for(auto* l:rates)if(!l->isVisible()||screen(canvas,l).toAlignedRect()!=eastBox(canvas,l).toAlignedRect())moved=l;
+        for(auto* l:rates)if(!l->isVisible()||!same(screen(canvas,l),eastBox(canvas,l)))moved=l;
         require(moved,"No label left its right-hand place");
         // 3. A hidden label is not clickable; a visible one still opens its input.
         for(auto* l:rates)if(l->isVisible()) {
@@ -141,7 +145,7 @@ int main(int argc,char** argv) {
         canvas.select(origin);canvas.redraw();settle();
         bool pinned=false;
         for(auto* l:labels(canvas,"input-volume"))if(l->data(1).toString().toStdString()==id)
-            pinned=l->isVisible()&&l->pinned()&&screen(canvas,l).toAlignedRect()==eastBox(canvas,l).toAlignedRect();
+            pinned=l->isVisible()&&l->pinned()&&same(screen(canvas,l),eastBox(canvas,l));
         require(pinned,"A selected input's label is not shown at its right");
         canvas.clearSelection(false);canvas.redraw();settle();
         // 5. Thai text, a rotated and a flipped view: still no overprint.

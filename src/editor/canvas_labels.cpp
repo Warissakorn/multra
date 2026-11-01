@@ -81,7 +81,9 @@ void EditorCanvas::placeLabels() {
     const double gap = editorDesign::space2, margin = 2;
     for (auto* label : order) {
         const auto box = label->frame(), text = label->textRect();
-        const QPointF at = mapFromScene(label->anchor());
+        // The exact device point: the label is painted there, so placement must reason there too
+        // (mapFromScene rounds to a pixel, which Windows font metrics then land on the other side of).
+        const QPointF at = viewportTransform().map(label->anchor());
         // Candidate positions of the frame's top-left corner, in screen pixels from the anchor.
         std::vector<QPointF> corners;
         if (label->style() == CanvasLabel::Style::box) {
