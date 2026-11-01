@@ -80,6 +80,8 @@
   "editorMeasure": "วัดระยะสองจุด",
   "editorCalibrate": "ปรับสเกลภาพ: เลือกสองจุด",
   "editorInspector": "คุณสมบัติ",
+  "editorCanvas": "มุมมองโครงข่าย",
+  "editorFloatCanvas": "แยกมุมมองโครงข่ายเป็นหน้าต่าง",
   "editorStreetSegmentProperties": "Link และช่องจราจร",
   "editorGeometryHeading": "เรขาคณิต",
   "editorSplitHeading": "แบ่งและทิศตรงข้าม",

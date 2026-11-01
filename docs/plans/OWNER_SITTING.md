@@ -407,6 +407,13 @@ nothing. Numbers are not reused.
     window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
     CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
     field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
+33. **Editor fixes D427–D431** (listed 2026-11-01). On Windows at 100/150/200 %, Thai and English:
+    run four-leg and drag the view while it runs. Do the roads stay under the vehicles (D427)?
+    Snap starts off (D428). Make a run fail and check the message line is one row, with
+    "and N more", a tooltip and an × button (D429). Zoom in and out on dashed lane lines:
+    do the 3 m dashes keep their length (D430)? Drag the network view by its marker line to another
+    side, double-click it to float it onto a second screen, use it, resize the window, then View →
+    Reset panel layout (D431). *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

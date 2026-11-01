@@ -150,8 +150,11 @@ chord. The arrow above the tree (also View → icons only) hides the names; tool
 accessible names keep name and chord. The view is not saved, and Reset panel layout restores
 names (D193).
 
-- **Ctrl+Shift+F** (View → Focus on network) hides docks and restores the previous layout on
-  the next press, including hidden and floating panels. Opening a panel also leaves focus mode.
+- **The network view is a dock too (D431).** Its title bar is the validation-marker line: drag it
+  to another side, or double-click it (or use View → Float network view) to float it onto another
+  screen. It cannot close and keeps its status and message lines. A window resize goes to it.
+- **Ctrl+Shift+F** (View → Focus on network) hides the other docks and restores the previous layout
+  on the next press, including hidden and floating panels. Opening a panel also leaves focus mode.
 - The Objects panel shows one task group at a time, chosen in the combo left of its tabs:
   Network (Links, Connectors, Link types, Street segments, Cross-sections), Control (Signal heads, Signal control, Conflict areas), Demand
   (Routes, Vehicle inputs, Routing decisions, Zones, OD matrices), Measurement (Queue counters,

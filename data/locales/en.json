@@ -80,6 +80,8 @@
   "editorMeasure": "Measure two points",
   "editorCalibrate": "Calibrate image: two points",
   "editorInspector": "Properties",
+  "editorCanvas": "Network view",
+  "editorFloatCanvas": "Float network view",
   "editorStreetSegmentProperties": "Link and lanes",
   "editorGeometryHeading": "Geometry",
   "editorSplitHeading": "Split and opposite",

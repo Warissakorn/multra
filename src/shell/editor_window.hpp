@@ -456,7 +456,7 @@ private:
     QDoubleSpinBox *width_{}, *grid_{}, *split_{}, *gap_{}, *bgX_{}, *bgY_{}, *bgScale_{}, *bgAngle_{}, *bgOpacity_{};
     QLineEdit *id_{}, *name_{}, *widths_{}, *linkMarkings_{};
     QDoubleSpinBox* linkPointStation_{};
-    class MessageLabel* error_{}; QLabel *coordinates_{}, *selectionInfo_{}; // D429: compact, closable
+    class MessageLabel* error_{}; QLabel *coordinates_{}, *selectionInfo_{}; QWidget* canvasHost_{}; // D429; D431: the canvas dock's body
     QString text(const std::string& key) const;
     void buildInspector();
     void buildWorkspace();

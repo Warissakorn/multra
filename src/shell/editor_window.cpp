@@ -60,11 +60,20 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     auto* central=new QWidget(this); auto* layout=new QVBoxLayout(central);
     layout->setContentsMargins(editorDesign::space1,editorDesign::space1,editorDesign::space1,editorDesign::space1);
     layout->setSpacing(editorDesign::space1);
-    auto* scope=new ReflowLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope; layout->addWidget(scope);
+    auto* scope=new ReflowLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope;
     setReflowPolicy(scope,QSizePolicy::Ignored);
     canvas_=new EditorCanvas(central);canvas_->setDisplayCatalog(displayCatalog_); layout->addWidget(canvas_,1);
-    error_=new MessageLabel(central); error_->setObjectName("editorError"); // D429: two lines at most, closable
-    layout->addWidget(error_); setCentralWidget(central);
+    error_=new MessageLabel(central); error_->setObjectName("editorError"); // D429: one row, closable
+    layout->addWidget(error_);
+    // D431: the canvas, with its status and message lines, is a dock like the other panels, so it
+    // can move to any side or float onto another screen. It cannot close. The central widget is a
+    // hidden placeholder, so the docks share the whole window.
+    canvasHost_=central;central->setObjectName("editorCanvasHost");
+    auto* canvasDock=new QDockWidget(this);canvasDock->setObjectName("editorCanvasDock");texts_["editorCanvas"]=canvasDock;
+    canvasDock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);canvasDock->setWidget(central);
+    canvasDock->setTitleBarWidget(scope); // the validation marker is its title bar: drag it to move, double-click to float
+    auto* placeholder=new QWidget(this);placeholder->setObjectName("editorCentralPlaceholder");setCentralWidget(placeholder);placeholder->hide();
+    setDockNestingEnabled(true);addDockWidget(Qt::LeftDockWidgetArea,canvasDock);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
     files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard())newFile(); }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
