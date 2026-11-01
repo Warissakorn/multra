@@ -68,6 +68,22 @@ offer framed labels and hiding overlaps. The spec below is MULTRA's own design i
 Images: [before](../images/canvas-labels-before/four-leg-0.9px-en.png),
 [after](../images/canvas-labels-after/four-leg-0.9px-en.png).
 
+## Slice B3 — stacked labels that keep off roads (done, D426)
+
+The owner asked that labels close together line up one under another, never overlap, and not
+cover other objects unless they must.
+
+| Part | Rule |
+|---|---|
+| Cluster | Box labels whose anchors chain within 48 screen px of each other (single linkage) form one unit; a halo label is a unit alone. |
+| Column | A unit's boxes stand in one column, 2 px apart: pinned first, then input before decision, then top to bottom by anchor. They align on the side facing the anchors (left edges east of them, right edges west, centres north or south). Each keeps its own leader to its own anchor. |
+| Places | E, W, N, S, NE, NW, SE, SW of the anchors' bounding box at 12, 32 and 64 px (a halo label: right, left, above, below). |
+| Choice | The first place that meets no placed label and no other drawn object; else the first that meets no placed label (covering an object only when it must); else a pinned unit takes its first place and any other unit hides whole, leaders too. |
+| Other objects | Visible items under the box's shape: road surfaces, kerbs, markings, markers, stop lines, signals, conflicts, counters, Node outlines. Not the background, grid, zone washes, feedback, leaders, run items, or the unit's own anchor markers. Queried on the scene index only for the candidates; no new cache (D28). |
+
+Images: [B2](../images/canvas-labels-b2/four-leg-0.9px-en.png),
+[B3](../images/canvas-labels-after/four-leg-0.9px-en.png).
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing

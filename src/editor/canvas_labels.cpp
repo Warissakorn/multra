@@ -6,6 +6,7 @@
 #include <QPainterPath>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <vector>
 
 namespace multra {
@@ -65,54 +66,140 @@ namespace {
 QPointF nearestOn(const QRectF& r, QPointF p) {
     return {std::clamp(p.x(), r.left(), r.right()), std::clamp(p.y(), r.top(), r.bottom())};
 }
+// Labels that are placed together: one halo label, or the box labels whose anchors chain within
+// clusterReach screen px of each other (D426), stacked as one column.
+struct LabelUnit {
+    std::vector<CanvasLabel*> members;
+    bool pinned{};
+    int priority{};
+    std::size_t first{}; // drawing order of its earliest member
+};
+constexpr double clusterReach = 48, stackGap = 2, margin = 2;
 }
-// D424/D425: pinned labels first, then by priority, then in drawing order. A halo label tries right,
-// left, above and below its anchor; a box tries eight directions at 12 px, then at 32 px. Each takes
-// the first screen rectangle that meets no label already placed, else hides (with its leader); a
-// pinned label always takes its first place. Labels stay upright under any view rotation or flip,
-// so the rectangles are axis-aligned and the test is exact.
+// D424-D426: labels are placed once per redraw, in screen space, at their exact device points.
+// Box labels whose anchors lie within 48 px of each other (single linkage) form one unit: a column
+// of boxes 2 px apart -- pinned, then by priority, then top to bottom by anchor -- aligned on the
+// side that faces the anchors, each box on its own leader. A unit tries E, W, N, S and the four
+// diagonals of its anchors' bounding box at 12, 32 and 64 px (a halo label: right, left, above,
+// below). It takes the first place that meets no placed label and no other drawn object; failing
+// that the first that meets no placed label (covering an object only when it must); failing that
+// a pinned unit takes its first place and any other unit hides whole, leaders too. Labels stay
+// upright under any rotation or flip, so the rectangles are axis-aligned and the tests exact.
 void EditorCanvas::placeLabels() {
-    std::vector<CanvasLabel*> order(labels_.begin(), labels_.end());
-    std::stable_sort(order.begin(), order.end(), [](const CanvasLabel* a, const CanvasLabel* b) {
-        if (a->pinned() != b->pinned()) return a->pinned();
-        return a->priority() > b->priority();
+    const QTransform toScreen = viewportTransform(), toScene = toScreen.inverted();
+    std::vector<QPointF> at(labels_.size());
+    for (std::size_t i = 0; i < labels_.size(); ++i) at[i] = toScreen.map(labels_[i]->anchor());
+    // Units: union-find over box anchors.
+    std::vector<std::size_t> parent(labels_.size());
+    for (std::size_t i = 0; i < parent.size(); ++i) parent[i] = i;
+    const auto root = [&](std::size_t i) { while (parent[i] != i) i = parent[i] = parent[parent[i]]; return i; };
+    for (std::size_t i = 0; i < labels_.size(); ++i)
+        for (std::size_t j = i + 1; j < labels_.size(); ++j)
+            if (labels_[i]->style() == CanvasLabel::Style::box && labels_[j]->style() == CanvasLabel::Style::box &&
+                QLineF(at[i], at[j]).length() <= clusterReach)
+                parent[root(j)] = root(i);
+    std::vector<LabelUnit> units;
+    std::vector<std::size_t> unitOf(labels_.size(), SIZE_MAX);
+    for (std::size_t i = 0; i < labels_.size(); ++i) {
+        auto& slot = unitOf[root(i)];
+        if (slot == SIZE_MAX) { slot = units.size(); units.push_back({{}, false, 0, i}); }
+        auto& unit = units[slot];
+        unit.members.push_back(labels_[i]);
+        unit.pinned = unit.pinned || labels_[i]->pinned();
+        unit.priority = std::max(unit.priority, labels_[i]->priority());
+    }
+    std::stable_sort(units.begin(), units.end(), [](const LabelUnit& a, const LabelUnit& b) {
+        if (a.pinned != b.pinned) return a.pinned;
+        if (a.priority != b.priority) return a.priority > b.priority;
+        return a.first < b.first;
     });
+    const auto screenOf = [&](const CanvasLabel* l) {
+        const auto found = std::find(labels_.begin(), labels_.end(), l);
+        return at[static_cast<std::size_t>(found - labels_.begin())];
+    };
+    // Another drawn object under a screen rectangle: anything visible that is not a label, a leader,
+    // the background, a zone wash, feedback, the run, or one of this unit's own anchors.
+    const auto coversObject = [&](const QRectF& rect, const LabelUnit& unit) {
+        for (const auto* item : scene_.items(toScene.map(QPolygonF(rect)), Qt::IntersectsItemShape)) {
+            if (!item->isVisible() || dynamic_cast<const CanvasLabel*>(item) || item->zValue() < -100) continue;
+            const auto tag = item->data(0).toString();
+            if (tag == QStringLiteral("label-leader") || tag == QStringLiteral("object-feedback") || tag == QStringLiteral("zone") ||
+                tag == QStringLiteral("demand-hover") || tag.startsWith(QStringLiteral("run"))) continue;
+            const auto id = item->data(1).toString();
+            if (!id.isEmpty() && std::any_of(unit.members.begin(), unit.members.end(),
+                                             [&](const CanvasLabel* l) { return l->data(1).toString() == id; })) continue;
+            return true;
+        }
+        return false;
+    };
     std::vector<QRectF> placed;
-    const double gap = editorDesign::space2, margin = 2;
-    for (auto* label : order) {
-        const auto box = label->frame(), text = label->textRect();
-        // The exact device point: the label is painted there, so placement must reason there too
-        // (mapFromScene rounds to a pixel, which Windows font metrics then land on the other side of).
-        const QPointF at = viewportTransform().map(label->anchor());
-        // Candidate positions of the frame's top-left corner, in screen pixels from the anchor.
-        std::vector<QPointF> corners;
-        if (label->style() == CanvasLabel::Style::box) {
-            for (const double reach : {12.0, 32.0})
-                for (const auto [dx, dy] : {std::pair{1, 0}, {-1, 0}, {0, -1}, {0, 1}, {1, -1}, {-1, -1}, {1, 1}, {-1, 1}}) {
-                    const double x = dx > 0 ? reach : dx < 0 ? -reach - box.width() : -box.width() / 2;
-                    const double y = dy > 0 ? reach : dy < 0 ? -reach - box.height() : -box.height() / 2;
-                    corners.push_back({x, y});
-                }
+    for (auto& unit : units) {
+        auto& members = unit.members;
+        std::stable_sort(members.begin(), members.end(), [&](const CanvasLabel* a, const CanvasLabel* b) {
+            if (a->pinned() != b->pinned()) return a->pinned();
+            if (a->priority() != b->priority()) return a->priority() > b->priority();
+            const auto pa = screenOf(a), pb = screenOf(b);
+            return pa.y() != pb.y() ? pa.y() < pb.y() : pa.x() < pb.x();
+        });
+        // Candidate layouts: each a frame rectangle per member, in screen pixels.
+        std::vector<std::vector<QRectF>> layouts;
+        if (members.size() == 1 && members.front()->style() == CanvasLabel::Style::halo) {
+            const auto text = members.front()->textRect();
+            const QPointF p = screenOf(members.front());
+            const double gap = editorDesign::space2;
+            for (const QPointF corner : {QPointF(gap, -text.height() / 2), QPointF(-gap - text.width(), -text.height() / 2),
+                                         QPointF(-text.width() / 2, -gap - text.height()), QPointF(-text.width() / 2, gap)})
+                layouts.push_back({QRectF(p + corner, text.size())});
         } else {
-            corners = {QPointF(gap, -text.height() / 2), QPointF(-gap - text.width(), -text.height() / 2),
-                       QPointF(-text.width() / 2, -gap - text.height()), QPointF(-text.width() / 2, gap)};
-        }
-        bool shown = false;
-        for (std::size_t i = 0; i < corners.size() && !shown; ++i) {
-            const QRectF rect = QRectF(at + corners[i], box.size()).adjusted(-margin, -margin, margin, margin);
-            const bool free = std::none_of(placed.begin(), placed.end(), [&](const QRectF& r) { return r.intersects(rect); });
-            if (!free && !(label->pinned() && i == 0)) continue;
-            const QPointF shift = corners[i] - box.topLeft();
-            label->setTransform(QTransform::fromTranslate(shift.x(), shift.y()));
-            placed.push_back(rect); shown = true;
-            if (auto* leader = label->leader()) {
-                const QPointF end = nearestOn(QRectF(at + corners[i], box.size()), at);
-                leader->setLine(QLineF(label->anchor(), viewportTransform().inverted().map(end)));
+            QRectF anchors(screenOf(members.front()), QSizeF(0, 0));
+            double width = 0, height = -stackGap;
+            for (const auto* l : members) {
+                const auto p = screenOf(l);
+                anchors = anchors.united(QRectF(p, QSizeF(0, 0)));
+                width = std::max(width, l->frame().width()); height += l->frame().height() + stackGap;
             }
+            for (const double reach : {12.0, 32.0, 64.0})
+                for (const auto [dx, dy] : {std::pair{1, 0}, {-1, 0}, {0, -1}, {0, 1}, {1, -1}, {-1, -1}, {1, 1}, {-1, 1}}) {
+                    const double x = dx > 0 ? anchors.right() + reach : dx < 0 ? anchors.left() - reach - width : anchors.center().x() - width / 2;
+                    double y = dy > 0 ? anchors.bottom() + reach : dy < 0 ? anchors.top() - reach - height : anchors.center().y() - height / 2;
+                    std::vector<QRectF> layout;
+                    for (const auto* l : members) {
+                        const auto size = l->frame().size();
+                        const double left = dx > 0 ? x : dx < 0 ? x + width - size.width() : x + (width - size.width()) / 2;
+                        layout.push_back(QRectF(QPointF(left, y), size));
+                        y += size.height() + stackGap;
+                    }
+                    layouts.push_back(std::move(layout));
+                }
         }
-        label->setVisible(shown);
-        if (auto* leader = label->leader()) leader->setVisible(shown);
-        label->setData(4, shown ? QStringLiteral("shown") : QStringLiteral("hidden"));
+        const auto meetsLabel = [&](const std::vector<QRectF>& layout) {
+            return std::any_of(layout.begin(), layout.end(), [&](const QRectF& r) {
+                const auto padded = r.adjusted(-margin, -margin, margin, margin);
+                return std::any_of(placed.begin(), placed.end(), [&](const QRectF& p) { return p.intersects(padded); });
+            });
+        };
+        const auto meetsObject = [&](const std::vector<QRectF>& layout) {
+            return std::any_of(layout.begin(), layout.end(), [&](const QRectF& r) { return coversObject(r, unit); });
+        };
+        const std::vector<QRectF>* chosen = nullptr;
+        for (const auto& layout : layouts) if (!meetsLabel(layout) && !meetsObject(layout)) { chosen = &layout; break; }
+        if (!chosen) for (const auto& layout : layouts) if (!meetsLabel(layout)) { chosen = &layout; break; }
+        if (!chosen && unit.pinned) chosen = &layouts.front();
+        for (std::size_t i = 0; i < members.size(); ++i) {
+            auto* label = members[i];
+            const bool shown = chosen != nullptr;
+            if (shown) {
+                const auto& rect = (*chosen)[i];
+                const QPointF p = screenOf(label);
+                const QPointF shift = rect.topLeft() - p - label->frame().topLeft();
+                label->setTransform(QTransform::fromTranslate(shift.x(), shift.y()));
+                placed.push_back(rect.adjusted(-margin, -margin, margin, margin));
+                if (auto* leader = label->leader()) leader->setLine(QLineF(label->anchor(), toScene.map(nearestOn(rect, p))));
+            }
+            label->setVisible(shown);
+            if (auto* leader = label->leader()) leader->setVisible(shown);
+            label->setData(4, shown ? QStringLiteral("shown") : QStringLiteral("hidden"));
+        }
     }
 }
 }

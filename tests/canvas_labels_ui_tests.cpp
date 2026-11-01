@@ -1,12 +1,14 @@
-// Canvas style slices B/B2 (D424, D425): Node and zone names carry a Base halo; input rates and
+// Canvas style slices B/B2/B3 (D424-D426): Node and zone names carry a Base halo; input rates and
 // decision names are white boxes in a grey frame on a leader. All are placed in screen space so no
-// two overprint; a label with no free place hides unless pinned. Placement is per redraw, drawing only.
+// two overprint; nearby boxes stack in a column and keep off roads when they can; a label with
+// no free place hides unless pinned. Placement is per redraw, drawing only.
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/editor/canvas_labels.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
 #include "../src/editor/canvas_style.hpp"
 #include <QGraphicsLineItem>
+#include <QGraphicsPathItem>
 #include <cmath>
 #include <QApplication>
 #include <QImage>
@@ -60,6 +62,42 @@ void leaders(EditorCanvas& c) {
 // Equal to within half a pixel per edge: what placement computed is what was painted.
 bool same(const QRectF& a,const QRectF& b) {
     return std::abs(a.left()-b.left())<=.5&&std::abs(a.top()-b.top())<=.5&&std::abs(a.right()-b.right())<=.5&&std::abs(a.bottom()-b.bottom())<=.5;
+}
+// A drawn road or demand object under a screen rectangle (what D426 avoids when it can).
+bool onObject(EditorCanvas& c,const QRectF& rect) {
+    for(auto* item:c.scene()->items(c.viewportTransform().inverted().map(QPolygonF(rect)),Qt::IntersectsItemShape)) {
+        if(!item->isVisible()||dynamic_cast<CanvasLabel*>(item))continue;
+        const auto tag=item->data(0).toString();
+        if(tag=="road-surface"||tag=="road-kerb"||tag=="input-marker"||tag=="decision-marker"||tag=="stop-line"||tag=="road-marking")return true;
+        if(tag.isEmpty()&&item->zValue()>-100&&item->zValue()<200000)if(auto* p=dynamic_cast<QGraphicsPathItem*>(item);p&&p->pen().style()==Qt::NoPen)return true;
+    }
+    return false;
+}
+// Box clusters (anchors chained within 48 px): every visible member of one shares an aligned edge,
+// and they stand 2 px apart in a column. Returns how many clusters have two or more members.
+int stacked(EditorCanvas& c,const std::vector<CanvasLabel*>& all) {
+    std::vector<CanvasLabel*> boxes;for(auto* l:all)if(l->style()==CanvasLabel::Style::box)boxes.push_back(l);
+    std::vector<int> group(boxes.size(),-1);int groups=0;
+    for(std::size_t i=0;i<boxes.size();++i)if(group[i]<0) {
+        std::vector<std::size_t> todo{i};group[i]=groups;
+        while(!todo.empty()){const auto k=todo.back();todo.pop_back();
+            for(std::size_t j=0;j<boxes.size();++j)if(group[j]<0&&QLineF(c.viewportTransform().map(boxes[k]->anchor()),
+                c.viewportTransform().map(boxes[j]->anchor())).length()<=48){group[j]=groups;todo.push_back(j);}}
+        ++groups;
+    }
+    int multi=0;
+    for(int g=0;g<groups;++g) {
+        std::vector<QRectF> rects;
+        for(std::size_t i=0;i<boxes.size();++i)if(group[i]==g&&boxes[i]->isVisible())rects.push_back(screen(c,boxes[i]));
+        if(rects.size()<2)continue;
+        ++multi;
+        std::sort(rects.begin(),rects.end(),[](const QRectF& a,const QRectF& b){return a.top()<b.top();});
+        const auto aligned=[&](auto edge){return std::all_of(rects.begin(),rects.end(),[&](const QRectF& r){return std::abs(edge(r)-edge(rects.front()))<=.5;});};
+        require(aligned([](const QRectF& r){return r.left();})||aligned([](const QRectF& r){return r.right();})||
+                aligned([](const QRectF& r){return r.center().x();}),"A label column is not aligned");
+        for(std::size_t i=1;i<rects.size();++i)require(std::abs(rects[i].top()-rects[i-1].bottom()-2)<=.5,"A label column is not 2 px apart");
+    }
+    return multi;
 }
 bool overlapping(const std::vector<QRectF>& rects) {
     for(std::size_t i=0;i<rects.size();++i)for(std::size_t j=i+1;j<rects.size();++j)if(rects[i].intersects(rects[j]))return true;
@@ -124,15 +162,28 @@ int main(int argc,char** argv) {
         require(!overlapping(visible(canvas)),"Placed labels still overprint");
         leaders(canvas);
         for(auto* l:rates)require(l->style()==CanvasLabel::Style::box,"An input rate is not a box");
-        CanvasLabel* moved=nullptr;
-        for(auto* l:rates)if(!l->isVisible()||!same(screen(canvas,l),eastBox(canvas,l)))moved=l;
-        require(moved,"No label left its right-hand place");
+        // 2b. D426: the anchors within 48 px of each other -- several inputs at one road end -- form a
+        // column: one aligned edge, 2 px apart, top to bottom; and no box sits on a road, marker or
+        // stop line while the view has room. The forcing: such a cluster exists, and the D425 first
+        // place (12 px east of the anchor) of a west-end rate lies on the road.
+        for(const double s:{.9,1.5}) {
+            view(canvas,QTransform::fromScale(s,-s),centre);
+            const auto all=labels(canvas,"input-volume");
+            require(stacked(canvas,all)>0,"Setup: no two input anchors share a road end");
+            require(std::any_of(all.begin(),all.end(),[&](CanvasLabel* l){return onObject(canvas,eastBox(canvas,l));}),
+                    "Setup: the D425 first place covers no road");
+            for(auto* l:all)require(l->isVisible(),"A rate label hid although the view has room");
+            for(auto* l:all)require(!onObject(canvas,screen(canvas,l)),"A rate box covers a road or marker it could avoid");
+        }
+        view(canvas,QTransform::fromScale(1.5,-1.5),centre);
+        rates=labels(canvas,"input-volume");
+        CanvasLabel* moved=rates.front();
         // 3. A hidden label is not clickable; a visible one still opens its input.
         for(auto* l:rates)if(l->isVisible()) {
             const auto at=screen(canvas,l).center().toPoint();
             require(canvas.demandObjectAt(at).first=="input","A visible rate label no longer opens its input");
         }
-        // 4. Selecting the moved input's origin road pins its label at the right, visible whatever it meets.
+        // 4. Selecting an input's origin road pins its label: shown, framed in the accent, its column first.
         const auto id=moved->data(1).toString().toStdString();
         std::string origin;
         const auto& def=*window.history().document().definition;
@@ -141,12 +192,13 @@ int main(int argc,char** argv) {
             if(origin.empty())for(const auto& route:def.routes)if(route.id==input.routeId&&!route.segmentIds.empty())origin=route.segmentIds.front();
             if(origin.empty())for(const auto& decision:def.routingDecisions)if(decision.id==input.routingDecisionId)origin=decision.linkId;
         }
-        require(!origin.empty(),"Setup: the moved input names no origin Link");
+        require(!origin.empty(),"Setup: the input names no origin Link");
         canvas.select(origin);canvas.redraw();settle();
         bool pinned=false;
         for(auto* l:labels(canvas,"input-volume"))if(l->data(1).toString().toStdString()==id)
-            pinned=l->isVisible()&&l->pinned()&&same(screen(canvas,l),eastBox(canvas,l));
-        require(pinned,"A selected input's label is not shown at its right");
+            pinned=l->isVisible()&&l->pinned();
+        require(pinned,"A selected input's label is not shown pinned");
+        require(!overlapping(visible(canvas)),"A pinned column overprints");
         canvas.clearSelection(false);canvas.redraw();settle();
         // 5. Thai text, a rotated and a flipped view: still no overprint.
         canvas.setDemandLabels(QString::fromUtf8("คัน/ชม."),QString::fromUtf8("%1 ช่วงเวลา"));
@@ -155,14 +207,14 @@ int main(int argc,char** argv) {
             view(canvas,t,centre);
             require(static_cast<int>(labels(canvas,"input-volume").size())==inputs,"A view lost a rate label");
             require(!overlapping(visible(canvas)),"Labels overprint in a Thai, rotated, flipped or far view");
-            leaders(canvas);
+            leaders(canvas);stacked(canvas,labels(canvas,nullptr));
         }
         // 6. The template's period counts and decision names share the pass.
         window.openFile(QString::fromStdString((data/"projects/m2.6-study-template.traffic.json").string()));settle();
         view(canvas,QTransform::fromScale(1,-1),centre);
         require(!labels(canvas,"decision-label").empty()&&!labels(canvas,"input-volume").empty(),"Template lost its labels");
         require(!overlapping(visible(canvas)),"Decision and period labels overprint");
-        leaders(canvas);
+        leaders(canvas);stacked(canvas,labels(canvas,nullptr));
         for(auto* l:labels(canvas,"decision-label"))require(l->style()==CanvasLabel::Style::box,"A decision name is not a box");
         std::cout<<"Canvas labels: halo, screen-space placement, pinned selection, clicks and views passed\n";
         return 0;
