@@ -41,15 +41,15 @@ Images: [before](../images/canvas-layers-before/four-leg-run-9px.png),
 [after](../images/canvas-layers-after/four-leg-edit-9px.png). Images are from a scratchpad render of the
 shipped projects at the named scale after a redraw; `canvas-layers-ui` writes its own with a second argument.
 
-## Slice B — labels (next)
+## Slice B — labels (done, D424)
 
-- **Placement.** One screen-space placement pass for input rates, decision and Node labels. A label
-  that collides tries the other side of its anchor, then yields to a higher-priority one.
-  Selected and hovered labels always show.
-- **Halo.** Every label gets a Base-colour halo.
-- **Tests.** Tests check no overlap at the shipped fit zooms, both locales, and rotated views.
+`CanvasLabel` with a Base glyph halo; one screen-space pass per redraw places each label right,
+left, above or below its anchor, or hides it; a highlighted Node, or an input's or decision's
+selected/hovered origin Link, pins its label. Images:
+[before](../images/canvas-labels-before/four-leg-1.5px-th.png),
+[after](../images/canvas-labels-after/four-leg-1.5px-th.png).
 
-## Slice C — run vehicles
+## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing
   `vehicleDisplayColor` hash picks the colour and draws no simulation random numbers.

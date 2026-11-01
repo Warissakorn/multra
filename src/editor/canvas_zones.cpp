@@ -1,5 +1,7 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
+#include <QGuiApplication>
 #include "../model/network/node_membership.hpp"
 #include <QGraphicsPathItem>
 #include <algorithm>
@@ -60,9 +62,8 @@ void EditorCanvas::drawZones() {
         auto* item = outline(zone.polygon, false);
         item->setData(0, QStringLiteral("zone")); item->setData(1, QString::fromStdString(zone.id));
         const auto c = centroid(zone.polygon);
-        auto* label = scene_.addSimpleText(QString::fromStdString(zone.name.empty() ? zone.id : zone.name));
-        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(-149);
+        addLabel(QString::fromStdString(zone.name.empty() ? zone.id : zone.name), c, QGuiApplication::font(),
+                 canvasStyle::ink(), -149, {}, {}, CanvasLabel::zone, false); // D424
         for (const auto& connector : layer.zoneConnectors) {
             if (connector.zoneId != zone.id) continue;
             const auto draw = [&](Point end, int level) {
@@ -142,9 +143,8 @@ void EditorCanvas::drawNodes() {
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));
         const auto c = centroid(node.polygon);
-        auto* label = scene_.addSimpleText(QString::fromStdString(node.name.empty() ? node.id : node.name));
-        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(200006);
+        addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), c, QGuiApplication::font(),
+                 canvasStyle::ink(), 200006, {}, {}, CanvasLabel::node, lit); // D424
         if (lit) drawNodeLegs(node);
     }
 }

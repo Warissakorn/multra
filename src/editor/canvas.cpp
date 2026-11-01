@@ -108,7 +108,7 @@ std::pair<std::string, double> EditorCanvas::hit(Point p,bool connectors) const 
     return hits.empty()?std::pair<std::string,double>{}:hits.front();
 }
 void EditorCanvas::redraw() {
-    previewRouteEnd_=nullptr;runItems_.clear();runVehicles_.clear();runBaked_.clear();scene_.clear();pruneConnectorCache();
+    previewRouteEnd_=nullptr;runItems_.clear();runVehicles_.clear();runBaked_.clear();labels_.clear();scene_.clear();pruneConnectorCache();
     if (runLayerBaked_) { runLayerBaked_=false; resetCachedContent(); }
     if (grid != cachedGrid_) { cachedGrid_ = grid; resetCachedContent(); }
     if (!document_) return;
@@ -187,6 +187,7 @@ void EditorCanvas::redraw() {
     const auto visible=mapToScene(viewport()->rect()).boundingRect();
     extent=extent.united(visible.adjusted(-visible.width(),-visible.height(),visible.width(),visible.height()));
     scene_.setSceneRect(extent);
+    placeLabels(); // D424
     bakeRunLayer();drawRunItems();viewport()->update();
 }
 double EditorCanvas::minimumViewScale() const {

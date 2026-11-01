@@ -23,6 +23,7 @@ class MapLayer;
 enum class MapStatus;
 struct MapLoadState;
 struct CanvasImageOptions;
+class CanvasLabel;
 class EditorCanvas : public QGraphicsView {
 public:
     enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node, road };
@@ -399,6 +400,11 @@ private:
     QPainterPath centreStroke(const std::vector<Point>&, double pixels) const;
     void drawCentreLine(const std::string& id, const std::vector<Point>&, const QColor&, double z);
     void addKerb(const QPainterPath& surface, double level, double laneWidth, const std::string& id); // D423
+    // D424: canvas labels are registered for one screen-space placement pass per redraw.
+    CanvasLabel* addLabel(const QString& text, Point anchor, const QFont& font, const QBrush& brush, double z,
+                          const QString& tag, const std::string& id, int priority, bool pinned);
+    void placeLabels();
+    std::vector<CanvasLabel*> labels_;
     // A filled arrowhead of constant screen size, centred on `at` and pointing along `angle`.
     void addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);
     // True once a move is visibly under way: the lane tabs, which follow the committed document,

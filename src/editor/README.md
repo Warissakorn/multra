@@ -24,6 +24,7 @@ and `canvas_connectors.cpp` reads `../commands/connector_commands.hpp` for its p
 | `canvas_style.*` | Canvas colours as functions (built after `QApplication`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `ui_design_tokens.*` | The only place a hex colour literal may appear; read back by `QPalette` role | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `canvas_hud.*` | Screen HUD: scale bar, zoom in px/m, north arrow when the georeference gives one; transparent to the mouse | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
+| `canvas_labels.*` | Upright canvas labels with a Base halo, placed per redraw in screen space beside their anchors (D424) | [CANVAS_STYLE](../../docs/plans/CANVAS_STYLE.md) |
 | `canvas_image.*` | Bounded PNG export from an isolated authoring canvas (max 8192 px per edge, 32 Mpx), following the live display settings | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) |
 | `road_crossbar.*` | A Run signal state's shape at a station, readable without hue | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `vehicle_pose.*` | Display-only pose from the front-bumper station on the whole route | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) |
