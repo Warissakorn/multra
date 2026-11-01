@@ -152,7 +152,7 @@ void EditorCanvas::redraw() {
         if(canvasStyle::laneMarkingsReadable(narrowest,viewScale()))
         for(const auto& marking:markingStrokes(linkMarkings(link,document_->network.drivingSide))) {
             const auto pen=canvasStyle::markingPen(QColor(QString::fromStdString(appearance.laneColor)),marking.type);
-            auto* mark=scene_.addPath(path(marking.geometry),pen);
+            auto* mark=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,appearance.laneDash,appearance.laneGap),pen);
             mark->setZValue(z+canvasStyle::linkMarkingLayer);mark->setData(0,QStringLiteral("road-marking"));mark->setData(1,QString::fromStdString(link.id));
         }
         // Direction of travel is shown on the selection outline (drawObjectFeedback), not mid-road.

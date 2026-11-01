@@ -157,7 +157,8 @@ void EditorCanvas::drawConnectors() {
         for(const auto& marking:markingStrokes(drawing.markings)) {
             // An outer edge is solid; an interior divider draws its own type.
             const auto pen=canvasStyle::markingPen(marking.edge?boundaryColour:laneColour,marking.type);
-            auto* item=scene_.addPath(path(marking.geometry),pen);item->setZValue(z+4.5);
+            const auto& look=style(c.displayType); // D430: true-length dashes
+            auto* item=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,look.laneDash,look.laneGap),pen);item->setZValue(z+4.5);
             item->setData(0,QStringLiteral("road-marking"));item->setData(1,QString::fromStdString(c.id));
             item->setData(2,marking.edge?QStringLiteral("edge"):QStringLiteral("divider"));
         }

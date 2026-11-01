@@ -84,6 +84,11 @@ cover other objects unless they must.
 Images: [B2](../images/canvas-labels-b2/four-leg-0.9px-en.png),
 [B3](../images/canvas-labels-after/four-leg-0.9px-en.png).
 
+## Owner-requested: true-size lane dashes (done, D430)
+
+Dashed lane lines are cut in metres (`laneDash`/`laneGap` per display type, default 3/3) and keep
+their length at every zoom; Slice D's markings use the same cut.
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing

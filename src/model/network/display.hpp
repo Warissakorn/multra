@@ -8,6 +8,7 @@ struct DisplayType {
     std::string id;
     std::map<std::string,std::string> name;
     std::string linkColor,connectorColor,laneColor,vehicleColor;
+    double laneDash{3},laneGap{3}; // D430: dashed lane line, metres on the ground at every zoom
 };
 // vehicleColors: vehicle-type id -> #rrggbb, from data/vehicle-appearance (D97). A type with no
 // entry is drawn in its segment's DisplayType::vehicleColor.

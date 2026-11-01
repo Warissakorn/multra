@@ -2,7 +2,9 @@
 #include "../model/network/network.hpp"
 #include "ui_design_tokens.hpp"
 #include <QColor>
+#include <QPainterPath>
 #include <QPen>
+#include <vector>
 #include <cmath>
 
 namespace multra::canvasStyle {
@@ -75,10 +77,13 @@ inline QColor connectorBoundaryColor(const QColor& surface) {
     return editorDesign::role(luminance > .27 ? QPalette::Text : QPalette::Base);
 }
 
-inline QPen markingPen(const QColor& colour, MarkingType type) {
-    QPen pen(colour, markingWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
-    // Qt expresses dash lengths in pen widths. Keep 3 m dashes/gaps as the view zooms.
-    if (type == MarkingType::dashed) pen.setDashPattern({3 / markingWidth, 3 / markingWidth});
-    return pen;
+// D430: every marking is stroked solid. A dashed line is dashed in its geometry (dashedPath), because
+// Qt counts a pen's dash lengths in pen widths and floors a thin pen at one device pixel, which
+// stretched a 3 m dash to 15 m at 4 px/m.
+inline QPen markingPen(const QColor& colour, MarkingType) {
+    return QPen(colour, markingWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 }
+// D430: the polyline cut into dash sub-paths of `dash` metres separated by `gap` metres, measured
+// along the line from its start; a solid line (or a non-dashed type) is the whole polyline.
+QPainterPath markingPath(const std::vector<Point>& line, MarkingType type, double dash, double gap);
 }
