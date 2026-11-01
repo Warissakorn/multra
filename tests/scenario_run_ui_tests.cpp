@@ -99,9 +99,9 @@ int main(int argc, char** argv) {
             bool eventFilter(QObject*, QEvent* e) override { if (e->type() == QEvent::LayoutRequest) ++count; return false; }
         } requests;
         action(w, "editorReset"); action(w, "editorStep");
-        w.centralWidget()->installEventFilter(&requests);
+        w.findChild<QWidget*>("editorCanvasHost")->installEventFilter(&requests);
         for (int i = 0; i < 20; ++i) action(w, "editorStep");
-        w.centralWidget()->removeEventFilter(&requests);
+        w.findChild<QWidget*>("editorCanvasHost")->removeEventFilter(&requests);
         require(w.runState().tick == 21 && requests.count < 3, "A Step relays out the window");
         require(fits(), "Stepping left the status clipped");
         for (int i = 21; i < static_cast<int>(finished); ++i) { step->trigger(); if (i % 100 == 0) QApplication::processEvents(); }

@@ -2,7 +2,9 @@
 #include "../model/network/network.hpp"
 #include "ui_design_tokens.hpp"
 #include <QColor>
+#include <QPainterPath>
 #include <QPen>
+#include <vector>
 #include <cmath>
 
 namespace multra::canvasStyle {
@@ -44,6 +46,27 @@ inline constexpr double minLanePixels = 3;
 inline bool laneMarkingsReadable(double laneWidthMetres, double pixelsPerMetre) {
     return laneWidthMetres * pixelsPerMetre >= minLanePixels * (1 - 1e-9);
 }
+// D423 (canvas style slice A): a resting Connector shows each lane's centre path as a faint 1 px
+// guide, only from 8 logical px per lane; the kerb under the one asphalt fill replaces its edges.
+inline constexpr double minConnectorLanePixels = 8;
+inline constexpr int connectorGuideAlpha = 110;
+inline bool connectorLanesReadable(double laneWidthMetres, double pixelsPerMetre) {
+    return laneWidthMetres * pixelsPerMetre >= minConnectorLanePixels * (1 - 1e-9);
+}
+inline QPen connectorGuidePen(QColor colour) {
+    colour.setAlpha(connectorGuideAlpha);
+    QPen pen(colour, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
+    return pen;
+}
+// D423: every road surface is stroked with the kerb pen one layer below all surfaces of its level;
+// the fills cover the inner half, so only the outer contour of the road shows, with no seams.
+inline constexpr double kerbWidth = 0.50; // metres; a quarter metre shows outside the surface
+inline QColor kerb() { return editorDesign::role(QPalette::Mid); }
+inline QPen kerbPen() {
+    return QPen(kerb(), kerbWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+}
+// Layers within a level (z = level*100 + ...): kerb, surface, resting Connector guides, Link markings.
+inline constexpr double kerbLayer = 0.5, surfaceLayer = 1, connectorGuideLayer = 1.5, linkMarkingLayer = 2;
 
 inline QColor connectorBoundaryColor(const QColor& surface) {
     const auto linear = [](double channel) {
@@ -54,10 +77,13 @@ inline QColor connectorBoundaryColor(const QColor& surface) {
     return editorDesign::role(luminance > .27 ? QPalette::Text : QPalette::Base);
 }
 
-inline QPen markingPen(const QColor& colour, MarkingType type) {
-    QPen pen(colour, markingWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
-    // Qt expresses dash lengths in pen widths. Keep 3 m dashes/gaps as the view zooms.
-    if (type == MarkingType::dashed) pen.setDashPattern({3 / markingWidth, 3 / markingWidth});
-    return pen;
+// D430: every marking is stroked solid. A dashed line is dashed in its geometry (dashedPath), because
+// Qt counts a pen's dash lengths in pen widths and floors a thin pen at one device pixel, which
+// stretched a 3 m dash to 15 m at 4 px/m.
+inline QPen markingPen(const QColor& colour, MarkingType) {
+    return QPen(colour, markingWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 }
+// D430: the polyline cut into dash sub-paths of `dash` metres separated by `gap` metres, measured
+// along the line from its start; a solid line (or a non-dashed type) is the whole polyline.
+QPainterPath markingPath(const std::vector<Point>& line, MarkingType type, double dash, double gap);
 }

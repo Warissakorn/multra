@@ -92,6 +92,10 @@ void EditorCanvas::updateHud() {
 }
 void EditorCanvas::scrollContentsBy(int dx,int dy) {
     // The view scrolls the viewport's child widgets with the scene; the corner overlays stay put.
+    // D427: the background cache (grid, map, D281's run layer) is repainted, not scrolled. Qt
+    // shifts the cached pixmap by logical pixels, which misplaces it at a device pixel ratio other
+    // than 1 (the run's roads drifted from its vehicles at 150 %) and breaks dash phase at any.
+    resetCachedContent();
     QGraphicsView::scrollContentsBy(dx,dy);updateMapOverlay();
 }
 void EditorCanvas::drawForeground(QPainter*,const QRectF&) {

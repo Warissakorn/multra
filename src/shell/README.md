@@ -38,6 +38,7 @@ The other headers:
 | `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `editor_style.*` | The 20-unit toolbar and cursor glyphs; the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `message_label.*` | The one-row, closable message line under the canvas | [D429](../../docs/decisions/RECORD.md#d429) |
 | `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |

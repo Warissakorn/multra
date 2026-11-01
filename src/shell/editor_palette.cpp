@@ -1,3 +1,4 @@
+#include <QHeaderView>
 #include "editor_window.hpp"
 #include "editor_interaction.hpp"
 #include "editor_style.hpp"
@@ -38,6 +39,18 @@ void EditorWindow::buildPalette() {
     palette_->setIconSize(QSize(editorDesign::space4,editorDesign::space4));
     palette_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     palette_->setTextElideMode(Qt::ElideRight);palette_->setMinimumWidth(0);
+    // D431: the header is hidden, and a hidden header gets no resize events, so its stretched column
+    // stayed at its first width (100 px) once the dock layout started narrowing the palette. The
+    // column follows the viewport instead, so a row is never clipped or short.
+    struct ColumnFollowsViewport : QObject {
+        using QObject::QObject;
+        bool eventFilter(QObject* watched,QEvent* event) override {
+            if(event->type()==QEvent::Resize)
+                if(auto* tree=qobject_cast<QTreeWidget*>(watched->parent()))tree->header()->resizeSection(0,static_cast<QWidget*>(watched)->width());
+            return false;
+        }
+    };
+    palette_->viewport()->installEventFilter(new ColumnFollowsViewport(palette_));
     struct Group {const char* key;std::initializer_list<int> modes;};
     const Group groups[]={
         {"editorPaletteGeometry",{0,1,14,5,2}},

@@ -292,7 +292,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    Does zooming out on a large network feel quicker on Windows? *Owner:*
 22. **D281 static run layer** (listed 2026-10-20). Run M2.6 on Windows, pan and zoom while it runs,
    select a Link mid-run. Do the roads, markings and Connectors look as they do in Edit, and does
-   the run feel quicker than before (Linux: −38 % per Step with D282 and D283)? Does the status line above
+   the run feel quicker than before (Linux: −38 % per Step with D282 and D283)? Since D427 a pan repaints the cached roads: at 150 % do they stay under the vehicles while you drag? Does the status line above
    the canvas still show all its lines at 100–200 %? *Owner:*
 23. **D306 E1 tool pointers and clicks** (listed 2026-10-22). At 100/150/200 % on Windows, use
    each drawing tool: is its pointer glyph clear, and do plain clicks after a draft's first point
@@ -407,6 +407,13 @@ nothing. Numbers are not reused.
     window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
     CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
     field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
+33. **Editor fixes D427–D431** (listed 2026-11-01). On Windows at 100/150/200 %, Thai and English:
+    run four-leg and drag the view while it runs. Do the roads stay under the vehicles (D427)?
+    Snap starts off (D428). Make a run fail and check the message line is one row, with
+    "and N more", a tooltip and an × button (D429). Zoom in and out on dashed lane lines:
+    do the 3 m dashes keep their length (D430)? Drag the network view by its marker line to another
+    side, double-click it to float it onto a second screen, use it, resize the window, then View →
+    Reset panel layout (D431). *Owner:*
 
 ## F — Dialogs: demand and behaviour
 

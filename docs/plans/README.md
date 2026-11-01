@@ -8,6 +8,7 @@ the live queue. Owner observations are distinct from automated checks.
 |---|---|
 | [UI_PRESENTATION_SPEC.md](UI_PRESENTATION_SPEC.md) | Phase 1 UI layout, typography, icons, HUD/LOD and table proposal; awaiting owner choices |
 | [UI_PRESENTATION_SLICES.md](UI_PRESENTATION_SLICES.md) | UI presentation sessions, mandatory stable-tab slice 0 and acceptance tests |
+| [CANVAS_STYLE.md](CANVAS_STYLE.md) | Owner-directed Aimsun-like canvas drawing: grill answers Q1–Q12 and slices A–E (2026-11-01; A is D423) |
 | [OSM_BACKGROUND.md](OSM_BACKGROUND.md) | OSM raster map implementation and delivery order (2026-10-12) |
 | [OWNER_SITTING.md](OWNER_SITTING.md) | Every item waiting on the owner, for one sitting (D143) |
 | [UTDF_PROBE.md](UTDF_PROBE.md) | M14 U0: the reference junction and steps for the owner's Synchro 12 and Vistro 2026 UTDF probe — 2026-10-28 |

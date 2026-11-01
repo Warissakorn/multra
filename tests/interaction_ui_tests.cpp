@@ -240,7 +240,7 @@ void connectorEndTabs(EditorCanvas& c) {
         for(auto* item:c.scene()->items())if(item->data(0).toString()=="road-surface" &&
             item->data(1).toString()==QString::fromStdString(d.network.connectors.front().id)) {
             const auto* road=dynamic_cast<QGraphicsPathItem*>(item);require(road,"Connector surface is not a path");
-            require(road->brush().color()==QColor("#607d8b"),"Default Connector surface is still purple");
+            require(road->brush().color()==QColor("#49596d"),"Connector surface is not its type's road asphalt (D423)");
             foundRoadFill=true;
         }
         require(foundRoadFill,"Connector surface is missing its display colour");
@@ -389,7 +389,8 @@ void markings(EditorCanvas& c) {
             const auto* path=dynamic_cast<QGraphicsPathItem*>(item);require(path,"Marking path missing");
             require(!path->pen().isCosmetic() && std::abs(path->pen().widthF()-.10)<1e-9,"Lane marking is not 10 cm in world units");++marks;
         }
-        require(marks>=9,"Fixture is missing Link or Connector markings");
+        // D423: a resting Connector draws no lane markings (only faint lane guides); the Links draw six.
+        require(marks>=6,"Fixture is missing Link markings");
     }
     c.setDocument(nullptr);
 }

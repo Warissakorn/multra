@@ -65,7 +65,7 @@ selected objects after confirmation.
 
 The world uses metres, x east/right and y north/up. Right-button or middle-button drag
 pans; the wheel zooms at the pointer. F fits the network and background. Grid spacing
-is in metres, and Snap affects drawing/dragging. Measuring and calibration bypass snap.
+is in metres; Snap (off by default, D428) affects drawing/dragging. Measuring and calibration bypass snap.
 
 | Shortcut | Action |
 |---|---|
@@ -301,8 +301,8 @@ a table or inspector switches to all levels so the edit target is visible.
 
 Definitions live in `data/levels/*.json` and `data/display-types/*.json`, loaded in filename
 order. Add a JSON entry with English/Thai names to add a level or style; no C++ edit is
-needed. Catalogs require ground level 0 and a default style. Unknown stored styles keep
-their ID and render with the default, with a missing-style indication in Properties.
+needed. Catalogs require ground level 0 and a default style. A style's optional `laneDash`/`laneGap` (m, 0.1–100, default 3/3) set its dashed lane lines' true length at every zoom (D430). Unknown stored styles keep their ID
+and render with the default, with a missing-style indication in Properties.
 Levels only affect display and selection; they do not change runtime conflicts.
 
 ## Routes, inputs and fixed-time signals

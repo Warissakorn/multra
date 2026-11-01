@@ -200,7 +200,7 @@ int main(int argc,char** argv) {
             require(w.history().document().network==parseDocument(beforeSide).network,"Side round trip did not return the network");
         }
         lane(source,links[0].lanes[1].id);lane(target,links[1].lanes[0].id);action(w,"editorCreateConnector");
-        require(w.history().document().network.connectors.size()==2,"Inspector creation failed");
+        require(w.history().document().network.connectors.size()==2,("Inspector creation failed: "+item<QLabel>(w,"editorError")->text().toStdString()).c_str());
         const auto beforeDuplicate=documentJson(w.history().document());action(w,"editorCreateConnector");
         require(documentJson(w.history().document())==beforeDuplicate,"Duplicate changed document");
         require(item<QLabel>(w,"editorError")->text().contains("already have"),"Duplicate feedback missing");

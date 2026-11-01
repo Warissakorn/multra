@@ -53,9 +53,9 @@ void EditorWindow::buildConflicts() {
     layout->addWidget(conflictTable_);
     addObjectPage(body,"editorConflictTable");
     // The Run UI says what the solver protects: authored areas only (M3_PLAN §2).
-    runProtection_ = new ReflowLabel(centralWidget()); runProtection_->setObjectName("editorRunProtection");
+    runProtection_ = new ReflowLabel(canvasHost_); runProtection_->setObjectName("editorRunProtection");
     runProtection_->setWordWrap(true); setReflowPolicy(runProtection_,QSizePolicy::Ignored);
-    qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(2, runProtection_);
+    qobject_cast<QVBoxLayout*>(canvasHost_->layout())->insertWidget(1, runProtection_); // D431: under the run status
     runProtection_->hide();
     bar->addAction(action("editorAddCrossing", {}, [this] { addCrossings(); }));
     bar->addAction(action("editorTakeOverMerge", {}, [this] {

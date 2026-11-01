@@ -1,8 +1,11 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
+#include <QGuiApplication>
 #include "../model/network/node_membership.hpp"
 #include <QGraphicsPathItem>
 #include <algorithm>
+#include <limits>
 #include <QGraphicsSimpleTextItem>
 #include <QMouseEvent>
 #include <QPainterPath>
@@ -59,9 +62,8 @@ void EditorCanvas::drawZones() {
         auto* item = outline(zone.polygon, false);
         item->setData(0, QStringLiteral("zone")); item->setData(1, QString::fromStdString(zone.id));
         const auto c = centroid(zone.polygon);
-        auto* label = scene_.addSimpleText(QString::fromStdString(zone.name.empty() ? zone.id : zone.name));
-        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(-149);
+        addLabel(QString::fromStdString(zone.name.empty() ? zone.id : zone.name), c, QGuiApplication::font(),
+                 canvasStyle::ink(), -149, {}, {}, CanvasLabel::zone, false, CanvasLabel::Style::halo); // D424
         for (const auto& connector : layer.zoneConnectors) {
             if (connector.zoneId != zone.id) continue;
             const auto draw = [&](Point end, int level) {
@@ -115,6 +117,19 @@ void EditorCanvas::drawNodes() {
         for (std::size_t i = 0; i < node.polygon.size(); ++i)
             i ? shape.lineTo(node.polygon[i].x, node.polygon[i].y) : shape.moveTo(node.polygon[i].x, node.polygon[i].y);
         shape.closeSubpath();
+        // D423 (Q5 b): a Node's polygon is junction road -- the default asphalt with its kerb, on the
+        // ground level, so no gap between its Connectors reads as a hole. Wireframe draws no surface.
+        if (!wireframe_ && levelVisible(0)) {
+            auto* surface = scene_.addPath(shape, QPen(Qt::NoPen),
+                                           QBrush(QColor(QString::fromStdString(style("default").linkColor))));
+            surface->setZValue(canvasStyle::surfaceLayer);
+            surface->setData(0, QStringLiteral("node-surface")); surface->setData(1, QString::fromStdString(node.id));
+            // A Node has no lanes of its own: its kerb shows when the narrowest lane's markings do.
+            double narrowest = std::numeric_limits<double>::infinity();
+            for (const auto& link : document_->network.links)
+                for (const auto& lane : link.lanes) narrowest = std::min(narrowest, lane.width);
+            addKerb(shape, 0, narrowest, node.id);
+        }
         const bool lit = node.id == highlightedNode_;
         QPen pen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2.5 : node.generated ? 1.5 : 2,
                  node.generated ? Qt::DotLine : Qt::SolidLine);
@@ -128,9 +143,8 @@ void EditorCanvas::drawNodes() {
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));
         const auto c = centroid(node.polygon);
-        auto* label = scene_.addSimpleText(QString::fromStdString(node.name.empty() ? node.id : node.name));
-        label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        label->setBrush(canvasStyle::ink()); label->setPos(c.x, c.y); label->setZValue(200006);
+        addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), c, QGuiApplication::font(),
+                 canvasStyle::ink(), 200006, {}, {}, CanvasLabel::node, lit, CanvasLabel::Style::halo); // D424
         if (lit) drawNodeLegs(node);
     }
 }

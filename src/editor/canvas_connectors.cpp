@@ -111,6 +111,8 @@ void EditorCanvas::drawConnectors() {
         if(!levelVisible(c.level))continue;
         const double z=c.level*100.;
         const QColor colour(QString::fromStdString(style(c.displayType).connectorColor));
+        // D423: a Connector is road like its Links -- one asphalt in its type's linkColor.
+        const QColor asphalt(QString::fromStdString(style(c.displayType).linkColor));
         auto preview=c;
         if(c.id==primary && !preview_.empty()){preview.geometry=preview_;preview.laneBlend.clear();}
         if(c.id==primary && rangeCorner_)resizeConnectorEdges(document_->network,preview,previewFromCount_,previewToCount_,rangeCorner_>4,true);
@@ -137,25 +139,41 @@ void EditorCanvas::drawConnectors() {
         // A ribbon that overlaps itself on a tight turn is still road there. The even-odd
         // default punched the overlap out as a hole, which read as a tear in the surface.
         surface.setFillRule(Qt::WindingFill);
-        auto* road=scene_.addPath(surface,QPen(Qt::NoPen),QBrush(colour));road->setZValue(z+4);
+        auto* road=scene_.addPath(surface,QPen(Qt::NoPen),QBrush(asphalt));road->setZValue(z+canvasStyle::surfaceLayer);
         road->setData(0,QStringLiteral("road-surface"));road->setData(1,QString::fromStdString(c.id));
         // D200: the narrowest lane the Connector carries at either end decides its markings.
         double narrowest=std::numeric_limits<double>::infinity();
         const auto widths=connectorLaneWidths(document_->network,preview);
         for(const auto* end:{&widths.source,&widths.target})for(double w:*end)if(w>0)narrowest=std::min(narrowest,w);
+        addKerb(surface,c.level,narrowest,c.id);
         const bool readable=canvasStyle::laneMarkingsReadable(narrowest,viewScale());
-        if(readable)
+        // D423: only a Connector being worked on -- selected, hovered or under the Connect tool --
+        // draws its edges, dividers and mouth edges over the junction. At rest the kerb is its edge,
+        // and from 8 px per lane, outside a run, each lane's centre path lies faintly under every
+        // Link marking: the turn a vehicle takes, legible where the lines no longer tangle.
+        const bool emphasised=isSelected(c.id) || c.id==hoverObject_ || tool_==Tool::connect;
+        const QColor laneColour(QString::fromStdString(style(c.displayType).laneColor));
+        if(emphasised && readable)
         for(const auto& marking:markingStrokes(drawing.markings)) {
             // An outer edge is solid; an interior divider draws its own type.
-            const QColor markingColour=marking.edge?boundaryColour:
-                QColor(QString::fromStdString(style(c.displayType).laneColor));
-            const auto pen=canvasStyle::markingPen(markingColour,marking.type);
-            auto* item=scene_.addPath(path(marking.geometry),pen);item->setZValue(z+4.5);
+            const auto pen=canvasStyle::markingPen(marking.edge?boundaryColour:laneColour,marking.type);
+            const auto& look=style(c.displayType); // D430: true-length dashes
+            auto* item=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,look.laneDash,look.laneGap),pen);item->setZValue(z+4.5);
             item->setData(0,QStringLiteral("road-marking"));item->setData(1,QString::fromStdString(c.id));
             item->setData(2,marking.edge?QStringLiteral("edge"):QStringLiteral("divider"));
         }
+        if(!emphasised && !runFrame_.scenario && canvasStyle::connectorLanesReadable(narrowest,viewScale()))
+        for(std::size_t i=0;i+1<drawing.boundaries.size();++i) {
+            const auto& left=drawing.boundaries[i];const auto& right=drawing.boundaries[i+1];
+            if(left.size()!=right.size() || left.size()<2)continue; // rails share their stations
+            std::vector<Point> centre;centre.reserve(left.size());
+            for(std::size_t k=0;k<left.size();++k)centre.push_back({(left[k].x+right[k].x)/2,(left[k].y+right[k].y)/2});
+            auto* guide=scene_.addPath(path(centre),canvasStyle::connectorGuidePen(laneColour));
+            guide->setZValue(z+canvasStyle::connectorGuideLayer);
+            guide->setData(0,QStringLiteral("connector-guide"));guide->setData(1,QString::fromStdString(c.id));
+        }
         const auto mouthEdge=[&](const std::optional<ConnectorMouth>& mouth,const char* end) {
-            if(!mouth || !readable)return;
+            if(!mouth || !readable || !emphasised)return;
             auto* item=scene_.addPath(path({mouth->points[2],mouth->points[3]}),
                 canvasStyle::markingPen(boundaryColour,MarkingType::solid));
             item->setZValue(z+4.5);item->setData(0,QStringLiteral("connector-mouth-edge"));

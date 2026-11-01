@@ -1,3 +1,5 @@
+#include <QTimer>
+#include <algorithm>
 #include "editor_window.hpp"
 #include "object_export.hpp"
 #include "image_export.hpp"
@@ -26,6 +28,24 @@
 #include <QToolButton>
 #include <QTreeWidget>
 #include <initializer_list>
+
+namespace {
+// D431: with no central widget, Qt shares a window resize among all the docks. A panel's size is
+// therefore remembered whenever it changes while the window keeps its size (a separator drag, a
+// move, Reset), and resizeEvent gives it back afterwards, leaving the change to the canvas dock as
+// the central widget used to take it.
+struct KeepPanelSizes : QObject {
+    using QObject::QObject;
+    bool eventFilter(QObject* watched,QEvent* event) override {
+        auto* dock=qobject_cast<QDockWidget*>(watched);
+        if(event->type()==QEvent::Resize && dock && dock->objectName()!=QLatin1String("editorCanvasDock") && !dock->isFloating()) {
+            auto* window=dock->parentWidget();
+            if(window && window->property("multraLaidOutSize").toSize()==window->size())dock->setProperty("multraPanelSize",dock->size());
+        }
+        return false;
+    }
+};
+}
 namespace multra {
 void EditorWindow::buildWorkspace() {
     buildAutomationActions();
@@ -57,6 +77,12 @@ void EditorWindow::buildWorkspace() {
     auto* focus=action("editorFocusCanvas",QKeySequence("Ctrl+Shift+F"),[]{});focus->setCheckable(true);
     connect(focus,&QAction::toggled,this,&EditorWindow::focusCanvas);
     action("editorResetLayout",{},[this]{resetWorkspace();});
+    // D431: the network view's title is its marker line, so floating also has a menu entry.
+    auto* floatView=action("editorFloatCanvas",{},[this]{
+        auto* view=findChild<QDockWidget*>("editorCanvasDock");view->setFloating(!view->isFloating());view->show();canvas_->setFocus();
+    });
+    floatView->setCheckable(true);
+    connect(findChild<QDockWidget*>("editorCanvasDock"),&QDockWidget::topLevelChanged,floatView,&QAction::setChecked);
     action("editorShortcuts",QKeySequence::HelpContents,[this]{
         QMessageBox::information(this,text("editorShortcuts"),text("editorKeyboardHelp")+"\n\n"+text("editorGestureHelp")+"\n\n"+text("editorRunStatusNote"));
     });
@@ -78,7 +104,7 @@ void EditorWindow::buildWorkspace() {
         }));
     }
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});
-    menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","editorVehicleColors","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorResetLayout"});
+    menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","editorVehicleColors","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorFloatCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorMapRetry","editorToggleMap","editorRemoveMap"});
     menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorBehaviourLab","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
     menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts","","editorAutomationEnable","editorAutomationEndpoint","editorAutomationDisable"});
@@ -135,6 +161,8 @@ void EditorWindow::buildWorkspace() {
             }
         });
     alignFormLabels(findChild<QDockWidget*>("editorInspectorDock")->widget()); // after every Properties page exists
+    auto* keep=new KeepPanelSizes(this); // D431
+    for(auto* dock:findChildren<QDockWidget*>(QString(),Qt::FindDirectChildrenOnly))dock->installEventFilter(keep);
     resetWorkspace();
 }
 void EditorWindow::layoutToolbars() {
@@ -143,12 +171,40 @@ void EditorWindow::layoutToolbars() {
         if(stacked!=toolBarBreak(run)){if(stacked)insertToolBarBreak(run);else removeToolBarBreak(run);}
     }
 }
-void EditorWindow::resizeEvent(QResizeEvent* event) {QMainWindow::resizeEvent(event);layoutToolbars();}
+void EditorWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);layoutToolbars();
+    // D431: once the resize and any toolbar re-wrap have been laid out, give the panels back
+    // their sizes so the canvas takes the change. Until then nothing is remembered as intended.
+    if(property("multraRestorePending").toBool())return;
+    setProperty("multraRestorePending",true);
+    QTimer::singleShot(0,this,[this]{
+        setProperty("multraRestorePending",false);
+        auto* view=findChild<QDockWidget*>("editorCanvasDock");
+        if(view && !view->isFloating() && view->isVisible()) {
+            // Side panels keep their width and top/bottom panels their height. Qt hands space taken
+            // from a panel straight back to the panels while no central widget is shown, so the
+            // canvas is sized instead: it gains whatever the panels give back.
+            QList<QDockWidget*> sides{view},ends{view};QList<int> widths{view->width()},heights{view->height()};
+            for(auto* dock:findChildren<QDockWidget*>(QString(),Qt::FindDirectChildrenOnly)) {
+                const auto kept=dock->property("multraPanelSize").toSize();
+                if(dock==view || dock->isFloating() || !dock->isVisible() || !kept.isValid())continue;
+                const auto area=dockWidgetArea(dock);
+                if(area==Qt::LeftDockWidgetArea || area==Qt::RightDockWidgetArea) {
+                    sides.push_back(dock);widths.push_back(kept.width());widths[0]+=dock->width()-kept.width();
+                } else {ends.push_back(dock);heights.push_back(kept.height());heights[0]+=dock->height()-kept.height();}
+            }
+            if(sides.size()>1)resizeDocks(sides,widths,Qt::Horizontal);
+            if(ends.size()>1)resizeDocks(ends,heights,Qt::Vertical);
+        }
+        setProperty("multraLaidOutSize",size());
+    });
+}
 void EditorWindow::focusCanvas(bool enabled) {
     changingWorkspace_=true;
     if(enabled) {
         workspaceBeforeFocus_=saveState();
-        for(auto* dock:findChildren<QDockWidget*>(QString(),Qt::FindDirectChildrenOnly))dock->hide();
+        for(auto* dock:findChildren<QDockWidget*>(QString(),Qt::FindDirectChildrenOnly))
+            if(dock->objectName()!=QLatin1String("editorCanvasDock"))dock->hide(); // D431: the canvas stays
     } else if(!workspaceBeforeFocus_.isEmpty()) {restoreState(workspaceBeforeFocus_);workspaceBeforeFocus_.clear();}
     layoutToolbars();changingWorkspace_=false;canvas_->setFocus();
 }
@@ -159,14 +215,26 @@ void EditorWindow::resetWorkspace() {
     actions_.at("editorPaletteIconsOnly")->setChecked(false);translatePalette(); // the view is transient (B17)
     const auto dock=[this](const char* name){return findChild<QDockWidget*>(name);};
     auto* palette=dock("editorPaletteDock");auto* inspector=dock("editorInspectorDock");
-    auto* objects=dock("editorObjectsDock");auto* history=dock("editorHistoryDock");
-    for(auto* panel:{palette,inspector,objects,history}){panel->setFloating(false);removeDockWidget(panel);}
-    addDockWidget(Qt::LeftDockWidgetArea,palette);addDockWidget(Qt::RightDockWidgetArea,inspector);
+    auto* objects=dock("editorObjectsDock");auto* history=dock("editorHistoryDock");auto* view=dock("editorCanvasDock");
+    for(auto* panel:{view,palette,inspector,objects,history}){panel->setFloating(false);removeDockWidget(panel);}
+    // D431: palette | canvas | Properties (History tabbed) across the top, Objects along the bottom.
+    addDockWidget(Qt::LeftDockWidgetArea,palette);splitDockWidget(palette,view,Qt::Horizontal);
+    addDockWidget(Qt::RightDockWidgetArea,inspector);
     addDockWidget(Qt::RightDockWidgetArea,history);tabifyDockWidget(inspector,history);addDockWidget(Qt::BottomDockWidgetArea,objects);
-    for(auto* panel:{palette,inspector,objects})panel->show();
+    for(auto* panel:{view,palette,inspector,objects})panel->show();
     history->hide();inspector->raise();
     showObjectPage(objectPages_.at("editorLinkTable")); // the group is transient too
-    resizeDocks({palette,inspector},{paletteWidth,310},Qt::Horizontal);resizeDocks({objects},{185},Qt::Vertical);
+    // D431: with no central widget the docks share any spare room, so the canvas is given it
+    // explicitly; before the first show the window has no size yet, so the sizes apply again then.
+    const auto sizes=[this,palette,view,inspector,objects]{
+        resizeDocks({palette,view,inspector},{paletteWidth,std::max(400,width()-paletteWidth-310),310},Qt::Horizontal);
+        resizeDocks({view,objects},{std::max(300,height()-185),185},Qt::Vertical);
+        // The requested sizes are what each panel keeps (side panels their width, Objects its height);
+        // the widgets take them only at the next layout.
+        palette->setProperty("multraPanelSize",QSize(std::max(paletteWidth,palette->minimumSizeHint().width()),1));inspector->setProperty("multraPanelSize",QSize(310,1));
+        objects->setProperty("multraPanelSize",QSize(1,185));
+    };
+    sizes();if(!isVisible())QTimer::singleShot(0,this,sizes);
     layoutToolbars();changingWorkspace_=false;canvas_->setFocus();
 }
 }

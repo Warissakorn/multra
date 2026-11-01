@@ -110,7 +110,14 @@ int main(int argc, char** argv) {
 #endif
     if (socket.write(bytes) != bytes.size()) return failure("WRITE_FAILED", socket.errorString());
     while (socket.bytesToWrite() > 0)
-        if (!socket.waitForBytesWritten(remaining())) return failure("WRITE_FAILED", socket.errorString());
+        if (!socket.waitForBytesWritten(remaining())) {
+            // A peer that answers and closes at once (app.quit) can finish before a Windows pipe
+            // reports this write; its reply decides. No reply still fails in the read loop below.
+            if (socket.bytesAvailable() > 0 || socket.state() != QLocalSocket::ConnectedState) break;
+            // A peer that never reads can hold a Windows pipe write past --timeout: that is a timeout.
+            if (remaining() == 0) return failure("TIMEOUT", "Timed out sending the request");
+            return failure("WRITE_FAILED", socket.errorString());
+        }
 
     QByteArray response;
     for (;;) {

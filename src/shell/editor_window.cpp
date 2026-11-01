@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "automation_server.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
 #include "behaviour_lab_window.hpp"
@@ -59,12 +60,20 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     auto* central=new QWidget(this); auto* layout=new QVBoxLayout(central);
     layout->setContentsMargins(editorDesign::space1,editorDesign::space1,editorDesign::space1,editorDesign::space1);
     layout->setSpacing(editorDesign::space1);
-    auto* scope=new ReflowLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope; layout->addWidget(scope);
+    auto* scope=new ReflowLabel(central); scope->setWordWrap(true); scope->setObjectName("editorScope"); texts_["editorScopeCompact"]=scope;
     setReflowPolicy(scope,QSizePolicy::Ignored);
     canvas_=new EditorCanvas(central);canvas_->setDisplayCatalog(displayCatalog_); layout->addWidget(canvas_,1);
-    error_=new ReflowLabel(central); error_->setObjectName("editorError"); error_->setWordWrap(true);
-    setReflowPolicy(error_,QSizePolicy::Ignored);
-    layout->addWidget(error_); setCentralWidget(central);
+    error_=new MessageLabel(central); error_->setObjectName("editorError"); // D429: one row, closable
+    layout->addWidget(error_);
+    // D431: the canvas, with its status and message lines, is a dock like the other panels, so it
+    // can move to any side or float onto another screen. It cannot close. The central widget is a
+    // hidden placeholder, so the docks share the whole window.
+    canvasHost_=central;central->setObjectName("editorCanvasHost");
+    auto* canvasDock=new QDockWidget(this);canvasDock->setObjectName("editorCanvasDock");texts_["editorCanvas"]=canvasDock;
+    canvasDock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);canvasDock->setWidget(central);
+    canvasDock->setTitleBarWidget(scope); // the validation marker is its title bar: drag it to move, double-click to float
+    auto* placeholder=new QWidget(this);placeholder->setObjectName("editorCentralPlaceholder");setCentralWidget(placeholder);placeholder->hide();
+    setDockNestingEnabled(true);addDockWidget(Qt::LeftDockWidgetArea,canvasDock);
     auto* files=addToolBar(QString());texts_["editorFiles"]=files; files->setObjectName("editorFiles");
     files->addAction(action("editorNew",QKeySequence::New,[this]{ if(confirmDiscard())newFile(); }));
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
@@ -92,7 +101,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         if(box.exec()==QMessageBox::Yes) execute("editorDeleteLink",[&](auto& d){deleteLink(d,id);});
     });
     auto* snap=action("editorSnap",{},[this]{canvas_->snap=actions_.at("editorSnap")->isChecked();});
-    snap->setCheckable(true); snap->setChecked(true); tools->addAction(snap);
+    snap->setCheckable(true); snap->setChecked(false); tools->addAction(snap); // D428: off by default
     grid_=new QDoubleSpinBox(this); grid_->setRange(0.1,100); grid_->setValue(1); grid_->setSuffix(" m"); grid_->setObjectName("editorGrid");grid_->setMaximumWidth(86); tools->addWidget(grid_);
     coordinates_=new ReflowLabel(this);coordinates_->setObjectName("editorCoordinates");
     coordinates_->setProperty("numeric",true);coordinates_->setFont(editorDesign::numericFont());
@@ -226,6 +235,7 @@ void EditorWindow::translate() {
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
     language_->setAccessibleName(text("language"));
     texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
+    error_->setMoreText(text("editorMessageMore"));error_->setCloseText(text("editorMessageClose"));
     buildMapTranslation();error_->clear(); refresh();
 }
 bool EditorWindow::commitChange(const std::string& name,const std::function<void(ProjectDocument&)>& change,bool generatedCommand) {

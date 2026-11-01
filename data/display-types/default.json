@@ -7,5 +7,7 @@
   "linkColor": "#49596d",
   "connectorColor": "#607d8b",
   "laneColor": "#d0dfeb",
-  "vehicleColor": "#facc15"
+  "vehicleColor": "#facc15",
+  "laneDash": 3,
+  "laneGap": 3
 }

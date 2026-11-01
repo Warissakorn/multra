@@ -181,6 +181,7 @@ QString editorStyleSheet() {
         QLabel#editorScope { background: palette(window); color: palette(text); padding: @space1px @space2px; border-bottom: 1px solid palette(mid); }
         QLabel#editorRunInfo { background: palette(base); color: palette(text); padding: @space1px @space2px; }
         QLabel#editorError, QLabel[validationState="invalid"], QLabel[status="error"] { color: palette(bright-text); padding: @space1px @space2px; }
+        QToolButton#editorMessageClose, QToolButton#editorMessageClose:focus { min-height: 0; max-height: none; min-width: 0; padding: 0; border: none; background: transparent; } /* D429 */
         QLabel[status="warning"] { color: palette(link-visited); }
         QLabel[status="advisory"] { color: palette(link); }
         QLabel[status="ok"] { color: palette(shadow); }

@@ -138,7 +138,8 @@ int main(int argc, char** argv) {
         QLocalServer silent;
         require(silent.listen(multra::automationServerName(endpoint + "-silent")), "Silent timeout test endpoint did not start");
         response = invoke(binary, {"--endpoint", endpoint + "-silent", "--request", "{}", "--timeout", "100"}, 2);
-        require(response.value("error").toObject().value("code") == "TIMEOUT", "Client did not bound an unanswered request");
+        const auto silentCode = response.value("error").toObject().value("code").toString();
+        require(silentCode == "TIMEOUT", ("Client did not bound an unanswered request: " + silentCode).toStdString().c_str());
 #ifndef Q_OS_WIN
         // The socket is the user's own: inside an owner-only runtime directory, never the shared
         // temporary one, so another account cannot create the name first and receive requests.

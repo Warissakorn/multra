@@ -1,3 +1,4 @@
+#include <cmath>
 #include "display.hpp"
 #include "json.hpp"
 #include <nlohmann/json.hpp>
@@ -43,6 +44,13 @@ DisplayCatalog loadDisplayCatalog(const std::filesystem::path& data) {
             const auto id=j.at("id").get<std::string>();
             if(id.empty() || !ids.insert(id).second)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
             catalog.types.push_back({id,name(j),color(j,"linkColor"),color(j,"connectorColor"),color(j,"laneColor"),color(j,"vehicleColor")});
+            // D430: optional, 0.1-100 m; absent keeps 3 m dash, 3 m gap.
+            for(const auto& [key,field]:{std::pair{"laneDash",&DisplayType::laneDash},std::pair{"laneGap",&DisplayType::laneGap}})
+                if(j.contains(key)) {
+                    if(!j.at(key).is_number() || !std::isfinite(j.at(key).get<double>()) || j.at(key).get<double>()<.1 || j.at(key).get<double>()>100)
+                        throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+                    catalog.types.back().*field=j.at(key).get<double>();
+                }
         }
         if(!orders.contains(0) || !ids.contains("default"))throw std::runtime_error("EDIT_DISPLAY_CATALOG");
         // D97: a vehicle type's colour is display data, so it lives here and not in

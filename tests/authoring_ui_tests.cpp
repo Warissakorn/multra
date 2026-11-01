@@ -55,8 +55,10 @@ int main(int argc,char** argv) {
         int solid=0,dashed=0;
         for(auto* p:w.canvas()->scene()->items())if(p->data(0).toString()=="road-marking") {
             auto* path=dynamic_cast<QGraphicsPathItem*>(p);require(path,"Marking is not a path");
-            if(path->pen().style()==Qt::SolidLine)++solid;
-            if(path->pen().style()==Qt::CustomDashLine)++dashed;
+            // D430: a dashed line is cut into dash subpaths; every marking pen is solid.
+            int pieces=0;for(int i=0;i<path->path().elementCount();++i)pieces+=path->path().elementAt(i).isMoveTo();
+            if(pieces==1)++solid;
+            if(pieces>1)++dashed;
         }
         require(solid==2 && dashed==1,"Authored outer dashed edge was forced solid");
         const auto authored=w.history().document();

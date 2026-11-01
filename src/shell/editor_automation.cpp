@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "automation_error.hpp"
 #include "automation_geometry.hpp"
 #include "automation_document.hpp"

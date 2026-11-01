@@ -1,4 +1,5 @@
 #include "canvas.hpp"
+#include "canvas_style.hpp"
 #include <QKeyEvent>
 #include <QPainterPathStroker>
 #include <algorithm>
@@ -8,6 +9,14 @@ const DisplayType& EditorCanvas::style(const std::string& id) const {
     for(const auto& type:display_.types)if(type.id==id)return type;
     for(const auto& type:display_.types)if(type.id=="default")return type;
     static const DisplayType absent{};return absent;
+}
+// D423: the kerb is decoration under every surface of its level -- no hit, tool or selection reads
+// it -- so it follows the D200 lane threshold like the lane markings.
+void EditorCanvas::addKerb(const QPainterPath& surface,double level,double laneWidth,const std::string& id) {
+    if(surface.isEmpty() || !canvasStyle::laneMarkingsReadable(laneWidth,viewScale()))return;
+    auto* kerb=scene_.addPath(surface,canvasStyle::kerbPen(),QBrush(Qt::NoBrush));
+    kerb->setZValue(level*100.+canvasStyle::kerbLayer);
+    kerb->setData(0,QStringLiteral("road-kerb"));kerb->setData(1,QString::fromStdString(id));
 }
 std::vector<std::pair<std::string,double>> EditorCanvas::hitObjects(Point p,bool connectors) const {
     struct Hit {std::string id;double station{},distance{};int level{},order{};};

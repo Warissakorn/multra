@@ -30,6 +30,17 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Canvas style — slices A, B, B2 and B3 done; stop for owner review
+
+- Owner-directed and separate from M13/M14: [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill
+  answers and slices A–E. Slice A (road surface, kerb, junction layers) is D423; slice B (label
+  halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
+  with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
+  `docs/images/canvas-labels-after/`.
+- Owner-requested editor fixes (/optimize-program, 2026-11-01): pan repaints the background, so a
+  run's roads stay under their vehicles (D427). Snap starts off (D428). The message line is one closable row (D429). Dashed lane lines keep their true length, set per display type (D430). The canvas is a movable, floatable dock (D431). The owner checks these on Windows (OWNER_SITTING). Snap off by default, a compact closable message
+  line, true-size lane dashes per display type and a dockable canvas follow, one commit each.
+
 ## M13 — A9 implemented; stop for owner review
 
 - **Stop here; do not start another slice.** The owner accepted checkpoints `a6d0a25` and

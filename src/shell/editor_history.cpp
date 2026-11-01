@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QDockWidget>

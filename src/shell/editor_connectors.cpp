@@ -114,7 +114,9 @@ QWidget* EditorWindow::buildConnectorInspector() {
                 ref.station=old.station;return ref;
             }
         }
-        if(metres!=(outgoing?reference:0.))ref.station=metres;
+        // Within the box's 3-decimal rounding of the end, the value is the end itself: 50.000 shown
+        // for a 49.9997 m Link must not become a station past it (D431 exposed this).
+        if(std::abs(metres-(outgoing?reference:0.))>=5e-4)ref.station=metres;
         return ref;
     };
     connect(connectorObject_,&QComboBox::currentIndexChanged,this,[this]{

@@ -108,7 +108,7 @@ std::pair<std::string, double> EditorCanvas::hit(Point p,bool connectors) const 
     return hits.empty()?std::pair<std::string,double>{}:hits.front();
 }
 void EditorCanvas::redraw() {
-    previewRouteEnd_=nullptr;runItems_.clear();runVehicles_.clear();runBaked_.clear();scene_.clear();pruneConnectorCache();
+    previewRouteEnd_=nullptr;runItems_.clear();runVehicles_.clear();runBaked_.clear();labels_.clear();scene_.clear();pruneConnectorCache();
     if (runLayerBaked_) { runLayerBaked_=false; resetCachedContent(); }
     if (grid != cachedGrid_) { cachedGrid_ = grid; resetCachedContent(); }
     if (!document_) return;
@@ -145,14 +145,15 @@ void EditorCanvas::redraw() {
         const auto left=trimSelfIntersections(laneBoundaryGeometry(link,0,document_->network.drivingSide));
         const auto right=trimSelfIntersections(laneBoundaryGeometry(link,link.lanes.size(),document_->network.drivingSide));
         auto surface=path(left);for(auto it=right.rbegin();it!=right.rend();++it)surface.lineTo(q(*it));surface.closeSubpath();
-        scene_.addPath(surface,QPen(Qt::NoPen),QBrush(colour))->setZValue(z+1);
+        scene_.addPath(surface,QPen(Qt::NoPen),QBrush(colour))->setZValue(z+canvasStyle::surfaceLayer);
         double narrowest=std::numeric_limits<double>::infinity();
         for(const auto& lane:link.lanes)narrowest=std::min(narrowest,lane.width);
+        addKerb(surface,link.level,narrowest,link.id);
         if(canvasStyle::laneMarkingsReadable(narrowest,viewScale()))
         for(const auto& marking:markingStrokes(linkMarkings(link,document_->network.drivingSide))) {
             const auto pen=canvasStyle::markingPen(QColor(QString::fromStdString(appearance.laneColor)),marking.type);
-            auto* mark=scene_.addPath(path(marking.geometry),pen);
-            mark->setZValue(z+2);mark->setData(0,QStringLiteral("road-marking"));mark->setData(1,QString::fromStdString(link.id));
+            auto* mark=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,appearance.laneDash,appearance.laneGap),pen);
+            mark->setZValue(z+canvasStyle::linkMarkingLayer);mark->setData(0,QStringLiteral("road-marking"));mark->setData(1,QString::fromStdString(link.id));
         }
         // Direction of travel is shown on the selection outline (drawObjectFeedback), not mid-road.
         drawObjectFeedback(link.id,surface,z+2.5,{left,right});
@@ -186,6 +187,7 @@ void EditorCanvas::redraw() {
     const auto visible=mapToScene(viewport()->rect()).boundingRect();
     extent=extent.united(visible.adjusted(-visible.width(),-visible.height(),visible.width(),visible.height()));
     scene_.setSceneRect(extent);
+    placeLabels(); // D424
     bakeRunLayer();drawRunItems();viewport()->update();
 }
 double EditorCanvas::minimumViewScale() const {

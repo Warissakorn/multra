@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "message_label.hpp"
 #include "node_analysis_panel.hpp"
 #include "automation_error.hpp"
 #include <QUuid>
@@ -83,10 +84,10 @@ void EditorWindow::buildRunControls() {
     auto* faster=action("editorFaster",QKeySequence(Qt::Key_Plus),[this]{runSpeed_->setCurrentIndex(std::min(runSpeed_->count()-1,runSpeed_->currentIndex()+1));});
     auto* slower=action("editorSlower",QKeySequence(Qt::Key_Minus),[this]{runSpeed_->setCurrentIndex(std::max(0,runSpeed_->currentIndex()-1));});
     for(auto* a:{faster,slower}){a->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(a);}
-    runInfo_=new ReflowLabel(centralWidget());runInfo_->setObjectName("editorRunInfo");
+    runInfo_=new ReflowLabel(canvasHost_);runInfo_->setObjectName("editorRunInfo");
     runInfo_->setFont(editorDesign::numericFont());runInfo_->setProperty("numeric",true);
     runInfo_->setWordWrap(true);setReflowPolicy(runInfo_,QSizePolicy::Ignored);
-    qobject_cast<QVBoxLayout*>(centralWidget()->layout())->insertWidget(1,new RunInfoHost(runInfo_,centralWidget()));
+    qobject_cast<QVBoxLayout*>(canvasHost_->layout())->insertWidget(0,new RunInfoHost(runInfo_,canvasHost_));
     canvas_->stopRequested=[this]{pauseRun();};
     connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun("seedChanged");});
     connect(&runTimer_,&QTimer::timeout,this,[this]{tickRun();});
