@@ -262,6 +262,9 @@ void EditorWindow::setWorkspacePreset(int preset) {
     auto* palette=findChild<QDockWidget*>("editorPaletteDock");auto* inspector=findChild<QDockWidget*>("editorInspectorDock");
     auto* objects=findChild<QDockWidget*>("editorObjectsDock");auto* view=findChild<QDockWidget*>("editorCanvasDock");
     const bool results=preset==2,compact=property("editorAutoPalette").toBool()?width()<1500:actions_.at("editorPaletteIconsOnly")->isChecked();
+    // An icons-only rail is capped at its own width; showing or hiding docks against that cap let Qt
+    // hold the canvas dock at its old height and grow the window. resizePalette sets the cap again.
+    if(palette->property("editorPaletteRail").toBool())palette->setMaximumWidth(QWIDGETSIZE_MAX);
     palette->setVisible(!results);inspector->setVisible(!results);view->setVisible(!results||view->isFloating());objects->setVisible(preset!=0);
     actions_.at("editorPaletteIconsOnly")->setChecked(compact);translatePalette();
     if(results)showObjectPage(objectPages_.at("editorResultsTable"));

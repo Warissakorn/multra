@@ -2,6 +2,30 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
+
+- **Owner:** J6 at 3ec3d39/09b0689 is approved. Diagnose ordinary Fill's pre-existing
+  conflict-range failure before J4T; stop for this slice's review, no UTDF writer.
+- **Cause:** matchedStation's terminal subtraction/interpolation can return a runtime exit
+  one rounding unit past the path: 22.315802608466722 versus 22.31580260846672 m.
+  The three-junction repro and translated single junction fail on both sides; the origin
+  single-junction control passes. This is numerical conversion, not a corridor/geometry limit.
+- **Fixed:** exact endpoint returns in the shared converter; interior interpolation and
+  existing outside clamping stay. Ordinary History Fill and atomic corridor rebuild succeed
+  with three exit lanes, including the former road-32 fixture. Remove D413's temporary code
+  translation and locale strings. Core/whole-document validators and authored extents stay;
+  no new field/schema, timing default, conflict algorithm or ownership rule.
+- **Tests first:** JT17's endpoint/translated/corridor rows and rewritten JT16 success rows
+  failed before the correction (18 passed, 9 failed); both origin controls already passed.
+  Native junctioneditor is now **27/27**, including nine JT17 cases, both driving sides,
+  three-junction closure, preview parity, save/reopen and exact JSON Undo/Redo per Command.
+- **Docs:** supersede D413 with D415/index, update §5/JT16/JT17, editor/M3 station contracts,
+  approved J6/current J6a queue, E29 and ROADMAP; archive the oldest entry whole, keeping ten.
+- **Verification:** desktop build, CTest **257/257** (280.06 s, parallel 5), and check
+  **257/257** (277.28 s) pass, including frozen JT13, docs/file-size/architecture guards.
+  Node-analysis CLI raw bytes match except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen;
+  headless unconfigured, Windows/manual UI not run. Evidence: `/workspace/j6a-review/`.
+
 ## 2026-10-30 — J6 forms, B36 and complete review rows (D412, D414)
 
 - **Finished:** Nodes → Junction templates… stages structural role rows, geometric turn labels,
