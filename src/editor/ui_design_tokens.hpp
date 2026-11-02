@@ -36,7 +36,7 @@ inline constexpr int fontSizeSection=14,fontSizeTitle=18;
 inline constexpr int controlHeight=24,tableRowHeight=24,toolbarHeight=32,iconSize=16;
 inline int presentationDensity(){return QCoreApplication::instance()?std::clamp(QCoreApplication::instance()->property("editorDensity").toInt(),0,2):0;}
 // Label column shared by every Properties form (D195); longer labels wrap inside it.
-inline constexpr int formLabelWidth=120,namedPaletteWidth=210;
+inline constexpr int formLabelWidth=120,namedPaletteWidth=210,compactPaletteWidth=64;
 // Vertical padding inside a control. Not a spacing token: it is what makes a 24 px control
 // (1 border + 2 + 18 content + 2 + 1), not a gap between two things.
 inline constexpr int controlPaddingY=2;

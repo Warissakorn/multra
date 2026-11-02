@@ -156,6 +156,9 @@ QString editorStyleSheet() {
         QLineEdit:read-only { background: palette(midlight); color: palette(window-text); }
         QLineEdit:disabled, QComboBox:disabled, QAbstractSpinBox:disabled { background: palette(midlight); color: palette(window-text); border-color: palette(mid); }
         QAbstractSpinBox[validationState="invalid"], QLineEdit[validationState="invalid"] { border: 2px solid palette(bright-text); padding: 0 7px; min-height: @fieldFocuspx; max-height: @fieldFocuspx; }
+        /* An editable combo's own line edit is not a second framed field: no border, height or padding of its own,
+           so its text and clear button centre inside the combo's frame. */
+        QComboBox QLineEdit, QComboBox QLineEdit:focus, QComboBox QLineEdit:hover { border: 0; padding: 0; min-height: 0; max-height: 16777215; background: transparent; }
         QComboBox::drop-down { width: @space5px; border: 0; border-left: 1px solid palette(mid); }
         QComboBox::down-arrow { image: url(@glyphs/down.png); width: 8px; height: 5px; }
         QComboBox::down-arrow:disabled { image: url(@glyphs/down-off.png); }
@@ -171,7 +174,10 @@ QString editorStyleSheet() {
         QTreeWidget, QListWidget { border: 0; background: palette(base); outline: 0; }
         QTreeWidget::item, QListWidget::item { min-height: @controlContentpx; padding: @padYpx @space1px; border: 1px solid transparent; }
         QTreeWidget::item:hover, QListWidget::item:hover { background: palette(midlight); }
-        QTreeWidget::item:selected, QListWidget::item:selected { background: palette(mid); color: palette(text); border-left: 2px solid palette(highlight); }
+        QTreeWidget::item:selected, QListWidget::item:selected { background: palette(mid); color: palette(text); }
+        /* One accent bar per row, on its first cell: not one per column, nor on the tree's branch area. */
+        QTreeWidget::item:selected:first, QTreeWidget::item:selected:only-one, QListWidget::item:selected { border-left: 2px solid palette(highlight); }
+        QTreeWidget::branch:selected { background: palette(mid); border: 0; }
         QTreeWidget::item:focus:!selected, QListWidget::item:focus:!selected { border: 1px solid palette(highlight); }
         QTableView { background: palette(base); alternate-background-color: palette(window); border: 1px solid palette(dark); selection-background-color: palette(mid); selection-color: palette(text); gridline-color: palette(mid); }
         QTableView::item { min-height: @controlContentpx; padding: @padYpx @space1px; border-bottom: 1px solid palette(mid); }

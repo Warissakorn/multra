@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QVariant>
 #include <algorithm>
+#include "../editor/ui_design_tokens.hpp"
 namespace multra {
 void resizePalette(QMainWindow& window,int requested,int inspectorWidth) {
     auto* dock=window.findChild<QDockWidget*>("editorPaletteDock");
@@ -14,7 +15,9 @@ void resizePalette(QMainWindow& window,int requested,int inspectorWidth) {
     dock->layout()->invalidate();dock->layout()->activate();
     auto* view=window.findChild<QDockWidget*>("editorCanvasDock");auto* inspector=window.findChild<QDockWidget*>("editorInspectorDock");
     const int desired=std::max(requested,dock->minimumSizeHint().width()),change=dock->width()-desired;
-    if(!dock->property("editorPaletteMaximum").isValid())dock->setProperty("editorPaletteMaximum",dock->maximumWidth());
+    if(!dock->property("editorPaletteMaximum").isValid())
+        dock->setProperty("editorPaletteMaximum",dock->property("editorPaletteRail").toBool()?QWIDGETSIZE_MAX:dock->maximumWidth());
+    dock->setProperty("editorPaletteRail",requested<=editorDesign::compactPaletteWidth);
     const int generation=window.property("editorPaletteLayoutGeneration").toInt()+1;window.setProperty("editorPaletteLayoutGeneration",generation);
     window.setProperty("editorPaletteLayoutPending",true);window.setProperty("editorApplyingLayout",true);dock->setMaximumWidth(desired);
     if(view&&!view->isFloating()) {
@@ -30,7 +33,10 @@ void resizePalette(QMainWindow& window,int requested,int inspectorWidth) {
     // Keep the bound through the posted layout, then release it so separator dragging still works.
     QTimer::singleShot(0,&window,[&window,dock,generation]{
         if(window.property("editorPaletteLayoutGeneration").toInt()!=generation)return;
-        window.layout()->activate();dock->setMaximumWidth(dock->property("editorPaletteMaximum").toInt());
+        window.layout()->activate();
+        // Icons only is a fixed rail: dragging its edge would only open empty space beside the icons.
+        const bool rail=dock->property("editorPaletteRail").toBool();
+        dock->setMaximumWidth(rail?dock->width():dock->property("editorPaletteMaximum").toInt());
         dock->setProperty("editorPaletteMaximum",{});window.setProperty("editorPaletteLayoutPending",false);window.setProperty("editorApplyingLayout",false);
     });
 }

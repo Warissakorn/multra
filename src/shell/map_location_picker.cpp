@@ -25,7 +25,9 @@ QComboBox* choice(QWidget* parent,const char* name,const QString& empty) {
     auto* box=new QComboBox(parent);box->setObjectName(name);box->setEditable(true);
     box->setInsertPolicy(QComboBox::NoInsert);box->setMinimumContentsLength(20);
     box->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);box->setMaxVisibleItems(12);
-    box->addItem(empty);box->lineEdit()->setClearButtonEnabled(true);
+    box->addItem(empty);
+    // The clear button is offered only for a real choice, never over the "not selected" placeholder.
+    QObject::connect(box,&QComboBox::currentIndexChanged,box,[box](int index){box->lineEdit()->setClearButtonEnabled(index>0);});
     box->completer()->setCaseSensitivity(Qt::CaseInsensitive);box->completer()->setFilterMode(Qt::MatchContains);
     box->completer()->setCompletionMode(QCompleter::PopupCompletion);box->completer()->setMaxVisibleItems(12);
     return box;
