@@ -93,7 +93,7 @@ void EditorCanvas::resetGesture() {
     groupDrag_=groupDragging_=false;groupOffset_={};
     rotationPivot_.reset();rotationDegrees_=0;rotationDragging_=false;
     endpointDrag_.reset();endpointDraft_.reset();handleOffset_={};
-    creating_=false;decisionDrag_.reset();headDrag_.reset();lineDrag_.reset();hoverHead_.reset();gestureFrom_.reset();rangeCorner_=0;laneResize_.reset();previewLinkCount_=0;
+    creating_=false;gestureTarget_.reset();decisionDrag_.reset();headDrag_.reset();lineDrag_.reset();hoverHead_.reset();gestureFrom_.reset();rangeCorner_=0;laneResize_.reset();previewLinkCount_=0;
     draft_.clear(); preview_.clear(); original_.clear(); vertex_ = -1; band_.reset();
     connectorFrom_.reset(); connectorHover_.reset(); dragging_ = false; panning_ = false;
     clearRouteDraft(); counterDraft_.clear(); sectionStart_.reset(); zoneDraft_.clear(); draftPointer_.reset();
@@ -172,6 +172,7 @@ void EditorCanvas::redraw() {
         QColor wash=canvasStyle::active(); wash.setAlpha(30);
         scene_.addRect(*band_,canvasStyle::previewPen(canvasStyle::active(),1),QBrush(wash))->setZValue(200009);
     }
+    drawCreationPreview();
     if (!draft_.empty()) {
         const auto pen=canvasStyle::previewPen(canvasStyle::active());
         addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));

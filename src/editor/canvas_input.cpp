@@ -147,6 +147,7 @@ void EditorCanvas::mouseMoveEvent(QMouseEvent* e) {
         if(creationTool_==Tool::connect) {
             const auto target=hitLanePosition(world(e->pos(),false),false);
             if(target)draft_.back()=laneAttachment(document_->network,*target,false);
+            gestureTarget_=target;
         }
         redraw();return;
     }

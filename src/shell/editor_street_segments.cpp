@@ -105,6 +105,25 @@ void EditorWindow::buildStreetSegments() {
         const auto id = selectedStreetSegment(); if (id.empty()) return;
         execute("editorDeleteStreetSegment", [&](auto& d) { deleteStreetSegment(d, id); });
     }));
+    // D433: the Links the chosen template would generate along the centreline being drawn.
+    canvas_->streetSegmentPreview = [this](const std::vector<Point>& centreline) {
+        std::vector<Link> links;
+        const auto chosen = streetSegmentTemplate_->currentData().toString().toStdString();
+        if (chosen.empty()) return links;
+        try {
+            const StreetSegment road{"", "", centreline, chosen, 0, {}, {}};
+            const auto installed = crossSectionRows();
+            const auto* section = streetSegmentTemplate(history_.document(), road, installed);
+            if (!section) return links;
+            for (const auto& generated : templateLinks(history_.document().network, road, *section)) {
+                Link link{"", generated.geometry, {}};
+                for (std::size_t k = 0; k < generated.widths.size(); ++k) link.lanes.push_back({"preview-" + std::to_string(k), generated.widths[k]});
+                links.push_back(std::move(link));
+            }
+        } catch (const std::exception&) { links.clear(); }
+        return links;
+    };
+    connect(streetSegmentTemplate_, &QComboBox::currentIndexChanged, this, [this] { canvas_->redraw(); });
     canvas_->streetSegmentCommitted = [this](std::vector<Point> centreline) {
         const auto chosen = streetSegmentTemplate_->currentData().toString().toStdString();
         const int level = visibleLevel_ && visibleLevel_->currentData().isValid() ? visibleLevel_->currentData().toInt() : 0;

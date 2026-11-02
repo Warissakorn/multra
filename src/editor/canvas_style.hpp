@@ -41,6 +41,8 @@ inline constexpr double laneTabDepth = 8;   // logical pixels outside the road
 // a pixel -- unreadable -- so the road draws without them. Only lane markings and mouth edges obey
 // this; surfaces, controls, selection, handles and hits never depend on it.
 inline constexpr double minLanePixels = 3;
+// D433: the object a creation gesture would make, drawn under its draft line.
+inline constexpr double creationPreviewOpacity = 0.6;
 // D205: a rounding of the scale is not a zoom change -- a rotated view's hypot is the scale give or
 // take an ulp, and MSVC rounds it down -- so the comparison allows a relative 1e-9.
 inline bool laneMarkingsReadable(double laneWidthMetres, double pixelsPerMetre) {
