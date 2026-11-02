@@ -92,6 +92,10 @@ public:
     bool snap{false}; // D428: off by default (owner, 2026-11-01)
     double grid{1};
     std::function<void(const std::vector<Point>&)> createLinkGesture;
+    // Creation previews (D433): the lanes a new Link gets, and the Links a StreetSegment drawn
+    // along `centreline` would generate now (empty when no template is chosen).
+    void setNewLinkLanes(int count, double width);
+    std::function<std::vector<Link>(const std::vector<Point>& centreline)> streetSegmentPreview;
     std::function<void(LaneReference,LaneReference,const std::vector<Point>&)> createRangeGesture;
     // The head tool's click: the lane or Connector path under the pointer and the station on
     // it, which is where the stop line goes. A drag of a selected head slides it along its lane.
@@ -428,5 +432,11 @@ private:
     void drawLaneHandles();
     std::optional<LaneHandle> laneResize_;
     int previewLinkCount_{};
+    int newLaneCount_{2}; double newLaneWidth_{3.5};
+    std::optional<LaneReference> gestureTarget_;
+    bool drawCreationPreview();
+    bool drawPreviewLink(const Link&);
+    bool drawPreviewConnector(const LaneReference& from, const LaneReference& to);
+    bool creationPreviewDrawn_{}; // this redraw's preview replaces the draft line (D433)
 };
 }

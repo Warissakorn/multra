@@ -85,21 +85,22 @@ void EditorCanvas::drawZones() {
         }
     }
     if (polygonTool() && !zoneDraft_.empty()) {
-        outline(zoneDraft_, true)->setData(0, QStringLiteral("zone-draft"));
+        const bool previewed = tool_ == Tool::road && creationPreviewDrawn_; // D433: the road stands in for the line
+        if (!previewed) outline(zoneDraft_, true)->setData(0, QStringLiteral("zone-draft"));
         // The edges still to come, fainter: last corner to the pointer to the first corner, or
         // with no pointer yet the closing edge alone.
         std::vector<Point> pending{zoneDraft_.back()};
         if (draftPointer_) pending.push_back(*draftPointer_);
         // A StreetSegment's centreline is open: only the edge to the pointer is still to come.
         if (tool_ != Tool::road && (zoneDraft_.size() > 1 || draftPointer_)) pending.push_back(zoneDraft_.front());
-        if (pending.size() > 1) {
+        if (pending.size() > 1 && !previewed) {
             QPainterPath edges(QPointF(pending[0].x, pending[0].y));
             for (std::size_t i = 1; i < pending.size(); ++i) edges.lineTo(pending[i].x, pending[i].y);
             auto* item = scene_.addPath(edges, canvasStyle::pendingPen()); item->setZValue(200006.9);
             item->setData(0, QStringLiteral("zone-draft-pending"));
         }
         const double r = 3 / viewScale();
-        for (const auto& p : zoneDraft_)
+        if (!previewed) for (const auto& p : zoneDraft_)
             scene_.addEllipse(p.x - r, p.y - r, 2 * r, 2 * r, canvasStyle::previewPen(canvasStyle::active(), 1.5),
                               QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }
@@ -131,14 +132,19 @@ void EditorCanvas::drawNodes() {
             addKerb(shape, 0, narrowest, node.id);
         }
         const bool lit = node.id == highlightedNode_;
-        QPen pen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2.5 : node.generated ? 1.5 : 2,
-                 node.generated ? Qt::DotLine : Qt::SolidLine);
-        pen.setCosmetic(true);
-        // S5.2b (D328): a study-area Node is filled lightly under its usual outline.
+        // D434: a Node is a soft shade over its junction, not a ring; only the highlighted Node, or
+        // wireframe (which draws no surface to shade), gets a solid outline.
+        QPen pen(Qt::NoPen);
+        if (lit || wireframe_) {
+            pen = QPen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+            pen.setCosmetic(true);
+        }
+        // S5.2b (D328): a study-area Node is shaded green; otherwise ink, lighter for a generated one.
         const auto& area = document_->zones.studyArea.nodes;
         const bool inArea = std::find(area.begin(), area.end(), node.id) != area.end();
-        auto fill = canvasStyle::ok(); fill.setAlpha(40);
-        auto* item = scene_.addPath(shape, pen, inArea ? QBrush(fill) : QBrush(Qt::NoBrush));
+        auto fill = inArea ? canvasStyle::ok() : lit ? canvasStyle::selection() : canvasStyle::ink();
+        fill.setAlpha(inArea ? 40 : lit ? 36 : node.generated ? 16 : 28);
+        auto* item = scene_.addPath(shape, pen, QBrush(fill));
         item->setZValue(200005);
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));

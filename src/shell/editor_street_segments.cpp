@@ -80,9 +80,8 @@ void EditorWindow::buildStreetSegments() {
     // The combo's template on every selected row, without generating a Link; "(no template)" clears it.
     bar->addAction(action("editorAssignTemplate", {}, [this] {
         const auto ids = selectedStreetSegmentRows(); if (ids.empty()) return;
-        const auto chosen = streetSegmentTemplate_->currentData().toString().toStdString();
         const auto installed = crossSectionRows();
-        execute("editorAssignTemplate", [&](auto& d) { assignTemplate(d, ids, chosen.empty() ? std::nullopt : std::optional(chosen), installed); });
+        execute("editorAssignTemplate", [&](auto& d) { assignTemplate(d, ids, chosenTemplate(d, installed), installed); });
     }));
     bar->addAction(action("editorFindCrossings", {}, [this] { findCrossingsDialog(); })); // S3.5 (D309)
     bar->addAction(action("editorSeamChecks", {}, [this] { seamChecksDialog(); })); // S3.7 (D312)
@@ -105,14 +104,35 @@ void EditorWindow::buildStreetSegments() {
         const auto id = selectedStreetSegment(); if (id.empty()) return;
         execute("editorDeleteStreetSegment", [&](auto& d) { deleteStreetSegment(d, id); });
     }));
-    canvas_->streetSegmentCommitted = [this](std::vector<Point> centreline) {
+    // D433: the Links the chosen template would generate along the centreline being drawn.
+    canvas_->streetSegmentPreview = [this](const std::vector<Point>& centreline) {
+        std::vector<Link> links;
         const auto chosen = streetSegmentTemplate_->currentData().toString().toStdString();
+        if (chosen.empty()) return links; // "(no template)": a bare centreline
+        try {
+            const bool fallbackChosen = chosen == "@default";
+            const StreetSegment road{"", "", centreline, fallbackChosen ? std::nullopt : std::optional(chosen), 0, {}, {}};
+            const auto installed = crossSectionRows();
+            const auto fallback = defaultCrossSection();
+            const auto* section = fallbackChosen ? &fallback : streetSegmentTemplate(history_.document(), road, installed);
+            if (!section) return links;
+            for (const auto& generated : templateLinks(history_.document().network, road, *section)) {
+                Link link{"", generated.geometry, {}};
+                for (std::size_t k = 0; k < generated.widths.size(); ++k) link.lanes.push_back({"preview-" + std::to_string(k), generated.widths[k]});
+                links.push_back(std::move(link));
+            }
+        } catch (const std::exception&) { links.clear(); }
+        return links;
+    };
+    connect(streetSegmentTemplate_, &QComboBox::currentIndexChanged, this, [this] { canvas_->redraw(); });
+    canvas_->streetSegmentCommitted = [this](std::vector<Point> centreline) {
         const int level = visibleLevel_ && visibleLevel_->currentData().isValid() ? visibleLevel_->currentData().toInt() : 0;
         const auto installed = crossSectionRows();
         std::string id;
         if (!execute("editorStreetSegmentTool", [&](auto& d) {
-                id = putStreetSegment(d, StreetSegment{"", "", std::move(centreline), chosen.empty() ? std::nullopt : std::optional(chosen), level, {}, {}});
-                if (!chosen.empty()) applyTemplate(d, id, installed);
+                const auto section = chosenTemplate(d, installed); // D433: Default is added in this Undo step
+                id = putStreetSegment(d, StreetSegment{"", "", std::move(centreline), section, level, {}, {}});
+                if (section) applyTemplate(d, id, installed);
             })) return false;
         showStreetSegments();
         for (int r = 0; r < streetSegmentTable_->rowCount(); ++r)
@@ -159,10 +179,12 @@ void EditorWindow::refreshStreetSegments() {
             // The template the tool draws with: kept by id across a refresh, "(none)" when it went.
             const auto chosen = streetSegmentTemplate_->currentData().toString();
             const QSignalBlocker block(streetSegmentTemplate_);
-            streetSegmentTemplate_->clear(); streetSegmentTemplate_->addItem(text("editorStreetSegmentNoTemplate"), QString());
+            // D433: Default first and chosen unless the author picks another; "(no template)" still draws a bare centreline.
+            streetSegmentTemplate_->clear(); streetSegmentTemplate_->addItem(defaultTemplateLabel(), QStringLiteral("@default"));
+            streetSegmentTemplate_->addItem(text("editorStreetSegmentNoTemplate"), QString());
             for (const auto& s : sections)
                 streetSegmentTemplate_->addItem(QString::fromStdString(s.name.empty() ? s.id : s.name + " (" + s.id + ")"), QString::fromStdString(s.id));
-            streetSegmentTemplate_->setCurrentIndex(std::max(0, streetSegmentTemplate_->findData(chosen)));
+            streetSegmentTemplate_->setCurrentIndex(std::max(0, streetSegmentTemplate_->findData(chosen.isNull() ? QStringLiteral("@default") : chosen)));
         }
         const QSignalBlocker block(streetSegmentTable_);
         streetSegmentTable_->setRowCount(static_cast<int>(roads.size()));
@@ -252,4 +274,25 @@ void EditorWindow::editStreetSegment(const std::string& id) {
     execute("editorEditStreetSegment", [&](auto& d) { putStreetSegment(d, road); });
 }
 void EditorWindow::showStreetSegments() { objects_->setCurrentWidget(objectPages_.at("editorStreetSegmentTable")); }
+CrossSection EditorWindow::defaultCrossSection() const {
+    const int lanes = count_ ? count_->value() : 1;
+    const double width = width_ ? width_->value() : 3.5;
+    return CrossSection{"", "Default", 2, lanes, lanes, width, {}, 0, std::nullopt, "Editor default", std::nullopt};
+}
+QString EditorWindow::defaultTemplateLabel() const {
+    const auto s = defaultCrossSection();
+    return text("editorStreetSegmentDefaultTemplate").arg(s.lanesForward).arg(editorDesign::formatValue(s.laneWidth, 2));
+}
+std::optional<std::string> EditorWindow::chosenTemplate(ProjectDocument& d, const std::vector<CrossSection>& installed) const {
+    const auto chosen = streetSegmentTemplate_->currentData().toString().toStdString();
+    if (chosen.empty()) return std::nullopt;
+    if (chosen != "@default") return chosen;
+    // D433: reuse a catalog template with exactly the Default's lanes and width, else add one.
+    auto wanted = defaultCrossSection();
+    for (const auto& s : installed) {
+        auto same = s; same.id.clear();
+        if (same == wanted) return s.id;
+    }
+    return putCrossSection(d, std::move(wanted), installed);
+}
 }

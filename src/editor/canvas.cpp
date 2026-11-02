@@ -93,7 +93,7 @@ void EditorCanvas::resetGesture() {
     groupDrag_=groupDragging_=false;groupOffset_={};
     rotationPivot_.reset();rotationDegrees_=0;rotationDragging_=false;
     endpointDrag_.reset();endpointDraft_.reset();handleOffset_={};
-    creating_=false;decisionDrag_.reset();headDrag_.reset();lineDrag_.reset();hoverHead_.reset();gestureFrom_.reset();rangeCorner_=0;laneResize_.reset();previewLinkCount_=0;
+    creating_=false;gestureTarget_.reset();decisionDrag_.reset();headDrag_.reset();lineDrag_.reset();hoverHead_.reset();gestureFrom_.reset();rangeCorner_=0;laneResize_.reset();previewLinkCount_=0;
     draft_.clear(); preview_.clear(); original_.clear(); vertex_ = -1; band_.reset();
     connectorFrom_.reset(); connectorHover_.reset(); dragging_ = false; panning_ = false;
     clearRouteDraft(); counterDraft_.clear(); sectionStart_.reset(); zoneDraft_.clear(); draftPointer_.reset();
@@ -124,6 +124,7 @@ void EditorCanvas::redraw() {
         image->setTransform(QTransform(std::cos(a)*s,std::sin(a)*s,std::sin(a)*s,-std::cos(a)*s,bg.x,bg.y));
         image->setOpacity(bg.opacity); image->setZValue(-200000);
     }
+    creationPreviewDrawn_=drawCreationPreview(); // D433: first, so the draft lines below know it
     drawZones(); // M8.6a: below every Link
     drawNodes(); // S0.1: an outline over the junction
     drawStreetSegments(); // S3.3b
@@ -174,8 +175,8 @@ void EditorCanvas::redraw() {
     }
     if (!draft_.empty()) {
         const auto pen=canvasStyle::previewPen(canvasStyle::active());
-        addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));
-        for (auto p:draft_) { const double r=3/viewScale(); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
+        if(!creationPreviewDrawn_)addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));
+        if(!creationPreviewDrawn_)for (auto p:draft_) { const double r=3/viewScale(); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
     }
     auto extent=scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000));
     if (document_->map) {

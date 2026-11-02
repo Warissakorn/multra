@@ -265,7 +265,7 @@ void EditorWindow::setWorkspacePreset(int preset) {
     palette->setVisible(!results);inspector->setVisible(!results);view->setVisible(!results||view->isFloating());objects->setVisible(preset!=0);
     actions_.at("editorPaletteIconsOnly")->setChecked(compact);translatePalette();
     if(results)showObjectPage(objectPages_.at("editorResultsTable"));
-    const int left=compact?64:editorDesign::namedPaletteWidth+24*editorDesign::presentationDensity(),right=std::min(310,std::max(250,width()/4));
+    const int left=compact?editorDesign::compactPaletteWidth:editorDesign::namedPaletteWidth+24*editorDesign::presentationDensity(),right=std::min(310,std::max(250,width()/4));
     if(!results&&!view->isFloating()) {
         resizePalette(*this,left,right);
     }

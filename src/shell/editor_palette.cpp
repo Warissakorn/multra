@@ -42,8 +42,16 @@ void EditorWindow::buildPalette() {
         using QStyledItemDelegate::QStyledItemDelegate;
         QSize sizeHint(const QStyleOptionViewItem& option,const QModelIndex& index) const override {
             auto size=QStyledItemDelegate::sizeHint(option,index);
-            if(index.siblingAtColumn(0).data(Qt::UserRole+1).toBool()&&parent()->property("compact").toBool())size.setHeight(4);
+            if(!parent()->property("compact").toBool())return size;
+            if(index.siblingAtColumn(0).data(Qt::UserRole+1).toBool())size.setHeight(4);
+            else size.setHeight(editorDesign::controlHeight+editorDesign::space1); // a centred icon keeps the named row's height
             return size;
+        }
+    protected:
+        void initStyleOption(QStyleOptionViewItem* option,const QModelIndex& index) const override {
+            QStyledItemDelegate::initStyleOption(option,index);
+            // Icons only: the glyph sits in the middle of its selection frame, not at its left edge.
+            if(index.column()==0&&parent()->property("compact").toBool()){option->decorationPosition=QStyleOptionViewItem::Top;option->displayAlignment=Qt::AlignCenter;}
         }
     };
     palette_->setItemDelegate(new PaletteRows(palette_));palette_->setUniformRowHeights(false);palette_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -85,7 +93,7 @@ void EditorWindow::buildPalette() {
         root->setForeground(0,editorDesign::role(QPalette::WindowText));
         for(const int mode:group.modes){
             auto* entry=new QTreeWidgetItem(root);entry->setData(0,Qt::UserRole,mode);
-            entry->setTextAlignment(1,Qt::AlignRight|Qt::AlignVCenter);entry->setIcon(0,editorIcon(icons[mode]));entry->setData(0,Qt::UserRole+2,QString::fromLatin1(shortcuts[mode]));
+            entry->setTextAlignment(1,Qt::AlignCenter);entry->setIcon(0,editorIcon(icons[mode]));entry->setData(0,Qt::UserRole+2,QString::fromLatin1(shortcuts[mode]));
             paletteItems_[mode]=entry;
             auto* key=action("editorTool"+std::to_string(mode),QKeySequence(shortcuts[mode]),[this,mode]{
                 palette_->setCurrentItem(paletteItems_.at(mode));canvas_->setFocus();
@@ -103,6 +111,7 @@ void EditorWindow::buildPalette() {
         const QSignalBlocker blocked(palette_);if(paletteItems_.contains(mode))palette_->setCurrentItem(paletteItems_.at(mode));
     });
     connect(visibleLevel_,&QComboBox::currentIndexChanged,this,[this]{
+        visibleLevel_->setToolTip(visibleLevel_->itemData(visibleLevel_->currentIndex(),Qt::ToolTipRole).toString());
         if(visibleLevel_->currentData().isValid())canvas_->setVisibleLevel(visibleLevel_->currentData().toInt());
         else canvas_->setVisibleLevel({});
     });
@@ -158,22 +167,29 @@ void EditorWindow::translatePalette() {
     }
     if(auto* view=findChild<QToolButton*>("editorPaletteViewButton"))view->setArrowType(compact?Qt::RightArrow:Qt::LeftArrow);
     findChild<QLabel*>("editorVisibleLevelLabel")->setVisible(!compact);
-    visibleLevel_->setMinimumContentsLength(compact?0:10);visibleLevel_->setMinimumWidth(0);visibleLevel_->setMaximumWidth(compact?44:QWIDGETSIZE_MAX);
+    palette_->setMinimumWidth(compact?editorDesign::compactPaletteWidth-2*editorDesign::space2:0);
+    // Icons only keeps the level choice usable: short labels in a field as wide as the column.
+    visibleLevel_->setMinimumContentsLength(compact?1:10);visibleLevel_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    visibleLevel_->setMinimumWidth(compact?editorDesign::compactPaletteWidth-2*editorDesign::space2:0);visibleLevel_->setMaximumWidth(QWIDGETSIZE_MAX);
     const int keys=compact?0:24;palette_->header()->resizeSection(1,keys);palette_->header()->resizeSection(0,std::max(1,palette_->viewport()->width()-keys));
     palette_->doItemsLayout();
     findChild<QToolButton*>("editorBackgroundButton")->setToolButtonStyle(compact?Qt::ToolButtonIconOnly:Qt::ToolButtonTextOnly);
     const QSignalBlocker block(visibleLevel_);const auto selected=visibleLevel_->currentData();visibleLevel_->clear();
-    visibleLevel_->addItem(text("editorAllLevels"));
+    visibleLevel_->addItem(compact?QStringLiteral("*"):text("editorAllLevels"));visibleLevel_->setItemData(0,text("editorAllLevels"),Qt::ToolTipRole);
     const auto lang=language_->currentData().toString().toStdString();
-    for(const auto& level:displayCatalog_.levels)visibleLevel_->addItem(QString::number(level.order)+" · "+QString::fromStdString(level.name.at(lang)),level.order);
+    for(const auto& level:displayCatalog_.levels) {
+        const auto full=QString::number(level.order)+" · "+QString::fromStdString(level.name.at(lang));
+        visibleLevel_->addItem(compact?QString::number(level.order):full,level.order);visibleLevel_->setItemData(visibleLevel_->count()-1,full,Qt::ToolTipRole);
+    }
     if(selected.isValid() && visibleLevel_->findData(selected)<0)
         visibleLevel_->addItem(QString::number(selected.toInt()),selected);
     visibleLevel_->setCurrentIndex(selected.isValid()?visibleLevel_->findData(selected):0);
+    visibleLevel_->setToolTip(visibleLevel_->itemData(visibleLevel_->currentIndex(),Qt::ToolTipRole).toString());
 }
 void EditorWindow::showPaletteView() {
     translatePalette();
     const bool compact=actions_.at("editorPaletteIconsOnly")->isChecked();
-    resizePalette(*this,compact?64:editorDesign::namedPaletteWidth+24*editorDesign::presentationDensity());
+    resizePalette(*this,compact?editorDesign::compactPaletteWidth:editorDesign::namedPaletteWidth+24*editorDesign::presentationDensity());
 }
 void EditorWindow::buildAppearance(QFormLayout* form) {
     objectLevel_=new QComboBox(this);objectDisplay_=new QComboBox(this);

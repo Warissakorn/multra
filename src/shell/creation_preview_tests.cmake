@@ -1,0 +1,8 @@
+if(BUILD_TESTING)
+    add_executable(multra-creation-preview-ui-tests ../../tests/creation_preview_ui_tests.cpp)
+    target_link_libraries(multra-creation-preview-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-creation-preview-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME creation-preview-ui COMMAND multra-creation-preview-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(creation-preview-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check multra-creation-preview-ui-tests)
+endif()

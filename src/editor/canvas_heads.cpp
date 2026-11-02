@@ -93,21 +93,16 @@ void EditorCanvas::drawHeads() {
     const auto draw=[&](const NetworkSignalHead& head,QColor colour,bool preview) {
         const auto bar=signalCrossbar(document_->network,head);
         if(!bar || !levelVisible(bar->level))return;
-        if(!preview && isSelected(head.id)) {
-            QPen halo(canvasStyle::selection(),editorDesign::crossbarPixels+4);halo.setCosmetic(true);halo.setCapStyle(Qt::FlatCap);
-            scene_.addLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y,halo)->setZValue(bar->level*100.+10);
-        } else if(!preview) {
-            QPen outline(editorDesign::role(QPalette::Text),editorDesign::crossbarPixels+2);
-            outline.setCosmetic(true);outline.setCapStyle(Qt::FlatCap);
-            scene_.addLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y,outline)->setZValue(bar->level*100.+10);
-        }
-        auto* line=new RoadCrossbarItem(*bar,colour,scale,preview);scene_.addItem(line);
+        // D435: a Synchro-style head -- stop line and three-lamp housing; the line takes the state colour.
+        if(!preview && isSelected(head.id))colour=canvasStyle::selection();
+        auto* line=new SignalHeadItem(*bar,colour,scale,preview);scene_.addItem(line);
+        if(preview)line->setOpacity(canvasStyle::creationPreviewOpacity);
         line->setZValue(bar->level*100.+10.5);line->setData(0,QStringLiteral("stop-line"));
         line->setData(1,QString::fromStdString(head.id));
     };
     for(auto head:document_->network.signalHeads) {
         if(headDrag_ && headDrag_->id==head.id && headDrag_->moved)head.position=headDrag_->station;
-        draw(head,head.id==hoverObject_?canvasStyle::hover():editorDesign::role(QPalette::Base),false);
+        draw(head,head.id==hoverObject_?canvasStyle::hover():editorDesign::role(QPalette::Text),false);
     }
     if(hoverHead_ && tool_==Tool::head) {
         NetworkSignalHead preview;preview.lane=hoverHead_->slot.lane;
@@ -125,6 +120,6 @@ QPainterPath EditorCanvas::headShape(const NetworkSignalHead& head) const {
     if(!document_)return {};
     const auto bar=signalCrossbar(document_->network,head);
     if(!bar)return {};
-    return RoadCrossbarItem(*bar,canvasStyle::active(),viewScale()).shape();
+    return SignalHeadItem(*bar,canvasStyle::active(),viewScale()).shape();
 }
 }

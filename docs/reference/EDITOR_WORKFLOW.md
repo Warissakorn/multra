@@ -20,7 +20,9 @@ canvas Delete operate in Select (conflict areas also support Ctrl+Tab in their o
 
 Escape first cancels an unfinished gesture/draft; when idle, it clears selection. With no draft
 open, empty-space clicks in any authoring tool clear selection without showing an error. Enter
-commits and Escape cancels a multi-click draft.
+commits and Escape cancels a multi-click draft. While a Link, Connector or StreetSegment is drawn,
+the canvas previews the road it would create (lanes, width, markings) in place of the draft line;
+a StreetSegment drawn with the Default choice uses a two-way template from the Properties lane defaults (D433).
 Plain right/middle drag remains pan; Ctrl+right-click or Ctrl+right-drag creates or changes
 in every tool, and a plain left click never authors outside Routes (D116) and Measure/Calibrate,
 except that once a multi-click draft (Zone, Node, Queue counter, Section, two-click Connector) has

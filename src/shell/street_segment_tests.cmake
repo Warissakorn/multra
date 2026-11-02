@@ -29,3 +29,4 @@
         set_tests_properties(junction-${form}-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
     endforeach()
     add_dependencies(check multra-junction-forms-ui-tests)
+include("${CMAKE_CURRENT_LIST_DIR}/creation_preview_tests.cmake") # D433 creation previews

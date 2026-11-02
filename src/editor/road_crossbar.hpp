@@ -4,7 +4,7 @@
 #include <QColor>
 
 namespace multra {
-struct RoadCrossbar { Point first, second; int level{}; };
+struct RoadCrossbar { Point first, second; int level{}; Point travel{}; }; // travel: unit direction of the road at the bar
 // Presentation only: intersect the road normal with its real rails at this station.
 std::optional<RoadCrossbar> roadCrossbar(const std::vector<Point>& centre,
     const std::vector<Point>& firstRail, const std::vector<Point>& secondRail,
@@ -28,5 +28,20 @@ private:
     double hitWidth_{};
     SignalCue cue_{};
     bool preview_{};
+};
+// D435: a signal head as Synchro draws one -- its stop line plus a dark three-lamp head just upstream,
+// lamps across the lane in red, amber, green order. Edit mode shows every lamp dim; a run lights the
+// state's lamp only, so the state reads by position as well as hue (D199). Constant size on screen.
+class SignalHeadItem : public RoadCrossbarItem {
+public:
+    SignalHeadItem(const RoadCrossbar&, QColor line, double scale, bool preview = false, SignalCue cue = SignalCue::none);
+    QPainterPath shape() const override;
+    QRectF boundingRect() const override;
+    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
+private:
+    struct HeadFrame { QPointF centre, across, back; double length{}, depth{}; };
+    std::optional<HeadFrame> frame() const; // the housing's placement; none for a degenerate bar
+    QPainterPath housing() const;
+    Point travel_{}; double scale_{}; SignalCue lamp_{};
 };
 }

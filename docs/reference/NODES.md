@@ -269,7 +269,7 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Editor.**
   - `EditorCanvas::Tool::node` shares the zone draft (Ctrl+right-click, then plain clicks, Enter, Backspace, Esc) and
     hands it to `nodeCommitted`.
-  - `drawNodes` draws a solid outline, dotted while `generated`, with the name at the centroid.
+  - `drawNodes` draws a soft shade (lighter while `generated`) with no outline at rest, with the name at the centroid (D434).
   - The Nodes tab is `src/shell/editor_nodes.cpp`, in the Measurement group: table, rename dialog
     and delete. Tool 13 has the chord `N` and reuses the zone icon until a node icon is drawn.
 - **Rows.** N1–N4 are in `tests/node_tests.cpp` (ctest `nodes`) and N5 in `tests/node_ui_tests.cpp`
@@ -411,7 +411,7 @@ Each row first asserts that its forcing worked (AGENTS).
 - **The highlight.** Selecting a Nodes row lights that Node; clearing the row, deleting the Node or
   an Undo that removes it puts it out. A Select click on the canvas clears it, as it clears the
   conflict table's.
-  - **The outline:** drawn in the selection colour at 2.5 px, still dotted while `generated`.
+  - **The outline:** drawn solid in the selection colour at 2 px over a selection-tinted shade (D434).
   - **The legs:** each Link's span outside the polygon up to its crossing, as `nodeMembership`
     gives the legs: `[0, station]` for an in-leg, `[station, end]` for an out-leg. The span is
     clipped to the Link's own surface. In-legs are filled, out-legs hatched with a dashed edge, so
@@ -426,7 +426,7 @@ Each row first asserts that its forcing worked (AGENTS).
 
 | Row | Case | Asserts |
 |---|---|---|
-| N22 | The drawn triangle (refused), then the four-leg's suggested Node | The triangle's outline is lit with no legs. The suggested Node draws exactly its 4 in-legs and 4 out-legs, each tagged by Link id and direction as `nodeMembership` names them. Clearing the row returns the ink outline with no legs. A deleted Node is not highlighted |
+| N22 | The drawn triangle (refused), then the four-leg's suggested Node | The triangle's outline is lit with no legs. The suggested Node draws exactly its 4 in-legs and 4 out-legs, each tagged by Link id and direction as `nodeMembership` names them. Clearing the row returns the plain shade with no outline or legs. A deleted Node is not highlighted |
 
 - **Mutations caught:**
   - legs never drawn;

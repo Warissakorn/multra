@@ -153,6 +153,12 @@ void EditorWindow::buildInspector() {
     heading("editorStreetSegmentProperties");
     count_=new QSpinBox(body);count_->setRange(1,12);count_->setValue(2);label(form,"editorLaneCount",count_);
     width_=number(0.1,20,3.5);label(form,"editorDefaultWidth",width_);
+    // D433: a Link being drawn previews with these lanes.
+    const auto lanes=[this]{
+        canvas_->setNewLinkLanes(count_->value(),width_->value());
+        if(streetSegmentTemplate_&&streetSegmentTemplate_->count()>0){streetSegmentTemplate_->setItemText(0,defaultTemplateLabel());canvas_->redraw();}
+    };lanes();
+    connect(count_,&QSpinBox::valueChanged,this,lanes);connect(width_,&QDoubleSpinBox::valueChanged,this,lanes);
     widths_=new QLineEdit(body);label(form,"editorLaneWidths",widths_);
     auto* widthsHint=new ReflowLabel(body);widthsHint->setObjectName("editorLaneWidthsRange");widthsHint->setWordWrap(true);
     widthsHint->setProperty("validationState","invalid");form->addRow(QString(),widthsHint);widthsHint->hide();
