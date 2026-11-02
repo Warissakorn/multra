@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/right_of_way_commands.hpp"
@@ -91,7 +92,7 @@ void EditorWindow::refreshCounters() {
             }
             if (c.id == keep) counterTable_->selectRow(r);
         }
-        counterTable_->resizeColumnsToContents();
+        fitTableColumns(counterTable_);
     }
     const auto& heads = n.signalHeads;
     const auto& sel = canvas_->selection();

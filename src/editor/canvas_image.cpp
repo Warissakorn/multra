@@ -13,7 +13,7 @@ void validateCanvasImageSize(QSize size) {
 }
 QImage EditorCanvas::renderImage(const CanvasImageOptions& options) const {
     validateCanvasImageSize(options.pixels);
-    EditorCanvas drawing;
+    EditorCanvas drawing;drawing.setProperty("editorImageRendering",true); // scene export has no live viewport/HUD
     drawing.setMapVisible(false); // No tile requests, event pumping or camera edits during export.
     drawing.setDisplayCatalog(display_);drawing.setVisibleLevel(visibleLevel_);
     drawing.setWireframe(wireframe_);drawing.setBackgroundVisible(false);drawing.setDocument(document_);

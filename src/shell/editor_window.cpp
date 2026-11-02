@@ -1,4 +1,6 @@
 #include "editor_interaction.hpp"
+#include "form_values.hpp"
+#include "presentation.hpp"
 #include "automation_server.hpp"
 #include "editor_window.hpp"
 #include "message_label.hpp"
@@ -194,6 +196,7 @@ QAction* EditorWindow::action(const std::string& key,const QKeySequence& shortcu
 }
 QString EditorWindow::text(const std::string& key) const { return locales_.at(language_->currentData().toString()).value(QString::fromStdString(key)).toString(); }
 void EditorWindow::translate() {
+    const auto restoreDraft=preserveFormDraft(findChild<QDockWidget*>("editorInspectorDock"));
     for(const auto& [key,a]:actions_) a->setText(text(key));
     refreshAutomationActions();
     for(const auto& [key,w]:texts_) {
@@ -236,7 +239,8 @@ void EditorWindow::translate() {
     language_->setAccessibleName(text("language"));
     texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
     error_->setMoreText(text("editorMessageMore"));error_->setCloseText(text("editorMessageClose"));
-    buildMapTranslation();error_->clear(); refresh();
+    buildMapTranslation();translatePresentationMenu(*this,[this](const char* key){return text(key);});error_->clear(); refresh();restoreDraft();
+    for(const auto& validate:validationRefresh_)validate();
 }
 bool EditorWindow::commitChange(const std::string& name,const std::function<void(ProjectDocument&)>& change,bool generatedCommand) {
     const bool changed=history_.execute(name,change,generatedCommand);if(changed)clearRun();error_->clear();rejected_.clear();refresh();return changed;
@@ -275,6 +279,19 @@ std::string EditorWindow::selectedName() const {
     return {};
 }
 void EditorWindow::refresh(bool modelChanged) {
+    // A revision is unique only inside one document; Open/New/Recover start another generation.
+    const auto generation=QVariant::fromValue<qulonglong>(history_.generation());
+    if(property("editorViewGeneration")!=generation) {
+        const bool replacing=property("editorViewGeneration").isValid();setProperty("editorViewGeneration",generation);
+        tableRevision_=diagnosticRevision_=automaticRevision_=conflictRevision_=counterRevision_=sectionRevision_=UINT64_MAX;
+        speedDecisionRevision_=speedAreaRevision_=zoneRevision_=nodeRevision_=streetSegmentRevision_=crossSectionRevision_=UINT64_MAX;
+        odRevision_=periodRevision_=modeRevision_=linkTypeRevision_=UINT64_MAX;zoneConnectorsOf_.clear();
+        diagnostics_.clear();rejected_.clear();readiness_.clear();readinessChecked_=false;
+        if(replacing)error_->clear();
+        for(auto* table:findChildren<QTableWidget*>()) {
+            const QSignalBlocker block(table);table->clearSelection();table->setCurrentItem(nullptr);
+        }
+    }
     refreshMapActions();
     if(modelChanged) canvas_->setDocument(&history_.document());
     setWindowTitle(text("editorTitle")+" — "+(file_.isEmpty()?text("editorUntitled"):file_)+(history_.dirty()?" *":""));

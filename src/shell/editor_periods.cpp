@@ -1,4 +1,7 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "form_values.hpp"
+#include <QSpinBox>
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/zone_commands.hpp"
 #include <QAction>
@@ -25,7 +28,7 @@ QString clockText(double seconds) {
     return QStringLiteral("%1:%2:%3").arg(s / 3600, 2, 10, QLatin1Char('0')).arg(s / 60 % 60, 2, 10, QLatin1Char('0'))
                                     .arg(s % 60, 2, 10, QLatin1Char('0'));
 }
-QTime clockTime(double seconds) { return QTime(0, 0).addSecs(static_cast<int>(std::llround(seconds)) % 86400); }
+QTime clockTime(double seconds) { return QTime(0, 0).addSecs(static_cast<int>(std::floor(seconds)) % 86400); }
 void EditorWindow::buildPeriods() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
@@ -71,7 +74,7 @@ void EditorWindow::refreshPeriods() {
             }
             if (p.id == keep) periodTable_->selectRow(r);
         }
-        periodTable_->resizeColumnsToContents();
+        fitTableColumns(periodTable_);
         periodRevision_ = history_.revision();
     }
     const bool chosen = !selectedPeriod().empty();
@@ -86,7 +89,7 @@ void EditorWindow::editPeriod(const std::string& id) {
         if (found == periods.end()) return;
         value = *found;
     }
-    QDialog dialog(this); dialog.setObjectName("editorPeriodDialog");
+    FormDialog dialog(this); dialog.setObjectName("editorPeriodDialog");
     dialog.setWindowTitle(text(id.empty() ? "editorAddPeriod" : "editorEditPeriod"));
     auto* form = new QFormLayout(&dialog);
     form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
@@ -96,20 +99,27 @@ void EditorWindow::editPeriod(const std::string& id) {
         return edit;
     };
     auto* start = clock(value.start, "editorPeriodStart"); auto* end = clock(value.end, "editorPeriodEnd");
-    form->addRow(text("editorColumnName"), name); form->addRow(text("editorPeriodStart"), start); form->addRow(text("editorPeriodEnd"), end);
+    auto* startDay=new QSpinBox(&dialog);startDay->setObjectName("editorPeriodStartDay");startDay->setRange(1,2);startDay->setValue(static_cast<int>(value.start/86400)+1);
+    auto* endDay=new QSpinBox(&dialog);endDay->setObjectName("editorPeriodEndDay");endDay->setRange(1,3);endDay->setValue(static_cast<int>(value.end/86400)+1);
+    const auto shownStart=start->time(),shownEnd=end->time();const int shownStartDay=startDay->value(),shownEndDay=endDay->value();
+    form->addRow(text("editorColumnName"), name);form->addRow(text("editorPeriodStartDay"),startDay);form->addRow(text("editorPeriodStart"), start);
+    form->addRow(text("editorPeriodEndDay"),endDay);form->addRow(text("editorPeriodEnd"), end);
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     form->addRow(buttons);
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    if (dialog.exec() != QDialog::Accepted) return;
-    value.name = name->text().toStdString();
-    value.start = QTime(0, 0).secsTo(start->time());
-    value.end = QTime(0, 0).secsTo(end->time());
-    if (value.end <= value.start) value.end += 86400; // an end at or before the start is the next day
     std::string created;
-    if (execute(id.empty() ? "editorAddPeriod" : "editorEditPeriod", [&](auto& d) { created = putStudyPeriod(d, value); })) {
+    validateDialog(dialog,buttons,[&]{
+        auto candidate=value;candidate.name=name->text().toStdString();
+        const bool unchangedStart=start->time()==shownStart&&startDay->value()==shownStartDay;
+        const bool unchangedEnd=end->time()==shownEnd&&endDay->value()==shownEndDay;
+        candidate.start=unchangedStart?value.start:(startDay->value()-1)*86400.+QTime(0,0).secsTo(start->time());
+        candidate.end=unchangedEnd?value.end:(endDay->value()-1)*86400.+QTime(0,0).secsTo(end->time());
+        if(candidate.end<=candidate.start&&endDay->value()==startDay->value())candidate.end+=86400;
+
+        commitChange(id.empty()?"editorAddPeriod":"editorEditPeriod",[&](auto& d){created=putStudyPeriod(d,candidate);});
+    },[this](const char* key){return text(key);});
+    if(dialog.exec()==QDialog::Accepted) {
         showPeriods();
         for (int r = 0; r < periodTable_->rowCount(); ++r)
             if (periodTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) periodTable_->selectRow(r);

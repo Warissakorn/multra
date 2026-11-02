@@ -41,7 +41,6 @@ void EditorWindow::buildMeso(QToolBar* bar, QVBoxLayout* box) {
     meso_->table->verticalHeader()->setVisible(false);
     meso_->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     box->addWidget(meso_->table, 1);
-    bar->addSeparator();
     bar->addAction(action("editorRunMeso", {}, [this] { startMeso(); }));
     bar->addAction(action("editorCancelMeso", {}, [this] { if (meso_->cancel) *meso_->cancel = true; }));
 }

@@ -37,9 +37,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
   with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
   `docs/images/canvas-labels-after/`.
-- Owner-requested editor fixes (/optimize-program, 2026-11-01): pan repaints the background, so a
-  run's roads stay under their vehicles (D427). Snap starts off (D428). The message line is one closable row (D429). Dashed lane lines keep their true length, set per display type (D430). The canvas is a movable, floatable dock (D431). The owner checks these on Windows (OWNER_SITTING). Snap off by default, a compact closable message
-  line, true-size lane dashes per display type and a dockable canvas follow, one commit each.
+- Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
+  are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check
+  Drawing/Tables/Results, density, modal retries and Lab on Windows through OWNER_SITTING E33/E34.
+  Linux regression evidence does not close those appearance items or authorize slice C.
 
 ## M13 — A9 implemented; stop for owner review
 

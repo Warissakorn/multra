@@ -101,7 +101,7 @@ private:
         int shown=host_->contentsRect().width();
         if(viewport_)shown=std::min(shown,viewport_->width());
         const int width=shown-margins.left()-margins.right();
-        const auto policy=width<2*editorDesign::formLabelWidth?QFormLayout::WrapAllRows:QFormLayout::WrapLongRows;
+        const auto policy=host_->property("editorStackForm").toBool()||width<2*editorDesign::formLabelWidth?QFormLayout::WrapAllRows:QFormLayout::WrapLongRows;
         if(form_->rowWrapPolicy()!=policy)form_->setRowWrapPolicy(policy);
     }
     QFormLayout* form_;
@@ -231,6 +231,18 @@ private:
             }
             if(event->type()==QEvent::Leave)leave_.start(200);
             return false;
+        }
+        if(event->type()==QEvent::FocusIn||event->type()==QEvent::MouseButtonPress) {
+            // A combo or spin editor receives the click before its table's viewport does.
+            for(auto* at=widget->parentWidget();at;at=at->parentWidget())if(auto* table=qobject_cast<QTableView*>(at)) {
+                if(widget!=table->viewport()&&table->viewport()->isAncestorOf(widget)) {
+                    auto* editor=widget;
+                    while(editor->parentWidget()!=table->viewport())editor=editor->parentWidget();
+                    const auto index=table->indexAt(editor->geometry().center());
+                    if(index.isValid()&&index!=table->currentIndex())table->setCurrentIndex(index);
+                }
+                break;
+            }
         }
         if(event->type()==QEvent::Wheel) {
             QWidget* field=nullptr;

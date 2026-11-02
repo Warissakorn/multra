@@ -42,7 +42,7 @@ BehaviourLabWindow::BehaviourLabWindow(const lab::LabSettings& initial, std::fil
     panel_ = new BehaviourLabPanel(initial, text_, this);
     auto* dock = new QDockWidget(this); dock->setObjectName("labPanelDock"); dock->setWidget(panel_);
     dock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
+    addDockWidget(Qt::RightDockWidgetArea, dock);resizeDocks({dock},{320},Qt::Horizontal);
     // Hard rule 4: the marker is always on screen.
     marker_ = new QLabel(this); marker_->setObjectName("labUnvalidated");
     message_ = new QLabel(this); message_->setObjectName("labMessage"); message_->setWordWrap(true);
@@ -73,7 +73,7 @@ void BehaviourLabWindow::buildToolbar() {
         if (ok) run_->restart(seed); else run_->restart();
         followed_ = run_->focusId(); refresh();
     }));
-    seed_ = new QLineEdit("42", bar); seed_->setObjectName("labSeed"); seed_->setMaximumWidth(80);
+    seed_ = new QLineEdit("42", bar); seed_->setObjectName("labSeed"); seed_->setFixedWidth(104);
     seed_->setFont(editorDesign::numericFont()); bar->addWidget(seed_);
     speed_ = new QComboBox(bar); speed_->setObjectName("labSpeed");
     for (double n : {0.5, 1., 2., 5., 10., 20.}) speed_->addItem(QString::number(n) + "×", n);

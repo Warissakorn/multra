@@ -56,6 +56,8 @@ Rule 4 applies: nothing here is validated.
     `0 ≤ start < end ≤ 172800`. The upper bound of two days lets a period run past midnight.
 - **Refused:** `PERIOD_INVALID` at the field's path, when a value is not finite or the order is
   wrong.
+- **Editor (D432):** start/end day selectors retain the day offset; unchanged clock fields retain
+  exact stored seconds. Same-day end at/before start means the next day; the two-day bound still validates.
 - **Periods may overlap.** Two matrices in overlapping periods add, as overlapping inputs do today.
 - `profileId` and `macroFlowBasis` are not stored in S1 (owner choices 3, 4).
 

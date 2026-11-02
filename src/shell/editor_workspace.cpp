@@ -5,6 +5,8 @@
 #include "image_export.hpp"
 #include "editor_interaction.hpp"
 #include "editor_style.hpp"
+#include "presentation.hpp"
+#include "workspace_layout.hpp"
 #include "vehicle_color_dialog.hpp"
 #include "behaviour_lab_window.hpp"
 #include "../project/demand_catalog.hpp"
@@ -16,6 +18,7 @@
 #include <QDockWidget>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QLayout>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -40,11 +43,23 @@ struct KeepPanelSizes : QObject {
         auto* dock=qobject_cast<QDockWidget*>(watched);
         if(event->type()==QEvent::Resize && dock && dock->objectName()!=QLatin1String("editorCanvasDock") && !dock->isFloating()) {
             auto* window=dock->parentWidget();
-            if(window && window->property("multraLaidOutSize").toSize()==window->size())dock->setProperty("multraPanelSize",dock->size());
+            if(window && !window->property("editorApplyingLayout").toBool() && !window->property("editorPaletteLayoutPending").toBool() && window->property("multraLaidOutSize").toSize()==window->size())dock->setProperty("multraPanelSize",dock->size());
         }
         return false;
     }
 };
+void sizeTables(multra::EditorWindow& window) {
+    if(window.property("editorWorkspacePreset").toInt()!=1)return;
+    auto* view=window.findChild<QDockWidget*>("editorCanvasDock");auto* objects=window.findChild<QDockWidget*>("editorObjectsDock");
+    if(!view->isVisible()||!objects->isVisible()||view->isFloating()||objects->isFloating())return;
+    window.layout()->activate();const int available=view->height()+objects->height();
+    const int preview=window.width()<1180?250:350;
+    const int overhead=std::max(0,view->height()-window.canvas()->viewport()->height());
+    const int tableHeight=std::min(340,std::max(180,available-overhead-preview));
+    window.setProperty("editorApplyingLayout",true);
+    window.resizeDocks({view,objects},{std::max(100,available-tableHeight),tableHeight},Qt::Vertical);
+    objects->setProperty("multraPanelSize",QSize(1,tableHeight));window.setProperty("editorApplyingLayout",false);
+}
 }
 namespace multra {
 void EditorWindow::buildWorkspace() {
@@ -108,6 +123,13 @@ void EditorWindow::buildWorkspace() {
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorMapRetry","editorToggleMap","editorRemoveMap"});
     menu("editorSimulationMenu",{"editorRun","editorStep","editorReset","editorRunSettings","editorRecheck","","editorBehaviourLab","","editorRunSeeds","editorCancelSeeds","","editorExportResults","editorCopyResults"});
     menu("editorHelpMenu",{"editorCommandPalette","editorShortcuts","","editorAutomationEnable","editorAutomationEndpoint","editorAutomationDisable"});
+    auto* layouts=findChild<QMenu*>("editorViewMenu")->addMenu(QString());texts_["editorWorkspaceMenu"]=layouts;
+    auto* presets=new QActionGroup(this);int preset=0;
+    for(const auto* key:{"editorWorkspaceDrawing","editorWorkspaceTables","editorWorkspaceResults"}) {
+        auto* choose=action(key,{},[this,preset]{setWorkspacePreset(preset);});choose->setCheckable(true);presets->addAction(choose);layouts->addAction(choose);++preset;
+    }
+    installPresentationMenu(*this,[this](const char* key){return text(key);},[this]{setWorkspacePreset(property("editorWorkspacePreset").toInt());});
+    for(const auto* key:{"editorDensityCompact","editorDensityComfortable","editorDensityLarge"})actions_[key]=findChild<QAction*>(key);
     // Menu alternatives keep widget controls reachable even at extreme toolbar widths.
     auto* languages=new QActionGroup(this);
     for(int index=0;index<language_->count();++index) {
@@ -167,7 +189,7 @@ void EditorWindow::buildWorkspace() {
 }
 void EditorWindow::layoutToolbars() {
     if(auto* run=findChild<QToolBar*>("editorRunToolbar")) {
-        const bool stacked=width()<1180;
+        const bool stacked=width()<1180+80*editorDesign::presentationDensity();
         if(stacked!=toolBarBreak(run)){if(stacked)insertToolBarBreak(run);else removeToolBarBreak(run);}
     }
 }
@@ -197,6 +219,9 @@ void EditorWindow::resizeEvent(QResizeEvent* event) {
             if(ends.size()>1)resizeDocks(ends,heights,Qt::Vertical);
         }
         setProperty("multraLaidOutSize",size());
+        if(property("editorWorkspacePreset").toInt()==0&&property("editorAutoPalette").toBool()&&actions_.at("editorPaletteIconsOnly")->isChecked()!=(width()<1500)) {
+            actions_.at("editorPaletteIconsOnly")->setChecked(width()<1500);showPaletteView();
+        }
     });
 }
 void EditorWindow::focusCanvas(bool enabled) {
@@ -211,7 +236,7 @@ void EditorWindow::focusCanvas(bool enabled) {
 void EditorWindow::resetWorkspace() {
     changingWorkspace_=true;
     {const QSignalBlocker blocked(actions_.at("editorFocusCanvas"));actions_.at("editorFocusCanvas")->setChecked(false);}
-    workspaceBeforeFocus_.clear();
+    workspaceBeforeFocus_.clear();setProperty("editorAutoPalette",true);
     actions_.at("editorPaletteIconsOnly")->setChecked(false);translatePalette(); // the view is transient (B17)
     const auto dock=[this](const char* name){return findChild<QDockWidget*>(name);};
     auto* palette=dock("editorPaletteDock");auto* inspector=dock("editorInspectorDock");
@@ -226,15 +251,28 @@ void EditorWindow::resetWorkspace() {
     showObjectPage(objectPages_.at("editorLinkTable")); // the group is transient too
     // D431: with no central widget the docks share any spare room, so the canvas is given it
     // explicitly; before the first show the window has no size yet, so the sizes apply again then.
-    const auto sizes=[this,palette,view,inspector,objects]{
-        resizeDocks({palette,view,inspector},{paletteWidth,std::max(400,width()-paletteWidth-310),310},Qt::Horizontal);
-        resizeDocks({view,objects},{std::max(300,height()-185),185},Qt::Vertical);
-        // The requested sizes are what each panel keeps (side panels their width, Objects its height);
-        // the widgets take them only at the next layout.
-        palette->setProperty("multraPanelSize",QSize(std::max(paletteWidth,palette->minimumSizeHint().width()),1));inspector->setProperty("multraPanelSize",QSize(310,1));
-        objects->setProperty("multraPanelSize",QSize(1,185));
-    };
-    sizes();if(!isVisible())QTimer::singleShot(0,this,sizes);
+    changingWorkspace_=false;setWorkspacePreset(0);
+    if(!isVisible())QTimer::singleShot(0,this,[this]{setWorkspacePreset(0);});
     layoutToolbars();changingWorkspace_=false;canvas_->setFocus();
 }
+void EditorWindow::setWorkspacePreset(int preset) {
+    if(changingWorkspace_)return;
+    if(actions_.at("editorFocusCanvas")->isChecked())actions_.at("editorFocusCanvas")->setChecked(false);
+    changingWorkspace_=true;setProperty("editorApplyingLayout",true);setProperty("editorWorkspacePreset",preset);
+    auto* palette=findChild<QDockWidget*>("editorPaletteDock");auto* inspector=findChild<QDockWidget*>("editorInspectorDock");
+    auto* objects=findChild<QDockWidget*>("editorObjectsDock");auto* view=findChild<QDockWidget*>("editorCanvasDock");
+    const bool results=preset==2,compact=property("editorAutoPalette").toBool()?width()<1500:actions_.at("editorPaletteIconsOnly")->isChecked();
+    palette->setVisible(!results);inspector->setVisible(!results);view->setVisible(!results||view->isFloating());objects->setVisible(preset!=0);
+    actions_.at("editorPaletteIconsOnly")->setChecked(compact);translatePalette();
+    if(results)showObjectPage(objectPages_.at("editorResultsTable"));
+    const int left=compact?64:editorDesign::namedPaletteWidth+24*editorDesign::presentationDensity(),right=std::min(310,std::max(250,width()/4));
+    if(!results&&!view->isFloating()) {
+        resizePalette(*this,left,right);
+    }
+    palette->setProperty("multraPanelSize",QSize(left,1));inspector->setProperty("multraPanelSize",QSize(right,1));
+    if(preset==1){sizeTables(*this);QTimer::singleShot(0,this,[this]{sizeTables(*this);});} // after page/feedback reflow
+    int index=0;for(const auto* key:{"editorWorkspaceDrawing","editorWorkspaceTables","editorWorkspaceResults"})actions_.at(key)->setChecked(index++==preset);
+    setProperty("editorApplyingLayout",false);changingWorkspace_=false;layoutToolbars();
+}
+
 }

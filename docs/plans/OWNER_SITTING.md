@@ -415,6 +415,16 @@ nothing. Numbers are not reused.
     side, double-click it to float it onto a second screen, use it, resize the window, then View →
     Reset panel layout (D431). *Owner:*
 
+34. **UI audit remediation D432** (listed 2026-11-02). On Windows at 100/150/200 %, English and
+    Thai, open four-leg. At 1366×768 and 1024×768 switch View → Workspace between Drawing,
+    Tables and Results; at 800×600 expand Appearance and scroll Properties. Choose all three
+    UI densities, type seed 4294967295, inspect the named/icons palette and movement/queue
+    names, then open Behaviour Lab. Fit and pan the network: do labels stay inside the view,
+    clear of the HUD, with all twelve input rates after Fit at 1024×768? Submit an invalid
+    Input interval and correct it in the same form; reopen a second-day period without editing.
+    Are text, fields, row selection, scrolling and fixed dialog buttons usable without clipping?
+    Linux coverage and exact repro commands: [ui-audit-fixes](../evidence/ui-audit-fixes.md). *Owner:*
+
 ## F — Dialogs: demand and behaviour
 
 1. **D142 volume from turning counts** (listed 2026-10-09). Type a 15-minute count sheet into a

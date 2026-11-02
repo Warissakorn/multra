@@ -126,7 +126,7 @@ QString editorStyleSheet() {
         QToolBar { background: palette(base); border: 0; spacing: @space1px; padding: @space1px; }
         QToolBar::separator { background: palette(mid); width: 1px; margin: @space1px; }
         QToolButton, QPushButton { min-height: @fieldContentpx; max-height: @fieldContentpx; padding: 0 @space2px; border: 1px solid palette(dark); border-radius: @radiuspx; background: palette(button); }
-        QToolBar QToolButton { min-width: @iconpx; min-height: @iconpx; border-color: transparent; background: transparent; padding: 2px 1px 1px 2px; }
+        QToolBar QToolButton { min-width: @toolbarIconpx; min-height: @iconpx; border-color: transparent; background: transparent; padding: 2px 1px 1px 2px; }
         QToolButton:hover, QPushButton:hover { background: palette(midlight); }
         QToolButton:pressed, QPushButton:pressed { background: palette(mid); }
         QToolButton:checked, QPushButton:checked { background: palette(mid); border-bottom-color: palette(highlight); }
@@ -194,16 +194,17 @@ QString editorStyleSheet() {
         QStatusBar::item { border: 0; }
         QToolTip { background: palette(text); color: palette(base); border: 1px solid palette(text); padding: @space1px @space2px; }
     )");
+    const int density=editorDesign::presentationDensity(),height=editorDesign::controlHeight+4*density;
     const std::pair<const char*,int> sizes[]={
-        {"@fontLabel",editorDesign::fontSizeLabel},{"@fontNumeric",editorDesign::fontSizeNumeric},
-        {"@fontBody",editorDesign::fontSizeBody},{"@fontTitle",editorDesign::fontSizeTitle},
+        {"@fontLabel",editorDesign::fontSizeLabel+density},{"@fontNumeric",editorDesign::fontSizeNumeric+density},
+        {"@fontBody",editorDesign::fontSizeBody+density},{"@fontTitle",editorDesign::fontSizeTitle},
         {"@fontSection",editorDesign::fontSizeSection},
         {"@space1",editorDesign::space1},{"@space2",editorDesign::space2},{"@space4",editorDesign::space4},
         {"@space5",editorDesign::space5},{"@space6",editorDesign::space6},
-        {"@controlHeight",editorDesign::controlHeight},{"@controlContent",editorDesign::controlHeight-2*editorDesign::controlPaddingY-2},
+        {"@controlHeight",height},{"@controlContent",height-2*editorDesign::controlPaddingY-2},
         {"@padY",editorDesign::controlPaddingY},
-        {"@fieldContent",editorDesign::controlHeight-2},{"@fieldFocus",editorDesign::controlHeight-4},
-        {"@radius",2},{"@icon",editorDesign::iconSize}
+        {"@fieldContent",height-2},{"@fieldFocus",height-4},
+        {"@radius",2},{"@toolbarIcon",editorDesign::iconSize+4*density},{"@icon",editorDesign::iconSize}
     };
     // No token is a prefix of another ("@space1" vs "@space6", "@controlHeight" vs "@controlContent").
     for(const auto& [name,value]:sizes)stylesheet.replace(QLatin1String(name),QString::number(value));
@@ -212,7 +213,7 @@ QString editorStyleSheet() {
 }
 void applyTableRecipe(QTableView* table) {
     table->setAlternatingRowColors(true);table->setShowGrid(false);
-    if(!table->property("editorCustomRows").toBool())table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight);
+    if(!table->property("editorCustomRows").toBool())table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight+4*editorDesign::presentationDensity());
     table->horizontalHeader()->setMinimumSectionSize(editorDesign::controlHeight);
 }
 void applyEditorStyle(QWidget* window) {

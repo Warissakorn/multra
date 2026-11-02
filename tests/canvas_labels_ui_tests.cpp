@@ -143,7 +143,7 @@ int main(int argc,char** argv) {
             require(std::abs(edge.red()-want.red())+std::abs(edge.green()-want.green())+std::abs(edge.blue()-want.blue())<60,
                     "A box frame is not grey, or accent when pinned");
         }
-        EditorWindow window(data);window.resize(1360,860);window.show();settle();
+        EditorWindow window(data);window.show();window.resize(1800,1300);settle();
         window.openFile(QString::fromStdString((data/"projects/four-leg-signalised.traffic.json").string()));settle();
         auto& canvas=*window.canvas();
         QPointF centre;int n=0;
@@ -172,6 +172,8 @@ int main(int argc,char** argv) {
             require(stacked(canvas,all)>0,"Setup: no two input anchors share a road end");
             require(std::any_of(all.begin(),all.end(),[&](CanvasLabel* l){return onObject(canvas,eastBox(canvas,l));}),
                     "Setup: the D425 first place covers no road");
+            for(auto* l:all)require(QRectF(canvas.viewport()->rect()).adjusted(100,100,-100,-100).contains(canvas.viewportTransform().map(l->anchor())),
+                    "Setup: a fixed-scale label anchor has insufficient viewport margin");
             for(auto* l:all)require(l->isVisible(),"A rate label hid although the view has room");
             for(auto* l:all)require(!onObject(canvas,screen(canvas,l)),"A rate box covers a road or marker it could avoid");
         }

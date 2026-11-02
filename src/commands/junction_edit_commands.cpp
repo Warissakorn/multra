@@ -6,6 +6,7 @@
 #include "../model/network/street_segments.hpp"
 #include "../project/street_segment_codec.hpp"
 #include "../project/json.hpp"
+#include <nlohmann/json.hpp>
 #include <algorithm>
 #include <set>
 #include <stdexcept>

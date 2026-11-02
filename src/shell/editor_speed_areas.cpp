@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/demand_commands.hpp"
@@ -99,7 +100,7 @@ void EditorWindow::refreshSpeedAreas() {
             }
             if (a.id == keep) speedAreaTable_->selectRow(r);
         }
-        speedAreaTable_->resizeColumnsToContents();
+        fitTableColumns(speedAreaTable_);
     }
     const auto& selection = canvas_->selection();
     actions_.at("editorAddReducedSpeedArea")->setEnabled(selection.size() == 1 && findLink(d.network, selection.front()));

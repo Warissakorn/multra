@@ -15,7 +15,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
 | Signals, conflicts, Stop/Yield and queues | D258, D257, D256, D255, D254, D253, D251, D250, D249, D248, D247, D246, D241, D240, D239, D238, D237, D232, D231, D230, D227, D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
 | Following, commitment and lane changes | D258, D257, D256, D255, D254, D253, D252, D251, D250, D249, D248, D247, D246, D241, D240, D239, D238, D237, D236, D235, D234, D233, D232, D231, D230, D229, D228, D227, D226, D225, D224, D223, D222, D221, D220, D219, D218, D217, D216, D215, D214, D213, D212, D211, D210, D209, D208, D207, D206, D204, D203, D202, D189, D188, D187, D186, D185, D184, D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
-| UI, gestures, display and results | D270, D268, D265, D264, D263, D262, D261, D260, D259, D245, D244, D243, D242, D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
+| UI, gestures, display and results | D432, D270, D268, D265, D264, D263, D262, D261, D260, D259, D245, D244, D243, D242, D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
 | Performance, checks and documentation | D283, D282, D281, D280, D279, D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
 
 ## Reading a historical choice
@@ -472,3 +472,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.
 
 [D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
+
+[D432](RECORD.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.

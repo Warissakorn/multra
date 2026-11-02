@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/street_segment_commands.hpp"
@@ -191,7 +192,7 @@ void EditorWindow::refreshStreetSegments() {
             }
             if (road.id == keep) streetSegmentTable_->selectRow(r);
         }
-        streetSegmentTable_->resizeColumnsToContents();
+        fitTableColumns(streetSegmentTable_);
         streetSegmentRevision_ = history_.revision();
     }
     const auto id = selectedStreetSegment();

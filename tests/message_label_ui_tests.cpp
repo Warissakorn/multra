@@ -33,9 +33,9 @@ void check(const std::filesystem::path& data,const QString& language) {
     QTemporaryDir dir;
     EditorWindow window(data,language);window.resize(1366,768);window.show();settle();
     window.openFile(brokenProject(data,dir));settle();
-    auto* message=window.findChild<MessageLabel*>("editorError");
+    window.findChild<QAction*>("editorWorkspaceTables")->trigger();settle(); // isolate message height from opening Objects
+    auto* message=dynamic_cast<MessageLabel*>(window.findChild<QWidget*>("editorError"));
     require(message,"The message line is not a MessageLabel");
-    const int before=window.canvas()->height();
     require(message->text().isEmpty() && !message->isVisible(),"An empty message line takes room");
     window.findChild<QAction*>("editorStep")->trigger();settle();
     const auto full=message->text();
@@ -47,12 +47,14 @@ void check(const std::filesystem::path& data,const QString& language) {
     require(message->toolTip()==full,"The tooltip is not the whole message");
     const QFontMetrics metrics(message->font());
     require(message->height()<=metrics.lineSpacing()+16,"The message line is taller than one row: "+std::to_string(message->height()));
-    require(window.canvas()->height()>=before*0.9,"The canvas lost more than 10% to a message: "+std::to_string(before)+" -> "+
-            std::to_string(window.canvas()->height()));
+    const int withMessage=window.canvas()->height(),messageHeight=message->height();
     auto* close=message->findChild<QToolButton*>("editorMessageClose");
     require(close && close->isVisible(),"The message line has no close button");
     QTest::mouseClick(close,Qt::LeftButton);settle();
     require(!message->isVisible() && message->text()==full,"Close did not hide the line, or dropped the message");
+    // Compare the close itself: Run feedback and opening Problems also change the layout.
+    require(window.canvas()->height()>=withMessage&&window.canvas()->height()-withMessage<=messageHeight+16,
+            "Closing one message row changed more than its row of canvas space");
     window.findChild<QAction*>("editorStep")->trigger();settle();
     require(!message->isVisible(),"The same message came back after it was closed");
     message->setText(QStringLiteral("A different message"));settle();

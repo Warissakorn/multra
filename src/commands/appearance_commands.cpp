@@ -11,7 +11,9 @@
 namespace multra {
 void renameObject(ProjectDocument& d,const std::string& id,const std::string& name) {
     // A name long enough to be a document belongs in neither a dialog nor a table cell.
-    if(name.size()>200)throw std::invalid_argument("EDIT_NAME_LENGTH");
+    // Count Unicode scalar values, rather than UTF-8 bytes (Thai letters use three bytes).
+    const auto characters=std::count_if(name.begin(),name.end(),[](unsigned char c){return (c&0xc0)!=0x80;});
+    if(characters>200)throw std::invalid_argument("EDIT_NAME_LENGTH");
     for(auto& l:d.network.links)if(l.id==id){l.name=name;return;}
     for(auto& c:d.network.connectors)if(c.id==id){c.name=name;return;}
     for(auto& h:d.network.signalHeads)if(h.id==id){h.name=name;return;}

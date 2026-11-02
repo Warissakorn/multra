@@ -138,7 +138,8 @@ from the real signal program. Reset restores the authored bars. Marker stations 
 ## Workspace and screen space
 
 The application opens maximized. The command bar uses one row on wide windows and two rows
-below 1180 logical pixels, keeping playback and language controls reachable. File, Edit, View,
+below 1180 logical pixels in Compact (1260 in Comfortable, 1340 in Large), keeping playback
+and language controls reachable. File, Edit, View,
 Simulation, Help and Language menus retain full command names and keyboard shortcuts.
 The Simulation bar reads Run/Pause (F5), Step (F6) | Seed, speed | Reset; Reset and Drawing
 tools' Delete selected sit last behind a separator (D193).
@@ -147,8 +148,10 @@ The Network Objects palette groups the tools as Geometry (Select, Link, Connecto
 Control (Signal heads, Conflict areas), Demand (Routes, Vehicle inputs, Zones), Measurement
 (Queue counters, Travel-time sections) and Tools (Measure, Calibrate); every tool keeps its
 chord. The arrow above the tree (also View → icons only) hides the names; tooltips and
-accessible names keep name and chord. The view is not saved, and Reset panel layout restores
-names (D193).
+accessible names keep name and chord. Named rows use short tool names with a separate chord
+column. Icons-only uses thin category separators and gives the released width to the canvas.
+The view is session-only; Reset chooses names at 1500 logical pixels and above, icons below.
+A manual choice remains through task switches and window resizing (D432, amending D193).
 
 - **The network view is a dock too (D431).** Its title bar is the validation-marker line: drag it
   to another side, or double-click it (or use View → Float network view) to float it onto another
@@ -160,17 +163,32 @@ names (D193).
   (Routes, Vehicle inputs, Routing decisions, Zones, OD matrices), Measurement (Queue counters,
   Travel-time sections), Results and Problems. A jump to a page (a tool, Show in table, a failed
   check or run) switches to its group; Problems jumps also reopen the panel (D194).
-- **View → Reset panel layout** restores the palette (with names), Properties and Objects docks,
-  and the Objects panel's Network group.
+- **View → Workspace → Drawing / Tables / Results** changes the session layout. Drawing is the
+  opening layout, with the palette and Properties beside the canvas and Objects hidden. Tables
+  opens a bounded Objects area while keeping a readable network preview. Results hides the side panels and gives
+  the full dock area to results (a floating network view can remain visible). Navigating to an object page chooses
+  Tables; navigating to Results chooses Results. No document, selection or run state is changed.
+- **View → Reset panel layout** restores dock positions and the Drawing layout, with the
+  Objects panel's Network group selected for the next time it opens.
 - **Ctrl+I**, **Ctrl+Shift+O**, **Ctrl+Shift+H** and **Ctrl+Shift+T** toggle Properties, Objects,
   History and the Network Objects palette respectively.
-- Properties keeps ID, Name and its tabs visible while each tab scrolls independently.
+- Properties has a scrollable common section (ID, Name and appearance) above independently
+  scrolling tabs. Its content does not force a short window taller.
   Expand **Network and appearance** for drivingSide, level and display type. drivingSide
   applies at once; level and display type wait for their Apply button, below a divider. Labels
   share one column and wrap; a narrow panel puts every field under its label (D195).
 - Signal-head table actions appear on the Signal heads tab. Run settings and runnability
   checks are always available in the Simulation menu. **F1** opens gesture/keyboard help.
 
+**View → UI density → Compact / Comfortable / Large** is session-only and shared with the Lab.
+Rows and controls use 24 / 28 / 32 logical pixels; label fonts use 11 / 12 / 13 px, numbers
+12 / 13 / 14 px and body text 13 / 14 / 15 px. Canvas zoom and stored model values are independent.
+The ten-digit unsigned seed has a 104 px field. Initial object columns fit their contents up to
+320 px; user-resized widths survive selection, language and data refreshes. Long values retain
+normal table scrolling/tooltips. Demand-period columns fit the numeric editor's minimum width.
+
+Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
+Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.
 The unvalidated marker and complete simulation figures remain visible in focus mode.
 Wrapped labels retain height-for-width and a natural hint capped to the current page;
 fields reserve their font minimum, so narrow forms wrap and wide forms rejoin their rows.
@@ -193,3 +211,30 @@ The first plain Route click on a Link also places an opt-in recognition line at 
 projected station. Start on the same line to add a Route to its decision. Select-drag
 moves the line; [POSITIONED_ROUTING](POSITIONED_ROUTING.md) defines grouping, validation,
 passage-time choice and the numerical boundary. Legacy Ctrl+right/Enter remains unchanged.
+
+## Safe form and document refreshes (D432)
+
+Input, routing-decision, speed-decision, signal head/program/controller, run-settings and study-period
+forms validate and commit before accepting. A rejected submission keeps the form and staged
+values open with a localized explanation. Untouched numeric fields retain stored precision;
+opening and confirming a form is not an edit. Study periods expose start/end day as well as clock
+time, preserve second-day/fractional values untouched, and infer the next day for an overnight
+clock interval on the same chosen day. The stored two-day limit still applies.
+
+A language change preserves pending Properties text, numbers and choices. Empty comma-separated
+lane-width entries are invalid for both the hint and Apply. Object names allow 200 Unicode scalar
+characters, including Thai. Clicking a table cell editor selects its own row before Remove.
+Selecting an input replaces an earlier route-table highlight with that input's route.
+
+New/Open/recovery invalidates list and diagnostics views by document generation, even when the
+new document reuses revision numbers and row counts. Export and automation CSV/screenshot writes
+refuse the active project and recovery destinations through the common path guard.
+
+Only the active object/Results page contributes its vertical minimum, so a hidden stacked table
+does not make another task taller. The common Properties section shrinks to its content when
+folded and is bounded when expanded.
+
+Fit reserves screen-pixel space for labels. Placement after redraw, pan and resize keeps visible
+labels within the viewport and clear of HUD/map overlays; selected labels retain priority within
+that usable space. See [CANVAS_STYLE](../plans/CANVAS_STYLE.md) and
+[the remediation evidence](../evidence/ui-audit-fixes.md).

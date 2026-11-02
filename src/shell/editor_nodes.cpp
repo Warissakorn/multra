@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
@@ -225,7 +226,7 @@ void EditorWindow::refreshNodes() {
             nodeTable_->setItem(r, 7, inArea);
             if (n.id == keep) nodeTable_->selectRow(r);
         }
-        nodeTable_->resizeColumnsToContents();
+        fitTableColumns(nodeTable_);
         nodeRevision_ = history_.revision();
     }
     canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit

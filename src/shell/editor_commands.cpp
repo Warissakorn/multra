@@ -70,7 +70,7 @@ void EditorWindow::showCommandPalette() {
             if(!query.isEmpty()&&!searchable.contains(query,Qt::CaseInsensitive))continue;
             auto* item=new QListWidgetItem(title+(shortcuts.isEmpty()?QString():"    "+shortcuts),results);
             item->setData(Qt::UserRole,QString::fromStdString(key));item->setToolTip(searchable);
-            item->setSizeHint(QSize(item->sizeHint().width(),editorDesign::tableRowHeight));
+            item->setSizeHint(QSize(item->sizeHint().width(),editorDesign::tableRowHeight+4*editorDesign::presentationDensity()));
         }
         empty->setVisible(results->count()==0);
         if(results->count())results->setCurrentRow(0);

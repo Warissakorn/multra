@@ -1,4 +1,7 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "dialog_fit.hpp"
+#include "form_values.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/demand_commands.hpp"
 #include "../project/demand_catalog.hpp"
@@ -92,7 +95,7 @@ void EditorWindow::refreshSpeedDecisions() {
             }
             if (s.id == keep) speedDecisionTable_->selectRow(r);
         }
-        speedDecisionTable_->resizeColumnsToContents();
+        fitTableColumns(speedDecisionTable_);
     }
     const auto& selection = canvas_->selection();
     actions_.at("editorAddSpeedDecision")->setEnabled(selection.size() == 1 && findLink(d.network, selection.front()));
@@ -115,16 +118,16 @@ void EditorWindow::editSpeedDecision(const std::string& id, const std::string& l
     std::vector<VehicleType> types;
     try { types = resolveDemandCatalog(document.definition.value_or(AuthoringDefinition{}), data_, false).vehicleTypes; }
     catch (const std::exception& e) { showError(e); return; }
-    QDialog dialog(this); dialog.setObjectName("editorSpeedDecisionDialog");
+    FormDialog dialog(this); dialog.setObjectName("editorSpeedDecisionDialog");
     dialog.setWindowTitle(text(id.empty() ? "editorAddSpeedDecision" : "editorEditSpeedDecision"));
-    auto* form = new QFormLayout(&dialog);
+    auto* form = new QFormLayout(scrollingBody(dialog));
     form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
     form->setHorizontalSpacing(editorDesign::space2); form->setVerticalSpacing(editorDesign::space1);
     auto* name = new QLineEdit(QString::fromStdString(edited.name), &dialog); name->setObjectName("editorSpeedDecisionName");
     form->addRow(text("editorColumnName"), name);
     auto* station = new QDoubleSpinBox(&dialog); station->setObjectName("editorSpeedDecisionStation");
     station->setRange(0, std::max(0.0, length - 0.01)); station->setDecimals(2); station->setSuffix(" m");
-    station->setFont(editorDesign::numericFont()); station->setValue(edited.station);
+    station->setFont(editorDesign::numericFont()); setFormNumber(station,edited.station);
     form->addRow(text("editorSpeedDecisionStation"), station);
     struct Row { std::string type; QCheckBox* on; QDoubleSpinBox *min, *max; };
     std::vector<Row> rows;
@@ -136,7 +139,7 @@ void EditorWindow::editSpeedDecision(const std::string& id, const std::string& l
         const auto spin = [&](const char* end, double value) {
             auto* s = new QDoubleSpinBox(line); s->setObjectName(QString::fromStdString("speed." + t.id + "." + end));
             s->setRange(0, 100); s->setDecimals(2); s->setSuffix(" m/s"); s->setFont(editorDesign::numericFont());
-            s->setValue(value); s->setEnabled(on->isChecked()); box->addWidget(s);
+            setFormNumber(s,value); s->setEnabled(on->isChecked()); box->addWidget(s);
             connect(on, &QCheckBox::toggled, s, &QWidget::setEnabled);
             return s;
         };
@@ -147,18 +150,15 @@ void EditorWindow::editSpeedDecision(const std::string& id, const std::string& l
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
-    form->addRow(buttons);
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    if (dialog.exec() != QDialog::Accepted) return;
-    edited.name = name->text().toStdString(); edited.station = station->value();
-    edited.speeds.clear();
-    for (const auto& row : rows)
-        if (row.on->isChecked()) edited.speeds.push_back({row.type, row.min->value(), row.max->value()});
-    // Validation names an empty or inverted range; a refused edit leaves the document as it was.
+    addFooter(dialog,buttons);
     std::string made;
-    if (!execute(id.empty() ? "editorAddSpeedDecision" : "editorEditSpeedDecision", [&](auto& d) { made = putSpeedDecision(d, edited); }))
-        return;
+    validateDialog(dialog,buttons,[&]{
+        auto candidate=edited;candidate.name=name->text().toStdString();candidate.station=formNumber(station);
+        candidate.speeds.clear();
+        for(const auto& row:rows)if(row.on->isChecked())candidate.speeds.push_back({row.type,formNumber(row.min),formNumber(row.max)});
+        commitChange(id.empty()?"editorAddSpeedDecision":"editorEditSpeedDecision",[&](auto& d){made=putSpeedDecision(d,candidate);});
+    },[this](const char* key){return text(key);});
+    if(dialog.exec()!=QDialog::Accepted)return;
     objects_->setCurrentWidget(objectPages_.at("editorSpeedDecisionTable"));
     refreshSpeedDecisions();
     for (int r = 0; r < speedDecisionTable_->rowCount(); ++r)

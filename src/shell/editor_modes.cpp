@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/catalog_commands.hpp"
@@ -83,7 +84,7 @@ void EditorWindow::refreshModes() {
             }
             if (m.id == keep) modeTable_->selectRow(r);
         }
-        modeTable_->resizeColumnsToContents();
+        fitTableColumns(modeTable_);
         modeRevision_ = history_.revision();
     }
     const bool owned = ownsModes(history_.document()), chosen = !selectedMode().empty();

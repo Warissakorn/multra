@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "dialog_fit.hpp"
+#include "form_values.hpp"
 #include "../project/counted_volumes.hpp"
 #include <QCheckBox>
 #include "demand_period_editor.hpp"
@@ -36,7 +37,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     catch(const std::exception& e){showError(e);return;}
     if(value.vehicleTypeId.empty() && value.compositionId.empty())
         if(const auto* type=preferredVehicleType(catalog.vehicleTypes))value.vehicleTypeId=type->id; // a new input
-    QDialog dialog(this);dialog.setObjectName("editorInputDialog");dialog.setWindowTitle(text("editorEditInput"));
+    FormDialog dialog(this);dialog.setObjectName("editorInputDialog");dialog.setWindowTitle(text("editorEditInput"));
     auto* form=new QFormLayout(scrollingBody(dialog)); // the buttons stay on screen however many rows
     form->setContentsMargins(0,0,0,0);
     form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);
@@ -98,7 +99,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     if(const int at=type->findData(current);at>=0)type->setCurrentIndex(at);
     form->addRow(text("editorInputType"),type);
     const auto number=[&](const char* key,double v){
-        auto* field=new QDoubleSpinBox(&dialog);field->setObjectName(key);field->setRange(0,10000000);field->setDecimals(3);field->setValue(v);
+        auto* field=new QDoubleSpinBox(&dialog);field->setObjectName(key);field->setRange(0,10000000);field->setDecimals(3);setFormNumber(field,v);
         form->addRow(text(key),field);return field;
     };
     auto* volume=number("editorInputVolume",value.vehiclesPerHour);
@@ -143,7 +144,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
             auto* field=new QDoubleSpinBox(sharesGroup);
             field->setObjectName(QString("editorInputShare%1").arg(k));
             field->setRange(0,1000000);field->setDecimals(3);
-            {const QSignalBlocker guard(field);field->setValue(seed[k]);}
+            {const QSignalBlocker guard(field);setFormNumber(field,seed[k]);}
             connect(field,&QDoubleSpinBox::valueChanged,&dialog,[sharesDirty](double){*sharesDirty=true;});
             sharesForm->addRow(text("editorInputShareLane").arg(static_cast<int>(k+1)),field);
             shareFields->push_back(field);
@@ -214,7 +215,7 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
         value.intervals.clear();for(const auto& r:*edited)value.intervals.push_back({r[0],r[1],r[2]});
         deriveInputTotals(value);*countsDirty=false;
         const QSignalBlocker blockCounts(counts),blockMinutes(minutes);
-        counts->clear();volume->setValue(value.vehiclesPerHour);start->setValue(value.startTime);end->setValue(value.endTime);
+        counts->clear();setFormNumber(volume,value.vehiclesPerHour);setFormNumber(start,value.startTime);setFormNumber(end,value.endTime);
         irregularNote->setVisible(!value.intervals.empty());syncDerived();
     });
     periods->setToolTip(text("editorDemandSaveCountsFirst"));
@@ -227,45 +228,48 @@ void EditorWindow::editInput(const std::string& id,const std::string& preselecte
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);addFooter(dialog,buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     buttons->button(QDialogButtonBox::Ok)->setEnabled(route->count()>0 && type->count()>0);
-    connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
-    if(dialog.exec()!=QDialog::Accepted)return;
-    {
-        const auto chosen=route->currentData().toString();
-        const bool decision=chosen.startsWith("decision:"),link=chosen.startsWith("link:");
-        const auto id=chosen.mid(chosen.indexOf(':')+1).toStdString();
-        value.routingDecisionId=decision?id:std::string{};
-        value.linkId=link?id:std::string{};
-        value.routeId=decision||link?std::string{}:id;
-    }
-    {
-        const auto chosen=type->currentData().toString();
-        const bool composition=chosen.startsWith("composition:");
-        const auto id=chosen.mid(chosen.indexOf(':')+1).toStdString();
-        value.compositionId=composition?id:std::string{};
-        value.vehicleTypeId=composition?std::string{}:id;
-    }
-    value.vehiclesPerHour=volume->value();value.startTime=start->value();value.endTime=end->value();
-    // Left alone, the fields the author saw stay unwritten and the input keeps whatever
-    // laneShares it already had (usually empty -- the M1.26 equal split). Touched, they replace
-    // it outright, weights for exactly the lanes shown.
-    if(*sharesDirty && policy().acceptsShares){
-        value.laneShares.clear();
-        for(auto* field:*shareFields)value.laneShares.push_back(field->value());
-    }
-    value.volumeFromCounts=fromCounts->isChecked()&&fromCounts->isEnabled();
-    const auto rawCounts=counts->toPlainText();const double length=minutes->value()*60;
-    std::string created;if(execute("editorEditInput",[&](auto& d){
-        if(*countsDirty && !value.volumeFromCounts) {
-            value.intervals.clear();
-            const auto items=rawCounts.split(QRegularExpression("[\\s,;]+"),Qt::SkipEmptyParts);
-            for(int k=0;k<items.size();++k) {
-                bool ok=false;const double count=items[k].toDouble(&ok);
-                if(!ok||!(count>=0))throw std::invalid_argument("EDIT_INVALID_COUNTS");
-                const double from=value.startTime+k*length;
-                value.intervals.push_back({from,from+length,count*3600/length});
-            }
+    std::string created;
+    validateDialog(dialog,buttons,[&]{
+        auto candidate=value;
+        {
+            const auto chosen=route->currentData().toString();
+            const bool decision=chosen.startsWith("decision:"),link=chosen.startsWith("link:");
+            const auto id=chosen.mid(chosen.indexOf(':')+1).toStdString();
+            candidate.routingDecisionId=decision?id:std::string{};
+            candidate.linkId=link?id:std::string{};
+            candidate.routeId=decision||link?std::string{}:id;
         }
-        created=putInput(d,value);
-    }))selectDemand(created);
+        {
+            const auto chosen=type->currentData().toString();
+            const bool composition=chosen.startsWith("composition:");
+            const auto id=chosen.mid(chosen.indexOf(':')+1).toStdString();
+            candidate.compositionId=composition?id:std::string{};
+            candidate.vehicleTypeId=composition?std::string{}:id;
+        }
+        candidate.vehiclesPerHour=formNumber(volume);candidate.startTime=formNumber(start);candidate.endTime=formNumber(end);
+        // Left alone, the fields the author saw stay unwritten and the input keeps whatever
+        // laneShares it already had (usually empty -- the M1.26 equal split). Touched, they replace
+        // it outright, weights for exactly the lanes shown.
+        if(*sharesDirty && policy().acceptsShares){
+            candidate.laneShares.clear();
+            for(auto* field:*shareFields)candidate.laneShares.push_back(formNumber(field));
+        }
+        candidate.volumeFromCounts=fromCounts->isChecked()&&fromCounts->isEnabled();
+        const auto rawCounts=counts->toPlainText();const double length=minutes->value()*60;
+        commitChange("editorEditInput",[&](auto& d){
+            if(*countsDirty && !candidate.volumeFromCounts) {
+                candidate.intervals.clear();
+                const auto items=rawCounts.split(QRegularExpression("[\\s,;]+"),Qt::SkipEmptyParts);
+                for(int k=0;k<items.size();++k) {
+                    bool ok=false;const double count=items[k].toDouble(&ok);
+                    if(!ok||!(count>=0))throw std::invalid_argument("EDIT_INVALID_COUNTS");
+                    const double from=candidate.startTime+k*length;
+                    candidate.intervals.push_back({from,from+length,count*3600/length});
+                }
+            }
+            created=putInput(d,candidate);
+        });
+    },[this](const char* key){return text(key);});
+    if(dialog.exec()==QDialog::Accepted)selectDemand(created);
 }
 }

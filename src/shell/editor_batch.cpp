@@ -21,7 +21,6 @@ namespace multra {
 // Copy then format with the CLI's batchCsv. Every number keeps the not-validated marker (rule 4).
 using namespace batchCells;
 void EditorWindow::buildBatch(QToolBar* bar, QVBoxLayout* layout) {
-    bar->addSeparator();
     auto* label=new ReflowLabel(bar); texts_["editorSeedsLabel"]=label;
     batchSeeds_=new QLineEdit("42-51",bar); batchSeeds_->setObjectName("editorSeeds"); batchSeeds_->setMaximumWidth(120);
     batchSeeds_->setFont(editorDesign::numericFont()); batchSeeds_->setProperty("numeric",true);

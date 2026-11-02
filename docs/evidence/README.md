@@ -52,6 +52,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [lane-change-gap.md](lane-change-gap.md) | Mid-change gap loss: waiting at the line — 2026-10-16 | D208 |
 | [straddler-leaders.md](straddler-leaders.md) | A straddler follows the other lane's leaders — 2026-10-16 | D210 |
 | [lateral-run-audit.md](lateral-run-audit.md) | Lateral behaviour in product runs, switched on: invariants hold; a stuck straddler, waiting-changer clamps, swap lock — 2026-10-23 | D204, D208, D210 |
+| [ui-audit-fixes.md](ui-audit-fixes.md) | All 34 owner-requested UI/data/sizing fixes, regressions and reproduction — 2026-11-02 | D432 |
 | [dialog-fit.md](dialog-fit.md) | Dialog heights against short screens; the behaviour editor needed 1378 px — 2026-10-23 | D318 |
 | [curve-speed.md](curve-speed.md) | M3.6 slice 1: curve speed — 2026-10-17 | D211, D212, D213, D226 |
 | [kerb-bias.md](kerb-bias.md) | M3.4 keep to the kerb lane, slice 1 — 2026-10-17 | D213, D215 |
