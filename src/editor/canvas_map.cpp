@@ -11,7 +11,9 @@
 #include <algorithm>
 #include <cmath>
 namespace multra {
-EditorCanvas::~EditorCanvas()=default;
+EditorCanvas::~EditorCanvas(){
+    mapLayer_->changed={};setScene(nullptr);mapViewportTimer_.stop(); // detach before member teardown can scroll a destroyed label list
+}
 void EditorCanvas::initializeMap() {
     const auto directory=QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/map-tiles";
     mapLayer_=std::make_unique<MapLayer>(directory);
@@ -22,7 +24,7 @@ void EditorCanvas::initializeMap() {
     mapStatus_->setAutoFillBackground(true);mapStatus_->setMargin(4);mapStatus_->hide();
     hud_=new CanvasHud(viewport());
     mapLayer_->changed=[this]{
-        resetCachedContent();viewport()->update();updateMapOverlay();
+        resetCachedContent();viewport()->update();updateMapOverlay();placeLabels();
     };
     mapViewportTimer_.setSingleShot(true);mapViewportTimer_.setInterval(80);
     connect(&mapViewportTimer_,&QTimer::timeout,this,[this]{updateMapViewport();});
@@ -96,7 +98,7 @@ void EditorCanvas::scrollContentsBy(int dx,int dy) {
     // shifts the cached pixmap by logical pixels, which misplaces it at a device pixel ratio other
     // than 1 (the run's roads drifted from its vehicles at 150 %) and breaks dash phase at any.
     resetCachedContent();
-    QGraphicsView::scrollContentsBy(dx,dy);updateMapOverlay();
+    QGraphicsView::scrollContentsBy(dx,dy);updateMapOverlay();placeLabels();
 }
 void EditorCanvas::drawForeground(QPainter*,const QRectF&) {
     // A transform set without a map update (Lab heading-up frames) still refreshes the HUD, after paint.

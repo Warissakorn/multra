@@ -73,7 +73,7 @@ void EditorWindow::buildRunControls() {
     auto* space=action("editorStepSpace",QKeySequence(Qt::Key_Space),[this]{pauseRun();stepRun();});
     space->setShortcutContext(Qt::WidgetWithChildrenShortcut);canvas_->addAction(space);
     bar->addSeparator();
-    runSeed_=new QLineEdit("42",bar);runSeed_->setObjectName("editorSeed");runSeed_->setMaxLength(10);runSeed_->setMaximumWidth(80);
+    runSeed_=new QLineEdit("42",bar);runSeed_->setObjectName("editorSeed");runSeed_->setMaxLength(10);runSeed_->setFixedWidth(104);
     runSeed_->setFont(editorDesign::numericFont());runSeed_->setProperty("numeric",true);
     auto* seedLabel=new ReflowLabel(bar);texts_["editorSeedLabel"]=seedLabel;seedLabel->setBuddy(runSeed_);bar->addWidget(seedLabel);bar->addWidget(runSeed_);
     runSpeed_=new QComboBox(bar);runSpeed_->setObjectName("editorSpeed");

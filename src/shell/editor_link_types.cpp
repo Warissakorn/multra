@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -89,7 +90,7 @@ void EditorWindow::refreshLinkTypes() {
             }
             if (t.id == keep) linkTypeTable_->selectRow(r);
         }
-        linkTypeTable_->resizeColumnsToContents();
+        fitTableColumns(linkTypeTable_);
         linkTypeRevision_ = history_.revision();
     }
     const bool chosen = !selectedLinkType().empty() && ownsLinkTypes(history_.document());

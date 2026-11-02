@@ -147,9 +147,9 @@ int main(int argc,char** argv) {
         const auto beforeCounts=documentJson(w.history().document());
         edit(w,"editorEditDecision",[&](QDialog& parent){
             control<QLineEdit>(parent,"editorDecisionCounts1")->setText("3");
-            parent.accept();
+            parent.accept();require(parent.isVisible(),"Rejected decision form closed");
+            require(!control<QLabel>(parent,"editorFormError")->text().isEmpty(),"Missing turn count did not produce an error");parent.reject();
         });
-        require(!control<QLabel>(w,"editorError")->text().isEmpty(),"Missing turn count did not produce an error");
         require(documentJson(w.history().document())==beforeCounts,"Missing turn count changed history");
         std::cout<<"demand edit ui ok\n";
     }catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}

@@ -70,3 +70,5 @@ Add newly archived entries to the top of the newest file, or start a new one.
 - [`ROADMAP-review-2026-10-03.md`](ROADMAP-review-2026-10-03.md) — the 2026-10-03 roadmap review (O1–O10, S0–S5)
 - [`VISSIM_PARITY-2026-09-14-sections.md`](VISSIM_PARITY-2026-09-14-sections.md) — §1, §3 and §6 (the 2026-09-14 pre-completion assessment), out of `VISSIM_PARITY.md` 2026-10-15
 - [`VISSIM_PARITY-2026-09-15--2026-09-21-follow-ups.md`](VISSIM_PARITY-2026-09-15--2026-09-21-follow-ups.md), [`VISSIM_PARITY-2026-09-16.md`](VISSIM_PARITY-2026-09-16.md), [`VISSIM_PARITY-2026-09-17-wedge-mouth.md`](VISSIM_PARITY-2026-09-17-wedge-mouth.md) — dated `VISSIM_PARITY.md` follow-ups
+
+- [`PROGRESS-2026-11-02.md`](PROGRESS-2026-11-02.md) — oldest live entry moved whole when the D432 UI remediation was recorded

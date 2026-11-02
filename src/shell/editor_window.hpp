@@ -119,7 +119,6 @@ private:
     void translatePalette();
     // Applies the palette view (names or icons only) and fits the docked palette to it (B17).
     void showPaletteView();
-    static constexpr int paletteWidth=180; // the docked palette's default width
     void showCommandPalette();
     void buildAppearance(QFormLayout*);
     void refreshAppearance();
@@ -461,6 +460,7 @@ private:
     void buildInspector();
     void buildWorkspace();
     void resetWorkspace();
+    void setWorkspacePreset(int preset);
     void layoutToolbars();
     void focusCanvas(bool enabled);
     QByteArray workspaceBeforeFocus_;

@@ -1,6 +1,7 @@
 #include "canvas.hpp"
 #include "map_layer.hpp"
 #include "canvas_style.hpp"
+#include "canvas_labels.hpp"
 #include <QGraphicsPathItem>
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
@@ -187,7 +188,7 @@ void EditorCanvas::redraw() {
     const auto visible=mapToScene(viewport()->rect()).boundingRect();
     extent=extent.united(visible.adjusted(-visible.width(),-visible.height(),visible.width(),visible.height()));
     scene_.setSceneRect(extent);
-    placeLabels(); // D424
+    updateMapOverlay();placeLabels(); // place after reserving the HUD/map overlays
     bakeRunLayer();drawRunItems();viewport()->update();
 }
 double EditorCanvas::minimumViewScale() const {
@@ -197,10 +198,22 @@ double EditorCanvas::minimumViewScale() const {
     return std::max(0.0005,1.01*std::hypot(viewport()->width(),viewport()->height())/(2*mapOverviewRadius));
 }
 void EditorCanvas::fitNetwork() {
-    auto bounds=scene_.itemsBoundingRect(); if (bounds.isEmpty()) bounds=QRectF(-50,-50,100,100);
-    fitInView(bounds.adjusted(-10,-10,10,10),Qt::KeepAspectRatio);
-    const double scale=std::clamp(viewScale(),minimumViewScale(),100.0);
-    setTransform(QTransform::fromScale(scale,-scale)); centerOn(bounds.center()); redraw();scheduleMapUpdate();
+    QRectF bounds;
+    for(auto* item:scene_.items()) {
+        if(dynamic_cast<CanvasLabel*>(item)||item->data(0)==QStringLiteral("label-leader"))continue;
+        if(item->isVisible())bounds=bounds.isNull()?item->sceneBoundingRect():bounds.united(item->sceneBoundingRect());
+    }
+    for(auto* item:runBaked_)bounds=bounds.isNull()?item->sceneBoundingRect():bounds.united(item->sceneBoundingRect());
+    if(bounds.isEmpty())bounds=QRectF(-50,-50,100,100);
+    // Labels remain in screen pixels. Reserve room around the geometry rather than fitting their
+    // unscaled scene rectangles and then pushing the fixed-size callouts outside the viewport.
+    double labelWidth=0;
+    for(const auto* label:labels_)labelWidth=std::max(labelWidth,label->boundingRect().width()+20);
+    const double horizontal=std::min(viewport()->width()*.23,std::max(16.,labelWidth));
+    const double vertical=labels_.empty()?16.:std::min(90.,viewport()->height()*.24);
+    const double scale=std::clamp(std::min(std::max(1.,viewport()->width()-2*horizontal)/std::max(1.,bounds.width()),
+        std::max(1.,viewport()->height()-2*vertical)/std::max(1.,bounds.height())),minimumViewScale(),100.);
+    setTransform(QTransform::fromScale(scale,-scale));centerOn(bounds.center());redraw();scheduleMapUpdate();
 }
 void EditorCanvas::drawBackground(QPainter* painter,const QRectF& rect) {
     painter->fillRect(rect,editorDesign::role(QPalette::Base));
@@ -231,7 +244,7 @@ bool EditorCanvas::event(QEvent* e) {
     // The scroll area lays out its viewport while handling the event, so the corner overlays are
     // placed afterwards, against the new viewport (D197).
     const bool handled=QGraphicsView::event(e);
-    if (e->type()==QEvent::Resize || e->type()==QEvent::Show) {scheduleMapUpdate();updateMapOverlay();}
+    if (e->type()==QEvent::Resize || e->type()==QEvent::Show) {scheduleMapUpdate();updateMapOverlay();placeLabels();}
 #if QT_VERSION >= QT_VERSION_CHECK(6,6,0)
     // drawBackground() snaps its hairlines to device pixels, so a cache drawn at another
     // pixel ratio would blur them.

@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/zone_commands.hpp"
@@ -129,7 +130,7 @@ void EditorWindow::refreshZones() {
             }
             if (z.id == keep) zoneTable_->selectRow(r);
         }
-        zoneTable_->resizeColumnsToContents();
+        fitTableColumns(zoneTable_);
     }
     // The connector table follows the selected zone.
     const auto zone = selectedZone();
@@ -155,7 +156,7 @@ void EditorWindow::refreshZones() {
             }
             if (c.id == keepConnector) zoneConnectorTable_->selectRow(r);
         }
-        zoneConnectorTable_->resizeColumnsToContents();
+        fitTableColumns(zoneConnectorTable_);
         zoneConnectorsOf_ = zone;
     }
     zoneRevision_ = history_.revision();

@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -86,12 +87,13 @@ void EditorWindow::showObjectPage(QWidget* page) {
     objects_->setCurrentWidget(page);
     for(int i=0;i<objects_->count();++i)if(objectGroupOf(objects_->widget(i))!=group)objects_->setTabVisible(i,false);
     objectGroup_->setCurrentIndex(objectGroup_->findData(QString::fromStdString(group)));
-    changingGroup_=false;
+    changingGroup_=false;sizeTabPages(objects_);
+    if(!changingWorkspace_&&isVisible())setWorkspacePreset(group=="editorObjectGroupResults"?2:1);
 }
 void EditorWindow::revealObjectPage(QWidget* page) {
     auto* dock=findChild<QDockWidget*>("editorObjectsDock");
     dock->show();dock->raise(); // showing a panel exits focus mode (buildWorkspace)
-    objects_->setCurrentWidget(page);
+    showObjectPage(page);
 }
 void EditorWindow::buildObjectTables() {
     auto* dock=new QDockWidget(this); dock->setObjectName("editorObjectsDock"); texts_["editorObjectsDock"]=dock;
@@ -172,7 +174,7 @@ void EditorWindow::refreshTables(bool modelChanged) {
                 signalLabel(head.controllerId,head.groupNumber,head.programId)},QString::fromStdString(head.id));
         }
     }
-    for (auto* view : {linkTable_,connectorTable_,signalTable_}) view->resizeColumnsToContents();
+    for (auto* view : {linkTable_,connectorTable_,signalTable_}) fitTableColumns(view);
     syncing_=true;
     for (auto* view : {linkTable_,connectorTable_,signalTable_}) {
         view->clearSelection();

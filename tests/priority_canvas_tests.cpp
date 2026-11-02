@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
         require(areas.size() == 2, "Fixture did not make two crossing areas");
         const auto file = temp.filePath("canvas.traffic.json"); write(file, d);
         EditorWindow w{std::filesystem::path(argv[1])}; w.show(); QTest::qWait(30);
-        w.openFile(file); QApplication::processEvents();
+        w.openFile(file);act(w,"editorWorkspaceTables")->trigger();QTest::qWait(30);QApplication::processEvents();
         auto* c = w.canvas();
         c->fitNetwork(); c->scale(4, 4); c->centerOn(100, 0); QApplication::processEvents();
         auto* table = w.findChild<QTableWidget*>("editorConflictTable"); require(table, "No conflict table");

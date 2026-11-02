@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QDockWidget>
 #include <QDoubleSpinBox>
+#include <QEvent>
 #include <QFormLayout>
 #include <QFrame>
 #include <QLabel>
@@ -20,6 +21,24 @@
 #include <cmath>
 
 namespace multra {
+namespace {
+class SummaryScroll : public QScrollArea {
+public:
+    SummaryScroll(QWidget* content,QWidget* parent):QScrollArea(parent) {
+        setWidget(content);content->installEventFilter(this);parent->installEventFilter(this);
+    }
+    QSize sizeHint() const override {
+        auto size=QScrollArea::sizeHint();
+        const int limit=std::max(120,parentWidget()->height()*2/5);
+        size.setHeight(std::min(widget()->sizeHint().height(),limit));return size;
+    }
+protected:
+    bool eventFilter(QObject* watched,QEvent* event) override {
+        if(event->type()==QEvent::LayoutRequest||event->type()==QEvent::Resize)updateGeometry();
+        return QScrollArea::eventFilter(watched,event);
+    }
+};
+}
 void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field) {
     auto* label=new ReflowLabel(this);label->setWordWrap(true);label->setBuddy(field);texts_[key]=label;
     field->setObjectName(QString::fromStdString(key));form->addRow(label,field);
@@ -73,8 +92,12 @@ void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field
 void EditorWindow::buildInspector() {
     auto* dock=new QDockWidget(this);dock->setObjectName("editorInspectorDock");texts_["editorInspector"]=dock;
     dock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetClosable);
-    auto* body=new QWidget(dock);auto* layout=new QVBoxLayout(body);
-    layout->setContentsMargins(editorDesign::space2,editorDesign::space2,editorDesign::space2,editorDesign::space2);
+    auto* body=new QWidget(dock);auto* outer=new QVBoxLayout(body);
+    outer->setContentsMargins(editorDesign::space2,editorDesign::space2,editorDesign::space2,editorDesign::space2);outer->setSpacing(editorDesign::space1);
+    auto* summary=new QWidget(body);auto* layout=new QVBoxLayout(summary);
+    auto* summaryScroll=new SummaryScroll(summary,body);summaryScroll->setObjectName("editorInspectorSummaryScroll");summaryScroll->setWidgetResizable(true);
+    summaryScroll->setFrameShape(QFrame::NoFrame);summaryScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);outer->addWidget(summaryScroll);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(editorDesign::space1);
     auto* common=new QFormLayout;common->setContentsMargins(0,0,0,0);
     common->setHorizontalSpacing(editorDesign::space2);common->setVerticalSpacing(editorDesign::space1);
@@ -82,7 +105,7 @@ void EditorWindow::buildInspector() {
     id_=new QLineEdit(body);id_->setReadOnly(true);label(common,"editorId",id_);
     // Vissim's Name sits beside No. on every object dialog, so it lives in the common section
     // rather than the Link tab: one field names a Link, a Connector or a signal head alike.
-    name_=new QLineEdit(body);name_->setMaxLength(200);label(common,"editorName",name_);
+    name_=new QLineEdit(body);name_->setMaxLength(400);label(common,"editorName",name_);
     connect(name_,&QLineEdit::editingFinished,this,[this]{
         const auto typed=name_->text().toStdString();
         // editingFinished also fires on plain focus loss. Committing an unchanged name there
@@ -111,7 +134,7 @@ void EditorWindow::buildInspector() {
     appearanceForm->addRow(divider);
     buildAppearance(appearanceForm);
     buildBehaviourInspector(layout);
-    properties_=new QTabWidget(body);properties_->setObjectName("editorPropertyTabs");layout->addWidget(properties_,1);
+    properties_=new QTabWidget(body);properties_->setObjectName("editorPropertyTabs");outer->addWidget(properties_,3);
     const auto addPage=[this](QWidget* page){
         auto* scroll=new QScrollArea(properties_);scroll->setWidgetResizable(true);
         scroll->setFrameShape(QFrame::NoFrame);scroll->setWidget(page);properties_->addTab(scroll,QString());
@@ -146,7 +169,7 @@ void EditorWindow::buildInspector() {
     connect(widths_,&QLineEdit::textChanged,this,[validateWidths]{validateWidths();});
     connect(count_,&QSpinBox::valueChanged,this,[validateWidths]{validateWidths();});validationRefresh_.push_back(validateWidths);
     button("editorApplyLanes",[this]{
-        const auto parts=widths_->text().split(',',Qt::SkipEmptyParts);std::vector<double> widths;
+        const auto parts=widths_->text().split(',',Qt::KeepEmptyParts);std::vector<double> widths;
         for(const auto& part:parts){bool ok=false;const double w=part.trimmed().toDouble(&ok);if(!ok){showError(std::runtime_error("EDIT_LANES"));return;}widths.push_back(w);}
         if(widths.size()==1) widths.resize(static_cast<std::size_t>(count_->value()),widths[0]);
         if(widths.size()!=static_cast<std::size_t>(count_->value())){showError(std::runtime_error("EDIT_LANES"));return;}

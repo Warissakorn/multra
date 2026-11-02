@@ -5,6 +5,9 @@ describes that pass, not every subsequent D83/D84/D103 change. Current palette/g
 semantics are in [EDITOR_WORKFLOW](../reference/EDITOR_WORKFLOW.md) and
 `src/editor/ui_design_tokens.hpp`; live owner reviews remain in NEXT.
 
+D432 adds session Compact/Comfortable/Large density; the 24 px measurements below describe Compact.
+Current layout and density behavior is in [EDITOR_WORKFLOW](../reference/EDITOR_WORKFLOW.md).
+
 Scope: presentation only — canvas, view, inspector, shell, palette and QSS. No model, command,
 codec or runtime change, no shortcut change, no new dependency, no GPU/3D renderer.
 

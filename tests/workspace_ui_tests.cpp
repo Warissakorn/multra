@@ -166,7 +166,8 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
                 require(entry->toolTip(0).contains(name)&&entry->toolTip(0).contains(chord),"Palette tooltip lost name or chord");
                 const auto spoken=entry->data(0,Qt::AccessibleTextRole).toString();
                 require(spoken.contains(name)&&spoken.contains(chord),"Palette item has no accessible name and chord");
-                require(iconsOnly?entry->text(0).isEmpty():entry->text(0).startsWith(name),"Palette item label wrong for its view");
+                const auto shortName=text.value(mode==2?"editorPaletteSplit":mode==3?"editorPaletteMeasure":mode==4?"editorPaletteCalibrate":mode==11?"editorPaletteSection":names[mode]).toString();
+                require(iconsOnly?entry->text(0).isEmpty():entry->text(0)==shortName&&entry->text(1)==chord,"Palette item label or shortcut wrong for its view");
                 auto* key=item<QAction>(window,("editorTool"+std::to_string(mode)).c_str());
                 require(key->shortcut()==QKeySequence(chord),"Tool chord changed");
             }
@@ -190,8 +191,8 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
     require(tree->hasFocus(),"Tab order: the view toggle does not lead into the palette");
     require(window.findChild<QMenu*>("editorViewMenu")->actions().contains(item<QAction>(window,"editorPaletteIconsOnly")),"Palette view has no menu fallback");
     trigger(window,"editorResetLayout");
-    require(!item<QAction>(window,"editorPaletteIconsOnly")->isChecked()&&!tree->topLevelItem(0)->child(0)->text(0).isEmpty(),
-            "Reset layout kept the icons-only view");
+    require(item<QAction>(window,"editorPaletteIconsOnly")->isChecked()==(window.width()<1500),
+            "Reset layout did not choose the screen-appropriate palette");
     language->setCurrentIndex(0);tool->setCurrentIndex(0);settle();
 }
 // The Simulation group: order, destructive separators, fixed heights and the 1180 px break.
@@ -251,6 +252,8 @@ int main(int argc,char** argv) {
         window.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));
         auto* canvas=window.canvas();canvas->select(window.history().document().network.links.front().id);canvas->fitNetwork();settle();
         auto revision=window.history().revision();auto selection=canvas->selected();
+        require(!item<QDockWidget>(window,"editorObjectsDock")->isVisible(),"Default Drawing workspace shows Objects");
+        trigger(window,"editorWorkspaceTables"); // exercise focus restoration with the bottom dock open
         const auto defaultCanvas=canvas->viewport()->size();
         auto* palette=item<QDockWidget>(window,"editorPaletteDock");
         auto* toolTree=item<QTreeWidget>(window,"editorObjectPalette");
@@ -333,7 +336,7 @@ int main(int argc,char** argv) {
         require(!item<QAction>(window,"editorFocusCanvas")->isChecked()&&inspector->isVisible(),"Opening a panel did not exit focus");
         trigger(window,"editorResetLayout");
         require(window.dockWidgetArea(inspector)==Qt::RightDockWidgetArea&&!history->isFloating(),"Reset left custom docking behind");
-        require(palette->isVisible()&&objects->isVisible()&&!history->isVisible(),"Reset did not restore defaults");
+        require(palette->isVisible()&&!objects->isVisible()&&!history->isVisible(),"Reset did not restore Drawing defaults");
         require(window.history().revision()==revision&&canvas->selected()==selection,"Layout changed the document or selection");
         auto* tabs=item<QTabWidget>(window,"editorPropertyTabs");
         for(int i=0;i<tabs->count();++i)require(qobject_cast<QScrollArea*>(tabs->widget(i)),"Property page is not scrollable");

@@ -34,8 +34,9 @@ inline constexpr int space1=4,space2=8,space3=12,space4=16,space5=20,space6=24;
 inline constexpr int fontSizeLabel=11,fontSizeNumeric=12,fontSizeBody=13;
 inline constexpr int fontSizeSection=14,fontSizeTitle=18;
 inline constexpr int controlHeight=24,tableRowHeight=24,toolbarHeight=32,iconSize=16;
+inline int presentationDensity(){return QCoreApplication::instance()?std::clamp(QCoreApplication::instance()->property("editorDensity").toInt(),0,2):0;}
 // Label column shared by every Properties form (D195); longer labels wrap inside it.
-inline constexpr int formLabelWidth=120;
+inline constexpr int formLabelWidth=120,namedPaletteWidth=210;
 // Vertical padding inside a control. Not a spacing token: it is what makes a 24 px control
 // (1 border + 2 + 18 content + 2 + 1), not a gap between two things.
 inline constexpr int controlPaddingY=2;
@@ -86,13 +87,13 @@ inline QColor semantic(Semantic s) {
 // 572 units), which is the column-alignment guarantee a monospace face used to provide, without
 // a second typeface whose baseline disagrees with the labels beside it.
 inline QFont numericFont() {
-    auto font=QGuiApplication::font();font.setPixelSize(fontSizeNumeric);
+    auto font=QGuiApplication::font();font.setPixelSize(fontSizeNumeric+presentationDensity());
     return font;
 }
 // Group labels: 11 px, tracked, upper case. Thai has no case and tracking detaches its
 // combining marks, so only English gets either.
 inline void styleGroupLabel(QFont& font,bool english) {
-    font.setPixelSize(fontSizeLabel);font.setWeight(QFont::DemiBold);
+    font.setPixelSize(fontSizeLabel+presentationDensity());font.setWeight(QFont::DemiBold);
     font.setCapitalization(english?QFont::AllUppercase:QFont::MixedCase);
     font.setLetterSpacing(english?QFont::AbsoluteSpacing:QFont::PercentageSpacing,english?labelTracking:100.);
 }

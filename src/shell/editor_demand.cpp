@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../project/counted_volumes.hpp"
@@ -73,8 +74,14 @@ void EditorWindow::buildDemandTables() {
     // Preserve the existing presentation order; page identity does not depend on it.
     page(decisionTable_,"editorDecisionTable","editorAddDecision","editorEditDecision","editorDeleteDecision",
         [this](const auto& id){editDecision(id);},"decision");
-    connect(routeTable_,&QTableWidget::itemSelectionChanged,this,[this]{syncHighlightedRoute();});
-    connect(inputTable_,&QTableWidget::itemSelectionChanged,this,[this]{syncHighlightedRoute();});
+    connect(routeTable_,&QTableWidget::itemSelectionChanged,this,[this]{
+        if(!syncing_&&routeTable_->selectionModel()->hasSelection()){const QSignalBlocker block(inputTable_);inputTable_->clearSelection();inputTable_->setCurrentItem(nullptr);}
+        syncHighlightedRoute();
+    });
+    connect(inputTable_,&QTableWidget::itemSelectionChanged,this,[this]{
+        if(!syncing_&&inputTable_->selectionModel()->hasSelection()){const QSignalBlocker block(routeTable_);routeTable_->clearSelection();routeTable_->setCurrentItem(nullptr);}
+        syncHighlightedRoute();
+    });
     connect(routeTable_,&QTableWidget::itemSelectionChanged,this,[this]{
         if(syncing_ || !history_.document().definition) return;
         const auto id=selectedId(routeTable_);
@@ -189,7 +196,7 @@ void EditorWindow::refreshDemand() {
     for(const auto& entry:std::vector<std::pair<QTableWidget*,std::string>>{{routeTable_,routeId},{inputTable_,inputId},{programTable_,programId},{decisionTable_,decisionId}}) {
         auto* t=entry.first;
         for(int r=0;r<t->rowCount();++r)if(t->item(r,0)->data(Qt::UserRole).toString().toStdString()==entry.second)t->selectRow(r);
-        t->resizeColumnsToContents();
+        fitTableColumns(t);
     }
 }
 void EditorWindow::selectDemand(const std::string& id) {

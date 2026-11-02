@@ -44,7 +44,6 @@ void EditorWindow::buildMacro(QToolBar* bar, QVBoxLayout* box) {
     macro_->table->verticalHeader()->setVisible(false);
     macro_->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     box->addWidget(macro_->table, 1);
-    bar->addSeparator();
     bar->addAction(action("editorRunMacro", {}, [this] {
         try {
             const auto choice = chooseMacroRun(this, history_.document(), [this](const char* key) { return text(key); });

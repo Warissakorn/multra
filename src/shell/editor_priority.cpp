@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -173,7 +174,7 @@ void EditorWindow::refreshConflicts() {
             }
             if(conflictGroupContains(g,keep))conflictTable_->selectRow(r);
         }
-        conflictTable_->resizeColumnsToContents();
+        fitTableColumns(conflictTable_);
     }
     canvas_->setHighlightedConflict(selectedConflict());
     // What each action needs: two roads to cross, a Connector to take over, a row to act on.

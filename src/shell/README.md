@@ -42,6 +42,10 @@ The other headers:
 | `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
+| `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `table_layout.*` | Bounded initial columns, stable user widths and active-tab minima | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `workspace_layout.*` | Palette width transfer with explicit preset Properties size and deferred Qt bounds | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `presentation.*` | Session UI density and translated menu, shared by editor and Lab | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `junction_preview_dialog.*` | Affected Node/detail list and named refusals before explicit seam/corridor replacement | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `junction_polygon_dialog.*` | Original/proposed junction polygon outlines, named refusals and explicit Fit + Fill confirmation | [JUNCTION_TEMPLATES §5](../../docs/reference/JUNCTION_TEMPLATES.md) |
