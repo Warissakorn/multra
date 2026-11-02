@@ -6,6 +6,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-02 — main CI green again: node-ui and object-groups-ui
+
+- **Owner request:** fix the failing build (Native C++ run 692 on main, Linux and Windows) and rebuild.
+- **node-ui:** the test still expected a resting Node outlined in ink; D434 draws it as a shade with
+  no pen. The test now checks that the cleared Node has no outline.
+- **object-groups-ui:** the fixed icons-only rail (palette max width = its width, 96ad27a) made Qt
+  hold the canvas dock at its old height when Results → Problems showed the docks again, and the
+  window grew 860 → 903 px. `setWorkspacePreset` now lifts the rail cap before showing/hiding docks;
+  `resizePalette` sets it again, so the rail stays fixed afterwards.
+- **Verification:** release preset build, `ctest` 272/272 and `check` pass locally (Qt 6.4, offscreen).
+
 ## 2026-11-02 — session-path docs: one copy of each standing rule and owner item
 
 - **Owner request:** optimize docs/AI context; owner chose the recommended items 3 → 2 → 1.
@@ -285,27 +296,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   unconfigured, Windows/manual UI not run (E30).
   After restoring the core fixtures, the checkpoint desktop build and targeted signal/recipe
   tests pass **2/2** (7.74 s); docs/file-size/diff guards pass. B38 remains unanswered.
-
-## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
-
-- **Owner:** J6 at 3ec3d39/09b0689 is approved. Diagnose ordinary Fill's pre-existing
-  conflict-range failure before J4T; stop for this slice's review, no UTDF writer.
-- **Cause:** matchedStation's terminal subtraction/interpolation can return a runtime exit
-  one rounding unit past the path: 22.315802608466722 versus 22.31580260846672 m.
-  The three-junction repro and translated single junction fail on both sides; the origin
-  single-junction control passes. This is numerical conversion, not a corridor/geometry limit.
-- **Fixed:** exact endpoint returns in the shared converter; interior interpolation and
-  existing outside clamping stay. Ordinary History Fill and atomic corridor rebuild succeed
-  with three exit lanes, including the former road-32 fixture. Remove D413's temporary code
-  translation and locale strings. Core/whole-document validators and authored extents stay;
-  no new field/schema, timing default, conflict algorithm or ownership rule.
-- **Tests first:** JT17's endpoint/translated/corridor rows and rewritten JT16 success rows
-  failed before the correction (18 passed, 9 failed); both origin controls already passed.
-  Native junctioneditor is now **27/27**, including nine JT17 cases, both driving sides,
-  three-junction closure, preview parity, save/reopen and exact JSON Undo/Redo per Command.
-- **Docs:** supersede D413 with D415/index, update §5/JT16/JT17, editor/M3 station contracts,
-  approved J6/current J6a queue, E29 and ROADMAP; archive the oldest entry whole, keeping ten.
-- **Verification:** desktop build, CTest **257/257** (280.06 s, parallel 5), and check
-  **257/257** (277.28 s) pass, including frozen JT13, docs/file-size/architecture guards.
-  Node-analysis CLI raw bytes match except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen;
-  headless unconfigured, Windows/manual UI not run. Evidence: `/workspace/j6a-review/`.

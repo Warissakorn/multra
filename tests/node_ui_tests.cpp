@@ -105,6 +105,12 @@ QColor outline(EditorWindow& w) {
         if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().color();
     require(false, "No node outline"); return {};
 }
+// D434: a Node at rest is a shade with no outline; only the highlighted one has a pen.
+bool outlined(EditorWindow& w) {
+    for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node")
+        if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().style() != Qt::NoPen;
+    require(false, "No node shape"); return false;
+}
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -219,7 +225,7 @@ int main(int argc, char** argv) {
         require(outline(w) == canvasStyle::selection(), "The selected node's outline is not lit");
         table->clearSelection(); QApplication::processEvents();
         require(table->selectedItems().isEmpty(), "The row stayed selected");
-        require(c->highlightedNode().empty() && drawnLegs(w).empty() && outline(w) == canvasStyle::ink(),
+        require(c->highlightedNode().empty() && drawnLegs(w).empty() && !outlined(w),
                 "Clearing the row kept the highlight");
         trigger(w, "editorUndo"); require(nodes().empty(), "Undo kept the suggested node");
         // S5.5b (SA15): a study-area Node holding a generated Connector gives one warning with its
