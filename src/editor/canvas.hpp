@@ -434,8 +434,9 @@ private:
     int previewLinkCount_{};
     int newLaneCount_{2}; double newLaneWidth_{3.5};
     std::optional<LaneReference> gestureTarget_;
-    void drawCreationPreview();
-    void drawPreviewLink(const Link&);
-    void drawPreviewConnector(const LaneReference& from, const LaneReference& to);
+    bool drawCreationPreview();
+    bool drawPreviewLink(const Link&);
+    bool drawPreviewConnector(const LaneReference& from, const LaneReference& to);
+    bool creationPreviewDrawn_{}; // this redraw's preview replaces the draft line (D433)
 };
 }

@@ -870,6 +870,7 @@
   "editorCrossSectionTable": "แบบหน้าตัดถนน",
   "editorStreetSegmentPlaceHelp": "Ctrl+คลิกขวาที่จุดแรกของเส้นกลางช่วงถนน แล้วคลิกจุดที่เหลือตามทิศไป; Enter เพื่อสร้างช่วงถนนด้วยแบบหน้าตัดที่เลือกในแท็บช่วงถนนและสร้าง Link ให้ Backspace ลบจุดล่าสุด, Esc ยกเลิก",
   "editorStreetSegmentTemplateHelp": "แบบหน้าตัดที่เครื่องมือช่วงถนนใช้วาด",
+  "editorStreetSegmentDefaultTemplate": "ค่าเริ่มต้น (%1 + %1 × %2 ม.)",
   "editorStreetSegmentNoTemplate": "(ไม่มีแบบหน้าตัด)",
   "editorStreetSegmentTemplateColumn": "แบบหน้าตัด",
   "editorStreetSegmentLanes": "ช่องจราจร",

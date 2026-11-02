@@ -192,7 +192,7 @@ void EditorCanvas::drawConnectors() {
         const auto p=laneAttachment(document_->network,*connectorFrom_,true);
         scene_.addEllipse(p.x-radius,p.y-radius,2*radius,2*radius,QPen(canvasStyle::active()),QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }
-    if (connectorFrom_ && connectorHover_) {
+    if (connectorFrom_ && connectorHover_ && !creationPreviewDrawn_) {
         try {
             addPreviewPath(path(connectorCurve(document_->network,*connectorFrom_,*connectorHover_)),200007,
                            canvasStyle::previewPen(canvasStyle::active()))->setData(0,QStringLiteral("connector-preview"));

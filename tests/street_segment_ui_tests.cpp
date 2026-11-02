@@ -168,21 +168,25 @@ int main(int argc, char** argv) {
         author(w, a); key(w, Qt::Key_Return);
         require(network().streetSegments.empty() && c->zoneDraft().size() == 1, "One point made a StreetSegment");
         click(w, b); key(w, Qt::Key_Return);
-        require(network().streetSegments.size() == 1 && network().streetSegments[0].links.empty() && network().links.size() == links,
-                "A StreetSegment without a template generated Links");
-        const auto noTemplate = cell(roads, network().streetSegments[0].id, 5);
-        require(!noTemplate.isEmpty() && cell(roads, network().streetSegments[0].id, 4) == "0", "The bare StreetSegment has no status");
-        const auto bare = network().streetSegments[0].id;
-        selectRow(roads, bare); trigger(w, "editorDeleteStreetSegment");
-        require(network().streetSegments.empty(), "Delete kept the bare StreetSegment");
+        // D433: with no template chosen the StreetSegment uses the Default template (Properties lanes and
+        // width, two-way), added to the catalog in the same Undo step; Undo removes all of it.
+        const auto sectionsBefore = std::size_t{2}; // the 2+2 template and the added Default
+        const QString noTemplate = QString::fromUtf8("No template"); // a joined StreetSegment's status, below
+        require(network().streetSegments.size() == 1 && network().streetSegments[0].links.size() == 2 && network().links.size() == links + 2,
+                "A StreetSegment without a chosen template did not use the Default template");
+        const auto& added = doc().definition->crossSections.back();
+        require(doc().definition->crossSections.size() == sectionsBefore && added.name == "Default" && added.directions == 2 &&
+                network().streetSegments[0].crossSectionId == added.id, "The Default template was not added and used");
+        trigger(w, "editorUndo");
+        require(network().streetSegments.empty() && network().links.size() == links, "Undo kept the Default StreetSegment");
+        require(doc().definition->crossSections.size() == 1, "Undo kept the Default template");
 
         chosen->setCurrentIndex(chosen->findData(QString::fromStdString(t.id)));
-        const auto before = w.history().revision();
         author(w, a); click(w, m); click(w, b); key(w, Qt::Key_Return);
         require(network().streetSegments.size() == 1, "The StreetSegment tool did not draw a StreetSegment");
         const auto road = network().streetSegments[0];
         require(road.centreline.size() == 3 && road.crossSectionId == t.id && road.links.size() == 2, "The StreetSegment was not drawn and applied");
-        require(network().links.size() == links + 2 && w.history().revision() == before + 1, "Drawing and applying were not one Undo step");
+        require(network().links.size() == links + 2, "Drawing and applying did not generate the Links"); // one Undo removes both, below
         for (const auto& id : road.links) {
             const auto l = std::find_if(network().links.begin(), network().links.end(), [&](const auto& x) { return x.id == id; });
             require(l != network().links.end() && l->streetSegmentId == road.id && l->lanes.size() == 2, "A generated Link is not the template's");

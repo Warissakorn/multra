@@ -50,7 +50,8 @@ int main(int argc,char** argv){
     const Point a{centre.x()-60,centre.y()+70},b{centre.x()-20,centre.y()+70};
     QTest::mousePress(c.viewport(),Qt::RightButton,Qt::ControlModifier,pixel(c,a));QTest::mouseMove(c.viewport(),pixel(c,b));settle();
     const double link=previewArea(c);std::cout<<"Link preview "<<link<<" m2"<<std::endl;
-    require(link>300&&link<550,"Link preview is not the new Link's road surface");shot(w,"preview-link");
+    require(link>300&&link<550,"Link preview is not the new Link's road surface");
+    for(auto* item:c.scene()->items())require(item->data(0).toString()!="creation-draft","The draft line is drawn over the Link preview");shot(w,"preview-link");
     QTest::keyClick(&c,Qt::Key_Escape);settle();
     require(previewArea(c)==0&&w.history().revision()==revision,"Cancelling left a preview or changed the document");
     // Connector: drag from the end of one Link onto the start of another.
@@ -81,12 +82,17 @@ int main(int argc,char** argv){
     c.setFocus();QTest::keyClick(&c,Qt::Key_O);settle(); // the StreetSegment tool lists the templates
     auto* chosen=w.findChild<QComboBox*>("editorStreetSegmentTemplate");require(chosen&&chosen->count()>1,"No template to choose");
     QApplication::setActiveWindow(&w);if(auto* tool=w.findChild<QComboBox*>("editorTool"))tool->setCurrentIndex(14);settle();
-    chosen->setCurrentIndex(1);settle();
+    chosen->setCurrentIndex(chosen->count()-1);settle(); // the 2+2 template, after Default and "(no template)"
     QTest::qWait(600);QTest::mouseClick(c.viewport(),Qt::RightButton,Qt::ControlModifier,pixel(c,a));settle();
     require(c.zoneDraft().size()==1,"The StreetSegment draft did not start");
     QTest::mouseMove(c.viewport(),pixel(c,b));settle();
     const double road=previewArea(c);std::cout<<"StreetSegment preview "<<road<<" m2"<<std::endl;
     require(road>350,"StreetSegment preview is not its template's Links");shot(w,"preview-street-segment");
-    chosen->setCurrentIndex(0);settle();require(previewArea(c)==0,"A StreetSegment without a template previewed Links");
+    // D433: no template chosen previews the Default template (Properties 2 lanes x 3.5 m, two-way).
+    chosen->setCurrentIndex(0);settle();const double fallback=previewArea(c);std::cout<<"Default StreetSegment preview "<<fallback<<" m2"<<std::endl;
+    require(fallback>450&&fallback<650,"The Default template is not previewed");
+    for(auto* item:c.scene()->items())for(const auto* tag:{"creation-draft","connector-preview","zone-draft","zone-draft-pending"})
+        require(item->data(0).toString()!=tag,"A draft line is drawn over the preview");
+    chosen->setCurrentIndex(chosen->findData(QString()));settle();require(previewArea(c)==0,"\"(no template)\" previewed Links");
     std::cout<<"Creation previews passed"<<std::endl;
 }

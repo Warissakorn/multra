@@ -124,6 +124,7 @@ void EditorCanvas::redraw() {
         image->setTransform(QTransform(std::cos(a)*s,std::sin(a)*s,std::sin(a)*s,-std::cos(a)*s,bg.x,bg.y));
         image->setOpacity(bg.opacity); image->setZValue(-200000);
     }
+    creationPreviewDrawn_=drawCreationPreview(); // D433: first, so the draft lines below know it
     drawZones(); // M8.6a: below every Link
     drawNodes(); // S0.1: an outline over the junction
     drawStreetSegments(); // S3.3b
@@ -172,10 +173,9 @@ void EditorCanvas::redraw() {
         QColor wash=canvasStyle::active(); wash.setAlpha(30);
         scene_.addRect(*band_,canvasStyle::previewPen(canvasStyle::active(),1),QBrush(wash))->setZValue(200009);
     }
-    drawCreationPreview();
     if (!draft_.empty()) {
         const auto pen=canvasStyle::previewPen(canvasStyle::active());
-        addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));
+        if(!creationPreviewDrawn_)addPreviewPath(path(draft_),200008,pen)->setData(0,QStringLiteral("creation-draft"));
         for (auto p:draft_) { const double r=3/viewScale(); scene_.addEllipse(p.x-r,p.y-r,2*r,2*r,pen)->setZValue(8); }
     }
     auto extent=scene_.itemsBoundingRect().adjusted(-10000,-10000,10000,10000).united(QRectF(-10000,-10000,20000,20000));

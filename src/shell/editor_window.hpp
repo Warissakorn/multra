@@ -324,10 +324,10 @@ private:
     QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
     void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
     // S3.3b (STREET_SEGMENTS §16, D307): the StreetSegments and Cross-sections tabs and the StreetSegment tool's commit.
-    QTableWidget* streetSegmentTable_{}; QComboBox* streetSegmentTemplate_{}; std::uint64_t streetSegmentRevision_{UINT64_MAX};
-    QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
+    QTableWidget* streetSegmentTable_{}; QComboBox* streetSegmentTemplate_{}; std::uint64_t streetSegmentRevision_{UINT64_MAX}; QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
     enum class StreetSegmentStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
-    std::vector<CrossSection> crossSectionRows() const;
+    std::vector<CrossSection> crossSectionRows() const; // D433: Default template; chosenTemplate resolves the tool's choice in a Command
+    CrossSection defaultCrossSection() const; QString defaultTemplateLabel() const; std::optional<std::string> chosenTemplate(ProjectDocument&, const std::vector<CrossSection>& installed) const;
     StreetSegmentStatus streetSegmentStatus(const StreetSegment&, const std::vector<CrossSection>&) const;
     void buildStreetSegments(); void translateStreetSegments(); void refreshStreetSegments(); void showStreetSegments(); void editStreetSegment(const std::string& id);
     void findCrossingsDialog(); // S3.5 (D309)

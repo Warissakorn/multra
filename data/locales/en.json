@@ -870,6 +870,7 @@
   "editorCrossSectionTable": "Cross-sections",
   "editorStreetSegmentPlaceHelp": "Ctrl+right-click the Street segment's first centreline point, then click the others in the forward direction; Enter draws the Street segment with the Street segments tab's template and generates its Links. Backspace removes the last point, Esc cancels.",
   "editorStreetSegmentTemplateHelp": "Template the Street segment tool draws with",
+  "editorStreetSegmentDefaultTemplate": "Default (%1 + %1 × %2 m)",
   "editorStreetSegmentNoTemplate": "(no template)",
   "editorStreetSegmentTemplateColumn": "Template",
   "editorStreetSegmentLanes": "Lanes",
