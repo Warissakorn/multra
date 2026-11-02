@@ -6,6 +6,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-02 — session-path docs: one copy of each standing rule and owner item
+
+- **Owner request:** optimize docs/AI context; owner chose the recommended items 3 → 2 → 1.
+- **AGENTS:** dropped the finished D15 (migration) and D16 (M1.1–M1.3) authorizations, which read
+  as a live exception to one system per session; their two live rules stay. The CLA note, the
+  owner-only appearance/gate rule and the new-dialog convention (D318/D319) moved here from NEXT.
+- **NEXT:** removed restated OWNER_SITTING items (E22–E24, F4, G1/G2, H1/H2, C13, E11, B29) and
+  finished history (A1–A3, S5, Node detail measurements now pointed to ENGINEERING_NOTES); every
+  open item stays in order. No decision, gate or owner item changed.
+- **Measured (characters, ≈ tokens ÷ 4):** session path CLAUDE+AGENTS+NEXT+docs/README
+  36,619 → 34,722 (≈ 9,150 → 8,680 tokens); NEXT 14,430 → 12,425. The rest of NEXT is open work.
+- **Not changed, for the owner:** OWNER_SITTING's 14-day carve-out rule is not being applied
+  (17 items listed in September/early October remain on the sheet).
+- **Verification:** `multra-check-docs` and `multra-check-file-sizes` (built from `tools/`) pass;
+  no code or build change. Oldest whole entry archived, retaining ten.
+
 ## 2026-11-02 — all 34 UI audit corrections (D432)
 
 - **Owner request:** detailed UI review, additional sizing/proportion review, then fix everything.
@@ -293,35 +309,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   **257/257** (277.28 s) pass, including frozen JT13, docs/file-size/architecture guards.
   Node-analysis CLI raw bytes match except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen;
   headless unconfigured, Windows/manual UI not run. Evidence: `/workspace/j6a-review/`.
-
-## 2026-10-30 — J6 forms, B36 and complete review rows (D412, D414)
-
-- **Finished:** Nodes → Junction templates… stages structural role rows, geometric turn labels,
-  project-owned capture, Add/Edit and loader validation; Junction template… stages major/lane
-  overrides, independent directions, per-pocket storage/taper and NEMA cycle/phase numbers.
-  Each accepted catalog/Node edit is one Command/Undo; nested dialogs stage only. Cancel changes nothing. Existing catalog/schema
-  rules stay, including 63 when the captured whole catalog contains transitions.
-- **Drafts:** switching templates retains every entered site value, lists inapplicable/missing
-  items and keeps Fill disabled. Explicit clear/remove actions correct the draft; empty is
-  missing and entered yellow/allRed zero survives. No timing or length default.
-- **B36 implemented:** the existing setter retains current Node.generated for same-template
-  site numbers. Template/Detach, major/lane structure and polygon edits clear it; it never
-  resurrects ownership. The form calls the independent direction setter only when changed.
-  Find crossings → F3 → taper form → Fill enlarges the still-generated polygon in one Undo.
-- **Preview/seams:** affected Nodes and unique object counts replace hundreds of visible rows;
-  all ids remain expandable before Apply. Complete three-junction closure/shared pockets and
-  three-leg roles pass. Pure comparison detects missing Stops/priority and uncovered automatic
-  conflicts through the existing generation rules; no runtime/HCM priority changed.
-- **Tests first:** B36 and missing-control native rows, both missing form actions and compact
-  preview assertions failed before implementation. Additional rows cover explicit draft
-  correction, actual catalog movement/mixed-transition edits, schema/JSON reopen and full Undo.
-  Compile/setup errors are not product reds: Qt's slots macro required a different local name;
-  the three-Node fixture now iterates copied Node ids as generation replaces its document.
-- **Docs:** contracts/JT11/JT16, D414/index, schemas/readiness/module maps, B36/E29 and NEXT
-  updated; oldest whole entry archived, retaining ten. J6 awaits owner review, no J4T/writer.
-- **Verification:** targeted native **18/18** and junction-ui/catalog-ui/recipe-ui pass;
-  forms run on both driving sides and English/Thai, crossing/seam/corridor on both sides.
-  Desktop build, CTest **257/257** (251.60 s, parallel 5) and check **257/257** (248.32 s)
-  pass, including architecture/file-size/docs guards and frozen JT13. CLI node-analysis matches
-  except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured and
-  Windows/manual UI not run (E29). Captures/logs: `/workspace/j6-forms/`.

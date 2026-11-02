@@ -2,6 +2,38 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-30 — J6 forms, B36 and complete review rows (D412, D414)
+
+- **Finished:** Nodes → Junction templates… stages structural role rows, geometric turn labels,
+  project-owned capture, Add/Edit and loader validation; Junction template… stages major/lane
+  overrides, independent directions, per-pocket storage/taper and NEMA cycle/phase numbers.
+  Each accepted catalog/Node edit is one Command/Undo; nested dialogs stage only. Cancel changes nothing. Existing catalog/schema
+  rules stay, including 63 when the captured whole catalog contains transitions.
+- **Drafts:** switching templates retains every entered site value, lists inapplicable/missing
+  items and keeps Fill disabled. Explicit clear/remove actions correct the draft; empty is
+  missing and entered yellow/allRed zero survives. No timing or length default.
+- **B36 implemented:** the existing setter retains current Node.generated for same-template
+  site numbers. Template/Detach, major/lane structure and polygon edits clear it; it never
+  resurrects ownership. The form calls the independent direction setter only when changed.
+  Find crossings → F3 → taper form → Fill enlarges the still-generated polygon in one Undo.
+- **Preview/seams:** affected Nodes and unique object counts replace hundreds of visible rows;
+  all ids remain expandable before Apply. Complete three-junction closure/shared pockets and
+  three-leg roles pass. Pure comparison detects missing Stops/priority and uncovered automatic
+  conflicts through the existing generation rules; no runtime/HCM priority changed.
+- **Tests first:** B36 and missing-control native rows, both missing form actions and compact
+  preview assertions failed before implementation. Additional rows cover explicit draft
+  correction, actual catalog movement/mixed-transition edits, schema/JSON reopen and full Undo.
+  Compile/setup errors are not product reds: Qt's slots macro required a different local name;
+  the three-Node fixture now iterates copied Node ids as generation replaces its document.
+- **Docs:** contracts/JT11/JT16, D414/index, schemas/readiness/module maps, B36/E29 and NEXT
+  updated; oldest whole entry archived, retaining ten. J6 awaits owner review, no J4T/writer.
+- **Verification:** targeted native **18/18** and junction-ui/catalog-ui/recipe-ui pass;
+  forms run on both driving sides and English/Thai, crossing/seam/corridor on both sides.
+  Desktop build, CTest **257/257** (251.60 s, parallel 5) and check **257/257** (248.32 s)
+  pass, including architecture/file-size/docs guards and frozen JT13. CLI node-analysis matches
+  except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured and
+  Windows/manual UI not run (E29). Captures/logs: `/workspace/j6-forms/`.
+
 ## 2026-10-30 — J6 command/seam/corridor checkpoint (D410, D411)
 
 - **B35 answered:** all recommendations selected: explicit listed seam replacement with
