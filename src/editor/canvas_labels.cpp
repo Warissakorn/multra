@@ -1,6 +1,8 @@
 #include "canvas.hpp"
 #include "canvas_labels.hpp"
 #include "canvas_style.hpp"
+#include "canvas_hud.hpp"
+#include <QLabel>
 #include <QGraphicsLineItem>
 #include <QPainter>
 #include <QPainterPath>
@@ -83,10 +85,16 @@ constexpr double clusterReach = 48, stackGap = 2, margin = 2;
 // diagonals of its anchors' bounding box at 12, 32 and 64 px (a halo label: right, left, above,
 // below). It takes the first place that meets no placed label and no other drawn object; failing
 // that the first that meets no placed label (covering an object only when it must); failing that
-// a pinned unit takes its first place and any other unit hides whole, leaders too. Labels stay
+// a pinned unit may overlap another label, but every unit stays inside the viewport and away
+// from HUD/map overlays; a unit without a usable place hides whole, leaders too. Labels stay
 // upright under any rotation or flip, so the rectangles are axis-aligned and the tests exact.
 void EditorCanvas::placeLabels() {
     const QTransform toScreen = viewportTransform(), toScene = toScreen.inverted();
+    const bool exporting=property("editorImageRendering").toBool();
+    const QRectF viewportBounds=QRectF(viewport()->rect()).adjusted(4,4,-4,-4);
+    std::vector<QRectF> overlays;
+    for(auto* widget:{static_cast<QWidget*>(hud_),static_cast<QWidget*>(mapCredit_),static_cast<QWidget*>(mapStatus_)})
+        if(!exporting&&widget&&widget->isVisibleTo(viewport()))overlays.push_back(QRectF(widget->geometry()).adjusted(-4,-4,4,4));
     std::vector<QPointF> at(labels_.size());
     for (std::size_t i = 0; i < labels_.size(); ++i) at[i] = toScreen.map(labels_[i]->anchor());
     // Units: union-find over box anchors.
@@ -120,16 +128,21 @@ void EditorCanvas::placeLabels() {
     // Another drawn object under a screen rectangle: anything visible that is not a label, a leader,
     // the background, a zone wash, feedback, the run, or one of this unit's own anchors.
     const auto coversObject = [&](const QRectF& rect, const LabelUnit& unit) {
-        for (const auto* item : scene_.items(toScene.map(QPolygonF(rect)), Qt::IntersectsItemShape)) {
-            if (!item->isVisible() || dynamic_cast<const CanvasLabel*>(item) || item->zValue() < -100) continue;
-            const auto tag = item->data(0).toString();
-            if (tag == QStringLiteral("label-leader") || tag == QStringLiteral("object-feedback") || tag == QStringLiteral("zone") ||
-                tag == QStringLiteral("demand-hover") || tag.startsWith(QStringLiteral("run"))) continue;
-            const auto id = item->data(1).toString();
-            if (!id.isEmpty() && std::any_of(unit.members.begin(), unit.members.end(),
-                                             [&](const CanvasLabel* l) { return l->data(1).toString() == id; })) continue;
-            return true;
-        }
+        const auto blocks=[&](const QGraphicsItem* item) {
+            if(dynamic_cast<const CanvasLabel*>(item)||item->zValue() < -100)return false;
+            const auto tag=item->data(0).toString();
+            if(tag==QStringLiteral("label-leader")||tag==QStringLiteral("object-feedback")||tag==QStringLiteral("zone")||
+               tag==QStringLiteral("demand-hover")||tag.startsWith(QStringLiteral("run")))return false;
+            const auto id=item->data(1).toString();
+            return id.isEmpty()||std::none_of(unit.members.begin(),unit.members.end(),[&](const CanvasLabel* l){return l->data(1).toString()==id;});
+        };
+        const auto polygon=toScene.map(QPolygonF(rect));
+        for(const auto* item:scene_.items(polygon,Qt::IntersectsItemShape))if(blocks(item))return true;
+        // Baked roads are hidden scene items, but labels must avoid the same geometry with either
+        // renderer. QGraphicsScene's spatial query omits them, so inspect their exact shapes too.
+        QPainterPath probe;probe.addPolygon(polygon);
+        for(const auto* item:runBaked_)if(blocks(item)&&item->sceneBoundingRect().intersects(probe.boundingRect())&&
+            item->shape().intersects(item->mapFromScene(probe)))return true;
         return false;
     };
     std::vector<QRectF> placed;
@@ -181,10 +194,16 @@ void EditorCanvas::placeLabels() {
         const auto meetsObject = [&](const std::vector<QRectF>& layout) {
             return std::any_of(layout.begin(), layout.end(), [&](const QRectF& r) { return coversObject(r, unit); });
         };
+        const auto fitsView=[&](const std::vector<QRectF>& layout){
+            return std::all_of(layout.begin(),layout.end(),[&](const QRectF& r){
+                return (exporting||viewportBounds.contains(r.adjusted(-1,-1,1,1)))&&
+                    std::none_of(overlays.begin(),overlays.end(),[&](const QRectF& overlay){return overlay.intersects(r);});
+            });
+        };
         const std::vector<QRectF>* chosen = nullptr;
-        for (const auto& layout : layouts) if (!meetsLabel(layout) && !meetsObject(layout)) { chosen = &layout; break; }
-        if (!chosen) for (const auto& layout : layouts) if (!meetsLabel(layout)) { chosen = &layout; break; }
-        if (!chosen && unit.pinned) chosen = &layouts.front();
+        for (const auto& layout : layouts) if (fitsView(layout) && !meetsLabel(layout) && !meetsObject(layout)) { chosen = &layout; break; }
+        if (!chosen) for (const auto& layout : layouts) if (fitsView(layout) && !meetsLabel(layout)) { chosen = &layout; break; }
+        if(!chosen&&unit.pinned)for(const auto& layout:layouts)if(fitsView(layout)){chosen=&layout;break;}
         for (std::size_t i = 0; i < members.size(); ++i) {
             auto* label = members[i];
             const bool shown = chosen != nullptr;

@@ -89,6 +89,16 @@ Images: [B2](../images/canvas-labels-b2/four-leg-0.9px-en.png),
 Dashed lane lines are cut in metres (`laneDash`/`laneGap` per display type, default 3/3) and keep
 their length at every zoom; Slice D's markings use the same cut.
 
+## Viewport and overlays (D432)
+
+Fit excludes screen-space labels/leaders from world bounds and reserves pixel margins for them.
+Every candidate in the B3 pass must fit inside the viewport and avoid the visible HUD, map credit
+and status overlays, including pinned candidates. A selected label keeps first priority; if no
+whole column fits, it and its leaders hide together. This qualifies Q9/B2/B3's always-show rule
+at viewport boundaries. Pan and resize re-place the labels as redraw already does. No world
+geometry or hit identity changes. `ui-audit-layout` checks all twelve shipped input rates after
+Fit and overlay/edge exclusion; `canvas-labels-ui` retains transformed/cluster/leader coverage.
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing

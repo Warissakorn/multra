@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "form_values.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "signal_timing_view.hpp"
 #include "../model/demand/signal_control.hpp"
@@ -40,7 +41,7 @@ std::string EditorWindow::editController(const std::string& id) {
     SignalController value=fromTemplate(2,25,label);
     bool existing=false;
     if(def)for(const auto& c:def->signalControllers)if(c.id==id){value=c;existing=true;}
-    QDialog dialog(this);dialog.setObjectName("editorControllerDialog");
+    FormDialog dialog(this);dialog.setObjectName("editorControllerDialog");
     dialog.setWindowTitle(text(existing?"editorEditController":"editorAddController"));
     auto* layout=new QVBoxLayout(&dialog);layout->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);layout->setSpacing(editorDesign::space2);
     auto* form=new QFormLayout;form->setContentsMargins(0,0,0,0);form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);layout->addLayout(form);
@@ -68,21 +69,21 @@ std::string EditorWindow::editController(const std::string& id) {
     auto* status=new ReflowLabel(&dialog);status->setObjectName("editorControllerStatus");status->setWordWrap(true);layout->addWidget(status);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);layout->addWidget(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
-    connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
+
 
     bool loading=false;
     const auto second=[&](double v){
-        auto* f=new QDoubleSpinBox(groups);f->setRange(0,3600);f->setDecimals(1);f->setValue(v);return f;
+        auto* f=new QDoubleSpinBox(groups);f->setRange(0,3600);f->setDecimals(1);setFormNumber(f,v);return f;
     };
     // What the table says, read back into a controller. The dialog never keeps a second copy.
     const auto read=[&]{
-        auto c=value;c.name=title->text().toStdString();c.cycle=cycle->value();c.offset=offset->value();c.groups.clear();
+        auto c=value;c.name=title->text().toStdString();c.cycle=formNumber(cycle);c.offset=formNumber(offset);c.groups.clear();
         for(int r=0;r<groups->rowCount();++r)c.groups.push_back({
             qobject_cast<QSpinBox*>(groups->cellWidget(r,number))->value(),
             qobject_cast<QLineEdit*>(groups->cellWidget(r,name))->text().toStdString(),
-            qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,start))->value(),
-            qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,end))->value(),
-            qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,amber))->value()});
+            formNumber(qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,start))),
+            formNumber(qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,end))),
+            formNumber(qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,amber)))});
         return c;
     };
     std::function<void()> update;
@@ -99,7 +100,7 @@ std::string EditorWindow::editController(const std::string& id) {
             connect(qobject_cast<QDoubleSpinBox*>(groups->cellWidget(r,col)),qOverload<double>(&QDoubleSpinBox::valueChanged),&dialog,[&]{update();});
     };
     const auto load=[&](const SignalController& c){
-        loading=true;groups->setRowCount(0);cycle->setValue(c.cycle);offset->setValue(c.offset);
+        loading=true;groups->setRowCount(0);setFormNumber(cycle,c.cycle);setFormNumber(offset,c.offset);
         for(const auto& g:c.groups)append(g);
         loading=false;update();
     };
@@ -139,10 +140,10 @@ std::string EditorWindow::editController(const std::string& id) {
     });
     load(value);
     dialog.resize(640,480);
+    std::string created;
+    validateDialog(dialog,buttons,[&]{const auto result=read();commitChange("editorEditController",[&](auto& d){created=putSignalController(d,result);});},[this](const char* key){return text(key);});
     if(dialog.exec()!=QDialog::Accepted)return {};
-    auto result=read();std::string created;
-    if(execute("editorEditController",[&](auto& d){created=putSignalController(d,result);}))selectDemand(created);
-    return created;
+    selectDemand(created);return created;
 }
 // What a head shows, in words: "Main · 2 East" for a signal group, "Legacy program p" otherwise.
 QString EditorWindow::signalLabel(const std::string& controllerId,int groupNumber,const std::string& programId) const {

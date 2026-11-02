@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "form_values.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/demand_commands.hpp"
 #include <QCheckBox>
@@ -19,12 +20,12 @@ namespace multra {
 namespace {
 QDoubleSpinBox* number(QDialog& dialog,double min,double max,double value,const char* name) {
     auto* field=new QDoubleSpinBox(&dialog);field->setObjectName(name);field->setDecimals(3);
-    field->setRange(min,max);field->setValue(value);return field;
+    field->setRange(min,max);setFormNumber(field,value);return field;
 }
 }
 void EditorWindow::editRunSettings() {
     const auto def=history_.document().definition.value_or(AuthoringDefinition{});
-    QDialog dialog(this);dialog.setObjectName("editorSettingsDialog");dialog.setWindowTitle(text("editorRunSettings"));
+    FormDialog dialog(this);dialog.setObjectName("editorSettingsDialog");dialog.setWindowTitle(text("editorRunSettings"));
     auto* form=new QFormLayout(&dialog);
     form->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
     form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);
@@ -51,25 +52,24 @@ void EditorWindow::editRunSettings() {
     auto* standingStopFloor=rule("standingStopFloor","editorStandingStopFloor",def.clampRules.standingStopFloor);
     // S2.4 (MACRO_NETWORK §7, D277): the Macro target gap in % and the iteration cap; defaults write nothing.
     const auto macro=def.macroSettings.value_or(kMacroDefaults);
-    auto* gap=number(dialog,0.0001,99,macro.targetGap*100,"editorMacroTargetGap");gap->setDecimals(4);gap->setValue(macro.targetGap*100);
-    const double gapShown=gap->value();
+    auto* gap=number(dialog,0.0001,99,macro.targetGap*100,"editorMacroTargetGap");gap->setDecimals(4);setFormNumber(gap,macro.targetGap*100);
     auto* cap=new QSpinBox(&dialog);cap->setObjectName("editorMacroMaxIterations");cap->setRange(1,100000);cap->setValue(macro.maxIterations);
     form->addRow(text("editorMacroTargetGap"),gap);form->addRow(text("editorMacroMaxIterations"),cap);
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);form->addRow(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
-    connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
-    if(dialog.exec()==QDialog::Accepted)execute("editorRunSettings",[&](auto& d){
-        const MacroSettings chosen{gap->value()==gapShown?macro.targetGap:gap->value()/100,cap->value()}; // untouched keeps the stored value
+    validateDialog(dialog,buttons,[&]{commitChange("editorRunSettings",[&](auto& d){
+        const MacroSettings chosen{formNumber(gap)==macro.targetGap*100?macro.targetGap:formNumber(gap)/100,cap->value()};
         if(!(chosen==macro))changeMacroSettings(d,chosen==kMacroDefaults?std::nullopt:std::optional(chosen));
-        changeRunSettings(d,duration->value(),dt->value());
-        changeEvaluationPeriod(d,warmup->value(),period.end,cooldown->value());
+        changeRunSettings(d,formNumber(duration),formNumber(dt));
+        changeEvaluationPeriod(d,formNumber(warmup),period.end,formNumber(cooldown));
         if(clock->time()!=clockShown)demand(d).clockStart=QTime(0,0).secsTo(clock->time()); // untouched keeps a value past midnight
-        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked()});});
+        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked()});});},[this](const char* key){return text(key);});
+    dialog.exec();
 }
 void EditorWindow::editProgram(const std::string& id) {
     SignalProgram value{id,0,{{30,SignalColor::red},{30,SignalColor::green},{3,SignalColor::amber}}};
     if(history_.document().definition)for(const auto& p:history_.document().definition->signalPrograms)if(p.id==id)value=p;
-    QDialog dialog(this);dialog.setObjectName("editorProgramDialog");dialog.setWindowTitle(text("editorEditProgram"));
+    FormDialog dialog(this);dialog.setObjectName("editorProgramDialog");dialog.setWindowTitle(text("editorEditProgram"));
     auto* layout=new QVBoxLayout(&dialog);layout->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);layout->setSpacing(editorDesign::space2);
     auto* form=new QFormLayout;form->setContentsMargins(0,0,0,0);form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);layout->addLayout(form);
     auto* offset=number(dialog,-10000000,10000000,value.offset,"editorProgramOffset");form->addRow(text("editorProgramOffset"),offset);
@@ -90,13 +90,15 @@ void EditorWindow::editProgram(const std::string& id) {
     connect(remove,&QPushButton::clicked,&dialog,[&]{if(phases->rowCount())phases->removeRow(phases->rowCount()-1);});
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);layout->addWidget(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
-    connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
-    if(dialog.exec()!=QDialog::Accepted)return;
-    value.offset=offset->value();value.phases.clear();
-    for(int row=0;row<phases->rowCount();++row)value.phases.push_back({
-        qobject_cast<QDoubleSpinBox*>(phases->cellWidget(row,0))->value(),
-        static_cast<SignalColor>(qobject_cast<QComboBox*>(phases->cellWidget(row,1))->currentData().toInt())});
-    std::string created;if(execute("editorEditProgram",[&](auto& d){created=putProgram(d,value);}))selectDemand(created);
+    std::string created;
+    validateDialog(dialog,buttons,[&]{
+        auto candidate=value;candidate.offset=formNumber(offset);candidate.phases.clear();
+        for(int row=0;row<phases->rowCount();++row)candidate.phases.push_back({
+            formNumber(qobject_cast<QDoubleSpinBox*>(phases->cellWidget(row,0))),
+            static_cast<SignalColor>(qobject_cast<QComboBox*>(phases->cellWidget(row,1))->currentData().toInt())});
+        commitChange("editorEditProgram",[&](auto& d){created=putProgram(d,candidate);});
+    },[this](const char* key){return text(key);});
+    if(dialog.exec()==QDialog::Accepted)selectDemand(created);
 }
 void EditorWindow::editHead(const std::string& id,const std::optional<HeadPlacement>& placed) {
     const auto& network=history_.document().network;
@@ -111,7 +113,7 @@ void EditorWindow::editHead(const std::string& id,const std::optional<HeadPlacem
             value.controllerId=lastHeadSignal_.substr(2,hash-2);value.groupNumber=std::stoi(lastHeadSignal_.substr(hash+1));
         } else if(lastHeadSignal_.rfind("p:",0)==0) value.programId=lastHeadSignal_.substr(2);
     }
-    QDialog dialog(this);dialog.setObjectName("editorHeadDialog");dialog.setWindowTitle(text("editorEditHead"));
+    FormDialog dialog(this);dialog.setObjectName("editorHeadDialog");dialog.setWindowTitle(text("editorEditHead"));
     auto* form=new QFormLayout(&dialog);form->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
     form->setHorizontalSpacing(editorDesign::space2);form->setVerticalSpacing(editorDesign::space1);
     auto* lane=new QComboBox(&dialog);lane->setObjectName("editorHeadLane");
@@ -160,7 +162,7 @@ void EditorWindow::editHead(const std::string& id,const std::optional<HeadPlacem
         const double length=lane->currentData(Qt::UserRole+2).toDouble();
         station->setMaximum(length>0?length:10000000);
     };
-    bound();station->setValue(value.position);
+    bound();setFormNumber(station,value.position);
     connect(lane,qOverload<int>(&QComboBox::currentIndexChanged),&dialog,bound);
     form->addRow(text("editorColumnLane"),lane);form->addRow(text("editorSignalGroup"),signalRow);
     form->addRow(text("editorStopLine"),station);
@@ -177,16 +179,20 @@ void EditorWindow::editHead(const std::string& id,const std::optional<HeadPlacem
             first="c:"+made+"#"+std::to_string(c.groups.front().number);
         fill(first);enable();
     });
-    connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
-    if(dialog.exec()!=QDialog::Accepted)return;
-    value.lane={lane->currentData(Qt::UserRole+1).toString().toStdString(),lane->currentData().toString().toStdString()};
-    value.connectorId.clear();
-    if(value.lane.linkId.empty()){value.connectorId=value.lane.laneId;value.lane={};}
-    value.position=station->value();
-    const auto chosen=program->currentData().toString().toStdString();
-    value.programId.clear();value.controllerId.clear();value.groupNumber=0;
-    if(chosen.rfind("p:",0)==0)value.programId=chosen.substr(2);
-    else {const auto hash=chosen.rfind('#');value.controllerId=chosen.substr(2,hash-2);value.groupNumber=std::stoi(chosen.substr(hash+1));}
-    if(execute("editorEditHead",[&](auto& d){putSignalHead(d,value);}))lastHeadSignal_=chosen;
+    validateDialog(dialog,buttons,[&]{
+        auto candidate=value;
+        candidate.lane={lane->currentData(Qt::UserRole+1).toString().toStdString(),lane->currentData().toString().toStdString()};
+        candidate.connectorId.clear();
+        if(candidate.lane.linkId.empty()){candidate.connectorId=candidate.lane.laneId;candidate.lane={};}
+        candidate.position=formNumber(station);
+        const double limit=lane->currentData(Qt::UserRole+2).toDouble();
+        if(candidate.position>limit&&candidate.position-limit<0.0005)candidate.position=limit;
+        const auto chosen=program->currentData().toString().toStdString();
+        candidate.programId.clear();candidate.controllerId.clear();candidate.groupNumber=0;
+        if(chosen.rfind("p:",0)==0)candidate.programId=chosen.substr(2);
+        else {const auto hash=chosen.rfind('#');candidate.controllerId=chosen.substr(2,hash-2);candidate.groupNumber=std::stoi(chosen.substr(hash+1));}
+        commitChange("editorEditHead",[&](auto& d){putSignalHead(d,candidate);});lastHeadSignal_=chosen;
+    },[this](const char* key){return text(key);});
+    dialog.exec();
 }
 }

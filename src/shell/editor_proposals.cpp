@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_interaction.hpp"
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
@@ -61,7 +62,7 @@ void EditorWindow::refreshNodeProposals() {
             nodeProposalTable_->setItem(i, col, cell);
         }
     }
-    nodeProposalTable_->resizeColumnsToContents();
+    fitTableColumns(nodeProposalTable_);
     nodeProposalNote_->setText(text(rows.empty() ? "editorProposalsNone" : "editorProposals"));
 }
 void EditorWindow::translateNodeProposals() {

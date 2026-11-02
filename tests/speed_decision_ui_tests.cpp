@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QGraphicsItem>
 #include <QLineEdit>
+#include <QLabel>
 #include <QPushButton>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -33,12 +34,13 @@ int marks(EditorWindow& w) {
     return n;
 }
 // Runs `fill` on the speed-decision dialog that `open` raises, then confirms it.
-void dialog(const std::function<void()>& open, const std::function<void(QDialog&)>& fill) {
+void dialog(const std::function<void()>& open, const std::function<void(QDialog&)>& fill,bool rejects=false) {
     bool ran = false;
     QTimer::singleShot(0, [&] {
         auto* d = qobject_cast<QDialog*>(QApplication::activeModalWidget());
         if (!d || d->objectName() != "editorSpeedDecisionDialog") { if (d) d->reject(); return; }
-        fill(*d); d->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click(); ran = true;
+        fill(*d);d->findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();ran=true;
+        if(rejects){require(d->isVisible(),"Rejected speed form closed");require(!d->findChild<QLabel*>("editorFormError")->text().isEmpty(),"Rejected speed form has no explanation");d->reject();}
     });
     open(); QApplication::processEvents();
     require(ran, "No speed-decision dialog");
@@ -98,7 +100,7 @@ int main(int argc, char** argv) {
         table->selectRow(0);
         dialog([&] { act(w, "editorEditSpeedDecision")->trigger(); }, [](QDialog& d) {
             in<QDoubleSpinBox>(d, "speed.car.min")->setValue(20);
-        });
+        },true);
         require(w.history().revision() == before && decisions().front().speeds.front().min == 8, "An invalid range was accepted");
         // Delete is one Undo step.
         table->selectRow(0); act(w, "editorDeleteSpeedDecision")->trigger(); QApplication::processEvents();

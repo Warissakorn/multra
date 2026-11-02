@@ -29,9 +29,13 @@ std::optional<std::vector<std::vector<double>>> editDemandPeriods(QWidget* paren
             field->setProperty("originalValue",original);field->setProperty("edited",false);
             QObject::connect(field,&QDoubleSpinBox::valueChanged,field,[field]{field->setProperty("edited",true);});
             table->setCellWidget(at,c,field);
+            table->setColumnWidth(c,std::max(table->columnWidth(c),field->minimumSizeHint().width()+8));
+            table->setRowHeight(at,std::max(table->rowHeight(at),field->minimumSizeHint().height()));
         }
     };
     for(const auto& row:values)append(row);
+    table->resizeColumnsToContents();
+    for(int c=0;c<table->columnCount();++c)if(table->rowCount())table->setColumnWidth(c,std::max(table->columnWidth(c),table->cellWidget(0,c)->minimumSizeHint().width()+8));
     auto* add=new QPushButton(text("editorDemandAddPeriod"),&dialog);add->setObjectName("editorDemandAddPeriod");layout->addWidget(add);
     auto* remove=new QPushButton(text("editorDemandRemovePeriod"),&dialog);remove->setObjectName("editorDemandRemovePeriod");layout->addWidget(remove);
     auto* error=new ReflowLabel(&dialog);error->setObjectName("editorDemandPeriodsError");error->setWordWrap(true);layout->addWidget(error);

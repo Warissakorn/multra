@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/street_segment_commands.hpp"
@@ -76,7 +77,7 @@ void EditorWindow::refreshCrossSections() {
             }
             if (s.id == keep) crossSectionTable_->selectRow(r);
         }
-        crossSectionTable_->resizeColumnsToContents();
+        fitTableColumns(crossSectionTable_);
         crossSectionRevision_ = history_.revision();
     }
     const bool chosen = !selectedCrossSection().empty() && ownsCrossSections(history_.document());

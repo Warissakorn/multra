@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../project/od_demand.hpp"
 #include "../project/mode_codec.hpp"
@@ -91,7 +92,7 @@ void EditorWindow::refreshOd() {
             }
             if (m.id == keep) odTable_->selectRow(r);
         }
-        odTable_->resizeColumnsToContents();
+        fitTableColumns(odTable_);
     }
     actions_.at("editorAddOdMatrix")->setEnabled(!layer.zones.empty());
     const bool chosen = !selectedOd().empty();

@@ -1,3 +1,4 @@
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/right_of_way_commands.hpp"
@@ -85,7 +86,7 @@ void EditorWindow::refreshSections() {
             }
             if (s.id == keep) sectionTable_->selectRow(r);
         }
-        sectionTable_->resizeColumnsToContents();
+        fitTableColumns(sectionTable_);
     }
     const bool chosen = !selectedSection().empty();
     for (const auto* key : {"editorEditSection", "editorDeleteSection"}) actions_.at(key)->setEnabled(chosen);

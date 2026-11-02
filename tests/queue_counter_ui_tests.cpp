@@ -45,7 +45,11 @@ void author(EditorWindow& w, Point p) {
     QTest::qWait(600);
     QTest::mouseClick(w.canvas()->viewport(), Qt::RightButton, Qt::ControlModifier, pixel(w, p)); QApplication::processEvents();
 }
-void key(EditorWindow& w, Qt::Key k) { w.canvas()->setFocus(); QTest::keyClick(w.canvas(), k); QApplication::processEvents(); }
+void key(EditorWindow& w, Qt::Key k) {
+    if(!w.canvas()->isVisible()){act(w,"editorWorkspaceTables")->trigger();QTest::qWait(30);QApplication::processEvents();}
+    require(w.canvas()->isVisible(),"Keyboard fixture has no canvas");
+    w.canvas()->setFocus();QTest::keyClick(w.canvas(),k);QApplication::processEvents();
+}
 void onDialog(const char* name, std::function<void(QDialog*)> answer, bool& ran) {
     QTimer::singleShot(0, [=, &ran] {
         auto* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());

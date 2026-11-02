@@ -13,6 +13,7 @@
 #include <QStandardPaths>
 #include <QTabBar>
 #include <QTabWidget>
+#include <QTableWidget>
 #include <QTest>
 #include <filesystem>
 #include <iostream>
@@ -130,7 +131,10 @@ int main(int argc,char** argv) {
                 pick(combo,group.key);
                 require(window.width()<=size.width()&&window.height()<=size.height(),"A group forced the window larger");
                 const auto view=canvas->viewport()->size();
-                if(size.width()==1024)require(view.width()>=400&&view.height()>=250,"Small-window canvas is unusable with a group");
+                if(std::string(group.key)=="editorObjectGroupResults") {
+                    require(!canvas->isVisible()&&dock->isVisible(),"Results workspace did not focus its tables");
+                    require(item<QTableWidget>(window,"editorMovementTable")->viewport()->height()>=144,"Results workspace crowds out movement rows");
+                } else if(size.width()==1024)require(view.width()>=400&&view.height()>=250,"Small-window canvas is unusable with a group");
                 else {
                     if(view.width()<700||view.height()<350)std::cerr<<group.key<<" locale "<<lang<<": "<<view.width()<<" x "<<view.height()<<'\n';
                     require(view.width()>=700&&view.height()>=350,"Wide canvas crowded out by a group");

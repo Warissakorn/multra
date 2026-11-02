@@ -1,4 +1,5 @@
 #include "editor_interaction.hpp"
+#include "table_layout.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../core/simulation.hpp"
@@ -20,6 +21,7 @@
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QHBoxLayout>
+#include <QResizeEvent>
 #include <QVBoxLayout>
 
 namespace multra {
@@ -46,6 +48,19 @@ protected:
 private:
     std::function<void()> shown_;
 };
+// Keep both name columns readable when the Results dock is narrow.
+class MovementTables : public QWidget {
+public:
+    explicit MovementTables(QWidget* parent):QWidget(parent),row(new QBoxLayout(QBoxLayout::LeftToRight,this)) {
+        setObjectName("editorMovementTables");row->setContentsMargins(0,0,0,0);row->setSpacing(editorDesign::space1);
+    }
+    QBoxLayout* row;
+protected:
+    void resizeEvent(QResizeEvent* event) override {
+        row->setDirection(event->size().width()<1250?QBoxLayout::TopToBottom:QBoxLayout::LeftToRight);
+        QWidget::resizeEvent(event);
+    }
+};
 QLabel* noteLabel(QWidget* parent,const char* name) {
     auto* label=new ReflowLabel(parent); label->setObjectName(name); label->setWordWrap(true); return label;
 }
@@ -62,7 +77,7 @@ void EditorWindow::buildResults() {
     layout->setSpacing(editorDesign::space1);
     // Export writes exactly what `multra-cli --csv` writes, marker line first, and only for
     // a finished run: the CSV has no field saying its figures are partial.
-    auto* bar=new QToolBar(page); layout->addWidget(bar);
+    auto* bar=new QToolBar(page);bar->setObjectName("editorResultsToolbar");layout->addWidget(bar);
     bar->addAction(action("editorExportResults",{},[this]{
         const auto file=QFileDialog::getSaveFileName(this,text("editorExportResults"),"results.csv",text("editorCsvFilter"));
         if(file.isEmpty())return;
@@ -79,18 +94,22 @@ void EditorWindow::buildResults() {
         box->setContentsMargins(0,editorDesign::space1,0,0); box->setSpacing(editorDesign::space1);
         note=noteLabel(body,noteName); box->addWidget(note); resultPages_.emplace(key,body); resultsTabs_->addTab(body,QString()); return box;
     };
-    // Side by side, so the dock's height goes to rows: twelve movements beside four approaches.
+    const auto localBar=[](QVBoxLayout* box,const char* name){
+        auto* tools=new QToolBar(box->parentWidget());tools->setObjectName(name);box->insertWidget(0,tools);return tools;
+    };
+    // Stack on narrow windows; wide screens keep the two tables beside each other.
     auto* movementsBox=tab(resultsNote_,"editorResultsNote","editorResultsTabMovements");
-    auto* row=new QHBoxLayout; movementsBox->addLayout(row,1);
-    row->setContentsMargins(0,0,0,0);row->setSpacing(editorDesign::space1);
+    auto* tables=new MovementTables(movementsBox->parentWidget());movementsBox->addWidget(tables,1);auto* row=tables->row;
     movementTable_=resultTable(page,"editorMovementTable",4); row->addWidget(movementTable_,3);
     queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,2);
     dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote","editorResultsTabDischarge")->addWidget(dischargeTable_,1);
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
     nodeResultTable_=resultTable(page,"editorNodeResultTable",10); tab(nodeResultNote_,"editorNodeResultsNote","editorResultsTabNodes")->addWidget(nodeResultTable_,1); // S0.6
-    macro_=std::make_unique<MacroPanel>(); buildMacro(bar,tab(macro_->note,"editorMacroNote","editorResultsTabMacro")); // S2.4
-    meso_=std::make_unique<MesoPanel>(); buildMeso(bar,tab(meso_->note,"editorMesoNote","editorResultsTabMeso")); // M11.4
+    macro_=std::make_unique<MacroPanel>();auto* macroBox=tab(macro_->note,"editorMacroNote","editorResultsTabMacro");
+    buildMacro(localBar(macroBox,"editorMacroToolbar"),macroBox);
+    meso_=std::make_unique<MesoPanel>();auto* mesoBox=tab(meso_->note,"editorMesoNote","editorResultsTabMeso");
+    buildMeso(localBar(mesoBox,"editorMesoToolbar"),mesoBox);
     auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
         [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);},
         [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchGeneration_};},
@@ -101,8 +120,9 @@ void EditorWindow::buildResults() {
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
         table->horizontalHeader()->setSectionResizeMode(column,QHeaderView::Stretch);
     }
-    buildBatch(bar,movementsBox); // M5.6: the N-seed table takes the single run's place
-    connect(resultsTabs_,&QTabWidget::currentChanged,this,[this]{refreshResults();refreshRun();});
+    buildBatch(localBar(movementsBox,"editorBatchToolbar"),movementsBox); // N-seed replaces the single run
+    sizeTabPages(resultsTabs_);
+    connect(resultsTabs_,&QTabWidget::currentChanged,this,[this]{sizeTabPages(resultsTabs_);refreshResults();refreshRun();});
     addObjectPage(page,"editorResultsTable");
 }
 void EditorWindow::translateResults() {
@@ -243,8 +263,8 @@ std::string EditorWindow::singleRunCsv() const {
     return markedCsv(movementCsv(*report),runMarking_.marking,runMarking_.flows);
 }
 void EditorWindow::exportResults(const QString& file) const {
-    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis"))
-        checkExportDestination(file,{file_,recoveryFile_},"EDIT_ANALYSIS_EXPORT_PROTECTED");
+    const bool analytical=resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis");
+    checkExportDestination(file,{file_,recoveryFile_},analytical?"EDIT_ANALYSIS_EXPORT_PROTECTED":"EDIT_EXPORT_PROJECT");
     writeEditorBytes(file,resultsCsv(),"EDIT_CSV_WRITE");
 }
 void EditorWindow::copyResults() const {

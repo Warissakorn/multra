@@ -1,4 +1,5 @@
 #include "behaviour_lab_panel.hpp"
+#include "editor_interaction.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../lab/lab_run.hpp"
 #include <QCheckBox>
@@ -92,10 +93,18 @@ BehaviourLabPanel::BehaviourLabPanel(const lab::LabSettings& initial, Text text,
     qobject_cast<QVBoxLayout*>(road->layout())->addStretch();
     setSettings(initial);
     retranslate();
+    for(auto* form:findChildren<QFormLayout*>())for(int row=0;row<form->rowCount();++row) {
+        auto* cell=form->itemAt(row,QFormLayout::LabelRole);if(!cell)continue;
+        if(auto* label=qobject_cast<QLabel*>(cell->widget())) {
+            auto* wrapped=new ReflowLabel(label->text(),form->parentWidget());wrapped->setWordWrap(true);wrapped->setBuddy(label->buddy());
+            auto* old=form->replaceWidget(label,wrapped);delete old;delete label;
+        }
+    }
+    alignFormLabels(this);
 }
 QGroupBox* BehaviourLabPanel::group(QWidget* page, const char* titleKey, QFormLayout*& form) {
     auto* box = new QGroupBox(page); box->setObjectName(titleKey);
-    form = new QFormLayout(box); form->setRowWrapPolicy(QFormLayout::WrapLongRows);
+    form = new QFormLayout(box);box->setProperty("editorStackForm",true);form->setRowWrapPolicy(QFormLayout::WrapAllRows);
     page->layout()->addWidget(box); titles_[box] = titleKey;
     return box;
 }
@@ -103,7 +112,7 @@ QDoubleSpinBox* BehaviourLabPanel::number(QFormLayout* form, const char* key, do
                                           int decimals, const char* unit, std::function<double&(lab::LabSettings&)> value) {
     auto* spin = new QDoubleSpinBox(form->parentWidget());
     spin->setObjectName(prefix_ + key); spin->setRange(min, max); spin->setSingleStep(step); spin->setDecimals(decimals);
-    spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false);
+    spin->setFont(editorDesign::numericFont());spin->setMaximumWidth(160); spin->setKeyboardTracking(false);
     if (*unit) spin->setSuffix(QString(" ") + unit);
     form->addRow(key, spin);
     connect(spin, &QDoubleSpinBox::valueChanged, this, [this] { if (!loading_) { refreshAxles(); if (changed) changed(); } });
@@ -115,7 +124,7 @@ QCheckBox* BehaviourLabPanel::optional(QFormLayout* form, const char* key, doubl
     auto* on = new QCheckBox(key, form->parentWidget()); on->setObjectName(prefix_ + key + "Set");
     auto* spin = new QDoubleSpinBox(form->parentWidget());
     spin->setObjectName(prefix_ + key); spin->setRange(min, max); spin->setSingleStep(decimals ? 0.1 : 1); spin->setDecimals(decimals);
-    spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false); if (*unit) spin->setSuffix(QString(" ") + unit);
+    spin->setFont(editorDesign::numericFont());spin->setMaximumWidth(160); spin->setKeyboardTracking(false); if (*unit) spin->setSuffix(QString(" ") + unit);
     form->addRow(on, spin);
     connect(on, &QCheckBox::toggled, spin, &QWidget::setEnabled);
     connect(on, &QCheckBox::toggled, this, [this] { if (!loading_ && changed) changed(); });
@@ -158,7 +167,7 @@ void BehaviourLabPanel::behaviour(QFormLayout* form, std::function<DriverBehavio
              {"lateralMinDistanceStanding", 0, 5}, {"lateralMinDistanceAt50", 0, 5}, {"maxLateralSpeed", 0.1, 3}}) {
         auto* spin = new QDoubleSpinBox(form->parentWidget());
         spin->setObjectName(prefix_ + key); spin->setRange(min, max); spin->setSingleStep(0.1); spin->setDecimals(2);
-        spin->setFont(editorDesign::numericFont()); spin->setKeyboardTracking(false);
+        spin->setFont(editorDesign::numericFont());spin->setMaximumWidth(160); spin->setKeyboardTracking(false);
         spin->setSuffix(std::string_view(key) == "maxLateralSpeed" ? " m/s" : " m");
         form->addRow(key, spin);
         connect(on, &QCheckBox::toggled, spin, &QWidget::setEnabled);
