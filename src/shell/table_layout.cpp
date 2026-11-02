@@ -1,5 +1,6 @@
 #include "table_layout.hpp"
 #include <QAbstractSpinBox>
+#include <QApplication>
 #include <QHeaderView>
 #include <QTableWidget>
 #include <QTabWidget>
@@ -16,7 +17,11 @@ void sizeTabPages(QTabWidget* tabs) {
     }
 }
 void fitTableColumns(QTableWidget* table) {
-    if(table->rowCount()==0||table->property("editorColumnsSized").toBool())return;
+    if(table->rowCount()==0)return;
+    // Fit again when rows, language (header text) or density change; otherwise keep user-dragged widths.
+    QString key=QString::number(table->rowCount())+'|'+QString::number(qApp->property("editorDensity").toInt());
+    for(int column=0;column<table->columnCount();++column)if(auto* header=table->horizontalHeaderItem(column))key+='|'+header->text();
+    if(table->property("editorColumnsSized").toString()==key)return;
     table->resizeColumnsToContents();table->horizontalHeader()->setStretchLastSection(false);
     for(int column=0;column<table->columnCount();++column) {
         int minimum=40;
@@ -24,6 +29,6 @@ void fitTableColumns(QTableWidget* table) {
             minimum=std::max(minimum,std::max(widget->minimumWidth(),widget->minimumSizeHint().width()));
         table->setColumnWidth(column,std::clamp(table->columnWidth(column),minimum,std::max(minimum,320)));
     }
-    table->setProperty("editorColumnsSized",true);
+    table->setProperty("editorColumnsSized",key);
 }
 }

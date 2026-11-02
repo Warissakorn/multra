@@ -50,8 +50,12 @@ void setFormNumber(QDoubleSpinBox* field,double number) {
     QObject::connect(field,&QDoubleSpinBox::valueChanged,field,[field]{field->setProperty("formEdited",true);});
 }
 double formNumber(const QDoubleSpinBox* field) {
-    return field->property("formOriginal").isValid()&&!field->property("formEdited").toBool()
-        ?field->property("formOriginal").toDouble():field->value();
+    const QVariant original=field->property("formOriginal");
+    if(!original.isValid())return field->value();
+    // An edit typed back to the displayed original keeps the source precision too.
+    if(!field->property("formEdited").toBool()||field->value()==field->valueFromText(field->textFromValue(original.toDouble())))
+        return original.toDouble();
+    return field->value();
 }
 void validateDialog(FormDialog& dialog,QDialogButtonBox* buttons,const std::function<void()>& commit,
                     const std::function<QString(const char*)>& text) {

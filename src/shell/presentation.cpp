@@ -2,6 +2,7 @@
 #include "editor_style.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
+#include <QFontInfo>
 #include <QActionGroup>
 #include <QHeaderView>
 #include <QMainWindow>
@@ -9,6 +10,10 @@
 #include <QTableWidget>
 #include <algorithm>
 namespace multra {
+namespace {
+// Item font size before density was applied; a role of its own, away from table data roles.
+constexpr int baseFontRole=Qt::UserRole+0x4d46;
+}
 int editorDensity(){return editorDesign::presentationDensity();}
 void setEditorDensity(int density) {
     const int previous=editorDensity();
@@ -25,8 +30,12 @@ void setEditorDensity(int density) {
                 for(int col=0;col<table->columnCount();++col) {
                     if(auto* widget=table->cellWidget(row,col))rowHeight=std::max(rowHeight,widget->minimumSizeHint().height());
                     if(auto* item=table->item(row,col);item&&item->data(Qt::FontRole).isValid()) {
-                        if(!item->data(Qt::UserRole+99).isValid())item->setData(Qt::UserRole+99,item->font().pixelSize()-previous);
-                        auto f=item->font();f.setPixelSize(item->data(Qt::UserRole+99).toInt()+density);item->setFont(f);
+                        if(!item->data(baseFontRole).isValid()) {
+                            // A point-sized font reports pixelSize() -1; measure it instead.
+                            const int pixels=item->font().pixelSize()>0?item->font().pixelSize():QFontInfo(item->font()).pixelSize();
+                            item->setData(baseFontRole,pixels-previous);
+                        }
+                        auto f=item->font();f.setPixelSize(std::max(1,item->data(baseFontRole).toInt()+density));item->setFont(f);
                     }
                 }
                 table->setRowHeight(row,rowHeight);
