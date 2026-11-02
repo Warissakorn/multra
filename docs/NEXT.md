@@ -8,10 +8,6 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Standing facts
 
-- **Name:** MULTRA (D284, D287); only the file's `"format": "TrafficSim"` stays until a schema step
-  reads both. Licence GPL-3.0-or-later (D285); a CLA comes before any outside contribution.
-- **Local evidence is Linux only** (offscreen Qt; session versions in PROGRESS). Automated Windows
-  CI is recorded separately; no owner Windows/high-DPI appearance claim. No session closes a milestone gate.
 - **Books:** five owner copies (Sheffi, HCM 7, Ortúzar & Willumsen, Planning Handbook 4th ed.,
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
@@ -21,8 +17,6 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
   `checkpointJson` and `summaryJson` moved out of `project/json.hpp`. Do it with the first engine
   slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
-- **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
-  `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 - **M0 is closed** by owner ruling (D369, [evidence](evidence/m0-plausibility.md)). Bare M0
   scenarios still hold amber as red (D147); a change that moves the M0 baseline reopens it.
