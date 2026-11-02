@@ -93,12 +93,8 @@ void EditorCanvas::drawRunItems() {
         if(found==runHeadBars_.end() || !levelVisible(found->second.level))continue;
         const auto color=signalColorAt(p,runFrame_.time);
         const auto& bar=found->second;
-        QPen outline(editorDesign::role(QPalette::Base),editorDesign::crossbarPixels+2);
-        outline.setCosmetic(true);outline.setCapStyle(Qt::FlatCap);
-        auto* casing=scene_.addLine(bar.first.x,bar.first.y,bar.second.x,bar.second.y,outline);
-        casing->setZValue(bar.level*100.+11.9);runItems_.push_back(casing);
-        // D199: the state reads from the bar's shape too, not only its hue.
-        auto* item=new RoadCrossbarItem(found->second,
+        // D199/D435: the lit lamp's position carries the state as well as its hue.
+        auto* item=new SignalHeadItem(bar,
             color==SignalColor::red?canvasStyle::error():color==SignalColor::green?canvasStyle::ok():canvasStyle::warning(),
             viewScale(),false,color==SignalColor::red?SignalCue::stop:color==SignalColor::green?SignalCue::go:SignalCue::caution);
         scene_.addItem(item);item->setZValue(found->second.level*100.+12);

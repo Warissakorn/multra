@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QDoubleSpinBox>
+#include <QGraphicsEllipseItem>
 #include <QGraphicsPathItem>
 #include <QGraphicsScene>
 #include <QLineEdit>
@@ -51,7 +52,10 @@ int main(int argc,char** argv){
     QTest::mousePress(c.viewport(),Qt::RightButton,Qt::ControlModifier,pixel(c,a));QTest::mouseMove(c.viewport(),pixel(c,b));settle();
     const double link=previewArea(c);std::cout<<"Link preview "<<link<<" m2"<<std::endl;
     require(link>300&&link<550,"Link preview is not the new Link's road surface");
-    for(auto* item:c.scene()->items())require(item->data(0).toString()!="creation-draft","The draft line is drawn over the Link preview");shot(w,"preview-link");
+    for(auto* item:c.scene()->items()) {
+        require(item->data(0).toString()!="creation-draft","The draft line is drawn over the Link preview");
+        require(!(dynamic_cast<QGraphicsEllipseItem*>(item)&&item->zValue()==8),"The draft points are drawn over the Link preview"); // D435
+    }shot(w,"preview-link");
     QTest::keyClick(&c,Qt::Key_Escape);settle();
     require(previewArea(c)==0&&w.history().revision()==revision,"Cancelling left a preview or changed the document");
     // Connector: drag from the end of one Link onto the start of another.

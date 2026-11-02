@@ -309,8 +309,11 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
                 matchedStation(link.geometry,axis,*position),link.level);
         }
         if(!bar || !levelVisible(bar->level))return;
-        auto* line=new RoadCrossbarItem(*bar,canvasStyle::active(),viewScale(),preview && end);
-        scene_.addItem(line);line->setZValue(200007);
+        // D435: origin green, destination red, wide on a Base casing, so both ends read over the
+        // route tint and the hover outline; the destination follows the pointer while tracing.
+        auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::error():canvasStyle::ok(),viewScale(),true);
+        auto wide=line->pen();wide.setWidthF(editorDesign::crossbarPixels+2);line->setPen(wide);
+        scene_.addItem(line);line->setZValue(200007.5);
         if(preview && end)previewRouteEnd_=line;
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
     };

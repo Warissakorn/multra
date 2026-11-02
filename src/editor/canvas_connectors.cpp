@@ -188,7 +188,7 @@ void EditorCanvas::drawConnectors() {
             drawGeometryHandles(c.id,connectorGrips(document_->network,preview),true);
     }
     if (tool_!=Tool::connect) return;
-    if(connectorFrom_) {
+    if(connectorFrom_ && !creationPreviewDrawn_) {
         const auto p=laneAttachment(document_->network,*connectorFrom_,true);
         scene_.addEllipse(p.x-radius,p.y-radius,2*radius,2*radius,QPen(canvasStyle::active()),QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }

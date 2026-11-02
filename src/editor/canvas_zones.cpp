@@ -100,7 +100,7 @@ void EditorCanvas::drawZones() {
             item->setData(0, QStringLiteral("zone-draft-pending"));
         }
         const double r = 3 / viewScale();
-        for (const auto& p : zoneDraft_)
+        if (!previewed) for (const auto& p : zoneDraft_)
             scene_.addEllipse(p.x - r, p.y - r, 2 * r, 2 * r, canvasStyle::previewPen(canvasStyle::active(), 1.5),
                               QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }

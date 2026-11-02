@@ -51,7 +51,7 @@ std::optional<RoadCrossbar> roadCrossbar(const std::vector<Point>& centre,
     };
     const auto a=meet(firstRail,firstContinuation),b=meet(secondRail,secondContinuation);
     if(!a || !b || std::hypot(a->x-b->x,a->y-b->y)<1e-9)return {};
-    return RoadCrossbar{*a,*b,level};
+    return RoadCrossbar{*a,*b,level,u};
 }
 std::optional<RoadCrossbar> objectCrossbar(const Network& n,const std::string& id,bool end,std::optional<double> station) {
     try {
@@ -124,6 +124,47 @@ void RoadCrossbarItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* o
     if(cue_==SignalCue::caution) {
         auto thin=pen();thin.setWidthF(std::max(1.0,pen().widthF()/2));
         painter->setPen(thin);painter->drawLine(a+third,b-third);
+    }
+}
+SignalHeadItem::SignalHeadItem(const RoadCrossbar& bar,QColor colour,double scale,bool preview,SignalCue cue)
+    : RoadCrossbarItem(bar,colour,scale,preview,SignalCue::none),travel_(bar.travel),scale_(std::max(1e-9,std::abs(scale))),lamp_(cue) {
+    auto thin=pen();thin.setWidthF(2);setPen(thin);
+}
+QPainterPath SignalHeadItem::housing() const {
+    // A rounded body 3 lamps long, across the lane, one gap upstream of the stop line. Sizes are
+    // screen pixels, capped so the head never overhangs its lane.
+    const auto a=line().p1(),b=line().p2();const double lane=std::hypot(b.x()-a.x(),b.y()-a.y());
+    double t=std::hypot(travel_.x,travel_.y);
+    if(!(lane>0) || !(t>0))return {};
+    const double length=std::min(30/scale_,0.9*lane),depth=length/3,gap=3/scale_;
+    const QPointF across((b.x()-a.x())/lane,(b.y()-a.y())/lane),back(-travel_.x/t,-travel_.y/t);
+    const auto centre=(a+b)/2+back*(gap+depth/2);
+    QPainterPath body;QTransform frame(across.x(),across.y(),back.x(),back.y(),centre.x(),centre.y());
+    QPainterPath local;local.addRoundedRect(QRectF(-length/2,-depth/2,length,depth),depth/3,depth/3);
+    body=frame.map(local);return body;
+}
+QPainterPath SignalHeadItem::shape() const { return RoadCrossbarItem::shape().united(housing()); }
+QRectF SignalHeadItem::boundingRect() const { return shape().boundingRect().adjusted(-4/scale_,-4/scale_,4/scale_,4/scale_); }
+void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* option,QWidget* widget) {
+    RoadCrossbarItem::paint(painter,option,widget);
+    const auto body=housing();if(body.isEmpty())return;
+    painter->setRenderHint(QPainter::Antialiasing);
+    QPen edge(pen().color(),1.5);edge.setCosmetic(true);
+    painter->setPen(edge);painter->setBrush(QColor(38,42,48));painter->drawPath(body);
+    // Lamps along the body's long axis, red / amber / green from the first end of the bar.
+    const auto a=line().p1(),b=line().p2();const double lane=std::hypot(b.x()-a.x(),b.y()-a.y());
+    const double t=std::hypot(travel_.x,travel_.y);
+    const double length=std::min(30/scale_,0.9*lane),depth=length/3,gap=3/scale_;
+    const QPointF across((b.x()-a.x())/lane,(b.y()-a.y())/lane),back(-travel_.x/t,-travel_.y/t);
+    const auto centre=(a+b)/2+back*(gap+depth/2);
+    const QColor hues[]={QColor(230,57,53),QColor(245,180,30),QColor(46,184,92)};
+    const SignalCue cues[]={SignalCue::stop,SignalCue::caution,SignalCue::go};
+    for(int k=0;k<3;++k) {
+        QColor lampColour=hues[k];
+        if(lamp_==SignalCue::none)lampColour.setAlpha(150); // editing: the head, not a state
+        else if(lamp_!=cues[k])lampColour=QColor(70,74,80);
+        painter->setPen(Qt::NoPen);painter->setBrush(lampColour);
+        painter->drawEllipse(centre+across*((k-1)*depth),depth*0.36,depth*0.36);
     }
 }
 }

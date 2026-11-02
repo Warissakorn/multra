@@ -171,11 +171,16 @@ void EditorCanvas::drawConflicts() {
             const bool yields=(side==&first)==(priority==ConflictPriority::firstYields);
             const bool lit=key==highlightedConflict_,hover=key==hoverConflict_ || key==hoverAutomatic_;
             QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::warning()):yields?canvasStyle::error():canvasStyle::ok();
-            tint.setAlpha(automatic?(undecided?90:80):150);
-            const bool hatched=!branching && !undecided && yields;
-            QPen pen(lit?canvasStyle::selection():hover?canvasStyle::hover():tint.darker(150),lit?2.5:hover?2:1,
-                     automatic?Qt::DashLine:Qt::SolidLine);pen.setCosmetic(true);
-            auto* item=scene_.addPath(shape,pen,QBrush(tint,hatched?Qt::BDiagPattern:Qt::SolidPattern));
+            // D435: a soft, flat wash -- no hatching or outline at rest; an automatic candidate is
+            // fainter. Hover and the highlighted conflict get a clean solid edge.
+            tint.setAlpha(automatic?(undecided?40:48):yields?95:80);
+            const bool hatched=!branching && !undecided && yields; // tag only: z order, not paint
+            QPen pen(Qt::NoPen);
+            if(lit || hover) {
+                pen=QPen(lit?canvasStyle::selection():canvasStyle::hover(),lit?2:1.5,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin);
+                pen.setCosmetic(true);
+            }
+            auto* item=scene_.addPath(shape,pen,QBrush(tint));
             item->setZValue(level*100.+(automatic?(hatched?5.6:5.5):hatched?6.5:6));
             item->setData(0,QStringLiteral("conflict-area"));
             if(automatic && key.rfind("auto/",0)==0)item->setData(0,QStringLiteral("auto-conflict"));

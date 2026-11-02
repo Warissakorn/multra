@@ -158,13 +158,15 @@ int main(int argc, char** argv) {
         click(w, inside);
         require(c->highlightedConflict() == first.id && w.history().revision() == revision, "Reselecting the area changed its priority");
 
-        // Both sides stay readable: the one that gives way is hatched and drawn above the other.
+        // Both sides stay readable (D435): flat washes told apart by hue, the side that gives way
+        // red and drawn above the other; no outline at rest.
         const auto items = sides(w, first.id);
         require(items.size() == 2, "The area did not draw two sides");
-        const auto* hatched = items[0]->brush().style() == Qt::BDiagPattern ? items[0] : items[1];
-        const auto* solid = hatched == items[0] ? items[1] : items[0];
-        require(hatched->brush().style() == Qt::BDiagPattern && solid->brush().style() == Qt::SolidPattern, "The sides were not told apart");
-        require(hatched->zValue() > solid->zValue(), "The hatched side is not drawn above the solid one");
+        const auto* yielding = items[0]->zValue() > items[1]->zValue() ? items[0] : items[1];
+        const auto* ahead = yielding == items[0] ? items[1] : items[0];
+        require(yielding->brush().style() == Qt::SolidPattern && ahead->brush().style() == Qt::SolidPattern &&
+                yielding->brush().color().rgb() != ahead->brush().color().rgb() && yielding->zValue() > ahead->zValue(),
+                "The sides were not told apart");
 
         // Drag B's waiting line 5 m upstream, along its lane: one Undo step. A jitter moves nothing.
         const auto line = *std::find_if(network().rightOfWay.waitingLines.begin(), network().rightOfWay.waitingLines.end(),
