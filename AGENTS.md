@@ -171,9 +171,8 @@ tests/
   after its `QApplication` (D320), never `setTestModeEnabled` alone.
 - Qt UI suites run on Linux **and Windows** in `native.yml`. "Verified locally" means Linux
   only; say so, and do not read a green Linux run as cross-platform evidence.
-- The owner authorized the full stack migration (D15); it supersedes one-system scheduling
-  guidance for that migration only. Existing M0/M1 acceptance gates still apply.
-- The owner authorized M1.1–M1.3 together (D16). Project never imports command or Qt types; the shell owns atomic file replacement. Never equate authoring support with runtime support.
+- Project never imports command or Qt types; the shell owns atomic file replacement (D16).
+- Never equate authoring support with runtime support.
 
 ## Model invariants to check before editing
 
