@@ -39,6 +39,8 @@ public:
     QRectF boundingRect() const override;
     void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 private:
+    struct HeadFrame { QPointF centre, across, back; double length{}, depth{}; };
+    std::optional<HeadFrame> frame() const; // the housing's placement; none for a degenerate bar
     QPainterPath housing() const;
     Point travel_{}; double scale_{}; SignalCue lamp_{};
 };
