@@ -24,10 +24,10 @@ it separates the supplied spec from never-measured Vissim behaviour.
 
 MULTRA (Multi-Level Traffic Analysis) owns a traffic microsimulation engine for engineering studies
 (D38). The owner chose the name in D284, superseding D11 and D201's B1; the licence is
-GPL-3.0-or-later (D285). The repository, executables, `multra` namespace, targets and `MULTRA_*`
-options carry the name (D287). Only the project file's `"format": "TrafficSim"` marker and the
-legacy-storage move (D286) keep the earlier name; never change that marker without a schema step
-that still reads it.
+GPL-3.0-or-later (D285), and a CLA comes before any outside contribution. The repository,
+executables, `multra` namespace, targets and `MULTRA_*` options carry the name (D287). Only the
+project file's `"format": "TrafficSim"` marker and the legacy-storage move (D286) keep the earlier
+name; never change that marker without a schema step that still reads it.
 
 ## Documentation authority
 
@@ -170,10 +170,12 @@ tests/
 - A UI suite that builds an `EditorWindow` calls `useTestStorage()` (`tests/ui_test_storage.hpp`)
   after its `QApplication` (D320), never `setTestModeEnabled` alone.
 - Qt UI suites run on Linux **and Windows** in `native.yml`. "Verified locally" means Linux
-  only; say so, and do not read a green Linux run as cross-platform evidence.
-- The owner authorized the full stack migration (D15); it supersedes one-system scheduling
-  guidance for that migration only. Existing M0/M1 acceptance gates still apply.
-- The owner authorized M1.1–M1.3 together (D16). Project never imports command or Qt types; the shell owns atomic file replacement. Never equate authoring support with runtime support.
+  only; say so, and do not read a green Linux run as cross-platform evidence. Windows/high-DPI
+  appearance is the owner's check, and no session closes a milestone gate.
+- **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
+  `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
+- Project never imports command or Qt types; the shell owns atomic file replacement (D16).
+- Never equate authoring support with runtime support.
 
 ## Model invariants to check before editing
 

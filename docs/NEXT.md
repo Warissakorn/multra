@@ -8,10 +8,6 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Standing facts
 
-- **Name:** MULTRA (D284, D287); only the file's `"format": "TrafficSim"` stays until a schema step
-  reads both. Licence GPL-3.0-or-later (D285); a CLA comes before any outside contribution.
-- **Local evidence is Linux only** (offscreen Qt; session versions in PROGRESS). Automated Windows
-  CI is recorded separately; no owner Windows/high-DPI appearance claim. No session closes a milestone gate.
 - **Books:** five owner copies (Sheffi, HCM 7, Ortúzar & Willumsen, Planning Handbook 4th ed.,
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
@@ -21,8 +17,6 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
   `checkpointJson` and `summaryJson` moved out of `project/json.hpp`. Do it with the first engine
   slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
-- **New dialogs** are free functions with their own file (as `behaviour_editor.cpp`), not new
-  `EditorWindow` members, and one whose rows can grow uses `dialog_fit` (D318, D319).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 - **M0 is closed** by owner ruling (D369, [evidence](evidence/m0-plausibility.md)). Bare M0
   scenarios still hold amber as red (D147); a change that moves the M0 baseline reopens it.
@@ -89,13 +83,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 
-- Owner selected native object-table CSV export over the schema queue. Packaged Windows
-  acceptance is [OWNER_SITTING G1](plans/OWNER_SITTING.md#g--object-interchange); no owner or
-  full M1.23 gate closes from Linux tests. Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
+- Owner selected native object-table CSV export over the schema queue; packaged Windows checks are
+  [OWNER_SITTING G](plans/OWNER_SITTING.md#g--object-interchange). Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
   for columns/units and nested JSON conventions before extending interchange. GeoJSON,
   imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
-- Packaged Windows PNG acceptance is OWNER_SITTING G2. Read
-  [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
+- Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
 ## AI automation follow-up (D344–D350)
@@ -113,8 +105,6 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
   Reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked yet.
-- Windows acceptance is [OWNER_SITTING H](plans/OWNER_SITTING.md#h--desktop-automation-on-windows)
-  (H1 for D335/D336, H2 for D344–D350).
 
 ## Order of level work (D378)
 
@@ -130,23 +120,11 @@ field is optional, Micro reads it as a default and never a cap, and low site spe
 allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
 a planning-level method (otherwise back to the owner).
 
-## Road-model review follow-up (D382–D385)
-
-Batches A–D are done (D382–D385). What is left waits on the owner:
-- **On Windows:** OWNER_SITTING E24 (the Street segments tab's multi-row *Apply template* and the *Find
-  crossings* warning at 100/150/200 %, Thai and English).
-- **For the owner:** OWNER_SITTING B29 (generated Node size, one turn key across levels, explicit
-  Street segment directions, partial HCM totals, HCM storage, CountSet).
-
-## Next session — the owner's pick (S5 is complete, D327–D332)
+## Next session — the owner's pick
 
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Other picks:**
-  - **Owner checks:** desktop automation (D335/D336) is OWNER_SITTING H1, the vehicle library and
-    colours (D333/D334) C13, and the OSM real-study check (M1.28 MAP10) E11. A session prepares
-    the packaged build and the sheet; it does not record a verdict.
 - **Drawing level is not separation (D201 B3, booked 2026-10-16, not yet done):**
   `automatic_conflicts.cpp` still skips path pairs whose drawing `level` differs, against
   [M3_CONTRACT](reference/M3_CONTRACT.md) §1 ("Drawing level is not physical separation"); D201
@@ -171,16 +149,13 @@ Batches A–D are done (D382–D385). What is left waits on the owner:
   marker (D13, D369) and the owner gates; this item does not authorize closing those gates.
 - **Clamps:** 5 left on M2.6 (pull-out 1, late catch-up 4), the lane lab's 1 (D252) and source
   clearance (D108); `joinAnticipation` ships off (D255); D95 stays off.
-- **Node detail:** the booked local performance target is met after D353: 16 unconnected Nodes
-  0.609 s (Release, median of three), below 1.5 s, with byte-identical documents. No further
-  optimization is booked. Keep `multra-node-detail-benchmark 16 output.json` as the regression
-  measurement; re-profile before proposing more work.
-  - `automaticConflicts` remains network-wide. Scoping to Node bounds or incremental updates
-    would still need the owner's choice; this optimization changes neither scope nor output.
-- **Analytical junction capacity (M13, D370):** contract [NODE_ANALYSIS](reference/NODE_ANALYSIS.md);
-  A1 (D372) and A2 (D373, D374: shared lane groups, critical v/c, back of queue) implemented. Next
-  A3 implemented (D377, [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md) §7). Open, for the owner: a permitted far
-  turn in l+sl, lr or one-lane layouts (refused, narrows D375 1a) and Q1 for permitted lane groups. A4 only when asked.
+- **Node detail:** no optimization booked (target met, D353; measurements in
+  [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)). Re-profile before proposing more work;
+  scoping `automaticConflicts` below network-wide is the owner's choice.
+- **Analytical junction capacity (M13):** open for the owner after A3
+  ([NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md) §7): a permitted far turn in l+sl, lr or
+  one-lane layouts (refused, narrows D375 1a) and Q1 for permitted lane groups. A4 only when asked.
 - **Engine spread costs, not booked:** `closestVehicle` 8 %, per-tick `Vehicle` moves 6 % (D283).
-- **Owner checks on Windows:** D318's dialogs are OWNER_SITTING F4, E1's tool glyphs and click rule
-  (D306) E23, and paint E22. M2.8 has only owner checks left.
+- **Owner checks** (Windows, packaged builds, appearance) are only in
+  [OWNER_SITTING](plans/OWNER_SITTING.md); a session prepares the build and sheet, never a
+  verdict. M2.8 has only owner checks left.
