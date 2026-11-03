@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-02 — main CI green again: node-ui and object-groups-ui
+
+- **Owner request:** fix the failing build (Native C++ run 692 on main, Linux and Windows) and rebuild.
+- **node-ui:** the test still expected a resting Node outlined in ink; D434 draws it as a shade with
+  no pen. The test now checks that the cleared Node has no outline.
+- **object-groups-ui:** the fixed icons-only rail (palette max width = its width, 96ad27a) made Qt
+  hold the canvas dock at its old height when Results → Problems showed the docks again, and the
+  window grew 860 → 903 px. `setWorkspacePreset` now lifts the rail cap before showing/hiding docks;
+  `resizePalette` sets it again, so the rail stays fixed afterwards.
+- **Verification:** release preset build, `ctest` 272/272 and `check` pass locally (Qt 6.4, offscreen).
+
 ## 2026-11-02 — session-path docs: one copy of each standing rule and owner item
 
 - **Owner request:** optimize docs/AI context; owner chose the recommended items 3 → 2 → 1.

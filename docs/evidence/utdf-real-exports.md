@@ -85,6 +85,15 @@ It is a draft: its timing, PHF, %HV and NB/SB lanes are not yet the sheet's (UTD
   - The phase that ends the cycle has `End` = cycle length (60). The Synchro 10.1 file wrote 0 for the same case.
   - Default `Taper` is 25 ft.
 
+**Draft 2** ([`u0-vistro-draft2.csv`](../../tests/data/utdf/u0-vistro-draft2.csv)) matches the
+sheet's lanes, pockets, names, volumes, PHF and %HV. Its timing is still Vistro's 60 s four-phase
+plan. It adds three observations:
+- Pocket `Storage`/`StLanes` are written on the **through** column (NBT, EBT …), not on the turn
+  column that owns the pocket. Vistro also reads them on the turn column (`u0-handwritten.csv`).
+- `[Links] Lanes` is 2 on every leg although the stop line has 3 lanes: Vistro's writer counts
+  full lanes only. The owner chose to count pockets (D440).
+- `Allow RTOR` is 0 here and was 1 in draft 1, so it follows a project setting.
+
 ## What remains for U0
 
 - The §1–§3 junction redone in Vistro to match the sheet, with its export and HCM 7 report (D438; UTDF_PROBE §6 row 16).

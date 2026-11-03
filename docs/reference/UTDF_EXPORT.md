@@ -44,10 +44,10 @@ right-hand, in the MIT-licensed `utdf2gmns` 1.2.5 package from PyPI (`engine/sig
 |---|---|---|
 | `[Network]`, `Network Settings` | `RECORDNAME,DATA` | `UTDFVERSION` 8, `Metric` 1 (§4), and the defaults the project has: `yellowTime`, `allRedTime`, `HV` (a fraction), `PHF`, `DefWidth`, `DefFlow` |
 | `[Nodes]`, `Node Data` | `INTID,TYPE,X,Y,Z,DESCRIPTION,CBD,Inside Radius,Outside Radius,Roundabout Lanes,Circle Speed` | the Node number (§5), `TYPE` (0 signalised, 1 external; unsignalised unknown), X and Y (§4), the name, `CBD` |
-| `[Links]`, `Link Data` | `RECORDNAME,INTID,NB,SB,EB,WB,NE,NW,SE,SW` | for each Node's inbound Link by direction: `Up ID`, `Lanes`, `Name`, `Distance`, `Speed`, `Time`, `Grade`, `Median`. External ends list the Link arriving at them |
-| `[Lanes]`, `Lane Group Data` | `RECORDNAME,INTID,NBL,NBT,NBR,SBL,…,WBR,PED,HOLD` (the sample adds `NE…`/`SW…` and second-turn columns such as `EBL2`) | `Up Node`, `Dest Node`, `Lanes`, `Shared`, `Width`, `Storage`, `Taper`, `StLanes`, `Grade`, `Speed`, `Phase1`, `PermPhase1`, `IdealFlow`, `Volume`, `PHF`, `HeavyVehicles` (per cent), `BusStops` |
-| `[Timeplans]`, `Timing Plan Settings` | `RECORDNAME,INTID,DATA` | `Control Type`, `Cycle Length`, `Reference Phase`, `Offset` |
-| `[Phases]`, `Phasing Data` | `RECORDNAME,INTID,D1,…,D8` | `BRP`, `MinGreen`, `MaxGreen`, `Yellow`, `AllRed`, `Recall`, `Start`, `End`, `Yield` |
+| `[Links]`, `Link Data` | `RECORDNAME,INTID,NB,SB,EB,WB,NE,NW,SE,SW` | for each Node's inbound Link by direction: `Up ID`, `Lanes` (full lanes plus pockets at the stop line, D440), `Name`, `Distance`, `Speed`, `Time`, `Grade`, `Median`. External ends list the Link arriving at them |
+| `[Lanes]`, `Lane Group Data` | `RECORDNAME,INTID,NBL,NBT,NBR,SBL,…,WBR,PED,HOLD` (the sample adds `NE…`/`SW…` and second-turn columns such as `EBL2`) | `Up Node`, `Dest Node`, `Lanes`, `Shared`, `Width`, `Storage`, `Taper`, `StLanes` (on the turn column that owns the pocket; Vistro reads it there, though its writer puts it on the through column), `Grade`, `Speed`, `Phase1`, `PermPhase1`, `IdealFlow`, `Volume`, `PHF`, `HeavyVehicles` (per cent), `BusStops` |
+| `[Timeplans]`, `Timing Plan Settings` | `RECORDNAME,INTID,DATA` | every Synchro 10.1 record in its order: `Control Type`, `Cycle Length`, `Reference Phase` and `Offset` authored, the rest per D439 |
+| `[Phases]`, `Phasing Data` | `RECORDNAME,INTID,D1,…,D8` | every Synchro 10.1 record in its order: `BRP`, `MinGreen`, `MaxGreen`, `Yellow`, `AllRed`, `Recall`, `Start`, `End` and `Yield` authored, the rest per D439 |
 
 The sample carries more rows than MULTRA authors. MULTRA leaves out the detector rows, `Growth`,
 `LostTime`, `Allow RTOR`, `SatFlow*`, `Lane Group Flow`, the walk and pedestrian rows, the Link
@@ -55,8 +55,9 @@ mandatory and positioning distances, and the curve points. The curve points are 
 reaches them (§4). The codes the hand-written file guesses (shared lanes, control type, recall,
 `BRP`) are listed in [UTDF_PROBE §5](../plans/UTDF_PROBE.md#5-what-the-hand-written-file-assumes-checked-by-step-4).
 
-A field MULTRA has no value for is written empty, so the receiving program applies its own default
-and says so; the export report lists each one. MULTRA never writes a value it did not author.
+A field MULTRA has no value for is written empty, so the receiving program applies its own default;
+the export report lists each one. The exception is the timing records, which Vistro refuses when
+empty: they get D439's neutral pretimed values, also listed.
 
 **Vistro import (U0, 2026-11-03):** `u0-handwritten.csv`'s geometry, lanes, pockets and volumes
 import; its timing is refused (`CellNotFound: Row not found: Row = 3, Column = 1`). It lacks

@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
+
+- **Owner:** re-exported the U0 junction from Vistro. Draft 2 matches §1–§2: lanes, pockets,
+  names, volumes, PHF 0.92 and HV 5 %. The timing is still 60 s with four phases; the owner will
+  set §3 and export again.
+- **Owner choice (D440):** `[Links] Lanes` counts the pocket, 3 at the U0 junction. Vistro's own
+  writer counts only full lanes (2) and puts pocket storage on the through column. MULTRA keeps
+  storage on the turn column, which Vistro reads.
+- **Committed:** `u0-vistro-draft2.csv` byte for byte, and the probe `u0-handwritten-v3.csv`, which
+  is v2-filled with the junction legs' `Lanes` 3 (UTDF_PROBE §6 row 17).
+- **Fixed:** UTDF_EXPORT §3 still said MULTRA never writes unauthored values; it now cites D439.
+  Rows 15–16 of UTDF_PROBE §6 had text outside their last cell.
+- **Check:** `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro switches an import to right-hand; no median
 
 - **Owner:**
@@ -118,14 +132,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `drawing_level_is_not_separation…`; two new rows cover the overpass and level separators. All three
   failed before the fix. Shipped projects have every Link at level 0, so nothing they derive changes.
 - **Verification:** release build, `ctest` 272/272, desktop/headless builds and `check`; `multra-check-docs`.
-
-## 2026-11-02 — main CI green again: node-ui and object-groups-ui
-
-- **Owner request:** fix the failing build (Native C++ run 692 on main, Linux and Windows) and rebuild.
-- **node-ui:** the test still expected a resting Node outlined in ink; D434 draws it as a shade with
-  no pen. The test now checks that the cleared Node has no outline.
-- **object-groups-ui:** the fixed icons-only rail (palette max width = its width, 96ad27a) made Qt
-  hold the canvas dock at its old height when Results → Problems showed the docks again, and the
-  window grew 860 → 903 px. `setWorkspacePreset` now lifts the rail cap before showing/hiding docks;
-  `resizePalette` sets it again, so the rail stays fixed afterwards.
-- **Verification:** release preset build, `ctest` 272/272 and `check` pass locally (Qt 6.4, offscreen).
