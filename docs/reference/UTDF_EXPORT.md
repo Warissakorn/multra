@@ -120,15 +120,13 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
   - **Vistro 2026 has one** (`LEFTHANDTRAFFIC` in its own network file), but its UTDF export drops it,
     and **importing UTDF switches a left-hand project to right-hand** (owner, 2026-11-03). The export
     report must tell the user to set left-hand again after import in geometric mode.
-  - **Proposed companion file (U0 rows 18–19, pending):** besides the UTDF file, write a
-    Visum-format `.vistromerge` patch for Vistro's *Import → Merge Data*. It carries what UTDF
-    cannot:
-    - `$NETWORK` `LEFTHANDTRAFFIC`;
-    - `$NODE` `ICAMETHODSIGNALIZED` (HCM 7th Edition);
-    - `$LEG` `HASCISLAND`/`CISLANDWIDTH`/`CISLANDLEN` for medians.
-
-    The field names come from the owner's Vistro 2026 network export. If the merge fails, the
-    report's manual steps remain.
+  - **A UTDF import can never be left-hand in Vistro** (U0 rows 18–20). Merging a patch sets
+    the median (`$LEG` `HASCISLAND`/`CISLANDWIDTH`) but not `LEFTHANDTRAFFIC` or the HCM method.
+    Vistro also refuses to switch to left-hand while a right-hand junction exists.
+  - **Proposed Vistro route (pending row 21):** write the whole network in Vistro's own Visum net
+    format (`.vistromerge`), to be merged into an empty project already set to left-hand. UTDF
+    stays the route to Synchro. The two probe files differ only in how lane indices count under
+    left-hand traffic.
   - **The UTDF file never carries the driving side**: neither writer has a record for it.
 - **The user chooses a mode at export (D437):**
   - **Geometric (default).** Vistro's own writer does the same with left-hand traffic on (far turn

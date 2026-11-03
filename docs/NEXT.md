@@ -85,8 +85,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
     - importing UTDF switches Vistro to right-hand;
     - Vistro shows no median and opens imports as HCM 2010;
     - Vistro writes feet but reads metres.
-  - **Probe in progress (rows 18–20; v1 merge left it right-hand, v2 pending):** a `.vistromerge` patch through Vistro's *Merge Data*
-    could restore left-hand traffic, HCM 7th and medians that UTDF loses.
+  - **Probe in progress (row 21):** a UTDF import can never be left-hand in Vistro (rows 18–20).
+    The proposed Vistro route is the whole network in Vistro's own `.vistromerge` format, merged
+    into an empty left-hand project. UTDF stays the route to Synchro.
   - **When the owner picks U1:** start from UTDF_EXPORT §7. Report any effect on compass/NEMA
     mapping before further signal work.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl

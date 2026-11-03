@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — U0 golden file moves to Vistro (D438)
+
+- **Owner:** Synchro cannot create UTDF. They asked for another route and chose Vistro as the
+  reference (D438).
+- **Changed:**
+  - UTDF_PROBE §4 now has Vistro steps: draw left-hand and metric, run HCM 7, export `u0-vistro.csv`, find the far-turn column, import the hand-written file, then the licence question.
+  - UTDF_PROBE §6: rows 2/4/5/8 are closed as not possible; rows 9–12 are added.
+  - UTDF_EXPORT §8, UT0 and UT10, OWNER_SITTING I.1–I.3, `tests/data/utdf/README.md` and NEXT are updated to match.
+- **Kept:** Synchro's dialect stays recorded from the real 10.1 export. Synchro only checks the
+  import, if it can import UTDF. U1 stays blocked. `multra-check-docs` passes.
+
 ## 2026-11-03 — Synchro is right-hand only; left-hand UTDF export modes (D437)
 
 - **Owner answer (U0 item 4):** Synchro builds right-hand traffic only. The upload `2569-P01.csv`
