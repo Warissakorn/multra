@@ -1,7 +1,7 @@
 # UTDF files (M14)
 
 Data for the UTDF export ([UTDF_EXPORT](../../../docs/reference/UTDF_EXPORT.md)). Kept byte for byte
-(CRLF, no BOM, as Synchro writes), so `.gitattributes` turns off line-ending conversion here.
+(CRLF, no BOM, as Synchro writes; the `.vistromerge` patch keeps Vistro's BOM), so `.gitattributes` turns off line-ending conversion here.
 
 | File | What it is |
 |---|---|
@@ -11,6 +11,7 @@ Data for the UTDF export ([UTDF_EXPORT](../../../docs/reference/UTDF_EXPORT.md))
 | `u0-vistro-draft1.csv` | The owner's first Vistro 2026 export of the U0 junction (metric and left-hand on; *File → Export → Synchro…*), committed with permission on 2026-11-03. **Draft, not the golden file:** cycle 60 with phases 2/4/6/8, PHF 1.00, HV 2 %, and NB/SB lanes differ from the sheet. Kept for Vistro's dialect: written in feet, far turn under `EBR` |
 | `u0-vistro-draft2.csv` | The owner's second Vistro 2026 export of the U0 junction (2026-11-03). Matches the sheet's lanes, pockets, names, volumes, PHF 0.92 and HV 5 %. **Draft, not the golden file:** the timing is still 60 s with phases 2/4/6/8. Shows Vistro writes pocket storage on the through column and `[Links] Lanes` without pockets |
 | `u0-handwritten-v3.csv` | `u0-handwritten-v2-filled.csv` with the junction legs' `[Links] Lanes` set to 3 (full lanes plus the pocket, D440). Probes how Vistro reads it (UTDF_PROBE §6 row 17). **Imported by Vistro 2026 with the pockets as pockets and the same result as v2-filled (2026-11-03)** |
+| `u0-patch-v1.vistromerge` | MULTRA-written Vistro *Merge Data* patch (Visum net format 19, UTF-8 with BOM, CRLF): left-hand traffic and HCM 7th for node 1. Probes the companion-file idea (UTDF_PROBE §6 row 18) |
 
 `u0-vistro.csv` is the owner's Vistro 2026 export of the U0 junction (metric and left-hand on), the
 golden file for UT0 (D438), committed with permission on 2026-11-03. It matches the sheet's

@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — U0 limits: a Vistro Merge Data patch
+
+- **Owner:** asked how to handle UTDF's limits: the import switches to right-hand, there is no
+  median, and Vistro opens imports as HCM 2010. Vistro has *File → Import → Merge Data*.
+- **Found:** the owner's Vistro network export (Visum net format 19) has `$NETWORK
+  LEFTHANDTRAFFIC`, `$NODE ICAMETHODSIGNALIZED`/`USELOCALICAMETHOD` and `$LEG HASCISLAND`/
+  `CISLANDWIDTH`/`CISLANDLEN`.
+- **Added:** `u0-patch-v1.vistromerge`, which sets left-hand and HCM 7th for node 1. `.gitattributes`
+  now covers `*.vistromerge`. UTDF_PROBE rows 18–19, UTDF_EXPORT §6 (proposed companion file),
+  the README and NEXT are updated. The median patch waits on Vistro's link numbers after import (row 19).
+- **Check:** `multra-check-docs` passes.
+
 ## 2026-11-03 — U0 golden file committed
 
 - **Owner:** exported again from Vistro and accepted it as the golden file, `u0-vistro.csv`
@@ -112,20 +124,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   utdf-real-exports and NEXT.
 - **Still open:** the §1 export, both imports of the hand-written file, and whether Links `Lanes`
   counts pockets. U1 stays blocked. `multra-check-docs` passes.
-
-## 2026-11-03 — U0 partly answered from real Synchro/Vistro exports
-
-- **Owner supplied:** UTDF exports and project files from two real studies: Synchro 10.1, Vistro 2026
-  (with its `.vistromerge`) and an encrypted Synchro 12.0 `.syn`. None is the UTDF_PROBE §1 junction.
-- **Recorded, not committed:** licence and project data are unknown, so only section and field names
-  and codes went into [utdf-real-exports](evidence/utdf-real-exports.md). UTDF_PROBE §6 rows 3/7/8,
-  OWNER_SITTING I and NEXT now say what is settled.
-- **Findings:**
-  - Node TYPE 3 is unsignalised.
-  - A phase that ends at the cycle wrap is written `End 0`.
-  - `Yield` = End − yellow − all-red.
-  - Vistro's dialect adds U/L2/R2 movements, `D1…D32` phases and `Phase1…4`.
-  - Vistro has a left-hand setting, but UTDF does not carry it.
-- **Still open:** the §1 export, the far-turn column, Synchro's left-hand setting, both imports of
-  the hand-written file, and whether Links `Lanes` counts pockets. U1 stays blocked; UTDF_EXPORT
-  is unchanged.

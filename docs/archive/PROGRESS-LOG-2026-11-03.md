@@ -2,6 +2,23 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — U0 partly answered from real Synchro/Vistro exports
+
+- **Owner supplied:** UTDF exports and project files from two real studies: Synchro 10.1, Vistro 2026
+  (with its `.vistromerge`) and an encrypted Synchro 12.0 `.syn`. None is the UTDF_PROBE §1 junction.
+- **Recorded, not committed:** licence and project data are unknown, so only section and field names
+  and codes went into [utdf-real-exports](../evidence/utdf-real-exports.md). UTDF_PROBE §6 rows 3/7/8,
+  OWNER_SITTING I and NEXT now say what is settled.
+- **Findings:**
+  - Node TYPE 3 is unsignalised.
+  - A phase that ends at the cycle wrap is written `End 0`.
+  - `Yield` = End − yellow − all-red.
+  - Vistro's dialect adds U/L2/R2 movements, `D1…D32` phases and `Phase1…4`.
+  - Vistro has a left-hand setting, but UTDF does not carry it.
+- **Still open:** the §1 export, the far-turn column, Synchro's left-hand setting, both imports of
+  the hand-written file, and whether Links `Lanes` counts pockets. U1 stays blocked; UTDF_EXPORT
+  is unchanged.
+
 ## 2026-11-03 — drawing level is not separation (D436, D201 B3)
 
 - **Owner request:** continue NEXT. Every other open line waits on the owner, so this session took the
