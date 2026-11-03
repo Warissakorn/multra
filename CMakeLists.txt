@@ -94,7 +94,7 @@ target_sources(multra_project PRIVATE src/project/node_model_demand.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_fill.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_source_codec.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_comparison.cpp)
-target_sources(multra_project PRIVATE src/project/utdf_legs.cpp src/project/utdf_export.cpp)
+target_sources(multra_project PRIVATE src/project/utdf_legs.cpp src/project/utdf_signals.cpp src/project/utdf_export.cpp)
 target_link_libraries(multra_project PUBLIC multra_model multra_eval multra_runner Threads::Threads
     nlohmann_json::nlohmann_json PRIVATE multra_options)
 
@@ -250,7 +250,7 @@ if(BUILD_TESTING)
     target_sources(multra-tests PRIVATE tests/node_model_demand_tests.cpp tests/node_model_demand_edge_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_model_stub_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_analysis_source_tests.cpp)
-    target_sources(multra-tests PRIVATE tests/utdf_export_tests.cpp)
+    target_sources(multra-tests PRIVATE tests/utdf_export_tests.cpp tests/utdf_signal_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_analysis_comparison_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_editor_tests.cpp tests/junction_corridor_conflict_tests.cpp tests/transition_tests.cpp tests/transition_reference_tests.cpp tests/junction_layout_tests.cpp tests/junction_template_tests.cpp tests/junction_recipe_tests.cpp tests/junction_command_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_fill_tests.cpp tests/junction_fill_run_tests.cpp tests/junction_signal_tests.cpp tests/junction_t_tests.cpp tests/junction_polygon_tests.cpp tests/junction_signal_reference_tests.cpp tests/junction_signal_run_tests.cpp tests/junction_fill_completion_tests.cpp tests/junction_fill_parity_tests.cpp

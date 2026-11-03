@@ -52,10 +52,11 @@ double walkLength(Point from, const Walk& walk, Point to) {
     line.push_back(to);
     return polylineLength(line);
 }
-Plan plan(const Network& n) {
+Plan plan(const Network& n, const std::set<std::string>& excluded) {
     Plan out;
     std::set<int> numbers;
     for (const auto& node : n.nodes) {
+        if (excluded.count(node.id)) continue;
         const auto refuse = [&](const char* code, std::string text) { out.refusals.push_back({code, node.id, std::move(text)}); };
         if (!nodeHasDetail(n, node)) { refuse("UTDF_NO_DETAIL", "The Node has no Micro detail; it is left out."); continue; }
         auto layout = approachLayout(n, node);

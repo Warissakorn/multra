@@ -7,7 +7,65 @@
     "x": 0.0,
     "y": 0.0
   },
-  "definition": null,
+  "definition": {
+    "duration": 180.0,
+    "inputs": [],
+    "routes": [],
+    "signalControllers": [
+      {
+        "cycle": 100.0,
+        "groups": [
+          {
+            "amber": 3.0,
+            "greenEnd": 96.0,
+            "greenStart": 86.0,
+            "name": "EBR",
+            "number": 1
+          },
+          {
+            "amber": 3.0,
+            "greenEnd": 40.0,
+            "greenStart": 0.0,
+            "name": "WB",
+            "number": 2
+          },
+          {
+            "amber": 3.0,
+            "greenEnd": 82.0,
+            "greenStart": 44.0,
+            "name": "SB",
+            "number": 4
+          },
+          {
+            "amber": 3.0,
+            "greenEnd": 96.0,
+            "greenStart": 86.0,
+            "name": "WBR",
+            "number": 5
+          },
+          {
+            "amber": 3.0,
+            "greenEnd": 40.0,
+            "greenStart": 0.0,
+            "name": "EB",
+            "number": 6
+          },
+          {
+            "amber": 3.0,
+            "greenEnd": 82.0,
+            "greenStart": 44.0,
+            "name": "NB",
+            "number": 8
+          }
+        ],
+        "id": "u0-signal",
+        "name": "U0",
+        "offset": 0.0
+      }
+    ],
+    "signalPrograms": [],
+    "timeStep": 0.1
+  },
   "format": "TrafficSim",
   "network": {
     "connectors": [
@@ -218,7 +276,7 @@
             "y": 998.375
           }
         ],
-        "id": "connector-12",
+        "id": "connector-15",
         "laneBlend": [
           0.0,
           1.0
@@ -228,8 +286,8 @@
         "level": 0,
         "name": "",
         "to": {
-          "laneId": "lane-11",
-          "linkId": "link-10"
+          "laneId": "lane-14",
+          "linkId": "link-13"
         },
         "toLaneCount": 1
       },
@@ -251,7 +309,7 @@
             "y": 1001.625
           }
         ],
-        "id": "connector-14",
+        "id": "connector-17",
         "laneBlend": [
           0.0,
           1.0
@@ -262,16 +320,16 @@
         "level": 0,
         "name": "",
         "to": {
-          "laneId": "lane-13",
-          "linkId": "link-10"
+          "laneId": "lane-16",
+          "linkId": "link-13"
         },
         "toLaneCount": 2
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-11",
-          "linkId": "link-10"
+          "laneId": "lane-14",
+          "linkId": "link-13"
         },
         "fromLaneCount": 2,
         "geometry": [
@@ -296,7 +354,7 @@
             "y": 998.375
           }
         ],
-        "id": "connector-16",
+        "id": "connector-19",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -311,8 +369,8 @@
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-11",
-          "linkId": "link-10"
+          "laneId": "lane-14",
+          "linkId": "link-13"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -337,7 +395,7 @@
             "y": 990.0
           }
         ],
-        "id": "connector-17",
+        "id": "connector-20",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -352,8 +410,8 @@
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-15",
-          "linkId": "link-10"
+          "laneId": "lane-18",
+          "linkId": "link-13"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -378,7 +436,7 @@
             "y": 1010.0
           }
         ],
-        "id": "connector-18",
+        "id": "connector-21",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -408,7 +466,7 @@
             "y": 950.0
           }
         ],
-        "id": "connector-21",
+        "id": "connector-27",
         "laneBlend": [
           0.0,
           1.0
@@ -418,8 +476,8 @@
         "level": 0,
         "name": "",
         "to": {
-          "laneId": "lane-24",
-          "linkId": "link-19"
+          "laneId": "lane-30",
+          "linkId": "link-25"
         },
         "toLaneCount": 2
       },
@@ -441,7 +499,7 @@
             "y": 950.0
           }
         ],
-        "id": "connector-23",
+        "id": "connector-29",
         "laneBlend": [
           0.0,
           1.0
@@ -451,16 +509,16 @@
         "level": 0,
         "name": "",
         "to": {
-          "laneId": "lane-22",
-          "linkId": "link-19"
+          "laneId": "lane-28",
+          "linkId": "link-25"
         },
         "toLaneCount": 1
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-20",
-          "linkId": "link-19"
+          "laneId": "lane-26",
+          "linkId": "link-25"
         },
         "fromLaneCount": 2,
         "geometry": [
@@ -485,7 +543,7 @@
             "y": 1010.0
           }
         ],
-        "id": "connector-25",
+        "id": "connector-31",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -500,8 +558,8 @@
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-24",
-          "linkId": "link-19"
+          "laneId": "lane-30",
+          "linkId": "link-25"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -526,7 +584,7 @@
             "y": 998.375
           }
         ],
-        "id": "connector-26",
+        "id": "connector-32",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -541,8 +599,8 @@
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-22",
-          "linkId": "link-19"
+          "laneId": "lane-28",
+          "linkId": "link-25"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -567,7 +625,7 @@
             "y": 998.375
           }
         ],
-        "id": "connector-27",
+        "id": "connector-33",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -597,7 +655,7 @@
             "y": 1001.625
           }
         ],
-        "id": "connector-30",
+        "id": "connector-39",
         "laneBlend": [
           0.0,
           1.0
@@ -607,8 +665,8 @@
         "level": 0,
         "name": "",
         "to": {
-          "laneId": "lane-29",
-          "linkId": "link-28"
+          "laneId": "lane-38",
+          "linkId": "link-37"
         },
         "toLaneCount": 1
       },
@@ -630,7 +688,7 @@
             "y": 998.375
           }
         ],
-        "id": "connector-32",
+        "id": "connector-41",
         "laneBlend": [
           0.0,
           1.0
@@ -641,16 +699,16 @@
         "level": 0,
         "name": "",
         "to": {
-          "laneId": "lane-31",
-          "linkId": "link-28"
+          "laneId": "lane-40",
+          "linkId": "link-37"
         },
         "toLaneCount": 2
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-29",
-          "linkId": "link-28"
+          "laneId": "lane-38",
+          "linkId": "link-37"
         },
         "fromLaneCount": 2,
         "geometry": [
@@ -675,7 +733,7 @@
             "y": 1001.625
           }
         ],
-        "id": "connector-34",
+        "id": "connector-43",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -690,8 +748,8 @@
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-29",
-          "linkId": "link-28"
+          "laneId": "lane-38",
+          "linkId": "link-37"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -716,7 +774,7 @@
             "y": 1010.0
           }
         ],
-        "id": "connector-35",
+        "id": "connector-44",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -731,8 +789,8 @@
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-33",
-          "linkId": "link-28"
+          "laneId": "lane-42",
+          "linkId": "link-37"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -757,7 +815,7 @@
             "y": 990.0
           }
         ],
-        "id": "connector-36",
+        "id": "connector-45",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
@@ -1051,19 +1109,19 @@
             "y": 1000.0
           }
         ],
-        "id": "link-10",
+        "id": "link-13",
         "laneOffset": -1.625,
         "lanes": [
           {
-            "id": "lane-11",
+            "id": "lane-14",
             "width": 3.25
           },
           {
-            "id": "lane-13",
+            "id": "lane-16",
             "width": 3.25
           },
           {
-            "id": "lane-15",
+            "id": "lane-18",
             "width": 3.25
           }
         ],
@@ -1084,19 +1142,19 @@
             "y": 990.0
           }
         ],
-        "id": "link-19",
+        "id": "link-25",
         "laneOffset": 1.625,
         "lanes": [
           {
-            "id": "lane-24",
+            "id": "lane-30",
             "width": 3.25
           },
           {
-            "id": "lane-20",
+            "id": "lane-26",
             "width": 3.25
           },
           {
-            "id": "lane-22",
+            "id": "lane-28",
             "width": 3.25
           }
         ],
@@ -1117,19 +1175,19 @@
             "y": 1000.0
           }
         ],
-        "id": "link-28",
+        "id": "link-37",
         "laneOffset": -1.625,
         "lanes": [
           {
-            "id": "lane-29",
+            "id": "lane-38",
             "width": 3.25
           },
           {
-            "id": "lane-31",
+            "id": "lane-40",
             "width": 3.25
           },
           {
-            "id": "lane-33",
+            "id": "lane-42",
             "width": 3.25
           }
         ],
@@ -1146,13 +1204,92 @@
               "link": "link-1"
             },
             {
-              "link": "link-10"
+              "link": "link-13"
             },
             {
-              "link": "link-19"
+              "link": "link-25"
             },
             {
-              "link": "link-28"
+              "link": "link-37"
+            }
+          ],
+          "baseSaturationFlow": {
+            "source": "UTDF_PROBE sheet",
+            "value": 1900.0
+          },
+          "peakHourFactor": 0.92,
+          "turns": [
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-1",
+              "out": "leg2-out",
+              "vehiclesPerHour": 80.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-1",
+              "out": "leg3-out",
+              "vehiclesPerHour": 280.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-1",
+              "out": "leg4-out",
+              "vehiclesPerHour": 120.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-13",
+              "out": "leg3-out",
+              "vehiclesPerHour": 100.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-13",
+              "out": "leg4-out",
+              "vehiclesPerHour": 850.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-13",
+              "out": "leg1-out",
+              "vehiclesPerHour": 180.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-25",
+              "out": "leg4-out",
+              "vehiclesPerHour": 90.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-25",
+              "out": "leg1-out",
+              "vehiclesPerHour": 300.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-25",
+              "out": "leg2-out",
+              "vehiclesPerHour": 110.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-37",
+              "out": "leg1-out",
+              "vehiclesPerHour": 120.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-37",
+              "out": "leg2-out",
+              "vehiclesPerHour": 900.0
+            },
+            {
+              "heavyVehiclePercent": 5.0,
+              "in": "link-37",
+              "out": "leg3-out",
+              "vehiclesPerHour": 200.0
             }
           ]
         },
@@ -1179,9 +1316,166 @@
         ]
       }
     ],
-    "signalHeads": []
+    "signalHeads": [
+      {
+        "connectorId": "connector-7",
+        "controllerId": "u0-signal",
+        "groupNumber": 4,
+        "id": "head-10",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-8",
+        "controllerId": "u0-signal",
+        "groupNumber": 4,
+        "id": "head-11",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-9",
+        "controllerId": "u0-signal",
+        "groupNumber": 4,
+        "id": "head-12",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-19",
+        "controllerId": "u0-signal",
+        "groupNumber": 2,
+        "id": "head-22",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-20",
+        "controllerId": "u0-signal",
+        "groupNumber": 2,
+        "id": "head-23",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-21",
+        "controllerId": "u0-signal",
+        "groupNumber": 5,
+        "id": "head-24",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-31",
+        "controllerId": "u0-signal",
+        "groupNumber": 8,
+        "id": "head-34",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-32",
+        "controllerId": "u0-signal",
+        "groupNumber": 8,
+        "id": "head-35",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-33",
+        "controllerId": "u0-signal",
+        "groupNumber": 8,
+        "id": "head-36",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-43",
+        "controllerId": "u0-signal",
+        "groupNumber": 6,
+        "id": "head-46",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-44",
+        "controllerId": "u0-signal",
+        "groupNumber": 6,
+        "id": "head-47",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      },
+      {
+        "connectorId": "connector-45",
+        "controllerId": "u0-signal",
+        "groupNumber": 1,
+        "id": "head-48",
+        "lane": {
+          "laneId": "",
+          "linkId": ""
+        },
+        "name": "",
+        "position": 0.5,
+        "programId": ""
+      }
+    ]
   },
-  "nextId": 37,
+  "nextId": 49,
   "revision": 0,
   "schemaVersion": 65
 }

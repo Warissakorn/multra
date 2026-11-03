@@ -5,6 +5,7 @@
 #include "../model/network/approach_layout.hpp"
 #include <map>
 #include <optional>
+#include <set>
 
 namespace multra::utdf {
 // A leg walked to its far end: the Links in travel order, and the written Node (index into
@@ -25,7 +26,8 @@ struct Plan {
     std::map<std::pair<std::size_t,std::size_t>,int> inEnd, outEnd; // (node, leg) -> external number
     std::vector<UtdfNote> refusals;
 };
-Plan plan(const Network&);
+// `excluded` Node ids are left out without a note (the caller notes them).
+Plan plan(const Network&, const std::set<std::string>& excluded = {});
 Point centroid(const std::vector<Point>& polygon);
 // Along the Links' polylines, with straight joins, from `from` to `to`.
 double walkLength(Point from, const Walk&, Point to);

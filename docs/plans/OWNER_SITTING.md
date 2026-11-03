@@ -495,5 +495,5 @@ there (§6) verbatim and dated; these items only say what must hold.
    UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both
    modes (D437). A UTDF import can never be left-hand in Vistro, and Merge Data ignores the
    setting; Vistro uses mirrored mode plus a median patch (D441).
-5. **First MULTRA-written file (UT10, D442).** Import `tests/data/utdf/u1-u0-junction-geometric.csv` (geometry
-   only) into Vistro: do nodes, legs, lanes and pockets match §1–§2; are empty cells and `TYPE` 3 accepted? *Owner:*
+5. **First MULTRA-written file (UT10, D442, D443).** Import `tests/data/utdf/u2-u0-junction-geometric.csv` into
+   Vistro: do geometry, volumes and timing match §1–§3 (as v3 did); are the empty `[Network]` cells accepted? *Owner:*

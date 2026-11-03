@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — U0: the refused timing leaves no cycle; HCM method is not in UTDF
+
+- **Owner screenshot** of the original `u0-handwritten.csv` imported into Vistro: no cycle, empty
+  rings, *ICA error*, all delays 0. This confirms the refused timing; the v2 files are not yet tried.
+- **HCM method:** Vistro opens an import as HCM 2010. No UTDF record carries the method, and the
+  owner sets HCM 7th after import. The export report should say so.
+- **Updated:** UTDF_PROBE §6 row 6, UTDF_EXPORT §3 and utdf-real-exports. `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro draft 1 of the U0 junction
 
 - **Owner:** exported the U0 sheet from Vistro 2026 (metric, left-hand on), allowed the commit, and

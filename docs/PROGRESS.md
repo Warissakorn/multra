@@ -6,6 +6,31 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — UTDF U2a: phases, volumes and timing (D443)
+
+- **Owner:**
+  - U2a, then U2b, in one session;
+  - a Node whose controller fails NEMA is left out unless the user opts to export it unsignalised;
+  - the Vistro median patch stays a report step until Vistro's link numbering is confirmed.
+- **Writer:** `utdf_signals.*` reads the Node's controller through its heads and checks it with
+  `nemaCheck`.
+  - **[Timeplans]/[Phases]:** every Synchro 10.1 record. All-red is the ring gap, and the D439
+    values fill the records MULTRA does not author.
+  - **Lanes:** `Phase1`/`PermPhase1` per UTDF_PROBE §5. Volumes, PHF, HV, ideal flow and bus stops
+    come from `analysis`, with A1's HCM defaults listed. A1 and UTDF now share one PHF rule
+    (`nodeAnalysisPeakHourFactor`).
+  - **Report steps:** median (`UTDF_MEDIAN_STEP`) and HCM 7th. Mirrored mode keeps the group
+    numbers, which are already right-hand NEMA numbers.
+- **CLI:** `--utdf-unsignalised`.
+- **Tests:** the U0 junction now carries the §2 volumes and the §3 controller.
+  - It reproduces `u0-handwritten-v3.csv` except `[Network]`'s values and the external ends'
+    `Grade`. `[Timeplans]`/`[Phases]` match byte for byte.
+  - P1–P4 cover both driving sides (UT7).
+  - The four-leg A1 fixture covers the NEMA refusal and the opt-in (UT8).
+  - Mirrored mode is covered (UT11).
+  - The CLI fixture is renamed `u2-u0-junction*`.
+- **Verified:** headless `check` passes 174/174; `multra-check-docs` passes.
+
 ## 2026-11-03 — UTDF U1: the geometry writer (D442)
 
 - **Owner:** chose world metres for U1, with UTM in U2 on the desktop, because PROJ is not in the
@@ -117,11 +142,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Noticed:** the imports look drawn right-hand (row 15, to confirm).
 - **Updated:** UTDF_PROBE §6 rows 13/15, UTDF_EXPORT §3/UT4, the utdf README, OWNER_SITTING I.3
   and NEXT. `multra-check-docs` passes.
-
-## 2026-11-03 — U0: the refused timing leaves no cycle; HCM method is not in UTDF
-
-- **Owner screenshot** of the original `u0-handwritten.csv` imported into Vistro: no cycle, empty
-  rings, *ICA error*, all delays 0. This confirms the refused timing; the v2 files are not yet tried.
-- **HCM method:** Vistro opens an import as HCM 2010. No UTDF record carries the method, and the
-  owner sets HCM 7th after import. The export report should say so.
-- **Updated:** UTDF_PROBE §6 row 6, UTDF_EXPORT §3 and utdf-real-exports. `multra-check-docs` passes.

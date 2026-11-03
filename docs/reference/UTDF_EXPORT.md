@@ -1,12 +1,12 @@
 # UTDF export for Synchro 12 and Vistro 2026 (M14, D386, D387)
 
-Contract before code (D145), written 2026-10-28; U1, the geometry writer, shipped 2026-11-03 (§7). The owner approved exporting the
+Contract before code (D145), written 2026-10-28; U1 (geometry) and U2a (timing, volumes) shipped 2026-11-03 (§7). The owner approved exporting the
 network built for HCM to PTV Vistro 2026 and Synchro 12 (D386). This is the competitor-format
 scope revision that ROADMAP M1.23 requires; imports from those programs stay out. The editor side
 is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). U0 (§8) fixed §3's names from files the owner's
-programs write and read. U1 writes [Network], [Nodes], [Links] and [Lanes] geometry
-(`src/project/utdf_export.hpp`, `multra-cli --export-utdf`). Volumes, timing, the desktop dialog,
-UTM and the Vistro median patch are U2. No MULTRA-written file has been imported by the owner yet (UT10).
+programs write and read. The writer (`src/project/utdf_export.hpp`, `multra-cli --export-utdf`) writes all six sections:
+geometry since U1, and phases, volumes and timing since U2a. The desktop dialog and UTM are U2b;
+the Vistro median patch waits for Vistro's link numbering. No MULTRA-written file has been imported by the owner yet (UT10).
 
 ## 1. Why UTDF
 
@@ -155,7 +155,9 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 |---|---|---|
 | U0 | Probe (§8); this page's §3 fixed from real files; left-hand answer | UT0 |
 | U1 (done 2026-11-03) | Pure writer `utdfDocument(document, mode)` in `src/project/`: Network, Nodes, Links, Lanes geometry, geometric and mirrored; Node `number` (schema 65); CLI `--export-utdf`, `--utdf-mode` | UT0–UT5, UT11 geometry |
-| U2 | Lanes volumes, Timeplans, Phases (right-hand NEMA numbers when mirrored); *Number Nodes* and numbers on template Apply; desktop *Export → UTDF…* with the report dialog, UTM (PROJ), atomic write as the CSV tables; the Vistro median patch once its link numbers are settled (D441) | UT6–UT9, UT11 timing, UT12 |
+| U2a (done 2026-11-03) | Lanes phases and volumes, Timeplans, Phases; NEMA refusal or unsignalised opt-in (`--utdf-unsignalised`); median and HCM 7th report steps (D443) | UT6–UT8, UT11 timing |
+| U2b | *Number Nodes* and numbers on template Apply; desktop *Export → UTDF…* with the report dialog, UTM (PROJ), atomic write as the CSV tables | UT9 |
+| Later | The Vistro median patch, once Vistro's link numbering is confirmed (D441, D443) | UT12 |
 | U3 | Round trip on the owner's machine (OWNER_SITTING item), fixes | UT10 |
 
 ### U1 contract (D442, 2026-11-03)
@@ -231,6 +233,67 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
   timing, UTM and the Vistro median patch. They are U2; the patch's link numbers are still open
   (D441).
 
+### U2a contract: timing and volumes (D443, 2026-11-03)
+
+- **Options.** `utdfDocument(document, UtdfOptions)` carries three fields:
+  - `mode`;
+  - `unsignalisedOnNemaFailure`;
+  - `grid`, an optional world → grid transform. The CLI has none (world metres). The desktop
+    passes UTM when the project has a map reference (U2b).
+- **Signals.** The controller of a signalised Node is the one its member heads name. The check is
+  `nemaCheck(controller, {network, layout})`.
+  - **A failure** (heads with programs only count as `NEMA_HEAD_GROUP`) leaves the Node out with
+    `UTDF_NEMA_INVALID` and the check's codes.
+  - **The opt-in** `unsignalisedOnNemaFailure` (owner, 2026-11-03) writes the Node instead as
+    `TYPE` 3 with geometry and volumes, no phase cells and no timing, and notes it.
+  - A valid controller gives `TYPE` 0.
+- **Group of a movement.** Each movement's group is the one its turn's head program names.
+  - **Mirrored mode keeps the group numbers.** The NEMA numbers are mirror-invariant: through phase
+    *t*'s own far turn is `nemaFarPhase(t)` on both driving sides, and after the mirror that turn
+    is under `L`. The numbers are therefore already right-hand NEMA numbers (D437).
+- **`Phase1`/`PermPhase1`** (UTDF_PROBE §3/§5, `u0-handwritten-v3.csv`):
+  - A movement with `Lanes` 0, because it rides in a shared lane, leaves both cells empty.
+  - The through movement takes `Phase1`.
+  - The far turn takes `Phase1` when its group differs from the through group (protected), and
+    `PermPhase1` otherwise.
+  - The kerb turn takes `PermPhase1`.
+- **Volumes (UX-2a), written only with `analysis`:**
+  - `IdealFlow` = the base saturation flow;
+  - `Volume` = the turn's veh/h;
+  - `PHF` = the Node's PHF;
+  - `HeavyVehicles` = the turn's per cent;
+  - `BusStops` = the approach's buses per hour.
+
+  An absent value takes the same HCM 7 default as the Node analysis (1900; the A1 PHF rule; 3 %;
+  0), listed as `UTDF_HCM_DEFAULT`. A movement without a turn row is empty and listed. A Node
+  without `analysis` writes no volume rows and is noted as `UTDF_NO_VOLUMES`.
+- **[Timeplans]**, every Synchro 10.1 record in its order:
+  - `Control Type` 0;
+  - `Cycle Length`;
+  - `Lock Timings` 0, `Referenced To` 0;
+  - `Reference Phase` 206;
+  - `Offset` = (phase 2's green start − the controller offset) mod cycle;
+  - `Master` 0, `Yield` 0;
+  - `Node 0` = the number, `Node 1` 0.
+- **[Phases]** `D1…D8`, filled for each group present:
+  - **Start, Yield, End:** `Start` and `Yield` are the green start and end, mod cycle. `End` is the
+    next group's start in the same ring (ring = (n − 1) div 4, ordered by start), mod cycle, so the
+    cycle end is written 0.
+  - **Clearances:** `Yellow` = amber, and `AllRed` = End − Yield − amber. A hand-drawn controller's
+    waiting time is therefore counted as all-red, and a negative value is `NEMA_TIMING`.
+  - **Greens and split:** `MinGreen` = `MaxGreen` = `ActGreen` = green. `MinSplit` = End − Start.
+  - **`BRP`:** barrier ((n − 1) mod 4 < 2 → 1), ring, position. Position 1 is whichever of the
+    ring's two phases in that barrier ends where the other starts.
+  - **`Recall`:** 3.
+  - **The rest:** D439's neutral values, noted once per Node as `UTDF_NEUTRAL_TIMING`.
+- **[Network]:** adds `yellowTime`, `allRedTime`, `HV` and `PHF`, written empty and listed,
+  because the project has no network-wide values.
+- **Report steps for Vistro (D441):**
+  - `UTDF_HCM_METHOD`: set HCM 7th after the import.
+  - `UTDF_MEDIAN_STEP`: one note per leg that has a median, naming the Node, the direction and the
+    width to set by hand. The `.vistromerge` patch stays out until Vistro's link numbering is
+    confirmed (owner, 2026-11-03).
+
 ## 8. U0: the probe (first, before any writer)
 
 **Prepared 2026-10-28; waiting on the owner.** The sheet is [UTDF_PROBE](../plans/UTDF_PROBE.md),
@@ -278,11 +341,13 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 
 ## 10. Acceptance rows
 
-UT0–UT5 and UT11's geometry pass since U1 (2026-11-03) in `tests/utdf_export_tests.cpp` (group
-`utdf`) and `cli-utdf` (`tests/utdf_cli.cmake`). UT1's U0 junction reproduces every Node 1
-`[Links]` line and the ten `[Lanes]` geometry lines of `u0-handwritten-v3.csv`, which Vistro
-imported as sheeted. The CLI fixture and its expected files are
-`tests/data/utdf/u1-u0-junction*.{traffic.json,csv}`. UT6–UT10 and UT12 are planned.
+UT0–UT5 and UT11's geometry pass since U1 (2026-11-03); UT6–UT8 and UT11's timing since U2a (same
+day). The tests are `tests/utdf_export_tests.cpp` and `tests/utdf_signal_tests.cpp` (group `utdf`)
+and `cli-utdf` (`tests/utdf_cli.cmake`). The U0 junction, built in MULTRA with UTDF_PROBE §2's
+volumes and §3's controller, reproduces every line of `u0-handwritten-v3.csv` except `[Network]`'s
+values (the project has none) and the external ends' `Grade`. Its `[Timeplans]` and `[Phases]` are
+byte for byte. That is the file Vistro imported as sheeted. The CLI fixture and its expected
+files are `tests/data/utdf/u2-u0-junction*.{traffic.json,csv}`. UT9, UT10 and UT12 are planned.
 
 | Row | Asserts |
 |---|---|
