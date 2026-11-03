@@ -2,6 +2,41 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-31 — A9 native expected-demand preview checkpoint (D419)
+
+- **Owner:** J7 fe827c8 approved: real CLI/editor JSON/CSV parity for saved and unsaved
+  Save-representation snapshots; shipped projects/node analysis unchanged except buildCommit.
+  M14 junction slices are complete; U0 remains unanswered and no writer starts.
+- **B40:** asked six contract choices before code. Owner chose expected Micro demand, explicit
+  HV types, whole-set replacement/provenance cleared by later manual demand edits, and named
+  unresolved-demand refusals (1/4/5/6). T/PHF and the comparison action (2/3) remain unanswered;
+  their recommendations are not assumed. Schema 64 is booked for provenance, not consumed.
+- **Independent implementation:** read-only expected-demand preview captures/parses the same
+  bytes, reuses the compiler, integrates requested input intervals and maps complete runtime
+  traversals to derived turns. Use reference-to-lane stations and exact compiler origins for
+  entry-lane stubs; never multiply a turn by possible lane paths. Explicit HV weighting, zero
+  rows/retained optional %HV and source revision/manifest; no sampled traffic or achieved counts.
+  Refuse partial/unresolved traversals and affected potential parking releases, including
+  lot-to-lot sources. A provably empty lot without gate demand stays harmless.
+- **Tests:** NA24's direct interval/lane/stub rows failed against the empty interface on both
+  sides before implementation. Extended guards exposed a parking fixture without its required
+  gate; fixed the forcing setup. The empty-lot control then failed on an overbroad refusal,
+  before its guard fix. Eight new native cases cover those paths, clock-placed OD/compositions,
+  scheduled decision intervals, invalid requests/HV types, partial routes and runtime choices.
+  Native nodeanalysis now passes 32/32, including existing method rows.
+- **Unfinished:** no stored field/codec/version, Fill dialog/Command, T/PHF policy or Micro
+  comparison. Both-locale UI rows and NA26–NA30 are still planned, not claimed. E31 records the
+  cheap drawn-approach clear inconsistency for the next dialog touch; J7 approval stays intact.
+- **Verification:** desktop build, CTest 258/258 (280.29 s) and check 258/258 (283.04 s) pass.
+  A separate non-PCH header compile caught a missing complete Json include; fixed it, then
+  passed standalone compilation, another desktop build and native nodeanalysis 32/32.
+  Architecture/file-size/docs guards pass. Linux offscreen only, including existing JT12
+  en/th cases; this is not a claim of the still-unimplemented new UI rows.
+  The configured four-leg fixture and four shipped projects retain project bytes, and their
+  before/after --node-analysis JSON bytes differ only in buildCommit. No Windows/manual
+  verdict; headless is unconfigured. NEXT names the two pending answers and exact remaining work.
+  B39 and the oldest PROGRESS entry moved whole to indexed archives; ten live entries retained.
+
 ## 2026-10-31 — J7: Node analysis form, snapshot and Results (D418)
 
 - **Owner:** J4T approved, including natural polygons, both entry paths/sides, 200/90/60/40 m

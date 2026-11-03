@@ -28,7 +28,7 @@ From the saved document, read only, never changed by the export:
 Not exported: vehicle inputs, routes, Micro behaviour, conflict areas, Macro and Meso data, and
 results. A Node outside the rules is left out and named in the export report, never guessed.
 
-## 3. Sections (seen in one Synchro file, fixed by U0)
+## 3. Sections (seen in Synchro and Vistro files, fixed by U0)
 
 UTDF's combined file is one CSV with six bracketed sections. Each section starts with a title line
 and a header row. Rows are keyed by record name and intersection id (`INTID`), and the cells run by
@@ -118,10 +118,13 @@ and the sitting items are OWNER_SITTING I. The steps:
 1. The session writes a **reference junction** sheet: the Thai four-leg fixture of
    JUNCTION_TEMPLATES JT6 (two crossing Street segments, kerb pockets, a shared kerb-through lane), with
    volumes and a P2 timing.
-2. The owner draws it in **Synchro 12**, exports UTDF (combined CSV, metric), and saves it as the
-   golden file, with Synchro's HCM report.
-3. The owner imports that file into **Vistro 2026** and notes what came through, what was dropped,
-   and the HCM result.
+2. The owner draws it in **Vistro 2026** with left-hand traffic on, exports UTDF (combined CSV,
+   metric) as the golden file `u0-vistro.csv`, and saves Vistro's HCM report. This was revised
+   2026-11-03 (D438): the owner cannot create UTDF in Synchro, and Synchro is right-hand only.
+   Synchro's dialect comes from a real Synchro 10.1 export
+   ([utdf-real-exports](../evidence/utdf-real-exports.md)).
+3. If Synchro can import UTDF, the owner imports the golden file into it and notes what came
+   through and what was dropped.
 4. The owner checks the left-hand setting in both programs (§6).
 5. The session hand-writes the same junction as MULTRA would and the owner imports it into both,
    to find the first difference.
@@ -151,7 +154,7 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 
 | Row | Asserts |
 |---|---|
-| UT0 | U0's golden file parses with the writer's section reader, and every field §3 names is in it |
+| UT0 | U0's golden file (`u0-vistro.csv`, D438) parses with the writer's section reader, and every field §3 names is in it |
 | UT1 | A two-Node corridor exports Nodes, Links and Lanes with the numbers, units and distances by hand |
 | UT2 | Re-exporting an unchanged document gives the same bytes; adding a Node keeps the others' numbers |
 | UT3 | Every refusal (unnumbered, ambiguous direction, missing layout) names its Node and writes nothing for it |
@@ -162,4 +165,4 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 | UT8 | A controller failing `nemaCheck` is refused with its codes |
 | UT9 | The file written by the desktop equals the CLI's |
 | UT11 | A left-hand fixture exported geometric keeps compass legs and puts the far turn in `R`; mirrored swaps E↔W legs, puts it in `L` and uses right-hand NEMA numbers; one golden file per mode (D437) |
-| UT10 | (owner) Synchro 12 and Vistro 2026 import the fixture; geometry, lanes, volumes and timing match the sheet |
+| UT10 | (owner) Vistro 2026, and Synchro if it imports UTDF (D438), import the fixture; geometry, lanes, volumes and timing match the sheet |

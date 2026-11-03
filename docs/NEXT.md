@@ -75,8 +75,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   is the hand-written file. Partly answered 2026-11-03 from real Synchro 10.1/Vistro exports
   ([utdf-real-exports](evidence/utdf-real-exports.md)): field names, TYPE 3, `End` 0, and UTDF
   carries no driving side; Synchro is right-hand only, so the export offers geometric and mirrored
-  modes (D437, UTDF_EXPORT §6, UT11). Still open: the §1 export, both imports of the hand-written
-  file and whether Links `Lanes` counts pockets. **Do not start U1 or any UTDF writer.**
+  modes (D437, UTDF_EXPORT §6, UT11). Synchro cannot create UTDF, so Vistro writes the golden
+  `u0-vistro.csv` (D438). Still open: Vistro's §1 export and its far-turn column, the imports of
+  the hand-written file (Synchro only if it imports UTDF) and whether Links `Lanes` counts pockets. **Do not start U1 or any UTDF writer.**
   When answers arrive, revise UTDF_EXPORT §3/§6 from them, add the allowed golden file and UT0,
   and report any effect on compass/NEMA mapping before further signal work.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl

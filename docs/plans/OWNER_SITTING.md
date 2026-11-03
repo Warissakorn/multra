@@ -475,14 +475,16 @@ nothing. Numbers are not reused.
 The junction, the steps and the answer table are on [UTDF_PROBE](UTDF_PROBE.md). Write each answer
 there (§6) verbatim and dated; these items only say what must hold.
 
-1. **Synchro 12 golden file** (listed 2026-10-28, D386). Draw UTDF_PROBE §1–§3 and export a metric
-   UTDF combined file. Does Synchro's HCM 7 report run without errors, and is the export saved as
-   `u0-synchro.csv`? *Owner:* 2026-11-03: real-study exports from Synchro 10.1 and Vistro gave the
-   field names ([utdf-real-exports](../evidence/utdf-real-exports.md)); the §1–§3 junction is still to draw.
-2. **Vistro 2026 import** (listed 2026-10-28). Import `u0-synchro.csv`. Does Vistro take the
-   lanes, pockets, volumes and timing as drawn? *Owner:*
+1. **Vistro 2026 golden file** (listed 2026-10-28, D386; Vistro since D438, 2026-11-03). Draw
+   UTDF_PROBE §1–§3 with left-hand traffic on and export a metric UTDF combined file as
+   `u0-vistro.csv`. Does the HCM 7 report run without errors, and which column holds the far turn?
+   *Owner:* Synchro cannot create UTDF (2026-11-03). The field names of real Synchro 10.1 and Vistro
+   exports are recorded ([utdf-real-exports](../evidence/utdf-real-exports.md)); the §1–§3 junction
+   is still to draw.
+2. **Synchro import** (listed 2026-10-28; revised by D438). Can Synchro import UTDF? If so, import
+   `u0-vistro.csv`. Does it take the lanes, pockets, volumes and timing as drawn? *Owner:*
 3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`
-   into both programs. Does either refuse it, or draw something other than §1–§3? *Owner:*
+   into Vistro, and into Synchro if it imports UTDF. Does either refuse it, or draw something other than §1–§3? *Owner:*
 4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
    it in the UTDF file? *Owner:* 2026-11-03, answered: Synchro is right-hand only; Vistro has it and its
    UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both

@@ -6,6 +6,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — U0 golden file moves to Vistro (D438)
+
+- **Owner:** Synchro cannot create UTDF. They asked for another route and chose Vistro as the
+  reference (D438).
+- **Changed:**
+  - UTDF_PROBE §4 now has Vistro steps: draw left-hand and metric, run HCM 7, export `u0-vistro.csv`, find the far-turn column, import the hand-written file, then the licence question.
+  - UTDF_PROBE §6: rows 2/4/5/8 are closed as not possible; rows 9–12 are added.
+  - UTDF_EXPORT §8, UT0 and UT10, OWNER_SITTING I.1–I.3, `tests/data/utdf/README.md` and NEXT are updated to match.
+- **Kept:** Synchro's dialect stays recorded from the real 10.1 export. Synchro only checks the
+  import, if it can import UTDF. U1 stays blocked. `multra-check-docs` passes.
+
 ## 2026-11-03 — Synchro is right-hand only; left-hand UTDF export modes (D437)
 
 - **Owner answer (U0 item 4):** Synchro builds right-hand traffic only. The upload `2569-P01.csv`
@@ -199,38 +210,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   headless unconfigured, Windows/manual not run.
 - **Docs:** native contract, B40 answers/B41, D420/index and NEXT updated; B33–B36 and oldest
   PROGRESS entry archived whole, ten live entries retained. Next remains the rest of A9.
-
-## 2026-10-31 — A9 native expected-demand preview checkpoint (D419)
-
-- **Owner:** J7 fe827c8 approved: real CLI/editor JSON/CSV parity for saved and unsaved
-  Save-representation snapshots; shipped projects/node analysis unchanged except buildCommit.
-  M14 junction slices are complete; U0 remains unanswered and no writer starts.
-- **B40:** asked six contract choices before code. Owner chose expected Micro demand, explicit
-  HV types, whole-set replacement/provenance cleared by later manual demand edits, and named
-  unresolved-demand refusals (1/4/5/6). T/PHF and the comparison action (2/3) remain unanswered;
-  their recommendations are not assumed. Schema 64 is booked for provenance, not consumed.
-- **Independent implementation:** read-only expected-demand preview captures/parses the same
-  bytes, reuses the compiler, integrates requested input intervals and maps complete runtime
-  traversals to derived turns. Use reference-to-lane stations and exact compiler origins for
-  entry-lane stubs; never multiply a turn by possible lane paths. Explicit HV weighting, zero
-  rows/retained optional %HV and source revision/manifest; no sampled traffic or achieved counts.
-  Refuse partial/unresolved traversals and affected potential parking releases, including
-  lot-to-lot sources. A provably empty lot without gate demand stays harmless.
-- **Tests:** NA24's direct interval/lane/stub rows failed against the empty interface on both
-  sides before implementation. Extended guards exposed a parking fixture without its required
-  gate; fixed the forcing setup. The empty-lot control then failed on an overbroad refusal,
-  before its guard fix. Eight new native cases cover those paths, clock-placed OD/compositions,
-  scheduled decision intervals, invalid requests/HV types, partial routes and runtime choices.
-  Native nodeanalysis now passes 32/32, including existing method rows.
-- **Unfinished:** no stored field/codec/version, Fill dialog/Command, T/PHF policy or Micro
-  comparison. Both-locale UI rows and NA26–NA30 are still planned, not claimed. E31 records the
-  cheap drawn-approach clear inconsistency for the next dialog touch; J7 approval stays intact.
-- **Verification:** desktop build, CTest 258/258 (280.29 s) and check 258/258 (283.04 s) pass.
-  A separate non-PCH header compile caught a missing complete Json include; fixed it, then
-  passed standalone compilation, another desktop build and native nodeanalysis 32/32.
-  Architecture/file-size/docs guards pass. Linux offscreen only, including existing JT12
-  en/th cases; this is not a claim of the still-unimplemented new UI rows.
-  The configured four-leg fixture and four shipped projects retain project bytes, and their
-  before/after --node-analysis JSON bytes differ only in buildCommit. No Windows/manual
-  verdict; headless is unconfigured. NEXT names the two pending answers and exact remaining work.
-  B39 and the oldest PROGRESS entry moved whole to indexed archives; ten live entries retained.
