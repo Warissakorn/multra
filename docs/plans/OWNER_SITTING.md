@@ -482,7 +482,7 @@ there (§6) verbatim and dated; these items only say what must hold.
    exports are recorded ([utdf-real-exports](../evidence/utdf-real-exports.md)). Draft 1 was received
    2026-11-03 (metric, left-hand on): the far turn is under `EBR` and the file is in feet. The redo to
    match §2–§3 is pending (UTDF_PROBE §6 row 16). The golden `u0-vistro.csv` is committed (100 s, protected far turns, Vistro's phase numbers).
-   Next: import `u0-handwritten-v3.csv` (row 17, D440).
+   `u0-handwritten-v3.csv` imports as sheeted (row 17, D440 holds).
 2. **Synchro import** (listed 2026-10-28; revised by D438). Can Synchro import UTDF? If so, import
    `u0-vistro.csv`. Does it take the lanes, pockets, volumes and timing as drawn? *Owner:*
 3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`

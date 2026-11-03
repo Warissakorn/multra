@@ -13,7 +13,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   EBR is phase 3 and WBR phase 7. The phase numbers, the lagging order and the splits are
   Vistro's own, not §3's, so UT0 compares fields and codes, not timing values.
 - **Updated:** UTDF_PROBE §6 row 16, UTDF_EXPORT UT0, the utdf README, OWNER_SITTING I and NEXT.
-- **Open before U1:** row 17, Vistro's import of `u0-handwritten-v3.csv` (D440).
+- **Row 17:** `u0-handwritten-v3.csv` (Links `Lanes` 3) imports with the pockets as pockets and the
+  same HCM 2010 result as v2-filled: 186.72 s, LOS F. D440 holds, and U0's probe questions are answered.
 
 ## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
 

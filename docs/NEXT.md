@@ -70,20 +70,23 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
   [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
   including natural polygon fitting, ownership, site drafts and corridor/reference guards.
-- **U0 is waiting on the owner** ([OWNER_SITTING I](plans/OWNER_SITTING.md#i--utdf-probe-m14-u0)):
-  [UTDF_PROBE](plans/UTDF_PROBE.md) has the import sheet; `tests/data/utdf/u0-handwritten.csv`
-  is the hand-written file. Partly answered 2026-11-03 from real Synchro 10.1/Vistro exports
-  ([utdf-real-exports](evidence/utdf-real-exports.md)): field names, TYPE 3, `End` 0, and UTDF
-  carries no driving side; Synchro is right-hand only, so the export offers geometric and mirrored
-  modes (D437, UTDF_EXPORT §6, UT11). Synchro cannot create UTDF, so Vistro writes the golden
-  `u0-vistro.csv` (D438). Vistro imported `u0-handwritten.csv`: its geometry, lanes and volumes
-  came through, its timing was refused (missing Timeplans/Phases rows). v2-filled imports the
-  timing exactly; v2-empty is refused, so unauthored records get D439's neutral values. Vistro
-  draft 1 of the sheet: far turn under `R` with left-hand on, written in feet. Still open: the
-  v3 import of D440's Links `Lanes` 3 (row 17). The golden `u0-vistro.csv` is committed (row 16:
-  100 s, protected far turns, Vistro's own phase numbers and splits). Importing UTDF switches Vistro to right-hand, and the median is not shown (rows 14–15). **Do not start U1 or any UTDF writer.**
-  When answers arrive, revise UTDF_EXPORT §3/§6 from them, add the allowed golden file and UT0,
-  and report any effect on compass/NEMA mapping before further signal work.
+- **U0 is answered (2026-11-03); U1 waits for the owner's pick.** The answers are in
+  [UTDF_PROBE](plans/UTDF_PROBE.md) §6 and [utdf-real-exports](evidence/utdf-real-exports.md).
+  - **Decisions D437–D440:**
+    - left-hand export is geometric or mirrored, chosen by the user (D437);
+    - Vistro writes the golden file (D438);
+    - unauthored timing records get neutral pretimed values (D439);
+    - `[Links] Lanes` counts pockets (D440).
+  - **Fixtures in `tests/data/utdf/`:**
+    - `u0-vistro.csv` (golden; UT0 compares fields and codes, not its Vistro-numbered timing);
+    - `u0-handwritten-v2-filled.csv` and `-v3.csv`, which Vistro imports with geometry, lanes,
+      volumes and timing as sheeted.
+  - **Facts the writer and its report must respect:**
+    - importing UTDF switches Vistro to right-hand;
+    - Vistro shows no median and opens imports as HCM 2010;
+    - Vistro writes feet but reads metres.
+  - **When the owner picks U1:** start from UTDF_EXPORT §7. Report any effect on compass/NEMA
+    mapping before further signal work.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
   is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
   (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
