@@ -2,6 +2,43 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-31 — J7: Node analysis form, snapshot and Results (D418)
+
+- **Owner:** J4T approved, including natural polygons, both entry paths/sides, 200/90/60/40 m
+  corridors, correct short-pocket refusal and unchanged shipped/analysis bytes. J7 is A9 first
+  half only. B39 answered: current snapshot, exact saved bytes when equal; otherwise exact Save
+  bytes labelled unsaved at Analyse, with CLI parity after saving the unchanged snapshot.
+- **Implemented:** staged compass L/T/R turn volumes/%HV, Node PHF/period/CBD/sourced saturation
+  and approach adjustments; missing differs from zero. Existing codec checks shape/sign, HCM
+  checks its ranges on Analyse. Stale/extra rows are preserved and explicitly clearable.
+  setNodeAnalysis is one Command/Undo, Cancel/no-op unchanged. No lane/timing copy or new schema.
+- **Results:** shared project report/metadata/marking for CLI and GUI; synchronous calculation
+  over exactly recorded/parsed bytes. Separate group, approach, intersection, defaults/source
+  and localized refusal tables; unavailable figures blank. Partial totals retain D383's existing
+  warning. Source revision, captured-snapshot note, stale/Undo freshness, generation reset and
+  marked CSV/Copy; protect active project/recovery from export. No Window-header growth.
+- **Tests first:** initial fixture incorrectly assumed the template switch kept generated;
+  corrected the forcing assert before proving missing actions on all four side/locale pairs.
+  Extended form tests then exposed the missing source requirement for a saturation override;
+  fixed in UI without tightening older-file decoding. All 8 JT12 form/result cases pass.
+  The 28 actual CLI subprocess runs match JSON/CSV for non-canonical saved bytes, unsaved-then-saved
+  snapshots, external-file changes, method/queue refusals, multiple/empty configured Nodes;
+  plus defaults/zero, Cancel, exact Undo/reopen, explicit stale-row clearing and export guards.
+- **Verification:** the first full CTest run was 253/258: the old seven-tab expectation and
+  four layout cases failed. Updated the tab inventory and made the hidden page ignore minimum
+  size, with reflow labels; retained canvas/layout thresholds. Those six targeted suites then
+  passed (25.31 s), including JT12. Desktop build and CTest **258/258** (290.45 s, parallel 5)
+  pass; check **258/258** (297.74 s) also passes, with architecture/file-size/docs guards.
+  The one-Node before/final CLI bytes match except buildCommit.
+  The first build exhausted local
+  disk on debug executables; stripped debug sections and used a local-only strip-debug linker
+  cache flag, retaining debug objects and source/FP flags. No tracked build flag changed.
+  Linux offscreen only; headless unconfigured, Windows/manual UI remains E31. U0 unanswered;
+  no UTDF writer, Fill from model, timing proposal or Micro side-by-side.
+- **Docs:** editor contract/index, §9/JT12, Node-analysis/schema, D418/index, B39/E31, module maps,
+  ROADMAP/NEXT updated. Answered B37/B38 archived whole to keep OWNER_SITTING under 500 lines;
+  oldest PROGRESS entry archived whole, ten live entries retained.
+
 ## 2026-10-30 — J4T: real Find crossings Fill and explicit polygon preview (D417)
 
 - **Owner B38:** extend the chosen fit policy to every three-/four-leg junction template.

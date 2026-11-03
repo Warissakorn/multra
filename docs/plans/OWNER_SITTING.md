@@ -484,5 +484,6 @@ there (§6) verbatim and dated; these items only say what must hold.
 3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`
    into both programs. Does either refuse it, or draw something other than §1–§3? *Owner:*
 4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
-   it in the UTDF file? *Owner:* 2026-11-03, partial: Vistro has it and its UTDF drops it; Synchro open
-   ([utdf-real-exports](../evidence/utdf-real-exports.md)).
+   it in the UTDF file? *Owner:* 2026-11-03, answered: Synchro is right-hand only; Vistro has it and its
+   UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both
+   modes (D437).

@@ -115,11 +115,11 @@ network. The owner's file settles each one.
 
 | # | Question | Owner |
 |---|---|---|
-| 1 | Synchro 12: units set to metric, left-hand setting found? (menu path) | |
+| 1 | Synchro 12: units set to metric, left-hand setting found? (menu path) | 2026-11-03 (owner): "Synchro สร้างได้แค่แบบ การจราจรวิ่งขวา": Synchro builds right-hand traffic only. No left-hand setting. Metric: open. |
 | 2 | Synchro 12: HCM 7 delay and LOS per approach and junction | |
 | 3 | `u0-synchro.csv` exported; section and field names differ from §5 where? | 2026-11-03, partial, from a real Synchro 10.1 export (not §1): sections and Synchro field names in [utdf-real-exports](../evidence/utdf-real-exports.md); TYPE 3 = unsignalised; `End` 0 at the cycle wrap; single `Reference Phase` values occur. The §1 export is still needed. |
 | 4 | Vistro 2026 import of `u0-synchro.csv`: kept, dropped, HCM delay and LOS | |
 | 5 | `u0-handwritten.csv` into Synchro 12: first error or difference | |
 | 6 | `u0-handwritten.csv` into Vistro 2026: first error or difference | |
-| 7 | Left-hand: setting in each program, carried by the file, far-turn column | 2026-11-03, partial: Vistro 2026 has the setting (`LEFTHANDTRAFFIC` = 1 in its `.vistromerge`), and its UTDF export does not carry it ([utdf-real-exports](../evidence/utdf-real-exports.md)). Synchro's setting and the far-turn column are still open. |
+| 7 | Left-hand: setting in each program, carried by the file, far-turn column | 2026-11-03: Synchro right-hand only (owner); Vistro 2026 has the setting (`LEFTHANDTRAFFIC` = 1 in its `.vistromerge`) but its UTDF drops it; UTDF carries the side in neither ([utdf-real-exports](../evidence/utdf-real-exports.md)). The far-turn column is now the export mode's (D437: geometric `R`, mirrored `L`); how each program imports it is still open. |
 | 8 | May `u0-synchro.csv` be committed (GPL)? | 2026-11-03: the real-study exports supplied are not committed; only their field names are recorded. Still open for the §1 file. |

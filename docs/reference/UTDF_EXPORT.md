@@ -82,13 +82,23 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
   controller that fails it is `UTDF_NEMA_INVALID` with the check's codes; the Node is exported as
   unsignalised only if the user confirms, never silently.
 - Two-way stop: control type unsignalised with Stop on the minor approaches; all-way stop likewise.
-- **Left-hand traffic is the main risk.** HCM, NEMA numbering and both programs are written for
-  right-hand traffic. The sample's `[Network]` section has no driving-side record. U0 asks the
-  owner three things about Synchro 12 and Vistro 2026 (UTDF_PROBE §4 step 5):
-  - whether each program has a left-hand setting;
-  - whether the file carries it;
-  - whether the far turn is then written under `R` or `L`. Until answered, the movement
-  names are geometric (L/T/R) and the phase numbers follow JUNCTION_TEMPLATES §8's left-hand rule.
+- **Left-hand traffic is the main risk.** HCM and NEMA numbering assume right-hand traffic.
+  What U0 settled (2026-11-03, [utdf-real-exports](../evidence/utdf-real-exports.md)):
+  - **Synchro has no left-hand setting** (owner). It models right-hand traffic only.
+  - **Vistro 2026 has one** (`LEFTHANDTRAFFIC` in its own network file), but its UTDF export drops it.
+  - **The UTDF file never carries the driving side**: neither writer has a record for it.
+- **The user chooses a mode at export (D437):**
+  - **Geometric (default).**
+    - Real coordinates and compass legs.
+    - Movement names stay geometric (L/T/R), so the far turn of left-hand traffic stays in `R`.
+    - Phase numbers follow JUNCTION_TEMPLATES §8's left-hand rule.
+    - The report, and a comment line if the readers accept one (U0 import check), say the network is left-hand.
+    - A right-hand-only reader will misread `R` as the kerb turn.
+  - **Mirrored.**
+    - The network is reflected into its right-hand equivalent before writing, so the far turn is in `L`.
+    - NEMA numbering is the right-hand standard, and HCM in Synchro treats the far turn correctly.
+    - Compass legs swap across the mirror axis. The axis is fixed in U1's contract; the default is x → −x, so E↔W, and NE↔NW, SE↔SW.
+    - The report says the map is mirrored.
 
 ## 7. Slices
 
@@ -134,6 +144,9 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
    - **(a) Leave it out and list it in the report; the export still writes (recommended).**
    - (b) Refuse the whole export.
 
+5. **UX-5 Left-hand network** (answered 2026-11-03, D437): the user picks **geometric** or
+   **mirrored** at export (§6); geometric is the default.
+
 ## 10. Acceptance rows (planned)
 
 | Row | Asserts |
@@ -148,4 +161,5 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 | UT7 | Each preset's Phases rows equal the controller's greens, yellows and all-reds |
 | UT8 | A controller failing `nemaCheck` is refused with its codes |
 | UT9 | The file written by the desktop equals the CLI's |
+| UT11 | A left-hand fixture exported geometric keeps compass legs and puts the far turn in `R`; mirrored swaps E↔W legs, puts it in `L` and uses right-hand NEMA numbers; one golden file per mode (D437) |
 | UT10 | (owner) Synchro 12 and Vistro 2026 import the fixture; geometry, lanes, volumes and timing match the sheet |

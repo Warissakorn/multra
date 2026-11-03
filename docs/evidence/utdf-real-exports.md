@@ -16,7 +16,7 @@ timing value from the files appears here.
 | Synchro 10.1 (`%%Synchro10.1%%` binary) | UTDF combined CSV | `UTDFVERSION,8`, `Metric,1`, `ScenarioDate`; 1 signalised node |
 | PTV Vistro 2026.00-08 | UTDF combined CSV | `UTDFVERSION,8`, `Metric,0` (feet), `ScenarioTime`; 6 signalised nodes |
 | PTV Vistro 2026.00-08 | `.vistromerge` (Visum net format, version 19) | `$NETWORK:…;LEFTHANDTRAFFIC;…` = `1` |
-| Synchro 12.0 | `.syn` | Encrypted (`Salted__`); not readable |
+| Synchro 12.0 | `.syn`, and an upload named `2569-P01.csv` | Both are encrypted project files (`Salted__`), not UTDF; not readable |
 
 ## Sections and fields
 
@@ -55,12 +55,11 @@ Both writers emit the six sections in this order: `[Network] [Nodes] [Links] [La
 | A shared lane is coded on the through movement | Vistro also writes `Shared` on a right-turn column | Differs: not only on the through movement |
 | Links `Lanes` counts full lanes (2), not pockets | No case settles it | Open |
 | Movement columns named by compass and geometry, whatever the driving side | No driving-side field in either UTDF file | Inferred |
-| Left-hand setting carried by the file | Vistro has the setting (`LEFTHANDTRAFFIC` = 1 in `.vistromerge`); its UTDF has no such field | **Not carried**: a reader must be told the side |
-| Far turn in `NBR` or `NBL` | Needs the §1 junction | Open |
+| Left-hand setting carried by the file | Vistro has the setting (`LEFTHANDTRAFFIC` = 1 in `.vistromerge`); its UTDF has no such field. Synchro has none: right-hand only (owner) | **Not carried**: a reader must be told the side; D437 export modes |
+| Far turn in `NBR` or `NBL` | Set by the export mode (D437): geometric `R`, mirrored `L` | Decided; each program's import of it still open |
 
 ## What remains for U0
 
 - The §1–§3 junction drawn in Synchro (12.0 or 10.1, whichever is used), with its metric export and HCM 7 report.
 - The import of `tests/data/utdf/u0-handwritten.csv` into each program.
-- The far-turn column under left-hand traffic.
-- Whether Synchro has a left-hand setting.
+- How each program imports a geometric-mode file's far turn in `R`.
