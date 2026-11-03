@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Vistro draft 1 of the U0 junction
+
+- **Owner:** exported the U0 sheet from Vistro 2026 (metric, left-hand on), allowed the commit, and
+  will redo it to match the sheet.
+- **Committed** as `tests/data/utdf/u0-vistro-draft1.csv`, byte for byte. It is a draft, not the golden file:
+  cycle 60 with phases 2/4/6/8, PHF 1.00, HV 2 %, and different NB/SB lanes.
+- **Settled:**
+  - Vistro writes UTDF in feet even for a metric project, but reads `Metric,1`.
+  - With left-hand on, Vistro writes the far turn under `EBR` (geometric, as D437's default).
+  - Its 4-phase numbering is NB 6, SB 2, EB 8, WB 4.
+  - Its `End` for the phase that ends the cycle is the cycle length; Synchro writes 0.
+- **Updated:** UTDF_PROBE §6 rows 9/10/12/16, utdf-real-exports, UTDF_EXPORT §4/§6,
+  OWNER_SITTING I.1 and NEXT. `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro imports u0-handwritten.csv; timing probe v2
 
 - **Owner:** found Vistro's UTDF menus: *File → Export / Import → Synchro…*. They imported
@@ -167,37 +181,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Docs:** D422/index, answered B41/E32, contracts/schema/module maps and ROADMAP/NEXT updated.
   Oldest PROGRESS entry archived whole, ten live entries retained. A9 is implemented and stops
   for owner review; no open A9 contract question, M13 gate closure or UTDF writer. U0 unanswered.
-
-## 2026-10-31 — A9 staged Fill, source schema and Micro comparison (D421)
-
-- **Implemented answered B40:** Analysis → Fill from model… stages explicit window/HV choices,
-  StudyPeriod minus clockStart, all-turn before/after including zero/stale removal, T=window
-  hours and PHF=1. Child Confirm stages only; parent Confirm is one Command/Undo. Preserve
-  adjustments/saturation, and make drawn approach Clear stay visible like drawn turns (E31).
-- **Provenance:** feature-selected schema 64, closed/version-gated historical source fields,
-  exact captured project SHA plus compiler manifest file hashes/fallbacks and explicit choices.
-  Older/source-absent files keep their schema/bytes. Command and raw History demand-row/T/PHF
-  edits clear an unchanged claim; site-only edits retain it, Undo restores it. Source is exposed
-  in the form/settings and conditional analytical JSON/CSV, with no method or old-format change.
-- **Micro:** reuse the explicitly requested completed batch. Capture decoded source and ordered
-  Node/in-Link ids at compile; duplicate names are harmless. Match source/window/T, present
-  Node/approach HCM and Micro measures beside each other with n/CI/unfinished/blanks, and
-  localized named refusals. Shared comparison CSV keeps marker/marking; active-view export is
-  disabled without rows. No implicit run, subtraction, turn matching or new delay formula.
-  Edits/Undo, seed changes, cancellation and reopen discard comparisons under batch lifecycle.
-- **Failure first:** source codec/replacement cases failed before schema/T/PHF implementation;
-  both-locale/side Fill and Micro suites failed on missing controls, native comparison on empty
-  rows. Compile/setup mistakes (missing hash include, helper name colliding with namespace test,
-  requiring completed vehicles where a valid seed had none) were corrected before claiming reds.
-- **Coverage:** native nodeanalysis 44/44; new Qt Fill 4/4 and Micro 4/4, both sides/locales,
-  retaining JT12 8/8 and real CLI source-64 JSON/CSV parity. Exact snapshot source, site retention,
-  staged Cancel/no-op, one Undo/Redo/reopen, demand-edit clearing, batch/window/stale/refusal and
-  actual export cases pass. Legacy five project/report byte comparisons pass: project/CSV exact,
-  raw JSON exact after replacing only buildCommit. No core/HCM/Micro/Meso/Macro algorithm change.
-- **Pending:** B41 manual-count window confirmation remains unanswered; no window is inferred
-  from T, and manual missing-window rows give NODE_MICRO_NO_WINDOW. This is an A9 checkpoint for
-  review, not a claim that B41 or A9's remaining contract is closed. U0 unanswered; no UTDF writer.
-- **Verification:** desktop build passes (210 tasks). CTest 260/260 (289.67 s, parallel 5) and check
-  260/260 (285.80 s), with architecture/file-size/docs guards, pass. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless unconfigured, Windows/manual
-  appearance not driven (E32). Docs/schema/module maps, D421/index, ROADMAP/NEXT and owner sheet
-  updated. Oldest PROGRESS entry archived whole, ten live entries retained.

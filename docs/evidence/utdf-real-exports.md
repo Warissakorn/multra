@@ -7,7 +7,8 @@ reference junction:
 
 Their licence and project data are unknown, so **none of them is committed**. This note records
 only section names, field names and codes, as UTDF_PROBE §4.6 allows. No coordinate, volume or
-timing value from the files appears here.
+timing value from those files appears here. The last section is different: it covers the owner's
+Vistro export of the public U0 sheet, which is committed, and its values are the sheet's.
 
 ## The files
 
@@ -56,10 +57,33 @@ Both writers emit the six sections in this order: `[Network] [Nodes] [Links] [La
 | Links `Lanes` counts full lanes (2), not pockets | No case settles it | Open |
 | Movement columns named by compass and geometry, whatever the driving side | No driving-side field in either UTDF file | Inferred |
 | Left-hand setting carried by the file | Vistro has the setting (`LEFTHANDTRAFFIC` = 1 in `.vistromerge`); its UTDF has no such field. Synchro has none: right-hand only (owner) | **Not carried**: a reader must be told the side; D437 export modes |
-| Far turn in `NBR` or `NBL` | Set by the export mode (D437): geometric `R`, mirrored `L` | Decided; each program's import of it still open |
+| Far turn in `NBR` or `NBL` | Set by the export mode (D437): geometric `R`, mirrored `L`. Vistro's own writer, left-hand on, puts it under `R` (draft 1 below) | Decided; Vistro writes geometric |
+
+## Vistro export of the U0 sheet (draft 1)
+
+The owner drew UTDF_PROBE's junction in Vistro 2026 with metric units and left-hand traffic on,
+and exported it with *File → Export → Synchro…*. The file is committed as
+[`u0-vistro-draft1.csv`](../../tests/data/utdf/u0-vistro-draft1.csv), with the owner's permission.
+It is a draft: its timing, PHF, %HV and NB/SB lanes are not yet the sheet's (UTDF_PROBE §6 row 16).
+
+- **Units:** Vistro writes `Metric,0` (feet, mph) even for a metric project. Examples:
+  - lane width 10 ft, from 3.25 m;
+  - speeds 31/37 mph, from 50/60 km/h;
+  - storage 131/196 ft, from 40/60 m.
+
+  `test2.csv` is `Metric,0` too. Vistro *reads* `Metric,1`: `u0-handwritten.csv` imported with
+  3.25 m lanes and 40/60 m pockets.
+- **Far turn:** with left-hand on, EB right (the far turn) is written under `EBR`, with its pocket.
+  The movement names are geometric.
+- **Phase numbers:** Vistro's own 4-phase plan assigns NB 6, SB 2, EB 8, WB 4, with the turns
+  permitted in the same phase. That is not the sheet's Synchro convention (2 = WB, 6 = EB,
+  4 = SB, 8 = NB).
+- **Timing records:** `Referenced To` 3; `Yield` and `Lock Timings` empty; `Node 0…7`.
+  - The phase that ends the cycle has `End` = cycle length (60). The Synchro 10.1 file wrote 0 for the same case.
+  - Default `Taper` is 25 ft.
 
 ## What remains for U0
 
-- The §1–§3 junction drawn in Synchro (12.0 or 10.1, whichever is used), with its metric export and HCM 7 report.
+- The §1–§3 junction redone in Vistro to match the sheet, with its export and HCM 7 report (D438; UTDF_PROBE §6 row 16).
 - The import of `tests/data/utdf/u0-handwritten.csv` into each program.
 - How each program imports a geometric-mode file's far turn in `R`.

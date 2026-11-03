@@ -68,7 +68,9 @@ show whether present-but-empty rows suffice:
 
 ## 4. Units and coordinates
 
-- **Metric** (metres, km/h), the file declaring it, so no conversion is written.
+- **Metric** (metres, km/h), the file declaring it, so no conversion is written. Vistro reads
+  `Metric,1`, as `u0-handwritten.csv` showed (2026-11-03), although its own writer always emits
+  feet ([utdf-real-exports](../evidence/utdf-real-exports.md)).
 - **X, Y:** world metres. When the project has a map reference (MAP_BACKGROUND, schema 29), the
   UTM easting and northing are added, so both programs' backgrounds align (§9 UX-3).
 - Distances are centreline lengths between Node centres along the Links; curve points are the
@@ -96,7 +98,8 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
   - **Vistro 2026 has one** (`LEFTHANDTRAFFIC` in its own network file), but its UTDF export drops it.
   - **The UTDF file never carries the driving side**: neither writer has a record for it.
 - **The user chooses a mode at export (D437):**
-  - **Geometric (default).**
+  - **Geometric (default).** Vistro's own writer does the same with left-hand traffic on (far turn
+    under `R`, 2026-11-03).
     - Real coordinates and compass legs.
     - Movement names stay geometric (L/T/R), so the far turn of left-hand traffic stays in `R`.
     - Phase numbers follow JUNCTION_TEMPLATES §8's left-hand rule.

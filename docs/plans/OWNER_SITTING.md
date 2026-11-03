@@ -479,8 +479,9 @@ there (§6) verbatim and dated; these items only say what must hold.
    UTDF_PROBE §1–§3 with left-hand traffic on and export a metric UTDF combined file as
    `u0-vistro.csv`. Does the HCM 7 report run without errors, and which column holds the far turn?
    *Owner:* Synchro cannot create UTDF (2026-11-03). The field names of real Synchro 10.1 and Vistro
-   exports are recorded ([utdf-real-exports](../evidence/utdf-real-exports.md)); the §1–§3 junction
-   is still to draw.
+   exports are recorded ([utdf-real-exports](../evidence/utdf-real-exports.md)). Draft 1 was received
+   2026-11-03 (metric, left-hand on): the far turn is under `EBR` and the file is in feet. The redo to
+   match §2–§3 is pending (UTDF_PROBE §6 row 16).
 2. **Synchro import** (listed 2026-10-28; revised by D438). Can Synchro import UTDF? If so, import
    `u0-vistro.csv`. Does it take the lanes, pockets, volumes and timing as drawn? *Owner:*
 3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`

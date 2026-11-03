@@ -2,6 +2,40 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-31 — A9 staged Fill, source schema and Micro comparison (D421)
+
+- **Implemented answered B40:** Analysis → Fill from model… stages explicit window/HV choices,
+  StudyPeriod minus clockStart, all-turn before/after including zero/stale removal, T=window
+  hours and PHF=1. Child Confirm stages only; parent Confirm is one Command/Undo. Preserve
+  adjustments/saturation, and make drawn approach Clear stay visible like drawn turns (E31).
+- **Provenance:** feature-selected schema 64, closed/version-gated historical source fields,
+  exact captured project SHA plus compiler manifest file hashes/fallbacks and explicit choices.
+  Older/source-absent files keep their schema/bytes. Command and raw History demand-row/T/PHF
+  edits clear an unchanged claim; site-only edits retain it, Undo restores it. Source is exposed
+  in the form/settings and conditional analytical JSON/CSV, with no method or old-format change.
+- **Micro:** reuse the explicitly requested completed batch. Capture decoded source and ordered
+  Node/in-Link ids at compile; duplicate names are harmless. Match source/window/T, present
+  Node/approach HCM and Micro measures beside each other with n/CI/unfinished/blanks, and
+  localized named refusals. Shared comparison CSV keeps marker/marking; active-view export is
+  disabled without rows. No implicit run, subtraction, turn matching or new delay formula.
+  Edits/Undo, seed changes, cancellation and reopen discard comparisons under batch lifecycle.
+- **Failure first:** source codec/replacement cases failed before schema/T/PHF implementation;
+  both-locale/side Fill and Micro suites failed on missing controls, native comparison on empty
+  rows. Compile/setup mistakes (missing hash include, helper name colliding with namespace test,
+  requiring completed vehicles where a valid seed had none) were corrected before claiming reds.
+- **Coverage:** native nodeanalysis 44/44; new Qt Fill 4/4 and Micro 4/4, both sides/locales,
+  retaining JT12 8/8 and real CLI source-64 JSON/CSV parity. Exact snapshot source, site retention,
+  staged Cancel/no-op, one Undo/Redo/reopen, demand-edit clearing, batch/window/stale/refusal and
+  actual export cases pass. Legacy five project/report byte comparisons pass: project/CSV exact,
+  raw JSON exact after replacing only buildCommit. No core/HCM/Micro/Meso/Macro algorithm change.
+- **Pending:** B41 manual-count window confirmation remains unanswered; no window is inferred
+  from T, and manual missing-window rows give NODE_MICRO_NO_WINDOW. This is an A9 checkpoint for
+  review, not a claim that B41 or A9's remaining contract is closed. U0 unanswered; no UTDF writer.
+- **Verification:** desktop build passes (210 tasks). CTest 260/260 (289.67 s, parallel 5) and check
+  260/260 (285.80 s), with architecture/file-size/docs guards, pass. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless unconfigured, Windows/manual
+  appearance not driven (E32). Docs/schema/module maps, D421/index, ROADMAP/NEXT and owner sheet
+  updated. Oldest PROGRESS entry archived whole, ten live entries retained.
+
 ## 2026-10-31 — A9 review: resolve compiled lane-change stubs (D420)
 
 - **Owner:** native preview accepted so far; remaining B40 choices answered as recommended:
