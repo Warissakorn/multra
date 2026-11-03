@@ -5,8 +5,7 @@ network built for HCM to PTV Vistro 2026 and Synchro 12 (D386). This is the comp
 scope revision that ROADMAP M1.23 requires; imports from those programs stay out. The editor side
 is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). U0 (§8) fixed §3's names from files the owner's
 programs write and read. The writer (`src/project/utdf_export.hpp`, `multra-cli --export-utdf`) writes all six sections:
-geometry since U1, and phases, volumes and timing since U2a. The desktop dialog and UTM are U2b;
-the Vistro median patch waits for Vistro's link numbering. No MULTRA-written file has been imported by the owner yet (UT10).
+geometry since U1, and phases, volumes and timing since U2a. The desktop export with UTM is U2b; the Vistro median patch waits for Vistro's link numbering. No MULTRA-written file has been imported by the owner yet (UT10).
 
 ## 1. Why UTDF
 
@@ -156,7 +155,7 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 | U0 | Probe (§8); this page's §3 fixed from real files; left-hand answer | UT0 |
 | U1 (done 2026-11-03) | Pure writer `utdfDocument(document, mode)` in `src/project/`: Network, Nodes, Links, Lanes geometry, geometric and mirrored; Node `number` (schema 65); CLI `--export-utdf`, `--utdf-mode` | UT0–UT5, UT11 geometry |
 | U2a (done 2026-11-03) | Lanes phases and volumes, Timeplans, Phases; NEMA refusal or unsignalised opt-in (`--utdf-unsignalised`); median and HCM 7th report steps (D443) | UT6–UT8, UT11 timing |
-| U2b | *Number Nodes* and numbers on template Apply; desktop *Export → UTDF…* with the report dialog, UTM (PROJ), atomic write as the CSV tables | UT9 |
+| U2b (done 2026-11-03) | *Number Nodes*, the Number column and field, and numbers on template Apply; desktop *File → Export UTDF for Synchro/Vistro…*, a report dialog with the mode and NEMA option before the file dialog, UTM through PROJ (`GeoProjection::worldToGrid`), and an atomic write (`QSaveFile`) | UT9 |
 | Later | The Vistro median patch, once Vistro's link numbering is confirmed (D441, D443) | UT12 |
 | U3 | Round trip on the owner's machine (OWNER_SITTING item), fixes | UT10 |
 
@@ -347,7 +346,11 @@ and `cli-utdf` (`tests/utdf_cli.cmake`). The U0 junction, built in MULTRA with U
 volumes and §3's controller, reproduces every line of `u0-handwritten-v3.csv` except `[Network]`'s
 values (the project has none) and the external ends' `Grade`. Its `[Timeplans]` and `[Phases]` are
 byte for byte. That is the file Vistro imported as sheeted. The CLI fixture and its expected
-files are `tests/data/utdf/u2-u0-junction*.{traffic.json,csv}`. UT9, UT10 and UT12 are planned.
+files are `tests/data/utdf/u2-u0-junction*.{traffic.json,csv}`. UT9 passes since U2b
+(`utdf-export-ui`, `tests/utdf_export_ui_tests.cpp`): the desktop writes the CLI's expected files
+byte for byte, in both modes, for a project without a map reference. A project with one gets UTM on
+the desktop (`map-geo` checks `worldToGrid`) and world metres from the CLI, so UT9 compares
+projects without a map. UT10 (owner) and UT12 (median patch) are open.
 
 | Row | Asserts |
 |---|---|
@@ -360,7 +363,7 @@ files are `tests/data/utdf/u2-u0-junction*.{traffic.json,csv}`. UT9, UT10 and UT
 | UT6 | Lanes volumes, PHF and %HV equal `Node::analysis` per movement |
 | UT7 | Each preset's Phases rows equal the controller's greens, yellows and all-reds |
 | UT8 | A controller failing `nemaCheck` is refused with its codes |
-| UT9 | The file written by the desktop equals the CLI's |
+| UT9 | The file written by the desktop equals the CLI's (projects without a map reference; with one, the desktop writes UTM) |
 | UT11 | A left-hand fixture exported geometric keeps compass legs and puts the far turn in `R`; mirrored swaps E↔W legs, puts it in `L` and uses right-hand NEMA numbers; one golden file per mode (D437) |
 | UT12 | The Vistro median patch has one `$LEG` row per junction leg with a median, addressed by Vistro's post-import link numbers (D441), and the report lists it with the HCM 7th and right-hand notes |
 | UT10 | (owner) Vistro 2026, and Synchro if it imports UTDF (D438), import the fixture; geometry, lanes, volumes and timing match the sheet |

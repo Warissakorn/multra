@@ -21,6 +21,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QHeaderView>
+#include <QIntValidator>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSignalBlocker>
@@ -44,7 +45,7 @@ void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    nodeTable_ = new QTableWidget(0, 8, body); nodeTable_->setObjectName("editorNodeTable");
+    nodeTable_ = new QTableWidget(0, 9, body); nodeTable_->setObjectName("editorNodeTable");
     nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     nodeTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
@@ -61,6 +62,10 @@ void EditorWindow::buildNodes() {
         form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
         auto* name = new QLineEdit(QString::fromStdString(n->name), &dialog); name->setObjectName("editorNodeName");
         form->addRow(text("editorColumnName"), name);
+        // UTDF U2b (UTDF_EXPORT §5): the export number; empty means none. Repeats refuse on commit.
+        auto* number = new QLineEdit(n->number ? QString::number(*n->number) : QString(), &dialog); number->setObjectName("editorNodeNumber");
+        number->setValidator(new QIntValidator(1, 2147483647, number));
+        form->addRow(text("editorNodeNumberColumn"), number);
         auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
         buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
         buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
@@ -69,9 +74,16 @@ void EditorWindow::buildNodes() {
         connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
         if (dialog.exec() != QDialog::Accepted) return;
         const auto renamed = name->text().toStdString();
-        execute("editorRenameNode", [&](auto& d) { renameNode(d, id, renamed); });
+        const std::optional<int> numbered = number->text().isEmpty() ? std::nullopt : std::optional<int>(number->text().toInt());
+        const auto oldName = n->name; const auto oldNumber = n->number;
+        execute("editorRenameNode", [&](auto& d) {
+            if (renamed != oldName) renameNode(d, id, renamed);
+            if (numbered != oldNumber) setNodeNumber(d, id, numbered);
+        });
     };
     bar->addAction(action("editorRenameNode", {}, rename));
+    // UTDF U2b: every unnumbered Node takes the next free number, in one Undo step.
+    bar->addAction(action("editorNumberNodes", {}, [this] { execute("editorNumberNodes", [](auto& d) { numberNodes(d); }); }));
     bar->addAction(action("editorDeleteNode", {}, [this] {
         const auto id = selectedNode(); if (id.empty()) return;
         execute("editorDeleteNode", [&](auto& d) { deleteNode(d, id); });
@@ -184,7 +196,7 @@ void EditorWindow::buildNodes() {
 }
 void EditorWindow::translateNodes() {
     nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
-        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues"), text("editorNodeStudyArea")});
+        text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues"), text("editorNodeStudyArea"), text("editorNodeNumberColumn")});
     nodeRevision_ = UINT64_MAX;
     translateNodeProposals();
 }
@@ -224,6 +236,9 @@ void EditorWindow::refreshNodes() {
             inArea->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
             inArea->setCheckState(std::find(area.begin(), area.end(), n.id) != area.end() ? Qt::Checked : Qt::Unchecked);
             nodeTable_->setItem(r, 7, inArea);
+            auto* number = new QTableWidgetItem(n.number ? QString::number(*n.number) : QStringLiteral("\u2014"));
+            number->setData(Qt::UserRole, QString::fromStdString(n.id)); editorDesign::setNumericText(number, true);
+            nodeTable_->setItem(r, 8, number);
             if (n.id == keep) nodeTable_->selectRow(r);
         }
         fitTableColumns(nodeTable_);
@@ -235,6 +250,7 @@ void EditorWindow::refreshNodes() {
     const auto current = std::find_if(nodes.begin(), nodes.end(), [&](const auto& x) { return x.id == selectedNode(); });
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));
+    actions_.at("editorNumberNodes")->setEnabled(std::any_of(nodes.begin(), nodes.end(), [](const auto& x) { return !x.number; }));
     actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
     refreshNodeProposals();
 }

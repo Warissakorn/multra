@@ -11,3 +11,10 @@
     add_test(NAME network-image-ui COMMAND multra-network-image-ui-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(network-image-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 60)
     add_dependencies(check multra-network-image-ui-tests)
+
+    add_executable(multra-utdf-export-ui-tests ${PROJECT_SOURCE_DIR}/tests/utdf_export_ui_tests.cpp)
+    target_link_libraries(multra-utdf-export-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-utdf-export-ui-tests REUSE_FROM multra_shell)
+    add_test(NAME utdf-export-ui COMMAND multra-utdf-export-ui-tests "${PROJECT_SOURCE_DIR}/data" "${PROJECT_SOURCE_DIR}")
+    set_tests_properties(utdf-export-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 60)
+    add_dependencies(check multra-utdf-export-ui-tests)

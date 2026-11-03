@@ -6,6 +6,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — UTDF U2b: desktop export, Number Nodes, UTM
+
+- **Numbering:** template Apply numbers an unnumbered Node (`generateJunction`), and re-Apply keeps
+  the number. `numberNodes` and `setNodeNumber` are in `node_commands`.
+- **Nodes page:** a Number column, a Number field in *Rename*, and *Number Nodes* (one Undo step).
+- **Export:** *File → UTDF for Synchro/Vistro…* (`utdf_export_dialog.*`).
+  - It shows the report, with the mode and the NEMA opt-in, before the file dialog.
+  - It writes atomically and refuses the open project.
+  - It writes UTM through `GeoProjection::worldToGrid` when the project has a map reference.
+- **Translations:** en/th strings for every `UTDF_*` code and the dialog.
+- **Tests:**
+  - `utdf-export-ui` (UT9): the desktop writes the CLI's expected files byte for byte in both
+    modes. It also covers cancel, protection, Number Nodes and Thai.
+  - `map-geo` checks `worldToGrid`.
+  - `node-ui` now expects the 9th column.
+  - The jt6 fill now writes schema 65.
+- **Verified:** headless `utdf`, `junctionfill` and `nodeanalysis` pass, and so do desktop
+  `utdf-export-ui`, `map-geo`, `node-ui` and `object-export-ui`. `multra-check-docs` passes.
+
 ## 2026-11-03 — UTDF U2a: phases, volumes and timing (D443)
 
 - **Owner:**
@@ -130,15 +149,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - UTDF_EXPORT §3/§6: in geometric mode the report must tell the user to set left-hand again after import, and that Vistro drops the median.
   - OWNER_SITTING I.3 and NEXT.
 - **Check:** `multra-check-docs` passes.
-
-## 2026-11-03 — Vistro imports the U0 timing; neutral values for unauthored records (D439)
-
-- **Owner imports into Vistro 2026:**
-  - `u0-handwritten-v2-empty.csv` is refused: `VehExt … D1 is invalid`. Empty cells are not allowed.
-  - `u0-handwritten-v2-filled.csv` imports the timing exactly: controller 1, cycle 100, Ring 1 =
-    1·2|4, Ring 2 = 5·6|8, splits 14/44/42/14/44/42. HCM 2010 then gives 186.72 s, LOS F, v/c 0.988.
-- **Owner choice, D439:** the timing records MULTRA does not author get v2-filled's neutral
-  pretimed values: constants and copies of authored values, each listed in the report. UT4 is amended.
-- **Noticed:** the imports look drawn right-hand (row 15, to confirm).
-- **Updated:** UTDF_PROBE §6 rows 13/15, UTDF_EXPORT §3/UT4, the utdf README, OWNER_SITTING I.3
-  and NEXT. `multra-check-docs` passes.

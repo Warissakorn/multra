@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Vistro imports the U0 timing; neutral values for unauthored records (D439)
+
+- **Owner imports into Vistro 2026:**
+  - `u0-handwritten-v2-empty.csv` is refused: `VehExt … D1 is invalid`. Empty cells are not allowed.
+  - `u0-handwritten-v2-filled.csv` imports the timing exactly: controller 1, cycle 100, Ring 1 =
+    1·2|4, Ring 2 = 5·6|8, splits 14/44/42/14/44/42. HCM 2010 then gives 186.72 s, LOS F, v/c 0.988.
+- **Owner choice, D439:** the timing records MULTRA does not author get v2-filled's neutral
+  pretimed values: constants and copies of authored values, each listed in the report. UT4 is amended.
+- **Noticed:** the imports look drawn right-hand (row 15, to confirm).
+- **Updated:** UTDF_PROBE §6 rows 13/15, UTDF_EXPORT §3/UT4, the utdf README, OWNER_SITTING I.3
+  and NEXT. `multra-check-docs` passes.
+
 ## 2026-11-03 — U0: the refused timing leaves no cycle; HCM method is not in UTDF
 
 - **Owner screenshot** of the original `u0-handwritten.csv` imported into Vistro: no cycle, empty

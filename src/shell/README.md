@@ -77,6 +77,7 @@ The other headers:
 | `map_settings_dialog.*` | Map reference and appearance (staged) and navigation | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 | `map_location_picker.*` | Searchable country and province shortcuts that fill the coordinate fields | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 | `vehicle_color_dialog.*` | Per-type fixed or mixed body colours, saved as application-local preferences shared with the lab | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md#vehicle-colour-preferences-d334) |
+| `utdf_export_dialog.*` | File → Export UTDF for Synchro/Vistro: report dialog (mode, NEMA opt-in) then file dialog; UTM from the map reference; atomic write. The writer is `src/project/utdf_export` | [UTDF_EXPORT](../../docs/reference/UTDF_EXPORT.md) |
 | `object_export.*` | File → Export object table (CSV); the formatter is `src/project/object_csv` | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) |
 | `image_export.*` | File → Export network image (PNG); the canvas renders | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) |
 | `automation_server.*` | Optional local JSONL control, one object per line, dispatched on the GUI thread | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |

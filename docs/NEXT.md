@@ -64,22 +64,21 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. No
   M13/M14 milestone gate closes merely from these Linux tests or implementation review.
 
-## M14 — junction slices complete; UTDF U1 and U2a shipped, U2b in progress
+## M14 — junction slices complete; UTDF U1, U2a and U2b shipped
 
 - SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
   [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
   including natural polygon fitting, ownership, site drafts and corridor/reference guards.
-- **UTDF writer:** U1 (D442) and U2a (D443) are done. Contracts are in
+- **UTDF export:** U1 (D442), U2a (D443) and U2b are done. Contracts are in
   [UTDF_EXPORT §7](reference/UTDF_EXPORT.md#7-slices).
-  - `multra-cli --export-utdf` writes all six sections for numbered Nodes, in world metres,
-    geometric or mirrored, with an opt-in `--utdf-unsignalised`.
-  - Passing rows: UT0–UT8 and UT11.
-  - **Compass/NEMA:** mirrored keeps the group numbers, which are already right-hand NEMA numbers
-    (D443).
-- **U2b, the owner's pick, in progress:**
-  - *Number Nodes*, plus numbers on template Apply;
-  - a Number column and field on the Nodes page;
-  - *File → Export → UTDF…* with the report dialog, UTM through PROJ, and an atomic write (UT9).
+  - There are two ways to export:
+    - the CLI, `multra-cli --export-utdf`;
+    - the desktop, *File → UTDF for Synchro/Vistro…*, which shows the report first and writes UTM
+      when the project has a map reference.
+  - Nodes are numbered by template Apply or *Number Nodes*.
+  - Passing rows: UT0–UT9 and UT11.
+  - **Compass/NEMA:** mirrored mode keeps the group numbers, which are already right-hand NEMA
+    numbers (D443).
 - **Owner (OWNER_SITTING I.5, UT10):** import `tests/data/utdf/u2-u0-junction-geometric.csv` into
   Vistro 2026 and report:
   - whether geometry, volumes and timing match UTDF_PROBE §1–§3;

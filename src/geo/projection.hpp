@@ -23,6 +23,8 @@ public:
     bool insideStudy(MetrePoint) const;
     // Browsing/coordinates only; this does not extend the engineering study area.
     bool insideOverview(MetrePoint) const;
+    // UTDF U2b (UTDF_EXPORT §4, UX-3a): the projected grid (UTM easting, northing) of a world point.
+    MetrePoint worldToGrid(MetrePoint p) const { return worldToProjected(p); }
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

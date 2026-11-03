@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
         require(tagged(w, "node") == 1, "The node is not drawn");
         require(table->rowCount() == 1 && table->currentRow() == 0, "The Nodes tab does not list and select the node");
         // S0.2: the small triangle holds no turn, so its membership is refused (NODES §3).
-        require(table->columnCount() == 8 && table->item(0, 5)->text() == "0" && table->item(0, 4)->text() == "0 / 0",
+        require(table->columnCount() == 9 && table->item(0, 5)->text() == "0" && table->item(0, 4)->text() == "0 / 0",
                 "The Nodes tab does not show the membership");
         require(table->item(0, 6)->text().contains("gives no rows"),
                 "The Nodes tab does not show the refusal");
