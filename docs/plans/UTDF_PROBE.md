@@ -80,7 +80,8 @@ if it can import UTDF. Menu names are guesses; correct them on the answer lines.
    - Turn left-hand traffic on and use metric units.
    - Draw §1, enter §2 and §3, and run the HCM 7 signalised report.
    - Save the report as PDF or text: delay and LOS per approach and for the junction.
-2. **Export.** Export UTDF (combined CSV), metric, as `u0-vistro.csv`.
+2. **Export.** *File → Export → Synchro…* writes the UTDF combined CSV (the owner's real `test2.csv`
+   came from this menu, 2026-11-03; Vistro has no item named UTDF). Use metric units and save it as `u0-vistro.csv`.
 3. **Far-turn column.** Find which column `u0-vistro.csv` holds the far turn (EB right, phase 1) in: `EBR` or `EBL`.
    If Vistro lets you, export the same junction again with left-hand traffic off, and note whether
    the column changes.
