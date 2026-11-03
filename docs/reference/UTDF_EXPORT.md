@@ -189,7 +189,7 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 
 | Row | Asserts |
 |---|---|
-| UT0 | U0's golden file (`u0-vistro.csv`, D438) parses with the writer's section reader, and every field §3 names is in it |
+| UT0 | U0's golden file (`u0-vistro.csv`, D438; committed 2026-11-03) parses with the writer's section reader, and every field §3 names is in it. Its timing is Vistro's own numbering and splits, so UT0 compares fields and codes, not timing values |
 | UT1 | A two-Node corridor exports Nodes, Links and Lanes with the numbers, units and distances by hand |
 | UT2 | Re-exporting an unchanged document gives the same bytes; adding a Node keeps the others' numbers |
 | UT3 | Every refusal (unnumbered, ambiguous direction, missing layout) names its Node and writes nothing for it |

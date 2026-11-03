@@ -6,6 +6,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — U0 golden file committed
+
+- **Owner:** exported again from Vistro and accepted it as the golden file, `u0-vistro.csv`
+  (committed byte for byte). It matches §1–§2 with a 100 s cycle and protected-only far turns:
+  EBR is phase 3 and WBR phase 7. The phase numbers, the lagging order and the splits are
+  Vistro's own, not §3's, so UT0 compares fields and codes, not timing values.
+- **Updated:** UTDF_PROBE §6 row 16, UTDF_EXPORT UT0, the utdf README, OWNER_SITTING I and NEXT.
+- **Open before U1:** row 17, Vistro's import of `u0-handwritten-v3.csv` (D440).
+
 ## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
 
 - **Owner:** re-exported the U0 junction from Vistro. Draft 2 matches §1–§2: lanes, pockets,
@@ -119,16 +128,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Still open:** the §1 export, the far-turn column, Synchro's left-hand setting, both imports of
   the hand-written file, and whether Links `Lanes` counts pockets. U1 stays blocked; UTDF_EXPORT
   is unchanged.
-
-## 2026-11-03 — drawing level is not separation (D436, D201 B3)
-
-- **Owner request:** continue NEXT. Every other open line waits on the owner, so this session took the
-  booked fix. Owner choice: separation is a confirmed overpass, or Street segments on different levels.
-- **Change:** `automaticConflicts` no longer skips path pairs because their drawing `level` differs
-  (M3_CONTRACT §1). Pairs of Links generated from an overpass pair or from Street segments on
-  different levels stay apart, so Find crossings and D382 keep their meaning. Hand-drawn Links and
-  Connectors on different levels now get a passive crossing, as the contract says.
-- **Failure first:** the old `levels_apart_do_not_conflict…` became
-  `drawing_level_is_not_separation…`; two new rows cover the overpass and level separators. All three
-  failed before the fix. Shipped projects have every Link at level 0, so nothing they derive changes.
-- **Verification:** release build, `ctest` 272/272, desktop/headless builds and `check`; `multra-check-docs`.

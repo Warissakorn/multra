@@ -12,6 +12,7 @@ Data for the UTDF export ([UTDF_EXPORT](../../../docs/reference/UTDF_EXPORT.md))
 | `u0-vistro-draft2.csv` | The owner's second Vistro 2026 export of the U0 junction (2026-11-03). Matches the sheet's lanes, pockets, names, volumes, PHF 0.92 and HV 5 %. **Draft, not the golden file:** the timing is still 60 s with phases 2/4/6/8. Shows Vistro writes pocket storage on the through column and `[Links] Lanes` without pockets |
 | `u0-handwritten-v3.csv` | `u0-handwritten-v2-filled.csv` with the junction legs' `[Links] Lanes` set to 3 (full lanes plus the pocket, D440). Probes how Vistro reads it (UTDF_PROBE §6 row 17) |
 
-The owner's Vistro 2026 export of the same junction (`u0-vistro.csv`, the golden file for UT0;
-Vistro since D438, as Synchro cannot create UTDF) comes here only if the owner agrees that it may
-be redistributed; otherwise only its field names and units are recorded in UTDF_EXPORT §3.
+`u0-vistro.csv` is the owner's Vistro 2026 export of the U0 junction (metric and left-hand on), the
+golden file for UT0 (D438), committed with permission on 2026-11-03. It matches the sheet's
+geometry and volumes, with a 100 s cycle and protected-only far turns (EBR phase 3, WBR phase 7).
+Its phase numbers and splits are Vistro's own, not UTDF_PROBE §3's.
