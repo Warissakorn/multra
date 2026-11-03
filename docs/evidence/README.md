@@ -40,6 +40,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [macro-sheffi-benchmark.md](macro-sheffi-benchmark.md) | MA15 — Sheffi (1985) Table 5.4 as the Macro benchmark, 2026-10-22 | D294, D272 |
 | [macro-run-procedures.md](macro-run-procedures.md) | How Visum and Aimsun organise a Macro run (web search), 2026-10-19 | D276 |
 | [tampere-node-model.md](tampere-node-model.md) | M11.3 node model — Tampère et al. (2011) read against MESO_NETWORK §5, 2026-10-22 | D297, D292 |
+| [utdf-real-exports.md](utdf-real-exports.md) | Real Synchro 10.1 and Vistro 2026 UTDF exports against the U0 assumptions (field names only) — 2026-11-03 | D386 |
 | [yperman-ltm.md](yperman-ltm.md) | M11.3c link model — Yperman (2007) read against MESO_NETWORK §4–§6; Example 4.5 and §7.1 reproduced, 2026-10-22 | D298, D297 |
 | [meso-signals.md](meso-signals.md) | M11.3d signals — averaged green from Tampère §5.2, Yperman §5.2.1 and HCM Eq. 19-1, 2026-10-22 | D299, D298 |
 | [source-first-step.md](source-first-step.md) | Source first-step clearance — D108, M3.2.8a.1a | D108, D107 |

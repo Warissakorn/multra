@@ -6,6 +6,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — U0 partly answered from real Synchro/Vistro exports
+
+- **Owner supplied:** UTDF exports and project files from two real studies: Synchro 10.1, Vistro 2026
+  (with its `.vistromerge`) and an encrypted Synchro 12.0 `.syn`. None is the UTDF_PROBE §1 junction.
+- **Recorded, not committed:** licence and project data are unknown, so only section and field names
+  and codes went into [utdf-real-exports](evidence/utdf-real-exports.md). UTDF_PROBE §6 rows 3/7/8,
+  OWNER_SITTING I and NEXT now say what is settled.
+- **Findings:**
+  - Node TYPE 3 is unsignalised.
+  - A phase that ends at the cycle wrap is written `End 0`.
+  - `Yield` = End − yellow − all-red.
+  - Vistro's dialect adds U/L2/R2 movements, `D1…D32` phases and `Phase1…4`.
+  - Vistro has a left-hand setting, but UTDF does not carry it.
+- **Still open:** the §1 export, the far-turn column, Synchro's left-hand setting, both imports of
+  the hand-written file, and whether Links `Lanes` counts pockets. U1 stays blocked; UTDF_EXPORT
+  is unchanged.
+
 ## 2026-11-03 — drawing level is not separation (D436, D201 B3)
 
 - **Owner request:** continue NEXT. Every other open line waits on the owner, so this session took the
@@ -242,32 +259,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Docs:** editor contract/index, §9/JT12, Node-analysis/schema, D418/index, B39/E31, module maps,
   ROADMAP/NEXT updated. Answered B37/B38 archived whole to keep OWNER_SITTING under 500 lines;
   oldest PROGRESS entry archived whole, ten live entries retained.
-
-## 2026-10-30 — J4T: real Find crossings Fill and explicit polygon preview (D417)
-
-- **Owner B38:** extend the chosen fit policy to every three-/four-leg junction template.
-  Generated polygons fit automatically; a false flag uses explicit previewed Fit polygon +
-  Fill, one Undo, never restoring true. First template choice keeps current ownership through
-  the crossing column or later Node form; switching template/Detach/polygon edits still clear it.
-- **Implemented:** share D407's original/cut/Connector surface hull and widest-lane padding
-  with transitions, retaining new-Link-leg and neighbour-overlap guards. Named fit-required
-  recovery opens old/proposed outlines; Cancel is unchanged. Preview and Command share a
-  private plan and retain edited-detail/reference refusals. Remaining NODE_CONNECTOR_CROSSES
-  names both Node and each crossing Connector. No field/schema, timing default or F4 change.
-- **Tests first:** original JT20 fails three cases; the all-template/first-choice/diagnostic
-  extension has 11 real failures after correcting a no-op setup assert and rank-aware seams.
-  The explicit-action Qt row also fails before the button/dialog exists. Normal T fixtures now
-  keep the natural polygon; deliberately roomy pocket/reference cases remain explicit.
-- **Coverage:** junctionsignals 40/40 (21 JT20), junctionfill 25/25 including frozen JT13,
-  junctiontemplates 19/19, junctioneditor 27/27 and transitions 14/14. Natural shared/pocket
-  four-leg and signalised T run through both entry paths on both sides; explicit fit covers
-  both T controls/four stems and four-leg pockets, guards/refinement, exact Undo and reopen.
-  Qt drives later first choice → Fill for all three families, explicit preview Cancel/Apply,
-  required phases and nested site forms in English/Thai on both sides. The authored transition
-  fixture now declares its polygon non-generated instead of relying on old first-choice clearing.
-- **Verification:** desktop build 103 tasks, CTest **257/257** (283.98 s, parallel 5), targeted
-  suites 6/6 (30.70 s). One-Node CLI raw bytes match before/after B38 and the pre-J4T baseline
-  except only root buildCommit. Check **257/257** (281.54 s) passes. Linux offscreen only; headless is
-  unconfigured, Windows/manual appearance remains E30. U0 has no answers; no J7/writer started.
-- **Docs:** §5/JT20, signal/editor/schema/readiness contracts, D417/index, B38/E30 and module
-  maps updated; old out-of-repo evidence paths removed. Oldest PROGRESS entry archived whole.

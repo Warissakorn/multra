@@ -477,10 +477,12 @@ there (§6) verbatim and dated; these items only say what must hold.
 
 1. **Synchro 12 golden file** (listed 2026-10-28, D386). Draw UTDF_PROBE §1–§3 and export a metric
    UTDF combined file. Does Synchro's HCM 7 report run without errors, and is the export saved as
-   `u0-synchro.csv`? *Owner:*
+   `u0-synchro.csv`? *Owner:* 2026-11-03: real-study exports from Synchro 10.1 and Vistro gave the
+   field names ([utdf-real-exports](../evidence/utdf-real-exports.md)); the §1–§3 junction is still to draw.
 2. **Vistro 2026 import** (listed 2026-10-28). Import `u0-synchro.csv`. Does Vistro take the
    lanes, pockets, volumes and timing as drawn? *Owner:*
 3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`
    into both programs. Does either refuse it, or draw something other than §1–§3? *Owner:*
 4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
-   it in the UTDF file? *Owner:*
+   it in the UTDF file? *Owner:* 2026-11-03, partial: Vistro has it and its UTDF drops it; Synchro open
+   ([utdf-real-exports](../evidence/utdf-real-exports.md)).
