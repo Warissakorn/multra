@@ -94,6 +94,28 @@ plan. It adds three observations:
   full lanes only. The owner chose to count pockets (D440).
 - `Allow RTOR` is 0 here and was 1 in draft 1, so it follows a project setting.
 
+## Vistro's network export after a UTDF import
+
+After importing `u0-handwritten-v3.csv`, the owner exported Vistro's *Merge Data* file (Visum net
+format 19). It was not committed (owner). Its structure:
+- **Numbering:**
+  - Junction 1 keeps its UTDF number.
+  - The end nodes are renumbered 100100 (W), 100109 (S), 100118 (E) and 100127 (N).
+  - Links are numbered by Vistro: 227 N, 318 E, 409 S, 500 W.
+
+  A patch that addresses legs must use these numbers.
+- **Defaults are omitted.** `$NETWORK` has no `LEFTHANDTRAFFIC` column and `$NODE` no
+  `ICAMETHODSIGNALIZED`, so both are at their defaults (right-hand, Vistro's default method).
+  The owner's real study export lists them.
+- **Pockets** are `$LANE` rows with an empty `INDEXATFROMNODE` and a `LENGTH` of 40 m or 60 m.
+  Departing lanes default to 3.5 m.
+- **Turns** carry the base volume, PHF 0.92, `SHAREHGV` 5 and the signal group.
+- **Signal groups** match §3: SG1 EBR 14 s, SG2 WBT 44 s, SG4 42 s, SG5 WBR 14 s, SG6 44 s, SG8 42 s.
+  The controller restates `Reference Phase` 206 / offset 0 as `TIMEOFFSET` 44 s with
+  `OFFSETREFERENCE` LAGEND.
+- **Legs** are keyed `NODENO;MAINNODENO;INLINKNO;OUTLINKNO` and carry `HASCISLAND` (median) and
+  the channelisation fields.
+
 ## What remains for U0
 
 - The §1–§3 junction redone in Vistro to match the sheet, with its export and HCM 7 report (D438; UTDF_PROBE §6 row 16).

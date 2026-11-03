@@ -85,7 +85,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
     - importing UTDF switches Vistro to right-hand;
     - Vistro shows no median and opens imports as HCM 2010;
     - Vistro writes feet but reads metres.
-  - **Probe in progress (rows 18–19):** a `.vistromerge` patch through Vistro's *Merge Data*
+  - **Probe in progress (rows 18–20; v1 merge left it right-hand, v2 pending):** a `.vistromerge` patch through Vistro's *Merge Data*
     could restore left-hand traffic, HCM 7th and medians that UTDF loses.
   - **When the owner picks U1:** start from UTDF_EXPORT §7. Report any effect on compass/NEMA
     mapping before further signal work.
