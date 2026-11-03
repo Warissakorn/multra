@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Lateral crossing at the window end (D444)
+
+- **Owner:** agreed to the smallest fix first, after the review of the lateral audit: reproduce
+  Finding 1, unify the crossing test and clamp the body. The lane-change state machine waits.
+- **Cause (m2.6 seed 45, vehicle 613):** the span window [240, 277] ends at a join on the target route.
+  At the dead end, `frontPart` put the mapped front on `connector-53`, so `crossingOn` found no crossing
+  and the centre clamp let the body stand on the line. `lateralStart` read the same part, which gives
+  a target of 0 to a change started there.
+- **Change:**
+  - `targetSectionAt` (`lateral.cpp`) is the one target-lane lookup for the start and the crossing.
+  - `spanHolds` (`lanes.hpp`) replaces four copies of the coverage test.
+  - On a side no span covers, the whole body stays in its lane (LATERAL §7; BA44 now pins this).
+- **Rows:** BA158 and BA159 failed before the fix and pass after.
+- **Result, switched on:** m2.6 seed 45 completes 1531 → 1903 (off: 1908). No vehicle straddles at the
+  end of any seed. m2.6 clamps fall from 33 to 28. The lab, four-leg and T-junction runs on equal their
+  off runs.
+- **Open:** Finding 2 (seed 42: 13 clamps) and Finding 3 (the swap lock) are not addressed. The
+  `followerFilter` window-end lookup is recorded in the evidence.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass. There was
+  no desktop build here: Qt is not installed in this container.
+
 ## 2026-11-03 — UTDF U2b: desktop export, Number Nodes, UTM
 
 - **Numbering:** template Apply numbers an unnumbered Node (`generateJunction`), and re-Apply keeps
@@ -136,16 +157,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   is v2-filled with the junction legs' `Lanes` 3 (UTDF_PROBE §6 row 17).
 - **Fixed:** UTDF_EXPORT §3 still said MULTRA never writes unauthored values; it now cites D439.
   Rows 15–16 of UTDF_PROBE §6 had text outside their last cell.
-- **Check:** `multra-check-docs` passes.
-
-## 2026-11-03 — Vistro switches an import to right-hand; no median
-
-- **Owner:**
-  - The project was set left-hand before import; Vistro switched it to right-hand itself.
-  - No median is shown.
-  - The redone `u0-vistro.csv` arrived empty after the first column of every section, so it was not committed and a re-export is pending.
-- **Recorded:**
-  - UTDF_PROBE §6 rows 14–16.
-  - UTDF_EXPORT §3/§6: in geometric mode the report must tell the user to set left-hand again after import, and that Vistro drops the median.
-  - OWNER_SITTING I.3 and NEXT.
 - **Check:** `multra-check-docs` passes.

@@ -349,3 +349,49 @@ TEST(lanechangeduration, ba54_a_close_follower_on_the_target_lane_holds_the_move
     CHECK(clamps == 0);
     CHECK(byId(state, 2)->distance > byId(state, 1)->distance); // the car went by
 }
+
+// D444 (BA158): where the span window ends at a join on the target route, a changer standing at its
+// dead end still crosses. The target lane's section there is the one the span leads onto, not the
+// downstream part a front exactly at the join would otherwise be on (m2.6 seed 45, vehicle 613).
+namespace {
+Stub joinedAtWindowEnd() {
+    auto r = stub(keys(0, 0), 0, 300, 300); // the road is 300 m: the window ends at the lane's end
+    auto& s = r.s;
+    s.segments.push_back({"after", 50, {}});
+    s.segmentCrossSections.push_back({1000, 0, 0, 3.5, 3.5, 0, 50}); // its own carriageway, as a Connector's
+    for (auto& route : s.routes) if (route.segmentIds.front() == r.right) route.segmentIds.push_back("after");
+    for (auto& segment : s.segments) if (segment.id == r.right) segment.next = {"after"};
+    return r;
+}
+}
+TEST(lanechangeduration, ba158_a_changer_at_a_window_ending_at_a_join_crosses) { // BA158
+    auto r = joinedAtWindowEnd();
+    CHECK(validateScenario(r.s).empty());
+    auto state = place(r.s, {{r.left, 300, 0, 0}});
+    state.vehicles[0].desiredSpeed = 0;
+    const auto& target = state.index->parts[state.index->laneChangesOfRoute[state.vehicles[0].routeIndex].at(0).target];
+    CHECK(target.size() == 2 && target[0].start + target[0].length == 300); // the forcing: a join at the window's end
+    state = stepSimulation(std::move(state));
+    CHECK(byId(state, 1)->lateralTarget.has_value());
+    CHECK(std::abs(*byId(state, 1)->lateralTarget + 3.5) < 1e-9); // toward the right lane, not the part past the join
+    for (int t = 0; t < 60 && byId(state, 1)->lateralTarget; ++t) state = stepSimulation(std::move(state));
+    CHECK(segmentOf(state, *byId(state, 1)) != r.left); // crossed
+    CHECK(!byId(state, 1)->lateralTarget);
+}
+
+// D444 (BA159): a side it cannot cross holds the whole body in its lane. A target past such a line is
+// clamped so the body stays inside, and a body already over it comes back (LATERAL §7).
+TEST(lanechangeduration, ba159_the_body_stays_inside_its_lane_on_a_side_it_cannot_cross) { // BA159
+    auto r = stub(keys(0, 0), 0, 200, 250);
+    const double width = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width;
+    for (const double start : {0.0, -1.75}) { // centred, then with its centre on the line
+        auto state = place(r.s, {{r.left, 220, 0, start}}); // past the window: no span covers the body
+        state.vehicles[0].desiredSpeed = 0;
+        state.vehicles[0].lateralTarget = -3.5;
+        for (int t = 0; t < 40; ++t) state = stepSimulation(std::move(state));
+        const auto* v = byId(state, 1);
+        CHECK(!covers(state, 1, r.right));
+        CHECK(v->lateral >= -(1.75 - width / 2) - 1e-9);
+        CHECK(segmentOf(state, *v) == r.left);
+    }
+}

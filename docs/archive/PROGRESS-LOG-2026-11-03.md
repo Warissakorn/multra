@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Vistro switches an import to right-hand; no median
+
+- **Owner:**
+  - The project was set left-hand before import; Vistro switched it to right-hand itself.
+  - No median is shown.
+  - The redone `u0-vistro.csv` arrived empty after the first column of every section, so it was not committed and a re-export is pending.
+- **Recorded:**
+  - UTDF_PROBE §6 rows 14–16.
+  - UTDF_EXPORT §3/§6: in geometric mode the report must tell the user to set left-hand again after import, and that Vistro drops the median.
+  - OWNER_SITTING I.3 and NEXT.
+- **Check:** `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro imports the U0 timing; neutral values for unauthored records (D439)
 
 - **Owner imports into Vistro 2026:**

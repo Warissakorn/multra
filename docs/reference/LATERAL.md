@@ -172,8 +172,10 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
 - The proposed move is `Δ = clamp(yT − lateral, ±maxLateralSpeed · dt)`, read at the cross-section
   of the vehicle's front. `yT` is first clamped so the body stays inside the carriageway's outer
   edges, the outermost lane edges among the front's section and the neighbour sections at that
-  reference station (a Connector path: its own width there), and so the centre stays inside the
-  current lane (on the boundary at most) on each side no span covers (below). An empty range moves nothing.
+  reference station (a Connector path: its own width there), and so the whole body stays inside the
+  current lane (its edge on the boundary at most) on each side no span covers (below); a body already
+  over such a boundary moves back (D444, which replaces D189's centre-on-the-boundary clamp). An empty
+  range moves nothing.
 - **Admission.** Implemented in `moveLaterally` (`src/core/lateral_motion.cpp`), which runs after the
   tick's longitudinal step has published every body. Proposed moves are resolved in **vehicle-id
   order**, as phase 2 (`resolveRequests`) does. A move is admitted only if the new body overlaps
@@ -182,13 +184,14 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   (D189). A refused move keeps the previous `lateral`, and its `lateralSpeed` is 0. `lateralSpeed`
   is `Δ / dt` for an admitted move.
 - **Crossing.** A span **covers** a side when it leaves the vehicle's route, its from-range holds the
-  whole body (the test the instantaneous change already makes), and its target lane at the mapped
-  front is the nearest lane on that side. When the body's centre is strictly past the boundary on a
-  covered side, the route remaps through `recordLaneChange` (`lanes.cpp`), the bookkeeping today's
+  whole body (`spanHolds`, the test the instantaneous change already makes), and its target lane at
+  the mapped front is the nearest lane on that side. The target lane there is `targetSectionAt`, read
+  inside the span's to-range, so a window ending at a join leads onto the lane before the join (D444).
+  When the body's centre is strictly past the boundary on a covered side, the route remaps through `recordLaneChange` (`lanes.cpp`), the bookkeeping today's
   instantaneous change uses, to the mapped distance; `lateral` and `yT` are re-expressed from the new
   lane's centre, so neither moves on the road. The vehicle's `MovedEvent` of that tick names the new lane
   (it reports where the tick ends), and the `LaneChangeEvent` follows it. Without a span, `yT` is
-  clamped so the centre stays inside the current lane.
+  clamped so the body stays inside the current lane (D444).
 - Lateral speed is a capped rate, not an acceleration-limited state, in this version. That is a
   stated simplification for M6 to test.
 

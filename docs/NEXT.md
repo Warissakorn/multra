@@ -135,11 +135,29 @@ a planning-level method (otherwise back to the owner).
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Lateral, before any shipped behaviour carries its keys**
-  ([lateral-run-audit](evidence/lateral-run-audit.md)): on `m2.6-study-template` a changer past its
-  window straddles the line and jams both lanes (seed 45: 1908 → 1531 completed; clamps 1 → 33).
-  LANE_CHANGE_DURATION §9's reopen condition is met; abandoning a change is the owner's call. The
-  switched-on cost (+10–28 % wall) is not worth cutting until then.
+- **Lateral, before any shipped behaviour carries its keys** ([lateral-run-audit](evidence/lateral-run-audit.md),
+  [crossing-window](evidence/lateral-crossing-window.md)). Finding 1 (the stuck straddler) is fixed by
+  D444, and m2.6 seed 45 now completes 1903 switched on (off: 1908). The owner agreed on this order, one
+  step per session, each with failure-first rows and the audit batch re-run (seeds 42–51, off and on):
+  1. **Finding 2:** m2.6 seed 42 has 13 clamps on vehicle 1133, a waiting changer over the line, and
+     seed 43 has 6. The car-following and the hard cap both call `closestVehicle` with the same
+     filter, so the clamps are not two separate searches. Suspects:
+     - `hiddenLength` (`caps.cpp`) assumes the leader is on the follower's route parts, but a
+       covered-lane leader (D210) is on another lane;
+     - the clamp rule itself moves a vehicle to `allowedDistance` with speed 0.
+
+     Reproduce with a probe like D444's before changing anything.
+  2. **A body over a line whose move is refused:** a refused move (`blocked`) keeps a body that is
+     over a line where it is. Step it back as D208 does.
+  3. **Finding 3, the swap lock** (lab seeds 44/49, vehicles 83/88): refuse a start while a changer
+     coming the other way targets this lane over an overlapping length; break same-tick ties by id.
+  4. **`followerFilter`'s lookup at the window end:** it still uses `frontPart` there; reuse
+     `targetSectionAt`.
+
+  The lane-change state machine and the no-progress timer come only if residue remains. A timer is
+  a behaviour value: a key needs the owner (D204 added none). Abandoning a change is still the owner's
+  call. The +10–28 % wall cost switched on is not worth cutting until then, and it needs a profile
+  first.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
   (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5

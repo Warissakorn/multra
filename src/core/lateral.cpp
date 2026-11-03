@@ -188,4 +188,16 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
     if (!filter.covered.empty()) filter.onlyNext = &index.lateral.onlyNext;
     return filter;
 }
+const SegmentCrossSection& targetSectionAt(const Scenario& s, const ScenarioIndex& index,
+                                           const RouteLaneChange& change, double front) {
+    const double at = mappedOnto(change, front);
+    const auto& parts = index.parts[change.target];
+    const bool window = change.toEnd > change.toStart;
+    for (const auto& part : parts) {
+        const double end = part.start + part.length;
+        if (window && end <= change.toStart + 1e-9) continue; // wholly before the to-range
+        if (at <= end + 1e-9) return s.segmentCrossSections[part.segmentIndex];
+    }
+    return s.segmentCrossSections[parts.back().segmentIndex];
+}
 }

@@ -117,18 +117,21 @@ TEST(lateralmotion, ba44_a_covered_crossing_remaps_the_route_and_keeps_the_body_
     CHECK(std::abs(state.vehicles[0].lateral) < 1e-12); // centred in the right lane
 }
 
-TEST(lateralmotion, ba44_without_a_span_the_centre_stops_on_the_lane_line) { // BA44
+TEST(lateralmotion, ba44_without_a_span_the_body_stays_inside_its_lane) { // BA44, D444
+    // D189 stopped the centre on the lane line; D444 keeps the whole body in the lane on a side no
+    // span covers, so a changer that cannot cross never stands across both lanes.
     auto s = road(2, 3.5, keys(0, 0));
     s.laneChanges.clear();
+    const double inside = 1.75 - carWidth(s) / 2;
     auto state = place(s, {{s.segments[laneSegment(s, 0)].id, 50, 10, 0}});
     state.vehicles[0].lateralTarget = -3.5;
     const auto route = state.vehicles[0].routeIndex;
     for (int t = 0; t < 40; ++t) {
         state = stepSimulation(std::move(state));
         CHECK(state.vehicles[0].routeIndex == route);
-        CHECK(state.vehicles[0].lateral >= -1.75);
+        CHECK(state.vehicles[0].lateral >= -inside - 1e-12);
     }
-    CHECK(state.vehicles[0].lateral == -1.75); // the centre on the boundary, never past it
+    CHECK(std::abs(state.vehicles[0].lateral + inside) < 1e-12); // the body's edge on the line, never past it
 }
 
 TEST(lateralmotion, ba44_a_body_never_passes_the_carriageway_edge) { // BA44

@@ -63,4 +63,9 @@ inline bool lateralCounts(const LateralFilter* filter, const OccupiedSpan& span)
 LateralFilter followerFilter(const Scenario& scenario, const ScenarioIndex& index,
     const std::vector<RoutePart>& parts, double front, double width, double lateral,
     const DriverBehaviour& behaviour, double speed);
+// D444: the target lane's cross-section where `front` maps through `change`. Read inside the span's
+// to-range, so a mapped front exactly at a join at the window's end is on the lane the span leads onto,
+// not on the part past the join (frontPart's convention). The lane-change start and the crossing share it.
+const SegmentCrossSection& targetSectionAt(const Scenario& scenario, const ScenarioIndex& index,
+                                           const RouteLaneChange& change, double front);
 }

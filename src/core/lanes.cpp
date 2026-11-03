@@ -84,10 +84,8 @@ LateralStart lateralStart(const Scenario& s, const ScenarioIndex& index, const V
     const auto& rate = s.behaviours[refs.behaviour].lateral.maxLateralSpeed;
     if (!index.lateral.on || !rate) return {};
     const double front = vehicle.distance;
-    const auto centre = [&](std::size_t route, double d) {
-        return s.segmentCrossSections[frontPart(index.parts[route], d).segmentIndex].centre;
-    };
-    const double target = centre(change.target, at) - centre(refs.route, front);
+    const double target = targetSectionAt(s, index, change, front).centre -
+                          s.segmentCrossSections[frontPart(index.parts[refs.route], front).segmentIndex].centre;
     const double ahead = vehicle.speed * std::abs(target - vehicle.lateral) / *rate; // the front's travel during the move
     const double travel = ahead + s.vehicleTypes[refs.type].length;
     // The nearest zone line at or ahead of `from` must be at least `travel` ahead (equal starts).
@@ -208,7 +206,7 @@ double mappedOnto(const RouteLaneChange& c, double at) {
 const RouteLaneChange* laneChangeTargetOf(const ScenarioIndex& index, std::size_t route, double front, double rear) {
     for (const auto& change : index.laneChangesOfRoute[route]) {
         if (index.remainingOfRoute[change.target] >= index.remainingOfRoute[route]) break;
-        if (rear >= change.fromStart - 1e-9 && front <= change.fromEnd + 1e-9) return &change;
+        if (spanHolds(change, front, rear)) return &change;
     }
     return nullptr;
 }
@@ -350,7 +348,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         if (inConflictArea(index, route, rear, front) || vehicle.lateralTarget) continue; // D206: one change at a time
         for (const auto& change : index.laneChangesOfRoute[route]) {
             if (index.remainingOfRoute[change.target] >= index.remainingOfRoute[route]) break;
-            if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
+            if (!spanHolds(change, front, rear)) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
             // Nearest vehicle ahead of and behind the mapped place, over this tick's snapshot and
@@ -408,7 +406,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot
-            if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
+            if (!spanHolds(change, front, rear)) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
             const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0, behaviour, vehicle.speed);

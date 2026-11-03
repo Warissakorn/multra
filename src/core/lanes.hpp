@@ -8,6 +8,10 @@
 #include <optional>
 
 namespace multra {
+// Whether a span's from-range holds the whole body: the one test the start and the crossing share (D444).
+inline bool spanHolds(const RouteLaneChange& change, double front, double rear) {
+    return rear >= change.fromStart - 1e-9 && front <= change.fromEnd + 1e-9;
+}
 // Validation of the compiled spans and dead ends; called by validateScenario.
 std::vector<ValidationIssue> laneChangeIssues(const Scenario&);
 // OVERTAKING §2 (D215): kerbLaneBias outside (0, 5], or without D95's threshold, at `path`.kerbLaneBias.

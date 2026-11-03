@@ -1,6 +1,7 @@
 #include "lateral_motion.hpp"
 #include "following.hpp"
 #include "lanes.hpp"
+#include "lateral.hpp"
 #include "routes.hpp"
 #include <algorithm>
 #include <cmath>
@@ -35,8 +36,8 @@ std::optional<Crossing> crossingOn(const Scenario& s, const ScenarioIndex& index
     });
     for (const auto* list : {&index.laneChangesOfRoute[route], &index.discretionaryOfRoute[route]})
         for (const auto& change : *list) {
-            if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
-            const auto& to = s.segmentCrossSections[frontPart(index.parts[change.target], mappedOnto(change, front)).segmentIndex];
+            if (!spanHolds(change, front, rear)) continue;
+            const auto& to = targetSectionAt(s, index, change, front); // D444
             if (to.carriageway != at.section->carriageway) continue;
             if (const double d = sign * (to.centre - at.section->centre); d > 0 && d <= adjacent + 1e-9) return Crossing{&change, &to};
         }
@@ -133,8 +134,10 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         double low = right + type.width / 2 - centre, high = left - type.width / 2 - centre;
         const auto toRight = crossingOn(s, index, refs[v].route, at, front, rear, -1);
         const auto toLeft = crossingOn(s, index, refs[v].route, at, front, rear, +1);
-        if (!toRight) low = std::max(low, -half);
-        if (!toLeft) high = std::min(high, half);
+        // D444: on a side it cannot cross, the whole body stays in its lane (a body over that line comes back).
+        const double inside = std::max(0.0, half - type.width / 2);
+        if (!toRight) low = std::max(low, -inside);
+        if (!toLeft) high = std::min(high, inside);
         if (low > high) continue;
         const double step = *behaviour.lateral.maxLateralSpeed * dt;
         const double delta = std::clamp(std::clamp(*vehicle.lateralTarget, low, high) - vehicle.lateral, -step, step);
