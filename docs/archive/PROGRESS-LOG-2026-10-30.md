@@ -5,7 +5,7 @@ Whole entries moved from the live PROGRESS log.
 ## 2026-11-02 — all 34 UI audit corrections (D432)
 
 - **Owner request:** detailed UI review, additional sizing/proportion review, then fix everything.
-  [Evidence](evidence/ui-audit-fixes.md) maps all 34 findings to code and reproducible regressions.
+  [Evidence](../evidence/ui-audit-fixes.md) maps all 34 findings to code and reproducible regressions.
 - **Data safety:** results/automation exports protect project/recovery paths; document generations
   invalidate all list/diagnostic caches; rejected Problems clear on replacement; input/route tint
   ownership is explicit. Staged forms validate before closing and keep errors/drafts; untouched
