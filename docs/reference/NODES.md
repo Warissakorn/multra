@@ -39,6 +39,10 @@ that Macro and Meso compile (S2, M10, M11). Rule 4 applies: every number a Node 
     polygon's (`simplePolygon`, `src/project/zone_codec.cpp`), moved to a shared helper.
   - `generated` is written only when true. It is cleared by the first edit of that Node
     (WORKFLOW §1.3).
+  - `number` (schema 65, [UTDF_EXPORT §5](UTDF_EXPORT.md#5-node-and-link-numbers)) is the optional
+    positive export id. Template Apply assigns one to an unnumbered Node. On the Nodes page,
+    *Number Nodes* fills every unnumbered Node in one Undo step, and *Rename* edits the number. It
+    leaves `generated` alone; `NODE_NUMBER_INVALID`/`NODE_NUMBER_DUPLICATE` refuse on commit.
 - **File form.** The key is written only when a Node exists, so other files keep their bytes and
   schema. A file of schema 48 carries it. An older file that does is refused with
   `EDIT_UNSUPPORTED_FIELD network.nodes`.

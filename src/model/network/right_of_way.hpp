@@ -98,8 +98,9 @@ MergeSide mergeSide(const Network&, const RuntimeSections&, const std::string& s
 
 // M3.2.4c (D68): what the drawing implies where nobody has authored an area -- Vissim's automatic
 // conflict areas. Derived, never stored, so they need no lifecycle and a file never holds one.
-//  - A crossing: two lane paths of different roads on one level whose surfaces overlap, that no
-//    authored area covers. It is PASSIVE (priority undetermined): it compiles to nothing, and
+//  - A crossing: two lane paths of different roads whose surfaces overlap, that no authored area
+//    covers. A drawing level alone does not keep them apart; Links generated from an overpass pair
+//    or from Street segments on different levels do (D436). It is PASSIVE (priority undetermined): it compiles to nothing, and
 //    vehicles ignore each other there until the author sets a priority. A Connector against its
 //    own Links (its mouths) and two Connectors leaving or entering the same lane are not crossings.
 //  - A merge: each pair of an automatic merge group, as takeOverMerge would store it, with the

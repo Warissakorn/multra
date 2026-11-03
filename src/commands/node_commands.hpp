@@ -6,6 +6,14 @@ namespace multra {
 std::string putNode(ProjectDocument&, Node);
 void renameNode(ProjectDocument&, const std::string& id, const std::string& name);
 void deleteNode(ProjectDocument&, const std::string& id); // EDIT_UNKNOWN_OBJECT when absent
+// UTDF U2b (UTDF_EXPORT §5, D388 UX-1a): a Node's export number, or none. A number is an id, not a
+// shape, so it leaves `generated` alone; repeats and values below 1 are refused on commit (nodeIssues).
+void setNodeNumber(ProjectDocument&, const std::string& id, std::optional<int> number);
+// *Number Nodes*: every unnumbered Node, in document order, takes the next number above the largest
+// in use; numbered Nodes keep theirs. Returns the ids numbered (empty: nothing to do).
+std::vector<std::string> numberNodes(ProjectDocument&);
+// The number a newly numbered Node takes: one above the largest in use (1 when none).
+int nextNodeNumber(const ProjectDocument&);
 // S0.5 (D265): adds every nodeSuggestions polygon as a `generated` Node; returns their ids.
 std::vector<std::string> suggestNodes(ProjectDocument&);
 // S3.5 (STREET_SEGMENTS §5, D309): Merge nodes. The first Node takes the convex hull of every listed Node's

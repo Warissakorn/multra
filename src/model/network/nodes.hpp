@@ -6,6 +6,7 @@
 namespace multra {
 // Blank or duplicate ids (against every other network id), a polygon that is not simple
 // (NODE_POLYGON_INVALID), two Nodes that share any point (NODE_OVERLAP, at the later one).
+// A `number` below 1 (NODE_NUMBER_INVALID) or repeated (NODE_NUMBER_DUPLICATE, at the later one, schema 65).
 // Paths are "nodes[i]...".
 std::vector<ValidationIssue> nodeIssues(const Network&);
 }

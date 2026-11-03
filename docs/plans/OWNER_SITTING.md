@@ -475,12 +475,25 @@ nothing. Numbers are not reused.
 The junction, the steps and the answer table are on [UTDF_PROBE](UTDF_PROBE.md). Write each answer
 there (§6) verbatim and dated; these items only say what must hold.
 
-1. **Synchro 12 golden file** (listed 2026-10-28, D386). Draw UTDF_PROBE §1–§3 and export a metric
-   UTDF combined file. Does Synchro's HCM 7 report run without errors, and is the export saved as
-   `u0-synchro.csv`? *Owner:*
-2. **Vistro 2026 import** (listed 2026-10-28). Import `u0-synchro.csv`. Does Vistro take the
-   lanes, pockets, volumes and timing as drawn? *Owner:*
+1. **Vistro 2026 golden file** (listed 2026-10-28, D386; Vistro since D438, 2026-11-03). Draw
+   UTDF_PROBE §1–§3 with left-hand traffic on and export a metric UTDF combined file as
+   `u0-vistro.csv`. Does the HCM 7 report run without errors, and which column holds the far turn?
+   *Owner:* Synchro cannot create UTDF (2026-11-03). The field names of real Synchro 10.1 and Vistro
+   exports are recorded ([utdf-real-exports](../evidence/utdf-real-exports.md)). Draft 1 was received
+   2026-11-03 (metric, left-hand on): the far turn is under `EBR` and the file is in feet. The redo to
+   match §2–§3 is pending (UTDF_PROBE §6 row 16). The golden `u0-vistro.csv` is committed (100 s, protected far turns, Vistro's phase numbers).
+   `u0-handwritten-v3.csv` imports as sheeted (row 17, D440 holds).
+2. **Synchro import** (listed 2026-10-28; revised by D438). Can Synchro import UTDF? If so, import
+   `u0-vistro.csv`. Does it take the lanes, pockets, volumes and timing as drawn? *Owner:*
 3. **MULTRA's hand-written file** (listed 2026-10-28). Import `tests/data/utdf/u0-handwritten.csv`
-   into both programs. Does either refuse it, or draw something other than §1–§3? *Owner:*
+   into Vistro, and into Synchro if it imports UTDF. Does either refuse it, or draw something other than §1–§3? *Owner:*
+   2026-11-03, Vistro: geometry, lanes, pockets and volumes came through; timing was refused
+   (UTDF_PROBE §6 row 6). v2-filled imports the timing exactly; v2-empty is refused (row 13, D439).
+   Median not shown (row 14); importing switches Vistro to right-hand (row 15).
 4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
-   it in the UTDF file? *Owner:*
+   it in the UTDF file? *Owner:* 2026-11-03, answered: Synchro is right-hand only; Vistro has it and its
+   UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both
+   modes (D437). A UTDF import can never be left-hand in Vistro, and Merge Data ignores the
+   setting; Vistro uses mirrored mode plus a median patch (D441).
+5. **First MULTRA-written file (UT10, D442, D443).** Import `tests/data/utdf/u2-u0-junction-geometric.csv` into
+   Vistro: do geometry, volumes and timing match §1–§3 (as v3 did); are the empty `[Network]` cells accepted? *Owner:*

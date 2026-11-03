@@ -1,0 +1,28 @@
+﻿$VISION
+* MULTRA U0 patch v2, hand-written 2026-11-03 (UTDF_PROBE §6 row 20)
+* Merge after importing u0-handwritten-v3.csv: left-hand traffic, HCM 7th for node 1,
+* and a 2 m median on Main St (links 318 and 500, as Vistro numbers them after that import).
+* 
+* Table: Version block
+* 
+$VERSION:VERSNR;FILETYPE;LANGUAGE;UNIT;VISUMVERSIONNO
+19;Net;ENG;KM;2026.00
+
+* 
+* Table: Network
+* 
+$NETWORK:NETVERSIONID;LEFTHANDTRAFFIC
+1.21;1
+
+* 
+* Table: Nodes
+* 
+$NODE:NO;USELOCALICAMETHOD;ICAMETHODSIGNALIZED
+1;1;HCM 7th Edition
+
+* 
+* Table: Legs
+* 
+$LEG:NODENO;MAINNODENO;INLINKNO;OUTLINKNO;HASCISLAND;CISLANDWIDTH
+1;0;318;318;1;2m
+1;0;500;500;1;2m

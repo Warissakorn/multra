@@ -187,6 +187,7 @@ void addNodesJson(const Network& n, Json& network) {
         if (node.analysis) nodes.back()["analysis"] = analysisJson(*node.analysis);
         if (node.junction) nodes.back()["junction"] = junctionRecipeJson(*node.junction);
         if (!node.approachDirections.empty()) nodes.back()["approachDirections"] = approachDirectionsJson(node.approachDirections);
+        if (node.number) nodes.back()["number"] = *node.number;
     }
     network["nodes"] = nodes;
 }
@@ -204,7 +205,8 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
             (void)value;
             if (key != "id" && key != "name" && key != "polygon" && key != "generated" && (key != "coarse" || schema < 53) &&
                 (key != "analysis" || schema < 58) &&
-                (key != "junction" || schema < 61) && (key != "approachDirections" || schema < 61))
+                (key != "junction" || schema < 61) && (key != "approachDirections" || schema < 61) &&
+                (key != "number" || schema < 65))
                 invalid(path + "." + key);
         }
         Node node;
@@ -218,6 +220,11 @@ std::vector<Node> parseNodes(const Json& network, int schema) {
         if (j.contains("analysis")) node.analysis = parseAnalysis(j.at("analysis"), path + ".analysis", schema);
         if (j.contains("junction")) node.junction = parseJunctionRecipe(j.at("junction"), path + ".junction");
         if (j.contains("approachDirections")) node.approachDirections = parseApproachDirections(j.at("approachDirections"), path + ".approachDirections");
+        if (j.contains("number")) {
+            const auto& v = j.at("number");
+            if (!v.is_number_integer() || v.get<long long>() < 1 || v.get<long long>() > 2147483647) invalid(path + ".number");
+            node.number = static_cast<int>(v.get<long long>());
+        }
         const auto& polygon = j.at("polygon");
         for (std::size_t k = 0; k < polygon.size(); ++k) {
             const auto& p = polygon[k];
@@ -247,6 +254,9 @@ bool usesGeneratedFlags(const ProjectDocument& d) {
     const auto& r = n.rightOfWay;
     return any(n.connectors) || any(n.signalHeads) || any(r.waitingLines) || any(r.conflictAreas) || any(r.priorityRules) ||
            any(r.stopControls) || (d.definition && any(d.definition->signalControllers));
+}
+bool usesNodeNumbers(const ProjectDocument& d) {
+    return std::any_of(d.network.nodes.begin(), d.network.nodes.end(), [](const auto& n) { return n.number.has_value(); });
 }
 bool usesNodeAnalysis(const ProjectDocument& d) {
     return std::any_of(d.network.nodes.begin(), d.network.nodes.end(), [](const auto& n) { return n.analysis.has_value(); });

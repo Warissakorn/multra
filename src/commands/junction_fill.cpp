@@ -29,7 +29,8 @@ JunctionFillStatus junctionFillStatus(const ProjectDocument& d,const Node& node,
 std::vector<ValidationIssue> junctionFillIssues(const ProjectDocument& d,const Node& node,const NodeFillCatalogs& catalogs) {
     return junctionFillStatus(d,node,catalogs).issues;
 }
-std::vector<std::string> generateJunction(ProjectDocument& d,const std::string& id,const NodeFillCatalogs& catalogs) {
+std::vector<std::string> generateJunction(ProjectDocument& d,const std::string& nodeId,const NodeFillCatalogs& catalogs) {
+    const std::string id=nodeId; // callers pass the Node's own id; `d` is replaced below
     const auto node=std::find_if(d.network.nodes.begin(),d.network.nodes.end(),[&](const auto& x){return x.id==id;});
     if(node==d.network.nodes.end())throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
     auto p=junctionDetail::plan(d,*node,catalogs);
@@ -37,6 +38,8 @@ std::vector<std::string> generateJunction(ProjectDocument& d,const std::string& 
     authorNodePriority(p.document,p.turns,catalogs.priority);
     std::vector<std::string> ids;for(const auto& [key,value]:p.turns){(void)value;ids.push_back(key);}
     d=std::move(p.document); // History's existing refine rule removes coarse only after detail exists.
+    // UTDF U2b (UTDF_EXPORT §5, UX-1a): Apply numbers an unnumbered Node; re-Apply keeps its number.
+    for(auto& n:d.network.nodes)if(n.id==id&&!n.number){int largest=0;for(const auto& x:d.network.nodes)if(x.number)largest=std::max(largest,*x.number);n.number=largest+1;}
     return ids;
 }
 }

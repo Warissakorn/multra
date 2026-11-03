@@ -94,6 +94,7 @@ target_sources(multra_project PRIVATE src/project/node_model_demand.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_fill.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_source_codec.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_comparison.cpp)
+target_sources(multra_project PRIVATE src/project/utdf_legs.cpp src/project/utdf_signals.cpp src/project/utdf_export.cpp)
 target_link_libraries(multra_project PUBLIC multra_model multra_eval multra_runner Threads::Threads
     nlohmann_json::nlohmann_json PRIVATE multra_options)
 
@@ -249,6 +250,7 @@ if(BUILD_TESTING)
     target_sources(multra-tests PRIVATE tests/node_model_demand_tests.cpp tests/node_model_demand_edge_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_model_stub_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_analysis_source_tests.cpp)
+    target_sources(multra-tests PRIVATE tests/utdf_export_tests.cpp tests/utdf_signal_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_analysis_comparison_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_editor_tests.cpp tests/junction_corridor_conflict_tests.cpp tests/transition_tests.cpp tests/transition_reference_tests.cpp tests/junction_layout_tests.cpp tests/junction_template_tests.cpp tests/junction_recipe_tests.cpp tests/junction_command_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_fill_tests.cpp tests/junction_fill_run_tests.cpp tests/junction_signal_tests.cpp tests/junction_t_tests.cpp tests/junction_polygon_tests.cpp tests/junction_signal_reference_tests.cpp tests/junction_signal_run_tests.cpp tests/junction_fill_completion_tests.cpp tests/junction_fill_parity_tests.cpp
@@ -272,7 +274,7 @@ if(BUILD_TESTING)
         queue_counter tjunction tjunction_controlled tjunction_signal automatic_conflict conflict_geometry
         rightofway_runtime rightofway_editor lanechange lane_correspondence mouth_sweep conflict_follow
         discretionary lanelab lane_centres equation batch compare evaluationperiod cooldown amber traveltime los w74 w74codec perceptioncodec perceptionmotion perceptionlane perceptiondelay reactiondischarge lateralcodec lateralspan lateralmotion lateralzone lanechangeduration laneswap straddlerleader curvespeed kerbbias commitdecel mergedecel speeddecision speedarea speeddist stopdwell lanepref driverfactor redrunning mergeclamps joinanticipation stopfloor nodes nodemembership nodeevaluation nodesuggest studyperiods modepcu macronetwork mesonetwork macroassign macrobenchmark mesodemand mesonode mesoloading mesooutput macrooutput streetsegmentcatalog streetsegments streetsegmentcrossings streetsegmentcoarse streetsegmentseams streetsegmentschema linkspeed readiness filldefaults nodedetail studyarea nodeproposals givewaystop w74traits w74run demandcounts zonescodec zonescommands odexpand parkinglot parkingcodec parkingproject parkingoutputs seedmixing circuit lab)
-    list(APPEND MULTRA_TEST_GROUPS namedmacro streetsegmentzone mesostreetsegment nodeanalysis junctionlayout junctiontemplates junctionfill junctionsignals transitions junctioneditor)
+    list(APPEND MULTRA_TEST_GROUPS namedmacro streetsegmentzone mesostreetsegment nodeanalysis junctionlayout junctiontemplates junctionfill junctionsignals transitions junctioneditor utdf)
     foreach(group ${MULTRA_TEST_GROUPS})
         add_test(NAME ${group} COMMAND multra-tests ${group})
     endforeach()
@@ -345,6 +347,8 @@ if(BUILD_TESTING)
     set_tests_properties(cli-node-analysis PROPERTIES PASS_REGULAR_EXPRESSION "\"delay\": 59\\.86[0-9]*,\n *\"flow\": 2826\\.08")
     add_test(NAME cli-node-analysis-args COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json" --node-analysis --seeds 1-2)
     set_tests_properties(cli-node-analysis-args PROPERTIES PASS_REGULAR_EXPRESSION "--node-analysis needs --project and takes only --csv and --data-dir")
+    add_test(NAME cli-utdf COMMAND "${CMAKE_COMMAND}" "-DCLI=$<TARGET_FILE:multra-cli>" "-DSOURCE=${PROJECT_SOURCE_DIR}"
+        "-DTEST_ROOT=${CMAKE_BINARY_DIR}/utdf-cli-test" -P "${PROJECT_SOURCE_DIR}/tests/utdf_cli.cmake")
     add_test(NAME cli-meso COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/meso-two-route.traffic.json" --meso)
     set_tests_properties(cli-meso PROPERTIES PASS_REGULAR_EXPRESSION "\"validated\": false")
     add_test(NAME cli-meso-seeds COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/meso-two-route.traffic.json" --meso --seeds 1-2)

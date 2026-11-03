@@ -36,9 +36,7 @@ NodeAnalysisRun runNodeAnalysis(const ProjectDocument& d, const std::filesystem:
         // Exhibit 19-11 (PDF p. 1430-1431) defaults for whatever the Node does not state.
         out.analysisPeriod = a.analysisPeriod.value_or(0.25);
         if (!a.analysisPeriod) out.defaults.push_back("analysisPeriod");
-        double entering = 0;
-        for (const auto& t : a.turns) entering += t.vehiclesPerHour;
-        out.peakHourFactor = a.peakHourFactor.value_or(std::abs(out.analysisPeriod - 0.25) > 1e-12 ? 1.00 : entering >= 1000 ? 0.92 : 0.90);
+        out.peakHourFactor = nodeAnalysisPeakHourFactor(a);
         if (!a.peakHourFactor) out.defaults.push_back("peakHourFactor");
         out.baseSaturationFlow = a.baseSaturationFlow ? a.baseSaturationFlow->value : 1900;
         out.baseSaturationSource = a.baseSaturationFlow ? a.baseSaturationFlow->source : "HCM 7 Exhibit 19-11 (metro population >= 250,000)";

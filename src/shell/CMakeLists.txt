@@ -5,7 +5,7 @@ target_sources(multra_shell PRIVATE junction_preview_dialog.cpp junction_cross_s
     junction_form_widgets.cpp junction_catalog_dialog.cpp junction_recipe_dialog.cpp junction_site_dialogs.cpp node_analysis_dialog.cpp node_analysis_panel.cpp node_analysis_fill_dialog.cpp node_analysis_manual_dialog.cpp)
 include(node_analysis_tests.cmake)
 target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
-target_sources(multra_shell PRIVATE vehicle_color_dialog.cpp object_export.cpp image_export.cpp ../editor/canvas_image.cpp)
+target_sources(multra_shell PRIVATE vehicle_color_dialog.cpp object_export.cpp utdf_export_dialog.cpp image_export.cpp ../editor/canvas_image.cpp)
 target_sources(multra_shell PRIVATE automation_server.cpp editor_automation.cpp editor_automation_lifecycle.cpp automation_geometry.cpp automation_document.cpp)
 target_sources(multra_shell PRIVATE editor_macro.cpp editor_link_types.cpp macro_run_dialog.cpp street_segment_zone_dialog.cpp) # Macro dialogs
 target_sources(multra_shell PRIVATE editor_street_segments.cpp editor_cross_sections.cpp editor_crossings.cpp) # S3.3b (D307), S3.5 (D309)

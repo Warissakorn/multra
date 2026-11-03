@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "editor_window.hpp"
 #include "object_export.hpp"
+#include "utdf_export_dialog.hpp"
 #include "image_export.hpp"
 #include "editor_interaction.hpp"
 #include "editor_style.hpp"
@@ -118,6 +119,11 @@ void EditorWindow::buildWorkspace() {
             catch(const std::exception& error){showError(error);}
         }));
     }
+    // UTDF U2b (UTDF_EXPORT §7): report first, then the file; the document is only read.
+    findChild<QMenu*>("editorFileMenu")->addAction(action("editorExportUtdf",{},[this]{
+        try {exportUtdfDialog(this,history_.document(),[this](const char* name){return text(name);},{file_,recoveryFile_});}
+        catch(const std::exception& error){showError(error);}
+    }));
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});
     menu("editorViewMenu",{"editorFit","editorSnap","editorToggleBackground","editorToggleWireframe","editorVehicleColors","","editorNetworkObjects","editorPaletteIconsOnly","editorInspector","editorObjects","editorHistory","","editorFocusCanvas","editorFloatCanvas","editorResetLayout"});
     menu("editorMapMenu",{"editorMapSettings","editorMapGoTo","editorMapRetry","editorToggleMap","editorRemoveMap"});

@@ -108,13 +108,41 @@ TEST(automatic_conflict, a_lanes_second_area_shares_its_line_moved_before_the_fi
                                      [&](const auto& w) { return w.id == roadLines[0]; });
     test::near(line.point.station, onRoad(near).entryStation - 1, 1e-9);
 }
-TEST(automatic_conflict, levels_apart_do_not_conflict_and_order_does_not_matter) {
+namespace {
+// Two crossing one-lane Links, each generated from its own Street segment (D436).
+ProjectDocument generatedCrossing(int otherLevel) {
+    ProjectDocument d;
+    const auto a = addLink(d, {{0, 0}, {200, 0}}, 1, 3.5), b = addLink(d, {{100, -60}, {100, 60}}, 1, 3.5);
+    d.network.streetSegments.push_back({"ss-a", "", {{0, 0}, {200, 0}}, std::nullopt, 0, {}, {a}});
+    d.network.streetSegments.push_back({"ss-b", "", {{100, -60}, {100, 60}}, std::nullopt, otherLevel, {}, {b}});
+    editableLink(d, a).streetSegmentId = "ss-a"; editableLink(d, b).streetSegmentId = "ss-b";
+    editableLink(d, b).level = otherLevel;
+    return d;
+}
+}
+TEST(automatic_conflict, an_overpass_separates_the_links_its_street_segments_generate) {
+    auto d = generatedCrossing(0);
+    CHECK(of(automaticConflicts(d.network), ConflictKind::crossing).size() == 1); // the forcing: confirmed junction or not yet asked
+    d.network.overpasses.push_back({"ss-a", "ss-b"});
+    CHECK(of(automaticConflicts(d.network), ConflictKind::crossing).empty());
+}
+TEST(automatic_conflict, street_segments_on_different_levels_never_meet) {
+    // WORKFLOW §4 / D382: Find crossings never asks about them, so no overpass pair is stored.
+    CHECK(of(automaticConflicts(generatedCrossing(1).network), ConflictKind::crossing).empty());
+    // A hand-drawn Link on the other level still crosses a generated one: only Street segments separate.
+    auto d = generatedCrossing(0);
+    const auto hand = addLink(d, {{150, -60}, {150, 60}}, 1, 3.5); editableLink(d, hand).level = 1;
+    std::size_t withHand = 0;
+    for (const auto& a : of(automaticConflicts(d.network), ConflictKind::crossing)) withHand += touches(a, hand);
+    CHECK(withHand == 1);
+}
+TEST(automatic_conflict, drawing_level_is_not_separation_and_order_does_not_matter) {
     ProjectDocument d;
     addLink(d, {{0, 0}, {200, 0}}, 1, 3.5);
     const auto bridge = addLink(d, {{100, -60}, {100, 60}}, 1, 3.5);
     CHECK(of(automaticConflicts(d.network), ConflictKind::crossing).size() == 1); // the forcing: at grade they cross
-    editableLink(d, bridge).level = 1;
-    CHECK(automaticConflicts(d.network).empty());
+    editableLink(d, bridge).level = 1; // D201 B3, D436: M3_CONTRACT §1, a drawing level alone separates nothing
+    CHECK(of(automaticConflicts(d.network), ConflictKind::crossing).size() == 1);
     // The same drawing listed in another order derives the same areas.
     const auto t = bare();
     auto shuffled = t.document.network;

@@ -23,6 +23,7 @@ struct Node {
     std::optional<NodeCoarse> coarse{}; std::optional<NodeAnalysis> analysis{}; // schema 53 (S3.6a), 58 (M13 A1)
     std::optional<NodeJunction> junction{}; // M14 J3a, schema 61: a recipe, never the layout
     ApproachDirections approachDirections{}; // schema 61, independent of the recipe
+    std::optional<int> number{}; // schema 65 (UTDF_EXPORT §5, D388): the export's intersection id, positive and unique
     bool operator==(const Node&) const = default;
 };
 }

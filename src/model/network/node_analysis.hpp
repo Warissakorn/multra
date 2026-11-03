@@ -1,5 +1,6 @@
 #pragma once
 #include "node_analysis_source.hpp"
+#include <cmath>
 #include <optional>
 #include <string>
 #include <vector>
@@ -36,4 +37,12 @@ struct NodeAnalysis {
     std::optional<NodeAnalysisModelSource> modelSource{}; // schema 64, A9 Fill from model
     bool operator==(const NodeAnalysis&) const = default;
 };
+// Exhibit 19-11's PHF default when the Node states none: 1.00 for an analysis period other than
+// 15 min, else 0.92 at >= 1,000 veh/h entering and 0.90 below. Shared by A1 and the UTDF export.
+inline double nodeAnalysisPeakHourFactor(const NodeAnalysis& a) {
+    if (a.peakHourFactor) return *a.peakHourFactor;
+    double entering = 0;
+    for (const auto& t : a.turns) entering += t.vehiclesPerHour;
+    return std::abs(a.analysisPeriod.value_or(0.25) - 0.25) > 1e-12 ? 1.00 : entering >= 1000 ? 0.92 : 0.90;
+}
 }

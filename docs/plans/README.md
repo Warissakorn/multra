@@ -11,7 +11,7 @@ the live queue. Owner observations are distinct from automated checks.
 | [CANVAS_STYLE.md](CANVAS_STYLE.md) | Owner-directed Aimsun-like canvas drawing: grill answers Q1–Q12 and slices A–E (2026-11-01; A is D423) |
 | [OSM_BACKGROUND.md](OSM_BACKGROUND.md) | OSM raster map implementation and delivery order (2026-10-12) |
 | [OWNER_SITTING.md](OWNER_SITTING.md) | Every item waiting on the owner, for one sitting (D143) |
-| [UTDF_PROBE.md](UTDF_PROBE.md) | M14 U0: the reference junction and steps for the owner's Synchro 12 and Vistro 2026 UTDF probe — 2026-10-28 |
+| [UTDF_PROBE.md](UTDF_PROBE.md) | M14 U0: the reference junction and steps for the owner's UTDF probe; Vistro 2026 writes the golden file (D438) — 2026-10-28, revised 2026-11-03 |
 | [M1_ACCEPTANCE.md](M1_ACCEPTANCE.md) | M1 owner acceptance record |
 | [M2_PLAN.md](M2_PLAN.md) | M2 plan — and the M1 review it starts from |
 | [M2_GATE.md](M2_GATE.md) | M2 gate record |

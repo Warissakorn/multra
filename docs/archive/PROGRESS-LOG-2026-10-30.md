@@ -2,6 +2,297 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-02 — main CI green again: node-ui and object-groups-ui
+
+- **Owner request:** fix the failing build (Native C++ run 692 on main, Linux and Windows) and rebuild.
+- **node-ui:** the test still expected a resting Node outlined in ink; D434 draws it as a shade with
+  no pen. The test now checks that the cleared Node has no outline.
+- **object-groups-ui:** the fixed icons-only rail (palette max width = its width, 96ad27a) made Qt
+  hold the canvas dock at its old height when Results → Problems showed the docks again, and the
+  window grew 860 → 903 px. `setWorkspacePreset` now lifts the rail cap before showing/hiding docks;
+  `resizePalette` sets it again, so the rail stays fixed afterwards.
+- **Verification:** release preset build, `ctest` 272/272 and `check` pass locally (Qt 6.4, offscreen).
+
+## 2026-11-02 — session-path docs: one copy of each standing rule and owner item
+
+- **Owner request:** optimize docs/AI context; owner chose the recommended items 3 → 2 → 1.
+- **AGENTS:** dropped the finished D15 (migration) and D16 (M1.1–M1.3) authorizations, which read
+  as a live exception to one system per session; their two live rules stay. The CLA note, the
+  owner-only appearance/gate rule and the new-dialog convention (D318/D319) moved here from NEXT.
+- **NEXT:** removed restated OWNER_SITTING items (E22–E24, F4, G1/G2, H1/H2, C13, E11, B29) and
+  finished history (A1–A3, S5, Node detail measurements now pointed to ENGINEERING_NOTES); every
+  open item stays in order. No decision, gate or owner item changed.
+- **Measured (characters, ≈ tokens ÷ 4):** session path CLAUDE+AGENTS+NEXT+docs/README
+  36,619 → 34,722 (≈ 9,150 → 8,680 tokens); NEXT 14,430 → 12,425. The rest of NEXT is open work.
+- **Not changed, for the owner:** OWNER_SITTING's 14-day carve-out rule is not being applied
+  (17 items listed in September/early October remain on the sheet).
+- **Verification:** `multra-check-docs` and `multra-check-file-sizes` (built from `tools/`) pass;
+  no code or build change. Oldest whole entry archived, retaining ten.
+
+## 2026-11-02 — all 34 UI audit corrections (D432)
+
+- **Owner request:** detailed UI review, additional sizing/proportion review, then fix everything.
+  [Evidence](../evidence/ui-audit-fixes.md) maps all 34 findings to code and reproducible regressions.
+- **Data safety:** results/automation exports protect project/recovery paths; document generations
+  invalidate all list/diagnostic caches; rejected Problems clear on replacement; input/route tint
+  ownership is explicit. Staged forms validate before closing and keep errors/drafts; untouched
+  numbers, day-two/fractional periods and language-switch Properties drafts retain exact values.
+  Empty width tokens refuse consistently, clicked cell editors own Remove, and 200 Unicode scalar
+  names work for Thai and surrogate-pair characters.
+- **Space:** Drawing opens without Objects; Tables reserves a readable network preview; Results
+  uses the dock area with per-tab Macro/Meso/batch bars and stacked movement/queue tables below
+  1250 px. Only the active tab imposes its vertical minimum. Common Properties shrinks when folded
+  and scrolls when expanded. Object columns retain manual sizes and cap initial prose at 320 px;
+  period editors fit their cells, seeds reserve 104 px, and growing speed forms keep fixed footers.
+  The compact palette gives its released width to the canvas, with thin group separators; named
+  tools use short captions and a separate chord column. Lab uses a 320 px panel and aligned,
+  stacked fields. Session Compact/Comfortable/Large density provides 24/28/32 px rows/controls.
+- **Canvas:** Fit reserves pixel room for labels, including cached roads during Run. Labels avoid
+  viewport edges/HUD/map overlays after redraw/pan/resize and see the same road shapes in cached
+  and live rendering. PNG scene export keeps independent placement; canvas destruction detaches
+  its scene before label-member teardown. Scientific values, schemas and engine algorithms stay
+  unchanged, with all not-yet-validated markers retained.
+- **Measured:** Drawing at 1366×768 is 936×575 (51.3% of the window); compact releases/reclaims
+  123 px English / 119 px Thai with zero Properties growth. At 1024, movement viewports are
+  992×208 / 992×220 (8/9 full rows), queue names 726 / 667 px; both locales fit 800×600 folded
+  and expanded. Screenshots and commands are linked from the evidence note.
+- **Verification:** desktop build and `check` pass: 271/271 CTest entries (381.90 s, parallel 5),
+  plus architecture, file-size and documentation guards. New data/layout regressions cover both
+  locales and layout at 1×/1.5×/2×; existing core/CLI/analytical CSV parity, docking, gestures,
+  cached/live Run rendering and PNG export remain green. Linux GCC 14.2.0 / Qt 6.8.2 offscreen;
+  headless unconfigured, Windows/native manual appearance not driven (E34).
+- **Contracts:** D432/index, workflow, periods, canvas plan, module maps, evidence, NEXT and E34
+  updated; oldest PROGRESS entry archived whole. Windows owner appearance remains open; this
+  does not start canvas style C, another M13 slice or UTDF, or close a milestone gate.
+
+## 2026-10-31 — A9 finish: explicit manual-count comparison windows (D422)
+
+- **Owner B41:** explicit per-Node session-only confirmation before comparison, matching batch
+  start/end and Node T, labelled manual counts, nothing stored. Checkpoints a6d0a25/d663bf5 are
+  accepted so far: m2.6 totals 2040 veh/h over all three reviewed windows, source-64 reopen,
+  manual-edit schema/source clearing and exact Undo, CBD/source retention and old-output parity.
+- **Implemented:** Results → Node analysis → Micro side by side → Confirm manual count window…
+  selects a Node by id/name and shows batch window/effective T. Required start/end preview uses
+  the same project comparison guards as the result. Missing/non-finite/reversed/mismatched or
+  duplicate confirmations refuse with localized named Node paths; no duration/name inference.
+  Cancel keeps prior state, Confirm replaces only that Node’s session window. No project field,
+  schema step, Command/revision or implicit run. Re-Analyse, batch changes/cancel, edits/Undo
+  and New/reopen clear confirmations; saved project and analytical report bytes stay unchanged.
+- **Presentation:** Node/approach rows label Manual counts versus Model demand in both locales.
+  The comparison CSV alone appends quoted countsSource through shared formatters and marking;
+  HCM/CLI formats, values, missing estimates, n/CI/unfinished and distinct measures stay as before.
+- **Tests first:** both native manual cases fail on missing rows after asserting real completed
+  batches/entered T; all four UI cases fail on the missing confirmation button. A test setup
+  compile error (multiplying an optional T without dereferencing) was fixed before recording
+  product reds. Coverage includes absolute-window mismatch with equal duration, correct window
+  with wrong T, wrong/duplicate ids, labels, Cancel, no History/Save change, CSV equality,
+  re-Analyse, edit/Undo, new batches and reopen, on both driving sides and English/Thai.
+- **Verification:** native nodeanalysis 46/46, Micro UI 8/8, Fill UI 4/4 and JT12 UI 8/8
+  pass, including expanded lifecycle rows. Desktop build (108 tasks) and CTest 260/260
+  (303.56 s, parallel 5) pass; check 260/260 (301.67 s) also passes with architecture,
+  file-size and documentation guards. Five legacy project/CSV comparisons are byte-exact and raw JSON is
+  exact except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured,
+  Windows/manual/high-DPI appearance not driven (E32). No HCM/core/other-level algorithm change.
+- **Docs:** D422/index, answered B41/E32, contracts/schema/module maps and ROADMAP/NEXT updated.
+  Oldest PROGRESS entry archived whole, ten live entries retained. A9 is implemented and stops
+  for owner review; no open A9 contract question, M13 gate closure or UTDF writer. U0 unanswered.
+
+## 2026-10-31 — A9 staged Fill, source schema and Micro comparison (D421)
+
+- **Implemented answered B40:** Analysis → Fill from model… stages explicit window/HV choices,
+  StudyPeriod minus clockStart, all-turn before/after including zero/stale removal, T=window
+  hours and PHF=1. Child Confirm stages only; parent Confirm is one Command/Undo. Preserve
+  adjustments/saturation, and make drawn approach Clear stay visible like drawn turns (E31).
+- **Provenance:** feature-selected schema 64, closed/version-gated historical source fields,
+  exact captured project SHA plus compiler manifest file hashes/fallbacks and explicit choices.
+  Older/source-absent files keep their schema/bytes. Command and raw History demand-row/T/PHF
+  edits clear an unchanged claim; site-only edits retain it, Undo restores it. Source is exposed
+  in the form/settings and conditional analytical JSON/CSV, with no method or old-format change.
+- **Micro:** reuse the explicitly requested completed batch. Capture decoded source and ordered
+  Node/in-Link ids at compile; duplicate names are harmless. Match source/window/T, present
+  Node/approach HCM and Micro measures beside each other with n/CI/unfinished/blanks, and
+  localized named refusals. Shared comparison CSV keeps marker/marking; active-view export is
+  disabled without rows. No implicit run, subtraction, turn matching or new delay formula.
+  Edits/Undo, seed changes, cancellation and reopen discard comparisons under batch lifecycle.
+- **Failure first:** source codec/replacement cases failed before schema/T/PHF implementation;
+  both-locale/side Fill and Micro suites failed on missing controls, native comparison on empty
+  rows. Compile/setup mistakes (missing hash include, helper name colliding with namespace test,
+  requiring completed vehicles where a valid seed had none) were corrected before claiming reds.
+- **Coverage:** native nodeanalysis 44/44; new Qt Fill 4/4 and Micro 4/4, both sides/locales,
+  retaining JT12 8/8 and real CLI source-64 JSON/CSV parity. Exact snapshot source, site retention,
+  staged Cancel/no-op, one Undo/Redo/reopen, demand-edit clearing, batch/window/stale/refusal and
+  actual export cases pass. Legacy five project/report byte comparisons pass: project/CSV exact,
+  raw JSON exact after replacing only buildCommit. No core/HCM/Micro/Meso/Macro algorithm change.
+- **Pending:** B41 manual-count window confirmation remains unanswered; no window is inferred
+  from T, and manual missing-window rows give NODE_MICRO_NO_WINDOW. This is an A9 checkpoint for
+  review, not a claim that B41 or A9's remaining contract is closed. U0 unanswered; no UTDF writer.
+- **Verification:** desktop build passes (210 tasks). CTest 260/260 (289.67 s, parallel 5) and check
+  260/260 (285.80 s), with architecture/file-size/docs guards, pass. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless unconfigured, Windows/manual
+  appearance not driven (E32). Docs/schema/module maps, D421/index, ROADMAP/NEXT and owner sheet
+  updated. Oldest PROGRESS entry archived whole, ten live entries retained.
+
+## 2026-10-31 — A9 review: resolve compiled lane-change stubs (D420)
+
+- **Owner:** native preview accepted so far; remaining B40 choices answered as recommended:
+  explicit window/StudyPeriod placement, replace T with duration and PHF with 1 before Confirm;
+  reuse completed requested batches for Node/approach n/CI/unfinished, keeping quantities distinct.
+  B41 asks the manual-count window only; no answer is assumed. U0 remains unanswered, no writer.
+- **Failure first:** shipped m2.6 plus Suggest nodes refused its singleton-origin path-4 stub,
+  as did the hand-counted pocket on both sides. Corrected the ambiguous fixture's forcing setup
+  to enter on a real source and give positive stub demand two complete, different Node exits.
+- **Fixed:** follow every compiled laneChanges target through further stubs and accept only
+  agreeing complete traversals. A stub with targets cannot fall back to a broader origin family.
+  Target-free stubs retain the exact-origin fallback. Visit graph cycles once; stage all results
+  before installation, and copy queue ids before appending so vector growth cannot alter a choice.
+  Determined demand totals are conserved; different/partial target traversals still refuse.
+- **Tests:** six new both-side cases cover real m2.6 windows, the 1200 veh/h pocket's hand totals
+  720/240/240 and the ambiguous control. Native nodeanalysis 38/38 passes. No stored field/schema,
+  method, geometry or level output change. Desktop build, CTest 258/258 (274.43 s) and check
+  258/258 (270.13 s) pass, with architecture/file-size/docs guards. Five fixture/project JSON
+  reports differ only in buildCommit; CSV and project bytes are unchanged. Linux offscreen;
+  headless unconfigured, Windows/manual not run.
+- **Docs:** native contract, B40 answers/B41, D420/index and NEXT updated; B33–B36 and oldest
+  PROGRESS entry archived whole, ten live entries retained. Next remains the rest of A9.
+
+## 2026-10-31 — A9 native expected-demand preview checkpoint (D419)
+
+- **Owner:** J7 fe827c8 approved: real CLI/editor JSON/CSV parity for saved and unsaved
+  Save-representation snapshots; shipped projects/node analysis unchanged except buildCommit.
+  M14 junction slices are complete; U0 remains unanswered and no writer starts.
+- **B40:** asked six contract choices before code. Owner chose expected Micro demand, explicit
+  HV types, whole-set replacement/provenance cleared by later manual demand edits, and named
+  unresolved-demand refusals (1/4/5/6). T/PHF and the comparison action (2/3) remain unanswered;
+  their recommendations are not assumed. Schema 64 is booked for provenance, not consumed.
+- **Independent implementation:** read-only expected-demand preview captures/parses the same
+  bytes, reuses the compiler, integrates requested input intervals and maps complete runtime
+  traversals to derived turns. Use reference-to-lane stations and exact compiler origins for
+  entry-lane stubs; never multiply a turn by possible lane paths. Explicit HV weighting, zero
+  rows/retained optional %HV and source revision/manifest; no sampled traffic or achieved counts.
+  Refuse partial/unresolved traversals and affected potential parking releases, including
+  lot-to-lot sources. A provably empty lot without gate demand stays harmless.
+- **Tests:** NA24's direct interval/lane/stub rows failed against the empty interface on both
+  sides before implementation. Extended guards exposed a parking fixture without its required
+  gate; fixed the forcing setup. The empty-lot control then failed on an overbroad refusal,
+  before its guard fix. Eight new native cases cover those paths, clock-placed OD/compositions,
+  scheduled decision intervals, invalid requests/HV types, partial routes and runtime choices.
+  Native nodeanalysis now passes 32/32, including existing method rows.
+- **Unfinished:** no stored field/codec/version, Fill dialog/Command, T/PHF policy or Micro
+  comparison. Both-locale UI rows and NA26–NA30 are still planned, not claimed. E31 records the
+  cheap drawn-approach clear inconsistency for the next dialog touch; J7 approval stays intact.
+- **Verification:** desktop build, CTest 258/258 (280.29 s) and check 258/258 (283.04 s) pass.
+  A separate non-PCH header compile caught a missing complete Json include; fixed it, then
+  passed standalone compilation, another desktop build and native nodeanalysis 32/32.
+  Architecture/file-size/docs guards pass. Linux offscreen only, including existing JT12
+  en/th cases; this is not a claim of the still-unimplemented new UI rows.
+  The configured four-leg fixture and four shipped projects retain project bytes, and their
+  before/after --node-analysis JSON bytes differ only in buildCommit. No Windows/manual
+  verdict; headless is unconfigured. NEXT names the two pending answers and exact remaining work.
+  B39 and the oldest PROGRESS entry moved whole to indexed archives; ten live entries retained.
+
+## 2026-10-31 — J7: Node analysis form, snapshot and Results (D418)
+
+- **Owner:** J4T approved, including natural polygons, both entry paths/sides, 200/90/60/40 m
+  corridors, correct short-pocket refusal and unchanged shipped/analysis bytes. J7 is A9 first
+  half only. B39 answered: current snapshot, exact saved bytes when equal; otherwise exact Save
+  bytes labelled unsaved at Analyse, with CLI parity after saving the unchanged snapshot.
+- **Implemented:** staged compass L/T/R turn volumes/%HV, Node PHF/period/CBD/sourced saturation
+  and approach adjustments; missing differs from zero. Existing codec checks shape/sign, HCM
+  checks its ranges on Analyse. Stale/extra rows are preserved and explicitly clearable.
+  setNodeAnalysis is one Command/Undo, Cancel/no-op unchanged. No lane/timing copy or new schema.
+- **Results:** shared project report/metadata/marking for CLI and GUI; synchronous calculation
+  over exactly recorded/parsed bytes. Separate group, approach, intersection, defaults/source
+  and localized refusal tables; unavailable figures blank. Partial totals retain D383's existing
+  warning. Source revision, captured-snapshot note, stale/Undo freshness, generation reset and
+  marked CSV/Copy; protect active project/recovery from export. No Window-header growth.
+- **Tests first:** initial fixture incorrectly assumed the template switch kept generated;
+  corrected the forcing assert before proving missing actions on all four side/locale pairs.
+  Extended form tests then exposed the missing source requirement for a saturation override;
+  fixed in UI without tightening older-file decoding. All 8 JT12 form/result cases pass.
+  The 28 actual CLI subprocess runs match JSON/CSV for non-canonical saved bytes, unsaved-then-saved
+  snapshots, external-file changes, method/queue refusals, multiple/empty configured Nodes;
+  plus defaults/zero, Cancel, exact Undo/reopen, explicit stale-row clearing and export guards.
+- **Verification:** the first full CTest run was 253/258: the old seven-tab expectation and
+  four layout cases failed. Updated the tab inventory and made the hidden page ignore minimum
+  size, with reflow labels; retained canvas/layout thresholds. Those six targeted suites then
+  passed (25.31 s), including JT12. Desktop build and CTest **258/258** (290.45 s, parallel 5)
+  pass; check **258/258** (297.74 s) also passes, with architecture/file-size/docs guards.
+  The one-Node before/final CLI bytes match except buildCommit.
+  The first build exhausted local
+  disk on debug executables; stripped debug sections and used a local-only strip-debug linker
+  cache flag, retaining debug objects and source/FP flags. No tracked build flag changed.
+  Linux offscreen only; headless unconfigured, Windows/manual UI remains E31. U0 unanswered;
+  no UTDF writer, Fill from model, timing proposal or Micro side-by-side.
+- **Docs:** editor contract/index, §9/JT12, Node-analysis/schema, D418/index, B39/E31, module maps,
+  ROADMAP/NEXT updated. Answered B37/B38 archived whole to keep OWNER_SITTING under 500 lines;
+  oldest PROGRESS entry archived whole, ten live entries retained.
+
+## 2026-10-30 — J4T: real Find crossings Fill and explicit polygon preview (D417)
+
+- **Owner B38:** extend the chosen fit policy to every three-/four-leg junction template.
+  Generated polygons fit automatically; a false flag uses explicit previewed Fit polygon +
+  Fill, one Undo, never restoring true. First template choice keeps current ownership through
+  the crossing column or later Node form; switching template/Detach/polygon edits still clear it.
+- **Implemented:** share D407's original/cut/Connector surface hull and widest-lane padding
+  with transitions, retaining new-Link-leg and neighbour-overlap guards. Named fit-required
+  recovery opens old/proposed outlines; Cancel is unchanged. Preview and Command share a
+  private plan and retain edited-detail/reference refusals. Remaining NODE_CONNECTOR_CROSSES
+  names both Node and each crossing Connector. No field/schema, timing default or F4 change.
+- **Tests first:** original JT20 fails three cases; the all-template/first-choice/diagnostic
+  extension has 11 real failures after correcting a no-op setup assert and rank-aware seams.
+  The explicit-action Qt row also fails before the button/dialog exists. Normal T fixtures now
+  keep the natural polygon; deliberately roomy pocket/reference cases remain explicit.
+- **Coverage:** junctionsignals 40/40 (21 JT20), junctionfill 25/25 including frozen JT13,
+  junctiontemplates 19/19, junctioneditor 27/27 and transitions 14/14. Natural shared/pocket
+  four-leg and signalised T run through both entry paths on both sides; explicit fit covers
+  both T controls/four stems and four-leg pockets, guards/refinement, exact Undo and reopen.
+  Qt drives later first choice → Fill for all three families, explicit preview Cancel/Apply,
+  required phases and nested site forms in English/Thai on both sides. The authored transition
+  fixture now declares its polygon non-generated instead of relying on old first-choice clearing.
+- **Verification:** desktop build 103 tasks, CTest **257/257** (283.98 s, parallel 5), targeted
+  suites 6/6 (30.70 s). One-Node CLI raw bytes match before/after B38 and the pre-J4T baseline
+  except only root buildCommit. Check **257/257** (281.54 s) passes. Linux offscreen only; headless is
+  unconfigured, Windows/manual appearance remains E30. U0 has no answers; no J7/writer started.
+- **Docs:** §5/JT20, signal/editor/schema/readiness contracts, D417/index, B38/E30 and module
+  maps updated; old out-of-repo evidence paths removed. Oldest PROGRESS entry archived whole.
+
+## 2026-10-30 — J4T core checkpoint; natural polygon choice pending (D416, B38)
+
+- **Owner:** J6/J6a approved. B33 fixes three stages/compass numbering; B37 selected two full
+  incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3, and a measuring-copy stem
+  extension for both signalised and two-way-stop T templates. Ordinary F4 remains unchanged.
+- **Implemented:** one installed protected T; only major through 2/6, physical major far 1/5,
+  existing minor 4/8. Both numbered rings remain, including a one-phase ring. No timing
+  defaults: cycle/green/yellow/allRed are entered; clearance/waiting stay separate and cycle
+  closes exactly. Required numbers derive before timing is complete; Fill, form and seams
+  share that set. No new enum, stored field, schema or HCM procedure.
+- **Cuts:** extend only the full-width measuring stem to the far major painted boundary,
+  then use the existing overlap cuts. Published geometry/stations are on the original Links,
+  with reference/outside/refine guards and one Undo. D400 is superseded for templates only.
+- **Tests first:** seven new signal/T rows failed on the old catalog/mapping/cuts, while all
+  nine JT9 cases passed; the former orthogonal-T refusal row failed on its new success assert.
+  UI digit extraction was corrected after its first assert included the explanatory suffix;
+  re-running the original form proves the missing four-phase subset before restoring the fix.
+  A catalog fixture now explicitly selects a four-leg entry rather than assuming it is first.
+- **Coverage:** both sides/four compass stems, literal U0 numbers, single-ring waiting,
+  missing/unused/grid/cycle/protected-lane guards, physical opposition versus labels, manual
+  controller/checker cases, pocket drafts/re-apply, retained/refused references, full Undo/reopen,
+  HCM's six movement greens and Micro seed 42. Node form is driven in English/Thai.
+- **Docs:** signal contract split before the root page's 500-line limit; JT18/JT19, D416/index,
+  schema/readiness/module maps, B37/E30, ROADMAP and NEXT updated; oldest whole entry archived.
+- **Final workflow finding (B38):** removing the fixture's authored 60 m square exposes
+  NODE_CONNECTOR_CROSSES with the actual 14.5 m-radius Find crossings polygon on both sides.
+  The T core is committed at b7be7c94 but the slice is not complete. Template/major selection
+  can already clear generated, so another polygon policy is an owner choice. Asked before
+  implementing growth; JT20 is pending. Preserve the failing patch and original/candidate
+  JSON in the evidence directory; restore the roomy tests to green while awaiting B38.
+- **Verification:** desktop build and CTest **257/257** (279.81 s, parallel 5) pass; native
+  junctionsignals **19/19**, junctionfill **25/25**, junctiontemplates **19/19**, junctioneditor
+  **27/27** and both-locale Qt forms pass. CLI raw bytes match except buildCommit. Check
+  **257/257** (280.92 s) passes. U0 has no answers; no writer/interchange claim or J7 work. Linux only; headless
+  unconfigured, Windows/manual UI not run (E30).
+  After restoring the core fixtures, the checkpoint desktop build and targeted signal/recipe
+  tests pass **2/2** (7.74 s); docs/file-size/diff guards pass. B38 remains unanswered.
+
 ## 2026-10-30 — J6a: exact endpoints fix Fill and corridor exit lanes (D415)
 
 - **Owner:** J6 at 3ec3d39/09b0689 is approved. Diagnose ordinary Fill's pre-existing

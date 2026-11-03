@@ -19,6 +19,10 @@ void projection() {
     const auto round=p.mercatorToWorld(p.worldToMercator(control));near(round.x,control.x);near(round.y,control.y);
     r.anchorWorldX=123;r.anchorWorldY=-456;r.rotationDegrees=90;GeoProjection rotated(r);
     const auto north=rotated.geographicToWorld({99,13});near(north.x,123-control.y,1e-5);near(north.y,-456,1e-5);
+    // UTDF U2b: world -> UTM grid. Zone 47's central meridian is 99 E (false easting 500 km), so the
+    // anchor at (99, 0) is grid (500000, 0) and 13 N is the meridional arc, under any anchor/rotation.
+    const auto grid=rotated.worldToGrid(north);near(grid.x,500000,1e-5);near(grid.y,1437135.722171435,0.01);
+    const auto anchor=rotated.worldToGrid({123,-456});near(anchor.x,500000,1e-6);near(anchor.y,0,1e-6);
     require(rotated.insideStudy({123,-456}),"Anchor outside study");require(!rotated.insideStudy({100124,-456}),"Unbounded study");
     bool failed=false;try {p.worldToMercator({std::numeric_limits<double>::quiet_NaN(),0});}catch(const std::exception&){failed=true;}
     require(failed,"Invalid coordinate accepted");

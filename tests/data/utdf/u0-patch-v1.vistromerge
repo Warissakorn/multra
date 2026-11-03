@@ -1,0 +1,20 @@
+﻿$VISION
+* MULTRA U0 patch v1, hand-written 2026-11-03 (UTDF_PROBE §6 row 18)
+* Sets what UTDF cannot carry: left-hand traffic and the HCM method of junction 1.
+* 
+* Table: Version block
+* 
+$VERSION:VERSNR;FILETYPE;LANGUAGE;UNIT
+19;Net;ENG;KM
+
+* 
+* Table: Network
+* 
+$NETWORK:LEFTHANDTRAFFIC
+1
+
+* 
+* Table: Nodes
+* 
+$NODE:NO;USELOCALICAMETHOD;ICAMETHODSIGNALIZED
+1;1;HCM 7th Edition

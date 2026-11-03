@@ -61,20 +61,30 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   CLI parity and old-output byte checks; both driving sides/locales, then commit/push the same
   branch and stop again. Keep Window header ≤500 lines. Windows/high-DPI/manual appearance is
   [OWNER_SITTING E32](plans/OWNER_SITTING.md), with E31's cleared-approach carry-over fixed.
-- After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. U0
-  still has no answers, so U1/the UTDF writer remains blocked; no M13/M14 milestone gate closes
-  merely from these Linux tests or implementation review.
+- After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. No
+  M13/M14 milestone gate closes merely from these Linux tests or implementation review.
 
-## M14 — junction slices complete; UTDF awaits U0
+## M14 — junction slices complete; UTDF U1, U2a and U2b shipped
 
 - SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
   [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
   including natural polygon fitting, ownership, site drafts and corridor/reference guards.
-- **U0 is waiting on the owner** ([OWNER_SITTING I](plans/OWNER_SITTING.md#i--utdf-probe-m14-u0)):
-  [UTDF_PROBE](plans/UTDF_PROBE.md) has the import sheet; `tests/data/utdf/u0-handwritten.csv`
-  is the hand-written file. No answers have arrived. **Do not start U1 or any UTDF writer.**
-  When answers arrive, revise UTDF_EXPORT §3/§6 from them, add the allowed golden file and UT0,
-  and report any effect on compass/NEMA mapping before further signal work.
+- **UTDF export:** U1 (D442), U2a (D443) and U2b are done. Contracts are in
+  [UTDF_EXPORT §7](reference/UTDF_EXPORT.md#7-slices).
+  - There are two ways to export:
+    - the CLI, `multra-cli --export-utdf`;
+    - the desktop, *File → UTDF for Synchro/Vistro…*, which shows the report first and writes UTM
+      when the project has a map reference.
+  - Nodes are numbered by template Apply or *Number Nodes*.
+  - Passing rows: UT0–UT9 and UT11.
+  - **Compass/NEMA:** mirrored mode keeps the group numbers, which are already right-hand NEMA
+    numbers (D443).
+- **Owner (OWNER_SITTING I.5, UT10):** import `tests/data/utdf/u2-u0-junction-geometric.csv` into
+  Vistro 2026 and report:
+  - whether geometry, volumes and timing match UTDF_PROBE §1–§3;
+  - whether the empty `[Network]` values are accepted.
+- **Later:** the Vistro median patch, once Vistro's post-import link numbering is confirmed. Until
+  then it is a report step (D441, D443).
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
   is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
   (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
@@ -125,13 +135,6 @@ a planning-level method (otherwise back to the owner).
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Drawing level is not separation (D201 B3, booked 2026-10-16, not yet done):**
-  `automatic_conflicts.cpp` still skips path pairs whose drawing `level` differs, against
-  [M3_CONTRACT](reference/M3_CONTRACT.md) §1 ("Drawing level is not physical separation"); D201
-  kept the contract and queued the code. Failure first: two crossing Links on different levels get
-  an automatic area. `automatic_conflict_tests.cpp`'s `levels_apart_do_not_conflict...` asserts
-  the old skip and changes with the fix. Decide in the slice's contract whether an S3.5 overpass is
-  the object that separates them, and say so before changing generated Nodes.
 - **Lateral, before any shipped behaviour carries its keys**
   ([lateral-run-audit](evidence/lateral-run-audit.md)): on `m2.6-study-template` a changer past its
   window straddles the line and jams both lanes (seed 45: 1908 → 1531 completed; clamps 1 → 33).
