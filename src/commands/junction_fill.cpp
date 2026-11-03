@@ -37,6 +37,8 @@ std::vector<std::string> generateJunction(ProjectDocument& d,const std::string& 
     authorNodePriority(p.document,p.turns,catalogs.priority);
     std::vector<std::string> ids;for(const auto& [key,value]:p.turns){(void)value;ids.push_back(key);}
     d=std::move(p.document); // History's existing refine rule removes coarse only after detail exists.
+    // UTDF U2b (UTDF_EXPORT §5, UX-1a): Apply numbers an unnumbered Node; re-Apply keeps its number.
+    for(auto& n:d.network.nodes)if(n.id==id&&!n.number){int largest=0;for(const auto& x:d.network.nodes)if(x.number)largest=std::max(largest,*x.number);n.number=largest+1;}
     return ids;
 }
 }

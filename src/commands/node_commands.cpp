@@ -27,6 +27,19 @@ void renameNode(ProjectDocument& d, const std::string& id, const std::string& na
     auto& node = find(d, id);
     node.name = name; node.generated = false;
 }
+void setNodeNumber(ProjectDocument& d, const std::string& id, std::optional<int> number) {
+    find(d, id).number = number;
+}
+int nextNodeNumber(const ProjectDocument& d) {
+    int largest = 0;
+    for (const auto& n : d.network.nodes) if (n.number) largest = std::max(largest, *n.number);
+    return largest + 1;
+}
+std::vector<std::string> numberNodes(ProjectDocument& d) {
+    std::vector<std::string> ids; int next = nextNodeNumber(d);
+    for (auto& n : d.network.nodes) if (!n.number) { n.number = next++; ids.push_back(n.id); }
+    return ids;
+}
 void deleteNode(ProjectDocument& d, const std::string& id) {
     find(d, id);
     std::erase_if(d.network.nodes, [&](const Node& n) { return n.id == id; });

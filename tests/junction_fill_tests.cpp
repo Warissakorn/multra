@@ -14,7 +14,8 @@ TEST(junctionfill,jt6_crossings_pockets_both_sides_one_undo) {
         for (const auto& o:fillOffers(d,catalogs(d))) CHECK(o.kind!=FillKind::nodeDetail);
         apply(h); checkLayout(h.document());
         CHECK(!node(h.document()).coarse && node(h.document()).junction==node(d).junction);
-        const auto after=bytes(h.document()); CHECK(after.at("schemaVersion")==62);
+        const auto after=bytes(h.document()); CHECK(after.at("schemaVersion")==65); // Apply numbers the Node (UTDF U2b)
+        CHECK(node(h.document()).number==1 && !node(d).number);
         CHECK(bytes(parseDocument(documentJson(h.document())))==after);
         h.undo(); CHECK(bytes(h.document())==before); h.redo(); CHECK(bytes(h.document())==after);
     }

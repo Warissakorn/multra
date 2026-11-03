@@ -76,3 +76,22 @@ TEST(utdf, ut11_mirrored_keeps_group_numbers_with_the_far_turn_under_l) {
         CHECK(oddAt(mirrored.at("Phase1"), mirroredFar) && !oddAt(mirrored.at("Phase1"), far));
     }
 }
+TEST(utdf, number_nodes_is_one_undo_step_and_apply_keeps_a_number) {
+    History h; h.reset(junctionSignalTest::signalCross(DrivingSide::left, "P2"));
+    CHECK(!junctionTest::node(h.document()).number);
+    junctionTest::apply(h); CHECK(junctionTest::node(h.document()).number == 1); // Apply numbers it
+    auto d = h.document(); setNodeNumber(d, junctionTest::node(d).id, 9);
+    (void)generateJunction(d, junctionTest::node(d).id, junctionTest::catalogs(d));
+    CHECK(junctionTest::node(d).number == 9); // re-Apply keeps it
+    d.network.nodes.push_back({"b", "B", {{500, 500}, {560, 500}, {560, 560}, {500, 560}}, true});
+    d.network.nodes.push_back({"c", "C", {{700, 500}, {760, 500}, {760, 560}, {700, 560}}, false});
+    History n; n.reset(d); const auto states = n.states().size(); std::vector<std::string> ids;
+    CHECK(n.execute("editorNumberNodes", [&](auto& doc) { ids = numberNodes(doc); }));
+    CHECK(n.states().size() == states + 1 && ids == std::vector<std::string>({"b", "c"}));
+    const auto& nodes = n.document().network.nodes;
+    CHECK(nodes[1].number == 10 && nodes[2].number == 11 && nodes[1].generated); // a number leaves `generated` alone
+    CHECK(numberNodes(*std::make_unique<ProjectDocument>(n.document())).empty());
+    auto twice = n.document(); setNodeNumber(twice, "c", 9);
+    test::throws([&] { validateDocument(twice); }, "NODE_NUMBER_DUPLICATE");
+    n.undo(); CHECK(!n.document().network.nodes[1].number);
+}
