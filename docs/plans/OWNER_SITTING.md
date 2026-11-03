@@ -493,4 +493,5 @@ there (§6) verbatim and dated; these items only say what must hold.
 4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
    it in the UTDF file? *Owner:* 2026-11-03, answered: Synchro is right-hand only; Vistro has it and its
    UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both
-   modes (D437).
+   modes (D437). A UTDF import can never be left-hand in Vistro, and Merge Data ignores the
+   setting; Vistro uses mirrored mode plus a median patch (D441).

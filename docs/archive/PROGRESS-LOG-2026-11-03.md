@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Vistro imports u0-handwritten.csv; timing probe v2
+
+- **Owner:** found Vistro's UTDF menus: *File → Export / Import → Synchro…*. They imported
+  `u0-handwritten.csv`.
+- **Came through as sheeted:** geometry, speeds, 3.25 m lanes, all four pockets, shared lanes,
+  volumes and PHF.
+- **Not shown:** the intersection median.
+- **Timing refused:** `CellNotFound: Row not found: Row = 3, Column = 1`.
+- **Added:** `u0-handwritten-v2-empty.csv` and `-v2-filled.csv`. Their `[Timeplans]` and `[Phases]`
+  carry every record Synchro 10.1 writes, in its order; one leaves the unauthored rows empty, the
+  other fills them. The import tells whether UT4 ("no unauthored values") survives.
+- **Updated:** UTDF_PROBE §4/§6 rows 6 and 13–15, UTDF_EXPORT §3, OWNER_SITTING I.3 and NEXT.
+- **Status:** U1 stays blocked. `multra-check-docs` passes.
+
 ## 2026-11-03 — U0 golden file moves to Vistro (D438)
 
 - **Owner:** Synchro cannot create UTDF. They asked for another route and chose Vistro as the

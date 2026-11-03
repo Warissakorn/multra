@@ -6,6 +6,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Vistro limits closed (D441)
+
+- **Owner:** both whole-network merges (`u0-full-lh-a/-b`) create a second, overlapping junction and
+  stay right-hand; only `a` gets the median. The owner stopped probing.
+- **D441:** Vistro gets the UTDF file plus a `.vistromerge` median patch. Mirrored mode (D437)
+  gives a correct far-turn HCM. The report covers HCM 7th and the right-hand result of geometric mode.
+- **Updated:** UTDF_PROBE row 21, UTDF_EXPORT §6/§9 UX-6/UT12, the README, NEXT and OWNER_SITTING I.4.
+- **Open for U1:** how the patch learns Vistro's post-import link numbers. `multra-check-docs` passes.
+
 ## 2026-11-03 — UTDF cannot be left-hand in Vistro; whole-network probe
 
 - **Owner (patch v2):**
@@ -112,17 +121,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Its `End` for the phase that ends the cycle is the cycle length; Synchro writes 0.
 - **Updated:** UTDF_PROBE §6 rows 9/10/12/16, utdf-real-exports, UTDF_EXPORT §4/§6,
   OWNER_SITTING I.1 and NEXT. `multra-check-docs` passes.
-
-## 2026-11-03 — Vistro imports u0-handwritten.csv; timing probe v2
-
-- **Owner:** found Vistro's UTDF menus: *File → Export / Import → Synchro…*. They imported
-  `u0-handwritten.csv`.
-- **Came through as sheeted:** geometry, speeds, 3.25 m lanes, all four pockets, shared lanes,
-  volumes and PHF.
-- **Not shown:** the intersection median.
-- **Timing refused:** `CellNotFound: Row not found: Row = 3, Column = 1`.
-- **Added:** `u0-handwritten-v2-empty.csv` and `-v2-filled.csv`. Their `[Timeplans]` and `[Phases]`
-  carry every record Synchro 10.1 writes, in its order; one leaves the unauthored rows empty, the
-  other fills them. The import tells whether UT4 ("no unauthored values") survives.
-- **Updated:** UTDF_PROBE §4/§6 rows 6 and 13–15, UTDF_EXPORT §3, OWNER_SITTING I.3 and NEXT.
-- **Status:** U1 stays blocked. `multra-check-docs` passes.

@@ -123,10 +123,16 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
   - **A UTDF import can never be left-hand in Vistro** (U0 rows 18–20). Merging a patch sets
     the median (`$LEG` `HASCISLAND`/`CISLANDWIDTH`) but not `LEFTHANDTRAFFIC` or the HCM method.
     Vistro also refuses to switch to left-hand while a right-hand junction exists.
-  - **Proposed Vistro route (pending row 21):** write the whole network in Vistro's own Visum net
-    format (`.vistromerge`), to be merged into an empty project already set to left-hand. UTDF
-    stays the route to Synchro. The two probe files differ only in how lane indices count under
-    left-hand traffic.
+  - **Vistro route (D441):** the UTDF file plus a `.vistromerge` patch for Vistro's *Merge Data*,
+    carrying the medians (`$LEG` `HASCISLAND`/`CISLANDWIDTH`; proven after the import, row 20).
+    - The patch must address the link numbers Vistro itself gives after the import (rows 19–20).
+      U1's contract must settle how: from Vistro's numbering rule, or by asking the user to export
+      *Merge Data* first. If neither works, the median becomes a report step.
+    - A whole network in Vistro's own format does not work: Merge Data duplicates the junction and
+      ignores `LEFTHANDTRAFFIC` (row 21).
+    - **For a correct HCM treatment of the Thai far turn, the user picks mirrored mode.** In
+      geometric mode Vistro analyses the network as right-hand.
+    - The report tells the user to set HCM 7th after import.
   - **The UTDF file never carries the driving side**: neither writer has a record for it.
 - **The user chooses a mode at export (D437):**
   - **Geometric (default).** Vistro's own writer does the same with left-hand traffic on (far turn
@@ -191,6 +197,10 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 
 5. **UX-5 Left-hand network** (answered 2026-11-03, D437): the user picks **geometric** or
    **mirrored** at export (§6); geometric is the default.
+6. **UX-6 What UTDF loses in Vistro** (answered 2026-11-03, D441):
+   - **Medians:** a `.vistromerge` median patch alongside the UTDF file.
+   - **Left-hand:** mirrored mode when HCM must treat the far turn correctly.
+   - **HCM 7th:** a report step after import.
 
 ## 10. Acceptance rows (planned)
 
@@ -207,4 +217,5 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 | UT8 | A controller failing `nemaCheck` is refused with its codes |
 | UT9 | The file written by the desktop equals the CLI's |
 | UT11 | A left-hand fixture exported geometric keeps compass legs and puts the far turn in `R`; mirrored swaps E↔W legs, puts it in `L` and uses right-hand NEMA numbers; one golden file per mode (D437) |
+| UT12 | The Vistro median patch has one `$LEG` row per junction leg with a median, addressed by Vistro's post-import link numbers (D441), and the report lists it with the HCM 7th and right-hand notes |
 | UT10 | (owner) Vistro 2026, and Synchro if it imports UTDF (D438), import the fixture; geometry, lanes, volumes and timing match the sheet |
