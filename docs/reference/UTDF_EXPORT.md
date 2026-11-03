@@ -66,6 +66,9 @@ show whether present-but-empty rows suffice:
 - if they do, UT4 stands;
 - if Vistro needs values, the writer needs authored defaults, which is an owner choice before U1.
 
+No UTDF record names the HCM method, in either writer's files. Vistro opens an import as HCM 2010;
+the user sets HCM 7th in the program after import (owner, 2026-11-03). The export report should say so.
+
 ## 4. Units and coordinates
 
 - **Metric** (metres, km/h), the file declaring it, so no conversion is written. Vistro reads

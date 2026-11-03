@@ -6,6 +6,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — U0: the refused timing leaves no cycle; HCM method is not in UTDF
+
+- **Owner screenshot** of the original `u0-handwritten.csv` imported into Vistro: no cycle, empty
+  rings, *ICA error*, all delays 0. This confirms the refused timing; the v2 files are not yet tried.
+- **HCM method:** Vistro opens an import as HCM 2010. No UTDF record carries the method, and the
+  owner sets HCM 7th after import. The export report should say so.
+- **Updated:** UTDF_PROBE §6 row 6, UTDF_EXPORT §3 and utdf-real-exports. `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro draft 1 of the U0 junction
 
 - **Owner:** exported the U0 sheet from Vistro 2026 (metric, left-hand on), allowed the commit, and
@@ -149,35 +157,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Contracts:** D432/index, workflow, periods, canvas plan, module maps, evidence, NEXT and E34
   updated; oldest PROGRESS entry archived whole. Windows owner appearance remains open; this
   does not start canvas style C, another M13 slice or UTDF, or close a milestone gate.
-
-## 2026-10-31 — A9 finish: explicit manual-count comparison windows (D422)
-
-- **Owner B41:** explicit per-Node session-only confirmation before comparison, matching batch
-  start/end and Node T, labelled manual counts, nothing stored. Checkpoints a6d0a25/d663bf5 are
-  accepted so far: m2.6 totals 2040 veh/h over all three reviewed windows, source-64 reopen,
-  manual-edit schema/source clearing and exact Undo, CBD/source retention and old-output parity.
-- **Implemented:** Results → Node analysis → Micro side by side → Confirm manual count window…
-  selects a Node by id/name and shows batch window/effective T. Required start/end preview uses
-  the same project comparison guards as the result. Missing/non-finite/reversed/mismatched or
-  duplicate confirmations refuse with localized named Node paths; no duration/name inference.
-  Cancel keeps prior state, Confirm replaces only that Node’s session window. No project field,
-  schema step, Command/revision or implicit run. Re-Analyse, batch changes/cancel, edits/Undo
-  and New/reopen clear confirmations; saved project and analytical report bytes stay unchanged.
-- **Presentation:** Node/approach rows label Manual counts versus Model demand in both locales.
-  The comparison CSV alone appends quoted countsSource through shared formatters and marking;
-  HCM/CLI formats, values, missing estimates, n/CI/unfinished and distinct measures stay as before.
-- **Tests first:** both native manual cases fail on missing rows after asserting real completed
-  batches/entered T; all four UI cases fail on the missing confirmation button. A test setup
-  compile error (multiplying an optional T without dereferencing) was fixed before recording
-  product reds. Coverage includes absolute-window mismatch with equal duration, correct window
-  with wrong T, wrong/duplicate ids, labels, Cancel, no History/Save change, CSV equality,
-  re-Analyse, edit/Undo, new batches and reopen, on both driving sides and English/Thai.
-- **Verification:** native nodeanalysis 46/46, Micro UI 8/8, Fill UI 4/4 and JT12 UI 8/8
-  pass, including expanded lifecycle rows. Desktop build (108 tasks) and CTest 260/260
-  (303.56 s, parallel 5) pass; check 260/260 (301.67 s) also passes with architecture,
-  file-size and documentation guards. Five legacy project/CSV comparisons are byte-exact and raw JSON is
-  exact except buildCommit. Linux GCC 14.2.0/Qt 6.8.2 offscreen; headless unconfigured,
-  Windows/manual/high-DPI appearance not driven (E32). No HCM/core/other-level algorithm change.
-- **Docs:** D422/index, answered B41/E32, contracts/schema/module maps and ROADMAP/NEXT updated.
-  Oldest PROGRESS entry archived whole, ten live entries retained. A9 is implemented and stops
-  for owner review; no open A9 contract question, M13 gate closure or UTDF writer. U0 unanswered.

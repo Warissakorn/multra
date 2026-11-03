@@ -43,6 +43,9 @@ Both writers emit the six sections in this order: `[Network] [Nodes] [Links] [La
     - Phases: `StartTime`, `MaxInitial`, `AddedMin`, `MinActuation`, `MaxActuation`, `MaxExtension`, `ReduceBy` and `ReduceEvery`.
     - Timeplans: `Node 0…7`.
 
+No record names the HCM analysis method in either writer's files. Vistro defaults an import to
+HCM 2010, and the user can change it after import.
+
 ## Codes observed
 
 | Assumption (UTDF_PROBE §5) | Observed | Status |
