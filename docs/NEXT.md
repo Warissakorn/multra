@@ -80,8 +80,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   came through, its timing was refused (missing Timeplans/Phases rows). v2-filled imports the
   timing exactly; v2-empty is refused, so unauthored records get D439's neutral values. Vistro
   draft 1 of the sheet: far turn under `R` with left-hand on, written in feet. Still open: the
-  redo to the sheet (row 16), the median (row 14), whether an import draws left-hand (row 15)
-  and whether Links `Lanes` counts pockets. **Do not start U1 or any UTDF writer.**
+  redo to the sheet (row 16; the first redo arrived empty) and whether Links `Lanes` counts
+  pockets. Importing UTDF switches Vistro to right-hand, and the median is not shown (rows 14–15). **Do not start U1 or any UTDF writer.**
   When answers arrive, revise UTDF_EXPORT §3/§6 from them, add the allowed golden file and UT0,
   and report any effect on compass/NEMA mapping before further signal work.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl

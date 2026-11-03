@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Vistro switches an import to right-hand; no median
+
+- **Owner:**
+  - The project was set left-hand before import; Vistro switched it to right-hand itself.
+  - No median is shown.
+  - The redone `u0-vistro.csv` arrived empty after the first column of every section, so it was not committed and a re-export is pending.
+- **Recorded:**
+  - UTDF_PROBE §6 rows 14–16.
+  - UTDF_EXPORT §3/§6: in geometric mode the report must tell the user to set left-hand again after import, and that Vistro drops the median.
+  - OWNER_SITTING I.3 and NEXT.
+- **Check:** `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro imports the U0 timing; neutral values for unauthored records (D439)
 
 - **Owner imports into Vistro 2026:**
@@ -117,19 +129,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   window grew 860 → 903 px. `setWorkspacePreset` now lifts the rail cap before showing/hiding docks;
   `resizePalette` sets it again, so the rail stays fixed afterwards.
 - **Verification:** release preset build, `ctest` 272/272 and `check` pass locally (Qt 6.4, offscreen).
-
-## 2026-11-02 — session-path docs: one copy of each standing rule and owner item
-
-- **Owner request:** optimize docs/AI context; owner chose the recommended items 3 → 2 → 1.
-- **AGENTS:** dropped the finished D15 (migration) and D16 (M1.1–M1.3) authorizations, which read
-  as a live exception to one system per session; their two live rules stay. The CLA note, the
-  owner-only appearance/gate rule and the new-dialog convention (D318/D319) moved here from NEXT.
-- **NEXT:** removed restated OWNER_SITTING items (E22–E24, F4, G1/G2, H1/H2, C13, E11, B29) and
-  finished history (A1–A3, S5, Node detail measurements now pointed to ENGINEERING_NOTES); every
-  open item stays in order. No decision, gate or owner item changed.
-- **Measured (characters, ≈ tokens ÷ 4):** session path CLAUDE+AGENTS+NEXT+docs/README
-  36,619 → 34,722 (≈ 9,150 → 8,680 tokens); NEXT 14,430 → 12,425. The rest of NEXT is open work.
-- **Not changed, for the owner:** OWNER_SITTING's 14-day carve-out rule is not being applied
-  (17 items listed in September/early October remain on the sheet).
-- **Verification:** `multra-check-docs` and `multra-check-file-sizes` (built from `tools/`) pass;
-  no code or build change. Oldest whole entry archived, retaining ten.

@@ -488,7 +488,7 @@ there (§6) verbatim and dated; these items only say what must hold.
    into Vistro, and into Synchro if it imports UTDF. Does either refuse it, or draw something other than §1–§3? *Owner:*
    2026-11-03, Vistro: geometry, lanes, pockets and volumes came through; timing was refused
    (UTDF_PROBE §6 row 6). v2-filled imports the timing exactly; v2-empty is refused (row 13, D439).
-   Next: the median (row 14) and left-hand drawing (row 15).
+   Median not shown (row 14); importing switches Vistro to right-hand (row 15).
 4. **Left-hand traffic** (listed 2026-10-28). Does either program lack a left-hand setting, or lose
    it in the UTDF file? *Owner:* 2026-11-03, answered: Synchro is right-hand only; Vistro has it and its
    UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both

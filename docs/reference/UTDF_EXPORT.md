@@ -81,6 +81,9 @@ listed in the export report:
 None of these values changes a fixed-time plan. Vistro's own extra records (`StartTime`,
 `MaxInitial` …) are not written: v2-filled imported without them.
 
+Links `Median` is not shown by Vistro after import (2.0 m on Main St, owner 2026-11-03); MULTRA
+still writes it, and the report says Vistro drops it.
+
 No UTDF record names the HCM method, in either writer's files. Vistro opens an import as HCM 2010;
 the user sets HCM 7th in the program after import (owner, 2026-11-03). The export report should say so.
 
@@ -113,7 +116,9 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 - **Left-hand traffic is the main risk.** HCM and NEMA numbering assume right-hand traffic.
   What U0 settled (2026-11-03, [utdf-real-exports](../evidence/utdf-real-exports.md)):
   - **Synchro has no left-hand setting** (owner). It models right-hand traffic only.
-  - **Vistro 2026 has one** (`LEFTHANDTRAFFIC` in its own network file), but its UTDF export drops it.
+  - **Vistro 2026 has one** (`LEFTHANDTRAFFIC` in its own network file), but its UTDF export drops it,
+    and **importing UTDF switches a left-hand project to right-hand** (owner, 2026-11-03). The export
+    report must tell the user to set left-hand again after import in geometric mode.
   - **The UTDF file never carries the driving side**: neither writer has a record for it.
 - **The user chooses a mode at export (D437):**
   - **Geometric (default).** Vistro's own writer does the same with left-hand traffic on (far turn
