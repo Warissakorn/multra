@@ -1,6 +1,6 @@
 # src/project
 
-Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–64), catalogs from
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–65), catalogs from
 `data/`, compilation for each level, and every run's output formats. The document persists
 authoring data and the optional background; no compiled runtime network is saved, and an empty
 draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
@@ -98,13 +98,15 @@ keeps its schema and bytes.
 | `export_marking.*` | Program-drawn objects a study-area run rests on, and the marking every export carries | [STUDY_AREA §8, §10, §11](../../docs/reference/STUDY_AREA.md) |
 | `node_analysis_run.*` | M13: HCM on every Node that carries `analysis`; `node_analysis_output.cpp` writes the JSON and CSV | [NODE_ANALYSIS](../../docs/reference/NODE_ANALYSIS.md) |
 | `node_analysis_permitted.*` | M13 A3: one permitted or protected-permitted far-turn lane group (`analysePermitted`), the shared lane's Eq. 31-59 share for lane flows, and a protected lane group's queue service time g_s | [NODE_ANALYSIS_A3](../../docs/reference/NODE_ANALYSIS_A3.md) |
+| `utdf_export.*` | UTDF 8 geometry for Synchro/Vistro (U1): Network, Nodes, Links, Lanes; geometric or mirrored; report notes; CRLF, no BOM, never mutates | [UTDF_EXPORT](../../docs/reference/UTDF_EXPORT.md) |
+| `utdf_legs.*` | U1's leg walk: written Nodes and refusals, upstream/downstream to a Node or an external end, external-end numbers | [UTDF_EXPORT](../../docs/reference/UTDF_EXPORT.md) |
 | `object_csv.*` | Five authored object tables as CSV (UTF-8 BOM, CRLF, full precision, nested JSON cells); no compilation | [OBJECT_TABLE_CSV](../../docs/reference/OBJECT_TABLE_CSV.md) |
 
 ## Codec rules
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 streetSegmentId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–64; shared `$defs`
+composes envelope/background with these structural rules for schemas 1–65; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

@@ -495,3 +495,9 @@ there (§6) verbatim and dated; these items only say what must hold.
    UTDF drops it ([utdf-real-exports](../evidence/utdf-real-exports.md)). The export offers both
    modes (D437). A UTDF import can never be left-hand in Vistro, and Merge Data ignores the
    setting; Vistro uses mirrored mode plus a median patch (D441).
+5. **MULTRA's first written file (UT10, U1)** (listed 2026-11-03, D442). Import
+   `tests/data/utdf/u1-u0-junction-geometric.csv` into Vistro 2026 with *File → Import → Synchro…*.
+   The CLI wrote it from a MULTRA project, and it holds geometry only: no volumes and no timing.
+   Do the nodes, legs, lane counts and pockets come through as in §1–§2? Are the empty
+   `DefWidth`/`DefFlow`/`Median` cells and `TYPE` 3 (unsignalised) accepted, or is something refused?
+   *Owner:*

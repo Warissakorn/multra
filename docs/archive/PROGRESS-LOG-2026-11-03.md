@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Vistro draft 1 of the U0 junction
+
+- **Owner:** exported the U0 sheet from Vistro 2026 (metric, left-hand on), allowed the commit, and
+  will redo it to match the sheet.
+- **Committed** as `tests/data/utdf/u0-vistro-draft1.csv`, byte for byte. It is a draft, not the golden file:
+  cycle 60 with phases 2/4/6/8, PHF 1.00, HV 2 %, and different NB/SB lanes.
+- **Settled:**
+  - Vistro writes UTDF in feet even for a metric project, but reads `Metric,1`.
+  - With left-hand on, Vistro writes the far turn under `EBR` (geometric, as D437's default).
+  - Its 4-phase numbering is NB 6, SB 2, EB 8, WB 4.
+  - Its `End` for the phase that ends the cycle is the cycle length; Synchro writes 0.
+- **Updated:** UTDF_PROBE §6 rows 9/10/12/16, utdf-real-exports, UTDF_EXPORT §4/§6,
+  OWNER_SITTING I.1 and NEXT. `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro imports u0-handwritten.csv; timing probe v2
 
 - **Owner:** found Vistro's UTDF menus: *File → Export / Import → Synchro…*. They imported

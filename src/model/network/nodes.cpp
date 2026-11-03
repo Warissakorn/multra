@@ -38,9 +38,12 @@ std::vector<ValidationIssue> nodeIssues(const Network& n) {
     const auto apart = [&](std::size_t i, std::size_t j) {
         return box[i][2] < box[j][0] || box[j][2] < box[i][0] || box[i][3] < box[j][1] || box[j][3] < box[i][1];
     };
+    std::set<int> numbers;
     for (std::size_t i = 0; i < n.nodes.size(); ++i) {
         const auto& node = n.nodes[i];
         const auto path = "nodes[" + std::to_string(i) + "]";
+        if (node.number && *node.number < 1) add("NODE_NUMBER_INVALID", path + ".number");
+        else if (node.number && !numbers.insert(*node.number).second) add("NODE_NUMBER_DUPLICATE", path + ".number");
         if (node.id.find_first_not_of(" \t\n\r") == std::string::npos) add("INVALID_ID", path + ".id");
         else if (!ids.insert(node.id).second) add("DUPLICATE_ID", path + ".id");
         if (!simple[i]) { add("NODE_POLYGON_INVALID", path + ".polygon"); continue; }

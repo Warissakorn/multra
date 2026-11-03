@@ -14,6 +14,7 @@
 #include "../src/project/node_analysis_run.hpp"
 #include "../src/project/node_analysis_report.hpp"
 #include "../src/project/build_metadata.hpp"
+#include "../src/project/utdf_export.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
@@ -207,12 +208,28 @@ int runNodeAnalysisProject(const std::filesystem::path& file, const std::filesys
     std::cout << result.dump(2) << '\n';
     return std::cout ? 0 : 1;
 }
+// --export-utdf (UTDF U1, UTDF_EXPORT §7, D442): the UTDF 8 geometry sections; the report goes to stdout.
+int runUtdfExport(const std::filesystem::path& file, const std::filesystem::path& out, UtdfMode mode) {
+    if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
+    const auto document = parseDocument(readInputJson(file, "project", nullptr));
+    if (std::filesystem::exists(out)) throw std::invalid_argument("UTDF output already exists: " + out.string());
+    const auto result = utdfDocument(document, mode);
+    Json report = Json::array();
+    for (const auto& n : result.report) report.push_back({{"code", n.code}, {"node", n.node}, {"text", n.text}});
+    std::cout << Json{{"file", result.csv.empty() ? Json(nullptr) : Json(out.string())}, {"report", report}}.dump(2) << '\n';
+    if (result.csv.empty()) return 1; // UTDF_NOTHING_TO_EXPORT: no file is written
+    std::ofstream csv(out, std::ios::binary); // CRLF as written, on every platform
+    csv << result.csv;
+    if (!csv) throw std::runtime_error("Failed writing UTDF output");
+    return std::cout ? 0 : 1;
+}
 }
 int main(int argc, char** argv) {
     try {
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
-        std::optional<std::string> macroPeriod, macroRunId;
+        std::optional<std::string> macroPeriod, macroRunId, utdfMode;
+        std::filesystem::path utdfFile;
         bool meso = false, nodeAnalysis = false;
         bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false;
         bool arrivalPhases = false, waitCauses = false;
@@ -254,7 +271,9 @@ int main(int argc, char** argv) {
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
                              "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n"
                              "--node-analysis (with --project, alone) analyses every Node with analysis inputs by HCM 7 Ch. 19\n"
-                             "  (pretimed, protected, exclusive lane groups): analytical, not simulated (M13 A1).\n";
+                             "  (pretimed, protected, exclusive lane groups): analytical, not simulated (M13 A1).\n"
+                             "--export-utdf FILE (with --project, alone) writes the UTDF 8 geometry of every numbered Node\n"
+                             "  for Synchro and Vistro; --utdf-mode geometric|mirrored (default geometric) (UTDF U1).\n";
                 return 0;
             }
             if (discharge.consume(arg, i, argc, argv)) continue;
@@ -270,7 +289,7 @@ int main(int argc, char** argv) {
             }
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
-                arg == "--threads" || arg == "--macro" || arg == "--macro-run") {
+                arg == "--threads" || arg == "--macro" || arg == "--macro-run" || arg == "--export-utdf" || arg == "--utdf-mode") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -283,6 +302,16 @@ int main(int argc, char** argv) {
                 else if (arg == "--project") projectFile = argv[i];
                 else if (arg == "--csv") csvFile = argv[i];
                 else if (arg == "--compare") compareFile = argv[i];
+                else if (arg == "--export-utdf") {
+                    if (!utdfFile.empty()) throw std::invalid_argument("Specify --export-utdf only once");
+                    utdfFile = argv[i];
+                    if (utdfFile.empty()) throw std::invalid_argument("--export-utdf needs a file");
+                }
+                else if (arg == "--utdf-mode") {
+                    if (utdfMode) throw std::invalid_argument("Specify --utdf-mode only once");
+                    utdfMode = argv[i];
+                    if (*utdfMode != "geometric" && *utdfMode != "mirrored") throw std::invalid_argument("--utdf-mode needs geometric or mirrored");
+                }
                 else if (arg == "--macro") {
                     if (macroPeriod) throw std::invalid_argument("Specify --macro only once");
                     macroPeriod = argv[i];
@@ -335,6 +364,11 @@ int main(int argc, char** argv) {
         if (nodeAnalysis && (projectFile.empty() || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes ||
                              stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads))
             throw std::invalid_argument("--node-analysis needs --project and takes only --csv and --data-dir");
+        if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
+        if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
+                                  segmentTimes || stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() ||
+                                  threads || !csvFile.empty()))
+            throw std::invalid_argument("--export-utdf needs --project and takes only --utdf-mode and --data-dir");
         if (seeds) {
             if (projectFile.empty()) throw std::invalid_argument("--seeds needs --project");
             if (seedSet) throw std::invalid_argument("--seeds cannot be combined with a single seed");
@@ -348,6 +382,7 @@ int main(int argc, char** argv) {
             if (macroRunId) return runMacroPeriod(projectFile, csvFile, data, *macroRunId, true);
             if (meso) return runMesoProject(projectFile, csvFile, data);
             if (nodeAnalysis) return runNodeAnalysisProject(projectFile, csvFile, data);
+            if (!utdfFile.empty()) return runUtdfExport(projectFile, utdfFile, utdfMode == std::optional<std::string>("mirrored") ? UtdfMode::mirrored : UtdfMode::geometric);
             if (!compareFile.empty()) return runComparison(projectFile, compareFile, csvFile, data, *seeds, threads);
             if (seeds) return runBatch(projectFile, csvFile, data, *seeds, threads);
             return runProject(projectFile, csvFile, data, seed, laneChanges, segmentTimes, stopLines, arrivalPhases ? binWidth : 0, waitCauses, discharge);

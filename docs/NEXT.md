@@ -61,39 +61,40 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   CLI parity and old-output byte checks; both driving sides/locales, then commit/push the same
   branch and stop again. Keep Window header ≤500 lines. Windows/high-DPI/manual appearance is
   [OWNER_SITTING E32](plans/OWNER_SITTING.md), with E31's cleared-approach carry-over fixed.
-- After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. U0
-  still has no answers, so U1/the UTDF writer remains blocked; no M13/M14 milestone gate closes
-  merely from these Linux tests or implementation review.
+- After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. No
+  M13/M14 milestone gate closes merely from these Linux tests or implementation review.
 
-## M14 — junction slices complete; UTDF awaits U0
+## M14 — junction slices complete; UTDF U1 shipped, U2 next
 
 - SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
   [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
   including natural polygon fitting, ownership, site drafts and corridor/reference guards.
-- **U0 is answered (2026-11-03); U1 waits for the owner's pick.** The answers are in
-  [UTDF_PROBE](plans/UTDF_PROBE.md) §6 and [utdf-real-exports](evidence/utdf-real-exports.md).
-  - **Decisions D437–D440:**
-    - left-hand export is geometric or mirrored, chosen by the user (D437);
-    - Vistro writes the golden file (D438);
-    - unauthored timing records get neutral pretimed values (D439);
-    - `[Links] Lanes` counts pockets (D440).
-  - **Fixtures in `tests/data/utdf/`:**
-    - `u0-vistro.csv` (golden; UT0 compares fields and codes, not its Vistro-numbered timing);
-    - `u0-handwritten-v2-filled.csv` and `-v3.csv`, which Vistro imports with geometry, lanes,
-      volumes and timing as sheeted.
-  - **Facts the writer and its report must respect:**
-    - importing UTDF switches Vistro to right-hand;
-    - Vistro shows no median and opens imports as HCM 2010;
-    - Vistro writes feet but reads metres.
-  - **Vistro limits (D441, probing closed):**
-    - UTDF plus a `.vistromerge` median patch;
-    - mirrored mode for a correct far-turn HCM, because Vistro cannot be left-hand after a UTDF
-      import and Merge Data ignores `LEFTHANDTRAFFIC`;
-    - HCM 7th as a report step.
+- **U1, the geometry writer, is done (2026-11-03, D442).** Its contract is
+  [UTDF_EXPORT §7](reference/UTDF_EXPORT.md#7-slices).
+  - `utdfDocument(document, mode)` and `multra-cli --export-utdf` write [Network], [Nodes], [Links]
+    and [Lanes] for numbered Nodes (schema 65). They use world metres, in geometric or mirrored mode.
+  - It passes UT0–UT5 and UT11's geometry.
+  - U0's answers and decisions D437–D441 stay in force:
+    - [UTDF_PROBE](plans/UTDF_PROBE.md) §6;
+    - [utdf-real-exports](evidence/utdf-real-exports.md);
+    - the fixtures in `tests/data/utdf/`.
+  - **Compass/NEMA effect:** none yet. Mirrored mode relabels only E↔W and L↔R in the columns.
+    Right-hand NEMA numbers for mirrored Phases are U2.
+- **Owner (UT10, before U2 relies on it):** import `tests/data/utdf/u1-u0-junction-geometric.csv`
+  into Vistro 2026 and report what comes through:
+  - the geometry;
+  - the lanes, including the pockets on the owning turn;
+  - whether the empty `DefWidth`/`DefFlow`, empty `Median` and `TYPE` 3 are accepted.
 
-    Open for U1's contract: how the patch learns Vistro's post-import link numbers.
-  - **When the owner picks U1:** start from UTDF_EXPORT §7. Report any effect on compass/NEMA
-    mapping before further signal work.
+  U1 writes no timing, so Vistro may refuse or skip timing.
+- **U2, when the owner picks it** (UTDF_EXPORT §7):
+  - Lanes volumes, Timeplans and Phases (D439 neutral values);
+  - *Number Nodes* and numbering on template Apply;
+  - the desktop *Export → UTDF…* with the report dialog, UTM through PROJ, and an atomic write.
+
+  Open point: how the Vistro median patch learns Vistro's post-import link numbers (D441). The
+  options are Vistro's numbering rule (one observation only) or the user's *Merge Data* export first;
+  otherwise it becomes a report step.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
   is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
   (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.

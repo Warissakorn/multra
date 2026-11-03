@@ -1326,6 +1326,8 @@
   "TRANSITION_TAPER_OUTSIDE": "The edited Node polygon must contain the entire incoming taper and its Connectors. Enlarge the polygon or enter a shorter taper.",
   "TRANSITION_POLYGON_CAPTURES": "Enlarging the transition polygon would capture another Link leg. Shorten the taper or draw the Node polygon by hand.",
   "NODE_OVERLAP": "Node polygons must not overlap.",
+  "NODE_NUMBER_DUPLICATE": "Two Nodes must not share a number.",
+  "NODE_NUMBER_INVALID": "A Node number must be a whole number of 1 or more.",
   "editorJunctionTemplateColumn": "Template",
   "SEAM_JUNCTION_DIFFERS": "The junction drawing differs from its template.",
   "editorJunctionApplyAgain": "Apply again…",

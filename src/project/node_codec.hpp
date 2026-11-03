@@ -20,4 +20,6 @@ bool usesGeneratedFlags(const ProjectDocument&);
 void rejectGeneratedControllersBefore54(const Json& file);
 // M13 A1 (NODE_ANALYSIS §4, D371): whether any Node carries `analysis`, which makes the file schema 58.
 bool usesNodeAnalysis(const ProjectDocument&);
+// UTDF U1 (UTDF_EXPORT §5, D442): whether any Node carries `number`, which makes the file schema 65.
+bool usesNodeNumbers(const ProjectDocument&);
 }

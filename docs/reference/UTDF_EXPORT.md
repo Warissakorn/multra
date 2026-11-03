@@ -1,11 +1,12 @@
 # UTDF export for Synchro 12 and Vistro 2026 (M14, D386, D387)
 
-Contract before code (D145), docs only, written 2026-10-28. The owner approved exporting the
+Contract before code (D145), written 2026-10-28; U1, the geometry writer, shipped 2026-11-03 (§7). The owner approved exporting the
 network built for HCM to PTV Vistro 2026 and Synchro 12 (D386). This is the competitor-format
 scope revision that ROADMAP M1.23 requires; imports from those programs stay out. The editor side
-is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). **Nothing here is implemented.** §3's
-names come from one Synchro UTDF 8 file; no import by either program has been verified. U0 (§8)
-fixes them from files the owner's programs write and read.
+is [JUNCTION_TEMPLATES](JUNCTION_TEMPLATES.md); Road became Street segment in slice SR (D389). U0 (§8) fixed §3's names from files the owner's
+programs write and read. U1 writes [Network], [Nodes], [Links] and [Lanes] geometry
+(`src/project/utdf_export.hpp`, `multra-cli --export-utdf`). Volumes, timing, the desktop dialog,
+UTM and the Vistro median patch are U2. No MULTRA-written file has been imported by the owner yet (UT10).
 
 ## 1. Why UTDF
 
@@ -102,8 +103,8 @@ the user sets HCM 7th in the program after import (owner, 2026-11-03). The expor
 
 UTDF identifies intersections by integer. MULTRA's ids are strings and a re-export must give the
 same numbers, or a study re-imported into Synchro mismatches its edits.
-- **Stored (§9 UX-1):** an optional integer `number` on the Node, written only when set, at the
-  next schema step. Applying a junction template assigns the next free one; *Number Nodes* fills the rest in one
+- **Stored (§9 UX-1):** an optional positive integer `number` on the Node, written only when set
+  (schema 65, D442; a repeat is `NODE_NUMBER_DUPLICATE`). Applying a junction template assigns the next free one; *Number Nodes* fills the rest in one
   Undo step. Export refuses an unnumbered Node with `UTDF_NODE_UNNUMBERED`, naming the fill.
 - **External ends** (a leg's far end) take derived numbers above the largest Node number, in
   Link-id order; they are not stored, as nobody edits them in the target.
@@ -153,9 +154,82 @@ same numbers, or a study re-imported into Synchro mismatches its edits.
 | Slice | Scope | Rows |
 |---|---|---|
 | U0 | Probe (§8); this page's §3 fixed from real files; left-hand answer | UT0 |
-| U1 | Pure writer `utdfDocument(document)` in `src/project/`: Network, Nodes, Links, Lanes geometry; Node `number`; CLI `--export-utdf` | UT1–UT5 |
-| U2 | Lanes volumes, Timeplans, Phases; desktop *Export → UTDF…* with the report dialog, atomic write as the CSV tables | UT6–UT9 |
+| U1 (done 2026-11-03) | Pure writer `utdfDocument(document, mode)` in `src/project/`: Network, Nodes, Links, Lanes geometry, geometric and mirrored; Node `number` (schema 65); CLI `--export-utdf`, `--utdf-mode` | UT0–UT5, UT11 geometry |
+| U2 | Lanes volumes, Timeplans, Phases (right-hand NEMA numbers when mirrored); *Number Nodes* and numbers on template Apply; desktop *Export → UTDF…* with the report dialog, UTM (PROJ), atomic write as the CSV tables; the Vistro median patch once its link numbers are settled (D441) | UT6–UT9, UT11 timing, UT12 |
 | U3 | Round trip on the owner's machine (OWNER_SITTING item), fixes | UT10 |
+
+### U1 contract (D442, 2026-11-03)
+
+- **Call.** `utdfDocument(document, mode)` in `src/project/utdf_export.hpp` returns `{csv, report}`.
+  - It is pure: it reads the document and never changes it (UT5).
+  - The CSV is CRLF, has no BOM, and uses the C locale.
+  - Each report note is `{code, node, text}`.
+  - `mode` is geometric (default) or mirrored (D437); both are in U1.
+- **Which Nodes are written.** A Node is written when it has Micro detail (`nodeHasDetail`), a valid
+  `approachLayout`, and a stored `number` (§5). Any other Node is left out with one note (UX-4a):
+  - `UTDF_NO_DETAIL`;
+  - `UTDF_LAYOUT_INVALID`, followed by the layout's codes;
+  - `UTDF_NODE_UNNUMBERED`.
+- **Legs.**
+  - **Walking a leg.** A written Node's in-leg is walked upstream through the unique Connector
+    that feeds it, provided that Connector lies outside every Node. The walk stops at the out-leg of
+    another written Node, which becomes the upstream Node. Otherwise it stops at the first Link's
+    start, which is an **external end**. Out-legs are walked downstream the same way.
+  - **External ends and their numbers.**
+    - An in-leg and the out-leg leaving in the opposite compass direction share one external end,
+      placed at the in-leg's start.
+    - External ends are numbered above the largest Node number, in the order of the Link id that
+      keys them (the in-leg's first Link, or the out-leg's last Link).
+  - **Distance** runs along the leg's Link polylines, from the upstream Node's centroid (or the
+    external end) to the Node's centroid, with straight joins across Connectors.
+- **Values and rounding.**
+  - **[Network]:** `UTDFVERSION` 8, `Metric` 1, `DefWidth` and `DefFlow`, written empty. The
+    project has no network-wide default for either, so the report lists both. Yellow, all-red, HV
+    and PHF are U2.
+  - **[Nodes]:**
+    - X and Y are the polygon's area centroid in world metres, to 0.1. UTM waits for U2 on the
+      desktop, because PROJ is not in the headless build (D442), and the report says so.
+    - `TYPE`: 0 when the membership is signalised; 3 when it is unsignalised (Vistro's code, which
+      [utdf-real-exports](../evidence/utdf-real-exports.md) records); 1 for an external end.
+    - `DESCRIPTION` is the Node's name. `CBD` comes from `analysis`; it is empty without one.
+  - **[Links]**, written per in-leg under its compass column:
+    - `Up ID`;
+    - `Lanes`: the in-Link's lanes at the stop line, pockets included (D440);
+    - `Name`: the Street segment's name, or else the Link's;
+    - `Distance`, to 1 m;
+    - `Speed`: the in-Link's `speedLimit`;
+    - `Time` = Distance × 3.6 / Speed, to 0.1 s;
+    - `Grade`: from `analysis`;
+    - `Median`: the Street segment's override, or else its cross-section's, to 0.1.
+
+    External ends list the out-leg that arrives at them. NE, NW, SE and SW stay empty, because
+    layouts have only four compass directions.
+  - **[Lanes]**, by movement:
+    - `Up Node` and `Dest Node` are written for every movement the layout has.
+    - **Grouping.** A lane serving the through movement belongs to T. A lane serving only one turn
+      belongs to that turn. A lane serving both turns and no through movement belongs to L.
+    - `Lanes` is the group's count, 0 included.
+    - `Shared` is written when the count is above 0:
+      - on T, 1 if a T lane also serves L, plus 2 if one also serves R;
+      - on L, 2 if an L lane also serves R;
+      - on R, 0.
+    - `Width` is the mean width of the group's lanes, or of the lanes serving the movement when the
+      group is empty.
+    - `Storage`, `Taper` and `StLanes` go on the column of the group that owns the pocket (D440).
+    - `Grade` and `Speed` go on T, or on the approach's first movement when it has no T.
+  - Lengths are to 0.1 m, widths to 0.01 m, and trailing zeros are trimmed. `Time` and `Median`
+    keep one decimal place.
+- **Empty values.** Every cell the contract authors that has no value is written empty and listed
+  as `UTDF_FIELD_EMPTY` with its record and column (UT4). Cells for directions or movements that
+  do not exist are not listed.
+- **Mode notes.**
+  - **Mirrored:** x → −x; E and W swap in every column name; L and R swap in movement names. The
+    report says the map is mirrored. Right-hand NEMA numbers come with Phases in U2.
+  - **Geometric, left-hand network:** the report says the network is left-hand and the far turn is
+    under `R`.
+- **Not in U1:** Node numbering in the editor (*Number Nodes*, numbers on template Apply), volumes,
+  timing, UTM and the Vistro median patch. They are U2; the patch's link numbers are still open
+  (D441).
 
 ## 8. U0: the probe (first, before any writer)
 
@@ -202,7 +276,13 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
    - **Left-hand:** mirrored mode when HCM must treat the far turn correctly.
    - **HCM 7th:** a report step after import.
 
-## 10. Acceptance rows (planned)
+## 10. Acceptance rows
+
+UT0–UT5 and UT11's geometry pass since U1 (2026-11-03) in `tests/utdf_export_tests.cpp` (group
+`utdf`) and `cli-utdf` (`tests/utdf_cli.cmake`). UT1's U0 junction reproduces every Node 1
+`[Links]` line and the ten `[Lanes]` geometry lines of `u0-handwritten-v3.csv`, which Vistro
+imported as sheeted. The CLI fixture and its expected files are
+`tests/data/utdf/u1-u0-junction*.{traffic.json,csv}`. UT6–UT10 and UT12 are planned.
 
 | Row | Asserts |
 |---|---|
