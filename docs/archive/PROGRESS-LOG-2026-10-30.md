@@ -2,6 +2,29 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-10-31 — A9 review: resolve compiled lane-change stubs (D420)
+
+- **Owner:** native preview accepted so far; remaining B40 choices answered as recommended:
+  explicit window/StudyPeriod placement, replace T with duration and PHF with 1 before Confirm;
+  reuse completed requested batches for Node/approach n/CI/unfinished, keeping quantities distinct.
+  B41 asks the manual-count window only; no answer is assumed. U0 remains unanswered, no writer.
+- **Failure first:** shipped m2.6 plus Suggest nodes refused its singleton-origin path-4 stub,
+  as did the hand-counted pocket on both sides. Corrected the ambiguous fixture's forcing setup
+  to enter on a real source and give positive stub demand two complete, different Node exits.
+- **Fixed:** follow every compiled laneChanges target through further stubs and accept only
+  agreeing complete traversals. A stub with targets cannot fall back to a broader origin family.
+  Target-free stubs retain the exact-origin fallback. Visit graph cycles once; stage all results
+  before installation, and copy queue ids before appending so vector growth cannot alter a choice.
+  Determined demand totals are conserved; different/partial target traversals still refuse.
+- **Tests:** six new both-side cases cover real m2.6 windows, the 1200 veh/h pocket's hand totals
+  720/240/240 and the ambiguous control. Native nodeanalysis 38/38 passes. No stored field/schema,
+  method, geometry or level output change. Desktop build, CTest 258/258 (274.43 s) and check
+  258/258 (270.13 s) pass, with architecture/file-size/docs guards. Five fixture/project JSON
+  reports differ only in buildCommit; CSV and project bytes are unchanged. Linux offscreen;
+  headless unconfigured, Windows/manual not run.
+- **Docs:** native contract, B40 answers/B41, D420/index and NEXT updated; B33–B36 and oldest
+  PROGRESS entry archived whole, ten live entries retained. Next remains the rest of A9.
+
 ## 2026-10-31 — A9 native expected-demand preview checkpoint (D419)
 
 - **Owner:** J7 fe827c8 approved: real CLI/editor JSON/CSV parity for saved and unsaved

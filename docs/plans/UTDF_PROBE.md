@@ -86,8 +86,12 @@ if it can import UTDF. Menu names are guesses; correct them on the answer lines.
    If Vistro lets you, export the same junction again with left-hand traffic off, and note whether
    the column changes.
 4. **Import MULTRA's file.** Import
-   [`u0-handwritten.csv`](../../tests/data/utdf/u0-handwritten.csv) into Vistro. Note the first error,
-   or the first place where the drawing differs from §1–§3.
+   [`u0-handwritten.csv`](../../tests/data/utdf/u0-handwritten.csv) into Vistro (*File → Import →
+   Synchro…*). Note the first error, or the first place where the drawing differs from §1–§3. Its
+   timing was refused on 2026-11-03 (row 6), so also import the two v2 files (row 13). They differ
+   only in `[Timeplans]` and `[Phases]`: both carry every record Synchro 10.1 writes, in its order.
+   - **v2-empty** leaves the records MULTRA does not author empty.
+   - **v2-filled** gives them neutral pretimed values. It is probe-only.
 5. **Synchro, if it can import UTDF.** If Synchro has a UTDF import (perhaps *Transfer → Load/Merge
    UTDF*), import `u0-vistro.csv` and `u0-handwritten.csv`. Note the first error or difference.
    If it has no UTDF import, write "no import".
@@ -127,10 +131,13 @@ network. The owner's file settles each one.
 | 3 | `u0-synchro.csv` exported; section and field names differ from §5 where? | 2026-11-03, partial, from a real Synchro 10.1 export (not §1): sections and Synchro field names in [utdf-real-exports](../evidence/utdf-real-exports.md); TYPE 3 = unsignalised; `End` 0 at the cycle wrap; single `Reference Phase` values occur. The §1 export is still needed. |
 | 4 | Vistro 2026 import of `u0-synchro.csv`: kept, dropped, HCM delay and LOS | 2026-11-03: no Synchro file (D438). See rows 9–11. |
 | 5 | `u0-handwritten.csv` into Synchro 12: first error or difference | Now §4 step 5: only if Synchro imports UTDF. |
-| 6 | `u0-handwritten.csv` into Vistro 2026: first error or difference | |
+| 6 | `u0-handwritten.csv` into Vistro 2026: first error or difference | 2026-11-03, via *File → Import → Synchro…*, from screenshots. **Came through:** four legs with names and directions; speeds 50/60; every lane 3.25 m; pockets NB/SB left 1 × 40 m and EB/WB right 1 × 60 m; shared lanes as drawn; every volume; PHF 0.92 (analysis volume = volume ÷ 0.92). **Not shown:** the intersection *Median* is unchecked (Links `Median` 2.0, row 14). *Analysis Method* reads HCM 2010, not set by the file. **Timing refused:** "Could not build RBC Basic Timing. Reason: CellNotFound: Row not found: Row = 3, Column = 1, NodeID = 1", then "Could not populate signal group data for controller 1, signal group 1". Our `[Timeplans]` and `[Phases]` lack rows that both real writers emit; see row 13. |
 | 7 | Left-hand: setting in each program, carried by the file, far-turn column | 2026-11-03: Synchro right-hand only (owner); Vistro 2026 has the setting (`LEFTHANDTRAFFIC` = 1 in its `.vistromerge`) but its UTDF drops it; UTDF carries the side in neither ([utdf-real-exports](../evidence/utdf-real-exports.md)). The far-turn column is now the export mode's (D437: geometric `R`, mirrored `L`); how each program imports it is still open. |
 | 8 | May `u0-synchro.csv` be committed (GPL)? | 2026-11-03: no Synchro file (D438); the real-study exports supplied are not committed, only their field names are recorded. See row 12. |
 | 9 | Vistro 2026: left-hand on, metric; HCM 7 delay and LOS per approach and junction | |
 | 10 | `u0-vistro.csv` exported; far turn (EB right) in `EBR` or `EBL`; with left-hand off, does it change? | |
 | 11 | Synchro: does it import UTDF? If yes, first error or difference for `u0-vistro.csv` and `u0-handwritten.csv` | |
 | 12 | May `u0-vistro.csv` be committed (GPL)? | |
+| 13 | Import [`u0-handwritten-v2-empty.csv`](../../tests/data/utdf/u0-handwritten-v2-empty.csv) and [`u0-handwritten-v2-filled.csv`](../../tests/data/utdf/u0-handwritten-v2-filled.csv) into Vistro: first error, or does the timing appear (cycle 100; phases 1/2/4/5/6/8; splits 14/44/42/14/44/42)? | |
+| 14 | Median: after importing, does Vistro show Main St's 2.0 m median anywhere (approach, link or cross-section)? | |
+| 15 | With the network's left-hand setting on, is the imported junction drawn left-hand (NB vehicles approach on the west side)? | |

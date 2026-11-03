@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Vistro imports u0-handwritten.csv; timing probe v2
+
+- **Owner:** found Vistro's UTDF menus: *File → Export / Import → Synchro…*. They imported
+  `u0-handwritten.csv`.
+- **Came through as sheeted:** geometry, speeds, 3.25 m lanes, all four pockets, shared lanes,
+  volumes and PHF.
+- **Not shown:** the intersection median.
+- **Timing refused:** `CellNotFound: Row not found: Row = 3, Column = 1`.
+- **Added:** `u0-handwritten-v2-empty.csv` and `-v2-filled.csv`. Their `[Timeplans]` and `[Phases]`
+  carry every record Synchro 10.1 writes, in its order; one leaves the unauthored rows empty, the
+  other fills them. The import tells whether UT4 ("no unauthored values") survives.
+- **Updated:** UTDF_PROBE §4/§6 rows 6 and 13–15, UTDF_EXPORT §3, OWNER_SITTING I.3 and NEXT.
+- **Status:** U1 stays blocked. `multra-check-docs` passes.
+
 ## 2026-11-03 — U0 golden file moves to Vistro (D438)
 
 - **Owner:** Synchro cannot create UTDF. They asked for another route and chose Vistro as the
@@ -187,26 +201,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   260/260 (285.80 s), with architecture/file-size/docs guards, pass. Linux GCC 14.2.0/Qt 6.8.2 offscreen only; headless unconfigured, Windows/manual
   appearance not driven (E32). Docs/schema/module maps, D421/index, ROADMAP/NEXT and owner sheet
   updated. Oldest PROGRESS entry archived whole, ten live entries retained.
-
-## 2026-10-31 — A9 review: resolve compiled lane-change stubs (D420)
-
-- **Owner:** native preview accepted so far; remaining B40 choices answered as recommended:
-  explicit window/StudyPeriod placement, replace T with duration and PHF with 1 before Confirm;
-  reuse completed requested batches for Node/approach n/CI/unfinished, keeping quantities distinct.
-  B41 asks the manual-count window only; no answer is assumed. U0 remains unanswered, no writer.
-- **Failure first:** shipped m2.6 plus Suggest nodes refused its singleton-origin path-4 stub,
-  as did the hand-counted pocket on both sides. Corrected the ambiguous fixture's forcing setup
-  to enter on a real source and give positive stub demand two complete, different Node exits.
-- **Fixed:** follow every compiled laneChanges target through further stubs and accept only
-  agreeing complete traversals. A stub with targets cannot fall back to a broader origin family.
-  Target-free stubs retain the exact-origin fallback. Visit graph cycles once; stage all results
-  before installation, and copy queue ids before appending so vector growth cannot alter a choice.
-  Determined demand totals are conserved; different/partial target traversals still refuse.
-- **Tests:** six new both-side cases cover real m2.6 windows, the 1200 veh/h pocket's hand totals
-  720/240/240 and the ambiguous control. Native nodeanalysis 38/38 passes. No stored field/schema,
-  method, geometry or level output change. Desktop build, CTest 258/258 (274.43 s) and check
-  258/258 (270.13 s) pass, with architecture/file-size/docs guards. Five fixture/project JSON
-  reports differ only in buildCommit; CSV and project bytes are unchanged. Linux offscreen;
-  headless unconfigured, Windows/manual not run.
-- **Docs:** native contract, B40 answers/B41, D420/index and NEXT updated; B33–B36 and oldest
-  PROGRESS entry archived whole, ten live entries retained. Next remains the rest of A9.

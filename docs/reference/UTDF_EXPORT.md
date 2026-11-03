@@ -58,6 +58,14 @@ reaches them (§4). The codes the hand-written file guesses (shared lanes, contr
 A field MULTRA has no value for is written empty, so the receiving program applies its own default
 and says so; the export report lists each one. MULTRA never writes a value it did not author.
 
+**Vistro import (U0, 2026-11-03):** `u0-handwritten.csv`'s geometry, lanes, pockets and volumes
+import; its timing is refused (`CellNotFound: Row not found: Row = 3, Column = 1`). It lacks
+`[Timeplans]` and `[Phases]` records that both real writers emit, in a fixed order
+([utdf-real-exports](../evidence/utdf-real-exports.md)). The v2 probe files (UTDF_PROBE §6 row 13)
+show whether present-but-empty rows suffice:
+- if they do, UT4 stands;
+- if Vistro needs values, the writer needs authored defaults, which is an owner choice before U1.
+
 ## 4. Units and coordinates
 
 - **Metric** (metres, km/h), the file declaring it, so no conversion is written.
