@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — Vistro imports the U0 timing; neutral values for unauthored records (D439)
+
+- **Owner imports into Vistro 2026:**
+  - `u0-handwritten-v2-empty.csv` is refused: `VehExt … D1 is invalid`. Empty cells are not allowed.
+  - `u0-handwritten-v2-filled.csv` imports the timing exactly: controller 1, cycle 100, Ring 1 =
+    1·2|4, Ring 2 = 5·6|8, splits 14/44/42/14/44/42. HCM 2010 then gives 186.72 s, LOS F, v/c 0.988.
+- **Owner choice, D439:** the timing records MULTRA does not author get v2-filled's neutral
+  pretimed values: constants and copies of authored values, each listed in the report. UT4 is amended.
+- **Noticed:** the imports look drawn right-hand (row 15, to confirm).
+- **Updated:** UTDF_PROBE §6 rows 13/15, UTDF_EXPORT §3/UT4, the utdf README, OWNER_SITTING I.3
+  and NEXT. `multra-check-docs` passes.
+
 ## 2026-11-03 — U0: the refused timing leaves no cycle; HCM method is not in UTDF
 
 - **Owner screenshot** of the original `u0-handwritten.csv` imported into Vistro: no cycle, empty
@@ -121,39 +133,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   (17 items listed in September/early October remain on the sheet).
 - **Verification:** `multra-check-docs` and `multra-check-file-sizes` (built from `tools/`) pass;
   no code or build change. Oldest whole entry archived, retaining ten.
-
-## 2026-11-02 — all 34 UI audit corrections (D432)
-
-- **Owner request:** detailed UI review, additional sizing/proportion review, then fix everything.
-  [Evidence](evidence/ui-audit-fixes.md) maps all 34 findings to code and reproducible regressions.
-- **Data safety:** results/automation exports protect project/recovery paths; document generations
-  invalidate all list/diagnostic caches; rejected Problems clear on replacement; input/route tint
-  ownership is explicit. Staged forms validate before closing and keep errors/drafts; untouched
-  numbers, day-two/fractional periods and language-switch Properties drafts retain exact values.
-  Empty width tokens refuse consistently, clicked cell editors own Remove, and 200 Unicode scalar
-  names work for Thai and surrogate-pair characters.
-- **Space:** Drawing opens without Objects; Tables reserves a readable network preview; Results
-  uses the dock area with per-tab Macro/Meso/batch bars and stacked movement/queue tables below
-  1250 px. Only the active tab imposes its vertical minimum. Common Properties shrinks when folded
-  and scrolls when expanded. Object columns retain manual sizes and cap initial prose at 320 px;
-  period editors fit their cells, seeds reserve 104 px, and growing speed forms keep fixed footers.
-  The compact palette gives its released width to the canvas, with thin group separators; named
-  tools use short captions and a separate chord column. Lab uses a 320 px panel and aligned,
-  stacked fields. Session Compact/Comfortable/Large density provides 24/28/32 px rows/controls.
-- **Canvas:** Fit reserves pixel room for labels, including cached roads during Run. Labels avoid
-  viewport edges/HUD/map overlays after redraw/pan/resize and see the same road shapes in cached
-  and live rendering. PNG scene export keeps independent placement; canvas destruction detaches
-  its scene before label-member teardown. Scientific values, schemas and engine algorithms stay
-  unchanged, with all not-yet-validated markers retained.
-- **Measured:** Drawing at 1366×768 is 936×575 (51.3% of the window); compact releases/reclaims
-  123 px English / 119 px Thai with zero Properties growth. At 1024, movement viewports are
-  992×208 / 992×220 (8/9 full rows), queue names 726 / 667 px; both locales fit 800×600 folded
-  and expanded. Screenshots and commands are linked from the evidence note.
-- **Verification:** desktop build and `check` pass: 271/271 CTest entries (381.90 s, parallel 5),
-  plus architecture, file-size and documentation guards. New data/layout regressions cover both
-  locales and layout at 1×/1.5×/2×; existing core/CLI/analytical CSV parity, docking, gestures,
-  cached/live Run rendering and PNG export remain green. Linux GCC 14.2.0 / Qt 6.8.2 offscreen;
-  headless unconfigured, Windows/native manual appearance not driven (E34).
-- **Contracts:** D432/index, workflow, periods, canvas plan, module maps, evidence, NEXT and E34
-  updated; oldest PROGRESS entry archived whole. Windows owner appearance remains open; this
-  does not start canvas style C, another M13 slice or UTDF, or close a milestone gate.

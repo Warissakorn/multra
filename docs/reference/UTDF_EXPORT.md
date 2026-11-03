@@ -62,9 +62,24 @@ and says so; the export report lists each one. MULTRA never writes a value it di
 import; its timing is refused (`CellNotFound: Row not found: Row = 3, Column = 1`). It lacks
 `[Timeplans]` and `[Phases]` records that both real writers emit, in a fixed order
 ([utdf-real-exports](../evidence/utdf-real-exports.md)). The v2 probe files (UTDF_PROBE §6 row 13)
-show whether present-but-empty rows suffice:
-- if they do, UT4 stands;
-- if Vistro needs values, the writer needs authored defaults, which is an owner choice before U1.
+answered this the same day (UTDF_PROBE §6 row 13): **every record must be present and non-empty.**
+v2-empty is refused at the first empty cell (`VehExt … D1 is invalid`); v2-filled imports the
+cycle, rings and splits exactly as sheeted.
+
+**Timing records MULTRA does not author (D439)** are written with neutral pretimed values, all
+listed in the export report:
+- **Constants:**
+  - `Lock Timings`, `Referenced To`, `Master` and `Yield` (Timeplans): 0.
+  - `VehExt`, `TimeBeforeReduce`, `TimeToReduce` and `MinGap`: 0.0.
+  - `PedCalls` 0, `DualEntry` 0, `InhibitMax` 1.
+  - `Walk` and `DontWalk` stay empty; v2-filled imported with them empty.
+- **Copies of authored values:**
+  - `MinSplit` = split; `ActGreen` = green.
+  - `Yield170` and `LocalYield170` = `Yield`; `LocalStart` = `Start`; `LocalYield` = `Yield`.
+- **Records in Synchro 10.1's order:** `Node 0` = the Node's number and `Node 1` = 0.
+
+None of these values changes a fixed-time plan. Vistro's own extra records (`StartTime`,
+`MaxInitial` …) are not written: v2-filled imported without them.
 
 No UTDF record names the HCM method, in either writer's files. Vistro opens an import as HCM 2010;
 the user sets HCM 7th in the program after import (owner, 2026-11-03). The export report should say so.
@@ -172,7 +187,7 @@ The golden file goes to `tests/data/utdf/` only if the owner agrees that it may 
 | UT1 | A two-Node corridor exports Nodes, Links and Lanes with the numbers, units and distances by hand |
 | UT2 | Re-exporting an unchanged document gives the same bytes; adding a Node keeps the others' numbers |
 | UT3 | Every refusal (unnumbered, ambiguous direction, missing layout) names its Node and writes nothing for it |
-| UT4 | Empty fields are listed in the report; no field carries a value MULTRA did not author |
+| UT4 | Empty fields are listed in the report; every value is either authored or one of D439's neutral pretimed values, each listed in the report |
 | UT5 | The export changes no byte of the document |
 | UT6 | Lanes volumes, PHF and %HV equal `Node::analysis` per movement |
 | UT7 | Each preset's Phases rows equal the controller's greens, yellows and all-reds |
