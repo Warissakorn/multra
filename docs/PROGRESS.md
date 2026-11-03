@@ -6,6 +6,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-03 — drawing level is not separation (D436, D201 B3)
+
+- **Owner request:** continue NEXT. Every other open line waits on the owner, so this session took the
+  booked fix. Owner choice: separation is a confirmed overpass, or Street segments on different levels.
+- **Change:** `automaticConflicts` no longer skips path pairs because their drawing `level` differs
+  (M3_CONTRACT §1). Pairs of Links generated from an overpass pair or from Street segments on
+  different levels stay apart, so Find crossings and D382 keep their meaning. Hand-drawn Links and
+  Connectors on different levels now get a passive crossing, as the contract says.
+- **Failure first:** the old `levels_apart_do_not_conflict…` became
+  `drawing_level_is_not_separation…`; two new rows cover the overpass and level separators. All three
+  failed before the fix. Shipped projects have every Link at level 0, so nothing they derive changes.
+- **Verification:** release build, `ctest` 272/272, desktop/headless builds and `check`; `multra-check-docs`.
+
 ## 2026-11-02 — main CI green again: node-ui and object-groups-ui
 
 - **Owner request:** fix the failing build (Native C++ run 692 on main, Linux and Windows) and rebuild.
@@ -258,41 +271,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   unconfigured, Windows/manual appearance remains E30. U0 has no answers; no J7/writer started.
 - **Docs:** §5/JT20, signal/editor/schema/readiness contracts, D417/index, B38/E30 and module
   maps updated; old out-of-repo evidence paths removed. Oldest PROGRESS entry archived whole.
-
-## 2026-10-30 — J4T core checkpoint; natural polygon choice pending (D416, B38)
-
-- **Owner:** J6/J6a approved. B33 fixes three stages/compass numbering; B37 selected two full
-  incoming lanes per arm (F|T, T|K, F|K), existing P2 + legs=3, and a measuring-copy stem
-  extension for both signalised and two-way-stop T templates. Ordinary F4 remains unchanged.
-- **Implemented:** one installed protected T; only major through 2/6, physical major far 1/5,
-  existing minor 4/8. Both numbered rings remain, including a one-phase ring. No timing
-  defaults: cycle/green/yellow/allRed are entered; clearance/waiting stay separate and cycle
-  closes exactly. Required numbers derive before timing is complete; Fill, form and seams
-  share that set. No new enum, stored field, schema or HCM procedure.
-- **Cuts:** extend only the full-width measuring stem to the far major painted boundary,
-  then use the existing overlap cuts. Published geometry/stations are on the original Links,
-  with reference/outside/refine guards and one Undo. D400 is superseded for templates only.
-- **Tests first:** seven new signal/T rows failed on the old catalog/mapping/cuts, while all
-  nine JT9 cases passed; the former orthogonal-T refusal row failed on its new success assert.
-  UI digit extraction was corrected after its first assert included the explanatory suffix;
-  re-running the original form proves the missing four-phase subset before restoring the fix.
-  A catalog fixture now explicitly selects a four-leg entry rather than assuming it is first.
-- **Coverage:** both sides/four compass stems, literal U0 numbers, single-ring waiting,
-  missing/unused/grid/cycle/protected-lane guards, physical opposition versus labels, manual
-  controller/checker cases, pocket drafts/re-apply, retained/refused references, full Undo/reopen,
-  HCM's six movement greens and Micro seed 42. Node form is driven in English/Thai.
-- **Docs:** signal contract split before the root page's 500-line limit; JT18/JT19, D416/index,
-  schema/readiness/module maps, B37/E30, ROADMAP and NEXT updated; oldest whole entry archived.
-- **Final workflow finding (B38):** removing the fixture's authored 60 m square exposes
-  NODE_CONNECTOR_CROSSES with the actual 14.5 m-radius Find crossings polygon on both sides.
-  The T core is committed at b7be7c94 but the slice is not complete. Template/major selection
-  can already clear generated, so another polygon policy is an owner choice. Asked before
-  implementing growth; JT20 is pending. Preserve the failing patch and original/candidate
-  JSON in the evidence directory; restore the roomy tests to green while awaiting B38.
-- **Verification:** desktop build and CTest **257/257** (279.81 s, parallel 5) pass; native
-  junctionsignals **19/19**, junctionfill **25/25**, junctiontemplates **19/19**, junctioneditor
-  **27/27** and both-locale Qt forms pass. CLI raw bytes match except buildCommit. Check
-  **257/257** (280.92 s) passes. U0 has no answers; no writer/interchange claim or J7 work. Linux only; headless
-  unconfigured, Windows/manual UI not run (E30).
-  After restoring the core fixtures, the checkpoint desktop build and targeted signal/recipe
-  tests pass **2/2** (7.74 s); docs/file-size/diff guards pass. B38 remains unanswered.

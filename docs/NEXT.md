@@ -125,13 +125,6 @@ a planning-level method (otherwise back to the owner).
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Drawing level is not separation (D201 B3, booked 2026-10-16, not yet done):**
-  `automatic_conflicts.cpp` still skips path pairs whose drawing `level` differs, against
-  [M3_CONTRACT](reference/M3_CONTRACT.md) §1 ("Drawing level is not physical separation"); D201
-  kept the contract and queued the code. Failure first: two crossing Links on different levels get
-  an automatic area. `automatic_conflict_tests.cpp`'s `levels_apart_do_not_conflict...` asserts
-  the old skip and changes with the fix. Decide in the slice's contract whether an S3.5 overpass is
-  the object that separates them, and say so before changing generated Nodes.
 - **Lateral, before any shipped behaviour carries its keys**
   ([lateral-run-audit](evidence/lateral-run-audit.md)): on `m2.6-study-template` a changer past its
   window straddles the line and jams both lanes (seed 45: 1908 → 1531 completed; clamps 1 → 33).

@@ -95,6 +95,9 @@ common downstream topology. Changes invalidating this coverage block Run. Merely
 two arbitrary numbers is insufficient to claim geometric collision protection. Tangencies,
 self-intersections and ambiguous overlaps unsupported by the geometry resolver are named
 capability blockers, not guessed areas. Drawing level is not physical separation.
+Automatic crossings follow this (D436): Links on different drawing levels cross, and only Links
+generated from Street segments confirmed as an overpass, or from Street segments on different levels
+(which never meet, STREET_SEGMENTS §5), are kept apart.
 
 ## 2. Authoring and runtime validation are different
 

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <unordered_map>
 
 // M3.2.4c (D68): conflict areas the drawing implies, as Vissim generates them. See the header.
 namespace multra {
@@ -17,8 +18,19 @@ std::string refKey(const ControlPathRef& r) {
 // One lane path a crossing can involve, with what the exclusions and the prefilter read.
 struct Path {
     ControlPathRef ref; std::string owner, key;
-    int level{}; Point lo{}, hi{};
+    std::string segment; Point lo{}, hi{}; // segment: the generating Street segment, if any
 };
+// D436 (D201 B3): a drawing level alone is not physical separation (M3_CONTRACT §1). Two lane paths
+// are apart only when their Links come from Street segments confirmed as an overpass, or from
+// Street segments on different levels, which never meet (STREET_SEGMENTS §5, D382).
+bool separated(const Network& n, const std::unordered_map<std::string, int>& levels, const Path& a, const Path& b) {
+    if (a.segment.empty() || b.segment.empty() || a.segment == b.segment) return false;
+    const auto pair = std::minmax(a.segment, b.segment);
+    for (const auto& o : n.overpasses)
+        if (std::minmax(o.first, o.second) == pair) return true;
+    const auto x = levels.find(a.segment), y = levels.find(b.segment);
+    return x != levels.end() && y != levels.end() && x->second != y->second;
+}
 void bound(Path& p, const std::vector<Point>& g, double margin) {
     p.lo = {INFINITY, INFINITY}; p.hi = {-INFINITY, -INFINITY};
     for (const auto& q : g) {
@@ -76,7 +88,7 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
     std::vector<Path> paths;
     for (const auto& l : n.links)
         for (const auto& lane : l.lanes) {
-            Path p{{l.id, lane.id, "", "", ""}, l.id, "", l.level};
+            Path p{{l.id, lane.id, "", "", ""}, l.id, "", l.streetSegmentId.value_or("")};
             const auto surface=conflictSurface(n,p.ref,&cache);
             if(!surface)continue;
             auto edges=surface->left;edges.insert(edges.end(),surface->right.begin(),surface->right.end());
@@ -85,7 +97,7 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
         }
     for (const auto& c : n.connectors)
         for (const auto& cp : connectorPaths(n, c)) {
-            Path p{{"", "", c.id, cp.from.laneId, cp.to.laneId}, c.id, "", c.level};
+            Path p{{"", "", c.id, cp.from.laneId, cp.to.laneId}, c.id, "", ""};
             const auto surface=conflictSurface(n,p.ref,&cache);
             if(!surface)continue;
             auto edges=surface->left;edges.insert(edges.end(),surface->right.begin(),surface->right.end());
@@ -93,11 +105,13 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
             paths.push_back(std::move(p));
         }
     for (auto& p : paths) p.key = refKey(p.ref);
+    std::unordered_map<std::string, int> levels;
+    for (const auto& s : n.streetSegments) levels.emplace(s.id, s.level);
     std::sort(paths.begin(), paths.end(), [](const auto& a, const auto& b) { return a.key < b.key; });
     for (std::size_t i = 0; i < paths.size(); ++i)
         for (std::size_t j = i + 1; j < paths.size(); ++j) {
             const auto& a = paths[i]; const auto& b = paths[j];
-            if(a.owner==b.owner || a.level!=b.level)continue;
+            if(a.owner==b.owner || separated(n, levels, a, b))continue;
             if (a.hi.x < b.lo.x || b.hi.x < a.lo.x || a.hi.y < b.lo.y || b.hi.y < a.lo.y) continue;
             const auto pieces = classifiedOverlaps(n, a.ref, b.ref,&cache);
             std::size_t crossingIndex=0,branchingIndex=0;
