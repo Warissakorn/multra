@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
+
+- **Owner:** re-exported the U0 junction from Vistro. Draft 2 matches §1–§2: lanes, pockets,
+  names, volumes, PHF 0.92 and HV 5 %. The timing is still 60 s with four phases; the owner will
+  set §3 and export again.
+- **Owner choice (D440):** `[Links] Lanes` counts the pocket, 3 at the U0 junction. Vistro's own
+  writer counts only full lanes (2) and puts pocket storage on the through column. MULTRA keeps
+  storage on the turn column, which Vistro reads.
+- **Committed:** `u0-vistro-draft2.csv` byte for byte, and the probe `u0-handwritten-v3.csv`, which
+  is v2-filled with the junction legs' `Lanes` 3 (UTDF_PROBE §6 row 17).
+- **Fixed:** UTDF_EXPORT §3 still said MULTRA never writes unauthored values; it now cites D439.
+  Rows 15–16 of UTDF_PROBE §6 had text outside their last cell.
+- **Check:** `multra-check-docs` passes.
+
 ## 2026-11-03 — Vistro switches an import to right-hand; no median
 
 - **Owner:**

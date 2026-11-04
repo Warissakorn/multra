@@ -139,7 +139,8 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   overlapping. Two motorcycles side by side in one lane, with clearance above `dLat`, are not each
   other's leaders. This applies to the physical leader and to PERCEPTION's perceived leaders alike.
   **A straddler also searches the lanes it covers** (D210, [evidence](../evidence/straddler-leaders.md)).
-  Each other lane its body covers at its front segment by more than `kLateralOverlap` is searched
+  Each other lane its body covers at its front segment by more than `kLateralOverlap`, on the section
+  level with the front (D445: a neighbour section that starts ahead of the front is not covered there), is searched
   ahead of the body's front, mapped onto that lane as §5 maps spans, with the same filter. The search
   walks on through that lane's only successor and stops at a fork, where the straddler has no route to
   choose by. The nearer of the two searches is the leader; a tie keeps the own lane's. In code,

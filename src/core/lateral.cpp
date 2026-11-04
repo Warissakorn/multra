@@ -183,7 +183,10 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
         const double half = other.startWidth / 2;
         if (std::min(body.left, other.centre + half) - std::max(body.right, other.centre - half) <= kLateralOverlap) continue;
         const double length = s.segments[n].length;
-        filter.covered.push_back({n, std::clamp(mapStation(section, s.segments[part.segmentIndex].length, other, length, front - part.start), 0.0, length)});
+        // D445: only a section level with the front; one ahead of it (or behind) is not covered there.
+        const double at = mapStation(section, s.segments[part.segmentIndex].length, other, length, front - part.start);
+        if (at < -1e-9 || at > length + 1e-9) continue;
+        filter.covered.push_back({n, std::clamp(at, 0.0, length)});
     }
     if (!filter.covered.empty()) filter.onlyNext = &index.lateral.onlyNext;
     return filter;

@@ -136,28 +136,26 @@ a planning-level method (otherwise back to the owner).
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
 - **Lateral, before any shipped behaviour carries its keys** ([lateral-run-audit](evidence/lateral-run-audit.md),
-  [crossing-window](evidence/lateral-crossing-window.md)). Finding 1 (the stuck straddler) is fixed by
-  D444, and m2.6 seed 45 now completes 1903 switched on (off: 1908). The owner agreed on this order, one
-  step per session, each with failure-first rows and the audit batch re-run (seeds 42–51, off and on):
-  1. **Finding 2:** m2.6 seed 42 has 13 clamps on vehicle 1133, a waiting changer over the line, and
-     seed 43 has 6. The car-following and the hard cap both call `closestVehicle` with the same
-     filter, so the clamps are not two separate searches. Suspects:
-     - `hiddenLength` (`caps.cpp`) assumes the leader is on the follower's route parts, but a
-       covered-lane leader (D210) is on another lane;
-     - the clamp rule itself moves a vehicle to `allowedDistance` with speed 0.
-
-     Reproduce with a probe like D444's before changing anything.
-  2. **A body over a line whose move is refused:** a refused move (`blocked`) keeps a body that is
-     over a line where it is. Step it back as D208 does.
-  3. **Finding 3, the swap lock** (lab seeds 44/49, vehicles 83/88): refuse a start while a changer
-     coming the other way targets this lane over an overlapping length; break same-tick ties by id.
-  4. **`followerFilter`'s lookup at the window end:** it still uses `frontPart` there; reuse
-     `targetSectionAt`.
-
-  The lane-change state machine and the no-progress timer come only if residue remains. A timer is
-  a behaviour value: a key needs the owner (D204 added none). Abandoning a change is still the owner's
-  call. The +10–28 % wall cost switched on is not worth cutting until then, and it needs a profile
-  first.
+  [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md)).
+  - **Fixed:** Finding 1, the stuck straddler (D444), and Finding 2, the waiting-changer clamps
+    (D445). Switched on, m2.6 now has the switched-off clamp count in every seed, and seed 45
+    completes 1903 (off: 1908).
+  - **Next steps,** in the order the owner agreed: one per session, each with failure-first rows,
+    a probe of the case before any change, and the audit batch re-run (seeds 42–51, off and on).
+    1. **Finding 3, the swap lock** (lab seeds 44/49, vehicles 83/88, about 50 s side by side at
+       `lateral ±0.8`): refuse a start while a changer coming the other way targets this lane over
+       an overlapping length; break same-tick ties by id. The D444 straddle probe does not see this
+       case, because both bodies stay inside their lanes. Measure the time each changer spends
+       waiting at the line instead.
+    2. **A body over a line whose move is refused** (`blocked` in `moveLaterally`) keeps its place.
+       Step it back as D208 does. No product run shows this now, so build the case in a test.
+    3. **`followerFilter`'s target-route lookup at the window's end** still uses `frontPart`.
+       Reuse `targetSectionAt` (D444).
+  - **Later, and only if residue remains:** the lane-change state machine and a no-progress timer.
+    A timer is a behaviour value, so a key needs the owner (D204 added none). Abandoning a change is
+    still the owner's call.
+  - **Cost:** the +10–28 % wall cost switched on is not worth cutting until then, and it needs a
+    profile first.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
   (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5

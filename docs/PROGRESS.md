@@ -6,6 +6,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — Straddler searched a covered lane's next section from its start (D445)
+
+- **Owner:** "ทำเลย": lateral audit Finding 2, reproduced before any change.
+- **Cause (m2.6 seed 42, vehicle 1133):** `followerFilter` listed both sections of lane-17 as covered.
+  The second starts 25 m ahead of the front; its mapped station was clamped to 0, so the D210 search
+  started there and found a standing car at gap 0. The car-following and the hard cap shared that one
+  search, so the hard cap held 1133 and it was clamped 13 times. The review's suspects were not
+  the cause.
+- **Change:** a covered lane is listed only when the mapped front falls within that section (LATERAL §6).
+- **Row:** BA160 failed before the fix and passes after.
+- **Result, switched on:** m2.6 clamps fall from 28 to 1, the switched-off count, in every seed. Seed 51
+  completes 1965, as it does off. Seed 42's longest straddle falls from 5.8 s to 2.4 s. Every
+  switched-off batch is unchanged.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-03 — Lateral crossing at the window end (D444)
 
 - **Owner:** agreed to the smallest fix first, after the review of the lateral audit: reproduce
@@ -144,17 +159,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Updated:** UTDF_PROBE §6 row 16, UTDF_EXPORT UT0, the utdf README, OWNER_SITTING I and NEXT.
 - **Row 17:** `u0-handwritten-v3.csv` (Links `Lanes` 3) imports with the pockets as pockets and the
   same HCM 2010 result as v2-filled: 186.72 s, LOS F. D440 holds, and U0's probe questions are answered.
-
-## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
-
-- **Owner:** re-exported the U0 junction from Vistro. Draft 2 matches §1–§2: lanes, pockets,
-  names, volumes, PHF 0.92 and HV 5 %. The timing is still 60 s with four phases; the owner will
-  set §3 and export again.
-- **Owner choice (D440):** `[Links] Lanes` counts the pocket, 3 at the U0 junction. Vistro's own
-  writer counts only full lanes (2) and puts pocket storage on the through column. MULTRA keeps
-  storage on the turn column, which Vistro reads.
-- **Committed:** `u0-vistro-draft2.csv` byte for byte, and the probe `u0-handwritten-v3.csv`, which
-  is v2-filled with the junction legs' `Lanes` 3 (UTDF_PROBE §6 row 17).
-- **Fixed:** UTDF_EXPORT §3 still said MULTRA never writes unauthored values; it now cites D439.
-  Rows 15–16 of UTDF_PROBE §6 had text outside their last cell.
-- **Check:** `multra-check-docs` passes.

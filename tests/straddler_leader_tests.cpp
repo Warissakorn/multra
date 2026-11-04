@@ -130,3 +130,44 @@ TEST(straddlerleader, perceived_leaders_include_the_covered_lane) { // BA55 with
     CHECK(r.clamps == 0);
     CHECK(std::abs(byId(state, 1)->speed - 5) < 0.5);
 }
+
+// D445 (BA160): a covered lane is searched only on the section the front is level with. The left lane
+// is cut into two sections at 150 m; both neighbour the right lane's single section, but a straddler at
+// 100 m is level only with the first. A car standing at the start of the second is 50 m ahead, not 0
+// (m2.6 seed 42, vehicle 1133: 13 clamps behind a car 28 m ahead).
+TEST(straddlerleader, a_covered_lane_section_ahead_of_the_front_is_not_searched_from_its_start) { // BA160
+    auto s = road(2, 3.5, keys(0, 0));
+    const auto left = laneSegment(s, 0), right = laneSegment(s, 1);
+    const auto leftId = s.segments[left].id;
+    s.segments[left].length = 150; s.segments[left].next = {"left-2"};
+    s.segments.push_back({"left-2", 150, {}});
+    auto section = s.segmentCrossSections[left];
+    s.segmentCrossSections[left].referenceEnd = 150;
+    section.linkStationStart += 150; section.referenceStart = 150;
+    s.segmentCrossSections.push_back(section);
+    for (auto& route : s.routes) if (route.segmentIds.front() == leftId) route.segmentIds.push_back("left-2");
+    CHECK(validateScenario(s).empty());
+    const double length = s.vehicleTypes[slot(s.vehicleTypes, "car")].length;
+    // Both toward the line, so the car's band overlaps the straddler's and it counts as a leader.
+    auto state = place(s, {{s.segments[right].id, 100, 0, 1.6}, {leftId, 150 + length, 0, -0.6}});
+    for (auto& v : state.vehicles) v.desiredSpeed = v.id == 1 ? 10 : 0;
+    const auto& sc = *state.scenario; const auto& index = *state.index;
+    const auto second = slot(sc.segments, "left-2"), own = slot(sc.segments, s.segments[right].id);
+    const auto& near = index.lateral.neighbours[own];
+    CHECK(std::find(near.begin(), near.end(), second) != near.end()); // the forcing: the section ahead neighbours it
+    const auto refs = resolveRefs(sc, state.vehicles, index);
+    const auto spans = occupiedSpans(sc, state.vehicles, index, refs);
+    CHECK(std::any_of(spans.begin(), spans.end(), [&](const auto& x) { // and the body is over the line
+        return x.vehicleId == 1 && !x.own && x.segmentIndex == slot(sc.segments, leftId); }));
+    const auto buckets = bucketSpans(spans, sc.segments.size());
+    const auto& straddler = state.vehicles[0];
+    const auto filter = followerFilter(sc, index, index.parts[refs[0].route], straddler.distance,
+                                       sc.vehicleTypes[refs[0].type].width, straddler.lateral, sc.behaviours[refs[0].behaviour], 0);
+    std::uint64_t id = 0;
+    const auto leader = closestVehicle(straddler, index.parts[refs[0].route], spans, buckets, &id, &filter);
+    CHECK(leader && id == 2);
+    CHECK(leader && std::abs(leader->gap - 50) < 1e-9);
+    const auto r = run(state, 1);
+    CHECK(r.clamps == 0);
+    CHECK(byId(state, 1)->distance > 100);
+}

@@ -53,6 +53,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [lane-change-gap.md](lane-change-gap.md) | Mid-change gap loss: waiting at the line — 2026-10-16 | D208 |
 | [straddler-leaders.md](straddler-leaders.md) | A straddler follows the other lane's leaders — 2026-10-16 | D210 |
 | [lateral-run-audit.md](lateral-run-audit.md) | Lateral behaviour in product runs, switched on: invariants hold; a stuck straddler, waiting-changer clamps, swap lock — 2026-10-23 | D204, D208, D210 |
+| [lateral-covered-sections.md](lateral-covered-sections.md) | Audit Finding 2 fixed: a covered lane is searched only on the section level with the front; m2.6 clamps switched on fall to the switched-off count — 2026-11-04 | D445 |
 | [lateral-crossing-window.md](lateral-crossing-window.md) | Audit Finding 1 fixed: the start and the crossing share the target lane at the window end; a body stays in its lane on a side it cannot cross — 2026-11-03 | D444 |
 | [ui-audit-fixes.md](ui-audit-fixes.md) | All 34 owner-requested UI/data/sizing fixes, regressions and reproduction — 2026-11-02 | D432 |
 | [dialog-fit.md](dialog-fit.md) | Dialog heights against short screens; the behaviour editor needed 1378 px — 2026-10-23 | D318 |
