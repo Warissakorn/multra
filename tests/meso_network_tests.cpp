@@ -160,7 +160,7 @@ TEST(mesonetwork, me2_jam_density_settings_and_refusals) { // ME2
     auto fine = d; demand(fine).mesoSettings = MesoSettings{limit, limit};
     CHECK(!issueAt(mesoNetwork(fine, data()).issues, "MESO_STEP_TOO_LONG", "definition.mesoSettings.step"));
     // Without a Meso field every shipped project keeps its schema.
-    for (const char* project : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json", "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json"}) {
+    for (const char* project : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json", "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json", "weaving-lab.traffic.json"}) {
         const auto file = fileJson(project);
         const auto saved = reread(parseDocument(file));
         CHECK(saved["schemaVersion"] == file["schemaVersion"] && !saved["definition"].contains("mesoSettings"));

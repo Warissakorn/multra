@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — UTDF U1: the geometry writer (D442)
+
+- **Owner:** chose world metres for U1, with UTM in U2 on the desktop, because PROJ is not in the
+  headless build. Mirrored mode is in U1. Recorded as D442; the contract is UTDF_EXPORT §7.
+- **Schema 65:** Node `number`, an optional positive integer. A repeat is `NODE_NUMBER_DUPLICATE`.
+- **Writer:** `utdfDocument(document, mode)` (`utdf_export.*`, with the leg walk in `utdf_legs.*`)
+  writes [Network], [Nodes], [Links] and [Lanes]:
+  - legs walked to the next Node or to an external end;
+  - D440 lane counts, with pockets on the owning turn;
+  - every empty authored field listed in the report.
+- **CLI:** `multra-cli --project P --export-utdf FILE [--utdf-mode geometric|mirrored]`. It refuses
+  an existing file and writes nothing when no Node can be exported.
+- **Tests:** group `utdf` covers UT0–UT5 and UT11's geometry. The U0 junction rebuilt in MULTRA
+  reproduces every Node 1 `[Links]` line and the ten `[Lanes]` geometry lines of
+  `u0-handwritten-v3.csv`. `cli-utdf` compares the CLI's files byte for byte.
+- **Verified:** headless `ctest` 174/174 and `check` pass; `multra-check-docs` passes.
+- **Next:** the owner imports `u1-u0-junction-geometric.csv` into Vistro (UT10). After that comes U2.
+
 ## 2026-11-03 — Vistro limits closed (D441)
 
 - **Owner:** both whole-network merges (`u0-full-lh-a/-b`) create a second, overlapping junction and

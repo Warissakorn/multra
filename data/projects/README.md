@@ -1,6 +1,6 @@
 # Shipped example projects
 
-Four projects, installed with the program and opened by the tests and the CLI. Each is built by a
+Five projects, installed with the program and opened by the tests and the CLI. Each is built by a
 C++ builder in `tools/` through the editor's own commands, and a test fails when the committed
 file and its builder differ: regenerate with the named tool, never edit the JSON by hand.
 
@@ -14,6 +14,7 @@ counts, and no result from them is a claim about a real road (PRINCIPLES rule 4)
 | `t-junction-priority.traffic.json` | An unsignalised Yield T-junction whose minor turn crosses one major stream and merges into the other (M3.2.7, A26); the M3.2.7d owner exercise | Right-hand | `tools/t_junction_network.hpp` → `multra-t-junction-fixture` |
 | `m2.6-study-template.traffic.json` | The four-leg drawing set up as a gate study: one routeless input per approach over four 15-minute intervals, split by routing decisions, 1 h. **Placeholder volumes, a guessed timing-to-approach mapping and no aerial image**: replace them with a study's counts (OWNER_SITTING B4) | Left-hand | `tools/m26_study_network.hpp` → `multra-m26-study` |
 | `lane-change-lab.traffic.json` | A development bed for lane changing, not an acceptance fixture: four separate scenes (overtaking, three lanes, lane drop, diverge) that run in seconds (D98) | Left-hand | `tools/lane_change_network.hpp` → `multra-lane-change-fixture` |
+| `weaving-lab.traffic.json` | A synthetic weaving fixture, not a study: three Type A weaves of 150, 300 and 500 m, each starting at the network edge, origins by entry lane (D449, [WEAVING_FIXTURE](../../docs/reference/WEAVING_FIXTURE.md)) | Left-hand | `tools/weaving_network.hpp` → `multra-weaving-fixture` |
 
 Regenerate from the repository root, for example
 `./build/headless/bin/multra-four-leg-fixture data/projects/four-leg-signalised.traffic.json`.

@@ -247,7 +247,8 @@ left-hand-traffic networks, held in a behaviour key (D178). **Lane-change durati
 [evidence](evidence/lateral-perf.md)). A swapping pair of stubs now resolves by the rear one yielding (D207,
 [evidence](evidence/lane-swap.md)); a mid-change body waits at the line (D208) and follows the lanes it covers
 (D210, [evidence](evidence/straddler-leaders.md), BA55); **keep-to-kerb contract written** ([OVERTAKING](reference/OVERTAKING.md),
-D213, BA64–BA71) and **slice 1 implemented** (D215, [evidence](evidence/kerb-bias.md); A53 still fails, no D95 value ships); Vissim's cooperative lane change stays open. **Gate:** contract and failure-first rows per item in the
+D213, BA64–BA71) and **slice 1 implemented** (D215, [evidence](evidence/kerb-bias.md); A53 still fails, no D95 value ships); Vissim's cooperative lane change stays open. **Weaving fixture** (D449, [WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md),
+[evidence](evidence/weaving-lab.md), BA179–BA183): at full demand the weave end locks for good (BA183, open). **Gate:** contract and failure-first rows per item in the
 lane-change lab (D98), then acceptance fixtures; prototype baselines change only by a recorded decision.
 
 ### M3.5 — Perception, reaction and attention

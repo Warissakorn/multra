@@ -231,6 +231,11 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA160 | A straddler level with the first of two sections of the lane it covers; a car at the second section's start (D445) | Its leader is that car at the true gap, not 0; no clamp |
 | BA162 | A stub at its dead end where the window ends at a join; a car on the far lane leaning into the target lane's far edge alongside (D448) | The start is accepted, as it is 1 m short of the join |
 | BA161 | Switched on, a swapping pair whose rear one is beyond its standstill distance but too close to accept the front one (D446) | The rear one yields; both cross within 8 s; no clamp, no 2D overlap, no braking beyond comfortable |
+| BA179 | The weaving lab compiled ([WEAVING_FIXTURE](../reference/WEAVING_FIXTURE.md), D449); and the same weave drawn with two entry Links | Each scene: stubs only on the crossing lanes, dead ends at the weave's end, origins by entry lane. The two-entry drawing refuses the two crossing routes (`UNSUPPORTED_ROUTE_TOPOLOGY`; pinned limitation) |
+| BA180 | The 300 m weave, switched off, demand ×0.6, 450 s; weaving vehicles change (D449) | No vehicle removed, no 2D overlap, no clamp; what is left is only what was still on its way |
+| BA181 | The same, switched on (audit keys) (D449) | No vehicle removed, no 2D overlap; what is left is only what was still on its way |
+| BA182 | The same run twice, off and on (D449) | Identical movement and lane-change reports and arrival times |
+| BA183 | **Open, pinned** (D449): the 300 m weave, switched off, demand ×1.0 | Today: the two heads at the dead end stand short of each other's gap and the weave stops serving for good (nothing arrives in the last minute). The fix must turn this row around without removing vehicles |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

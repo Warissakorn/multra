@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — Weaving lab, step 1: fixture and off/on sweep (D449)
+
+- **Owner:** asked how other tools test weaving, then agreed to step 1: a synthetic fixture and an
+  off/on measurement, contract first ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md)).
+- **Built:**
+  - `data/projects/weaving-lab.traffic.json`, from `tools/weaving_network.hpp`, regenerated with
+    `multra-weaving-fixture`: three Type A weaves of 150, 300 and 500 m;
+  - `multra-weaving-sweep`;
+  - rows BA179–BA183 in `weavinglab`.
+  No engine or schema change.
+- **Found** ([evidence](evidence/weaving-lab.md)):
+  - A weave with two entry Links does not compile its crossing routes, because a change is
+    compiled only on the entry Link. So the lab starts the weave at the network edge.
+  - **The weave end locks for good** once the two lane heads stand short of each other's gap, since
+    nothing is removed (M3 §4). The weave is lock-free through ×0.4. Locks begin at ×0.5. At ×1.0
+    every seed of the 150 and 300 m weaves locks, off and on. Switched on locks earlier.
+  - BA183 pins the lock as open.
+- **Also:** the shipped-project tests count five files (SP1), and N1, MA1, NA8 and the Meso check
+  include the lab.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — Lateral track closed; owner checks prepared
 
 - **Owner:** chose to close the lateral track and turn to the pending owner checks. Gap seeking is
@@ -162,21 +183,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Mirrored mode is covered (UT11).
   - The CLI fixture is renamed `u2-u0-junction*`.
 - **Verified:** headless `check` passes 174/174; `multra-check-docs` passes.
-
-## 2026-11-03 — UTDF U1: the geometry writer (D442)
-
-- **Owner:** chose world metres for U1, with UTM in U2 on the desktop, because PROJ is not in the
-  headless build. Mirrored mode is in U1. Recorded as D442; the contract is UTDF_EXPORT §7.
-- **Schema 65:** Node `number`, an optional positive integer. A repeat is `NODE_NUMBER_DUPLICATE`.
-- **Writer:** `utdfDocument(document, mode)` (`utdf_export.*`, with the leg walk in `utdf_legs.*`)
-  writes [Network], [Nodes], [Links] and [Lanes]:
-  - legs walked to the next Node or to an external end;
-  - D440 lane counts, with pockets on the owning turn;
-  - every empty authored field listed in the report.
-- **CLI:** `multra-cli --project P --export-utdf FILE [--utdf-mode geometric|mirrored]`. It refuses
-  an existing file and writes nothing when no Node can be exported.
-- **Tests:** group `utdf` covers UT0–UT5 and UT11's geometry. The U0 junction rebuilt in MULTRA
-  reproduces every Node 1 `[Links]` line and the ten `[Lanes]` geometry lines of
-  `u0-handwritten-v3.csv`. `cli-utdf` compares the CLI's files byte for byte.
-- **Verified:** headless `ctest` 174/174 and `check` pass; `multra-check-docs` passes.
-- **Next:** the owner imports `u1-u0-junction-geometric.csv` into Vistro (UT10). After that comes U2.
