@@ -18,6 +18,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [DRIVING_BEHAVIOUR.md](DRIVING_BEHAVIOUR.md) | Class/road behaviour assignment: library storage, runtime selection and editor (M3.3.2a–c) and the target capability map |
 | [BEHAVIOUR_LAB.md](BEHAVIOUR_LAB.md) | Behaviour Lab: circuit routes, live retune, vehicle placement, the lab ring and window, rows BL1–BL12 (M3.3.4) |
 | [LATERAL.md](LATERAL.md) | Two-dimensional occupancy: lateral frame, cross-sections, spans on every overlapped lane, lateral admission, zones and display (M3.7.0 contract, D180; slices 1–4 implemented, D187–D189, D202, D203) |
+| [LATERAL_LAB.md](LATERAL_LAB.md) | The lateral lab: four scenes with the lateral switch on, the one shipped project carrying the keys, as lab placeholders; rows BA198–BA203 (D457) |
 | [BEHAVIOUR_PARAMETERS.md](BEHAVIOUR_PARAMETERS.md) | Every value that shapes driving behaviour: settable now, should become settable, kept fixed (D213, D214), and each setting's scope, project-wide or local (D216) |
 | [COMMITMENT.md](COMMITMENT.md) | Commitment deceleration at give-way lines: `commitmentDeceleration`, the lower of it and the type maximum, rows BA72–BA78 (B-2 contract, D218; implemented, D219) |
 | [MERGE_DECELERATION.md](MERGE_DECELERATION.md) | Accepted deceleration for mandatory lane changes: own and trailing keys, rows BA79–BA85 (B-3 contract, D220; implemented, D221) |
@@ -51,10 +52,12 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [GIVE_WAY_STOP.md](GIVE_WAY_STOP.md) | A feasible stop at a give-way line: on a tick that clamps today, a stop within the type's maximum brakes at `v²/(2·gap)` instead; rows BA146–BA151 (M3.2.8a.1 slice, D239; implemented, D240) |
 | [RED_RUNNING.md](RED_RUNNING.md) | Red-light running share: `redRunningShare` and `redRunningTime` on the driver behaviour, runners pass red only in its first seconds while moving, a counted `red-running` event, absent = today, schema 44, rows BA138–BA145 (B-9 contract, D237; implemented, D238; M2.6 clamps traced, D241) |
 | [DRIVER_FACTOR.md](DRIVER_FACTOR.md) | Driver-factor spread: `driverFactorSpread` on the driver behaviour, the standard deviation of the factor drawn when a vehicle is made, absent = 0.15, schema 43, rows BA131–BA137 (B-4 contract, D235; implemented, D236) |
+| [GAP_SEEKING.md](GAP_SEEKING.md) | Gap seeking: a follower opens a gap anywhere in the span (D455); switched on, a refused changer falls back behind its blocker (D458); rows BA194–BA195, BA204–BA205 |
 | [STOP_DWELL.md](STOP_DWELL.md) | Stop dwell time: `stopDwellTime` on the driver behaviour, rest in whole ticks of at least that time, absent = today, schema 41, rows BA117–BA123 (B-8 contract, D230; implemented, D231) |
 | [OVERTAKING.md](OVERTAKING.md) | Keep to the kerb lane: `kerbLaneBias`, return/pass/undertake gains, rows BA64–BA71 (M3.4 contract, D213; slice 1 implemented, D215) |
 | [SPEED_CONTROL.md](SPEED_CONTROL.md) | Curve speed on Connectors: the behaviour key, the radius, the anticipated bound, rows BA56–BA63 (M3.6 contract, D211; slice 1 implemented, D212) |
 | [LANE_CHANGE_DURATION.md](LANE_CHANGE_DURATION.md) | Lane changes as lateral moves: start rule before conflict areas, crossing, end, display, rows BA48–BA53 (M3.4 contract, D204; slice 1 implemented, D206) |
+| [WEAVING_FIXTURE.md](WEAVING_FIXTURE.md) | The weaving lab: three Type A weaves as a synthetic fixture, demand and lateral variants, measures, rows BA179–BA183; mechanism evidence, not validation (M3.4, D449) |
 | [PERCEPTION.md](PERCEPTION.md) | Look-ahead, observed vehicles, look-back, rear time-to-collision and reaction time (M3.5.0 contract, D179; not implemented) |
 | [W74.md](W74.md) | W74 car-following equations, parameters, traits, state and model switch (runs since D138; not validated) |
 | [POSITIONED_ROUTING.md](POSITIONED_ROUTING.md) | Positioned Route recognition and schema 20 |

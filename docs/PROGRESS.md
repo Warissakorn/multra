@@ -6,146 +6,206 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
-## 2026-11-03 — UTDF U2b: desktop export, Number Nodes, UTM
+## 2026-11-04 — Two-entry weaves run (D459)
 
-- **Numbering:** template Apply numbers an unnumbered Node (`generateJunction`), and re-Apply keeps
-  the number. `numberNodes` and `setNodeNumber` are in `node_commands`.
-- **Nodes page:** a Number column, a Number field in *Rename*, and *Number Nodes* (one Undo step).
-- **Export:** *File → UTDF for Synchro/Vistro…* (`utdf_export_dialog.*`).
-  - It shows the report, with the mode and the NEMA opt-in, before the file dialog.
-  - It writes atomically and refuses the open project.
-  - It writes UTM through `GeoProjection::worldToGrid` when the project has a map reference.
-- **Translations:** en/th strings for every `UTDF_*` code and the dialog.
-- **Tests:**
-  - `utdf-export-ui` (UT9): the desktop writes the CLI's expected files byte for byte in both
-    modes. It also covers cancel, protection, Number Nodes and Thai.
-  - `map-geo` checks `worldToGrid`.
-  - `node-ui` now expects the 9th column.
-  - The jt6 fill now writes schema 65.
-- **Verified:** headless `utdf`, `junctionfill` and `nodeanalysis` pass, and so do desktop
-  `utdf-export-ui`, `map-geo`, `node-ui` and `object-export-ui`. `multra-check-docs` passes.
+- **Owner:** "ทำให้วาด weave แบบสองทางเข้าได้", with the test as a fourth weaving-lab scene.
+- **Cause:** a lane family kept a stub only beside a full chain on its first Link, so a weave drawn
+  with two entries refused both crossing movements (BA179).
+- **D459 (M3_8_CONTRACT §2):** a family may start a **joined chain** on a later Link's lane that no
+  chain enters, kept only beside a stub that needs it.
+  - It takes no input share.
+  - Its route carries `leadIn`, which the free-flow time counts.
+  - A change onto it also sees the segments feeding its first segment. Without this, a ramp car at
+    the gore was clamped.
+  - Downstream routing decisions (D93) never build one.
+- **Weaving lab, scene 4:** the 300 m weave with a 2-lane mainline and a 1-lane ramp, each with a
+  300 m approach, at the same volumes. Scenes 1–3 are unchanged.
+- **Rows:** BA179 revised; BA206–BA208.
+- **Results** ([evidence](evidence/weaving-two-entries.md)):
+  - products and the lateral lab are byte-identical;
+  - scene 4 serves 100 % at every factor, off and on, with no lock and no wait at a dead end;
+    delay at ×1.0 is 20.0 s off and 26.8 s on;
+  - the edge scenes in the full run move only by the shifted random draw;
+  - one clamp at ×1.0 on, seed 48, in the 150 m weave (open).
+- **Verified:** `ctest --preset headless` passes 176/176.
 
-## 2026-11-03 — UTDF U2a: phases, volumes and timing (D443)
+## 2026-11-04 — Gap seeking, slice 2: the changer falls back behind its blocker (D458)
 
-- **Owner:**
-  - U2a, then U2b, in one session;
-  - a Node whose controller fails NEMA is left out unless the user opts to export it unsignalised;
-  - the Vistro median patch stays a report step until Vistro's link numbering is confirmed.
-- **Writer:** `utdf_signals.*` reads the Node's controller through its heads and checks it with
-  `nemaCheck`.
-  - **[Timeplans]/[Phases]:** every Synchro 10.1 record. All-red is the ring gap, and the D439
-    values fill the records MULTRA does not author.
-  - **Lanes:** `Phase1`/`PermPhase1` per UTDF_PROBE §5. Volumes, PHF, HV, ideal flow and bus stops
-    come from `analysis`, with A1's HCM defaults listed. A1 and UTDF now share one PHF rule
-    (`nodeAnalysisPeakHourFactor`).
-  - **Report steps:** median (`UTDF_MEDIAN_STEP`) and HCM 7th. Mirrored mode keeps the group
-    numbers, which are already right-hand NEMA numbers.
-- **CLI:** `--utdf-unsignalised`.
-- **Tests:** the U0 junction now carries the §2 volumes and the §3 controller.
-  - It reproduces `u0-handwritten-v3.csv` except `[Network]`'s values and the external ends'
-    `Grade`. `[Timeplans]`/`[Phases]` match byte for byte.
-  - P1–P4 cover both driving sides (UT7).
-  - The four-leg A1 fixture covers the NEMA refusal and the opt-in (UT8).
-  - Mirrored mode is covered (UT11).
-  - The CLI fixture is renamed `u2-u0-junction*`.
-- **Verified:** headless `check` passes 174/174; `multra-check-docs` passes.
+- **Owner:** "ทำต่อ". Shown both variants measured, the owner chose "switched on only".
+- **D458 ([GAP_SEEKING](reference/GAP_SEEKING.md) §2):** with the lateral switch on, a moving
+  refused stub whose forward test fails against the target-lane vehicle ahead of it falls back behind
+  that vehicle, braking at most comfortably. Its swap partner is excepted.
+  - Slice 1 moved from M3_8_CONTRACT to GAP_SEEKING.
+  - `courtesyHolds` moved to `src/core/courtesy.cpp`, because `lanes.cpp` would have been over 500
+    lines.
+- **Variants rejected** ([evidence](evidence/gap-seeking-changer.md)):
+  - **Capped at the cooperative key:** BA184 clamped.
+  - **Both switch states:** switched off grew slower when dense (lab ×1.0 25/19/21 → 29/25/30 s;
+    lane-change lab +1.7 %).
+  - **Look-ahead only:** no gain.
+- **Rows:** BA204 (218 → 200 m) and BA205 (150 m weave, ×1.0: 295 → 389 served, 83 → 37 s).
+  BA197's served floor is revised to 365.
+- **Results:**
+  - Lab on at ×1.0: delay 137/98/41 → 87/44/35 s, and served 100 %.
+  - Lateral lab: delay 30.3 → 13.1 s.
+  - Switched off: byte-identical.
+  - **Cost:** the 500 m weave alone at ×1.0 on, 24 → 28.5 s.
+- **Verified:** `ctest --preset headless` passes 176/176; `check` passes.
 
-## 2026-11-03 — UTDF U1: the geometry writer (D442)
+## 2026-11-04 — The lateral lab (D457)
 
-- **Owner:** chose world metres for U1, with UTM in U2 on the desktop, because PROJ is not in the
-  headless build. Mirrored mode is in U1. Recorded as D442; the contract is UTDF_EXPORT §7.
-- **Schema 65:** Node `number`, an optional positive integer. A repeat is `NODE_NUMBER_DUPLICATE`.
-- **Writer:** `utdfDocument(document, mode)` (`utdf_export.*`, with the leg walk in `utdf_legs.*`)
-  writes [Network], [Nodes], [Links] and [Lanes]:
-  - legs walked to the next Node or to an external end;
-  - D440 lane counts, with pockets on the owning turn;
-  - every empty authored field listed in the report.
-- **CLI:** `multra-cli --project P --export-utdf FILE [--utdf-mode geometric|mirrored]`. It refuses
-  an existing file and writes nothing when no Node can be exported.
-- **Tests:** group `utdf` covers UT0–UT5 and UT11's geometry. The U0 junction rebuilt in MULTRA
-  reproduces every Node 1 `[Links]` line and the ten `[Lanes]` geometry lines of
-  `u0-handwritten-v3.csv`. `cli-utdf` compares the CLI's files byte for byte.
-- **Verified:** headless `ctest` 174/174 and `check` pass; `multra-check-docs` passes.
-- **Next:** the owner imports `u1-u0-junction-geometric.csv` into Vistro (UT10). After that comes U2.
+- **Owner:** asked for a project to test lateral behaviour, with all four scenes, and the lab's
+  values in the file. "ทำโปรเจกต์ lateral-lab".
+- **D457 ([LATERAL_LAB](reference/LATERAL_LAB.md)):** `data/projects/lateral-lab.traffic.json`.
+  - **Scenes:** a timed lane change, a lane drop, a 150 m weave at ×0.8, and keep-left with cars,
+    heavy vehicles and motorcycles.
+  - **Keys:** every behaviour carries the lateral keys as lab placeholders (0.5 m, 1.0 m, 1 m/s).
+    The keep-left Link has its own behaviour, which adds D95's pair and `kerbLaneBias`.
+  - **The exception:** it is a lab-only exception to D178. No other project and no `data/`
+    behaviour carries the keys.
+  - **The builder:** `tools/lateral_lab_network.hpp`, through the editor's commands, regenerated
+    with `multra-lateral-fixture data <out>`. The keys have one source, `tools/lateral_lab_keys.hpp`,
+    shared with the weaving sweep.
+- **Rows:** BA198–BA203 (`laterallab`). The four shipped-project lists in the tests now include the
+  lab, and SP1 counts six files.
+- **Results** ([evidence](evidence/lateral-lab.md), seeds 42–51):
+  - mean delay 30.3 s; no clamp and nothing unfinished;
+  - the short weave's delay is the highest, 47–62 s;
+  - with the bias, the kerb lane's share of vehicle time is 68–80 % (45–49 % without it).
+- **Verified:** `ctest --preset headless` passes 176/176.
+- **Not done here:** the owner's check in the editor.
 
-## 2026-11-03 — Vistro limits closed (D441)
+## 2026-11-04 — The dead end as a second obstacle (D456)
 
-- **Owner:** both whole-network merges (`u0-full-lh-a/-b`) create a second, overlapping junction and
-  stay right-hand; only `a` gets the median. The owner stopped probing.
-- **D441:** Vistro gets the UTDF file plus a `.vistromerge` median patch. Mirrored mode (D437)
-  gives a correct far-turn HCM. The report covers HCM 7th and the right-hand result of geometric mode.
-- **Updated:** UTDF_PROBE row 21, UTDF_EXPORT §6/§9 UX-6/UT12, the README, NEXT and OWNER_SITTING I.4.
-- **Open for U1:** how the patch learns Vistro's post-import link numbers. `multra-check-docs` passes.
+- **Owner:** asked for a lateral test project, then chose to fix the engine first, starting with
+  the late dead-end braking. The lateral lab follows, as a lab-only exception to D178.
+- **Cause** ([evidence](evidence/dead-end-second-obstacle.md)): in all 13 stub clamps of the lab on
+  at ×1.0, a nearer moving leader whose route goes on hid the dead end. The vehicle then braked at
+  −8 m/s² with about 14 m left.
+- **D456 (M3_8_CONTRACT §2, "Dead end"):** behind a nearer leader, car-following runs once more
+  against the dead end and keeps the lower acceleration, as the courtesy hold does. No new key.
+- **Rows:** BA196 (`laneswap`) and BA197 (`weavinglab`), both failure-first.
+- **Results:**
+  - Weaving lab (seeds 42–51): no seed locks at any factor, off or on (D455: 0/1/0 at ×1.0, both).
+    Clamps are 0 from ×0.3 to ×1.0, off and on (on at ×1.0: 23 → 0).
+  - The D450 (a) overrun at ×0.4 clears. Delay on at ×1.0: 151/124/64 → 137/98/41 s.
+  - Product runs: within 0.1 %, clamps unchanged, T-junction identical.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
 
-## 2026-11-03 — UTDF cannot be left-hand in Vistro; whole-network probe
+## 2026-11-04 — Gap seeking, slice 1: the follower opens a gap anywhere in the span (D455)
 
-- **Owner (patch v2):**
-  - The median merged.
-  - Left-hand and HCM 7th did not merge.
-  - Vistro refuses to switch to left-hand while a right-hand junction exists.
-- **Owner choice:** try the whole network in Vistro's own format, merged into an empty left-hand project.
-- **Added:** `u0-full-lh-a/-b.vistromerge`, generated by a script from the structure of the owner's
-  post-import export (not committed) and holding U0 sheet data only. `b` mirrors lane indices.
-  A script check finds every lane-turn and signal-group index in `$LANE`.
-- **Updated:** UTDF_PROBE rows 20–21, UTDF_EXPORT §6, the README and NEXT. `multra-check-docs` passes.
+- **Owner:** asked for gap seeking and chose the follower's slice.
+- **D455 (M3_8_CONTRACT §2, M3.2.8c):** cooperative braking helps a refused moving stub anywhere in
+  its span, not only inside its dead-end look-ahead.
+  - **Deviation from the plan:** a stub that is the changer's swap partner is not asked. Without
+    that, two weaves run alone locked.
+- **Rows:** BA194 and BA195 are new and failure-first. A38 is revised: a hold is now issued 160 m
+  out.
+- **Results** ([evidence](evidence/gap-seeking-follower.md)):
+  - Product runs: mean delay within 0.7 %, clamps unchanged.
+  - Lab switched on: mean delay at ×0.8 112/62/28 → 64/24/15 s, and the ×0.8 lock clears.
+  - Lab switched off at ×1.0: locks 0/2/1 → 0/1/0, clamps 35 → 21.
+- **Costs:**
+  - clamps on at ×1.0 7 → 23 (late braking for a dead end at speed);
+  - one new lock on at ×1.0;
+  - a D450 (a) overrun at ×0.4 (seed 42, 500 m).
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
 
-## 2026-11-03 — Merge Data patch v1 keeps right-hand; v2
+## 2026-11-04 — The yielding partner brakes as cooperative braking does (D454)
 
-- **Owner:** merging `u0-patch-v1.vistromerge` after the v3 import left the project right-hand.
-  They also sent Vistro's post-import network export; it is not committed (owner).
-- **Recorded (structure only):**
-  - Vistro renumbers the end nodes (100100…) and numbers the links itself (227 N, 318 E, 409 S, 500 W).
-  - Default values are omitted from the export.
-  - Pockets are `$LANE` rows with a length.
-  - The signal groups match §3. The offset is restated as 44 s LAGEND.
-- **Added:** `u0-patch-v2.vistromerge`, in the export's own shape, with HCM 7th and a 2 m median on
-  legs 318/500. UTDF_PROBE rows 18–20, utdf-real-exports, the README and NEXT are updated.
-  `multra-check-docs` passes.
+- **Owner:** asked for a recommendation, then "do D454".
+- **Cause** ([weaving-yield-cap](evidence/weaving-yield-cap.md)): a front stub reaching its dead end
+  fast stops harder than comfortable. Its rear partner, capped at comfortable braking, stood inside
+  the standstill distance, and the pair locked. This was P2b, and the off ×1.0 remainder.
+- **D454 (M3_8_CONTRACT §2, D450 (a) revised):** once the front one closes in, the rear partner
+  brakes up to `maxDecelerationCooperativeBraking` (M3.2.8c's key, 3 m/s²). No new parameter.
+- **Rows:** BA192 and BA193, both failure-first.
+- **Results:**
+  - Product runs are identical except the lane-change lab on (delay −0.00005 s, clamps 0).
+  - Lab on: one lock is left from ×0.5 to ×1.0 (seed 50, 500 m).
+  - Lab off at ×1.0: 0/2/1 (from 0/3/2).
+  - Cost: a 205 s wait on at ×1.0.
+- **Track:** the weave-end lock track is closed by the recommendation. The leftovers are in NEXT.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
 
-## 2026-11-03 — U0 limits: a Vistro Merge Data patch
+## 2026-11-04 — A change under way that may not land claims nothing (D453)
 
-- **Owner:** asked how to handle UTDF's limits: the import switches to right-hand, there is no
-  median, and Vistro opens imports as HCM 2010. Vistro has *File → Import → Merge Data*.
-- **Found:** the owner's Vistro network export (Visum net format 19) has `$NETWORK
-  LEFTHANDTRAFFIC`, `$NODE ICAMETHODSIGNALIZED`/`USELOCALICAMETHOD` and `$LEG HASCISLAND`/
-  `CISLANDWIDTH`/`CISLANDLEN`.
-- **Added:** `u0-patch-v1.vistromerge`, which sets left-hand and HCM 7th for node 1. `.gitattributes`
-  now covers `*.vistromerge`. UTDF_PROBE rows 18–19, UTDF_EXPORT §6 (proposed companion file),
-  the README and NEXT are updated. The median patch waits on Vistro's link numbers after import (row 19).
-- **Check:** `multra-check-docs` passes.
+- **Owner:** "trace P2a first", then "do B+C+E as D453".
+- **Traced** ([weaving-held-change](evidence/weaving-held-change.md)):
+  - A two-change stub's crossing was held at the lane edge for 170 m beside lane-1 traffic.
+  - It then landed beside a waiting partner, because D450 (b) was checked only at the start.
+  - Checking (b) on every step was not enough. The held change still made its partner yield short
+    of the dead end, where (b) lapsed, and it still reserved its target place (D206).
+- **D453 (M3_8_CONTRACT §2):** a change under way that (b) refuses takes no outward step, is no
+  partner for D451 (c), and holds no target place. Switched on only.
+  - Every subset was measured; only B with E, and B with C and E, cut the locks, to 3 each.
+- **Rows:** BA190 and BA191, both failure-first.
+- **Results:**
+  - Product runs are identical except the lane-change lab switched on (delay +0.003 s, clamps
+    unchanged).
+  - Lab switched on: locked seeds at ×0.6 0/1/0, at ×0.8 0/0/1, at ×1.0 0/1/0. The 237 s wait is
+    gone.
+  - Lab switched off: identical.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
 
-## 2026-11-03 — U0 golden file committed
+## 2026-11-04 — No courtesy for a change that may not land (D452)
 
-- **Owner:** exported again from Vistro and accepted it as the golden file, `u0-vistro.csv`
-  (committed byte for byte). It matches §1–§2 with a 100 s cycle and protected-only far turns:
-  EBR is phase 3 and WBR phase 7. The phase numbers, the lagging order and the splits are
-  Vistro's own, not §3's, so UT0 compares fields and codes, not timing values.
-- **Updated:** UTDF_PROBE §6 row 16, UTDF_EXPORT UT0, the utdf README, OWNER_SITTING I and NEXT.
-- **Row 17:** `u0-handwritten-v3.csv` (Links `Lanes` 3) imports with the pockets as pockets and the
-  same HCM 2010 result as v2-filled: 186.72 s, LOS F. D440 holds, and U0's probe questions are answered.
+- **Owner:** "trace the remaining switched-on locks first".
+- **Traced** ([weaving-lock](evidence/weaving-lock.md#d452-no-courtesy-for-a-change-that-may-not-land)):
+  three patterns.
+  - **(P1) the courtesy cycle:** a lane-1 follower held back for a two-change stub whose landing
+    D450 (b) refuses, and stood short of a waiting lane-0 stub's place, so neither went.
+  - **(P2a):** a held crossing resumes beside a partner.
+  - **(P2b):** a late hard stop at the dead end beats the comfortable yield.
+- **D452 (M3_8_CONTRACT §2):** no courtesy for a changer whose landing (b) refuses. It is one line in
+  `courtesyHolds`, with no parameter and no state.
+  - **Tried and dropped:** re-checking (b) as a held crossing resumes (P2a). It added locks at ×0.8.
+- **Rows:** BA188 and BA189, both failure-first.
+- **Results:**
+  - Product runs are identical to D451, off and on.
+  - Locked seeds on: ×0.5 0/0/0, ×0.8 1/0/0, ×1.0 0/2/0 (from 1/1/0, 4/5/0 and 1/4/3).
+  - Locked seeds off at ×1.0: 0/3/2 (from 6/6/5).
+  - Longest waits: off ×1.0 down from 510 s to 28 s.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
 
-## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
+## 2026-11-04 — Switched-on weave-end lock: a change under way hid the pair (D451)
 
-- **Owner:** re-exported the U0 junction from Vistro. Draft 2 matches §1–§2: lanes, pockets,
-  names, volumes, PHF 0.92 and HV 5 %. The timing is still 60 s with four phases; the owner will
-  set §3 and export again.
-- **Owner choice (D440):** `[Links] Lanes` counts the pocket, 3 at the U0 junction. Vistro's own
-  writer counts only full lanes (2) and puts pocket storage on the through column. MULTRA keeps
-  storage on the turn column, which Vistro reads.
-- **Committed:** `u0-vistro-draft2.csv` byte for byte, and the probe `u0-handwritten-v3.csv`, which
-  is v2-filled with the junction legs' `Lanes` 3 (UTDF_PROBE §6 row 17).
-- **Fixed:** UTDF_EXPORT §3 still said MULTRA never writes unauthored values; it now cites D439.
-  Rows 15–16 of UTDF_PROBE §6 had text outside their last cell.
-- **Check:** `multra-check-docs` passes.
+- **Owner:** "trace the switched-on case first".
+- **Traced** ([weaving-lock](evidence/weaving-lock.md#d451-switched-on-a-change-under-way-hid-the-pair)):
+  a lateral crossing (about 3.5 s) left the changer no one's partner until it crossed, so an
+  approaching partner drove on and arrived too fast to yield. Two more traps were found on the way:
+  a dead end at a join (D444), and a landing stub that drives on to its own dead end.
+- **D451 (M3_8_CONTRACT §2):**
+  - (b) revised: a partner is taken where it will wait, and the landing stub takes the lane up to
+    its dead end;
+  - (c) new: a change under way counts as on its target route for D207 (`yieldMutualUnderWay`).
+  - **Deviation from the plan:** I had rejected (c) on its own, but the trace showed it is needed
+    together with (b).
+  - **Dropped:** a "could not stop comfortably" condition; it added a lab clamp.
+- **Rows:** BA186 and BA187, both failure-first.
+- **Results:**
+  - Product runs are unchanged but for the lane-change lab's Diverge (clamps 0, delay ±0.01 s).
+  - The weaving lab off is lock-free through ×0.8. On, its locks at ×1.0 fall from 10/10/10 to
+    1/4/3 seeds.
+  - Longer waits: up to 237 s on at ×0.6, and 510 s off at ×1.0.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
 
-## 2026-11-03 — Vistro switches an import to right-hand; no median
+## 2026-11-04 — The weave-end lock, partly fixed (D450)
 
-- **Owner:**
-  - The project was set left-hand before import; Vistro switched it to right-hand itself.
-  - No median is shown.
-  - The redone `u0-vistro.csv` arrived empty after the first column of every section, so it was not committed and a re-export is pending.
-- **Recorded:**
-  - UTDF_PROBE §6 rows 14–16.
-  - UTDF_EXPORT §3/§6: in geometric mode the report must tell the user to set left-hand again after import, and that Vistro drops the median.
-  - OWNER_SITTING I.3 and NEXT.
-- **Check:** `multra-check-docs` passes.
+- **Owner:** "fix the weave-end lock first".
+- **Traced** ([weaving-lock](evidence/weaving-lock.md)). Two ways a pair at a shared dead end locks
+  for good:
+  - D207 dropped the rear partner whenever it fell back, and it drove up into the standstill
+    distance once the front one stood;
+  - a two-change stub moved into the place a waiting partner needed.
+- **D450 (M3_8_CONTRACT §2):** (a) the pair is kept while the front one brakes for or waits at its
+  dead end; (b) `landsInWaitingPlace` refuses such a landing. No parameter, no state, and both
+  switch modes.
+- **Rows:** BA184 and BA185 were written failure-first, and BA183 turned from pinned-open to
+  passing. Each rule is needed.
+- **Results:**
+  - All four product projects are identical apart from the build commit.
+  - The lab switched off is lock-free through ×0.6 (×0.4 before). Locks remain at ×0.8+ and
+    switched on.
+  - Two experiments, not kept, are in the evidence. Harder yield braking is the owner's choice.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

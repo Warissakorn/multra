@@ -232,7 +232,34 @@ TEST(lanechange, a_cooperative_helper_never_brakes_beyond_its_maximum) { // A37
     CHECK(with.movingHold); // the forcing: somebody really braked cooperatively
     CHECK(with.hardestStream >= -3 - 1e-9 && with.t.clamps == 0);
 }
-TEST(lanechange, no_cooperative_braking_outside_the_look_ahead) { // A38
+// D455 (BA194), gap seeking slice 1: a changer 160 m short of its dead end rides in a stream at its
+// own speed, 14 m behind the car ahead on the target lane and 5 m ahead of the one behind (weaving
+// lab x0.6 seed 48: 8 m either side). Before D455 nobody made room until its look-ahead: it got in
+// at 133 m. Now the car behind falls back at no more than maxDecelerationCooperativeBraking.
+TEST(lanechange, ba194_a_follower_opens_a_gap_anywhere_in_the_span) {
+    std::vector<test::Placement> placed{on(1, "stubA", 40, 10), on(10, "full", 58.5, 10), on(11, "full", 30.5, 10),
+                                        on(12, "full", 18.5, 10), on(13, "full", 70.5, 10)};
+    auto s = test::withVehicles(cooperative(true), placed);
+    // The forcing: it is on a stub, the stream refuses its change, and it is outside its look-ahead.
+    const auto refs = resolveRefs(*s.scenario, s.vehicles, *s.index);
+    const auto spans = occupiedSpans(*s.scenario, s.vehicles, *s.index, refs);
+    CHECK(decideLaneChanges(*s.scenario, *s.index, s.vehicles, refs, spans,
+                            bucketSpans(spans, s.scenario->segments.size()), {}, s.tick).empty());
+    const auto& me = *find(s, 1);
+    CHECK(!deadEndGoverns(*s.index, me.routeIndex, me, s.scenario->vehicleTypes[me.typeIndex], s.scenario->behaviours.front()));
+    double at = -1, hardest = 0;
+    Tally t;
+    for (int i = 0; i < 600 && find(s, 1) && routeOf(s, 1) == "stubA"; ++i) {
+        const double d = find(s, 1)->distance;
+        s = stepSimulation(s); count(s, t);
+        for (const auto& v : s.vehicles) if (v.id >= 10) hardest = std::min(hardest, v.acceleration);
+        if (find(s, 1) && routeOf(s, 1) == "full") at = d;
+    }
+    CHECK(at > 0 && at < 60); // it changes within 20 m, far outside its look-ahead
+    CHECK(t.clamps == 0);
+    CHECK(hardest >= -3 - 1e-9); // no stream vehicle brakes beyond the key
+}
+TEST(lanechange, cooperative_braking_also_outside_the_look_ahead) { // A38, revised by D455 (gap seeking)
     const auto s = approaching(true, 40);
     // The forcing: it is on a stub, and the stream refuses its change.
     const auto refs = resolveRefs(*s.scenario, s.vehicles, *s.index);
@@ -240,8 +267,9 @@ TEST(lanechange, no_cooperative_braking_outside_the_look_ahead) { // A38
     CHECK(s.index->remainingOfRoute[find(s, 1)->routeIndex] == 1);
     CHECK(decideLaneChanges(*s.scenario, *s.index, s.vehicles, refs, spans,
                             bucketSpans(spans, s.scenario->segments.size()), {}, s.tick).empty());
-    // 160 m from its dead end at 10 m/s: far outside the 25 m it needs to stop comfortably.
-    CHECK(!anyMoving(holdsOf(s)));
+    // 160 m from its dead end at 10 m/s: far outside the 25 m it needs to stop comfortably. Before
+    // D455 no hold was issued here; now a follower is asked to open a gap.
+    CHECK(anyMoving(holdsOf(s)));
 }
 TEST(lanechange, without_the_parameter_only_the_waiting_rule_runs_and_replay_is_exact) { // A39
     CHECK(!drive(approaching(false)).movingHold);

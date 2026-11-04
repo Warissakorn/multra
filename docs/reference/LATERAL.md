@@ -5,8 +5,8 @@ cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)
 spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), §7's motion, admission
 and crossing (D189, [evidence](../evidence/lateral-motion.md)), zone occupancy by span (D202,
 [evidence](../evidence/lateral-zones.md)) and the display (D203, [evidence](../evidence/lateral-display.md)). Since M3.4 slice 1 (D206) a lane
-change sets a lateral target when the switch is on; no shipped project carries the keys, so every
-shipped run still keeps `lateral` at 0. Rows BA39–BA47 are in
+change sets a lateral target when the switch is on; no shipped project carries the keys except the
+[lateral lab](LATERAL_LAB.md) (D457, lab placeholders), so every other shipped run keeps `lateral` at 0. Rows BA39–BA47 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA47 have
 automated evidence and BA39 is kept in every slice. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
@@ -139,7 +139,8 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   overlapping. Two motorcycles side by side in one lane, with clearance above `dLat`, are not each
   other's leaders. This applies to the physical leader and to PERCEPTION's perceived leaders alike.
   **A straddler also searches the lanes it covers** (D210, [evidence](../evidence/straddler-leaders.md)).
-  Each other lane its body covers at its front segment by more than `kLateralOverlap` is searched
+  Each other lane its body covers at its front segment by more than `kLateralOverlap`, on the section
+  level with the front (D445: a neighbour section that starts ahead of the front is not covered there), is searched
   ahead of the body's front, mapped onto that lane as §5 maps spans, with the same filter. The search
   walks on through that lane's only successor and stops at a fork, where the straddler has no route to
   choose by. The nearer of the two searches is the leader; a tie keeps the own lane's. In code,
@@ -172,23 +173,27 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
 - The proposed move is `Δ = clamp(yT − lateral, ±maxLateralSpeed · dt)`, read at the cross-section
   of the vehicle's front. `yT` is first clamped so the body stays inside the carriageway's outer
   edges, the outermost lane edges among the front's section and the neighbour sections at that
-  reference station (a Connector path: its own width there), and so the centre stays inside the
-  current lane (on the boundary at most) on each side no span covers (below). An empty range moves nothing.
+  reference station (a Connector path: its own width there), and so the whole body stays inside the
+  current lane (its edge on the boundary at most) on each side no span covers (below); a body already
+  over such a boundary moves back (D444, which replaces D189's centre-on-the-boundary clamp). An empty
+  range moves nothing.
 - **Admission.** Implemented in `moveLaterally` (`src/core/lateral_motion.cpp`), which runs after the
   tick's longitudinal step has published every body. Proposed moves are resolved in **vehicle-id
   order**, as phase 2 (`resolveRequests`) does. A move is admitted only if the new body overlaps
   no published body of this tick and no move admitted before it. Here overlapping means positive area
   in both directions: touching bodies may stand side by side, unlike §6's inclusive leader test
-  (D189). A refused move keeps the previous `lateral`, and its `lateralSpeed` is 0. `lateralSpeed`
+  (D189). A refused move keeps the previous `lateral`, and its `lateralSpeed` is 0, unless the body is over a
+  lane line: then it steps back toward its lane centre by up to one step (D447, LANE_CHANGE_DURATION §4). `lateralSpeed`
   is `Δ / dt` for an admitted move.
 - **Crossing.** A span **covers** a side when it leaves the vehicle's route, its from-range holds the
-  whole body (the test the instantaneous change already makes), and its target lane at the mapped
-  front is the nearest lane on that side. When the body's centre is strictly past the boundary on a
-  covered side, the route remaps through `recordLaneChange` (`lanes.cpp`), the bookkeeping today's
+  whole body (`spanHolds`, the test the instantaneous change already makes), and its target lane at
+  the mapped front is the nearest lane on that side. The target lane there is `targetSectionAt`, read
+  inside the span's to-range, so a window ending at a join leads onto the lane before the join (D444).
+  When the body's centre is strictly past the boundary on a covered side, the route remaps through `recordLaneChange` (`lanes.cpp`), the bookkeeping today's
   instantaneous change uses, to the mapped distance; `lateral` and `yT` are re-expressed from the new
   lane's centre, so neither moves on the road. The vehicle's `MovedEvent` of that tick names the new lane
   (it reports where the tick ends), and the `LaneChangeEvent` follows it. Without a span, `yT` is
-  clamped so the centre stays inside the current lane.
+  clamped so the body stays inside the current lane (D444).
 - Lateral speed is a capped rate, not an acceleration-limited state, in this version. That is a
   stated simplification for M6 to test.
 
@@ -217,7 +222,7 @@ A behaviour carrying any one of them must carry all three (`INVALID_BEHAVIOUR_PA
 path to the first missing key). The codec follows D136/D179: one key table read by the parser,
 the serializer and the range check. The schema is the next free number at implementation time,
 written only when used. Older files keep their bytes, and an older schema that carries a key is
-refused. No values are shipped. A preset follows D178's rule: cited standard values, flagged
+refused. No values are shipped in `data/`; only the lateral lab carries lab placeholders (D457). A preset follows D178's rule: cited standard values, flagged
 uncertain.
 
 ## 10. Consumers

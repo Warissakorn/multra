@@ -141,11 +141,13 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
         std::vector<FamilyRoute> members;
         for (std::size_t k = 0; k < family.size(); ++k) {
             const auto id = family.size() == 1 ? route.id : route.id + "/lane-" + std::to_string(k + 1);
-            members.push_back({id, expandRouteSegments(table, family[k].ids), family[k].stub});
+            members.push_back({id, expandRouteSegments(table, family[k].ids), family[k].stub, {}, family[k].joined});
             routes.push_back({id, members.back().segments});
             expanded[route.id].push_back(id);
-            laneOf[route.id].push_back(family[k].lane);
+            laneOf[route.id].push_back(family[k].joined ? std::size_t(-1) : family[k].lane);
         }
+        for (std::size_t k = 0; k < members.size(); ++k) // D459: a joined chain's free-flow lead-in
+            if (members[k].joined) routes[routes.size() - members.size() + k].leadIn = joinedLeadIn(network, table, members, k);
         appendLaneChanges(network, table, members, scenario.laneChanges, scenario.routeDeadEnds);
         // D95: one authored route is one family, so its full chains may change between each other.
         std::vector<DiscretionaryRoute> full;
@@ -166,8 +168,11 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
             if (!authored) inputs.push_back(input);
             continue;
         }
-        const auto& lanes = found->second;
-        const auto& lane = laneOf[input.routeId];
+        // D459: a joined chain (lane npos) has no first-Link lane, so no input enters it.
+        std::vector<std::string> lanes;
+        std::vector<std::size_t> lane;
+        for (std::size_t k = 0; k < found->second.size(); ++k)
+            if (laneOf[input.routeId][k] != std::size_t(-1)) { lanes.push_back(found->second[k]); lane.push_back(laneOf[input.routeId][k]); }
         // laneShares are weights, one per lane of the route's first Link (M3.2.8b), and `lane`
         // says which each chain starts on (laneSplit has the stale-size fallback).
         const auto split = laneSplit(lane, laneCount[input.routeId], input.laneShares, entryKerbLanes(network, scenario, input));

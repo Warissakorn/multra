@@ -1,4 +1,5 @@
 #include "lateral_test_support.hpp"
+#include "../src/core/following.hpp"
 #include <cmath>
 #include <map>
 using namespace multra;
@@ -117,4 +118,290 @@ TEST(laneswap, a_full_route_vehicle_alongside_is_not_asked) { // D207, not a pai
     for (int t = 0; t < 10; ++t) state = stepSimulation(std::move(state));
     CHECK(byId(state, 2)->speed >= before - 1e-9); // never braked for it
     CHECK(routeOf(state, 1) == "A-stub");
+}
+
+// D446 (BA161): switched on, a pair whose rear one is just over a standstill distance behind the front
+// one's target place (lane-change-lab seed 49, vehicles 83 and 88). Both starts are accepted at low
+// speed, but D208 lets neither body over the line: the rear one is too close to accept the front one
+// as its leader. Before D446, D207 did not count it as a partner (beyond the standstill distance), so
+// nobody yielded and the two rode side by side to the dead end. Now the rear one yields while the
+// front one's change is under way.
+TEST(laneswap, switched_on_a_rear_partner_too_close_to_accept_yields) { // BA161
+    const auto r = swap(keys(0.5, 1.0)); // as the audit (lab seed 49)
+    const double length = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].length;
+    const double standstill = r.s.behaviours.front().standstillDistance;
+    const double gap = standstill + 1; // vehicle 2's front behind vehicle 1's target place
+    auto state = put(r.s, {{"A-stub", 40, 5}, {"B-stub", 40 - length - gap, 4}}); // the front one pulling away slowly
+    CHECK(state.index->lateral.on);
+    CHECK(gap > standstill); // the forcing: outside D207's standstill zone
+    state = stepSimulation(std::move(state));
+    CHECK(byId(state, 1)->lateralTarget && byId(state, 2)->lateralTarget); // and both changes started
+    const auto o = run(state, 8);
+    CHECK(o.order.size() == 2); // both crossed within 8 s
+    CHECK(o.order.size() == 2 && o.order.front() == 1); // the front one first
+    CHECK(o.clamps == 0);
+    CHECK(!o.overlap);
+    CHECK(o.hardest >= -comfortable(r.s) - 1e-9);
+}
+// D450 (BA184): a two-lane swap with mixed queues, as at a weave's end (weaving lab, D449). Behind
+// each stub, full and stub vehicles alternate at 7 m, all at 12 m/s. Stubs 2 (right lane, A's) and 5
+// (left lane, B's) are a swapping pair, and 5 yields (D207). Each time 5 fell more than a standstill
+// distance behind 2's target place, D207 dropped the pair, and once 2 stood at its dead end 5 drove
+// back up to 1.3 m short of that place, inside the standstill distance. Each then refused the other
+// for ever, and every lane behind stood. Now the pair holds while 2 brakes for its dead end.
+TEST(laneswap, ba184_a_yielding_partner_keeps_its_standstill_distance_and_the_queues_clear) {
+    const auto r = swap(LateralParameters{});
+    const double x = 170, dy = 10, v = 12, h = 7;
+    std::vector<std::tuple<std::string, double, double>> at{{"B-stub", x, v}, {"A-stub", x - dy, v}};
+    for (int k = 1; k <= 8; ++k) {
+        at.push_back({k % 2 ? "A-full" : "B-stub", x - k * h, v});
+        at.push_back({k % 2 ? "B-full" : "A-stub", x - dy - k * h, v});
+    }
+    auto state = put(r.s, at);
+    // The forcing: vehicles 2 and 5 start as a D207 pair (5's front within the standstill distance
+    // behind 2's target place), and both stubs share the dead end at 250 m.
+    const double length = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].length;
+    const double standstill = r.s.behaviours.front().standstillDistance;
+    CHECK(routeOf(state, 2) == "A-stub" && routeOf(state, 5) == "B-stub");
+    CHECK(byId(state, 5)->distance > byId(state, 2)->distance - length - standstill && byId(state, 5)->distance < byId(state, 2)->distance);
+    int clamps = 0; bool overlap = false;
+    for (int t = 0; t < 900 && !state.vehicles.empty(); ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        overlap = overlap || overlap2d(state);
+    }
+    CHECK(state.vehicles.empty()); // every vehicle has arrived within 90 s
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
+
+// D450 (BA185): a change may not land in a waiting partner's place (weaving lab seed 47, vehicles
+// 975 and 994). Three lanes 0-2. W stands at its dead end on lane 0 and needs lane 1. Z, a stub
+// needing two changes (lane 2 -> 1 -> 0), stands beside it on lane 2, and lane 1 is free. Before D450
+// Z changed into lane 1 beside W -- into the very place W waits for -- and then each needed the
+// other's place, standing alongside, for ever.
+namespace {
+struct Three { Scenario s; std::string l0, l1, l2; };
+Three three(const LateralParameters& p = {}) {
+    Three t{road(3, 3.5, p), {}, {}, {}};
+    auto& s = t.s;
+    const auto lanes = road(3, 3.5, keys(0, 0)); // lane order needs cross-sections; ids do not depend on them
+    t.l0 = lanes.segments[laneSegment(lanes, 0)].id; t.l1 = lanes.segments[laneSegment(lanes, 1)].id;
+    t.l2 = lanes.segments[laneSegment(lanes, 2)].id;
+    s.routes = {{"W-stub", {t.l0}}, {"W-full", {t.l1}}, {"Z-2", {t.l2}}, {"Z-1", {t.l1}}, {"Z-full", {t.l0}}};
+    s.laneChanges = {{"W-stub", "W-full", 0, 250, 0, 250}, {"Z-2", "Z-1", 0, 250, 0, 250}, {"Z-1", "Z-full", 0, 250, 0, 250}};
+    s.routeDeadEnds = {{"W-stub", 250}, {"Z-2", 250}, {"Z-1", 250}};
+    return t;
+}
+}
+TEST(laneswap, ba185_a_change_does_not_land_in_a_waiting_partners_place) {
+    const auto t = three();
+    CHECK(validateScenario(t.s).empty());
+    // Z is vehicle 1, so it decides first in the tick (changes go in vehicle-id order).
+    auto state = put(t.s, {{"Z-2", 249, 0}, {"W-stub", 249, 0}});
+    // The forcing: W waits at its dead end, Z needs two changes, and lane 1 is free at W's place.
+    CHECK(waitingAtDeadEnd(*state.index, byId(state, 2)->routeIndex, *byId(state, 2), state.scenario->behaviours.front()));
+    CHECK(state.index->remainingOfRoute[byId(state, 1)->routeIndex] == 2);
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int t2 = 0; t2 < 300; ++t2) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // W changes first, then Z twice; both reach their full routes within 30 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
+
+// D451 (BA186): switched on, a partner still approaching is taken at the place it will wait (weaving
+// lab seed 42, 150 m, x0.6, vehicles 392 and 401). Z stands at its dead end on lane 2; W approaches
+// on lane 0 at 11 m/s, 15 m back, already inside its look-ahead (from 20 m back W still stops
+// behind Z after the crossing). D450 (b) compared Z's landing with
+// W's current place and let Z start into lane 1. During the 3.5 s crossing Z was no partner of W's
+// yet, so W drove on, and when Z crossed W could no longer stop behind it: it stood beside Z, each
+// needing the other's place, for ever.
+TEST(laneswap, ba186_switched_on_an_approaching_partner_is_taken_where_it_will_wait) {
+    const auto t = three(keys(0.5, 1.0));
+    auto state = put(t.s, {{"Z-2", 249, 0}, {"W-stub", 234, 11}});
+    CHECK(state.index->lateral.on);
+    // The forcing: W is inside its look-ahead and not waiting, and its current place is clear of
+    // Z's landing (so D450 (b) as first written lets Z start).
+    const auto& w = *byId(state, 2);
+    const auto& wType = state.scenario->vehicleTypes[w.typeIndex];
+    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, wType, state.scenario->behaviours.front()));
+    CHECK(!waitingAtDeadEnd(*state.index, w.routeIndex, w, state.scenario->behaviours.front()));
+    const double length = wType.length, standstill = state.scenario->behaviours.front().standstillDistance;
+    CHECK(234 + standstill < 249 - length); // W's place now, widened, ends behind Z's landing
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 400; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // W changes first, then Z twice, within 40 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
+
+// D452 (BA188): no courtesy for a change that may not land (weaving lab, the 150 m weave alone, x0.6,
+// seed 45, vehicles 43, 35 and 36). W waits on lane 0 needing lane 1; Z, a two-change stub, waits on
+// lane 2 just ahead of it; F, on its full route on lane 1, stands short of W's standstill distance
+// but not of Z's. Before D452 courtesy had F hold back for Z, whose landing D450 (b) refuses beside
+// the waiting W, and F's place kept W from changing: nobody moved, for ever.
+TEST(laneswap, ba188_no_courtesy_for_a_change_that_may_not_land) {
+    const auto t = three();
+    auto state = put(t.s, {{"Z-2", 249.8, 0}, {"W-stub", 248, 0}, {"W-full", 242.5, 0}});
+    const auto& behaviour = state.scenario->behaviours.front();
+    const double length = state.scenario->vehicleTypes[byId(state, 1)->typeIndex].length;
+    const double standstill = behaviour.standstillDistance;
+    // The forcing: W and Z wait; F is too close behind W's place for W, not behind Z's for Z.
+    CHECK(waitingAtDeadEnd(*state.index, byId(state, 1)->routeIndex, *byId(state, 1), behaviour));
+    CHECK(waitingAtDeadEnd(*state.index, byId(state, 2)->routeIndex, *byId(state, 2), behaviour));
+    CHECK((248 - length) - 242.5 < standstill);
+    CHECK((249.8 - length) - 242.5 >= standstill);
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 600; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // F drives on, W changes, then Z twice, within 60 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(routes[3].empty());
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
+
+// D453 (BA190): switched on, a change under way that may not land claims nothing (weaving lab, the
+// 150 m weave alone, x0.8, seed 42). Z, needing two changes, stands near its dead end on lane 2 with
+// its crossing into lane 1 held at the lane edge, because F drives alongside its target place. W
+// approaches on lane 0. Before D453, W yielded to Z's held change as if Z were already on lane 1,
+// stopping short of its own dead end, so D450 (b) no longer counted it. Once F had passed, Z crossed
+// beside it, and each then needed the other's place, for ever.
+TEST(laneswap, ba190_switched_on_a_held_change_that_may_not_land_claims_nothing) {
+    const auto t = three(keys(0.5, 1.0));
+    auto state = put(t.s, {{"Z-2", 246, 0}, {"W-stub", 230, 9}, {"W-full", 249, 2}});
+    auto& z = state.vehicles[0];
+    z.lateral = 0.8; z.lateralTarget = 3.5; // held at the lane edge, toward lane 1
+    // The forcing: Z's body is still in its own lane; F lies alongside Z's target place; W is inside
+    // its look-ahead and not yet waiting.
+    const auto spans = spansOf(state);
+    CHECK(std::all_of(spans.begin(), spans.end(), [](const auto& x) { return x.vehicleId != 1 || x.own; }));
+    const auto& behaviour = state.scenario->behaviours.front();
+    const double length = state.scenario->vehicleTypes[z.typeIndex].length;
+    CHECK(249 - length < 246 && 246 - length < 249);
+    const auto& w = *byId(state, 2);
+    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, state.scenario->vehicleTypes[w.typeIndex], behaviour));
+    CHECK(!waitingAtDeadEnd(*state.index, w.routeIndex, w, behaviour));
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 400; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // W changes first, then Z twice, within 40 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
+
+// D454 (BA192): the yielding partner may brake as cooperative braking does. The front stub reaches
+// its dead end fast and stops harder than comfortable; the rear partner, capped at comfortable
+// braking, stood inside the standstill distance behind its target place, and neither ever changed
+// (weaving lab, the 300 m weave, x0.6, seed 49). It now brakes up to maxDecelerationCooperativeBraking.
+TEST(laneswap, ba192_the_yielding_partner_brakes_as_cooperative_braking_does) {
+    const auto r = swap(keys(0, 0));
+    auto state = put(r.s, {{"A-stub", 230, 10}, {"B-stub", 223, 12}});
+    // The forcing: the front one is inside its look-ahead, and stopping by its dead end needs more
+    // than comfortable braking; the behaviour carries the key.
+    const auto& x = *byId(state, 1);
+    const auto& type = state.scenario->vehicleTypes[x.typeIndex];
+    const auto& behaviour = state.scenario->behaviours.front();
+    CHECK(deadEndGoverns(*state.index, x.routeIndex, x, type, behaviour));
+    CHECK(10.0 * 10.0 / (2 * (250 - 230)) > type.comfortableDeceleration);
+    CHECK(behaviour.maxDecelerationCooperativeBraking.has_value());
+    int clamps = 0;
+    for (int k = 0; k < 600; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+    }
+    CHECK(state.vehicles.empty()); // both reached their full routes and arrived within 60 s
+    CHECK(clamps == 0);
+}
+
+// D456 (BA196): a stub vehicle's dead end is a second obstacle, never hidden by a nearer leader. A
+// on its stub follows B, whose route goes on along the same lane past A's dead end; A's change is
+// refused, because C drives alongside its target place. Before D456 A followed B alone, unbraked,
+// until the dead end was nearer than B, then braked at the type's maximum (weaving lab, x1.0
+// switched on, seed 47, vehicle 125: 12.5 m/s with 14 m left, then a safety clamp).
+TEST(laneswap, ba196_a_nearer_leader_does_not_hide_the_dead_end) {
+    const auto r = swap(LateralParameters{});
+    auto state = put(r.s, {{"A-stub", 184, 12}, {"B-full", 208, 12}, {"A-full", 184, 12}});
+    const double comfort = comfortable(r.s);
+    // The forcing: B is the nearer obstacle, moving at A's desired speed; the dead end alone asks A
+    // to brake.
+    const auto& a = *byId(state, 1);
+    const auto& type = state.scenario->vehicleTypes[a.typeIndex];
+    const auto& behaviour = state.scenario->behaviours.front();
+    CHECK(follow(a.speed, a, a.w74State, type, behaviour, Leader{250 - 184, 0, 0}).acceleration < -1);
+    state = stepSimulation(std::move(state));
+    CHECK(routeOf(state, 1) == "A-stub"); // its change is refused
+    CHECK(byId(state, 1)->acceleration < -1); // it brakes for the dead end now (before: 0)
+    double hardest = 0;
+    int clamps = 0;
+    for (int k = 0; k < 200 && byId(state, 1) && routeOf(state, 1) == "A-stub"; ++k) {
+        state = stepSimulation(std::move(state));
+        if (byId(state, 1)) hardest = std::min(hardest, byId(state, 1)->acceleration);
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+    }
+    CHECK(hardest >= -comfort); // comfortably throughout (before: -8, the type's maximum)
+    CHECK(clamps == 0);
+}
+
+// D458 (BA204), gap seeking slice 2, switched on: A on its stub rides at 10 m/s in a stream on the
+// target lane, 1.5 m behind the rear of the car ahead there, so its own forward test fails; the car
+// behind leaves room. Slice 1 asks only followers: before D458 A rode on, and got in at 218 m. Now
+// it falls back behind that car, braking comfortably at most, and gets in about 19 m earlier.
+TEST(laneswap, ba204_switched_on_a_refused_changer_falls_back_behind_its_blocker) {
+    const auto r = swap(keys(0.5, 1.0));
+    auto state = put(r.s, {{"A-stub", 90, 10}, {"A-full", 96, 10}, {"A-full", 80.5, 10}, {"A-full", 68.5, 10}, {"A-full", 120.5, 10}});
+    // The forcing: the switch is on, A is refused, and its dead end is outside its look-ahead.
+    CHECK(state.index->lateral.on);
+    const auto& a = *byId(state, 1);
+    CHECK(!deadEndGoverns(*state.index, a.routeIndex, a, state.scenario->vehicleTypes[a.typeIndex], state.scenario->behaviours.front()));
+    double at = -1, hardest = 0;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 600 && byId(state, 1) && routeOf(state, 1) == "A-stub"; ++k) {
+        const double d = byId(state, 1)->distance;
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+        if (byId(state, 1)) hardest = std::min(hardest, byId(state, 1)->acceleration);
+        if (byId(state, 1) && routeOf(state, 1) == "A-full") at = d;
+        overlap = overlap || overlap2d(state);
+    }
+    CHECK(at > 0 && at < 205); // it gets in at 199.6 m (before D458: 218.3 m)
+    CHECK(hardest >= -comfortable(r.s) - 1e-9);
+    CHECK(clamps == 0 && !overlap);
 }

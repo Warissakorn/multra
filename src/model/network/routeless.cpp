@@ -75,7 +75,7 @@ struct Walk {
         double sum = 0;
         for (const auto& destination : d.destinations) {
             std::vector<std::vector<FamilyChain>> family;
-            for (const auto& objects : destination.chains) family.push_back(routeLaneFamily(network, table, objects));
+            for (const auto& objects : destination.chains) family.push_back(routeLaneFamily(network, table, objects, nullptr, false));
             const auto name = familyName(d, destination);
             decisionOf[name] = d.path;
             const auto* leg = legFrom(family, laneId, false);
@@ -115,7 +115,7 @@ struct Walk {
         for (const auto& destination : d.destinations) {
             bool served = false;
             for (const auto& objects : destination.chains) {
-                for (auto& leg : routeLaneChains(network, table, objects))
+                for (auto& leg : routeLaneChains(network, table, objects, false))
                     if (!leg.empty() && leg.front() == laneId) {
                         legs.push_back({std::move(leg), destination.weight}); sum += destination.weight; served = true; break;
                     }
@@ -158,7 +158,7 @@ struct Walk {
         for (const auto& destination : d->destinations) {
             Served s{destination.weight, familyName(*d, destination), {}};
             std::vector<std::vector<FamilyChain>> family;
-            for (const auto& objects : destination.chains) family.push_back(routeLaneFamily(network, table, objects));
+            for (const auto& objects : destination.chains) family.push_back(routeLaneFamily(network, table, objects, nullptr, false));
             for (std::size_t k = 0; k < start.lanes.size(); ++k) {
                 const auto* leg = legFrom(family, start.lanes[k].id, false);
                 if (!leg) leg = legFrom(family, start.lanes[k].id, true);

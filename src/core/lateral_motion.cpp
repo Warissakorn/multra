@@ -1,6 +1,7 @@
 #include "lateral_motion.hpp"
 #include "following.hpp"
 #include "lanes.hpp"
+#include "lateral.hpp"
 #include "routes.hpp"
 #include <algorithm>
 #include <cmath>
@@ -35,8 +36,8 @@ std::optional<Crossing> crossingOn(const Scenario& s, const ScenarioIndex& index
     });
     for (const auto* list : {&index.laneChangesOfRoute[route], &index.discretionaryOfRoute[route]})
         for (const auto& change : *list) {
-            if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
-            const auto& to = s.segmentCrossSections[frontPart(index.parts[change.target], mappedOnto(change, front)).segmentIndex];
+            if (!spanHolds(change, front, rear)) continue;
+            const auto& to = targetSectionAt(s, index, change, front); // D444
             if (to.carriageway != at.section->carriageway) continue;
             if (const double d = sign * (to.centre - at.section->centre); d > 0 && d <= adjacent + 1e-9) return Crossing{&change, &to};
         }
@@ -48,14 +49,9 @@ std::optional<Crossing> crossingOn(const Scenario& s, const ScenarioIndex& index
 // nearest follower behind it with the changer as leader. Each vehicle whose route runs on the covered
 // segment is compared in its own route's distances, so the test sees across segment ends.
 bool coversSafely(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
-                  const std::vector<VehicleRefs>& refs, std::size_t v, double dt, const std::vector<OccupiedSpan>& body) {
+                  const std::vector<VehicleRefs>& refs, std::size_t v, const std::vector<OccupiedSpan>& body) {
     const auto& vehicle = vehicles[v];
-    const auto accepts = [&](std::size_t f, const Leader& leader) {
-        const auto& who = vehicles[f]; const auto& fType = s.vehicleTypes[refs[f].type];
-        const auto& fBehaviour = s.behaviours[refs[f].behaviour];
-        const double a = follow(who.speed, who, who.w74State, fType, fBehaviour, leader).acceleration;
-        return a >= -fType.comfortableDeceleration && integrate(who.speed, a, dt).distance <= leader.gap - standstillGap(fBehaviour);
-    };
+    const auto accepts = [&](std::size_t f, const Leader& leader) { return acceptsAsLeader(s, vehicles, refs, f, leader); }; // D446: shared with D207
     for (const auto& mine : body) {
         if (mine.own) continue;
         std::optional<Leader> leader, follower;
@@ -133,8 +129,10 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         double low = right + type.width / 2 - centre, high = left - type.width / 2 - centre;
         const auto toRight = crossingOn(s, index, refs[v].route, at, front, rear, -1);
         const auto toLeft = crossingOn(s, index, refs[v].route, at, front, rear, +1);
-        if (!toRight) low = std::max(low, -half);
-        if (!toLeft) high = std::min(high, half);
+        // D444: on a side it cannot cross, the whole body stays in its lane (a body over that line comes back).
+        const double inside = std::max(0.0, half - type.width / 2);
+        if (!toRight) low = std::max(low, -inside);
+        if (!toLeft) high = std::min(high, inside);
         if (low > high) continue;
         const double step = *behaviour.lateral.maxLateralSpeed * dt;
         const double delta = std::clamp(std::clamp(*vehicle.lateralTarget, low, high) - vehicle.lateral, -step, step);
@@ -158,16 +156,22 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         };
         double move = delta;
         auto body = bodyAt(move);
-        if (blocked(body)) continue;
-        if (std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral) && // outward from its lane centre only
-            !coversSafely(s, index, vehicles, refs, v, dt, body)) {
-            // D208: it waits in its own lane, so a body already over the line steps back toward its centre.
+        // D208, and D447 for a move refused by 2D overlap: a refused move waits in its own lane, so a
+        // body already over the line steps back toward its centre by up to one step. False: no move.
+        const auto stepBack = [&] {
             const auto now = bodyAt(0);
-            if (std::all_of(now.begin(), now.end(), [](const auto& x) { return x.own; })) continue;
+            if (std::all_of(now.begin(), now.end(), [](const auto& x) { return x.own; })) return false;
             move = std::clamp(-vehicle.lateral, -step, step);
             body = bodyAt(move);
-            if (move == 0 || blocked(body)) continue;
-        }
+            return move != 0 && !blocked(body);
+        };
+        // D453 (B): an outward step is also refused while D450 (b) refuses the landing it leads to.
+        const auto& side = move > 0 ? toLeft : toRight;
+        const bool outward = std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral); // from its lane centre
+        const bool intoPartner = outward && side &&
+            landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, *side->change, mappedOnto(*side->change, front));
+        if (blocked(body)) { if (!stepBack()) continue; }
+        else if (outward && (intoPartner || !coversSafely(s, index, vehicles, refs, v, body)) && !stepBack()) continue;
         vehicle.lateral += move; vehicle.lateralSpeed = move / dt;
         moved.insert(moved.end(), body.begin(), body.end()); movedIds.push_back(vehicle.id);
         // Crossing: the centre strictly past a boundary only a covering span lets it reach.

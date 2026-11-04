@@ -394,19 +394,22 @@ std::vector<std::vector<std::string>> routeLaneChains(const Network&,
                                                       const std::vector<std::string>& objectIds,
                                                       std::vector<std::string>* ambiguous = nullptr);
 std::vector<std::vector<std::string>> routeLaneChains(const Network&, const ConnectorPathTable&,
-                                                      const std::vector<std::string>& objectIds);
+                                                      const std::vector<std::string>& objectIds, bool joining = true);
 // M3.2.8b (docs/reference/M3_8_CONTRACT.md §2): the same walk, keeping one chain per lane of the first Link.
 // A lane that cannot reach the end is a STUB: its chain follows the route's objects as far as that
 // lane goes and stops on the lane the next object does not leave; its vehicles change lanes. A
 // stub is kept only when neighbouring lanes with chains lead from it to a full chain. The full
 // chains are exactly routeLaneChains', in the same order; a route starting on a Connector has no
 // others. Empty when no lane reaches the end.
-struct FamilyChain { std::vector<std::string> ids; std::size_t lane{}; bool stub{}; };
+// D459: a JOINED chain starts on a later Link, on a lane no chain of the family enters, and lies
+// next to a stub that stops there; it has no first-Link lane (lane == npos) and no input share.
+// `joining` false (downstream routing decisions) never builds one.
+struct FamilyChain { std::vector<std::string> ids; std::size_t lane{}; bool stub{}; bool joined{}; };
 std::vector<FamilyChain> routeLaneFamily(const Network&, const std::vector<std::string>& objectIds,
                                          std::vector<std::string>* ambiguous = nullptr);
 std::vector<FamilyChain> routeLaneFamily(const Network&, const ConnectorPathTable&,
                                          const std::vector<std::string>& objectIds,
-                                         std::vector<std::string>* ambiguous = nullptr);
+                                         std::vector<std::string>* ambiguous = nullptr, bool joining = true);
 // How many weights an input's laneShares on this route carries: one per lane of its first Link,
 // or one per chain for a route starting on a Connector (M3.2.8b). One answer for the compile step
 // and the input dialog, so the two cannot disagree about which weight is which lane.
@@ -431,7 +434,10 @@ std::optional<int> entryKerbLanes(const Network&, const ScenarioDefinition&, con
 // D93 rule 5: a downstream decision's family names its Link in `after`, and only spans on or past
 // where each route reaches that Link are kept -- before the decision no vehicle knows its
 // destination. Empty: anywhere, as for an entry family (whose routes start there anyway).
-struct FamilyRoute { std::string id; std::vector<std::string> segments; bool stub{}; std::string after; };
+struct FamilyRoute { std::string id; std::vector<std::string> segments; bool stub{}; std::string after; bool joined{}; };
+// D459: a joined member's lead-in -- the route distance at which a non-joined member of its family
+// first reaches the Link the joined one starts on (0 when none does).
+double joinedLeadIn(const Network&, const RuntimeSections&, const std::vector<FamilyRoute>&, std::size_t joined);
 void appendLaneChanges(const Network&, const RuntimeSections&, const std::vector<FamilyRoute>&,
                        std::vector<LaneChangeSpan>& spans, std::vector<RouteDeadEnd>& deadEnds);
 // D95: the spans a vehicle may change along BY CHOICE -- between two FULL routes on adjacent lanes

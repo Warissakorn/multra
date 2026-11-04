@@ -19,6 +19,7 @@ struct Route {
     // D165 (BEHAVIOUR_LAB.md §1.1): the route closes on itself and its vehicles never arrive.
     // Last, so every existing brace-initialisation keeps its meaning.
     bool circuit{};
+    double leadIn{}; // D459: distance before a joined chain's first Link, for the free-flow time
     bool operator==(const Route&) const = default;
 };
 // M3.3.3a W74 (docs/reference/W74.md, D129). Every key is required data (hard rule 5); there
@@ -282,6 +283,7 @@ struct ScenarioIndex {
     // route still has to make (0 for a full route); `deadEndOfRoute` is +infinity without one.
     bool laneChanges{};
     std::vector<std::vector<RouteLaneChange>> laneChangesOfRoute;
+    std::vector<std::vector<RoutePart>> feedersOfRoute; // D459: a joined route's feeding segments, before 0
     std::vector<double> deadEndOfRoute;
     std::vector<std::uint32_t> remainingOfRoute;
     // D95: the full-to-full spans, apart from `laneChangesOfRoute` (stub spans only), in target-slot

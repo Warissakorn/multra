@@ -3,11 +3,16 @@
 // whose lane cannot reach its movement's end -- moves to an adjacent chain of the same movement
 // when both the gap ahead and the gap behind are safe there. Everything is read off the tick's
 // pre-step snapshot and decided in vehicle-id order, with no random draw, so replay is exact.
+#include "following.hpp"
 #include "routes.hpp"
 #include <limits>
 #include <optional>
 
 namespace multra {
+// Whether a span's from-range holds the whole body: the one test the start and the crossing share (D444).
+inline bool spanHolds(const RouteLaneChange& change, double front, double rear) {
+    return rear >= change.fromStart - 1e-9 && front <= change.fromEnd + 1e-9;
+}
 // Validation of the compiled spans and dead ends; called by validateScenario.
 std::vector<ValidationIssue> laneChangeIssues(const Scenario&);
 // OVERTAKING §2 (D215): kerbLaneBias outside (0, 5], or without D95's threshold, at `path`.kerbLaneBias.
@@ -46,6 +51,23 @@ struct CourtesyHold {
     double acceleration{}; // a moving changer's; 0 for a waiting one (W74.md §2)
     double cap{};          // a moving hold brakes no harder than this (D90's parameter, or D207's comfortable)
 };
+// Rule 4 as D208 tests it (lane_swap.cpp, D446): vehicle `f` accepts `leader` -- its car-following
+// brakes no harder than comfortably and this tick's move stays inside the room the leader leaves.
+bool acceptsAsLeader(const Scenario&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                     std::size_t f, const Leader& leader);
+// D207/D446: stub vehicle `x`'s swapping partner holds back behind x's target place (lane_swap.cpp).
+void yieldMutual(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                 const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t x, const RouteLaneChange& change,
+                 std::vector<CourtesyHold>& holds);
+// D451: a change under way already counts, for D207, as on the stub route it leads to -- its
+// partners there yield from the start of the crossing, not from its end (lane_swap.cpp).
+void yieldMutualUnderWay(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                         const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t x, std::vector<CourtesyHold>& holds);
+// D450 (contract §2, "Cooperation"): vehicle `v`'s mandatory change onto `change.target` at `at`
+// would land, still a stub, inside the target place (widened by the standstill distance) of a stub
+// on its next target lane that needs the landing lane and is waiting or inside its look-ahead.
+bool landsInWaitingPlace(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                         const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t v, const RouteLaneChange& change, double at);
 // Cooperation (contract §2): for each vehicle, the nearest place it holds back from; gap
 // +infinity for none. For a stub vehicle waiting at its dead end, the nearest vehicle behind its
 // target place that can stop there comfortably and without a clamp holds back. For one still

@@ -117,6 +117,19 @@ every left-turner of an M2.6 approach appeared in the kerb lane at the network e
   is a change a vehicle can make there. Any other stub is not emitted, and its lane gets no share
   of that family, which is the pre-M3.2.8b behaviour. A stub that still ends up with no span is
   refused by core validation (`LANE_CHANGE_DEAD_END_UNREACHABLE`) rather than losing its volume.
+- **A joined chain (D459)** starts on a later Link's lane that no chain of the family enters, and
+  follows the family's remaining objects.
+  - **When it is kept:** a stub that the rule above does not keep, and that stops on that Link, is
+    kept when neighbouring lanes there lead to a full chain. A joined chain is kept only when such a
+    run uses it.
+  - **No input:** it has no first-Link lane, so no input enters it. Vehicles reach it only by
+    changing onto it.
+  - **Free-flow time:** its route carries a lead-in, the distance before its first Link, which the
+    trip's free-flow time counts.
+  - **Rear check:** a change onto it also sees vehicles on the segments feeding its first segment,
+    such as the ramp at a gore.
+  - **Scope:** this is what lets a weave drawn with two entries run. Downstream routing decisions
+    (D93) never build one.
 - The core gets spans and dead ends as data (`ScenarioDefinition::laneChanges`,
   `::routeDeadEnds`, filled by the compile step next to the routes they join). It never sees
   geometry, lanes or Links. Neither is in the project file.
@@ -163,7 +176,10 @@ claim. Car-following, priority rules, zones and the phase-2 checks then run on t
 snapshot, which every vehicle shares.
 
 **Dead end.** A stub vehicle is held at its dead end by the stop-line mechanism, exactly as a red
-head holds one, and waits there for a gap. It never arrives on a stub.
+head holds one, and waits there for a gap. It never arrives on a stub. Since D456 the dead end is also a
+**second obstacle**: behind a nearer moving leader, car-following runs once more against the dead end and keeps
+the harder braking, as for the courtesy hold, so a leader that goes on past it never hides it (BA196–BA197,
+[evidence](../evidence/dead-end-second-obstacle.md)).
 
 ### Cooperation: holding back for a waiting vehicle
 
@@ -202,7 +218,89 @@ Y treats X's target place as a moving obstacle at X's speed (a second obstacle, 
 no harder than its type's `comfortableDeceleration`. Every tick decides afresh; nothing is stored.
 Once Y is a standstill distance back, rules 1–5, the waiting hold and cooperative braking apply as
 before, and Y changes into the lane X left. It applies with and without the lateral switch (D206),
-and it never waives a safety test.
+and it never waives a safety test. **While X's change is under way (D446)**, switched on, Y beyond its
+standstill distance is still X's partner as long as it would not accept X at X's target place as its
+leader (`acceptsAsLeader`, the test D208 uses before X covers Y's lane), so the pair cannot ride side by
+side with neither covering. Switched off no change is under way, and nothing differs.
+
+**At a shared dead end (D450).** Two stub routes often end at the same station, as at a weave's end.
+The [weaving lab](WEAVING_FIXTURE.md) found two ways a pair there locks for good. Once both stand,
+nobody can yield, and nothing is removed (M3 §4).
+
+- **(a) The pair keeps its partner while X closes in.** Once X brakes for its dead end (D90's
+  look-ahead, `deadEndGoverns`) or waits there, Y stays X's partner at any distance behind X's
+  target place. Before, Y dropped out whenever it fell more than its standstill distance behind.
+  Once X stood, Y drove back up into that distance and stood there, and each refused the other.
+  The yield itself is a moving obstacle at X's speed. While Y is still free of the place, its
+  acceleration is unchanged.
+  - **Its braking (D454):** once X closes in, Y brakes up to the larger of its comfortable
+    deceleration and its behaviour's `maxDecelerationCooperativeBraking` (M3.2.8c below). Before
+    that, and for a behaviour without the key, it brakes no harder than comfortable.
+  - **Why (D454):** an X that reaches its dead end fast stops harder than comfortable. Y, capped at
+    comfortable, then stood inside the standstill distance, and the pair locked (lab ×0.6, seed 49).
+    The key is the help a target-lane vehicle already gives a stub, so Y is asked for no more. Rows
+    BA192–BA193.
+- **(b) A change does not land in a waiting partner's place.** A mandatory change onto a route that
+  is still a stub is refused when the changer's body on the landing lane would lie inside the target
+  place of a stub W on its next target lane, widened by W's standstill distance on both sides. W
+  must need the landing lane and be waiting at its dead end or inside its look-ahead. Before, a
+  two-change stub could move into the very place W waited for, and the two then stood alongside,
+  each needing the other's place. The changer keeps its target and tries again next tick.
+
+Both rules apply with the lateral switch off and on. They add no parameter and no state, and never
+waive a safety test. Rows BA184–BA185, and BA183 in the lab.
+
+**Switched on, a change under way hid the pair (D451).** A crossing lasts seconds. Until it
+crossed, the changer was still a stub of its old lane and no one's partner, so an approaching
+partner drove on and arrived too fast to yield. D451 revises (b) and adds (c):
+
+- **(b), revised: where the partner will wait.**
+  - **Which partner counts:** as in D450, W counts while it waits or is inside its look-ahead.
+  - **Where W is taken:** a W not yet waiting is taken where it will wait, its front anywhere within
+    its stop-line reach of its dead end.
+  - **What the changer occupies:** still a stub, the changer goes on to its own dead end, so it takes
+    the lane from where it lands up to there.
+  - **How the lane is found:** W's place on the landing lane is found by lane section, because a
+    dead end often lies exactly at a join (D444).
+- **(c) A change under way counts as on its target route.** While a change leads onto a route that
+  is still a stub, D207's partner test (with D450 (a)) also treats the changer as already on that
+  route. Its partners there then yield from the start of the crossing, not from its end.
+  - D206 already treats a change under way as holding its target place for other changes.
+  - Switched off no change is under way, so (c) does nothing.
+
+Rows BA186 (a unit row, switched on) and BA187 (the lab).
+
+**No courtesy for a change that may not land (D452).** Courtesy (the D71 waiting rule and
+M3.2.8c's cooperative braking below) is not given to a changer whose landing (b) refuses.
+
+- **Before:** a follower on the landing lane held back for that changer, which never went.
+  - It could stand short of the standstill distance behind a waiting partner's place. It had
+    arrived too late to hold back comfortably for that place.
+  - The partner then never went either. Lab seed 45: a lane-0 stub, a two-change stub on lane 2
+    and a lane-1 follower between their places.
+- **Now:** the follower holds back for the next changer whose change can land, or for no one.
+  - The refused changer keeps its target and goes once the partner has left.
+- **Unchanged:** no parameter, no state; (a), (c) and D207 are unchanged.
+
+Rows BA188 (a unit row) and BA189 (the lab).
+
+**A change under way that may not land claims nothing (D453).** Switched on, a crossing can be held
+in its own lane for many metres (D208, D447) and complete near its dead end. While (b) refuses its
+landing, a change under way:
+
+- **(B) does not move outward:** the body stays in its lane, stepping back as D447 does. (b) is now
+  checked on every outward step, not only at the start.
+- **(C) is no partner for D451 (c):** nobody yields to it as if it were already on its target route.
+- **(E) holds no target place for other changes (D206).**
+
+**Why all three.** Each one alone kept the lock in another form:
+- Without (B), the held crossing completed beside the partner.
+- Without (C), the partner yielded to it and stood short of its own dead end. There it no longer
+  counted as waiting, and (b) lapsed.
+- Without (E), the partner could not start into the place the held change reserved.
+
+Switched off no change is under way, so D453 does nothing. No parameter, no state. Rows BA190 (a unit
+row, switched on) and BA191 (the lab).
 
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 
@@ -240,6 +338,9 @@ parameter (2026-10-01).
   stays at `comfortableDeceleration`.
 - Vissim also has a cooperative lane change, in which a vehicle moves out of the way. That is not
   modelled.
+
+**Gap seeking (D455, D458)** has its own contract, [GAP_SEEKING](GAP_SEEKING.md): a follower opens a
+gap anywhere in the span (slice 1), and a refused changer falls back behind its blocker (slice 2).
 
 ### Downstream routing decisions (M3.2.8c, D93 — implemented 2026-10-01; tests green in Linux CI since PR #84)
 

@@ -50,6 +50,10 @@ the discretionary incentive and hold) and then:
   is at least `travel` ahead of the front. This extends the existing rule that no change starts
   inside an area: a changer therefore never straddles into a zone, and no zone has to hold a
   straddler. D202's occupancy stays as the safety net other vehicles see.
+- **The target lane** is the span's target section at the mapped front, read inside the span's
+  to-range (`targetSectionAt`, D444): where the window ends at a join, the start and the crossing both
+  see the lane before the join, never the part past it. The start's lateral safety filter on the target
+  lane reads the same part (`targetPartAt`, `followerFilterOn`, D448).
 - **It must cross inside the span window.** The crossing (LATERAL §7) needs a span that covers the
   whole body; the change starts only if `front + speed · |lateralTarget − lateral| / (2 · maxLateralSpeed)
   ≤ fromEnd` of that span, so the centre passes the lane line before the window closes. D206: the
@@ -75,8 +79,10 @@ the discretionary incentive and hold) and then:
   until the body leaves that lane.
 - **The crossing** remaps the route through `recordLaneChange` with the trace entry flagged
   `lateral` (D189, D203); `lateral` and `lateralTarget` are re-expressed from the new lane.
-- **A refused move waits:** `lateral` is kept and `lateralSpeed` is 0; the change is neither
-  restarted nor abandoned in this version (§9).
+- **A refused move waits in its own lane:** with its body inside its lane, `lateral` is kept and
+  `lateralSpeed` is 0. A body already over the line steps back toward its centre by up to one step
+  instead, whether the move was refused by 2D overlap or by the test below (D447, which revises
+  D206's BA53). The change is neither restarted nor abandoned in this version (§9).
 - **Waiting at the line (owner, D208).** A move outward from the own lane's centre that would put the
   body (further) over a lane line must also pass the start's safety tests on the lane it would cover
   (M3_8_CONTRACT §2 rules 3–5): no vehicle of that lane alongside the body, and the car-following
@@ -127,3 +133,16 @@ asserting its forcing before its consequence.
   `m2.6-study-template`, a changer past its window stood at its dead end with its centre on the
   line and jammed both lanes. Two changers swapping lanes waited side by side for 500 m in the lab.
   The first and second conditions above are met; nothing has been reopened yet.
+- **2026-11-03 (D444, [evidence](../evidence/lateral-crossing-window.md)):** the stuck straddler was
+  not a missed window. The window ended at a join, and the start and the crossing read different lanes
+  there. With one target-lane lookup and a body clamp on uncrossable sides, m2.6 seed 45 completes 1903
+  (off: 1908). Abandoning is still not reopened.
+- **2026-11-04 (D445, [evidence](../evidence/lateral-covered-sections.md)):** the waiting-changer
+  clamps (audit Finding 2) came from the straddler's leader search. It searched a covered lane's next
+  section from its start, 25 m ahead of the front, and found a car there at gap 0. Fixed, m2.6
+  switched on has the switched-off clamp count in every seed.
+- **2026-11-04 (D446, [evidence](../evidence/lateral-swap-lock.md)):** the swap lock (second condition)
+  was a hole between D207's partner zone (the standstill distance) and D208's covering test (the
+  car-following's acceptance). While a change is under way, the partner now extends to the latter, so
+  the rear one yields; the lab pair crosses 1.7 s after starting. Resolved without abandoning. A changer
+  alongside a car that is not changing, at a similar speed, still waits (no gap seeking).

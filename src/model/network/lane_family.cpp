@@ -124,6 +124,18 @@ void appendLaneChanges(const Network& network, const RuntimeSections& table, con
         deadEnds.push_back({family[s].id, deadEnd >= 0 ? deadEnd : lanes.lengthOf(family[s].segments)});
     }
 }
+double joinedLeadIn(const Network& network, const RuntimeSections& table, const std::vector<FamilyRoute>& family, std::size_t joined) {
+    Lanes lanes(network, table);
+    const auto own = lanes.stretchesOf(family[joined].segments);
+    if (own.empty()) return 0;
+    const auto& link = own.front().section->linkId;
+    for (const auto& member : family) {
+        if (member.joined) continue;
+        for (const auto& stretch : lanes.stretchesOf(member.segments))
+            if (stretch.section->linkId == link) return stretch.at;
+    }
+    return 0;
+}
 void appendDiscretionaryLaneChanges(const Network& network, const RuntimeSections& table,
                                     const std::vector<DiscretionaryRoute>& routes, std::vector<LaneChangeSpan>& spans) {
     if (routes.size() < 2) return;

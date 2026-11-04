@@ -177,7 +177,10 @@ TEST(lanechangeduration, ba52_the_crossing_must_fall_inside_the_span_window) { /
     CHECK(segmentOf(state, *byId(state, 1)) == r.left);
 }
 
-TEST(lanechangeduration, ba53_a_refused_move_waits_and_resumes_when_the_space_is_free) { // BA53
+// D447 revises BA53: D208 says a changer never waits over the line, and that now holds for a move
+// refused by 2D overlap too. The blocked body steps back into its own lane, keeps its target, and
+// resumes once the space is free (it waited where it stood before D447).
+TEST(lanechangeduration, ba53_a_refused_move_steps_back_and_resumes_when_the_space_is_free) { // BA53, D447
     auto r = stub(keys(0, 0));
     auto state = place(r.s, {{r.left, 60, 0, 0}});
     state.vehicles[0].desiredSpeed = 0;
@@ -201,14 +204,22 @@ TEST(lanechangeduration, ba53_a_refused_move_waits_and_resumes_when_the_space_is
     // The forcing: the changer's next step would overlap the blocker.
     CHECK(3.5 + before - width < kStep);
     CHECK(!overlap2d(state));
+    CHECK(covers(state, 1, r.right)); // and its body is already over the line
     state = stepSimulation(std::move(state));
-    CHECK(byId(state, 1)->lateral == before);
-    CHECK(byId(state, 1)->lateralSpeed == 0);
+    CHECK(std::abs(byId(state, 1)->lateral) < std::abs(before)); // stepped back toward its centre
     CHECK(byId(state, 1)->lateralTarget.has_value());
-    // Freed: the blocker removed, the move resumes.
+    for (int t = 0; t < 30 && covers(state, 1, r.right); ++t) {
+        state = stepSimulation(std::move(state));
+        CHECK(!overlap2d(state));
+    }
+    CHECK(!covers(state, 1, r.right)); // back inside its own lane while the space is taken
+    CHECK(byId(state, 1)->lateralTarget.has_value());
+    CHECK(segmentOf(state, *byId(state, 1)) == r.left);
+    // Freed: the blocker removed, the move resumes outward.
+    const double waited = byId(state, 1)->lateral;
     state.vehicles.pop_back();
     state = stepSimulation(std::move(state));
-    CHECK(byId(state, 1)->lateral < before);
+    CHECK(byId(state, 1)->lateral < waited);
     CHECK(!overlap2d(state));
 }
 
@@ -348,4 +359,85 @@ TEST(lanechangeduration, ba54_a_close_follower_on_the_target_lane_holds_the_move
     }
     CHECK(clamps == 0);
     CHECK(byId(state, 2)->distance > byId(state, 1)->distance); // the car went by
+}
+
+// D444 (BA158): where the span window ends at a join on the target route, a changer standing at its
+// dead end still crosses. The target lane's section there is the one the span leads onto, not the
+// downstream part a front exactly at the join would otherwise be on (m2.6 seed 45, vehicle 613).
+namespace {
+Stub joinedAtWindowEnd() {
+    auto r = stub(keys(0, 0), 0, 300, 300); // the road is 300 m: the window ends at the lane's end
+    auto& s = r.s;
+    s.segments.push_back({"after", 50, {}});
+    s.segmentCrossSections.push_back({1000, 0, 0, 3.5, 3.5, 0, 50}); // its own carriageway, as a Connector's
+    for (auto& route : s.routes) if (route.segmentIds.front() == r.right) route.segmentIds.push_back("after");
+    for (auto& segment : s.segments) if (segment.id == r.right) segment.next = {"after"};
+    return r;
+}
+}
+TEST(lanechangeduration, ba158_a_changer_at_a_window_ending_at_a_join_crosses) { // BA158
+    auto r = joinedAtWindowEnd();
+    CHECK(validateScenario(r.s).empty());
+    auto state = place(r.s, {{r.left, 300, 0, 0}});
+    state.vehicles[0].desiredSpeed = 0;
+    const auto& target = state.index->parts[state.index->laneChangesOfRoute[state.vehicles[0].routeIndex].at(0).target];
+    CHECK(target.size() == 2 && target[0].start + target[0].length == 300); // the forcing: a join at the window's end
+    state = stepSimulation(std::move(state));
+    CHECK(byId(state, 1)->lateralTarget.has_value());
+    CHECK(std::abs(*byId(state, 1)->lateralTarget + 3.5) < 1e-9); // toward the right lane, not the part past the join
+    for (int t = 0; t < 60 && byId(state, 1)->lateralTarget; ++t) state = stepSimulation(std::move(state));
+    CHECK(segmentOf(state, *byId(state, 1)) != r.left); // crossed
+    CHECK(!byId(state, 1)->lateralTarget);
+}
+
+// D444 (BA159): a side it cannot cross holds the whole body in its lane. A target past such a line is
+// clamped so the body stays inside, and a body already over it comes back (LATERAL §7).
+TEST(lanechangeduration, ba159_the_body_stays_inside_its_lane_on_a_side_it_cannot_cross) { // BA159
+    auto r = stub(keys(0, 0), 0, 200, 250);
+    const double width = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width;
+    for (const double start : {0.0, -1.75}) { // centred, then with its centre on the line
+        auto state = place(r.s, {{r.left, 220, 0, start}}); // past the window: no span covers the body
+        state.vehicles[0].desiredSpeed = 0;
+        state.vehicles[0].lateralTarget = -3.5;
+        for (int t = 0; t < 40; ++t) state = stepSimulation(std::move(state));
+        const auto* v = byId(state, 1);
+        CHECK(!covers(state, 1, r.right));
+        CHECK(v->lateral >= -(1.75 - width / 2) - 1e-9);
+        CHECK(segmentOf(state, *v) == r.left);
+    }
+}
+
+// D448 (BA162): the start's target-lane filter reads the lane the span leads onto, as the target and the
+// crossing do (D444). Three lanes; the left one a stub onto the middle one, whose route joins a part on
+// another carriageway at the window's end. A car on the right lane leans 0.3 m over into the middle
+// lane's far edge, alongside: its copy there does not overlap a changer centred on the middle lane.
+TEST(lanechangeduration, ba162_the_start_filter_at_a_window_ending_at_a_join_reads_the_target_lane) { // BA162
+    const auto starts = [](double at) {
+        auto s = road(3, 3.5, keys(0, 0));
+        const auto left = s.segments[laneSegment(s, 0)].id, middle = s.segments[laneSegment(s, 1)].id,
+                   right = s.segments[laneSegment(s, 2)].id;
+        const auto routeOn = [&](const std::string& segment) {
+            for (const auto& route : s.routes) if (route.segmentIds.front() == segment) return route.id;
+            throw std::runtime_error("no route on " + segment);
+        };
+        s.laneChanges = {{routeOn(left), routeOn(middle), 0, 300, 0, 300}};
+        s.routeDeadEnds = {{routeOn(left), 300}};
+        s.segments.push_back({"after", 50, {}});
+        s.segmentCrossSections.push_back({1000, 0, 0, 3.5, 3.5, 0, 50}); // its own carriageway, as a Connector's
+        for (auto& route : s.routes) if (route.segmentIds.front() == middle) route.segmentIds.push_back("after");
+        for (auto& segment : s.segments) if (segment.id == middle) segment.next = {"after"};
+        CHECK(validateScenario(s).empty());
+        const double width = s.vehicleTypes[slot(s.vehicleTypes, "car")].width;
+        auto state = place(s, {{left, at, 0, 0}, {right, 299, 0, 1.75 - width / 2 + 0.3}});
+        for (auto& v : state.vehicles) v.desiredSpeed = 0;
+        const auto spans = spansOf(state); // the forcing: the leaning car's copy is on the middle lane
+        CHECK(std::any_of(spans.begin(), spans.end(), [&](const auto& x) {
+            return x.vehicleId == 2 && !x.own && state.scenario->segments[x.segmentIndex].id == middle; }));
+        const auto& parts = state.index->parts[state.index->laneChangesOfRoute[state.vehicles[0].routeIndex].at(0).target];
+        CHECK(parts.size() == 2 && parts[0].start + parts[0].length == 300); // and a join at the window's end
+        state = stepSimulation(std::move(state));
+        return byId(state, 1)->lateralTarget.has_value() && std::abs(*byId(state, 1)->lateralTarget + 3.5) < 1e-9;
+    };
+    CHECK(starts(299)); // control: short of the join the filter reads the middle lane, and the start is accepted
+    CHECK(starts(300)); // at the join: the same
 }

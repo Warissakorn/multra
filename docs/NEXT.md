@@ -135,11 +135,48 @@ a planning-level method (otherwise back to the owner).
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Lateral, before any shipped behaviour carries its keys**
-  ([lateral-run-audit](evidence/lateral-run-audit.md)): on `m2.6-study-template` a changer past its
-  window straddles the line and jams both lanes (seed 45: 1908 → 1531 completed; clamps 1 → 33).
-  LANE_CHANGE_DURATION §9's reopen condition is met; abandoning a change is the owner's call. The
-  switched-on cost (+10–28 % wall) is not worth cutting until then.
+- **Lateral: closed by owner choice (2026-11-04).** The audit's findings and the review's copies
+  are fixed (D444–D448; [audit](evidence/lateral-run-audit.md),
+  [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md),
+  [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md),
+  [start-filter](evidence/lateral-start-filter.md)). The long m2.6 waits are signal-queue congestion
+  that exists switched off too ([m26-long-waits](evidence/m26-long-waits.md)).
+  - **Gap seeking ([GAP_SEEKING](reference/GAP_SEEKING.md)):** slices 1 and 2 are done.
+    - **Slice 1 (D455):** a follower opens a gap for a refused stub anywhere in its span.
+    - **Slice 2 (D458, [evidence](evidence/gap-seeking-changer.md)):** switched on only (the
+      owner's choice), a refused changer falls back behind its blocker.
+    - **Deferred:** speeding up to slip in ahead, the lane-change state machine, a no-progress
+      timer, and abandoning a change.
+    - **D455's clamp cost is fixed (D456, [evidence](evidence/dead-end-second-obstacle.md)):** a
+      stub's dead end is a second obstacle, so a nearer leader no longer hides it. Clamps on at ×1.0
+      23 → 0.
+  - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
+    The one exception is the [lateral lab](reference/LATERAL_LAB.md) (D457), a shipped project with
+    four scenes carrying lab placeholder values. **The owner's check:** open it in the editor and
+    watch the crossings, the straddling and keep-left (the D203 display).
+    The +10–28 % wall cost switched on needs a profile before any work.
+- **Weaving (M3.4, D449–D455): the next step is the owner's choice.** The weaving lab
+  ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA195), the weave-end lock fixes
+  D450–D454 and D456 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
+  [yield-cap](evidence/weaving-yield-cap.md)) and gap seeking slice 1 (D455,
+  [evidence](evidence/gap-seeking-follower.md)).
+  - **Two-entry weaves run (D459, [evidence](evidence/weaving-two-entries.md)):** joined chains
+    start on the weave. They are scene 4 of the lab; a routing decision on a weave is still not
+    supported.
+  - **Results (D458, [evidence](evidence/gap-seeking-changer.md)):**
+    - No seed of 10 locks at any factor (×0.3–×1.2), off or on.
+    - Clamps are 0 at every factor, off and on.
+    - Switched on, every vehicle is served through ×1.0. Mean delay is 15/12/14 s at ×0.8 and
+      87/44/35 s at ×1.0.
+    - Switched off, results are byte-identical to D456.
+  - **Left:**
+    - the 500 m weave alone at ×1.0 on is slower than before (24 → 28.5 s);
+    - ×1.2 on is over capacity (150 m: 91 % served).
+    - one clamp at ×1.0 on in the full lab since D459's draw: seed 48, the 150 m weave, a car standing
+      mid-crossing ([evidence](evidence/weaving-two-entries.md)).
+  - **Next, the owner's choice:**
+    - the pending owner checks (UT10, A9, canvas);
+    - NGSIM at M6.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
   (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5

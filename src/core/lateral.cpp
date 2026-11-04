@@ -172,7 +172,11 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
     const std::vector<RoutePart>& parts, double front, double width, double lateral,
     const DriverBehaviour& behaviour, double speed) {
     if (!index.lateral.on || parts.empty()) return {};
-    const auto& part = frontPart(parts, front);
+    return followerFilterOn(s, index, frontPart(parts, front), front, width, lateral, behaviour, speed);
+}
+LateralFilter followerFilterOn(const Scenario& s, const ScenarioIndex& index, const RoutePart& part,
+    double front, double width, double lateral, const DriverBehaviour& behaviour, double speed) {
+    if (!index.lateral.on) return {};
     auto filter = lateralFilter(s, part.segmentIndex, width, lateral, behaviour, speed);
     // D210: the other lanes the body covers at its front, with the front mapped onto each (as §5's spans).
     const auto& section = s.segmentCrossSections[part.segmentIndex];
@@ -183,9 +187,27 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
         const double half = other.startWidth / 2;
         if (std::min(body.left, other.centre + half) - std::max(body.right, other.centre - half) <= kLateralOverlap) continue;
         const double length = s.segments[n].length;
-        filter.covered.push_back({n, std::clamp(mapStation(section, s.segments[part.segmentIndex].length, other, length, front - part.start), 0.0, length)});
+        // D445: only a section level with the front; one ahead of it (or behind) is not covered there.
+        const double at = mapStation(section, s.segments[part.segmentIndex].length, other, length, front - part.start);
+        if (at < -1e-9 || at > length + 1e-9) continue;
+        filter.covered.push_back({n, std::clamp(at, 0.0, length)});
     }
     if (!filter.covered.empty()) filter.onlyNext = &index.lateral.onlyNext;
     return filter;
+}
+const RoutePart& targetPartAt(const ScenarioIndex& index, const RouteLaneChange& change, double front) {
+    const double at = mappedOnto(change, front);
+    const auto& parts = index.parts[change.target];
+    const bool window = change.toEnd > change.toStart;
+    for (const auto& part : parts) {
+        const double end = part.start + part.length;
+        if (window && end <= change.toStart + 1e-9) continue; // wholly before the to-range
+        if (at <= end + 1e-9) return part;
+    }
+    return parts.back();
+}
+const SegmentCrossSection& targetSectionAt(const Scenario& s, const ScenarioIndex& index,
+                                           const RouteLaneChange& change, double front) {
+    return s.segmentCrossSections[targetPartAt(index, change, front).segmentIndex];
 }
 }

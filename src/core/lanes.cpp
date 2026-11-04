@@ -64,11 +64,12 @@ Around around(const ScenarioIndex& index, std::size_t target, double at, double 
             }
         } else a.alongside = true;
     };
-    for (const auto& part : index.parts[target]) {
-        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i)
-            consider(part, spans[buckets.items[i]]);
-        for (const auto& span : extra) if (span.segmentIndex == part.segmentIndex) consider(part, span);
-    }
+    for (const auto* list : {&index.parts[target], index.feedersOfRoute.empty() ? nullptr : &index.feedersOfRoute[target]})
+        if (list) for (const auto& part : *list) {
+            for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i)
+                consider(part, spans[buckets.items[i]]);
+            for (const auto& span : extra) if (span.segmentIndex == part.segmentIndex) consider(part, span);
+        }
     // The nearest follower is the only candidate, so dropping it past the range is §4's filter.
     if (sight.lookBackDistance && a.follower && a.follower->gap > *sight.lookBackDistance) a.follower.reset();
     return a;
@@ -84,10 +85,8 @@ LateralStart lateralStart(const Scenario& s, const ScenarioIndex& index, const V
     const auto& rate = s.behaviours[refs.behaviour].lateral.maxLateralSpeed;
     if (!index.lateral.on || !rate) return {};
     const double front = vehicle.distance;
-    const auto centre = [&](std::size_t route, double d) {
-        return s.segmentCrossSections[frontPart(index.parts[route], d).segmentIndex].centre;
-    };
-    const double target = centre(change.target, at) - centre(refs.route, front);
+    const double target = targetSectionAt(s, index, change, front).centre -
+                          s.segmentCrossSections[frontPart(index.parts[refs.route], front).segmentIndex].centre;
     const double ahead = vehicle.speed * std::abs(target - vehicle.lateral) / *rate; // the front's travel during the move
     const double travel = ahead + s.vehicleTypes[refs.type].length;
     // The nearest zone line at or ahead of `from` must be at least `travel` ahead (equal starts).
@@ -158,35 +157,6 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
     }
     return std::numeric_limits<double>::infinity();
 }
-// D207 (M3_8_CONTRACT §2, "Cooperation"): stub vehicle `x`'s mutual partner -- a stub alongside or
-// just behind x's target place that needs the lane x is on -- holds back behind that place when it is
-// the rear one of the pair (level: the higher id), braking no harder than comfortably. Otherwise each
-// lies alongside the other's target place and neither ever changes.
-void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
-                 const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
-                 std::size_t x, const RouteLaneChange& change, std::vector<CourtesyHold>& holds) {
-    const auto& front = vehicles[x];
-    const double at = mappedOnto(change, front.distance), atRear = at - s.vehicleTypes[refs[x].type].length;
-    const auto lane = frontPart(index.parts[refs[x].route], front.distance).segmentIndex;
-    for (const auto& part : index.parts[change.target])
-        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
-            const auto& span = spans[buckets.items[i]];
-            const auto y = span.own && span.vehicleId != front.id ? slotOfId(vehicles, span.vehicleId) : vehicles.size();
-            if (y == vehicles.size()) continue;
-            const double yFront = part.start + span.front, yRear = part.start + span.rear;
-            if (yRear >= at || yFront <= atRear - standstillGap(s.behaviours[refs[y].behaviour])) continue;
-            if (yFront > at || (yFront == at && vehicles[y].id < front.id)) continue; // y is the front one
-            const auto& other = vehicles[y];
-            const auto* theirs = laneChangeTargetOf(index, refs[y].route, other.distance,
-                                                    other.distance - s.vehicleTypes[refs[y].type].length);
-            if (!theirs) continue;
-            const auto& to = index.parts[theirs->target];
-            if (std::none_of(to.begin(), to.end(), [&](const auto& p) { return p.segmentIndex == lane; })) continue;
-            const CourtesyHold hold{atRear - yFront, front.speed, true, front.acceleration,
-                                    s.vehicleTypes[refs[y].type].comfortableDeceleration};
-            if (hold.gap < holds[y].gap) holds[y] = hold;
-        }
-}
 }
 void recordLaneChange(const Scenario& s, Vehicle& vehicle, std::uint32_t route, double distance,
                       std::uint64_t tick, double time, std::vector<SimEvent>& events) {
@@ -208,7 +178,7 @@ double mappedOnto(const RouteLaneChange& c, double at) {
 const RouteLaneChange* laneChangeTargetOf(const ScenarioIndex& index, std::size_t route, double front, double rear) {
     for (const auto& change : index.laneChangesOfRoute[route]) {
         if (index.remainingOfRoute[change.target] >= index.remainingOfRoute[route]) break;
-        if (rear >= change.fromStart - 1e-9 && front <= change.fromEnd + 1e-9) return &change;
+        if (spanHolds(change, front, rear)) return &change;
     }
     return nullptr;
 }
@@ -309,6 +279,16 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     for (const auto& dead : s.routeDeadEnds)
         if (const auto r = slotOf(s, dead.routeId); r < s.routes.size()) index.deadEndOfRoute[r] = dead.at;
     index.discretionaryOfRoute.assign(s.routes.size(), {});
+    // D459: a joined route (leadIn > 0) starts on a lane others feed; the segments leading into its
+    // first one lie behind it, so a change onto it sees a vehicle still arriving there.
+    index.feedersOfRoute.assign(s.routes.size(), {});
+    for (std::size_t r = 0; r < s.routes.size(); ++r) {
+        if (!(s.routes[r].leadIn > 0) || index.parts[r].empty()) continue;
+        const auto& first = index.parts[r].front().segmentId;
+        for (std::size_t g = 0; g < s.segments.size(); ++g)
+            if (std::find(s.segments[g].next.begin(), s.segments[g].next.end(), first) != s.segments[g].next.end())
+                index.feedersOfRoute[r].push_back({s.segments[g].id, g, -s.segments[g].length, s.segments[g].length});
+    }
     bool anyDiscretionary = false;
     for (const auto& span : s.laneChanges) {
         const auto from = slotOf(s, span.fromRouteId), to = slotOf(s, span.toRouteId);
@@ -336,10 +316,17 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
                                           const std::vector<StopService>& stopService, std::uint64_t tick) {
     std::vector<LaneChange> accepted;
     std::vector<OccupiedSpan> moved; // accepted changers at their new places, this tick
-    // D206: a change under way already holds its target place, so no other change starts into it.
+    // D206: a change under way already holds its target place, so no other change starts into it --
+    // unless D450 (b) refuses its landing (D453 (E)): then it holds nothing.
     if (index.lateral.on)
-        for (std::size_t v = 0; v < vehicles.size(); ++v)
-            if (vehicles[v].lateralTarget) { auto placed = vehicles[v]; placed.lateral = *placed.lateralTarget; appendVehicleSpans(moved, s, index, placed, refs[v]); }
+        for (std::size_t v = 0; v < vehicles.size(); ++v) {
+            const auto& under = vehicles[v];
+            if (!under.lateralTarget) continue;
+            const double length = s.vehicleTypes[refs[v].type].length;
+            if (const auto* c = laneChangeTargetOf(index, refs[v].route, under.distance, under.distance - length);
+                c && landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, *c, mappedOnto(*c, under.distance))) continue;
+            auto placed = under; placed.lateral = *placed.lateralTarget; appendVehicleSpans(moved, s, index, placed, refs[v]);
+        }
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto route = refs[v].route;
         if (index.remainingOfRoute[route] == 0) continue;
@@ -350,17 +337,18 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         if (inConflictArea(index, route, rear, front) || vehicle.lateralTarget) continue; // D206: one change at a time
         for (const auto& change : index.laneChangesOfRoute[route]) {
             if (index.remainingOfRoute[change.target] >= index.remainingOfRoute[route]) break;
-            if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
+            if (!spanHolds(change, front, rear)) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
             // Nearest vehicle ahead of and behind the mapped place, over this tick's snapshot and
             // the changes already accepted; anything alongside refuses the change (rule 5).
             // LATERAL §6: the changer centred on the target lane (the change is instantaneous).
-            const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0,
-                                                 s.behaviours[refs[v].behaviour], vehicle.speed);
+            const auto sideways = followerFilterOn(s, index, targetPartAt(index, change, front), at, type.width, 0,
+                                                   s.behaviours[refs[v].behaviour], vehicle.speed); // D448
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
                                      s.behaviours[refs[v].behaviour].perception, &sideways);
             if (!safeAt(s, vehicles, refs, v, near, true)) continue;
+            if (landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, change, at)) continue; // D450
             const auto start = lateralStart(s, index, vehicle, refs[v], change, at);
             if (start.refused) continue;
             accepted.push_back({v, static_cast<std::uint32_t>(change.target), at, start.target});
@@ -408,10 +396,10 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot
-            if (rear < change.fromStart - 1e-9 || front > change.fromEnd + 1e-9) continue;
+            if (!spanHolds(change, front, rear)) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
-            const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0, behaviour, vehicle.speed);
+            const auto sideways = followerFilterOn(s, index, targetPartAt(index, change, front), at, type.width, 0, behaviour, vehicle.speed); // D448
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight, &sideways);
             const double gain = acceleration(near) - here;
             const double bias = behaviour.kerbLaneBias.value_or(0);
@@ -430,69 +418,5 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         appendVehicleSpans(moved, s, index, placed, {best->route, refs[v].type, refs[v].behaviour});
     }
     return accepted;
-}
-std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
-                                        const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans,
-                                        const SpanBuckets& buckets) {
-    std::vector<CourtesyHold> holds(vehicles.size());
-    // Without the parameter on any behaviour, only the D71 rule runs, exactly as before.
-    const bool cooperative = std::any_of(s.behaviours.begin(), s.behaviours.end(),
-                                         [](const auto& b) { return b.maxDecelerationCooperativeBraking.has_value(); });
-    for (std::size_t v = 0; v < vehicles.size(); ++v) {
-        const auto route = refs[v].route;
-        if (index.remainingOfRoute[route] == 0) continue;
-        const auto& vehicle = vehicles[v];
-        const auto& type = s.vehicleTypes[refs[v].type];
-        const auto& behaviour = s.behaviours[refs[v].behaviour];
-        if (const auto* mine = laneChangeTargetOf(index, route, vehicle.distance, vehicle.distance - type.length))
-            yieldMutual(s, index, vehicles, refs, spans, buckets, v, *mine, holds);
-        const bool waiting = waitingAtDeadEnd(index, route, vehicle, behaviour);
-        if (!waiting) {
-            // Cooperative braking: only inside the look-ahead, once its dead end, taken as a
-            // standing obstacle, already governs its car-following (contract §2).
-            if (!cooperative || !deadEndGoverns(index, route, vehicle, type, behaviour)) continue;
-        }
-        const auto* change = laneChangeTargetOf(index, route, vehicle.distance, vehicle.distance - type.length);
-        if (!change) continue;
-        const double at = mappedOnto(*change, vehicle.distance), atRear = at - type.length;
-        // Every vehicle behind the target place, nearest first. One alongside is not asked: it is
-        // already past. A vehicle in two segments has two spans; its nearer one counts.
-        std::vector<std::pair<double, std::uint64_t>> behind;
-        for (const auto& part : index.parts[change->target])
-            for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
-                const auto& span = spans[buckets.items[i]];
-                // D188: a lateral copy is in this lane's frame, but a hold is applied on its own route.
-                if (span.own && span.vehicleId != vehicle.id && part.start + span.front <= atRear)
-                    behind.emplace_back(atRear - (part.start + span.front), span.vehicleId);
-            }
-        std::sort(behind.begin(), behind.end());
-        // The nearest that can hold back holds back; any nearer than it cannot, and passes first.
-        for (const auto& [gap, id] : behind) {
-            const auto f = slotOfId(vehicles, id);
-            if (f == vehicles.size()) continue;
-            const auto& other = vehicles[f];
-            const auto& fType = s.vehicleTypes[refs[f].type];
-            const auto& fBehaviour = s.behaviours[refs[f].behaviour];
-            const double room = gap - standstillGap(fBehaviour);
-            if (room < 0) continue;
-            CourtesyHold hold{gap, 0, false, 0};
-            if (waiting) {
-                // Kinematic, not the model's commanded braking: once it holds back, its stopping
-                // distance only shrinks, so the same vehicle keeps holding back tick after tick.
-                if (other.speed * other.speed > 2 * fType.comfortableDeceleration * room ||
-                    other.speed * s.timeStep > room) continue;
-            } else {
-                // Falls in behind the moving changer at no more than its cooperative deceleration.
-                if (!fBehaviour.maxDecelerationCooperativeBraking) continue;
-                const double closing = other.speed - vehicle.speed;
-                if (closing > 0 && closing * closing > 2 * *fBehaviour.maxDecelerationCooperativeBraking * room) continue;
-                hold = {gap, vehicle.speed, true, vehicle.acceleration, *fBehaviour.maxDecelerationCooperativeBraking};
-            }
-            // The nearest place counts; at equal gaps a waiting changer's standing one wins.
-            if (hold.gap < holds[f].gap || (hold.gap == holds[f].gap && holds[f].moving)) holds[f] = hold;
-            break;
-        }
-    }
-    return holds;
 }
 }
