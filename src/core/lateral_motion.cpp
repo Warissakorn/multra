@@ -165,9 +165,13 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
             body = bodyAt(move);
             return move != 0 && !blocked(body);
         };
+        // D453 (B): an outward step is also refused while D450 (b) refuses the landing it leads to.
+        const auto& side = move > 0 ? toLeft : toRight;
+        const bool outward = std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral); // from its lane centre
+        const bool intoPartner = outward && side &&
+            landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, *side->change, mappedOnto(*side->change, front));
         if (blocked(body)) { if (!stepBack()) continue; }
-        else if (std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral) && // outward from its lane centre only
-                 !coversSafely(s, index, vehicles, refs, v, body) && !stepBack()) continue;
+        else if (outward && (intoPartner || !coversSafely(s, index, vehicles, refs, v, body)) && !stepBack()) continue;
         vehicle.lateral += move; vehicle.lateralSpeed = move / dt;
         moved.insert(moved.end(), body.begin(), body.end()); movedIds.push_back(vehicle.id);
         // Crossing: the centre strictly past a boundary only a covering span lets it reach.

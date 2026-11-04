@@ -146,27 +146,30 @@ a planning-level method (otherwise back to the owner).
     lane-change state machine, a no-progress timer and abandoning a change are deferred with it.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
     The +10–28 % wall cost switched on needs a profile before any work.
-- **Weaving (M3.4, D449–D452): the lock is mostly fixed; the next step is the owner's choice.**
-  The weaving lab ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA189) and
-  D450–D452 ([evidence](evidence/weaving-lock.md)):
+- **Weaving (M3.4, D449–D453): the lock is mostly fixed; the next step is the owner's choice.**
+  The weaving lab ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA191) and
+  D450–D453 ([evidence](evidence/weaving-lock.md)):
   - **Fixed:**
     - a swapping pair is kept while the front one closes in on its dead end;
     - no change lands where a partner waits or will wait;
     - a change under way counts as on its target route, so partners yield from the start of the
       crossing;
-    - no courtesy for a change that may not land (D452), so a follower no longer stands for it.
+    - no courtesy for a change that may not land (D452), so a follower no longer stands for it;
+    - a change under way that may not land claims nothing (D453): no outward step, no partner
+      yield, no reserved place.
   - **Results:**
     - Switched off: lock-free through ×0.8; 0/3/2 seeds of 10 lock at ×1.0.
-    - Switched on: 0 locks through ×0.5; 1/2/0 at ×0.6, 1/0/0 at ×0.8, 0/2/0 at ×1.0.
+    - Switched on: 0 locks through ×0.5; 0/1/0 at ×0.6, 0/0/1 at ×0.8, 0/1/0 at ×1.0.
     - Product runs: unchanged.
-  - **Leftovers (traced, D452 evidence):**
-    - P2a, a held crossing resuming beside a partner (on ×0.6, seed 48). Re-checking D450 (b) as it
-      resumes added locks at ×0.8, so it needs its own trace.
-    - P2b and the off ×1.0 remainder: a late hard stop beats the comfortable yield.
-    - One long wait remains: 237 s on at ×0.6 (300 m, a locked seed).
+  - **Leftovers ([D453 evidence](evidence/weaving-held-change.md)):**
+    - P2b and the off ×1.0 remainder: a late hard stop beats the comfortable yield (on ×0.6, seed 49).
+    - A stub standing short of its stop-line reach is not counted as waiting by D450 (b) (on ×0.8,
+      seed 50, 500 m).
+    - On ×1.0, seed 48 (300 m): not traced.
+    - Underneath: a crossing can hold for 170 m alongside traffic at the same speed (no gap seeking).
   - **Choices:**
     - (1) Let the D207 yield brake up to `maxDecelerationCooperativeBraking` (P2b, off ×1.0).
-    - (2) Trace P2a.
+    - (2) Count a stub standing short of its stop-line reach as waiting (seed 50).
     - (3) Gap seeking (deferred above).
     - (4) Compile two-entry weaves (BA179).
     - (5) NGSIM at M6.

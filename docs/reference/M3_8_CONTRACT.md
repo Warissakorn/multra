@@ -261,6 +261,24 @@ M3.2.8c's cooperative braking below) is not given to a changer whose landing (b)
 
 Rows BA188 (a unit row) and BA189 (the lab).
 
+**A change under way that may not land claims nothing (D453).** Switched on, a crossing can be held
+in its own lane for many metres (D208, D447) and complete near its dead end. While (b) refuses its
+landing, a change under way:
+
+- **(B) does not move outward:** the body stays in its lane, stepping back as D447 does. (b) is now
+  checked on every outward step, not only at the start.
+- **(C) is no partner for D451 (c):** nobody yields to it as if it were already on its target route.
+- **(E) holds no target place for other changes (D206).**
+
+**Why all three.** Each one alone kept the lock in another form:
+- Without (B), the held crossing completed beside the partner.
+- Without (C), the partner yielded to it and stood short of its own dead end. There it no longer
+  counted as waiting, and (b) lapsed.
+- Without (E), the partner could not start into the place the held change reserved.
+
+Switched off no change is under way, so D453 does nothing. No parameter, no state. Rows BA190 (a unit
+row, switched on) and BA191 (the lab).
+
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 
 M3.2.8c step 5 showed that the time M3.2.8b costs is the left-turn dead-end waits

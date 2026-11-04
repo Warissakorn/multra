@@ -6,6 +6,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — A change under way that may not land claims nothing (D453)
+
+- **Owner:** "trace P2a first", then "do B+C+E as D453".
+- **Traced** ([weaving-held-change](evidence/weaving-held-change.md)):
+  - A two-change stub's crossing was held at the lane edge for 170 m beside lane-1 traffic.
+  - It then landed beside a waiting partner, because D450 (b) was checked only at the start.
+  - Checking (b) on every step was not enough. The held change still made its partner yield short
+    of the dead end, where (b) lapsed, and it still reserved its target place (D206).
+- **D453 (M3_8_CONTRACT §2):** a change under way that (b) refuses takes no outward step, is no
+  partner for D451 (c), and holds no target place. Switched on only.
+  - Every subset was measured; only B with E, and B with C and E, cut the locks, to 3 each.
+- **Rows:** BA190 and BA191, both failure-first.
+- **Results:**
+  - Product runs are identical except the lane-change lab switched on (delay +0.003 s, clamps
+    unchanged).
+  - Lab switched on: locked seeds at ×0.6 0/1/0, at ×0.8 0/0/1, at ×1.0 0/1/0. The 237 s wait is
+    gone.
+  - Lab switched off: identical.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — No courtesy for a change that may not land (D452)
 
 - **Owner:** "trace the remaining switched-on locks first".
@@ -164,19 +184,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Lab changes over 8 s fall from 36 to 27, and the lab pair now crosses 1.7 s after starting.
   - Residue: a changer alongside a car that is not changing, at a similar speed, still waits (lab
     seed 49, vehicle 580, 36 s). That is the gap-seeking case, not a swap.
-- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
-
-## 2026-11-04 — Straddler searched a covered lane's next section from its start (D445)
-
-- **Owner:** "ทำเลย": lateral audit Finding 2, reproduced before any change.
-- **Cause (m2.6 seed 42, vehicle 1133):** `followerFilter` listed both sections of lane-17 as covered.
-  The second starts 25 m ahead of the front; its mapped station was clamped to 0, so the D210 search
-  started there and found a standing car at gap 0. The car-following and the hard cap shared that one
-  search, so the hard cap held 1133 and it was clamped 13 times. The review's suspects were not
-  the cause.
-- **Change:** a covered lane is listed only when the mapped front falls within that section (LATERAL §6).
-- **Row:** BA160 failed before the fix and passes after.
-- **Result, switched on:** m2.6 clamps fall from 28 to 1, the switched-off count, in every seed. Seed 51
-  completes 1965, as it does off. Seed 42's longest straddle falls from 5.8 s to 2.4 s. Every
-  switched-off batch is unchanged.
 - **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.

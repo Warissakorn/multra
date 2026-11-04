@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Straddler searched a covered lane's next section from its start (D445)
+
+- **Owner:** "ทำเลย": lateral audit Finding 2, reproduced before any change.
+- **Cause (m2.6 seed 42, vehicle 1133):** `followerFilter` listed both sections of lane-17 as covered.
+  The second starts 25 m ahead of the front; its mapped station was clamped to 0, so the D210 search
+  started there and found a standing car at gap 0. The car-following and the hard cap shared that one
+  search, so the hard cap held 1133 and it was clamped 13 times. The review's suspects were not
+  the cause.
+- **Change:** a covered lane is listed only when the mapped front falls within that section (LATERAL §6).
+- **Row:** BA160 failed before the fix and passes after.
+- **Result, switched on:** m2.6 clamps fall from 28 to 1, the switched-off count, in every seed. Seed 51
+  completes 1965, as it does off. Seed 42's longest straddle falls from 5.8 s to 2.4 s. Every
+  switched-off batch is unchanged.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-03 — Lateral crossing at the window end (D444)
 
 - **Owner:** agreed to the smallest fix first, after the review of the lateral audit: reproduce

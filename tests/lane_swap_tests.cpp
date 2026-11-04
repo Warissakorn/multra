@@ -287,3 +287,41 @@ TEST(laneswap, ba188_no_courtesy_for_a_change_that_may_not_land) {
     CHECK(clamps == 0);
     CHECK(!overlap);
 }
+
+// D453 (BA190): switched on, a change under way that may not land claims nothing (weaving lab, the
+// 150 m weave alone, x0.8, seed 42). Z, needing two changes, stands near its dead end on lane 2 with
+// its crossing into lane 1 held at the lane edge, because F drives alongside its target place. W
+// approaches on lane 0. Before D453, W yielded to Z's held change as if Z were already on lane 1,
+// stopping short of its own dead end, so D450 (b) no longer counted it. Once F had passed, Z crossed
+// beside it, and each then needed the other's place, for ever.
+TEST(laneswap, ba190_switched_on_a_held_change_that_may_not_land_claims_nothing) {
+    const auto t = three(keys(0.5, 1.0));
+    auto state = put(t.s, {{"Z-2", 246, 0}, {"W-stub", 230, 9}, {"W-full", 249, 2}});
+    auto& z = state.vehicles[0];
+    z.lateral = 0.8; z.lateralTarget = 3.5; // held at the lane edge, toward lane 1
+    // The forcing: Z's body is still in its own lane; F lies alongside Z's target place; W is inside
+    // its look-ahead and not yet waiting.
+    const auto spans = spansOf(state);
+    CHECK(std::all_of(spans.begin(), spans.end(), [](const auto& x) { return x.vehicleId != 1 || x.own; }));
+    const auto& behaviour = state.scenario->behaviours.front();
+    const double length = state.scenario->vehicleTypes[z.typeIndex].length;
+    CHECK(249 - length < 246 && 246 - length < 249);
+    const auto& w = *byId(state, 2);
+    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, state.scenario->vehicleTypes[w.typeIndex], behaviour));
+    CHECK(!waitingAtDeadEnd(*state.index, w.routeIndex, w, behaviour));
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 400; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // W changes first, then Z twice, within 40 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}

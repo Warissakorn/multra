@@ -305,10 +305,17 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
                                           const std::vector<StopService>& stopService, std::uint64_t tick) {
     std::vector<LaneChange> accepted;
     std::vector<OccupiedSpan> moved; // accepted changers at their new places, this tick
-    // D206: a change under way already holds its target place, so no other change starts into it.
+    // D206: a change under way already holds its target place, so no other change starts into it --
+    // unless D450 (b) refuses its landing (D453 (E)): then it holds nothing.
     if (index.lateral.on)
-        for (std::size_t v = 0; v < vehicles.size(); ++v)
-            if (vehicles[v].lateralTarget) { auto placed = vehicles[v]; placed.lateral = *placed.lateralTarget; appendVehicleSpans(moved, s, index, placed, refs[v]); }
+        for (std::size_t v = 0; v < vehicles.size(); ++v) {
+            const auto& under = vehicles[v];
+            if (!under.lateralTarget) continue;
+            const double length = s.vehicleTypes[refs[v].type].length;
+            if (const auto* c = laneChangeTargetOf(index, refs[v].route, under.distance, under.distance - length);
+                c && landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, *c, mappedOnto(*c, under.distance))) continue;
+            auto placed = under; placed.lateral = *placed.lateralTarget; appendVehicleSpans(moved, s, index, placed, refs[v]);
+        }
     for (std::size_t v = 0; v < vehicles.size(); ++v) {
         const auto route = refs[v].route;
         if (index.remainingOfRoute[route] == 0) continue;

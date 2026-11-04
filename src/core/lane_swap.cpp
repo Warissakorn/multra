@@ -79,6 +79,8 @@ void yieldMutualUnderWay(const Scenario& s, const ScenarioIndex& index, const st
     const double length = s.vehicleTypes[refs[x].type].length;
     const auto* current = laneChangeTargetOf(index, refs[x].route, vehicle.distance, vehicle.distance - length);
     if (!current || index.remainingOfRoute[current->target] == 0) return; // it leads onto a full route
+    // D453 (C): a change that may not land is no one's partner on its target route.
+    if (landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, x, *current, mappedOnto(*current, vehicle.distance))) return;
     auto there = vehicle; // where it will be once it has crossed, its change done
     there.distance = mappedOnto(*current, vehicle.distance);
     there.lateralTarget.reset();

@@ -143,3 +143,15 @@ TEST(weavinglab, ba189_switched_on_no_courtesy_for_a_change_that_may_not_land) {
     CHECK(r.removed == 0 && !r.overlap);
     CHECK(last >= 450 - 60); // still arriving in the last minute
 }
+TEST(weavinglab, ba191_switched_on_a_held_change_that_may_not_land_claims_nothing) {
+    // D453: a two-change stub's crossing was held at the lane edge, and the lane-0 stub yielded to it
+    // short of its own dead end, where D450 (b) no longer counted it; the held crossing then landed
+    // beside it. The 150 m weave alone, x0.8, seed 42, 450 s: before D453 nothing arrived after 173.6 s.
+    const auto lab = fixture::weavingLab();
+    const auto r = scene(0, 0.8, true, 42);
+    const auto& sc = lab.scenes[0];
+    double last = 0;
+    for (const auto& id : {sc.toMain, sc.toExit}) if (r.lastArrival.count(id)) last = std::max(last, r.lastArrival.at(id));
+    CHECK(r.removed == 0 && !r.overlap);
+    CHECK(last >= 450 - 60); // still arriving in the last minute
+}

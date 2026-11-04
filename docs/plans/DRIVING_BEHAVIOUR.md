@@ -242,6 +242,8 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA187 | The 150 m weave alone, switched on, ×0.6, seed 42, 450 s (D451) | Arrivals continue into the last minute; no removal, no 2D overlap. Before: nothing arrived after 218.6 s |
 | BA188 | Three lanes, all standing: W waits at its dead end on lane 0 needing lane 1; Z, a two-change stub, waits on lane 2 just ahead of it; F, on its full route on lane 1, stands short of W's standstill distance but not of Z's (D452) | F drives on, W changes, then Z twice, within 60 s; no clamp, no 2D overlap. Before: F held back for Z, whose landing (b) refuses, and nobody moved |
 | BA189 | The 150 m weave alone, switched on, ×0.6, seed 45, 450 s (D452) | Arrivals continue into the last minute; no removal, no 2D overlap. Before: nothing arrived after 88.2 s |
+| BA190 | Switched on, three lanes: Z (two changes) stands at its dead end on lane 2, its crossing into lane 1 held at the lane edge; W approaches on lane 0 inside its look-ahead (D453) | W changes first, then Z twice, within 40 s; no clamp, no 2D overlap. Before: W yielded to Z's held change, Z then crossed beside it, and both stood for ever |
+| BA191 | The 150 m weave alone, switched on, ×0.8, seed 42, 450 s (D453) | Arrivals continue into the last minute; no removal, no 2D overlap. Before: nothing arrived after 173.6 s |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.
