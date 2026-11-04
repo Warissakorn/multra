@@ -23,8 +23,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** BA179 revised; BA206–BA208.
 - **Results** ([evidence](evidence/weaving-two-entries.md)):
   - products and the lateral lab are byte-identical;
-  - scene 4 has no clamp at ×0.6–1.0, off and on;
-  - the sweep table follows.
+  - scene 4 serves 100 % at every factor, off and on, with no lock and no wait at a dead end;
+    delay at ×1.0 is 20.0 s off and 26.8 s on;
+  - the edge scenes in the full run move only by the shifted random draw;
+  - one clamp at ×1.0 on, seed 48, in the 150 m weave (open).
 - **Verified:** `ctest --preset headless` passes 176/176.
 
 ## 2026-11-04 — Gap seeking, slice 2: the changer falls back behind its blocker (D458)

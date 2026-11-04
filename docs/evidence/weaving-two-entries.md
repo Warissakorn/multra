@@ -57,7 +57,34 @@ With the feeding segments seen, scene 4 alone at ×0.6, ×0.8 and ×1.0, off and
   940 m. Without the lead-in it would be 620 m.
 - **BA208:** scene 4 serves all four movements at ×0.6, off and on, with no clamp.
 
-## Weaving sweep
+## Weaving sweep (seeds 42–51, full lab with scene 4)
 
-The full sweep with scene 4 was still running when this was first committed. Its rows follow in
-the next commit.
+`multra-weaving-sweep . --seeds 42-51 --factors 0.3,0.4,0.5,0.6,0.8,1.0,1.2`
+
+**Scene 4, the two-entry 300 m weave:**
+
+| Factor | Off: served %, delay (s) | On: served %, delay (s) | Locked seeds |
+|---|---|---|---|
+| ×0.3 | 100, 6.5 | 100, 6.7 | 0 |
+| ×0.6 | 100, 9.8 | 100, 10.5 | 0 |
+| ×0.8 | 100, 13.1 | 100, 15.2 | 0 |
+| ×1.0 | 100, 20.0 | 100, 26.8 | 0 |
+| ×1.2 | 100, 47.7 | 100, 80.6 | 0 |
+
+- **Waiting:** no vehicle waits at a dead end in scene 4 at any factor. With a 300 m approach, a
+  mainline car bound for the exit moves toward lane 1 before the weave.
+- **Compared with the edge 300 m weave**, at the same volumes, delay is close:
+  - switched off at ×1.0: 20.0 s against 19.6 s;
+  - switched on at ×1.0: 26.8 s against 33.1 s.
+
+**The edge scenes in the full run are not byte-identical to D458's sweep.** The full lab draws
+every scene's arrivals from one random stream, so scene 4's inputs shift the draws. Even at ×0.3,
+where nothing interacts, served counts move by up to 7 %. That is a different arrival draw, not
+different behaviour. Each edge scene run alone (the rows' runs) is unchanged, because its inputs are
+filtered first.
+
+**One clamp:** at ×1.0 switched on, seed 48, the 150 m edge weave (`route-13/lane-1`, t = 261.5 s)
+has a car standing mid-crossing at lateral −1.6 m. It is in a scene D459 does not touch. The new
+draw exposed it, and it is left open (NEXT).
+
+{table}

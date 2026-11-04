@@ -172,6 +172,8 @@ a planning-level method (otherwise back to the owner).
   - **Left:**
     - the 500 m weave alone at ×1.0 on is slower than before (24 → 28.5 s);
     - ×1.2 on is over capacity (150 m: 91 % served).
+    - one clamp at ×1.0 on in the full lab since D459's draw: seed 48, the 150 m weave, a car standing
+      mid-crossing ([evidence](evidence/weaving-two-entries.md)).
   - **Next, the owner's choice:**
     - the pending owner checks (UT10, A9, canvas);
     - NGSIM at M6.
