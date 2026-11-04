@@ -20,7 +20,7 @@ Add newly archived entries to the top of the newest file, or start a new one.
 
 | File | Milestones and decisions in entry titles | Entries |
 |---|---|---|
-| [`PROGRESS-LOG-2026-11-03.md`](PROGRESS-LOG-2026-11-03.md) | D440, Vistro right-hand import, D436, drawing level is not separation; U0 from real UTDF exports, D437, D438, timing probe v2, Vistro draft 1, refused timing and HCM method, v2-filled timing import (D439) | 13 |
+| [`PROGRESS-LOG-2026-11-03.md`](PROGRESS-LOG-2026-11-03.md) | D440, Vistro right-hand import, D436, drawing level is not separation; U0 from real UTDF exports, D437, D438, timing probe v2, Vistro draft 1, refused timing and HCM method, v2-filled timing import (D439) | 14 |
 | [`PROGRESS-LOG-2026-10-30.md`](PROGRESS-LOG-2026-10-30.md) | D405–D411, D415–D422, D432, J4T core and Find crossings Fill, J5/polygon reviews, T booking, J6 overlap/command checkpoints, J6a exact endpoints, J7 Node analysis, A9 reviews and finish, UI audit corrections, session-path docs, main CI fix | 17 |
 | [`PROGRESS-LOG-2026-10-29.md`](PROGRESS-LOG-2026-10-29.md) | D391–D404, junction pockets, catalog/review, J3b fill/review and J4 signals | 9 |
 | [`PROGRESS-LOG-2026-10-28.md`](PROGRESS-LOG-2026-10-28.md) | D381–D390, site circulation/pedestrians, Road/Node-analysis review batches A–D, M14 contracts, Street segment rename, UTDF probe and posted speed | 10 |

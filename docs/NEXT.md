@@ -148,14 +148,18 @@ a planning-level method (otherwise back to the owner).
 
     Switched on, m2.6 now has the switched-off clamp count in every seed, and lab changes over 8 s
     fell from 36 to 27.
-  - **Residue for the owner: gap seeking.** Every code copy the review found now shares one test
-    (D444–D448). What remains is behaviour:
-    - A changer alongside a car that is not changing, at a similar speed, waits at the line (lab
-      seed 49, vehicle 580, 36 s).
-    - The long m2.6 waits (up to 91 s, seeds 43/47/49) were not examined. Probe them first, one
-      session, with failure-first rows and the audit batch re-run.
-    - Cooperation beyond D207 pairs is M3.2.8c (only near the dead end) or a new contract; either is
-      the owner's choice.
+  - **Residue for the owner: gap seeking** ([m26-long-waits](evidence/m26-long-waits.md)). Every code
+    copy the review found now shares one test (D444–D448). What remains is behaviour:
+    - **The long m2.6 waits (up to 119 s) are signal-queue congestion that exists switched off
+      too** (max 110.9 s off). Switching on adds the crossing time (≈ 2 s per change) and a modest
+      tail on the `path-4` approaches: 61 → 74 waits over 30 s.
+    - **Gap seeking would shorten only the moving phase** (4–18 s of those waits), where the target
+      lane's leader is too close. It would also help the lab case: seed 49, vehicle 580, which rides
+      alongside a car that is not changing, at a similar speed, for 36 s.
+    - **Options for the owner:**
+      - extend M3.2.8c cooperation beyond the dead end;
+      - a new gap-seeking contract;
+      - nothing: accept the measured cost until M6 calibrates lane changes.
   - **Later, and only if residue remains:** the lane-change state machine and a no-progress timer.
     A timer is a behaviour value, so a key needs the owner (D204 added none). Abandoning a change is
     still the owner's call.
