@@ -3,7 +3,7 @@
 Written 2026-11-04 (D449). The owner asked whether MULTRA simulates weaving and how other tools
 test it, and agreed to step 1: a synthetic fixture and a measurement with the lateral switch off and
 on. It is **mechanism evidence, not validation** (rule 4): the marker stays, and calibration and field
-data stay with M6. Rows BA179–BA183 are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows).
+data stay with M6. Rows BA179–BA183 (and BA184–BA189 for the lock) are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows).
 Lane changing itself is [M3_8_CONTRACT](M3_8_CONTRACT.md) §2 and
 [LANE_CHANGE_DURATION](LANE_CHANGE_DURATION.md); this page changes neither.
 
@@ -111,7 +111,12 @@ run the 300 m scene alone for 450 s, so they stay quick.
   is not the truth either.
 - **NGSIM US-101 and I-80** are the validation candidates for M6, once the owner approves a source
   entry.
-- **The weave-end lock (D450–D451):** a swapping pair is now kept while the front one closes in, no change lands where a partner waits or will wait, and a change under way counts as on its target route ([evidence](../evidence/weaving-lock.md)). Locks remain at ×1.0, and switched on at ×0.5–0.8 for the shorter weaves; waits are longer.
+- **The weave-end lock (D450–D452):**
+  - A swapping pair is now kept while the front one closes in.
+  - No change lands where a partner waits or will wait.
+  - A change under way counts as on its target route.
+  - No courtesy goes to a change that may not land.
+  - Locks remain at ×1.0 (0–3 seeds of 10), and switched on in two seeds at ×0.6–0.8 ([evidence](../evidence/weaving-lock.md)).
 - **No diffusion:** MULTRA never removes a stuck vehicle (M3 §4). A lock therefore shows as
   `unfinished` and a frozen last arrival, where Vissim would delete the pair after 60 s. Compare
   with Vissim only with that difference stated.

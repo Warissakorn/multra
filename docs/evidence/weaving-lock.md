@@ -253,3 +253,136 @@ The full table:
   - Locks remain at ×1.0, and switched on at ×0.5–0.8 for the 150 and 300 m weaves.
   - The off case at ×1.0 is D450's comfortable-cap overrun, unchanged.
   - The remaining on locks are not traced.
+
+## D452: no courtesy for a change that may not land
+
+The owner asked to trace the remaining switched-on locks first (2026-11-04). On `831e07e` (D451).
+
+### Trace
+
+Scratch probes over the full lab run, seeds 42–51, switched on, at the heads of the locked scenes.
+The 15 locks at ×0.5–0.8 show three patterns:
+
+- **P1, the courtesy cycle.** ×0.5 seed 47 and ×0.6 seed 44 (150 m), and the 150 m weave run alone
+  at ×0.6 with seeds 45 and 47. In seed 45 alone, at 130 s:
+  - W (43), on lane 0, waits at its dead end, front 147.7, and needs lane 1.
+  - Z (35), on lane 2, waits at 148.4. It needs lanes 1 then 0.
+  - F (36), on its full route on lane 1, stands at 141.7.
+  - F could no longer stop comfortably behind W's place, which needs 2 m behind 143.2, so the
+    courtesy rule had F hold back for Z's place, the next in line.
+  - D450 (b) refuses Z's landing beside the waiting W, so Z never goes.
+  - F stands 1.5 m behind W's place, short of the standstill distance, so W never goes either.
+  - The two rules disagree: courtesy was granted for a change that (b) refuses.
+- **P2a, a held crossing resumes beside a partner.** ×0.5 seed 43 (300 m) and ×0.6 seeds 46 and 48.
+  - A two-change stub on lane 2 starts its crossing early, is refused and holds at lateral 0.8 for
+    7 m to 170 m.
+  - It then completes the crossing beside a lane-0 stub at its dead end. (b) is checked only when a
+    change starts.
+- **P2b, a late hard stop.** ×0.6 seed 49 (300 m).
+  - The lane-0 stub reaches its dead end at 12 m/s and stops at about 6 m/s².
+  - Its rear partner yields at comfortable braking only and stands 1.1 m short. This is the D450
+    remainder, as in the off ×1.0 case.
+
+### Change (D452, M3_8_CONTRACT §2)
+
+Courtesy (D71's waiting rule and M3.2.8c) is not given to a changer whose landing (b) refuses. One
+line in `courtesyHolds`, reusing `landsInWaitingPlace`. No parameter, no state.
+
+**Tried and dropped (fix B):** re-checking (b) whenever a held crossing moves outward, for P2a.
+- **With D452 (scratch):** it cleared ×0.6 except seed 49 (P2b), but added locks at ×0.8: three in
+  the 150 and 300 m weaves, one in the 500 m weave.
+- **Alone:** it changed almost nothing.
+- So it is not part of this step.
+
+### Rows
+
+- **BA188** (`laneswap`, switched off): W and Z wait, and F stands between their limits.
+  - **Forcing:** both wait, and F's gap to W's place is short of the standstill distance but its gap
+    to Z's place is not.
+  - **Before:** W never changed.
+  - **After:** W changes, then Z twice, within 60 s. F never changes. No clamp, no overlap.
+- **BA189** (`weavinglab`): the 150 m weave alone, switched on, ×0.6, seed 45, 450 s.
+  - **Before:** nothing arrived after 88.2 s.
+  - **After:** arrivals continue into the last minute.
+
+### Product runs, seeds 42–51
+
+All four projects are identical to D451, off and on, apart from the build commit.
+
+### Weaving lab, seeds 42–51
+
+Locked seeds per 10, D451 → D452 (150 / 300 / 500 m). Up to ×0.4 nothing changes.
+
+| Factor | Lateral off | Lateral on |
+|---|---|---|
+| ×0.5 | 0 / 0 / 0 → 0 / 0 / 0 | 1 / 1 / 0 → **0 / 0 / 0** |
+| ×0.6 | 0 / 0 / 0 → 0 / 0 / 0 | 3 / 2 / 0 → **1 / 2 / 0** |
+| ×0.8 | 0 / 0 / 0 → 0 / 0 / 0 | 4 / 5 / 0 → **1 / 0 / 0** |
+| ×1.0 | 6 / 6 / 5 → **0 / 3 / 2** | 1 / 4 / 3 → **0 / 2 / 0** |
+
+Longest waits at the dead end (s), D451 → D452:
+
+| Factor | Lateral off | Lateral on |
+|---|---|---|
+| ×0.6 | 28 / 9 / 10 → 5 / 7 / 9 | 199 / 237 / 28 → 29 / 237 / 15 |
+| ×0.8 | 63 / 8 / 10 → 11 / 8 / 6 | 122 / 143 / 22 → 20 / 103 / 133 |
+| ×1.0 | 236 / 510 / 165 → 17 / 28 / 16 | 57 / 46 / 112 → 21 / 17 / 26 |
+
+Clamps (all scenes, 10 seeds):
+- **Off:** ×0.8 12 → 12; ×1.0 32 → 36.
+- **On:** ×0.5 5 → 6; ×0.6 14 → 15; ×0.8 13 → 13; ×1.0 8 → 9.
+- **2D overlaps and removals:** 0 throughout.
+
+The full table:
+
+| scene | factor | lateral | served | unfinished | served % | mean delay (s) | changes | waiting at dead end | longest wait (s) | last arrival (s), earliest seed | locked seeds (of the range) | clamps | 2D overlap | removed |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Weave 150 m | 0.3 | off | 189.7 | 0.0 | 100.0 | 4.5 | 81.7 | 0.1 | 2.4 | 634.5 | 0 | 2 | 0 | 0 |
+| Weave 300 m | 0.3 | off | 189.2 | 0.0 | 100.0 | 5.0 | 80.2 | 0.1 | 2.0 | 645.6 | 0 |  |  |  |
+| Weave 500 m | 0.3 | off | 201.0 | 0.0 | 100.0 | 6.1 | 83.0 | 0.1 | 1.1 | 647.4 | 0 |  |  |  |
+| Weave 150 m | 0.3 | on | 189.7 | 0.0 | 100.0 | 4.9 | 81.7 | 1.1 | 5.2 | 634.0 | 0 | 4 | 0 | 0 |
+| Weave 300 m | 0.3 | on | 189.2 | 0.0 | 100.0 | 5.2 | 80.2 | 1.0 | 4.8 | 645.6 | 0 |  |  |  |
+| Weave 500 m | 0.3 | on | 201.0 | 0.0 | 100.0 | 6.3 | 83.0 | 1.1 | 5.2 | 647.4 | 0 |  |  |  |
+| Weave 150 m | 0.4 | off | 258.8 | 0.0 | 100.0 | 5.2 | 110.9 | 0.4 | 4.9 | 632.3 | 0 | 1 | 0 | 0 |
+| Weave 300 m | 0.4 | off | 256.1 | 0.0 | 100.0 | 6.0 | 108.8 | 0.5 | 2.6 | 650.2 | 0 |  |  |  |
+| Weave 500 m | 0.4 | off | 257.8 | 0.0 | 100.0 | 7.1 | 111.1 | 0.5 | 3.5 | 654.5 | 0 |  |  |  |
+| Weave 150 m | 0.4 | on | 258.8 | 0.0 | 100.0 | 6.1 | 110.9 | 1.7 | 6.1 | 632.3 | 0 | 3 | 0 | 0 |
+| Weave 300 m | 0.4 | on | 256.1 | 0.0 | 100.0 | 6.4 | 108.8 | 2.1 | 7.8 | 650.2 | 0 |  |  |  |
+| Weave 500 m | 0.4 | on | 257.8 | 0.0 | 100.0 | 7.3 | 111.1 | 1.7 | 8.1 | 654.5 | 0 |  |  |  |
+| Weave 150 m | 0.5 | off | 317.3 | 0.0 | 100.0 | 6.0 | 138.7 | 0.4 | 3.4 | 630.9 | 0 | 4 | 0 | 0 |
+| Weave 300 m | 0.5 | off | 326.2 | 0.0 | 100.0 | 6.8 | 138.6 | 1.2 | 7.7 | 646.5 | 0 |  |  |  |
+| Weave 500 m | 0.5 | off | 321.0 | 0.0 | 100.0 | 7.9 | 136.5 | 1.3 | 5.2 | 661.8 | 0 |  |  |  |
+| Weave 150 m | 0.5 | on | 317.3 | 0.0 | 100.0 | 8.4 | 138.7 | 2.6 | 10.7 | 631.1 | 0 | 6 | 0 | 0 |
+| Weave 300 m | 0.5 | on | 326.2 | 0.0 | 100.0 | 8.0 | 138.6 | 4.1 | 7.1 | 646.5 | 0 |  |  |  |
+| Weave 500 m | 0.5 | on | 321.0 | 0.0 | 100.0 | 8.4 | 136.5 | 2.4 | 8.7 | 662.1 | 0 |  |  |  |
+| Weave 150 m | 0.6 | off | 376.8 | 0.0 | 100.0 | 7.0 | 159.6 | 2.2 | 4.6 | 632.4 | 0 | 9 | 0 | 0 |
+| Weave 300 m | 0.6 | off | 373.5 | 0.0 | 100.0 | 7.5 | 156.8 | 2.4 | 7.0 | 642.2 | 0 |  |  |  |
+| Weave 500 m | 0.6 | off | 399.0 | 0.0 | 100.0 | 9.3 | 168.1 | 3.2 | 8.9 | 665.5 | 0 |  |  |  |
+| Weave 150 m | 0.6 | on | 343.0 | 33.8 | 91.0 | 20.9 | 147.0 | 6.6 | 28.8 | 160.7 | 1 | 15 | 0 | 0 |
+| Weave 300 m | 0.6 | on | 334.1 | 39.4 | 89.5 | 19.0 | 137.6 | 3.4 | 237.3 | 295.1 | 2 |  |  |  |
+| Weave 500 m | 0.6 | on | 399.0 | 0.0 | 100.0 | 10.9 | 168.1 | 4.5 | 15.3 | 665.5 | 0 |  |  |  |
+| Weave 150 m | 0.8 | off | 505.8 | 10.5 | 98.0 | 11.3 | 211.3 | 4.4 | 11.4 | 573.0 | 0 | 12 | 0 | 0 |
+| Weave 300 m | 0.8 | off | 509.3 | 0.0 | 100.0 | 10.9 | 207.0 | 5.6 | 8.4 | 657.6 | 0 |  |  |  |
+| Weave 500 m | 0.8 | off | 502.6 | 0.0 | 100.0 | 12.3 | 218.5 | 5.6 | 6.4 | 668.3 | 0 |  |  |  |
+| Weave 150 m | 0.8 | on | 471.4 | 44.9 | 91.3 | 107.2 | 199.3 | 17.8 | 20.3 | 269.7 | 1 | 13 | 0 | 0 |
+| Weave 300 m | 0.8 | on | 505.6 | 3.7 | 99.3 | 64.4 | 206.5 | 14.7 | 102.5 | 660.4 | 0 |  |  |  |
+| Weave 500 m | 0.8 | on | 494.9 | 7.7 | 98.5 | 26.5 | 214.5 | 12.9 | 133.3 | 670.0 | 0 |  |  |  |
+| Weave 150 m | 1.0 | off | 639.0 | 0.0 | 100.0 | 46.3 | 269.4 | 18.2 | 16.6 | 658.3 | 0 | 36 | 0 | 0 |
+| Weave 300 m | 1.0 | off | 507.1 | 121.2 | 80.7 | 35.8 | 206.6 | 15.1 | 28.1 | 66.2 | 3 |  |  |  |
+| Weave 500 m | 1.0 | off | 550.7 | 85.2 | 86.6 | 25.3 | 237.3 | 14.2 | 16.2 | 269.4 | 2 |  |  |  |
+| Weave 150 m | 1.0 | on | 504.1 | 134.9 | 78.9 | 183.2 | 219.1 | 20.2 | 21.4 | 893.3 | 0 | 9 | 0 | 0 |
+| Weave 300 m | 1.0 | on | 443.6 | 184.7 | 70.6 | 148.4 | 186.8 | 17.2 | 17.0 | 66.2 | 2 |  |  |  |
+| Weave 500 m | 1.0 | on | 560.0 | 75.9 | 88.1 | 127.0 | 244.9 | 21.9 | 26.0 | 899.0 | 0 |  |  |  |
+
+### Reading
+
+- **Better in both switches.** The courtesy cycle was most of what remained, switched off at ×1.0
+  too. The long waits D451 added also shrink, because the follower no longer stands for a changer
+  that cannot go.
+  - Switched on, the 500 m weave's longest wait at ×0.8 grows from 22 to 133 s.
+- **Still open:**
+  - On ×0.6, seed 48 (150 and 300 m; P2a) and seed 49 (300 m; P2b).
+  - On ×0.8, one seed at 150 m, and on ×1.0, two seeds at 300 m.
+  - Off ×1.0: 0 / 3 / 2.
+  - P2b and the off remainder need a harder yield for the rear partner, a parameter choice. P2a
+    needs its own trace, since fix B as tried has a cost. Neither was traced further here.

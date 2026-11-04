@@ -240,6 +240,8 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA185 | Three lanes: W waits at its dead end on lane 0 needing lane 1; Z, a two-change stub with the lower id, stands beside it on lane 2; lane 1 free (D450) | W changes first, then Z twice; no clamp, no 2D overlap. Before: Z landed in W's place and the two stood alongside for ever |
 | BA186 | Switched on, three lanes: Z (two changes, lower id) stands at its dead end on lane 2; W approaches on lane 0, 15 m back at 11 m/s, inside its look-ahead, its current place clear of Z's landing (D451) | W changes first, then Z twice, within 40 s; no clamp, no 2D overlap. Before: Z started into lane 1, W arrived beside it during the crossing, and both stood for ever |
 | BA187 | The 150 m weave alone, switched on, ×0.6, seed 42, 450 s (D451) | Arrivals continue into the last minute; no removal, no 2D overlap. Before: nothing arrived after 218.6 s |
+| BA188 | Three lanes, all standing: W waits at its dead end on lane 0 needing lane 1; Z, a two-change stub, waits on lane 2 just ahead of it; F, on its full route on lane 1, stands short of W's standstill distance but not of Z's (D452) | F drives on, W changes, then Z twice, within 60 s; no clamp, no 2D overlap. Before: F held back for Z, whose landing (b) refuses, and nobody moved |
+| BA189 | The 150 m weave alone, switched on, ×0.6, seed 45, 450 s (D452) | Arrivals continue into the last minute; no removal, no 2D overlap. Before: nothing arrived after 88.2 s |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

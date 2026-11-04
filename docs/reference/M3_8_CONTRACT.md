@@ -247,6 +247,20 @@ partner drove on and arrived too fast to yield. D451 revises (b) and adds (c):
 
 Rows BA186 (a unit row, switched on) and BA187 (the lab).
 
+**No courtesy for a change that may not land (D452).** Courtesy (the D71 waiting rule and
+M3.2.8c's cooperative braking below) is not given to a changer whose landing (b) refuses.
+
+- **Before:** a follower on the landing lane held back for that changer, which never went.
+  - It could stand short of the standstill distance behind a waiting partner's place. It had
+    arrived too late to hold back comfortably for that place.
+  - The partner then never went either. Lab seed 45: a lane-0 stub, a two-change stub on lane 2
+    and a lane-1 follower between their places.
+- **Now:** the follower holds back for the next changer whose change can land, or for no one.
+  - The refused changer keeps its target and goes once the partner has left.
+- **Unchanged:** no parameter, no state; (a), (c) and D207 are unchanged.
+
+Rows BA188 (a unit row) and BA189 (the lab).
+
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 
 M3.2.8c step 5 showed that the time M3.2.8b costs is the left-turn dead-end waits

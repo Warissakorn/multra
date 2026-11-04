@@ -426,6 +426,7 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
         const auto* change = laneChangeTargetOf(index, route, vehicle.distance, vehicle.distance - type.length);
         if (!change) continue;
         const double at = mappedOnto(*change, vehicle.distance), atRear = at - type.length;
+        if (landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, *change, at)) continue; // D452: it may not land
         // Every vehicle behind the target place, nearest first. One alongside is not asked: it is
         // already past. A vehicle in two segments has two spans; its nearer one counts.
         std::vector<std::pair<double, std::uint64_t>> behind;

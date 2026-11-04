@@ -6,6 +6,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — No courtesy for a change that may not land (D452)
+
+- **Owner:** "trace the remaining switched-on locks first".
+- **Traced** ([weaving-lock](evidence/weaving-lock.md#d452-no-courtesy-for-a-change-that-may-not-land)):
+  three patterns.
+  - **(P1) the courtesy cycle:** a lane-1 follower held back for a two-change stub whose landing
+    D450 (b) refuses, and stood short of a waiting lane-0 stub's place, so neither went.
+  - **(P2a):** a held crossing resumes beside a partner.
+  - **(P2b):** a late hard stop at the dead end beats the comfortable yield.
+- **D452 (M3_8_CONTRACT §2):** no courtesy for a changer whose landing (b) refuses. It is one line in
+  `courtesyHolds`, with no parameter and no state.
+  - **Tried and dropped:** re-checking (b) as a held crossing resumes (P2a). It added locks at ×0.8.
+- **Rows:** BA188 and BA189, both failure-first.
+- **Results:**
+  - Product runs are identical to D451, off and on.
+  - Locked seeds on: ×0.5 0/0/0, ×0.8 1/0/0, ×1.0 0/2/0 (from 1/1/0, 4/5/0 and 1/4/3).
+  - Locked seeds off at ×1.0: 0/3/2 (from 6/6/5).
+  - Longest waits: off ×1.0 down from 510 s to 28 s.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — Switched-on weave-end lock: a change under way hid the pair (D451)
 
 - **Owner:** "trace the switched-on case first".
@@ -160,24 +180,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   completes 1965, as it does off. Seed 42's longest straddle falls from 5.8 s to 2.4 s. Every
   switched-off batch is unchanged.
 - **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
-
-## 2026-11-03 — Lateral crossing at the window end (D444)
-
-- **Owner:** agreed to the smallest fix first, after the review of the lateral audit: reproduce
-  Finding 1, unify the crossing test and clamp the body. The lane-change state machine waits.
-- **Cause (m2.6 seed 45, vehicle 613):** the span window [240, 277] ends at a join on the target route.
-  At the dead end, `frontPart` put the mapped front on `connector-53`, so `crossingOn` found no crossing
-  and the centre clamp let the body stand on the line. `lateralStart` read the same part, which gives
-  a target of 0 to a change started there.
-- **Change:**
-  - `targetSectionAt` (`lateral.cpp`) is the one target-lane lookup for the start and the crossing.
-  - `spanHolds` (`lanes.hpp`) replaces four copies of the coverage test.
-  - On a side no span covers, the whole body stays in its lane (LATERAL §7; BA44 now pins this).
-- **Rows:** BA158 and BA159 failed before the fix and pass after.
-- **Result, switched on:** m2.6 seed 45 completes 1531 → 1903 (off: 1908). No vehicle straddles at the
-  end of any seed. m2.6 clamps fall from 33 to 28. The lab, four-leg and T-junction runs on equal their
-  off runs.
-- **Open:** Finding 2 (seed 42: 13 clamps) and Finding 3 (the swap lock) are not addressed. The
-  `followerFilter` window-end lookup is recorded in the evidence.
-- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass. There was
-  no desktop build here: Qt is not installed in this container.

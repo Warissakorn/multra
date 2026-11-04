@@ -253,3 +253,37 @@ TEST(laneswap, ba186_switched_on_an_approaching_partner_is_taken_where_it_will_w
     CHECK(clamps == 0);
     CHECK(!overlap);
 }
+
+// D452 (BA188): no courtesy for a change that may not land (weaving lab, the 150 m weave alone, x0.6,
+// seed 45, vehicles 43, 35 and 36). W waits on lane 0 needing lane 1; Z, a two-change stub, waits on
+// lane 2 just ahead of it; F, on its full route on lane 1, stands short of W's standstill distance
+// but not of Z's. Before D452 courtesy had F hold back for Z, whose landing D450 (b) refuses beside
+// the waiting W, and F's place kept W from changing: nobody moved, for ever.
+TEST(laneswap, ba188_no_courtesy_for_a_change_that_may_not_land) {
+    const auto t = three();
+    auto state = put(t.s, {{"Z-2", 249.8, 0}, {"W-stub", 248, 0}, {"W-full", 242.5, 0}});
+    const auto& behaviour = state.scenario->behaviours.front();
+    const double length = state.scenario->vehicleTypes[byId(state, 1)->typeIndex].length;
+    const double standstill = behaviour.standstillDistance;
+    // The forcing: W and Z wait; F is too close behind W's place for W, not behind Z's for Z.
+    CHECK(waitingAtDeadEnd(*state.index, byId(state, 1)->routeIndex, *byId(state, 1), behaviour));
+    CHECK(waitingAtDeadEnd(*state.index, byId(state, 2)->routeIndex, *byId(state, 2), behaviour));
+    CHECK((248 - length) - 242.5 < standstill);
+    CHECK((249.8 - length) - 242.5 >= standstill);
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 600; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // F drives on, W changes, then Z twice, within 60 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(routes[3].empty());
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
