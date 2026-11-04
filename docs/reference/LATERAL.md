@@ -182,7 +182,8 @@ Here 13.8889 m/s is 50 km/h. Below 50 km/h the value is interpolated; at or abov
   order**, as phase 2 (`resolveRequests`) does. A move is admitted only if the new body overlaps
   no published body of this tick and no move admitted before it. Here overlapping means positive area
   in both directions: touching bodies may stand side by side, unlike §6's inclusive leader test
-  (D189). A refused move keeps the previous `lateral`, and its `lateralSpeed` is 0. `lateralSpeed`
+  (D189). A refused move keeps the previous `lateral`, and its `lateralSpeed` is 0, unless the body is over a
+  lane line: then it steps back toward its lane centre by up to one step (D447, LANE_CHANGE_DURATION §4). `lateralSpeed`
   is `Δ / dt` for an admitted move.
 - **Crossing.** A span **covers** a side when it leaves the vehicle's route, its from-range holds the
   whole body (`spanHolds`, the test the instantaneous change already makes), and its target lane at

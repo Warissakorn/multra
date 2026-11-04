@@ -6,6 +6,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — A blocked body over the line steps back (D447)
+
+- **Owner:** chose D208's rule ("never waits straddling the line") over D206's BA53, which kept
+  `lateral` over the line when a car alongside blocked the move.
+- **Change:** `moveLaterally` has one step-back path, used when the move is blocked in 2D and when
+  D208 refuses the cover. A body inside its lane waits; one over the line steps back by up to one step
+  and keeps its target. This closes the review's path (b).
+- **Row:** BA53 revised failure-first. It failed on the old code (`lateral` kept) and passes after.
+- **Result:** every audit batch, off and on, is byte-identical to D446's, and so is the
+  change-duration probe. No product run reaches the case now.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-04 — Swap lock: the rear partner too close to accept yields (D446)
 
 - **Owner:** approved the plan for lateral audit Finding 3.
@@ -159,15 +171,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Added:** `u0-patch-v2.vistromerge`, in the export's own shape, with HCM 7th and a 2 m median on
   legs 318/500. UTDF_PROBE rows 18–20, utdf-real-exports, the README and NEXT are updated.
   `multra-check-docs` passes.
-
-## 2026-11-03 — U0 limits: a Vistro Merge Data patch
-
-- **Owner:** asked how to handle UTDF's limits: the import switches to right-hand, there is no
-  median, and Vistro opens imports as HCM 2010. Vistro has *File → Import → Merge Data*.
-- **Found:** the owner's Vistro network export (Visum net format 19) has `$NETWORK
-  LEFTHANDTRAFFIC`, `$NODE ICAMETHODSIGNALIZED`/`USELOCALICAMETHOD` and `$LEG HASCISLAND`/
-  `CISLANDWIDTH`/`CISLANDLEN`.
-- **Added:** `u0-patch-v1.vistromerge`, which sets left-hand and HCM 7th for node 1. `.gitattributes`
-  now covers `*.vistromerge`. UTDF_PROBE rows 18–19, UTDF_EXPORT §6 (proposed companion file),
-  the README and NEXT are updated. The median patch waits on Vistro's link numbers after import (row 19).
-- **Check:** `multra-check-docs` passes.

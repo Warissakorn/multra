@@ -156,16 +156,18 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         };
         double move = delta;
         auto body = bodyAt(move);
-        if (blocked(body)) continue;
-        if (std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral) && // outward from its lane centre only
-            !coversSafely(s, index, vehicles, refs, v, body)) {
-            // D208: it waits in its own lane, so a body already over the line steps back toward its centre.
+        // D208, and D447 for a move refused by 2D overlap: a refused move waits in its own lane, so a
+        // body already over the line steps back toward its centre by up to one step. False: no move.
+        const auto stepBack = [&] {
             const auto now = bodyAt(0);
-            if (std::all_of(now.begin(), now.end(), [](const auto& x) { return x.own; })) continue;
+            if (std::all_of(now.begin(), now.end(), [](const auto& x) { return x.own; })) return false;
             move = std::clamp(-vehicle.lateral, -step, step);
             body = bodyAt(move);
-            if (move == 0 || blocked(body)) continue;
-        }
+            return move != 0 && !blocked(body);
+        };
+        if (blocked(body)) { if (!stepBack()) continue; }
+        else if (std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral) && // outward from its lane centre only
+                 !coversSafely(s, index, vehicles, refs, v, body) && !stepBack()) continue;
         vehicle.lateral += move; vehicle.lateralSpeed = move / dt;
         moved.insert(moved.end(), body.begin(), body.end()); movedIds.push_back(vehicle.id);
         // Crossing: the centre strictly past a boundary only a covering span lets it reach.

@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — U0 limits: a Vistro Merge Data patch
+
+- **Owner:** asked how to handle UTDF's limits: the import switches to right-hand, there is no
+  median, and Vistro opens imports as HCM 2010. Vistro has *File → Import → Merge Data*.
+- **Found:** the owner's Vistro network export (Visum net format 19) has `$NETWORK
+  LEFTHANDTRAFFIC`, `$NODE ICAMETHODSIGNALIZED`/`USELOCALICAMETHOD` and `$LEG HASCISLAND`/
+  `CISLANDWIDTH`/`CISLANDLEN`.
+- **Added:** `u0-patch-v1.vistromerge`, which sets left-hand and HCM 7th for node 1. `.gitattributes`
+  now covers `*.vistromerge`. UTDF_PROBE rows 18–19, UTDF_EXPORT §6 (proposed companion file),
+  the README and NEXT are updated. The median patch waits on Vistro's link numbers after import (row 19).
+- **Check:** `multra-check-docs` passes.
+
 ## 2026-11-03 — U0 golden file committed
 
 - **Owner:** exported again from Vistro and accepted it as the golden file, `u0-vistro.csv`

@@ -78,8 +78,10 @@ the discretionary incentive and hold) and then:
   until the body leaves that lane.
 - **The crossing** remaps the route through `recordLaneChange` with the trace entry flagged
   `lateral` (D189, D203); `lateral` and `lateralTarget` are re-expressed from the new lane.
-- **A refused move waits:** `lateral` is kept and `lateralSpeed` is 0; the change is neither
-  restarted nor abandoned in this version (§9).
+- **A refused move waits in its own lane:** with its body inside its lane, `lateral` is kept and
+  `lateralSpeed` is 0. A body already over the line steps back toward its centre by up to one step
+  instead, whether the move was refused by 2D overlap or by the test below (D447, which revises
+  D206's BA53). The change is neither restarted nor abandoned in this version (§9).
 - **Waiting at the line (owner, D208).** A move outward from the own lane's centre that would put the
   body (further) over a lane line must also pass the start's safety tests on the lane it would cover
   (M3_8_CONTRACT §2 rules 3–5): no vehicle of that lane alongside the body, and the car-following

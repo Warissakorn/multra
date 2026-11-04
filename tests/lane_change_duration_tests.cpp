@@ -177,7 +177,10 @@ TEST(lanechangeduration, ba52_the_crossing_must_fall_inside_the_span_window) { /
     CHECK(segmentOf(state, *byId(state, 1)) == r.left);
 }
 
-TEST(lanechangeduration, ba53_a_refused_move_waits_and_resumes_when_the_space_is_free) { // BA53
+// D447 revises BA53: D208 says a changer never waits over the line, and that now holds for a move
+// refused by 2D overlap too. The blocked body steps back into its own lane, keeps its target, and
+// resumes once the space is free (it waited where it stood before D447).
+TEST(lanechangeduration, ba53_a_refused_move_steps_back_and_resumes_when_the_space_is_free) { // BA53, D447
     auto r = stub(keys(0, 0));
     auto state = place(r.s, {{r.left, 60, 0, 0}});
     state.vehicles[0].desiredSpeed = 0;
@@ -201,14 +204,22 @@ TEST(lanechangeduration, ba53_a_refused_move_waits_and_resumes_when_the_space_is
     // The forcing: the changer's next step would overlap the blocker.
     CHECK(3.5 + before - width < kStep);
     CHECK(!overlap2d(state));
+    CHECK(covers(state, 1, r.right)); // and its body is already over the line
     state = stepSimulation(std::move(state));
-    CHECK(byId(state, 1)->lateral == before);
-    CHECK(byId(state, 1)->lateralSpeed == 0);
+    CHECK(std::abs(byId(state, 1)->lateral) < std::abs(before)); // stepped back toward its centre
     CHECK(byId(state, 1)->lateralTarget.has_value());
-    // Freed: the blocker removed, the move resumes.
+    for (int t = 0; t < 30 && covers(state, 1, r.right); ++t) {
+        state = stepSimulation(std::move(state));
+        CHECK(!overlap2d(state));
+    }
+    CHECK(!covers(state, 1, r.right)); // back inside its own lane while the space is taken
+    CHECK(byId(state, 1)->lateralTarget.has_value());
+    CHECK(segmentOf(state, *byId(state, 1)) == r.left);
+    // Freed: the blocker removed, the move resumes outward.
+    const double waited = byId(state, 1)->lateral;
     state.vehicles.pop_back();
     state = stepSimulation(std::move(state));
-    CHECK(byId(state, 1)->lateral < before);
+    CHECK(byId(state, 1)->lateral < waited);
     CHECK(!overlap2d(state));
 }
 
