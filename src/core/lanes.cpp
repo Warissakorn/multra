@@ -425,11 +425,9 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
             yieldMutual(s, index, vehicles, refs, spans, buckets, v, *mine, holds);
         yieldMutualUnderWay(s, index, vehicles, refs, spans, buckets, v, holds); // D451
         const bool waiting = waitingAtDeadEnd(index, route, vehicle, behaviour);
-        if (!waiting) {
-            // Cooperative braking: only inside the look-ahead, once its dead end, taken as a
-            // standing obstacle, already governs its car-following (contract §2).
-            if (!cooperative || !deadEndGoverns(index, route, vehicle, type, behaviour)) continue;
-        }
+        // Cooperative braking (M3.2.8c), anywhere in the span since D455 (gap seeking, slice 1): a
+        // moving stub still a stub after this tick's changes was refused, and a follower may open a gap.
+        if (!waiting && !cooperative) continue;
         const auto* change = laneChangeTargetOf(index, route, vehicle.distance, vehicle.distance - type.length);
         if (!change) continue;
         const double at = mappedOnto(*change, vehicle.distance), atRear = at - type.length;
@@ -463,6 +461,13 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
             } else {
                 // Falls in behind the moving changer at no more than its cooperative deceleration.
                 if (!fBehaviour.maxDecelerationCooperativeBraking) continue;
+                // D455: a stub that itself needs the changer's lane is its swap partner, held by
+                // D207's rule instead, never asked here (it stood short of its own dead end).
+                if (const auto* theirs = laneChangeTargetOf(index, refs[f].route, other.distance, other.distance - fType.length)) {
+                    const auto lane = frontPart(index.parts[route], vehicle.distance).segmentIndex;
+                    const auto& to = index.parts[theirs->target];
+                    if (std::any_of(to.begin(), to.end(), [&](const auto& p) { return p.segmentIndex == lane; })) continue;
+                }
                 const double closing = other.speed - vehicle.speed;
                 if (closing > 0 && closing * closing > 2 * *fBehaviour.maxDecelerationCooperativeBraking * room) continue;
                 hold = {gap, vehicle.speed, true, vehicle.acceleration, *fBehaviour.maxDecelerationCooperativeBraking};

@@ -141,34 +141,31 @@ a planning-level method (otherwise back to the owner).
   [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md),
   [start-filter](evidence/lateral-start-filter.md)). The long m2.6 waits are signal-queue congestion
   that exists switched off too ([m26-long-waits](evidence/m26-long-waits.md)).
-  - **Deferred:** gap seeking, until M6 calibration or an explicit owner request. If it is
-    requested, extend M3.2.8c cooperative braking beyond the dead end, contract first. The
-    lane-change state machine, a no-progress timer and abandoning a change are deferred with it.
+  - **Gap seeking, slice 1 done (D455, [evidence](evidence/gap-seeking-follower.md)):** a
+    follower opens a gap for a refused stub anywhere in its span.
+    - **Deferred:** slice 2, the changer's own speed adjustment, which a dense stream needs; and
+      the lane-change state machine, a no-progress timer, and abandoning a change.
+    - **Open costs:** clamps on at ×1.0 in the weaving lab rise from 7 to 23. The cause is the
+      car-following's late braking for a dead end.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
     The +10–28 % wall cost switched on needs a profile before any work.
-- **Weaving (M3.4, D449–D454): the weave-end lock track is closed by the recommendation; next is the
-  owner's choice.** The weaving lab ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows
-  BA179–BA193) and D450–D454 ([weaving-lock](evidence/weaving-lock.md),
-  [held-change](evidence/weaving-held-change.md), [yield-cap](evidence/weaving-yield-cap.md)).
-  - **Fixed:**
-    - a swapping pair is kept while the front one closes in;
-    - no change lands where a partner waits or will wait;
-    - a change under way counts as on its target route;
-    - no courtesy goes to a change that may not land, and such a change under way claims nothing;
-    - the yielding partner brakes up to `maxDecelerationCooperativeBraking` once the front one
-      closes in.
-  - **Results:**
-    - Switched off: lock-free through ×0.8; 0/2/1 seeds of 10 lock at ×1.0.
-    - Switched on: one lock from ×0.5 to ×1.0 (×0.8, seed 50, 500 m).
-    - Product runs: unchanged but for hundredths of a second in the lane-change lab.
-  - **Left, not chased:**
-    - A stub standing short of its stop-line reach is not counted as waiting by D450 (b) (seed 50).
-    - Off ×1.0: 0/2/1, not traced.
-    - A 205 s wait on at ×1.0 (300 m).
-    - Underneath: no gap seeking. A held crossing can ride alongside same-speed traffic for 170 m.
+- **Weaving (M3.4, D449–D455): the next step is the owner's choice.** The weaving lab
+  ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA195), the weave-end lock fixes
+  D450–D454 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
+  [yield-cap](evidence/weaving-yield-cap.md)) and gap seeking slice 1 (D455,
+  [evidence](evidence/gap-seeking-follower.md)).
+  - **Results (D455):**
+    - Switched off: lock-free through ×0.8; 0/1/0 seeds of 10 lock at ×1.0.
+    - Switched on: lock-free through ×0.8; 0/1/0 at ×1.0. Mean delay at ×0.8 is 64/24/15 s.
+    - Product runs: within 0.7 %.
+  - **Left:**
+    - clamps on at ×1.0 (23): the car-following's late braking for a dead end at speed;
+    - a D450 (a) overrun (×0.4 on, seed 42, 500 m: 45 vehicles unfinished);
+    - one lock on at ×1.0.
   - **Next, the owner's choice:**
+    - gap seeking slice 2 (the changer's own speed);
+    - earlier dead-end braking (the clamps);
     - the pending owner checks (UT10, A9, canvas);
-    - gap seeking, contract first (deferred above);
     - two-entry weaves (BA179);
     - NGSIM at M6.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of

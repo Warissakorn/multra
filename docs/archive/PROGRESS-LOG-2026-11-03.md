@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — A blocked body over the line steps back (D447)
+
+- **Owner:** chose D208's rule ("never waits straddling the line") over D206's BA53, which kept
+  `lateral` over the line when a car alongside blocked the move.
+- **Change:** `moveLaterally` has one step-back path, used when the move is blocked in 2D and when
+  D208 refuses the cover. A body inside its lane waits; one over the line steps back by up to one step
+  and keeps its target. This closes the review's path (b).
+- **Row:** BA53 revised failure-first. It failed on the old code (`lateral` kept) and passes after.
+- **Result:** every audit batch, off and on, is byte-identical to D446's, and so is the
+  change-duration probe. No product run reaches the case now.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-04 — Swap lock: the rear partner too close to accept yields (D446)
 
 - **Owner:** approved the plan for lateral audit Finding 3.

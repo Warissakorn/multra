@@ -3,7 +3,7 @@
 Written 2026-11-04 (D449). The owner asked whether MULTRA simulates weaving and how other tools
 test it, and agreed to step 1: a synthetic fixture and a measurement with the lateral switch off and
 on. It is **mechanism evidence, not validation** (rule 4): the marker stays, and calibration and field
-data stay with M6. Rows BA179–BA183 (and BA184–BA193 for the lock) are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows).
+data stay with M6. Rows BA179–BA183 (BA184–BA193 for the lock, BA195 for gap seeking) are in [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows).
 Lane changing itself is [M3_8_CONTRACT](M3_8_CONTRACT.md) §2 and
 [LANE_CHANGE_DURATION](LANE_CHANGE_DURATION.md); this page changes neither.
 
@@ -118,6 +118,7 @@ run the 300 m scene alone for 450 s, so they stay quick.
   - No courtesy goes to a change that may not land, and such a change under way claims nothing.
   - The yielding partner brakes up to `maxDecelerationCooperativeBraking` once the front one closes in.
   - Locks remain switched off at ×1.0 (0–2 seeds of 10). Switched on, one lock is left from ×0.5 to ×1.0 ([evidence](../evidence/weaving-yield-cap.md)).
+- **Gap seeking, slice 1 (D455):** a follower opens a gap for a refused stub anywhere in its span. One seed of 10 locks at ×1.0, off and on ([evidence](../evidence/gap-seeking-follower.md)).
 - **No diffusion:** MULTRA never removes a stuck vehicle (M3 §4). A lock therefore shows as
   `unfinished` and a frozen last arrival, where Vissim would delete the pair after 60 s. Compare
   with Vissim only with that difference stated.

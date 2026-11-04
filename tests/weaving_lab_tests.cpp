@@ -169,3 +169,18 @@ TEST(weavinglab, ba193_the_yielding_partner_brakes_as_cooperative_braking_does) 
         CHECK(last >= 450 - 60); // still arriving in the last minute
     }
 }
+TEST(weavinglab, ba195_switched_on_a_follower_opens_a_gap_anywhere_in_the_span) {
+    // D455 (gap seeking, slice 1): a refused changer rode alongside same-speed traffic until its
+    // look-ahead. The 300 m weave alone, switched on, x0.8, seed 42, 450 s: before D455 the mean
+    // delay was 30.1 s; a follower now falls back for it anywhere in its span.
+    const auto lab = fixture::weavingLab();
+    const auto r = scene(1, 0.8, true, 42);
+    const auto& sc = lab.scenes[1];
+    double last = 0, delay = 0;
+    for (const auto& id : {sc.toMain, sc.toExit}) if (r.lastArrival.count(id)) last = std::max(last, r.lastArrival.at(id));
+    for (const auto& m : r.movements.movements) delay += m.meanDelay.value_or(0) * static_cast<double>(m.vehicles);
+    CHECK(served(r) > 0);
+    CHECK(delay / static_cast<double>(served(r)) < 20);
+    CHECK(r.removed == 0 && !r.overlap);
+    CHECK(last >= 450 - 60);
+}

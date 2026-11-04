@@ -323,6 +323,33 @@ parameter (2026-10-01).
 - Vissim also has a cooperative lane change, in which a vehicle moves out of the way. That is not
   modelled.
 
+**Gap seeking, slice 1: help anywhere in the span (D455).** The owner asked for gap seeking
+(2026-11-04) and chose the follower's slice. "Who needs help" above drops the look-ahead.
+
+- **Who needs help now:** any stub vehicle that is not waiting, is wholly inside a span with a
+  target, and is still a stub after this tick's changes, so its change was refused.
+  - D452 and D453 still exclude a change whose landing D450 (b) refuses.
+- **Who is not asked:** a stub that itself needs the changer's lane. That is the changer's swap
+  partner, and D207's rule holds it.
+  - Asked as an ordinary follower, it stood short of its own dead end, where (b) does not count
+    it, and the pair locked. Two weaves run alone locked this way in scratch.
+- **Unchanged otherwise:** who helps, how, the cap and the closing-speed test. The waiting rule is unchanged.
+  A behaviour without the key does not help, and the help is stateless.
+- **Why:**
+  - A changer refused for lack of a gap drove alongside same-speed traffic for as long as 170 m.
+    Help arrived only inside its look-ahead (about 50 m at 10 m/s), by when its partners waited at
+    the dead end (weaving lab, D451–D454).
+  - SUMO's LC2013 has followers adjust their speed for a blocked strategic change
+    (`lcCooperativeSpeed`).
+  - Vissim's "advanced merging" gives the merging vehicle and its cooperating trailing vehicles an
+    earlier look-ahead.
+  - Both are known here from secondary sources only (the [evidence](../evidence/gap-seeking-follower.md)).
+- **Rows:** acceptance row A38 is revised. A refused stub far from its dead end now gets a helper.
+  Rows BA194–BA195 are added.
+- **Still deferred:**
+  - the changer's own speed adjustment, to line up with a gap (slice 2);
+  - the lane-change state machine, a no-progress timer, and abandoning a change.
+
 ### Downstream routing decisions (M3.2.8c, D93 — implemented 2026-10-01; tests green in Linux CI since PR #84)
 
 The owner's ruling (2026-10-01): a routing decision placed on a Link **D** downstream of the
