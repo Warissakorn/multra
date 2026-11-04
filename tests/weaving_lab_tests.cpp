@@ -155,3 +155,17 @@ TEST(weavinglab, ba191_switched_on_a_held_change_that_may_not_land_claims_nothin
     CHECK(r.removed == 0 && !r.overlap);
     CHECK(last >= 450 - 60); // still arriving in the last minute
 }
+TEST(weavinglab, ba193_the_yielding_partner_brakes_as_cooperative_braking_does) {
+    // D454: a front stub stopping hard at its dead end left its rear partner, capped at comfortable
+    // braking, inside the standstill distance, and the pair locked. Before D454 nothing arrived
+    // after 82.9 s (150 m, off) and 152.5 s (300 m, on); x0.8, 450 s each.
+    const auto lab = fixture::weavingLab();
+    for (const auto& [k, lateral, seed] : {std::tuple<std::size_t, bool, std::uint32_t>{0, false, 47}, {1, true, 51}}) {
+        const auto r = scene(k, 0.8, lateral, seed);
+        const auto& sc = lab.scenes[k];
+        double last = 0;
+        for (const auto& id : {sc.toMain, sc.toExit}) if (r.lastArrival.count(id)) last = std::max(last, r.lastArrival.at(id));
+        CHECK(r.removed == 0 && !r.overlap);
+        CHECK(last >= 450 - 60); // still arriving in the last minute
+    }
+}

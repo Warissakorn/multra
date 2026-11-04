@@ -60,8 +60,11 @@ void yieldMutualAs(const Scenario& s, const ScenarioIndex& index, const std::vec
             if (!theirs) continue;
             const auto& to = index.parts[theirs->target];
             if (std::none_of(to.begin(), to.end(), [&](const auto& p) { return p.segmentIndex == lane; })) continue;
-            const CourtesyHold hold{atRear - yFront, front.speed, true, front.acceleration,
-                                    s.vehicleTypes[refs[y].type].comfortableDeceleration};
+            // D454: once x closes in, y brakes as cooperative braking does (M3.2.8c), never less than comfortably.
+            double cap = s.vehicleTypes[refs[y].type].comfortableDeceleration;
+            if (const auto& cooperative = s.behaviours[refs[y].behaviour].maxDecelerationCooperativeBraking; closing && cooperative)
+                cap = std::max(cap, *cooperative);
+            const CourtesyHold hold{atRear - yFront, front.speed, true, front.acceleration, cap};
             if (hold.gap < holds[y].gap) holds[y] = hold;
         }
 }

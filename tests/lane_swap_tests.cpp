@@ -325,3 +325,27 @@ TEST(laneswap, ba190_switched_on_a_held_change_that_may_not_land_claims_nothing)
     CHECK(clamps == 0);
     CHECK(!overlap);
 }
+
+// D454 (BA192): the yielding partner may brake as cooperative braking does. The front stub reaches
+// its dead end fast and stops harder than comfortable; the rear partner, capped at comfortable
+// braking, stood inside the standstill distance behind its target place, and neither ever changed
+// (weaving lab, the 300 m weave, x0.6, seed 49). It now brakes up to maxDecelerationCooperativeBraking.
+TEST(laneswap, ba192_the_yielding_partner_brakes_as_cooperative_braking_does) {
+    const auto r = swap(keys(0, 0));
+    auto state = put(r.s, {{"A-stub", 230, 10}, {"B-stub", 223, 12}});
+    // The forcing: the front one is inside its look-ahead, and stopping by its dead end needs more
+    // than comfortable braking; the behaviour carries the key.
+    const auto& x = *byId(state, 1);
+    const auto& type = state.scenario->vehicleTypes[x.typeIndex];
+    const auto& behaviour = state.scenario->behaviours.front();
+    CHECK(deadEndGoverns(*state.index, x.routeIndex, x, type, behaviour));
+    CHECK(10.0 * 10.0 / (2 * (250 - 230)) > type.comfortableDeceleration);
+    CHECK(behaviour.maxDecelerationCooperativeBraking.has_value());
+    int clamps = 0;
+    for (int k = 0; k < 600; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+    }
+    CHECK(state.vehicles.empty()); // both reached their full routes and arrived within 60 s
+    CHECK(clamps == 0);
+}

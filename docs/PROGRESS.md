@@ -6,6 +6,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — The yielding partner brakes as cooperative braking does (D454)
+
+- **Owner:** asked for a recommendation, then "do D454".
+- **Cause** ([weaving-yield-cap](evidence/weaving-yield-cap.md)): a front stub reaching its dead end
+  fast stops harder than comfortable. Its rear partner, capped at comfortable braking, stood inside
+  the standstill distance, and the pair locked. This was P2b, and the off ×1.0 remainder.
+- **D454 (M3_8_CONTRACT §2, D450 (a) revised):** once the front one closes in, the rear partner
+  brakes up to `maxDecelerationCooperativeBraking` (M3.2.8c's key, 3 m/s²). No new parameter.
+- **Rows:** BA192 and BA193, both failure-first.
+- **Results:**
+  - Product runs are identical except the lane-change lab on (delay −0.00005 s, clamps 0).
+  - Lab on: one lock is left from ×0.5 to ×1.0 (seed 50, 500 m).
+  - Lab off at ×1.0: 0/2/1 (from 0/3/2).
+  - Cost: a 205 s wait on at ×1.0.
+- **Track:** the weave-end lock track is closed by the recommendation. The leftovers are in NEXT.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — A change under way that may not land claims nothing (D453)
 
 - **Owner:** "trace P2a first", then "do B+C+E as D453".
@@ -162,26 +179,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Row:** BA53 revised failure-first. It failed on the old code (`lateral` kept) and passes after.
 - **Result:** every audit batch, off and on, is byte-identical to D446's, and so is the
   change-duration probe. No product run reaches the case now.
-- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
-
-## 2026-11-04 — Swap lock: the rear partner too close to accept yields (D446)
-
-- **Owner:** approved the plan for lateral audit Finding 3.
-- **Cause (lab seed 49, vehicles 83/88):** a swapping pair. Both starts were accepted at low speed,
-  then D208's covering test refused each body over the line because the other was too close. D207's
-  partner test ends at the standstill distance (2 m), and the rear one was just beyond it, so nobody
-  yielded. The pair rode side by side for about 50 s. Refusing the second start would not have
-  helped.
-- **Change:**
-  - While a change is under way, the D207 partner also covers a rear stub that would not accept the
-    changer as its leader.
-  - `acceptsAsLeader` is the one follower test, shared by D208 and D207.
-  - `yieldMutual` moves to the new `lane_swap.cpp`: `lanes.cpp` was at 496 lines.
-- **Row:** BA161 failed before the fix (the pair crossed only at 14.7 s) and passes after.
-- **Result:**
-  - Switched off, every batch is unchanged.
-  - Switched on, completed trips and clamps are unchanged.
-  - Lab changes over 8 s fall from 36 to 27, and the lab pair now crosses 1.7 s after starting.
-  - Residue: a changer alongside a car that is not changing, at a similar speed, still waits (lab
-    seed 49, vehicle 580, 36 s). That is the gap-seeking case, not a swap.
 - **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.

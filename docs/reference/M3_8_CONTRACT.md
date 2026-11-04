@@ -215,8 +215,15 @@ nobody can yield, and nothing is removed (M3 §4).
   look-ahead, `deadEndGoverns`) or waits there, Y stays X's partner at any distance behind X's
   target place. Before, Y dropped out whenever it fell more than its standstill distance behind.
   Once X stood, Y drove back up into that distance and stood there, and each refused the other.
-  The yield itself is unchanged: a moving obstacle at X's speed, braking no harder than comfortable.
-  While Y is still free of the place, its acceleration is unchanged.
+  The yield itself is a moving obstacle at X's speed. While Y is still free of the place, its
+  acceleration is unchanged.
+  - **Its braking (D454):** once X closes in, Y brakes up to the larger of its comfortable
+    deceleration and its behaviour's `maxDecelerationCooperativeBraking` (M3.2.8c below). Before
+    that, and for a behaviour without the key, it brakes no harder than comfortable.
+  - **Why (D454):** an X that reaches its dead end fast stops harder than comfortable. Y, capped at
+    comfortable, then stood inside the standstill distance, and the pair locked (lab ×0.6, seed 49).
+    The key is the help a target-lane vehicle already gives a stub, so Y is asked for no more. Rows
+    BA192–BA193.
 - **(b) A change does not land in a waiting partner's place.** A mandatory change onto a route that
   is still a stub is refused when the changer's body on the landing lane would lie inside the target
   place of a stub W on its next target lane, widened by W's standstill distance on both sides. W

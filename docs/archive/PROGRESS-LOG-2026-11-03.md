@@ -2,6 +2,28 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Swap lock: the rear partner too close to accept yields (D446)
+
+- **Owner:** approved the plan for lateral audit Finding 3.
+- **Cause (lab seed 49, vehicles 83/88):** a swapping pair. Both starts were accepted at low speed,
+  then D208's covering test refused each body over the line because the other was too close. D207's
+  partner test ends at the standstill distance (2 m), and the rear one was just beyond it, so nobody
+  yielded. The pair rode side by side for about 50 s. Refusing the second start would not have
+  helped.
+- **Change:**
+  - While a change is under way, the D207 partner also covers a rear stub that would not accept the
+    changer as its leader.
+  - `acceptsAsLeader` is the one follower test, shared by D208 and D207.
+  - `yieldMutual` moves to the new `lane_swap.cpp`: `lanes.cpp` was at 496 lines.
+- **Row:** BA161 failed before the fix (the pair crossed only at 14.7 s) and passes after.
+- **Result:**
+  - Switched off, every batch is unchanged.
+  - Switched on, completed trips and clamps are unchanged.
+  - Lab changes over 8 s fall from 36 to 27, and the lab pair now crosses 1.7 s after starting.
+  - Residue: a changer alongside a car that is not changing, at a similar speed, still waits (lab
+    seed 49, vehicle 580, 36 s). That is the gap-seeking case, not a swap.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-04 — Straddler searched a covered lane's next section from its start (D445)
 
 - **Owner:** "ทำเลย": lateral audit Finding 2, reproduced before any change.
