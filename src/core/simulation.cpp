@@ -466,7 +466,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             ++next.completed;
             events.emplace_back(ArrivedEvent{time, vehicle.id, scenario.routes[moved.routeIndex].id,
                 time - vehicle.enteredTime,
-                vehicle.enteredTime - vehicle.scheduledTime, freeFlowTime(moved, routeLength)});
+                vehicle.enteredTime - vehicle.scheduledTime, freeFlowTime(moved, routeLength, scenario.routes[moved.routeIndex].leadIn)});
         } else {
             const auto location = locateOnParts(parts, moved);
             next.vehicles.push_back(std::move(moved));

@@ -165,6 +165,38 @@
         "startTime": 0.0,
         "vehicleTypeId": "car",
         "vehiclesPerHour": 560.0
+      },
+      {
+        "endTime": 600.0,
+        "id": "input-74",
+        "routeId": "route-70",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 2100.0
+      },
+      {
+        "endTime": 600.0,
+        "id": "input-75",
+        "routeId": "route-71",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 900.0
+      },
+      {
+        "endTime": 600.0,
+        "id": "input-76",
+        "routeId": "route-72",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 240.0
+      },
+      {
+        "endTime": 600.0,
+        "id": "input-77",
+        "routeId": "route-73",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 560.0
       }
     ],
     "routes": [
@@ -214,6 +246,46 @@
           "link-35",
           "connector-44",
           "link-39"
+        ]
+      },
+      {
+        "id": "route-70",
+        "segmentIds": [
+          "link-52",
+          "connector-66",
+          "link-57",
+          "connector-69",
+          "link-63"
+        ]
+      },
+      {
+        "id": "route-71",
+        "segmentIds": [
+          "link-52",
+          "connector-66",
+          "link-57",
+          "connector-68",
+          "link-61"
+        ]
+      },
+      {
+        "id": "route-72",
+        "segmentIds": [
+          "link-55",
+          "connector-67",
+          "link-57",
+          "connector-69",
+          "link-63"
+        ]
+      },
+      {
+        "id": "route-73",
+        "segmentIds": [
+          "link-55",
+          "connector-67",
+          "link-57",
+          "connector-68",
+          "link-61"
         ]
       }
     ],
@@ -466,6 +538,170 @@
         "to": {
           "laneId": "lane-42",
           "linkId": "link-41"
+        },
+        "toLaneCount": 2
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-53",
+          "linkId": "link-52"
+        },
+        "fromLaneCount": 2,
+        "geometry": [
+          {
+            "x": 300.0,
+            "y": -180.0
+          },
+          {
+            "x": 305.0,
+            "y": -180.0
+          },
+          {
+            "x": 310.0,
+            "y": -180.0
+          },
+          {
+            "x": 315.0,
+            "y": -180.0
+          },
+          {
+            "x": 320.0,
+            "y": -180.0
+          }
+        ],
+        "id": "connector-66",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "Two-entry 300 m mainline on",
+        "to": {
+          "laneId": "lane-59",
+          "linkId": "link-57"
+        },
+        "toLaneCount": 2
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-56",
+          "linkId": "link-55"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 300.0,
+            "y": -173.0
+          },
+          {
+            "x": 305.0428490746297,
+            "y": -173.546875
+          },
+          {
+            "x": 310.0,
+            "y": -174.75
+          },
+          {
+            "x": 314.9571509253703,
+            "y": -175.953125
+          },
+          {
+            "x": 320.0,
+            "y": -176.5
+          }
+        ],
+        "id": "connector-67",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "Two-entry 300 m ramp on",
+        "to": {
+          "laneId": "lane-58",
+          "linkId": "link-57"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-58",
+          "linkId": "link-57"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 620.0,
+            "y": -176.5
+          },
+          {
+            "x": 625.0428490746298,
+            "y": -175.953125
+          },
+          {
+            "x": 630.0,
+            "y": -174.75
+          },
+          {
+            "x": 634.9571509253703,
+            "y": -173.546875
+          },
+          {
+            "x": 640.0,
+            "y": -173.0
+          }
+        ],
+        "id": "connector-68",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "Two-entry 300 m to exit",
+        "to": {
+          "laneId": "lane-62",
+          "linkId": "link-61"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-59",
+          "linkId": "link-57"
+        },
+        "fromLaneCount": 2,
+        "geometry": [
+          {
+            "x": 620.0,
+            "y": -180.0
+          },
+          {
+            "x": 625.0,
+            "y": -180.0
+          },
+          {
+            "x": 630.0,
+            "y": -180.0
+          },
+          {
+            "x": 635.0,
+            "y": -180.0
+          },
+          {
+            "x": 640.0,
+            "y": -180.0
+          }
+        ],
+        "id": "connector-69",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "Two-entry 300 m to mainline",
+        "to": {
+          "laneId": "lane-64",
+          "linkId": "link-63"
         },
         "toLaneCount": 2
       }
@@ -724,11 +960,147 @@
         ],
         "level": 0,
         "name": "Weave 500 m mainline"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 0.0,
+            "y": -181.75
+          },
+          {
+            "x": 300.0,
+            "y": -181.75
+          }
+        ],
+        "id": "link-52",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-53",
+            "width": 3.5
+          },
+          {
+            "id": "lane-54",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Two-entry 300 m mainline approach"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 0.0,
+            "y": -173.0
+          },
+          {
+            "x": 300.0,
+            "y": -173.0
+          }
+        ],
+        "id": "link-55",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-56",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Two-entry 300 m ramp"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 320.0,
+            "y": -180.0
+          },
+          {
+            "x": 620.0,
+            "y": -180.0
+          }
+        ],
+        "id": "link-57",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-58",
+            "width": 3.5
+          },
+          {
+            "id": "lane-59",
+            "width": 3.5
+          },
+          {
+            "id": "lane-60",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Two-entry 300 m weave"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 640.0,
+            "y": -173.0
+          },
+          {
+            "x": 940.0,
+            "y": -173.0
+          }
+        ],
+        "id": "link-61",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-62",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Two-entry 300 m exit"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 640.0,
+            "y": -181.75
+          },
+          {
+            "x": 940.0,
+            "y": -181.75
+          }
+        ],
+        "id": "link-63",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-64",
+            "width": 3.5
+          },
+          {
+            "id": "lane-65",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Two-entry 300 m mainline"
       }
     ],
     "signalHeads": []
   },
-  "nextId": 52,
+  "nextId": 78,
   "revision": 0,
   "schemaVersion": 17
 }

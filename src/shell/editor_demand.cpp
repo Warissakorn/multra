@@ -135,7 +135,7 @@ void EditorWindow::refreshDemand() {
             // The split is laneSplit's, the compiler's own rule, so weights show as they are set.
             std::vector<std::size_t> chainLanes;std::size_t shareCount=0;
             for(const auto& r:def.routes)if(r.id==i.routeId) {
-                for(const auto& c:routeLaneFamily(history_.document().network,r.segmentIds))chainLanes.push_back(c.lane);
+                for(const auto& c:routeLaneFamily(history_.document().network,r.segmentIds))if(!c.joined)chainLanes.push_back(c.lane); // D459
                 shareCount=routeLaneShareCount(history_.document().network,r.segmentIds);
             }
             // M2.1.1: a routeless input names its Link, and splits across that Link's lanes.

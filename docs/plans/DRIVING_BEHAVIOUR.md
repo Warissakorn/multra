@@ -231,7 +231,7 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA160 | A straddler level with the first of two sections of the lane it covers; a car at the second section's start (D445) | Its leader is that car at the true gap, not 0; no clamp |
 | BA162 | A stub at its dead end where the window ends at a join; a car on the far lane leaning into the target lane's far edge alongside (D448) | The start is accepted, as it is 1 m short of the join |
 | BA161 | Switched on, a swapping pair whose rear one is beyond its standstill distance but too close to accept the front one (D446) | The rear one yields; both cross within 8 s; no clamp, no 2D overlap, no braking beyond comfortable |
-| BA179 | The weaving lab compiled ([WEAVING_FIXTURE](../reference/WEAVING_FIXTURE.md), D449); and the same weave drawn with two entry Links | Each scene: stubs only on the crossing lanes, dead ends at the weave's end, origins by entry lane. The two-entry drawing refuses the two crossing routes (`UNSUPPORTED_ROUTE_TOPOLOGY`; pinned limitation) |
+| BA179 | The weaving lab compiled ([WEAVING_FIXTURE](../reference/WEAVING_FIXTURE.md), D449); and the same weave drawn with two entry Links | Each scene: stubs only on the crossing lanes, dead ends at the weave's end, origins by entry lane. The two-entry drawing compiles since D459: each crossing movement gets a joined chain on the weave, with a lead-in (before D459: `UNSUPPORTED_ROUTE_TOPOLOGY` on both, a pinned limitation) |
 | BA180 | The 300 m weave, switched off, demand ×0.6, 450 s; weaving vehicles change (D449) | No vehicle removed, no 2D overlap, no clamp; what is left is only what was still on its way |
 | BA181 | The same, switched on (audit keys) (D449) | No vehicle removed, no 2D overlap; what is left is only what was still on its way |
 | BA182 | The same run twice, off and on (D449) | Identical movement and lane-change reports and arrival times |
@@ -258,6 +258,9 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA203 | Lab scene 4, keep-left, alone, seed 42, 300 s, with and without `kerbLaneBias` | Cars, heavy vehicles and motorcycles each spend a larger share of time in the kerb lane with the bias; no 2D overlap, no removal, no clamp |
 | BA204 | Gap seeking, slice 2 (D458), switched on: a stub car at 10 m/s in a 10 m/s target-lane stream, 1.5 m behind the rear of the car ahead there; the car behind leaves room | It falls back behind that car, braking comfortably at most, and gets in before 205 m; no clamp, no 2D overlap. Before: 218 m |
 | BA205 | The 150 m weave alone, switched on, ×1.0, seed 42, 450 s (D458) | At least 370 served and mean delay below 50 s; no clamp, no removal, no 2D overlap. Before: 295 served, 83.0 s |
+| BA206 | The weaving lab and the four-leg, compiled (D459) | Two joined chains, both the two-entry weave's; no input enters one; every other route has no lead-in |
+| BA207 | Scene 4's ramp movements alone, seed 42, 300 s (D459) | Ramp → mainline trips, ending on a joined chain, count a free-flow length within 5 m of ramp → exit's (about 940 m). Before: the joined route's 620 m |
+| BA208 | Scene 4, the two-entry weave, alone, ×0.6, off and on, seed 42, 450 s (D459) | All four movements still arrive in the last minute; no clamp, no removal, no 2D overlap. Before the rear check saw the feeding segments: a ramp car was clamped at the gore |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

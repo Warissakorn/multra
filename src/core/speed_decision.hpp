@@ -14,6 +14,6 @@ inline double speedInForce(const Vehicle& v) { return v.areaSpeed > 0 && v.areaS
 // §3: the vehicle's place in its type's range: kept once taken, else read from its desired speed.
 double quantileOf(const Vehicle&, const VehicleType&);
 // §4: the trip's free-flow time; routeLength / desiredSpeed exactly when no decision was passed.
-double freeFlowTime(const Vehicle&, double routeLength);
+double freeFlowTime(const Vehicle&, double routeLength, double leadIn = 0);
 std::vector<ValidationIssue> speedDecisionIssues(const Scenario&);
 }

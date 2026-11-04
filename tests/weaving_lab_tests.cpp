@@ -27,7 +27,7 @@ const auto kData = test::root() / "data";
 sweep::WeavingRun scene(std::size_t k, double factor, bool lateral, std::uint32_t seed = 42) {
     const auto lab = fixture::weavingLab();
     const auto& sc = lab.scenes[k];
-    return sweep::runWeaving(lab.document, kData, seed, {factor, lateral, {sc.toMain, sc.toExit}, 450.0});
+    return sweep::runWeaving(lab.document, kData, seed, {factor, lateral, sc.routes(), 450.0});
 }
 sweep::WeavingRun middle(double factor, bool lateral, std::uint32_t seed = 42) { return scene(1, factor, lateral, seed); }
 std::uint64_t served(const sweep::WeavingRun& r) { std::uint64_t n = 0; for (const auto& m : r.movements.movements) n += m.vehicles; return n; }
@@ -44,7 +44,8 @@ TEST(weavinglab, ba179_each_weave_compiles_to_one_crossing_per_weaving_movement)
     const auto s = compileDocument(lab.document, kData).scenario;
     CHECK(validateScenario(s).empty());
     CHECK(s.conflictZones.empty()); // a weave is lane changing alone: nothing crosses or merges
-    for (const auto& sc : lab.scenes) {
+    for (std::size_t k = 0; k < 3; ++k) { // the three edge weaves; the two-entry one is BA208
+        const auto& sc = lab.scenes[k];
         // The forcing: lane 0 reaches only the exit, lanes 1-2 only the mainline.
         std::map<std::string, double> deadEnd;
         for (const auto& d : s.routeDeadEnds) deadEnd[d.routeId] = d.at;
@@ -70,14 +71,70 @@ TEST(weavinglab, ba179_each_weave_compiles_to_one_crossing_per_weaving_movement)
         CHECK(std::abs(volume[exit(2)] + volume[exit(3)] - fixture::kMainExit) < 1e-6);
     }
 }
-TEST(weavinglab, ba179_a_weave_with_two_entries_does_not_run) {
-    // The limitation the lab's shape works around (M3_8_CONTRACT §2): a change is compiled only on
-    // a route's entry Link, so the two crossing movements have no lane path. A fix shows up here.
-    const auto two = fixture::weavingTwoEntries();
-    const auto issues = routeRuntimeIssues(two.network, *two.definition);
-    std::vector<std::string> paths;
-    for (const auto& i : issues) if (i.code == "UNSUPPORTED_ROUTE_TOPOLOGY") paths.push_back(i.path);
-    CHECK(paths == std::vector<std::string>({"routes[1]", "routes[2]"})); // main-exit and ramp-main
+TEST(weavinglab, ba179_a_weave_with_two_entries_compiles) { // revised by D459
+    // Before D459 a change was compiled only from chains on a route's entry Link, so the two crossing
+    // movements had no lane path (UNSUPPORTED_ROUTE_TOPOLOGY on routes[1] and routes[2]). Now each
+    // gets a joined chain on the weave, next to the stub that needs it.
+    auto two = fixture::weavingTwoEntries();
+    CHECK(routeRuntimeIssues(two.network, *two.definition).empty());
+    for (const char* r : {"main-main", "main-exit", "ramp-main", "ramp-exit"}) putInput(two, {"", r, "car", 300, 0, 600, {}});
+    const auto s = compileDocument(two, kData).scenario;
+    CHECK(validateScenario(s).empty());
+    std::map<std::string, double> leadIn;
+    for (const auto& r : s.routes) leadIn[r.id] = r.leadIn;
+    CHECK(leadIn.count("main-exit/lane-3") && leadIn.at("main-exit/lane-3") > 300); // starts on the weave
+    CHECK(leadIn.count("ramp-main/lane-2") && leadIn.at("ramp-main/lane-2") > 300);
+    std::set<std::string> to;
+    for (const auto& c : s.laneChanges) if (c.fromRouteId == "ramp-main/lane-1") to.insert(c.toRouteId);
+    CHECK(to == std::set<std::string>{"ramp-main/lane-2"});
+}
+TEST(weavinglab, ba206_a_joined_chain_takes_no_input_and_ordinary_routes_are_unchanged) { // D459
+    const auto lab = fixture::weavingLab();
+    const auto s = compileDocument(lab.document, kData).scenario;
+    std::set<std::string> joined;
+    for (const auto& r : s.routes) if (r.leadIn > 0) joined.insert(r.id);
+    CHECK(joined.size() == 2); // one per crossing movement of the two-entry weave
+    for (const auto& i : s.inputs) CHECK(!joined.count(i.routeId));
+    // Every route of the three edge weaves, and of another shipped project, has no lead-in.
+    std::ifstream f(test::root() / "data/projects/four-leg-signalised.traffic.json"); Json j; f >> j;
+    for (const auto& r : compileDocument(parseDocument(j), kData).scenario.routes) CHECK(r.leadIn == 0);
+}
+TEST(weavinglab, ba207_a_trip_ending_on_a_joined_chain_counts_its_whole_path_free_flow) { // D459
+    // Ramp -> mainline ends on a chain that starts on the weave (620 m of route), but its path from
+    // the ramp is as long as ramp -> exit's (940 m). Before D459 its free-flow time counted 620 m.
+    const auto lab = fixture::weavingLab();
+    const auto& sc = lab.scenes[3];
+    auto snapshot = compileDocument(lab.document, kData);
+    auto& inputs = snapshot.scenario.inputs;
+    std::erase_if(inputs, [&](const auto& i) { const auto r = sweep::authoredRoute(i.routeId); return r != sc.rampMain && r != sc.rampExit; });
+    snapshot.scenario.duration = 300;
+    for (auto& i : inputs) i.endTime = std::min(i.endTime, 300.0);
+    auto state = createSimulation(snapshot.scenario, 42);
+    std::map<std::string, std::pair<double, int>> ratio; // authored route -> (sum of free-flow x desired speed, count)
+    std::map<std::uint64_t, double> desired;
+    while (state.tick < totalTicks(snapshot.scenario)) {
+        for (const auto& v : state.vehicles) desired[v.id] = v.desiredSpeed;
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events)
+            if (const auto* a = std::get_if<ArrivedEvent>(&e)) {
+                auto& [sum, n] = ratio[sweep::authoredRoute(a->routeId)];
+                sum += a->freeFlowTime * desired.at(a->vehicleId); ++n; // the free-flow length
+            }
+    }
+    const auto length = [&](const std::string& r) { return ratio.at(r).first / ratio.at(r).second; };
+    CHECK(ratio.count(sc.rampMain) && ratio.count(sc.rampExit));
+    CHECK(std::abs(length(sc.rampMain) - length(sc.rampExit)) < 5); // both about 940 m (before: 620 m)
+}
+TEST(weavinglab, ba208_the_two_entry_weave_serves_off_and_on) { // D459
+    const auto lab = fixture::weavingLab();
+    const auto& sc = lab.scenes[3];
+    for (const bool lateral : {false, true}) {
+        const auto r = scene(3, 0.6, lateral, 42);
+        std::set<std::string> served;
+        for (const auto& id : sc.routes()) if (r.lastArrival.count(id) && r.lastArrival.at(id) >= 450 - 60) served.insert(id);
+        CHECK(served.size() == 4); // every movement, crossing ones too, still arriving in the last minute
+        CHECK(r.movements.safetyClamps == 0 && r.removed == 0 && !r.overlap);
+    }
 }
 TEST(weavinglab, ba180_switched_off_below_breakdown_every_vehicle_is_served_or_counted) {
     const auto r = middle(0.6, false);

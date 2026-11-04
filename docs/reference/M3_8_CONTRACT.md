@@ -117,6 +117,19 @@ every left-turner of an M2.6 approach appeared in the kerb lane at the network e
   is a change a vehicle can make there. Any other stub is not emitted, and its lane gets no share
   of that family, which is the pre-M3.2.8b behaviour. A stub that still ends up with no span is
   refused by core validation (`LANE_CHANGE_DEAD_END_UNREACHABLE`) rather than losing its volume.
+- **A joined chain (D459)** starts on a later Link's lane that no chain of the family enters, and
+  follows the family's remaining objects.
+  - **When it is kept:** a stub that the rule above does not keep, and that stops on that Link, is
+    kept when neighbouring lanes there lead to a full chain. A joined chain is kept only when such a
+    run uses it.
+  - **No input:** it has no first-Link lane, so no input enters it. Vehicles reach it only by
+    changing onto it.
+  - **Free-flow time:** its route carries a lead-in, the distance before its first Link, which the
+    trip's free-flow time counts.
+  - **Rear check:** a change onto it also sees vehicles on the segments feeding its first segment,
+    such as the ramp at a gore.
+  - **Scope:** this is what lets a weave drawn with two entries run. Downstream routing decisions
+    (D93) never build one.
 - The core gets spans and dead ends as data (`ScenarioDefinition::laneChanges`,
   `::routeDeadEnds`, filled by the compile step next to the routes they join). It never sees
   geometry, lanes or Links. Neither is in the project file.

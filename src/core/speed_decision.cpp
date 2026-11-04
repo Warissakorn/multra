@@ -43,8 +43,10 @@ double quantileOf(const Vehicle& v, const VehicleType& type) {
     if (v.desiredQuantile >= 0) return v.desiredQuantile;
     return shareOf(type.desiredSpeed, v.desiredSpeed); // the curve's share (B-5, D229)
 }
-double freeFlowTime(const Vehicle& v, double routeLength) {
-    if (v.desiredQuantile < 0) return routeLength / v.desiredSpeed;
+double freeFlowTime(const Vehicle& v, double routeLength, double leadIn) {
+    // D459: the plain form counts a joined route's lead-in; the piecewise one already carries it
+    // across a change (freeFlowFrom, D223).
+    if (v.desiredQuantile < 0) return (leadIn > 0 ? routeLength + leadIn : routeLength) / v.desiredSpeed;
     return v.freeFlowSoFar + (routeLength - v.freeFlowFrom) / speedInForce(v);
 }
 std::vector<ValidationIssue> speedDecisionIssues(const Scenario& s) {

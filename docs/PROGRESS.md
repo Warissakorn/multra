@@ -6,6 +6,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — Two-entry weaves run (D459)
+
+- **Owner:** "ทำให้วาด weave แบบสองทางเข้าได้", with the test as a fourth weaving-lab scene.
+- **Cause:** a lane family kept a stub only beside a full chain on its first Link, so a weave drawn
+  with two entries refused both crossing movements (BA179).
+- **D459 (M3_8_CONTRACT §2):** a family may start a **joined chain** on a later Link's lane that no
+  chain enters, kept only beside a stub that needs it.
+  - It takes no input share.
+  - Its route carries `leadIn`, which the free-flow time counts.
+  - A change onto it also sees the segments feeding its first segment. Without this, a ramp car at
+    the gore was clamped.
+  - Downstream routing decisions (D93) never build one.
+- **Weaving lab, scene 4:** the 300 m weave with a 2-lane mainline and a 1-lane ramp, each with a
+  300 m approach, at the same volumes. Scenes 1–3 are unchanged.
+- **Rows:** BA179 revised; BA206–BA208.
+- **Results** ([evidence](evidence/weaving-two-entries.md)):
+  - products and the lateral lab are byte-identical;
+  - scene 4 has no clamp at ×0.6–1.0, off and on;
+  - the sweep table follows.
+- **Verified:** `ctest --preset headless` passes 176/176.
+
 ## 2026-11-04 — Gap seeking, slice 2: the changer falls back behind its blocker (D458)
 
 - **Owner:** "ทำต่อ". Shown both variants measured, the owner chose "switched on only".
@@ -185,25 +206,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - The lab switched off is lock-free through ×0.6 (×0.4 before). Locks remain at ×0.8+ and
     switched on.
   - Two experiments, not kept, are in the evidence. Harder yield braking is the owner's choice.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — Weaving lab, step 1: fixture and off/on sweep (D449)
-
-- **Owner:** asked how other tools test weaving, then agreed to step 1: a synthetic fixture and an
-  off/on measurement, contract first ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md)).
-- **Built:**
-  - `data/projects/weaving-lab.traffic.json`, from `tools/weaving_network.hpp`, regenerated with
-    `multra-weaving-fixture`: three Type A weaves of 150, 300 and 500 m;
-  - `multra-weaving-sweep`;
-  - rows BA179–BA183 in `weavinglab`.
-  No engine or schema change.
-- **Found** ([evidence](evidence/weaving-lab.md)):
-  - A weave with two entry Links does not compile its crossing routes, because a change is
-    compiled only on the entry Link. So the lab starts the weave at the network edge.
-  - **The weave end locks for good** once the two lane heads stand short of each other's gap, since
-    nothing is removed (M3 §4). The weave is lock-free through ×0.4. Locks begin at ×0.5. At ×1.0
-    every seed of the 150 and 300 m weaves locks, off and on. Switched on locks earlier.
-  - BA183 pins the lock as open.
-- **Also:** the shipped-project tests count five files (SP1), and N1, MA1, NA8 and the Meso check
-  include the lab.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

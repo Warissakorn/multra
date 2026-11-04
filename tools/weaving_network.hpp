@@ -1,6 +1,6 @@
 #pragma once
 // The weaving lab (D449, docs/reference/WEAVING_FIXTURE.md): three Type A weaving sections of 150,
-// 300 and 500 m, each its own scene. A development bed and acceptance fixture for the mechanism,
+// 300 and 500 m, each its own scene, and since D459 a fourth: the 300 m weave with two entries. A development bed and acceptance fixture for the mechanism,
 // like the lane-change lab (D98): built through the editor's own commands, committed as
 // data/projects/weaving-lab.traffic.json, and `weavinglab` checks the file is this builder's
 // output. Regenerate with multra-weaving-fixture, never by hand.
@@ -27,11 +27,17 @@ namespace multra::fixture {
 struct WeavingScene {
     double length{};
     std::string weave, exitOut, mainOut; // Links
-    std::string toMain, toExit;          // routes
+    std::string toMain, toExit;          // routes (scene 4: from the mainline)
+    std::string rampMain, rampExit;      // scene 4 only (D459): the routes from the ramp
+    std::vector<std::string> routes() const {
+        std::vector<std::string> all{toMain, toExit};
+        for (const auto& r : {rampMain, rampExit}) if (!r.empty()) all.push_back(r);
+        return all;
+    }
 };
 struct WeavingLab {
     ProjectDocument document;
-    std::array<WeavingScene, 3> scenes;
+    std::array<WeavingScene, 4> scenes; // three Type A weaves at the edge, then a two-entry one (D459)
 };
 
 // Veh/h, one input each: mainline 3000 and ramp 800, 30 % of each crossing
@@ -75,12 +81,47 @@ inline WeavingLab weavingLab() {
         putInput(d, {"", sc.toMain, "car", kRampMain, 0, 600, ramp});
         putInput(d, {"", sc.toExit, "car", kRampExit, 0, 600, ramp});
     }
+    // D459, scene 4: the 300 m weave drawn with two entries -- a 2-lane mainline and a 1-lane ramp,
+    // each with a 300 m approach, joining the 3-lane weave -- as weavingTwoEntries() draws it. The
+    // crossing movements change onto joined chains that start on the weave.
+    {
+        auto& sc = t.scenes[3];
+        sc.length = 300;
+        const double y = -3 * gap, x0 = 300 + joint, x1 = x0 + sc.length;
+        const std::string name = "Two-entry 300 m";
+        const auto mainIn = addLink(d, {{0, y - w / 2}, {300, y - w / 2}}, 2, w);
+        const auto rampIn = addLink(d, {{0, y + 2 * w}, {300, y + 2 * w}}, 1, w);
+        sc.weave = addLink(d, {{x0, y}, {x1, y}}, 3, w);
+        sc.exitOut = addLink(d, {{x1 + joint, y + 2 * w}, {x1 + joint + away, y + 2 * w}}, 1, w);
+        sc.mainOut = addLink(d, {{x1 + joint, y - w / 2}, {x1 + joint + away, y - w / 2}}, 2, w);
+        editableLink(d, mainIn).name = name + " mainline approach";
+        editableLink(d, rampIn).name = name + " ramp";
+        editableLink(d, sc.weave).name = name + " weave";
+        editableLink(d, sc.exitOut).name = name + " exit";
+        editableLink(d, sc.mainOut).name = name + " mainline";
+        const auto mainOn = addConnectorRange(d, {mainIn, lane(d, mainIn, 0)}, {sc.weave, lane(d, sc.weave, 1)}, 2, 2);
+        const auto rampOn = addConnector(d, {rampIn, lane(d, rampIn, 0)}, {sc.weave, lane(d, sc.weave, 0)});
+        const auto exitOff = addConnector(d, {sc.weave, lane(d, sc.weave, 0)}, {sc.exitOut, lane(d, sc.exitOut, 0)});
+        const auto mainOff = addConnectorRange(d, {sc.weave, lane(d, sc.weave, 1)}, {sc.mainOut, lane(d, sc.mainOut, 0)}, 2, 2);
+        editableConnector(d, mainOn).name = name + " mainline on";
+        editableConnector(d, rampOn).name = name + " ramp on";
+        editableConnector(d, exitOff).name = name + " to exit";
+        editableConnector(d, mainOff).name = name + " to mainline";
+        sc.toMain = putRoute(d, {"", {mainIn, mainOn, sc.weave, mainOff, sc.mainOut}});
+        sc.toExit = putRoute(d, {"", {mainIn, mainOn, sc.weave, exitOff, sc.exitOut}});
+        sc.rampMain = putRoute(d, {"", {rampIn, rampOn, sc.weave, mainOff, sc.mainOut}});
+        sc.rampExit = putRoute(d, {"", {rampIn, rampOn, sc.weave, exitOff, sc.exitOut}});
+        putInput(d, {"", sc.toMain, "car", kMainMain, 0, 600, {}});
+        putInput(d, {"", sc.toExit, "car", kMainExit, 0, 600, {}});
+        putInput(d, {"", sc.rampMain, "car", kRampMain, 0, 600, {}});
+        putInput(d, {"", sc.rampExit, "car", kRampExit, 0, 600, {}});
+    }
     changeRunSettings(d, 900, 0.1);
     return t;
 }
 // The same weave drawn with two entries -- a 2-lane mainline and a 1-lane ramp Link joining the
-// 3-lane weave -- and its four routes. It does not run: the crossing routes have no single-lane
-// path, and a change is compiled only on the entry Link. Kept to pin that limitation (D449).
+// 3-lane weave -- and its four routes, without inputs. Before D459 it did not compile: the
+// crossing routes had no single-lane path. BA179 now pins that it does (joined chains).
 inline ProjectDocument weavingTwoEntries() {
     constexpr double w = 3.5, length = 300;
     const auto lane = [](const ProjectDocument& d, const std::string& id, std::size_t k) {

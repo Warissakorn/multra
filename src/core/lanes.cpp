@@ -64,11 +64,12 @@ Around around(const ScenarioIndex& index, std::size_t target, double at, double 
             }
         } else a.alongside = true;
     };
-    for (const auto& part : index.parts[target]) {
-        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i)
-            consider(part, spans[buckets.items[i]]);
-        for (const auto& span : extra) if (span.segmentIndex == part.segmentIndex) consider(part, span);
-    }
+    for (const auto* list : {&index.parts[target], index.feedersOfRoute.empty() ? nullptr : &index.feedersOfRoute[target]})
+        if (list) for (const auto& part : *list) {
+            for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i)
+                consider(part, spans[buckets.items[i]]);
+            for (const auto& span : extra) if (span.segmentIndex == part.segmentIndex) consider(part, span);
+        }
     // The nearest follower is the only candidate, so dropping it past the range is §4's filter.
     if (sight.lookBackDistance && a.follower && a.follower->gap > *sight.lookBackDistance) a.follower.reset();
     return a;
@@ -278,6 +279,16 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     for (const auto& dead : s.routeDeadEnds)
         if (const auto r = slotOf(s, dead.routeId); r < s.routes.size()) index.deadEndOfRoute[r] = dead.at;
     index.discretionaryOfRoute.assign(s.routes.size(), {});
+    // D459: a joined route (leadIn > 0) starts on a lane others feed; the segments leading into its
+    // first one lie behind it, so a change onto it sees a vehicle still arriving there.
+    index.feedersOfRoute.assign(s.routes.size(), {});
+    for (std::size_t r = 0; r < s.routes.size(); ++r) {
+        if (!(s.routes[r].leadIn > 0) || index.parts[r].empty()) continue;
+        const auto& first = index.parts[r].front().segmentId;
+        for (std::size_t g = 0; g < s.segments.size(); ++g)
+            if (std::find(s.segments[g].next.begin(), s.segments[g].next.end(), first) != s.segments[g].next.end())
+                index.feedersOfRoute[r].push_back({s.segments[g].id, g, -s.segments[g].length, s.segments[g].length});
+    }
     bool anyDiscretionary = false;
     for (const auto& span : s.laneChanges) {
         const auto from = slotOf(s, span.fromRouteId), to = slotOf(s, span.toRouteId);

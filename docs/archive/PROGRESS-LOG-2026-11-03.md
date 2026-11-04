@@ -2,6 +2,27 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Weaving lab, step 1: fixture and off/on sweep (D449)
+
+- **Owner:** asked how other tools test weaving, then agreed to step 1: a synthetic fixture and an
+  off/on measurement, contract first ([WEAVING_FIXTURE](../reference/WEAVING_FIXTURE.md)).
+- **Built:**
+  - `data/projects/weaving-lab.traffic.json`, from `tools/weaving_network.hpp`, regenerated with
+    `multra-weaving-fixture`: three Type A weaves of 150, 300 and 500 m;
+  - `multra-weaving-sweep`;
+  - rows BA179–BA183 in `weavinglab`.
+  No engine or schema change.
+- **Found** ([evidence](../evidence/weaving-lab.md)):
+  - A weave with two entry Links does not compile its crossing routes, because a change is
+    compiled only on the entry Link. So the lab starts the weave at the network edge.
+  - **The weave end locks for good** once the two lane heads stand short of each other's gap, since
+    nothing is removed (M3 §4). The weave is lock-free through ×0.4. Locks begin at ×0.5. At ×1.0
+    every seed of the 150 and 300 m weaves locks, off and on. Switched on locks earlier.
+  - BA183 pins the lock as open.
+- **Also:** the shipped-project tests count five files (SP1), and N1, MA1, NA8 and the Meso check
+  include the lab.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — Lateral track closed; owner checks prepared
 
 - **Owner:** chose to close the lateral track and turn to the pending owner checks. Gap seeking is

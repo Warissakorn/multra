@@ -46,15 +46,20 @@ commands. `weavinglab` pins the file to the builder; regenerate it with `multra-
   - two authored routes per scene, to the mainline and to the exit;
   - mainline → exit and ramp → mainline each cross the lane 0/1 line once inside the weave. From
     lane 2 to the exit is two changes.
-- **Why the weave is the entry Link:**
-  - A change is compiled only on a family's entry Link (M3_8_CONTRACT §2, D71/D93).
-  - A weave drawn as a mainline and a ramp Link joining a 3-lane Link therefore cannot carry the
-    crossing movements: those routes have no single-lane path (`UNSUPPORTED_ROUTE_TOPOLOGY`).
-  - A routing decision on the weave does not help. No walk from the ramp reaches lanes 1–2, so its
-    stubs are not kept.
-  - This is the D96 limitation in another shape. BA179 pins it (`weavingTwoEntries()`).
-  - The cost: the lab has no merge at the gore and no upstream approach. Vehicles are inserted at
-    the gore.
+- **Why scenes 1–3 start at the edge:**
+  - Before D459, a change was compiled only from chains on a family's entry Link. A weave drawn
+    with two entries could not carry the crossing movements (`UNSUPPORTED_ROUTE_TOPOLOGY`).
+  - The edge scenes keep that shape, so their results stay comparable.
+- **Scene 4, the two-entry weave (D459):**
+  - **Layout:** a 2-lane mainline and a 1-lane ramp, each with a 300 m approach, join a 300 m
+    3-lane weave, then split as in the other scenes.
+  - **Inputs:** the same volumes as the other scenes, by route on the approaches.
+  - **How the crossings run:** the crossing movements change onto joined chains that start on the
+    weave (M3_8_CONTRACT §2).
+  - **What it adds:** the merge at the gore and the approach.
+  - **Routing decisions:** a decision on the weave is still not supported, because D93 builds no
+    joined chain.
+  - **Row:** BA179 now pins that it compiles.
 - **Compiled:** every stub's dead end is the weave's end, so every change is made inside the weave.
   No conflict zone is compiled.
 

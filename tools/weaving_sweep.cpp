@@ -26,7 +26,7 @@ std::vector<double> numbers(const std::string& text) {
 struct Scene { double served{}, unfinished{}, delaySum{}, changes{}, waiting{}, longest{}, last{}; };
 Scene scene(const sweep::WeavingRun& r, const std::string& name, const fixture::WeavingScene& lab) {
     Scene s;
-    for (const auto& id : {lab.toMain, lab.toExit})
+    for (const auto& id : lab.routes())
         if (const auto it = r.lastArrival.find(id); it != r.lastArrival.end()) s.last = std::max(s.last, it->second);
     for (const auto& m : r.movements.movements) {
         if (m.name.rfind(name + " ", 0) != 0) continue;
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
         if (!stream) throw std::runtime_error("Cannot read project: " + project.string());
         const auto document = parseDocument(Json::parse(stream));
         const auto data = root / "data";
-        const std::vector<std::string> names{"Weave 150 m", "Weave 300 m", "Weave 500 m"};
+        const std::vector<std::string> names{"Weave 150 m", "Weave 300 m", "Weave 500 m", "Two-entry 300 m"};
         const auto lab = fixture::weavingLab(); // the committed file's builder: the same route ids
         const auto started = std::chrono::steady_clock::now();
         std::ostringstream table;

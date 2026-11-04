@@ -160,6 +160,9 @@ a planning-level method (otherwise back to the owner).
   D450–D454 and D456 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
   [yield-cap](evidence/weaving-yield-cap.md)) and gap seeking slice 1 (D455,
   [evidence](evidence/gap-seeking-follower.md)).
+  - **Two-entry weaves run (D459, [evidence](evidence/weaving-two-entries.md)):** joined chains
+    start on the weave. They are scene 4 of the lab; a routing decision on a weave is still not
+    supported.
   - **Results (D458, [evidence](evidence/gap-seeking-changer.md)):**
     - No seed of 10 locks at any factor (×0.3–×1.2), off or on.
     - Clamps are 0 at every factor, off and on.
@@ -171,7 +174,6 @@ a planning-level method (otherwise back to the owner).
     - ×1.2 on is over capacity (150 m: 91 % served).
   - **Next, the owner's choice:**
     - the pending owner checks (UT10, A9, canvas);
-    - two-entry weaves (BA179);
     - NGSIM at M6.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
