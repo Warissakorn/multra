@@ -2,6 +2,15 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Vistro limits closed (D441)
+
+- **Owner:** both whole-network merges (`u0-full-lh-a/-b`) create a second, overlapping junction and
+  stay right-hand; only `a` gets the median. The owner stopped probing.
+- **D441:** Vistro gets the UTDF file plus a `.vistromerge` median patch. Mirrored mode (D437)
+  gives a correct far-turn HCM. The report covers HCM 7th and the right-hand result of geometric mode.
+- **Updated:** UTDF_PROBE row 21, UTDF_EXPORT §6/§9 UX-6/UT12, the README, NEXT and OWNER_SITTING I.4.
+- **Open for U1:** how the patch learns Vistro's post-import link numbers. `multra-check-docs` passes.
+
 ## 2026-11-03 — UTDF cannot be left-hand in Vistro; whole-network probe
 
 - **Owner (patch v2):**

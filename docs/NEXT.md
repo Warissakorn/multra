@@ -135,36 +135,17 @@ a planning-level method (otherwise back to the owner).
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Lateral, before any shipped behaviour carries its keys** ([lateral-run-audit](evidence/lateral-run-audit.md),
+- **Lateral: closed by owner choice (2026-11-04).** The audit's findings and the review's copies
+  are fixed (D444–D448; [audit](evidence/lateral-run-audit.md),
   [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md),
-  [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md), [start-filter](evidence/lateral-start-filter.md)).
-  - **Fixed:** all three audit findings.
-    - The stuck straddler (D444).
-    - The waiting-changer clamps (D445).
-    - The swap lock (D446).
-    - The review's path (b), a blocked body waiting over the line, is closed too: it now steps back
-      (D447, BA53 revised).
-    - The start's target-lane filter at the window's end reads the lane before the join (D448).
-
-    Switched on, m2.6 now has the switched-off clamp count in every seed, and lab changes over 8 s
-    fell from 36 to 27.
-  - **Residue for the owner: gap seeking** ([m26-long-waits](evidence/m26-long-waits.md)). Every code
-    copy the review found now shares one test (D444–D448). What remains is behaviour:
-    - **The long m2.6 waits (up to 119 s) are signal-queue congestion that exists switched off
-      too** (max 110.9 s off). Switching on adds the crossing time (≈ 2 s per change) and a modest
-      tail on the `path-4` approaches: 61 → 74 waits over 30 s.
-    - **Gap seeking would shorten only the moving phase** (4–18 s of those waits), where the target
-      lane's leader is too close. It would also help the lab case: seed 49, vehicle 580, which rides
-      alongside a car that is not changing, at a similar speed, for 36 s.
-    - **Options for the owner:**
-      - extend M3.2.8c cooperation beyond the dead end;
-      - a new gap-seeking contract;
-      - nothing: accept the measured cost until M6 calibrates lane changes.
-  - **Later, and only if residue remains:** the lane-change state machine and a no-progress timer.
-    A timer is a behaviour value, so a key needs the owner (D204 added none). Abandoning a change is
-    still the owner's call.
-  - **Cost:** the +10–28 % wall cost switched on is not worth cutting until then, and it needs a
-    profile first.
+  [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md),
+  [start-filter](evidence/lateral-start-filter.md)). The long m2.6 waits are signal-queue congestion
+  that exists switched off too ([m26-long-waits](evidence/m26-long-waits.md)).
+  - **Deferred:** gap seeking, until M6 calibration or an explicit owner request. If it is
+    requested, extend M3.2.8c cooperative braking beyond the dead end, contract first. The
+    lane-change state machine, a no-progress timer and abandoning a change are deferred with it.
+  - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
+    The +10–28 % wall cost switched on needs a profile before any work.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
   (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5
