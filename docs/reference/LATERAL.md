@@ -5,8 +5,8 @@ cross-sections and `drivingSide` (D187, [evidence](../evidence/lateral-codec.md)
 spans and predicates (D188, [evidence](../evidence/lateral-spans.md)), §7's motion, admission
 and crossing (D189, [evidence](../evidence/lateral-motion.md)), zone occupancy by span (D202,
 [evidence](../evidence/lateral-zones.md)) and the display (D203, [evidence](../evidence/lateral-display.md)). Since M3.4 slice 1 (D206) a lane
-change sets a lateral target when the switch is on; no shipped project carries the keys, so every
-shipped run still keeps `lateral` at 0. Rows BA39–BA47 are in
+change sets a lateral target when the switch is on; no shipped project carries the keys except the
+[lateral lab](LATERAL_LAB.md) (D457, lab placeholders), so every other shipped run keeps `lateral` at 0. Rows BA39–BA47 are in
 [the delivery plan](../plans/DRIVING_BEHAVIOUR.md#3-failure-first-acceptance-rows); BA40–BA47 have
 automated evidence and BA39 is kept in every slice. The [driving-behaviour review](../audits/DRIVING_BEHAVIOUR_REVIEW.md)
 §3 H and §4.2 motivate it, and D177/D178 order it second. Three later pieces build on it:
@@ -222,7 +222,7 @@ A behaviour carrying any one of them must carry all three (`INVALID_BEHAVIOUR_PA
 path to the first missing key). The codec follows D136/D179: one key table read by the parser,
 the serializer and the range check. The schema is the next free number at implementation time,
 written only when used. Older files keep their bytes, and an older schema that carries a key is
-refused. No values are shipped. A preset follows D178's rule: cited standard values, flagged
+refused. No values are shipped in `data/`; only the lateral lab carries lab placeholders (D457). A preset follows D178's rule: cited standard values, flagged
 uncertain.
 
 ## 10. Consumers

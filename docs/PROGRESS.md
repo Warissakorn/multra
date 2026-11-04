@@ -6,6 +6,29 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — The lateral lab (D457)
+
+- **Owner:** asked for a project to test lateral behaviour, with all four scenes, and the lab's
+  values in the file. "ทำโปรเจกต์ lateral-lab".
+- **D457 ([LATERAL_LAB](reference/LATERAL_LAB.md)):** `data/projects/lateral-lab.traffic.json`.
+  - **Scenes:** a timed lane change, a lane drop, a 150 m weave at ×0.8, and keep-left with cars,
+    heavy vehicles and motorcycles.
+  - **Keys:** every behaviour carries the lateral keys as lab placeholders (0.5 m, 1.0 m, 1 m/s).
+    The keep-left Link has its own behaviour, which adds D95's pair and `kerbLaneBias`.
+  - **The exception:** it is a lab-only exception to D178. No other project and no `data/`
+    behaviour carries the keys.
+  - **The builder:** `tools/lateral_lab_network.hpp`, through the editor's commands, regenerated
+    with `multra-lateral-fixture data <out>`. The keys have one source, `tools/lateral_lab_keys.hpp`,
+    shared with the weaving sweep.
+- **Rows:** BA198–BA203 (`laterallab`). The four shipped-project lists in the tests now include the
+  lab, and SP1 counts six files.
+- **Results** ([evidence](evidence/lateral-lab.md), seeds 42–51):
+  - mean delay 30.3 s; no clamp and nothing unfinished;
+  - the short weave's delay is the highest, 47–62 s;
+  - with the bias, the kerb lane's share of vehicle time is 68–80 % (45–49 % without it).
+- **Verified:** `ctest --preset headless` passes 176/176.
+- **Not done here:** the owner's check in the editor.
+
 ## 2026-11-04 — The dead end as a second obstacle (D456)
 
 - **Owner:** asked for a lateral test project, then chose to fix the engine first, starting with
@@ -174,19 +197,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     formula. `nodeanalysis` passes.
   - **Canvas:** the five `canvas-labels-after` images CANVAS_STYLE links are present.
 - **Verdicts:** the owner's, on OWNER_SITTING I.5 and E32 and on the canvas review in NEXT.
-
-## 2026-11-04 — Probe: the long m2.6 lane-change waits (no code change)
-
-- **Owner:** "probe การรอนานใน m2.6 ก่อน", before deciding on gap seeking.
-- **Method:** scratch probes, not committed.
-  - `stubwait`: time on a route that still needs a change, a metric both runs share. Off and on,
-    seeds 42–51; its arrival totals equal the CLI batches.
-  - `refusal`: per-tick reasons for the three long waits.
-- **Result** ([m26-long-waits](evidence/m26-long-waits.md)):
-  - The long waits exist switched off (max 110.9 s; 61 over 30 s). They are signal-queue
-    congestion on the two `path-4` approaches.
-  - Switching on adds ≈ 2 s per change (the crossing time) and 13 more waits over 30 s.
-  - The three long waits are mostly queued with the target place occupied (21–74 s). Being refused
-    while moving, with the target lane's leader too close, is only 4–18 s; that is the part gap
-    seeking would reach.
-- **Next:** the owner's choice on gap seeking (NEXT). No decision ID and no engine change.

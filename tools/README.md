@@ -186,6 +186,12 @@ It is development evidence, not part of `check`.
 is the entry Link. `weavinglab` fails when the file and the builder differ, and carries rows
 BA179–BA183 ([WEAVING_FIXTURE](../docs/reference/WEAVING_FIXTURE.md)).
 
+`multra-lateral-fixture <data-dir> <output>` regenerates `data/projects/lateral-lab.traffic.json`
+from `lateral_lab_network.hpp` (D457). It reads the data directory for the catalogs the project
+owns. Its four scenes run with the lateral switch on, using the lab keys of `lateral_lab_keys.hpp`,
+which the weaving sweep shares. `laterallab` fails when the file and the builder differ, and carries
+rows BA198–BA203 ([LATERAL_LAB](../docs/reference/LATERAL_LAB.md)).
+
 `multra-weaving-sweep <repo root> [--seeds 42-51] [--factors 0.6,0.8,1.0,1.2,1.4]` runs every scene
 for each demand factor, with lateral off and then on, for every seed. Lateral on uses the audit's
 keys on an owned catalog copy (`weaving_sweep.hpp`, shared with the rows).

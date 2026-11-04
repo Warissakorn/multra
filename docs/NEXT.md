@@ -149,6 +149,9 @@ a planning-level method (otherwise back to the owner).
       stub's dead end is a second obstacle, so a nearer leader no longer hides it. Clamps on at ×1.0
       23 → 0.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
+    The one exception is the [lateral lab](reference/LATERAL_LAB.md) (D457), a shipped project with
+    four scenes carrying lab placeholder values. **The owner's check:** open it in the editor and
+    watch the crossings, the straddling and keep-left (the D203 display).
     The +10–28 % wall cost switched on needs a profile before any work.
 - **Weaving (M3.4, D449–D455): the next step is the owner's choice.** The weaving lab
   ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA195), the weave-end lock fixes
@@ -164,9 +167,6 @@ a planning-level method (otherwise back to the owner).
     - a dense stream still delays a changer (150 m on at ×0.8: 43 s), which is slice 2's case.
   - **Next, the owner's choice:**
     - gap seeking slice 2 (the changer's own speed);
-    - **the owner's order (2026-11-04):** after the engine fixes, the lateral lab, a shipped project
-      for testing lateral behaviour with four scenes (a timed lane change, a lane drop, a 150 m
-      weave, keep-left with a mixed fleet), carrying the lab values as a lab-only exception to D178;
     - the pending owner checks (UT10, A9, canvas);
     - two-entry weaves (BA179);
     - NGSIM at M6.

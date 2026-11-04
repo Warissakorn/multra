@@ -2,6 +2,22 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Probe: the long m2.6 lane-change waits (no code change)
+
+- **Owner:** "probe การรอนานใน m2.6 ก่อน", before deciding on gap seeking.
+- **Method:** scratch probes, not committed.
+  - `stubwait`: time on a route that still needs a change, a metric both runs share. Off and on,
+    seeds 42–51; its arrival totals equal the CLI batches.
+  - `refusal`: per-tick reasons for the three long waits.
+- **Result** ([m26-long-waits](../evidence/m26-long-waits.md)):
+  - The long waits exist switched off (max 110.9 s; 61 over 30 s). They are signal-queue
+    congestion on the two `path-4` approaches.
+  - Switching on adds ≈ 2 s per change (the crossing time) and 13 more waits over 30 s.
+  - The three long waits are mostly queued with the target place occupied (21–74 s). Being refused
+    while moving, with the target lane's leader too close, is only 4–18 s; that is the part gap
+    seeking would reach.
+- **Next:** the owner's choice on gap seeking (NEXT). No decision ID and no engine change.
+
 ## 2026-11-04 — The start's target-lane filter at the window's end (D448)
 
 - **Owner:** "ทำข้อถัดไปต่อเลย": NEXT's last code copy left from D444.

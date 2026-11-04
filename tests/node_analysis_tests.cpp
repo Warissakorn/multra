@@ -108,7 +108,7 @@ TEST(nodeanalysis, na7_refusals_name_the_turn_and_give_no_number) { // NA7; shar
 }
 TEST(nodeanalysis, na8_codec_schema_and_command) { // NA8: schema 58, old bytes kept
     for (const char* project : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json",
-                                "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json", "weaving-lab.traffic.json"}) {
+                                "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json", "weaving-lab.traffic.json", "lateral-lab.traffic.json"}) {
         const auto d = shipped(project);
         CHECK(documentSchemaVersion(d) < 58);
     }

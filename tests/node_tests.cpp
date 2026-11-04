@@ -27,7 +27,7 @@ bool hasIssue(const Network& n, const std::string& code, const std::string& path
 }
 }
 TEST(nodes, n1_a_project_without_a_node_keeps_its_bytes) { // N1
-    for (const char* project : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json", "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json", "weaving-lab.traffic.json"}) {
+    for (const char* project : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json", "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json", "weaving-lab.traffic.json", "lateral-lab.traffic.json"}) {
         const auto j = fileJson(project);
         const auto d = parseDocument(j);
         CHECK(d.network.nodes.empty());

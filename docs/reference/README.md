@@ -18,6 +18,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [DRIVING_BEHAVIOUR.md](DRIVING_BEHAVIOUR.md) | Class/road behaviour assignment: library storage, runtime selection and editor (M3.3.2a–c) and the target capability map |
 | [BEHAVIOUR_LAB.md](BEHAVIOUR_LAB.md) | Behaviour Lab: circuit routes, live retune, vehicle placement, the lab ring and window, rows BL1–BL12 (M3.3.4) |
 | [LATERAL.md](LATERAL.md) | Two-dimensional occupancy: lateral frame, cross-sections, spans on every overlapped lane, lateral admission, zones and display (M3.7.0 contract, D180; slices 1–4 implemented, D187–D189, D202, D203) |
+| [LATERAL_LAB.md](LATERAL_LAB.md) | The lateral lab: four scenes with the lateral switch on, the one shipped project carrying the keys, as lab placeholders; rows BA198–BA203 (D457) |
 | [BEHAVIOUR_PARAMETERS.md](BEHAVIOUR_PARAMETERS.md) | Every value that shapes driving behaviour: settable now, should become settable, kept fixed (D213, D214), and each setting's scope, project-wide or local (D216) |
 | [COMMITMENT.md](COMMITMENT.md) | Commitment deceleration at give-way lines: `commitmentDeceleration`, the lower of it and the type maximum, rows BA72–BA78 (B-2 contract, D218; implemented, D219) |
 | [MERGE_DECELERATION.md](MERGE_DECELERATION.md) | Accepted deceleration for mandatory lane changes: own and trailing keys, rows BA79–BA85 (B-3 contract, D220; implemented, D221) |

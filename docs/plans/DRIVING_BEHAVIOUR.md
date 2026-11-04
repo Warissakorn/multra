@@ -250,6 +250,12 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA195 | The 300 m weave alone, switched on, ×0.8, seed 42, 450 s (D455) | Mean delay below 20 s; arrivals continue into the last minute; no removal, no 2D overlap. Before: mean delay 30.1 s |
 | BA196 | Dead end as a second obstacle (D456): a stub vehicle at 12 m/s, 66 m short of its dead end, follows a 12 m/s vehicle whose route goes on along the same lane; its change is refused | It brakes for the dead end at once and never harder than comfortably; no clamp. Before: it held 0 m/s² until the dead end was nearer than the leader, then braked at the type's maximum (8 m/s²) |
 | BA197 | The 500 m weave alone, switched on, ×1.0, seed 42, 450 s (D456) | No safety clamp; at least as many served (381 before); no removal, no 2D overlap. Before: 2 clamps |
+| BA198 | The lateral lab (D457): the committed file | It is the builder's output and reopens exactly |
+| BA199 | The lateral lab and the other five shipped projects, compiled | The lab is switched on, with the lab keys; the other five are switched off (BA39 kept) |
+| BA200 | Lab scene 1, the timed lane change, alone, seed 42, 300 s | Changes happen with a crossing under way and some body straddles two lanes; no 2D overlap, no removal, no clamp |
+| BA201 | Lab scene 2, the lane drop, alone, seed 42, 300 s | Mandatory changes are made and arrivals continue into the last minute; no 2D overlap, no removal, no clamp |
+| BA202 | Lab scene 3, the 150 m weave at ×0.8, alone, seed 42, 300 s | Changes are made and arrivals continue into the last minute; no 2D overlap, no removal, no clamp |
+| BA203 | Lab scene 4, keep-left, alone, seed 42, 300 s, with and without `kerbLaneBias` | Cars, heavy vehicles and motorcycles each spend a larger share of time in the kerb lane with the bias; no 2D overlap, no removal, no clamp |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

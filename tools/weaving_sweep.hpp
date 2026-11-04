@@ -4,6 +4,7 @@
 // would make (the keys must be there when compiling: the cross-sections are built then). Shared by multra-weaving-sweep and `weavinglab`.
 // Development evidence only: no calibration, no M6 validity.
 #include "lane_change_sweep.hpp"
+#include "lateral_lab_keys.hpp"
 #include "../src/commands/catalog_commands.hpp"
 #include "../src/core/lateral.hpp"
 #include "../src/project/demand_catalog.hpp"
@@ -29,11 +30,7 @@ struct WeavingOptions {
 // "route-12/lane-2" -> "route-12": the authored route a compiled lane route came from.
 inline std::string authoredRoute(const std::string& id) { return id.substr(0, id.find("/lane-")); }
 // The audit's keys (lateral-run-audit): 0.5 m standing, 1.0 m at 50 km/h, 1 m/s.
-inline LateralParameters weavingKeys() {
-    LateralParameters p;
-    p.lateralMinDistanceStanding = 0.5; p.lateralMinDistanceAt50 = 1.0; p.maxLateralSpeed = 1;
-    return p;
-}
+inline LateralParameters weavingKeys() { return fixture::labLateralKeys(); } // D457: one source
 // Two bodies sharing a lane section overlap along it and across it (the lateral rows' test).
 inline bool overlaps2d(const SimState& state) {
     const auto spans = occupiedSpans(*state.scenario, state.vehicles, *state.index,

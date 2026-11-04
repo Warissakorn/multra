@@ -59,7 +59,7 @@ TEST(studyperiods, sp1_files_without_a_period_keep_their_bytes) { // SP1
     std::vector<std::filesystem::path> files;
     for (const auto& entry : std::filesystem::directory_iterator(test::root() / "data/projects"))
         if (entry.path().string().ends_with(".traffic.json")) files.push_back(entry.path());
-    CHECK(files.size() == 5);
+    CHECK(files.size() == 6); // D457 added the lateral lab
     for (const auto& file : files) {
         std::ifstream in(file); const auto j = Json::parse(in);
         CHECK(documentJson(parseDocument(j)) == j);
