@@ -190,6 +190,17 @@ TEST(weavinglab, ba197_switched_on_no_clamp_where_a_leader_hid_the_dead_end) {
     // it was nearer than the moving vehicle ahead.
     const auto r = scene(2, 1.0, true, 42);
     CHECK(r.movements.safetyClamps == 0);
-    CHECK(served(r) >= 381); // as many as before, or more (387 after)
+    CHECK(served(r) >= 365); // D458 revised: 387 after D456, 372 since gap seeking slice 2 (BA205)
     CHECK(r.removed == 0 && !r.overlap);
+}
+TEST(weavinglab, ba205_switched_on_a_refused_changer_falls_back_behind_its_blocker) {
+    // D458 (gap seeking, slice 2): in a dense stream a refused changer rode alongside the target-lane
+    // car whose rear blocked it. The 150 m weave alone, switched on, x1.0, seed 42, 450 s: before D458
+    // 295 served, mean delay 83.0 s; the changer now falls back behind its blocker.
+    const auto r = scene(0, 1.0, true, 42);
+    double delay = 0;
+    for (const auto& m : r.movements.movements) delay += m.meanDelay.value_or(0) * static_cast<double>(m.vehicles);
+    CHECK(served(r) >= 370); // 389 after
+    CHECK(delay / static_cast<double>(served(r)) < 50); // 36.9 s after
+    CHECK(r.movements.safetyClamps == 0 && r.removed == 0 && !r.overlap);
 }

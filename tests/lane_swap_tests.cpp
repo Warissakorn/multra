@@ -379,3 +379,29 @@ TEST(laneswap, ba196_a_nearer_leader_does_not_hide_the_dead_end) {
     CHECK(hardest >= -comfort); // comfortably throughout (before: -8, the type's maximum)
     CHECK(clamps == 0);
 }
+
+// D458 (BA204), gap seeking slice 2, switched on: A on its stub rides at 10 m/s in a stream on the
+// target lane, 1.5 m behind the rear of the car ahead there, so its own forward test fails; the car
+// behind leaves room. Slice 1 asks only followers: before D458 A rode on, and got in at 218 m. Now
+// it falls back behind that car, braking comfortably at most, and gets in about 19 m earlier.
+TEST(laneswap, ba204_switched_on_a_refused_changer_falls_back_behind_its_blocker) {
+    const auto r = swap(keys(0.5, 1.0));
+    auto state = put(r.s, {{"A-stub", 90, 10}, {"A-full", 96, 10}, {"A-full", 80.5, 10}, {"A-full", 68.5, 10}, {"A-full", 120.5, 10}});
+    // The forcing: the switch is on, A is refused, and its dead end is outside its look-ahead.
+    CHECK(state.index->lateral.on);
+    const auto& a = *byId(state, 1);
+    CHECK(!deadEndGoverns(*state.index, a.routeIndex, a, state.scenario->vehicleTypes[a.typeIndex], state.scenario->behaviours.front()));
+    double at = -1, hardest = 0;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 600 && byId(state, 1) && routeOf(state, 1) == "A-stub"; ++k) {
+        const double d = byId(state, 1)->distance;
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+        if (byId(state, 1)) hardest = std::min(hardest, byId(state, 1)->acceleration);
+        if (byId(state, 1) && routeOf(state, 1) == "A-full") at = d;
+        overlap = overlap || overlap2d(state);
+    }
+    CHECK(at > 0 && at < 205); // it gets in at 199.6 m (before D458: 218.3 m)
+    CHECK(hardest >= -comfortable(r.s) - 1e-9);
+    CHECK(clamps == 0 && !overlap);
+}

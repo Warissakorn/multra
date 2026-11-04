@@ -141,10 +141,12 @@ a planning-level method (otherwise back to the owner).
   [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md),
   [start-filter](evidence/lateral-start-filter.md)). The long m2.6 waits are signal-queue congestion
   that exists switched off too ([m26-long-waits](evidence/m26-long-waits.md)).
-  - **Gap seeking, slice 1 done (D455, [evidence](evidence/gap-seeking-follower.md)):** a
-    follower opens a gap for a refused stub anywhere in its span.
-    - **Deferred:** slice 2, the changer's own speed adjustment, which a dense stream needs; and
-      the lane-change state machine, a no-progress timer, and abandoning a change.
+  - **Gap seeking ([GAP_SEEKING](reference/GAP_SEEKING.md)):** slices 1 and 2 are done.
+    - **Slice 1 (D455):** a follower opens a gap for a refused stub anywhere in its span.
+    - **Slice 2 (D458, [evidence](evidence/gap-seeking-changer.md)):** switched on only (the
+      owner's choice), a refused changer falls back behind its blocker.
+    - **Deferred:** speeding up to slip in ahead, the lane-change state machine, a no-progress
+      timer, and abandoning a change.
     - **D455's clamp cost is fixed (D456, [evidence](evidence/dead-end-second-obstacle.md)):** a
       stub's dead end is a second obstacle, so a nearer leader no longer hides it. Clamps on at ×1.0
       23 → 0.
@@ -158,15 +160,16 @@ a planning-level method (otherwise back to the owner).
   D450–D454 and D456 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
   [yield-cap](evidence/weaving-yield-cap.md)) and gap seeking slice 1 (D455,
   [evidence](evidence/gap-seeking-follower.md)).
-  - **Results (D456, [evidence](evidence/dead-end-second-obstacle.md)):**
+  - **Results (D458, [evidence](evidence/gap-seeking-changer.md)):**
     - No seed of 10 locks at any factor (×0.3–×1.2), off or on.
-    - Clamps are 0 through ×1.0, off and on. Mean delay on at ×0.8 is 43/20/13 s.
-    - Product runs: within 0.1 % of D455.
+    - Clamps are 0 at every factor, off and on.
+    - Switched on, every vehicle is served through ×1.0. Mean delay is 15/12/14 s at ×0.8 and
+      87/44/35 s at ×1.0.
+    - Switched off, results are byte-identical to D456.
   - **Left:**
-    - switched on at ×1.0, the 150 m weave leaves 25 of about 640 vehicles per seed unfinished;
-    - a dense stream still delays a changer (150 m on at ×0.8: 43 s), which is slice 2's case.
+    - the 500 m weave alone at ×1.0 on is slower than before (24 → 28.5 s);
+    - ×1.2 on is over capacity (150 m: 91 % served).
   - **Next, the owner's choice:**
-    - gap seeking slice 2 (the changer's own speed);
     - the pending owner checks (UT10, A9, canvas);
     - two-entry weaves (BA179);
     - NGSIM at M6.

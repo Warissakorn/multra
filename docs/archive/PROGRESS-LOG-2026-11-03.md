@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Lateral track closed; owner checks prepared
+
+- **Owner:** chose to close the lateral track and turn to the pending owner checks. Gap seeking is
+  deferred to M6 calibration or an explicit request (NEXT).
+- **Prepared and verified** (Linux; no Windows desktop build in this container):
+  - **UT10:** `tests/data/utdf/u2-u0-junction-geometric.csv` is byte-identical to today's
+    `multra-cli --export-utdf` of `u2-u0-junction.traffic.json`, and `utdf` passes.
+  - **A9:** the only Node-analysis code change since `086a4fd` is `32ab14a`, which moved the
+    peak-hour-factor default into the shared `nodeAnalysisPeakHourFactor` for UTDF, with the same
+    formula. `nodeanalysis` passes.
+  - **Canvas:** the five `canvas-labels-after` images CANVAS_STYLE links are present.
+- **Verdicts:** the owner's, on OWNER_SITTING I.5 and E32 and on the canvas review in NEXT.
+
 ## 2026-11-04 — Probe: the long m2.6 lane-change waits (no code change)
 
 - **Owner:** "probe การรอนานใน m2.6 ก่อน", before deciding on gap seeking.

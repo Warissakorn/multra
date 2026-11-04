@@ -43,6 +43,14 @@ gap seeking slice 2 targets (NEXT). It serves everything; no seed locks.
 The kerb lane is lane 0, which the compiled route `…/lane-1` runs on (checked against the Link's
 lane order).
 
+## After D458 (gap seeking, slice 2)
+
+The same full-project run (seeds 42–51) after D458:
+- mean delay 30.3 → 13.1 s;
+- short weave 62.4/46.6 → 19.3/17.1 s (spread ±8.6/±6.0 s);
+- the other scenes within 0.3 s;
+- no clamp, nothing unfinished.
+
 ## Unchanged
 
 - **Other projects:** every other shipped project still compiles switched off (BA199), and its

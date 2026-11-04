@@ -6,6 +6,29 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — Gap seeking, slice 2: the changer falls back behind its blocker (D458)
+
+- **Owner:** "ทำต่อ". Shown both variants measured, the owner chose "switched on only".
+- **D458 ([GAP_SEEKING](reference/GAP_SEEKING.md) §2):** with the lateral switch on, a moving
+  refused stub whose forward test fails against the target-lane vehicle ahead of it falls back behind
+  that vehicle, braking at most comfortably. Its swap partner is excepted.
+  - Slice 1 moved from M3_8_CONTRACT to GAP_SEEKING.
+  - `courtesyHolds` moved to `src/core/courtesy.cpp`, because `lanes.cpp` would have been over 500
+    lines.
+- **Variants rejected** ([evidence](evidence/gap-seeking-changer.md)):
+  - **Capped at the cooperative key:** BA184 clamped.
+  - **Both switch states:** switched off grew slower when dense (lab ×1.0 25/19/21 → 29/25/30 s;
+    lane-change lab +1.7 %).
+  - **Look-ahead only:** no gain.
+- **Rows:** BA204 (218 → 200 m) and BA205 (150 m weave, ×1.0: 295 → 389 served, 83 → 37 s).
+  BA197's served floor is revised to 365.
+- **Results:**
+  - Lab on at ×1.0: delay 137/98/41 → 87/44/35 s, and served 100 %.
+  - Lateral lab: delay 30.3 → 13.1 s.
+  - Switched off: byte-identical.
+  - **Cost:** the 500 m weave alone at ×1.0 on, 24 → 28.5 s.
+- **Verified:** `ctest --preset headless` passes 176/176; `check` passes.
+
 ## 2026-11-04 — The lateral lab (D457)
 
 - **Owner:** asked for a project to test lateral behaviour, with all four scenes, and the lab's
@@ -184,16 +207,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Also:** the shipped-project tests count five files (SP1), and N1, MA1, NA8 and the Meso check
   include the lab.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — Lateral track closed; owner checks prepared
-
-- **Owner:** chose to close the lateral track and turn to the pending owner checks. Gap seeking is
-  deferred to M6 calibration or an explicit request (NEXT).
-- **Prepared and verified** (Linux; no Windows desktop build in this container):
-  - **UT10:** `tests/data/utdf/u2-u0-junction-geometric.csv` is byte-identical to today's
-    `multra-cli --export-utdf` of `u2-u0-junction.traffic.json`, and `utdf` passes.
-  - **A9:** the only Node-analysis code change since `086a4fd` is `32ab14a`, which moved the
-    peak-hour-factor default into the shared `nodeAnalysisPeakHourFactor` for UTDF, with the same
-    formula. `nodeanalysis` passes.
-  - **Canvas:** the five `canvas-labels-after` images CANVAS_STYLE links are present.
-- **Verdicts:** the owner's, on OWNER_SITTING I.5 and E32 and on the canvas review in NEXT.
