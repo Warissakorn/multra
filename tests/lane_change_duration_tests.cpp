@@ -406,3 +406,38 @@ TEST(lanechangeduration, ba159_the_body_stays_inside_its_lane_on_a_side_it_canno
         CHECK(segmentOf(state, *v) == r.left);
     }
 }
+
+// D448 (BA162): the start's target-lane filter reads the lane the span leads onto, as the target and the
+// crossing do (D444). Three lanes; the left one a stub onto the middle one, whose route joins a part on
+// another carriageway at the window's end. A car on the right lane leans 0.3 m over into the middle
+// lane's far edge, alongside: its copy there does not overlap a changer centred on the middle lane.
+TEST(lanechangeduration, ba162_the_start_filter_at_a_window_ending_at_a_join_reads_the_target_lane) { // BA162
+    const auto starts = [](double at) {
+        auto s = road(3, 3.5, keys(0, 0));
+        const auto left = s.segments[laneSegment(s, 0)].id, middle = s.segments[laneSegment(s, 1)].id,
+                   right = s.segments[laneSegment(s, 2)].id;
+        const auto routeOn = [&](const std::string& segment) {
+            for (const auto& route : s.routes) if (route.segmentIds.front() == segment) return route.id;
+            throw std::runtime_error("no route on " + segment);
+        };
+        s.laneChanges = {{routeOn(left), routeOn(middle), 0, 300, 0, 300}};
+        s.routeDeadEnds = {{routeOn(left), 300}};
+        s.segments.push_back({"after", 50, {}});
+        s.segmentCrossSections.push_back({1000, 0, 0, 3.5, 3.5, 0, 50}); // its own carriageway, as a Connector's
+        for (auto& route : s.routes) if (route.segmentIds.front() == middle) route.segmentIds.push_back("after");
+        for (auto& segment : s.segments) if (segment.id == middle) segment.next = {"after"};
+        CHECK(validateScenario(s).empty());
+        const double width = s.vehicleTypes[slot(s.vehicleTypes, "car")].width;
+        auto state = place(s, {{left, at, 0, 0}, {right, 299, 0, 1.75 - width / 2 + 0.3}});
+        for (auto& v : state.vehicles) v.desiredSpeed = 0;
+        const auto spans = spansOf(state); // the forcing: the leaning car's copy is on the middle lane
+        CHECK(std::any_of(spans.begin(), spans.end(), [&](const auto& x) {
+            return x.vehicleId == 2 && !x.own && state.scenario->segments[x.segmentIndex].id == middle; }));
+        const auto& parts = state.index->parts[state.index->laneChangesOfRoute[state.vehicles[0].routeIndex].at(0).target];
+        CHECK(parts.size() == 2 && parts[0].start + parts[0].length == 300); // and a join at the window's end
+        state = stepSimulation(std::move(state));
+        return byId(state, 1)->lateralTarget.has_value() && std::abs(*byId(state, 1)->lateralTarget + 3.5) < 1e-9;
+    };
+    CHECK(starts(299)); // control: short of the join the filter reads the middle lane, and the start is accepted
+    CHECK(starts(300)); // at the join: the same
+}

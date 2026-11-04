@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — Merge Data patch v1 keeps right-hand; v2
+
+- **Owner:** merging `u0-patch-v1.vistromerge` after the v3 import left the project right-hand.
+  They also sent Vistro's post-import network export; it is not committed (owner).
+- **Recorded (structure only):**
+  - Vistro renumbers the end nodes (100100…) and numbers the links itself (227 N, 318 E, 409 S, 500 W).
+  - Default values are omitted from the export.
+  - Pockets are `$LANE` rows with a length.
+  - The signal groups match §3. The offset is restated as 44 s LAGEND.
+- **Added:** `u0-patch-v2.vistromerge`, in the export's own shape, with HCM 7th and a 2 m median on
+  legs 318/500. UTDF_PROBE rows 18–20, utdf-real-exports, the README and NEXT are updated.
+  `multra-check-docs` passes.
+
 ## 2026-11-03 — U0 limits: a Vistro Merge Data patch
 
 - **Owner:** asked how to handle UTDF's limits: the import switches to right-hand, there is no

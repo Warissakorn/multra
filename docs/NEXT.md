@@ -137,24 +137,25 @@ a planning-level method (otherwise back to the owner).
   the reopen contract.
 - **Lateral, before any shipped behaviour carries its keys** ([lateral-run-audit](evidence/lateral-run-audit.md),
   [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md),
-  [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md)).
+  [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md), [start-filter](evidence/lateral-start-filter.md)).
   - **Fixed:** all three audit findings.
     - The stuck straddler (D444).
     - The waiting-changer clamps (D445).
     - The swap lock (D446).
     - The review's path (b), a blocked body waiting over the line, is closed too: it now steps back
       (D447, BA53 revised).
+    - The start's target-lane filter at the window's end reads the lane before the join (D448).
 
     Switched on, m2.6 now has the switched-off clamp count in every seed, and lab changes over 8 s
     fell from 36 to 27.
-  - **Next steps,** in the agreed order: one per session, each with a probe of the case first,
-    failure-first rows and the audit batch re-run (seeds 42–51, off and on).
-    1. **`followerFilter`'s target-route lookup at the window's end** still uses `frontPart`. Reuse
-       `targetSectionAt` (D444).
-    2. **Residue for the owner: gap seeking.** A changer alongside a car that is not changing, at a
-       similar speed, waits at the line (lab seed 49, vehicle 580, 36 s). The long m2.6 waits (up to
-       91 s, seeds 43/47/49) were not examined: probe them first. Cooperation beyond D207 pairs is
-       M3.2.8c (only near the dead end) or a new contract; either is the owner's choice.
+  - **Residue for the owner: gap seeking.** Every code copy the review found now shares one test
+    (D444–D448). What remains is behaviour:
+    - A changer alongside a car that is not changing, at a similar speed, waits at the line (lab
+      seed 49, vehicle 580, 36 s).
+    - The long m2.6 waits (up to 91 s, seeds 43/47/49) were not examined. Probe them first, one
+      session, with failure-first rows and the audit batch re-run.
+    - Cooperation beyond D207 pairs is M3.2.8c (only near the dead end) or a new contract; either is
+      the owner's choice.
   - **Later, and only if residue remains:** the lane-change state machine and a no-progress timer.
     A timer is a behaviour value, so a key needs the owner (D204 added none). Abandoning a change is
     still the owner's call.

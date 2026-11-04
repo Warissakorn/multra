@@ -53,6 +53,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [lane-change-gap.md](lane-change-gap.md) | Mid-change gap loss: waiting at the line — 2026-10-16 | D208 |
 | [straddler-leaders.md](straddler-leaders.md) | A straddler follows the other lane's leaders — 2026-10-16 | D210 |
 | [lateral-run-audit.md](lateral-run-audit.md) | Lateral behaviour in product runs, switched on: invariants hold; a stuck straddler, waiting-changer clamps, swap lock — 2026-10-23 | D204, D208, D210 |
+| [lateral-start-filter.md](lateral-start-filter.md) | The start's target-lane filter reads the lane before a join at the window's end, as the target and the crossing do; product runs unchanged — 2026-11-04 | D448 |
 | [lateral-refused-step-back.md](lateral-refused-step-back.md) | A body over the line whose move is blocked in 2D steps back (BA53 revised); product runs unchanged — 2026-11-04 | D447 |
 | [lateral-swap-lock.md](lateral-swap-lock.md) | Audit Finding 3 fixed: a swapping pair's rear one yields while too close to accept the front one; lab changes over 8 s 36 → 27 — 2026-11-04 | D446 |
 | [lateral-covered-sections.md](lateral-covered-sections.md) | Audit Finding 2 fixed: a covered lane is searched only on the section level with the front; m2.6 clamps switched on fall to the switched-off count — 2026-11-04 | D445 |

@@ -52,7 +52,8 @@ the discretionary incentive and hold) and then:
   straddler. D202's occupancy stays as the safety net other vehicles see.
 - **The target lane** is the span's target section at the mapped front, read inside the span's
   to-range (`targetSectionAt`, D444): where the window ends at a join, the start and the crossing both
-  see the lane before the join, never the part past it.
+  see the lane before the join, never the part past it. The start's lateral safety filter on the target
+  lane reads the same part (`targetPartAt`, `followerFilterOn`, D448).
 - **It must cross inside the span window.** The crossing (LATERAL §7) needs a span that covers the
   whole body; the change starts only if `front + speed · |lateralTarget − lateral| / (2 · maxLateralSpeed)
   ≤ fromEnd` of that span, so the centre passes the lane line before the window closes. D206: the

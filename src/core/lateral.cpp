@@ -172,7 +172,11 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
     const std::vector<RoutePart>& parts, double front, double width, double lateral,
     const DriverBehaviour& behaviour, double speed) {
     if (!index.lateral.on || parts.empty()) return {};
-    const auto& part = frontPart(parts, front);
+    return followerFilterOn(s, index, frontPart(parts, front), front, width, lateral, behaviour, speed);
+}
+LateralFilter followerFilterOn(const Scenario& s, const ScenarioIndex& index, const RoutePart& part,
+    double front, double width, double lateral, const DriverBehaviour& behaviour, double speed) {
+    if (!index.lateral.on) return {};
     auto filter = lateralFilter(s, part.segmentIndex, width, lateral, behaviour, speed);
     // D210: the other lanes the body covers at its front, with the front mapped onto each (as §5's spans).
     const auto& section = s.segmentCrossSections[part.segmentIndex];
@@ -191,16 +195,19 @@ LateralFilter followerFilter(const Scenario& s, const ScenarioIndex& index,
     if (!filter.covered.empty()) filter.onlyNext = &index.lateral.onlyNext;
     return filter;
 }
-const SegmentCrossSection& targetSectionAt(const Scenario& s, const ScenarioIndex& index,
-                                           const RouteLaneChange& change, double front) {
+const RoutePart& targetPartAt(const ScenarioIndex& index, const RouteLaneChange& change, double front) {
     const double at = mappedOnto(change, front);
     const auto& parts = index.parts[change.target];
     const bool window = change.toEnd > change.toStart;
     for (const auto& part : parts) {
         const double end = part.start + part.length;
         if (window && end <= change.toStart + 1e-9) continue; // wholly before the to-range
-        if (at <= end + 1e-9) return s.segmentCrossSections[part.segmentIndex];
+        if (at <= end + 1e-9) return part;
     }
-    return s.segmentCrossSections[parts.back().segmentIndex];
+    return parts.back();
+}
+const SegmentCrossSection& targetSectionAt(const Scenario& s, const ScenarioIndex& index,
+                                           const RouteLaneChange& change, double front) {
+    return s.segmentCrossSections[targetPartAt(index, change, front).segmentIndex];
 }
 }

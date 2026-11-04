@@ -325,8 +325,8 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             // Nearest vehicle ahead of and behind the mapped place, over this tick's snapshot and
             // the changes already accepted; anything alongside refuses the change (rule 5).
             // LATERAL §6: the changer centred on the target lane (the change is instantaneous).
-            const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0,
-                                                 s.behaviours[refs[v].behaviour], vehicle.speed);
+            const auto sideways = followerFilterOn(s, index, targetPartAt(index, change, front), at, type.width, 0,
+                                                   s.behaviours[refs[v].behaviour], vehicle.speed); // D448
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
                                      s.behaviours[refs[v].behaviour].perception, &sideways);
             if (!safeAt(s, vehicles, refs, v, near, true)) continue;
@@ -380,7 +380,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             if (!spanHolds(change, front, rear)) continue;
             const double at = mappedOnto(change, front), atRear = at - type.length;
             if (inConflictArea(index, change.target, atRear, at)) continue;
-            const auto sideways = followerFilter(s, index, index.parts[change.target], at, type.width, 0, behaviour, vehicle.speed);
+            const auto sideways = followerFilterOn(s, index, targetPartAt(index, change, front), at, type.width, 0, behaviour, vehicle.speed); // D448
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved, sight, &sideways);
             const double gain = acceleration(near) - here;
             const double bias = behaviour.kerbLaneBias.value_or(0);

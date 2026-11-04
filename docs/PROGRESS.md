@@ -6,6 +6,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — The start's target-lane filter at the window's end (D448)
+
+- **Owner:** "ทำข้อถัดไปต่อเลย": NEXT's last code copy left from D444.
+- **Cause:** the start's `sideways` filter took `frontPart` on the target route. At a join at the
+  window's end that is the downstream Connector, so every span on the target lane counted. This was
+  conservative: a start a correct filter accepts was refused.
+- **Change:**
+  - `targetPartAt` returns D444's part, and `targetSectionAt` wraps it.
+  - `followerFilterOn` takes the part. `followerFilter` wraps it, so other callers are unchanged.
+  - Both start sites read the target lane through these.
+- **Row:** BA162 (control accepted at 299 m; refused at the 300 m join before the fix, accepted after).
+- **Result:** every audit batch, off and on, and the duration probe are byte-identical to D447's.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-04 — A blocked body over the line steps back (D447)
 
 - **Owner:** chose D208's rule ("never waits straddling the line") over D206's BA53, which kept
@@ -158,16 +172,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   post-import export (not committed) and holding U0 sheet data only. `b` mirrors lane indices.
   A script check finds every lane-turn and signal-group index in `$LANE`.
 - **Updated:** UTDF_PROBE rows 20–21, UTDF_EXPORT §6, the README and NEXT. `multra-check-docs` passes.
-
-## 2026-11-03 — Merge Data patch v1 keeps right-hand; v2
-
-- **Owner:** merging `u0-patch-v1.vistromerge` after the v3 import left the project right-hand.
-  They also sent Vistro's post-import network export; it is not committed (owner).
-- **Recorded (structure only):**
-  - Vistro renumbers the end nodes (100100…) and numbers the links itself (227 N, 318 E, 409 S, 500 W).
-  - Default values are omitted from the export.
-  - Pockets are `$LANE` rows with a length.
-  - The signal groups match §3. The offset is restated as 44 s LAGEND.
-- **Added:** `u0-patch-v2.vistromerge`, in the export's own shape, with HCM 7th and a 2 m median on
-  legs 318/500. UTDF_PROBE rows 18–20, utdf-real-exports, the README and NEXT are updated.
-  `multra-check-docs` passes.
