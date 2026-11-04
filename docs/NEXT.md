@@ -145,26 +145,28 @@ a planning-level method (otherwise back to the owner).
     follower opens a gap for a refused stub anywhere in its span.
     - **Deferred:** slice 2, the changer's own speed adjustment, which a dense stream needs; and
       the lane-change state machine, a no-progress timer, and abandoning a change.
-    - **Open costs:** clamps on at ×1.0 in the weaving lab rise from 7 to 23. The cause is the
-      car-following's late braking for a dead end.
+    - **D455's clamp cost is fixed (D456, [evidence](evidence/dead-end-second-obstacle.md)):** a
+      stub's dead end is a second obstacle, so a nearer leader no longer hides it. Clamps on at ×1.0
+      23 → 0.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
     The +10–28 % wall cost switched on needs a profile before any work.
 - **Weaving (M3.4, D449–D455): the next step is the owner's choice.** The weaving lab
   ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA195), the weave-end lock fixes
-  D450–D454 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
+  D450–D454 and D456 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
   [yield-cap](evidence/weaving-yield-cap.md)) and gap seeking slice 1 (D455,
   [evidence](evidence/gap-seeking-follower.md)).
-  - **Results (D455):**
-    - Switched off: lock-free through ×0.8; 0/1/0 seeds of 10 lock at ×1.0.
-    - Switched on: lock-free through ×0.8; 0/1/0 at ×1.0. Mean delay at ×0.8 is 64/24/15 s.
-    - Product runs: within 0.7 %.
+  - **Results (D456, [evidence](evidence/dead-end-second-obstacle.md)):**
+    - No seed of 10 locks at any factor (×0.3–×1.2), off or on.
+    - Clamps are 0 through ×1.0, off and on. Mean delay on at ×0.8 is 43/20/13 s.
+    - Product runs: within 0.1 % of D455.
   - **Left:**
-    - clamps on at ×1.0 (23): the car-following's late braking for a dead end at speed;
-    - a D450 (a) overrun (×0.4 on, seed 42, 500 m: 45 vehicles unfinished);
-    - one lock on at ×1.0.
+    - switched on at ×1.0, the 150 m weave leaves 25 of about 640 vehicles per seed unfinished;
+    - a dense stream still delays a changer (150 m on at ×0.8: 43 s), which is slice 2's case.
   - **Next, the owner's choice:**
     - gap seeking slice 2 (the changer's own speed);
-    - earlier dead-end braking (the clamps);
+    - **the owner's order (2026-11-04):** after the engine fixes, the lateral lab, a shipped project
+      for testing lateral behaviour with four scenes (a timed lane change, a lane drop, a 150 m
+      weave, keep-left with a mixed fleet), carrying the lab values as a lab-only exception to D178;
     - the pending owner checks (UT10, A9, canvas);
     - two-entry weaves (BA179);
     - NGSIM at M6.

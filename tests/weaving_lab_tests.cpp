@@ -184,3 +184,12 @@ TEST(weavinglab, ba195_switched_on_a_follower_opens_a_gap_anywhere_in_the_span) 
     CHECK(r.removed == 0 && !r.overlap);
     CHECK(last >= 450 - 60);
 }
+TEST(weavinglab, ba197_switched_on_no_clamp_where_a_leader_hid_the_dead_end) {
+    // D456: a stub vehicle's dead end is a second obstacle. The 500 m weave alone, switched on, x1.0,
+    // seed 42, 450 s: before D456 two vehicles were clamped, each braking for its dead end only once
+    // it was nearer than the moving vehicle ahead.
+    const auto r = scene(2, 1.0, true, 42);
+    CHECK(r.movements.safetyClamps == 0);
+    CHECK(served(r) >= 381); // as many as before, or more (387 after)
+    CHECK(r.removed == 0 && !r.overlap);
+}

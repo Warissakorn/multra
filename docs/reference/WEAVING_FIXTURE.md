@@ -119,6 +119,7 @@ run the 300 m scene alone for 450 s, so they stay quick.
   - The yielding partner brakes up to `maxDecelerationCooperativeBraking` once the front one closes in.
   - Locks remain switched off at ×1.0 (0–2 seeds of 10). Switched on, one lock is left from ×0.5 to ×1.0 ([evidence](../evidence/weaving-yield-cap.md)).
 - **Gap seeking, slice 1 (D455):** a follower opens a gap for a refused stub anywhere in its span. One seed of 10 locks at ×1.0, off and on ([evidence](../evidence/gap-seeking-follower.md)).
+- **Dead end as a second obstacle (D456):** a nearer leader no longer hides a stub's dead end. No seed locks at any factor, off or on, and clamps are 0 through ×1.0 ([evidence](../evidence/dead-end-second-obstacle.md)).
 - **No diffusion:** MULTRA never removes a stuck vehicle (M3 §4). A lock therefore shows as
   `unfinished` and a frozen last arrival, where Vissim would delete the pair after 60 s. Compare
   with Vissim only with that difference stated.

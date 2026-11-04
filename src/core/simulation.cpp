@@ -282,12 +282,11 @@ SimState stepSimulation(SimState&& state, double dt) {
             holdCap = std::min(holdCap, std::max(0.0, gap)); headLine = std::min(headLine, std::max(0.0, gap));
             if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
         }
-        // A stub route's dead end holds its vehicle as a red head does, until it changes lanes.
-        if (index.laneChanges)
-            if (const double gap = std::max(0.0, index.deadEndOfRoute[refs[v].route] - vehicle.distance); std::isfinite(gap)) {
-                holdCap = std::min(holdCap, gap);
-                if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
-            }
+        // A stub route's dead end holds its vehicle as a red head does, until it changes lanes; D456: a
+        // nearer moving leader does not hide it, so it is also a second obstacle (below).
+        const double deadEnd = index.laneChanges ? std::max(0.0, index.deadEndOfRoute[refs[v].route] - vehicle.distance)
+                                                   : std::numeric_limits<double>::infinity();
+        if (std::isfinite(deadEnd)) { holdCap = std::min(holdCap, deadEnd); if (!leader || deadEnd < leader->gap) leader = Leader{deadEnd, 0, 0}; }
         // A lot's gate holds like a dead end while the lot is full or its service is still to serve.
         if (!gateHeld.empty())
             if (const auto gap = gateHold(next, vehicle, refs[v].route)) {
@@ -357,6 +356,8 @@ SimState stepSimulation(SimState&& state, double dt) {
                 held.acceleration = std::max(held.acceleration, -courtesy[v].cap);
             if (held.acceleration < following.acceleration) following = held;
         }
+        if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
+            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
         if (const auto delay = reactionTicks(sight, dt)) {
             decisions.push_back({v, delay, following});
             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;

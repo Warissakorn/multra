@@ -1,4 +1,5 @@
 #include "lateral_test_support.hpp"
+#include "../src/core/following.hpp"
 #include <cmath>
 #include <map>
 using namespace multra;
@@ -347,5 +348,34 @@ TEST(laneswap, ba192_the_yielding_partner_brakes_as_cooperative_braking_does) {
         for (const auto& e : state.events) if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
     }
     CHECK(state.vehicles.empty()); // both reached their full routes and arrived within 60 s
+    CHECK(clamps == 0);
+}
+
+// D456 (BA196): a stub vehicle's dead end is a second obstacle, never hidden by a nearer leader. A
+// on its stub follows B, whose route goes on along the same lane past A's dead end; A's change is
+// refused, because C drives alongside its target place. Before D456 A followed B alone, unbraked,
+// until the dead end was nearer than B, then braked at the type's maximum (weaving lab, x1.0
+// switched on, seed 47, vehicle 125: 12.5 m/s with 14 m left, then a safety clamp).
+TEST(laneswap, ba196_a_nearer_leader_does_not_hide_the_dead_end) {
+    const auto r = swap(LateralParameters{});
+    auto state = put(r.s, {{"A-stub", 184, 12}, {"B-full", 208, 12}, {"A-full", 184, 12}});
+    const double comfort = comfortable(r.s);
+    // The forcing: B is the nearer obstacle, moving at A's desired speed; the dead end alone asks A
+    // to brake.
+    const auto& a = *byId(state, 1);
+    const auto& type = state.scenario->vehicleTypes[a.typeIndex];
+    const auto& behaviour = state.scenario->behaviours.front();
+    CHECK(follow(a.speed, a, a.w74State, type, behaviour, Leader{250 - 184, 0, 0}).acceleration < -1);
+    state = stepSimulation(std::move(state));
+    CHECK(routeOf(state, 1) == "A-stub"); // its change is refused
+    CHECK(byId(state, 1)->acceleration < -1); // it brakes for the dead end now (before: 0)
+    double hardest = 0;
+    int clamps = 0;
+    for (int k = 0; k < 200 && byId(state, 1) && routeOf(state, 1) == "A-stub"; ++k) {
+        state = stepSimulation(std::move(state));
+        if (byId(state, 1)) hardest = std::min(hardest, byId(state, 1)->acceleration);
+        for (const auto& e : state.events) clamps += std::holds_alternative<SafetyClampEvent>(e);
+    }
+    CHECK(hardest >= -comfort); // comfortably throughout (before: -8, the type's maximum)
     CHECK(clamps == 0);
 }

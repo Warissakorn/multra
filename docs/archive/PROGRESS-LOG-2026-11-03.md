@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — The start's target-lane filter at the window's end (D448)
+
+- **Owner:** "ทำข้อถัดไปต่อเลย": NEXT's last code copy left from D444.
+- **Cause:** the start's `sideways` filter took `frontPart` on the target route. At a join at the
+  window's end that is the downstream Connector, so every span on the target lane counted. This was
+  conservative: a start a correct filter accepts was refused.
+- **Change:**
+  - `targetPartAt` returns D444's part, and `targetSectionAt` wraps it.
+  - `followerFilterOn` takes the part. `followerFilter` wraps it, so other callers are unchanged.
+  - Both start sites read the target lane through these.
+- **Row:** BA162 (control accepted at 299 m; refused at the 300 m join before the fix, accepted after).
+- **Result:** every audit batch, off and on, and the duration probe are byte-identical to D447's.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-04 — A blocked body over the line steps back (D447)
 
 - **Owner:** chose D208's rule ("never waits straddling the line") over D206's BA53, which kept

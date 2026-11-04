@@ -163,7 +163,10 @@ claim. Car-following, priority rules, zones and the phase-2 checks then run on t
 snapshot, which every vehicle shares.
 
 **Dead end.** A stub vehicle is held at its dead end by the stop-line mechanism, exactly as a red
-head holds one, and waits there for a gap. It never arrives on a stub.
+head holds one, and waits there for a gap. It never arrives on a stub. Since D456 the dead end is also a
+**second obstacle**: behind a nearer moving leader, car-following runs once more against the dead end and keeps
+the harder braking, as for the courtesy hold, so a leader that goes on past it never hides it (BA196–BA197,
+[evidence](../evidence/dead-end-second-obstacle.md)).
 
 ### Cooperation: holding back for a waiting vehicle
 
