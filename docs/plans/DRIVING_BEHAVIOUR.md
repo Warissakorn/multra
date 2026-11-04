@@ -235,7 +235,9 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA180 | The 300 m weave, switched off, demand ×0.6, 450 s; weaving vehicles change (D449) | No vehicle removed, no 2D overlap, no clamp; what is left is only what was still on its way |
 | BA181 | The same, switched on (audit keys) (D449) | No vehicle removed, no 2D overlap; what is left is only what was still on its way |
 | BA182 | The same run twice, off and on (D449) | Identical movement and lane-change reports and arrival times |
-| BA183 | **Open, pinned** (D449): the 300 m weave, switched off, demand ×1.0 | Today: the two heads at the dead end stand short of each other's gap and the weave stops serving for good (nothing arrives in the last minute). The fix must turn this row around without removing vehicles |
+| BA183 | The 300 m weave alone, switched off, demand ×1.0, seed 42, 450 s (D449; open until D450) | Arrivals continue into the last minute; no removal, no 2D overlap. Before D450 the dead-end heads locked for good |
+| BA184 | Two lanes, a swapping pair of stubs inside mixed queues (full and stub vehicles alternating at 7 m, 12 m/s) toward the shared dead end; the pair starts within D207's distance (D450) | Every vehicle arrives within 90 s; no clamp, no 2D overlap. Before: the rear partner drove back up inside the standstill distance once the front one stood, and every lane stood |
+| BA185 | Three lanes: W waits at its dead end on lane 0 needing lane 1; Z, a two-change stub with the lower id, stands beside it on lane 2; lane 1 free (D450) | W changes first, then Z twice; no clamp, no 2D overlap. Before: Z landed in W's place and the two stood alongside for ever |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

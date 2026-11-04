@@ -207,6 +207,26 @@ standstill distance is still X's partner as long as it would not accept X at X's
 leader (`acceptsAsLeader`, the test D208 uses before X covers Y's lane), so the pair cannot ride side by
 side with neither covering. Switched off no change is under way, and nothing differs.
 
+**At a shared dead end (D450).** Two stub routes often end at the same station, as at a weave's end.
+The [weaving lab](WEAVING_FIXTURE.md) found two ways a pair there locks for good. Once both stand,
+nobody can yield, and nothing is removed (M3 §4).
+
+- **(a) The pair keeps its partner while X closes in.** Once X brakes for its dead end (D90's
+  look-ahead, `deadEndGoverns`) or waits there, Y stays X's partner at any distance behind X's
+  target place. Before, Y dropped out whenever it fell more than its standstill distance behind.
+  Once X stood, Y drove back up into that distance and stood there, and each refused the other.
+  The yield itself is unchanged: a moving obstacle at X's speed, braking no harder than comfortable.
+  While Y is still free of the place, its acceleration is unchanged.
+- **(b) A change does not land in a waiting partner's place.** A mandatory change onto a route that
+  is still a stub is refused when the changer's body on the landing lane would lie inside the target
+  place of a stub W on its next target lane, widened by W's standstill distance on both sides. W
+  must need the landing lane and be waiting at its dead end or inside its look-ahead. Before, a
+  two-change stub could move into the very place W waited for, and the two then stood alongside,
+  each needing the other's place. The changer keeps its target and tries again next tick.
+
+Both rules apply with the lateral switch off and on. They add no parameter and no state, and never
+waive a safety test. Rows BA184–BA185, and BA183 in the lab.
+
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 
 M3.2.8c step 5 showed that the time M3.2.8b costs is the left-turn dead-end waits

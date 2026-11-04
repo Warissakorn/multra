@@ -59,6 +59,11 @@ bool acceptsAsLeader(const Scenario&, const std::vector<Vehicle>&, const std::ve
 void yieldMutual(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
                  const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t x, const RouteLaneChange& change,
                  std::vector<CourtesyHold>& holds);
+// D450 (contract §2, "Cooperation"): vehicle `v`'s mandatory change onto `change.target` at `at`
+// would land, still a stub, inside the target place (widened by the standstill distance) of a stub
+// on its next target lane that needs the landing lane and is waiting or inside its look-ahead.
+bool landsInWaitingPlace(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                         const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t v, const RouteLaneChange& change, double at);
 // Cooperation (contract §2): for each vehicle, the nearest place it holds back from; gap
 // +infinity for none. For a stub vehicle waiting at its dead end, the nearest vehicle behind its
 // target place that can stop there comfortably and without a clamp holds back. For one still

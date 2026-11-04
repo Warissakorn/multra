@@ -330,6 +330,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
             const auto near = around(index, change.target, at, atRear, vehicle.id, spans, buckets, moved,
                                      s.behaviours[refs[v].behaviour].perception, &sideways);
             if (!safeAt(s, vehicles, refs, v, near, true)) continue;
+            if (landsInWaitingPlace(s, index, vehicles, refs, spans, buckets, v, change, at)) continue; // D450
             const auto start = lateralStart(s, index, vehicle, refs[v], change, at);
             if (start.refused) continue;
             accepted.push_back({v, static_cast<std::uint32_t>(change.target), at, start.target});

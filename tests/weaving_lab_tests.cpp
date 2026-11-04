@@ -105,16 +105,16 @@ TEST(weavinglab, ba182_a_run_replays_exactly) {
         CHECK(a.lastArrival == b.lastArrival);
     }
 }
-TEST(weavinglab, ba183_pinned_open_at_full_demand_the_weave_end_locks) {
-    // OPEN (D449): at the fixture's demand the two lane heads at the dead end stand short of the
-    // gap each needs in the other's lane, nobody yields once both stand, and with no removal the
-    // weave stops serving for good. This pins today's behaviour; the fix turns it around.
+TEST(weavinglab, ba183_at_full_demand_the_weave_end_keeps_serving) {
+    // D450 (was pinned open by D449): at the fixture's demand the two lane heads at the dead end
+    // stood short of the gap each needs in the other's lane, nobody could yield once both stood, and
+    // with no removal the weave stopped serving for good. A yielding partner now keeps its standstill
+    // distance, and a change never lands in a waiting partner's place.
     const auto lab = fixture::weavingLab();
     const auto r = middle(1.0, false);
     const auto& sc = lab.scenes[1];
     double last = 0;
     for (const auto& id : {sc.toMain, sc.toExit}) if (r.lastArrival.count(id)) last = std::max(last, r.lastArrival.at(id));
     CHECK(r.removed == 0 && !r.overlap);
-    CHECK(unfinished(r) > served(r)); // most of the demand is still waiting
-    CHECK(last < 450 - 60);           // and nothing has arrived in the last minute
+    CHECK(last >= 450 - 60); // still arriving in the last minute
 }

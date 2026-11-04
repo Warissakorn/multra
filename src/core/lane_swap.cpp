@@ -30,6 +30,10 @@ void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vecto
     const auto& front = vehicles[x];
     const double at = mappedOnto(change, front.distance), atRear = at - s.vehicleTypes[refs[x].type].length;
     const auto lane = frontPart(index.parts[refs[x].route], front.distance).segmentIndex;
+    const auto& xType = s.vehicleTypes[refs[x].type];
+    const auto& xBehaviour = s.behaviours[refs[x].behaviour];
+    const bool closing = waitingAtDeadEnd(index, refs[x].route, front, xBehaviour) ||
+                         deadEndGoverns(index, refs[x].route, front, xType, xBehaviour); // D450
     for (const auto& part : index.parts[change.target])
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
@@ -39,8 +43,12 @@ void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vecto
             if (yRear >= at) continue;
             // D446: beyond its standstill distance, y is still a partner while x's change is under way
             // and y would not accept x at its target place as a leader (D208 then lets x not cover).
+            // D450: and once x brakes for its dead end (D90's look-ahead) or waits there, y stays x's
+            // partner at any distance behind, so it cannot drive up into the standstill distance once x
+            // stands. While y is still free of the place, the hold leaves its acceleration unchanged.
             if (yFront <= atRear - standstillGap(s.behaviours[refs[y].behaviour]) &&
-                (!front.lateralTarget || acceptsAsLeader(s, vehicles, refs, y, Leader{atRear - yFront, front.speed, front.acceleration})))
+                (!front.lateralTarget || acceptsAsLeader(s, vehicles, refs, y, Leader{atRear - yFront, front.speed, front.acceleration})) &&
+                !closing)
                 continue;
             if (yFront > at || (yFront == at && vehicles[y].id < front.id)) continue; // y is the front one
             const auto& other = vehicles[y];
@@ -53,6 +61,36 @@ void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vecto
                                     s.vehicleTypes[refs[y].type].comfortableDeceleration};
             if (hold.gap < holds[y].gap) holds[y] = hold;
         }
+}
+bool landsInWaitingPlace(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
+                         const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                         std::size_t v, const RouteLaneChange& change, double at) {
+    const auto target = change.target;
+    if (index.remainingOfRoute[target] == 0) return false; // it lands on a full route and leaves
+    const double length = s.vehicleTypes[refs[v].type].length;
+    const auto* next = laneChangeTargetOf(index, target, at, at - length);
+    if (!next) return false;
+    const auto& landing = frontPart(index.parts[target], at);
+    const double front = at - landing.start, rear = front - length; // on the landing lane section
+    for (const auto& part : index.parts[next->target])
+        for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
+            const auto& span = spans[buckets.items[i]];
+            const auto w = span.own && span.vehicleId != vehicles[v].id ? slotOf(vehicles, span.vehicleId) : vehicles.size();
+            if (w == vehicles.size()) continue;
+            const auto& other = vehicles[w];
+            const auto& type = s.vehicleTypes[refs[w].type];
+            const auto& behaviour = s.behaviours[refs[w].behaviour];
+            const auto* theirs = laneChangeTargetOf(index, refs[w].route, other.distance, other.distance - type.length);
+            if (!theirs) continue;
+            if (!waitingAtDeadEnd(index, refs[w].route, other, behaviour) &&
+                !deadEndGoverns(index, refs[w].route, other, type, behaviour)) continue;
+            const double wAt = mappedOnto(*theirs, other.distance);
+            const auto& place = frontPart(index.parts[theirs->target], wAt);
+            if (place.segmentIndex != landing.segmentIndex) continue; // it needs another lane
+            const double wFront = wAt - place.start, wRear = wFront - type.length, room = standstillGap(behaviour);
+            if (front > wRear - room && rear < wFront + room) return true;
+        }
+    return false;
 }
 
 }

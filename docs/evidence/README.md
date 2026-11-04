@@ -56,6 +56,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [m26-long-waits.md](m26-long-waits.md) | The long m2.6 lane-change waits are signal-queue congestion that exists switched off too; lateral adds the crossing time and a modest tail — 2026-11-04 | D444–D448 |
 | [lateral-start-filter.md](lateral-start-filter.md) | The start's target-lane filter reads the lane before a join at the window's end, as the target and the crossing do; product runs unchanged — 2026-11-04 | D448 |
 | [weaving-lab.md](weaving-lab.md) | The weaving lab, off and on: lock-free through ×0.4; above it the weave end locks for good (BA183, open); two-entry weaves do not compile — 2026-11-04 | D449 |
+| [weaving-lock.md](weaving-lock.md) | The weave-end lock: a swapping pair kept while the front one closes in, and no change into a waiting partner's place; off lock-free through ×0.6, locks left at ×0.8+ and switched on; product runs unchanged — 2026-11-04 | D450 |
 | [lateral-refused-step-back.md](lateral-refused-step-back.md) | A body over the line whose move is blocked in 2D steps back (BA53 revised); product runs unchanged — 2026-11-04 | D447 |
 | [lateral-swap-lock.md](lateral-swap-lock.md) | Audit Finding 3 fixed: a swapping pair's rear one yields while too close to accept the front one; lab changes over 8 s 36 → 27 — 2026-11-04 | D446 |
 | [lateral-covered-sections.md](lateral-covered-sections.md) | Audit Finding 2 fixed: a covered lane is searched only on the section level with the front; m2.6 clamps switched on fall to the switched-off count — 2026-11-04 | D445 |

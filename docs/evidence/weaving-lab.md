@@ -26,6 +26,8 @@ BA179 pins this. The lab therefore starts the weave at the network edge.
 
 ## Finding 2: the weave end locks for good
 
+**Since D450** ([weaving-lock](weaving-lock.md)): two of its ways are fixed; locks remain at ×0.8+ and switched on. The numbers below are D449's.
+
 Scratch probe (not committed): every vehicle of one scene at a given time, for seeds 42, 47 and 49.
 
 - **300 m weave, off, ×1.0, seed 42, t = 450 s and 899 s, unchanged:**

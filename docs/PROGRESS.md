@@ -6,6 +6,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — The weave-end lock, partly fixed (D450)
+
+- **Owner:** "fix the weave-end lock first".
+- **Traced** ([weaving-lock](evidence/weaving-lock.md)). Two ways a pair at a shared dead end locks
+  for good:
+  - D207 dropped the rear partner whenever it fell back, and it drove up into the standstill
+    distance once the front one stood;
+  - a two-change stub moved into the place a waiting partner needed.
+- **D450 (M3_8_CONTRACT §2):** (a) the pair is kept while the front one brakes for or waits at its
+  dead end; (b) `landsInWaitingPlace` refuses such a landing. No parameter, no state, and both
+  switch modes.
+- **Rows:** BA184 and BA185 were written failure-first, and BA183 turned from pinned-open to
+  passing. Each rule is needed.
+- **Results:**
+  - All four product projects are identical apart from the build commit.
+  - The lab switched off is lock-free through ×0.6 (×0.4 before). Locks remain at ×0.8+ and
+    switched on.
+  - Two experiments, not kept, are in the evidence. Harder yield braking is the owner's choice.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — Weaving lab, step 1: fixture and off/on sweep (D449)
 
 - **Owner:** asked how other tools test weaving, then agreed to step 1: a synthetic fixture and an
@@ -158,28 +178,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - The jt6 fill now writes schema 65.
 - **Verified:** headless `utdf`, `junctionfill` and `nodeanalysis` pass, and so do desktop
   `utdf-export-ui`, `map-geo`, `node-ui` and `object-export-ui`. `multra-check-docs` passes.
-
-## 2026-11-03 — UTDF U2a: phases, volumes and timing (D443)
-
-- **Owner:**
-  - U2a, then U2b, in one session;
-  - a Node whose controller fails NEMA is left out unless the user opts to export it unsignalised;
-  - the Vistro median patch stays a report step until Vistro's link numbering is confirmed.
-- **Writer:** `utdf_signals.*` reads the Node's controller through its heads and checks it with
-  `nemaCheck`.
-  - **[Timeplans]/[Phases]:** every Synchro 10.1 record. All-red is the ring gap, and the D439
-    values fill the records MULTRA does not author.
-  - **Lanes:** `Phase1`/`PermPhase1` per UTDF_PROBE §5. Volumes, PHF, HV, ideal flow and bus stops
-    come from `analysis`, with A1's HCM defaults listed. A1 and UTDF now share one PHF rule
-    (`nodeAnalysisPeakHourFactor`).
-  - **Report steps:** median (`UTDF_MEDIAN_STEP`) and HCM 7th. Mirrored mode keeps the group
-    numbers, which are already right-hand NEMA numbers.
-- **CLI:** `--utdf-unsignalised`.
-- **Tests:** the U0 junction now carries the §2 volumes and the §3 controller.
-  - It reproduces `u0-handwritten-v3.csv` except `[Network]`'s values and the external ends'
-    `Grade`. `[Timeplans]`/`[Phases]` match byte for byte.
-  - P1–P4 cover both driving sides (UT7).
-  - The four-leg A1 fixture covers the NEMA refusal and the opt-in (UT8).
-  - Mirrored mode is covered (UT11).
-  - The CLI fixture is renamed `u2-u0-junction*`.
-- **Verified:** headless `check` passes 174/174; `multra-check-docs` passes.
