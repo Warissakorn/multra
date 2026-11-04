@@ -227,6 +227,26 @@ nobody can yield, and nothing is removed (M3 §4).
 Both rules apply with the lateral switch off and on. They add no parameter and no state, and never
 waive a safety test. Rows BA184–BA185, and BA183 in the lab.
 
+**Switched on, a change under way hid the pair (D451).** A crossing lasts seconds. Until it
+crossed, the changer was still a stub of its old lane and no one's partner, so an approaching
+partner drove on and arrived too fast to yield. D451 revises (b) and adds (c):
+
+- **(b), revised: where the partner will wait.**
+  - **Which partner counts:** as in D450, W counts while it waits or is inside its look-ahead.
+  - **Where W is taken:** a W not yet waiting is taken where it will wait, its front anywhere within
+    its stop-line reach of its dead end.
+  - **What the changer occupies:** still a stub, the changer goes on to its own dead end, so it takes
+    the lane from where it lands up to there.
+  - **How the lane is found:** W's place on the landing lane is found by lane section, because a
+    dead end often lies exactly at a join (D444).
+- **(c) A change under way counts as on its target route.** While a change leads onto a route that
+  is still a stub, D207's partner test (with D450 (a)) also treats the changer as already on that
+  route. Its partners there then yield from the start of the crossing, not from its end.
+  - D206 already treats a change under way as holding its target place for other changes.
+  - Switched off no change is under way, so (c) does nothing.
+
+Rows BA186 (a unit row, switched on) and BA187 (the lab).
+
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 
 M3.2.8c step 5 showed that the time M3.2.8b costs is the left-turn dead-end waits

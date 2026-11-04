@@ -59,6 +59,10 @@ bool acceptsAsLeader(const Scenario&, const std::vector<Vehicle>&, const std::ve
 void yieldMutual(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
                  const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t x, const RouteLaneChange& change,
                  std::vector<CourtesyHold>& holds);
+// D451: a change under way already counts, for D207, as on the stub route it leads to -- its
+// partners there yield from the start of the crossing, not from its end (lane_swap.cpp).
+void yieldMutualUnderWay(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                         const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t x, std::vector<CourtesyHold>& holds);
 // D450 (contract §2, "Cooperation"): vehicle `v`'s mandatory change onto `change.target` at `at`
 // would land, still a stub, inside the target place (widened by the standstill distance) of a stub
 // on its next target lane that needs the landing lane and is waiting or inside its look-ahead.

@@ -2,6 +2,25 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — UTDF U2b: desktop export, Number Nodes, UTM
+
+- **Numbering:** template Apply numbers an unnumbered Node (`generateJunction`), and re-Apply keeps
+  the number. `numberNodes` and `setNodeNumber` are in `node_commands`.
+- **Nodes page:** a Number column, a Number field in *Rename*, and *Number Nodes* (one Undo step).
+- **Export:** *File → UTDF for Synchro/Vistro…* (`utdf_export_dialog.*`).
+  - It shows the report, with the mode and the NEMA opt-in, before the file dialog.
+  - It writes atomically and refuses the open project.
+  - It writes UTM through `GeoProjection::worldToGrid` when the project has a map reference.
+- **Translations:** en/th strings for every `UTDF_*` code and the dialog.
+- **Tests:**
+  - `utdf-export-ui` (UT9): the desktop writes the CLI's expected files byte for byte in both
+    modes. It also covers cancel, protection, Number Nodes and Thai.
+  - `map-geo` checks `worldToGrid`.
+  - `node-ui` now expects the 9th column.
+  - The jt6 fill now writes schema 65.
+- **Verified:** headless `utdf`, `junctionfill` and `nodeanalysis` pass, and so do desktop
+  `utdf-export-ui`, `map-geo`, `node-ui` and `object-export-ui`. `multra-check-docs` passes.
+
 ## 2026-11-03 — UTDF U2a: phases, volumes and timing (D443)
 
 - **Owner:**

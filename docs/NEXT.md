@@ -146,24 +146,28 @@ a planning-level method (otherwise back to the owner).
     lane-change state machine, a no-progress timer and abandoning a change are deferred with it.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
     The +10–28 % wall cost switched on needs a profile before any work.
-- **Weaving (M3.4, D449–D450): the lock is partly fixed; the next step is the owner's choice.**
-  The weaving lab ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA185) and D450
-  ([evidence](evidence/weaving-lock.md)):
-  - **Fixed (D450):** a swapping pair is kept while the front one closes in on its dead end, and no
-    change lands in a waiting partner's place. Switched off, the lab is lock-free through ×0.6
-    (before: ×0.4). Product runs are unchanged.
-  - **Still locking:**
-    - Off at ×0.8+. The rear partner, braking no harder than comfortable, overruns into the
-      standstill distance when the front one stops hard.
-    - Switched on at almost every level from ×0.5. Not yet traced; a change under way occupies both
-      lanes.
-    - Until these are fixed, a weave's served flow above that demand still measures lock timing.
+- **Weaving (M3.4, D449–D451): the lock is mostly fixed; the next step is the owner's choice.**
+  The weaving lab ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA187) and
+  D450–D451 ([evidence](evidence/weaving-lock.md)):
+  - **Fixed:**
+    - a swapping pair is kept while the front one closes in on its dead end;
+    - no change lands where a partner waits or will wait;
+    - a change under way counts as on its target route, so partners yield from the start of the
+      crossing.
+  - **Results:** switched off, the lab is lock-free through ×0.8. Switched on, locks fall from every
+    seed to 1–4 of 10 at ×1.0. Product runs are unchanged but for the lane-change lab's Diverge
+    (clamps 0).
+  - **Costs and leftovers:**
+    - Longer waits for two-change stubs: up to 237 s on at ×0.6, and 510 s off at ×1.0.
+    - Clamps off at ×1.0 rise from 24 to 32.
+    - Locks left at ×1.0 (off: D450's comfortable-cap overrun) and, switched on, at ×0.5–0.8 for
+      the 150 and 300 m weaves; not traced.
   - **Choices:**
-    - (1) Let the D207 yield brake up to `maxDecelerationCooperativeBraking`, which changes D207's
-      limit. The experiment gave ×1.0 off 7/8/5 → 4/2/3 locked seeds and no gain on.
-    - (2) Trace the switched-on locks, contract first.
-    - (3) Gap seeking, which is deferred above.
-    - (4) Compile two-entry weaves (BA179, the D96 shape).
+    - (1) Let the D207 yield brake up to `maxDecelerationCooperativeBraking`. D450's experiment gave
+      ×1.0 off 7/8/5 → 4/2/3.
+    - (2) Trace the remaining switched-on locks.
+    - (3) Gap seeking (deferred above), which would also shorten the long waits.
+    - (4) Compile two-entry weaves (BA179).
     - (5) NGSIM at M6.
 - **Meso (M11, in through M11.4b):** the gate needs the benchmark: waiting on the owner's copy of
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu

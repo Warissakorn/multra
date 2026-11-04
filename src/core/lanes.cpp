@@ -416,6 +416,7 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
         const auto& behaviour = s.behaviours[refs[v].behaviour];
         if (const auto* mine = laneChangeTargetOf(index, route, vehicle.distance, vehicle.distance - type.length))
             yieldMutual(s, index, vehicles, refs, spans, buckets, v, *mine, holds);
+        yieldMutualUnderWay(s, index, vehicles, refs, spans, buckets, v, holds); // D451
         const bool waiting = waitingAtDeadEnd(index, route, vehicle, behaviour);
         if (!waiting) {
             // Cooperative braking: only inside the look-ahead, once its dead end, taken as a

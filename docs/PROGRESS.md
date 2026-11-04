@@ -6,6 +6,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — Switched-on weave-end lock: a change under way hid the pair (D451)
+
+- **Owner:** "trace the switched-on case first".
+- **Traced** ([weaving-lock](evidence/weaving-lock.md#d451-switched-on-a-change-under-way-hid-the-pair)):
+  a lateral crossing (about 3.5 s) left the changer no one's partner until it crossed, so an
+  approaching partner drove on and arrived too fast to yield. Two more traps were found on the way:
+  a dead end at a join (D444), and a landing stub that drives on to its own dead end.
+- **D451 (M3_8_CONTRACT §2):**
+  - (b) revised: a partner is taken where it will wait, and the landing stub takes the lane up to
+    its dead end;
+  - (c) new: a change under way counts as on its target route for D207 (`yieldMutualUnderWay`).
+  - **Deviation from the plan:** I had rejected (c) on its own, but the trace showed it is needed
+    together with (b).
+  - **Dropped:** a "could not stop comfortably" condition; it added a lab clamp.
+- **Rows:** BA186 and BA187, both failure-first.
+- **Results:**
+  - Product runs are unchanged but for the lane-change lab's Diverge (clamps 0, delay ±0.01 s).
+  - The weaving lab off is lock-free through ×0.8. On, its locks at ×1.0 fall from 10/10/10 to
+    1/4/3 seeds.
+  - Longer waits: up to 237 s on at ×0.6, and 510 s off at ×1.0.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — The weave-end lock, partly fixed (D450)
 
 - **Owner:** "fix the weave-end lock first".
@@ -159,22 +181,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `followerFilter` window-end lookup is recorded in the evidence.
 - **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass. There was
   no desktop build here: Qt is not installed in this container.
-
-## 2026-11-03 — UTDF U2b: desktop export, Number Nodes, UTM
-
-- **Numbering:** template Apply numbers an unnumbered Node (`generateJunction`), and re-Apply keeps
-  the number. `numberNodes` and `setNodeNumber` are in `node_commands`.
-- **Nodes page:** a Number column, a Number field in *Rename*, and *Number Nodes* (one Undo step).
-- **Export:** *File → UTDF for Synchro/Vistro…* (`utdf_export_dialog.*`).
-  - It shows the report, with the mode and the NEMA opt-in, before the file dialog.
-  - It writes atomically and refuses the open project.
-  - It writes UTM through `GeoProjection::worldToGrid` when the project has a map reference.
-- **Translations:** en/th strings for every `UTDF_*` code and the dialog.
-- **Tests:**
-  - `utdf-export-ui` (UT9): the desktop writes the CLI's expected files byte for byte in both
-    modes. It also covers cancel, protection, Number Nodes and Thai.
-  - `map-geo` checks `worldToGrid`.
-  - `node-ui` now expects the 9th column.
-  - The jt6 fill now writes schema 65.
-- **Verified:** headless `utdf`, `junctionfill` and `nodeanalysis` pass, and so do desktop
-  `utdf-export-ui`, `map-geo`, `node-ui` and `object-export-ui`. `multra-check-docs` passes.

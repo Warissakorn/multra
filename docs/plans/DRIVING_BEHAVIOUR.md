@@ -238,6 +238,8 @@ assertions and platform in evidence when the corresponding slice lands.
 | BA183 | The 300 m weave alone, switched off, demand ×1.0, seed 42, 450 s (D449; open until D450) | Arrivals continue into the last minute; no removal, no 2D overlap. Before D450 the dead-end heads locked for good |
 | BA184 | Two lanes, a swapping pair of stubs inside mixed queues (full and stub vehicles alternating at 7 m, 12 m/s) toward the shared dead end; the pair starts within D207's distance (D450) | Every vehicle arrives within 90 s; no clamp, no 2D overlap. Before: the rear partner drove back up inside the standstill distance once the front one stood, and every lane stood |
 | BA185 | Three lanes: W waits at its dead end on lane 0 needing lane 1; Z, a two-change stub with the lower id, stands beside it on lane 2; lane 1 free (D450) | W changes first, then Z twice; no clamp, no 2D overlap. Before: Z landed in W's place and the two stood alongside for ever |
+| BA186 | Switched on, three lanes: Z (two changes, lower id) stands at its dead end on lane 2; W approaches on lane 0, 15 m back at 11 m/s, inside its look-ahead, its current place clear of Z's landing (D451) | W changes first, then Z twice, within 40 s; no clamp, no 2D overlap. Before: Z started into lane 1, W arrived beside it during the crossing, and both stood for ever |
+| BA187 | The 150 m weave alone, switched on, ×0.6, seed 42, 450 s (D451) | Arrivals continue into the last minute; no removal, no 2D overlap. Before: nothing arrived after 218.6 s |
 
 Future W74/W99 rows must force each transition/limit, mixed-model following,
 profile/model boundary state transfer, distribution sampling and physical safety.

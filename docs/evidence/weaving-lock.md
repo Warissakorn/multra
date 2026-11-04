@@ -127,3 +127,129 @@ The full table:
   Experiment (1) is marginal. Experiment (2) helps switched off and redefines D207's braking limit,
   so it is the owner's choice. Neither touches the switched-on locks at ×1.0. Those need their own
   trace: a change under way occupies both lanes, so the pair geometry differs.
+
+## D451: switched on, a change under way hid the pair
+
+The owner chose to trace the switched-on case first (2026-11-04). Branch on `adec701` (D450) plus
+D451.
+
+### Trace
+
+**Lab seed 42, 150 m, on, ×0.6, vehicles 392 and 401:**
+- **223.5 s:** 392, a two-change stub on lane 2, stands at 146.3 m and starts its lateral move into
+  lane 1. 401 (lane 0, needs lane 1) is about 35 m back at 11 m/s.
+- **Why D450 (b) let it through:** it compared the landing with 401's *current* place.
+- **During the 3.5 s crossing:** 392 was still a lane-2 stub, so no one's partner. 401 drove on,
+  speeding up to 12 m/s.
+- **About 225.7 s:** 392 crossed. 401 was 3 m from where it had to stop, and it stood 0.3 m from
+  392's place.
+
+**The 150 m weave alone, seed 42:** 80 started its move while 99 crawled 22 m back at 0.9 m/s,
+outside its look-ahead. During the crossing 99 accelerated to 2.3 m/s, and it stood 0.85 m from
+80's place.
+
+**Two more traps found on the way:**
+- W's dead end lies exactly at the join, so `frontPart` put its place on the exit Connector (D444's
+  trap). The test then skipped W.
+- A landing stub drives on to its own dead end, so a landing clear of W at the decision ended
+  beside W anyway (vehicles 756 and 794).
+
+### Change (D451, M3_8_CONTRACT §2)
+
+- **(b), revised:**
+  - a partner not yet waiting is taken where it will wait, within its stop-line reach of its dead
+    end;
+  - the landing stub takes the lane up to its own dead end;
+  - W's place is found on the landing lane's own part.
+- **(c), new:** a change under way counts, for D207 and D450 (a), as on the stub route it leads to,
+  through `yieldMutualUnderWay`. Partners there yield from the start of the crossing. Switched off
+  nothing is under way.
+- **Tried and dropped:** counting a W that "could not stop comfortably short of the landing" (D71's
+  test). It added a clamp in the lane-change lab (seed 48, Diverge): a stub landed late, braked at
+  up to 8 m/s² for its dead end, and its follower clamped. The rows pass without it.
+
+### Rows
+
+| Row | Before | After |
+|---|---|---|
+| BA186 (`laneswap`, on): Z stands at its dead end on lane 2; W approaches on lane 0, 15 m back at 11 m/s, inside its look-ahead, its current place clear of the landing | Fails: both stand | W changes first, then Z twice, within 40 s; no clamp, no overlap |
+| BA187 (`weavinglab`, on): the 150 m weave alone, ×0.6, seed 42 | Fails: nothing arrives after 218.6 s | Still arriving in the last minute; no removal, no overlap |
+
+- Without (c), BA187 fails; BA186 needed the waiting place.
+- BA183–BA185, D207's rows and BA161 still pass. `ctest --preset headless`: **175/175**, and
+  `check` passes.
+
+### Product runs, seeds 42–51
+
+- Four-leg, M2.6 and the T-junction are identical to D450 apart from the build commit, off and on.
+- The lane-change lab changes only in its Diverge scene, a real shared dead end. The trips are the
+  same and clamps stay 0. Mean delay goes from 8.982 to 8.981 s off, and from 9.045 to 9.052 s on.
+
+### Weaving lab, seeds 42–51
+
+Locked seeds per 10, D450 → D451 (150 / 300 / 500 m):
+
+| Factor | Lateral off | Lateral on |
+|---|---|---|
+| ×0.3, ×0.4 | 0 / 0 / 0 → 0 / 0 / 0 | 0 / 0 / 0 → 0 / 0 / 0 |
+| ×0.5 | 0 / 0 / 0 → 0 / 0 / 0 | 2 / 2 / 0 → **1 / 1 / 0** |
+| ×0.6 | 0 / 0 / 0 → 0 / 0 / 0 | 7 / 5 / 1 → **3 / 2 / 0** |
+| ×0.8 | 1 / 1 / 0 → **0 / 0 / 0** | 10 / 9 / 5 → **4 / 5 / 0** |
+| ×1.0 | 7 / 8 / 5 → 6 / 6 / 5 | 10 / 10 / 10 → **1 / 4 / 3** |
+
+The full table:
+
+| scene | factor | lateral | served | unfinished | served % | mean delay (s) | changes | waiting at dead end | longest wait (s) | last arrival (s), earliest seed | locked seeds (of the range) | clamps | 2D overlap | removed |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Weave 150 m | 0.3 | off | 189.7 | 0.0 | 100.0 | 4.5 | 81.7 | 0.1 | 2.4 | 634.5 | 0 | 2 | 0 | 0 |
+| Weave 300 m | 0.3 | off | 189.2 | 0.0 | 100.0 | 5.0 | 80.2 | 0.1 | 2.0 | 645.6 | 0 |  |  |  |
+| Weave 500 m | 0.3 | off | 201.0 | 0.0 | 100.0 | 6.1 | 83.0 | 0.1 | 1.1 | 647.4 | 0 |  |  |  |
+| Weave 150 m | 0.3 | on | 189.7 | 0.0 | 100.0 | 4.9 | 81.7 | 1.1 | 5.2 | 634.0 | 0 | 4 | 0 | 0 |
+| Weave 300 m | 0.3 | on | 189.2 | 0.0 | 100.0 | 5.2 | 80.2 | 1.0 | 4.8 | 645.6 | 0 |  |  |  |
+| Weave 500 m | 0.3 | on | 201.0 | 0.0 | 100.0 | 6.3 | 83.0 | 1.1 | 5.2 | 647.4 | 0 |  |  |  |
+| Weave 150 m | 0.4 | off | 258.8 | 0.0 | 100.0 | 5.2 | 110.9 | 0.4 | 4.9 | 632.3 | 0 | 1 | 0 | 0 |
+| Weave 300 m | 0.4 | off | 256.1 | 0.0 | 100.0 | 6.0 | 108.8 | 0.5 | 2.6 | 650.2 | 0 |  |  |  |
+| Weave 500 m | 0.4 | off | 257.8 | 0.0 | 100.0 | 7.1 | 111.1 | 0.5 | 3.5 | 654.5 | 0 |  |  |  |
+| Weave 150 m | 0.4 | on | 258.8 | 0.0 | 100.0 | 6.1 | 110.9 | 1.7 | 6.1 | 632.3 | 0 | 3 | 0 | 0 |
+| Weave 300 m | 0.4 | on | 256.1 | 0.0 | 100.0 | 6.5 | 108.8 | 2.1 | 7.8 | 650.2 | 0 |  |  |  |
+| Weave 500 m | 0.4 | on | 257.8 | 0.0 | 100.0 | 7.3 | 111.1 | 1.7 | 8.1 | 654.5 | 0 |  |  |  |
+| Weave 150 m | 0.5 | off | 317.3 | 0.0 | 100.0 | 6.1 | 138.7 | 0.5 | 7.4 | 630.9 | 0 | 4 | 0 | 0 |
+| Weave 300 m | 0.5 | off | 321.5 | 4.7 | 98.6 | 6.8 | 136.5 | 1.1 | 5.8 | 559.4 | 0 |  |  |  |
+| Weave 500 m | 0.5 | off | 321.0 | 0.0 | 100.0 | 7.9 | 136.5 | 1.3 | 5.2 | 661.8 | 0 |  |  |  |
+| Weave 150 m | 0.5 | on | 308.8 | 8.5 | 97.3 | 9.2 | 134.2 | 2.7 | 60.3 | 516.3 | 1 | 5 | 0 | 0 |
+| Weave 300 m | 0.5 | on | 315.7 | 10.5 | 96.8 | 7.9 | 134.0 | 4.2 | 7.1 | 520.6 | 1 |  |  |  |
+| Weave 500 m | 0.5 | on | 321.0 | 0.0 | 100.0 | 8.4 | 136.5 | 2.4 | 8.7 | 662.1 | 0 |  |  |  |
+| Weave 150 m | 0.6 | off | 376.8 | 0.0 | 100.0 | 7.7 | 159.6 | 2.7 | 28.3 | 632.4 | 0 | 9 | 0 | 0 |
+| Weave 300 m | 0.6 | off | 373.5 | 0.0 | 100.0 | 7.5 | 156.8 | 2.2 | 8.9 | 642.2 | 0 |  |  |  |
+| Weave 500 m | 0.6 | off | 399.0 | 0.0 | 100.0 | 9.5 | 168.1 | 3.3 | 9.8 | 665.5 | 0 |  |  |  |
+| Weave 150 m | 0.6 | on | 293.6 | 83.2 | 77.9 | 50.8 | 125.3 | 7.5 | 199.2 | 160.7 | 3 | 14 | 0 | 0 |
+| Weave 300 m | 0.6 | on | 333.6 | 39.9 | 89.3 | 20.0 | 137.5 | 3.6 | 237.3 | 295.1 | 2 |  |  |  |
+| Weave 500 m | 0.6 | on | 399.0 | 0.0 | 100.0 | 11.4 | 168.1 | 4.8 | 28.0 | 665.5 | 0 |  |  |  |
+| Weave 150 m | 0.8 | off | 516.3 | 0.0 | 100.0 | 15.8 | 216.2 | 6.5 | 62.7 | 633.9 | 0 | 12 | 0 | 0 |
+| Weave 300 m | 0.8 | off | 509.3 | 0.0 | 100.0 | 11.0 | 207.0 | 5.6 | 7.5 | 657.6 | 0 |  |  |  |
+| Weave 500 m | 0.8 | off | 502.6 | 0.0 | 100.0 | 12.4 | 218.5 | 5.7 | 10.1 | 668.3 | 0 |  |  |  |
+| Weave 150 m | 0.8 | on | 349.4 | 166.9 | 67.7 | 125.8 | 147.5 | 14.5 | 121.6 | 357.6 | 4 | 13 | 0 | 0 |
+| Weave 300 m | 0.8 | on | 353.3 | 156.0 | 69.4 | 53.9 | 142.0 | 9.4 | 143.1 | 206.0 | 5 |  |  |  |
+| Weave 500 m | 0.8 | on | 502.6 | 0.0 | 100.0 | 26.8 | 218.5 | 12.5 | 21.7 | 670.0 | 0 |  |  |  |
+| Weave 150 m | 1.0 | off | 370.6 | 268.4 | 58.0 | 89.7 | 152.2 | 13.7 | 236.1 | 162.6 | 6 | 32 | 0 | 0 |
+| Weave 300 m | 1.0 | off | 376.2 | 252.1 | 59.9 | 44.2 | 144.8 | 13.1 | 510.3 | 66.2 | 6 |  |  |  |
+| Weave 500 m | 1.0 | off | 412.0 | 223.9 | 64.8 | 41.3 | 175.0 | 13.5 | 165.3 | 106.1 | 5 |  |  |  |
+| Weave 150 m | 1.0 | on | 428.4 | 210.6 | 67.0 | 174.8 | 187.5 | 17.9 | 57.3 | 452.4 | 1 | 8 | 0 | 0 |
+| Weave 300 m | 1.0 | on | 348.1 | 280.2 | 55.4 | 135.1 | 141.2 | 14.3 | 45.7 | 66.2 | 4 |  |  |  |
+| Weave 500 m | 1.0 | on | 416.6 | 219.3 | 65.5 | 122.4 | 184.0 | 15.7 | 111.8 | 312.5 | 3 |  |  |  |
+
+### Reading
+
+- **Switched on:** much better. The 500 m weave is lock-free through ×0.8, and at ×1.0 only 1–4
+  seeds of 10 lock, against every seed before.
+- **Switched off:** lock-free through ×0.8 now.
+- **The cost, as the plan warned:** a two-change stub now waits on lane 2 while partners keep
+  arriving.
+  - The longest waits grow: 199–237 s on at ×0.6 (150 and 300 m), and up to 510 s off at ×1.0.
+  - Clamps switched off at ×1.0 rise from 24 to 32 (×0.8: 14 to 12).
+  - These are long waits, not locks: the vehicles still get through. Nothing is removed and nothing
+    overlaps.
+- **Still open:**
+  - Locks remain at ×1.0, and switched on at ×0.5–0.8 for the 150 and 300 m weaves.
+  - The off case at ×1.0 is D450's comfortable-cap overrun, unchanged.
+  - The remaining on locks are not traced.

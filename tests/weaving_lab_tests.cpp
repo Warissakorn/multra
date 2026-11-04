@@ -24,11 +24,12 @@ bool same(const Json& a, const Json& b) {
 }
 const auto kData = test::root() / "data";
 // The 300 m scene alone, 450 s: about a third of one full run, so the rows stay quick.
-sweep::WeavingRun middle(double factor, bool lateral, std::uint32_t seed = 42) {
+sweep::WeavingRun scene(std::size_t k, double factor, bool lateral, std::uint32_t seed = 42) {
     const auto lab = fixture::weavingLab();
-    const auto& sc = lab.scenes[1];
+    const auto& sc = lab.scenes[k];
     return sweep::runWeaving(lab.document, kData, seed, {factor, lateral, {sc.toMain, sc.toExit}, 450.0});
 }
+sweep::WeavingRun middle(double factor, bool lateral, std::uint32_t seed = 42) { return scene(1, factor, lateral, seed); }
 std::uint64_t served(const sweep::WeavingRun& r) { std::uint64_t n = 0; for (const auto& m : r.movements.movements) n += m.vehicles; return n; }
 std::uint64_t unfinished(const sweep::WeavingRun& r) { std::uint64_t n = 0; for (const auto& m : r.movements.movements) n += m.unfinished; return n; }
 std::uint64_t changes(const sweep::WeavingRun& r) { std::uint64_t n = 0; for (const auto& c : r.changes.rows) n += c.changes; return n; }
@@ -113,6 +114,18 @@ TEST(weavinglab, ba183_at_full_demand_the_weave_end_keeps_serving) {
     const auto lab = fixture::weavingLab();
     const auto r = middle(1.0, false);
     const auto& sc = lab.scenes[1];
+    double last = 0;
+    for (const auto& id : {sc.toMain, sc.toExit}) if (r.lastArrival.count(id)) last = std::max(last, r.lastArrival.at(id));
+    CHECK(r.removed == 0 && !r.overlap);
+    CHECK(last >= 450 - 60); // still arriving in the last minute
+}
+TEST(weavinglab, ba187_switched_on_the_150_m_weave_keeps_serving) {
+    // D451: switched on, a two-change stub crossing into lane 1 hid its pair from the lane-0 stub
+    // approaching its dead end, which then arrived at speed and stood beside it for good. The 150 m
+    // weave alone, x0.6, seed 42, 450 s: before D451 nothing arrived after 218.6 s.
+    const auto lab = fixture::weavingLab();
+    const auto r = scene(0, 0.6, true);
+    const auto& sc = lab.scenes[0];
     double last = 0;
     for (const auto& id : {sc.toMain, sc.toExit}) if (r.lastArrival.count(id)) last = std::max(last, r.lastArrival.at(id));
     CHECK(r.removed == 0 && !r.overlap);

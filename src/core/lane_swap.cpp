@@ -1,4 +1,5 @@
 #include "lanes.hpp"
+#include "conflicts.hpp"
 #include "following.hpp"
 #include <algorithm>
 
@@ -24,16 +25,18 @@ bool acceptsAsLeader(const Scenario& s, const std::vector<Vehicle>& vehicles, co
 // the rear one of the pair (level: the higher id), braking no harder than comfortably. Otherwise each
 // lies alongside the other's target place and neither ever changes. D446: while x's change is under
 // way (switched on), y also counts beyond the standstill distance while it would not accept x as leader.
-void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
-                 const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
-                 std::size_t x, const RouteLaneChange& change, std::vector<CourtesyHold>& holds) {
-    const auto& front = vehicles[x];
+namespace {
+// yieldMutual for x as `front` on `route` -- its own, or (D451) the one its change under way leads to.
+void yieldMutualAs(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
+                   const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                   std::size_t x, const Vehicle& front, std::size_t route, const RouteLaneChange& change,
+                   std::vector<CourtesyHold>& holds) {
     const double at = mappedOnto(change, front.distance), atRear = at - s.vehicleTypes[refs[x].type].length;
-    const auto lane = frontPart(index.parts[refs[x].route], front.distance).segmentIndex;
+    const auto lane = frontPart(index.parts[route], front.distance).segmentIndex;
     const auto& xType = s.vehicleTypes[refs[x].type];
     const auto& xBehaviour = s.behaviours[refs[x].behaviour];
-    const bool closing = waitingAtDeadEnd(index, refs[x].route, front, xBehaviour) ||
-                         deadEndGoverns(index, refs[x].route, front, xType, xBehaviour); // D450
+    const bool closing = waitingAtDeadEnd(index, route, front, xBehaviour) ||
+                         deadEndGoverns(index, route, front, xType, xBehaviour); // D450
     for (const auto& part : index.parts[change.target])
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
@@ -62,6 +65,26 @@ void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vecto
             if (hold.gap < holds[y].gap) holds[y] = hold;
         }
 }
+}
+void yieldMutual(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
+                 const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                 std::size_t x, const RouteLaneChange& change, std::vector<CourtesyHold>& holds) {
+    yieldMutualAs(s, index, vehicles, refs, spans, buckets, x, vehicles[x], refs[x].route, change, holds);
+}
+void yieldMutualUnderWay(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
+                         const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
+                         std::size_t x, std::vector<CourtesyHold>& holds) {
+    const auto& vehicle = vehicles[x];
+    if (!vehicle.lateralTarget) return;
+    const double length = s.vehicleTypes[refs[x].type].length;
+    const auto* current = laneChangeTargetOf(index, refs[x].route, vehicle.distance, vehicle.distance - length);
+    if (!current || index.remainingOfRoute[current->target] == 0) return; // it leads onto a full route
+    auto there = vehicle; // where it will be once it has crossed, its change done
+    there.distance = mappedOnto(*current, vehicle.distance);
+    there.lateralTarget.reset();
+    if (const auto* next = laneChangeTargetOf(index, current->target, there.distance, there.distance - length))
+        yieldMutualAs(s, index, vehicles, refs, spans, buckets, x, there, current->target, *next, holds);
+}
 bool landsInWaitingPlace(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
                          const std::vector<VehicleRefs>& refs, const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
                          std::size_t v, const RouteLaneChange& change, double at) {
@@ -72,6 +95,9 @@ bool landsInWaitingPlace(const Scenario& s, const ScenarioIndex& index, const st
     if (!next) return false;
     const auto& landing = frontPart(index.parts[target], at);
     const double front = at - landing.start, rear = front - length; // on the landing lane section
+    // D451: still a stub, the changer goes on to wait at its own dead end, so it takes the lane from
+    // where it lands up to there.
+    const double reach = std::max(front, index.deadEndOfRoute[target] - landing.start);
     for (const auto& part : index.parts[next->target])
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
@@ -82,13 +108,22 @@ bool landsInWaitingPlace(const Scenario& s, const ScenarioIndex& index, const st
             const auto& behaviour = s.behaviours[refs[w].behaviour];
             const auto* theirs = laneChangeTargetOf(index, refs[w].route, other.distance, other.distance - type.length);
             if (!theirs) continue;
-            if (!waitingAtDeadEnd(index, refs[w].route, other, behaviour) &&
-                !deadEndGoverns(index, refs[w].route, other, type, behaviour)) continue;
-            const double wAt = mappedOnto(*theirs, other.distance);
-            const auto& place = frontPart(index.parts[theirs->target], wAt);
-            if (place.segmentIndex != landing.segmentIndex) continue; // it needs another lane
-            const double wFront = wAt - place.start, wRear = wFront - type.length, room = standstillGap(behaviour);
-            if (front > wRear - room && rear < wFront + room) return true;
+            // The landing lane's part on w's target route; none, and w needs another lane. Found by
+            // segment, since w's dead end often lies exactly at a join (frontPart's downstream, D444).
+            const auto& parts = index.parts[theirs->target];
+            const auto on = std::find_if(parts.begin(), parts.end(), [&](const auto& p) { return p.segmentIndex == landing.segmentIndex; });
+            if (on == parts.end()) continue;
+            // D450: a partner counts while it waits or is inside its look-ahead.
+            const bool waiting = waitingAtDeadEnd(index, refs[w].route, other, behaviour);
+            if (!waiting && !deadEndGoverns(index, refs[w].route, other, type, behaviour)) continue;
+            const double room = standstillGap(behaviour);
+            // D451: one not yet waiting is taken where it will wait -- its front anywhere within its
+            // stop-line reach of its dead end -- not where it is now; one waiting, where it stands.
+            const double dead = index.deadEndOfRoute[refs[w].route];
+            const double lo = waiting ? other.distance : dead - stopLineReach(behaviour, other.driverFactor);
+            const double hi = waiting ? other.distance : dead;
+            const double wFront = mappedOnto(*theirs, hi) - on->start, wRear = mappedOnto(*theirs, lo) - on->start - type.length;
+            if (reach > wRear - room && rear < wFront + room) return true;
         }
     return false;
 }

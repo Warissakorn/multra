@@ -181,8 +181,8 @@ TEST(laneswap, ba184_a_yielding_partner_keeps_its_standstill_distance_and_the_qu
 // other's place, standing alongside, for ever.
 namespace {
 struct Three { Scenario s; std::string l0, l1, l2; };
-Three three() {
-    Three t{road(3, 3.5, LateralParameters{}), {}, {}, {}};
+Three three(const LateralParameters& p = {}) {
+    Three t{road(3, 3.5, p), {}, {}, {}};
     auto& s = t.s;
     const auto lanes = road(3, 3.5, keys(0, 0)); // lane order needs cross-sections; ids do not depend on them
     t.l0 = lanes.segments[laneSegment(lanes, 0)].id; t.l1 = lanes.segments[laneSegment(lanes, 1)].id;
@@ -212,6 +212,42 @@ TEST(laneswap, ba185_a_change_does_not_land_in_a_waiting_partners_place) {
         overlap = overlap || overlap2d(state);
     }
     // W changes first, then Z twice; both reach their full routes within 30 s.
+    CHECK(routes[2] == std::vector<std::string>{"W-full"});
+    CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
+    CHECK(clamps == 0);
+    CHECK(!overlap);
+}
+
+// D451 (BA186): switched on, a partner still approaching is taken at the place it will wait (weaving
+// lab seed 42, 150 m, x0.6, vehicles 392 and 401). Z stands at its dead end on lane 2; W approaches
+// on lane 0 at 11 m/s, 15 m back, already inside its look-ahead (from 20 m back W still stops
+// behind Z after the crossing). D450 (b) compared Z's landing with
+// W's current place and let Z start into lane 1. During the 3.5 s crossing Z was no partner of W's
+// yet, so W drove on, and when Z crossed W could no longer stop behind it: it stood beside Z, each
+// needing the other's place, for ever.
+TEST(laneswap, ba186_switched_on_an_approaching_partner_is_taken_where_it_will_wait) {
+    const auto t = three(keys(0.5, 1.0));
+    auto state = put(t.s, {{"Z-2", 249, 0}, {"W-stub", 234, 11}});
+    CHECK(state.index->lateral.on);
+    // The forcing: W is inside its look-ahead and not waiting, and its current place is clear of
+    // Z's landing (so D450 (b) as first written lets Z start).
+    const auto& w = *byId(state, 2);
+    const auto& wType = state.scenario->vehicleTypes[w.typeIndex];
+    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, wType, state.scenario->behaviours.front()));
+    CHECK(!waitingAtDeadEnd(*state.index, w.routeIndex, w, state.scenario->behaviours.front()));
+    const double length = wType.length, standstill = state.scenario->behaviours.front().standstillDistance;
+    CHECK(234 + standstill < 249 - length); // W's place now, widened, ends behind Z's landing
+    std::map<std::uint64_t, std::vector<std::string>> routes;
+    int clamps = 0; bool overlap = false;
+    for (int k = 0; k < 400; ++k) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events) {
+            if (const auto* c = std::get_if<LaneChangeEvent>(&e)) routes[c->vehicleId].push_back(c->toRouteId);
+            if (std::holds_alternative<SafetyClampEvent>(e)) ++clamps;
+        }
+        overlap = overlap || overlap2d(state);
+    }
+    // W changes first, then Z twice, within 40 s.
     CHECK(routes[2] == std::vector<std::string>{"W-full"});
     CHECK(routes[1] == std::vector<std::string>({"Z-1", "Z-full"}));
     CHECK(clamps == 0);
