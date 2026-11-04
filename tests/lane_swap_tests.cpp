@@ -118,3 +118,27 @@ TEST(laneswap, a_full_route_vehicle_alongside_is_not_asked) { // D207, not a pai
     CHECK(byId(state, 2)->speed >= before - 1e-9); // never braked for it
     CHECK(routeOf(state, 1) == "A-stub");
 }
+
+// D446 (BA161): switched on, a pair whose rear one is just over a standstill distance behind the front
+// one's target place (lane-change-lab seed 49, vehicles 83 and 88). Both starts are accepted at low
+// speed, but D208 lets neither body over the line: the rear one is too close to accept the front one
+// as its leader. Before D446, D207 did not count it as a partner (beyond the standstill distance), so
+// nobody yielded and the two rode side by side to the dead end. Now the rear one yields while the
+// front one's change is under way.
+TEST(laneswap, switched_on_a_rear_partner_too_close_to_accept_yields) { // BA161
+    const auto r = swap(keys(0.5, 1.0)); // as the audit (lab seed 49)
+    const double length = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].length;
+    const double standstill = r.s.behaviours.front().standstillDistance;
+    const double gap = standstill + 1; // vehicle 2's front behind vehicle 1's target place
+    auto state = put(r.s, {{"A-stub", 40, 5}, {"B-stub", 40 - length - gap, 4}}); // the front one pulling away slowly
+    CHECK(state.index->lateral.on);
+    CHECK(gap > standstill); // the forcing: outside D207's standstill zone
+    state = stepSimulation(std::move(state));
+    CHECK(byId(state, 1)->lateralTarget && byId(state, 2)->lateralTarget); // and both changes started
+    const auto o = run(state, 8);
+    CHECK(o.order.size() == 2); // both crossed within 8 s
+    CHECK(o.order.size() == 2 && o.order.front() == 1); // the front one first
+    CHECK(o.clamps == 0);
+    CHECK(!o.overlap);
+    CHECK(o.hardest >= -comfortable(r.s) - 1e-9);
+}

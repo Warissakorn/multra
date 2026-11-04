@@ -136,21 +136,25 @@ a planning-level method (otherwise back to the owner).
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
 - **Lateral, before any shipped behaviour carries its keys** ([lateral-run-audit](evidence/lateral-run-audit.md),
-  [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md)).
-  - **Fixed:** Finding 1, the stuck straddler (D444), and Finding 2, the waiting-changer clamps
-    (D445). Switched on, m2.6 now has the switched-off clamp count in every seed, and seed 45
-    completes 1903 (off: 1908).
-  - **Next steps,** in the order the owner agreed: one per session, each with failure-first rows,
-    a probe of the case before any change, and the audit batch re-run (seeds 42–51, off and on).
-    1. **Finding 3, the swap lock** (lab seeds 44/49, vehicles 83/88, about 50 s side by side at
-       `lateral ±0.8`): refuse a start while a changer coming the other way targets this lane over
-       an overlapping length; break same-tick ties by id. The D444 straddle probe does not see this
-       case, because both bodies stay inside their lanes. Measure the time each changer spends
-       waiting at the line instead.
-    2. **A body over a line whose move is refused** (`blocked` in `moveLaterally`) keeps its place.
+  [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md),
+  [swap-lock](evidence/lateral-swap-lock.md)).
+  - **Fixed:** all three audit findings.
+    - The stuck straddler (D444).
+    - The waiting-changer clamps (D445).
+    - The swap lock (D446).
+
+    Switched on, m2.6 now has the switched-off clamp count in every seed, and lab changes over 8 s
+    fell from 36 to 27.
+  - **Next steps,** in the agreed order: one per session, each with a probe of the case first,
+    failure-first rows and the audit batch re-run (seeds 42–51, off and on).
+    1. **A body over a line whose move is refused** (`blocked` in `moveLaterally`) keeps its place.
        Step it back as D208 does. No product run shows this now, so build the case in a test.
-    3. **`followerFilter`'s target-route lookup at the window's end** still uses `frontPart`.
-       Reuse `targetSectionAt` (D444).
+    2. **`followerFilter`'s target-route lookup at the window's end** still uses `frontPart`. Reuse
+       `targetSectionAt` (D444).
+    3. **Residue for the owner: gap seeking.** A changer alongside a car that is not changing, at a
+       similar speed, waits at the line (lab seed 49, vehicle 580, 36 s). The long m2.6 waits (up to
+       91 s, seeds 43/47/49) were not examined: probe them first. Cooperation beyond D207 pairs is
+       M3.2.8c (only near the dead end) or a new contract; either is the owner's choice.
   - **Later, and only if residue remains:** the lane-change state machine and a no-progress timer.
     A timer is a behaviour value, so a key needs the owner (D204 added none). Abandoning a change is
     still the owner's call.

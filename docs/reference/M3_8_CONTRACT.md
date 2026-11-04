@@ -202,7 +202,10 @@ Y treats X's target place as a moving obstacle at X's speed (a second obstacle, 
 no harder than its type's `comfortableDeceleration`. Every tick decides afresh; nothing is stored.
 Once Y is a standstill distance back, rules 1–5, the waiting hold and cooperative braking apply as
 before, and Y changes into the lane X left. It applies with and without the lateral switch (D206),
-and it never waives a safety test.
+and it never waives a safety test. **While X's change is under way (D446)**, switched on, Y beyond its
+standstill distance is still X's partner as long as it would not accept X at X's target place as its
+leader (`acceptsAsLeader`, the test D208 uses before X covers Y's lane), so the pair cannot ride side by
+side with neither covering. Switched off no change is under way, and nothing differs.
 
 ### Cooperative braking: helping a vehicle before it stops (M3.2.8c)
 

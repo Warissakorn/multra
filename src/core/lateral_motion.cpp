@@ -49,14 +49,9 @@ std::optional<Crossing> crossingOn(const Scenario& s, const ScenarioIndex& index
 // nearest follower behind it with the changer as leader. Each vehicle whose route runs on the covered
 // segment is compared in its own route's distances, so the test sees across segment ends.
 bool coversSafely(const Scenario& s, const ScenarioIndex& index, const std::vector<Vehicle>& vehicles,
-                  const std::vector<VehicleRefs>& refs, std::size_t v, double dt, const std::vector<OccupiedSpan>& body) {
+                  const std::vector<VehicleRefs>& refs, std::size_t v, const std::vector<OccupiedSpan>& body) {
     const auto& vehicle = vehicles[v];
-    const auto accepts = [&](std::size_t f, const Leader& leader) {
-        const auto& who = vehicles[f]; const auto& fType = s.vehicleTypes[refs[f].type];
-        const auto& fBehaviour = s.behaviours[refs[f].behaviour];
-        const double a = follow(who.speed, who, who.w74State, fType, fBehaviour, leader).acceleration;
-        return a >= -fType.comfortableDeceleration && integrate(who.speed, a, dt).distance <= leader.gap - standstillGap(fBehaviour);
-    };
+    const auto accepts = [&](std::size_t f, const Leader& leader) { return acceptsAsLeader(s, vehicles, refs, f, leader); }; // D446: shared with D207
     for (const auto& mine : body) {
         if (mine.own) continue;
         std::optional<Leader> leader, follower;
@@ -163,7 +158,7 @@ void moveLaterally(const Scenario& s, const ScenarioIndex& index, std::vector<Ve
         auto body = bodyAt(move);
         if (blocked(body)) continue;
         if (std::abs(vehicle.lateral + move) > std::abs(vehicle.lateral) && // outward from its lane centre only
-            !coversSafely(s, index, vehicles, refs, v, dt, body)) {
+            !coversSafely(s, index, vehicles, refs, v, body)) {
             // D208: it waits in its own lane, so a body already over the line steps back toward its centre.
             const auto now = bodyAt(0);
             if (std::all_of(now.begin(), now.end(), [](const auto& x) { return x.own; })) continue;

@@ -2,6 +2,16 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-03 — U0 golden file committed
+
+- **Owner:** exported again from Vistro and accepted it as the golden file, `u0-vistro.csv`
+  (committed byte for byte). It matches §1–§2 with a 100 s cycle and protected-only far turns:
+  EBR is phase 3 and WBR phase 7. The phase numbers, the lagging order and the splits are
+  Vistro's own, not §3's, so UT0 compares fields and codes, not timing values.
+- **Updated:** UTDF_PROBE §6 row 16, UTDF_EXPORT UT0, the utdf README, OWNER_SITTING I and NEXT.
+- **Row 17:** `u0-handwritten-v3.csv` (Links `Lanes` 3) imports with the pockets as pockets and the
+  same HCM 2010 result as v2-filled: 186.72 s, LOS F. D440 holds, and U0's probe questions are answered.
+
 ## 2026-11-03 — Vistro draft 2 of U0; Links Lanes counts pockets (D440)
 
 - **Owner:** re-exported the U0 junction from Vistro. Draft 2 matches §1–§2: lanes, pockets,

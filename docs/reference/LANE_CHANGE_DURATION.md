@@ -133,8 +133,13 @@ asserting its forcing before its consequence.
 - **2026-11-03 (D444, [evidence](../evidence/lateral-crossing-window.md)):** the stuck straddler was
   not a missed window. The window ended at a join, and the start and the crossing read different lanes
   there. With one target-lane lookup and a body clamp on uncrossable sides, m2.6 seed 45 completes 1903
-  (off: 1908). The swap lock (second condition) remains; abandoning is still not reopened.
+  (off: 1908). Abandoning is still not reopened.
 - **2026-11-04 (D445, [evidence](../evidence/lateral-covered-sections.md)):** the waiting-changer
   clamps (audit Finding 2) came from the straddler's leader search. It searched a covered lane's next
   section from its start, 25 m ahead of the front, and found a car there at gap 0. Fixed, m2.6
   switched on has the switched-off clamp count in every seed.
+- **2026-11-04 (D446, [evidence](../evidence/lateral-swap-lock.md)):** the swap lock (second condition)
+  was a hole between D207's partner zone (the standstill distance) and D208's covering test (the
+  car-following's acceptance). While a change is under way, the partner now extends to the latter, so
+  the rear one yields; the lab pair crosses 1.7 s after starting. Resolved without abandoning. A changer
+  alongside a car that is not changing, at a similar speed, still waits (no gap seeking).

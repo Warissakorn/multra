@@ -6,6 +6,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ---
 
 
+## 2026-11-04 — Swap lock: the rear partner too close to accept yields (D446)
+
+- **Owner:** approved the plan for lateral audit Finding 3.
+- **Cause (lab seed 49, vehicles 83/88):** a swapping pair. Both starts were accepted at low speed,
+  then D208's covering test refused each body over the line because the other was too close. D207's
+  partner test ends at the standstill distance (2 m), and the rear one was just beyond it, so nobody
+  yielded. The pair rode side by side for about 50 s. Refusing the second start would not have
+  helped.
+- **Change:**
+  - While a change is under way, the D207 partner also covers a rear stub that would not accept the
+    changer as its leader.
+  - `acceptsAsLeader` is the one follower test, shared by D208 and D207.
+  - `yieldMutual` moves to the new `lane_swap.cpp`: `lanes.cpp` was at 496 lines.
+- **Row:** BA161 failed before the fix (the pair crossed only at 14.7 s) and passes after.
+- **Result:**
+  - Switched off, every batch is unchanged.
+  - Switched on, completed trips and clamps are unchanged.
+  - Lab changes over 8 s fall from 36 to 27, and the lab pair now crosses 1.7 s after starting.
+  - Residue: a changer alongside a car that is not changing, at a similar speed, still waits (lab
+    seed 49, vehicle 580, 36 s). That is the gap-seeking case, not a swap.
+- **Verified (Linux, headless only):** `ctest --preset headless` 174/174 and `check` pass.
+
 ## 2026-11-04 — Straddler searched a covered lane's next section from its start (D445)
 
 - **Owner:** "ทำเลย": lateral audit Finding 2, reproduced before any change.
@@ -149,13 +171,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   now covers `*.vistromerge`. UTDF_PROBE rows 18–19, UTDF_EXPORT §6 (proposed companion file),
   the README and NEXT are updated. The median patch waits on Vistro's link numbers after import (row 19).
 - **Check:** `multra-check-docs` passes.
-
-## 2026-11-03 — U0 golden file committed
-
-- **Owner:** exported again from Vistro and accepted it as the golden file, `u0-vistro.csv`
-  (committed byte for byte). It matches §1–§2 with a 100 s cycle and protected-only far turns:
-  EBR is phase 3 and WBR phase 7. The phase numbers, the lagging order and the splits are
-  Vistro's own, not §3's, so UT0 compares fields and codes, not timing values.
-- **Updated:** UTDF_PROBE §6 row 16, UTDF_EXPORT UT0, the utdf README, OWNER_SITTING I and NEXT.
-- **Row 17:** `u0-handwritten-v3.csv` (Links `Lanes` 3) imports with the pockets as pockets and the
-  same HCM 2010 result as v2-filled: 186.72 s, LOS F. D440 holds, and U0's probe questions are answered.

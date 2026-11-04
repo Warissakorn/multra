@@ -3,6 +3,7 @@
 // whose lane cannot reach its movement's end -- moves to an adjacent chain of the same movement
 // when both the gap ahead and the gap behind are safe there. Everything is read off the tick's
 // pre-step snapshot and decided in vehicle-id order, with no random draw, so replay is exact.
+#include "following.hpp"
 #include "routes.hpp"
 #include <limits>
 #include <optional>
@@ -50,6 +51,14 @@ struct CourtesyHold {
     double acceleration{}; // a moving changer's; 0 for a waiting one (W74.md §2)
     double cap{};          // a moving hold brakes no harder than this (D90's parameter, or D207's comfortable)
 };
+// Rule 4 as D208 tests it (lane_swap.cpp, D446): vehicle `f` accepts `leader` -- its car-following
+// brakes no harder than comfortably and this tick's move stays inside the room the leader leaves.
+bool acceptsAsLeader(const Scenario&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                     std::size_t f, const Leader& leader);
+// D207/D446: stub vehicle `x`'s swapping partner holds back behind x's target place (lane_swap.cpp).
+void yieldMutual(const Scenario&, const ScenarioIndex&, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
+                 const std::vector<OccupiedSpan>&, const SpanBuckets&, std::size_t x, const RouteLaneChange& change,
+                 std::vector<CourtesyHold>& holds);
 // Cooperation (contract §2): for each vehicle, the nearest place it holds back from; gap
 // +infinity for none. For a stub vehicle waiting at its dead end, the nearest vehicle behind its
 // target place that can stop there comfortably and without a clamp holds back. For one still
