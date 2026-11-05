@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — UI fixes, round 2 (D463)
+
+- **Owner:** "เริ่ม UI รอบสองเลย".
+- **Properties width:** the Link page needed 393 px in a 280 px panel because of the Link type
+  combobox. The box now shrinks below its longest item, and a form's Apply button elides at
+  Large density. No sideways scroll at any density.
+- **Clipped summary:** at 800 px it ends on a whole row instead of through a field.
+- **Labels:** "Lane widths (m)", "Boundary markings", "New lane width (m)" (Thai likewise); the
+  format is the placeholder and tooltip.
+- **Scope banner:** one line, "Not yet validated · prototype model — hover for its limits"; the
+  full limits stay in its tooltip.
+- **Results:** a cell with no figure reads "—".
+- **Verified:** see the commit; images in `docs/images/ui-round2-d463/`.
+
 ## 2026-11-05 — Owner choices after D461 (D462)
 
 - **Owner:** "ช่วยแนะนำต้องตัดสินใจ", then took every recommendation.
@@ -179,24 +193,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Lab off at ×1.0: 0/2/1 (from 0/3/2).
   - Cost: a 205 s wait on at ×1.0.
 - **Track:** the weave-end lock track is closed by the recommendation. The leftovers are in NEXT.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — A change under way that may not land claims nothing (D453)
-
-- **Owner:** "trace P2a first", then "do B+C+E as D453".
-- **Traced** ([weaving-held-change](evidence/weaving-held-change.md)):
-  - A two-change stub's crossing was held at the lane edge for 170 m beside lane-1 traffic.
-  - It then landed beside a waiting partner, because D450 (b) was checked only at the start.
-  - Checking (b) on every step was not enough. The held change still made its partner yield short
-    of the dead end, where (b) lapsed, and it still reserved its target place (D206).
-- **D453 (M3_8_CONTRACT §2):** a change under way that (b) refuses takes no outward step, is no
-  partner for D451 (c), and holds no target place. Switched on only.
-  - Every subset was measured; only B with E, and B with C and E, cut the locks, to 3 each.
-- **Rows:** BA190 and BA191, both failure-first.
-- **Results:**
-  - Product runs are identical except the lane-change lab switched on (delay +0.003 s, clamps
-    unchanged).
-  - Lab switched on: locked seeds at ×0.6 0/1/0, at ×0.8 0/0/1, at ×1.0 0/1/0. The 237 s wait is
-    gone.
-  - Lab switched off: identical.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

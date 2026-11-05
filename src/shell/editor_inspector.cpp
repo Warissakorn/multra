@@ -30,7 +30,19 @@ public:
     QSize sizeHint() const override {
         auto size=QScrollArea::sizeHint();
         const int limit=std::max(120,parentWidget()->height()*2/5);
-        size.setHeight(std::min(widget()->sizeHint().height(),limit));return size;
+        const int full=widget()->sizeHint().height();
+        if(full<=limit){size.setHeight(full);return size;}
+        // D463: a clipped summary ends on a whole row, never through the middle of a field.
+        std::vector<QRect> rows;
+        for(auto* child:widget()->findChildren<QWidget*>(QString(),Qt::FindDirectChildrenOnly))
+            if(child->isVisibleTo(widget()))rows.push_back(child->geometry());
+        int fit=0;
+        for(const auto& r:rows) {
+            const int cut=r.bottom()+1;
+            if(cut>limit||cut<=fit)continue;
+            if(std::none_of(rows.begin(),rows.end(),[&](const QRect& o){return o.top()<cut&&o.bottom()>=cut;}))fit=cut;
+        }
+        size.setHeight(fit>60?fit:limit);return size;
     }
 protected:
     bool eventFilter(QObject* watched,QEvent* event) override {
@@ -147,7 +159,8 @@ void EditorWindow::buildInspector() {
         auto* s=new QDoubleSpinBox(body);s->setDecimals(decimals);s->setRange(min,max);s->setValue(value);return s;
     };
     auto button=[&](const std::string& key,const std::function<void()>& callback){
-        auto* b=new QToolButton(body);b->setToolButtonStyle(Qt::ToolButtonTextOnly);b->setDefaultAction(action(key,{},callback));form->addRow(b);
+        auto* b=new ElidingToolButton(body); // D463: a long Apply label elides (full text in its tooltip) before it widens the page
+        b->setToolButtonStyle(Qt::ToolButtonTextOnly);b->setDefaultAction(action(key,{},callback));form->addRow(b);
     };
     auto heading=[&](const std::string& key){auto* h=new ReflowLabel(body);h->setObjectName(QString::fromStdString(key));h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};
     heading("editorStreetSegmentProperties");
@@ -183,6 +196,12 @@ void EditorWindow::buildInspector() {
     });
     buildLinkTypeField(form); // S2.4: the Link's Macro type
     linkMarkings_=new QLineEdit(body);label(form,"editorLinkMarkings",linkMarkings_);
+    // D463: the label stays short; the format is the field's placeholder and tooltip.
+    widths_->setPlaceholderText(QStringLiteral("3.50, 3.50"));
+    const auto markingsHint=[this]{
+        linkMarkings_->setPlaceholderText(QStringLiteral("solid, dashed, solid"));
+        linkMarkings_->setToolTip(text("editorLinkMarkingsHint"));linkMarkings_->setAccessibleDescription(text("editorLinkMarkingsHint"));
+    };markingsHint();validationRefresh_.push_back(markingsHint);
     button("editorApplyLinkMarkings",[this]{
         try {
             std::vector<MarkingType> markings;

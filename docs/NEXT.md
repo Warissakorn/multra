@@ -31,11 +31,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
   with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
   `docs/images/canvas-labels-after/`.
-- D460 (owner review), D461 (display fixes, round 1) and D462 (owner choices: no hidden-rate
-  marker, one-page object groups without a tab strip, movement names left as authored) are done.
-  Waiting on the owner's go: round 2 UI fixes (Properties overflow at 1366 px and squeeze at 800 px,
-  long field labels, a one-line "not yet validated" banner, "—" in empty result cells). The
-  junction median spikes stay (Q5). Slice C waits for the go-ahead.
+- D460 (owner review), D461 (display fixes), D462 (owner choices) and D463 (UI round 2:
+  Properties fits its panel, clipped summary ends on a row, short labels, one-line scope banner,
+  "—" in empty result cells) are done. The owner checks them on Windows through
+  [the images](images/); the junction median spikes stay (Q5). Slice C waits for the go-ahead.
 - Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
   are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check
   Drawing/Tables/Results, density, modal retries and Lab on Windows through OWNER_SITTING E33/E34.

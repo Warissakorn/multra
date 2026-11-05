@@ -98,6 +98,12 @@ void run(const std::filesystem::path& data,const QString& lang,const QString& ev
         auto* summary=child<QScrollArea>(w,"editorInspectorSummaryScroll");
         check(summary->isVisible()&&summary->viewport()->height()>60,"Common Properties cannot be scrolled");
         check(summary->verticalScrollBar()->maximum()>0,"Expanded Properties scroll fixture did not overflow");
+        { // D463: scrolled to the top, the clipped summary ends on a whole row, through no field.
+            summary->verticalScrollBar()->setValue(0);settle();
+            const int bottom=summary->viewport()->height();
+            for(auto* f:summary->widget()->findChildren<QWidget*>(QString(),Qt::FindDirectChildrenOnly))
+                if(f->isVisible())check(!(f->geometry().top()<bottom&&f->geometry().bottom()>=bottom),"The Properties summary is cut through a field");
+        }
         check(w.canvas()->viewport()->width()>350&&w.canvas()->viewport()->height()>350,"Small Drawing canvas unusable");
         appearance->setChecked(false);settle();
         check(summary->height()<=summary->widget()->sizeHint().height()+2,"Folded common Properties wastes vertical space");
@@ -151,6 +157,11 @@ void run(const std::filesystem::path& data,const QString& lang,const QString& ev
         w.resize(1180,768);settle();
         auto* overflow=bar->findChild<QToolButton*>("qt_toolbar_ext_button");check(!overflow||!overflow->isVisible(),"Density hides playback in toolbar overflow");
         check(seed->isVisible(),"Density hides the seed");w.resize(1366,768);settle();
+        { // D463: the current Properties page fits its panel at every density -- no sideways scroll.
+            auto* tabs=child<QTabWidget>(w,"editorPropertyTabs");auto* page=qobject_cast<QScrollArea*>(tabs->currentWidget());
+            check(page&&page->widget()->minimumSizeHint().width()<=page->viewport()->width(),"A Properties field forces the page wider than its panel");
+            check(!page->horizontalScrollBar()->isVisible(),"Properties scrolls sideways");
+        }
         if(!evidence.isEmpty())check(w.grab().save(evidence+lang+QString("-density-%1.png").arg(density)),"Screenshot failed");
     }
     trigger(w,"editorDensityCompact");

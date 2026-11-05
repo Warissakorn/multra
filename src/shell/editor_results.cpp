@@ -65,7 +65,7 @@ QLabel* noteLabel(QWidget* parent,const char* name) {
     auto* label=new ReflowLabel(parent); label->setObjectName(name); label->setWordWrap(true); return label;
 }
 QTableWidgetItem* figure(const std::optional<double>& value,int decimals=1) {
-    auto* item=new QTableWidgetItem(value?editorDesign::formatValue(*value,decimals):QString());
+    auto* item=new QTableWidgetItem(value?editorDesign::formatValue(*value,decimals):QStringLiteral("\u2014")); // D463: no figure yet reads "—", not a blank cell
     editorDesign::setNumericText(item,true);
     item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
     return item;
