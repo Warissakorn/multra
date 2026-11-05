@@ -153,6 +153,29 @@ TEST(ranges, vehicle_shapes_are_optional_validated_display_data) {
     }
     std::filesystem::remove_all(dir);
 }
+// D465/D467: a type's shipped palette is optional, 2-16 distinct #rrggbb colours, lower-cased, and
+// read by the same parser as the standard palette.
+TEST(ranges, shipped_type_palettes_are_optional_validated_data) {
+    const auto data=test::root()/"data";const auto catalog=loadDisplayCatalog(data);
+    CHECK(catalog.shippedVehiclePalettes.at("car").size()>=2);
+    CHECK(!catalog.shippedVehiclePalettes.contains("bus"));
+    const auto dir=std::filesystem::temp_directory_path()/"multra-type-palettes";
+    std::filesystem::remove_all(dir);std::filesystem::create_directories(dir/"vehicle-appearance");
+    for(const auto* sub:{"levels","display-types"})
+        std::filesystem::copy(data/sub,dir/sub,std::filesystem::copy_options::recursive);
+    const auto file=dir/"vehicle-appearance/custom.json";
+    Json j={{"vehicleTypeId","custom-type"},{"color","#123456"},{"palette",Json::array({"#ABCDEF","#123456"})}};
+    std::ofstream(file)<<j;
+    const auto loaded=loadDisplayCatalog(dir);
+    CHECK(loaded.shippedVehiclePalettes.at("custom-type")==std::vector<std::string>({"#abcdef","#123456"}));
+    CHECK(loaded.vehicleColorPalettes.at("custom-type")==loaded.shippedVehiclePalettes.at("custom-type"));
+    for(const auto& values:std::vector<Json>{Json::array({"#abcdef"}),Json::array({"#abcdef","#ABCDEF"}),Json::array({"#abcdef","red"}),nullptr}) {
+        j["palette"]=values;std::ofstream(file)<<j;
+        CHECK(Json::parse(std::ifstream(file))["palette"]==values);
+        test::throws([&]{loadDisplayCatalog(dir);},"EDIT_DISPLAY_CATALOG");
+    }
+    std::filesystem::remove_all(dir);
+}
 TEST(ranges, standard_vehicle_palette_is_optional_validated_data) {
     const auto data=test::root()/"data";
     CHECK(loadDisplayCatalog(data).availableVehicleColors.size()>=2);

@@ -1,6 +1,7 @@
 #include "run_vehicle_item.hpp"
 #include "canvas_style.hpp"
 #include <QPainter>
+#include <QPaintDevice>
 #include <algorithm>
 
 namespace multra {
@@ -29,12 +30,16 @@ void RunVehicleItem::paint(QPainter* painter,const QStyleOptionGraphicsItem*,QWi
     // shadowPixels down and right on screen whatever the view's rotation, flip or heading-up. No blur
     // (a blur effect re-renders every vehicle every frame), and none below the detail size, where
     // the body is its floored minimum symbol.
+    // D467: deviceTransform() counts device pixels, which on a high-DPI screen are 1/ratio of a logical
+    // pixel, so the offset and the threshold are scaled by the device's pixel ratio.
+    const double ratio=painter->device()?std::max(1.0,painter->device()->devicePixelRatioF()):1.0;
     const QTransform device=painter->deviceTransform();
     const QRectF onScreen=device.mapRect(path().boundingRect());
-    if(device.isInvertible() && std::max(onScreen.width(),onScreen.height())>=shadowMinPixels) {
+    if(device.isInvertible() && std::max(onScreen.width(),onScreen.height())>=shadowMinPixels*ratio) {
         const QTransform back=device.inverted();
-        const QPointF offset=back.map(QPointF(shadowPixels,shadowPixels))-back.map(QPointF(0,0));
-        painter->setBrush(shadowColor());painter->drawPath(path().translated(offset));
+        const QPointF offset=back.map(QPointF(shadowPixels*ratio,shadowPixels*ratio))-back.map(QPointF(0,0));
+        painter->save();painter->translate(offset); // the same path, moved: no copy per vehicle per paint
+        painter->setBrush(shadowColor());painter->drawPath(path());painter->restore();
     }
     painter->setBrush(brush());painter->drawPath(path());
     // All details stay inside the body, and inside this one reusable scene item.

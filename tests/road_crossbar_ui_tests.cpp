@@ -10,6 +10,12 @@
 #include <QTest>
 #include <cmath>
 #include <memory>
+#include <filesystem>
+#include <fstream>
+#include <algorithm>
+#include "../src/project/document.hpp"
+#include "../src/project/json.hpp"
+#include <nlohmann/json.hpp>
 #include "../src/editor/road_crossbar.hpp"
 #include <iostream>
 
@@ -191,6 +197,11 @@ void connectorPoles() {
     const auto& path=paths.front();const double length=connectorPathLength(path);
     NetworkSignalHead mouth;mouth.connectorId=path.id;mouth.position=.5;
     const auto bar=signalCrossbar(n,mouth);require(bar && bar->pole,"A head at a Connector mouth has no pole");
+    { // D467: drawn past the stop line (D466), the mouth head's pole still stands off every road surface
+        EditorCanvas canvas;canvas.resize(400,300);canvas.setDocument(&d);canvas.setTransform(QTransform::fromScale(100,-100));
+        const auto arm=SignalHeadItem(*bar,QColor(Qt::black),100.).arm();require(arm.has_value(),"A mouth head lost its arm");
+        require(canvas.hitObjects({arm->p1().x(),arm->p1().y()}).empty(),"A Connector-mouth pole stands on a road surface");
+    }
     // Beside the Link's edge: 3.5 m from the in-Link's centreline (half its two-lane road), at its end.
     require(std::abs(std::abs(bar->pole->y)-3.5)<1e-6 && std::abs(bar->pole->x+20)<1e-6,"The pole is not at the attached Link's edge");
     NetworkSignalHead middle=mouth;middle.position=length/2;
@@ -224,10 +235,32 @@ void oneArm() {
         }
     }
 }
+// D467: in the shipped signalised projects every drawn pole (the arm's first point) stands off every
+// Link and Connector surface -- D466 moved Connector-mouth poles 1.25 m into the junction.
+void polesOffRoad(const std::filesystem::path& data) {
+    for(const auto* name:{"four-leg-signalised.traffic.json","m2.6-study-template.traffic.json"}) {
+        const auto document=parseDocument(Json::parse(std::ifstream(data/"projects"/name)));
+        require(!document.network.signalHeads.empty(),"Setup: a signalised project has no heads");
+        EditorCanvas canvas;canvas.resize(400,300);canvas.setDocument(&document);
+        canvas.setTransform(QTransform::fromScale(100,-100)); // hit tolerance 6 px = 0.06 m
+        int poles=0;
+        for(const auto& head:document.network.signalHeads) {
+            const auto bar=signalCrossbar(document.network,head);if(!bar)continue;
+            const auto arm=SignalHeadItem(*bar,QColor(Qt::black),100.).arm();if(!arm)continue;++poles;
+            for(const auto& [id,station]:canvas.hitObjects({arm->p1().x(),arm->p1().y()})) {
+                const bool isHead=std::any_of(document.network.signalHeads.begin(),document.network.signalHeads.end(),[&](const auto& h){return h.id==id;});
+                if(!isHead){std::cerr<<name<<": the pole of "<<head.id<<" stands on "<<id<<'\n';throw std::runtime_error("A signal pole stands on a road surface");}
+            }
+        }
+        require(poles>0,"Setup: no head in a signalised project has a pole");
+    }
+}
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
     try {
-        geometry();connectorPoles();oneArm();EditorCanvas canvas;canvas.resize(1000,700);canvas.show();QTest::qWait(20);
-        trace(canvas);signalsAndInputs(canvas,argc>1?argv[1]:nullptr);std::cout<<"road crossbars ok\n";
+        geometry();connectorPoles();oneArm();
+        require(argc>2,"Expected the data directory as the second argument");polesOffRoad(argv[2]);
+        EditorCanvas canvas;canvas.resize(1000,700);canvas.show();QTest::qWait(20);
+        trace(canvas);signalsAndInputs(canvas,argc>1&&*argv[1]?argv[1]:nullptr);std::cout<<"road crossbars ok\n";
     } catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
 }

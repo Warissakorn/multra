@@ -52,7 +52,8 @@ public:
     // head has no pole or its box is grown for an export.
     std::optional<QLineF> arm() const;
 private:
-    struct HeadFrame { QPointF centre, across, back; double size{}; bool floored{}; }; // floored: grown to headMinPixels
+    // ahead: the direction of travel at the stop line (D466: the box lies that way); floored: grown to headMinPixels
+    struct HeadFrame { QPointF centre, across, ahead; double size{}; bool floored{}; };
     std::optional<HeadFrame> frame() const; // the housing's placement; none for a degenerate bar
     QPainterPath housing() const; // the head's square: also the hit region beside the stop line
     QPainterPath square(QPointF centre,double side) const; // a square aligned with the bar

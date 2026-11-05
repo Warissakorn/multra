@@ -161,12 +161,12 @@ std::optional<SignalHeadItem::HeadFrame> SignalHeadItem::frame() const {
     const bool floored=keepVisible_&&size*scale_<headMinPixels; // D464: an exported head stays legible
     if(floored)size=headMinPixels/scale_;
     // D466: past the stop line, in the direction of travel, so the queue's first vehicle stands clear of it.
-    const QPointF across((b.x()-a.x())/lane,(b.y()-a.y())/lane),back(-travel_.x/t,-travel_.y/t);
-    return HeadFrame{(a+b)/2-back*(gap+size/2),across,back,size,floored};
+    const QPointF across((b.x()-a.x())/lane,(b.y()-a.y())/lane),ahead(travel_.x/t,travel_.y/t);
+    return HeadFrame{(a+b)/2+ahead*(gap+size/2),across,ahead,size,floored};
 }
 QPainterPath SignalHeadItem::square(QPointF centre,double side) const {
     const auto f=frame();if(!f)return {};
-    const auto u=f->across*(side/2),v=f->back*(side/2);
+    const auto u=f->across*(side/2),v=f->ahead*(side/2);
     QPainterPath path;path.addPolygon(QPolygonF({centre-u-v,centre+u-v,centre+u+v,centre-u+v,centre-u-v}));
     path.closeSubpath();return path;
 }
@@ -182,7 +182,8 @@ std::optional<QPointF> SignalHeadItem::poleAt() const {
     const QPointF middle=(line().p1()+line().p2())/2,edge(pole_->x,pole_->y);
     const double out=QPointF::dotProduct(edge-middle,f->across);
     const QPointF outward=f->across*(out<0?-1.:1.);
-    return edge-f->back*QPointF::dotProduct(f->centre-f->back*(f->size/2)-middle,-f->back)+outward*poleSetback;
+    const QPointF armPoint=f->centre+f->ahead*(f->size/2); // on the boxes' back edge
+    return edge+f->ahead*QPointF::dotProduct(armPoint-middle,f->ahead)+outward*poleSetback;
 }
 std::optional<QLineF> SignalHeadItem::arm() const {
     // D466: one straight arm along the boxes' back edge, from the pole to this box's far side; every
@@ -190,7 +191,7 @@ std::optional<QLineF> SignalHeadItem::arm() const {
     const auto f=frame();if(!f || f->floored)return {};
     const auto pole=poleAt();if(!pole)return {};
     const double side=QPointF::dotProduct(*pole-f->centre,f->across)<0?-1.:1.;
-    return QLineF(*pole,f->centre-f->back*(f->size/2)-f->across*(side*f->size/2));
+    return QLineF(*pole,f->centre+f->ahead*(f->size/2)-f->across*(side*f->size/2));
 }
 QRectF SignalHeadItem::boundingRect() const {
     auto bounds=shape().boundingRect();

@@ -157,7 +157,8 @@ it (or Reset to it) is not written to the preferences, so a later release's pale
 against every shipped road colour, so it reads in greyscale too.
 
 In a run each vehicle at least 14 px long casts a shadow: its body again in black at alpha 70,
-offset 2 px down and right on screen whatever the rotation, flip or heading-up. It is painted
+offset 2 logical px down and right on screen whatever the rotation, flip, heading-up or device
+pixel ratio (D467). It is painted
 only (no blur effect, no hit change), inside the item's bounding rectangle.
 Its 1 px casing is the road edge's dark ink on every fill (D466); in wireframe, where no road lies
 under the vehicle, it follows D199's contrast rule instead.

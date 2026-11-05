@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Review fixes to D464–D466 (D467)
+
+- **Owner:** asked for a fix for each review finding, then "ข้อ 1 ไม่แก้ … ที่เหลือเอาตามแนะนำ".
+- **Fixed:** the shadow kept its size on high-DPI screens (it was half size at ratio 2); it no
+  longer copies the body path per paint; one palette parser; the head frame reads `ahead`.
+- **New checks:** painted casings over a road; every drawn pole off the road, in the shipped
+  signalised projects and at a Connector mouth; type palette refusals.
+- **Kept:** dark casings for a user's dark colours (the shadow shows them); a head box past its
+  stop line still takes clicks there. The run-overlay policy waits for a third overlay.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked (the high-DPI fix is tested on an offscreen ratio-2 image, not a real 200 % screen).
+
 ## 2026-11-05 — Signal heads past the stop line; dark vehicle casings (D466)
 
 - **Owner:** asked whether to move the pole past the stop line, use dark casings only and hang
@@ -160,26 +172,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Switched off: byte-identical.
   - **Cost:** the 500 m weave alone at ×1.0 on, 24 → 28.5 s.
 - **Verified:** `ctest --preset headless` passes 176/176; `check` passes.
-
-## 2026-11-04 — The lateral lab (D457)
-
-- **Owner:** asked for a project to test lateral behaviour, with all four scenes, and the lab's
-  values in the file. "ทำโปรเจกต์ lateral-lab".
-- **D457 ([LATERAL_LAB](reference/LATERAL_LAB.md)):** `data/projects/lateral-lab.traffic.json`.
-  - **Scenes:** a timed lane change, a lane drop, a 150 m weave at ×0.8, and keep-left with cars,
-    heavy vehicles and motorcycles.
-  - **Keys:** every behaviour carries the lateral keys as lab placeholders (0.5 m, 1.0 m, 1 m/s).
-    The keep-left Link has its own behaviour, which adds D95's pair and `kerbLaneBias`.
-  - **The exception:** it is a lab-only exception to D178. No other project and no `data/`
-    behaviour carries the keys.
-  - **The builder:** `tools/lateral_lab_network.hpp`, through the editor's commands, regenerated
-    with `multra-lateral-fixture data <out>`. The keys have one source, `tools/lateral_lab_keys.hpp`,
-    shared with the weaving sweep.
-- **Rows:** BA198–BA203 (`laterallab`). The four shipped-project lists in the tests now include the
-  lab, and SP1 counts six files.
-- **Results** ([evidence](evidence/lateral-lab.md), seeds 42–51):
-  - mean delay 30.3 s; no clamp and nothing unfinished;
-  - the short weave's delay is the highest, 47–62 s;
-  - with the bias, the kerb lane's share of vehicle time is 68–80 % (45–49 % without it).
-- **Verified:** `ctest --preset headless` passes 176/176.
-- **Not done here:** the owner's check in the editor.

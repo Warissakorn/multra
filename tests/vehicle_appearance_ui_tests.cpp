@@ -33,6 +33,21 @@ int glassPixels(RunVehicleItem& item) {
         count+=image.pixelColor(x,y)==QColor("#172c3b");
     return count;
 }
+// D467: how far the shadow reaches past the body on a device of pixel ratio `ratio`, in that
+// device's pixels: the shadow's rightmost and lowest columns/rows beyond the body's.
+QPointF shadowReach(RunVehicleItem& item,double ratio) {
+    QImage image(int(400*ratio),int(400*ratio),QImage::Format_RGB32);image.setDevicePixelRatio(ratio);image.fill(Qt::white);
+    {QPainter painter(&image);painter.translate(200,200);painter.scale(24,-24);item.paint(&painter,nullptr,nullptr);}
+    const double a=RunVehicleItem::shadowColor().alphaF();const QColor shade=QColor::fromRgbF(1-a,1-a,1-a);
+    int bodyRight=-1,bodyBottom=-1,shadowRight=-1,shadowBottom=-1;
+    for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+        const QColor p=image.pixelColor(x,y);
+        if(p.alpha()==255&&p!=QColor(Qt::white)&&!(std::abs(p.red()-shade.red())<=2&&std::abs(p.green()-shade.green())<=2&&std::abs(p.blue()-shade.blue())<=2))
+            {bodyRight=std::max(bodyRight,x);bodyBottom=std::max(bodyBottom,y);}
+        else if(p!=QColor(Qt::white)){shadowRight=std::max(shadowRight,x);shadowBottom=std::max(shadowBottom,y);}
+    }
+    return {double(shadowRight-bodyRight),double(shadowBottom-bodyBottom)};
+}
 // D465: the shadow as it lands on screen -- its pixels' offset from the body's, under `view`.
 std::pair<int,QPointF> shadowOnScreen(RunVehicleItem& item,const QTransform& view) {
     QImage image(400,400,QImage::Format_RGB32);image.fill(Qt::white);
@@ -78,6 +93,10 @@ void drawingContract() {
             require(count>0,"A vehicle at 24 px/m casts no shadow");
             require(offset.x()>.5&&offset.y()>.5,"The shadow does not fall down and right on screen");
         }
+        // D467: on a high-DPI device the shadow keeps its logical size -- twice the device pixels at ratio 2.
+        const auto one=shadowReach(item,1),two=shadowReach(item,2);
+        require(std::abs(one.x()-RunVehicleItem::shadowPixels)<=1 && std::abs(one.y()-RunVehicleItem::shadowPixels)<=1,"The shadow does not reach 2 px past the body");
+        require(std::abs(two.x()-2*RunVehicleItem::shadowPixels)<=1 && std::abs(two.y()-2*RunVehicleItem::shadowPixels)<=1,"A high-DPI shadow shrinks in logical pixels");
         item.setPixelsPerMetre(2);
         require(shadowOnScreen(item,QTransform::fromScale(2.9,-2.9)).first==0,"A vehicle under 14 px casts a shadow");
         require(item.boundingRect().adjusted(0,0,0,0).contains(item.path().boundingRect().translated(

@@ -2,6 +2,29 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — The lateral lab (D457)
+
+- **Owner:** asked for a project to test lateral behaviour, with all four scenes, and the lab's
+  values in the file. "ทำโปรเจกต์ lateral-lab".
+- **D457 ([LATERAL_LAB](../reference/LATERAL_LAB.md)):** `data/projects/lateral-lab.traffic.json`.
+  - **Scenes:** a timed lane change, a lane drop, a 150 m weave at ×0.8, and keep-left with cars,
+    heavy vehicles and motorcycles.
+  - **Keys:** every behaviour carries the lateral keys as lab placeholders (0.5 m, 1.0 m, 1 m/s).
+    The keep-left Link has its own behaviour, which adds D95's pair and `kerbLaneBias`.
+  - **The exception:** it is a lab-only exception to D178. No other project and no `data/`
+    behaviour carries the keys.
+  - **The builder:** `tools/lateral_lab_network.hpp`, through the editor's commands, regenerated
+    with `multra-lateral-fixture data <out>`. The keys have one source, `tools/lateral_lab_keys.hpp`,
+    shared with the weaving sweep.
+- **Rows:** BA198–BA203 (`laterallab`). The four shipped-project lists in the tests now include the
+  lab, and SP1 counts six files.
+- **Results** ([evidence](../evidence/lateral-lab.md), seeds 42–51):
+  - mean delay 30.3 s; no clamp and nothing unfinished;
+  - the short weave's delay is the highest, 47–62 s;
+  - with the bias, the kerb lane's share of vehicle time is 68–80 % (45–49 % without it).
+- **Verified:** `ctest --preset headless` passes 176/176.
+- **Not done here:** the owner's check in the editor.
+
 ## 2026-11-04 — The dead end as a second obstacle (D456)
 
 - **Owner:** asked for a lateral test project, then chose to fix the engine first, starting with

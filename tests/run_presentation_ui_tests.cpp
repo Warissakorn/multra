@@ -63,6 +63,23 @@ int main(int argc,char** argv) {
             require(edge>=0.3,"Vehicle vanishes on a background of its own colour");
             delete vehicle;
         }
+        // D466/D467: over a road the painted casing is the dark road-edge ink on a light body and a dark
+        // body alike -- the pixels at the body's edge, not only casingColor().
+        for(const QColor fill:{QColor("#f4f4f2"),QColor("#17181a")}) {
+            auto* vehicle=new RunVehicleItem(body,fill,20);
+            const QColor road("#4c4f53");const auto image=render(vehicle,road,20);
+            // The 1 px casing is antialiased across two pixels, so it is read by luminance: darker than the
+            // road (a light body's edge), and never lighter than the road (a dark body's edge).
+            int dark=0,light=0;const double under=luminance(road.rgb());
+            for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+                const double l=luminance(image.pixel(x,y));
+                if(image.pixel(x,y)==fill.rgb())continue;
+                dark+=l<under-.1;light+=l>under+.1;
+            }
+            require(fill.lightness()<128 || dark>=40,"A run vehicle's painted casing is not the dark road-edge ink");
+            require(fill.lightness()>=128 || light==0,"A dark run vehicle is painted with a light casing over a road");
+            delete vehicle;
+        }
         // Red, amber and green bars differ in shape, not only hue; their hit shape is one.
         const RoadCrossbar bar{{0,-3.5},{0,3.5},0};
         const QColor background("#808080");
