@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Signal heads past the stop line; dark vehicle casings (D466)
+
+- **Owner:** asked whether to move the pole past the stop line, use dark casings only and hang
+  the boxes on the arm, then "เอาตามแนะนำ เริ่ม D466 เลย".
+- **Heads:** each box lies past its stop line (0.35 m gap, 0.9 m box) and hangs by its back edge
+  from one straight arm; one pole per stop line, and no arm crosses a box. Hits move with the box.
+- **Casings:** run vehicles take the road edge's dark ink; wireframe keeps D199's contrast rule.
+- **Rows:** road-crossbar-ui and run-presentation-ui, each failed first.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked. Images: `docs/images/canvas-heads-d466/` (four-leg mid-run, 6 and 14 px/m, colour and grey).
+
 ## 2026-11-05 — Canvas style slice C: run vehicles (D465)
 
 - **Owner:** reviewed slice C, then "เอาตามแนะนำ เริ่ม Slice C เลย".
@@ -172,20 +183,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - with the bias, the kerb lane's share of vehicle time is 68–80 % (45–49 % without it).
 - **Verified:** `ctest --preset headless` passes 176/176.
 - **Not done here:** the owner's check in the editor.
-
-## 2026-11-04 — The dead end as a second obstacle (D456)
-
-- **Owner:** asked for a lateral test project, then chose to fix the engine first, starting with
-  the late dead-end braking. The lateral lab follows, as a lab-only exception to D178.
-- **Cause** ([evidence](evidence/dead-end-second-obstacle.md)): in all 13 stub clamps of the lab on
-  at ×1.0, a nearer moving leader whose route goes on hid the dead end. The vehicle then braked at
-  −8 m/s² with about 14 m left.
-- **D456 (M3_8_CONTRACT §2, "Dead end"):** behind a nearer leader, car-following runs once more
-  against the dead end and keeps the lower acceleration, as the courtesy hold does. No new key.
-- **Rows:** BA196 (`laneswap`) and BA197 (`weavinglab`), both failure-first.
-- **Results:**
-  - Weaving lab (seeds 42–51): no seed locks at any factor, off or on (D455: 0/1/0 at ×1.0, both).
-    Clamps are 0 from ×0.3 to ×1.0, off and on (on at ×1.0: 23 → 0).
-  - The D450 (a) overrun at ×0.4 clears. Delay on at ×1.0: 151/124/64 → 137/98/41 s.
-  - Product runs: within 0.1 %, clamps unchanged, T-junction identical.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

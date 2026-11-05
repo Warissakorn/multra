@@ -152,7 +152,7 @@ SignalHeadItem::SignalHeadItem(const RoadCrossbar& bar,QColor colour,double scal
     auto thin=pen();thin.setWidthF(2);setPen(thin);
 }
 std::optional<SignalHeadItem::HeadFrame> SignalHeadItem::frame() const {
-    // A square headSize metres a side, headGap upstream of the stop line, centred on its lane;
+    // A square headSize metres a side, headGap past the stop line (D466), centred on its lane;
     // smaller only where the lane is too narrow to hold it.
     const auto a=line().p1(),b=line().p2();const double lane=std::hypot(b.x()-a.x(),b.y()-a.y());
     const double t=std::hypot(travel_.x,travel_.y);
@@ -160,8 +160,9 @@ std::optional<SignalHeadItem::HeadFrame> SignalHeadItem::frame() const {
     double size=std::min(headSize,0.9*lane);const double gap=headGap*size/headSize;
     const bool floored=keepVisible_&&size*scale_<headMinPixels; // D464: an exported head stays legible
     if(floored)size=headMinPixels/scale_;
+    // D466: past the stop line, in the direction of travel, so the queue's first vehicle stands clear of it.
     const QPointF across((b.x()-a.x())/lane,(b.y()-a.y())/lane),back(-travel_.x/t,-travel_.y/t);
-    return HeadFrame{(a+b)/2+back*(gap+size/2),across,back,size,floored};
+    return HeadFrame{(a+b)/2-back*(gap+size/2),across,back,size,floored};
 }
 QPainterPath SignalHeadItem::square(QPointF centre,double side) const {
     const auto f=frame();if(!f)return {};
@@ -175,12 +176,21 @@ QPainterPath SignalHeadItem::housing() const {
 }
 QPainterPath SignalHeadItem::shape() const { return RoadCrossbarItem::shape().united(housing()); }
 std::optional<QPointF> SignalHeadItem::poleAt() const {
-    // The kerb-side road edge at the stop line, moved level with the head and set back off the road.
+    // D466: the kerb-side road edge at the stop line, moved downstream to the boxes' back edge (the arm's
+    // line) and set back off the road -- the same point for every head on one stop line.
     const auto f=frame();if(!f || !pole_)return {};
     const QPointF middle=(line().p1()+line().p2())/2,edge(pole_->x,pole_->y);
     const double out=QPointF::dotProduct(edge-middle,f->across);
     const QPointF outward=f->across*(out<0?-1.:1.);
-    return edge+f->back*QPointF::dotProduct(f->centre-middle,f->back)+outward*poleSetback;
+    return edge-f->back*QPointF::dotProduct(f->centre-f->back*(f->size/2)-middle,-f->back)+outward*poleSetback;
+}
+std::optional<QLineF> SignalHeadItem::arm() const {
+    // D466: one straight arm along the boxes' back edge, from the pole to this box's far side; every
+    // box hangs from it by its back edge, so no arm crosses a box.
+    const auto f=frame();if(!f || f->floored)return {};
+    const auto pole=poleAt();if(!pole)return {};
+    const double side=QPointF::dotProduct(*pole-f->centre,f->across)<0?-1.:1.;
+    return QLineF(*pole,f->centre-f->back*(f->size/2)-f->across*(side*f->size/2));
 }
 QRectF SignalHeadItem::boundingRect() const {
     auto bounds=shape().boundingRect();
@@ -197,13 +207,11 @@ void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* opt
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     const QColor metal(58,63,70);
-    if(const auto at=f->floored?std::nullopt:poleAt()) { // the mast arm from the pole to the head's kerb-side edge, then the pole
-        const QPointF pole=*at;
-        const double side=QPointF::dotProduct(pole-f->centre,f->across)<0?-1.:1.;
-        QPen arm(metal,2,Qt::SolidLine,Qt::FlatCap);arm.setCosmetic(true);
-        painter->setPen(arm);painter->drawLine(pole,f->centre+f->across*(side*f->size/2));
+    if(const auto line=arm()) { // the mast arm along the boxes' back edge (D466), then the pole
+        QPen pen(metal,2,Qt::SolidLine,Qt::FlatCap);pen.setCosmetic(true);
+        painter->setPen(pen);painter->drawLine(*line);
         const double r=poleRadius;
-        painter->setPen(Qt::NoPen);painter->setBrush(QColor(38,42,48));painter->drawEllipse(pole,r,r);
+        painter->setPen(Qt::NoPen);painter->setBrush(QColor(38,42,48));painter->drawEllipse(line->p1(),r,r);
     }
     // D460: one square box of one colour -- dark while editing, the state's colour in a run -- with a
     // cosmetic edge in the line's colour (state, hover, selection) and no lamps.

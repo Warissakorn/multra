@@ -3,6 +3,7 @@
 #include "../src/editor/canvas_labels.hpp"
 #include "../src/editor/run_vehicle_item.hpp"
 #include "../src/editor/road_crossbar.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -50,9 +51,11 @@ int main(int argc,char** argv) {
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         // A vehicle the colour of its background still shows its edge; its hit shape is the bare path.
+        // D466: that background is any colour only in wireframe (no road under the vehicle), where the
+        // contrast rule stays; over a road the casing is dark and the D465 contrast row keeps fills off it.
         QPainterPath body;body.addRect(-4.5,-0.9,4.5,1.8);
         for(const QColor fill:{QColor("#202020"),QColor("#f0f0f0")}) {
-            auto* vehicle=new RunVehicleItem(body,fill,20);
+            auto* vehicle=new RunVehicleItem(body,fill,20);vehicle->setWireframe(true);
             QGraphicsPathItem plain(body);plain.setPen(Qt::NoPen);
             require(vehicle->shape()==plain.shape(),"Casing changed the vehicle's hit shape");
             const auto image=render(vehicle,fill,20);
@@ -82,6 +85,19 @@ int main(int argc,char** argv) {
             ++vehicles;if(!first)first=item;
         }
         require(vehicles>0,"Run fixture has no vehicles");
+        // D466: over a road every casing is the road edge's dark ink, a dark body too; in wireframe,
+        // with no road under it, D199's contrast rule comes back (a white casing on a dark body).
+        const auto casings=[&](bool wireframe){
+            for(auto* item:canvas->scene()->items())if(auto* v=dynamic_cast<RunVehicleItem*>(item)) {
+                const auto expected=wireframe?canvasStyle::connectorBoundaryColor(v->brush().color()):canvasStyle::kerb();
+                require(v->casingColor()==expected,wireframe?"A wireframe casing lost its contrast rule":"A run vehicle's casing is not the dark ink");
+            }
+        };
+        casings(false);
+        {
+            RunVehicleItem dark(QPainterPath(),QColor("#17181a"),20);
+            require(dark.casingColor()==canvasStyle::kerb(),"A dark vehicle keeps a light casing over the road");
+        }
         std::optional<std::uint64_t> clicked;canvas->runVehicleClicked=[&](std::uint64_t id){clicked=id;};
         canvas->centerOn(first);settle();
         const auto at=canvas->mapFromScene(first->mapToScene(first->shape().boundingRect().center()));
@@ -234,6 +250,7 @@ int main(int argc,char** argv) {
             canvas->centerOn(rates().front()->anchor());canvas->redraw();settle(); // a box stays inside the viewport
             require(rates().size()==1&&rates().front()->isVisible()&&!rates().front()->onLane(),"A selected road's rate is not its box in a run");
             canvas->select("");
+            canvas->setWireframe(true);settle();casings(true);canvas->setWireframe(false);settle(); // D466
         }
         if(argc>2) {
             canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);settle();

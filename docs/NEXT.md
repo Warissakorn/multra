@@ -35,8 +35,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   "—" in empty result cells) and D464 (a PNG export shows every rate and signal head; the LOD
   threshold test measures real decoration again) are done. The owner checks them on Windows through
   [the images](images/); the junction median spikes stay (Q5).
-- **Slice C (run vehicles) is done (D465); stop for owner review** of
-  `docs/images/canvas-run-d465/`. Slice D (lane arrows, white stop line) starts only on the owner's go.
+- **Slice C (run vehicles) is done (D465), with the head/casing follow-up D466; stop for owner
+  review** of `docs/images/canvas-run-d465/` and `docs/images/canvas-heads-d466/`. Slice D (lane arrows, white stop line) starts only on the owner's go.
 - Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
   are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check
   Drawing/Tables/Results, density, modal retries and Lab on Windows through OWNER_SITTING E33/E34.

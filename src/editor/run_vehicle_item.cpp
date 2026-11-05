@@ -17,6 +17,9 @@ void RunVehicleItem::setPixelsPerMetre(double pixelsPerMetre) {
     const double margin=(shadowPixels+2)/std::max(1e-9,pixelsPerMetre); // casing and shadow
     if(margin!=margin_){prepareGeometryChange();margin_=margin;}
 }
+QColor RunVehicleItem::casingColor() const {
+    return wireframe_?canvasStyle::connectorBoundaryColor(brush().color()):canvasStyle::kerb();
+}
 QRectF RunVehicleItem::boundingRect() const {
     return QGraphicsPathItem::boundingRect().adjusted(-margin_,-margin_,margin_,margin_);
 }
@@ -43,7 +46,7 @@ void RunVehicleItem::paint(QPainter* painter,const QStyleOptionGraphicsItem*,QWi
         painter->setBrush(QColor("#f5f1d8"));painter->drawPath(lamps_);
         painter->restore();
     }
-    QPen casing(canvasStyle::connectorBoundaryColor(brush().color()),1);casing.setCosmetic(true);casing.setJoinStyle(Qt::MiterJoin);
+    QPen casing(casingColor(),1);casing.setCosmetic(true);casing.setJoinStyle(Qt::MiterJoin);
     painter->setPen(casing);painter->setBrush(Qt::NoBrush);painter->drawPath(path());
     // A followed vehicle's outline (D165) stays on top, as before.
     if(pen().style()!=Qt::NoPen){painter->setPen(pen());painter->drawPath(path());}

@@ -1,6 +1,7 @@
 #pragma once
 #include "../model/network/network.hpp"
 #include <QGraphicsLineItem>
+#include <QLineF>
 #include <QColor>
 #include <optional>
 
@@ -32,7 +33,7 @@ private:
     SignalCue cue_{};
     bool preview_{};
 };
-// D435: a signal head -- its stop line plus a head just upstream. D460 (owner review): the head is
+// D435: a signal head -- its stop line plus a head just past it (D466; upstream before). D460 (owner review): the head is
 // one square box of one colour with sharp corners, in real metres, hung on a mast arm that meets
 // its kerb-side edge from a pole beside the road; dark while editing, the state's colour in a run,
 // where the stop line also keeps D199's shape cue (full, thinned middle, open) so it reads without hue.
@@ -47,6 +48,9 @@ public:
     // An exported image keeps every head: a box under headMinPixels grows to that size on screen
     // and drops its arm and pole, instead of leaving the stop line alone (D464).
     void keepVisible() { prepareGeometryChange(); keepVisible_ = true; }
+    // D466: the mast arm, pole first, along the boxes' back edge past the stop line; none when the
+    // head has no pole or its box is grown for an export.
+    std::optional<QLineF> arm() const;
 private:
     struct HeadFrame { QPointF centre, across, back; double size{}; bool floored{}; }; // floored: grown to headMinPixels
     std::optional<HeadFrame> frame() const; // the housing's placement; none for a degenerate bar

@@ -12,6 +12,10 @@ public:
     // (the D97 detail length), and its colour.
     static constexpr double shadowPixels = 2, shadowMinPixels = 14;
     static QColor shadowColor() { return QColor(0, 0, 0, 70); }
+    // D466: the casing is the road edge's dark ink on every vehicle (shipped colours all stand off the
+    // road, D465); in wireframe, where no road lies under it, D199's contrast rule keeps it visible.
+    void setWireframe(bool on) { if (on != wireframe_) { wireframe_ = on; update(); } }
+    QColor casingColor() const;
     RunVehicleItem(const QPainterPath& body, QColor fill, double pixelsPerMetre);
     RunVehicleItem(const VehicleDrawing&, QColor fill, double pixelsPerMetre);
     void setDrawing(const VehicleDrawing&);
@@ -21,6 +25,7 @@ public:
     void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 private:
     QPainterPath glass_,panels_,lamps_;
+    bool wireframe_{};
     double margin_{}; // the casing's reach outside the path, in metres at the frame's zoom
 };
 }

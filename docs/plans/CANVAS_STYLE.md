@@ -142,6 +142,12 @@ A network image PNG pins every input rate (grey-framed box) and keeps every sign
 - Images: [before](../images/canvas-run-d465/before/), [after](../images/canvas-run-d465/after/)
   (the shipped four-leg junction mid-run at 6 and 14 px/m, colour and greyscale).
 
+## Signal heads and casings after slice C (D466)
+
+A head's box lies past its stop line, hanging by its back edge from one straight arm and pole
+per stop line; no arm crosses a box. Run vehicles take a dark casing, except in wireframe.
+Images: [before](../images/canvas-heads-d466/before/), [after](../images/canvas-heads-d466/after/).
+
 ## Slice D — surface markings
 
 - **Edge line.** Withdrawn by D460: the road edge is a thin dark line.

@@ -170,7 +170,7 @@ void EditorCanvas::drawRunItems() {
         }
         auto* item=kept.item;
         if(item->brush().color()!=fill)item->setBrush(fill);
-        item->setPen(Qt::NoPen);
+        item->setPen(Qt::NoPen);item->setWireframe(wireframe_); // D466: dark casing over a road
         const double norm=std::hypot(heading.x,heading.y);
         item->setPos(at.x-lever*heading.x/norm,at.y-lever*heading.y/norm);
         item->setRotation(std::atan2(heading.y,heading.x)*180/std::numbers::pi);
