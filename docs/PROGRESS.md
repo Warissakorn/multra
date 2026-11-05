@@ -19,7 +19,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   full limits stay in its tooltip.
 - **Results:** a movement or queue cell with no figure reads "—"; a Node-table cell that does not
   apply (a turn's queue) stays blank.
-- **Verified:** see the commit; images in `docs/images/ui-round2-d463/`.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux after fixing what the first full run caught (a layout loop from eliding buttons, a Node-table blank); Windows not checked. Images: `docs/images/ui-round2-d463/`.
 
 ## 2026-11-05 — Owner choices after D461 (D462)
 
