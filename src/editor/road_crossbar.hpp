@@ -32,13 +32,11 @@ private:
     SignalCue cue_{};
     bool preview_{};
 };
-// D435: a signal head -- its stop line plus a dark three-lamp head just upstream, lamps across the
-// lane in red, amber, green order. Edit mode shows every lamp dim; a run lights the state's lamp
-// only, so the state reads by position as well as hue (D199). D460 (owner review): the head is a
-// square with sharp corners in real metres, hung on a mast arm from a pole beside the road's kerb
-// side, so it zooms with the road; the lamps are left out below headLampMinPixels.
-inline constexpr double headSize=0.90,headMargin=0.08,headGap=0.35,headLamp=0.22,headLampPitch=0.25;
-inline constexpr double headLampMinPixels=3,poleRadius=0.22,poleSetback=0.50;
+// D435: a signal head -- its stop line plus a head just upstream. D460 (owner review): the head is
+// one square box of one colour with sharp corners, in real metres, hung on a mast arm that meets
+// its kerb-side edge from a pole beside the road; dark while editing, the state's colour in a run,
+// where the stop line also keeps D199's shape cue (full, thinned middle, open) so it reads without hue.
+inline constexpr double headSize=0.90,headGap=0.35,poleRadius=0.22,poleSetback=0.50;
 class SignalHeadItem : public RoadCrossbarItem {
 public:
     SignalHeadItem(const RoadCrossbar&, QColor line, double scale, bool preview = false, SignalCue cue = SignalCue::none);
@@ -51,6 +49,6 @@ private:
     QPainterPath housing() const; // the head's square: also the hit region beside the stop line
     QPainterPath square(QPointF centre,double side) const; // a square aligned with the bar
     std::optional<QPointF> poleAt() const; // the pole's centre, when the bar knows its kerb
-    Point travel_{}; double scale_{}; SignalCue lamp_{}; std::optional<Point> pole_;
+    Point travel_{}; double scale_{}; SignalCue lamp_{}; std::optional<Point> pole_; // lamp_: the run state
 };
 }

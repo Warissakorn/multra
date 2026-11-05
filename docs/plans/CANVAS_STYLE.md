@@ -101,8 +101,10 @@ Fit and overlay/edge exclusion; `canvas-labels-ui` retains transformed/cluster/l
 
 ## Owner review fixes (D460)
 
-Nodes are thin outlines with no fill. Signal heads have a real size in metres: a sharp 0.9 m square
-with three square lamps (hidden below 3 px), on a mast arm from a pole beside the kerb-side edge.
+Nodes are thin outlines above the roads with no fill; the polygon is no longer junction asphalt
+(amends Q5). Signal heads are one sharp 0.9 m square box of one colour (dark when editing, the
+state's in a run), on a mast arm meeting its kerb-side edge from a pole beside the road. Roads
+are neutral greys.
 Road edges are a thin dark line instead of the light kerb (amends Q8), and a Link's plain solid
 outer edge is no longer painted white (Slice D's white edge line is withdrawn unless the owner
 asks again). Input rates on a Link lie in their lanes, along the road,
@@ -111,7 +113,8 @@ follow the text's ink height. A line edit's clear button is exempt from the fiel
 Images: [rates at 8 px/m](../images/canvas-review-d460/four-leg-input-rates-8px.png),
 [heads at 20 px/m](../images/canvas-review-d460/four-leg-signal-heads-20px.png),
 [a Node at rest](../images/canvas-review-d460/four-leg-node-rest-10px.png) and
-[selected](../images/canvas-review-d460/four-leg-node-selected-10px.png).
+[selected](../images/canvas-review-d460/four-leg-node-selected-10px.png), and
+[run heads green/amber/red](../images/canvas-review-d460/signal-head-run-states-40px.png).
 
 ## Slice C — run vehicles (next)
 

@@ -4,9 +4,9 @@
     "en": "Default road",
     "th": "ถนนทั่วไป"
   },
-  "linkColor": "#49596d",
-  "connectorColor": "#607d8b",
-  "laneColor": "#d0dfeb",
+  "linkColor": "#5a5d61",
+  "connectorColor": "#71767c",
+  "laneColor": "#e4e5e6",
   "vehicleColor": "#facc15",
   "laneDash": 3,
   "laneGap": 3

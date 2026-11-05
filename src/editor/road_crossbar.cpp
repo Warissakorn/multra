@@ -145,7 +145,7 @@ void RoadCrossbarItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* o
     }
 }
 SignalHeadItem::SignalHeadItem(const RoadCrossbar& bar,QColor colour,double scale,bool preview,SignalCue cue)
-    : RoadCrossbarItem(bar,colour,scale,preview,SignalCue::none),travel_(bar.travel),scale_(std::max(1e-9,std::abs(scale))),lamp_(cue),pole_(bar.pole) {
+    : RoadCrossbarItem(bar,colour,scale,preview,cue),travel_(bar.travel),scale_(std::max(1e-9,std::abs(scale))),lamp_(cue),pole_(bar.pole) {
     auto thin=pen();thin.setWidthF(2);setPen(thin);
 }
 std::optional<SignalHeadItem::HeadFrame> SignalHeadItem::frame() const {
@@ -186,36 +186,23 @@ QRectF SignalHeadItem::boundingRect() const {
     return bounds.adjusted(-4/scale_,-4/scale_,4/scale_,4/scale_);
 }
 void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* option,QWidget* widget) {
-    RoadCrossbarItem::paint(painter,option,widget);
+    RoadCrossbarItem::paint(painter,option,widget); // in a run the bar keeps D199's shape cue
     const auto f=frame();if(!f)return;
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     const QColor metal(58,63,70);
-    if(const auto at=poleAt()) { // the mast arm from the pole at the kerb to the head, then the pole itself
+    if(const auto at=poleAt()) { // the mast arm from the pole to the head's kerb-side edge, then the pole
         const QPointF pole=*at;
+        const double side=QPointF::dotProduct(pole-f->centre,f->across)<0?-1.:1.;
         QPen arm(metal,2,Qt::SolidLine,Qt::FlatCap);arm.setCosmetic(true);
-        painter->setPen(arm);painter->drawLine(pole,f->centre);
+        painter->setPen(arm);painter->drawLine(pole,f->centre+f->across*(side*f->size/2));
         const double r=std::max(poleRadius,2/scale_);
         painter->setPen(Qt::NoPen);painter->setBrush(QColor(38,42,48));painter->drawEllipse(pole,r,r);
     }
-    // The square head with a cosmetic edge in the line's colour (state, hover, selection), its
-    // darker face, then three square lamps across the lane: red, amber, green from the bar's first end.
-    QPen edge(pen().color(),1);edge.setCosmetic(true);edge.setJoinStyle(Qt::MiterJoin);
-    painter->setPen(edge);painter->setBrush(metal);painter->drawPath(housing());
-    const double fit=f->size/headSize;
-    painter->setPen(Qt::NoPen);painter->setBrush(QColor(28,31,36));
-    painter->drawPath(square(f->centre,f->size-2*headMargin*fit));
-    if(headLamp*fit*scale_>=headLampMinPixels) {
-        const QColor hues[]={QColor(230,57,53),QColor(245,180,30),QColor(46,184,92)};
-        const SignalCue cues[]={SignalCue::stop,SignalCue::caution,SignalCue::go};
-        for(int k=0;k<3;++k) {
-            QColor lampColour=hues[k];
-            if(lamp_==SignalCue::none)lampColour=lampColour.darker(115); // editing: the head, not a state
-            else if(lamp_!=cues[k])lampColour=QColor(52,56,62);
-            painter->setBrush(lampColour);
-            painter->drawPath(square(f->centre+f->across*((k-1)*headLampPitch*fit),headLamp*fit));
-        }
-    }
+    // D460: one square box of one colour -- dark while editing, the state's colour in a run -- with a
+    // cosmetic edge in the line's colour (state, hover, selection) and no lamps.
+    QPen edge(lamp_==SignalCue::none?pen().color():metal,1);edge.setCosmetic(true);edge.setJoinStyle(Qt::MiterJoin);
+    painter->setPen(edge);painter->setBrush(lamp_==SignalCue::none?metal:pen().color());painter->drawPath(housing());
     painter->restore();
 }
 }

@@ -50,13 +50,13 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     // 1. Layers: every kerb of a level under every surface of it, lane guides over the surfaces and
     // under the Link markings; the level-1 kerb over the level-0 surfaces.
     const auto kerbs=tagged(c,"road-kerb"),surfaces=tagged(c,"road-surface"),nodes=tagged(c,"node-surface");
-    require(!surfaces.empty() && nodes.size()==1,"Fixture lost its Connector or Node surface");
+    require(!surfaces.empty() && nodes.empty(),"Fixture lost its Connector surface, or a Node drew one (D460)");
     const auto centre=surfaces.front()->sceneBoundingRect().center(); // items die at each redraw
     std::vector<QGraphicsPathItem*> ground,upper,linkMarks;
     for(auto* k:kerbs)(k->zValue()<100?ground:upper).push_back(k);
-    require(ground.size()==4 && upper.size()==1,"Every Link, Connector and Node surface does not carry one kerb");
+    require(ground.size()==3 && upper.size()==1,"Every Link and Connector surface does not carry one kerb");
     for(auto* m:tagged(c,"road-marking"))if(m->data(1).toString()!=connector)linkMarks.push_back(m);
-    require(extreme(ground,true)<extreme(surfaces,false) && extreme(ground,true)<extreme(nodes,false),
+    require(extreme(ground,true)<extreme(surfaces,false),
             "A kerb lies over a surface of its level");
     require(extreme(upper,false)>extreme(surfaces,true),"The bridge's kerb is under the ground surfaces");
     require(faint(c)>0,"A resting Connector at 14 px per lane shows no lane guides");
@@ -98,7 +98,7 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     for(std::size_t i=0;i<probes.size();++i)require(c.hitObjects(probes[i])==before[i],"A kerb changed a hit");
     // 5. Under 3 px per lane the kerb goes with the markings (D200); wireframe draws none at all.
     view(c,3/3.5*(1-1e-3));
-    require(tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty() && tagged(c,"node-surface").size()==1,
+    require(tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty() && tagged(c,"node-surface").empty(),
             "Under 3 px the kerb stayed or a surface went");
     view(c,4);c.setWireframe(true);
     require(tagged(c,"road-kerb").empty() && tagged(c,"node-surface").empty() && faint(c)==0,"Wireframe draws road surface");

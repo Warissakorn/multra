@@ -149,6 +149,11 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
         state.time=time;c.setRunFrame(state);
         auto* bar=dynamic_cast<RoadCrossbarItem*>(drawn(c,"run-signal"));require(bar,"Run signal still uses a dot");
         require(bar->line()==original && bar->pen().color()==colour,"Run bar position or colour disagrees with the signal");
+        if(preview) { // D460 review image: the run head at 40 px/m, one box in the state's colour
+            c.setTransform(QTransform::fromScale(40,-40));c.centerOn(original.center());c.setRunFrame(state);
+            require(c.viewport()->grab().save(QString::fromLocal8Bit(preview)+QString("-run-%1.png").arg(time)),"Run review image failed");
+            c.fitNetwork();c.setRunFrame(state);
+        }
     }
     c.clearRunFrame();require(drawn(c,"stop-line") && !drawn(c,"run-signal"),"Reset did not restore authored heads");
     c.setHighlightedRoute(route);

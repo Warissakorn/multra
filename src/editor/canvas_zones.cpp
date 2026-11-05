@@ -118,19 +118,8 @@ void EditorCanvas::drawNodes() {
         for (std::size_t i = 0; i < node.polygon.size(); ++i)
             i ? shape.lineTo(node.polygon[i].x, node.polygon[i].y) : shape.moveTo(node.polygon[i].x, node.polygon[i].y);
         shape.closeSubpath();
-        // D423 (Q5 b): a Node's polygon is junction road -- the default asphalt with its kerb, on the
-        // ground level, so no gap between its Connectors reads as a hole. Wireframe draws no surface.
-        if (!wireframe_ && levelVisible(0)) {
-            auto* surface = scene_.addPath(shape, QPen(Qt::NoPen),
-                                           QBrush(QColor(QString::fromStdString(style("default").linkColor))));
-            surface->setZValue(canvasStyle::surfaceLayer);
-            surface->setData(0, QStringLiteral("node-surface")); surface->setData(1, QString::fromStdString(node.id));
-            // A Node has no lanes of its own: its kerb shows when the narrowest lane's markings do.
-            double narrowest = std::numeric_limits<double>::infinity();
-            for (const auto& link : document_->network.links)
-                for (const auto& lane : link.lanes) narrowest = std::min(narrowest, lane.width);
-            addKerb(shape, 0, narrowest, node.id);
-        }
+        // D460 (owner review): a Node draws no surface of its own -- no junction asphalt, no kerb --
+        // only its thin outline, above the roads (z 200005); holes between Connectors stay holes.
         const bool lit = node.id == highlightedNode_;
         // D460 (owner review of D434): a Node is a thin outline with no fill, so the junction road
         // under it reads as road. Highlighted: 2 px accent; study area: green; generated: fainter ink.

@@ -7,14 +7,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ## 2026-11-05 — Canvas review fixes (D460)
 
-- **Owner review** of the canvas: four items, then a second round (square heads on a pole,
-  thin dark road edges, a Node image).
-- **Node:** a thin outline with no fill. Highlighted Nodes stay 2 px accent and study-area Nodes
-  green; the junction road under the Node is unchanged.
-- **Signal head:** real size in metres: a 0.90 m square with sharp corners 0.35 m upstream of the
-  stop line, three square lamps across the lane, and a mast arm to a pole just outside the road
-  edge on the kerb (driving) side. It zooms with the road. Below 3 px the lamps are left out and the
-  stop line carries the state. Hit shape: band plus square, as before.
+- **Owner review** of the canvas: four items, then two more rounds (single-colour square heads
+  on a pole, thin dark road edges, bare Node outlines, greyer roads).
+- **Node:** a thin outline with no fill, drawn above the roads. The polygon is no longer filled as
+  junction asphalt. Highlighted Nodes stay 2 px accent and study-area Nodes green.
+- **Road colour:** neutral greys instead of blue-greys (`data/display-types/`).
+- **Signal head:** a 0.90 m square box of one colour with sharp corners, 0.35 m upstream of the
+  stop line: dark while editing, the state's colour in a run, with no lamps. The run stop line
+  keeps D199's shape cue. A mast arm meets the box's kerb-side edge from a pole just outside the
+  road on the driving side. It zooms with the road.
 - **Road edge:** a thin dark line replaces the thick light kerb, on Links and Connectors. A Link's
   plain solid outer-edge marking is no longer painted white over it; dashed and double edges still
   are.
