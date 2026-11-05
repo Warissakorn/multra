@@ -5,7 +5,7 @@ Whole entries moved from the live PROGRESS log.
 ## 2026-11-04 — The weave-end lock, partly fixed (D450)
 
 - **Owner:** "fix the weave-end lock first".
-- **Traced** ([weaving-lock](evidence/weaving-lock.md)). Two ways a pair at a shared dead end locks
+- **Traced** ([weaving-lock](../evidence/weaving-lock.md)). Two ways a pair at a shared dead end locks
   for good:
   - D207 dropped the rear partner whenever it fell back, and it drove up into the standstill
     distance once the front one stood;
