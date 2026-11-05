@@ -16,7 +16,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Road edge:** shows while the whole road is 2 px wide, no longer only from 3 px per lane.
 - **Heads on a Connector:** the pole stands beside the attached Link's edge at the mouth; a head
   away from any mouth has none.
-- **Verified:** see the commit; before/after images in `docs/images/canvas-fixes-d461/`.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. The queue-counter test now zooms to its own targets (it scaled Fit by 3). Images: `docs/images/canvas-fixes-d461/`.
 
 ## 2026-11-05 — Canvas review fixes (D460)
 
