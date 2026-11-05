@@ -436,7 +436,7 @@ private:
     // Page identity is registered once at construction; tab order is presentation only.
     std::map<std::string,QWidget*> objectPages_, resultPages_;
     void addObjectPage(QWidget* page,const std::string& key);
-    void translateObjectPages();
+    void translateObjectPages(); void updateObjectsHeader(); // D462: single-page strip and dock title
     // Task groups (UI slice c): navigation only; the group always follows the current page.
     QComboBox* objectGroup_{};
     bool changingGroup_{};

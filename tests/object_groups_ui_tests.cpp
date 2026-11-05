@@ -80,6 +80,13 @@ int main(int argc,char** argv) {
                 for(const auto* content:group.pages)expected.push_back(test::tabPage(tabs,item<QWidget>(window,content)));
                 require(visiblePages(tabs)==expected,"Group shows the wrong pages");
                 require(tabs->currentWidget()==expected.front(),"Choosing a group did not open its first page");
+                // D462: a one-page group shows no tab strip, the picker stays, and the dock is titled by the group.
+                require(tabs->tabBar()->isHidden()==(expected.size()==1),"A one-page group still shows its tab strip, or a larger one lost it");
+                require(!combo->isHidden(),"Hiding the strip hid the group picker");
+                // ...and it never overlaps the page: in the strip's corner, or in its own row above the page.
+                require((tabs->cornerWidget(Qt::TopLeftCorner)==combo)==(expected.size()>1),"The picker is not where its group needs it");
+                if(expected.size()==1)require(combo->geometry().bottom()<tabs->geometry().top(),"The picker overlaps a one-page group's page");
+                require(dock->windowTitle().compare(text.value(group.key).toString(),Qt::CaseInsensitive)==0,"The dock is not titled by its group");
                 for(auto* page:expected)covered.insert(page);
             }
         }
@@ -140,7 +147,8 @@ int main(int argc,char** argv) {
                     require(view.width()>=700&&view.height()>=350,"Wide canvas crowded out by a group");
                 }
                 require(window.rect().contains(QRect(combo->mapTo(&window,QPoint()),combo->size())),"Selector outside window");
-                require(combo->mapTo(tabs,QPoint(combo->width(),0)).x()<=tabs->tabBar()->mapTo(tabs,QPoint()).x(),"Selector overlaps the page strip");
+                if(tabs->cornerWidget(Qt::TopLeftCorner)==combo) // D462: a one-page group has no strip to overlap
+                    require(combo->mapTo(tabs,QPoint(combo->width(),0)).x()<=tabs->tabBar()->mapTo(tabs,QPoint()).x(),"Selector overlaps the page strip");
             }
         }
         if(argc>2) {

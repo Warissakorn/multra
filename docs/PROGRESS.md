@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Owner choices after D461 (D462)
+
+- **Owner:** "ช่วยแนะนำต้องตัดสินใจ", then took every recommendation.
+- **Hidden rates:** no extra marker. The blue input bar stays, and hovering or selecting the origin
+  road shows the rate as its box.
+- **Objects dock:** titled by its current group. A one-page group (Results, Problems) shows no tab
+  strip; its picker moves to its own row above the page, since Qt left it floating over the page
+  with the strip hidden. It returns to the strip's corner for larger groups.
+- **Movement names:** not translated; they are the project's Link names.
+- **Verified:** see the commit.
+
 ## 2026-11-05 — Canvas display fixes, round 1 (D461)
 
 - **Owner:** "เริ่มเลย" on round 1 of the display-error list; the median spikes in the junction
@@ -188,24 +199,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Lab switched on: locked seeds at ×0.6 0/1/0, at ×0.8 0/0/1, at ×1.0 0/1/0. The 237 s wait is
     gone.
   - Lab switched off: identical.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — No courtesy for a change that may not land (D452)
-
-- **Owner:** "trace the remaining switched-on locks first".
-- **Traced** ([weaving-lock](evidence/weaving-lock.md#d452-no-courtesy-for-a-change-that-may-not-land)):
-  three patterns.
-  - **(P1) the courtesy cycle:** a lane-1 follower held back for a two-change stub whose landing
-    D450 (b) refuses, and stood short of a waiting lane-0 stub's place, so neither went.
-  - **(P2a):** a held crossing resumes beside a partner.
-  - **(P2b):** a late hard stop at the dead end beats the comfortable yield.
-- **D452 (M3_8_CONTRACT §2):** no courtesy for a changer whose landing (b) refuses. It is one line in
-  `courtesyHolds`, with no parameter and no state.
-  - **Tried and dropped:** re-checking (b) as a held crossing resumes (P2a). It added locks at ×0.8.
-- **Rows:** BA188 and BA189, both failure-first.
-- **Results:**
-  - Product runs are identical to D451, off and on.
-  - Locked seeds on: ×0.5 0/0/0, ×0.8 1/0/0, ×1.0 0/2/0 (from 1/1/0, 4/5/0 and 1/4/3).
-  - Locked seeds off at ×1.0: 0/3/2 (from 6/6/5).
-  - Longest waits: off ×1.0 down from 510 s to 28 s.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
