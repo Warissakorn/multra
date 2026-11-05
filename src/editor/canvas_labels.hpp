@@ -31,6 +31,8 @@ public:
     QPointF anchor() const { return anchor_; }
     int priority() const { return priority_; }
     bool pinned() const { return pinned_; }
+    // D464: an exported image pins every rate so none hides, without the accent frame of a selection.
+    void setAccent(bool on) { accent_ = on; update(); }
     Style style() const { return style_; }
     QGraphicsLineItem* leader() const { return leader_; }
     void setLeader(QGraphicsLineItem* line) { leader_ = line; }
@@ -47,6 +49,7 @@ private:
     QPointF anchor_;
     int priority_{};
     bool pinned_{};
+    bool accent_{};
     Style style_{Style::halo};
     QGraphicsLineItem* leader_{};
     std::optional<LaneSlot> lane_;

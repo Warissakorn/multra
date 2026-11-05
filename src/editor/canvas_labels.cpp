@@ -14,7 +14,7 @@
 
 namespace multra {
 CanvasLabel::CanvasLabel(const QString& text, const QFont& font, QPointF anchor, int priority, bool pinned, Style style)
-    : QGraphicsSimpleTextItem(text), anchor_(anchor), priority_(priority), pinned_(pinned), style_(style) {
+    : QGraphicsSimpleTextItem(text), anchor_(anchor), priority_(priority), pinned_(pinned), accent_(pinned), style_(style) {
     setFont(font);
     setFlag(QGraphicsItem::ItemIgnoresTransformations);
     setPos(anchor);
@@ -47,7 +47,7 @@ void CanvasLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWid
         const double luminance = .2126 * road.redF() + .7152 * road.greenF() + .0722 * road.blueF();
         painter->strokePath(glyphs, QPen(road, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         painter->fillPath(glyphs, luminance > .55 ? QColor(20, 22, 26) : QColor(255, 255, 255));
-        if (pinned_) {
+        if (accent_) {
             painter->setPen(QPen(canvasStyle::selection(), 1.5)); painter->setBrush(Qt::NoBrush);
             painter->drawRoundedRect(frame(), radius, radius);
         }
@@ -56,7 +56,7 @@ void CanvasLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWid
     }
     if (style_ != Style::halo) {
         // D425 (and D460's tag): a white box, grey frame (accent and heavier when pinned), then the text.
-        QPen pen(pinned_ ? canvasStyle::selection() : editorDesign::role(QPalette::Dark), pinned_ ? 1.5 : 1);
+        QPen pen(accent_ ? canvasStyle::selection() : editorDesign::role(QPalette::Dark), accent_ ? 1.5 : 1);
         painter->setPen(pen); painter->setBrush(editorDesign::role(QPalette::Base));
         const double corner = style_ == Style::tag ? 0 : radius; // a tag is a plain rectangle
         painter->drawRoundedRect(frame().adjusted(.5, .5, -.5, -.5), corner, corner);

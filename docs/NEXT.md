@@ -29,11 +29,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Owner-directed and separate from M13/M14: [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill
   answers and slices A–E. Slice A (road surface, kerb, junction layers) is D423; slice B (label
   halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
-  with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
-  `docs/images/canvas-labels-after/`.
+  with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426.
 - D460 (owner review), D461 (display fixes), D462 (owner choices) and D463 (UI round 2:
   Properties fits its panel, clipped summary ends on a row, short labels, one-line scope banner,
-  "—" in empty result cells) are done. The owner checks them on Windows through
+  "—" in empty result cells) and D464 (a PNG export shows every rate and signal head; the LOD
+  threshold test measures real decoration again) are done. The owner checks them on Windows through
   [the images](images/); the junction median spikes stay (Q5). Slice C waits for the go-ahead.
 - Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
   are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check

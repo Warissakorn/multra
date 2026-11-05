@@ -152,6 +152,10 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
     };
     require(boxPixels(2)==0,"A head under 4 px still paints its box (D461)");
     require(boxPixels(40)>0,"A head at 40 px/m lost its box");
+    // D464: an exported image keeps every head -- the same 2 px/m view rendered for a PNG paints the box.
+    c.setProperty("editorImageRendering",true);
+    require(boxPixels(2)>0,"An exported head under 4 px lost its box");
+    c.setProperty("editorImageRendering",QVariant());
     c.fitNetwork();
     Scenario scenario;scenario.duration=60;scenario.timeStep=.1;
     scenario.signalPrograms=d.definition->signalPrograms;scenario.signalHeads={{head,"unused",50,program}};

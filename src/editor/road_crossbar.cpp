@@ -157,9 +157,11 @@ std::optional<SignalHeadItem::HeadFrame> SignalHeadItem::frame() const {
     const auto a=line().p1(),b=line().p2();const double lane=std::hypot(b.x()-a.x(),b.y()-a.y());
     const double t=std::hypot(travel_.x,travel_.y);
     if(!(lane>0) || !(t>0))return {};
-    const double size=std::min(headSize,0.9*lane),gap=headGap*size/headSize;
+    double size=std::min(headSize,0.9*lane);const double gap=headGap*size/headSize;
+    const bool floored=keepVisible_&&size*scale_<headMinPixels; // D464: an exported head stays legible
+    if(floored)size=headMinPixels/scale_;
     const QPointF across((b.x()-a.x())/lane,(b.y()-a.y())/lane),back(-travel_.x/t,-travel_.y/t);
-    return HeadFrame{(a+b)/2+back*(gap+size/2),across,back,size};
+    return HeadFrame{(a+b)/2+back*(gap+size/2),across,back,size,floored};
 }
 QPainterPath SignalHeadItem::square(QPointF centre,double side) const {
     const auto f=frame();if(!f)return {};
@@ -191,11 +193,11 @@ QRectF SignalHeadItem::boundingRect() const {
 void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* option,QWidget* widget) {
     RoadCrossbarItem::paint(painter,option,widget); // in a run the bar keeps D199's shape cue
     const auto f=frame();if(!f)return;
-    if(f->size*scale_<headMinPixels)return; // D461: zoomed out, the stop line alone is the head
+    if(!f->floored&&f->size*scale_<headMinPixels)return; // D461: zoomed out, the stop line alone is the head
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     const QColor metal(58,63,70);
-    if(const auto at=poleAt()) { // the mast arm from the pole to the head's kerb-side edge, then the pole
+    if(const auto at=f->floored?std::nullopt:poleAt()) { // the mast arm from the pole to the head's kerb-side edge, then the pole
         const QPointF pole=*at;
         const double side=QPointF::dotProduct(pole-f->centre,f->across)<0?-1.:1.;
         QPen arm(metal,2,Qt::SolidLine,Qt::FlatCap);arm.setCosmetic(true);

@@ -124,6 +124,11 @@ road edge follows the whole road's width (2 px), not the lane threshold. A head 
 hangs from a pole beside the attached Link's edge. The median spikes in junctions stay (Q5).
 Images: [before](../images/canvas-fixes-d461/before/), [after](../images/canvas-fixes-d461/after/).
 
+## Exported images (D464)
+
+A network image PNG pins every input rate (grey-framed box) and keeps every signal head box at
+4 px or more; the live canvas is unchanged.
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing

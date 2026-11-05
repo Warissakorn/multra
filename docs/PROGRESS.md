@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Exported images keep rates and heads; the LOD test measures again (D464)
+
+- **Owner:** asked to review the decisions D460 replaced, then "เริ่มเลย" on the three fixes.
+- **PNG export:** every input rate shows as a grey-framed box, and every signal head keeps its
+  box (4 px at least, no pole when grown). D462's "no marker" relied on hover, which a picture
+  lacks. The live canvas is unchanged.
+- **canvas-lod-ui:** after D460 the crossing fixture drew no lane decoration at 3 px, so its
+  threshold checks compared 0 with 0. It now measures a selected Connector's mouth edges and
+  requires them.
+- **Records:** D423, D432, D434 and D435 now say what D460 changed in them.
+- **Rows:** network-image-ui, road-crossbar-ui and canvas-lod-ui each failed before the fix.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked. Images: `docs/images/export-d464/` (whole-network PNG before and after).
+
 ## 2026-11-05 — UI fixes, round 2 (D463)
 
 - **Owner:** "เริ่ม UI รอบสองเลย".
@@ -178,21 +192,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - clamps on at ×1.0 7 → 23 (late braking for a dead end at speed);
   - one new lock on at ×1.0;
   - a D450 (a) overrun at ×0.4 (seed 42, 500 m).
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — The yielding partner brakes as cooperative braking does (D454)
-
-- **Owner:** asked for a recommendation, then "do D454".
-- **Cause** ([weaving-yield-cap](evidence/weaving-yield-cap.md)): a front stub reaching its dead end
-  fast stops harder than comfortable. Its rear partner, capped at comfortable braking, stood inside
-  the standstill distance, and the pair locked. This was P2b, and the off ×1.0 remainder.
-- **D454 (M3_8_CONTRACT §2, D450 (a) revised):** once the front one closes in, the rear partner
-  brakes up to `maxDecelerationCooperativeBraking` (M3.2.8c's key, 3 m/s²). No new parameter.
-- **Rows:** BA192 and BA193, both failure-first.
-- **Results:**
-  - Product runs are identical except the lane-change lab on (delay −0.00005 s, clamps 0).
-  - Lab on: one lock is left from ×0.5 to ×1.0 (seed 50, 500 m).
-  - Lab off at ×1.0: 0/2/1 (from 0/3/2).
-  - Cost: a 205 s wait on at ×1.0.
-- **Track:** the weave-end lock track is closed by the recommendation. The leftovers are in NEXT.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

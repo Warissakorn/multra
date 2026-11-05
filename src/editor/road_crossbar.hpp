@@ -44,12 +44,16 @@ public:
     QPainterPath shape() const override;
     QRectF boundingRect() const override;
     void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
+    // An exported image keeps every head: a box under headMinPixels grows to that size on screen
+    // and drops its arm and pole, instead of leaving the stop line alone (D464).
+    void keepVisible() { prepareGeometryChange(); keepVisible_ = true; }
 private:
-    struct HeadFrame { QPointF centre, across, back; double size{}; };
+    struct HeadFrame { QPointF centre, across, back; double size{}; bool floored{}; }; // floored: grown to headMinPixels
     std::optional<HeadFrame> frame() const; // the housing's placement; none for a degenerate bar
     QPainterPath housing() const; // the head's square: also the hit region beside the stop line
     QPainterPath square(QPointF centre,double side) const; // a square aligned with the bar
     std::optional<QPointF> poleAt() const; // the pole's centre, when the bar knows its kerb
     Point travel_{}; double scale_{}; SignalCue lamp_{}; std::optional<Point> pole_; // lamp_: the run state
+    bool keepVisible_{};
 };
 }

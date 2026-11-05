@@ -2,6 +2,23 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — The yielding partner brakes as cooperative braking does (D454)
+
+- **Owner:** asked for a recommendation, then "do D454".
+- **Cause** ([weaving-yield-cap](../evidence/weaving-yield-cap.md)): a front stub reaching its dead end
+  fast stops harder than comfortable. Its rear partner, capped at comfortable braking, stood inside
+  the standstill distance, and the pair locked. This was P2b, and the off ×1.0 remainder.
+- **D454 (M3_8_CONTRACT §2, D450 (a) revised):** once the front one closes in, the rear partner
+  brakes up to `maxDecelerationCooperativeBraking` (M3.2.8c's key, 3 m/s²). No new parameter.
+- **Rows:** BA192 and BA193, both failure-first.
+- **Results:**
+  - Product runs are identical except the lane-change lab on (delay −0.00005 s, clamps 0).
+  - Lab on: one lock is left from ×0.5 to ×1.0 (seed 50, 500 m).
+  - Lab off at ×1.0: 0/2/1 (from 0/3/2).
+  - Cost: a 205 s wait on at ×1.0.
+- **Track:** the weave-end lock track is closed by the recommendation. The leftovers are in NEXT.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — A change under way that may not land claims nothing (D453)
 
 - **Owner:** "trace P2a first", then "do B+C+E as D453".

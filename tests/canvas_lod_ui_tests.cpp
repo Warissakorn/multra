@@ -48,18 +48,18 @@ int main(int argc,char** argv) {
         const double rounded=at*(1-1e-12);
         require(narrowest*rounded<canvasStyle::minLanePixels,"Setup: the rounded scale is not below the threshold");
         require(canvasStyle::laneMarkingsReadable(narrowest,rounded),"A rounding of the scale hides the markings");
-        // 1. The markings follow the lane threshold, and only they do.
+        // 1. The markings follow the lane threshold, and only they do. D460 left the fixture's one-lane
+        // Links no lane line (their solid outer edges are the dark road edge, road-kerb) and resting
+        // Connectors no guides, so the decoration measured is a selected Connector's mouth edges (D423),
+        // which follow the same threshold; the Connector stays selected through steps 1 and 6.
+        const auto connectorId=fixture["connectors"].front()["id"].get<std::string>();
+        canvas.select(connectorId);
         view(canvas,QTransform::fromScale(at,-at));
         const auto full=tags(canvas);
-        // D460: the fixture's one-lane Links have only solid outer edges, now the dark road edge
-        // (road-kerb), so the kerb is the lane decoration this view must show.
         require(full.count("road-kerb")&&full.at("road-kerb")>0,"No kerb at 3 px per lane");
+        require(full.count("connector-mouth-edge")&&full.at("connector-mouth-edge")>0,"No mouth edges at 3 px per lane");
         const int fullDecoration=markings(canvas);
-        // D423: only a Connector being worked on draws its mouth edges; select one to see them.
-        const auto connectorId=fixture["connectors"].front()["id"].get<std::string>();
-        canvas.select(connectorId);canvas.redraw();settle();
-        require(tags(canvas).count("connector-mouth-edge")&&tags(canvas).at("connector-mouth-edge")>0,"No mouth edges at 3 px per lane");
-        canvas.select("");canvas.redraw();settle();
+        require(fullDecoration>0,"The forcing: no lane decoration at 3 px per lane, so the threshold checks below are empty");
         if(argc>2)require(canvas.viewport()->grab().save(QString::fromUtf8(argv[2])+"-at-3px.png"),"Screenshot failed");
         const auto kept=essential(canvas);
         view(canvas,QTransform::fromScale(under,-under));
@@ -80,6 +80,7 @@ int main(int argc,char** argv) {
             view(canvas,QTransform::fromScale(s,s));
             require(markings(canvas)==expected,"A flipped view decides the markings differently");
         }
+        canvas.select("");
         // 3, 4. A selected Link keeps its outline, arrows and grips; hits are the model's.
         const auto& link=fixture["links"].front();const auto& line=link["geometry"];
         const auto middle=line[line.size()/2];
