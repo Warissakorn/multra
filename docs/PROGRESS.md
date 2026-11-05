@@ -29,7 +29,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     projects. A rate whose origin road is selected or hovered falls back to its box.
   - Boxes are now as tall as the text's ink.
   - This replaces D432's "all visible after Fit" and D426's columns for unpinned rates.
-- **Verified:** see the commit; images in `docs/images/canvas-review-d460/`.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. Images: `docs/images/canvas-review-d460/`.
 
 
 ## 2026-11-04 — Two-entry weaves run (D459)
