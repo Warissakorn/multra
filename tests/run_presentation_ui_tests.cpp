@@ -198,6 +198,43 @@ int main(int argc,char** argv) {
             requireSame(grab().copy(interior),photoBaked.copy(interior),"A background image's opacity is lost in the cached layer");
             canvas->setRunLayerCache(true);
         }
+        if(argc>2) { // slice C review images: the shipped four-leg junction mid-run, colour and grey
+            window.openFile(QString::fromStdString((data/"projects/four-leg-signalised.traffic.json").string()));settle();
+            for(int i=0;i<900;++i)window.findChild<QAction*>("editorStep")->trigger();
+            settle();
+            for(const double scale:{6.,14.}) {
+                canvas->setTransform(QTransform::fromScale(scale,-scale));canvas->centerOn(0,0);canvas->redraw();settle(); // as a wheel zoom
+                const auto image=canvas->viewport()->grab().toImage();
+                const auto name=QString::fromUtf8(argv[2])+QStringLiteral("-four-leg-run-%1px").arg(scale);
+                require(image.save(name+".png")&&image.convertToFormat(QImage::Format_Grayscale8).save(name+"-grayscale.png"),"Screenshot failed");
+            }
+        }
+        // D465 (slice C): in a run neither a Node outline nor an unpinned rate label is drawn over the
+        // vehicles; a selected road's rate still shows, as its box. Forcing: both show while editing.
+        {
+            QTemporaryDir directory;require(directory.isValid(),"No temporary directory");
+            window.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));settle();
+            auto document=window.history().document();document.background={};
+            document.network.nodes.push_back(Node{"run-node","",{{-12,-12},{12,-12},{12,12},{-12,12}}});
+            const auto file=directory.filePath("node.traffic.json");
+            std::ofstream(file.toStdString())<<documentJson(document).dump(1);
+            window.openFile(file);settle();
+            canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);canvas->redraw();settle();
+            const auto outline=[&]()->QGraphicsItem*{for(auto* item:canvas->scene()->items())
+                if(item->data(0).toString()=="node"&&item->data(1).toString()=="run-node")return item;return nullptr;};
+            const auto rates=[&]{std::vector<CanvasLabel*> out;for(auto* item:canvas->scene()->items())
+                if(auto* label=dynamic_cast<CanvasLabel*>(item);label&&label->data(0).toString()=="input-volume")out.push_back(label);return out;};
+            require(outline()&&outline()->isVisible()&&!rates().empty(),"Forcing: editing shows the Node outline and the rates");
+            for(int i=0;i<50;++i)window.findChild<QAction*>("editorStep")->trigger();
+            settle();
+            require(outline()&&!outline()->isVisible(),"A Node outline is drawn over the vehicles in a run");
+            require(rates().empty(),"A rate label is drawn over the vehicles in a run");
+            for(const auto& link:window.history().document().network.links){canvas->select(link.id);settle();if(!rates().empty())break;}
+            require(!rates().empty(),"Setup: no road's selection pins a rate");
+            canvas->centerOn(rates().front()->anchor());canvas->redraw();settle(); // a box stays inside the viewport
+            require(rates().size()==1&&rates().front()->isVisible()&&!rates().front()->onLane(),"A selected road's rate is not its box in a run");
+            canvas->select("");
+        }
         if(argc>2) {
             canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);settle();
             auto image=canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_Grayscale8);

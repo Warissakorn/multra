@@ -1,5 +1,11 @@
 {
   "vehicleTypeId": "van",
   "color": "#a78bfa",
-  "shape": "van"
+  "shape": "van",
+  "palette": [
+    "#f4f4f2",
+    "#c9ccd0",
+    "#17181a",
+    "#42a5f5"
+  ]
 }

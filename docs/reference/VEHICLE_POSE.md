@@ -149,6 +149,17 @@ select an existing archetype by adding data alone. Invalid shape values fail wit
 without `shape` retains the length-based car/truck choice (truck above 7 m).
 Appearance never enters `core/`, project schemas or vehicle-type parameter hashes.
 
+An optional `palette` (2–16 distinct `#rrggbb`) makes a type a mixed fleet by default (D465):
+car, pickup and van ship realistic body colours; bus, trucks and motorcycle keep one type colour so
+they still read by colour. A user's choice for a type replaces its shipped palette; a type left on
+it (or Reset to it) is not written to the preferences, so a later release's palette reaches it.
+`vehicle-colors-ui` requires every shipped vehicle colour to keep a WCAG contrast of at least 1.5
+against every shipped road colour, so it reads in greyscale too.
+
+In a run each vehicle at least 14 px long casts a shadow: its body again in black at alpha 70,
+offset 2 px down and right on screen whatever the rotation, flip or heading-up. It is painted
+only (no blur effect, no hit change), inside the item's bounding rectangle.
+
 `vehicleDrawing` produces a solid body and separate glass, roof/load panels and pale
 headlamps in the front-bumper frame. Cars have a tapered nose and cabin; pickups an open
 bed; vans a short cab-over nose, continuous high roof, divided side windows and upright

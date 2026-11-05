@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include <cmath>
 using namespace multra;
 namespace {
 void require(bool ok,const char* message){if(!ok)throw std::runtime_error(message);}
@@ -38,7 +39,25 @@ int main(int argc,char**argv) {
         QFile locale(QString::fromStdString((data/"locales/en.json").string()));require(locale.open(QIODevice::ReadOnly),"Locale missing");
         const auto text=QJsonDocument::fromJson(locale.readAll()).object();
         auto tr=[&](const char* key){require(text.contains(key),"Translation missing");return text.value(key).toString();};
-        require(vehicleDisplayColor(catalog,"car",1,"fallback")==catalog.vehicleColors.at("car"),"Legacy colour changed");
+        // D465: car, pickup and van ship a mixed palette; the other types keep their one type colour.
+        for(const auto* id:{"car","pickup","van"})
+            require(catalog.shippedVehiclePalettes.contains(id)&&catalog.vehicleColorPalettes.at(id)==catalog.shippedVehiclePalettes.at(id),"Shipped palette missing");
+        for(const auto* id:{"bus","motorcycle","heavy-vehicle","rigid-truck"})
+            require(!catalog.vehicleColorPalettes.contains(id)&&vehicleDisplayColor(catalog,id,1,"fallback")==catalog.vehicleColors.at(id),"Legacy colour changed");
+        // Every shipped vehicle colour stands off every shipped road surface in grey too: WCAG contrast >= 1.5.
+        const auto luminance=[](const std::string& hex){
+            const QColor c(QString::fromStdString(hex));double rgb[]{c.redF(),c.greenF(),c.blueF()};
+            for(auto& v:rgb)v=v<=.04045?v/12.92:std::pow((v+.055)/1.055,2.4);
+            return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+        };
+        std::vector<std::string> fleet;for(const auto& [id,c]:catalog.vehicleColors)fleet.push_back(c);
+        for(const auto& [id,palette]:catalog.shippedVehiclePalettes)fleet.insert(fleet.end(),palette.begin(),palette.end());
+        for(const auto& type:catalog.types)for(const auto& c:fleet) {
+            const double a=luminance(c),b=luminance(type.linkColor);
+            if((std::max(a,b)+.05)/(std::min(a,b)+.05)<1.5) {
+                std::cerr<<c<<" on "<<type.linkColor<<'\n';throw std::runtime_error("A shipped vehicle colour fades into a road");
+            }
+        }
         require(vehicleDisplayColor(catalog,"custom",1,"#123456")=="#123456","Road fallback changed");
         catalog.vehicleColorPalettes["car"]={"#123456"};
         for(std::uint64_t i=0;i<100;++i)require(vehicleDisplayColor(catalog,"car",i,"")=="#123456","Fixed colour varies");
@@ -75,6 +94,11 @@ int main(int argc,char**argv) {
         require(catalog.vehicleColorPalettes.at("motorcycle")==std::vector<std::string>{"#123456"},"Fixed choice not applied");
         auto reopened=loadDisplayCatalog(data);require(loadVehicleColorPreferences(reopened,path),"Reopen failed");
         require(reopened.vehicleColorPalettes==catalog.vehicleColorPalettes,"Saved colours changed");
+        // D465: a type left on its shipped palette is not written, so a later release's palette reaches it.
+        {
+            const auto written=QJsonDocument::fromJson(bytes(path)).object().value("palettes").toObject();
+            require(!written.contains("pickup")&&!written.contains("van")&&written.contains("motorcycle"),"Shipped palettes were saved as user choices");
+        }
         const auto saved=bytes(path);const auto before=catalog.vehicleColorPalettes;
         modal([&](QDialog& d){widget<QPushButton>(d,"editorVehicleColorReset")->click();d.reject();});
         require(!editVehicleColors(nullptr,catalog,ids,tr,path),"Cancel accepted");if(failure)std::rethrow_exception(failure);
@@ -93,10 +117,18 @@ int main(int argc,char**argv) {
         const auto preFailure=catalog.vehicleColorPalettes;
         require(!editVehicleColors(nullptr,catalog,ids,tr,dir.path()),"Invalid save accepted");if(failure)std::rethrow_exception(failure);
         require(catalog.vehicleColorPalettes==preFailure,"Failed save changed colours");
+        modal([&](QDialog& d){ // D465: Reset takes a type back to its shipped palette, which is then not saved
+            widget<QComboBox>(d,"editorVehicleColorType")->setCurrentText("car");
+            widget<QPushButton>(d,"editorVehicleColorReset")->click();confirm(d);
+        });
+        require(editVehicleColors(nullptr,catalog,ids,tr,path),"Reset rejected");if(failure)std::rethrow_exception(failure);
+        require(catalog.vehicleColorPalettes.at("car")==catalog.shippedVehiclePalettes.at("car"),"Reset did not restore the shipped palette");
+        require(!QJsonDocument::fromJson(bytes(path)).object().value("palettes").toObject().contains("car"),"A reset type was saved");
+        const auto afterReset=catalog.vehicleColorPalettes;
         for(const auto& bad:{QByteArray("{"),QByteArray(R"({"version":1,"palettes":{"car":[]}})"),
             QByteArray(R"({"version":1,"palettes":{"car":["red"]}})"),QByteArray(R"({"version":1,"palettes":{"car":["#ffffff","#FFFFFF"]}})")}) {
             write(path,bad);require(bytes(path)==bad,"Invalid fixture missing");
-            require(!loadVehicleColorPreferences(catalog,path)&&catalog.vehicleColorPalettes==preFailure,"Malformed preferences changed colours");
+            require(!loadVehicleColorPreferences(catalog,path)&&catalog.vehicleColorPalettes==afterReset,"Malformed preferences changed colours");
         }
         EditorWindow window(data,"th");const auto revision=window.history().revision();
         auto* action=window.findChild<QAction*>("editorVehicleColors");require(action,"View colour action missing");

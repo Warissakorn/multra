@@ -65,6 +65,18 @@ DisplayCatalog loadDisplayCatalog(const std::filesystem::path& data) {
                     throw std::runtime_error("EDIT_DISPLAY_CATALOG");
                 catalog.vehicleShapes.emplace(id,shape);
             }
+            if(j.contains("palette")) { // D465: a mixed fleet by default, 2-16 distinct colours
+                const auto& values=j.at("palette");
+                if(!values.is_array() || values.size()<2 || values.size()>16)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+                std::vector<std::string> palette;std::set<std::string> unique;
+                for(const auto& c:values) {
+                    auto value=color(Json{{"color",c}},"color");
+                    std::transform(value.begin(),value.end(),value.begin(),[](unsigned char ch){return char(std::tolower(ch));});
+                    if(!unique.insert(value).second)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+                    palette.push_back(std::move(value));
+                }
+                catalog.shippedVehiclePalettes.emplace(id,palette);catalog.vehicleColorPalettes.emplace(id,std::move(palette));
+            }
         }
         if(std::filesystem::is_regular_file(data/"vehicle-colors.json")) {
             std::ifstream input(data/"vehicle-colors.json");const auto j=Json::parse(input);

@@ -1,5 +1,13 @@
 {
   "vehicleTypeId": "car",
   "color": "#38bdf8",
-  "shape": "car"
+  "shape": "car",
+  "palette": [
+    "#f4f4f2",
+    "#c9ccd0",
+    "#a7abb0",
+    "#17181a",
+    "#e53935",
+    "#42a5f5"
+  ]
 }

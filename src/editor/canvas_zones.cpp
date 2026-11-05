@@ -133,6 +133,9 @@ void EditorCanvas::drawNodes() {
         item->setZValue(200005);
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));
+        // D465 (slice C): in a run the outline would cross the vehicles in the junction, so only a
+        // highlighted Node shows; the item stays for hits.
+        if (runFrame_.scenario && !lit) item->setVisible(false);
         // D460: the name shows only while the Node is selected, centred in a tight frame, no halo.
         if (lit) addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), centroid(node.polygon),
                           QGuiApplication::font(), editorDesign::role(QPalette::Text), 200006, QStringLiteral("node-label"),

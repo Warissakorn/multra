@@ -5,7 +5,7 @@
 
 namespace multra {
 RunVehicleItem::RunVehicleItem(const QPainterPath& body,QColor fill,double pixelsPerMetre)
-    : QGraphicsPathItem(body), margin_(2/std::max(1e-9,pixelsPerMetre)) {
+    : QGraphicsPathItem(body), margin_((shadowPixels+2)/std::max(1e-9,pixelsPerMetre)) {
     setPen(Qt::NoPen);setBrush(fill);
 }
 RunVehicleItem::RunVehicleItem(const VehicleDrawing& drawing,QColor fill,double pixelsPerMetre)
@@ -14,14 +14,26 @@ void RunVehicleItem::setDrawing(const VehicleDrawing& drawing) {
     setPath(drawing.body);glass_=drawing.glass;panels_=drawing.panels;lamps_=drawing.lamps;update();
 }
 void RunVehicleItem::setPixelsPerMetre(double pixelsPerMetre) {
-    const double margin=2/std::max(1e-9,pixelsPerMetre);
+    const double margin=(shadowPixels+2)/std::max(1e-9,pixelsPerMetre); // casing and shadow
     if(margin!=margin_){prepareGeometryChange();margin_=margin;}
 }
 QRectF RunVehicleItem::boundingRect() const {
     return QGraphicsPathItem::boundingRect().adjusted(-margin_,-margin_,margin_,margin_);
 }
 void RunVehicleItem::paint(QPainter* painter,const QStyleOptionGraphicsItem*,QWidget*) {
-    painter->setPen(Qt::NoPen);painter->setBrush(brush());painter->drawPath(path());
+    painter->setPen(Qt::NoPen);
+    // D465 (slice C, Q10): a soft shadow -- the body again in translucent black, offset a fixed
+    // shadowPixels down and right on screen whatever the view's rotation, flip or heading-up. No blur
+    // (a blur effect re-renders every vehicle every frame), and none below the detail size, where
+    // the body is its floored minimum symbol.
+    const QTransform device=painter->deviceTransform();
+    const QRectF onScreen=device.mapRect(path().boundingRect());
+    if(device.isInvertible() && std::max(onScreen.width(),onScreen.height())>=shadowMinPixels) {
+        const QTransform back=device.inverted();
+        const QPointF offset=back.map(QPointF(shadowPixels,shadowPixels))-back.map(QPointF(0,0));
+        painter->setBrush(shadowColor());painter->drawPath(path().translated(offset));
+    }
+    painter->setBrush(brush());painter->drawPath(path());
     // All details stay inside the body, and inside this one reusable scene item.
     // Clip also protects custom dimensions with very narrow aspect ratios.
     if(!glass_.isEmpty() || !panels_.isEmpty() || !lamps_.isEmpty()) {

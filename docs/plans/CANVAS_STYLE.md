@@ -129,12 +129,18 @@ Images: [before](../images/canvas-fixes-d461/before/), [after](../images/canvas-
 A network image PNG pins every input rate (grey-framed box) and keeps every signal head box at
 4 px or more; the live canvas is unchanged.
 
-## Slice C — run vehicles (next)
+## Slice C — run vehicles (done, D465)
 
-- **Palettes.** Default per-type palettes are stored in the catalog files. The existing
-  `vehicleDisplayColor` hash picks the colour and draws no simulation random numbers.
-- **Shadow.** A soft offset shadow is painted only, so hit shapes are unchanged.
+- **Palettes.** Car, pickup and van ship a mixed palette in `data/vehicle-appearance` (Q10 narrowed by
+  the owner: bus, trucks and motorcycle keep one type colour). The existing `vehicleDisplayColor`
+  hash picks the colour and draws no simulation random numbers. A user's palette replaces a type's.
+- **Shadow.** The body again in translucent black, 2 px down-right on screen, painted only, from
+  14 px; no blur.
+- **Overlays.** In a run Node outlines hide unless highlighted, and only a selected or hovered
+  road's rate shows, as its box.
 - **Unchanged.** The 14 px and 4×2.5 px LOD floors and the D199 casing stay.
+- Images: [before](../images/canvas-run-d465/before/), [after](../images/canvas-run-d465/after/)
+  (the shipped four-leg junction mid-run at 6 and 14 px/m, colour and greyscale).
 
 ## Slice D — surface markings
 

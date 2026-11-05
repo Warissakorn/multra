@@ -1,5 +1,13 @@
 {
   "vehicleTypeId": "pickup",
   "color": "#22c55e",
-  "shape": "pickup"
+  "shape": "pickup",
+  "palette": [
+    "#f4f4f2",
+    "#c9ccd0",
+    "#17181a",
+    "#a7abb0",
+    "#e53935",
+    "#42a5f5"
+  ]
 }

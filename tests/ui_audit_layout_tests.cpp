@@ -39,7 +39,7 @@ void check(bool ok,const std::string& message){if(!ok)throw std::runtime_error(m
 template<class T>T* child(QObject& root,const char* name){auto* p=root.findChild<T*>(name);check(p,name);return p;}
 void settle(){for(int n=0;n<3;++n){QApplication::processEvents();QTest::qWait(10);}}
 void trigger(EditorWindow& w,const char* name){child<QAction>(w,name)->trigger();settle();}
-void labels(EditorWindow& w){
+void labels(EditorWindow& w,int expectedInputs=12){
     trigger(w,"editorFit");int inputs=0;
     const auto viewport=QRectF(w.canvas()->viewport()->rect()).adjusted(2,2,-2,-2);
     auto* hud=child<QWidget>(*w.canvas()->viewport(),"editorCanvasHud");
@@ -49,7 +49,7 @@ void labels(EditorWindow& w){
         const auto rect=label->deviceTransform(w.canvas()->viewportTransform()).mapRect(label->frame());
         check(viewport.contains(rect),"Fit clipped a label");check(!rect.intersects(hud->geometry()),"HUD covered a label");
     }
-    check(inputs==12,"Expected the twelve-input fitting fixture");
+    check(inputs==expectedInputs,"Expected the twelve-input fitting fixture (none in a run, D465)");
     // D461: with the rates hidden at Fit (D460), Fit reserves no room for them -- the roads fill
     // at least 70 % of the viewport's width or height.
     QRectF roads;
@@ -114,7 +114,7 @@ void run(const std::filesystem::path& data,const QString& lang,const QString& ev
     auto* seed=child<QLineEdit>(w,"editorSeed");seed->setText("4294967295");
     QStyleOptionFrame frame;frame.initFrom(seed);const auto content=seed->style()->subElementRect(QStyle::SE_LineEditContents,&frame,seed);
     check(content.width()>=seed->fontMetrics().horizontalAdvance(seed->text())+4,"Ten-digit seed is clipped");seed->setText("42");
-    trigger(w,"editorStep");labels(w);
+    trigger(w,"editorStep");labels(w,0); // D465: a run draws no unpinned rate
     for(const int width:{1366,1024}) {
         w.resize(width,768);trigger(w,"editorWorkspaceResults");
         auto* movement=child<QTableWidget>(w,"editorMovementTable");auto* queue=child<QTableWidget>(w,"editorQueueTable");

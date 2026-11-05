@@ -33,6 +33,8 @@ bool validColor(const QString& color) {
 bool save(const DisplayCatalog& catalog,const QString& path) {
     QJsonObject palettes;
     for(const auto& [id,colors]:catalog.vehicleColorPalettes) {
+        // D465: a type still on its shipped palette is not a user choice, so a later release's palette reaches it.
+        if(const auto shipped=catalog.shippedVehiclePalettes.find(id);shipped!=catalog.shippedVehiclePalettes.end()&&shipped->second==colors)continue;
         QJsonArray values;for(const auto& color:colors)values.append(QString::fromStdString(color));
         palettes.insert(QString::fromStdString(id),values);
     }
@@ -62,7 +64,9 @@ bool loadVehicleColorPreferences(DisplayCatalog& catalog,const QString& path) {
         }
         palettes.emplace(entry.key().toStdString(),std::move(colors));
     }
-    catalog.vehicleColorPalettes=std::move(palettes);return true;
+    auto merged=catalog.shippedVehiclePalettes; // D465: the user's types replace the shipped ones
+    for(auto& [id,colors]:palettes)merged[id]=std::move(colors);
+    catalog.vehicleColorPalettes=std::move(merged);return true;
 }
 bool editVehicleColors(QWidget* parent,DisplayCatalog& catalog,const std::vector<std::string>& typeIds,
         const std::function<QString(const char*)>& tr,const QString& path) {
@@ -125,7 +129,11 @@ bool editVehicleColors(QWidget* parent,DisplayCatalog& catalog,const std::vector
         }
     });
     QObject::connect(defaults,&QPushButton::clicked,&dialog,usePalette);
-    QObject::connect(reset,&QPushButton::clicked,&dialog,[&]{staged.vehicleColorPalettes.erase(id());load();});
+    QObject::connect(reset,&QPushButton::clicked,&dialog,[&]{ // D465: back to the shipped palette, if any
+        staged.vehicleColorPalettes.erase(id());
+        if(const auto shipped=staged.shippedVehiclePalettes.find(id());shipped!=staged.shippedVehiclePalettes.end())
+            staged.vehicleColorPalettes[id()]=shipped->second;
+        load();});
     const auto choose=[&](bool append){
         const int at=list->currentRow();if(!append&&at<0)return;
         QColorDialog picker(QColor(QString::fromStdString(colors.at(append?0:at))),&dialog);

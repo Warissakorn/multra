@@ -17,8 +17,10 @@ struct DisplayCatalog {
     std::map<std::string,std::string> vehicleColors;
     // Optional display-only archetype. Omission retains the legacy length-based choice.
     std::map<std::string,std::string> vehicleShapes;
-    // User overrides: one colour fixes a type; several colours mix within that type.
+    // Per type: one colour fixes it; several colours mix within it. Starts as the shipped palettes
+    // (an optional `palette` in data/vehicle-appearance, D465); a user's choices replace those types.
     std::map<std::string,std::vector<std::string>> vehicleColorPalettes;
+    std::map<std::string,std::vector<std::string>> shippedVehiclePalettes;
     std::vector<std::string> availableVehicleColors;
 };
 }

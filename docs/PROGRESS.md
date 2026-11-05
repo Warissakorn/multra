@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Canvas style slice C: run vehicles (D465)
+
+- **Owner:** reviewed slice C, then "เอาตามแนะนำ เริ่ม Slice C เลย".
+- **Palettes:** car, pickup and van ship realistic body colours (white, silvers, black, red,
+  blue); bus, trucks and motorcycle keep their type colour. A user's palette still wins; a type on
+  its shipped palette is not saved, and Reset returns to it. Every shipped vehicle colour keeps
+  contrast ≥ 1.5 against every road grey.
+- **Shadow:** a 2 px down-right translucent copy of the body, from 14 px, no blur.
+- **Run overlays:** Node outlines and unpinned rate labels no longer sit on the vehicles; a
+  selected road's rate shows as its box.
+- **Rows:** vehicle-colors-ui, vehicle-appearance-ui and run-presentation-ui, each failed first.
+- **Also:** `ui-audit-layout` now expects no unpinned rate labels during its one run step.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked. Images: `docs/images/canvas-run-d465/` (four-leg mid-run, 6 and 14 px/m, colour and grey).
+
 ## 2026-11-05 — Exported images keep rates and heads; the LOD test measures again (D464)
 
 - **Owner:** asked to review the decisions D460 replaced, then "เริ่มเลย" on the three fixes.
@@ -173,23 +188,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     Clamps are 0 from ×0.3 to ×1.0, off and on (on at ×1.0: 23 → 0).
   - The D450 (a) overrun at ×0.4 clears. Delay on at ×1.0: 151/124/64 → 137/98/41 s.
   - Product runs: within 0.1 %, clamps unchanged, T-junction identical.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — Gap seeking, slice 1: the follower opens a gap anywhere in the span (D455)
-
-- **Owner:** asked for gap seeking and chose the follower's slice.
-- **D455 (M3_8_CONTRACT §2, M3.2.8c):** cooperative braking helps a refused moving stub anywhere in
-  its span, not only inside its dead-end look-ahead.
-  - **Deviation from the plan:** a stub that is the changer's swap partner is not asked. Without
-    that, two weaves run alone locked.
-- **Rows:** BA194 and BA195 are new and failure-first. A38 is revised: a hold is now issued 160 m
-  out.
-- **Results** ([evidence](evidence/gap-seeking-follower.md)):
-  - Product runs: mean delay within 0.7 %, clamps unchanged.
-  - Lab switched on: mean delay at ×0.8 112/62/28 → 64/24/15 s, and the ×0.8 lock clears.
-  - Lab switched off at ×1.0: locks 0/2/1 → 0/1/0, clamps 35 → 21.
-- **Costs:**
-  - clamps on at ×1.0 7 → 23 (late braking for a dead end at speed);
-  - one new lock on at ×1.0;
-  - a D450 (a) overrun at ×0.4 (seed 42, 500 m).
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

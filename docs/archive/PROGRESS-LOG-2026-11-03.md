@@ -2,6 +2,25 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Gap seeking, slice 1: the follower opens a gap anywhere in the span (D455)
+
+- **Owner:** asked for gap seeking and chose the follower's slice.
+- **D455 (M3_8_CONTRACT §2, M3.2.8c):** cooperative braking helps a refused moving stub anywhere in
+  its span, not only inside its dead-end look-ahead.
+  - **Deviation from the plan:** a stub that is the changer's swap partner is not asked. Without
+    that, two weaves run alone locked.
+- **Rows:** BA194 and BA195 are new and failure-first. A38 is revised: a hold is now issued 160 m
+  out.
+- **Results** ([evidence](../evidence/gap-seeking-follower.md)):
+  - Product runs: mean delay within 0.7 %, clamps unchanged.
+  - Lab switched on: mean delay at ×0.8 112/62/28 → 64/24/15 s, and the ×0.8 lock clears.
+  - Lab switched off at ×1.0: locks 0/2/1 → 0/1/0, clamps 35 → 21.
+- **Costs:**
+  - clamps on at ×1.0 7 → 23 (late braking for a dead end at speed);
+  - one new lock on at ×1.0;
+  - a D450 (a) overrun at ×0.4 (seed 42, 500 m).
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — The yielding partner brakes as cooperative braking does (D454)
 
 - **Owner:** asked for a recommendation, then "do D454".

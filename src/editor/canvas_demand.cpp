@@ -242,13 +242,17 @@ void EditorCanvas::drawDemandOverlay() {
         // D424: placed beside the input's bar with every other label. An input has no selection of
         // its own on the canvas, so its label always shows while its origin road is selected or hovered.
         const bool lit=isSelected(origin) || origin==hoverObject_;
+        // D465 (slice C): in a run a rate would lie over the vehicles entering, so only the selected or
+        // hovered road's rate shows, as its box.
+        const bool running=static_cast<bool>(runFrame_.scenario);
+        if(running && !lit)continue;
         auto* label=addLabel(text,at,editorDesign::numericFont(),editorDesign::role(QPalette::Text),200006,
                  QStringLiteral("input-volume"),input.id,CanvasLabel::input,
                  lit || property("editorImageRendering").toBool(), // D464: a PNG shows every rate
                  CanvasLabel::Style::box); // D425
         label->setAccent(lit);
         // D460: on a Link the rate lies on one of its first served group's lanes, along the road's straight start.
-        if(!groups.empty())for(const auto& link:document_->network.links)if(link.id==origin) {
+        if(!groups.empty() && !running)for(const auto& link:document_->network.links)if(link.id==origin) {
             const auto& bar=bars.front();const auto [firstLane,laneCount]=groups.front();
             const QPointF from(bar.first.x,bar.first.y),to(bar.second.x,bar.second.y),direction(bar.travel.x,bar.travel.y);
             const QPointF start=(from+to)/2;

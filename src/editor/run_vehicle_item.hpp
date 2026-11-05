@@ -1,5 +1,6 @@
 #pragma once
 #include <QGraphicsPathItem>
+#include <QColor>
 #include "vehicle_shape.hpp"
 
 namespace multra {
@@ -7,6 +8,10 @@ namespace multra {
 // Decoration and casing are paint-only: picking uses the solid body path and item pen.
 class RunVehicleItem : public QGraphicsPathItem {
 public:
+    // D465 (slice C): the shadow's screen offset, the body's on-screen size below which it has none
+    // (the D97 detail length), and its colour.
+    static constexpr double shadowPixels = 2, shadowMinPixels = 14;
+    static QColor shadowColor() { return QColor(0, 0, 0, 70); }
     RunVehicleItem(const QPainterPath& body, QColor fill, double pixelsPerMetre);
     RunVehicleItem(const VehicleDrawing&, QColor fill, double pixelsPerMetre);
     void setDrawing(const VehicleDrawing&);

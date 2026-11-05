@@ -348,7 +348,7 @@ the initial state for the same seed. Playback speed changes scheduling only. Sta
 seed, time and active/pending/completed counts; seeded arrivals may leave the view empty at first.
 
 Each vehicle is drawn at its type's true length × width, front bumper at its position and turned
-along the road, in its type's colour from `data/vehicle-appearance/` (a type with no entry takes
+along the road, in its type's colour or palette pick (D465) from `data/vehicle-appearance/` (none takes
 its road's display-type vehicle colour). A windshield, and on a vehicle over 7 m a cab gap, appear
 once the body is about 14 px long; zoomed far out a vehicle is floored at 4 × 2.5 px so it never
 vanishes (D97).

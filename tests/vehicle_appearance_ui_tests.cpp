@@ -33,6 +33,20 @@ int glassPixels(RunVehicleItem& item) {
         count+=image.pixelColor(x,y)==QColor("#172c3b");
     return count;
 }
+// D465: the shadow as it lands on screen -- its pixels' offset from the body's, under `view`.
+std::pair<int,QPointF> shadowOnScreen(RunVehicleItem& item,const QTransform& view) {
+    QImage image(400,400,QImage::Format_RGB32);image.fill(Qt::white);
+    {QPainter painter(&image);painter.translate(200,200);painter.setTransform(view,true);item.paint(&painter,nullptr,nullptr);}
+    const QColor shade=QColor::fromRgbF(1-RunVehicleItem::shadowColor().alphaF(),1-RunVehicleItem::shadowColor().alphaF(),1-RunVehicleItem::shadowColor().alphaF());
+    QPointF body,shadow;int bodies=0,shadows=0;
+    for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+        const QColor p=image.pixelColor(x,y);
+        if(p==item.brush().color()){body+=QPointF(x,y);++bodies;}
+        else if(std::abs(p.red()-shade.red())<=2&&std::abs(p.green()-shade.green())<=2&&std::abs(p.blue()-shade.blue())<=2){shadow+=QPointF(x,y);++shadows;}
+    }
+    require(bodies>0,"Setup: the body is not on screen");
+    return {shadows,shadows?shadow/shadows-body/bodies:QPointF()};
+}
 void drawingContract() {
     const std::map<std::string,double> windshield{{"car",.29},{"motorcycle",.27},{"pickup",.29},
         {"van",.20},{"bus",.055},{"truck",.075}};
@@ -53,6 +67,21 @@ void drawingContract() {
         require(item.contains(window),"A click on glass misses the vehicle");
         require(!item.contains(QPointF(.01,0)),"Painted casing expands the hit shape");
         require(item.childItems().empty(),"Decoration adds scene children per vehicle");
+    }
+    // D465 (slice C): a soft shadow falls down and right on screen at any rotation or flip, as a
+    // translucent copy of the body, and a body under 14 px has none.
+    {
+        RunVehicleItem item(vehicleDrawing(4.5,1.8,false,"car"),QColor("#e53935"),24);
+        for(const auto& view:{QTransform::fromScale(24,-24),QTransform().rotate(90)*QTransform::fromScale(24,-24),
+                              QTransform().rotate(200)*QTransform::fromScale(24,-24),QTransform::fromScale(-24,24)}) {
+            const auto [count,offset]=shadowOnScreen(item,view);
+            require(count>0,"A vehicle at 24 px/m casts no shadow");
+            require(offset.x()>.5&&offset.y()>.5,"The shadow does not fall down and right on screen");
+        }
+        item.setPixelsPerMetre(2);
+        require(shadowOnScreen(item,QTransform::fromScale(2.9,-2.9)).first==0,"A vehicle under 14 px casts a shadow");
+        require(item.boundingRect().adjusted(0,0,0,0).contains(item.path().boundingRect().translated(
+            RunVehicleItem::shadowPixels/2.9,-RunVehicleItem::shadowPixels/2.9)),"The bounding rectangle does not hold the shadow");
     }
     // Equal dimensions must still communicate the archetype: a bus has no truck cab notch.
     const auto bus=vehicleDrawing(12,2.5,true,"bus"),truck=vehicleDrawing(12,2.5,true,"truck");
@@ -121,7 +150,11 @@ void canvasContract(const std::filesystem::path& data) {
         const double lever=axles.wheelbase+axles.frontOverhang;
         near(bounds.width(),type.length);near(bounds.height(),type.width);near(bounds.right(),lever);
         near(item->pos().x(),vehicle.distance-lever);near(item->rotation(),0);
-        require(item->brush().color()==QColor(QString::fromStdString(display.vehicleColors.at(type.id))),"Wrong type colour");
+        // D465: a palette type takes its stable pick from the shipped palette, any other its type colour.
+        require(item->brush().color()==QColor(QString::fromStdString(vehicleDisplayColor(display,type.id,vehicle.id,""))),"Wrong type colour");
+        if(const auto palette=display.shippedVehiclePalettes.find(type.id);palette!=display.shippedVehiclePalettes.end())
+            require(std::find(palette->second.begin(),palette->second.end(),item->brush().color().name().toStdString())!=palette->second.end(),"A palette type drew a colour outside its palette");
+        else require(item->brush().color()==QColor(QString::fromStdString(display.vehicleColors.at(type.id))),"Wrong type colour");
         require(glassPixels(*item)>0,"Detailed canvas vehicles lack painted glass");
         const auto kind=display.vehicleShapes.at(type.id);
         const double windshield=kind=="bus"?.055:kind=="truck"?.075:kind=="van"?.20:kind=="motorcycle"?.27:.29;
