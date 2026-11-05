@@ -50,33 +50,24 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     // 1. Layers: every kerb of a level under every surface of it, lane guides over the surfaces and
     // under the Link markings; the level-1 kerb over the level-0 surfaces.
     const auto kerbs=tagged(c,"road-kerb"),surfaces=tagged(c,"road-surface"),nodes=tagged(c,"node-surface");
-    require(!surfaces.empty() && nodes.size()==1,"Fixture lost its Connector or Node surface");
+    require(!surfaces.empty() && nodes.empty(),"Fixture lost its Connector surface, or a Node drew one (D460)");
     const auto centre=surfaces.front()->sceneBoundingRect().center(); // items die at each redraw
     std::vector<QGraphicsPathItem*> ground,upper,linkMarks;
     for(auto* k:kerbs)(k->zValue()<100?ground:upper).push_back(k);
-    require(ground.size()==4 && upper.size()==1,"Every Link, Connector and Node surface does not carry one kerb");
+    require(ground.size()==3 && upper.size()==1,"Every Link and Connector surface does not carry one kerb");
     for(auto* m:tagged(c,"road-marking"))if(m->data(1).toString()!=connector)linkMarks.push_back(m);
-    require(extreme(ground,true)<extreme(surfaces,false) && extreme(ground,true)<extreme(nodes,false),
+    require(extreme(ground,true)<extreme(surfaces,false),
             "A kerb lies over a surface of its level");
     require(extreme(upper,false)>extreme(surfaces,true),"The bridge's kerb is under the ground surfaces");
-    require(faint(c)>0,"A resting Connector at 14 px per lane shows no lane guides");
-    const auto guides=tagged(c,"connector-guide",connector);
-    require(guides.size()==2,"A resting two-lane Connector does not show one guide per lane");
-    for(auto* g:guides)
-        require(g->zValue()>extreme(surfaces,true) && g->zValue()<extreme(linkMarks,false) && g->pen().isCosmetic() &&
-                g->pen().color().alpha()==canvasStyle::connectorGuideAlpha,"A lane guide is not a faint line between the surfaces and the Link markings");
+    require(faint(c)==0,"A resting Connector still draws lane-centre guides (D460)");
     require(tagged(c,"road-marking",connector).empty(),"A resting Connector still draws lane markings");
     // 2. One asphalt: the Connector is its type's linkColor, not connectorColor.
     for(auto* s:surfaces)require(s->brush().color()==QColor("#49596d"),"A Connector surface is not road asphalt");
-    for(auto* k:kerbs)require(k->pen().color()==canvasStyle::kerb() && !k->pen().isCosmetic() &&
-        std::abs(k->pen().widthF()-canvasStyle::kerbWidth)<1e-12 && k->brush().style()==Qt::NoBrush,"A kerb is not the world-unit kerb pen");
+    for(auto* k:kerbs)require(k->pen().color()==canvasStyle::kerb() && k->pen().isCosmetic() &&
+        std::abs(k->pen().widthF()-canvasStyle::kerbPixels)<1e-12 && k->brush().style()==Qt::NoBrush,"A road edge is not the thin dark edge pen (D460)");
     // 3. At rest no edge and no mouth edge; under 8 px no dividers either.
     require(connectorLines(c,connector,"edge")==0 && tagged(c,"connector-mouth-edge").empty(),
             "A resting Connector still draws its edges over the junction");
-    view(c,8/3.5*(1-1e-3));
-    require(faint(c)==0 && !tagged(c,"road-kerb").empty(),"Lane guides drawn under 8 px per lane");
-    view(c,8/3.5*(1-1e-12)); // D205: one rounding below is no zoom change
-    require(faint(c)>0,"A rounding of the scale hid the lane guides");
     // ...and selected, hovered or under the Connect tool it draws today's full set at z+4.5.
     view(c,4);
     c.select(connector.toStdString());c.redraw();settle();
@@ -96,10 +87,13 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     for(const auto p:probes)before.push_back(c.hitObjects(p));
     for(auto* k:tagged(c,"road-kerb")){c.scene()->removeItem(k);delete k;}
     for(std::size_t i=0;i<probes.size();++i)require(c.hitObjects(probes[i])==before[i],"A kerb changed a hit");
-    // 5. Under 3 px per lane the kerb goes with the markings (D200); wireframe draws none at all.
+    // 5. D461: under 3 px per lane the markings go (D200) but the road edge stays; under 2 px of road
+    // it goes too; wireframe draws none at all.
     view(c,3/3.5*(1-1e-3));
-    require(tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty() && tagged(c,"node-surface").size()==1,
-            "Under 3 px the kerb stayed or a surface went");
+    require(!tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty() && tagged(c,"node-surface").empty(),
+            "Under 3 px per lane the road edge went or a surface went");
+    view(c,.2);
+    require(tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty(),"A road under 2 px wide kept its edge");
     view(c,4);c.setWireframe(true);
     require(tagged(c,"road-kerb").empty() && tagged(c,"node-surface").empty() && faint(c)==0,"Wireframe draws road surface");
     c.setWireframe(false);c.setDocument(nullptr);
@@ -119,14 +113,14 @@ int main(int argc,char** argv) {
         window.openFile(QString::fromStdString((data/"projects/four-leg-signalised.traffic.json").string()));settle();
         auto& canvas=*window.canvas();
         view(canvas,9);
-        require(faint(canvas)>=20 && !tagged(canvas,"road-kerb").empty(),"The shipped junction has no lane guide per Connector lane, or no kerb");
+        require(faint(canvas)==0 && !tagged(canvas,"road-kerb").empty(),"The shipped junction draws lane guides, or no road edge");
         if(argc>2)require(canvas.viewport()->grab().save(QString::fromUtf8(argv[2])+"-edit.png"),"Screenshot failed");
         for(int i=0;i<200;++i)window.findChild<QAction*>("editorStep")->trigger();
         settle();
         require(canvas.renderedVehicles()>0,"The forcing: the run shows vehicles");
         require(faint(canvas)==0 && !tagged(canvas,"road-kerb").empty() && !tagged(canvas,"road-surface").empty(),
                 "A run kept the lane guides or lost the road");
-        std::cout<<"Canvas layers: kerb under one asphalt, Node fill, faint resting lane guides, unchanged hits passed\n";
+        std::cout<<"Canvas layers: road edge under one asphalt, no Node fill, no resting lane guides, unchanged hits passed\n";
         return 0;
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }

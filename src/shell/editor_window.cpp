@@ -237,7 +237,8 @@ void EditorWindow::translate() {
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
     language_->setAccessibleName(text("language"));
-    texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));
+    // D463: the banner is one short line; the full limits are its tooltip and accessible description.
+    texts_.at("editorScopeCompact")->setToolTip(text("editorScope"));texts_.at("editorScopeCompact")->setAccessibleDescription(text("editorScope"));
     error_->setMoreText(text("editorMessageMore"));error_->setCloseText(text("editorMessageClose"));
     buildMapTranslation();translatePresentationMenu(*this,[this](const char* key){return text(key);});error_->clear(); refresh();restoreDraft();
     for(const auto& validate:validationRefresh_)validate();

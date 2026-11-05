@@ -1,5 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
+#include "../src/editor/canvas_labels.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
 #include "../src/editor/canvas_style.hpp"
@@ -105,10 +106,13 @@ QColor outline(EditorWindow& w) {
         if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().color();
     require(false, "No node outline"); return {};
 }
-// D434: a Node at rest is a shade with no outline; only the highlighted one has a pen.
+// D460: a Node is a thin outline with no fill; only the highlighted one is lit (2 px accent).
 bool outlined(EditorWindow& w) {
     for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node")
-        if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().style() != Qt::NoPen;
+        if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) {
+            require(path->brush().style() == Qt::NoBrush && path->pen().style() == Qt::SolidLine, "A Node is not a bare outline");
+            return path->pen().color() == canvasStyle::selection() && path->pen().widthF() == 2;
+        }
     require(false, "No node shape"); return false;
 }
 }
@@ -222,8 +226,28 @@ int main(int argc, char** argv) {
         const auto expected = membershipLegs(w.history().document().network, nodes()[0]);
         require(expected.size() == 8, "The four-leg node does not have eight legs");
         require(drawnLegs(w) == expected, "The drawn legs are not the node's in- and out-legs");
+        // Review images (D460) when a second argument names a prefix: the suggested Node at 10 px/m.
+        const auto capture = [&](const char* name) {
+            if (argc < 3) return;
+            QPolygonF ring; for (const auto& p : nodes()[0].polygon) ring << QPointF(p.x, p.y);
+            c->setTransform(QTransform::fromScale(10, -10)); c->centerOn(ring.boundingRect().center()); c->redraw(); QApplication::processEvents();
+            require(c->viewport()->grab().save(QString::fromLocal8Bit(argv[2]) + name), "Node screenshot failed");
+        };
+        capture("-node-selected.png");
+        // D460: the selected Node's name is a tight framed tag centred on its centroid; at rest, none.
+        const auto nodeLabels = [&] { std::vector<CanvasLabel*> out;
+            for (auto* i : w.canvas()->scene()->items()) if (auto* l = dynamic_cast<CanvasLabel*>(i); l && l->data(0).toString() == "node-label") out.push_back(l);
+            return out; };
+        {
+            const auto shown = nodeLabels();
+            require(shown.size() == 1 && shown[0]->isVisible() && shown[0]->style() == CanvasLabel::Style::tag, "The selected Node shows no name tag");
+            const auto box = shown[0]->deviceTransform(c->viewportTransform()).mapRect(shown[0]->frame());
+            require(QLineF(box.center(), c->viewportTransform().map(shown[0]->anchor())).length() < 1, "The Node's name is not centred on it");
+        }
         require(outline(w) == canvasStyle::selection(), "The selected node's outline is not lit");
         table->clearSelection(); QApplication::processEvents();
+        capture("-node-rest.png");
+        require(nodeLabels().empty(), "A Node at rest still shows its name");
         require(table->selectedItems().isEmpty(), "The row stayed selected");
         require(c->highlightedNode().empty() && drawnLegs(w).empty() && !outlined(w),
                 "Clearing the row kept the highlight");

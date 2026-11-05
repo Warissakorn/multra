@@ -3,6 +3,7 @@
 #include "../src/shell/editor_storage.hpp"
 #include "../src/editor/canvas_image.hpp"
 #include "../src/editor/map_layer.hpp"
+#include "../src/editor/canvas_labels.hpp"
 #include "ui_test_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QApplication>
@@ -43,6 +44,24 @@ void renderCases(const std::filesystem::path& data,const QString& directory) {
     const auto h=c->horizontalScrollBar()->value(),v=c->verticalScrollBar()->value();
     CanvasImageOptions options;options.pixels={640,480};options.background=false;
     const auto all=c->renderImage(options);require(all.size()==options.pixels && marked(all),"Network render is blank/wrong size");
+    // D464: an image cannot be hovered, so every input rate shows in it (as its box, grey-framed);
+    // the forcing is the live canvas at the same scale, which hides some. Heads: road-crossbar-ui.
+    {
+        const auto shown=[&](bool exporting,double scale) {
+            EditorCanvas probe;if(exporting)probe.setProperty("editorImageRendering",true);
+            probe.resize(640,480);probe.setDocument(&w.history().document());
+            probe.setTransform(QTransform::fromScale(scale,-scale));probe.redraw();
+            int rates=0,visible=0;
+            for(auto* item:probe.scene()->items()) {
+                if(auto* label=dynamic_cast<CanvasLabel*>(item);label&&label->data(0).toString()=="input-volume"){++rates;visible+=label->isVisible();}
+            }
+            return std::pair{rates,visible};
+        };
+        const auto [rates,liveVisible]=shown(false,1.5);
+        require(rates>0 && liveVisible<rates,"Forcing: the live canvas at 1.5 px/m shows every rate");
+        const auto [exportRates,exportVisible]=shown(true,1.5);
+        require(exportRates==rates && exportVisible==rates,"An exported image hides an input rate");
+    }
     options.scope=CanvasImageScope::view;require(marked(c->renderImage(options)),"View-area render is blank");
     writeNetworkPng(directory+"/ภาพเครือข่าย.png",*c,options,{directory+"/not-created-recovery.json"});
     const QImage saved(directory+"/ภาพเครือข่าย.png");require(saved.size()==options.pixels,"PNG cannot be reopened");

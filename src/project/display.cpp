@@ -22,6 +22,19 @@ std::string color(const Json& j,const char* key) {
         throw std::runtime_error("EDIT_DISPLAY_CATALOG");
     return c;
 }
+// A list of minCount..16 distinct #rrggbb colours, lower-cased: a shipped type palette (D465) or the
+// standard palette offered by the colour dialog.
+std::vector<std::string> palette(const Json& values,std::size_t minCount) {
+    if(!values.is_array() || values.size()<minCount || values.size()>16)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+    std::vector<std::string> result;std::set<std::string> unique;
+    for(const auto& c:values) {
+        auto value=color(Json{{"color",c}},"color");
+        std::transform(value.begin(),value.end(),value.begin(),[](unsigned char ch){return char(std::tolower(ch));});
+        if(!unique.insert(value).second)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
+        result.push_back(std::move(value));
+    }
+    return result;
+}
 std::map<std::string,std::string> name(const Json& j) {
     std::map<std::string,std::string> result;
     for(const auto* code:{"en","th"}){
@@ -65,18 +78,14 @@ DisplayCatalog loadDisplayCatalog(const std::filesystem::path& data) {
                     throw std::runtime_error("EDIT_DISPLAY_CATALOG");
                 catalog.vehicleShapes.emplace(id,shape);
             }
+            if(j.contains("palette")) { // D465: a mixed fleet by default
+                auto shipped=palette(j.at("palette"),2);
+                catalog.shippedVehiclePalettes.emplace(id,shipped);catalog.vehicleColorPalettes.emplace(id,std::move(shipped));
+            }
         }
         if(std::filesystem::is_regular_file(data/"vehicle-colors.json")) {
             std::ifstream input(data/"vehicle-colors.json");const auto j=Json::parse(input);
-            const auto& colors=j.at("colors");
-            if(!colors.is_array() || colors.empty() || colors.size()>16)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
-            std::set<std::string> unique;
-            for(const auto& c:colors) {
-                auto value=color(Json{{"color",c}},"color");
-                std::transform(value.begin(),value.end(),value.begin(),[](unsigned char ch){return char(std::tolower(ch));});
-                if(!unique.insert(value).second)throw std::runtime_error("EDIT_DISPLAY_CATALOG");
-                catalog.availableVehicleColors.push_back(std::move(value));
-            }
+            catalog.availableVehicleColors=palette(j.at("colors"),1);
         }
         return catalog;
     }catch(const std::exception&){throw std::runtime_error("EDIT_DISPLAY_CATALOG");}

@@ -105,8 +105,18 @@ int main(int argc, char** argv) {
         const auto laneLine = laneGeometry(upstream, upstream.lanes.front().id, network().drivingSide);
         const auto onLane = pointAlong(laneLine, polylineLength(laneLine) / 2);
         const Point centre{(stop(*heads[0]).x + onLane.x) / 2, (stop(*heads[0]).y + onLane.y) / 2};
-        c->fitNetwork(); c->centerOn(centre.x, centre.y);
-        c->scale(3, 3); QApplication::processEvents();
+        // Zoom so every point the test clicks -- the heads, the lane and the empty probe 40 m off --
+        // is on screen (an absolute scale: Fit's own scale changed with D461).
+        {
+            std::vector<Point> targets{onLane, {centre.x, centre.y + 40}};
+            for (const auto* h : heads) targets.push_back(stop(*h));
+            double x0 = targets[0].x, x1 = x0, y0 = targets[0].y, y1 = y0;
+            for (const auto& t : targets) { x0 = std::min(x0, t.x); x1 = std::max(x1, t.x); y0 = std::min(y0, t.y); y1 = std::max(y1, t.y); }
+            const QRectF span(QPointF(x0, y0), QPointF(x1, y1));
+            const auto view = c->viewport()->rect();
+            const double s = .6 * std::min(view.width(), view.height()) / std::max({1., span.width(), span.height()});
+            c->setTransform(QTransform::fromScale(s, -s)); c->centerOn(span.center()); c->redraw(); QApplication::processEvents();
+        }
         for (const auto* h : heads) pixel(w, stop(*h)); // every target is on screen
         pixel(w, onLane);
 

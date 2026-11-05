@@ -15,6 +15,10 @@ the current project and recovery destinations are protected by the same guard as
 - A separate authoring canvas reuses the existing renderer, display catalog, active level filter
   and wireframe setting. No selection, edit preview, grid, HUD, running vehicles or live signal
   colours are copied. This is an authored-network illustration, not a results screenshot.
+- Nothing hides for lack of room that a viewer of the live canvas could bring back by hovering
+  (D464): every input rate shows as its box with a grey frame, and every signal head keeps its
+  box, grown to 4 px when its real 0.9 m is smaller (no arm or pole then). Lane markings and the
+  road edge still follow the live canvas's pixel thresholds.
 - Whole-network bounds come from the visible authoring items, excluding the aerial image, with
   a margin of 3% of the larger span (minimum 1 m). An image-only draft uses its image extent;
   an empty drawing uses a 100 m square centred at the origin. Current view uses the main

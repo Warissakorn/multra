@@ -152,7 +152,10 @@ void EditorWindow::editLinkType(const std::string& id) {
     }
 }
 void EditorWindow::buildLinkTypeField(QFormLayout* form) {
-    linkType_ = new QComboBox(this); linkType_->setObjectName("editorLinkType"); label(form, "editorLinkType", linkType_);
+    linkType_ = new QComboBox(this); linkType_->setObjectName("editorLinkType");
+    // D463: a long type name must not widen Properties past its panel; the field shrinks and
+    // the list still shows each name in full.
+    linkType_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon); linkType_->setMinimumContentsLength(8); label(form, "editorLinkType", linkType_);
     // Every selected Link at once, as one Undo step; "(none)" clears it (Macro then refuses the Link).
     connect(linkType_, &QComboBox::activated, this, [this] {
         const auto chosen = linkType_->currentData().toString().toStdString();

@@ -99,16 +99,58 @@ at viewport boundaries. Pan and resize re-place the labels as redraw already doe
 geometry or hit identity changes. `ui-audit-layout` checks all twelve shipped input rates after
 Fit and overlay/edge exclusion; `canvas-labels-ui` retains transformed/cluster/leader coverage.
 
-## Slice C — run vehicles (next)
+## Owner review fixes (D460)
 
-- **Palettes.** Default per-type palettes are stored in the catalog files. The existing
-  `vehicleDisplayColor` hash picks the colour and draws no simulation random numbers.
-- **Shadow.** A soft offset shadow is painted only, so hit shapes are unchanged.
+Nodes are thin outlines above the roads with no fill; the polygon is no longer junction asphalt
+(amends Q5). Signal heads are one sharp 0.9 m square box of one colour (dark when editing, the
+state's in a run), on a mast arm meeting its kerb-side edge from a pole beside the road. Roads
+are neutral greys. A Node's name shows only while it is selected, as a tight framed tag at its
+centre. Resting Connectors draw no lane-centre guides (amends Q7).
+Road edges are a thin dark line instead of the light kerb (amends Q8), and a Link's plain solid
+outer edge is no longer painted white (Slice D's white edge line is withdrawn unless the owner
+asks again). Input rates on a Link lie in their lanes, along the road,
+and hide while the text is taller than a lane; a pinned rate falls back to its B2 box. Boxes
+follow the text's ink height. A line edit's clear button is exempt from the field-height rule.
+Images: [rates at 8 px/m](../images/canvas-review-d460/four-leg-input-rates-8px.png),
+[heads at 20 px/m](../images/canvas-review-d460/four-leg-signal-heads-20px.png),
+[a Node at rest](../images/canvas-review-d460/four-leg-node-rest-10px.png) and
+[selected](../images/canvas-review-d460/four-leg-node-selected-10px.png), and
+[run heads green/amber/red](../images/canvas-review-d460/signal-head-run-states-40px.png).
+
+## Display fixes (D461)
+
+Fit ignores rate labels that hide at Fit. A signal head under 4 px is its stop line alone. The
+road edge follows the whole road's width (2 px), not the lane threshold. A head on a Connector
+hangs from a pole beside the attached Link's edge. The median spikes in junctions stay (Q5).
+Images: [before](../images/canvas-fixes-d461/before/), [after](../images/canvas-fixes-d461/after/).
+
+## Exported images (D464)
+
+A network image PNG pins every input rate (grey-framed box) and keeps every signal head box at
+4 px or more; the live canvas is unchanged.
+
+## Slice C — run vehicles (done, D465)
+
+- **Palettes.** Car, pickup and van ship a mixed palette in `data/vehicle-appearance` (Q10 narrowed by
+  the owner: bus, trucks and motorcycle keep one type colour). The existing `vehicleDisplayColor`
+  hash picks the colour and draws no simulation random numbers. A user's palette replaces a type's.
+- **Shadow.** The body again in translucent black, 2 px down-right on screen, painted only, from
+  14 px; no blur.
+- **Overlays.** In a run Node outlines hide unless highlighted, and only a selected or hovered
+  road's rate shows, as its box.
 - **Unchanged.** The 14 px and 4×2.5 px LOD floors and the D199 casing stay.
+- Images: [before](../images/canvas-run-d465/before/), [after](../images/canvas-run-d465/after/)
+  (the shipped four-leg junction mid-run at 6 and 14 px/m, colour and greyscale).
+
+## Signal heads and casings after slice C (D466)
+
+A head's box lies past its stop line, hanging by its back edge from one straight arm and pole
+per stop line; no arm crosses a box. Run vehicles take a dark casing, except in wireframe.
+Images: [before](../images/canvas-heads-d466/before/), [after](../images/canvas-heads-d466/after/).
 
 ## Slice D — surface markings
 
-- **Edge line.** A white solid inner edge line.
+- **Edge line.** Withdrawn by D460: the road edge is a thin dark line.
 - **Arrows.** Lane arrows come from the Connectors leaving each lane, and are mirrored by `drivingSide`.
 - **Stop line.** A white stop line across each lane under the D199 signal bars.
 

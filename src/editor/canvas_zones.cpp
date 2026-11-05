@@ -105,7 +105,7 @@ void EditorCanvas::drawZones() {
                               QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }
 }
-// S0.1 (NODES §6): a Node is a solid outline over the Links with its name at the centroid.
+// S0.1 (NODES §6): a Node is a thin outline over the Links with its name at the centroid (D460).
 void EditorCanvas::setHighlightedNode(std::string id) {
     if (highlightedNode_ == id) return;
     highlightedNode_ = std::move(id); redraw();
@@ -118,39 +118,28 @@ void EditorCanvas::drawNodes() {
         for (std::size_t i = 0; i < node.polygon.size(); ++i)
             i ? shape.lineTo(node.polygon[i].x, node.polygon[i].y) : shape.moveTo(node.polygon[i].x, node.polygon[i].y);
         shape.closeSubpath();
-        // D423 (Q5 b): a Node's polygon is junction road -- the default asphalt with its kerb, on the
-        // ground level, so no gap between its Connectors reads as a hole. Wireframe draws no surface.
-        if (!wireframe_ && levelVisible(0)) {
-            auto* surface = scene_.addPath(shape, QPen(Qt::NoPen),
-                                           QBrush(QColor(QString::fromStdString(style("default").linkColor))));
-            surface->setZValue(canvasStyle::surfaceLayer);
-            surface->setData(0, QStringLiteral("node-surface")); surface->setData(1, QString::fromStdString(node.id));
-            // A Node has no lanes of its own: its kerb shows when the narrowest lane's markings do.
-            double narrowest = std::numeric_limits<double>::infinity();
-            for (const auto& link : document_->network.links)
-                for (const auto& lane : link.lanes) narrowest = std::min(narrowest, lane.width);
-            addKerb(shape, 0, narrowest, node.id);
-        }
+        // D460 (owner review): a Node draws no surface of its own -- no junction asphalt, no kerb --
+        // only its thin outline, above the roads (z 200005); holes between Connectors stay holes.
         const bool lit = node.id == highlightedNode_;
-        // D434: a Node is a soft shade over its junction, not a ring; only the highlighted Node, or
-        // wireframe (which draws no surface to shade), gets a solid outline.
-        QPen pen(Qt::NoPen);
-        if (lit || wireframe_) {
-            pen = QPen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-            pen.setCosmetic(true);
-        }
-        // S5.2b (D328): a study-area Node is shaded green; otherwise ink, lighter for a generated one.
+        // D460 (owner review of D434): a Node is a thin outline with no fill, so the junction road
+        // under it reads as road. Highlighted: 2 px accent; study area: green; generated: fainter ink.
         const auto& area = document_->zones.studyArea.nodes;
         const bool inArea = std::find(area.begin(), area.end(), node.id) != area.end();
-        auto fill = inArea ? canvasStyle::ok() : lit ? canvasStyle::selection() : canvasStyle::ink();
-        fill.setAlpha(inArea ? 40 : lit ? 36 : node.generated ? 16 : 28);
-        auto* item = scene_.addPath(shape, pen, QBrush(fill));
+        auto colour = lit ? canvasStyle::selection() : inArea ? canvasStyle::ok() : canvasStyle::ink();
+        if (!lit && !inArea && node.generated) colour.setAlpha(140);
+        QPen pen(colour, lit ? 2 : inArea ? 1.5 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        pen.setCosmetic(true);
+        auto* item = scene_.addPath(shape, pen, QBrush(Qt::NoBrush));
         item->setZValue(200005);
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));
-        const auto c = centroid(node.polygon);
-        addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), c, QGuiApplication::font(),
-                 canvasStyle::ink(), 200006, {}, {}, CanvasLabel::node, lit, CanvasLabel::Style::halo); // D424
+        // D465 (slice C): in a run the outline would cross the vehicles in the junction, so only a
+        // highlighted Node shows; the item stays for hits.
+        if (runFrame_.scenario && !lit) item->setVisible(false);
+        // D460: the name shows only while the Node is selected, centred in a tight frame, no halo.
+        if (lit) addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), centroid(node.polygon),
+                          QGuiApplication::font(), editorDesign::role(QPalette::Text), 200006, QStringLiteral("node-label"),
+                          node.id, CanvasLabel::node, true, CanvasLabel::Style::tag);
         if (lit) drawNodeLegs(node);
     }
 }

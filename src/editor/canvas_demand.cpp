@@ -209,6 +209,7 @@ void EditorCanvas::drawDemandOverlay() {
         const auto whole=objectCrossbar(document_->network,origin,false);
         if(!whole || !levelVisible(whole->level))continue;
         std::vector<RoadCrossbar> bars;
+        std::vector<std::pair<int,int>> groups; // first lane and count of each Link bar
         for(const auto& link:document_->network.links)if(link.id==origin) {
             std::vector<bool> served(link.lanes.size(),segments.empty());
             if(!segments.empty())for(const auto& chain:routeLaneFamily(document_->network,segments))
@@ -222,7 +223,9 @@ void EditorCanvas::drawDemandOverlay() {
                 const auto a=laneBoundaryGeometry(link,first,document_->network.drivingSide);
                 const auto b=laneBoundaryGeometry(link,k,document_->network.drivingSide);
                 const auto centre=linkCentreline(link,document_->network.drivingSide);
-                if(const auto bar=roadCrossbar(centre,a,b,0,link.level))bars.push_back(*bar);
+                if(const auto bar=roadCrossbar(centre,a,b,0,link.level)) {
+                    bars.push_back(*bar);groups.push_back({static_cast<int>(first),static_cast<int>(k-first)});
+                }
             }
         }
         if(!isLink(origin))bars.push_back(*whole);
@@ -238,9 +241,32 @@ void EditorCanvas::drawDemandOverlay() {
             :inputPeriodsLabel_.arg(static_cast<int>(input.intervals.size()));
         // D424: placed beside the input's bar with every other label. An input has no selection of
         // its own on the canvas, so its label always shows while its origin road is selected or hovered.
-        addLabel(text,at,editorDesign::numericFont(),editorDesign::role(QPalette::Text),200006,
-                 QStringLiteral("input-volume"),input.id,CanvasLabel::input,isSelected(origin) || origin==hoverObject_,
+        const bool lit=isSelected(origin) || origin==hoverObject_;
+        // D465 (slice C): in a run a rate would lie over the vehicles entering, so only the selected or
+        // hovered road's rate shows, as its box.
+        const bool running=static_cast<bool>(runFrame_.scenario);
+        if(running && !lit)continue;
+        auto* label=addLabel(text,at,editorDesign::numericFont(),editorDesign::role(QPalette::Text),200006,
+                 QStringLiteral("input-volume"),input.id,CanvasLabel::input,
+                 lit || property("editorImageRendering").toBool(), // D464: a PNG shows every rate
                  CanvasLabel::Style::box); // D425
+        label->setAccent(lit);
+        // D460: on a Link the rate lies on one of its first served group's lanes, along the road's straight start.
+        if(!groups.empty() && !running)for(const auto& link:document_->network.links)if(link.id==origin) {
+            const auto& bar=bars.front();const auto [firstLane,laneCount]=groups.front();
+            const QPointF from(bar.first.x,bar.first.y),to(bar.second.x,bar.second.y),direction(bar.travel.x,bar.travel.y);
+            const QPointF start=(from+to)/2;
+            const auto centre=linkCentreline(link,document_->network.drivingSide);
+            const double offset=std::hypot(start.x()-centre.front().x,start.y()-centre.front().y);
+            double reach=polylineLength(centre);
+            for(const auto& point:centre) { // where the road bends off the start ray, the text stops
+                const QPointF v(point.x-start.x(),point.y-start.y());
+                const double ahead=v.x()*direction.x()+v.y()*direction.y(),aside=std::abs(v.x()*direction.y()-v.y()*direction.x());
+                if(ahead>0 && std::abs(aside-offset)>.25*QLineF(from,to).length()/laneCount){reach=std::min(reach,ahead);break;}
+            }
+            label->setLaneSlot({from,to,direction,reach,firstLane,laneCount,QString::fromStdString(link.id),
+                                QColor(QString::fromStdString(style(link.displayType).linkColor))});
+        }
     }
     drawPositionedDecisions();
     // M2.1.1: a routing decision placed on a Link draws as a diamond a little way along it, where

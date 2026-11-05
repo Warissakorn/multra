@@ -150,9 +150,10 @@ void EditorCanvas::redraw() {
         scene_.addPath(surface,QPen(Qt::NoPen),QBrush(colour))->setZValue(z+canvasStyle::surfaceLayer);
         double narrowest=std::numeric_limits<double>::infinity();
         for(const auto& lane:link.lanes)narrowest=std::min(narrowest,lane.width);
-        addKerb(surface,link.level,narrowest,link.id);
+        double roadWidth=0;for(const auto& lane:link.lanes)roadWidth+=lane.width;
+        addKerb(surface,link.level,roadWidth,link.id);
         if(canvasStyle::laneMarkingsReadable(narrowest,viewScale()))
-        for(const auto& marking:markingStrokes(linkMarkings(link,document_->network.drivingSide))) {
+        for(const auto& marking:markingStrokes(canvasStyle::paintedLinkMarkings(linkMarkings(link,document_->network.drivingSide)))) {
             const auto pen=canvasStyle::markingPen(QColor(QString::fromStdString(appearance.laneColor)),marking.type);
             auto* mark=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,appearance.laneDash,appearance.laneGap),pen);
             mark->setZValue(z+canvasStyle::linkMarkingLayer);mark->setData(0,QStringLiteral("road-marking"));mark->setData(1,QString::fromStdString(link.id));
@@ -208,10 +209,13 @@ void EditorCanvas::fitNetwork() {
     if(bounds.isEmpty())bounds=QRectF(-50,-50,100,100);
     // Labels remain in screen pixels. Reserve room around the geometry rather than fitting their
     // unscaled scene rectangles and then pushing the fixed-size callouts outside the viewport.
-    double labelWidth=0;
-    for(const auto* label:labels_)labelWidth=std::max(labelWidth,label->boundingRect().width()+20);
+    // D461: only labels that show at Fit -- an unpinned on-lane rate hides when zoomed out (D460).
+    double labelWidth=0;int kept=0;
+    for(const auto* label:labels_)if(!label->laneSlot() || label->pinned()) {
+        labelWidth=std::max(labelWidth,label->boundingRect().width()+20);++kept;
+    }
     const double horizontal=std::min(viewport()->width()*.23,std::max(16.,labelWidth));
-    const double vertical=labels_.empty()?16.:std::min(90.,viewport()->height()*.24);
+    const double vertical=kept==0?16.:std::min(90.,viewport()->height()*.24);
     const double scale=std::clamp(std::min(std::max(1.,viewport()->width()-2*horizontal)/std::max(1.,bounds.width()),
         std::max(1.,viewport()->height()-2*vertical)/std::max(1.,bounds.height())),minimumViewScale(),100.);
     setTransform(QTransform::fromScale(scale,-scale));centerOn(bounds.center());redraw();scheduleMapUpdate();

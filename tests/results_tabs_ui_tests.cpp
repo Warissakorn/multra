@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
             const auto& h = heads.at({discharge->item(r, 0)->text().toStdString(), discharge->item(r, 1)->text().toStdString()});
             require(discharge->item(r, 2)->text().toInt() == h.first, "Greens differ");
             require(discharge->item(r, 3)->text().toInt() == static_cast<int>(h.second.size()), "Estimate count differs");
-            if (h.second.empty()) { require(discharge->item(r, 4)->text().isEmpty() && !discharge->item(r, 7)->text().isEmpty(),
+            if (h.second.empty()) { require(discharge->item(r, 4)->text() == QString::fromUtf8("\u2014") && !discharge->item(r, 7)->text().isEmpty(),
                                             "An unavailable head shows a figure or no reason"); continue; }
             double sum = 0; for (double x : h.second) sum += x;
             require(discharge->item(r, 4)->text() == QString::number(sum / h.second.size(), 'f', 2), "Mean headway differs");

@@ -96,6 +96,7 @@ void EditorCanvas::drawHeads() {
         // D435: a Synchro-style head -- stop line and three-lamp housing; the line takes the state colour.
         if(!preview && isSelected(head.id))colour=canvasStyle::selection();
         auto* line=new SignalHeadItem(*bar,colour,scale,preview);scene_.addItem(line);
+        if(property("editorImageRendering").toBool())line->keepVisible(); // D464: a PNG keeps every head
         if(preview)line->setOpacity(canvasStyle::creationPreviewOpacity);
         line->setZValue(bar->level*100.+10.5);line->setData(0,QStringLiteral("stop-line"));
         line->setData(1,QString::fromStdString(head.id));

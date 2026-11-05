@@ -1,7 +1,9 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
+#include "../src/editor/canvas_labels.hpp"
 #include "../src/editor/run_vehicle_item.hpp"
 #include "../src/editor/road_crossbar.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -49,14 +51,33 @@ int main(int argc,char** argv) {
     try {
         require(argc>=2,"Expected data directory");const std::filesystem::path data(argv[1]);
         // A vehicle the colour of its background still shows its edge; its hit shape is the bare path.
+        // D466: that background is any colour only in wireframe (no road under the vehicle), where the
+        // contrast rule stays; over a road the casing is dark and the D465 contrast row keeps fills off it.
         QPainterPath body;body.addRect(-4.5,-0.9,4.5,1.8);
         for(const QColor fill:{QColor("#202020"),QColor("#f0f0f0")}) {
-            auto* vehicle=new RunVehicleItem(body,fill,20);
+            auto* vehicle=new RunVehicleItem(body,fill,20);vehicle->setWireframe(true);
             QGraphicsPathItem plain(body);plain.setPen(Qt::NoPen);
             require(vehicle->shape()==plain.shape(),"Casing changed the vehicle's hit shape");
             const auto image=render(vehicle,fill,20);
             double edge=0;for(int x=0;x<image.width();++x)edge=std::max(edge,std::abs(luminance(image.pixel(x,image.height()/2))-luminance(fill.rgb())));
             require(edge>=0.3,"Vehicle vanishes on a background of its own colour");
+            delete vehicle;
+        }
+        // D466/D467: over a road the painted casing is the dark road-edge ink on a light body and a dark
+        // body alike -- the pixels at the body's edge, not only casingColor().
+        for(const QColor fill:{QColor("#f4f4f2"),QColor("#17181a")}) {
+            auto* vehicle=new RunVehicleItem(body,fill,20);
+            const QColor road("#4c4f53");const auto image=render(vehicle,road,20);
+            // The 1 px casing is antialiased across two pixels, so it is read by luminance: darker than the
+            // road (a light body's edge), and never lighter than the road (a dark body's edge).
+            int dark=0,light=0;const double under=luminance(road.rgb());
+            for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+                const double l=luminance(image.pixel(x,y));
+                if(image.pixel(x,y)==fill.rgb())continue;
+                dark+=l<under-.1;light+=l>under+.1;
+            }
+            require(fill.lightness()<128 || dark>=40,"A run vehicle's painted casing is not the dark road-edge ink");
+            require(fill.lightness()>=128 || light==0,"A dark run vehicle is painted with a light casing over a road");
             delete vehicle;
         }
         // Red, amber and green bars differ in shape, not only hue; their hit shape is one.
@@ -81,6 +102,19 @@ int main(int argc,char** argv) {
             ++vehicles;if(!first)first=item;
         }
         require(vehicles>0,"Run fixture has no vehicles");
+        // D466: over a road every casing is the road edge's dark ink, a dark body too; in wireframe,
+        // with no road under it, D199's contrast rule comes back (a white casing on a dark body).
+        const auto casings=[&](bool wireframe){
+            for(auto* item:canvas->scene()->items())if(auto* v=dynamic_cast<RunVehicleItem*>(item)) {
+                const auto expected=wireframe?canvasStyle::connectorBoundaryColor(v->brush().color()):canvasStyle::kerb();
+                require(v->casingColor()==expected,wireframe?"A wireframe casing lost its contrast rule":"A run vehicle's casing is not the dark ink");
+            }
+        };
+        casings(false);
+        {
+            RunVehicleItem dark(QPainterPath(),QColor("#17181a"),20);
+            require(dark.casingColor()==canvasStyle::kerb(),"A dark vehicle keeps a light casing over the road");
+        }
         std::optional<std::uint64_t> clicked;canvas->runVehicleClicked=[&](std::uint64_t id){clicked=id;};
         canvas->centerOn(first);settle();
         const auto at=canvas->mapFromScene(first->mapToScene(first->shape().boundingRect().center()));
@@ -132,7 +166,10 @@ int main(int argc,char** argv) {
         canvas->setTransform(view);canvas->horizontalScrollBar()->setValue(across);canvas->verticalScrollBar()->setValue(down);canvas->redraw();settle(); // bodies follow the zoom at the next frame
         // D281: during a run the static network below the vehicles is painted from the cached
         // background, pixel for pixel what live items paint, and a selection still repaints it.
-        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())if(!item->isVisible())++n;return n;};
+        // D460: a rate label too tall for its lanes hides by design (and its leader with it); only
+        // the static layer's items count.
+        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())
+            if(!item->isVisible()&&!dynamic_cast<CanvasLabel*>(item)&&item->data(0).toString()!="label-leader")++n;return n;};
         require(hidden()>0,"The forcing: a run hides the static layer it bakes");
         const auto grab=[&]{settle();return canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_RGB32);};
         // The cache is a premultiplied pixmap, so a blend can round a level or two apart from the live
@@ -193,6 +230,44 @@ int main(int argc,char** argv) {
             require(interior.width()>=20&&interior.height()>=20,"The forcing: the photo's interior is on screen");
             requireSame(grab().copy(interior),photoBaked.copy(interior),"A background image's opacity is lost in the cached layer");
             canvas->setRunLayerCache(true);
+        }
+        if(argc>2) { // slice C review images: the shipped four-leg junction mid-run, colour and grey
+            window.openFile(QString::fromStdString((data/"projects/four-leg-signalised.traffic.json").string()));settle();
+            for(int i=0;i<900;++i)window.findChild<QAction*>("editorStep")->trigger();
+            settle();
+            for(const double scale:{6.,14.}) {
+                canvas->setTransform(QTransform::fromScale(scale,-scale));canvas->centerOn(0,0);canvas->redraw();settle(); // as a wheel zoom
+                const auto image=canvas->viewport()->grab().toImage();
+                const auto name=QString::fromUtf8(argv[2])+QStringLiteral("-four-leg-run-%1px").arg(scale);
+                require(image.save(name+".png")&&image.convertToFormat(QImage::Format_Grayscale8).save(name+"-grayscale.png"),"Screenshot failed");
+            }
+        }
+        // D465 (slice C): in a run neither a Node outline nor an unpinned rate label is drawn over the
+        // vehicles; a selected road's rate still shows, as its box. Forcing: both show while editing.
+        {
+            QTemporaryDir directory;require(directory.isValid(),"No temporary directory");
+            window.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));settle();
+            auto document=window.history().document();document.background={};
+            document.network.nodes.push_back(Node{"run-node","",{{-12,-12},{12,-12},{12,12},{-12,12}}});
+            const auto file=directory.filePath("node.traffic.json");
+            std::ofstream(file.toStdString())<<documentJson(document).dump(1);
+            window.openFile(file);settle();
+            canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);canvas->redraw();settle();
+            const auto outline=[&]()->QGraphicsItem*{for(auto* item:canvas->scene()->items())
+                if(item->data(0).toString()=="node"&&item->data(1).toString()=="run-node")return item;return nullptr;};
+            const auto rates=[&]{std::vector<CanvasLabel*> out;for(auto* item:canvas->scene()->items())
+                if(auto* label=dynamic_cast<CanvasLabel*>(item);label&&label->data(0).toString()=="input-volume")out.push_back(label);return out;};
+            require(outline()&&outline()->isVisible()&&!rates().empty(),"Forcing: editing shows the Node outline and the rates");
+            for(int i=0;i<50;++i)window.findChild<QAction*>("editorStep")->trigger();
+            settle();
+            require(outline()&&!outline()->isVisible(),"A Node outline is drawn over the vehicles in a run");
+            require(rates().empty(),"A rate label is drawn over the vehicles in a run");
+            for(const auto& link:window.history().document().network.links){canvas->select(link.id);settle();if(!rates().empty())break;}
+            require(!rates().empty(),"Setup: no road's selection pins a rate");
+            canvas->centerOn(rates().front()->anchor());canvas->redraw();settle(); // a box stays inside the viewport
+            require(rates().size()==1&&rates().front()->isVisible()&&!rates().front()->onLane(),"A selected road's rate is not its box in a run");
+            canvas->select("");
+            canvas->setWireframe(true);settle();casings(true);canvas->setWireframe(false);settle(); // D466
         }
         if(argc>2) {
             canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);settle();

@@ -15,7 +15,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 | Demand and routing | D234, D233, D229, D228, D162, D161, D160, D158, D157, D156, D155, D154, D153, D142, D25, D32–D33, D37, D42–D46, D71, D93–D94, D111–D113 |
 | Signals, conflicts, Stop/Yield and queues | D443, D442, D441, D440, D439, D438, D437, D436, D258, D257, D256, D255, D254, D253, D251, D250, D249, D248, D247, D246, D241, D240, D239, D238, D237, D232, D231, D230, D227, D147 (supersedes D36 for projects), D35–D36, D40, D47–D48, D50, D57–D69 |
 | Following, commitment and lane changes | D459, D458, D457, D456, D455, D454, D453, D452, D451, D450, D449, D448, D447, D446, D445, D444, D258, D257, D256, D255, D254, D253, D252, D251, D250, D249, D248, D247, D246, D241, D240, D239, D238, D237, D236, D235, D234, D233, D232, D231, D230, D229, D228, D227, D226, D225, D224, D223, D222, D221, D220, D219, D218, D217, D216, D215, D214, D213, D212, D211, D210, D209, D208, D207, D206, D204, D203, D202, D189, D188, D187, D186, D185, D184, D183, D182, D181, D180, D179, D178, D177, D176, D166, D165, D138, D137, D136, D135, D129, D127, D126, D125, D124, D123, D122, D121, D120, D69, D71, D87–D95, D98, D101–D102, D105, D108 |
-| UI, gestures, display and results | D435, D434, D433, D432, D270, D268, D265, D264, D263, D262, D261, D260, D259, D245, D244, D243, D242, D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
+| UI, gestures, display and results | D467, D466, D465, D464, D463, D462, D461, D460, D435, D434, D433, D432, D270, D268, D265, D264, D263, D262, D261, D260, D259, D245, D244, D243, D242, D205, D200, D199, D198, D197, D196, D195, D194, D193, D192, D190, D151, D150, D149, D148, D146, D144, D141, D139, D134, D133, D132, D131, D130, D128, D24, D30, D39–D40, D60–D65, D81, D83–D84, D96–D97, D100, D102–D104, D116 |
 | Performance, checks and documentation | D283, D282, D281, D280, D279, D164, D163, D159, D152, D143, D140, D27–D29, D31, D70, D82, D85, D91, D99 |
 
 ## Reading a historical choice
@@ -471,22 +471,14 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.
 
-[D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
-
-[D432](RECORD.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.
-
-[D444](RECORD.md#d444) — lateral crossing at the window end: one target-lane lookup (`targetSectionAt`) for the start and the crossing, one `spanHolds` test, and the whole body kept in its lane on a side it cannot cross (replaces D189's centre clamp).
-
-[D445](RECORD.md#d445) — a straddler searches a covered lane only on the section level with its front (fixes audit Finding 2's gap-0 leader and clamps).
-
-[D446](RECORD.md#d446) — while a lateral change is under way, D207's swap partner extends to a rear stub too close to accept the changer (`acceptsAsLeader`, shared with D208); `yieldMutual` moves to `lane_swap.cpp`.
-
-[D447](RECORD.md#d447) — a body over the line whose lateral move is blocked in 2D steps back like D208's refused cover (one step-back path); revises D206's BA53.
-
-[D448](RECORD.md#d448) — the lane-change start's lateral safety filter reads the target lane by `targetPartAt` (D444's to-range rule) through `followerFilterOn`.
-
-[D449](RECORD.md#d449) — the weaving lab: a synthetic Type A weaving fixture with an off/on sweep (rows BA179–BA183); at full demand the weave end locks (open).
-
+- [D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
+- [D432](RECORD.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.
+- [D444](RECORD.md#d444) — lateral crossing at the window end: one target-lane lookup (`targetSectionAt`) for the start and the crossing, one `spanHolds` test, and the whole body kept in its lane on a side it cannot cross (replaces D189's centre clamp).
+- [D445](RECORD.md#d445) — a straddler searches a covered lane only on the section level with its front (fixes audit Finding 2's gap-0 leader and clamps).
+- [D446](RECORD.md#d446) — while a lateral change is under way, D207's swap partner extends to a rear stub too close to accept the changer (`acceptsAsLeader`, shared with D208); `yieldMutual` moves to `lane_swap.cpp`.
+- [D447](RECORD.md#d447) — a body over the line whose lateral move is blocked in 2D steps back like D208's refused cover (one step-back path); revises D206's BA53.
+- [D448](RECORD.md#d448) — the lane-change start's lateral safety filter reads the target lane by `targetPartAt` (D444's to-range rule) through `followerFilterOn`.
+- [D449](RECORD.md#d449) — the weaving lab: a synthetic Type A weaving fixture with an off/on sweep (rows BA179–BA183); at full demand the weave end locks (open).
 - [D450](RECORD.md#d450) — at a shared dead end, a swapping pair is kept while the front one closes in, and no change lands in a waiting partner's place (BA183–BA185).
 - [D451](RECORD.md#d451) — switched on, a change under way counts as on its target route for D207, and an approaching partner is taken where it will wait (BA186–BA187).
 - [D452](RECORD.md#d452) — no courtesy for a change that may not land: a follower no longer holds back for a changer whose landing D450 (b) refuses (BA188–BA189).
@@ -497,3 +489,11 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 - [D457](RECORD.md#d457) — the lateral lab: a shipped four-scene project carrying the lateral keys as lab placeholders, a lab-only exception to D178 (BA198–BA203).
 - [D458](RECORD.md#d458) — gap seeking, slice 2: switched on, a refused changer falls back behind its blocker, braking comfortably at most (BA204–BA205).
 - [D459](RECORD.md#d459) — two-entry weaves: a lane family may start a joined chain on a downstream Link, with a lead-in and a rear check over its feeders (BA179 revised, BA206–BA208).
+- [D460](RECORD.md#d460) — canvas review fixes: thin Node outlines, real-size signal heads, a centred clear button, input rates on their lanes (amends D425/D426/D432/D434/D435).
+- [D461](RECORD.md#d461) — canvas display fixes: Fit ignores hidden rate labels, small signal heads are their stop line, the road edge follows road width, Connector heads hang beside the Link edge.
+- [D462](RECORD.md#d462) — owner choices: no marker for hidden rates, one-page object groups lose the tab strip and title the dock, movement names stay as authored.
+- [D463](RECORD.md#d463) — UI round 2: Properties fits its panel, the summary clips on a row, short labels with hints, a one-line scope banner, "—" in empty result cells.
+- [D464](RECORD.md#d464) — a network image PNG shows every input rate (grey-framed box) and every signal head box; the canvas-lod threshold test measures real decoration again.
+- [D465](RECORD.md#d465) — canvas style slice C: shipped car/pickup/van palettes, a screen-offset vehicle shadow, no Node outlines or unpinned rates over a run.
+- [D466](RECORD.md#d466) — signal head boxes past the stop line on one straight arm, a dark casing on run vehicles (contrast rule kept in wireframe).
+- [D467](RECORD.md#d467) — review fixes: high-DPI shadow, one palette parser, poles tested off the road; dark casings and the head's hit place kept.

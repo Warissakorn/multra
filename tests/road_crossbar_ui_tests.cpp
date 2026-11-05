@@ -9,6 +9,14 @@
 #include <QGraphicsSimpleTextItem>
 #include <QTest>
 #include <cmath>
+#include <memory>
+#include <filesystem>
+#include <fstream>
+#include <algorithm>
+#include "../src/project/document.hpp"
+#include "../src/project/json.hpp"
+#include <nlohmann/json.hpp>
+#include "../src/editor/road_crossbar.hpp"
 #include <iostream>
 
 using namespace multra;
@@ -130,6 +138,33 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
     require(inputs==2,"Non-contiguous input lanes were not separate bars");
     auto* stop=dynamic_cast<RoadCrossbarItem*>(drawn(c,"stop-line"));require(stop,"Head still uses a dot");
     const auto original=stop->line();
+    // D460: the head has a real size -- its square (beyond the stop-line band) spans the same
+    // metres at any zoom, 0.9 m across the 3.5 m lane, and sits past the line (D466) on a pole.
+    for(const double s:{12.,40.}) {
+        c.setTransform(QTransform::fromScale(s,-s));c.redraw();
+        auto* item=dynamic_cast<SignalHeadItem*>(drawn(c,"stop-line"));require(item,"A head is not a signal head item");
+        const auto plate=item->shape().subtracted(static_cast<RoadCrossbarItem*>(item)->RoadCrossbarItem::shape()).boundingRect();
+        require(std::abs(plate.height()-headSize)<.05 && plate.left()>original.x1()-1e-6 &&
+                item->boundingRect().height()>headSize+3.5,
+                "A head's size changes with zoom or it sits upstream of its line (D466)");
+    }
+    // D461: zoomed out, a head is its stop line alone -- no box, arm or pole pixels -- and the box
+    // is back at a normal zoom. The box is the only metal-grey paint here.
+    const auto boxPixels=[&](double scale) {
+        c.setTransform(QTransform::fromScale(scale,-scale));c.centerOn(original.center());c.redraw();QApplication::processEvents();
+        const auto image=c.viewport()->grab().toImage();int n=0;
+        for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+            const QColor p=image.pixelColor(x,y);n+=std::abs(p.red()-58)<=3&&std::abs(p.green()-63)<=3&&std::abs(p.blue()-70)<=3;
+        }
+        return n;
+    };
+    require(boxPixels(2)==0,"A head under 4 px still paints its box (D461)");
+    require(boxPixels(40)>0,"A head at 40 px/m lost its box");
+    // D464: an exported image keeps every head -- the same 2 px/m view rendered for a PNG paints the box.
+    c.setProperty("editorImageRendering",true);
+    require(boxPixels(2)>0,"An exported head under 4 px lost its box");
+    c.setProperty("editorImageRendering",QVariant());
+    c.fitNetwork();
     Scenario scenario;scenario.duration=60;scenario.timeStep=.1;
     scenario.signalPrograms=d.definition->signalPrograms;scenario.signalHeads={{head,"unused",50,program}};
     SimState state;state.scenario=std::make_shared<const Scenario>(scenario);
@@ -138,6 +173,11 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
         state.time=time;c.setRunFrame(state);
         auto* bar=dynamic_cast<RoadCrossbarItem*>(drawn(c,"run-signal"));require(bar,"Run signal still uses a dot");
         require(bar->line()==original && bar->pen().color()==colour,"Run bar position or colour disagrees with the signal");
+        if(preview) { // D460 review image: the run head at 40 px/m, one box in the state's colour
+            c.setTransform(QTransform::fromScale(40,-40));c.centerOn(original.center());c.setRunFrame(state);
+            require(c.viewport()->grab().save(QString::fromLocal8Bit(preview)+QString("-run-%1.png").arg(time)),"Run review image failed");
+            c.fitNetwork();c.setRunFrame(state);
+        }
     }
     c.clearRunFrame();require(drawn(c,"stop-line") && !drawn(c,"run-signal"),"Reset did not restore authored heads");
     c.setHighlightedRoute(route);
@@ -146,10 +186,81 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
     c.setVisibleLevel({});c.setDocument(nullptr);
 }
 }
+// D461: a head on a Connector at a mouth hangs from a pole beside the attached Link's edge; one
+// in the middle of the junction, away from any mouth, has none.
+void connectorPoles() {
+    ProjectDocument d;d.network.drivingSide=DrivingSide::left;
+    const auto in=addLink(d,{{-80,0},{-20,0}},2,3.5),out=addLink(d,{{20,40},{20,100}},2,3.5);
+    addConnectorRange(d,{in,d.network.links[0].lanes[0].id},{out,d.network.links[1].lanes[0].id},2,2);
+    const auto& n=d.network;const auto paths=connectorPaths(n,n.connectors.front());
+    require(!paths.empty(),"Setup: the Connector has no paths");
+    const auto& path=paths.front();const double length=connectorPathLength(path);
+    NetworkSignalHead mouth;mouth.connectorId=path.id;mouth.position=.5;
+    const auto bar=signalCrossbar(n,mouth);require(bar && bar->pole,"A head at a Connector mouth has no pole");
+    { // D467: drawn past the stop line (D466), the mouth head's pole still stands off every road surface
+        EditorCanvas canvas;canvas.resize(400,300);canvas.setDocument(&d);canvas.setTransform(QTransform::fromScale(100,-100));
+        const auto arm=SignalHeadItem(*bar,QColor(Qt::black),100.).arm();require(arm.has_value(),"A mouth head lost its arm");
+        require(canvas.hitObjects({arm->p1().x(),arm->p1().y()}).empty(),"A Connector-mouth pole stands on a road surface");
+    }
+    // Beside the Link's edge: 3.5 m from the in-Link's centreline (half its two-lane road), at its end.
+    require(std::abs(std::abs(bar->pole->y)-3.5)<1e-6 && std::abs(bar->pole->x+20)<1e-6,"The pole is not at the attached Link's edge");
+    NetworkSignalHead middle=mouth;middle.position=length/2;
+    const auto inside=signalCrossbar(n,middle);require(inside && !inside->pole,"A head inside the junction stands on a pole");
+}
+// D466: on a three-lane stop line every box lies past the line, hangs by its back edge from one
+// straight arm, and no arm crosses a box; all three arms start at one pole.
+void oneArm() {
+    for(const auto side:{DrivingSide::left,DrivingSide::right}) {
+        ProjectDocument d;d.network.drivingSide=side;
+        const auto a=addLink(d,{{0,0},{60,0}},3,3.5);const auto& l=d.network.links.front();
+        std::vector<std::unique_ptr<SignalHeadItem>> heads;
+        for(const auto& lane:l.lanes) {
+            NetworkSignalHead h;h.lane={a,lane.id};h.position=50;
+            const auto bar=signalCrossbar(d.network,h);require(bar && bar->pole,"Setup: a stop-line head has no pole");
+            heads.push_back(std::make_unique<SignalHeadItem>(*bar,QColor(Qt::red),20.));
+        }
+        std::optional<QPointF> pole;
+        for(const auto& head:heads) {
+            const auto plate=head->shape().subtracted(static_cast<RoadCrossbarItem*>(head.get())->RoadCrossbarItem::shape()).boundingRect();
+            require(plate.left()>50-1e-6,"A head box lies before its stop line");
+            const auto arm=head->arm();require(arm.has_value(),"A head lost its arm");
+            if(!pole)pole=arm->p1();
+            require(QLineF(*pole,arm->p1()).length()<1e-6,"The heads of one stop line stand on different poles");
+            require(std::abs(arm->p1().x()-plate.right())<1e-6 && std::abs(arm->p2().x()-plate.right())<1e-6,
+                    "The arm does not run along the boxes' back edge");
+            for(const auto& other:heads) {
+                const auto box=other->shape().subtracted(static_cast<RoadCrossbarItem*>(other.get())->RoadCrossbarItem::shape()).boundingRect().adjusted(.02,.02,-.02,-.02);
+                for(int k=0;k<=200;++k)require(!box.contains(arm->pointAt(k/200.)),"An arm crosses a head box");
+            }
+        }
+    }
+}
+// D467: in the shipped signalised projects every drawn pole (the arm's first point) stands off every
+// Link and Connector surface -- D466 moved Connector-mouth poles 1.25 m into the junction.
+void polesOffRoad(const std::filesystem::path& data) {
+    for(const auto* name:{"four-leg-signalised.traffic.json","m2.6-study-template.traffic.json"}) {
+        const auto document=parseDocument(Json::parse(std::ifstream(data/"projects"/name)));
+        require(!document.network.signalHeads.empty(),"Setup: a signalised project has no heads");
+        EditorCanvas canvas;canvas.resize(400,300);canvas.setDocument(&document);
+        canvas.setTransform(QTransform::fromScale(100,-100)); // hit tolerance 6 px = 0.06 m
+        int poles=0;
+        for(const auto& head:document.network.signalHeads) {
+            const auto bar=signalCrossbar(document.network,head);if(!bar)continue;
+            const auto arm=SignalHeadItem(*bar,QColor(Qt::black),100.).arm();if(!arm)continue;++poles;
+            for(const auto& [id,station]:canvas.hitObjects({arm->p1().x(),arm->p1().y()})) {
+                const bool isHead=std::any_of(document.network.signalHeads.begin(),document.network.signalHeads.end(),[&](const auto& h){return h.id==id;});
+                if(!isHead){std::cerr<<name<<": the pole of "<<head.id<<" stands on "<<id<<'\n';throw std::runtime_error("A signal pole stands on a road surface");}
+            }
+        }
+        require(poles>0,"Setup: no head in a signalised project has a pole");
+    }
+}
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
     try {
-        geometry();EditorCanvas canvas;canvas.resize(1000,700);canvas.show();QTest::qWait(20);
-        trace(canvas);signalsAndInputs(canvas,argc>1?argv[1]:nullptr);std::cout<<"road crossbars ok\n";
+        geometry();connectorPoles();oneArm();
+        require(argc>2,"Expected the data directory as the second argument");polesOffRoad(argv[2]);
+        EditorCanvas canvas;canvas.resize(1000,700);canvas.show();QTest::qWait(20);
+        trace(canvas);signalsAndInputs(canvas,argc>1&&*argv[1]?argv[1]:nullptr);std::cout<<"road crossbars ok\n";
     } catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
 }

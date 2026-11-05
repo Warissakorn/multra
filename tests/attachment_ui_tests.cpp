@@ -198,11 +198,12 @@ int main(int argc,char** argv) {
             for(int i=0;i<3;++i)action(w,"editorUndo");
             require(w.history().document().network==originalNetwork,"Capped drag did not undo exactly");
         }
-        // N lanes have exactly N+1 longitudinal markings, with no dashed lane centres.
+        // N lanes have exactly N-1 longitudinal markings between them, with no dashed lane centres;
+        // the two plain outer edges are the dark road edge (D460).
         for(const auto& link:w.history().document().network.links) {
             int markings=0;
             for(auto* item:c->scene()->items())if(item->data(0).toString()=="road-marking" && item->data(1).toString()==QString::fromStdString(link.id))++markings;
-            require(markings==static_cast<int>(link.lanes.size())+1,"Wrong number of road boundaries");
+            require(markings==static_cast<int>(link.lanes.size())-1,"Wrong number of lane lines between lanes");
         }
         // The ribbon fills by winding, so a tight turn that overlaps itself stays solid road
         // instead of having the overlap punched out as a hole.

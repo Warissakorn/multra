@@ -10,10 +10,10 @@ const DisplayType& EditorCanvas::style(const std::string& id) const {
     for(const auto& type:display_.types)if(type.id=="default")return type;
     static const DisplayType absent{};return absent;
 }
-// D423: the kerb is decoration under every surface of its level -- no hit, tool or selection reads
-// it -- so it follows the D200 lane threshold like the lane markings.
-void EditorCanvas::addKerb(const QPainterPath& surface,double level,double laneWidth,const std::string& id) {
-    if(surface.isEmpty() || !canvasStyle::laneMarkingsReadable(laneWidth,viewScale()))return;
+// D423: the road edge is decoration under every surface of its level -- no hit, tool or selection
+// reads it. D461: it stays while the whole road is 2 px wide, not only while lanes are readable.
+void EditorCanvas::addKerb(const QPainterPath& surface,double level,double roadWidth,const std::string& id) {
+    if(surface.isEmpty() || !canvasStyle::roadEdgeReadable(roadWidth,viewScale()))return;
     auto* kerb=scene_.addPath(surface,canvasStyle::kerbPen(),QBrush(Qt::NoBrush));
     kerb->setZValue(level*100.+canvasStyle::kerbLayer);
     kerb->setData(0,QStringLiteral("road-kerb"));kerb->setData(1,QString::fromStdString(id));

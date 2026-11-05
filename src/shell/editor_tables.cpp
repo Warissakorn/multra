@@ -4,6 +4,8 @@
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
+#include <QTabBar>
+#include <QBoxLayout>
 #include <QDockWidget>
 #include <QHeaderView>
 #include <QLabel>
@@ -54,6 +56,34 @@ void EditorWindow::translateObjectPages() {
     for(int i=0;i<objectGroup_->count();++i)objectGroup_->setItemText(i,text(objectGroup_->itemData(i).toString().toStdString()));
     // The tab widget places the strip from the corner's hint but never resizes the corner itself.
     objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+    updateObjectsHeader();
+}
+// D462: the dock is titled by its current task group, and a group with one page shows no tab
+// strip -- the group picker already names that page (Results, Problems).
+void EditorWindow::updateObjectsHeader() {
+    if(!objectGroup_||!objects_)return;
+    const auto group=objectGroup_->currentData().toString().toStdString();
+    if(group.empty())return;
+    int pages=0;for(const auto& [key,keys]:objectGroups)if(key==group)for(const auto& page:keys)pages+=objectPages_.count(page);
+    // The picker lives in the strip's corner; with no strip Qt would leave it floating over the
+    // page, so a one-page group gives it its own row above the page instead.
+    auto* body=qobject_cast<QBoxLayout*>(objects_->parentWidget()->layout());
+    if(pages>1 && objects_->cornerWidget(Qt::TopLeftCorner)!=objectGroup_) {
+        if(body)body->removeWidget(objectGroup_);
+        objects_->setCornerWidget(objectGroup_,Qt::TopLeftCorner);objectGroup_->show();objectGroup_->ensurePolished();
+        // Back in the corner: re-pin its width to its hint, which places the strip, and lay out again.
+        objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+        QEvent relayout(QEvent::LayoutRequest);QApplication::sendEvent(objects_,&relayout);
+    } else if(pages<=1 && body && objects_->cornerWidget(Qt::TopLeftCorner)==objectGroup_) {
+        objects_->setCornerWidget(nullptr,Qt::TopLeftCorner);
+        objectGroup_->setParent(objects_->parentWidget());body->insertWidget(body->indexOf(objects_),objectGroup_,0,Qt::AlignLeft);
+        objectGroup_->show();
+    }
+    objects_->tabBar()->setVisible(pages>1);
+    if(auto* dock=findChild<QDockWidget*>("editorObjectsDock")) {
+        auto title=text(group);if(language_&&language_->currentData().toString()=="en")title=title.toUpper();
+        dock->setWindowTitle(title);
+    }
 }
 std::string EditorWindow::objectGroupOf(const QWidget* page) const {
     for(const auto& [group,keys]:objectGroups)for(const auto& key:keys)if(objectPages_.at(key)==page)return group;
@@ -87,7 +117,7 @@ void EditorWindow::showObjectPage(QWidget* page) {
     objects_->setCurrentWidget(page);
     for(int i=0;i<objects_->count();++i)if(objectGroupOf(objects_->widget(i))!=group)objects_->setTabVisible(i,false);
     objectGroup_->setCurrentIndex(objectGroup_->findData(QString::fromStdString(group)));
-    changingGroup_=false;sizeTabPages(objects_);
+    changingGroup_=false;updateObjectsHeader();sizeTabPages(objects_);
     if(!changingWorkspace_&&isVisible())setWorkspacePreset(group=="editorObjectGroupResults"?2:1);
 }
 void EditorWindow::revealObjectPage(QWidget* page) {

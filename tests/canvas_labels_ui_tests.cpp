@@ -9,6 +9,7 @@
 #include "../src/editor/canvas_style.hpp"
 #include <QGraphicsLineItem>
 #include <QGraphicsPathItem>
+#include <QPainterPath>
 #include <cmath>
 #include <QApplication>
 #include <QImage>
@@ -149,7 +150,7 @@ int main(int argc,char** argv) {
         QPointF centre;int n=0;
         for(auto* item:canvas.scene()->items())if(item->data(0).toString()=="road-surface"){centre+=item->sceneBoundingRect().center();++n;}
         centre/=std::max(n,1);
-        // 2. The forcing: at 1.5 px/m today's right-hand placement overprints two input rates.
+        // 2. The forcing: at 1.5 px/m D424's right-hand placement would overprint two input rates.
         view(canvas,QTransform::fromScale(1.5,-1.5),centre);
         std::set<QString> drawn;
         for(auto* item:canvas.scene()->items())if(item->data(0).toString()=="input-marker")drawn.insert(item->data(1).toString());
@@ -162,20 +163,33 @@ int main(int argc,char** argv) {
         require(!overlapping(visible(canvas)),"Placed labels still overprint");
         leaders(canvas);
         for(auto* l:rates)require(l->style()==CanvasLabel::Style::box,"An input rate is not a box");
-        // 2b. D426: the anchors within 48 px of each other -- several inputs at one road end -- form a
-        // column: one aligned edge, 2 px apart, top to bottom; and no box sits on a road, marker or
-        // stop line while the view has room. The forcing: such a cluster exists, and the D425 first
-        // place (12 px east of the anchor) of a west-end rate lies on the road.
+        // 2b. D460: an input rate lies on its own lanes. Far out (0.9 and 1.5 px/m) its text is taller
+        // than the lanes, so it hides instead of floating beside the road; zoomed in, every rate
+        // shows on its lanes, upright, on the road surface, no two overlapping, and opens its input.
         for(const double s:{.9,1.5}) {
             view(canvas,QTransform::fromScale(s,-s),centre);
+            for(auto* l:labels(canvas,"input-volume"))require(!l->isVisible()&&!l->onLane(),"A rate shows although its lanes cannot hold it");
+        }
+        if(argc>2)for(const double s:{8.,20.}) { // review images: on-lane rates at a road end, heads at the junction
+            view(canvas,QTransform::fromScale(s,-s),s<10?labels(canvas,"input-volume").front()->anchor():centre);
+            require(canvas.viewport()->grab().save(QString::fromUtf8(argv[2])+QString("-%1px.png").arg(s)),"Screenshot failed");
+        }
+        for(const auto& t:{QTransform::fromScale(8,-8),QTransform().rotate(37)*QTransform::fromScale(10,-10),QTransform::fromScale(8,8)}) {
+            view(canvas,t,centre);
             const auto all=labels(canvas,"input-volume");
-            require(stacked(canvas,all)>0,"Setup: no two input anchors share a road end");
-            require(std::any_of(all.begin(),all.end(),[&](CanvasLabel* l){return onObject(canvas,eastBox(canvas,l));}),
-                    "Setup: the D425 first place covers no road");
-            for(auto* l:all)require(QRectF(canvas.viewport()->rect()).adjusted(100,100,-100,-100).contains(canvas.viewportTransform().map(l->anchor())),
-                    "Setup: a fixed-scale label anchor has insufficient viewport margin");
-            for(auto* l:all)require(l->isVisible(),"A rate label hid although the view has room");
-            for(auto* l:all)require(!onObject(canvas,screen(canvas,l)),"A rate box covers a road or marker it could avoid");
+            require(static_cast<int>(all.size())==inputs,"A zoomed view lost a rate label");
+            // On-lane text is rotated with the road: compare the drawn outlines, not their bounds.
+            const auto outline=[&](CanvasLabel* l){QPainterPath p;p.addPolygon(l->deviceTransform(canvas.viewportTransform()).map(QPolygonF(l->frame())));return p;};
+            const auto shown=labels(canvas,nullptr);
+            for(std::size_t i=0;i<shown.size();++i)for(std::size_t j=i+1;j<shown.size();++j)
+                if(shown[i]->isVisible()&&shown[j]->isVisible())require(!outline(shown[i]).intersects(outline(shown[j])),"On-lane rates overprint");
+            for(auto* l:all) {
+                require(l->isVisible()&&l->onLane()&&!l->leader()->isVisible(),"A rate does not lie on its lanes when zoomed in");
+                const auto box=screen(canvas,l);
+                require(onObject(canvas,QRectF(box.center()-QPointF(1,1),QSizeF(2,2))),"An on-lane rate is off its road");
+                const QPoint at=box.center().toPoint();
+                if(canvas.viewport()->rect().contains(at))require(canvas.demandObjectAt(at).first=="input","An on-lane rate no longer opens its input");
+            }
         }
         view(canvas,QTransform::fromScale(1.5,-1.5),centre);
         rates=labels(canvas,"input-volume");

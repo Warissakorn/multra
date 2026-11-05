@@ -9,21 +9,29 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <map>
 #include <vector>
 
 namespace multra {
 CanvasLabel::CanvasLabel(const QString& text, const QFont& font, QPointF anchor, int priority, bool pinned, Style style)
-    : QGraphicsSimpleTextItem(text), anchor_(anchor), priority_(priority), pinned_(pinned), style_(style) {
+    : QGraphicsSimpleTextItem(text), anchor_(anchor), priority_(priority), pinned_(pinned), accent_(pinned), style_(style) {
     setFont(font);
     setFlag(QGraphicsItem::ItemIgnoresTransformations);
     setPos(anchor);
 }
 QRectF CanvasLabel::frame() const {
     const auto text = textRect();
-    return style_ == Style::box ? text.adjusted(-padX, -padY, padX, padY) : text;
+    if (style_ == Style::halo && !onLane_) return text;
+    // D460: a box or on-lane label is as tall as its text's ink (digits, Thai marks), not the
+    // font's whole line, which made the boxes tall.
+    const QFontMetricsF metrics(font());
+    const auto ink = metrics.tightBoundingRect(this->text());
+    const double top = metrics.ascent() + ink.top(), bottom = metrics.ascent() + ink.bottom();
+    const double x = onLane_ ? 2 : style_ == Style::tag ? 3 : padX, y = onLane_ ? 1 : style_ == Style::tag ? 2 : padY;
+    return QRectF(text.left() - x, top - y, text.width() + 2 * x, bottom - top + 2 * y);
 }
 QRectF CanvasLabel::boundingRect() const {
-    return style_ == Style::box ? frame().adjusted(-1, -1, 1, 1) : textRect().adjusted(-halo, -halo, halo, halo);
+    return style_ != Style::halo || onLane_ ? frame().adjusted(-2, -2, 2, 2) : textRect().adjusted(-halo, -halo, halo, halo);
 }
 QPainterPath CanvasLabel::shape() const { QPainterPath path; path.addRect(boundingRect()); return path; }
 void CanvasLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) {
@@ -32,11 +40,26 @@ void CanvasLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWid
     glyphs.addText(0, metrics.ascent(), font(), text());
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
-    if (style_ == Style::box) {
-        // D425: a white box, grey frame (accent and heavier when pinned), then the text.
-        QPen pen(pinned_ ? canvasStyle::selection() : editorDesign::role(QPalette::Dark), pinned_ ? 1.5 : 1);
+    if (onLane_ && lane_) {
+        // D460: on its lanes the text takes the contrasting ink of the road, on a thin halo of the
+        // road's own colour that keeps lane markings off the glyphs; pinned, it gains an accent frame.
+        const auto& road = lane_->surface;
+        const double luminance = .2126 * road.redF() + .7152 * road.greenF() + .0722 * road.blueF();
+        painter->strokePath(glyphs, QPen(road, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->fillPath(glyphs, luminance > .55 ? QColor(20, 22, 26) : QColor(255, 255, 255));
+        if (accent_) {
+            painter->setPen(QPen(canvasStyle::selection(), 1.5)); painter->setBrush(Qt::NoBrush);
+            painter->drawRoundedRect(frame(), radius, radius);
+        }
+        painter->restore();
+        return;
+    }
+    if (style_ != Style::halo) {
+        // D425 (and D460's tag): a white box, grey frame (accent and heavier when pinned), then the text.
+        QPen pen(accent_ ? canvasStyle::selection() : editorDesign::role(QPalette::Dark), accent_ ? 1.5 : 1);
         painter->setPen(pen); painter->setBrush(editorDesign::role(QPalette::Base));
-        painter->drawRoundedRect(frame().adjusted(.5, .5, -.5, -.5), radius, radius);
+        const double corner = style_ == Style::tag ? 0 : radius; // a tag is a plain rectangle
+        painter->drawRoundedRect(frame().adjusted(.5, .5, -.5, -.5), corner, corner);
     } else {
         // D424: the glyph outlines, stroked wide in Base, then filled in the label's brush.
         painter->strokePath(glyphs, QPen(editorDesign::role(QPalette::Base), 2 * halo, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -78,6 +101,60 @@ struct LabelUnit {
 };
 constexpr double clusterReach = 48, stackGap = 2, margin = 2;
 }
+// D460: an input rate with a lane slot lies in the middle of one of its lanes, along the road and
+// upright, 6 px (or a metre) past the input's bar. Rates on one Link fill its lanes side by side,
+// then line up along each lane 8 px apart. A rate taller than its lane, or running past the road's
+// straight reach, hides -- unless pinned, when it joins the box pass below. Returns, per label,
+// whether it is settled here.
+std::vector<bool> EditorCanvas::placeLaneLabels(const QTransform& toScreen, std::vector<QRectF>& placed) {
+    std::vector<bool> settled(labels_.size(), false);
+    std::map<std::pair<QString, int>, double> used; // screen px already taken along each lane
+    for (std::size_t i = 0; i < labels_.size(); ++i) {
+        auto* label = labels_[i];
+        const auto& slot = label->laneSlot();
+        if (label->style() == CanvasLabel::Style::tag) { // D460: centred on the anchor, as it is
+            const auto box = label->frame();
+            label->setTransform(QTransform::fromTranslate(-box.center().x(), -box.center().y()));
+            placed.push_back(box.translated(-box.center()).translated(toScreen.map(label->anchor())).adjusted(-2, -2, 2, 2));
+            label->setVisible(true); label->setData(4, QStringLiteral("shown")); settled[i] = true;
+            continue;
+        }
+        if (!slot || slot->laneCount < 1) continue;
+        label->setOnLane(true);
+        const QPointF a = toScreen.map(slot->from), b = toScreen.map(slot->to);
+        const QPointF along = toScreen.map(slot->from + slot->direction) - a;
+        const double perMetre = std::hypot(along.x(), along.y());
+        const auto box = label->frame();
+        if (!(perMetre > 0)) { label->setOnLane(false); continue; }
+        const QPointF d = along / perMetre;
+        const double start = std::max(6., perMetre);
+        int lane = 0; // the served lane with the most room left; the nearest the bar's first end on a tie
+        for (int k = 1; k < slot->laneCount; ++k)
+            if (used.try_emplace({slot->group, slot->firstLane + k}, start).first->second <
+                used.try_emplace({slot->group, slot->firstLane + lane}, start).first->second) lane = k;
+        double& offset = used.try_emplace({slot->group, slot->firstLane + lane}, start).first->second;
+        const double laneWidth = QLineF(a, b).length() / slot->laneCount;
+        const bool fits = box.height() + 2 <= laneWidth && offset + box.width() <= slot->reach * perMetre;
+        if (fits) {
+            double angle = std::atan2(d.y(), d.x()) * 180 / M_PI;
+            if (angle > 90) angle -= 180; else if (angle <= -90) angle += 180; // keep the text upright
+            const QPointF middle = a + (b - a) * ((lane + .5) / slot->laneCount);
+            const QPointF centre = middle + d * (offset + box.width() / 2) - toScreen.map(label->anchor());
+            const auto transform = QTransform::fromTranslate(-box.center().x(), -box.center().y()) *
+                                   QTransform().rotate(angle) * QTransform::fromTranslate(centre.x(), centre.y());
+            label->setTransform(transform);
+            offset += box.width() + 8;
+            placed.push_back(transform.mapRect(box).translated(toScreen.map(label->anchor())).adjusted(-2, -2, 2, 2));
+        } else label->setOnLane(false);
+        if (fits || !label->pinned()) {
+            settled[i] = true;
+            label->setVisible(fits);
+            if (auto* leader = label->leader()) leader->setVisible(false);
+            label->setData(4, fits ? QStringLiteral("lane") : QStringLiteral("hidden"));
+        }
+    }
+    return settled;
+}
 // D424-D426: labels are placed once per redraw, in screen space, at their exact device points.
 // Box labels whose anchors lie within 48 px of each other (single linkage) form one unit: a column
 // of boxes 2 px apart -- pinned, then by priority, then top to bottom by anchor -- aligned on the
@@ -97,18 +174,21 @@ void EditorCanvas::placeLabels() {
         if(!exporting&&widget&&widget->isVisibleTo(viewport()))overlays.push_back(QRectF(widget->geometry()).adjusted(-4,-4,4,4));
     std::vector<QPointF> at(labels_.size());
     for (std::size_t i = 0; i < labels_.size(); ++i) at[i] = toScreen.map(labels_[i]->anchor());
+    std::vector<QRectF> placed;
+    const auto skip = placeLaneLabels(toScreen, placed);
     // Units: union-find over box anchors.
     std::vector<std::size_t> parent(labels_.size());
     for (std::size_t i = 0; i < parent.size(); ++i) parent[i] = i;
     const auto root = [&](std::size_t i) { while (parent[i] != i) i = parent[i] = parent[parent[i]]; return i; };
     for (std::size_t i = 0; i < labels_.size(); ++i)
         for (std::size_t j = i + 1; j < labels_.size(); ++j)
-            if (labels_[i]->style() == CanvasLabel::Style::box && labels_[j]->style() == CanvasLabel::Style::box &&
+            if (!skip[i] && !skip[j] && labels_[i]->style() == CanvasLabel::Style::box && labels_[j]->style() == CanvasLabel::Style::box &&
                 QLineF(at[i], at[j]).length() <= clusterReach)
                 parent[root(j)] = root(i);
     std::vector<LabelUnit> units;
     std::vector<std::size_t> unitOf(labels_.size(), SIZE_MAX);
     for (std::size_t i = 0; i < labels_.size(); ++i) {
+        if (skip[i]) continue;
         auto& slot = unitOf[root(i)];
         if (slot == SIZE_MAX) { slot = units.size(); units.push_back({{}, false, 0, i}); }
         auto& unit = units[slot];
@@ -145,7 +225,6 @@ void EditorCanvas::placeLabels() {
             item->shape().intersects(item->mapFromScene(probe)))return true;
         return false;
     };
-    std::vector<QRectF> placed;
     for (auto& unit : units) {
         auto& members = unit.members;
         std::stable_sort(members.begin(), members.end(), [&](const CanvasLabel* a, const CanvasLabel* b) {

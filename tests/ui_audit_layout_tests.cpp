@@ -39,17 +39,24 @@ void check(bool ok,const std::string& message){if(!ok)throw std::runtime_error(m
 template<class T>T* child(QObject& root,const char* name){auto* p=root.findChild<T*>(name);check(p,name);return p;}
 void settle(){for(int n=0;n<3;++n){QApplication::processEvents();QTest::qWait(10);}}
 void trigger(EditorWindow& w,const char* name){child<QAction>(w,name)->trigger();settle();}
-void labels(EditorWindow& w){
+void labels(EditorWindow& w,int expectedInputs=12){
     trigger(w,"editorFit");int inputs=0;
     const auto viewport=QRectF(w.canvas()->viewport()->rect()).adjusted(2,2,-2,-2);
     auto* hud=child<QWidget>(*w.canvas()->viewport(),"editorCanvasHud");
     for(auto* item:w.canvas()->scene()->items())if(auto* label=dynamic_cast<CanvasLabel*>(item)) {
-        if(label->data(0).toString()=="input-volume"){++inputs;check(label->isVisible(),"Fit hid an input rate");}
+        if(label->data(0).toString()=="input-volume"){++inputs;check(label->isVisible()==label->onLane(),"An input rate neither lies on its lanes nor hides (D460)");}
         if(!label->isVisible())continue;
         const auto rect=label->deviceTransform(w.canvas()->viewportTransform()).mapRect(label->frame());
         check(viewport.contains(rect),"Fit clipped a label");check(!rect.intersects(hud->geometry()),"HUD covered a label");
     }
-    check(inputs==12,"Expected the twelve-input fitting fixture");
+    check(inputs==expectedInputs,"Expected the twelve-input fitting fixture (none in a run, D465)");
+    // D461: with the rates hidden at Fit (D460), Fit reserves no room for them -- the roads fill
+    // at least 70 % of the viewport's width or height.
+    QRectF roads;
+    for(auto* item:w.canvas()->scene()->items())if(const auto tag=item->data(0).toString();tag=="road-surface"||tag=="road-kerb")
+        roads=roads.isNull()?item->sceneBoundingRect():roads.united(item->sceneBoundingRect());
+    const auto drawn=w.canvas()->viewportTransform().mapRect(roads);
+    check(drawn.width()>=.7*viewport.width()||drawn.height()>=.7*viewport.height(),"Fit leaves the network small in wide margins");
 }
 void run(const std::filesystem::path& data,const QString& lang,const QString& evidence){
     EditorWindow w(data,lang,nullptr,true);w.resize(1366,768);w.show();
@@ -91,6 +98,12 @@ void run(const std::filesystem::path& data,const QString& lang,const QString& ev
         auto* summary=child<QScrollArea>(w,"editorInspectorSummaryScroll");
         check(summary->isVisible()&&summary->viewport()->height()>60,"Common Properties cannot be scrolled");
         check(summary->verticalScrollBar()->maximum()>0,"Expanded Properties scroll fixture did not overflow");
+        { // D463: scrolled to the top, the clipped summary ends on a whole row, through no field.
+            summary->verticalScrollBar()->setValue(0);settle();
+            const int bottom=summary->viewport()->height();
+            for(auto* f:summary->widget()->findChildren<QWidget*>(QString(),Qt::FindDirectChildrenOnly))
+                if(f->isVisible())check(!(f->geometry().top()<bottom&&f->geometry().bottom()>=bottom),"The Properties summary is cut through a field");
+        }
         check(w.canvas()->viewport()->width()>350&&w.canvas()->viewport()->height()>350,"Small Drawing canvas unusable");
         appearance->setChecked(false);settle();
         check(summary->height()<=summary->widget()->sizeHint().height()+2,"Folded common Properties wastes vertical space");
@@ -101,7 +114,7 @@ void run(const std::filesystem::path& data,const QString& lang,const QString& ev
     auto* seed=child<QLineEdit>(w,"editorSeed");seed->setText("4294967295");
     QStyleOptionFrame frame;frame.initFrom(seed);const auto content=seed->style()->subElementRect(QStyle::SE_LineEditContents,&frame,seed);
     check(content.width()>=seed->fontMetrics().horizontalAdvance(seed->text())+4,"Ten-digit seed is clipped");seed->setText("42");
-    trigger(w,"editorStep");labels(w);
+    trigger(w,"editorStep");labels(w,0); // D465: a run draws no unpinned rate
     for(const int width:{1366,1024}) {
         w.resize(width,768);trigger(w,"editorWorkspaceResults");
         auto* movement=child<QTableWidget>(w,"editorMovementTable");auto* queue=child<QTableWidget>(w,"editorQueueTable");
@@ -144,6 +157,11 @@ void run(const std::filesystem::path& data,const QString& lang,const QString& ev
         w.resize(1180,768);settle();
         auto* overflow=bar->findChild<QToolButton*>("qt_toolbar_ext_button");check(!overflow||!overflow->isVisible(),"Density hides playback in toolbar overflow");
         check(seed->isVisible(),"Density hides the seed");w.resize(1366,768);settle();
+        { // D463: the current Properties page fits its panel at every density -- no sideways scroll.
+            auto* tabs=child<QTabWidget>(w,"editorPropertyTabs");auto* page=qobject_cast<QScrollArea*>(tabs->currentWidget());
+            check(page&&page->widget()->minimumSizeHint().width()<=page->viewport()->width(),"A Properties field forces the page wider than its panel");
+            check(!page->horizontalScrollBar()->isVisible(),"Properties scrolls sideways");
+        }
         if(!evidence.isEmpty())check(w.grab().save(evidence+lang+QString("-density-%1.png").arg(density)),"Screenshot failed");
     }
     trigger(w,"editorDensityCompact");
