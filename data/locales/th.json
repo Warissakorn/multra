@@ -386,7 +386,7 @@
   "editorApplyLinkMarkings": "ใช้ค่าเส้นขอบเลน",
   "editorLinkPointStation": "ตำแหน่งจุดจากต้น Link (m)",
   "editorInsertLinkPoint": "แทรกจุดตามระยะ",
-  "editorAddLinkPoint": "เพิ่มจุดกลางช่วงที่ยาวที่สุด",
+  "editorAddLinkPoint": "เพิ่มจุดกลางช่วงยาวสุด",
   "editorStraightLink": "ปรับ Link ให้ตรง",
   "editorReverseLink": "กลับทิศ Link ที่ไม่มีการอ้างอิง",
   "editorAdvisorySeverity": "ข้อสังเกต",

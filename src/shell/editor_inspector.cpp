@@ -159,7 +159,7 @@ void EditorWindow::buildInspector() {
         auto* s=new QDoubleSpinBox(body);s->setDecimals(decimals);s->setRange(min,max);s->setValue(value);return s;
     };
     auto button=[&](const std::string& key,const std::function<void()>& callback){
-        auto* b=new ElidingToolButton(body); // D463: a long Apply label elides (full text in its tooltip) before it widens the page
+        auto* b=new QToolButton(body);
         b->setToolButtonStyle(Qt::ToolButtonTextOnly);b->setDefaultAction(action(key,{},callback));form->addRow(b);
     };
     auto heading=[&](const std::string& key){auto* h=new ReflowLabel(body);h->setObjectName(QString::fromStdString(key));h->setProperty("editorEyebrow",true);texts_[key]=h;form->addRow(h);};

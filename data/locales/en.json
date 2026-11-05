@@ -386,7 +386,7 @@
   "editorApplyLinkMarkings": "Apply boundary markings",
   "editorLinkPointStation": "Point station from Link start (m)",
   "editorInsertLinkPoint": "Insert point at station",
-  "editorAddLinkPoint": "Add midpoint to longest segment",
+  "editorAddLinkPoint": "Midpoint on longest segment",
   "editorStraightLink": "Straighten Link",
   "editorReverseLink": "Reverse unreferenced Link",
   "editorAdvisorySeverity": "Advisory",

@@ -12,7 +12,7 @@ namespace multra {
 namespace {
 QTableWidgetItem* plain(const QString& text) { return new QTableWidgetItem(text); }
 QTableWidgetItem* figure(const std::optional<double>& value) {
-    auto* item = new QTableWidgetItem(value ? editorDesign::formatValue(*value, 1) : QStringLiteral("\u2014")); // D463: no figure yet reads "—", not a blank cell
+    auto* item = new QTableWidgetItem(value ? editorDesign::formatValue(*value, 1) : QString());
     editorDesign::setNumericText(item, true); item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     return item;
 }

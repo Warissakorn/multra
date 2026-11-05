@@ -9,14 +9,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **Owner:** "เริ่ม UI รอบสองเลย".
 - **Properties width:** the Link page needed 393 px in a 280 px panel because of the Link type
-  combobox. The box now shrinks below its longest item, and a form's Apply button elides at
-  Large density. No sideways scroll at any density.
+  combobox. The box now shrinks below its longest item, and the widest button label is shorter
+  ("Midpoint on longest segment"); an eliding button made the form layout loop. No sideways
+  scroll at any density.
 - **Clipped summary:** at 800 px it ends on a whole row instead of through a field.
 - **Labels:** "Lane widths (m)", "Boundary markings", "New lane width (m)" (Thai likewise); the
   format is the placeholder and tooltip.
 - **Scope banner:** one line, "Not yet validated · prototype model — hover for its limits"; the
   full limits stay in its tooltip.
-- **Results:** a cell with no figure reads "—".
+- **Results:** a movement or queue cell with no figure reads "—"; a Node-table cell that does not
+  apply (a turn's queue) stays blank.
 - **Verified:** see the commit; images in `docs/images/ui-round2-d463/`.
 
 ## 2026-11-05 — Owner choices after D461 (D462)
