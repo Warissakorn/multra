@@ -408,6 +408,7 @@ private:
     CanvasLabel* addLabel(const QString& text, Point anchor, const QFont& font, const QBrush& brush, double z,
                           const QString& tag, const std::string& id, int priority, bool pinned, CanvasLabel::Style style);
     void placeLabels();
+    std::vector<bool> placeLaneLabels(const QTransform& toScreen, std::vector<QRectF>& placed); // D460
     std::vector<CanvasLabel*> labels_;
     // A filled arrowhead of constant screen size, centred on `at` and pointing along `angle`.
     void addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);

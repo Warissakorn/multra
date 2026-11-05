@@ -1,6 +1,8 @@
 #pragma once
 #include <QGraphicsSimpleTextItem>
+#include <QColor>
 #include <QPointF>
+#include <optional>
 
 class QGraphicsLineItem;
 namespace multra {
@@ -9,8 +11,16 @@ namespace multra {
 // with a grey frame and a leader line to its anchor (input rates and decision names, in the
 // spirit of PTV Vistro's fixed-size callouts). The canvas places it in screen space
 // (EditorCanvas::placeLabels); a label that finds no free place is hidden unless pinned.
+//
+// D460: an input rate may instead lie on its own lanes, along the road, while its text fits inside
+// them; zoomed out past that it hides (a pinned one falls back to its box). Box heights follow the
+// text's ink, not the font's line height.
 class CanvasLabel : public QGraphicsSimpleTextItem {
 public:
+    // Where an on-lane label may go: the input's bar runs across lanes firstLane.. of one Link
+    // (`group`) from `from` to `to` (scene), the road leaving along unit `direction` and straight
+    // for `reach` metres. A label takes the middle of one of those lanes; `surface` is the road's colour.
+    struct LaneSlot { QPointF from, to, direction; double reach{}; int firstLane{}, laneCount{1}; QString group; QColor surface; };
     static constexpr double halo = 3;              // logical px of Base around each glyph
     static constexpr double padX = 4, padY = 2;    // box padding
     static constexpr double radius = 3;            // box corner
@@ -23,6 +33,10 @@ public:
     Style style() const { return style_; }
     QGraphicsLineItem* leader() const { return leader_; }
     void setLeader(QGraphicsLineItem* line) { leader_ = line; }
+    const std::optional<LaneSlot>& laneSlot() const { return lane_; }
+    void setLaneSlot(const LaneSlot& slot) { lane_ = slot; }
+    bool onLane() const { return onLane_; }
+    void setOnLane(bool on) { prepareGeometryChange(); onLane_ = on; }
     QRectF textRect() const { return QGraphicsSimpleTextItem::boundingRect(); }
     QRectF frame() const; // the box in item pixels (the text rect for a halo label)
     QRectF boundingRect() const override;
@@ -34,5 +48,7 @@ private:
     bool pinned_{};
     Style style_{Style::halo};
     QGraphicsLineItem* leader_{};
+    std::optional<LaneSlot> lane_;
+    bool onLane_{};
 };
 }

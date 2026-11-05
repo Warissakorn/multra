@@ -99,6 +99,20 @@ at viewport boundaries. Pan and resize re-place the labels as redraw already doe
 geometry or hit identity changes. `ui-audit-layout` checks all twelve shipped input rates after
 Fit and overlay/edge exclusion; `canvas-labels-ui` retains transformed/cluster/leader coverage.
 
+## Owner review fixes (D460)
+
+Nodes are thin outlines with no fill. Signal heads have a real size in metres: a sharp 0.9 m square
+with three square lamps (hidden below 3 px), on a mast arm from a pole beside the kerb-side edge.
+Road edges are a thin dark line instead of the light kerb (amends Q8), and a Link's plain solid
+outer edge is no longer painted white (Slice D's white edge line is withdrawn unless the owner
+asks again). Input rates on a Link lie in their lanes, along the road,
+and hide while the text is taller than a lane; a pinned rate falls back to its B2 box. Boxes
+follow the text's ink height. A line edit's clear button is exempt from the field-height rule.
+Images: [rates at 8 px/m](../images/canvas-review-d460/four-leg-input-rates-8px.png),
+[heads at 20 px/m](../images/canvas-review-d460/four-leg-signal-heads-20px.png),
+[a Node at rest](../images/canvas-review-d460/four-leg-node-rest-10px.png) and
+[selected](../images/canvas-review-d460/four-leg-node-selected-10px.png).
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing
@@ -108,7 +122,7 @@ Fit and overlay/edge exclusion; `canvas-labels-ui` retains transformed/cluster/l
 
 ## Slice D — surface markings
 
-- **Edge line.** A white solid inner edge line.
+- **Edge line.** Withdrawn by D460: the road edge is a thin dark line.
 - **Arrows.** Lane arrows come from the Connectors leaving each lane, and are mirrored by `drivingSide`.
 - **Stop line.** A white stop line across each lane under the D199 signal bars.
 

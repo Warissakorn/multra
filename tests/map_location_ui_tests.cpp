@@ -19,6 +19,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <QTimer>
+#include <QToolButton>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -137,13 +138,30 @@ void unfinishedSearch(const std::filesystem::path& data) {
     });
     require(navigations==1,"Valid country selection failed after correcting a search");
 }
+// D460: an editable combo's clear button sits midway between the frame's top and bottom: its
+// centre in the combo is the frame's centre, give or take half a pixel, at rest and focused.
+void clearButtonCentred(QComboBox& box) {
+    QToolButton* clear=nullptr;
+    for(auto* b:box.lineEdit()->findChildren<QToolButton*>())if(b->isVisible())clear=b;
+    require(clear,"A chosen location offers no clear button");
+    const QRectF button(clear->mapTo(&box,QPoint(0,0)),QSizeF(clear->size()));
+    const QRectF frame=QRectF(box.rect());
+    std::cout<<box.objectName().toStdString()<<" combo "<<frame.height()<<" edit y "<<box.lineEdit()->geometry().y()<<" h "<<box.lineEdit()->height()
+             <<" button y "<<button.y()<<" h "<<button.height()<<'\n';
+    require(std::abs(button.center().y()-frame.center().y())<=.5,"The clear button is not centred in its combo");
+}
 void historyAndNavigation(const std::filesystem::path& data,const QString& screenshots) {
     EditorWindow window(data);window.resize(1000,700);window.show();QApplication::processEvents();
     window.canvas()->setMapProviders({provider});window.canvas()->createLink({{-60,0},{60,0}});
     const auto originalNetwork=window.history().document().network;const auto before=window.history().revision();
     auto* settings=item<QAction>(window,"editorMapSettings");
     modal([&]{settings->trigger();},[](QDialog& dialog){
-        select(dialog,"editorMapCountry","TH");select(dialog,"editorMapProvince","TH-10");dialog.reject();
+        select(dialog,"editorMapCountry","TH");select(dialog,"editorMapProvince","TH-10");
+        for(const char* name:{"editorMapCountry","editorMapProvince"}) {
+            auto* box=item<QComboBox>(dialog,name);clearButtonCentred(*box);
+            box->lineEdit()->setFocus();QApplication::processEvents();clearButtonCentred(*box);
+        }
+        dialog.reject();
     });
     require(window.history().revision()==before && !window.history().document().map,"Cancelling a location edit changed history");
     modal([&]{settings->trigger();},[](QDialog& dialog){select(dialog,"editorMapCountry","TH");confirm(dialog);});

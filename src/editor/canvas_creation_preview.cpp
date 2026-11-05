@@ -36,7 +36,7 @@ bool EditorCanvas::drawPreviewLink(const Link& link) {
         double narrowest=std::numeric_limits<double>::infinity();
         for(const auto& lane:link.lanes)narrowest=std::min(narrowest,lane.width);
         if(!canvasStyle::laneMarkingsReadable(narrowest,viewScale()))return true;
-        for(const auto& marking:markingStrokes(linkMarkings(link,side))) {
+        for(const auto& marking:markingStrokes(canvasStyle::paintedLinkMarkings(linkMarkings(link,side)))) {
             auto pen=canvasStyle::markingPen(QColor(QString::fromStdString(look.laneColor)),marking.type);
             auto* mark=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,look.laneDash,look.laneGap),pen);
             mark->setZValue(previewZ+0.1);mark->setOpacity(canvasStyle::creationPreviewOpacity);mark->setData(0,QStringLiteral("creation-preview"));

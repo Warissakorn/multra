@@ -105,10 +105,13 @@ QColor outline(EditorWindow& w) {
         if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().color();
     require(false, "No node outline"); return {};
 }
-// D434: a Node at rest is a shade with no outline; only the highlighted one has a pen.
+// D460: a Node is a thin outline with no fill; only the highlighted one is lit (2 px accent).
 bool outlined(EditorWindow& w) {
     for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "node")
-        if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) return path->pen().style() != Qt::NoPen;
+        if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) {
+            require(path->brush().style() == Qt::NoBrush && path->pen().style() == Qt::SolidLine, "A Node is not a bare outline");
+            return path->pen().color() == canvasStyle::selection() && path->pen().widthF() == 2;
+        }
     require(false, "No node shape"); return false;
 }
 }
@@ -222,8 +225,17 @@ int main(int argc, char** argv) {
         const auto expected = membershipLegs(w.history().document().network, nodes()[0]);
         require(expected.size() == 8, "The four-leg node does not have eight legs");
         require(drawnLegs(w) == expected, "The drawn legs are not the node's in- and out-legs");
+        // Review images (D460) when a second argument names a prefix: the suggested Node at 10 px/m.
+        const auto capture = [&](const char* name) {
+            if (argc < 3) return;
+            QPolygonF ring; for (const auto& p : nodes()[0].polygon) ring << QPointF(p.x, p.y);
+            c->setTransform(QTransform::fromScale(10, -10)); c->centerOn(ring.boundingRect().center()); c->redraw(); QApplication::processEvents();
+            require(c->viewport()->grab().save(QString::fromLocal8Bit(argv[2]) + name), "Node screenshot failed");
+        };
+        capture("-node-selected.png");
         require(outline(w) == canvasStyle::selection(), "The selected node's outline is not lit");
         table->clearSelection(); QApplication::processEvents();
+        capture("-node-rest.png");
         require(table->selectedItems().isEmpty(), "The row stayed selected");
         require(c->highlightedNode().empty() && drawnLegs(w).empty() && !outlined(w),
                 "Clearing the row kept the highlight");

@@ -68,8 +68,8 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     require(tagged(c,"road-marking",connector).empty(),"A resting Connector still draws lane markings");
     // 2. One asphalt: the Connector is its type's linkColor, not connectorColor.
     for(auto* s:surfaces)require(s->brush().color()==QColor("#49596d"),"A Connector surface is not road asphalt");
-    for(auto* k:kerbs)require(k->pen().color()==canvasStyle::kerb() && !k->pen().isCosmetic() &&
-        std::abs(k->pen().widthF()-canvasStyle::kerbWidth)<1e-12 && k->brush().style()==Qt::NoBrush,"A kerb is not the world-unit kerb pen");
+    for(auto* k:kerbs)require(k->pen().color()==canvasStyle::kerb() && k->pen().isCosmetic() &&
+        std::abs(k->pen().widthF()-canvasStyle::kerbPixels)<1e-12 && k->brush().style()==Qt::NoBrush,"A road edge is not the thin dark edge pen (D460)");
     // 3. At rest no edge and no mouth edge; under 8 px no dividers either.
     require(connectorLines(c,connector,"edge")==0 && tagged(c,"connector-mouth-edge").empty(),
             "A resting Connector still draws its edges over the junction");

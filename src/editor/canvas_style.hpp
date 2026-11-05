@@ -62,10 +62,13 @@ inline QPen connectorGuidePen(QColor colour) {
 }
 // D423: every road surface is stroked with the kerb pen one layer below all surfaces of its level;
 // the fills cover the inner half, so only the outer contour of the road shows, with no seams.
-inline constexpr double kerbWidth = 0.50; // metres; a quarter metre shows outside the surface
-inline QColor kerb() { return editorDesign::role(QPalette::Mid); }
+// D460 (owner review): a thin dark road edge, not a thick light kerb. The pen is 2 screen px; the
+// fills cover its inner half, so 1 px shows outside the road at every zoom.
+inline constexpr double kerbPixels = 2;
+inline QColor kerb() { return QColor(28, 31, 36); }
 inline QPen kerbPen() {
-    return QPen(kerb(), kerbWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    QPen pen(kerb(), kerbPixels, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
+    return pen;
 }
 // Layers within a level (z = level*100 + ...): kerb, surface, resting Connector guides, Link markings.
 inline constexpr double kerbLayer = 0.5, surfaceLayer = 1, connectorGuideLayer = 1.5, linkMarkingLayer = 2;
@@ -88,4 +91,10 @@ inline QPen markingPen(const QColor& colour, MarkingType) {
 // D430: the polyline cut into dash sub-paths of `dash` metres separated by `gap` metres, measured
 // along the line from its start; a solid line (or a non-dashed type) is the whole polyline.
 QPainterPath markingPath(const std::vector<Point>& line, MarkingType type, double dash, double gap);
+// D460: a Link's plain solid outer edge is drawn as the thin dark road edge, not a white line;
+// interior lines and any other edge type (dashed, double) keep their markings.
+inline std::vector<ConnectorMarking> paintedLinkMarkings(std::vector<ConnectorMarking> markings) {
+    std::erase_if(markings, [](const ConnectorMarking& m) { return m.edge && m.type == MarkingType::solid; });
+    return markings;
+}
 }

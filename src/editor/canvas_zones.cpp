@@ -105,7 +105,7 @@ void EditorCanvas::drawZones() {
                               QBrush(editorDesign::role(QPalette::Base)))->setZValue(200008);
     }
 }
-// S0.1 (NODES §6): a Node is a solid outline over the Links with its name at the centroid.
+// S0.1 (NODES §6): a Node is a thin outline over the Links with its name at the centroid (D460).
 void EditorCanvas::setHighlightedNode(std::string id) {
     if (highlightedNode_ == id) return;
     highlightedNode_ = std::move(id); redraw();
@@ -132,19 +132,15 @@ void EditorCanvas::drawNodes() {
             addKerb(shape, 0, narrowest, node.id);
         }
         const bool lit = node.id == highlightedNode_;
-        // D434: a Node is a soft shade over its junction, not a ring; only the highlighted Node, or
-        // wireframe (which draws no surface to shade), gets a solid outline.
-        QPen pen(Qt::NoPen);
-        if (lit || wireframe_) {
-            pen = QPen(lit ? canvasStyle::selection() : canvasStyle::ink(), lit ? 2 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-            pen.setCosmetic(true);
-        }
-        // S5.2b (D328): a study-area Node is shaded green; otherwise ink, lighter for a generated one.
+        // D460 (owner review of D434): a Node is a thin outline with no fill, so the junction road
+        // under it reads as road. Highlighted: 2 px accent; study area: green; generated: fainter ink.
         const auto& area = document_->zones.studyArea.nodes;
         const bool inArea = std::find(area.begin(), area.end(), node.id) != area.end();
-        auto fill = inArea ? canvasStyle::ok() : lit ? canvasStyle::selection() : canvasStyle::ink();
-        fill.setAlpha(inArea ? 40 : lit ? 36 : node.generated ? 16 : 28);
-        auto* item = scene_.addPath(shape, pen, QBrush(fill));
+        auto colour = lit ? canvasStyle::selection() : inArea ? canvasStyle::ok() : canvasStyle::ink();
+        if (!lit && !inArea && node.generated) colour.setAlpha(140);
+        QPen pen(colour, lit ? 2 : inArea ? 1.5 : 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        pen.setCosmetic(true);
+        auto* item = scene_.addPath(shape, pen, QBrush(Qt::NoBrush));
         item->setZValue(200005);
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));

@@ -44,7 +44,7 @@ void labels(EditorWindow& w){
     const auto viewport=QRectF(w.canvas()->viewport()->rect()).adjusted(2,2,-2,-2);
     auto* hud=child<QWidget>(*w.canvas()->viewport(),"editorCanvasHud");
     for(auto* item:w.canvas()->scene()->items())if(auto* label=dynamic_cast<CanvasLabel*>(item)) {
-        if(label->data(0).toString()=="input-volume"){++inputs;check(label->isVisible(),"Fit hid an input rate");}
+        if(label->data(0).toString()=="input-volume"){++inputs;check(label->isVisible()==label->onLane(),"An input rate neither lies on its lanes nor hides (D460)");}
         if(!label->isVisible())continue;
         const auto rect=label->deviceTransform(w.canvas()->viewportTransform()).mapRect(label->frame());
         check(viewport.contains(rect),"Fit clipped a label");check(!rect.intersects(hud->geometry()),"HUD covered a label");

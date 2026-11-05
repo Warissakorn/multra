@@ -31,6 +31,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
   with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
   `docs/images/canvas-labels-after/`.
+- D460 (owner review, 2026-11-05) is implemented: thin Node outlines, real-size signal heads,
+  a centred combo clear button, and input rates on their lanes that hide when zoomed out. The owner
+  checks them on Windows; slice C still waits for the owner's go-ahead.
 - Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
   are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check
   Drawing/Tables/Results, density, modal retries and Lab on Windows through OWNER_SITTING E33/E34.

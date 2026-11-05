@@ -159,6 +159,9 @@ QString editorStyleSheet() {
         /* An editable combo's own line edit is not a second framed field: no border, height or padding of its own,
            so its text and clear button centre inside the combo's frame. */
         QComboBox QLineEdit, QComboBox QLineEdit:focus, QComboBox QLineEdit:hover { border: 0; padding: 0; min-height: 0; max-height: 16777215; background: transparent; }
+        /* D460: a line edit's clear button is a QToolButton too; the field-height rule above made it 24 px
+           tall from where Qt centred an 18 px one, so its X sat 3 px low. It keeps Qt's own size. */
+        QLineEdit QToolButton, QLineEdit QToolButton:focus, QLineEdit QToolButton:hover { min-height: 0; max-height: 16777215; min-width: 0; padding: 0; border: none; background: transparent; }
         QComboBox::drop-down { width: @space5px; border: 0; border-left: 1px solid palette(mid); }
         QComboBox::down-arrow { image: url(@glyphs/down.png); width: 8px; height: 5px; }
         QComboBox::down-arrow:disabled { image: url(@glyphs/down-off.png); }

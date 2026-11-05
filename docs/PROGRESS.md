@@ -5,6 +5,31 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Canvas review fixes (D460)
+
+- **Owner review** of the canvas: four items, then a second round (square heads on a pole,
+  thin dark road edges, a Node image).
+- **Node:** a thin outline with no fill. Highlighted Nodes stay 2 px accent and study-area Nodes
+  green; the junction road under the Node is unchanged.
+- **Signal head:** real size in metres: a 0.90 m square with sharp corners 0.35 m upstream of the
+  stop line, three square lamps across the lane, and a mast arm to a pole just outside the road
+  edge on the kerb (driving) side. It zooms with the road. Below 3 px the lamps are left out and the
+  stop line carries the state. Hit shape: band plus square, as before.
+- **Road edge:** a thin dark line replaces the thick light kerb, on Links and Connectors. A Link's
+  plain solid outer-edge marking is no longer painted white over it; dashed and double edges still
+  are.
+- **Clear button:** measured 24 px tall at y 2 inside the combo's 22 px edit, so the X sat 3 px low.
+  The cause was the app-wide `QToolButton` field-height rule, which also styles a line edit's clear
+  button. That button is now exempt.
+- **Input rates:**
+  - A rate lies in the middle of one of its served lanes, along the road and upright.
+  - The rates on one Link fill its lanes side by side, then line up along each lane.
+  - While the text is taller than the lane it hides, so there is nothing at Fit on the shipped
+    projects. A rate whose origin road is selected or hovered falls back to its box.
+  - Boxes are now as tall as the text's ink.
+  - This replaces D432's "all visible after Fit" and D426's columns for unpinned rates.
+- **Verified:** see the commit; images in `docs/images/canvas-review-d460/`.
+
 
 ## 2026-11-04 — Two-entry weaves run (D459)
 
@@ -188,24 +213,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - The weaving lab off is lock-free through ×0.8. On, its locks at ×1.0 fall from 10/10/10 to
     1/4/3 seeds.
   - Longer waits: up to 237 s on at ×0.6, and 510 s off at ×1.0.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — The weave-end lock, partly fixed (D450)
-
-- **Owner:** "fix the weave-end lock first".
-- **Traced** ([weaving-lock](evidence/weaving-lock.md)). Two ways a pair at a shared dead end locks
-  for good:
-  - D207 dropped the rear partner whenever it fell back, and it drove up into the standstill
-    distance once the front one stood;
-  - a two-change stub moved into the place a waiting partner needed.
-- **D450 (M3_8_CONTRACT §2):** (a) the pair is kept while the front one brakes for or waits at its
-  dead end; (b) `landsInWaitingPlace` refuses such a landing. No parameter, no state, and both
-  switch modes.
-- **Rows:** BA184 and BA185 were written failure-first, and BA183 turned from pinned-open to
-  passing. Each rule is needed.
-- **Results:**
-  - All four product projects are identical apart from the build commit.
-  - The lab switched off is lock-free through ×0.6 (×0.4 before). Locks remain at ×0.8+ and
-    switched on.
-  - Two experiments, not kept, are in the evidence. Harder yield braking is the owner's choice.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

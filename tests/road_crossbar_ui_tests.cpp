@@ -130,6 +130,17 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
     require(inputs==2,"Non-contiguous input lanes were not separate bars");
     auto* stop=dynamic_cast<RoadCrossbarItem*>(drawn(c,"stop-line"));require(stop,"Head still uses a dot");
     const auto original=stop->line();
+    // D460: the head has a real size -- its square (beyond the stop-line band) spans the same
+    // metres at any zoom, 0.9 m across the 3.5 m lane, and sits upstream of the line on a pole.
+    for(const double s:{12.,40.}) {
+        c.setTransform(QTransform::fromScale(s,-s));c.redraw();
+        auto* item=dynamic_cast<SignalHeadItem*>(drawn(c,"stop-line"));require(item,"A head is not a signal head item");
+        const auto plate=item->shape().subtracted(static_cast<RoadCrossbarItem*>(item)->RoadCrossbarItem::shape()).boundingRect();
+        require(std::abs(plate.height()-headSize)<.05 && plate.right()<original.x1()+1e-6 &&
+                item->boundingRect().height()>headSize+3.5,
+                "A head's size changes with zoom or it sits downstream of its line");
+    }
+    c.fitNetwork();
     Scenario scenario;scenario.duration=60;scenario.timeStep=.1;
     scenario.signalPrograms=d.definition->signalPrograms;scenario.signalHeads={{head,"unused",50,program}};
     SimState state;state.scenario=std::make_shared<const Scenario>(scenario);
