@@ -14,7 +14,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   strip; its picker moves to its own row above the page, since Qt left it floating over the page
   with the strip hidden. It returns to the strip's corner for larger groups.
 - **Movement names:** not translated; they are the project's Link names.
-- **Verified:** see the commit.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked.
 
 ## 2026-11-05 — Canvas display fixes, round 1 (D461)
 
