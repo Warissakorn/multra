@@ -1,5 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
+#include "../src/editor/canvas_labels.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
 #include "../src/editor/canvas_style.hpp"
@@ -233,9 +234,20 @@ int main(int argc, char** argv) {
             require(c->viewport()->grab().save(QString::fromLocal8Bit(argv[2]) + name), "Node screenshot failed");
         };
         capture("-node-selected.png");
+        // D460: the selected Node's name is a tight framed tag centred on its centroid; at rest, none.
+        const auto nodeLabels = [&] { std::vector<CanvasLabel*> out;
+            for (auto* i : w.canvas()->scene()->items()) if (auto* l = dynamic_cast<CanvasLabel*>(i); l && l->data(0).toString() == "node-label") out.push_back(l);
+            return out; };
+        {
+            const auto shown = nodeLabels();
+            require(shown.size() == 1 && shown[0]->isVisible() && shown[0]->style() == CanvasLabel::Style::tag, "The selected Node shows no name tag");
+            const auto box = shown[0]->deviceTransform(c->viewportTransform()).mapRect(shown[0]->frame());
+            require(QLineF(box.center(), c->viewportTransform().map(shown[0]->anchor())).length() < 1, "The Node's name is not centred on it");
+        }
         require(outline(w) == canvasStyle::selection(), "The selected node's outline is not lit");
         table->clearSelection(); QApplication::processEvents();
         capture("-node-rest.png");
+        require(nodeLabels().empty(), "A Node at rest still shows its name");
         require(table->selectedItems().isEmpty(), "The row stayed selected");
         require(c->highlightedNode().empty() && drawnLegs(w).empty() && !outlined(w),
                 "Clearing the row kept the highlight");

@@ -59,12 +59,7 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     require(extreme(ground,true)<extreme(surfaces,false),
             "A kerb lies over a surface of its level");
     require(extreme(upper,false)>extreme(surfaces,true),"The bridge's kerb is under the ground surfaces");
-    require(faint(c)>0,"A resting Connector at 14 px per lane shows no lane guides");
-    const auto guides=tagged(c,"connector-guide",connector);
-    require(guides.size()==2,"A resting two-lane Connector does not show one guide per lane");
-    for(auto* g:guides)
-        require(g->zValue()>extreme(surfaces,true) && g->zValue()<extreme(linkMarks,false) && g->pen().isCosmetic() &&
-                g->pen().color().alpha()==canvasStyle::connectorGuideAlpha,"A lane guide is not a faint line between the surfaces and the Link markings");
+    require(faint(c)==0,"A resting Connector still draws lane-centre guides (D460)");
     require(tagged(c,"road-marking",connector).empty(),"A resting Connector still draws lane markings");
     // 2. One asphalt: the Connector is its type's linkColor, not connectorColor.
     for(auto* s:surfaces)require(s->brush().color()==QColor("#49596d"),"A Connector surface is not road asphalt");
@@ -73,10 +68,6 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     // 3. At rest no edge and no mouth edge; under 8 px no dividers either.
     require(connectorLines(c,connector,"edge")==0 && tagged(c,"connector-mouth-edge").empty(),
             "A resting Connector still draws its edges over the junction");
-    view(c,8/3.5*(1-1e-3));
-    require(faint(c)==0 && !tagged(c,"road-kerb").empty(),"Lane guides drawn under 8 px per lane");
-    view(c,8/3.5*(1-1e-12)); // D205: one rounding below is no zoom change
-    require(faint(c)>0,"A rounding of the scale hid the lane guides");
     // ...and selected, hovered or under the Connect tool it draws today's full set at z+4.5.
     view(c,4);
     c.select(connector.toStdString());c.redraw();settle();
@@ -119,14 +110,14 @@ int main(int argc,char** argv) {
         window.openFile(QString::fromStdString((data/"projects/four-leg-signalised.traffic.json").string()));settle();
         auto& canvas=*window.canvas();
         view(canvas,9);
-        require(faint(canvas)>=20 && !tagged(canvas,"road-kerb").empty(),"The shipped junction has no lane guide per Connector lane, or no kerb");
+        require(faint(canvas)==0 && !tagged(canvas,"road-kerb").empty(),"The shipped junction draws lane guides, or no road edge");
         if(argc>2)require(canvas.viewport()->grab().save(QString::fromUtf8(argv[2])+"-edit.png"),"Screenshot failed");
         for(int i=0;i<200;++i)window.findChild<QAction*>("editorStep")->trigger();
         settle();
         require(canvas.renderedVehicles()>0,"The forcing: the run shows vehicles");
         require(faint(canvas)==0 && !tagged(canvas,"road-kerb").empty() && !tagged(canvas,"road-surface").empty(),
                 "A run kept the lane guides or lost the road");
-        std::cout<<"Canvas layers: kerb under one asphalt, Node fill, faint resting lane guides, unchanged hits passed\n";
+        std::cout<<"Canvas layers: road edge under one asphalt, no Node fill, no resting lane guides, unchanged hits passed\n";
         return 0;
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }

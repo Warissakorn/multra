@@ -133,9 +133,10 @@ void EditorCanvas::drawNodes() {
         item->setZValue(200005);
         item->setData(0, QStringLiteral("node")); item->setData(1, QString::fromStdString(node.id));
         if (inArea) item->setData(2, QStringLiteral("area"));
-        const auto c = centroid(node.polygon);
-        addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), c, QGuiApplication::font(),
-                 canvasStyle::ink(), 200006, {}, {}, CanvasLabel::node, lit, CanvasLabel::Style::halo); // D424
+        // D460: the name shows only while the Node is selected, centred in a tight frame, no halo.
+        if (lit) addLabel(QString::fromStdString(node.name.empty() ? node.id : node.name), centroid(node.polygon),
+                          QGuiApplication::font(), editorDesign::role(QPalette::Text), 200006, QStringLiteral("node-label"),
+                          node.id, CanvasLabel::node, true, CanvasLabel::Style::tag);
         if (lit) drawNodeLegs(node);
     }
 }

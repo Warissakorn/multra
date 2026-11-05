@@ -104,7 +104,8 @@ Fit and overlay/edge exclusion; `canvas-labels-ui` retains transformed/cluster/l
 Nodes are thin outlines above the roads with no fill; the polygon is no longer junction asphalt
 (amends Q5). Signal heads are one sharp 0.9 m square box of one colour (dark when editing, the
 state's in a run), on a mast arm meeting its kerb-side edge from a pole beside the road. Roads
-are neutral greys.
+are neutral greys. A Node's name shows only while it is selected, as a tight framed tag at its
+centre. Resting Connectors draw no lane-centre guides (amends Q7).
 Road edges are a thin dark line instead of the light kerb (amends Q8), and a Link's plain solid
 outer edge is no longer painted white (Slice D's white edge line is withdrawn unless the owner
 asks again). Input rates on a Link lie in their lanes, along the road,

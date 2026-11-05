@@ -48,18 +48,6 @@ inline constexpr double creationPreviewOpacity = 0.6;
 inline bool laneMarkingsReadable(double laneWidthMetres, double pixelsPerMetre) {
     return laneWidthMetres * pixelsPerMetre >= minLanePixels * (1 - 1e-9);
 }
-// D423 (canvas style slice A): a resting Connector shows each lane's centre path as a faint 1 px
-// guide, only from 8 logical px per lane; the kerb under the one asphalt fill replaces its edges.
-inline constexpr double minConnectorLanePixels = 8;
-inline constexpr int connectorGuideAlpha = 110;
-inline bool connectorLanesReadable(double laneWidthMetres, double pixelsPerMetre) {
-    return laneWidthMetres * pixelsPerMetre >= minConnectorLanePixels * (1 - 1e-9);
-}
-inline QPen connectorGuidePen(QColor colour) {
-    colour.setAlpha(connectorGuideAlpha);
-    QPen pen(colour, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
-    return pen;
-}
 // D423: every road surface is stroked with the kerb pen one layer below all surfaces of its level;
 // the fills cover the inner half, so only the outer contour of the road shows, with no seams.
 // D460 (owner review): a thin dark road edge, not a thick light kerb. The pen is 2 screen px; the
@@ -70,8 +58,8 @@ inline QPen kerbPen() {
     QPen pen(kerb(), kerbPixels, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);
     return pen;
 }
-// Layers within a level (z = level*100 + ...): kerb, surface, resting Connector guides, Link markings.
-inline constexpr double kerbLayer = 0.5, surfaceLayer = 1, connectorGuideLayer = 1.5, linkMarkingLayer = 2;
+// Layers within a level (z = level*100 + ...): road edge, surface, Link markings.
+inline constexpr double kerbLayer = 0.5, surfaceLayer = 1, linkMarkingLayer = 2;
 
 inline QColor connectorBoundaryColor(const QColor& surface) {
     const auto linear = [](double channel) {

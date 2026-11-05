@@ -14,7 +14,8 @@ namespace multra {
 //
 // D460: an input rate may instead lie on its own lanes, along the road, while its text fits inside
 // them; zoomed out past that it hides (a pinned one falls back to its box). Box heights follow the
-// text's ink, not the font's line height.
+// text's ink, not the font's line height. A tag label (a selected Node's name) is a tight framed box
+// centred on its anchor, with no halo and no leader.
 class CanvasLabel : public QGraphicsSimpleTextItem {
 public:
     // Where an on-lane label may go: the input's bar runs across lanes firstLane.. of one Link
@@ -25,7 +26,7 @@ public:
     static constexpr double padX = 4, padY = 2;    // box padding
     static constexpr double radius = 3;            // box corner
     enum Priority { zone = 0, node = 1, decision = 2, input = 3 };
-    enum class Style { halo, box };
+    enum class Style { halo, box, tag }; // tag (D460): a tight frame centred on its anchor, never moved
     CanvasLabel(const QString& text, const QFont& font, QPointF anchor, int priority, bool pinned, Style style = Style::halo);
     QPointF anchor() const { return anchor_; }
     int priority() const { return priority_; }

@@ -21,17 +21,17 @@ CanvasLabel::CanvasLabel(const QString& text, const QFont& font, QPointF anchor,
 }
 QRectF CanvasLabel::frame() const {
     const auto text = textRect();
-    if (style_ != Style::box && !onLane_) return text;
+    if (style_ == Style::halo && !onLane_) return text;
     // D460: a box or on-lane label is as tall as its text's ink (digits, Thai marks), not the
     // font's whole line, which made the boxes tall.
     const QFontMetricsF metrics(font());
     const auto ink = metrics.tightBoundingRect(this->text());
     const double top = metrics.ascent() + ink.top(), bottom = metrics.ascent() + ink.bottom();
-    const double x = onLane_ ? 2 : padX, y = onLane_ ? 1 : padY;
+    const double x = onLane_ ? 2 : style_ == Style::tag ? 3 : padX, y = onLane_ ? 1 : style_ == Style::tag ? 2 : padY;
     return QRectF(text.left() - x, top - y, text.width() + 2 * x, bottom - top + 2 * y);
 }
 QRectF CanvasLabel::boundingRect() const {
-    return style_ == Style::box || onLane_ ? frame().adjusted(-2, -2, 2, 2) : textRect().adjusted(-halo, -halo, halo, halo);
+    return style_ != Style::halo || onLane_ ? frame().adjusted(-2, -2, 2, 2) : textRect().adjusted(-halo, -halo, halo, halo);
 }
 QPainterPath CanvasLabel::shape() const { QPainterPath path; path.addRect(boundingRect()); return path; }
 void CanvasLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) {
@@ -54,11 +54,12 @@ void CanvasLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWid
         painter->restore();
         return;
     }
-    if (style_ == Style::box) {
-        // D425: a white box, grey frame (accent and heavier when pinned), then the text.
+    if (style_ != Style::halo) {
+        // D425 (and D460's tag): a white box, grey frame (accent and heavier when pinned), then the text.
         QPen pen(pinned_ ? canvasStyle::selection() : editorDesign::role(QPalette::Dark), pinned_ ? 1.5 : 1);
         painter->setPen(pen); painter->setBrush(editorDesign::role(QPalette::Base));
-        painter->drawRoundedRect(frame().adjusted(.5, .5, -.5, -.5), radius, radius);
+        const double corner = style_ == Style::tag ? 0 : radius; // a tag is a plain rectangle
+        painter->drawRoundedRect(frame().adjusted(.5, .5, -.5, -.5), corner, corner);
     } else {
         // D424: the glyph outlines, stroked wide in Base, then filled in the label's brush.
         painter->strokePath(glyphs, QPen(editorDesign::role(QPalette::Base), 2 * halo, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -111,6 +112,13 @@ std::vector<bool> EditorCanvas::placeLaneLabels(const QTransform& toScreen, std:
     for (std::size_t i = 0; i < labels_.size(); ++i) {
         auto* label = labels_[i];
         const auto& slot = label->laneSlot();
+        if (label->style() == CanvasLabel::Style::tag) { // D460: centred on the anchor, as it is
+            const auto box = label->frame();
+            label->setTransform(QTransform::fromTranslate(-box.center().x(), -box.center().y()));
+            placed.push_back(box.translated(-box.center()).translated(toScreen.map(label->anchor())).adjusted(-2, -2, 2, 2));
+            label->setVisible(true); label->setData(4, QStringLiteral("shown")); settled[i] = true;
+            continue;
+        }
         if (!slot || slot->laneCount < 1) continue;
         label->setOnLane(true);
         const QPointF a = toScreen.map(slot->from), b = toScreen.map(slot->to);
