@@ -15,7 +15,6 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Node name:** shown only while the Node is selected, as a tight framed tag centred on it, no halo.
 - **Connector lane guides:** the faint resting lane-centre lines (D423 Q7) are gone; they tangled
   over every junction. A Connector's lanes still show on hover, selection or the Connect tool.
-- **Pole:** the mast arm is 3 px and the pole 0.30 m.
 - **Signal head:** a 0.90 m square box of one colour with sharp corners, 0.35 m upstream of the
   stop line: dark while editing, the state's colour in a run, with no lamps. The run stop line
   keeps D199's shape cue. A mast arm meets the box's kerb-side edge from a pole just outside the

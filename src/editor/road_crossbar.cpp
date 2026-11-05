@@ -180,7 +180,7 @@ std::optional<QPointF> SignalHeadItem::poleAt() const {
 QRectF SignalHeadItem::boundingRect() const {
     auto bounds=shape().boundingRect();
     if(const auto pole=poleAt()) {
-        const double r=std::max(poleRadius,2.5/scale_);
+        const double r=std::max(poleRadius,2/scale_);
         bounds=bounds.united(QRectF(*pole-QPointF(r,r),QSizeF(2*r,2*r)));
     }
     return bounds.adjusted(-4/scale_,-4/scale_,4/scale_,4/scale_);
@@ -194,10 +194,9 @@ void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* opt
     if(const auto at=poleAt()) { // the mast arm from the pole to the head's kerb-side edge, then the pole
         const QPointF pole=*at;
         const double side=QPointF::dotProduct(pole-f->centre,f->across)<0?-1.:1.;
-        QPen arm(metal,3,Qt::SolidLine,Qt::FlatCap);arm.setCosmetic(true); // D460: a slightly heavier mast
-
+        QPen arm(metal,2,Qt::SolidLine,Qt::FlatCap);arm.setCosmetic(true);
         painter->setPen(arm);painter->drawLine(pole,f->centre+f->across*(side*f->size/2));
-        const double r=std::max(poleRadius,2.5/scale_);
+        const double r=std::max(poleRadius,2/scale_);
         painter->setPen(Qt::NoPen);painter->setBrush(QColor(38,42,48));painter->drawEllipse(pole,r,r);
     }
     // D460: one square box of one colour -- dark while editing, the state's colour in a run -- with a

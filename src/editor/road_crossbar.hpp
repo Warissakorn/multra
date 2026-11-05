@@ -36,7 +36,7 @@ private:
 // one square box of one colour with sharp corners, in real metres, hung on a mast arm that meets
 // its kerb-side edge from a pole beside the road; dark while editing, the state's colour in a run,
 // where the stop line also keeps D199's shape cue (full, thinned middle, open) so it reads without hue.
-inline constexpr double headSize=0.90,headGap=0.35,poleRadius=0.30,poleSetback=0.50;
+inline constexpr double headSize=0.90,headGap=0.35,poleRadius=0.22,poleSetback=0.50;
 class SignalHeadItem : public RoadCrossbarItem {
 public:
     SignalHeadItem(const RoadCrossbar&, QColor line, double scale, bool preview = false, SignalCue cue = SignalCue::none);
