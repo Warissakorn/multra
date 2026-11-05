@@ -1,5 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
+#include "../src/editor/canvas_labels.hpp"
 #include "../src/editor/run_vehicle_item.hpp"
 #include "../src/editor/road_crossbar.hpp"
 #include "../src/project/json.hpp"
@@ -132,7 +133,10 @@ int main(int argc,char** argv) {
         canvas->setTransform(view);canvas->horizontalScrollBar()->setValue(across);canvas->verticalScrollBar()->setValue(down);canvas->redraw();settle(); // bodies follow the zoom at the next frame
         // D281: during a run the static network below the vehicles is painted from the cached
         // background, pixel for pixel what live items paint, and a selection still repaints it.
-        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())if(!item->isVisible())++n;return n;};
+        // D460: a rate label too tall for its lanes hides by design (and its leader with it); only
+        // the static layer's items count.
+        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())
+            if(!item->isVisible()&&!dynamic_cast<CanvasLabel*>(item)&&item->data(0).toString()!="label-leader")++n;return n;};
         require(hidden()>0,"The forcing: a run hides the static layer it bakes");
         const auto grab=[&]{settle();return canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_RGB32);};
         // The cache is a premultiplied pixmap, so a blend can round a level or two apart from the live

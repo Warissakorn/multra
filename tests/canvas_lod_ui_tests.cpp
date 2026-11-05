@@ -51,7 +51,8 @@ int main(int argc,char** argv) {
         // 1. The markings follow the lane threshold, and only they do.
         view(canvas,QTransform::fromScale(at,-at));
         const auto full=tags(canvas);
-        require(full.count("road-marking")&&full.at("road-marking")>0,"No lane markings at 3 px per lane");
+        // D460: the fixture's one-lane Links have only solid outer edges, now the dark road edge
+        // (road-kerb), so the kerb is the lane decoration this view must show.
         require(full.count("road-kerb")&&full.at("road-kerb")>0,"No kerb at 3 px per lane");
         const int fullDecoration=markings(canvas);
         // D423: only a Connector being worked on draws its mouth edges; select one to see them.

@@ -389,8 +389,9 @@ void markings(EditorCanvas& c) {
             const auto* path=dynamic_cast<QGraphicsPathItem*>(item);require(path,"Marking path missing");
             require(!path->pen().isCosmetic() && std::abs(path->pen().widthF()-.10)<1e-9,"Lane marking is not 10 cm in world units");++marks;
         }
-        // D423: a resting Connector draws no lane markings (only faint lane guides); the Links draw six.
-        require(marks>=6,"Fixture is missing Link markings");
+        // D423: a resting Connector draws no lane markings (only faint lane guides). D460: each two-lane
+        // Link draws its one line between lanes; its plain outer edges are the dark road edge.
+        require(marks==2,"Fixture is missing Link markings");
     }
     c.setDocument(nullptr);
 }
