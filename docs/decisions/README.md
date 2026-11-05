@@ -471,22 +471,14 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.
 
-[D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
-
-[D432](RECORD.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.
-
-[D444](RECORD.md#d444) — lateral crossing at the window end: one target-lane lookup (`targetSectionAt`) for the start and the crossing, one `spanHolds` test, and the whole body kept in its lane on a side it cannot cross (replaces D189's centre clamp).
-
-[D445](RECORD.md#d445) — a straddler searches a covered lane only on the section level with its front (fixes audit Finding 2's gap-0 leader and clamps).
-
-[D446](RECORD.md#d446) — while a lateral change is under way, D207's swap partner extends to a rear stub too close to accept the changer (`acceptsAsLeader`, shared with D208); `yieldMutual` moves to `lane_swap.cpp`.
-
-[D447](RECORD.md#d447) — a body over the line whose lateral move is blocked in 2D steps back like D208's refused cover (one step-back path); revises D206's BA53.
-
-[D448](RECORD.md#d448) — the lane-change start's lateral safety filter reads the target lane by `targetPartAt` (D444's to-range rule) through `followerFilterOn`.
-
-[D449](RECORD.md#d449) — the weaving lab: a synthetic Type A weaving fixture with an off/on sweep (rows BA179–BA183); at full demand the weave end locks (open).
-
+- [D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
+- [D432](RECORD.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.
+- [D444](RECORD.md#d444) — lateral crossing at the window end: one target-lane lookup (`targetSectionAt`) for the start and the crossing, one `spanHolds` test, and the whole body kept in its lane on a side it cannot cross (replaces D189's centre clamp).
+- [D445](RECORD.md#d445) — a straddler searches a covered lane only on the section level with its front (fixes audit Finding 2's gap-0 leader and clamps).
+- [D446](RECORD.md#d446) — while a lateral change is under way, D207's swap partner extends to a rear stub too close to accept the changer (`acceptsAsLeader`, shared with D208); `yieldMutual` moves to `lane_swap.cpp`.
+- [D447](RECORD.md#d447) — a body over the line whose lateral move is blocked in 2D steps back like D208's refused cover (one step-back path); revises D206's BA53.
+- [D448](RECORD.md#d448) — the lane-change start's lateral safety filter reads the target lane by `targetPartAt` (D444's to-range rule) through `followerFilterOn`.
+- [D449](RECORD.md#d449) — the weaving lab: a synthetic Type A weaving fixture with an off/on sweep (rows BA179–BA183); at full demand the weave end locks (open).
 - [D450](RECORD.md#d450) — at a shared dead end, a swapping pair is kept while the front one closes in, and no change lands in a waiting partner's place (BA183–BA185).
 - [D451](RECORD.md#d451) — switched on, a change under way counts as on its target route for D207, and an approaching partner is taken where it will wait (BA186–BA187).
 - [D452](RECORD.md#d452) — no courtesy for a change that may not land: a follower no longer holds back for a changer whose landing D450 (b) refuses (BA188–BA189).
