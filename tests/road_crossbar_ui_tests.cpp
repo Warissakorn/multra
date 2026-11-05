@@ -140,6 +140,18 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
                 item->boundingRect().height()>headSize+3.5,
                 "A head's size changes with zoom or it sits downstream of its line");
     }
+    // D461: zoomed out, a head is its stop line alone -- no box, arm or pole pixels -- and the box
+    // is back at a normal zoom. The box is the only metal-grey paint here.
+    const auto boxPixels=[&](double scale) {
+        c.setTransform(QTransform::fromScale(scale,-scale));c.centerOn(original.center());c.redraw();QApplication::processEvents();
+        const auto image=c.viewport()->grab().toImage();int n=0;
+        for(int y=0;y<image.height();++y)for(int x=0;x<image.width();++x) {
+            const QColor p=image.pixelColor(x,y);n+=std::abs(p.red()-58)<=3&&std::abs(p.green()-63)<=3&&std::abs(p.blue()-70)<=3;
+        }
+        return n;
+    };
+    require(boxPixels(2)==0,"A head under 4 px still paints its box (D461)");
+    require(boxPixels(40)>0,"A head at 40 px/m lost its box");
     c.fitNetwork();
     Scenario scenario;scenario.duration=60;scenario.timeStep=.1;
     scenario.signalPrograms=d.definition->signalPrograms;scenario.signalHeads={{head,"unused",50,program}};
@@ -162,10 +174,26 @@ void signalsAndInputs(EditorCanvas& c,const char* preview) {
     c.setVisibleLevel({});c.setDocument(nullptr);
 }
 }
+// D461: a head on a Connector at a mouth hangs from a pole beside the attached Link's edge; one
+// in the middle of the junction, away from any mouth, has none.
+void connectorPoles() {
+    ProjectDocument d;d.network.drivingSide=DrivingSide::left;
+    const auto in=addLink(d,{{-80,0},{-20,0}},2,3.5),out=addLink(d,{{20,40},{20,100}},2,3.5);
+    addConnectorRange(d,{in,d.network.links[0].lanes[0].id},{out,d.network.links[1].lanes[0].id},2,2);
+    const auto& n=d.network;const auto paths=connectorPaths(n,n.connectors.front());
+    require(!paths.empty(),"Setup: the Connector has no paths");
+    const auto& path=paths.front();const double length=connectorPathLength(path);
+    NetworkSignalHead mouth;mouth.connectorId=path.id;mouth.position=.5;
+    const auto bar=signalCrossbar(n,mouth);require(bar && bar->pole,"A head at a Connector mouth has no pole");
+    // Beside the Link's edge: 3.5 m from the in-Link's centreline (half its two-lane road), at its end.
+    require(std::abs(std::abs(bar->pole->y)-3.5)<1e-6 && std::abs(bar->pole->x+20)<1e-6,"The pole is not at the attached Link's edge");
+    NetworkSignalHead middle=mouth;middle.position=length/2;
+    const auto inside=signalCrossbar(n,middle);require(inside && !inside->pole,"A head inside the junction stands on a pole");
+}
 int main(int argc,char** argv) {
     QApplication app(argc,argv);
     try {
-        geometry();EditorCanvas canvas;canvas.resize(1000,700);canvas.show();QTest::qWait(20);
+        geometry();connectorPoles();EditorCanvas canvas;canvas.resize(1000,700);canvas.show();QTest::qWait(20);
         trace(canvas);signalsAndInputs(canvas,argc>1?argv[1]:nullptr);std::cout<<"road crossbars ok\n";
     } catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
 }

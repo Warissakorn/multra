@@ -2,6 +2,28 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Switched-on weave-end lock: a change under way hid the pair (D451)
+
+- **Owner:** "trace the switched-on case first".
+- **Traced** ([weaving-lock](../evidence/weaving-lock.md#d451-switched-on-a-change-under-way-hid-the-pair)):
+  a lateral crossing (about 3.5 s) left the changer no one's partner until it crossed, so an
+  approaching partner drove on and arrived too fast to yield. Two more traps were found on the way:
+  a dead end at a join (D444), and a landing stub that drives on to its own dead end.
+- **D451 (M3_8_CONTRACT §2):**
+  - (b) revised: a partner is taken where it will wait, and the landing stub takes the lane up to
+    its dead end;
+  - (c) new: a change under way counts as on its target route for D207 (`yieldMutualUnderWay`).
+  - **Deviation from the plan:** I had rejected (c) on its own, but the trace showed it is needed
+    together with (b).
+  - **Dropped:** a "could not stop comfortably" condition; it added a lab clamp.
+- **Rows:** BA186 and BA187, both failure-first.
+- **Results:**
+  - Product runs are unchanged but for the lane-change lab's Diverge (clamps 0, delay ±0.01 s).
+  - The weaving lab off is lock-free through ×0.8. On, its locks at ×1.0 fall from 10/10/10 to
+    1/4/3 seeds.
+  - Longer waits: up to 237 s on at ×0.6, and 510 s off at ×1.0.
+- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
+
 ## 2026-11-04 — The weave-end lock, partly fixed (D450)
 
 - **Owner:** "fix the weave-end lock first".

@@ -31,10 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
   with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426. Slice C (run vehicles) starts after the owner reviews
   `docs/images/canvas-labels-after/`.
-- D460 (owner review, 2026-11-05, three rounds) is implemented: bare thin Node outlines above the
-  road, single-colour square signal boxes on a pole, thin dark road edges, greyer roads, a centred
-  combo clear button, and input rates on their lanes that hide when zoomed out. The owner checks
-  [the images](images/canvas-review-d460/) and Windows; slice C waits for the owner's go-ahead.
+- D460 (owner review, 2026-11-05) and D461 (display fixes, round 1) are implemented. Waiting on the
+  owner: round 2 UI fixes (Properties overflow at 1366 px and squeeze at 800 px, long field labels,
+  a one-line "not yet validated" banner, "—" in empty result cells), and three choices: a marker
+  for hidden rates when zoomed out, the duplicate Results combobox/tab, and translating generated
+  movement names. The junction median spikes stay (owner, Q5). Slice C waits for the go-ahead.
 - Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
   are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check
   Drawing/Tables/Results, density, modal retries and Lab on Windows through OWNER_SITTING E33/E34.

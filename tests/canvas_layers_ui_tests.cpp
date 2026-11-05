@@ -87,10 +87,13 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     for(const auto p:probes)before.push_back(c.hitObjects(p));
     for(auto* k:tagged(c,"road-kerb")){c.scene()->removeItem(k);delete k;}
     for(std::size_t i=0;i<probes.size();++i)require(c.hitObjects(probes[i])==before[i],"A kerb changed a hit");
-    // 5. Under 3 px per lane the kerb goes with the markings (D200); wireframe draws none at all.
+    // 5. D461: under 3 px per lane the markings go (D200) but the road edge stays; under 2 px of road
+    // it goes too; wireframe draws none at all.
     view(c,3/3.5*(1-1e-3));
-    require(tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty() && tagged(c,"node-surface").empty(),
-            "Under 3 px the kerb stayed or a surface went");
+    require(!tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty() && tagged(c,"node-surface").empty(),
+            "Under 3 px per lane the road edge went or a surface went");
+    view(c,.2);
+    require(tagged(c,"road-kerb").empty() && !tagged(c,"road-surface").empty(),"A road under 2 px wide kept its edge");
     view(c,4);c.setWireframe(true);
     require(tagged(c,"road-kerb").empty() && tagged(c,"node-surface").empty() && faint(c)==0,"Wireframe draws road surface");
     c.setWireframe(false);c.setDocument(nullptr);

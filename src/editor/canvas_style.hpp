@@ -53,6 +53,11 @@ inline bool laneMarkingsReadable(double laneWidthMetres, double pixelsPerMetre) 
 // D460 (owner review): a thin dark road edge, not a thick light kerb. The pen is 2 screen px; the
 // fills cover its inner half, so 1 px shows outside the road at every zoom.
 inline constexpr double kerbPixels = 2;
+// D461: the edge shows while the whole road is at least this wide on screen.
+inline constexpr double minRoadEdgePixels = 2;
+inline bool roadEdgeReadable(double roadWidthMetres, double pixelsPerMetre) {
+    return roadWidthMetres * pixelsPerMetre >= minRoadEdgePixels * (1 - 1e-9);
+}
 inline QColor kerb() { return QColor(28, 31, 36); }
 inline QPen kerbPen() {
     QPen pen(kerb(), kerbPixels, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); pen.setCosmetic(true);

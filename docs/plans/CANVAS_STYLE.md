@@ -117,6 +117,13 @@ Images: [rates at 8 px/m](../images/canvas-review-d460/four-leg-input-rates-8px.
 [selected](../images/canvas-review-d460/four-leg-node-selected-10px.png), and
 [run heads green/amber/red](../images/canvas-review-d460/signal-head-run-states-40px.png).
 
+## Display fixes (D461)
+
+Fit ignores rate labels that hide at Fit. A signal head under 4 px is its stop line alone. The
+road edge follows the whole road's width (2 px), not the lane threshold. A head on a Connector
+hangs from a pole beside the attached Link's edge. The median spikes in junctions stay (Q5).
+Images: [before](../images/canvas-fixes-d461/before/), [after](../images/canvas-fixes-d461/after/).
+
 ## Slice C — run vehicles (next)
 
 - **Palettes.** Default per-type palettes are stored in the catalog files. The existing

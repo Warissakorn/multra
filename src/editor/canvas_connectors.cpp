@@ -145,7 +145,10 @@ void EditorCanvas::drawConnectors() {
         double narrowest=std::numeric_limits<double>::infinity();
         const auto widths=connectorLaneWidths(document_->network,preview);
         for(const auto* end:{&widths.source,&widths.target})for(double w:*end)if(w>0)narrowest=std::min(narrowest,w);
-        addKerb(surface,c.level,narrowest,c.id);
+        double roadWidth=0; // D461: the narrower end's whole width decides the edge
+        {double source=0,target=0;for(double w:widths.source)source+=std::max(0.,w);for(double w:widths.target)target+=std::max(0.,w);
+         roadWidth=std::min(source,target);}
+        addKerb(surface,c.level,roadWidth,c.id);
         const bool readable=canvasStyle::laneMarkingsReadable(narrowest,viewScale());
         // D423: only a Connector being worked on -- selected, hovered or under the Connect tool --
         // draws its edges, dividers and mouth edges over the junction. At rest the road edge is its

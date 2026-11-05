@@ -109,7 +109,10 @@ std::optional<RoadCrossbar> signalCrossbar(const Network& n,const NetworkSignalH
                 const auto ref=source && (!target || h.position<length/2)?paths[k].from:paths[k].to;
                 const auto extra=source || target?attachmentRails(n,ref,ref):std::pair<std::vector<Point>,std::vector<Point>>{};
                 auto bar=roadCrossbar(paths[k].geometry,rails[k],rails[k+1],h.position,c.level,extra.first,extra.second);
-                if(bar)bar->pole=kerbEnd(*bar,n.drivingSide);
+                // D461: the pole stands beside the attached Link's edge at the mouth; a head inside
+                // the junction, away from any mouth, has no pole.
+                if(bar && (source || target))
+                    if(const auto road=objectCrossbar(n,ref.linkId,ref==paths[k].from,ref.station))bar->pole=kerbEnd(*road,n.drivingSide);
                 return bar;
             }
         }
@@ -188,6 +191,7 @@ QRectF SignalHeadItem::boundingRect() const {
 void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* option,QWidget* widget) {
     RoadCrossbarItem::paint(painter,option,widget); // in a run the bar keeps D199's shape cue
     const auto f=frame();if(!f)return;
+    if(f->size*scale_<headMinPixels)return; // D461: zoomed out, the stop line alone is the head
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
     const QColor metal(58,63,70);
@@ -196,7 +200,7 @@ void SignalHeadItem::paint(QPainter* painter,const QStyleOptionGraphicsItem* opt
         const double side=QPointF::dotProduct(pole-f->centre,f->across)<0?-1.:1.;
         QPen arm(metal,2,Qt::SolidLine,Qt::FlatCap);arm.setCosmetic(true);
         painter->setPen(arm);painter->drawLine(pole,f->centre+f->across*(side*f->size/2));
-        const double r=std::max(poleRadius,2/scale_);
+        const double r=poleRadius;
         painter->setPen(Qt::NoPen);painter->setBrush(QColor(38,42,48));painter->drawEllipse(pole,r,r);
     }
     // D460: one square box of one colour -- dark while editing, the state's colour in a run -- with a

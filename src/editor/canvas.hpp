@@ -403,7 +403,7 @@ private:
     // (tagged "centre-line") with its selection feedback riding it.
     QPainterPath centreStroke(const std::vector<Point>&, double pixels) const;
     void drawCentreLine(const std::string& id, const std::vector<Point>&, const QColor&, double z);
-    void addKerb(const QPainterPath& surface, double level, double laneWidth, const std::string& id); // D423
+    void addKerb(const QPainterPath& surface, double level, double roadWidth, const std::string& id); // D423, D461
     // D424: canvas labels are registered for one screen-space placement pass per redraw.
     CanvasLabel* addLabel(const QString& text, Point anchor, const QFont& font, const QBrush& brush, double z,
                           const QString& tag, const std::string& id, int priority, bool pinned, CanvasLabel::Style style);

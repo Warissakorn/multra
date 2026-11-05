@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-05 — Canvas display fixes, round 1 (D461)
+
+- **Owner:** "เริ่มเลย" on round 1 of the display-error list; the median spikes in the junction
+  stay (owner choice, Q5).
+- **Fit:** reserves label room only for labels that show at Fit. On-lane rates hide there (D460),
+  so the four-leg roads now fill 94 % of the view height instead of 68 %.
+- **Signal heads zoomed out:** under 4 px a head is its stop line alone, with no box, arm or
+  pole; the pole has no pixel floor. A run keeps the state colour and cue on the line.
+- **Road edge:** shows while the whole road is 2 px wide, no longer only from 3 px per lane.
+- **Heads on a Connector:** the pole stands beside the attached Link's edge at the mouth; a head
+  away from any mouth has none.
+- **Verified:** see the commit; before/after images in `docs/images/canvas-fixes-d461/`.
+
 ## 2026-11-05 — Canvas review fixes (D460)
 
 - **Owner review** of the canvas: four items, then three more rounds (single-colour square heads
@@ -195,26 +208,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Locked seeds on: ×0.5 0/0/0, ×0.8 1/0/0, ×1.0 0/2/0 (from 1/1/0, 4/5/0 and 1/4/3).
   - Locked seeds off at ×1.0: 0/3/2 (from 6/6/5).
   - Longest waits: off ×1.0 down from 510 s to 28 s.
-- **Verified:** `ctest --preset headless` passes 175/175; `check` passes.
-
-## 2026-11-04 — Switched-on weave-end lock: a change under way hid the pair (D451)
-
-- **Owner:** "trace the switched-on case first".
-- **Traced** ([weaving-lock](evidence/weaving-lock.md#d451-switched-on-a-change-under-way-hid-the-pair)):
-  a lateral crossing (about 3.5 s) left the changer no one's partner until it crossed, so an
-  approaching partner drove on and arrived too fast to yield. Two more traps were found on the way:
-  a dead end at a join (D444), and a landing stub that drives on to its own dead end.
-- **D451 (M3_8_CONTRACT §2):**
-  - (b) revised: a partner is taken where it will wait, and the landing stub takes the lane up to
-    its dead end;
-  - (c) new: a change under way counts as on its target route for D207 (`yieldMutualUnderWay`).
-  - **Deviation from the plan:** I had rejected (c) on its own, but the trace showed it is needed
-    together with (b).
-  - **Dropped:** a "could not stop comfortably" condition; it added a lab clamp.
-- **Rows:** BA186 and BA187, both failure-first.
-- **Results:**
-  - Product runs are unchanged but for the lane-change lab's Diverge (clamps 0, delay ±0.01 s).
-  - The weaving lab off is lock-free through ×0.8. On, its locks at ×1.0 fall from 10/10/10 to
-    1/4/3 seeds.
-  - Longer waits: up to 237 s on at ×0.6, and 510 s off at ×1.0.
 - **Verified:** `ctest --preset headless` passes 175/175; `check` passes.

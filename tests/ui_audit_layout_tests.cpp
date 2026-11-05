@@ -50,6 +50,13 @@ void labels(EditorWindow& w){
         check(viewport.contains(rect),"Fit clipped a label");check(!rect.intersects(hud->geometry()),"HUD covered a label");
     }
     check(inputs==12,"Expected the twelve-input fitting fixture");
+    // D461: with the rates hidden at Fit (D460), Fit reserves no room for them -- the roads fill
+    // at least 70 % of the viewport's width or height.
+    QRectF roads;
+    for(auto* item:w.canvas()->scene()->items())if(const auto tag=item->data(0).toString();tag=="road-surface"||tag=="road-kerb")
+        roads=roads.isNull()?item->sceneBoundingRect():roads.united(item->sceneBoundingRect());
+    const auto drawn=w.canvas()->viewportTransform().mapRect(roads);
+    check(drawn.width()>=.7*viewport.width()||drawn.height()>=.7*viewport.height(),"Fit leaves the network small in wide margins");
 }
 void run(const std::filesystem::path& data,const QString& lang,const QString& evidence){
     EditorWindow w(data,lang,nullptr,true);w.resize(1366,768);w.show();
