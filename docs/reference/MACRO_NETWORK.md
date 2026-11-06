@@ -398,7 +398,8 @@ A stage that refuses stops every later stage. A stage is never counted as done w
   like Aimsun's experiments. §21 implements this at schema 56 with an editor list; the earlier
   estimate of 52 was taken by Meso.
 - (c) A general procedure sequence like Visum's (generation → distribution → mode choice → skim →
-  assignment). It is premature while M10.2–M10.4 do not exist, and is booked as an M10 seam.
+  assignment). It was premature while M10.2–M10.4 did not exist and was booked as an M10 seam;
+  now [PROCEDURE_SEQUENCE](PROCEDURE_SEQUENCE.md) (D483).
 
 <a id="named-macro-runs"></a>
 

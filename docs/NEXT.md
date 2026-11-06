@@ -177,10 +177,12 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   Linux, Example 6.3's ten rows included.
 - **Destination-constrained distribution done (D482, TRIP_DISTRIBUTION §16):** `constraint:
   "destination"` at schema 72; rows TD21–TD26 pass on Linux.
+- **Procedure sequence contract written (D483, [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):**
+  owner chose a general step list, in-memory matrices, stored procedures (schema 73), feedback
+  later. **Next: P1** (engine, codec, CLI), then **P2** (dialog and page).
 - **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2,
   N1 and D4).
 - **Next, the owner's pick:**
-  - the procedure sequence (MACRO_NETWORK §19 c), which can now chain the four steps;
   - congested-cost feedback (Ortúzar Ch. 11);
   - logsum feedback from mode choice into distribution (G/MS/D/A, §6.5.2).
 

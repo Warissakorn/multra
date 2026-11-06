@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 contract after reading Ortúzar Ch. 5 (D472)
+
+- **Owner:** "สำหรับงานถัดไปคือ M10.3", then "ทำงานถัดไป".
+- **D0 ([evidence](../evidence/ortuzar-ch5-trip-distribution.md)):** the page images of Tables
+  5.6–5.10 and the band table were read. A scratch replay reproduces Table 5.7 and Table 5.10
+  (cells, a_i, b_j, bands) with three row-first passes. Table 5.10's row-2 sum is misprinted. The
+  book gives no Furness tolerance.
+- **D472 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md)):** gravity with exponential deterrence
+  over M10.2's ends, row-first Furness, a free-flow skim, deterrence sets as data (none shipped),
+  rows TD1–TD14, slices D0–D2, and nine owner choices. Docs only.
+
 ## 2026-11-06 — M10.2 G2: owned rate sets, zone attributes, Trip generation page (D471)
 
 - **Owner:** "เริ่มเลย" on G2; chose attributes in the Edit Zone dialog and a rate-set list with

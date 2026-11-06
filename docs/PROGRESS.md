@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — Procedure sequence contract (D483)
+
+- **Owner:** "ลำดับขั้นตอนการรัน"; answered §6 in the session: a general step list (1b, against
+  the recommended fixed chain), in-memory matrices (2a), stored procedures (3a), feedback later
+  (4a).
+- **D483 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):** steps `tripGeneration`,
+  `tripDistribution`, `modeChoice` and `assignment`, each taking the nearest earlier active input;
+  a refused step stops the later ones; schema 73; `--procedure`; rows PS1–PS11. Docs only.
+
 ## 2026-11-06 — M10.3 D4: destination-constrained purposes (D482)
 
 - **Owner:** "งานถัดไปตามแนะนำ"; the recommended options (all a) stand.
@@ -129,14 +138,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Four engine mutations each failed a row.
 - **Found while building:** the Macro graph's centroids are per zone connector, not per zone, so
   the skim aggregates connector pairs by share (§5).
-
-## 2026-11-06 — M10.3 contract after reading Ortúzar Ch. 5 (D472)
-
-- **Owner:** "สำหรับงานถัดไปคือ M10.3", then "ทำงานถัดไป".
-- **D0 ([evidence](evidence/ortuzar-ch5-trip-distribution.md)):** the page images of Tables
-  5.6–5.10 and the band table were read. A scratch replay reproduces Table 5.7 and Table 5.10
-  (cells, a_i, b_j, bands) with three row-first passes. Table 5.10's row-2 sum is misprinted. The
-  book gives no Furness tolerance.
-- **D472 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)):** gravity with exponential deterrence
-  over M10.2's ends, row-first Furness, a free-flow skim, deterrence sets as data (none shipped),
-  rows TD1–TD14, slices D0–D2, and nine owner choices. Docs only.
