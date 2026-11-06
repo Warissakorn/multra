@@ -2,6 +2,35 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — Canvas review fixes (D460)
+
+- **Owner review** of the canvas: four items, then three more rounds (single-colour square heads
+  on a pole, thin dark road edges, bare Node outlines and tags, greyer roads, no resting lane guides).
+- **Node:** a thin outline with no fill, drawn above the roads. The polygon is no longer filled as
+  junction asphalt. Highlighted Nodes stay 2 px accent and study-area Nodes green.
+- **Road colour:** neutral greys instead of blue-greys (`data/display-types/`).
+- **Node name:** shown only while the Node is selected, as a tight framed tag centred on it, no halo.
+- **Connector lane guides:** the faint resting lane-centre lines (D423 Q7) are gone; they tangled
+  over every junction. A Connector's lanes still show on hover, selection or the Connect tool.
+- **Signal head:** a 0.90 m square box of one colour with sharp corners, 0.35 m upstream of the
+  stop line: dark while editing, the state's colour in a run, with no lamps. The run stop line
+  keeps D199's shape cue. A mast arm meets the box's kerb-side edge from a pole just outside the
+  road on the driving side. It zooms with the road.
+- **Road edge:** a thin dark line replaces the thick light kerb, on Links and Connectors. A Link's
+  plain solid outer-edge marking is no longer painted white over it; dashed and double edges still
+  are.
+- **Clear button:** measured 24 px tall at y 2 inside the combo's 22 px edit, so the X sat 3 px low.
+  The cause was the app-wide `QToolButton` field-height rule, which also styles a line edit's clear
+  button. That button is now exempt.
+- **Input rates:**
+  - A rate lies in the middle of one of its served lanes, along the road and upright.
+  - The rates on one Link fill its lanes side by side, then line up along each lane.
+  - While the text is taller than the lane it hides, so there is nothing at Fit on the shipped
+    projects. A rate whose origin road is selected or hovered falls back to its box.
+  - Boxes are now as tall as the text's ink.
+  - This replaces D432's "all visible after Fit" and D426's columns for unpinned rates.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. Images: `docs/images/canvas-review-d460/`.
+
 ## 2026-11-04 — Two-entry weaves run (D459)
 
 - **Owner:** "ทำให้วาด weave แบบสองทางเข้าได้", with the test as a fourth weaving-lab scene.

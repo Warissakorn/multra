@@ -1,0 +1,22 @@
+{
+  "id": "example-4-4",
+  "name": "Ortuzar and Willumsen Example 4.4, zonal form",
+  "source": { "citation": "Ortuzar and Willumsen (2011), Modelling Transport, 4th ed., Example 4.4 and section 4.2.5, p. 156" },
+  "unit": "home-based trips",
+  "purposes": [
+    {
+      "id": "HB",
+      "productions": {
+        "method": "regression",
+        "constant": 0,
+        "terms": [
+          { "attribute": "households", "coefficient": 0.84 },
+          { "attribute": "workers", "coefficient": 1.41 },
+          { "attribute": "hh.oneCar", "coefficient": 0.75 },
+          { "attribute": "hh.twoPlusCars", "coefficient": 3.14 }
+        ]
+      },
+      "attractions": { "method": "regression", "constant": 0, "terms": [ { "attribute": "jobs", "coefficient": 1 } ] }
+    }
+  ]
+}

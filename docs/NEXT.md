@@ -130,22 +130,20 @@ Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the 
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
-## M10.2 trip generation — G0 done (D469); G1 is next
+## M10.2 trip generation — G1 done (D470); G2 on the owner's go
 
-- [TRIP_GENERATION](reference/TRIP_GENERATION.md): choices answered 1a–8a (D469); §3–§4 cite
-  Ortúzar Ch. 4 ([evidence](evidence/ortuzar-ch4-trip-generation.md)). The owner allows attaching
-  the book copy.
-- **G1 when the owner says go** (§12): the rate-set codec and `data/trip-rates/` catalog loader
-  (the folder ships empty, choice 8a, so tests use fixture sets under `tests/data/`),
-  `src/macro/trip_generation.{hpp,cpp}` (pure; register it in `src/macro/README.md` and
-  `check_architecture`), `src/project/trip_generation_run.*` with §7's stages, JSON/CSV as §8, and
-  `--trip-generation` in `tools/run_simulation.cpp`. Rows TG1–TG10, TG4b and TG12 (Example 4.1:
-  2125 and 3000). Write the interface (§7) first. Read MACRO_NETWORK_IMPLEMENTED for how
-  `macro_output` formats numbers and how `--macro` refuses selector conflicts, and reuse both.
-- **Then G2:** owned `tripRateSets` at schema 66 (check that 66 is still free), zone-attribute
-  editing in the Zones table, *Trip generation…* table (TG11, TG13, TG14).
-- Desktop build, ctest and `check` must pass; this environment lacked nlohmann/json on
-  2026-11-06, so install it (or use the CI) before claiming a build.
+- [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14 records what G1 built: the pure engine,
+  the rate-set codec and catalog, `runTripGeneration`, JSON/CSV and `--trip-generation`. Rows
+  TG1–TG10, TG4b, TG12 pass; fixture sets live in `tests/data/trip-generation/` because none ships.
+- **G2 when the owner says go** (§12): owned `tripRateSets` at schema 66 (confirm 66 is still the
+  next free schema; `documentSchemaVersion` in `src/project/document.cpp` selects it, 65 today), parsed by `parseTripRateSet(…, false)` and merged
+  ahead of the catalog with clashes as `DUPLICATE_ID`; zone-attribute columns in the Zones table
+  (one Undo step per edit, `ZONE_ATTRIBUTE_INVALID` refusals); a free-function *Trip generation…*
+  dialog running `runTripGeneration` on the worker with the stage list, a table and stale marking
+  as the Macro links table. Rows TG11, TG13, TG14. Needs a desktop build: this environment has no
+  Qt, so G2 must be built and its UI suites run where Qt exists (CI's `native.yml`).
+- Then M10.3 (distribution) starts with its contract, reading `TripPurposeResult`'s productions and
+  balanced attractions (§9).
 
 ## Next session — the owner's pick
 

@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D468) as a contract with eight owner choices (§11). The owner accepted every
 recommendation the same day (D469: 1a–8a), and slice G0 checked §3–§4 against the book
-([evidence](../evidence/ortuzar-ch4-trip-generation.md)). No code exists yet; G1 is next. This is the first of the
+([evidence](../evidence/ortuzar-ch4-trip-generation.md)). G1 is implemented (D470, §14); G2 is next. This is the first of the
 four-step stages that MACRO_NETWORK left out of M10.1 ([MACRO_NETWORK](MACRO_NETWORK.md) §1,
 §15; [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.4 step 1): productions and
 attractions per zone and purpose, from zone attributes and a trip-rate set held as data.
@@ -188,11 +188,13 @@ The values above illustrate the shape and are not a source. Rules:
   `{id, factor?, totals {productions, attractionsRaw, attractions}, zones[{zoneId, productions,
   attractionsRaw, attractions}]}`, zones in id order.
 - **CSV:** the marker line, one identification line, then one row per purpose and zone:
-  `purpose,zoneId,productions,attractionsRaw,attractions` and a totals row per purpose.
-- Numbers are formatted as the Macro link outputs format theirs; the same input gives the same
-  bytes.
-- **CLI:** `--trip-generation <rateSetId>`, with the output-format flags `--macro` accepts. It cannot be
-  combined with `--macro`, `--macro-run` or `--meso`.
+  `purpose,zoneId,productions,attractionsRaw,attractions,factor` (factor blank) and a totals row
+  per purpose whose unquoted `totals` cell is distinct from any quoted zone id.
+- Numbers are formatted as the Macro link outputs format theirs (JSON full precision, CSV two
+  decimals); the same input gives the same bytes.
+- **CLI:** `--trip-generation <rateSetId>` with `--project`, taking only `--csv` and `--data-dir`.
+  It cannot be combined with `--macro`, `--macro-run`, `--meso`, `--node-analysis`,
+  `--export-utdf`, seeds or the single-run diagnostics.
 - **Editor (choice 7a):** *Macro → Trip generation…* runs the selected set on the worker and
   shows a table (purpose, zone, P, raw A, A, factor), with Copy and Export. It is no History step;
   an edit to a zone attribute or a set marks the table stale, as the Macro links table.
@@ -271,7 +273,7 @@ The owner: "เอาตามแนะนำ 1a–8a". The options are kept for
 | G2 | Owned sets at the next schema with their editor table; zone-attribute columns in the Zones table (one Undo step per edit); *Trip generation…* table and stale marking (choice 7a) | TG11, TG13, TG14 |
 | Fixture | Example 4.1 reproduced (G1's tests) | TG12 |
 
-## 13. Acceptance rows (planned)
+## 13. Acceptance rows (G1's implemented, D470)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -292,3 +294,22 @@ Each row first asserts that its forcing worked (AGENTS).
 | TG12 | Ortúzar Example 4.1 (§10) | Two categories, 250 households each at 2.5 and 6.0, give 2125; one category of 500 at 6.0 gives 3000, as printed |
 | TG13 | Editor | Trip generation is no History step; a table row per purpose and zone; an attribute edit marks it stale |
 | TG14 | Zone attributes in the editor | Add, edit and remove an attribute; each is one Undo step; a non-finite value or blank name is refused as `ZONE_ATTRIBUTE_INVALID`; saved bytes equal the codec's |
+
+## 14. As implemented (G1, D470)
+
+- **Files:** `src/macro/trip_generation.*` (pure: `tripEnd`, `generateTrips`, index-located
+  `TripIssue`s); `src/project/trip_rate_codec.*` (`parseTripRateSet`, `tripRateSetJson`,
+  `resolveTripRateSets`); `src/project/trip_generation_run.*` (`runTripGeneration`, stages
+  rateSet → zones → generation → balancing; inputs and outputs are the caller's, as Macro's);
+  `src/project/trip_generation_output.*`; `--trip-generation` in `tools/run_simulation.cpp`.
+- **Paths:** a missing attribute is `zones[i].attributes.<name>` and a negative end
+  `zones[i].<purpose>.productions|attractions`, with `i` the document's zone index; an unbalanceable
+  purpose is `<file>.purposes[p]`; an unknown set `tripRateSets`; shape faults
+  `catalog/trip-rates/<file>.<json path>`.
+- **Catalog:** `data/trip-rates/` does not exist (choice 8a), which reads as an empty catalog. The
+  rows use a test-only data root, `tests/data/trip-generation/`, with Examples 4.1 and 4.4 as sets,
+  and `tests/trip-generation.traffic.json` (the two-route fixture with zone attributes).
+- **Rows:** `tests/trip_generation_tests.cpp` (group `tripgeneration`) and the CLI tests
+  `cli-trip-generation`, `-conflict`, `-unknown`. TG11, TG13 and TG14 are G2's. Every row passed on
+  first run; four engine mutations (inverted factor, unrefused negative, rate without count, a
+  partial result kept on refusal) were each caught by at least one row.

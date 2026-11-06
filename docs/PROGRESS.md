@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.2 G1: trip generation engine, run, outputs and CLI (D470)
+
+- **Owner:** "เริ่มเลย" on G1.
+- **D470 ([TRIP_GENERATION](reference/TRIP_GENERATION.md) §14):** `src/macro/trip_generation` (pure),
+  the rate-set codec and catalog, `runTripGeneration` by stage, JSON/CSV and `--trip-generation`.
+  Example 4.1 reproduces 2125 and 3000 trips/day; Example 4.4's zonal form gives 356.9.
+- **Environment:** installed `nlohmann-json3-dev`; no Qt here, so the headless preset only.
+- **Rows:** TG1–TG10, TG4b, TG12 and three CLI tests. All passed on first run, so four engine
+  mutations were run; each failed at least one row.
+- **Verified:** `ctest --preset headless` 180/180 (176 before + 4 new), `check` passes on Linux.
+  Desktop and Windows not built.
+
 ## 2026-11-06 — M10.2 owner answers and G0, the book read (D469)
 
 - **Owner:** "เอาตามแนะนำ 1a–8a อนุญาตแนบหนังสือ เริ่ม G0".
@@ -126,32 +138,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Heads on a Connector:** the pole stands beside the attached Link's edge at the mouth; a head
   away from any mouth has none.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. The queue-counter test now zooms to its own targets (it scaled Fit by 3). Images: `docs/images/canvas-fixes-d461/`.
-
-## 2026-11-05 — Canvas review fixes (D460)
-
-- **Owner review** of the canvas: four items, then three more rounds (single-colour square heads
-  on a pole, thin dark road edges, bare Node outlines and tags, greyer roads, no resting lane guides).
-- **Node:** a thin outline with no fill, drawn above the roads. The polygon is no longer filled as
-  junction asphalt. Highlighted Nodes stay 2 px accent and study-area Nodes green.
-- **Road colour:** neutral greys instead of blue-greys (`data/display-types/`).
-- **Node name:** shown only while the Node is selected, as a tight framed tag centred on it, no halo.
-- **Connector lane guides:** the faint resting lane-centre lines (D423 Q7) are gone; they tangled
-  over every junction. A Connector's lanes still show on hover, selection or the Connect tool.
-- **Signal head:** a 0.90 m square box of one colour with sharp corners, 0.35 m upstream of the
-  stop line: dark while editing, the state's colour in a run, with no lamps. The run stop line
-  keeps D199's shape cue. A mast arm meets the box's kerb-side edge from a pole just outside the
-  road on the driving side. It zooms with the road.
-- **Road edge:** a thin dark line replaces the thick light kerb, on Links and Connectors. A Link's
-  plain solid outer-edge marking is no longer painted white over it; dashed and double edges still
-  are.
-- **Clear button:** measured 24 px tall at y 2 inside the combo's 22 px edit, so the X sat 3 px low.
-  The cause was the app-wide `QToolButton` field-height rule, which also styles a line edit's clear
-  button. That button is now exempt.
-- **Input rates:**
-  - A rate lies in the middle of one of its served lanes, along the road and upright.
-  - The rates on one Link fill its lanes side by side, then line up along each lane.
-  - While the text is taller than the lane it hides, so there is nothing at Fit on the shipped
-    projects. A rate whose origin road is selected or hovered falls back to its box.
-  - Boxes are now as tall as the text's ink.
-  - This replaces D432's "all visible after Fit" and D426's columns for unpinned rates.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. Images: `docs/images/canvas-review-d460/`.

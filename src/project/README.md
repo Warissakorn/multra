@@ -87,6 +87,9 @@ keeps its schema and bytes.
 | `node_output.*` | Each Node's turns, legs and conflicts as evaluation specs, and their rows | [NODES §4](../../docs/reference/NODES.md) |
 | `macro_input.*` | What a Macro run reads from a document | [MACRO_NETWORK §3-§6](../../docs/reference/MACRO_NETWORK.md) |
 | `macro_run.*` | One Macro run of a named period, shared by the CLI and the editor; `runNamedMacro` runs a saved definition without changing the document | [MACRO_NETWORK §7, §9](../../docs/reference/MACRO_NETWORK.md) |
+| `trip_rate_codec.*` | A trip-rate set's JSON shape and refusals, and the `data/trip-rates/` catalog (none ships) | [TRIP_GENERATION §6.1](../../docs/reference/TRIP_GENERATION.md) |
+| `trip_generation_run.*` | One trip-generation run of a named rate set over the zones, by stage; resolves attributes and paths for `src/macro/trip_generation` | [TRIP_GENERATION §7](../../docs/reference/TRIP_GENERATION.md) |
+| `trip_generation_output.*` | The run's JSON and CSV, marked not validated | [TRIP_GENERATION §8](../../docs/reference/TRIP_GENERATION.md) |
 | `macro_output.*` | A Macro run's fields and one row per arc | [MACRO_NETWORK §9](../../docs/reference/MACRO_NETWORK.md) |
 | `meso_input.*` | What a Meso run reads: resolved link types, settings, `mesoDemand` | [MESO_NETWORK §3, §8](../../docs/reference/MESO_NETWORK.md) |
 | `meso_run.*` | `runMeso` over the whole Micro run | [MESO_NETWORK §7](../../docs/reference/MESO_NETWORK.md) |

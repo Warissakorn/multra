@@ -8,7 +8,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 |---|---|
 | Desktop automation and AI control | D350, D349, D348, D347, D346, D345, D344, D336, D335 |
 | Product scope, stack, naming and owner gates | D378, D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
-| Macro assignment (S2, M10.1) and four-step (M10.2) | D469, D468, D277, D276, D275, D274, D273, D272, D271 |
+| Macro assignment (S2, M10.1) and four-step (M10.2) | D470, D469, D468, D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
 | Formats, validation and diagnostics | D18a–D18d, D19a–D19d, D21, D54–D56 |
 | Link/Connector geometry and lifecycle | D20–D23, D26, D55, D72–D80, D86, D106–D110, D114–D118 |
@@ -497,4 +497,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 - [D465](RECORD.md#d465) — canvas style slice C: shipped car/pickup/van palettes, a screen-offset vehicle shadow, no Node outlines or unpinned rates over a run.
 - [D466](RECORD.md#d466) — signal head boxes past the stop line on one straight arm, a dark casing on run vehicles (contrast rule kept in wireframe).
 - [D467](RECORD.md#d467) — review fixes: high-DPI shadow, one palette parser, poles tested off the road; dark casings and the head's hit place kept.
-- [D468](RECORD.md#d468), [D469](RECORD.md#d469) — M10.2 trip generation contract (rate sets as data, category and regression methods, attractions balanced to productions, unit carried); owner answers 1a–8a; G0 read Ortúzar Ch. 4, fixture Example 4.1, not 4.5.
+- [D468](RECORD.md#d468), [D469](RECORD.md#d469), [D470](RECORD.md#d470) — M10.2 trip generation contract (rate sets as data, category and regression methods, attractions balanced to productions, unit carried); owner answers 1a–8a; G0 read Ortúzar Ch. 4, fixture Example 4.1, not 4.5; G1 engine, run, outputs and CLI.
