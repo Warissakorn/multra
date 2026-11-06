@@ -1,0 +1,280 @@
+# Trip generation (M10.2)
+
+Written 2026-11-06 (D468) as a contract with eight owner choices (§11). **No choice is answered
+yet;** the recommendation of each is marked, and no code exists. This is the first of the
+four-step stages that MACRO_NETWORK left out of M10.1 ([MACRO_NETWORK](MACRO_NETWORK.md) §1,
+§15; [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.4 step 1): productions and
+attractions per zone and purpose, from zone attributes and a trip-rate set held as data.
+
+Rule 4 applies: every generation result carries the not-validated marker. Reproducing a textbook
+example checks arithmetic, not behaviour, and removes no marker ([BOOKS](BOOKS.md) §1).
+
+## 1. Scope
+
+- **In M10.2:**
+  - the trip-rate set, a data catalog (`data/trip-rates/`) and project-owned sets;
+  - two methods per purpose side: cross-classification (category analysis) and zonal linear
+    regression (choice 1);
+  - productions and attractions per zone and purpose, and their balancing (choice 3);
+  - outputs in JSON and CSV, the CLI and one editor surface (choice 7).
+- **Out:**
+  - distribution (M10.3), mode choice and person-to-vehicle conversion (M10.4);
+  - anything that writes an OD matrix or feeds an assignment: generation output is trip ends,
+    not a trip table, until M10.3 consumes it (§9);
+  - gate zones, external trips and special generators (choice 6);
+  - estimating rates or coefficients from survey data: a set states values, it is not fitted
+    here;
+  - the procedure sequence (MACRO_NETWORK §19 c), which waits on M10.3–M10.4;
+  - growth factors, elasticities and future-year forecasting beyond "change the attributes".
+
+### Already decided (cited, not asked again)
+
+| Item | Decision | Where |
+|---|---|---|
+| Purposes | HBW, HBO, NHB by default; purposes are named by the data, not by code | D158 (B7 answer 3) |
+| Where rates live | `data/trip-rates/`, per purpose; attraction totals balanced to productions | D145 design §3.4 step 1 |
+| Zone input | `Zone::attributes`, finite numbers, "read by M10 trip generation only; unknown names kept, not interpreted" | ZONES_AND_PARKING §2.1 (D153) |
+| Determinism | No seed; fixed iteration order (zone id, then file order); the same input gives the same bytes | D145 design §3.4 |
+| Module | Pure arithmetic in `src/macro/` (imports nothing); `src/project/` resolves zones and catalogs | D145 design §3.4, §4; MACRO_NETWORK §1 |
+| Shipped values | None until a source names them, as PCU (D267) and link types (D272 2a) | choice 2's pattern; this contract asks again only for rates (choice 8) |
+| Zone kinds | `internal`/`gate` come with M10's boundary flows | STUDY_PERIODS §1 |
+
+## 2. Today (measured from the code on `5a63039`)
+
+- **Zones** (`src/model/demand/zones.hpp`): `Zone{id, name, polygon, attributes}`, with
+  `attributes` a `std::map<std::string, double>`. The codec checks names and finiteness
+  (`ZONE_ATTRIBUTE_INVALID` at `zones[i].attributes.<name>`). Nothing reads the values, and no
+  editor surface or command edits them.
+- **No purpose, rate set or trip-end type exists.** `data/` has no `trip-rates/` folder.
+- **Macro** (`src/macro/`, MACRO_NETWORK §16–§21) assigns OD matrices of vehicle trips per
+  study period. It has no notion of person trips or purposes.
+- **Schema:** the newest feature-selected save is 65 (UTDF numbering, D442). A file that uses no
+  M10.2 field keeps its schema and bytes (§6).
+
+## 3. The two methods (choice 1)
+
+Notation: zone `i`, purpose `p`, side `s` ∈ {productions, attractions}. Each side of each purpose
+names exactly one method. Source of both forms: Ortúzar and Willumsen (2011), *Modelling
+Transport* 4th ed., Ch. 4 (book pp. 139–172); the section and equation numbers are cited when the
+book is read (§10).
+
+- **Cross-classification** (category analysis). The set lists categories `c`, each with the
+  zone attribute `attr_c` that holds the zone's count of units in that category (usually
+  households) and a rate `t_c` in trips per unit:
+
+  ```
+  T_i = Σ_c N_ic · t_c,    N_ic = attributes[attr_c] of zone i
+  ```
+
+- **Zonal linear regression.** A constant `a_0` and terms `k`, each an attribute and a
+  coefficient:
+
+  ```
+  T_i = a_0 + Σ_k a_k · x_ik,    x_ik = attributes[attr_k] of zone i
+  ```
+
+- **Sums run in file order** (categories, then terms), zones by id. No method reads the polygon,
+  the network or another zone.
+- **A negative trip end is refused**, `TRIP_GENERATION_NEGATIVE` at the zone and purpose side
+  (a regression with a negative constant can produce one). It is never clamped to 0: clamping
+  invents a total the data does not state.
+- **A zero is valid.** A zone whose terms are all 0 generates 0.
+
+## 4. Balancing (choice 3)
+
+Per purpose, with `P = Σ_i P_i` and `A = Σ_i A_i` (raw):
+
+- **Recommended:** attractions are scaled to productions, `A*_i = A_i · P / A`. The factor
+  `f_p = P / A` is reported. Productions are never scaled.
+- `A = 0` with `P > 0` cannot be balanced: `TRIP_BALANCE_IMPOSSIBLE` at the purpose.
+- `P = 0` and `A = 0`: the purpose generates nothing; `f_p` is absent, not 1, and every `A*_i`
+  is 0.
+- Raw attractions stay in the output beside the balanced ones; a reader can see how far apart
+  the two totals were.
+
+## 5. Units and period (choice 4)
+
+- A rate set states one `unit` string (for example "person trips per day"). It is carried into
+  every output unchanged and is not interpreted.
+- **Recommended:** M10.2 does no time or mode conversion. A day-based or person-based set stays
+  in its unit; M10.3–M10.4 own the period factor and the person-to-vehicle step, because both
+  need distribution and modes. Generation never names a study period.
+
+## 6. Data and storage
+
+### 6.1 A trip-rate set
+
+One file per set in `data/trip-rates/<id>.json`, or a project-owned row (choice 7):
+
+```json
+{
+  "id": "example",
+  "name": "Example set",
+  "source": { "citation": "…", "table": "…" },
+  "unit": "person trips per day",
+  "purposes": [
+    {
+      "id": "HBW",
+      "productions": {
+        "method": "crossClassification",
+        "categories": [ { "attribute": "hh.cars0", "rate": 0.9 } ]
+      },
+      "attractions": {
+        "method": "regression",
+        "constant": 0,
+        "terms": [ { "attribute": "jobs", "coefficient": 1.1 } ]
+      }
+    }
+  ]
+}
+```
+
+The values above illustrate the shape and are not a source. Rules:
+
+- `id` non-blank and unique among shipped and owned sets (`INVALID_ID`, `DUPLICATE_ID`); a
+  project set with a shipped set's id is `DUPLICATE_ID`, never a silent override.
+- `source.citation` is required for a shipped set and optional for a project set; it is copied
+  into every output.
+- Purpose ids are non-blank and unique within the set. At least one purpose.
+- `method` is `crossClassification` (needs ≥ 1 category, no `constant` or `terms`) or
+  `regression` (needs `constant`, ≥ 0 terms, no `categories`). `rate`, `constant` and
+  `coefficient` are finite numbers; `rate` is ≥ 0. Attribute names are non-blank; one attribute
+  may appear once per side.
+- Any other shape is `INVALID_TRIP_RATE_SET` at its JSON path; unknown fields are refused, not
+  dropped (AGENTS model invariants).
+
+### 6.2 Zone attributes (choice 2)
+
+- **Recommended:** category counts are ordinary zone attributes, named by the set's
+  `attribute` strings (for example `hh.cars0`). This needs no new zone field and no schema step.
+  Today only the file carries them: no editor surface edits `attributes` (measured: the codec
+  reads and writes them, no shell or command code touches them), so G2 adds one (choice 7a).
+- A zone that lacks an attribute named by the selected set is `TRIP_RATE_ATTRIBUTE_MISSING` at
+  `zones[i].attributes.<name>` (choice 5); the run is refused, every missing name listed.
+
+### 6.3 Project schema
+
+- Project-owned sets, if chosen (choice 7a), are an optional root `tripRateSets`, saved at the
+  next free feature-selected schema (66 today); an empty list is omitted, so a file without
+  owned sets keeps its schema and bytes. Below that schema the field is `EDIT_UNSUPPORTED_FIELD`.
+- No result, selection or generated trip end is stored in the project.
+
+## 7. Engine (`src/macro/`) and project layer
+
+- **`src/macro/trip_generation.hpp`** (pure, imports nothing):
+  - inputs: zone ids in order, an attribute table resolved to dense values per zone, and the
+    purposes with their two sides as plain structs;
+  - `generateTrips(...)` returns, per purpose, `P_i`, raw `A_i`, `A*_i`, the totals and `f_p`,
+    or the issues of §3–§4.
+- **`src/project/trip_generation_run.*`:** loads the catalog and owned sets, resolves the
+  selected set, checks attributes (§6.2), calls the engine and formats JSON and CSV. It never
+  touches an OD matrix or a Macro run.
+- **Run stages**, as MACRO_NETWORK §19: Inputs (hashes) → Rate set (`TRIP_RATE_SET_UNKNOWN`) →
+  Zones (`TRIP_GENERATION_NO_ZONES`, §6.2) → Generation (§3) → Balancing (§4) → Outputs. A stage
+  that refuses stops every later stage.
+
+## 8. Outputs
+
+- **JSON:** the marker line; `rateSet {id, name, source, unit}`; input hashes; per purpose
+  `{id, factor?, totals {productions, attractionsRaw, attractions}, zones[{zoneId, productions,
+  attractionsRaw, attractions}]}`, zones in id order.
+- **CSV:** the marker line, one identification line, then one row per purpose and zone:
+  `purpose,zoneId,productions,attractionsRaw,attractions` and a totals row per purpose.
+- Numbers are formatted as the Macro link outputs format theirs; the same input gives the same
+  bytes.
+- **CLI:** `--trip-generation <rateSetId>`, with the output-format flags `--macro` accepts. It cannot be
+  combined with `--macro`, `--macro-run` or `--meso`.
+- **Editor (choice 7a):** *Macro → Trip generation…* runs the selected set on the worker and
+  shows a table (purpose, zone, P, raw A, A, factor), with Copy and Export. It is no History step;
+  an edit to a zone attribute or a set marks the table stale, as the Macro links table.
+
+## 9. Seams
+
+- **M10.3 distribution** reads `P_i` and `A*_i` per purpose and the set's `unit`; it, not M10.2,
+  turns them into trip tables. Its doubly-constrained gravity needs `ΣP = ΣA*`, which §4 gives.
+- **M10.4 mode choice** owns person-to-vehicle conversion and the study-period factor (§5).
+- **The procedure sequence** (MACRO_NETWORK §19 c) gains a Generation stage that calls the same
+  run function; nothing here assumes one.
+- **Gate zones and boundary flows** (choice 6b's later slice; S5): a gate zone's trip ends come
+  from a cut or a count, never from rates.
+- **Calibration:** fitting rates to surveys or counts is a separate milestone; a fitted set is
+  still just a set.
+
+## 10. Benchmark and sources
+
+- **Primary fixture: Ortúzar and Willumsen (2011) Example 4.5, book p. 161** (category
+  analysis; BOOKS §3.3). **Not read in this session:** attaching the owner's copy
+  (`Warissakorn/Modelling-Transport-4-edition-Markdown`) was refused by the session's
+  permission check. Before row TG12 is coded, a session reads the page image (BOOKS §1), records
+  its categories, rates, counts and printed answer in an evidence file, and states whether the
+  example also balances.
+- The methods' section and equation numbers in Ch. 4 (§3) and any balancing rule the chapter
+  prints (§4) are cited from the same reading. Until then §3–§4 rest on the standard four-step
+  formulation, recorded as such.
+- **Hand-computed fixtures** (TG3–TG6) need no book.
+
+## 11. Owner choices (open)
+
+1. **Methods.**
+   - **(a) Both, per purpose side (recommended).** Production by categories and attraction by
+     regression is the common pairing, and Example 4.5 is category analysis.
+   - (b) Cross-classification only.
+   - (c) Regression only.
+2. **Category counts.**
+   - **(a) Ordinary zone attributes named by the set (recommended),** §6.2; no schema step.
+   - (b) A new per-zone household table field.
+3. **Balancing.**
+   - **(a) Attractions scaled to productions per purpose (recommended),** §4.
+   - (b) Both scaled to the mean of the two totals.
+   - (c) No balancing in M10.2; M10.3 balances.
+4. **Units.**
+   - **(a) The set's unit carried, no conversion (recommended),** §5.
+   - (b) A per-purpose period factor in the set now.
+5. **A missing attribute.**
+   - **(a) Refuse the run, listing every missing name (recommended),** §6.2. A silent zero hides a
+     data error in exactly the zone a study is about.
+   - (b) Read it as 0 with an advisory per zone.
+6. **Which zones.**
+   - **(a) Every zone, gate zones later (recommended).** A gate zone's ends are not rate-driven
+     (§9).
+   - (b) Add zone kinds now and skip `gate` zones.
+7. **Storage and surface.**
+   - **(a) Project-owned sets at the next schema, CLI, a Trip generation table and zone-attribute
+     editing in the Zones table (recommended).** A study's local rates live in its file, as link
+     types do, and a study enters its zone data in the editor rather than in JSON.
+   - (b) Catalog sets only and the CLI; no schema change and no editor surface yet (attributes
+     stay file-only).
+8. **Shipped rates.**
+   - **(a) Ship none (recommended),** as PCU and link types: rates are local and dated, and a
+     shipped number reads as a default.
+   - (b) Ship one cited set the owner names (title, edition, table).
+
+## 12. Slices
+
+| Slice | Content | Rows |
+|---|---|---|
+| G0 | Read Ortúzar Ch. 4 and Example 4.5 into an evidence file; cite §3–§4 | — |
+| G1 | Rate-set codec and catalog, `src/macro/trip_generation`, balancing, the run function, JSON/CSV and `--trip-generation` | TG1–TG10 |
+| G2 | Owned sets at the next schema with their editor table; zone-attribute columns in the Zones table (one Undo step per edit); *Trip generation…* table and stale marking (choice 7a) | TG11, TG13, TG14 |
+| Fixture | Example 4.5 reproduced (after G0) | TG12 |
+
+## 13. Acceptance rows (planned)
+
+Each row first asserts that its forcing worked (AGENTS).
+
+| Row | Case | Asserts |
+|---|---|---|
+| TG1 | Shipped projects with no set selected | Saved bytes, schema and every Micro, Meso and Macro output byte-identical |
+| TG2 | Rate-set codec | Round-trip; every bad shape of §6.1 refused at its path; a shipped/owned id clash is `DUPLICATE_ID` |
+| TG3 | Cross-classification, two zones, three categories | `P_i` equals the hand sum Σ N · t |
+| TG4 | Regression, three zones | `A_i` equals `a_0 + Σ a_k x_ik` by hand; a zero zone gives 0 |
+| TG5 | Balancing | `A*` sums to `P` within 1e-12 relative; `f_p` = P / A; raw A kept |
+| TG6 | Edge totals | `A = 0, P > 0` is `TRIP_BALANCE_IMPOSSIBLE`; both 0 gives no factor and zeros |
+| TG7 | Negative end | A negative constant producing `T_i < 0` is `TRIP_GENERATION_NEGATIVE` at zone and side; nothing is clamped |
+| TG8 | Missing attribute | `TRIP_RATE_ATTRIBUTE_MISSING` at every missing `zones[i].attributes.<name>`; the run writes no result |
+| TG9 | Determinism | Same bytes twice; zones and attributes permuted in the file give the same bytes |
+| TG10 | Data swap and CLI | Another set changes the output with no code edit; the marker line in JSON and CSV; unknown id is `TRIP_RATE_SET_UNKNOWN`; selector conflicts refused |
+| TG11 | Owned sets | Schema-66 round-trip; no owned sets keeps old bytes; older schemas refuse the field; accept is one Undo step |
+| TG12 | Ortúzar Example 4.5 | Every printed trip end reproduced to the printed precision (values from G0's evidence) |
+| TG13 | Editor | Trip generation is no History step; a table row per purpose and zone; an attribute edit marks it stale |
+| TG14 | Zone attributes in the editor | Add, edit and remove an attribute; each is one Undo step; a non-finite value or blank name is refused as `ZONE_ATTRIBUTE_INVALID`; saved bytes equal the codec's |

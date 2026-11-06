@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.2 trip generation contract (D468)
+
+- **Owner:** asked what could come next, then "เริ่มเขียนสัญญา M10.2 trip generation".
+- **D468 ([TRIP_GENERATION](reference/TRIP_GENERATION.md)):** trip-rate sets as data, one method
+  per purpose side (cross-classification or zonal regression), attractions balanced to productions,
+  the set's unit carried with no period or mode conversion, outputs, CLI and editor surface, seams
+  to M10.3/M10.4, slices G0–G2 and rows TG1–TG14. Docs only; no code.
+- **Measured:** `Zone::attributes` is read and written by the codec only; no editor surface or
+  command edits it, so choice 7a includes attribute editing.
+- **Not read:** attaching the owner's Ortúzar copy was refused by the session's permission check,
+  so Example 4.5 (p. 161) is booked as slice G0, and §3–§4 rest on the standard formulation until
+  that reading cites Ch. 4.
+- **Open:** eight owner choices, OWNER_SITTING B42.
+- **Verified:** `check_docs` and `check_file_sizes` pass, compiled directly with g++; the headless
+  preset did not configure here (nlohmann/json not installed), so no CMake build or ctest ran. Docs only.
+
 ## 2026-11-05 — Review fixes to D464–D466 (D467)
 
 - **Owner:** asked for a fix for each review finding, then "ข้อ 1 ไม่แก้ … ที่เหลือเอาตามแนะนำ".
@@ -149,26 +165,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - the edge scenes in the full run move only by the shifted random draw;
   - one clamp at ×1.0 on, seed 48, in the 150 m weave (open).
 - **Verified:** `ctest --preset headless` passes 176/176.
-
-## 2026-11-04 — Gap seeking, slice 2: the changer falls back behind its blocker (D458)
-
-- **Owner:** "ทำต่อ". Shown both variants measured, the owner chose "switched on only".
-- **D458 ([GAP_SEEKING](reference/GAP_SEEKING.md) §2):** with the lateral switch on, a moving
-  refused stub whose forward test fails against the target-lane vehicle ahead of it falls back behind
-  that vehicle, braking at most comfortably. Its swap partner is excepted.
-  - Slice 1 moved from M3_8_CONTRACT to GAP_SEEKING.
-  - `courtesyHolds` moved to `src/core/courtesy.cpp`, because `lanes.cpp` would have been over 500
-    lines.
-- **Variants rejected** ([evidence](evidence/gap-seeking-changer.md)):
-  - **Capped at the cooperative key:** BA184 clamped.
-  - **Both switch states:** switched off grew slower when dense (lab ×1.0 25/19/21 → 29/25/30 s;
-    lane-change lab +1.7 %).
-  - **Look-ahead only:** no gain.
-- **Rows:** BA204 (218 → 200 m) and BA205 (150 m weave, ×1.0: 295 → 389 served, 83 → 37 s).
-  BA197's served floor is revised to 365.
-- **Results:**
-  - Lab on at ×1.0: delay 137/98/41 → 87/44/35 s, and served 100 %.
-  - Lateral lab: delay 30.3 → 13.1 s.
-  - Switched off: byte-identical.
-  - **Cost:** the 500 m weave alone at ×1.0 on, 24 → 28.5 s.
-- **Verified:** `ctest --preset headless` passes 176/176; `check` passes.

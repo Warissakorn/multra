@@ -139,15 +139,16 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 
 39. **J7 analysis source:** answered and approved; [whole B39](../archive/OWNER_SITTING-B39-2026-10-31.md), D418.
 
-40. **A9 Fill from model and Micro comparison** (2026-10-31, D419; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-answered-choices)).
-   Owner chose expected Micro demand, explicit HV types, full replacement/provenance and
-   named unresolved-demand refusals (D419). Owner selected explicit window/T/PHF=1 replacement
-   and reuse of a completed batch on 2026-10-31 (D420). Do not re-ask these choices.
+40. **A9 Fill from model and Micro comparison:** answered (D419, D420; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-answered-choices)). Do not re-ask.
 
 41. **A9 manual-count comparison window** (answered 2026-10-31, D422). Owner selected
    [explicit session-only confirmation](../reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window),
    matching batch evaluation start/end and Node T, labelled manual counts. Nothing is stored.
    Checkpoints a6d0a25/d663bf5 are accepted so far; finish A9, then stop for review.
+
+42. **M10.2 trip generation** (listed 2026-11-06, D468). Answer [TRIP_GENERATION](../reference/TRIP_GENERATION.md)
+   §11's eight choices by number and letter (recommended: 1a 2a 3a 4a 5a 6a 7a 8a). Also: may a
+   session attach your Ortúzar copy for slice G0 (this session's request was refused)? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

@@ -126,9 +126,27 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the next one is
-**M10.2 (trip generation)**, then M10.3–M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
+**M10.2 (trip generation; contract written, below)**, then M10.3–M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
+
+## M10.2 trip generation — contract written (D468); stop for the owner's choices
+
+- [TRIP_GENERATION](reference/TRIP_GENERATION.md) holds the contract: §11's eight choices are
+  [OWNER_SITTING B42](plans/OWNER_SITTING.md), all unanswered. **Write no code before the answers.**
+- **First slice after the answers: G0**, docs only. Attach `Warissakorn/Modelling-Transport-4-edition-Markdown`
+  (`add_repo`, then a shallow clone beside this repo; BOOKS §1). This session's attach was refused
+  by its permission check, so ask the owner first if it is refused again. Read Ch. 4's sections
+  on cross-classification, regression and balancing, and Example 4.5 (book p. 161 = PDF p. 183)
+  from the page image. Then write `docs/evidence/ortuzar-example-4-5.md` with the categories, rates,
+  counts and printed answers, and replace §3–§4's "standard formulation" notes with section and
+  equation citations. If the book's method differs from §3–§4, record the difference and ask the
+  owner; do not change the contract silently.
+- **Then G1** (TRIP_GENERATION §12): the codec, `src/macro/trip_generation`, the run function,
+  JSON/CSV and `--trip-generation`, rows TG1–TG10. Choices that are answered differently change
+  §3–§8 first, in the same commit as the D-row that records the answers.
+- Unchanged by this: M10.1's gate (B21) and §19 c's procedure sequence, which waits on
+  M10.3–M10.4.
 
 **Booked by D379 (B27, on delegation), each starting with its contract when the owner asks:** one
 posted speed on the Link (D380 confirmed it; the M13 approach `speedLimit` becomes derived; D381: the
