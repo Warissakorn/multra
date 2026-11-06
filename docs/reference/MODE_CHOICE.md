@@ -1,6 +1,6 @@
 # Mode choice and OD conversion (M10.4)
 
-Written 2026-11-06 (D477) as a contract with eight owner choices (§10). Slice M0 first read
+Written 2026-11-06 (D477) as a contract with eight owner choices (§10); the owner answered 1a–8a and E1 is implemented (D478, §13). Slice M0 first read
 Ortúzar and Willumsen §5.4.4 and Ch. 6–7 from the page images
 ([evidence](../evidence/ortuzar-ch6-7-mode-choice.md)). This is the last demand stage of the
 four-step chain:
@@ -191,7 +191,9 @@ T^k_ij = P_k · T_ij                            (persons, P-A, the rate set's un
 | Occupancy | §11.3, η in Eq. (11.18)–(11.19) | 407 |
 | Structure and β ≤ λ | §6.5.2, Eq. (6.11) | 213–214 |
 
-## 10. Owner choices (open)
+## 10. Owner choices (answered 2026-11-06, D478: 1a–8a)
+
+The owner: "เอาตามแนะนำ". The options are kept for the record.
 
 1. **Model.**
    - **(a) An MNL per purpose with linear utilities as data (a constant plus a cost coefficient
@@ -234,10 +236,10 @@ T^k_ij = P_k · T_ij                            (persons, P-A, the rate set's un
 | Slice | Content | Rows |
 |---|---|---|
 | M0 | Read §5.4.4 and Ch. 6–7 into an evidence file; this contract. **Done (D477)** | — |
-| E1 | Mode-choice codec and catalog; root `periodFactors` at schema 69; the pure `src/macro/mode_choice` (MNL shares, the directional split, occupancy); `runModeChoice`; JSON/CSV; `--mode-choice`/`--period` | MC1–MC10 |
+| E1 | Mode-choice codec and catalog; root `periodFactors` at schema 69; the pure `src/macro/mode_choice` (MNL shares, the directional split, occupancy); `runModeChoice`; JSON/CSV; `--mode-choice`/`--period`. **Implemented (D478)** | MC1–MC10 |
 | E2 | Owned `modeChoiceSets`; the *Mode choice* page; the sets dialog; the *Period factors* table; *Write OD matrices* | MC11–MC14 |
 
-## 12. Acceptance rows (planned)
+## 12. Acceptance rows (MC1–MC10 implemented, D478; MC11–MC14 planned)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -257,3 +259,51 @@ Each row first asserts that its forcing worked (AGENTS).
 | MC12 | Write OD matrices | One History step; replaces only `generatedBy: mode-choice` matrices; the written matrices pass `odMatrices` validation; Run Macro assigns them |
 | MC13 | Editor page | A run is no History step; stale after an edit |
 | MC14 | Shipped projects | Every Micro, Meso, Macro, generation and distribution output byte-identical |
+
+## 13. As implemented (E1, D478)
+
+- **Files:**
+  - `src/macro/mode_choice.*`, which is pure: `logitShares`, `splitModes`, `directionalOd`;
+  - `src/project/zone_skim.*`, the zone skim and the cost-matrix overlay, moved out of
+    `trip_distribution_run.cpp` unchanged and shared by both runs;
+  - `src/project/mode_choice_codec.*`;
+  - `src/project/period_factor_codec.*`, with `ProjectDocument::periodFactors` and
+    `kLatestSchema` 69;
+  - `src/project/mode_choice_run.*`, with stages distribution → set → costs → split → periods;
+  - `src/project/mode_choice_output.*`;
+  - `tools/four_step_cli.*`, holding the generation and distribution runs moved out of
+    `run_simulation.cpp`, plus `--mode-choice`.
+- **Sets:** E1 reads catalog sets only (`data/mode-choice/`, none shipped). Owned
+  `modeChoiceSets` are E2.
+- **Periods:**
+  - With no `--period`, the run covers every study period that some factor names, in
+    study-period order. If there is none, it refuses `MODE_CHOICE_NO_PERIOD` at `periodFactors`.
+  - A purpose without a factor row for a period adds the advisory `MODE_PERIOD_FACTOR_MISSING`
+    (at `periodFactors`) and contributes nothing.
+  - Deleting a study period that a factor names is refused (`UNKNOWN_PERIOD` at
+    `periodFactors[i].periodId`).
+- **Costs:**
+  - The skim per `modeId` is computed once per run.
+  - An alternative with only a `costMatrix` starts from all-∞, and its matrix's non-null cells
+    make it available.
+  - The distribution run's skim (`--skim-mode`, `--cost-matrix`) is unchanged.
+- **Outputs:**
+  - **JSON:** per purpose, each alternative's costs (null where unavailable), P-A persons and
+    total. Per period, each alternative's OD persons and vehicles (null without occupancy) and each
+    mode's vehicles and total.
+  - **CSV:** the columns `period,alternative,originId,destinationId,persons,vehicles`, with a
+    totals row per period and alternative.
+  - Both carry the marker and the unit conditional.
+- **Test data:**
+  - `tests/data/trip-distribution/mode-choice/hand.json`: car with occupancy 1.25, and walk by
+    an owned matrix. Its values are illustrations;
+  - `modes/car.json`;
+  - `mode-choice.traffic.json`: the generation fixture plus one study period, one factor row and
+    the `walk-times` matrix, at schema 69.
+- **Rows:**
+  - `tests/mode_choice_tests.cpp` (group `modechoice`) covers MC1–MC9, with MC6 and MC7 in one
+    test;
+  - `cli-mode-choice`, `-alone` and `-unknown` cover MC10;
+  - TD1–TD20 pass unchanged after the skim was moved.
+- **Mutations:** each of the following failed at least one row: no max shift, the return share
+  without the transpose, occupancy multiplied, and unavailable alternatives kept.

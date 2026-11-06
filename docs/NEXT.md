@@ -159,13 +159,16 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
 - **Later:** destination-constrained purposes (booked by choice 1a); whether the Furness target
   and cap become a document setting (open from D1).
 
-## M10.4 mode choice — contract written (D477); waiting for the owner's answers
+## M10.4 mode choice — contract (D477) answered 1a–8a; E1 done (D478)
 
 - [MODE_CHOICE](reference/MODE_CHOICE.md), after M0 read Ortúzar §5.4.4 and Ch. 6–7
   ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)): an MNL split per purpose, P-A to OD by
   period shares, occupancy, and generated `odMatrices`.
-- **Owner:** answer §10's eight choices (recommended 1a–8a). Slice E1 (rows MC1–MC10) starts on
-  the answer, then E2 (MC11–MC14).
+- **E1 done (D478, MODE_CHOICE §13):** the MNL engine, `periodFactors` at schema 69,
+  `runModeChoice`, JSON/CSV and `--mode-choice`/`--period`; rows MC1–MC10 pass on Linux.
+- **Next, on the owner's go:** E2 (MC11–MC14). It covers owned `modeChoiceSets`, the *Mode choice*
+  page, the sets dialog, the *Period factors* table, and *Write OD matrices*, which brings
+  `generatedBy` at schema 70.
 
 ## Next session — the owner's pick
 

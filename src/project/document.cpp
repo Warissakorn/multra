@@ -96,7 +96,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool cooled=period && d.definition->evaluation->cooldown>0;
     const bool constrained=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint.has_value();});});
-    return constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -220,6 +220,7 @@ Json documentJson(const ProjectDocument& d) {
     addMacroRunDefinitionsJson(d,result); // Named Macro definitions, schema 56
     addOwnedTripRateSetsJson(d.tripRateSets,result); // M10.2 G2, schema 66
     addOwnedDeterrenceSetsJson(d.deterrenceSets,result); addOwnedCostMatricesJson(d.costMatrices,result); // M10.3 D2, schema 67
+    addPeriodFactorsJson(d.periodFactors,result); // M10.4 E1, schema 69
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
@@ -241,6 +242,7 @@ void validateDocument(const ProjectDocument& d) {
     if (auto issues = ownedTripRateSetIssues(d.tripRateSets); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = ownedDeterrenceSetIssues(d.deterrenceSets); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = ownedCostMatrixIssues(d.costMatrices); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = periodFactorIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // M10.4 E1
     if (auto issues = zoneLayerIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = studyAreaIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // S5.2a
 }
@@ -282,6 +284,8 @@ ProjectDocument parseDocument(const Json& j) {
         }
     d.deterrenceSets = parseOwnedDeterrenceSets(j);
     d.costMatrices = parseOwnedCostMatrices(j);
+    if (version < 69 && j.contains("periodFactors")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "periodFactors"}});
+    d.periodFactors = parsePeriodFactors(j); // M10.4 E1
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
     d.zones.studyArea=parseStudyArea(j);

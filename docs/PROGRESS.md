@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
+
+- **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).
+- **D478 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
+  - the MNL split (exp(V − max V), unavailable alternatives excluded);
+  - P-A to OD by period factors (root `periodFactors`, schema 69);
+  - vehicles by occupancy, summed per mode;
+  - marked JSON/CSV, and `--mode-choice`/`--period`.
+  - The zone skim moved to `zone_skim`, with distribution unchanged.
+  - The four-step CLI runs moved to `tools/four_step_cli`.
+- **Rows:** `modechoice` (MC1–MC9) and `cli-mode-choice*` (MC10). Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless); Windows not checked.
+
 ## 2026-11-06 — M10.4 contract: mode choice and OD conversion (D477)
 
 - **Owner:** "ทำงานถัดไปตามแนะนำ".
@@ -121,19 +134,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   second regression form (§3).
 - **Verified:** `check_docs` and `check_file_sizes` pass (compiled with g++; the CMake preset still
   lacks nlohmann/json here). Docs only.
-
-## 2026-11-06 — M10.2 trip generation contract (D468)
-
-- **Owner:** asked what could come next, then "เริ่มเขียนสัญญา M10.2 trip generation".
-- **D468 ([TRIP_GENERATION](reference/TRIP_GENERATION.md)):** trip-rate sets as data, one method
-  per purpose side (cross-classification or zonal regression), attractions balanced to productions,
-  the set's unit carried with no period or mode conversion, outputs, CLI and editor surface, seams
-  to M10.3/M10.4, slices G0–G2 and rows TG1–TG14. Docs only; no code.
-- **Measured:** `Zone::attributes` is read and written by the codec only; no editor surface or
-  command edits it, so choice 7a includes attribute editing.
-- **Not read:** attaching the owner's Ortúzar copy was refused by the session's permission check,
-  so Example 4.5 (p. 161) is booked as slice G0, and §3–§4 rest on the standard formulation until
-  that reading cites Ch. 4.
-- **Open:** eight owner choices, OWNER_SITTING B42.
-- **Verified:** `check_docs` and `check_file_sizes` pass, compiled directly with g++; the headless
-  preset did not configure here (nlohmann/json not installed), so no CMake build or ctest ran. Docs only.
