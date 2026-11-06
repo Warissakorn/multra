@@ -4,6 +4,170 @@ Rows D1–D199 moved here unchanged from [RECORD](RECORD.md) by D486. This file 
 add new D-numbers to [RECORD](RECORD.md) only. Use the [topic index](README.md) to pick rows, and
 read later superseding rows and the current contracts before applying an old choice.
 
+## Index
+
+[D1](#d1) · [D2](#d2) · [D3](#d3) · [D4](#d4) · [D5](#d5) · [D6](#d6) · [D7](#d7) · [D8](#d8) · [D9](#d9) · [D10](#d10)
+[D11](#d11) · [D12](#d12) · [D13](#d13) · [D14](#d14) · [D15](#d15) · [D16](#d16) · [D17](#d17) · [D18a](#d18a) · [D18b](#d18b) · [D18c](#d18c)
+[D18d](#d18d) · [D19a](#d19a) · [D19b](#d19b) · [D19c](#d19c) · [D19d](#d19d) · [D20](#d20) · [D21](#d21) · [D22](#d22) · [D23](#d23) · [D24](#d24)
+[D25](#d25) · [D26](#d26) · [D27](#d27) · [D28](#d28) · [D29](#d29) · [D30](#d30) · [D31](#d31) · [D32](#d32) · [D33](#d33) · [D34](#d34)
+[D35](#d35) · [D36](#d36) · [D37](#d37) · [D38](#d38) · [D39](#d39) · [D40](#d40) · [D41](#d41) · [D42](#d42) · [D43](#d43) · [D44](#d44)
+[D45](#d45) · [D46](#d46) · [D47](#d47) · [D48](#d48) · [D49](#d49) · [D50](#d50) · [D51](#d51) · [D52](#d52) · [D53](#d53) · [D54](#d54)
+[D55](#d55) · [D56](#d56) · [D57](#d57) · [D58](#d58) · [D59](#d59) · [D60](#d60) · [D61](#d61) · [D62](#d62) · [D63](#d63) · [D64](#d64)
+[D65](#d65) · [D66](#d66) · [D67](#d67) · [D68](#d68) · [D69](#d69) · [D70](#d70) · [D71](#d71) · [D72](#d72) · [D73](#d73) · [D74](#d74)
+[D75](#d75) · [D76](#d76) · [D77](#d77) · [D78](#d78) · [D79](#d79) · [D80](#d80) · [D81](#d81) · [D82](#d82) · [D83](#d83) · [D84](#d84)
+[D85](#d85) · [D86](#d86) · [D87](#d87) · [D88](#d88) · [D89](#d89) · [D90](#d90) · [D91](#d91) · [D92](#d92) · [D93](#d93) · [D94](#d94)
+[D95](#d95) · [D96](#d96) · [D97](#d97) · [D98](#d98) · [D99](#d99) · [D100](#d100) · [D101](#d101) · [D102](#d102) · [D103](#d103) · [D104](#d104)
+[D105](#d105) · [D106](#d106) · [D107](#d107) · [D108](#d108) · [D109](#d109) · [D110](#d110) · [D111](#d111) · [D112](#d112) · [D113](#d113) · [D114](#d114) · [D115](#d115)
+
+
+[D116](#d116) · [D117](#d117) · [D118](#d118) · [D119](#d119)
+
+[D120](#d120) — staged behavior/measurement contracts and legacy assignment seam.
+
+[D121](#d121) — queue discharge observer and incomplete measurement gates.
+
+[D122](#d122) — original-rank vehicle-type selection and declared CLI measurement controls.
+
+[D123](#d123) — captured input provenance and shared-prefix route passage tracking.
+
+[D124](#d124) — proven post-remap/source motion and unresolved source-sink type identity.
+
+[D125](#d125) — rank-scoped remap invalidation and exact same-tick source-sink type replay.
+
+[D126](#d126) — schema-21 project-owned behaviour library and the Run refusal of assigned roads.
+
+[D127](#d127) — front-segment behaviour selection through one compiled table and `effectiveBehaviour`.
+
+[D128](#d128) — staged library dialog with one History step and whole-selection road assignment.
+
+[D129](#d129) — W74 contract: explicit-constant parameters, hashed driver traits outside the run stream, state re-initialised on model entry.
+
+[D130](#d130) — M5 first (O1a, O3b, O8, O9c): batch, evaluation period, section delay, LOS data, Copy/Export; W74 parked.
+
+[D131](#d131) — M5.2 batches: seed-ordered aggregate, conservative t table, overloaded seeds flagged and kept, formatting in `src/project/`.
+
+[D132](#d132) — M5.3 evaluation period (schema 22): trips ending in the period, whole-run totals, new projects 900 s + 1 h, per-movement unfinished.
+
+[D133](#d133) — M5.4 travel-time sections (schema 23): Link-wide start/end lines, interpolated crossings, delay against the vehicle's desired speed.
+
+[D134](#d134) — M5.5 LOS: HCM pack as data, author-set control type (schema 24), approaches by start Link, vehicle-weighted.
+[D135](#d135) — W74 lands first as a pure, unwired function with type bounds and D105 inside it; `Leader::acceleration` added, 0 until BA28.
+
+[D136](#d136) — schema-25 `w74` codec from one key table; Run refuses a `w74` behaviour in use until BA28; dialog read-only.
+
+[D137](#d137) — W74 traits hashed at generation only when a scenario holds `w74`; `W74State` and BA24/BA25 move to the composition slice.
+
+[D138](#d138) — W74 runs: one `follow` dispatcher and gap accessors for every consumer, `Leader` acceleration from the snapshot, state from the kept result; D136's refusal lifted.
+
+[D139](#d139) — `w74` edited in the Driving behaviours dialog: model choice, empty-able text field per key, no code defaults.
+
+[D140](#d140) — Routing walks read Connector paths from one lazy `ConnectorPathTable` per expansion, not a persistent cache.
+
+[D141](#d141) — Editor Run N seeds: one worker thread over value copies, the CLI's batch formatter for Export and Copy (TSV), cancelled or edited-away batches discarded.
+
+[D142](#d142) — Opt-in `volumeFromCounts`: an input's volume from its entry decision's turning counts (schema 26); D46 otherwise.
+
+[D143](#d143) — Owner accepted R1–R8: queue M5.9 → M4.2 → M6.0 → M5.8 after M5.7; one owner sitting; M2 closed; M3.4 and M6 carve-outs; M1.22/M1.23/M5.1 scope.
+
+[D144](#d144) — Results inner pages: Movements (or the batch), Queue discharge, Safety clamps; recovered from the unmerged PR #128.
+
+[D145](#d145) — Three modelling levels (Micro, Meso, Macro four-step), zones/OD, parking lots and dynamic assignment; M8–M12 after the D143 queue; PROBLEM amended.
+
+[D146](#d146) — M5.9 cool-down (schema 27): run past `duration` with no new demand; the window counts trips by release; new projects 900 s; no cool-down keeps D132's bytes.
+
+[D147](#d147) — M4.2 amber stop-or-go: `amberDeceleration` (catalog 3.0), continuous check, commitment at red; M0 keeps amber as red; schema 28 for an owned field.
+
+[D148](#d148) — M5.8a scenario comparison: `--compare` runs two independent batches on one seed list; alternative minus base with a Welch 95 % CI; unmatched rows listed; different windows refused before any run, different seeds before any output.
+[D149](#d149) — M5.8b editor comparison: the open project (base) against a chosen file over the Seeds field on the batch worker; refusals before any run leave the results on show; Export/Copy are `comparisonCsv`; a dirty base is named `(unsaved edits)`.
+
+[D150](#d150) — OSM map background and fixed UTM reference.
+[D151](#d151) — Route destination markers, responsive labels, bounded tooltips and wheel protection.
+
+[D152](#d152) — Batch and comparison seeds in parallel (`runSeedsParallel`, `--threads`), byte-identical results, runner stays thread-free.
+
+[D153](#d153) — M8.1 zones/OD/parking contract: Link-end zone connectors, OD compiled to ordinary inputs, lot timing from dwell with destinations from its row, space kept until insertion.
+
+[D154](#d154) — M8.2 zone layer codec and commands: structural checks on load/commit, Run-tier checks kept by authoring, Link-delete cascade, zone-in-use refusal, split rule.
+
+[D155](#d155) — M8.3 OD expansion to authored routes/inputs over fewest-object chains; Run-tier checks; first-draw PRNG bias for small seeds recorded, not changed.
+
+[D156](#d156) — M8.4 split; the engine's parking-lot runtime: gate hold, Stop-line arrival, drive-in without service, departures keep their space until inserted.
+
+[D157](#d157) — M8.4b authored lot: inline dwell curve, compiler from gate Links and the lot row, lot rows give routes only, empty row refused.
+
+[D158](#d158) — owner's B7/B10 answers: no dwell default, D153 kept, gate wait in movement delay and reported apart; LTM, BPR, gravity, modes with motorcycle, 0.1 % convergence.
+
+[D159](#d159) — B11 fixed: splitmix64 seed mixing before the first draw; raw mapping only for the frozen TS fixtures; CLI 42 baseline re-recorded.
+
+[D160](#d160) — M8.5 lot report: snapshot-only accumulator, held-set departures, gate wait after service, gate queue counter, `parked` closes the count.
+
+[D161](#d161) — M8.6 split; M8.6a Zone tool (Z), Zones tab, zone connectors from the canvas selection; no lot tool.
+
+[D162](#d162) — M8.6b OD matrices tab and grid dialog, lot dialog from the zone row, Results lot table, parked in the run status.
+
+[D163](#d163) — one compile shares its routeless walks (`RoutelessWalks`) and builds `runtimeSections` once; nothing kept between calls.
+
+[D164](#d164) — per-tick work reuses head colours, queue lines walk only crossing routes, arrivals check due time first.
+
+[D165](#d165) — Behaviour Lab: circuit routes, live retune and vehicle placement in core; `src/lab/` ring; the window follows one vehicle.
+
+[D166](#d166) — Behaviour Lab Urban circuit (signalised crossings and turns, cross-traffic loops) and heading-up camera; `viewScale()`.
+
+[D167](#d167) · [D168](#d168) · [D169](#d169) · [D170](#d170) · [D171](#d171) · [D172](#d172) · [D173](#d173)
+[D174](#d174)
+
+[D175](#d175) — multi-level workflow amends D145: one loop from any level, Node polygon (S0), Road + cross-section templates, StudyPeriod, run-time cut, offline first.
+
+[D176](#d176) — the first `w74` preset cites SUMO's Wiedemann defaults and lives in `data/driver-behaviour/presets/`, which projects do not load.
+
+[D177](#d177) — motorcycles core scope; driving-behaviour review carves M3.5–M3.9 and recommends perception and 2D contracts before W99.
+
+[D178](#d178) — owner's B14/B15 answers: D177 order accepted, keep-left default on left-hand traffic, standard motorcycle values flagged uncertain until local research.
+
+[D179](#d179) — perception contract: physical vs perceived leader, look-ahead/back, observed vehicles, rear TTC, reaction time as an action delay.
+
+[D180](#d180) — 2D occupancy contract: carriageway frame, spans on every overlapped lane, lateral admission in vehicle-id order, one switch.
+
+[D181](#d181) — perception codec: five optional keys in one core table, schema 32 only when used.
+
+[D182](#d182) — look-ahead and multi-anticipation in own motion; physical leader keeps the cap; scan-order ties.
+
+[D183](#d183) — lane-change tests read the changer's perception: look-back, rear TTC, perceived leaders and gain.
+
+[D184](#d184) — reaction-time FIFO: delayed own action, current safety bounds, publish-only history, and atomic retune tick-count guard.
+
+[D185](#d185) — BA38 reaction-time discharge experiment: captured inputs, within-model controls, seed-weighted summaries and explicit unavailable samples.
+
+[D186](#d186) — an empty FIFO entering a delayed road is filled with the entry decision, so braking continues.
+
+[D187](#d187) — lateral slice 1: key table at schema 33, cross-sections compiled only when switched on, start/end widths, `DrivingSide` in core.
+
+[D188](#d188) — lateral slice 2: spans with a band, other-lane spans past `kLateralOverlap` via the reference line, `dLat` filter on the follower's carriageway, zones deferred.
+
+[D189](#d189) — lateral slice 3a: test-only `lateralTarget`, capped moves admitted in id order without 2D overlap, crossing remaps through a covering span; zones are slice 3b.
+
+[D190](#d190) — no tooltip on empty canvas/panel/conflict/run summary (help in F1); hover fill, checked underline, focus-only frame; dock 13/600, hints 11, Lab sections 14; application palette.
+
+[D191](#d191) — audit corrections: exact route provenance, physical live speed reduction, fixed demand schedules, mirrored catalogs, checked signal integers and nonempty conflict chains.
+
+[D192](#d192) — icon vocabulary: Connector road bend, Route dot-trace-arrow, Reset mirrored with an origin dot, Focus wide panel; 16 px pair tests and a contact sheet.
+
+[D193](#d193) — five palette groups, transient icons-only palette view, Simulation bar Run/Step | Seed/speed | Reset, Delete trailing; Run button kept at 24 px.
+
+[D194](#d194) — Objects dock task groups: a corner combo shows Network, Control, Demand, Measurement, Results or Problems pages; the group follows the current page; Problems jumps show the dock.
+
+[D195](#d195) — Properties label column fixed at 120 px with wrapping labels, all-rows wrap below two columns, Apply divider in the appearance fold, eyebrow group headings.
+
+[D196](#d196) — table recipe applied at polish time to every table (dialogs included, `editorCustomRows` opts out), full-text popup on elided cells, cell figures through `formatValue`.
+
+[D197](#d197) — canvas HUD: 1/2/5 scale bar (64–160 px), px/m, north from the map projection only; mouse-transparent, clear of the map corners; e1b carved out.
+
+[D198](#d198) — owner E19: north from any georeference; the projection no longer waits for a tile provider.
+
+[D199](#d199) — run vehicle casings painted outside the hit shape, red/amber/green crossbar shapes, corner overlays re-placed after scrolling.
+
+## Rows
+
 | # | Date | Decision | Why | What would make it wrong |
 |---|---|---|---|---|
 | <a id="d1"></a>D1 | 2026-09-10 | **Own simulation engine, not a front end over an existing one** | Engineering use needs conflict areas and priority rules as authored inputs, signal heads anywhere on a link, and vehicle-owned driver behaviour, and the two things the job is actually paid for — per-movement evaluation and multi-run averaging — have to be built regardless. Owning the engine makes all of them first-class. See `../PROBLEM.md` §2. | If the M2 gate (D38) shows an engineer cannot complete a real study with it. This is the single most expensive decision in the project and it has an explicit test. |

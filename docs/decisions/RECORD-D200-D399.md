@@ -4,6 +4,283 @@ Rows D200–D399 moved here unchanged from [RECORD](RECORD.md) by D486. This fil
 add new D-numbers to [RECORD](RECORD.md) only. Use the [topic index](README.md) to pick rows, and
 read later superseding rows and the current contracts before applying an old choice.
 
+## Index
+
+[D321](#d321) — explicit retry of failed visible map tiles; preserve provider cooldown and document state.
+[D322](#d322) — stable OSM pan/zoom, bounded regional overview and offline country/optional-province selection.
+
+[D200](#d200) — LOD: lane markings and mouth edges not drawn under 3 px per lane; nothing else hidden; vehicle 14 px / 4×2.5 px rule pinned.
+
+[D201](#d201) — owner sitting triage: B1–B3, B5, B6, B8, B12, B13 closed as proposed; R4 (b) carve-outs M1.29 and M3.2.10; `level` skip queued as a fix.
+
+[D202](#d202) — lateral slice 3b: a straddler's other-lane span occupies that lane's zones (blocks, is anticipated, holds, sweeps); the straddler itself is not held there until M3.4.
+
+[D203](#d203) — lateral slice 4: the run view draws lane centre + `lateral` to the left of travel; lateral crossings are flagged in the trace and never slid.
+
+[D204](#d204) — M3.4 lane-change duration contract: switched on, a change is a lateral move that must finish before the next zone; slide only for switched-off runs; `maxLateralSpeed` sets the duration, no new key.
+
+[D205](#d205) — Windows-only UI reds: the 3 px lane threshold allows a 1e-9 rounding; the Properties label column is shared by every form and widens to an unbreakable word up to a quarter wider.
+
+[D206](#d206) — M3.4 slice 1: switched on, an accepted lane change sets `lateralTarget` and remaps at the crossing; window rule without the body length; a change under way holds its target place; no rate, instantaneous; switched-on cost owed an engine round.
+
+[D207](#d207) — a swapping pair of stubs at shared dead ends: the rear one (level: the higher id) holds back behind the front one's target place, at comfortable deceleration; shipped multi-lane outputs change.
+
+[D208](#d208) — mid-change: a lateral move that would cover another lane waits at the line until rules 3–5 hold there, in route distances; a body over the line steps back.
+
+[D209](#d209) — switched-on engine round: bodies only near movers, a precomputed clear band for lateral copies, `lateralCounts` inline; byte-identical, +3.0–3.5 % Ir against `5847cb9`.
+
+[D210](#d210) — a straddler also follows the leaders on the lanes its body covers, walking each through its only successor; `closestVehicle` moves to `leaders.cpp`; switched-off byte-identical.
+
+[D211](#d211) — M3.6 curve speed contract (docs only): behaviour key `curveLateralAcceleration`, radius from the Connector polyline, bound `sqrt(a·R)` anticipated at comfortable deceleration; delay against desired speed.
+
+[D212](#d212) — M3.6 slice 1: curve speed implemented (schema 34, `Segment::curvature`, `speedTarget` in the cap); `closestVehicle` inline again, recovering D210's switched-off cost.
+
+[D213](#d213) — behaviour configurability tiers (BEHAVIOUR_PARAMETERS) and the keep-to-kerb contract (OVERTAKING, `kerbLaneBias`, docs only); the editor's W74 save keeps the curve key.
+
+[D214](#d214) — B19 decided on the owner's delegation: D213's tiers stand (50 km/h lateral reference fixed); tier B ordered by effect on Thai study outputs.
+
+[D215](#d215) — keep-to-kerb slice 1: `kerbLaneBias` (schema 35), `towardKerb` from lane indices, return at `T − β`; A53 still fails, no D95 value ships.
+
+[D216](#d216) — settings scope: project, catalog default, vehicle type, driver behaviour (local by road), network object, per vehicle; the more local wins.
+
+[D217](#d217) — behaviour-key exposure: perception, lateral (one box) and curve are rows in the behaviour editor and the Lab panel; Lab Apply writes them back.
+
+[D218](#d218) — commitment deceleration contract (COMMITMENT, B-2): `commitmentDeceleration` at give-way lines only, the lower of it and the type's maximum.
+
+[D219](#d219) — commitment deceleration implemented (schema 36, editor row); a low value lowers T-junction delay and raises clamps, so no value ships.
+
+[D220](#d220) — mandatory lane-change deceleration contract (MERGE_DECELERATION, B-3): own and trailing keys, the trailing one read from the changer.
+
+[D221](#d221) — mandatory lane-change deceleration implemented (schema 37, editor rows); the explicit maximum cap dropped as dead code; shipped projects barely move.
+
+[D222](#d222) — desired-speed decision contract (SPEED_DECISIONS, B-6): per-type ranges at a Link station, quantile kept, delay against the speed in force; reduced-speed areas contract only.
+
+[D223](#d223) — desired-speed decisions implemented (schema 38, editor tab via selected Link); no decision byte-identical; one red-onset clamp recorded.
+
+[D224](#d224) — reduced-speed area contract (SPEED_DECISIONS §7): per-type temporary speed over a Link stretch, by lane id, anticipated at a per-area deceleration; delay not counted inside.
+
+[D225](#d225) — reduced-speed areas implemented (schema 39, editor tab with lane boxes); no area byte-identical; +0.77 % Ir recorded.
+
+[D226](#d226) — acceleration capped while a curve or area bound holds (row BA109); shipped runs byte-identical, same Ir.
+
+[D227](#d227) — D223's red-onset clamp traced: AMBER §1's red rule with a slow arrival and the prototype's soft final braking, not the decision code; a braking floor measured, not adopted.
+
+[D228](#d228) — desired-speed distribution curve contract (SPEED_DISTRIBUTION, B-5): piecewise cumulative points on the vehicle type, same draw, the share as quantile, schema 40.
+
+[D229](#d229) — desired-speed distribution curve implemented (schema 40, type dialog, Lab fit); shipped runs byte-identical, +0.06 % Ir.
+
+[D230](#d230) — Stop dwell time contract (STOP_DWELL, B-8): `stopDwellTime` on the driver behaviour, whole ticks of at least that time, absent = today, schema 41.
+
+[D231](#d231) — Stop dwell time implemented (schema 41, behaviour-dialog row); shipped runs byte-identical, +0.25–0.41 % Ir; Stop-line clamps recorded.
+
+[D232](#d232) — D231's Stop-line clamps traced (no code change): a slow move-off meets a closing gap at any give-way line; booked in M3.2.8a.1.
+
+[D233](#d233) — lane preference by vehicle type contract (LANE_PREFERENCE, B-7): `kerbLanes` on the type, entry on the kerb-most N lanes, schema 42.
+
+[D234](#d234) — lane preference by vehicle type implemented (schema 42, type-dialog row); shipped runs byte-identical; not at destination-chosen entries.
+
+[D235](#d235) — driver-factor spread contract (DRIVER_FACTOR, B-4): `driverFactorSpread` on the behaviour, the standard deviation of the factor, schema 43.
+
+[D236](#d236) — driver-factor spread implemented (schema 43, behaviour-dialog row); shipped runs byte-identical; mean delay unmoved, clamps rise with a wide spread.
+
+[D237](#d237) — red-light running contract (RED_RUNNING, B-9): a share of drivers may run in the first seconds of red while moving; counted, schema 44.
+
+[D238](#d238) — red-light running implemented (schema 44, two dialog rows, a counted event); shipped runs byte-identical; tier B complete.
+
+[D239](#d239) — give-way line stop contract (GIVE_WAY_STOP, M3.2.8a.1): a feasible stop at a just-closed give-way line brakes to the line instead of clamping.
+
+[D240](#d240) — give-way line stop implemented: the shipped Yield T-junction's 6 clamps go with delays unchanged; other outputs byte-identical.
+
+[D241](#d241) — M2.6's red-running clamps traced (no code change): a merge clamp reached through a run, and a follower behind a runner held again; none is a red-head hold.
+
+[D242](#d242) — a Properties form stacks by the width its scroll area shows, not its page's (Windows' wide action button kept narrow rows beside their labels).
+
+[D243](#d243) — text buttons above the Properties pages elide to an ellipsis, so an unwrappable label no longer holds the floating panel wide (Windows' toggle did).
+
+[D244](#d244) — a wrapped Properties text asks only for its longest word; on Windows the effective-behaviour text asked 257 px and held the narrow panel at 273 px.
+[D245](#d245) — Windows ships libthai (`thai.dll`, `libdatrie-1.dll`, `thbrk.tri`): without it Qt broke a Thai sentence only at its spaces, which held the narrow panel at 273 px.
+
+[D246](#d246) — red running revised by the owner's answers to D241: only a runner who cannot stop gently runs, a runner let through keeps going for that red, and every run it starts is counted.
+
+[D247](#d247) — D246 implemented: M2.6's added clamps go; shipped outputs byte-identical; on the shipped projects the window no longer changes anything, since every run starts at red onset.
+
+[D248](#d248) — red running's window stays an upper bound and a runner's committed crossing still counts; a camera-style red-entry count is booked for evaluation.
+
+[D249](#d249) — M2.6's 41 remaining clamps traced; seven options measured; B+M+Q recommended (41 → 17), answered by D250.
+
+[D250](#d250) — the owner's merge clamp choice: B + M + Q as three project switches (`clampRules`), on by default, schema 45.
+
+[D251](#d251) — the merge clamp package implemented (`clampRules`, schema 45, Run settings): M2.6 41 → 17 clamps; all off byte-identical; Ir +0.5–0.7 %.
+
+[D252](#d252) — the lane-change lab's one clamp traced: a follower under-brakes behind a leader stopping hard at a dead end (D241's follower class, not a merge).
+
+[D253](#d253) — anticipation across a join measured with prototypes: the workable variant nets 17 → 16 clamps and shifts T-junction delay; not recommended, answered by D254.
+[D254](#d254) — the owner chose A4 as an off-by-default `joinAnticipation` switch (schema 46), and a line-approach contract with numbers first.
+[D255](#d255) — `joinAnticipation` implemented; on, it reproduces D253's A4 outputs; off, byte-identical to D251.
+[D256](#d256) — stopping cleanly at a line measured: D227's floor scoped to `amberDeceleration` cuts M2.6 17 → 5 clamps with the pin and TS rows kept; recommended as a fifth switch, answered by D257.
+[D257](#d257) — the owner chose F1a as `clampRules.standingStopFloor`, on by default (schema 47 when off).
+[D258](#d258) — `standingStopFloor` implemented; on, it reproduces D256's F1a outputs (M2.6 17 → 5 clamps); off, byte-identical to D255.
+[D259](#d259) — the Node contract (S0, merged with M5.1): polygon object at schema 48, derived legs/turns/control, Micro per-turn evaluation; five owner choices, answered by D260.
+[D267](#d267) — the owner accepted every S1 recommendation (1a–5a).
+[D268](#d268) — S1.1 implemented: study periods at schema 49, `clockStart`, a matrix `periodId` placed by `odMatrixWindow`, the Study periods tab; rows SP1–SP8.
+[D269](#d269) — Modes join the Demand catalog under its presence rule: `definition.modes` absent is `data/modes/`; a project owning its compositions owns its modes once a matrix names one.
+[D270](#d270) — S1.2 implemented: the matrix `modeId`, vehicle-type `pcu` (no value ships), derived mode PCU, the Modes tab and the PCU row; rows SP9–SP14.
+[D271](#d271) — S2 (M10.1) contract written: Macro graph from Links and Connectors, link types and VDF data, PCU demand per period, Frank–Wolfe UE; eight owner choices; docs only.
+[D272](#d272) — The owner's S2 answers: Link pieces with one cross-level name, no link-type values, one class per mode with mode bans, no turn penalties, Run Macro + table + CLI, S0.4 to S3, a textbook benchmark, a 0.01 % gap.
+[D273](#d273) — S2.1 implemented: link types and `bpr.json`, `Link::linkType` at schema 50, `compileMacroNetwork` in a new pure `src/macro/`, Macro demand per class; rows MA1–MA6.
+[D274](#d274) — S2.2 implemented: Dijkstra with link-order ties, all-or-nothing loading, multi-class Frank–Wolfe with an exact line search and the named gap; rows MA7–MA11, MA16, MA17.
+[D275](#d275) — S2.3 implemented: `macroSettings` at schema 51, `runMacro` per study period, Macro JSON and CSV with the marker, the CLI `--macro`; rows MA12, MA13.
+[D276](#d276) — Macro run procedures in Visum and Aimsun studied (evidence note); MACRO_NETWORK §19 gives the owner three options.
+[D277](#d277) — S2.4 implemented (§19 a): Run Macro on a worker in stages with Cancel, the Macro links table with a stale notice, Run settings, the Link types tab; row MA14.
+[D278](#d278) — S0.6 implemented: Results → Nodes for a run and a batch, none for a comparison; rows N19–N21; MA15 paused.
+[D279](#d279) — Node evaluation cost: sections visited per route and tracks advanced in place; outputs byte-identical, a Node adds +14–20 % Ir (was +26–39 %).
+[D280](#d280) — NEXT holds open state only (history archived); RECORD is appended to, never read whole; stale doc lines fixed.
+[D281](#d281) — during a run the static network below the vehicles is painted from the cached background; M2.6 run view −28 % per Step (Linux).
+[D282](#d282) — the run status label sits in a host with no layout, so a Step no longer relays out the window; −11 % per Step.
+[D283](#d283) — run vehicle items are kept by id and moved each frame; −5.2 % Ir per Step.
+[D284](#d284) — the project is named MULTRA (Multi-Level Traffic Analysis); executables, window, CLI and CSV markers renamed; namespace, internal targets and the file marker unchanged.
+[D285](#d285) — GPL-3.0-or-later replaces MIT; THIRD-PARTY-NOTICES.md and licence texts ship in every package.
+[D286](#d286) — the first start as MULTRA moves the recovery and map-tile folders written as TrafficSim; never overwrites.
+[D287](#d287) — namespace `multra`, targets `multra_*`/`multra-*` and `MULTRA_*` options; old option names still apply with a warning.
+[D288](#d288) — S0.7: selecting a Nodes row lights the Node and its legs on the canvas; row N22.
+[D289](#d289) — S0.8a: the scenario comparison compares Node, leg and turn rows (JSON, CSV); rows CMP8–CMP10.
+[D290](#d290) — S0.8b: Results → Nodes shows a comparison's Node, leg and turn rows; row N21.
+[D291](#d291) — M11.1: the Meso contract (LTM links, node model, spill-back, jam density per link type), seven owner choices; docs only.
+[D292](#d292) — the owner answered the Meso choices 1a–7a, as recommended.
+[D293](#d293) — M11.2: the Meso graph from the drawing and its Nodes; `jamDensity` and `mesoSettings` at schema 52; rows ME1–ME2.
+[D294](#d294) — MA15: Sheffi (1985) Table 5.4 is the Macro benchmark; capacities (2, 4, 3) derived, owner to confirm; the M10 gate stays open.
+[D295](#d295) — M11.3a: authored routes, static decisions and OD routes as Meso paths, turn shares and demand per class; rows ME12–ME16; placed decisions and routeless inputs carved out as M11.3b.
+[D296](#d296) — M11.3b: routeless inputs and placed decisions through Micro's expandRouteless, lanes mapped back to objects, stubs handed to their full routes; rows ME17–ME19.
+[D297](#d297) — M11.3 node model: Tampère et al. (2011) §5.1 read in full and reproduced (Table 8); conflicts inside a Node deferred with MESO_PRIORITY_IGNORED; signals as explicit green; rows ME20–ME23.
+[D298](#d298) — M11.3c: Yperman (2007) read; link model (Eqs. 4.31, 4.35) and loading engine; step limit min(L/v, L/w) derived; turn splits by Eq. 5.2; signals deferred with MESO_SIGNAL_IGNORED; Example 4.5 and §7.1 reproduced; rows ME3–ME6, ME8, ME9, ME24–ME26.
+[D299](#d299) — M11.3d: signals as averaged green (4b replaces 4a); Tampère §5.2 supplies with Yperman's shared-lane b, applied as an effective capacity under CTF; g = G by HCM Eq. 19-1; MESO_SIGNAL_AMBIGUOUS; rows ME7, ME26, ME27.
+[D300](#d300) — M11.4: runMeso over the whole Micro run (owner), outputs by slice in PCU (JSON, CSV), `--meso`, the editor's Run Meso and Meso links tab; rows ME10, ME11; turn free time not yet loaded.
+[D301](#d301) — M11.4b: a turn's free-flow time as a lag charged to the out-link's storage (owner; ours, Yperman gives nodes no length); `inNodesAtEnd`; row ME28.
+[D302](#d302) — M11.6a: the Meso benchmark option sheet (docs only, M6.0 rules); M1 corridor and M2 network kinds; Yperman and Tampère cases disclosed as not blind; owner answers B23.
+[D303](#d303) — the S3 contract (docs only): Road with generated Links (`roadId`), templates, Nodes from crossings, S0.4 coarse values, seams, HCM-cited link types with a capacity basis; rows RD1–RD22; owner choices B24.
+[D304](#d304) — S3 choices answered (1a–5a, 6b, 7a); S3.2: HCM link-type catalog (Exhibits 12-4, 10-7), `capacityBasis` on types and VDFs (schema 53), `MACRO_CAPACITY_BASIS_MISMATCH`; `rank` moved to S3.6; rows RD1–RD3.
+[D305](#d305) — S3.3: Road, owned cross-section templates, `roadId` (schema 53), *Apply template*, detach on hand edits; editor moved to S3.3b, `shoulder` dropped; rows RD1, RD5–RD9.
+[D306](#d306) — E1: arrow pointers with the tool glyph (no crosshair); Ctrl+right-click only for a draft's first point, then plain clicks (amends D84); previews solid on a casing, saved dashes kept; rows E1-1 to E1-4.
+[D307](#d307) — S3.3b: Road tool (O) draws and applies the chosen template in one step; Roads tab (status incl. partly detached), Cross-sections tab; the selected Road lit on the canvas, warning colour when detached; rows RD23–RD26.
+[D308](#d308) — S3.4: Join opposite Links (15°, half widths + 30 m, owner; mean centreline, no template) and Assign template (several Roads, no Links generated); rows RD10, RD11.
+[D309](#d309) — S3.5: Find crossings (2 m, ≥3 legs, not under a Node), overpasses (schema 53), junction splits with a generated disc Node (half-width + widest lane), Merge nodes (hull, membership-checked); rows RD12–RD15.
+[D310](#d310) — S3.6a: link-type `rank` (tie = undetermined), `coarse` on Nodes without detail (checks), Macro and Meso compile coarse Nodes and Link-less Roads (pieces, joins, banned turns, stage g/C); S3.6b and RD20's Micro half booked; rows RD4, RD16, RD19, RD20.
+[D311](#d311) — S3.6b: detail revised to the interior (Connector inside or Link wholly inside; Link legs compiled as arms), refine and derive back in every Command (`settleNodes`), the two-leg lifecycle, the *Coarse values…* dialog; rows RD17, RD18, RD27, RD28.
+[D312](#d312) — S3.7: seam checks on demand by level (road not generated, lane count with Use Link / Use Node, speed jump over 20 km/h outside Nodes, detached Link on the Road); S3 complete; rows RD20 (Micro), RD21, RD22, RD29.
+[D313](#d313) — S4.1: readiness / *Fill defaults* / Node proposals contract, answered S4-1a–S4-4a: the Problems tab by level, cited fills F1–F3 (F4 later), proposals from v/c ≥ 1.0 and spill-back; rows RS1–RS10.
+[D314](#d314) — S4.2: the readiness panel by level in the Problems tab (runs' own refusal functions in order, advisories, seams), stale note after an edit; rows RS1–RS4.
+[D315](#d315) — B23 answered: Meso benchmark from Boyles et al. 2025 (M1-d, M2-c), Daganzo 1994/1995 secondary, not-blind cases as verification only; waiting on the copy.
+[D316](#d316) — S4.3: *Fill defaults* F1 (type from the Road's template), F2 (HCM jam density on owned types, only where valid), F3 (Apply template), listed with sources, ticked ones in one Undo step; rows RS5–RS8.
+[D317](#d317) — S4.4: Node proposals after a run (Macro v/c ≥ 1.0, Meso spill-back on a leg; junction ends without a Node by name; stale results none) on the Nodes tab; rows RS9, RS10. S4 complete.
+[D323](#d323) — F4 contract answered (F4-1a–6a); S4.5a: generated Connectors (schema 54), legs cut where arms meet, kerb-to-far lanes, re-apply byte-stable.
+[D324](#d324) — S4.5b: F4's priority by HCM 7 Ch. 20's ranks (PDF p. 1590; minor far turn rank 3 at a T), Stop on minor arms, generated right-of-way objects, derive-back major rule amended.
+[D325](#d325) — S4.5c: F4's signals (controller, group per turn, heads; intergreens on the time step), HCM ranks inside a stage, merges ordered by rank then drawing order; S4.5 complete.
+[D326](#d326) — S5.1: study area contract answered (S5-1c Nodes, 2a, 3c both cuts, 4a, 5a, 6a): Micro on the area's Nodes with gates, typed/Macro/Meso gate flows, side files, SHA-256 stale, export marking; rows SA1–SA15.
+[D327](#d327) — S5.2a: `studyArea` at schema 55, the kept set and gates, the run-time copy used by every Micro caller, area refusals, the Nodes tab column; F4 keeps a split leg's far end.
+[D328](#d328) — S5.2b: `studyAreaEnds`, gate-flow commands, the *Gate flows…* dialog (grid per period and types), area Nodes filled on the canvas; S5.2 complete; row SA16.
+[D329](#d329) — S5.3: Frank–Wolfe path flows (`keepPaths`, exact), the Macro cut by period (`flowSource` macro), Macro run at compile until S5.5 (owner); +72 % wall on a 1,892-cell grid with paths.
+[D330](#d330) — S5.4: the Meso cut from the loading's FIFO route counts (Yperman §3.2, Eq. 5.2) per output slice; Meso run at compile until S5.5 (owner); `type:` classes not cut.
+[D331](#d331) — S5.5a: Macro and Meso side files with `projectSha256`; the cut reads a usable one; stale by SHA-256 (`MICRO_AREA_SOURCE_STALE`); owner: cut source only, mismatch runs at compile.
+[D332](#d332) — S5.5b: `MICRO_GENERATED_IN_AREA` readiness warnings with counts; export marking and study-area flows lines (CSV and JSON, editor and CLI) only when needed; S5 complete.
+[D333](#d333) — Seven bundled vehicle types, opt-in diverse composition and data-selected plan-view archetypes; solid glass hit areas, detail LOD and preserved front/rear references.
+[D318](#d318) — Dialogs keep their buttons on screen: `dialog_fit` (scrolling body, fixed footer, first size capped to the screen); the behaviour editor split into a header and four topic tabs; vehicle type, input, decision and coarse dialogs scroll.
+[D319](#d319) — Optimization review: NEXT holds open items only (1113 → 469 words, old list archived); new dialogs as free functions, not `EditorWindow` members; split `src/core/` files before an engine slice.
+[D320](#d320) — UI suites call `useTestStorage()`: test-mode storage for all 51 `EditorWindow` suites, stale recovery drafts removed, live ones kept; a crashed run no longer blocks the next one.
+[D260](#d260) — the owner accepted every Node recommendation (1a–5a).
+[D261](#d261) — S0.1 implemented: Node object at schema 48, validation, Node tool (N) and Nodes tab; rows N1–N5.
+[D262](#d262) — NODES §3 amended: legs are boundary crossings, so a Link running through gives an in- and an out-leg; `NODE_LINK_REENTERS`.
+[D263](#d263) — S0.2 implemented: Node membership (legs, turns, conflicts, control; advisory refusals); rows N6–N11.
+[D264](#d264) — S0.3 implemented: per-turn sections, leg queue, vehicle-weighted leg/Node delay and letters in single-run and batch JSON/CSV; rows N12–N17; start-up loss finding.
+[D265](#d265) — S0.5 implemented: Suggest nodes, one generated Node per junction (conflict clusters fed from two Links, padded hull), one Undo step; row N18.
+[D266](#d266) — the S1 contract: StudyPeriod at schema 49, `clockStart`, matrix `periodId`/`modeId`, Mode catalog and cited PCU; five owner choices, answered by D267.
+
+[D334](#d334) — Per-type fixed/mixed colour preferences in View, stable display hashing and atomic application-local persistence; original pointed motorcycle restored.
+[D336](#d336) — review fixes: user-bound automation endpoint (runtime-dir socket, Windows server-owner check), `BUSY` during a pointer gesture, `preferredVehicleType` (car) for new defaults.
+
+[D338](#d338) — Study-area Meso cuts keep single-type classes through run-time matrices into Micro inputs, without catalog/schema changes; CLI source-provenance and marking coverage.
+
+[D339](#d339) — Named Macro period/settings definitions at schema 56; one-list Undo/Redo, editor/CLI selection through the staged worker, unchanged original project provenance and latest source per period.
+
+[D340](#d340) — Directed Road zone targets at schema 57 for Macro OD; endpoint-preserving Apply/split/delete/lifecycle commands and editor, explicit Micro/Meso refusal until conversion.
+
+[D341](#d341) — Meso Road OD uses minimum free-flow-time graph paths with equal tie shares, modes/PCU/windows and strict pair refusals; schema 57 and legacy paths stay unchanged, rule identified in exports/editor.
+
+[D342](#d342) — Review fixes: Meso graph OD per matrix (a Road zone opts its matrices in, others keep the legacy expansion), 1e-12 relative tie tolerance, `runDefinition` in the Macro side file, `kLatestSchema` in tests.
+
+[D353](#d353) — Resolve authored merge sides once per grouping call; the local Node-detail performance target is met with identical output.
+
+[D352](#d352) — Candidate ID membership checks share enumeration rules without rebuilding a full set per allocation.
+
+[D351](#d351) — Call-local Connector surface reuse during automatic conflict calculation, with byte-identical generated Nodes and measured Release timings.
+
+[D343](#d343) — Node detail and conflict-group authoring take one `automaticConflicts` list instead of one per pair; the canvas click keeps its stale check.
+
+[D354](#d354) — Bounded observed-schema discovery leaves unvisited array types open; Qt-free structural helper and boundary regression tests.
+
+[D355](#d355) — Project schema ownership/version inventory and shared feature-selected writer inspection; formal nested schemas remain separate.
+
+[D356](#d356) — Shared envelope/background metadata generates a partial formal schema; exact-integer CLI output and explicit codec-only token/byte constraints.
+
+[D357](#d357) — Codec-owned Network/Link/Lane metadata and shared versioned formal schema definitions; compatibility preserved across schemas 1–57.
+
+[D358](#d358) — Connector and attachment-reference schema/codec metadata, preserving fraction/station migration, defaults and diagnostics across schemas 1–57.
+
+[D359](#d359) — SignalHead metadata and conditional controller/group schema rules, preserving native numeric conversion and legacy migration stages.
+
+[D360](#d360) — Signal controller/group/program/phase metadata and structural schemas preserve distinct known-key policies, numeric conversion and document migration stages.
+
+[D361](#d361) — Right-of-way structural schemas share codec metadata, preserving nullable collections, legacy container/path decoding and schema 14/15/54 diagnostics.
+
+[D362](#d362) — Queue-counter/measurement-line and travel-time-section structural schemas preserve nullable sources, shared control points and versioned LOS control types.
+
+[D363](#d363) — Base definition, Route, VehicleInput and interval metadata preserve open keys, explicit-null errors, interval totals and counted-volume migration stages.
+
+[D364](#d364) — RoutingDecision/share/period/type-rule metadata preserve strict/open keys, nullable fields, matrix diagnostics and document-only position gates.
+
+[D365](#d365) — M1.23.1 authored object table CSV: five File-menu exports with precise values, nested JSON cells, Unicode and atomic writes.
+
+[D366](#d366) — Private bundled UI font family prevents installed Noto Sans Thai collisions; glyphs/metrics/layout unchanged and workspace assertions retained.
+
+[D367](#d367) — M1.23.2 authoring-network PNG: full/view bounds, bounded dimensions, optional backgrounds/cached map credit, no live-state mutation and atomic writes.
+
+[D368](#d368) — Object table CSV prefixes `'` to text cells starting with a spreadsheet formula character; numbers and JSON cells unchanged.
+
+[D369](#d369) — M0 plausibility accepted by owner ruling ("ผ่าน แบบ A"); caveat: bare M0 scenarios hold amber as red (1–3 clamps per run); unvalidated marker stays.
+
+[D370](#d370) — Analytical junction capacity (HCM 7 Ch. 19 first) booked as M13, a fourth method on the Node; contract NODE_ANALYSIS, owner choices open; no code.
+
+[D371](#d371) — M13 owner choices answered 1a–9a ("ใช้ตามแนะนำทั้งหมด"); A1 derives lane groups from Micro detail and refuses Nodes without it.
+
+[D372](#d372) — M13 A1: HCM 7 Ch. 19 pretimed protected exclusive lane groups on a Node (`src/analysis/`, schema 58 inputs, CLI `--node-analysis`, NA1–NA8); Exhibit 19-41 carved out to A2.
+
+[D373](#d373) — M13 A2 contract: shared lane groups (protected), critical v/c over a non-overlapping chain, back of queue with an approach speed limit; Exhibit 19-41 29/36 within ±5 %.
+
+[D374](#d374) — M13 A2 implemented: lane-based and shared lane groups (Ch. 31 §2), critical v/c, back of queue and storage ratio (Ch. 31 §4), approach `speedLimit`; NA9–NA14.
+
+[D375](#d375) — M13 A3's choices (OWNER_SITTING B25) decided on delegation ("ช่วยตัดสินใจ"): 1a–5a; A3 starts when the owner asks.
+
+[D376](#d376) — M13 A3 contract: permitted and protected-permitted turns, HCM 7 Ch. 31 §3 Steps 1–7; Exhibit 31-12 as one interval rule; NA15–NA20.
+
+[D377](#d377) — M13 A3 implemented: permitted and protected-permitted far turns (polygon, Step 7 B capacity, G_q2 iteration); l+sl, lr and one-lane permitted layouts refused and put to the owner; no permitted queue yet.
+
+[D378](#d378) — Purpose amended: Micro, Meso and Macro weighted equally, study-chain order (Macro → Meso → Micro), M13 a Node method serving them, Aimsun Next a reference in PROBLEM; supersedes D145 on "Micro first" only.
+
+[D379](#d379) — B27 decided on delegation ("ช่วยตัดสินใจ"): one posted speed on the Link pending the owner (B28, it reverses D373), per-lane allowed modes, *Fill from model* for Node turn volumes; M13 on coarse Nodes only within an HCM 7 planning method. Bookings only.
+
+[D380](#d380) — B28 decided on informed delegation: D379 1a stands (posted speed on the Link; D373 approach speed derived, values migrated); D378 order rule reworded (a finer gate does not close before the coarser one).
+
+[D381](#d381) — Stall-level parking and pedestrians added to PROBLEM §2 as needs, booked under *Later*; the 1a posted speed optional, a Micro default, never a cap.
+
+[D382](#d382) — Road-model review batch A: crossings grouped per level, `splitRoad` renames the far coarse Node, `FILL_NODE_ARM_OUTSIDE`, Link direction from stations (`forwardOnRoad`).
+
+[D383](#d383) — Review batch B: `splitLink` moves turn and approach rows downstream; stale Node-analysis rows reported; membership advised under its own code.
+
+[D384](#d384) — Review batch C: three Road-scale costs cut with byte-identical results (F3 on 480 Roads 96.3 s → 80 ms).
+
+[D385](#d385) — Review batch D: *Apply template* on every selected Road in one Undo step; *Find crossings* warns, without blocking, where a Road has neither template nor Links.
+
+## Rows
+
 | # | Date | Decision | Why | What would make it wrong |
 |---|---|---|---|---|
 | <a id="d200"></a>D200 | 2026-10-16 | **UI slice e2, measured LOD. Below 3 logical px per lane (`canvasStyle::laneMarkingsReadable`, the narrowest lane of a Link, or of the lanes a Connector carries at either end, times the rotation-safe `viewScale()`) the canvas does not draw that object's minor decoration: Link lane markings and Connector edges/dividers (`road-marking`) and Connector mouth edges (`connector-mouth-edge`), all 0.10 m strokes. Never suppressed: road surfaces, selection outline, direction arrows, geometry and lane handles, heads, stop lines, counters, sections, conflicts, demand, zones, run vehicles and signals, drafts, the band, the grid (own tiers) and Ctrl+A centre lines. The vehicle rule (4×2.5 px floor; windshield/cab from 14 px, D97) was already in and is now pinned by boundary tests** | At 3 px per lane a 0.10 m marking is under a tenth of a pixel: invisible, yet one path item each, rebuilt on every redraw. Hits read model geometry, never these items, so picking cannot change; the decision is made in `redraw()`, which runs on every zoom, so no cache or state is added (D28). Measured with `trafficsim-editor-benchmark` (40 intersections, fit zoom 0.08 px/m, Debug offscreen, three runs each): whole-scene redraw 6.6–8.1 → 3.0–4.2 ms, redraw with a selection 5.6–8.3 → 3.1–4.4 ms, while the untouched wireframe redraw stayed 3.9–5.5 → 4.1–5.4 ms. The run-view benchmark's fit zoom on the M2.6 template is 0.90 px/m (3.1 px per lane), above the threshold, so its 2091–2299 → 2184–2461 ms total is noise, not a claim. `wireframe_ui_tests` now views its template at 4 px/m, because its fit zoom is under the threshold | The owner (OWNER_SITTING E21) misses markings at overview zoom, or a Release/Windows run shows no gain |
