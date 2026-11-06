@@ -76,3 +76,30 @@ Costs (minutes): `3 11 18 22 / 12 3 12 19 / 15.5 13 5 7 / 24 18 8 5`; the trip e
   and no number here becomes a default (BOOKS §1, rule 4).
 - §5.5's calibration (Hyman's method) and §5.6's tri-proportional method were not read for
   numbers. The contract keeps both out (choice 8).
+
+## 6. Singly constrained (D3 contract, D475)
+
+Read for [TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §15.
+
+| Point | Book | Page (book / PDF) | Image read | Finding |
+|---|---|---|---|---|
+| Model | §5.3.2, Eq. (5.16): one set of balancing factors set to 1; origin constrained: B_j = 1, A_i = 1 / Σ_j D_j f(c_ij) | 183 / 205 | `p205-math-0239.png` | T_ij = O_i · D_j f_ij / Σ_k D_k f_ik. One row normalisation; no iteration |
+| Fixture | Example 5.2, Tables 5.4 and 5.5: an origin-constrained growth factor; each row scaled once to its target O_i | 179–180 / 201–202 | `p201-table-051.png`, `p202-table-052.png` | The same arithmetic as one row pass with the prior in place of D_j f_ij |
+| Purposes | §5.8.4: work trips normally doubly constrained, most others singly | 202 / 224 | (text, §2 above) | Choice 9's later slice |
+
+- **Example 5.2 replayed** (prior of Table 5.4 = Table 5.6's; O = 400, 460, 400, 702):
+  - every printed cell of Table 5.5 is reproduced to one decimal, e.g. row 1 `5.6 56.3 112.7 225.4`
+    and row 4 `123.2 246.3 307.9 24.6`;
+  - the rows equal O_i exactly.
+- **Two printed column sums differ:**
+  - Column 4 is printed 701.2. Its printed cells add to 710.2 and the replay gives 710.1, so the
+    printed sum is a digit transposition.
+  - Column 1 is printed 257.7 and the unrounded replay gives 257.8. The printed cells add to
+    257.7.
+- **No printed singly-constrained *gravity* example.** A grep of Ch. 5's text and exercises for
+  "singly", "origin-constrained" and "destination-constrained" finds only definitions and
+  remarks: §5.1 (notation), §5.2.2 (growth factors), §5.3.2, §5.4 (dropping one entropy
+  constraint), §5.7 (destination choice) and §5.8.4. The other rows are hand-computed.
+- **Scaling invariance.** Eq. (5.16) is unchanged when every D_j is multiplied by one constant.
+  TRIP_GENERATION §4 balances by such a constant (A*_i = A_i · P / A), so raw and balanced
+  attractions give the same trips.

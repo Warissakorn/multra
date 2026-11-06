@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.3 D3 contract: singly constrained purposes (D475)
+
+- **Owner:** asked for an explanation of singly constrained models, then "ทำงานต่อไปตามแนะนำ".
+- **D475 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §15), docs only:**
+  - Eq. (5.16) (p. 183) read from the page image;
+  - Example 5.2 (Tables 5.4–5.5) replayed as the fixture, with a misprinted column sum (701.2 for
+    710.2) ([evidence](evidence/ortuzar-ch5-trip-distribution.md) §6);
+  - raw and balanced attractions shown to give the same trips;
+  - five owner choices; rows TD15–TD20.
+- **Not done:** no code. Slice D3 waits for the owner's answers.
+
 ## 2026-11-06 — M10.3 D2: owned deterrence sets and cost matrices, Trip distribution page (D474)
 
 - **Owner:** "เริ่มเลย" on D2.
@@ -126,18 +137,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** road-crossbar-ui and run-presentation-ui, each failed first.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
   checked. Images: `docs/images/canvas-heads-d466/` (four-leg mid-run, 6 and 14 px/m, colour and grey).
-
-## 2026-11-05 — Canvas style slice C: run vehicles (D465)
-
-- **Owner:** reviewed slice C, then "เอาตามแนะนำ เริ่ม Slice C เลย".
-- **Palettes:** car, pickup and van ship realistic body colours (white, silvers, black, red,
-  blue); bus, trucks and motorcycle keep their type colour. A user's palette still wins; a type on
-  its shipped palette is not saved, and Reset returns to it. Every shipped vehicle colour keeps
-  contrast ≥ 1.5 against every road grey.
-- **Shadow:** a 2 px down-right translucent copy of the body, from 14 px, no blur.
-- **Run overlays:** Node outlines and unpinned rate labels no longer sit on the vehicles; a
-  selected road's rate shows as its box.
-- **Rows:** vehicle-colors-ui, vehicle-appearance-ui and run-presentation-ui, each failed first.
-- **Also:** `ui-audit-layout` now expects no unpinned rate labels during its one run step.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
-  checked. Images: `docs/images/canvas-run-d465/` (four-leg mid-run, 6 and 14 px/m, colour and grey).

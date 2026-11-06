@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — Canvas style slice C: run vehicles (D465)
+
+- **Owner:** reviewed slice C, then "เอาตามแนะนำ เริ่ม Slice C เลย".
+- **Palettes:** car, pickup and van ship realistic body colours (white, silvers, black, red,
+  blue); bus, trucks and motorcycle keep their type colour. A user's palette still wins; a type on
+  its shipped palette is not saved, and Reset returns to it. Every shipped vehicle colour keeps
+  contrast ≥ 1.5 against every road grey.
+- **Shadow:** a 2 px down-right translucent copy of the body, from 14 px, no blur.
+- **Run overlays:** Node outlines and unpinned rate labels no longer sit on the vehicles; a
+  selected road's rate shows as its box.
+- **Rows:** vehicle-colors-ui, vehicle-appearance-ui and run-presentation-ui, each failed first.
+- **Also:** `ui-audit-layout` now expects no unpinned rate labels during its one run step.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked. Images: `docs/images/canvas-run-d465/` (four-leg mid-run, 6 and 14 px/m, colour and grey).
+
 ## 2026-11-05 — Exported images keep rates and heads; the LOD test measures again (D464)
 
 - **Owner:** asked to review the decisions D460 replaced, then "เริ่มเลย" on the three fixes.

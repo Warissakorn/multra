@@ -142,7 +142,7 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   configure with `-DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"` here. Qt needs `qt6-base-dev libproj-dev
   libxkbcommon-dev nlohmann-json3-dev` from apt.
 
-## M10.3 trip distribution — D1 and D2 done (D473, D474); stop for the owner's look
+## M10.3 trip distribution — D1 and D2 done (D473, D474); D3 contracted (D475); stop for the owner
 
 - [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14 records both slices:
   - the pure gravity/Furness engine and the free-flow skim;
@@ -154,8 +154,9 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   open (rule 8).
 - **Owner:** the Windows look at the page and both dialogs
   ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42).
-- **Next, the owner's pick:**
-  - singly constrained purposes (choice 9a's later slice);
+- **D3 contract written (D475):** singly constrained purposes, TRIP_DISTRIBUTION §15. **Owner:**
+  answer §15.2's five choices (recommended 1a–5a); slice D3 (rows TD15–TD20) starts on the answer.
+- **Then, the owner's pick:**
   - M10.4 (P-A to OD, persons to vehicles, the period factor, mode choice; starts with its
     contract and Ortúzar Ch. 6–7 read from the page images).
   - Open from D1: whether the Furness target and cap become a document setting.

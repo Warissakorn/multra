@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D472) as a contract with nine owner choices (§11), after slice D0 read
 Ortúzar and Willumsen Ch. 5 from the page images ([evidence](../evidence/ortuzar-ch5-trip-distribution.md)).
-The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). This is the second four-step stage
+The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). Singly constrained purposes are contracted in §15 (D475), with owner choices open. This is the second four-step stage
 ([MACRO_NETWORK](MACRO_NETWORK.md) §1, §15; [TRIP_GENERATION](TRIP_GENERATION.md) §9). It turns each
 purpose's productions and balanced attractions into a production–attraction (P-A) trip table,
 using a gravity model with exponential deterrence balanced by Furness, as D158 chose.
@@ -234,6 +234,7 @@ The owner: "ตามแนะนำ". The options are kept for the record.
 | D0 | Read Ortúzar Ch. 5 into an evidence file; this contract. **Done (D472)** | — |
 | D1 | Deterrence codec and catalog, the free-flow skim, `src/macro/trip_distribution`, the run, JSON/CSV and `--trip-distribution`. **Implemented (D473)** | TD1–TD11 |
 | D2 | Owned deterrence sets and cost matrices at schema 67, the *Deterrence sets…* dialog, the *Trip distribution* page. **Implemented (D474)** | TD12–TD14 |
+| D3 | Singly constrained purposes (§15). **Contract written (D475); owner choices open** | TD15–TD20 |
 
 ## 13. Acceptance rows (implemented: TD1–TD11 D473, TD12–TD14 D474)
 
@@ -321,3 +322,68 @@ Each row first asserts that its forcing worked (AGENTS).
     (the page, the stale marking and both dialogs).
   - TD14: the shipped projects keep their bytes. Neither list is written when empty, and TG1
     still passes.
+
+## 15. Singly constrained purposes (D3 contract, D475)
+
+Written 2026-11-06, docs only, as choice 9a's later slice. Evidence:
+[§6 of the Ch. 5 check](../evidence/ortuzar-ch5-trip-distribution.md#6-singly-constrained-d3-contract-d475).
+Ortúzar §5.8.4 (p. 202) models work trips doubly constrained and most other purposes singly
+constrained, because their attractions are poorly known and proxies are used.
+
+### 15.1 Model (Eq. 5.16, p. 183)
+
+- **Per purpose,** `constraint` is either absent or `"double"`, which is today's behaviour, or
+  `"origin"`.
+- **Origin-constrained:**
+  - T_ij = P_i · A_j f_ij / Σ_k A_k f_ik, which is one row normalisation of the deterrence
+    matrix;
+  - the purpose's attractions are only weights, and column sums float;
+  - by the scaling invariance (evidence §6), raw and balanced attractions give the same trips, so
+    the run passes the balanced ones it already has.
+- **Result fields:** `passes` = 1; `converged` = true; `error` is the row error (0 up to
+  rounding); a_i = P_i / Σ_k A_k f_ik; b_j = A_j.
+- **Refusals:**
+  - `DISTRIBUTION_UNBALANCED` does not apply;
+  - a row with P_i > 0 and Σ_k A_k f_ik = 0, including when every weight is 0, is
+    `DISTRIBUTION_ROW_IMPOSSIBLE` at that zone and purpose, as in D1.
+- **Costs and diagonal** follow §5 and D474 unchanged.
+
+### 15.2 Owner choices (open)
+
+1. **Which constraint.**
+   - **(a) `origin` only; destination-constrained booked for later (recommended).** A P-A table
+     is fixed on its productions, and §5.8.4's purposes are all production-led.
+   - (b) Both `origin` and `destination`.
+2. **Where it lives.**
+   - **(a) A per-purpose field in the deterrence set, beside β (recommended).** The same rates
+     can then be run either way.
+   - (b) In the trip-rate set's purpose.
+3. **Schema.**
+   - **(a) An owned deterrence set that uses `constraint` saves at schema 68; below 68 the field
+     is `EDIT_UNSUPPORTED_FIELD` at its path; catalog files carry no schema (recommended).** This
+     is the repository's pattern (D471, D474).
+   - (b) No bump: the field is accepted at 67.
+4. **Intrazonal share when singly constrained.**
+   - **(a) T_ii = s · P_i (recommended).** Only the origin end is fixed, and §5.8.3 takes
+     intrazonal trips as a proportion of the trip ends.
+   - (b) Keep s · min(P_i, A*_i), as for doubly constrained.
+5. **Outputs.**
+   - **(a) Each purpose reports `constraint`, and per zone its modelled attractions (column sums)
+     beside the input weights (recommended).** The CSV comment line and the page note name the
+     constraint. The difference between the two attraction columns is what the model predicts.
+   - (b) `constraint` only.
+
+### 15.3 Slice D3 and rows (after the answers)
+
+- **Engine:** `DistributionInput` gains a `constraint` (default doubly). The origin path seeds f,
+  sets the intrazonal trips aside and makes one row pass. `furness` does not change.
+- **Rows:**
+
+| Row | Case | Asserts |
+|---|---|---|
+| TD15 | Example 5.2 through the origin path, Table 5.4's prior as the weights × deterrence | Every Table 5.5 cell to ±0.05; rows equal O_i exactly; columns 257.8, 464.6, 529.5, 710.1 (the print's 701.2 is a misprint) |
+| TD16 | Every f equal | Each origin's shares equal the weights' shares exactly |
+| TD17 | Raw against balanced attractions | The same trips |
+| TD18 | `"double"` or no field | Every distribution output byte-identical; shipped projects unchanged |
+| TD19 | Refusals and schema | `DISTRIBUTION_ROW_IMPOSSIBLE` at its path; a bad `constraint` refused at its path; schema 68 round-trips, older schemas refuse the field |
+| TD20 | CLI and page | The constraint and the modelled attractions are shown, with the marker |
