@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D472) as a contract with nine owner choices (§11), after slice D0 read
 Ortúzar and Willumsen Ch. 5 from the page images ([evidence](../evidence/ortuzar-ch5-trip-distribution.md)).
-The owner accepted every recommendation (D473: 1a–9a), and D1 is implemented (§14). This is the second four-step stage
+The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). This is the second four-step stage
 ([MACRO_NETWORK](MACRO_NETWORK.md) §1, §15; [TRIP_GENERATION](TRIP_GENERATION.md) §9). It turns each
 purpose's productions and balanced attractions into a production–attraction (P-A) trip table,
 using a gravity model with exponential deterrence balanced by Furness, as D158 chose.
@@ -233,9 +233,9 @@ The owner: "ตามแนะนำ". The options are kept for the record.
 |---|---|---|
 | D0 | Read Ortúzar Ch. 5 into an evidence file; this contract. **Done (D472)** | — |
 | D1 | Deterrence codec and catalog, the free-flow skim, `src/macro/trip_distribution`, the run, JSON/CSV and `--trip-distribution`. **Implemented (D473)** | TD1–TD11 |
-| D2 | Owned deterrence sets and cost matrices at schema 67, the *Deterrence sets…* dialog, the *Trip distribution* page | TD12–TD14 |
+| D2 | Owned deterrence sets and cost matrices at schema 67, the *Deterrence sets…* dialog, the *Trip distribution* page. **Implemented (D474)** | TD12–TD14 |
 
-## 13. Acceptance rows (TD1–TD11 implemented, D473; TD12–TD14 with D2)
+## 13. Acceptance rows (implemented: TD1–TD11 D473, TD12–TD14 D474)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -289,3 +289,35 @@ Each row first asserts that its forcing worked (AGENTS).
     decimals.
 - **Mutations:** columns first, b without T/Σf, the diagonal kept, and the row error ignored. Each
   failed at least one row.
+
+### D2 as implemented (D474)
+
+- **Files:**
+  - `ProjectDocument::deterrenceSets` and `costMatrices`, with `kLatestSchema` 67;
+  - `parseOwnedDeterrenceSets` / `addOwnedDeterrenceSetsJson` / `ownedDeterrenceSetIssues`
+    (`deterrence_codec.*`);
+  - `src/project/cost_matrix_codec.*`;
+  - `setDeterrenceSets` and `setCostMatrices` (`src/commands/trip_rate_commands.*`);
+  - `src/shell/owned_list_dialog.*`, the trip-rate dialog's body made generic. `trip_rate_dialog.*`
+    now wraps it for trip-rate sets, deterrence sets and cost matrices, and G2's object names are
+    kept;
+  - the self-owned `TripDistributionPanel` (`src/shell/trip_distribution_panel.*`), installed in
+    `editor_results.cpp` with no `EditorWindow` member;
+  - `--cost-matrix` on the CLI.
+- **Costs:**
+  - The skim gives no diagonal. A run-chosen matrix's non-null cells replace skim cells; the
+    matrix is the only source of a diagonal.
+  - A purpose with an intrazonal share drops the diagonal anyway (choice 2a). Its mean cost and
+    bands then leave the intrazonal trips out.
+  - A matrix naming a zone the project lacks is refused at run time
+    (`COST_MATRIX_ZONE_UNKNOWN`), so deleting a zone stays possible.
+- **Lookup:** owned deterrence sets are searched before the catalog. An id clash is
+  `DUPLICATE_ID` at `deterrenceSets[i].id`.
+- **Rows:**
+  - `tests/trip_distribution_owned_tests.cpp` (group `tripdistributionowned`) covers TD12: the
+    codec, the commands, the lookup and the override rows. With a full matrix, Example 4.1
+    distributes on the fixture where D1 refused it.
+  - `tests/trip_distribution_ui_tests.cpp` (`trip-distribution-ui`) covers TD12 save and TD13
+    (the page, the stale marking and both dialogs).
+  - TD14: the shipped projects keep their bytes. Neither list is written when empty, and TG1
+    still passes.

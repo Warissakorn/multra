@@ -21,7 +21,8 @@ Json tripDistributionJson(const TripDistributionRun& r) {
            {"rateSet", {{"id", g.set.id}, {"unit", g.set.unit}}},
            {"deterrenceSet", {{"id", r.deterrence.id}, {"name", r.deterrence.name}, {"source", source}, {"function", r.deterrence.function},
                               {"costUnit", r.deterrence.costUnit}}},
-           {"skim", {{"kind", "freeFlow"}, {"mode", r.mode}, {"unit", "min"}}},
+           {"skim", {{"kind", "freeFlow"}, {"mode", r.mode}, {"unit", "min"},
+                      {"costMatrix", r.costMatrix.empty() ? Json(nullptr) : Json(r.costMatrix)}}},
            {"zoneIds", g.zoneIds}, {"costs", Json::array()}, {"purposes", Json::array()}, {"inputManifest", g.inputManifest}};
     for (const auto& row : r.costs) {
         Json cells = Json::array();
@@ -42,7 +43,8 @@ std::string tripDistributionCsv(const TripDistributionRun& r) {
     std::ostringstream out;
     out << "# MULTRA - not yet validated. " << kMeasure << ".\n";
     out << "# Rate set: " << Json(g.set.id).dump() << "; deterrence set: " << Json(r.deterrence.id).dump() << "; unit: "
-        << Json(g.set.unit).dump() << "; skim mode: " << Json(r.mode).dump() << ".\n";
+        << Json(g.set.unit).dump() << "; skim mode: " << Json(r.mode).dump()
+        << "; cost matrix: " << (r.costMatrix.empty() ? std::string("none") : Json(r.costMatrix).dump()) << ".\n";
     for (const auto& p : r.purposes)
         out << "# " << Json(p.id).dump() << ": beta " << p.beta << " per min; passes " << p.result.passes << "; error " << p.result.error
             << (p.result.converged ? "" : "; DISTRIBUTION_NOT_CONVERGED") << ".\n";

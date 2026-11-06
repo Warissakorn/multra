@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.3 D2: owned deterrence sets and cost matrices, Trip distribution page (D474)
+
+- **Owner:** "เริ่มเลย" on D2.
+- **D474 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14):**
+  - `deterrenceSets` and `costMatrices` at schema 67, with commands;
+  - a run-chosen matrix overrides skim cells and is the only source of a diagonal;
+  - G2's trip-rate dialog made a shared owned-list dialog;
+  - the self-owned *Trip distribution* page;
+  - `--cost-matrix`.
+- **Rows:**
+  - `tripdistributionowned` (TD12 and the override rows) and `trip-distribution-ui` (TD12 save,
+    TD13, the dialogs).
+  - `workspace-ui` updated deliberately for the tenth Results tab.
+- **Verified:** Linux only (desktop and headless; counts in the session report). An offscreen grab
+  of the page and the dialog was checked for layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.3 D1: gravity distribution engine, skim, run, outputs and CLI (D473)
 
 - **Owner:** "ตามแนะนำ" on TRIP_DISTRIBUTION §11 (1a–9a).
@@ -125,17 +141,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Also:** `ui-audit-layout` now expects no unpinned rate labels during its one run step.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
   checked. Images: `docs/images/canvas-run-d465/` (four-leg mid-run, 6 and 14 px/m, colour and grey).
-
-## 2026-11-05 — Exported images keep rates and heads; the LOD test measures again (D464)
-
-- **Owner:** asked to review the decisions D460 replaced, then "เริ่มเลย" on the three fixes.
-- **PNG export:** every input rate shows as a grey-framed box, and every signal head keeps its
-  box (4 px at least, no pole when grown). D462's "no marker" relied on hover, which a picture
-  lacks. The live canvas is unchanged.
-- **canvas-lod-ui:** after D460 the crossing fixture drew no lane decoration at 3 px, so its
-  threshold checks compared 0 with 0. It now measures a selected Connector's mouth edges and
-  requires them.
-- **Records:** D423, D432, D434 and D435 now say what D460 changed in them.
-- **Rows:** network-image-ui, road-crossbar-ui and canvas-lod-ui each failed before the fix.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
-  checked. Images: `docs/images/export-d464/` (whole-network PNG before and after).

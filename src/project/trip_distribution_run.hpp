@@ -21,6 +21,7 @@ struct TripDistributionRun {
     TripGenerationRun generation;       // zone ids, productions, attractions, the rate set and its unit
     DeterrenceSet deterrence;
     std::string deterrencePath, mode;   // mode: the skim's mode, empty for every arc
+    std::string costMatrix;             // the overriding project matrix's id, empty for none (D2)
     DistributionMatrix costs;           // minutes, [origin][destination] over generation.zoneIds
     std::vector<TripDistributionPurpose> purposes;
     double bandWidth{4};
@@ -28,14 +29,17 @@ struct TripDistributionRun {
 };
 // Refused by ValidationError, by stage:
 // generation: runTripGeneration's refusals;
-// deterrence: DISTRIBUTION_SET_UNKNOWN at `deterrenceSets` (and the catalog's own faults);
+// deterrence: owned sets first (D2); DISTRIBUTION_SET_UNKNOWN at `deterrenceSets` (and the catalog's own
+//   faults); an owned id also in the catalog is DUPLICATE_ID at `deterrenceSets[i].id`;
 //   DISTRIBUTION_PURPOSE_MISSING at `<deterrencePath>.purposes` naming a rate-set purpose it lacks;
-// costs: the Macro network's refusals;
+// costs: the Macro network's refusals; COST_MATRIX_UNKNOWN at `costMatrices`; COST_MATRIX_ZONE_UNKNOWN at
+//   `costMatrices[k].zoneIds[n]`. The skim gives no diagonal; a matrix's non-null cells replace the skim's;
 // balancing: DISTRIBUTION_UNBALANCED at `<rateSetPath>.purposes[p]`, DISTRIBUTION_ROW_IMPOSSIBLE at
 //   `zones[i].<purpose>.productions`, DISTRIBUTION_COLUMN_IMPOSSIBLE at `zones[i].<purpose>.attractions`.
 // Not converging is not a refusal: the purpose's result says so.
 TripDistributionRun runTripDistribution(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& rateSetId,
-                                        const std::string& deterrenceSetId, const std::string& mode, InputManifest* = nullptr,
+                                        const std::string& deterrenceSetId, const std::string& mode, const std::string& costMatrixId = {},
+                                        InputManifest* = nullptr,
                                         const std::function<void(TripDistributionStage)>& stage = {},
                                         const DistributionSettings& settings = {});
 }

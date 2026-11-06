@@ -24,3 +24,10 @@ target_precompile_headers(multra-trip-generation-ui-tests REUSE_FROM multra_shel
 add_test(NAME trip-generation-ui COMMAND multra-trip-generation-ui-tests "${PROJECT_SOURCE_DIR}/data" "${PROJECT_SOURCE_DIR}/tests/trip-generation.traffic.json" "${PROJECT_SOURCE_DIR}/tests/data/trip-generation/trip-rates/example-4-1.json")
 set_tests_properties(trip-generation-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
 add_dependencies(check multra-trip-generation-ui-tests)
+# M10.3 D2 (TRIP_DISTRIBUTION §13, D474): the Trip distribution page and its two dialogs.
+add_executable(multra-trip-distribution-ui-tests ${PROJECT_SOURCE_DIR}/tests/trip_distribution_ui_tests.cpp)
+target_link_libraries(multra-trip-distribution-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+target_precompile_headers(multra-trip-distribution-ui-tests REUSE_FROM multra_shell)
+add_test(NAME trip-distribution-ui COMMAND multra-trip-distribution-ui-tests "${PROJECT_SOURCE_DIR}/data" "${PROJECT_SOURCE_DIR}/tests/trip-generation.traffic.json" "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution/trip-rates/one-way.json" "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution/deterrence/hand.json")
+set_tests_properties(trip-distribution-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+add_dependencies(check multra-trip-distribution-ui-tests)

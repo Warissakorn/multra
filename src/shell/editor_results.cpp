@@ -9,6 +9,7 @@
 #include "editor_meso.hpp"
 #include "node_analysis_panel.hpp"
 #include "trip_generation_panel.hpp"
+#include "trip_distribution_panel.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/meso_output.hpp"
 #include "../project/batch_output.hpp"
@@ -124,6 +125,14 @@ void EditorWindow::buildResults() {
          [this](const QString& name){return QFileDialog::getSaveFileName(this,text("editorTripRateExport"),name,"JSON (*.json)");}},
         [this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabTripGeneration",trips);resultsTabs_->addTab(trips,{});
+    // M10.3 D2 (TRIP_DISTRIBUTION §8, D474): the same context; its own dialogs share the file choice.
+    auto* distribution=new TripDistributionPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
+        [this]{return history_.generation();},data_,[this](const char* key){return text(key);},
+        [this](const char* name,std::function<void(ProjectDocument&)> change){return execute(name,change);},
+        {[this]{return QFileDialog::getOpenFileName(this,text("editorTripRateImport"),{},"JSON (*.json)");},
+         [this](const QString& name){return QFileDialog::getSaveFileName(this,text("editorTripRateExport"),name,"JSON (*.json)");}},
+        [this]{refreshRun();}});
+    resultPages_.emplace("editorResultsTabTripDistribution",distribution);resultsTabs_->addTab(distribution,{});
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -143,6 +152,7 @@ void EditorWindow::translateResults() {
     for(const auto& [key,page]:resultPages_)resultsTabs_->setTabText(resultsTabs_->indexOf(page),text(key));
     static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->translate();
     static_cast<TripGenerationPanel*>(resultPages_.at("editorResultsTabTripGeneration"))->translate();
+    static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->translate();
     lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
         text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
         text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});
@@ -162,6 +172,7 @@ void EditorWindow::refreshResults() {
     refreshDischarge(); refreshClamps(); refreshLots(); refreshResultNodes();
     static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->refresh();
     static_cast<TripGenerationPanel*>(resultPages_.at("editorResultsTabTripGeneration"))->refresh();
+    static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->refresh();
     refreshBatch(); // M5.6/M5.8b: a running or finished batch or comparison takes the single run's place
     if(batchShown())return;
     if(!movementTable_->isVisible())return;
@@ -257,6 +268,8 @@ std::string EditorWindow::resultsCsv() const {
         return static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->csv();
     if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabTripGeneration"))
         return static_cast<TripGenerationPanel*>(resultPages_.at("editorResultsTabTripGeneration"))->csv();
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabTripDistribution"))
+        return static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->csv();
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
         if(const auto* r=macroResult())return markedCsv(macroCsv(*r),exportMarking(history_.document(),{},macroStale())); // S5.5b
         throw std::runtime_error("EDIT_CSV_UNFINISHED");

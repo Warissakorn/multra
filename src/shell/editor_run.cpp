@@ -3,6 +3,7 @@
 #include "message_label.hpp"
 #include "node_analysis_panel.hpp"
 #include "trip_generation_panel.hpp"
+#include "trip_distribution_panel.hpp"
 #include "automation_error.hpp"
 #include <QUuid>
 #include <QJsonArray>
@@ -248,7 +249,10 @@ void EditorWindow::refreshRun(){
     auto* panel=analysis==resultPages_.end()?nullptr:static_cast<NodeAnalysisPanel*>(analysis->second);if(panel)panel->refresh();
     const auto tripPage=resultPages_.find("editorResultsTabTripGeneration");
     auto* trips=tripPage==resultPages_.end()?nullptr:static_cast<TripGenerationPanel*>(tripPage->second);if(trips)trips->refresh();
-    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():trips&&resultsTabs_->currentWidget()==trips?trips->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
+    const auto distPage=resultPages_.find("editorResultsTabTripDistribution"); // M10.3 D2
+    auto* dist=distPage==resultPages_.end()?nullptr:static_cast<TripDistributionPanel*>(distPage->second);if(dist)dist->refresh();
+    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():trips&&resultsTabs_->currentWidget()==trips?trips->exportable()
+        :dist&&resultsTabs_->currentWidget()==dist?dist->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
         :runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);

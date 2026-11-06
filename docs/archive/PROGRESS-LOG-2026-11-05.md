@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — Exported images keep rates and heads; the LOD test measures again (D464)
+
+- **Owner:** asked to review the decisions D460 replaced, then "เริ่มเลย" on the three fixes.
+- **PNG export:** every input rate shows as a grey-framed box, and every signal head keeps its
+  box (4 px at least, no pole when grown). D462's "no marker" relied on hover, which a picture
+  lacks. The live canvas is unchanged.
+- **canvas-lod-ui:** after D460 the crossing fixture drew no lane decoration at 3 px, so its
+  threshold checks compared 0 with 0. It now measures a selected Connector's mouth edges and
+  requires them.
+- **Records:** D423, D432, D434 and D435 now say what D460 changed in them.
+- **Rows:** network-image-ui, road-crossbar-ui and canvas-lod-ui each failed before the fix.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked. Images: `docs/images/export-d464/` (whole-network PNG before and after).
+
 ## 2026-11-05 — UI fixes, round 2 (D463)
 
 - **Owner:** "เริ่ม UI รอบสองเลย".

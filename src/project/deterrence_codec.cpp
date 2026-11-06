@@ -75,6 +75,36 @@ Json deterrenceSetJson(const DeterrenceSet& s) {
     }
     return {{"id", s.id}, {"name", s.name}, {"source", source}, {"function", s.function}, {"costUnit", s.costUnit}, {"purposes", purposes}};
 }
+std::vector<DeterrenceSet> parseOwnedDeterrenceSets(const Json& file) {
+    if (!file.contains("deterrenceSets")) return {};
+    const auto& list = file.at("deterrenceSets");
+    if (!list.is_array() || list.empty()) throw ValidationError({{"INVALID_DETERRENCE_SET", "deterrenceSets"}});
+    Issues issues;
+    std::vector<DeterrenceSet> sets;
+    for (std::size_t k = 0; k < list.size(); ++k) {
+        try { sets.push_back(parseDeterrenceSet(list[k], "deterrenceSets[" + std::to_string(k) + "]", false)); }
+        catch (const ValidationError& e) { issues.insert(issues.end(), e.issues.begin(), e.issues.end()); }
+    }
+    if (issues.empty()) issues = ownedDeterrenceSetIssues(sets);
+    if (!issues.empty()) throw ValidationError(std::move(issues));
+    return sets;
+}
+void addOwnedDeterrenceSetsJson(const std::vector<DeterrenceSet>& sets, Json& file) {
+    if (sets.empty()) return;
+    Json list = Json::array();
+    for (const auto& s : sets) list.push_back(deterrenceSetJson(s));
+    file["deterrenceSets"] = list;
+}
+std::vector<ValidationIssue> ownedDeterrenceSetIssues(const std::vector<DeterrenceSet>& sets) {
+    Issues issues;
+    std::set<std::string> ids;
+    for (std::size_t k = 0; k < sets.size(); ++k) {
+        const auto path = "deterrenceSets[" + std::to_string(k) + "].id";
+        if (blank(sets[k].id)) issues.push_back({"INVALID_ID", path});
+        else if (!ids.insert(sets[k].id).second) issues.push_back({"DUPLICATE_ID", path});
+    }
+    return issues;
+}
 std::vector<ResolvedDeterrenceSet> resolveDeterrenceSets(const std::filesystem::path& data, InputManifest* manifest) {
     std::vector<ResolvedDeterrenceSet> result;
     const auto directory = data / "deterrence";

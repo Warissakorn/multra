@@ -3,6 +3,7 @@
 // gravity model, with an optional intrazonal share), its JSON form and the catalog in
 // `data/deterrence/`. None ships (choice 3a); project-owned sets are D2.
 #include "json.hpp"
+#include "../core/validate.hpp"
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -28,6 +29,12 @@ struct ResolvedDeterrenceSet { DeterrenceSet set; std::string path; }; // path: 
 // JSON path. `function` must be "exponential" and `costUnit` "min". `requireCitation` for a catalog set.
 DeterrenceSet parseDeterrenceSet(const Json&, const std::string& path, bool requireCitation);
 Json deterrenceSetJson(const DeterrenceSet&);
+// M10.3 D2 (§6, D474): the project's own sets, root `deterrenceSets` at schema 67, as G2's trip-rate
+// sets: a present list is a non-empty array (INVALID_DETERRENCE_SET at `deterrenceSets`), rows parsed at
+// `deterrenceSets[i]` with the citation optional, ids unique. Absent or empty lists are not written.
+std::vector<DeterrenceSet> parseOwnedDeterrenceSets(const Json& file);
+void addOwnedDeterrenceSetsJson(const std::vector<DeterrenceSet>&, Json& file);
+std::vector<ValidationIssue> ownedDeterrenceSetIssues(const std::vector<DeterrenceSet>&);
 // `data/deterrence/*.json` in file-name order; a missing folder is an empty catalog. Duplicate ids are
 // DUPLICATE_ID at the later file's `.id`.
 std::vector<ResolvedDeterrenceSet> resolveDeterrenceSets(const std::filesystem::path& dataDirectory, InputManifest* = nullptr);

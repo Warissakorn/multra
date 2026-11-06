@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–66 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–67 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -32,6 +32,8 @@ that path as a canonical project.
 | `studyArea` | Optional from 55; present object needs nonempty nodes; null invalid | `study_area_codec.cpp` |
 | `macroRuns` | Optional from 56; present array must be nonempty; null invalid | `macro_run_definition.cpp` |
 | `tripRateSets` | Optional from 66; present array must be nonempty; rows as TRIP_GENERATION §6.1, ids unique | `trip_rate_codec.cpp` |
+| `deterrenceSets` | Optional from 67; present array must be nonempty; rows as TRIP_DISTRIBUTION §6 (citation optional), ids unique | `deterrence_codec.cpp` |
+| `costMatrices` | Optional from 67; present array must be nonempty; `{id, name, source?, unit: "min", zoneIds, rows}` n×n, cells ≥ 0 or null, ids unique; zone ids checked by a run, not the reader | `cost_matrix_codec.cpp` |
 
 `background` requires `pngBase64` (string), numeric `x`, `y`, `metresPerPixel`,
 `rotation`, `opacity`. Validation requires finite numbers, positive metresPerPixel,
@@ -108,6 +110,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 62 | Link `generated`, written only when true (J3b checkpoint, D398); older files still read, presence before 62 is refused at `network.links[i].generated` | `network_link_codec.cpp`, `network_fields.*`, `document.cpp` |
 | 63 | Owned transition template structure: `kind: transition`, `legs: 2`, and `directions.forward.align` / `directions.backward.align` (J5, D406); presence before 63 is refused at `directions` or `kind` | `junction_template_codec.cpp`, `document.cpp` |
 | 66 | Project-owned trip-rate sets `tripRateSets` (TRIP_GENERATION §6.3, D471); only selected when present; older versions refuse the field (`EDIT_UNSUPPORTED_FIELD`) | `trip_rate_codec.cpp` |
+| 67 | Project-owned `deterrenceSets` and `costMatrices` (TRIP_DISTRIBUTION §5–§6, D474); selected when either is present; older versions refuse each field (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `cost_matrix_codec.cpp` |
 | 65 | Node `number`: optional positive integer, the UTDF intersection id (UTDF_EXPORT §5, D442); only selected when a Node has one; older versions refuse it (`EDIT_NODE_INVALID`); validation refuses repeats (`NODE_NUMBER_DUPLICATE`) | `node_codec.cpp`, `nodes.cpp` |
 | 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 

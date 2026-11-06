@@ -200,12 +200,13 @@ int runTripGenerationProject(const std::filesystem::path& file, const std::files
 }
 // --trip-distribution (M10.3 D1, TRIP_DISTRIBUTION §8, D473): generation, the free-flow skim and the gravity model.
 int runTripDistributionProject(const std::filesystem::path& file, const std::filesystem::path& csvFile, const std::filesystem::path& data,
-                               const std::string& rateSet, const std::string& deterrence, const std::string& mode) {
+                               const std::string& rateSet, const std::string& deterrence, const std::string& mode,
+                               const std::string& matrix) {
     if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
     InputManifest inputs;
     const auto document = parseDocument(readInputJson(file, "project", &inputs));
     if (!csvFile.empty() && std::filesystem::exists(csvFile)) throw std::invalid_argument("CSV output already exists: " + csvFile.string());
-    const auto run = runTripDistribution(document, data, rateSet, deterrence, mode, &inputs);
+    const auto run = runTripDistribution(document, data, rateSet, deterrence, mode, matrix, &inputs);
     const auto marking = exportMarking(document, {});
     writeCsv(csvFile, markedCsv(tripDistributionCsv(run), marking));
     auto result = tripDistributionJson(run);
@@ -264,7 +265,7 @@ int main(int argc, char** argv) {
     try {
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
-        std::optional<std::string> macroPeriod, macroRunId, tripRateSet, utdfMode, tripDistribution, deterrenceSet, skimMode;
+        std::optional<std::string> macroPeriod, macroRunId, tripRateSet, utdfMode, tripDistribution, deterrenceSet, skimMode, costMatrix;
         std::filesystem::path utdfFile;
         bool meso = false, nodeAnalysis = false, utdfUnsignalised = false;
         bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false;
@@ -309,7 +310,8 @@ int main(int argc, char** argv) {
                              "--trip-generation ID (with --project, alone) computes productions and attractions per zone and\n"
                              "  purpose from the rate set ID in DATA/trip-rates and zone attributes, attractions balanced (M10.2).\n"
                              "--trip-distribution ID --deterrence SET [--skim-mode MODE] (with --project, alone) distributes\n"
-                             "  rate set ID's trip ends by a gravity model with DATA/deterrence SET over free-flow minutes (M10.3).\n"
+                             "  rate set ID's trip ends by a gravity model with DATA/deterrence SET over free-flow minutes (M10.3);\n"
+                             "  --cost-matrix ID overrides skim cells with the project's matrix ID (D2).\n"
                              "--node-analysis (with --project, alone) analyses every Node with analysis inputs by HCM 7 Ch. 19\n"
                              "  (pretimed, protected, exclusive lane groups): analytical, not simulated (M13 A1).\n"
                              "--export-utdf FILE (with --project, alone) writes the UTDF 8 geometry of every numbered Node\n"
@@ -332,7 +334,7 @@ int main(int argc, char** argv) {
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
                 arg == "--threads" || arg == "--macro" || arg == "--trip-generation" || arg == "--trip-distribution" ||
-                arg == "--deterrence" || arg == "--skim-mode" || arg == "--macro-run" || arg == "--export-utdf" || arg == "--utdf-mode") {
+                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--macro-run" || arg == "--export-utdf" || arg == "--utdf-mode") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -363,8 +365,9 @@ int main(int argc, char** argv) {
                     if (tripRateSet) throw std::invalid_argument("Specify --trip-generation only once");
                     tripRateSet = argv[i];
                 }
-                else if (arg == "--trip-distribution" || arg == "--deterrence" || arg == "--skim-mode") {
-                    auto& slot = arg == "--trip-distribution" ? tripDistribution : arg == "--deterrence" ? deterrenceSet : skimMode;
+                else if (arg == "--trip-distribution" || arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix") {
+                    auto& slot = arg == "--trip-distribution" ? tripDistribution : arg == "--deterrence" ? deterrenceSet
+                               : arg == "--skim-mode" ? skimMode : costMatrix;
                     if (slot) throw std::invalid_argument("Specify " + arg + " only once");
                     slot = argv[i];
                 }
@@ -420,11 +423,12 @@ int main(int argc, char** argv) {
                             segmentTimes || stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads ||
                             !utdfFile.empty()))
             throw std::invalid_argument("--trip-generation needs --project and takes only --csv and --data-dir");
-        if ((deterrenceSet || skimMode) && !tripDistribution) throw std::invalid_argument("--deterrence and --skim-mode need --trip-distribution");
+        if ((deterrenceSet || skimMode || costMatrix) && !tripDistribution)
+            throw std::invalid_argument("--deterrence, --skim-mode and --cost-matrix need --trip-distribution");
         if (tripDistribution && (!deterrenceSet || tripRateSet || projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId ||
                                  seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases || waitCauses ||
                                  discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
-            throw std::invalid_argument("--trip-distribution needs --project and --deterrence and takes only --skim-mode, --csv and --data-dir");
+            throw std::invalid_argument("--trip-distribution needs --project and --deterrence and takes only --skim-mode, --cost-matrix, --csv and --data-dir");
         if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
         if (utdfUnsignalised && utdfFile.empty()) throw std::invalid_argument("--utdf-unsignalised needs --export-utdf");
         if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
@@ -440,7 +444,7 @@ int main(int argc, char** argv) {
         if (!projectFile.empty()) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
-            if (tripDistribution) return runTripDistributionProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""));
+            if (tripDistribution) return runTripDistributionProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""), costMatrix.value_or(""));
             if (tripRateSet) return runTripGenerationProject(projectFile, csvFile, data, *tripRateSet);
             if (macroPeriod) return runMacroPeriod(projectFile, csvFile, data, *macroPeriod);
             if (macroRunId) return runMacroPeriod(projectFile, csvFile, data, *macroRunId, true);

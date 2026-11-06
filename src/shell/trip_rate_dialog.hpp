@@ -13,4 +13,7 @@ struct TripRateFiles {
 // The project's own trip-rate sets: a list with Import (JSON), Export and Remove. Values are
 // edited outside MULTRA. Local until accepted; the caller commits the list in one History step.
 std::optional<std::vector<TripRateSet>> editTripRateSets(QWidget*, const ProjectDocument&, const DialogText&, const TripRateFiles&);
+// M10.3 D2 (TRIP_DISTRIBUTION §6, D474): the project's deterrence sets and cost matrices, in the same dialog.
+std::optional<std::vector<DeterrenceSet>> editDeterrenceSets(QWidget*, const ProjectDocument&, const DialogText&, const TripRateFiles&);
+std::optional<std::vector<CostMatrix>> editCostMatrices(QWidget*, const ProjectDocument&, const DialogText&, const TripRateFiles&);
 }
