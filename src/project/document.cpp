@@ -99,7 +99,9 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool generated=std::any_of(d.zones.odMatrices.begin(),d.zones.odMatrices.end(),[](const auto& m){return !m.generatedBy.empty();});
     const bool nested=std::any_of(d.modeChoiceSets.begin(),d.modeChoiceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return !p.nests.empty();});});
-    return nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool toDestinations=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
+        return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
+    return toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -279,12 +281,13 @@ ProjectDocument parseDocument(const Json& j) {
     d.tripRateSets = parseOwnedTripRateSets(j);
     for (const auto* key : {"deterrenceSets", "costMatrices"})
         if (version < 67 && j.contains(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", key}});
-    if (version < 68 && j.contains("deterrenceSets") && j.at("deterrenceSets").is_array()) // D3 (D476)
+    if (version < 72 && j.contains("deterrenceSets") && j.at("deterrenceSets").is_array()) // D3 (D476): 68; D4 "destination" (D482): 72
         for (std::size_t i = 0; i < j.at("deterrenceSets").size(); ++i) {
             const auto& set = j.at("deterrenceSets")[i];
             if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
             for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
-                if (set.at("purposes")[k].is_object() && set.at("purposes")[k].contains("constraint"))
+                if (const auto& purpose = set.at("purposes")[k]; purpose.is_object() && purpose.contains("constraint") &&
+                    (version < 68 || purpose.at("constraint") == "destination"))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "deterrenceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].constraint"}});
         }
     d.deterrenceSets = parseOwnedDeterrenceSets(j);

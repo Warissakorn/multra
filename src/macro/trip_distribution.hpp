@@ -15,7 +15,9 @@ struct DistributionSettings {
 };
 // D3 (§15, D476): doubly balances both trip ends; origin meets the productions only (Eq. 5.16,
 // B_j = 1), the attractions being weights and the columns floating.
-enum class DistributionConstraint { doubly, origin };
+// D4 (§16, D482): destination meets the attractions only (A_i = 1, Eq. 5.14 with 5.18, p. 183), the
+// productions being weights and the rows floating.
+enum class DistributionConstraint { doubly, origin, destination };
 // A refusal located by index (§4); the project layer turns it into a path.
 struct DistributionIssue {
     enum class Code { unbalanced, rowImpossible, columnImpossible } code{};
@@ -45,7 +47,7 @@ struct DistributionInput {
     double beta{};                    // per minute, > 0
     double intrazonalShare{};         // in [0, 1): T_ii = s min(P_i, A_i) set aside (choice 2a)
     bool useDiagonal{};               // false: f_ii = 0 (the diagonal leaves the gravity model)
-    DistributionConstraint constraint{DistributionConstraint::doubly}; // origin: T_ii = s P_i set aside (choice 4a)
+    DistributionConstraint constraint{DistributionConstraint::doubly}; // origin: T_ii = s P_i set aside (choice 4a); destination: s A_i (§16)
 };
 struct DistributionResult {
     DistributionMatrix trips;         // the set-aside intrazonal trips included on the diagonal

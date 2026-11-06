@@ -116,7 +116,7 @@ TEST(tripdistributionorigin, td19_refusals_and_schema_68) { // TD19
     CHECK(unreachable.issues.size() == 1 && unreachable.issues[0].zone == 0);
     auto bad = readJson(tdData() / "deterrence/hand-origin.json");
     CHECK(parseDeterrenceSet(bad, "d", true).purposes[0].constraint == std::optional<std::string>("origin"));
-    bad["purposes"][0]["constraint"] = "destination";
+    bad["purposes"][0]["constraint"] = "both"; // D482 admits "destination"
     CHECK(has(refuses([&] { parseDeterrenceSet(bad, "d", true); }), "INVALID_DETERRENCE_SET", "d.purposes[0].constraint"));
     auto d = fixture();
     d.deterrenceSets = {parseDeterrenceSet(readJson(tdData() / "deterrence/hand-origin.json"), "d", true)};

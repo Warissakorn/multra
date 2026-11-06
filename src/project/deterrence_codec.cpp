@@ -59,7 +59,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
             }
             if (item.contains("constraint")) {
                 const auto& c = item.at("constraint");
-                if (!c.is_string() || (c.get<std::string>() != "double" && c.get<std::string>() != "origin")) bad(issues, at + ".constraint");
+                if (!c.is_string() || (c.get<std::string>() != "double" && c.get<std::string>() != "origin" && c.get<std::string>() != "destination")) bad(issues, at + ".constraint");
                 else p.constraint = c.get<std::string>();
             }
             set.purposes.push_back(std::move(p));

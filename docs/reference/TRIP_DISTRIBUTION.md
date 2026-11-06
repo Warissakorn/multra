@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D472) as a contract with nine owner choices (§11), after slice D0 read
 Ortúzar and Willumsen Ch. 5 from the page images ([evidence](../evidence/ortuzar-ch5-trip-distribution.md)).
-The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). Singly constrained purposes are contracted in §15 (D475); the owner answered 1a–5a and D3 is implemented (D476). This is the second four-step stage
+The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). Singly constrained purposes are contracted in §15 (D475); the owner answered 1a–5a and D3 is implemented (D476). Destination-constrained purposes (D4) are §16 (D482). This is the second four-step stage
 ([MACRO_NETWORK](MACRO_NETWORK.md) §1, §15; [TRIP_GENERATION](TRIP_GENERATION.md) §9). It turns each
 purpose's productions and balanced attractions into a production–attraction (P-A) trip table,
 using a gravity model with exponential deterrence balanced by Furness, as D158 chose.
@@ -111,7 +111,7 @@ textbook example checks arithmetic, not behaviour, and removes no marker ([BOOKS
 
 - **A deterrence set** is the analogue of a trip-rate set (TRIP_GENERATION §6.1):
   `{id, name, citation, table, function: "exponential", costUnit: "min", purposes: [{id, beta, intrazonalShare?, constraint?}]}`.
-  `constraint` is `"double"` (the default when absent) or `"origin"` (§15, D476).
+  `constraint` is `"double"` (the default when absent), `"origin"` (§15, D476) or `"destination"` (§16, D482).
   - Purposes match the trip-rate set's purpose ids. A rate-set purpose missing from the
     deterrence set is `DISTRIBUTION_PURPOSE_MISSING` at `<setPath>.purposes`.
   - β must be finite and > 0, and a share must be in [0, 1). Faults are
@@ -236,6 +236,7 @@ The owner: "ตามแนะนำ". The options are kept for the record.
 | D1 | Deterrence codec and catalog, the free-flow skim, `src/macro/trip_distribution`, the run, JSON/CSV and `--trip-distribution`. **Implemented (D473)** | TD1–TD11 |
 | D2 | Owned deterrence sets and cost matrices at schema 67, the *Deterrence sets…* dialog, the *Trip distribution* page. **Implemented (D474)** | TD12–TD14 |
 | D3 | Singly constrained purposes (§15). **Contract written (D475); implemented (D476)** | TD15–TD20 |
+| D4 | Destination-constrained purposes (§16). **Contract and implementation (D482)** | TD21–TD26 |
 
 ## 13. Acceptance rows (implemented: TD1–TD11 D473, TD12–TD14 D474, TD15–TD20 D476)
 
@@ -258,6 +259,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | TD13 | Editor page | A run is no History step; rows per purpose and pair; a network or attribute edit marks it stale |
 | TD14 | Shipped projects | Every Micro, Meso, Macro and generation output byte-identical |
 | TD15–TD20 | Singly constrained | §15.3 |
+| TD21–TD26 | Destination constrained | §16 |
 
 ## 14. As implemented (D1, D473)
 
@@ -417,3 +419,42 @@ The owner: "เอาตามแนะนำ". The options are kept for the rec
     `tests/data/trip-distribution/deterrence/hand-origin.json`;
   - `trip-distribution-ui` (TD20 on the page).
 - **Fixture result:** TD15 reproduces every Table 5.5 cell to the printed decimal.
+
+## 16. Destination-constrained purposes (D4, D482)
+
+D476 choice 1a booked this for later. The owner then said "งานถัดไปตามแนะนำ", so the
+recommended options below stand as the answers. The contract and the implementation are recorded
+together (D482).
+
+- **Model** (p. 183, [evidence §6](../evidence/ortuzar-ch5-trip-distribution.md#6-singly-constrained-d3-contract-d475)):
+  - A_i = 1 in Eq. 5.14 with B_j from Eq. 5.18, giving T_ij = A*_j · P_i f_ij / Σ_k P_k f_kj;
+  - this is one column normalisation; the productions are weights, and the rows float;
+  - the totals stay Σ P, because the attractions are balanced by Eq. 4.14.
+- **Choices (all a, recommended):**
+  1. the value `"destination"` of the same `constraint` field;
+  2. an owned set that uses it saves at **schema 72**, and below 72 the value is
+     `EDIT_UNSUPPORTED_FIELD` at its path; `"origin"` keeps 68;
+  3. T_ii = s · A*_i, the mirror of choice 4a in §15;
+  4. the outputs (below).
+- **Outputs:**
+  - **JSON:** `constraint: "destination"` and `productionsModelled` (row sums);
+  - **CSV:** the comment line ends `; destination constrained (rows not balanced)`;
+  - **Page:** the note lists the modelled and input productions per zone.
+  - Doubly and origin outputs keep their bytes.
+- **Refusal:** a column with A*_j > 0 that no producing zone reaches is
+  `DISTRIBUTION_COLUMN_IMPOSSIBLE` at `zones[j].<purpose>.attractions`.
+- **As implemented:**
+  - **Engine:** `distributeTrips` takes the origin path on the transposed problem (trip ends
+    swapped, costs transposed), transposes the trips back, swaps a and b, and reads a refused row as
+    a refused column. No new arithmetic.
+  - **Run:** `TripDistributionPurpose::productionsModelled` is filled for every purpose.
+  - **Fixture:** `deterrence/hand-destination.json`.
+- **Rows** (`tests/trip_distribution_destination_tests.cpp`, group `tripdistributiondestination`):
+  - **TD21:** Example 5.2 transposed reproduces Table 5.5 transposed to ±0.05, and equals the
+    transposed origin path exactly;
+  - **TD22:** the shares follow the weights, and scaling the productions changes nothing;
+  - **TD23:** T_ii = s · A_i;
+  - **TD24:** the refusals;
+  - **TD25:** schema 72;
+  - **TD26:** the outputs, with `cli-trip-distribution-destination` and `trip-distribution-ui`.
+  - D476's TD19 now tests the bad value `"both"`, since `"destination"` is valid.

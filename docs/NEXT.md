@@ -175,10 +175,11 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
 - **Nested logit done (D480 contract, D481 N1, [NESTED_LOGIT](reference/NESTED_LOGIT.md)):** two
   levels, φ per nest in (0, 1], nests at schema 71, the *Nests…* dialog; rows NL1–NL8 pass on
   Linux, Example 6.3's ten rows included.
-- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2
-  and N1).
+- **Destination-constrained distribution done (D482, TRIP_DISTRIBUTION §16):** `constraint:
+  "destination"` at schema 72; rows TD21–TD26 pass on Linux.
+- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2,
+  N1 and D4).
 - **Next, the owner's pick:**
-  - destination-constrained distribution;
   - the procedure sequence (MACRO_NETWORK §19 c), which can now chain the four steps;
   - congested-cost feedback (Ortúzar Ch. 11);
   - logsum feedback from mode choice into distribution (G/MS/D/A, §6.5.2).

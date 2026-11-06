@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.3 D4: destination-constrained purposes (D482)
+
+- **Owner:** "งานถัดไปตามแนะนำ"; the recommended options (all a) stand.
+- **D482 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §16):**
+  - `constraint: "destination"` (A_i = 1, p. 183, re-read from the page image), computed as the
+    origin path on the transposed problem;
+  - T_ii = s · A*_i, and owned sets using it at schema 72;
+  - `productionsModelled`, the CSV suffix and the page note.
+- **Rows:** `tripdistributiondestination` (TD21–TD25: Example 5.2 transposed, weights, intrazonal,
+  refusals, schema 72), `cli-trip-distribution-destination` and `trip-distribution-ui` (TD26).
+  TD19's bad value is now `"both"`. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
 
 - **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the
@@ -127,17 +140,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D472 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)):** gravity with exponential deterrence
   over M10.2's ends, row-first Furness, a free-flow skim, deterrence sets as data (none shipped),
   rows TD1–TD14, slices D0–D2, and nine owner choices. Docs only.
-
-## 2026-11-06 — M10.2 G2: owned rate sets, zone attributes, Trip generation page (D471)
-
-- **Owner:** "เริ่มเลย" on G2; chose attributes in the Edit Zone dialog and a rate-set list with
-  Import/Export JSON (over table columns and a form editor).
-- **D471 ([TRIP_GENERATION](reference/TRIP_GENERATION.md) §6.2, §6.3, §14):** `tripRateSets` at
-  schema 66, looked up before the catalog (a same-id clash is refused); `setTripRateSets`; the
-  Edit Zone attribute table; *Trip-rate sets…*; a self-owned *Trip generation* Results page.
-- **Rows:** `triprateowned` (TG11 codec, command, lookup) and `trip-generation-ui` (TG11 save,
-  TG13, TG14, the dialog). `utdf` and `workspace-ui` updated for schema 66 and the ninth Results tab.
-- **Environment:** installed Qt 6.4.2, PROJ and xkbcommon; a Debug build with debug info filled
-  the disk (23 GB), so both presets were built with `-g0`.
-- **Verified:** `ctest --preset desktop` 283/283 and `check` pass; `ctest --preset headless`
-  181/181. Linux offscreen only; Windows not checked (OWNER_SITTING 42).

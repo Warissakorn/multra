@@ -175,6 +175,20 @@ int main(int argc, char** argv) {
         runPanel(panel);
         require(panel->exportable() && note->text().indexOf("origin constrained") >= 0, "TD20: the note names the constraint");
         require(panel->csv().find("origin constrained") != std::string::npos, "TD20: the CSV names the constraint");
+
+        // TD26 (D482): a destination-constrained owned set saves at 72 and its note names the constraint.
+        auto destinationSet = deterrence; destinationSet["id"] = "destination-own"; destinationSet["purposes"][0]["constraint"] = "destination";
+        fixture["deterrenceSets"] = Json::array({deterrence, destinationSet}); fixture["schemaVersion"] = 72;
+        const auto destinationProject = dir.filePath("destination.traffic.json");
+        std::ofstream(destinationProject.toStdString()) << fixture.dump(1);
+        w.openFile(destinationProject); QApplication::processEvents();
+        require(d().deterrenceSets.size() == 2 && d().deterrenceSets[1].purposes[0].constraint == std::optional<std::string>("destination"),
+                "TD26: the destination set opens at schema 72");
+        choose(item<QComboBox>(*panel, "editorTripDistributionRateSet"), "one-way");
+        choose(item<QComboBox>(*panel, "editorTripDistributionDeterrence"), "destination-own");
+        runPanel(panel);
+        require(panel->exportable() && note->text().indexOf("destination constrained") >= 0, "TD26: the note names the constraint");
+        require(panel->csv().find("destination constrained (rows not balanced)") != std::string::npos, "TD26: the CSV names the constraint");
         std::cout << "trip-distribution-ui: passed\n";
         return 0;
     } catch (const std::exception& e) {

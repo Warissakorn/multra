@@ -86,6 +86,7 @@ Read for [TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §15.
 | Model | §5.3.2, Eq. (5.16): one set of balancing factors set to 1; origin constrained: B_j = 1, A_i = 1 / Σ_j D_j f(c_ij) | 183 / 205 | `p205-math-0239.png` | T_ij = O_i · D_j f_ij / Σ_k D_k f_ik. One row normalisation; no iteration |
 | Fixture | Example 5.2, Tables 5.4 and 5.5: an origin-constrained growth factor; each row scaled once to its target O_i | 179–180 / 201–202 | `p201-table-051.png`, `p202-table-052.png` | The same arithmetic as one row pass with the prior in place of D_j f_ij |
 | Purposes | §5.8.4: work trips normally doubly constrained, most others singly | 202 / 224 | (text, §2 above) | Choice 9's later slice |
+| Destination form (D4, D482) | §5.3.2: "either origin or destination constrained" by setting one set of factors to 1; with A_i = 1, Eq. (5.14) and (5.18) give B_j = 1 / Σ_i O_i f(c_ij) | 183 / 205 | PDF p. 205, re-read 2026-11-06 | T_ij = O_i D_j f_ij / Σ_k O_k f_kj, one column normalisation. Not printed as its own equation; no printed example, so TD21 uses Example 5.2 transposed (TRIP_DISTRIBUTION §16) |
 
 - **Example 5.2 replayed** (prior of Table 5.4 = Table 5.6's; O = 400, 460, 400, 702):
   - every printed cell of Table 5.5 is reproduced to one decimal, e.g. row 1 `5.6 56.3 112.7 225.4`

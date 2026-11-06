@@ -215,6 +215,14 @@ void TripDistributionPanel::refresh() {
                                  " / " + editorDesign::formatValue(weights[z], 2);
                 lines << text("editorDistributionOriginConstrained").arg(QString::fromStdString(p.id), zones.join(", "));
             }
+            if (p.constraint == DistributionConstraint::destination) { // D4 (§16)
+                QStringList zones;
+                const auto& weights = r.generation.purposes[&p - r.purposes.data()].productions;
+                for (std::size_t z = 0; z < r.generation.zoneIds.size(); ++z)
+                    zones << QString::fromStdString(r.generation.zoneIds[z]) + " " + editorDesign::formatValue(p.productionsModelled[z], 2) +
+                                 " / " + editorDesign::formatValue(weights[z], 2);
+                lines << text("editorDistributionDestinationConstrained").arg(QString::fromStdString(p.id), zones.join(", "));
+            }
         }
         if (stale()) lines << text("editorTripStale").arg(r.generation.revision).arg(doc.revision);
     }

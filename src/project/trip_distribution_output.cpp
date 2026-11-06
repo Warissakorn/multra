@@ -37,6 +37,8 @@ Json tripDistributionJson(const TripDistributionRun& r) {
             {"a", d.a}, {"b", d.b}, {"intrazonal", d.intrazonal}, {"trips", d.trips}};
         // D3 (§15, choice 5a): written for an origin-constrained purpose only, so doubly outputs keep their bytes.
         if (p.constraint == DistributionConstraint::origin) { item["constraint"] = "origin"; item["attractionsModelled"] = p.attractionsModelled; }
+        // D4 (§16): likewise for a destination-constrained purpose, with the floating row sums.
+        if (p.constraint == DistributionConstraint::destination) { item["constraint"] = "destination"; item["productionsModelled"] = p.productionsModelled; }
         j["purposes"].push_back(std::move(item));
     }
     return j;
@@ -51,7 +53,8 @@ std::string tripDistributionCsv(const TripDistributionRun& r) {
     for (const auto& p : r.purposes)
         out << "# " << Json(p.id).dump() << ": beta " << p.beta << " per min; passes " << p.result.passes << "; error " << p.result.error
             << (p.result.converged ? "" : "; DISTRIBUTION_NOT_CONVERGED")
-            << (p.constraint == DistributionConstraint::origin ? "; origin constrained (columns not balanced)" : "") << ".\n";
+            << (p.constraint == DistributionConstraint::origin ? "; origin constrained (columns not balanced)"
+                : p.constraint == DistributionConstraint::destination ? "; destination constrained (rows not balanced)" : "") << ".\n";
     out << "purpose,originId,destinationId,trips,cost\n";
     for (const auto& p : r.purposes) {
         double total = 0;

@@ -79,9 +79,28 @@ DistributionResult distributeFromOrigins(const DistributionInput& in) {
     out.passes = r.passes; out.error = r.error; out.converged = r.converged;
     return out;
 }
+DistributionMatrix transposed(const DistributionMatrix& m) {
+    DistributionMatrix t(m.size(), std::vector<double>(m.size(), 0.0));
+    for (std::size_t i = 0; i < m.size(); ++i)
+        for (std::size_t j = 0; j < m.size(); ++j) t[j][i] = m[i][j];
+    return t;
+}
+// D4 (§16): T_ij = A_j P_i f_ij / sum_k P_k f_kj, the origin path on the transposed problem: trip ends swapped,
+// costs transposed, the result transposed back, a and b swapped, a refused row read as a refused column.
+DistributionResult distributeFromDestinations(const DistributionInput& in) {
+    auto swapped = in;
+    swapped.productions = in.attractions; swapped.attractions = in.productions; swapped.costs = transposed(in.costs);
+    auto out = distributeFromOrigins(swapped);
+    for (auto& i : out.issues) i.code = DistributionIssue::Code::columnImpossible;
+    if (!out.issues.empty()) return out;
+    out.trips = transposed(out.trips);
+    std::swap(out.a, out.b);
+    return out;
+}
 }
 DistributionResult distributeTrips(const DistributionInput& in, const DistributionSettings& settings) {
     if (in.constraint == DistributionConstraint::origin) return distributeFromOrigins(in);
+    if (in.constraint == DistributionConstraint::destination) return distributeFromDestinations(in);
     const auto n = in.productions.size();
     DistributionResult out;
     if (std::abs(sum(in.productions) - sum(in.attractions)) > 1e-9 * std::max(sum(in.productions), sum(in.attractions))) {

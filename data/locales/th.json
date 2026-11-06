@@ -1665,6 +1665,7 @@
   "editorDistributionSummary": "ชุดอัตรา %1 ชุดค่า deterrence %2 หน่วย: %3",
   "editorDistributionPurpose": "%1: beta %2, %3 รอบ, คลาด %4 %, เวลาเฉลี่ย %5 นาที",
   "editorDistributionOriginConstrained": "%1: บังคับด้านต้นทาง (ไม่ปรับยอดคอลัมน์); ยอดเข้าที่โมเดลได้ / ค่าน้ำหนักที่ใส่: %2",
+  "editorDistributionDestinationConstrained": "%1: บังคับด้านปลายทาง (ไม่ปรับยอดแถว); ยอดออกที่โมเดลได้ / ค่าน้ำหนักที่ใส่: %2",
   "DISTRIBUTION_SET_UNKNOWN": "ไม่มีชุดค่า deterrence ที่มี id นี้ ทั้งในโปรเจกต์และใน catalog",
   "DISTRIBUTION_PURPOSE_MISSING": "ชุดค่า deterrence ไม่มี beta ของวัตถุประสงค์บางข้อในชุดอัตรา",
   "DISTRIBUTION_UNBALANCED": "ยอดรวม production กับ attraction ไม่เท่ากัน",

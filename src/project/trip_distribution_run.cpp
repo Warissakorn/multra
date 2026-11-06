@@ -40,7 +40,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         const auto match = std::find_if(ps.begin(), ps.end(), [&](const auto& q) { return q.id == p.id; });
         if (match == ps.end()) throw ValidationError({{"DISTRIBUTION_PURPOSE_MISSING", run.deterrencePath + ".purposes"}});
         run.purposes.push_back({p.id, match->beta, match->intrazonalShare.value_or(0.0), {}, 0.0, {},
-                                match->constraint == "origin" ? DistributionConstraint::origin : DistributionConstraint::doubly, {}});
+                                match->constraint == "origin" ? DistributionConstraint::origin :
+                                match->constraint == "destination" ? DistributionConstraint::destination : DistributionConstraint::doubly, {}, {}});
     }
 
     enter(TripDistributionStage::costs);
@@ -77,6 +78,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         purpose.bands = tripLengthBands(purpose.result.trips, costs, run.bandWidth);
         purpose.attractionsModelled.assign(costs.size(), 0.0);
         for (const auto& row : purpose.result.trips) for (std::size_t j = 0; j < row.size(); ++j) purpose.attractionsModelled[j] += row[j];
+        purpose.productionsModelled.clear();   // D4 (§16): the row sums, which float when destination-constrained
+        for (const auto& row : purpose.result.trips) { double t = 0; for (const double x : row) t += x; purpose.productionsModelled.push_back(t); }
     }
     if (!issues.empty()) throw ValidationError(std::move(issues));
     if (manifest) { manifest->validate(); run.generation.inputManifest = manifest->json(); }

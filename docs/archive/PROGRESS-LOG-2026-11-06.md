@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.2 G2: owned rate sets, zone attributes, Trip generation page (D471)
+
+- **Owner:** "เริ่มเลย" on G2; chose attributes in the Edit Zone dialog and a rate-set list with
+  Import/Export JSON (over table columns and a form editor).
+- **D471 ([TRIP_GENERATION](../reference/TRIP_GENERATION.md) §6.2, §6.3, §14):** `tripRateSets` at
+  schema 66, looked up before the catalog (a same-id clash is refused); `setTripRateSets`; the
+  Edit Zone attribute table; *Trip-rate sets…*; a self-owned *Trip generation* Results page.
+- **Rows:** `triprateowned` (TG11 codec, command, lookup) and `trip-generation-ui` (TG11 save,
+  TG13, TG14, the dialog). `utdf` and `workspace-ui` updated for schema 66 and the ninth Results tab.
+- **Environment:** installed Qt 6.4.2, PROJ and xkbcommon; a Debug build with debug info filled
+  the disk (23 GB), so both presets were built with `-g0`.
+- **Verified:** `ctest --preset desktop` 283/283 and `check` pass; `ctest --preset headless`
+  181/181. Linux offscreen only; Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.2 G1: trip generation engine, run, outputs and CLI (D470)
 
 - **Owner:** "เริ่มเลย" on G1.
