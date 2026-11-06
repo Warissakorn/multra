@@ -162,7 +162,7 @@ textbook example checks arithmetic, not behaviour, and removes no marker ([BOOKS
 
 ## 9. Seams
 
-- **M10.4** reads each purpose's P-A matrix and unit. It owns the conversion to OD and to
+- **M10.4** ([MODE_CHOICE](MODE_CHOICE.md), D477) reads each purpose's P-A matrix and unit. It owns the conversion to OD and to
   vehicles, and the period factor.
 - **M10.1:** distribution never writes `odMatrices` (choice 6a). The skim uses the same compiled
   graph and Dijkstra as assignment, so a network change shows in both.

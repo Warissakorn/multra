@@ -156,11 +156,16 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42).
 - **D3 done (D475 contract, D476 code):** origin-constrained purposes by a per-purpose
   `constraint` in the deterrence set (schema 68), TRIP_DISTRIBUTION §15; rows TD15–TD20.
-- **Then, the owner's pick:**
-  - destination-constrained purposes (booked by choice 1a);
-  - M10.4 (P-A to OD, persons to vehicles, the period factor, mode choice; starts with its
-    contract and Ortúzar Ch. 6–7 read from the page images).
-  - Open from D1: whether the Furness target and cap become a document setting.
+- **Later:** destination-constrained purposes (booked by choice 1a); whether the Furness target
+  and cap become a document setting (open from D1).
+
+## M10.4 mode choice — contract written (D477); waiting for the owner's answers
+
+- [MODE_CHOICE](reference/MODE_CHOICE.md), after M0 read Ortúzar §5.4.4 and Ch. 6–7
+  ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)): an MNL split per purpose, P-A to OD by
+  period shares, occupancy, and generated `odMatrices`.
+- **Owner:** answer §10's eight choices (recommended 1a–8a). Slice E1 (rows MC1–MC10) starts on
+  the answer, then E2 (MC11–MC14).
 
 ## Next session — the owner's pick
 

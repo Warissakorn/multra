@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.4 contract: mode choice and OD conversion (D477)
+
+- **Owner:** "ทำงานถัดไปตามแนะนำ".
+- **M0:** read Ortúzar §5.4.4 and Ch. 6–7 from the page images
+  ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)):
+  - Examples 6.2 and 6.3 reproduce, including every row of the λ₁ table;
+  - MNL (7.9) and the NL condition φ ≤ 1;
+  - no book value for occupancy or period shares.
+- **D477 ([MODE_CHOICE](reference/MODE_CHOICE.md)), docs only:** eight owner choices, slices
+  E1–E2, rows MC1–MC14.
+
 ## 2026-11-06 — M10.3 D3: origin-constrained purposes (D476)
 
 - **Owner:** "เอาตามแนะนำ" on TRIP_DISTRIBUTION §15.2 (1a–5a).
@@ -126,15 +137,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Open:** eight owner choices, OWNER_SITTING B42.
 - **Verified:** `check_docs` and `check_file_sizes` pass, compiled directly with g++; the headless
   preset did not configure here (nlohmann/json not installed), so no CMake build or ctest ran. Docs only.
-
-## 2026-11-05 — Review fixes to D464–D466 (D467)
-
-- **Owner:** asked for a fix for each review finding, then "ข้อ 1 ไม่แก้ … ที่เหลือเอาตามแนะนำ".
-- **Fixed:** the shadow kept its size on high-DPI screens (it was half size at ratio 2); it no
-  longer copies the body path per paint; one palette parser; the head frame reads `ahead`.
-- **New checks:** painted casings over a road; every drawn pole off the road, in the shipped
-  signalised projects and at a Connector mouth; type palette refusals.
-- **Kept:** dark casings for a user's dark colours (the shadow shows them); a head box past its
-  stop line still takes clicks there. The run-overlay policy waits for a third overlay.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
-  checked (the high-DPI fix is tested on an offscreen ratio-2 image, not a real 200 % screen).

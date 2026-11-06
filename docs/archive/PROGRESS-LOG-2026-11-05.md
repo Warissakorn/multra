@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — Review fixes to D464–D466 (D467)
+
+- **Owner:** asked for a fix for each review finding, then "ข้อ 1 ไม่แก้ … ที่เหลือเอาตามแนะนำ".
+- **Fixed:** the shadow kept its size on high-DPI screens (it was half size at ratio 2); it no
+  longer copies the body path per paint; one palette parser; the head frame reads `ahead`.
+- **New checks:** painted casings over a road; every drawn pole off the road, in the shipped
+  signalised projects and at a Connector mouth; type palette refusals.
+- **Kept:** dark casings for a user's dark colours (the shadow shows them); a head box past its
+  stop line still takes clicks there. The run-overlay policy waits for a third overlay.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
+  checked (the high-DPI fix is tested on an offscreen ratio-2 image, not a real 200 % screen).
+
 ## 2026-11-05 — Signal heads past the stop line; dark vehicle casings (D466)
 
 - **Owner:** asked whether to move the pole past the stop line, use dark casings only and hang

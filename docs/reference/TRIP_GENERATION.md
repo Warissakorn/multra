@@ -213,7 +213,7 @@ The values above illustrate the shape and are not a source. Rules:
 
 - **M10.3 distribution** ([TRIP_DISTRIBUTION](TRIP_DISTRIBUTION.md), D472) reads `P_i` and `A*_i` per purpose and the set's `unit`; it, not M10.2,
   turns them into trip tables. Its doubly-constrained gravity needs `ΣP = ΣA*`, which §4 gives.
-- **M10.4 mode choice** owns person-to-vehicle conversion and the study-period factor (§5).
+- **M10.4 mode choice** ([MODE_CHOICE](MODE_CHOICE.md), D477) owns person-to-vehicle conversion and the study-period factor (§5).
 - **The procedure sequence** (MACRO_NETWORK §19 c) gains a Generation stage that calls the same
   run function; nothing here assumes one.
 - **Gate zones and boundary flows** (choice 6b's later slice; S5): a gate zone's trip ends come
