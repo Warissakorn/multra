@@ -1,6 +1,7 @@
 #include "trip_rate_dialog.hpp"
 #include "mode_choice_nests_dialog.hpp"
 #include "owned_list_dialog.hpp"
+#include <QStringList>
 #include <nlohmann/json.hpp>
 
 namespace multra {

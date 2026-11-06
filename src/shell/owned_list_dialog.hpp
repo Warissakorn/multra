@@ -5,6 +5,7 @@
 #include "od_lot_dialogs.hpp"
 #include "trip_rate_dialog.hpp"
 #include "../project/json.hpp"
+#include <QStringList>
 #include <functional>
 #include <optional>
 #include <string>

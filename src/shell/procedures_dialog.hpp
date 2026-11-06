@@ -6,6 +6,7 @@
 // refusal's code and path in place. Local until accepted; the caller commits it in one History step.
 #include "od_lot_dialogs.hpp"
 #include "../project/document.hpp"
+#include <QStringList>
 #include <optional>
 
 namespace multra {
