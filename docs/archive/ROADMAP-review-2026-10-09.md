@@ -129,7 +129,7 @@ owner ordered it (D130): the ordering rule, not capacity, was the constraint.
 ## 8. Owner questions (answer by letter)
 
 **Answered 2026-10-09: every recommendation accepted (R1 a, R2 a then b, R3 c, R4 a with b, R5 a,
-R6 a, R7 a, R8 a), recorded as [D143](../decisions/RECORD.md#d143).**
+R6 a, R7 a, R8 a), recorded as [D143](../decisions/RECORD-D001-D199.md#d143).**
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|

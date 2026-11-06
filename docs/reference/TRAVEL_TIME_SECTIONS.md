@@ -1,8 +1,8 @@
 # Travel-time sections (M5.4)
 
 What a travel-time section is, how a run measures it and what it writes. Decisions:
-[D130](../decisions/RECORD.md#d130) (LOS from section delay, owner answer O3 (b)) and
-[D133](../decisions/RECORD.md#d133) (this contract). A section's delay is the quantity M5.5 will
+[D130](../decisions/RECORD-D001-D199.md#d130) (LOS from section delay, owner answer O3 (b)) and
+[D133](../decisions/RECORD-D001-D199.md#d133) (this contract). A section's delay is the quantity M5.5 will
 give an LOS letter; until then every figure is **simulated section delay, not HCM control delay or
 LOS, and not validated** (rule 4). Whole-route movement delay (D39) is unchanged and never gets a
 letter.

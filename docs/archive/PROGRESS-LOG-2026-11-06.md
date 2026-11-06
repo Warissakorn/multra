@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 D3 contract: singly constrained purposes (D475)
+
+- **Owner:** asked for an explanation of singly constrained models, then "ทำงานต่อไปตามแนะนำ".
+- **D475 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §15), docs only:**
+  - Eq. (5.16) (p. 183) read from the page image;
+  - Example 5.2 (Tables 5.4–5.5) replayed as the fixture, with a misprinted column sum (701.2 for
+    710.2) ([evidence](../evidence/ortuzar-ch5-trip-distribution.md) §6);
+  - raw and balanced attractions shown to give the same trips;
+  - five owner choices; rows TD15–TD20.
+- **Not done:** no code. Slice D3 waits for the owner's answers.
+
 ## 2026-11-06 — M10.3 D2: owned deterrence sets and cost matrices, Trip distribution page (D474)
 
 - **Owner:** "เริ่มเลย" on D2.

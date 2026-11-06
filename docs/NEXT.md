@@ -181,8 +181,6 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   owner chose a general step list, in-memory matrices, stored procedures (schema 73), feedback
   later. **P1 done (D484):** schema 73, `runProcedure`, `--procedure`; rows PS1–PS9 pass on Linux.
   **P2 done (D485):** *Procedures…* and the *Procedure* page (PS10).
-- **Housekeeping before D486:** `docs/decisions/RECORD.md` is at the 500-line limit; the owner
-  chooses how to split it (AGENTS says to append there).
 - **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2,
   N1 and D4).
 - **Next, the owner's pick:**

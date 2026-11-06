@@ -416,7 +416,7 @@ result of every level carries the not-yet-validated marker until that level's M6
 passes. M8 is code complete (gate open); M9–M12 are not started; each slice begins with its
 contract and acceptance rows. **Equal weight (D378):** open level work follows the study chain, M10.2–M10.4,
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
-**Amended 2026-10-15 ([D175](decisions/RECORD.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
+**Amended 2026-10-15 ([D175](decisions/RECORD-D001-D199.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
 Street segments with cross-section templates replace centreline-only Links; M12's stored cut becomes a
 run-time cut over a study area. M9–M11 keep their engine scopes and gates; no gate moves.

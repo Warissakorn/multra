@@ -1,7 +1,7 @@
 # M5 plan — multi-seed results, LOS and report tables (2026-10-08)
 
 The owner asked for the shortest path to real study use and answered the roadmap review's
-O1, O3, O8 and O9 ([D130](../decisions/RECORD.md#d130)). This plan numbers the slices that
+O1, O3, O8 and O9 ([D130](../decisions/RECORD-D001-D199.md#d130)). This plan numbers the slices that
 carry the back half of the [PROBLEM §4](../PROBLEM.md#4-what-done-looks-like) sentence:
 "runs 10 seeds, and gets a movement-level delay and LOS table they can paste into a report".
 [ROADMAP](../ROADMAP.md#m5--evaluation-and-reporting) owns the M5 scope and gate;

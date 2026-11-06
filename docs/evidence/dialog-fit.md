@@ -2,7 +2,7 @@
 
 Branch `claude/adoring-feynman-63tgnt` on `main` `048cc89`, plus D318. Local host: Linux, GCC 13.3.0,
 Ninja, Qt 6.4.2 offscreen, `--preset desktop`. **Linux only;** Windows paint and high-DPI belong to
-`native.yml` and the owner. Decision: [D318](../decisions/RECORD.md#d318).
+`native.yml` and the owner. Decision: [D318](../decisions/RECORD-D200-D399.md#d318).
 
 ## Method
 

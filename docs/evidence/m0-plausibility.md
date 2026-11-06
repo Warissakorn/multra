@@ -1,6 +1,6 @@
 # M0 plausibility — measured run and SUMO comparison, 2026-10-27
 
-Evidence for the owner's M0 ruling ([D369](../decisions/RECORD.md#d369)). It is an observation aid
+Evidence for the owner's M0 ruling ([D369](../decisions/RECORD-D200-D399.md#d369)). It is an observation aid
 and a cross-tool comparison. It is **not** calibration or validation: M6 and the unvalidated marker
 (D13) are unaffected.
 

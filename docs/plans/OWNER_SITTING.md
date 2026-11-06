@@ -64,7 +64,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Also: PROBLEM §1 now names two equal roles (study engineers and consultants; transport
    planners), with road and signal agencies doing the same work, as following from the equal
    weight. Correct that wording? *Owner:*
-29. **Road-model review follow-up** (listed 2026-10-28, [D382](../decisions/RECORD.md#d382)). Each is a
+29. **Road-model review follow-up** (listed 2026-10-28, [D382](../decisions/RECORD-D200-D399.md#d382)). Each is a
    choice, recommended first: (a) generated Nodes resize to their arms' templates, needing a "derived
    polygon" mark apart from `generated`, or keep D382's refusal only; (b) one turn key across levels,
    Street segment id plus end, for coarse values and Node-analysis volumes (a schema step), or keep Link ids and
@@ -82,41 +82,41 @@ Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../deci
 
 Answered 2026-10-29: **B31**, owner: defer all-way-stop generation until A5 or U1 needs it;
 keep the fill listed but disabled (`FILL_NODE_ALL_WAY_STOP`), leave StopControl unchanged and
-use no schema 63 ([D399](../decisions/RECORD.md#d399)).
+use no schema 63 ([D399](../decisions/RECORD-D200-D399.md#d399)).
 
 Answered 2026-10-28: **B30**, owner: “B30 เอาตามแนะนำ” (“B30 as recommended”): JT-1a–JT-5a and
-UX-1a–UX-4a ([D388](../decisions/RECORD.md#d388)); U0 is a session plus the owner's import check.
+UX-1a–UX-4a ([D388](../decisions/RECORD-D200-D399.md#d388)); U0 is a session plus the owner's import check.
 Answered 2026-10-28: **B28**, owner: “ช่วยตัดสินใจ” (“help decide”), given after being told that
-item 1 reverses D373; decided on that delegation in [D380](../decisions/RECORD.md#d380): 1a, 2a.
+item 1 reverses D373; decided on that delegation in [D380](../decisions/RECORD-D200-D399.md#d380): 1a, 2a.
 Numbers are not reused.
 
 Answered 2026-10-28: **B27**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
-[D379](../decisions/RECORD.md#d379): 2a, 3a; 1a by B28 (D380); 4 returns to the owner only if HCM 7 prints no
+[D379](../decisions/RECORD-D200-D399.md#d379): 2a, 3a; 1a by B28 (D380); 4 returns to the owner only if HCM 7 prints no
 planning-level method for a Node without lane detail. Bookings only; each slice starts when the owner asks. Numbers are not reused.
 
 Answered 2026-10-27: **B25**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
-[D375](../decisions/RECORD.md#d375): M13 A3's choices 1a–5a ([NODE_ANALYSIS](../reference/NODE_ANALYSIS.md) §12). Numbers are not reused.
+[D375](../decisions/RECORD-D200-D399.md#d375): M13 A3's choices 1a–5a ([NODE_ANALYSIS](../reference/NODE_ANALYSIS.md) §12). Numbers are not reused.
 
-Answered 2026-10-23: **B23**, owner: “เอาตามแนะนำ” (“as recommended”), [D315](../decisions/RECORD.md#d315):
+Answered 2026-10-23: **B23**, owner: “เอาตามแนะนำ” (“as recommended”), [D315](../decisions/RECORD-D200-D399.md#d315):
 QM (c), M1-d with M1-b, M2-c with M2-b, not-blind cases as verification only, Boyles et al. 2025
 supplied as a Markdown repository or with `arxiv.org` allowed. Numbers are not reused.
 
 Answered 2026-10-23 (in chat, AskUserQuestion): **S4's four choices**, as recommended,
-[D313](../decisions/RECORD.md#d313): S4-1a, S4-2a, S4-3a, S4-4a ([READINESS](../reference/READINESS.md) §8).
+[D313](../decisions/RECORD-D200-D399.md#d313): S4-1a, S4-2a, S4-3a, S4-4a ([READINESS](../reference/READINESS.md) §8).
 
-Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD.md#d304):
+Answered 2026-10-22: **B24**, owner: “เอาตามแนะนำ” (“as recommended”), [D304](../decisions/RECORD-D200-D399.md#d304):
 S3's choices 1a, 2a, 3a, 4a, 5a, 6b, 7a ([STREET_SEGMENTS](../reference/STREET_SEGMENTS.md) §11). Numbers are not reused.
 
-Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD.md#d292):
+Answered 2026-10-21: **B20**, owner: “เอาตามแนะนำ” (“as recommended”), [D292](../decisions/RECORD-D200-D399.md#d292):
 Meso choices 1a–7a ([MESO_NETWORK](../reference/MESO_NETWORK.md) §11). Numbers are not reused.
 
 Answered 2026-10-17: **B19**, owner: “ช่วยตัดสินใจ” (“help decide”), decided on that delegation in
-[D214](../decisions/RECORD.md#d214): the [tiers](../reference/BEHAVIOUR_PARAMETERS.md) stand, the 50 km/h
+[D214](../decisions/RECORD-D200-D399.md#d214): the [tiers](../reference/BEHAVIOUR_PARAMETERS.md) stand, the 50 km/h
 lateral reference moves to fixed, and tier B is ordered by effect on Thai study outputs (kerb bias,
 commitment deceleration, merge deceleration, speed limits, …). Numbers are not reused.
 
 Answered 2026-10-16: **B1, B2, B3, B5, B6, B8, B12, B13**, owner: “ปิดตามข้อเสนอ” (“close as
-proposed”), [D201](../decisions/RECORD.md#d201). Keep `TrafficSim` until a release; D95/D101 stay off
+proposed”), [D201](../decisions/RECORD-D200-D399.md#d201). Keep `TrafficSim` until a release; D95/D101 stay off
 and reopen only by route (i) in M3.4; the `level` skip is a discrepancy with M3_CONTRACT, queued as
 a fix in NEXT; the standstill cap joins M3.2.8a.1; more routing stations wait for a study that needs
 them; `four-leg-signalised` gets a 300 s cool-down (done 2026-10-25, D337); B12 is asked when multi-level S1
@@ -130,10 +130,10 @@ request those features. The [proposal](UI_PRESENTATION_SPEC.md) and
 by slice 0. Numbers B16–B18 are not reused.
 
 Answered 2026-10-15: the fourteen multi-level workflow questions, as recommended
-([D175](../decisions/RECORD.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9); B14 and B15, moved out
-([D178](../decisions/RECORD.md#d178): order accepted, keep-left default, standard motorcycle values for now).
-Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d158)), B11
-([D159](../decisions/RECORD.md#d159)). Numbers are not reused.
+([D175](../decisions/RECORD-D001-D199.md#d175), [workflow](MULTI_LEVEL_WORKFLOW.md) §9); B14 and B15, moved out
+([D178](../decisions/RECORD-D001-D199.md#d178): order accepted, keep-left default, standard motorcycle values for now).
+Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D199.md#d158)), B11
+([D159](../decisions/RECORD-D001-D199.md#d159)). Numbers are not reused.
 
 37–38. **J4T structure/cuts and polygon fitting:** answered and approved; [whole items B37–B38](../archive/OWNER_SITTING-B37-B38-2026-10-31.md), D416/D417.
 
@@ -279,7 +279,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    map provider: is that right, or should a plain georeference show it too? Is bottom-right the
    right corner, clear of the credit at every size? At 100/150/200 % on Windows, is the text
    unclipped? Linux offscreen evidence does not close this. *Owner:* 2026-10-16, north without a
-   map provider: “ควรแสดง” (show it), done as [D198](../decisions/RECORD.md#d198). The other
+   map provider: “ควรแสดง” (show it), done as [D198](../decisions/RECORD-D001-D199.md#d198). The other
    questions are open.
 20. **D199 run casings and signal shapes** (listed 2026-10-16). Run a project over a map photo and
    look at the [grayscale frame](../images/ui-run-after/run-grayscale.png): can you still see every
@@ -308,7 +308,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
     Undo; set one in a cross-section template and apply it. Does one Undo clear both Links, and does
     "ความเร็วกำหนด" read naturally? *Owner:*
 
-Carved out 2026-10-16 by [D201](../decisions/RECORD.md#d201) (R4 b applied before the sitting, owner's
+Carved out 2026-10-16 by [D201](../decisions/RECORD-D200-D399.md#d201) (R4 b applied before the sitting, owner's
 choice): C5, C6, D1, E1, E3, E4 and E7, the looks listed more than 14 days earlier, are now
 [M1.29](../ROADMAP.md#m129--owner-looks-carved-out-of-the-sitting-d201) and
 [M3.2.10](../ROADMAP.md#m3210--owner-looks-carved-out-of-the-sitting-d201). They stay unchecked and close

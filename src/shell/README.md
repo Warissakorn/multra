@@ -40,7 +40,7 @@ The other headers:
 | `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `message_label.*` | The one-row, closable message line under the canvas | [D429](../../docs/decisions/RECORD.md#d429) |
 | `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
-| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
+| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD-D200-D399.md#d286) |
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `table_layout.*` | Bounded initial columns, stable user widths and active-tab minima | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |

@@ -114,9 +114,11 @@ below, whose reasoning is D7. The ones that get broken by accident:
   non-obvious decision, in a short entry; keep about ten entries and move older ones whole to the
   archive. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
   next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
-- **Append to `docs/decisions/RECORD.md`, never read it whole** (≈95k tokens, 385k characters):
-  add the row with a shell append, and read a cited row by its anchor with `grep -n 'id="dNNN"'`
-  or the file's tail.
+- **Append to `docs/decisions/RECORD.md`, never read it whole** (D400 onward, ≈28k tokens; D1–D199
+  and D200–D399 are frozen in `RECORD-D001-D199.md` and `RECORD-D200-D399.md`, D486): add the row
+  with a shell append, and read a cited row by its anchor with `grep -n 'id="dNNN"' docs/decisions/RECORD*.md`
+  or the file's tail. When `RECORD.md` nears 500 lines, cut its oldest 200 IDs into a frozen file
+  the same way and rewrite their links.
 
 ## Session end
 

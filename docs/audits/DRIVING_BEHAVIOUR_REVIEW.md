@@ -1,6 +1,6 @@
 # Driving-behaviour completeness review — 2026-10-15
 
-**Owner answers:** [D178](../decisions/RECORD.md#d178), the order in §5 accepted, keep-left default,
+**Owner answers:** [D178](../decisions/RECORD-D001-D199.md#d178), the order in §5 accepted, keep-left default,
 standard motorcycle values for now; §8's B14/B15 are answered.
 
 A review, not an owner approval and not a contract. It asks how complete TrafficSim's driving

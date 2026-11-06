@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
+
+- **Owner:** ran /optimize-program on docs and AI context, and chose the split by 200 IDs, with the
+  decision index split by the same ranges.
+- **D486:** `RECORD.md` (500 lines, ~134k tokens) became `RECORD-D001-D199.md` and
+  `RECORD-D200-D399.md` (frozen) and `RECORD.md` (D400 onward, 97 lines). The rows moved unchanged.
+  527 anchored links in 24 files now name the file that holds the row. AGENTS says how to cut the
+  next range.
+- **Verified:** `multra-check-docs` and `multra-check-file-sizes`; no code changed.
+
 ## 2026-11-06 — Procedure sequence P2: Procedures dialog and Procedure page (D485)
 
 - **D485 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) §9):**
@@ -118,14 +128,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** `tripdistributionorigin` (TD15–TD19; TD15 reproduces Example 5.2's Table 5.5),
   `cli-trip-distribution-origin` and `trip-distribution-ui` (TD20).
 - **Verified:** Linux only (desktop and headless); Windows not checked.
-
-## 2026-11-06 — M10.3 D3 contract: singly constrained purposes (D475)
-
-- **Owner:** asked for an explanation of singly constrained models, then "ทำงานต่อไปตามแนะนำ".
-- **D475 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §15), docs only:**
-  - Eq. (5.16) (p. 183) read from the page image;
-  - Example 5.2 (Tables 5.4–5.5) replayed as the fixture, with a misprinted column sum (701.2 for
-    710.2) ([evidence](evidence/ortuzar-ch5-trip-distribution.md) §6);
-  - raw and balanced attractions shown to give the same trips;
-  - five owner choices; rows TD15–TD20.
-- **Not done:** no code. Slice D3 waits for the owner's answers.
