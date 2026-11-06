@@ -70,7 +70,11 @@ ProcedureRun runProcedure(const ProjectDocument& d, const std::filesystem::path&
                 auto copy = d;
                 if (const auto c = nearest(k, ProcedureStepKind::modeChoice)) {
                     auto& list = copy.zones.odMatrices;
-                    std::erase_if(list, [](const auto& x) { return x.generatedBy == "mode-choice"; });
+                    const auto& periods = run.steps[*c].modeChoice->periods;
+                    std::erase_if(list, [&](const auto& x) {
+                        return x.generatedBy == "mode-choice" &&
+                               std::any_of(periods.begin(), periods.end(), [&](const auto& p) { return p.id == x.periodId; });
+                    });
                     for (auto& x : generatedOdMatrices(*run.steps[*c].modeChoice)) list.push_back(std::move(x));
                 }
                 const MacroObserver* macroObserver = observer ? &observer->macro : nullptr;
@@ -82,6 +86,9 @@ ProcedureRun runProcedure(const ProjectDocument& d, const std::filesystem::path&
             }
         } catch (const ValidationError& e) {
             result.status = ProcedureStepStatus::refused; result.issues = e.issues;
+            break;
+        } catch (const std::exception& e) {
+            result.status = ProcedureStepStatus::refused; result.issues = {{e.what(), where}};
             break;
         }
         if (run.cancelled) break;

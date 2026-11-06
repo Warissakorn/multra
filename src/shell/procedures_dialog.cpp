@@ -89,7 +89,11 @@ std::optional<std::vector<Procedure>> editProcedures(QWidget* parent, const Proj
         table->setItem(row, 3, new QTableWidgetItem(options));
         table->setItem(row, 4, new QTableWidgetItem(matrix));
         QObject::connect(kind, &QComboBox::currentIndexChanged, table, [&, kind](int k) {
-            for (int r = 0; r < table->rowCount(); ++r) if (table->cellWidget(r, 1) == kind) setInputs(r, kKinds[k], {});
+            for (int r = 0; r < table->rowCount(); ++r)
+                if (table->cellWidget(r, 1) == kind) {
+                    setInputs(r, kKinds[k], {});
+                    for (const int column : {3, 4}) if (table->item(r, column)) table->item(r, column)->setText({});
+                }
         });
     };
     const auto readRow = [&](int r) {

@@ -62,7 +62,7 @@ struct ProcedurePanel::Data {
     QLabel* note{};
     QTableWidget* table{};
     std::optional<ProcedureRun> result;
-    std::uint64_t resultGeneration{}, ticket{};
+    std::uint64_t resultGeneration{}, ticket{}, serial{}, shown{};
     std::vector<ValidationIssue> refusal;
     std::size_t current{};
     std::thread worker;
@@ -103,7 +103,7 @@ ProcedurePanel::~ProcedurePanel() { ++d_->ticket; d_->stop->store(true); d_->joi
 void ProcedurePanel::run() {
     if (d_->busy || d_->choice->currentIndex() < 0) return;
     d_->join();
-    d_->refusal.clear(); d_->result.reset(); d_->current = 0;
+    d_->refusal.clear(); d_->result.reset(); d_->current = 0; ++d_->serial;
     d_->busy = true;
     d_->stop = std::make_shared<std::atomic<bool>>(false);
     const auto ticket = ++d_->ticket, generation = d_->context.generation();
@@ -127,6 +127,7 @@ void ProcedurePanel::run() {
             d_->join(); d_->busy = false;
             if (!issues.empty()) d_->refusal = issues;
             else { d_->result = std::move(*out); d_->resultGeneration = generation; }
+            ++d_->serial;
             refresh();
             if (d_->context.presentationChanged) d_->context.presentationChanged();
         }, Qt::QueuedConnection);
@@ -175,6 +176,7 @@ void ProcedurePanel::translate() {
     d_->editButton->setText(text("editorProcedures"));
     d_->table->setHorizontalHeaderLabels({text("editorProcedureStep"), text("editorProcedureKind"), text("editorProcedureStatus"),
                                           text("editorProcedureSummary")});
+    ++d_->serial; // the kind and status cells are translated text
     refresh();
 }
 void ProcedurePanel::refresh() {
@@ -203,6 +205,8 @@ void ProcedurePanel::refresh() {
         if (stale()) lines << text("editorTripStale").arg(r.revision).arg(doc.revision);
     }
     d_->note->setText(lines.join(" "));
+    if (d_->shown == d_->serial && (d_->valid() || d_->table->rowCount() == 0)) return;
+    d_->shown = d_->serial;
     auto* table = d_->table;
     table->setRowCount(0);
     if (!d_->valid()) return;

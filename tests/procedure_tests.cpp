@@ -76,6 +76,12 @@ TEST(procedure, ps1_codec_and_schema_73) { // PS1
     bad([](Json& k) { k["procedures"][0]["steps"][3]["active"] = "no"; }, p + ".steps[3].active");
     bad([](Json& k) { k["procedures"].push_back(k["procedures"][0]); }, "procedures[1].id", "DUPLICATE_ID");
     bad([](Json& k) { k["procedures"][0]["id"] = ""; }, p + ".id", "INVALID_ID");
+    // The struct check (the dialog's and validateDocument's) refuses what the reader refuses: a blank value.
+    auto blank = d; blank.procedures[0].steps[3].period = "";
+    CHECK(has(procedureIssues(blank.procedures), "INVALID_PROCEDURE", p + ".steps[3].period"));
+    CHECK(has(refuses([&] { validateDocument(blank); }), "INVALID_PROCEDURE", p + ".steps[3].period"));
+    blank = d; blank.procedures[0].steps[2].periods = {" "};
+    CHECK(has(procedureIssues(blank.procedures), "INVALID_PROCEDURE", p + ".steps[2].periods[0]"));
 }
 
 TEST(procedure, ps2_chaining_equals_the_units) { // PS2
@@ -103,6 +109,20 @@ TEST(procedure, ps3_assignment_uses_the_matrices_in_memory) { // PS3
     CHECK(r.steps[3].macro && r.steps[3].macro->assignment == macro.assignment && r.steps[3].macro->classes.size() == macro.classes.size());
     double total = 0; for (const double x : macro.assignment.load) total += x;
     CHECK(total > 0);
+}
+
+TEST(procedure, ps3b_other_periods_keep_their_generated_matrices) { // PS3
+    auto d = fixture();
+    StudyPeriod pm; pm.id = "period-pm"; pm.name = "PM"; pm.start = 61200; pm.end = 64800;
+    d.zones.studyPeriods.push_back(pm);
+    // A PM matrix written earlier by Write OD matrices.
+    auto stored = generatedOdMatrices(runModeChoice(d, tdData(), "one-way", "hand", "", "", "hand", {"period-am"}));
+    stored[0].id = "mc-period-pm-car"; stored[0].periodId = "period-pm";
+    d.zones.odMatrices.push_back(stored[0]);
+    d.procedures[0].steps[3].period = "period-pm"; // mode choice for AM only, then the PM assignment
+    const auto r = runProcedure(d, tdData(), "four-step");
+    CHECK(r.completed() && r.steps[3].macro); // the PM matrix survived the AM mode choice
+    CHECK(r.steps[3].macro->assignment == runMacro(d, tdData(), "period-pm").assignment);
 }
 
 TEST(procedure, ps4_assignment_without_mode_choice) { // PS4

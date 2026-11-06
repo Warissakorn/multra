@@ -85,7 +85,8 @@ Root `procedures`, written only when non-empty:
 3. **A refused step stops every later step,** which is marked *not run*. Earlier steps stay *done*
    with their results. A step is never *done* with an issue (the Visum fault).
 4. **The assignment demand.** The run copies the document, removes the matrices carrying
-   `generatedBy: "mode-choice"`, and adds the generated vehicle matrices of the nearest earlier
+   `generatedBy: "mode-choice"` for the periods that mode choice produced (a generated matrix of
+   another period is kept; review fix after D485), and adds the generated vehicle matrices of the nearest earlier
    mode-choice step (`mc-<period>-<mode>`, as E2's *Write OD matrices* would). The assignment runs
    on that copy, and the document itself is never changed. With no earlier mode-choice step, the
    document's own matrices are used.
@@ -210,6 +211,10 @@ Each row first asserts that its forcing worked.
   - a table of #, step, status and summary. The summaries are productions, trips, vehicles per
     period and mode, or the iterations and gap;
   - **CSV:** the step table, marked.
+- **Review fixes (after D485):** the struct check now refuses every blank value the reader refuses,
+  so the dialog cannot save a procedure that will not reopen. Changing a step's kind clears its
+  Options and Cost matrix. A non-validation failure is recorded on its step, and the earlier steps
+  keep their results. The page rebuilds its table only when the result or the language changes.
 - **Rows:**
   - `procedure-ui` (PS10) runs the fixture's procedure on the page and edits through the dialog: a
     blank id is refused in place, Cancel changes nothing, and turning off a step is one Undo step

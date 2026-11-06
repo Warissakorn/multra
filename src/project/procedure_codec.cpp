@@ -133,6 +133,12 @@ std::vector<ValidationIssue> procedureIssues(const std::vector<Procedure>& proce
             const auto where = at + ".steps[" + std::to_string(k) + "]";
             if (s.kind != ProcedureStepKind::assignment && blank(s.set)) bad(issues, where);
             if (s.kind == ProcedureStepKind::assignment && s.period.has_value() == s.macroRun.has_value()) bad(issues, where);
+            // The reader's blank-value rules, so a step built outside JSON (the dialog) is refused before it is saved.
+            for (const auto& [value, key] : {std::pair{&s.period, ".period"}, std::pair{&s.macroRun, ".macroRun"},
+                                             std::pair{&s.skimMode, ".skimMode"}, std::pair{&s.costMatrix, ".costMatrix"}})
+                if (value->has_value() && blank(**value)) bad(issues, where + key);
+            for (std::size_t m = 0; m < s.periods.size(); ++m)
+                if (blank(s.periods[m])) bad(issues, where + ".periods[" + std::to_string(m) + "]");
         }
     }
     return issues;
