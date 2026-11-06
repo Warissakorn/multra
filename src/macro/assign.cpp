@@ -47,6 +47,20 @@ MacroTree shortestTree(const MacroGraph& g, std::size_t origin, const std::strin
     }
     return tree;
 }
+std::vector<std::vector<double>> freeFlowSkim(const MacroGraph& g, const std::vector<std::size_t>& origins,
+                                              const std::vector<std::size_t>& destinations, const std::string& mode) {
+    constexpr double inf = std::numeric_limits<double>::infinity();
+    std::vector<double> times(g.links.size());
+    for (std::size_t a = 0; a < times.size(); ++a) times[a] = g.links[a].freeTime;
+    std::vector<std::vector<double>> skim(origins.size(), std::vector<double>(destinations.size(), inf));
+    for (std::size_t i = 0; i < origins.size(); ++i) {
+        if (origins[i] >= g.nodes.size()) continue;
+        const auto tree = shortestTree(g, origins[i], mode, times);
+        for (std::size_t j = 0; j < destinations.size(); ++j)
+            if (destinations[j] < g.nodes.size()) skim[i][j] = tree.distance[destinations[j]] / 60.0;
+    }
+    return skim;
+}
 MacroLoading allOrNothing(const MacroGraph& g, const MacroClass& cls, const std::vector<double>& times, bool paths) {
     MacroLoading out{std::vector<double>(g.links.size(), 0.0), 0.0};
     if (paths) out.paths.resize(cls.cells.size());

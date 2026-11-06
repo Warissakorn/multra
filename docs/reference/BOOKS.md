@@ -74,10 +74,10 @@ Chapter rows name what the book offers a milestone; they do not book work. A row
 
 | Chapter (book pages) | Offers | MULTRA |
 |---|---|---|
-| 4 Trip generation (139–172) | Regression and cross-classification; Examples 4.1–4.6 | M10.2 generation: Example 4.5 (p. 161, category analysis) as a fixture |
-| 5 Trip distribution (176–206) | Growth factors, Furness, gravity, entropy, calibration; Examples 5.1–5.7 | M10.3: Example 5.3 (p. 181, doubly constrained growth factor) for Furness balancing, Example 5.4 (p. 189) for the gravity model |
-| 6 Modal split (207–226) | Logit modal split, hierarchical structure; Examples 6.1–6.4 | M10.4: Example 6.2 (p. 214, car and bus shares under logit, the red bus/blue bus case) and Example 6.3 (p. 216, its hierarchical form) as fixtures |
-| 7 Discrete choice (227–) | MNL (§7.3), nested logit (§7.4) | M10.4's multinomial logit and its parameters |
+| 4 Trip generation (139–172) | Regression and cross-classification; Examples 4.1–4.6; balancing, Eq. (4.14) | **used:** [TRIP_GENERATION](TRIP_GENERATION.md) §3–§4, §10: Example 4.1 (pp. 143–144) as the category fixture, Example 4.4's zonal form (p. 156), Eq. (4.14) (p. 157). Example 4.5 (p. 161) prints no rates or results and is not a fixture ([check](../evidence/ortuzar-ch4-trip-generation.md)) |
+| 5 Trip distribution (176–206) | Growth factors, Furness, gravity, entropy, calibration; Examples 5.1–5.7 | **read (D472, D475):** Example 5.2 (pp. 179–180) as the singly constrained fixture, its column 4 sum misprinted (TRIP_DISTRIBUTION §15); [TRIP_DISTRIBUTION](TRIP_DISTRIBUTION.md) §10: Example 5.3 (p. 181) and Example 5.4 (pp. 189–190) both reproduce by three row-first Furness passes; no Furness tolerance number in the book; §5.8.3–§5.8.4 (pp. 201–202) on intrazonal trips and constraints ([check](../evidence/ortuzar-ch5-trip-distribution.md)) |
+| 6 Modal split (207–226) | Logit modal split, hierarchical structure; Examples 6.1–6.4 | **read (D477):** [MODE_CHOICE](MODE_CHOICE.md) §9: Example 6.2 (p. 214, P_C = 0.33) and Example 6.3 (p. 216, C_B = 49.23 and its ten-row λ₁ table) both reproduce; §6.5.2's β ≤ λ structure condition ([check](../evidence/ortuzar-ch6-7-mode-choice.md)) |
+| 7 Discrete choice (227–) | MNL (§7.3), nested logit (§7.4) | **read (D477):** Eq. (7.9) (p. 232) as M10.4's MNL; one constant fixed at 0 (§7.3.1); **used (D480–D481):** [NESTED_LOGIT](NESTED_LOGIT.md): Eq. (7.19) and (7.23) (pp. 238–239) as the two-level nested logit, φ in (0, 1] by Eq. (7.18)/(7.20) and §7.4.4.3 (p. 245); Example 6.3 reproduced as rows NL1 |
 | 10 Assignment (349–390) | AON, Dial's stochastic loading, congested assignment; Examples 10.1–10.6 | M10.1 cross-check; Example 10.4 (p. 367) sets up the two-route network below |
 | 11 Equilibrium and dynamic assignment (391–) | UE and system optimum, traffic dynamics, departure time; Examples 11.1–11.5 | **M9's gate fixture candidate:** Example 11.1 (p. 394), two routes with costs `15 + 0.005 V` and `10 + 0.02 V`, 2000 vehicles, equilibrium 1400 / 600 at 22 min; Example 11.2 (p. 396) gives the system optimum ([check](../evidence/book-copies-check.md#5-ortúzar-and-willumsen-a-two-route-equilibrium)) |
 | 15 Key parameters | Planning variables, value of time | Later economic outputs; not booked |
@@ -111,7 +111,7 @@ Chapter rows name what the book offers a milestone; they do not book work. A row
 | B9 / M6: benchmark choice | HCM 7 Ch. 19, 20, 31 | The M6.0 sheet's HCM values, which it says were not read, now checked against the 7th edition ([check](../evidence/book-copies-check.md#2-hcm-7-against-the-m60-option-sheet)). The choice stays the owner's |
 | Meso priority inside a Node (`t_ij`, D297) | HCM 7 Ch. 20 | Movement-specific `t_c` and `t_f` and conflicting-flow rules, citable; Brilon and Wu (2001) itself is not in these books |
 | M9 gate: analytic two-route fixture | Ortúzar Example 11.1 | A published two-route UE with closed-form costs; Sheffi Ch. 12 for MSA |
-| M10.2–M10.4 hand-computed fixtures | Ortúzar Ch. 4–7 | Worked examples with printed answers for generation, Furness, gravity and logit |
+| M10.2–M10.4 hand-computed fixtures | Ortúzar Ch. 4–7 | Worked examples with printed answers for generation (read: Example 4.1, D469), Furness and gravity (read: Examples 5.3, 5.4, D472) and logit (read: Examples 6.2, 6.3, D477) |
 | LOS pack edition | HCM 7 Exhibits 19-8, 20-2, 21-8 | The same bounds as `data/los/hcm.json`'s 6th-edition values; a citation update is possible, not needed |
 | A Meso delay at signals | Yperman Ch. 6 | The point-queue method; a slice would need its own contract and owner choice |
 | Boyles et al. 2025 (D315) | None | Not in these books; still waiting on the owner's copy |

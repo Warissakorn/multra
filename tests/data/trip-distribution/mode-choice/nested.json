@@ -1,0 +1,19 @@
+{
+  "id": "nested",
+  "name": "Hand fixture: car, and walk and jog in one nest",
+  "source": { "citation": "Hand-computed fixture (NESTED_LOGIT NL rows); the constants, coefficients, phi and occupancy are illustrations, not calibrated values" },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "alternatives": [
+        { "id": "car", "modeId": "car", "constant": 0, "timeCoefficient": -0.05, "occupancy": 1.25 },
+        { "id": "walk", "costMatrix": "walk-times", "constant": -1, "timeCoefficient": -0.1 },
+        { "id": "jog", "costMatrix": "walk-times", "constant": -1.5, "timeCoefficient": -0.08 }
+      ],
+      "nests": [
+        { "id": "foot", "phi": 0.5, "alternatives": ["walk", "jog"] }
+      ]
+    }
+  ]
+}

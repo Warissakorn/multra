@@ -11,6 +11,11 @@ double macroTime(const MacroLink&, double load);
 // predecessor. `via[n]` is the arc reaching node n (graph.links.size() when none).
 struct MacroTree { std::vector<double> distance; std::vector<std::size_t> via; };
 MacroTree shortestTree(const MacroGraph&, std::size_t origin, const std::string& mode, const std::vector<double>& times);
+// M10.3 D1 (TRIP_DISTRIBUTION §5, D473): free-flow minutes from each origin node to each destination
+// node over the arcs `mode` may use (empty: every arc); +infinity where unreachable or a node is absent
+// (graph.nodes.size()).
+std::vector<std::vector<double>> freeFlowSkim(const MacroGraph&, const std::vector<std::size_t>& origins,
+                                              const std::vector<std::size_t>& destinations, const std::string& mode);
 // One class loaded on its shortest paths: veh/h per link, and sum of demand x shortest time.
 // S5.3 (STUDY_AREA §6, D329): with `paths`, also each cell's path as link indices in travel order
 // (empty when it has none), indexed as `cls.cells`.

@@ -1,7 +1,7 @@
 # Level of service from section delay (M5.5)
 
-How a letter is put on a number. Decisions: [D130](../decisions/RECORD.md#d130) (O3 (b): LOS
-from section-bounded delay, HCM pack first) and [D134](../decisions/RECORD.md#d134) (this
+How a letter is put on a number. Decisions: [D130](../decisions/RECORD-D001-D199.md#d130) (O3 (b): LOS
+from section-bounded delay, HCM pack first) and [D134](../decisions/RECORD-D001-D199.md#d134) (this
 contract). The delay is [travel-time section](TRAVEL_TIME_SECTIONS.md) delay; whole-route
 movement delay (D39) never gets a letter. Every letter is labelled **simulated section delay, not
 HCM control delay, not validated (M6)** (rule 4).

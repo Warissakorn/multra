@@ -1,0 +1,13 @@
+{
+  "id": "one-way",
+  "name": "Hand fixture: site produces, town attracts",
+  "source": { "citation": "Hand-computed fixture (TRIP_DISTRIBUTION TD7)" },
+  "unit": "trips per day",
+  "purposes": [
+    {
+      "id": "all",
+      "productions": { "method": "crossClassification", "categories": [ { "attribute": "workers", "rate": 1 } ] },
+      "attractions": { "method": "regression", "constant": -100, "terms": [ { "attribute": "jobs", "coefficient": 1 } ] }
+    }
+  ]
+}

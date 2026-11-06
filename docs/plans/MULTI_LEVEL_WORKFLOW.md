@@ -1,7 +1,7 @@
 # Multi-level workflow — one document, any starting level (design, 2026-10-15)
 
 The owner accepted every recommendation of the 2026-10-14/15 design review in chat
-([D175](../decisions/RECORD.md#d175)). This document amends the [D145 design](MULTI_LEVEL_MODELLING.md):
+([D175](../decisions/RECORD-D001-D199.md#d175)). This document amends the [D145 design](MULTI_LEVEL_MODELLING.md):
 where they disagree, this one wins. It is a plan, not evidence: **nothing here is implemented**.
 [ROADMAP](../ROADMAP.md) owns scopes and gates; [NEXT](../NEXT.md) owns the queue. Every slice
 still begins with its contract and acceptance rows; numbers and citations named below are
@@ -33,7 +33,7 @@ candidates that the contract checks against the source before any value enters `
 | **Cross-section template** (new, `data/cross-sections/`) | directions, lanes per direction, widths, median, shoulders, `linkType`, source | — |
 | **Street segment** (new) | centreline + `crossSectionId` + overrides | Macro/Meso: one directed link per direction. Micro: lane Links generated from the template and stored as today |
 | **Node** (new; merges M5.1 evaluation nodes) | polygon (absent = derived disc); **only without detail:** turns differing from default, control, major/minor, stage signal | **with detail:** legs, turns, lanes, g/C, conflicts from the Links, Connectors, conflict areas and heads inside the polygon |
-| **Study area** (new) | the Nodes where Micro results are wanted (a Node set, not a polygon: [D326](../decisions/RECORD.md#d326), [STUDY_AREA](../reference/STUDY_AREA.md)) | run-time subarea cut |
+| **Study area** (new) | the Nodes where Micro results are wanted (a Node set, not a polygon: [D326](../decisions/RECORD-D200-D399.md#d326), [STUDY_AREA](../reference/STUDY_AREA.md)) | run-time subarea cut |
 | **CountSet** (new) | one count store, **merged with D142 decision counts** | — |
 | **Control points** (new) | ≥ 2 known coordinates in the project's EPSG | placement of images and imports |
 | **Background image** (changed) | world file (`.pgw`/`.jgw`) support; several images later | automatic placement |

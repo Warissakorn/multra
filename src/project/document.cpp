@@ -94,7 +94,14 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool constrained=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
+        return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint.has_value();});});
+    const bool generated=std::any_of(d.zones.odMatrices.begin(),d.zones.odMatrices.end(),[](const auto& m){return !m.generatedBy.empty();});
+    const bool nested=std::any_of(d.modeChoiceSets.begin(),d.modeChoiceSets.end(),[](const auto& s){
+        return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return !p.nests.empty();});});
+    const bool toDestinations=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
+        return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
+    return !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -216,6 +223,11 @@ Json documentJson(const ProjectDocument& d) {
     addStudyPeriodsJson(d.zones,result); // S1.1
     addStudyAreaJson(d.zones,result); // S5.2a
     addMacroRunDefinitionsJson(d,result); // Named Macro definitions, schema 56
+    addOwnedTripRateSetsJson(d.tripRateSets,result); // M10.2 G2, schema 66
+    addOwnedDeterrenceSetsJson(d.deterrenceSets,result); addOwnedCostMatricesJson(d.costMatrices,result); // M10.3 D2, schema 67
+    addPeriodFactorsJson(d.periodFactors,result); // M10.4 E1, schema 69
+    addOwnedModeChoiceSetsJson(d.modeChoiceSets,result); // M10.4 E2, schema 70
+    addProceduresJson(d.procedures,result); // D484, schema 73
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
@@ -234,6 +246,12 @@ void validateDocument(const ProjectDocument& d) {
         throw ValidationError({{"INVALID_NUMBER", "definition.clockStart"}}); // S1.1
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = macroRunDefinitionIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = ownedTripRateSetIssues(d.tripRateSets); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = ownedDeterrenceSetIssues(d.deterrenceSets); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = ownedCostMatrixIssues(d.costMatrices); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = periodFactorIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // M10.4 E1
+    if (auto issues = ownedModeChoiceSetIssues(d.modeChoiceSets); !issues.empty()) throw ValidationError(std::move(issues)); // M10.4 E2
+    if (auto issues = procedureIssues(d.procedures); !issues.empty()) throw ValidationError(std::move(issues)); // D484
     if (auto issues = zoneLayerIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = studyAreaIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // S5.2a
 }
@@ -261,6 +279,35 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
     if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
     d.macroRuns = parseMacroRunDefinitions(j);
+    if (version < 66 && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
+    d.tripRateSets = parseOwnedTripRateSets(j);
+    for (const auto* key : {"deterrenceSets", "costMatrices"})
+        if (version < 67 && j.contains(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", key}});
+    if (version < 72 && j.contains("deterrenceSets") && j.at("deterrenceSets").is_array()) // D3 (D476): 68; D4 "destination" (D482): 72
+        for (std::size_t i = 0; i < j.at("deterrenceSets").size(); ++i) {
+            const auto& set = j.at("deterrenceSets")[i];
+            if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
+            for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
+                if (const auto& purpose = set.at("purposes")[k]; purpose.is_object() && purpose.contains("constraint") &&
+                    (version < 68 || purpose.at("constraint") == "destination"))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "deterrenceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].constraint"}});
+        }
+    d.deterrenceSets = parseOwnedDeterrenceSets(j);
+    d.costMatrices = parseOwnedCostMatrices(j);
+    if (version < 69 && j.contains("periodFactors")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "periodFactors"}});
+    d.periodFactors = parsePeriodFactors(j); // M10.4 E1
+    if (version < 70 && j.contains("modeChoiceSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets"}});
+    if (version < 71 && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // M10.4 N1 (D481)
+        for (std::size_t i = 0; i < j.at("modeChoiceSets").size(); ++i) {
+            const auto& set = j.at("modeChoiceSets")[i];
+            if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
+            for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
+                if (set.at("purposes")[k].is_object() && set.at("purposes")[k].contains("nests"))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].nests"}});
+        }
+    d.modeChoiceSets = parseOwnedModeChoiceSets(j); // M10.4 E2
+    if (version < 73 && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});
+    d.procedures = parseProcedures(j); // D484
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
     d.zones.studyArea=parseStudyArea(j);

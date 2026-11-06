@@ -1,7 +1,7 @@
 # M6 benchmark option sheet (M6.0, 2026-10-10)
 
 Prepared by a session for Q4, open since 2026-09-10: *which published benchmarks define the M6
-tolerance?* ([D143](../decisions/RECORD.md#d143), R2 (b); the 2026-10-03 review's
+tolerance?* ([D143](../decisions/RECORD-D001-D199.md#d143), R2 (b); the 2026-10-03 review's
 [O2 and S0](../archive/ROADMAP-review-2026-10-03.md)). The owner answers by letter in the
 [owner sitting](../plans/OWNER_SITTING.md) B9. Nothing here is decided until then.
 
@@ -141,7 +141,7 @@ An answer here chooses sources only. It closes nothing, validates nothing and re
 
 ## 8. Later levels
 
-Meso and Macro (M10–M12, [D145](../decisions/RECORD.md#d145)) get their own benchmark kinds when
+Meso and Macro (M10–M12, [D145](../decisions/RECORD-D001-D199.md#d145)) get their own benchmark kinds when
 their contracts are written, by the same rule: options before any engine number. The design names
 the candidates: published equilibrium solutions for Macro, analytic queue and shockwave cases
 for Meso ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.7). The Meso sheet is

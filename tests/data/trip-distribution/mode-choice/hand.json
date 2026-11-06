@@ -1,0 +1,15 @@
+{
+  "id": "hand",
+  "name": "Hand fixture: car and walk",
+  "source": { "citation": "Hand-computed fixture (MODE_CHOICE MC rows); the constants, coefficients and occupancy are illustrations, not calibrated values" },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "alternatives": [
+        { "id": "car", "modeId": "car", "constant": 0, "timeCoefficient": -0.05, "occupancy": 1.25 },
+        { "id": "walk", "costMatrix": "walk-times", "constant": -1, "timeCoefficient": -0.1 }
+      ]
+    }
+  ]
+}

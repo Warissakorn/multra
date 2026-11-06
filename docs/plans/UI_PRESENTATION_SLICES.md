@@ -95,7 +95,7 @@ cache invalidation if future themes are added (theme work deferred).
 
 ## Slice b — palette and Simulation toolbar
 
-Done as [D193](../decisions/RECORD.md#d193) on 2026-10-16: five groups, the transient icons-only
+Done as [D193](../decisions/RECORD-D001-D199.md#d193) on 2026-10-16: five groups, the transient icons-only
 toggle, the Simulation bar order and Delete behind a separator. A b1-only variant (no toggle) was
 written in parallel and replaced by this one when both merged.
 
@@ -113,7 +113,7 @@ behaviour remains. No new remembered preference or independent Edit/Run state va
 
 ## Slice c — grouped Objects navigation
 
-Done as [D194](../decisions/RECORD.md#d194) on 2026-10-16: layout A with the group combo as the
+Done as [D194](../decisions/RECORD-D001-D199.md#d194) on 2026-10-16: layout A with the group combo as the
 page strip's corner widget, so it adds no dock height; the group follows the current page.
 
 **Depends:** green slice 0 and owner's B16 choice. Implement A unless the owner selects B;
@@ -136,9 +136,9 @@ to shrinking text. No persistent presets or remembered expanded sections.
 
 ## Slice d1 — Properties presentation
 
-Done as [D195](../decisions/RECORD.md#d195) on 2026-10-16: one 120 px label column per group,
+Done as [D195](../decisions/RECORD-D001-D199.md#d195) on 2026-10-16: one 120 px label column per group,
 all-rows wrap below two columns, the Apply divider and eyebrow headings. The dialog forms and the
-Lab were not touched. [D205](../decisions/RECORD.md#d205): the column is shared by every form and widens
+Lab were not touched. [D205](../decisions/RECORD-D200-D399.md#d205): the column is shared by every form and widens
 to a label word that cannot wrap (Thai on Windows) when it is less than a quarter wider.
 
 **Files:** editor_inspector.cpp, editor_connectors.cpp, editor_behaviour.cpp,
@@ -155,7 +155,7 @@ helper accidentally changing editingFinished/valueChanged behaviour.
 
 ## Slice d2 — table and numeric presentation
 
-Done as [D196](../decisions/RECORD.md#d196) on 2026-10-16: the recipe at polish time, elided-cell
+Done as [D196](../decisions/RECORD-D001-D199.md#d196) on 2026-10-16: the recipe at polish time, elided-cell
 popups and figures through `formatValue`; header units and table action separators were not changed.
 
 A separate session from d1 because late dialog tables and Results are a different surface.
@@ -174,7 +174,7 @@ IDs misclassified, too many rows of batch tables reducing readability.
 
 ## Slice e1 — overlay readability and HUD
 
-HUD part done as [D197](../decisions/RECORD.md#d197) on 2026-10-16: scale bar, px/m and north from
+HUD part done as [D197](../decisions/RECORD-D001-D199.md#d197) on 2026-10-16: scale bar, px/m and north from
 the map projection. The casings and R/A/G cue below are slice e1b.
 
 **Files:** src/editor/canvas.hpp, canvas_map.cpp, canvas_run.cpp, canvas_feedback.cpp and a
@@ -194,7 +194,7 @@ report/defer it to a separate geo task rather than change src/model/core or inve
 
 ## Slice e1b — run vehicle casings and R/A/G shape cue
 
-Done as [D199](../decisions/RECORD.md#d199) on 2026-10-16.
+Done as [D199](../decisions/RECORD-D001-D199.md#d199) on 2026-10-16.
 
 Carved out of e1 on 2026-10-16 (D197), because it is a second system.
 **Files:** canvas_run.cpp, canvas_heads.cpp, vehicle_shape.cpp only if a casing path is needed,
@@ -207,7 +207,7 @@ hit paths, crossbars and snapshots unchanged; no new signal logic.
 
 ## Slice e2 — measured LOD refinement
 
-Done as [D200](../decisions/RECORD.md#d200) on 2026-10-16.
+Done as [D200](../decisions/RECORD-D200-D399.md#d200) on 2026-10-16.
 
 **Files:** canvas.cpp, canvas_run.cpp, relevant canvas overlay files and tests; reuse existing
 viewScale/grid helpers. Read D28 before any cache proposal.

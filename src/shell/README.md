@@ -40,7 +40,7 @@ The other headers:
 | `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `message_label.*` | The one-row, closable message line under the canvas | [D429](../../docs/decisions/RECORD.md#d429) |
 | `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
-| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD.md#d286) |
+| `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD-D200-D399.md#d286) |
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `table_layout.*` | Bounded initial columns, stable user widths and active-tab minima | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
@@ -52,6 +52,15 @@ The other headers:
 | `node_analysis_dialog.*` | Staged turn/approach/settings inputs, missing/zero distinction, stored-codec validation and explicit stale-row clearing | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `node_analysis_fill_dialog.*` | Explicit window/HV selection and sourced whole-set before/after preview, staged until the Analysis form confirms | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
 | `node_analysis_manual_dialog.*` | Explicit per-Node manual-count window preview/confirmation, shared comparison guards and no document mutation | [NODE_ANALYSIS_MODEL](../../docs/reference/NODE_ANALYSIS_MODEL.md) |
+| `owned_list_dialog.*` | The shared owned-list dialog: a table, Import/Export JSON, Remove; files chosen by the caller (D474); an optional in-place edit of the selected row (D481) | [TRIP_DISTRIBUTION §6](../../docs/reference/TRIP_DISTRIBUTION.md) |
+| `trip_distribution_panel.*` | Self-owned *Trip distribution* Results page: rate set, deterrence set, cost matrix and mode choices, Run on a worker with stages, pair table, stale marking, marked CSV (D474) | [TRIP_DISTRIBUTION §8](../../docs/reference/TRIP_DISTRIBUTION.md) |
+| `mode_choice_nests_dialog.*` | *Nests…* from *Mode choice sets…*: a set's nests (purpose, id, φ, members) as an editable table, validated by the codec and refused in place (D481) | [NESTED_LOGIT §5](../../docs/reference/NESTED_LOGIT.md) |
+| `mode_choice_panel.*` | Self-owned *Mode choice* Results page: rate set, deterrence set, cost matrix, skim mode and set choices, Run on a worker with stages, *Mode choice sets…*, *Period factors…*, *Write OD matrices*, the period/alternative/pair table, stale marking, marked CSV (D479) | [MODE_CHOICE §7](../../docs/reference/MODE_CHOICE.md) |
+| `period_factors_dialog.*` | *Period factors…*: the project's per purpose and period P→A / A→P shares as an editable table, refused in place when not shares (D479) | [MODE_CHOICE §5](../../docs/reference/MODE_CHOICE.md) |
+| `procedure_panel.*` | Self-owned *Procedure* Results page: a procedure choice, Run on a worker with Cancel, *Procedures…*, one row per step (status and summary), stale marking, marked CSV (D485) | [PROCEDURE_SEQUENCE §4](../../docs/reference/PROCEDURE_SEQUENCE.md) |
+| `procedures_dialog.*` | *Procedures…*: the procedures list and the selected one's steps (active, kind, input, options, cost matrix), refused in place (D485) | [PROCEDURE_SEQUENCE §9](../../docs/reference/PROCEDURE_SEQUENCE.md) |
+| `trip_generation_panel.*` | Self-owned *Trip generation* Results page: rate-set choice, Run on a worker with stages, table, stale marking, marked CSV | [TRIP_GENERATION §8](../../docs/reference/TRIP_GENERATION.md) |
+| `trip_rate_dialog.*` | *Trip-rate sets…*, *Deterrence sets…*, *Cost matrices…* (D474) and *Mode choice sets…* (D479): the project's own lists, as wrappers of `owned_list_dialog` | [TRIP_GENERATION §6.3](../../docs/reference/TRIP_GENERATION.md) |
 | `node_analysis_panel.*` | Self-owned analytical Results page, snapshot provenance, CLI-identical exports and captured-batch Micro comparison | [NODE_ANALYSIS_EDITOR](../../docs/reference/NODE_ANALYSIS_EDITOR.md) |
 | `junction_cross_section_dialog.*` | Staged cross-section id/override form; blank values inherit, Cancel mutates nothing | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `junction_form_widgets.*` | Far-to-kerb lane rows, geometric labels and optional site-number fields | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |

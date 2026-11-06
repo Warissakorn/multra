@@ -1,0 +1,19 @@
+{
+  "id": "example-4-1",
+  "name": "Ortuzar and Willumsen Example 4.1",
+  "source": { "citation": "Ortuzar and Willumsen (2011), Modelling Transport, 4th ed., Example 4.1, pp. 143-144", "table": "Example 4.1" },
+  "unit": "trips per day",
+  "purposes": [
+    {
+      "id": "all",
+      "productions": {
+        "method": "crossClassification",
+        "categories": [
+          { "attribute": "hh.noCar", "rate": 2.5 },
+          { "attribute": "hh.car", "rate": 6.0 }
+        ]
+      },
+      "attractions": { "method": "regression", "constant": 0, "terms": [ { "attribute": "jobs", "coefficient": 1 } ] }
+    }
+  ]
+}

@@ -3,6 +3,12 @@
 #include "json.hpp"
 #include "map_settings.hpp"
 #include "macro_run_definition.hpp"
+#include "trip_rate_codec.hpp"
+#include "deterrence_codec.hpp"
+#include "cost_matrix_codec.hpp"
+#include "period_factor_codec.hpp"
+#include "mode_choice_codec.hpp"
+#include "procedure_codec.hpp"
 #include "../model/demand/zones.hpp"
 #include "../model/demand/definition.hpp"
 
@@ -28,6 +34,12 @@ struct ProjectDocument {
     std::optional<MapSettings> map;
     ZoneLayer zones; // M8.2, schema 31: the shared demand layer (ZONES_AND_PARKING.md)
     std::vector<MacroRunDefinition> macroRuns; // Named definitions only, schema 56; never results.
+    std::vector<TripRateSet> tripRateSets; // M10.2 G2 (TRIP_GENERATION §6.3, D471), schema 66
+    std::vector<DeterrenceSet> deterrenceSets; // M10.3 D2 (TRIP_DISTRIBUTION §6, D474), schema 67
+    std::vector<CostMatrix> costMatrices;      // M10.3 D2 (TRIP_DISTRIBUTION §5, D474), schema 67
+    std::vector<PeriodFactor> periodFactors;   // M10.4 E1 (MODE_CHOICE §5, D478), schema 69
+    std::vector<ModeChoiceSet> modeChoiceSets; // M10.4 E2 (MODE_CHOICE §6, D479), schema 70
+    std::vector<Procedure> procedures;         // PROCEDURE_SEQUENCE §2 (D484), schema 73
     bool operator==(const ProjectDocument&) const = default;
 };
 AuthoringDefinition parseAuthoringDefinition(const Json&);
@@ -49,7 +61,7 @@ std::vector<ValidationIssue> routingDecisionIssues(const AuthoringDefinition&);
 AuthoringDefinition withRoutingDecisions(AuthoringDefinition);
 Json documentJson(const ProjectDocument& document);
 // The newest schema the reader accepts; tests name kLatestSchema + 1 as the first unknown one.
-inline constexpr int kLatestSchema = 65;
+inline constexpr int kLatestSchema = 73;
 ProjectDocument parseDocument(const Json& json);
 void validateDocument(const ProjectDocument& document); // Empty networks are valid drafts.
 // Every id the network and definition hold, which a new or zone-layer id must not repeat.

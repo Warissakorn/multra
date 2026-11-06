@@ -1,8 +1,8 @@
 # Multi-seed batches (M5.2)
 
 What `multra-cli --project F --seeds LIST` and `src/runner/` compute. Decisions:
-[D130](../decisions/RECORD.md#d130) (M5 first) and [D131](../decisions/RECORD.md#d131) (this
-contract); scenario comparison, `--compare`, is §7 ([D148](../decisions/RECORD.md#d148)). Every figure is **simulated movement delay, not HCM control delay or LOS, and not
+[D130](../decisions/RECORD-D001-D199.md#d130) (M5 first) and [D131](../decisions/RECORD-D001-D199.md#d131) (this
+contract); scenario comparison, `--compare`, is §7 ([D148](../decisions/RECORD-D001-D199.md#d148)). Every figure is **simulated movement delay, not HCM control delay or LOS, and not
 validated** (rule 4); LOS waits for travel-time sections ([M5_PLAN](../plans/M5_PLAN.md) M5.4–M5.5).
 
 ## 1. Runs

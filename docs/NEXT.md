@@ -126,15 +126,67 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the next one is
-**M10.2 (trip generation)**, then M10.3–M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
+**M10.2 and M10.3 (done, below)**, then M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
-**Booked by D379 (B27, on delegation), each starting with its contract when the owner asks:** one
-posted speed on the Link (D380 confirmed it; the M13 approach `speedLimit` becomes derived; D381: the
-field is optional, Micro reads it as a default and never a cap, and low site speeds are valid), per-lane
-allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
-a planning-level method (otherwise back to the owner).
+## M10.2 trip generation — G1 and G2 done (D470, D471); stop for the owner's look
+
+- [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14 records both slices. The editor has project-owned
+  rate sets (schema 66, *Trip-rate sets…* with Import/Export JSON), zone attributes in the Edit
+  Zone dialog, and a *Trip generation* Results page. Rows TG1–TG14 pass on Linux (desktop and
+  headless). M10.2's code is complete; the M10 gate stays open (rule 8).
+- **Owner:** look at the two dialogs and the page on Windows ([OWNER_SITTING](plans/OWNER_SITTING.md)
+  item 42). Linux offscreen tests do not close that look.
+- **Build note:** a Debug desktop build with debug info filled this container's disk (23 GB);
+  configure with `-DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"` here. Qt needs `qt6-base-dev libproj-dev
+  libxkbcommon-dev nlohmann-json3-dev` from apt.
+
+## M10.3 trip distribution — D1, D2 and D3 done (D473, D474, D476); stop for the owner
+
+- [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14 records both slices:
+  - the pure gravity/Furness engine and the free-flow skim;
+  - deterrence sets (a catalog with none shipped, plus owned at schema 67);
+  - owned cost matrices that override skim cells and are the only source of diagonal costs;
+  - `--trip-distribution … [--cost-matrix]`;
+  - the *Trip distribution* Results page with *Deterrence sets…* and *Cost matrices…*.
+- Rows TD1–TD14 pass on Linux (desktop and headless). M10.3's code is complete; the M10 gate stays
+  open (rule 8).
+- **Owner:** the Windows look at the page and both dialogs
+  ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42).
+- **D3 done (D475 contract, D476 code):** origin-constrained purposes by a per-purpose
+  `constraint` in the deterrence set (schema 68), TRIP_DISTRIBUTION §15; rows TD15–TD20.
+- **Later:** destination-constrained purposes (booked by choice 1a); whether the Furness target
+  and cap become a document setting (open from D1).
+
+## M10.4 mode choice — E1, E2 and nested logit N1 done (D478, D479, D481); stop for the owner
+
+- [MODE_CHOICE](reference/MODE_CHOICE.md), after M0 read Ortúzar §5.4.4 and Ch. 6–7
+  ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)): an MNL split per purpose, P-A to OD by
+  period shares, occupancy, and generated `odMatrices`.
+- **E1 done (D478, MODE_CHOICE §13):** the MNL engine, `periodFactors` at schema 69,
+  `runModeChoice`, JSON/CSV and `--mode-choice`/`--period`; rows MC1–MC10 pass on Linux.
+- **E2 done (D479, MODE_CHOICE §13):** owned `modeChoiceSets` and `generatedBy` at schema 70,
+  the *Mode choice* page, *Mode choice sets…*, *Period factors…* and *Write OD matrices*; rows
+  MC11–MC14 pass on Linux.
+  - M10.2–M10.4 now chain end to end: generation → distribution → mode choice → written
+    `odMatrices` → Run Macro.
+  - The M10 gate stays open (rule 8).
+- **Nested logit done (D480 contract, D481 N1, [NESTED_LOGIT](reference/NESTED_LOGIT.md)):** two
+  levels, φ per nest in (0, 1], nests at schema 71, the *Nests…* dialog; rows NL1–NL8 pass on
+  Linux, Example 6.3's ten rows included.
+- **Destination-constrained distribution done (D482, TRIP_DISTRIBUTION §16):** `constraint:
+  "destination"` at schema 72; rows TD21–TD26 pass on Linux.
+- **Procedure sequence contract written (D483, [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):**
+  owner chose a general step list, in-memory matrices, stored procedures (schema 73), feedback
+  later. **P1 done (D484):** schema 73, `runProcedure`, `--procedure`; rows PS1–PS9 pass on Linux.
+  **P2 done (D485):** *Procedures…* and the *Procedure* page (PS10).
+- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2,
+  N1 and D4).
+- **Next, the owner's pick:**
+  - congested-cost feedback on top of procedures (the next slice the owner booked, D483 4a);
+  - congested-cost feedback (Ortúzar Ch. 11);
+  - logsum feedback from mode choice into distribution (G/MS/D/A, §6.5.2).
 
 ## Next session — the owner's pick
 

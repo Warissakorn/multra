@@ -2,7 +2,7 @@
 
 Scope: the owner's detailed review of [PR #138](https://github.com/Warissakorn/trafficsim/pull/138),
 starting at `d0eb5c6`. Contract: [MAP_BACKGROUND](../reference/MAP_BACKGROUND.md),
-decision [D150](../decisions/RECORD.md#d150). This review does not close MAP10 or an engine gate.
+decision [D150](../decisions/RECORD-D001-D199.md#d150). This review does not close MAP10 or an engine gate.
 
 ## Findings and corrections
 

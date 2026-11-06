@@ -19,6 +19,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <algorithm>
+#include <cmath>
+#include <map>
 
 // M8.6a (D161, docs/reference/ZONES_AND_PARKING.md §9): the Zones tab. The Zone tool's Enter commits
 // a polygon through execute(), so a drawn zone is one Undo step; connectors are added from the zone
@@ -56,7 +58,7 @@ void EditorWindow::buildZones() {
         row->addLayout(layout, stretch);
     };
     QToolBar *bar{}, *connectorBar{};
-    column(bar, zoneTable_, 4, "editorZoneTable", 3);
+    column(bar, zoneTable_, 5, "editorZoneTable", 3);
     column(connectorBar, zoneConnectorTable_, 3, "editorZoneConnectorTable", 2);
     addObjectPage(body,"editorZoneTable");
     bar->addAction(action("editorEditZone", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editZone(id); }));
@@ -97,7 +99,7 @@ void EditorWindow::buildZones() {
 }
 void EditorWindow::translateZones() {
     zoneTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
-                                           text("editorZoneLot")});
+                                           text("editorZoneLot"), text("editorZoneAttributes")});
     zoneConnectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorZoneConnectorTarget"), text("editorZoneConnectorShare")});
     zoneRevision_ = UINT64_MAX;
 }
@@ -122,10 +124,10 @@ void EditorWindow::refreshZones() {
                                                   [&](const auto& c) { return c.zoneId == z.id; });
             const bool lot = std::any_of(layer.parkingLots.begin(), layer.parkingLots.end(), [&](const auto& l) { return l.zoneId == z.id; });
             const QStringList values{QString::fromStdString(z.id), QString::fromStdString(z.name), QString::number(connectors),
-                                     lot ? text("editorYes") : QString()};
+                                     lot ? text("editorYes") : QString(), QString::number(z.attributes.size())}; // D471: attribute count
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(z.id));
-                if (col == 0 || col == 2) editorDesign::setNumericText(cell, col == 2);
+                if (col == 0 || col == 2 || col == 4) editorDesign::setNumericText(cell, col != 0);
                 zoneTable_->setItem(r, col, cell);
             }
             if (z.id == keep) zoneTable_->selectRow(r);
@@ -192,15 +194,47 @@ void EditorWindow::editZone(const std::string& id) {
     form->setHorizontalSpacing(editorDesign::space2); form->setVerticalSpacing(editorDesign::space1);
     auto* name = new QLineEdit(QString::fromStdString(z->name), &dialog); name->setObjectName("editorZoneName");
     form->addRow(text("editorColumnName"), name);
+    // M10.2 G2 (TRIP_GENERATION §6.2, D471): the zone's attributes, read by trip generation only.
+    auto* attributes = new QTableWidget(0, 2, &dialog); attributes->setObjectName("editorZoneAttributes");
+    attributes->setHorizontalHeaderLabels({text("editorColumnName"), text("editorZoneAttributeValue")});
+    attributes->horizontalHeader()->setStretchLastSection(true); attributes->verticalHeader()->hide();
+    attributes->setSelectionBehavior(QAbstractItemView::SelectRows); attributes->setMinimumHeight(160);
+    const auto addRow = [attributes](const QString& key, const QString& value) {
+        const int r = attributes->rowCount(); attributes->insertRow(r);
+        attributes->setItem(r, 0, new QTableWidgetItem(key)); attributes->setItem(r, 1, new QTableWidgetItem(value));
+    };
+    for (const auto& [key, value] : z->attributes) addRow(QString::fromStdString(key), QString::number(value, 'g', 17));
+    form->addRow(text("editorZoneAttributes"), attributes);
+    auto* attributeButtons = new QHBoxLayout;
+    auto* addAttribute = new QPushButton(text("editorZoneAttributeAdd"), &dialog); addAttribute->setObjectName("editorZoneAttributeAdd");
+    auto* removeAttribute = new QPushButton(text("editorZoneAttributeRemove"), &dialog); removeAttribute->setObjectName("editorZoneAttributeRemove");
+    attributeButtons->addWidget(addAttribute); attributeButtons->addWidget(removeAttribute); attributeButtons->addStretch();
+    form->addRow(attributeButtons);
+    connect(addAttribute, &QPushButton::clicked, &dialog, [&] { addRow({}, "0"); attributes->selectRow(attributes->rowCount() - 1); });
+    connect(removeAttribute, &QPushButton::clicked, &dialog, [&] { if (attributes->currentRow() >= 0) attributes->removeRow(attributes->currentRow()); });
+    auto* attributeError = new QLabel(&dialog); attributeError->setObjectName("editorZoneAttributeError"); attributeError->setWordWrap(true);
+    form->addRow(attributeError);
+    std::map<std::string, double> edited;
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
     buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     form->addRow(buttons);
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, [&] {
+        // Refused here, so the dialog stays open with the rows as typed (ZONE_ATTRIBUTE_INVALID's rule).
+        edited.clear();
+        for (int r = 0; r < attributes->rowCount(); ++r) {
+            const auto key = attributes->item(r, 0) ? attributes->item(r, 0)->text().trimmed() : QString();
+            bool ok = false;
+            const double value = attributes->item(r, 1) ? attributes->item(r, 1)->text().trimmed().toDouble(&ok) : 0;
+            if (key.isEmpty() || !ok || !std::isfinite(value)) { attributeError->setText(text("ZONE_ATTRIBUTE_INVALID")); attributes->selectRow(r); return; }
+            if (!edited.emplace(key.toStdString(), value).second) { attributeError->setText(text("editorZoneAttributeDuplicate")); attributes->selectRow(r); return; }
+        }
+        dialog.accept();
+    });
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     if (dialog.exec() != QDialog::Accepted) return;
-    auto edited = *z; edited.name = name->text().toStdString();
-    execute("editorEditZone", [&](auto& d) { putZone(d, edited); });
+    auto zone = *z; zone.name = name->text().toStdString(); zone.attributes = std::move(edited);
+    execute("editorEditZone", [&](auto& d) { putZone(d, zone); });
 }
 void EditorWindow::editZoneConnector(const std::string& id) {
     const auto& connectors = history_.document().zones.zoneConnectors;

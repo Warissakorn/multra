@@ -1,14 +1,14 @@
 # Zones, OD matrices and parking lots (M8 contract, D153)
 
 Implemented by M8.2–M8.6b (D154–D157, D160–D162); slice history is in PROGRESS and milestone
-status in [ROADMAP](../ROADMAP.md) M8. [D175](../decisions/RECORD.md#d175) will move the matrix
+status in [ROADMAP](../ROADMAP.md) M8. [D175](../decisions/RECORD-D001-D199.md#d175) will move the matrix
 period into StudyPeriod ([workflow](../plans/MULTI_LEVEL_WORKFLOW.md)); until that slice lands,
 §2.3 is the contract; [STUDY_PERIODS](STUDY_PERIODS.md) (D266) specifies the period and mode forms; a matrix may name a study period since D268, and a mode in place of its composition since D270. This document fixes the
 authoring objects, the Micro expansion, the parking-lot runtime and the failure-first rows that
 M8.2–M8.6 build against. The design
 behind it is [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.2–3.3 (D145). The
-reasoning for the choices below is [D153](../decisions/RECORD.md#d153); the check tiers and
-cascades of §6 are [D154](../decisions/RECORD.md#d154).
+reasoning for the choices below is [D153](../decisions/RECORD-D001-D199.md#d153); the check tiers and
+cascades of §6 are [D154](../decisions/RECORD-D001-D199.md#d154).
 
 Every result these objects produce is **not validated** (hard rule 4) and carries the marker. A
 lot's occupancy and gate queue are model outputs of an uncalibrated engine, not a parking study.
@@ -75,6 +75,7 @@ editor, lifecycle and rows RD30–RD34 are in [STREET_SEGMENTS_IMPLEMENTED §22]
 | `startTime`, `endTime` | seconds | `0 ≤ start < end ≤ duration` (cool-down excluded, as for inputs) |
 | `compositionId` | string | An existing composition (`data/compositions/` or the project's own); every trip of the matrix draws its type from it |
 | `zoneIds` | string[] | Existing Zones, no repeats; the row and column order |
+| `generatedBy` | string | Optional from schema 70, only `"mode-choice"`: a matrix *Write OD matrices* made, which the next write replaces (MODE_CHOICE §7, D479) |
 | `cells` | number[][] | `zoneIds.length` rows of `zoneIds.length` entries, finite, ≥ 0; row = origin, column = destination; **vehicle trips in the period** (not veh/h). The diagonal is allowed and needs a path like any cell |
 
 Several matrices may cover the same period with different compositions, or different periods.

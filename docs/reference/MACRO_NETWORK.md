@@ -356,7 +356,7 @@ Each row first asserts that its forcing worked (AGENTS).
 ## 15. Seams
 
 - **M10.2–M10.5** read the same graph and demand: generation and distribution fill matrices,
-  mode choice splits them, skims come from §7's shortest paths.
+  mode choice splits them, skims come from §7's shortest paths ([TRIP_DISTRIBUTION](TRIP_DISTRIBUTION.md) §5).
 - **S3:**
   - Street segments give Nodes without detail, and S0.4 lands with them (choice 6a);
   - the `linkType` hierarchy gives a coarse Node's priority (NODES §5).
@@ -398,7 +398,8 @@ A stage that refuses stops every later stage. A stage is never counted as done w
   like Aimsun's experiments. §21 implements this at schema 56 with an editor list; the earlier
   estimate of 52 was taken by Meso.
 - (c) A general procedure sequence like Visum's (generation → distribution → mode choice → skim →
-  assignment). It is premature while M10.2–M10.4 do not exist, and is booked as an M10 seam.
+  assignment). It was premature while M10.2–M10.4 did not exist and was booked as an M10 seam;
+  now [PROCEDURE_SEQUENCE](PROCEDURE_SEQUENCE.md) (D483).
 
 <a id="named-macro-runs"></a>
 

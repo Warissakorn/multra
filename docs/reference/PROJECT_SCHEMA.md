@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–65 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–73 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -29,8 +29,14 @@ that path as a canonical project.
 | `map` | Optional from 29; null is invalid; omitted without settings | `map_codec.cpp` |
 | `zones`, `zoneConnectors`, `odMatrices`, `parkingLots` | Optional from 31; present arrays must be nonempty; null invalid | `zone_codec.cpp` |
 | `studyPeriods` | Optional from 49; present array must be nonempty; null invalid | `study_period_codec.cpp` |
+| `periodFactors` | Optional from 69; present array must be nonempty; exact `{purposeId, periodId, productionToAttraction, attractionToProduction}`, shares in [0, 1] summing to ≤ 1 (`PERIOD_FACTOR_INVALID`); the period must exist (`UNKNOWN_PERIOD`), the pair unique (`DUPLICATE_ID`); purpose ids checked by a run | `period_factor_codec.cpp` |
+| `modeChoiceSets` | Optional from 70; present array must be nonempty; rows as MODE_CHOICE §6 (citation optional), ids unique; a purpose's `nests` (NESTED_LOGIT §3) from 71 | `mode_choice_codec.cpp` |
+| `procedures` | Optional from 73; present array must be nonempty; rows as PROCEDURE_SEQUENCE §2, ids unique | `procedure_codec.cpp` |
 | `studyArea` | Optional from 55; present object needs nonempty nodes; null invalid | `study_area_codec.cpp` |
 | `macroRuns` | Optional from 56; present array must be nonempty; null invalid | `macro_run_definition.cpp` |
+| `tripRateSets` | Optional from 66; present array must be nonempty; rows as TRIP_GENERATION §6.1, ids unique | `trip_rate_codec.cpp` |
+| `deterrenceSets` | Optional from 67; present array must be nonempty; rows as TRIP_DISTRIBUTION §6 (citation optional; a purpose's `constraint` from 68, its value `"destination"` from 72), ids unique | `deterrence_codec.cpp` |
+| `costMatrices` | Optional from 67; present array must be nonempty; `{id, name, source?, unit: "min", zoneIds, rows}` n×n, cells ≥ 0 or null, ids unique; zone ids checked by a run, not the reader | `cost_matrix_codec.cpp` |
 
 `background` requires `pngBase64` (string), numeric `x`, `y`, `metresPerPixel`,
 `rotation`, `opacity`. Validation requires finite numbers, positive metresPerPixel,
@@ -106,15 +112,21 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 61 | Junction catalog ownership, Node recipe and independent compass overrides (J3a, D393–D395) | `junction_template_codec.cpp`, `junction_recipe_codec.cpp`, `node_codec.cpp` |
 | 62 | Link `generated`, written only when true (J3b checkpoint, D398); older files still read, presence before 62 is refused at `network.links[i].generated` | `network_link_codec.cpp`, `network_fields.*`, `document.cpp` |
 | 63 | Owned transition template structure: `kind: transition`, `legs: 2`, and `directions.forward.align` / `directions.backward.align` (J5, D406); presence before 63 is refused at `directions` or `kind` | `junction_template_codec.cpp`, `document.cpp` |
+| 66 | Project-owned trip-rate sets `tripRateSets` (TRIP_GENERATION §6.3, D471); only selected when present; older versions refuse the field (`EDIT_UNSUPPORTED_FIELD`) | `trip_rate_codec.cpp` |
+| 67 | Project-owned `deterrenceSets` and `costMatrices` (TRIP_DISTRIBUTION §5–§6, D474); selected when either is present; older versions refuse each field (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `cost_matrix_codec.cpp` |
+| 68 | `deterrenceSets[i].purposes[k].constraint` (`"double"` or `"origin"`, TRIP_DISTRIBUTION §15, D476); selected when any owned purpose carries it; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `document.cpp` |
+| 69 | Root `periodFactors` (MODE_CHOICE §5–§6, D478): per purpose and study period, the P→A and A→P shares; selected when present; older versions refuse it (`EDIT_UNSUPPORTED_FIELD`) | `period_factor_codec.cpp` |
+| 70 | Root `modeChoiceSets` and `odMatrices[i].generatedBy` (`"mode-choice"`) (MODE_CHOICE §7, D479); selected when either is present; older versions refuse each at its path | `mode_choice_codec.cpp`, `zone_codec.cpp` |
+| 71 | `modeChoiceSets[i].purposes[k].nests` (two-level nested logit, φ in (0, 1], NESTED_LOGIT §3, D481); selected when any owned purpose carries nests; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `mode_choice_codec.cpp`, `document.cpp` |
+| 72 | `deterrenceSets[i].purposes[k].constraint` value `"destination"` (TRIP_DISTRIBUTION §16, D482); selected when any owned purpose uses it; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `document.cpp` |
+| 73 | Root `procedures` (PROCEDURE_SEQUENCE §2, D484): named step lists; selected when present; older versions refuse it (`EDIT_UNSUPPORTED_FIELD`) | `procedure_codec.cpp` |
 | 65 | Node `number`: optional positive integer, the UTDF intersection id (UTDF_EXPORT §5, D442); only selected when a Node has one; older versions refuse it (`EDIT_NODE_INVALID`); validation refuses repeats (`NODE_NUMBER_DUPLICATE`) | `node_codec.cpp`, `nodes.cpp` |
 | 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
-Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
-fraction attachments converted to metre stations on read, pre-8 routes migrate from
-lanes/paths to owning objects, and pre-13 editor signal programs migrate to controllers.
-Below 7, network unknown-field handling remains legacy/additive. Other early defaults
-and nested keys must be inventoried from the relevant readers before claiming complete
-historical-schema coverage.
+Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use fraction attachments
+converted to metre stations on read, pre-8 routes migrate from lanes/paths to owning objects, and pre-13 editor
+signal programs migrate to controllers. Below 7, network unknown-field handling remains legacy/additive. Other
+early defaults and nested keys must be inventoried from the relevant readers before claiming complete coverage.
 
 ## Nested coverage that a formal schema must preserve
 
@@ -318,7 +330,6 @@ Controllers/groups/program references, the semantic program-versus-controller ch
 head positions and geometric attachment constraints still require the model/document codec.
 Other control/demand row schemas remain separate follow-ups.
 
-
 ## Signal control extension (D360)
 
 The composed CLI coverage is now
@@ -347,7 +358,6 @@ integer conversion and diagnostic order, with generated validation after groups.
 reader retains duration-before-color diagnostics. Pre-13 project migration stays after definition
 and network decoding; bare M0 scenarios retain their programs. The envelope-only schema API,
 writer version selection and desktop observed-shape response remain unchanged.
-
 
 ## Right-of-way extension (D361)
 
@@ -379,7 +389,6 @@ There is no new geometry or runtime algorithm. Owner/path/line/area resolution, 
 extent validity, positive gap/headway, priority cycles and run-readiness remain existing
 model checks. Queue-counter and travel-time-section row schemas remain follow-up work.
 
-
 ## Measurement extension (D362)
 
 The composed CLI coverage adds `-measurements` to the D361 identifier; complete remains
@@ -405,7 +414,6 @@ reuse the same control point/path entries for waiting lines and queue counters. 
 algorithm, LOS threshold, delay definition, writer version rule or serialized output changes.
 Negative/out-of-bounds stations, reversed sections, empty or ambiguous measurement sources,
 reference resolution and runtime readiness remain the existing model/evaluation validators.
-
 
 ## Route and VehicleInput extension (D363)
 
@@ -435,7 +443,6 @@ serialized bytes, catalog ownership, routing algorithms and simulation dynamics 
 Topology/reachability, catalog/reference resolution, valid demand rates/windows, lane weights
 and counted-decision semantics remain existing validators. Routing decisions and catalog row
 schemas remain separate follow-ups.
-
 
 ## RoutingDecision extension (D364)
 

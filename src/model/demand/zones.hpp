@@ -37,6 +37,8 @@ struct OdMatrix {
     // Study-area Meso type: classes only, in the run-time copy. Never loaded or saved; authored
     // matrices still require a composition or mode. Expanded straight into VehicleInput's type.
     std::string vehicleTypeId;
+    // M10.4 E2 (MODE_CHOICE §7, D479): "mode-choice" for a matrix Write OD matrices made; empty = authored. Schema 70.
+    std::string generatedBy;
     bool operator==(const OdMatrix&) const = default;
 };
 // M8.4b (D157): a zone with capacity. Its destination connectors' Links are its gate, its origin

@@ -225,7 +225,7 @@ TEST(utdf, ut0_golden_file_holds_every_name_the_writer_writes) {
 }
 TEST(utdf, node_number_is_schema_65_positive_and_unique) {
     const auto d = corridor(); const auto j = documentJson(d);
-    CHECK(j["schemaVersion"] == 65 && j["network"]["nodes"][0]["number"] == 10 && kLatestSchema == 65);
+    CHECK(j["schemaVersion"] == 65 && j["network"]["nodes"][0]["number"] == 10 && kLatestSchema >= 65);
     CHECK(documentJson(parseDocument(j)) == j && documentSchemaVersion(parseDocument(j)) == 65);
     auto plain = d; for (auto& n : plain.network.nodes) n.number.reset();
     CHECK(documentSchemaVersion(plain) < 65 && !documentJson(plain)["network"]["nodes"][0].contains("number"));
