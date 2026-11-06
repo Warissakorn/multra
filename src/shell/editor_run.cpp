@@ -2,6 +2,7 @@
 #include "editor_window.hpp"
 #include "message_label.hpp"
 #include "node_analysis_panel.hpp"
+#include "trip_generation_panel.hpp"
 #include "automation_error.hpp"
 #include <QUuid>
 #include <QJsonArray>
@@ -245,7 +246,9 @@ void EditorWindow::refreshRun(){
     refreshMeso(); // M11.4: and the Meso ones
     const auto analysis=resultPages_.find("editorResultsTabNodeAnalysis");
     auto* panel=analysis==resultPages_.end()?nullptr:static_cast<NodeAnalysisPanel*>(analysis->second);if(panel)panel->refresh();
-    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
+    const auto tripPage=resultPages_.find("editorResultsTabTripGeneration");
+    auto* trips=tripPage==resultPages_.end()?nullptr:static_cast<TripGenerationPanel*>(tripPage->second);if(trips)trips->refresh();
+    const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():trips&&resultsTabs_->currentWidget()==trips?trips->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
         :runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);

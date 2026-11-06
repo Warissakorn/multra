@@ -146,8 +146,8 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    matching batch evaluation start/end and Node T, labelled manual counts. Nothing is stored.
    Checkpoints a6d0a25/d663bf5 are accepted so far; finish A9, then stop for review.
 
-42. **M10.2 trip generation:** answered 2026-11-06, 1a–8a, and the Ortúzar copy may be attached
-   (D469; [TRIP_GENERATION](../reference/TRIP_GENERATION.md) §11). Do not re-ask.
+42. **M10.2 trip generation:** answered 1a–8a (D469); G2 choices D471. **Look (Windows):** Edit Zone's
+   attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

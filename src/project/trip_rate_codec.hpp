@@ -3,6 +3,7 @@
 // `data/trip-rates/`. No set ships (choice 8a); project-owned sets are G2.
 #include "json.hpp"
 #include "../macro/trip_generation.hpp"
+#include "../core/validate.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -30,6 +31,12 @@ struct ResolvedTripRateSet { TripRateSet set; std::string path; }; // path: the 
 // `requireCitation` is true for a catalog set.
 TripRateSet parseTripRateSet(const Json&, const std::string& path, bool requireCitation);
 Json tripRateSetJson(const TripRateSet&);
+// M10.2 G2 (§6.3, D471): the project's own sets, root `tripRateSets` at schema 66. A present list must
+// be a non-empty array (INVALID_TRIP_RATE_SET at `tripRateSets`); rows are parsed at `tripRateSets[i]`
+// with the citation optional; ids must be unique (DUPLICATE_ID). Absent or empty lists are not written.
+std::vector<TripRateSet> parseOwnedTripRateSets(const Json& file);
+void addOwnedTripRateSetsJson(const std::vector<TripRateSet>&, Json& file);
+std::vector<ValidationIssue> ownedTripRateSetIssues(const std::vector<TripRateSet>&); // blank and duplicate ids
 // `data/trip-rates/*.json` in file-name order; a missing folder is an empty catalog. Duplicate ids are
 // DUPLICATE_ID at the later file's `.id`.
 std::vector<ResolvedTripRateSet> resolveTripRateSets(const std::filesystem::path& dataDirectory, InputManifest* = nullptr);

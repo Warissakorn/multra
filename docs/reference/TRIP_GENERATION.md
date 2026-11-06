@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D468) as a contract with eight owner choices (§11). The owner accepted every
 recommendation the same day (D469: 1a–8a), and slice G0 checked §3–§4 against the book
-([evidence](../evidence/ortuzar-ch4-trip-generation.md)). G1 is implemented (D470, §14); G2 is next. This is the first of the
+([evidence](../evidence/ortuzar-ch4-trip-generation.md)). G1 (D470) and G2 (D471) are implemented (§14). This is the first of the
 four-step stages that MACRO_NETWORK left out of M10.1 ([MACRO_NETWORK](MACRO_NETWORK.md) §1,
 §15; [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.4 step 1): productions and
 attractions per zone and purpose, from zone attributes and a trip-rate set held as data.
@@ -156,16 +156,24 @@ The values above illustrate the shape and are not a source. Rules:
 
 - Category counts are ordinary zone attributes (choice 2a), named by the set's
   `attribute` strings (for example `hh.cars0`). This needs no new zone field and no schema step.
-  Today only the file carries them: no editor surface edits `attributes` (measured: the codec
-  reads and writes them, no shell or command code touches them), so G2 adds one (choice 7a).
+  Before G2 only the file carried them. G2 edits them in the **Edit Zone dialog** (owner, D471):
+  a name/value table with Add and Remove; Confirm is one Undo step for the whole zone, and a blank
+  name, a duplicate name or a value that is not a finite number keeps the dialog open. The Zones
+  table shows each zone's attribute count.
 - A zone that lacks an attribute named by the selected set is `TRIP_RATE_ATTRIBUTE_MISSING` at
   `zones[i].attributes.<name>` (choice 5); the run is refused, every missing name listed.
 
 ### 6.3 Project schema
 
-- Project-owned sets (choice 7a) are an optional root `tripRateSets`, saved at the
-  next free feature-selected schema (66 today); an empty list is omitted, so a file without
-  owned sets keeps its schema and bytes. Below that schema the field is `EDIT_UNSUPPORTED_FIELD`.
+- Project-owned sets (choice 7a) are an optional root `tripRateSets`, saved at schema **66**; an
+  empty list is omitted, so a file without owned sets keeps its schema and bytes. Below 66 the
+  field is `EDIT_UNSUPPORTED_FIELD`. A present list must be a non-empty array; rows follow §6.1
+  with the citation optional; ids are unique (`DUPLICATE_ID`).
+- **Editing (owner, D471):** *Trip-rate sets…* lists the owned sets (id, name, unit, purposes) with
+  Import (a set's JSON file, refused at its first faulty path), Export and Remove. Values are
+  edited outside MULTRA. Confirm is one Undo step; Cancel changes nothing.
+- A run looks in the project's sets first, then the catalog; an owned set sharing the chosen id
+  with a catalog set is `DUPLICATE_ID` at `tripRateSets[i].id`, never a silent override.
 - No result, selection or generated trip end is stored in the project.
 
 ## 7. Engine (`src/macro/`) and project layer
@@ -195,9 +203,11 @@ The values above illustrate the shape and are not a source. Rules:
 - **CLI:** `--trip-generation <rateSetId>` with `--project`, taking only `--csv` and `--data-dir`.
   It cannot be combined with `--macro`, `--macro-run`, `--meso`, `--node-analysis`,
   `--export-utdf`, seeds or the single-run diagnostics.
-- **Editor (choice 7a):** *Macro → Trip generation…* runs the selected set on the worker and
-  shows a table (purpose, zone, P, raw A, A, factor), with Copy and Export. It is no History step;
-  an edit to a zone attribute or a set marks the table stale, as the Macro links table.
+- **Editor (choice 7a, as built D471):** a *Trip generation* page under Results: a rate-set choice
+  (owned, then catalog), *Run trip generation* on a worker with its four stages, *Trip-rate sets…*,
+  and a table (purpose, zone, P, raw A, A, factor) with a totals row per purpose; Copy and Export
+  use the Results actions. A run is no History step; a later document revision marks it stale and
+  the rows stay.
 
 ## 9. Seams
 
@@ -259,6 +269,9 @@ The owner: "เอาตามแนะนำ 1a–8a". The options are kept for
      types do, and a study enters its zone data in the editor rather than in JSON.
    - (b) Catalog sets only and the CLI; no schema change and no editor surface yet (attributes
      stay file-only).
+   - **Refined by the owner for G2 (D471):** attributes in the Edit Zone dialog rather than Zones
+     table columns; owned sets in a list dialog with Import/Export JSON and Remove rather than a
+     form editor.
 8. **Shipped rates.**
    - **(a) Ship none (recommended),** as PCU and link types: rates are local and dated, and a
      shipped number reads as a default.
@@ -270,10 +283,10 @@ The owner: "เอาตามแนะนำ 1a–8a". The options are kept for
 |---|---|---|
 | G0 | Read Ortúzar Ch. 4 into an evidence file; cite §3–§4. **Done (D469)** | — |
 | G1 | Rate-set codec and catalog, `src/macro/trip_generation`, balancing, the run function, JSON/CSV and `--trip-generation` | TG1–TG10, TG4b, TG12 |
-| G2 | Owned sets at the next schema with their editor table; zone-attribute columns in the Zones table (one Undo step per edit); *Trip generation…* table and stale marking (choice 7a) | TG11, TG13, TG14 |
+| G2 | Owned sets at schema 66 with the *Trip-rate sets…* dialog; zone attributes in the Edit Zone dialog; the *Trip generation* Results page and stale marking (choice 7a; D471). **Implemented** | TG11, TG13, TG14 |
 | Fixture | Example 4.1 reproduced (G1's tests) | TG12 |
 
-## 13. Acceptance rows (G1's implemented, D470)
+## 13. Acceptance rows (implemented: G1 D470, G2 D471)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -293,7 +306,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | TG11 | Owned sets | Schema-66 round-trip; no owned sets keeps old bytes; older schemas refuse the field; accept is one Undo step |
 | TG12 | Ortúzar Example 4.1 (§10) | Two categories, 250 households each at 2.5 and 6.0, give 2125; one category of 500 at 6.0 gives 3000, as printed |
 | TG13 | Editor | Trip generation is no History step; a table row per purpose and zone; an attribute edit marks it stale |
-| TG14 | Zone attributes in the editor | Add, edit and remove an attribute; each is one Undo step; a non-finite value or blank name is refused as `ZONE_ATTRIBUTE_INVALID`; saved bytes equal the codec's |
+| TG14 | Zone attributes in the Edit Zone dialog | Add, edit and remove an attribute; each is one Undo step; a non-number, a non-finite value or a blank name keeps the dialog open and changes nothing |
 
 ## 14. As implemented (G1, D470)
 
@@ -310,6 +323,19 @@ Each row first asserts that its forcing worked (AGENTS).
   rows use a test-only data root, `tests/data/trip-generation/`, with Examples 4.1 and 4.4 as sets,
   and `tests/trip-generation.traffic.json` (the two-route fixture with zone attributes).
 - **Rows:** `tests/trip_generation_tests.cpp` (group `tripgeneration`) and the CLI tests
-  `cli-trip-generation`, `-conflict`, `-unknown`. TG11, TG13 and TG14 are G2's. Every row passed on
+  `cli-trip-generation`, `-conflict`, `-unknown`. TG11, TG13 and TG14 are G2's (below). Every row passed on
   first run; four engine mutations (inverted factor, unrefused negative, rate without count, a
   partial result kept on refusal) were each caught by at least one row.
+
+### G2 as implemented (D471)
+
+- **Files:** `ProjectDocument::tripRateSets`, `kLatestSchema` 66 and `parseOwnedTripRateSets` /
+  `addOwnedTripRateSetsJson` / `ownedTripRateSetIssues` (`src/project/trip_rate_codec.*`, called
+  from `document.cpp`); `setTripRateSets` (`src/commands/trip_rate_commands.*`);
+  `editTripRateSets` (`src/shell/trip_rate_dialog.*`, file choice injected); the self-owned
+  `TripGenerationPanel` (`src/shell/trip_generation_panel.*`), installed in `editor_results.cpp`
+  with no `EditorWindow` member (its header is at the 500-line limit); the Edit Zone dialog in
+  `editor_zones.cpp`.
+- **Rows:** `tests/trip_rate_owned_tests.cpp` (group `triprateowned`: TG11 codec, command,
+  owned-first lookup and the clash) and `tests/trip_generation_ui_tests.cpp` (`trip-generation-ui`:
+  TG11 save, TG13, TG14, the dialog's Import/Export/Remove/Cancel).

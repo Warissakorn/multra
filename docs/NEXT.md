@@ -130,20 +130,22 @@ Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the 
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
-## M10.2 trip generation — G1 done (D470); G2 on the owner's go
+## M10.2 trip generation — G1 and G2 done (D470, D471); stop for the owner's look
 
-- [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14 records what G1 built: the pure engine,
-  the rate-set codec and catalog, `runTripGeneration`, JSON/CSV and `--trip-generation`. Rows
-  TG1–TG10, TG4b, TG12 pass; fixture sets live in `tests/data/trip-generation/` because none ships.
-- **G2 when the owner says go** (§12): owned `tripRateSets` at schema 66 (confirm 66 is still the
-  next free schema; `documentSchemaVersion` in `src/project/document.cpp` selects it, 65 today), parsed by `parseTripRateSet(…, false)` and merged
-  ahead of the catalog with clashes as `DUPLICATE_ID`; zone-attribute columns in the Zones table
-  (one Undo step per edit, `ZONE_ATTRIBUTE_INVALID` refusals); a free-function *Trip generation…*
-  dialog running `runTripGeneration` on the worker with the stage list, a table and stale marking
-  as the Macro links table. Rows TG11, TG13, TG14. Needs a desktop build: this environment has no
-  Qt, so G2 must be built and its UI suites run where Qt exists (CI's `native.yml`).
-- Then M10.3 (distribution) starts with its contract, reading `TripPurposeResult`'s productions and
-  balanced attractions (§9).
+- [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14 records both slices. The editor has project-owned
+  rate sets (schema 66, *Trip-rate sets…* with Import/Export JSON), zone attributes in the Edit
+  Zone dialog, and a *Trip generation* Results page. Rows TG1–TG14 pass on Linux (desktop and
+  headless). M10.2's code is complete; the M10 gate stays open (rule 8).
+- **Owner:** look at the two dialogs and the page on Windows ([OWNER_SITTING](plans/OWNER_SITTING.md)
+  item 42). Linux offscreen tests do not close that look.
+- **Next on the owner's go:** M10.3 (distribution) starts with its contract: doubly-constrained
+  gravity with exponential deterrence and Furness (D158), reading each purpose's productions and
+  balanced attractions (§9), the set's unit carried. Ortúzar Ch. 5 (Example 5.3 Furness, 5.4
+  gravity; BOOKS §3.3) must be read from the page images first, as G0 did, since G0 found one
+  BOOKS booking wrong.
+- **Build note:** a Debug desktop build with debug info filled this container's disk (23 GB);
+  configure with `-DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"` here. Qt needs `qt6-base-dev libproj-dev
+  libxkbcommon-dev nlohmann-json3-dev` from apt.
 
 ## Next session — the owner's pick
 

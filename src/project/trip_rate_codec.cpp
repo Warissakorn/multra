@@ -112,11 +112,42 @@ TripRateSet parseTripRateSet(const Json& j, const std::string& path, bool requir
     return set;
 }
 Json tripRateSetJson(const TripRateSet& s) {
-    Json source{{"citation", s.citation}};
+    Json source = Json::object(); // a project set may omit its citation; a catalog set always has one
+    if (!s.citation.empty()) source["citation"] = s.citation;
     if (!s.table.empty()) source["table"] = s.table;
     Json purposes = Json::array();
     for (const auto& p : s.purposes) purposes.push_back({{"id", p.id}, {"productions", sideJson(p.productions)}, {"attractions", sideJson(p.attractions)}});
     return {{"id", s.id}, {"name", s.name}, {"source", source}, {"unit", s.unit}, {"purposes", purposes}};
+}
+std::vector<TripRateSet> parseOwnedTripRateSets(const Json& file) {
+    if (!file.contains("tripRateSets")) return {};
+    const auto& list = file.at("tripRateSets");
+    if (!list.is_array() || list.empty()) throw ValidationError({{"INVALID_TRIP_RATE_SET", "tripRateSets"}});
+    Issues issues;
+    std::vector<TripRateSet> sets;
+    for (std::size_t k = 0; k < list.size(); ++k) {
+        try { sets.push_back(parseTripRateSet(list[k], "tripRateSets[" + std::to_string(k) + "]", false)); }
+        catch (const ValidationError& e) { issues.insert(issues.end(), e.issues.begin(), e.issues.end()); }
+    }
+    if (issues.empty()) issues = ownedTripRateSetIssues(sets);
+    if (!issues.empty()) throw ValidationError(std::move(issues));
+    return sets;
+}
+void addOwnedTripRateSetsJson(const std::vector<TripRateSet>& sets, Json& file) {
+    if (sets.empty()) return;
+    Json list = Json::array();
+    for (const auto& s : sets) list.push_back(tripRateSetJson(s));
+    file["tripRateSets"] = list;
+}
+std::vector<ValidationIssue> ownedTripRateSetIssues(const std::vector<TripRateSet>& sets) {
+    Issues issues;
+    std::set<std::string> ids;
+    for (std::size_t k = 0; k < sets.size(); ++k) {
+        const auto path = "tripRateSets[" + std::to_string(k) + "].id";
+        if (blank(sets[k].id)) issues.push_back({"INVALID_ID", path});
+        else if (!ids.insert(sets[k].id).second) issues.push_back({"DUPLICATE_ID", path});
+    }
+    return issues;
 }
 std::vector<ResolvedTripRateSet> resolveTripRateSets(const std::filesystem::path& data, InputManifest* manifest) {
     std::vector<ResolvedTripRateSet> result;

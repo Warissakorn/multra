@@ -3,6 +3,7 @@
 // project's zones, shared by the CLI and (G2) the editor. Nothing is stored in the project.
 #include "document.hpp"
 #include "trip_rate_codec.hpp"
+#include <nlohmann/json.hpp>
 #include <cstdint>
 #include <functional>
 

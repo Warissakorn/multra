@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.2 G2: owned rate sets, zone attributes, Trip generation page (D471)
+
+- **Owner:** "เริ่มเลย" on G2; chose attributes in the Edit Zone dialog and a rate-set list with
+  Import/Export JSON (over table columns and a form editor).
+- **D471 ([TRIP_GENERATION](reference/TRIP_GENERATION.md) §6.2, §6.3, §14):** `tripRateSets` at
+  schema 66, looked up before the catalog (a same-id clash is refused); `setTripRateSets`; the
+  Edit Zone attribute table; *Trip-rate sets…*; a self-owned *Trip generation* Results page.
+- **Rows:** `triprateowned` (TG11 codec, command, lookup) and `trip-generation-ui` (TG11 save,
+  TG13, TG14, the dialog). `utdf` and `workspace-ui` updated for schema 66 and the ninth Results tab.
+- **Environment:** installed Qt 6.4.2, PROJ and xkbcommon; a Debug build with debug info filled
+  the disk (23 GB), so both presets were built with `-g0`.
+- **Verified:** `ctest --preset desktop` 283/283 and `check` pass; `ctest --preset headless`
+  181/181. Linux offscreen only; Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.2 G1: trip generation engine, run, outputs and CLI (D470)
 
 - **Owner:** "เริ่มเลย" on G1.
@@ -125,16 +139,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   with the strip hidden. It returns to the strip's corner for larger groups.
 - **Movement names:** not translated; they are the project's Link names.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked.
-
-## 2026-11-05 — Canvas display fixes, round 1 (D461)
-
-- **Owner:** "เริ่มเลย" on round 1 of the display-error list; the median spikes in the junction
-  stay (owner choice, Q5).
-- **Fit:** reserves label room only for labels that show at Fit. On-lane rates hide there (D460),
-  so the four-leg roads now fill 94 % of the view height instead of 68 %.
-- **Signal heads zoomed out:** under 4 px a head is its stop line alone, with no box, arm or
-  pole; the pole has no pixel floor. A run keeps the state colour and cue on the line.
-- **Road edge:** shows while the whole road is 2 px wide, no longer only from 3 px per lane.
-- **Heads on a Connector:** the pole stands beside the attached Link's edge at the mouth; a head
-  away from any mouth has none.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. The queue-counter test now zooms to its own targets (it scaled Fit by 3). Images: `docs/images/canvas-fixes-d461/`.

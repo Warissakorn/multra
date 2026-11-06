@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — Canvas display fixes, round 1 (D461)
+
+- **Owner:** "เริ่มเลย" on round 1 of the display-error list; the median spikes in the junction
+  stay (owner choice, Q5).
+- **Fit:** reserves label room only for labels that show at Fit. On-lane rates hide there (D460),
+  so the four-leg roads now fill 94 % of the view height instead of 68 %.
+- **Signal heads zoomed out:** under 4 px a head is its stop line alone, with no box, arm or
+  pole; the pole has no pixel floor. A run keeps the state colour and cue on the line.
+- **Road edge:** shows while the whole road is 2 px wide, no longer only from 3 px per lane.
+- **Heads on a Connector:** the pole stands beside the attached Link's edge at the mouth; a head
+  away from any mouth has none.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. The queue-counter test now zooms to its own targets (it scaled Fit by 3). Images: `docs/images/canvas-fixes-d461/`.
+
 ## 2026-11-05 — Canvas review fixes (D460)
 
 - **Owner review** of the canvas: four items, then three more rounds (single-colour square heads

@@ -94,7 +94,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool period=d.definition && d.definition->evaluation;
     const bool controlled=std::any_of(d.network.travelTimeSections.begin(),d.network.travelTimeSections.end(),[](const auto& s){return s.controlType.has_value();});
     const bool cooled=period && d.definition->evaluation->cooldown>0;
-    return usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -216,6 +216,7 @@ Json documentJson(const ProjectDocument& d) {
     addStudyPeriodsJson(d.zones,result); // S1.1
     addStudyAreaJson(d.zones,result); // S5.2a
     addMacroRunDefinitionsJson(d,result); // Named Macro definitions, schema 56
+    addOwnedTripRateSetsJson(d.tripRateSets,result); // M10.2 G2, schema 66
     return result;
 }
 void validateDocument(const ProjectDocument& d) {
@@ -234,6 +235,7 @@ void validateDocument(const ProjectDocument& d) {
         throw ValidationError({{"INVALID_NUMBER", "definition.clockStart"}}); // S1.1
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = macroRunDefinitionIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = ownedTripRateSetIssues(d.tripRateSets); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = zoneLayerIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = studyAreaIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // S5.2a
 }
@@ -261,6 +263,8 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
     if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
     d.macroRuns = parseMacroRunDefinitions(j);
+    if (version < 66 && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
+    d.tripRateSets = parseOwnedTripRateSets(j);
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
     d.zones.studyArea=parseStudyArea(j);

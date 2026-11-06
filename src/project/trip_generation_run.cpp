@@ -24,9 +24,17 @@ TripGenerationRun runTripGeneration(const ProjectDocument& d, const std::filesys
                                     InputManifest* manifest, const std::function<void(TripGenerationStage)>& stage) {
     const auto enter = [&](TripGenerationStage s) { if (stage) stage(s); };
     enter(TripGenerationStage::rateSet);
-    const auto sets = resolveTripRateSets(data, manifest);
+    // G2 (§6.3, D471): the project's own sets come first; one sharing the chosen id with a catalog set
+    // is refused at the project's row, never a silent override.
+    std::vector<ResolvedTripRateSet> sets;
+    for (std::size_t k = 0; k < d.tripRateSets.size(); ++k) sets.push_back({d.tripRateSets[k], "tripRateSets[" + std::to_string(k) + "]"});
+    const auto owned = sets.size();
+    for (auto& s : resolveTripRateSets(data, manifest)) sets.push_back(std::move(s));
     const auto found = std::find_if(sets.begin(), sets.end(), [&](const auto& s) { return s.set.id == id; });
     if (found == sets.end()) throw ValidationError({{"TRIP_RATE_SET_UNKNOWN", "tripRateSets"}});
+    if (static_cast<std::size_t>(found - sets.begin()) < owned &&
+        std::any_of(sets.begin() + static_cast<std::ptrdiff_t>(owned), sets.end(), [&](const auto& s) { return s.set.id == id; }))
+        throw ValidationError({{"DUPLICATE_ID", found->path + ".id"}});
     TripGenerationRun run;
     run.revision = d.revision; run.set = found->set; run.setPath = found->path;
 
