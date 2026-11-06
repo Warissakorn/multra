@@ -56,7 +56,7 @@ void reorderedPages(EditorWindow& window,const std::filesystem::path& data) {
         {"editorLotTable","editorResultsTabLots"},{"editorNodeResultTable","editorResultsTabNodes"},{"editorMacroTable","editorResultsTabMacro"},
         {"editorMesoTable","editorResultsTabMeso"},{"editorNodeAnalysisPanel","editorResultsTabNodeAnalysis"},
         {"editorTripGenerationPanel","editorResultsTabTripGeneration"}}; // J7/D418; M10.2 G2 (D471)
-    require(tabs->count()==22 && inner->count()==11,"Tab inventory changed"); // M10.4 E2 (D479): Mode choice is the eleventh
+    require(tabs->count()==22 && inner->count()==12,"Tab inventory changed"); // D485: Procedure is the twelfth, after Mode choice (D479)
     QList<QWidget*> original,originalInner;
     for(int i=0;i<tabs->count();++i)original<<tabs->widget(i);
     for(int i=0;i<inner->count();++i)originalInner<<inner->widget(i);

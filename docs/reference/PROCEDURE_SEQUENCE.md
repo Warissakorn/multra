@@ -1,7 +1,7 @@
 # Procedure sequence (MACRO_NETWORK §19 c)
 
 Written 2026-11-06 as a contract (D483). The owner answered its four choices in the same session
-(§6). P1 is implemented (D484, §8); P2 (the editor) follows (§7).
+(§6). P1 (D484, §8) and P2 (D485, §9) are implemented.
 
 MACRO_NETWORK §19 booked option (c), "a general procedure sequence like Visum's", as an M10 seam
 until generation, distribution and mode choice existed. They now exist:
@@ -137,7 +137,7 @@ A run is no History step. Step statuses are `done`, `skipped`, `refused` and `no
 |---|---|---|
 | P0 | This contract. **Done (D483)** | — |
 | P1 | `procedures` at schema 73; `runProcedure`; `procedureJson`; `--procedure`. **Implemented (D484)** | PS1–PS9, PS11 |
-| P2 | *Procedures…* and the *Procedure* page | PS10 |
+| P2 | *Procedures…* and the *Procedure* page. **Implemented (D485)** | PS10 |
 
 Each row first asserts that its forcing worked.
 
@@ -187,3 +187,31 @@ Each row first asserts that its forcing worked.
   - taking the farthest input;
   - assigning the document instead of the copy;
   - ignoring `active`.
+
+## 9. As implemented (P2, D485)
+
+- **`src/shell/procedures_dialog.*`, *Procedures…*:**
+  - the procedures list, with *Add procedure* and *Remove*;
+  - id and name fields;
+  - a steps table with *Active* (a check box), *Step* (the kind), *Input*, *Options* and
+    *Cost matrix*.
+    - *Input* is an editable combo of the matching sets. For an assignment it offers the study
+      periods, `matrix:<id>` for a matrix with its own times, and `run:<id>` for a Macro run
+      definition.
+    - *Options* holds the skim mode (distribution) or the periods, separated by commas (mode
+      choice).
+  - *Add step*, *Remove*, *Up* and *Down*;
+  - **OK** checks the list with `procedureIssues`. A refusal shows its code and path and keeps the
+    dialog open.
+  - **Commit:** `setProcedures` (`src/commands/procedure_commands.*`) is one History step.
+- **`src/shell/procedure_panel.*`, the twelfth Results tab:**
+  - a procedure choice, *Run procedure* on a worker, *Cancel* and *Procedures…*;
+  - a note with the outcome (*completed*, *stopped* at a refusal, or *cancelled*), plus *Stale*;
+  - a table of #, step, status and summary. The summaries are productions, trips, vehicles per
+    period and mode, or the iterations and gap;
+  - **CSV:** the step table, marked.
+- **Rows:**
+  - `procedure-ui` (PS10) runs the fixture's procedure on the page and edits through the dialog: a
+    blank id is refused in place, Cancel changes nothing, and turning off a step is one Undo step
+    and makes the result stale. Saving writes schema 73;
+  - `workspace-ui` now counts 12 Results tabs.

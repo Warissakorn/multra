@@ -2,6 +2,22 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 D2: owned deterrence sets and cost matrices, Trip distribution page (D474)
+
+- **Owner:** "เริ่มเลย" on D2.
+- **D474 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §14):**
+  - `deterrenceSets` and `costMatrices` at schema 67, with commands;
+  - a run-chosen matrix overrides skim cells and is the only source of a diagonal;
+  - G2's trip-rate dialog made a shared owned-list dialog;
+  - the self-owned *Trip distribution* page;
+  - `--cost-matrix`.
+- **Rows:**
+  - `tripdistributionowned` (TD12 and the override rows) and `trip-distribution-ui` (TD12 save,
+    TD13, the dialogs).
+  - `workspace-ui` updated deliberately for the tenth Results tab.
+- **Verified:** Linux only (desktop and headless; counts in the session report). An offscreen grab
+  of the page and the dialog was checked for layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.3 D1: gravity distribution engine, skim, run, outputs and CLI (D473)
 
 - **Owner:** "ตามแนะนำ" on TRIP_DISTRIBUTION §11 (1a–9a).

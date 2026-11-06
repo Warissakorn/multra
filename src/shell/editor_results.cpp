@@ -11,6 +11,7 @@
 #include "trip_generation_panel.hpp"
 #include "trip_distribution_panel.hpp"
 #include "mode_choice_panel.hpp"
+#include "procedure_panel.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/meso_output.hpp"
 #include "../project/batch_output.hpp"
@@ -142,6 +143,11 @@ void EditorWindow::buildResults() {
          [this](const QString& name){return QFileDialog::getSaveFileName(this,text("editorTripRateExport"),name,"JSON (*.json)");}},
         [this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabModeChoice",modeChoice);resultsTabs_->addTab(modeChoice,{});
+    // PROCEDURE_SEQUENCE §4 (D485): the same context; its run never changes the document.
+    auto* procedure=new ProcedurePanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
+        [this]{return history_.generation();},data_,[this](const char* key){return text(key);},
+        [this](const char* name,std::function<void(ProjectDocument&)> change){return execute(name,change);},{},[this]{refreshRun();}});
+    resultPages_.emplace("editorResultsTabProcedure",procedure);resultsTabs_->addTab(procedure,{});
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -163,6 +169,7 @@ void EditorWindow::translateResults() {
     static_cast<TripGenerationPanel*>(resultPages_.at("editorResultsTabTripGeneration"))->translate();
     static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->translate();
     static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->translate();
+    static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->translate();
     lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
         text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
         text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});
@@ -184,6 +191,7 @@ void EditorWindow::refreshResults() {
     static_cast<TripGenerationPanel*>(resultPages_.at("editorResultsTabTripGeneration"))->refresh();
     static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->refresh();
     static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->refresh();
+    static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->refresh();
     refreshBatch(); // M5.6/M5.8b: a running or finished batch or comparison takes the single run's place
     if(batchShown())return;
     if(!movementTable_->isVisible())return;
@@ -283,6 +291,8 @@ std::string EditorWindow::resultsCsv() const {
         return static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->csv();
     if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabModeChoice"))
         return static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->csv();
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabProcedure"))
+        return static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->csv();
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
         if(const auto* r=macroResult())return markedCsv(macroCsv(*r),exportMarking(history_.document(),{},macroStale())); // S5.5b
         throw std::runtime_error("EDIT_CSV_UNFINISHED");

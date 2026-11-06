@@ -115,7 +115,7 @@ add_library(multra_commands STATIC src/commands/history.cpp src/commands/network
     src/commands/right_of_way_commands.cpp src/commands/conflict_authoring.cpp
     src/commands/junction_commands.cpp src/commands/node_commands.cpp src/commands/coarse_commands.cpp src/commands/fill_commands.cpp src/commands/node_detail_commands.cpp src/commands/conflict_follow.cpp src/commands/conflict_group_commands.cpp src/commands/map_commands.cpp src/commands/zone_commands.cpp)
 target_link_libraries(multra_commands PUBLIC multra_project PRIVATE multra_options)
-target_sources(multra_commands PRIVATE src/commands/trip_rate_commands.cpp src/commands/mode_choice_commands.cpp src/commands/macro_run_commands.cpp src/commands/node_analysis_commands.cpp)
+target_sources(multra_commands PRIVATE src/commands/trip_rate_commands.cpp src/commands/mode_choice_commands.cpp src/commands/procedure_commands.cpp src/commands/macro_run_commands.cpp src/commands/node_analysis_commands.cpp)
 target_precompile_headers(multra_commands PRIVATE <nlohmann/json.hpp>)
 # D165 behaviour lab: the ring, its run and live retune. Qt-free; the shell draws it (check_architecture).
 add_library(multra_lab STATIC src/lab/lab_settings.cpp src/lab/lab_network.cpp src/lab/lab_oval.cpp src/lab/lab_urban.cpp src/lab/lab_run.cpp)

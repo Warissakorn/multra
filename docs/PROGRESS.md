@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — Procedure sequence P2: Procedures dialog and Procedure page (D485)
+
+- **D485 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) §9):**
+  - *Procedures…* edits the list and its steps, refused in place, as one History step;
+  - the twelfth Results tab runs a procedure on a worker with Cancel and shows each step's status
+    and summary, with stale marking and a marked CSV.
+- **Rows:** `procedure-ui` (PS10); `workspace-ui` counts 12 tabs.
+- **Note:** `docs/decisions/RECORD.md` reached 500 lines with D485; splitting it is the owner's call
+  (NEXT).
+- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — Procedure sequence P1: engine, schema 73, CLI (D484)
 
 - **Owner:** approved the plan after D483.
@@ -118,19 +129,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - raw and balanced attractions shown to give the same trips;
   - five owner choices; rows TD15–TD20.
 - **Not done:** no code. Slice D3 waits for the owner's answers.
-
-## 2026-11-06 — M10.3 D2: owned deterrence sets and cost matrices, Trip distribution page (D474)
-
-- **Owner:** "เริ่มเลย" on D2.
-- **D474 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14):**
-  - `deterrenceSets` and `costMatrices` at schema 67, with commands;
-  - a run-chosen matrix overrides skim cells and is the only source of a diagonal;
-  - G2's trip-rate dialog made a shared owned-list dialog;
-  - the self-owned *Trip distribution* page;
-  - `--cost-matrix`.
-- **Rows:**
-  - `tripdistributionowned` (TD12 and the override rows) and `trip-distribution-ui` (TD12 save,
-    TD13, the dialogs).
-  - `workspace-ui` updated deliberately for the tenth Results tab.
-- **Verified:** Linux only (desktop and headless; counts in the session report). An offscreen grab
-  of the page and the dialog was checked for layout. Windows not checked (OWNER_SITTING 42).

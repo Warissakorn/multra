@@ -148,7 +148,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
 
 42. **M10.2 trip generation:** answered 1a–8a (D469); G2 choices D471. **Look (Windows):** Edit Zone's
    attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok?
-   M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. *Owner:*
+   M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. D485: *Procedure* page: add a procedure in *Procedures…*, run it, turn a step off. *Owner:*
 
 ## C — Run view (the 125 % screen)
 
