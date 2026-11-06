@@ -44,6 +44,7 @@ this module (`multra-check-architecture`).
 | `fill_commands.*` | *Fill defaults*: each fill writes a field from a value the project already cites, listed with its source, applied only when chosen | [READINESS §4](../../docs/reference/READINESS.md) |
 | `map_commands.*` | Sets or removes the background reference atomically; never moves network geometry | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 | `trip_rate_commands.*` | Replaces the project-owned trip-rate sets, deterrence sets (D474) or cost matrices (D474), each as one History step | [TRIP_GENERATION §6.3](../../docs/reference/TRIP_GENERATION.md) |
+| `mode_choice_commands.*` | Replaces the owned mode-choice sets or period factors as one History step; builds the generated OD matrices from a mode-choice run and writes them, replacing only earlier generated ones (D479) | [MODE_CHOICE §7](../../docs/reference/MODE_CHOICE.md) |
 | `macro_run_commands.*` | Replaces the ordered named Macro run list, allocating missing ids | [MACRO_NETWORK_IMPLEMENTED](../../docs/reference/MACRO_NETWORK_IMPLEMENTED.md) |
 
 ## Tests

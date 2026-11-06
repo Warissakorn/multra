@@ -1,6 +1,8 @@
 #include "test.hpp"
 #include "../src/project/document.hpp"
 #include <fstream>
+#include <iostream>
+#include <set>
 #include <tuple>
 
 using namespace multra;
@@ -57,6 +59,17 @@ TEST(project, catalog_and_translation_keys) {
     for (const auto& [key, value] : en.items()) {
         CHECK(value.is_string()); CHECK(!value.get<std::string>().empty());
         CHECK(th.at(key).is_string()); CHECK(!th.at(key).get<std::string>().empty());
+    }
+    // A repeated key parses silently with the last value winning (D476 shadowed the Origin column that way).
+    for (const auto* file : {"data/locales/en.json", "data/locales/th.json"}) {
+        std::ifstream in(test::root() / file);
+        std::set<std::string> keys;
+        for (std::string line; std::getline(in, line);) {
+            const auto open = line.find('"'), close = line.find("\":", open + 1);
+            if (open == std::string::npos || close == std::string::npos) continue;
+            const auto key = line.substr(open + 1, close - open - 1);
+            if (!keys.insert(key).second) { std::cerr << file << ": repeated key " << key << '\n'; CHECK(false); }
+        }
     }
 }
 // The reported failure: an editor project opened in the simulation window used to surface

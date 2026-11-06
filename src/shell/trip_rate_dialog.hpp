@@ -16,4 +16,6 @@ std::optional<std::vector<TripRateSet>> editTripRateSets(QWidget*, const Project
 // M10.3 D2 (TRIP_DISTRIBUTION §6, D474): the project's deterrence sets and cost matrices, in the same dialog.
 std::optional<std::vector<DeterrenceSet>> editDeterrenceSets(QWidget*, const ProjectDocument&, const DialogText&, const TripRateFiles&);
 std::optional<std::vector<CostMatrix>> editCostMatrices(QWidget*, const ProjectDocument&, const DialogText&, const TripRateFiles&);
+// M10.4 E2 (MODE_CHOICE §7, D479): the project's mode-choice sets, likewise.
+std::optional<std::vector<ModeChoiceSet>> editModeChoiceSets(QWidget*, const ProjectDocument&, const DialogText&, const TripRateFiles&);
 }

@@ -55,7 +55,7 @@ ZoneConnector parseConnector(const Json& j, int schema) {
     }
     return c;
 }
-OdMatrix parseMatrix(const Json& j, const std::string& path) {
+OdMatrix parseMatrix(const Json& j, const std::string& path, int schema) {
     // S1.1 (STUDY_PERIODS §5): its own times or a period, never both and never neither.
     if (j.is_object() && j.contains("periodId") == (j.contains("startTime") || j.contains("endTime")))
         throw ValidationError({{"OD_PERIOD_AMBIGUOUS", path}});
@@ -64,8 +64,16 @@ OdMatrix parseMatrix(const Json& j, const std::string& path) {
     const bool period = j.contains("periodId"), mode = j.contains("modeId");
     std::vector<const char*> keys{"id", "zoneIds", "cells", mode ? "modeId" : "compositionId"};
     if (period) keys.push_back("periodId"); else { keys.push_back("startTime"); keys.push_back("endTime"); }
+    // M10.4 E2 (D479): the generated marker, from schema 70, only "mode-choice".
+    if (j.is_object() && j.contains("generatedBy")) {
+        if (schema < 70) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + ".generatedBy"}});
+        if (!j.at("generatedBy").is_string() || j.at("generatedBy").get<std::string>() != "mode-choice")
+            throw ValidationError({{"OD_GENERATED_INVALID", path + ".generatedBy"}});
+        keys.push_back("generatedBy");
+    }
     exactKeys(j, keys);
     OdMatrix m;
+    if (j.contains("generatedBy")) m.generatedBy = j.at("generatedBy").get<std::string>();
     m.id = text(j, "id");
     if (period) m.periodId = text(j, "periodId"); else { m.startTime = number(j.at("startTime")); m.endTime = number(j.at("endTime")); }
     if (mode) m.modeId = text(j, "modeId"); else m.compositionId = text(j, "compositionId");
@@ -127,6 +135,7 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
             if (m.modeId.empty()) row["compositionId"] = m.compositionId; else row["modeId"] = m.modeId; // S1.2
             if (m.periodId.empty()) { row["startTime"] = m.startTime; row["endTime"] = m.endTime; }
             else row["periodId"] = m.periodId; // S1.1
+            if (!m.generatedBy.empty()) row["generatedBy"] = m.generatedBy; // M10.4 E2
             out.push_back(std::move(row));
         }
     }
@@ -159,7 +168,7 @@ ZoneLayer parseZoneLayer(const Json& document, int schema) {
     parseArray(document, kConnectors, schema, layer.zoneConnectors, [&](const Json& j) { return parseConnector(j, schema); });
     std::size_t matrix = 0;
     parseArray(document, kMatrices, schema, layer.odMatrices,
-               [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]"); });
+               [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]", schema); });
     parseArray(document, kLots, schema, layer.parkingLots, parseLot);
     return layer;
 }

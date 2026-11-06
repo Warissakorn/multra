@@ -213,7 +213,7 @@ void TripDistributionPanel::refresh() {
                 for (std::size_t z = 0; z < r.generation.zoneIds.size(); ++z)
                     zones << QString::fromStdString(r.generation.zoneIds[z]) + " " + editorDesign::formatValue(p.attractionsModelled[z], 2) +
                                  " / " + editorDesign::formatValue(weights[z], 2);
-                lines << text("editorDistributionOrigin").arg(QString::fromStdString(p.id), zones.join(", "));
+                lines << text("editorDistributionOriginConstrained").arg(QString::fromStdString(p.id), zones.join(", "));
             }
         }
         if (stale()) lines << text("editorTripStale").arg(r.generation.revision).arg(doc.revision);

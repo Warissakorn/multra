@@ -58,4 +58,22 @@ std::optional<std::vector<CostMatrix>> editCostMatrices(QWidget* parent, const P
     spec.cells = [](const Json& j) { return QStringList{str(j, "id"), str(j, "name"), QString::number(j.at("zoneIds").size())}; };
     return run<CostMatrix>(parent, spec, d.costMatrices, [](const Json& j) { return parseCostMatrix(j, "file"); }, costMatrixJson, text, files);
 }
+std::optional<std::vector<ModeChoiceSet>> editModeChoiceSets(QWidget* parent, const ProjectDocument& d, const DialogText& text,
+                                                             const TripRateFiles& files) {
+    OwnedListSpec spec{"editorModeChoiceSetsDialog", "editorModeChoiceSetsTable", "editorModeChoiceImport", "editorModeChoiceExport",
+                       "editorModeChoiceRemove", "editorModeChoiceError", "editorModeChoiceSets",
+                       {"editorColumnId", "editorColumnName", "editorModeChoiceAlternatives"},
+                       "MODE_CHOICE_INVALID_SET", "editorOwnedExportFailed", {}, {}, {}};
+    spec.cells = [](const Json& j) {
+        QStringList purposes;
+        for (const auto& p : j.at("purposes")) {
+            QStringList alternatives;
+            for (const auto& a : p.at("alternatives")) alternatives << QString::fromStdString(a.at("id").get<std::string>());
+            purposes << QString::fromStdString(p.at("id").get<std::string>()) + ": " + alternatives.join("/");
+        }
+        return QStringList{str(j, "id"), str(j, "name"), purposes.join(", ")};
+    };
+    return run<ModeChoiceSet>(parent, spec, d.modeChoiceSets, [](const Json& j) { return parseModeChoiceSet(j, "file", false); },
+                              modeChoiceSetJson, text, files);
+}
 }

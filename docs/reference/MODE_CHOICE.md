@@ -1,6 +1,6 @@
 # Mode choice and OD conversion (M10.4)
 
-Written 2026-11-06 (D477) as a contract with eight owner choices (§10); the owner answered 1a–8a and E1 is implemented (D478, §13). Slice M0 first read
+Written 2026-11-06 (D477) as a contract with eight owner choices (§10); the owner answered 1a–8a; E1 (D478) and E2 (D479) are implemented (§13). Slice M0 first read
 Ortúzar and Willumsen §5.4.4 and Ch. 6–7 from the page images
 ([evidence](../evidence/ortuzar-ch6-7-mode-choice.md)). This is the last demand stage of the
 four-step chain:
@@ -237,9 +237,9 @@ The owner: "เอาตามแนะนำ". The options are kept for the rec
 |---|---|---|
 | M0 | Read §5.4.4 and Ch. 6–7 into an evidence file; this contract. **Done (D477)** | — |
 | E1 | Mode-choice codec and catalog; root `periodFactors` at schema 69; the pure `src/macro/mode_choice` (MNL shares, the directional split, occupancy); `runModeChoice`; JSON/CSV; `--mode-choice`/`--period`. **Implemented (D478)** | MC1–MC10 |
-| E2 | Owned `modeChoiceSets`; the *Mode choice* page; the sets dialog; the *Period factors* table; *Write OD matrices* | MC11–MC14 |
+| E2 | Owned `modeChoiceSets`; the *Mode choice* page; the sets dialog; the *Period factors* table; *Write OD matrices*. **Implemented (D479)** | MC11–MC14 |
 
-## 12. Acceptance rows (MC1–MC10 implemented, D478; MC11–MC14 planned)
+## 12. Acceptance rows (MC1–MC10 implemented D478, MC11–MC14 D479)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -307,3 +307,43 @@ Each row first asserts that its forcing worked (AGENTS).
   - TD1–TD20 pass unchanged after the skim was moved.
 - **Mutations:** each of the following failed at least one row: no max shift, the return share
   without the transpose, occupancy multiplied, and unavailable alternatives kept.
+
+### E2 as implemented (D479)
+
+- **Schema 70:**
+  - root `modeChoiceSets`, the owned sets, with the citation optional;
+  - `odMatrices[i].generatedBy`, whose only value is `"mode-choice"` (`OD_GENERATED_INVALID`
+    otherwise).
+  - Older versions refuse each at its path. A file without them keeps its bytes.
+- **Lookup:** owned sets are searched before the catalog. An id clash is `DUPLICATE_ID` at
+  `modeChoiceSets[i].id`.
+- **Commands** (`src/commands/mode_choice_commands.*`):
+  - `setModeChoiceSets` and `setPeriodFactors`;
+  - `generatedOdMatrices(run)`, which gives one matrix per period and mode with id
+    `mc-<period>-<mode>`;
+  - `writeGeneratedOdMatrices`, which removes only generated matrices and appends the new ones.
+    It calls `ownModesWhenNamed`, as the OD dialog does, so a project owning its compositions
+    also owns its modes.
+  - Writing the same result again makes no History step.
+- **Editor:**
+  - the *Mode choice* Results tab (`src/shell/mode_choice_panel.*`), the eleventh;
+  - *Mode choice sets…*, through the shared owned-list dialog;
+  - *Period factors…* (`src/shell/period_factors_dialog.*`), where a share outside [0, 1], or a
+    row whose shares sum above 1, is refused in place;
+  - *Write OD matrices*, enabled only for a fresh result with periods.
+- **Assignment:**
+  - On a network that runs one way only, a return share (A→P) gives the return cells no path in
+    Macro (`MACRO_NO_PATH`). That is the data's consequence, not M10.4's.
+  - MC12 therefore assigns the fixture with A→P = 0.
+- **Rows:**
+  - `tests/mode_choice_owned_tests.cpp` (group `modechoiceowned`) covers MC11 and MC12, including
+    Run Macro on the written matrix;
+  - `mode-choice-ui` covers MC13;
+  - `workspace-ui` now counts 11 Results tabs;
+  - MC14: the shipped projects keep their bytes (TG1, TD14).
+- **Mutations:** each of the following failed a row: appending without removing, removing
+  authored matrices, and not writing `generatedBy`.
+- **Also fixed:** D476's note key had reused `editorDistributionOrigin`. That shadowed the Origin
+  column label of the Trip distribution page. The note key is now
+  `editorDistributionOriginConstrained`, and `project.catalog_and_translation_keys` refuses a
+  repeated locale key.

@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.2 owner answers and G0, the book read (D469)
+
+- **Owner:** "เอาตามแนะนำ 1a–8a อนุญาตแนบหนังสือ เริ่ม G0".
+- **G0 ([evidence](../evidence/ortuzar-ch4-trip-generation.md)):** Ortúzar Ch. 4 attached and read
+  from the page images. §3's two forms match Eq. (4.16) and §4.2.5's aggregation; §4.2.6's
+  Eq. (4.14) is the same rule as choice 3a.
+- **Correction:** Example 4.5 (p. 161), booked as the fixture, prints only sample counts. The
+  fixture is Example 4.1 (2125 and 3000 trips/day), with Example 4.4's zonal form as TG4b;
+  BOOKS §3.3 corrected.
+- **Contract:** answers recorded in §11; household-based models enter on zone totals with no
+  second regression form (§3).
+- **Verified:** `check_docs` and `check_file_sizes` pass (compiled with g++; the CMake preset still
+  lacks nlohmann/json here). Docs only.
+
 ## 2026-11-06 — M10.2 trip generation contract (D468)
 
 - **Owner:** asked what could come next, then "เริ่มเขียนสัญญา M10.2 trip generation".

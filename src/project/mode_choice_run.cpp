@@ -27,9 +27,17 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
     const auto& zoneIds = run.distribution.generation.zoneIds;
 
     enter(ModeChoiceStage::set);
-    const auto sets = resolveModeChoiceSets(data, manifest);
+    // E2 (D479): the project's own sets come first; one sharing the chosen id with a catalog set is refused
+    // at the project's row, never a silent override (as D474's deterrence sets).
+    std::vector<ResolvedModeChoiceSet> sets;
+    for (std::size_t k = 0; k < d.modeChoiceSets.size(); ++k) sets.push_back({d.modeChoiceSets[k], "modeChoiceSets[" + std::to_string(k) + "]"});
+    const auto owned = sets.size();
+    for (auto& s : resolveModeChoiceSets(data, manifest)) sets.push_back(std::move(s));
     const auto found = std::find_if(sets.begin(), sets.end(), [&](const auto& s) { return s.set.id == setId; });
     if (found == sets.end()) throw ValidationError({{"MODE_CHOICE_SET_UNKNOWN", "modeChoiceSets"}});
+    if (static_cast<std::size_t>(found - sets.begin()) < owned &&
+        std::any_of(sets.begin() + static_cast<std::ptrdiff_t>(owned), sets.end(), [&](const auto& s) { return s.set.id == setId; }))
+        throw ValidationError({{"DUPLICATE_ID", found->path + ".id"}});
     run.set = found->set; run.setPath = found->path;
     std::vector<std::size_t> purposeAt;
     for (const auto& p : run.distribution.purposes) {

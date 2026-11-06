@@ -75,6 +75,7 @@ editor, lifecycle and rows RD30–RD34 are in [STREET_SEGMENTS_IMPLEMENTED §22]
 | `startTime`, `endTime` | seconds | `0 ≤ start < end ≤ duration` (cool-down excluded, as for inputs) |
 | `compositionId` | string | An existing composition (`data/compositions/` or the project's own); every trip of the matrix draws its type from it |
 | `zoneIds` | string[] | Existing Zones, no repeats; the row and column order |
+| `generatedBy` | string | Optional from schema 70, only `"mode-choice"`: a matrix *Write OD matrices* made, which the next write replaces (MODE_CHOICE §7, D479) |
 | `cells` | number[][] | `zoneIds.length` rows of `zoneIds.length` entries, finite, ≥ 0; row = origin, column = destination; **vehicle trips in the period** (not veh/h). The diagonal is allowed and needs a path like any cell |
 
 Several matrices may cover the same period with different compositions, or different periods.

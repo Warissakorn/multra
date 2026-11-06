@@ -159,16 +159,25 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
 - **Later:** destination-constrained purposes (booked by choice 1a); whether the Furness target
   and cap become a document setting (open from D1).
 
-## M10.4 mode choice — contract (D477) answered 1a–8a; E1 done (D478)
+## M10.4 mode choice — E1 and E2 done (D478, D479); stop for the owner
 
 - [MODE_CHOICE](reference/MODE_CHOICE.md), after M0 read Ortúzar §5.4.4 and Ch. 6–7
   ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)): an MNL split per purpose, P-A to OD by
   period shares, occupancy, and generated `odMatrices`.
 - **E1 done (D478, MODE_CHOICE §13):** the MNL engine, `periodFactors` at schema 69,
   `runModeChoice`, JSON/CSV and `--mode-choice`/`--period`; rows MC1–MC10 pass on Linux.
-- **Next, on the owner's go:** E2 (MC11–MC14). It covers owned `modeChoiceSets`, the *Mode choice*
-  page, the sets dialog, the *Period factors* table, and *Write OD matrices*, which brings
-  `generatedBy` at schema 70.
+- **E2 done (D479, MODE_CHOICE §13):** owned `modeChoiceSets` and `generatedBy` at schema 70,
+  the *Mode choice* page, *Mode choice sets…*, *Period factors…* and *Write OD matrices*; rows
+  MC11–MC14 pass on Linux.
+  - M10.2–M10.4 now chain end to end: generation → distribution → mode choice → written
+    `odMatrices` → Run Macro.
+  - The M10 gate stays open (rule 8).
+- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2).
+- **Next, the owner's pick:**
+  - nested logit (Example 6.3 is the fixture);
+  - destination-constrained distribution;
+  - the procedure sequence (MACRO_NETWORK §19 c), which can now chain the four steps;
+  - congested-cost feedback (Ortúzar Ch. 11).
 
 ## Next session — the owner's pick
 

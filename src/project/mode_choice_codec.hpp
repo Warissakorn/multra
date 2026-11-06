@@ -36,6 +36,12 @@ struct ResolvedModeChoiceSet { ModeChoiceSet set; std::string path; }; // e.g. c
 // timeCoefficient finite and <= 0; a modeId or a costMatrix (non-blank strings); occupancy finite and >= 1.
 ModeChoiceSet parseModeChoiceSet(const Json&, const std::string& path, bool requireCitation);
 Json modeChoiceSetJson(const ModeChoiceSet&);
+// M10.4 E2 (§6, D479): the project's own sets, root `modeChoiceSets` at schema 70, as D474's deterrence sets:
+// a present list is a non-empty array (MODE_CHOICE_INVALID_SET at `modeChoiceSets`), rows parsed at
+// `modeChoiceSets[i]` with the citation optional, ids unique. Absent or empty lists are not written.
+std::vector<ModeChoiceSet> parseOwnedModeChoiceSets(const Json& file);
+void addOwnedModeChoiceSetsJson(const std::vector<ModeChoiceSet>&, Json& file);
+std::vector<ValidationIssue> ownedModeChoiceSetIssues(const std::vector<ModeChoiceSet>&);
 // The installed `data/mode-choice/*.json` in name order (none when the directory is missing); ids unique.
 std::vector<ResolvedModeChoiceSet> resolveModeChoiceSets(const std::filesystem::path& dataDirectory, InputManifest* = nullptr);
 }

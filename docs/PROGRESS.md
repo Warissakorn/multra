@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
+
+- **Owner:** "ทำงานถัดไป".
+- **D479 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
+  - owned `modeChoiceSets` and `odMatrices[i].generatedBy` at schema 70;
+  - the *Mode choice* Results page, with *Mode choice sets…* and *Period factors…*;
+  - *Write OD matrices*, one History step replacing only generated matrices, which Run Macro
+    assigns.
+  - **Fixed:** D476's note key shadowed the Trip distribution page's Origin column. Locale keys
+    are now checked for repeats.
+- **Rows:** `modechoiceowned` (MC11–MC12) and `mode-choice-ui` (MC13); `workspace-ui` counts 11
+  Results tabs. Three mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
+  layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
 
 - **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).
@@ -120,17 +135,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   mutations were run; each failed at least one row.
 - **Verified:** `ctest --preset headless` 180/180 (176 before + 4 new), `check` passes on Linux.
   Desktop and Windows not built.
-
-## 2026-11-06 — M10.2 owner answers and G0, the book read (D469)
-
-- **Owner:** "เอาตามแนะนำ 1a–8a อนุญาตแนบหนังสือ เริ่ม G0".
-- **G0 ([evidence](evidence/ortuzar-ch4-trip-generation.md)):** Ortúzar Ch. 4 attached and read
-  from the page images. §3's two forms match Eq. (4.16) and §4.2.5's aggregation; §4.2.6's
-  Eq. (4.14) is the same rule as choice 3a.
-- **Correction:** Example 4.5 (p. 161), booked as the fixture, prints only sample counts. The
-  fixture is Example 4.1 (2125 and 3000 trips/day), with Example 4.4's zonal form as TG4b;
-  BOOKS §3.3 corrected.
-- **Contract:** answers recorded in §11; household-based models enter on zone totals with no
-  second regression form (§3).
-- **Verified:** `check_docs` and `check_file_sizes` pass (compiled with g++; the CMake preset still
-  lacks nlohmann/json here). Docs only.

@@ -111,6 +111,36 @@ Json modeChoiceSetJson(const ModeChoiceSet& s) {
     }
     return {{"id", s.id}, {"name", s.name}, {"source", source}, {"costUnit", s.costUnit}, {"purposes", purposes}};
 }
+std::vector<ModeChoiceSet> parseOwnedModeChoiceSets(const Json& file) {
+    if (!file.contains("modeChoiceSets")) return {};
+    const auto& list = file.at("modeChoiceSets");
+    if (!list.is_array() || list.empty()) throw ValidationError({{"MODE_CHOICE_INVALID_SET", "modeChoiceSets"}});
+    Issues issues;
+    std::vector<ModeChoiceSet> sets;
+    for (std::size_t k = 0; k < list.size(); ++k) {
+        try { sets.push_back(parseModeChoiceSet(list[k], "modeChoiceSets[" + std::to_string(k) + "]", false)); }
+        catch (const ValidationError& e) { issues.insert(issues.end(), e.issues.begin(), e.issues.end()); }
+    }
+    if (issues.empty()) issues = ownedModeChoiceSetIssues(sets);
+    if (!issues.empty()) throw ValidationError(std::move(issues));
+    return sets;
+}
+void addOwnedModeChoiceSetsJson(const std::vector<ModeChoiceSet>& sets, Json& file) {
+    if (sets.empty()) return;
+    Json list = Json::array();
+    for (const auto& s : sets) list.push_back(modeChoiceSetJson(s));
+    file["modeChoiceSets"] = list;
+}
+std::vector<ValidationIssue> ownedModeChoiceSetIssues(const std::vector<ModeChoiceSet>& sets) {
+    Issues issues;
+    std::set<std::string> ids;
+    for (std::size_t k = 0; k < sets.size(); ++k) {
+        const auto path = "modeChoiceSets[" + std::to_string(k) + "].id";
+        if (blank(sets[k].id)) issues.push_back({"INVALID_ID", path});
+        else if (!ids.insert(sets[k].id).second) issues.push_back({"DUPLICATE_ID", path});
+    }
+    return issues;
+}
 std::vector<ResolvedModeChoiceSet> resolveModeChoiceSets(const std::filesystem::path& data, InputManifest* manifest) {
     std::vector<ResolvedModeChoiceSet> result;
     const auto directory = data / "mode-choice";
