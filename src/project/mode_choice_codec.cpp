@@ -40,6 +40,33 @@ ModeAlternative alternative(const Json& item, const std::string& at, Issues& iss
     }
     return a;
 }
+std::vector<ModeChoiceNest> nests(const Json& list, const std::string& at, const ModeChoicePurpose& purpose, Issues& issues) {
+    std::vector<ModeChoiceNest> result;
+    if (!list.is_array() || list.empty()) { bad(issues, at); return result; }
+    std::set<std::string> ids, members;
+    for (std::size_t n = 0; n < list.size(); ++n) {
+        const auto where = at + "[" + std::to_string(n) + "]";
+        const auto& item = list[n];
+        if (!item.is_object() || !onlyKeys(item, {"id", "phi", "alternatives"})) { bad(issues, where); continue; }
+        ModeChoiceNest nest;
+        if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", where + ".id"});
+        else if (nest.id = item.at("id").get<std::string>(); !ids.insert(nest.id).second) issues.push_back({"DUPLICATE_ID", where + ".id"});
+        // Eq. (7.18)/(7.20): phi > 1 contradicts utility maximisation; (7.35) is equivalent to 0 < phi <= 1 (p. 245).
+        if (!isNumber(item, "phi") || !(item.at("phi").get<double>() > 0) || item.at("phi").get<double>() > 1) bad(issues, where + ".phi");
+        else nest.phi = item.at("phi").get<double>();
+        if (!item.contains("alternatives") || !item.at("alternatives").is_array() || item.at("alternatives").empty()) { bad(issues, where + ".alternatives"); continue; }
+        const auto& ms = item.at("alternatives");
+        for (std::size_t m = 0; m < ms.size(); ++m) {
+            const auto member = where + ".alternatives[" + std::to_string(m) + "]";
+            if (!ms[m].is_string() || std::none_of(purpose.alternatives.begin(), purpose.alternatives.end(),
+                                                   [&](const auto& a) { return !a.id.empty() && a.id == ms[m].get<std::string>(); })) { bad(issues, member); continue; }
+            if (!members.insert(ms[m].get<std::string>()).second) { issues.push_back({"DUPLICATE_ID", member}); continue; }
+            nest.alternatives.push_back(ms[m].get<std::string>());
+        }
+        result.push_back(std::move(nest));
+    }
+    return result;
+}
 }
 ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool requireCitation) {
     Issues issues;
@@ -66,7 +93,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
         for (std::size_t p = 0; p < items.size(); ++p) {
             const auto at = path + ".purposes[" + std::to_string(p) + "]";
             const auto& item = items[p];
-            if (!item.is_object() || !onlyKeys(item, {"id", "alternatives"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, {"id", "alternatives", "nests"})) { bad(issues, at); continue; }
             ModeChoicePurpose purpose;
             if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (purpose.id = item.at("id").get<std::string>(); !ids.insert(purpose.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
@@ -85,6 +112,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
             const bool reference = std::any_of(list.begin(), list.end(), [](const Json& a) {
                 return a.is_object() && a.contains("constant") && a.at("constant").is_number() && a.at("constant").get<double>() == 0; });
             if (!reference) bad(issues, at);
+            if (item.contains("nests")) purpose.nests = nests(item.at("nests"), at + ".nests", purpose, issues);
             set.purposes.push_back(std::move(purpose));
         }
     }
@@ -107,7 +135,13 @@ Json modeChoiceSetJson(const ModeChoiceSet& s) {
             if (a.occupancy) item["occupancy"] = *a.occupancy;
             alternatives.push_back(std::move(item));
         }
-        purposes.push_back({{"id", p.id}, {"alternatives", alternatives}});
+        Json purpose{{"id", p.id}, {"alternatives", alternatives}};
+        if (!p.nests.empty()) {
+            Json list = Json::array();
+            for (const auto& n : p.nests) list.push_back({{"id", n.id}, {"phi", n.phi}, {"alternatives", n.alternatives}});
+            purpose["nests"] = list;   // N1: written only when nested, so MNL sets keep their bytes
+        }
+        purposes.push_back(std::move(purpose));
     }
     return {{"id", s.id}, {"name", s.name}, {"source", source}, {"costUnit", s.costUnit}, {"purposes", purposes}};
 }

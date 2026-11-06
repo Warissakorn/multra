@@ -23,6 +23,11 @@ struct OwnedListSpec {
     std::function<std::string(const Json&)> id;
     std::function<QStringList(const Json&)> cells;
     std::function<Json(const Json&)> parse;
+    // M10.4 N1 (D481): an optional in-place edit of the selected row (the nests of a mode-choice set). Unset:
+    // no button. The result replaces the row in the local list; nullopt (Cancel) changes nothing.
+    const char* editName{};
+    const char* editKey{};
+    std::function<std::optional<Json>(QWidget*, const Json&)> edit;
 };
 // `items` are in their export form; the result is too, or nullopt on Cancel.
 std::optional<std::vector<Json>> editOwnedList(QWidget*, const OwnedListSpec&, std::vector<Json> items, const DialogText&, const TripRateFiles&);

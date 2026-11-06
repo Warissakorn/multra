@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.2 G1: trip generation engine, run, outputs and CLI (D470)
+
+- **Owner:** "เริ่มเลย" on G1.
+- **D470 ([TRIP_GENERATION](../reference/TRIP_GENERATION.md) §14):** `src/macro/trip_generation` (pure),
+  the rate-set codec and catalog, `runTripGeneration` by stage, JSON/CSV and `--trip-generation`.
+  Example 4.1 reproduces 2125 and 3000 trips/day; Example 4.4's zonal form gives 356.9.
+- **Environment:** installed `nlohmann-json3-dev`; no Qt here, so the headless preset only.
+- **Rows:** TG1–TG10, TG4b, TG12 and three CLI tests. All passed on first run, so four engine
+  mutations were run; each failed at least one row.
+- **Verified:** `ctest --preset headless` 180/180 (176 before + 4 new), `check` passes on Linux.
+  Desktop and Windows not built.
+
 ## 2026-11-06 — M10.2 owner answers and G0, the book read (D469)
 
 - **Owner:** "เอาตามแนะนำ 1a–8a อนุญาตแนบหนังสือ เริ่ม G0".

@@ -43,7 +43,16 @@ std::optional<std::vector<Json>> editOwnedList(QWidget* parent, const OwnedListS
     auto* importButton = new QPushButton(text("editorTripRateImport"), &dialog); importButton->setObjectName(spec.importName);
     auto* exportButton = new QPushButton(text("editorTripRateExport"), &dialog); exportButton->setObjectName(spec.exportName);
     auto* removeButton = new QPushButton(text("editorTripRateRemove"), &dialog); removeButton->setObjectName(spec.removeName);
-    row->addWidget(importButton); row->addWidget(exportButton); row->addWidget(removeButton); row->addStretch(); layout->addLayout(row);
+    row->addWidget(importButton); row->addWidget(exportButton); row->addWidget(removeButton);
+    if (spec.edit) {
+        auto* editButton = new QPushButton(text(spec.editKey), &dialog); editButton->setObjectName(spec.editName); row->addWidget(editButton);
+        QObject::connect(editButton, &QPushButton::clicked, &dialog, [&, editButton] {
+            const int r = table->currentRow();
+            if (r < 0 || r >= static_cast<int>(items.size())) return;
+            if (auto edited = spec.edit(editButton->window(), items[r])) { items[r] = std::move(*edited); fill(); table->selectRow(r); }
+        });
+    }
+    row->addStretch(); layout->addLayout(row);
     auto* error = new QLabel(&dialog); error->setObjectName(spec.errorName); error->setWordWrap(true); layout->addWidget(error);
     const auto refuse = [&](const QString& code, const QString& path) { error->setText(text(code.toUtf8().constData()) + " (" + path + ")"); };
     QObject::connect(importButton, &QPushButton::clicked, &dialog, [&] {

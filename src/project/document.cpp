@@ -97,7 +97,9 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool constrained=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint.has_value();});});
     const bool generated=std::any_of(d.zones.odMatrices.begin(),d.zones.odMatrices.end(),[](const auto& m){return !m.generatedBy.empty();});
-    return !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool nested=std::any_of(d.modeChoiceSets.begin(),d.modeChoiceSets.end(),[](const auto& s){
+        return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return !p.nests.empty();});});
+    return nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -290,6 +292,14 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 69 && j.contains("periodFactors")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "periodFactors"}});
     d.periodFactors = parsePeriodFactors(j); // M10.4 E1
     if (version < 70 && j.contains("modeChoiceSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets"}});
+    if (version < 71 && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // M10.4 N1 (D481)
+        for (std::size_t i = 0; i < j.at("modeChoiceSets").size(); ++i) {
+            const auto& set = j.at("modeChoiceSets")[i];
+            if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
+            for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
+                if (set.at("purposes")[k].is_object() && set.at("purposes")[k].contains("nests"))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].nests"}});
+        }
     d.modeChoiceSets = parseOwnedModeChoiceSets(j); // M10.4 E2
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);

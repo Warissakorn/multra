@@ -159,7 +159,7 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
 - **Later:** destination-constrained purposes (booked by choice 1a); whether the Furness target
   and cap become a document setting (open from D1).
 
-## M10.4 mode choice — E1 and E2 done (D478, D479); stop for the owner
+## M10.4 mode choice — E1, E2 and nested logit N1 done (D478, D479, D481); stop for the owner
 
 - [MODE_CHOICE](reference/MODE_CHOICE.md), after M0 read Ortúzar §5.4.4 and Ch. 6–7
   ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)): an MNL split per purpose, P-A to OD by
@@ -172,12 +172,16 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   - M10.2–M10.4 now chain end to end: generation → distribution → mode choice → written
     `odMatrices` → Run Macro.
   - The M10 gate stays open (rule 8).
-- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2).
+- **Nested logit done (D480 contract, D481 N1, [NESTED_LOGIT](reference/NESTED_LOGIT.md)):** two
+  levels, φ per nest in (0, 1], nests at schema 71, the *Nests…* dialog; rows NL1–NL8 pass on
+  Linux, Example 6.3's ten rows included.
+- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2
+  and N1).
 - **Next, the owner's pick:**
-  - nested logit (Example 6.3 is the fixture);
   - destination-constrained distribution;
   - the procedure sequence (MACRO_NETWORK §19 c), which can now chain the four steps;
-  - congested-cost feedback (Ortúzar Ch. 11).
+  - congested-cost feedback (Ortúzar Ch. 11);
+  - logsum feedback from mode choice into distribution (G/MS/D/A, §6.5.2).
 
 ## Next session — the owner's pick
 

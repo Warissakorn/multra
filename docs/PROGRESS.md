@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
+
+- **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the
+  session: two levels, φ in (0, 1] refused outside, and a nest editor in the dialog (3b, against
+  the recommended Import only).
+- **D480 ([NESTED_LOGIT](reference/NESTED_LOGIT.md)):** N0 read Eq. 7.16–7.23 (PDF 260–261) and
+  §7.4.4.3 (PDF 267) from the page images; the contract.
+- **D481 (NESTED_LOGIT §7):**
+  - `nestedLogitShares` (Eq. 7.23 with β = 1, shifted logsums), `splitModes(…, ModeNests)`;
+  - per-purpose `nests` in mode-choice sets, owned nested sets at schema 71;
+  - the run and the JSON echo;
+  - *Nests…* in the Mode choice sets dialog.
+- **Rows:** `nestedlogit` (NL1–NL7: Example 6.3's ten rows, the MNL collapse, availability,
+  numerics, the codec, schema 71, the run), `cli-mode-choice-nested`, `nested-logit-ui` (NL8);
+  MC1–MC14 unchanged. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). An offscreen grab of the dialog was checked for
+  layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
 
 - **Owner:** "ทำงานถัดไป".
@@ -123,15 +141,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   the disk (23 GB), so both presets were built with `-g0`.
 - **Verified:** `ctest --preset desktop` 283/283 and `check` pass; `ctest --preset headless`
   181/181. Linux offscreen only; Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.2 G1: trip generation engine, run, outputs and CLI (D470)
-
-- **Owner:** "เริ่มเลย" on G1.
-- **D470 ([TRIP_GENERATION](reference/TRIP_GENERATION.md) §14):** `src/macro/trip_generation` (pure),
-  the rate-set codec and catalog, `runTripGeneration` by stage, JSON/CSV and `--trip-generation`.
-  Example 4.1 reproduces 2125 and 3000 trips/day; Example 4.4's zonal form gives 356.9.
-- **Environment:** installed `nlohmann-json3-dev`; no Qt here, so the headless preset only.
-- **Rows:** TG1–TG10, TG4b, TG12 and three CLI tests. All passed on first run, so four engine
-  mutations were run; each failed at least one row.
-- **Verified:** `ctest --preset headless` 180/180 (176 before + 4 new), `check` passes on Linux.
-  Desktop and Windows not built.

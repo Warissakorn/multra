@@ -18,9 +18,17 @@ struct ModeAlternative {
     std::optional<double> occupancy;                 // persons per vehicle, >= 1; absent: persons only
     bool operator==(const ModeAlternative&) const = default;
 };
+// M10.4 N1 (NESTED_LOGIT §3, D481): a nest of the two-level nested logit; phi in (0, 1] (Ortuzar Eq. 7.20).
+struct ModeChoiceNest {
+    std::string id;
+    double phi{1};
+    std::vector<std::string> alternatives;   // ids of the purpose's alternatives, each in at most one nest
+    bool operator==(const ModeChoiceNest&) const = default;
+};
 struct ModeChoicePurpose {
     std::string id;
     std::vector<ModeAlternative> alternatives;
+    std::vector<ModeChoiceNest> nests;       // empty: the MNL
     bool operator==(const ModeChoicePurpose&) const = default;
 };
 struct ModeChoiceSet {
@@ -34,6 +42,8 @@ struct ResolvedModeChoiceSet { ModeChoiceSet set; std::string path; }; // e.g. c
 // path: costUnit "min"; a purpose needs a non-empty list of alternatives with unique ids and at least one
 // constant equal to 0 (only differences are identified, Ortuzar §7.3.1; refused at the purpose);
 // timeCoefficient finite and <= 0; a modeId or a costMatrix (non-blank strings); occupancy finite and >= 1.
+// N1: optional `nests`, present means non-empty; nest ids unique; phi finite in (0, 1]; members a non-empty
+// list naming the purpose's alternatives, each alternative in at most one nest (DUPLICATE_ID at the member).
 ModeChoiceSet parseModeChoiceSet(const Json&, const std::string& path, bool requireCitation);
 Json modeChoiceSetJson(const ModeChoiceSet&);
 // M10.4 E2 (§6, D479): the project's own sets, root `modeChoiceSets` at schema 70, as D474's deterrence sets:

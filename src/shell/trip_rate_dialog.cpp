@@ -1,4 +1,5 @@
 #include "trip_rate_dialog.hpp"
+#include "mode_choice_nests_dialog.hpp"
 #include "owned_list_dialog.hpp"
 #include <nlohmann/json.hpp>
 
@@ -68,11 +69,23 @@ std::optional<std::vector<ModeChoiceSet>> editModeChoiceSets(QWidget* parent, co
         QStringList purposes;
         for (const auto& p : j.at("purposes")) {
             QStringList alternatives;
-            for (const auto& a : p.at("alternatives")) alternatives << QString::fromStdString(a.at("id").get<std::string>());
+            // N1 (D481): alternatives in no nest, then each nest with its members, e.g. car/foot{walk/jog}.
+            QStringList nested, groups;
+            if (p.contains("nests"))
+                for (const auto& n : p.at("nests")) {
+                    QStringList members;
+                    for (const auto& m : n.at("alternatives")) members << QString::fromStdString(m.get<std::string>());
+                    nested << members; groups << QString::fromStdString(n.at("id").get<std::string>()) + "{" + members.join("/") + "}";
+                }
+            for (const auto& a : p.at("alternatives"))
+                if (const auto id = QString::fromStdString(a.at("id").get<std::string>()); !nested.contains(id)) alternatives << id;
+            alternatives << groups;
             purposes << QString::fromStdString(p.at("id").get<std::string>()) + ": " + alternatives.join("/");
         }
         return QStringList{str(j, "id"), str(j, "name"), purposes.join(", ")};
     };
+    spec.editName = "editorModeChoiceNests"; spec.editKey = "editorModeChoiceNestsOpen";
+    spec.edit = [text](QWidget* owner, const Json& j) { return editModeChoiceNests(owner, j, text); };
     return run<ModeChoiceSet>(parent, spec, d.modeChoiceSets, [](const Json& j) { return parseModeChoiceSet(j, "file", false); },
                               modeChoiceSetJson, text, files);
 }

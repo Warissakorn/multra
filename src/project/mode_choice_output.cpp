@@ -1,6 +1,7 @@
 #include "mode_choice_output.hpp"
 #include "csv_format.hpp"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <cmath>
 #include <sstream>
 
@@ -34,7 +35,15 @@ Json modeChoiceJson(const ModeChoiceRun& r) {
         for (const auto& a : p.alternatives)
             alternatives.push_back({{"id", a.alternative.id}, {"modeId", a.alternative.modeId ? Json(*a.alternative.modeId) : Json(nullptr)},
                                     {"persons", total(a.persons)}, {"costs", costs(a.costs)}, {"trips", a.persons}});
-        j["purposes"].push_back({{"id", p.id}, {"alternatives", alternatives}});
+        Json purpose{{"id", p.id}, {"alternatives", alternatives}};
+        // N1 (D481): the nested logit's structure, echoed only for a nested purpose so MNL outputs keep their bytes.
+        const auto& ps = r.set.purposes;
+        if (const auto q = std::find_if(ps.begin(), ps.end(), [&](const auto& x) { return x.id == p.id; }); q != ps.end() && !q->nests.empty()) {
+            Json nests = Json::array();
+            for (const auto& n : q->nests) nests.push_back({{"id", n.id}, {"phi", n.phi}, {"alternatives", n.alternatives}});
+            purpose["nests"] = nests;
+        }
+        j["purposes"].push_back(std::move(purpose));
     }
     for (const auto& s : r.periods) {
         Json alternatives = Json::array(), modes = Json::array();

@@ -28,6 +28,8 @@ Both bookings hold. BOOKS gives Ch. 6 as pp. 207–226; its examples sit on pp. 
 | MNL | §7.3, Eq. (7.9) | 232 / 254 | `p254-math-0355.png` | P_i = exp(β V_i) / Σ_{A_j ∈ A(q)} exp(β V_j) over the *available* alternatives, β normalised to 1 |
 | Constants | §7.3.1, Example 7.1 | 232–233 / 254–255 | (text) | Alternative-specific constants: only differences are identified, so one alternative's is fixed at 0 |
 | Nested logit condition | §7.4.2.1, Eq. (7.17)–(7.18) | 238 / 260 | `p260-math-0382.png` | φ = β/λ ≤ 1. At φ = 1 the NL collapses to the MNL; φ > 1 is incompatible with utility maximisation |
+| Two-level NL (N0, D480) | §7.4.2.1–7.4.2.2, Eq. (7.19)–(7.23) | 238–239 / 260–261 | PDF p. 260, 261 | Eq. (7.19): a scale λ_j per nest, condition (7.20) φ_j = β/λ_j ≤ 1. McFadden's Eq. (7.23) is the same model with β = 1 and 1/λ_j = φ_j = μ_j, μ_j ≤ 1. [NESTED_LOGIT](../reference/NESTED_LOGIT.md) §2 uses this form |
+| Limits of φ (N0, D480) | §7.4.4.3, Eq. (7.35) | 245 / 267 | PDF p. 267 | Eq. (7.35) is equivalent to 0 < φ ≤ 1. Börsch-Supan's φ > 1 on a "relevant subset" is reported, not adopted (NESTED_LOGIT choice 2a) |
 | Structure | §6.5.2, Eq. (6.10)–(6.11) | 213–214 / 235–236 | PDF p. 236 | With a logsum composite cost, G/D/MS/A needs β ≤ λ. The book suggests G/D/MS/A for work trips and G/MS/D/A for other purposes |
 | Occupancy | §11.3, Eq. (11.18)–(11.19) | 407 / 429 | (text) | Assignment carries vehicles while distribution and mode choice carry person trips. Vehicle occupancy η converts them. **No number:** owner data (choice 5) |
 | Calibration | §6.5.4, Example 6.4, Table 6.1 | 217–218 / 239–240 | (text) | Berkson–Theil regression for λ and δ (λ ≈ 0.72, δ ≈ 3.15). Out of M10.4 (choice 8), so not replayed |

@@ -82,7 +82,19 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
             inputs.push_back({a.constant, a.timeCoefficient, costs});
             purpose.alternatives.push_back({a, std::move(costs), {}});
         }
-        auto split = splitModes(run.distribution.purposes[p].result.trips, inputs);
+        // N1 (D481): a nested purpose maps its members to alternative indices; no nests keeps the MNL path.
+        const auto& setPurpose = run.set.purposes[purposeAt[p]];
+        ModeNests nests;
+        if (!setPurpose.nests.empty()) {
+            nests.nestOf.assign(setPurpose.alternatives.size(), -1);
+            for (std::size_t n = 0; n < setPurpose.nests.size(); ++n) {
+                nests.phi.push_back(setPurpose.nests[n].phi);
+                for (const auto& member : setPurpose.nests[n].alternatives)
+                    for (std::size_t k = 0; k < setPurpose.alternatives.size(); ++k)
+                        if (setPurpose.alternatives[k].id == member) nests.nestOf[k] = static_cast<int>(n);
+            }
+        }
+        auto split = splitModes(run.distribution.purposes[p].result.trips, inputs, nests);
         std::set<std::size_t> origins;
         for (const auto& i : split.issues)
             if (origins.insert(i.origin).second) issues.push_back({"MODE_CHOICE_NO_ALTERNATIVE", "zones[" + zoneIndex(i.origin) + "]." + purpose.id});

@@ -27,7 +27,8 @@ constant, coefficient, occupancy or period share ships as a default.
   - persons to vehicles by occupancy (§5, choice 5);
   - outputs, the CLI, an editor page, and writing `odMatrices` (§7, choice 7).
 - **Not in M10.4:**
-  - nested logit (choice 1b's later slice; Example 6.3 is booked as its fixture);
+  - nested logit (choice 1b's later slice): now [NESTED_LOGIT](NESTED_LOGIT.md) (D480–D481), with
+    Example 6.3 as its fixture;
   - estimating or calibrating utility parameters (Ortúzar §6.5.4, Ch. 8; choice 8);
   - logsum feedback into distribution, and the G/MS/D/A structure (§6.5.2);
   - congested-cost feedback (Ch. 11) and the procedure sequence (MACRO_NETWORK §19 c);
@@ -186,7 +187,7 @@ T^k_ij = P_k · T_ij                            (persons, P-A, the rate set's un
 | MNL | Ortúzar Eq. (7.9) | 232 |
 | One constant fixed at 0 | §7.3.1, Example 7.1 | 232–233 |
 | N-way logit fixture | Example 6.2, P_C = 0.33 | 214 |
-| Nested logit fixture (later slice) | Example 6.3, C_B = 49.23 and the λ₁ table | 216 |
+| Nested logit fixture ([NESTED_LOGIT](NESTED_LOGIT.md) NL1) | Example 6.3, C_B = 49.23 and the λ₁ table | 216 |
 | P-A to OD by period shares | §5.4.4 | 190–191 |
 | Occupancy | §11.3, η in Eq. (11.18)–(11.19) | 407 |
 | Structure and β ≤ λ | §6.5.2, Eq. (6.11) | 213–214 |

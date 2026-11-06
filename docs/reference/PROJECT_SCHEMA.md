@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–70 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–71 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -30,7 +30,7 @@ that path as a canonical project.
 | `zones`, `zoneConnectors`, `odMatrices`, `parkingLots` | Optional from 31; present arrays must be nonempty; null invalid | `zone_codec.cpp` |
 | `studyPeriods` | Optional from 49; present array must be nonempty; null invalid | `study_period_codec.cpp` |
 | `periodFactors` | Optional from 69; present array must be nonempty; exact `{purposeId, periodId, productionToAttraction, attractionToProduction}`, shares in [0, 1] summing to ≤ 1 (`PERIOD_FACTOR_INVALID`); the period must exist (`UNKNOWN_PERIOD`), the pair unique (`DUPLICATE_ID`); purpose ids checked by a run | `period_factor_codec.cpp` |
-| `modeChoiceSets` | Optional from 70; present array must be nonempty; rows as MODE_CHOICE §6 (citation optional), ids unique | `mode_choice_codec.cpp` |
+| `modeChoiceSets` | Optional from 70; present array must be nonempty; rows as MODE_CHOICE §6 (citation optional), ids unique; a purpose's `nests` (NESTED_LOGIT §3) from 71 | `mode_choice_codec.cpp` |
 | `studyArea` | Optional from 55; present object needs nonempty nodes; null invalid | `study_area_codec.cpp` |
 | `macroRuns` | Optional from 56; present array must be nonempty; null invalid | `macro_run_definition.cpp` |
 | `tripRateSets` | Optional from 66; present array must be nonempty; rows as TRIP_GENERATION §6.1, ids unique | `trip_rate_codec.cpp` |
@@ -116,6 +116,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 68 | `deterrenceSets[i].purposes[k].constraint` (`"double"` or `"origin"`, TRIP_DISTRIBUTION §15, D476); selected when any owned purpose carries it; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `document.cpp` |
 | 69 | Root `periodFactors` (MODE_CHOICE §5–§6, D478): per purpose and study period, the P→A and A→P shares; selected when present; older versions refuse it (`EDIT_UNSUPPORTED_FIELD`) | `period_factor_codec.cpp` |
 | 70 | Root `modeChoiceSets` and `odMatrices[i].generatedBy` (`"mode-choice"`) (MODE_CHOICE §7, D479); selected when either is present; older versions refuse each at its path | `mode_choice_codec.cpp`, `zone_codec.cpp` |
+| 71 | `modeChoiceSets[i].purposes[k].nests` (two-level nested logit, φ in (0, 1], NESTED_LOGIT §3, D481); selected when any owned purpose carries nests; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `mode_choice_codec.cpp`, `document.cpp` |
 | 65 | Node `number`: optional positive integer, the UTDF intersection id (UTDF_EXPORT §5, D442); only selected when a Node has one; older versions refuse it (`EDIT_NODE_INVALID`); validation refuses repeats (`NODE_NUMBER_DUPLICATE`) | `node_codec.cpp`, `nodes.cpp` |
 | 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
@@ -412,7 +413,6 @@ reuse the same control point/path entries for waiting lines and queue counters. 
 algorithm, LOS threshold, delay definition, writer version rule or serialized output changes.
 Negative/out-of-bounds stations, reversed sections, empty or ambiguous measurement sources,
 reference resolution and runtime readiness remain the existing model/evaluation validators.
-
 
 ## Route and VehicleInput extension (D363)
 

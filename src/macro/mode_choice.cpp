@@ -15,7 +15,27 @@ std::vector<double> logitShares(const std::vector<double>& v) {
     for (auto& s : shares) s /= total;
     return shares;
 }
-ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlternativeInput>& alternatives) {
+std::vector<double> nestedLogitShares(const std::vector<double>& v, const std::vector<int>& nestOf, const std::vector<double>& phi) {
+    const auto none = -std::numeric_limits<double>::infinity();
+    // Branches: one per nest, then one per alternative in no nest; W = -inf when no member is available.
+    std::vector<double> top(phi.size(), none), w;
+    for (std::size_t k = 0; k < v.size(); ++k)
+        if (nestOf[k] >= 0 && std::isfinite(v[k])) top[nestOf[k]] = std::max(top[nestOf[k]], v[k]);
+    std::vector<double> inner(v.size(), 0.0), sum(phi.size(), 0.0);
+    for (std::size_t k = 0; k < v.size(); ++k)
+        if (const int n = nestOf[k]; n >= 0 && std::isfinite(v[k])) { inner[k] = std::exp((v[k] - top[n]) / phi[n]); sum[n] += inner[k]; }
+    for (std::size_t n = 0; n < phi.size(); ++n) w.push_back(std::isfinite(top[n]) ? top[n] + phi[n] * std::log(sum[n]) : none);
+    std::vector<std::size_t> own;
+    for (std::size_t k = 0; k < v.size(); ++k)
+        if (nestOf[k] < 0) { own.push_back(k); w.push_back(v[k]); }
+    const auto branch = logitShares(w);
+    std::vector<double> shares(v.size(), 0.0);
+    for (std::size_t k = 0; k < v.size(); ++k)
+        if (const int n = nestOf[k]; n >= 0 && sum[n] > 0) shares[k] = branch[n] * inner[k] / sum[n];
+    for (std::size_t b = 0; b < own.size(); ++b) shares[own[b]] = branch[phi.size() + b];
+    return shares;
+}
+ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlternativeInput>& alternatives, const ModeNests& nests) {
     const auto n = trips.size();
     ModeSplit out;
     std::vector<DistributionMatrix> persons(alternatives.size(), DistributionMatrix(n, std::vector<double>(n, 0.0)));
@@ -28,7 +48,7 @@ ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlte
                 const double c = a.costs[i][j];
                 v[k] = std::isfinite(c) ? a.constant + a.timeCoefficient * c : std::numeric_limits<double>::quiet_NaN();
             }
-            const auto shares = logitShares(v);
+            const auto shares = nests.nestOf.empty() ? logitShares(v) : nestedLogitShares(v, nests.nestOf, nests.phi);
             if (std::none_of(shares.begin(), shares.end(), [](double s) { return s > 0; })) { out.issues.push_back({i, j}); continue; }
             for (std::size_t k = 0; k < alternatives.size(); ++k) persons[k][i][j] = shares[k] * trips[i][j];
         }

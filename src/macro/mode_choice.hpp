@@ -15,12 +15,21 @@ struct ModeAlternativeInput {
     double constant{}, timeCoefficient{};   // theta per minute, <= 0
     DistributionMatrix costs;               // minutes, [origin][destination]; +infinity where unavailable
 };
+// M10.4 N1 (NESTED_LOGIT §2, D481): a two-level nested logit (Ortuzar and Willumsen 2011, Eq. 7.19/7.23 with
+// beta = 1, phi_n = mu_n in (0, 1]). nestOf[k] is k's nest or -1 (a branch of its own at the root); a nest
+// with no available member drops out. W_n = m_n + phi_n ln sum exp((V_k - m_n)/phi_n), P(n) = logit over W,
+// P(k) = P(n) exp((V_k - m_n)/phi_n) / sum. At phi = 1, or with every nestOf -1, this is logitShares.
+std::vector<double> nestedLogitShares(const std::vector<double>& utilities, const std::vector<int>& nestOf, const std::vector<double>& phi);
+struct ModeNests {
+    std::vector<int> nestOf;    // per alternative; empty: the MNL
+    std::vector<double> phi;    // per nest
+};
 struct ModeSplitIssue { std::size_t origin{}, destination{}; }; // trips > 0 and no available alternative
 struct ModeSplit {
     std::vector<DistributionMatrix> persons; // one per alternative, in the given order
     std::vector<ModeSplitIssue> issues;      // non-empty: nothing else is filled
 };
-ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlternativeInput>&);
+ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlternativeInput>&, const ModeNests& = {});
 // fPA T + fAP T^T: the P-A trips travelling production to attraction and back in one period.
 DistributionMatrix directionalOd(const DistributionMatrix& trips, double fPA, double fAP);
 }
