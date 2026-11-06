@@ -88,6 +88,9 @@ keeps its schema and bytes.
 | `macro_input.*` | What a Macro run reads from a document | [MACRO_NETWORK §3-§6](../../docs/reference/MACRO_NETWORK.md) |
 | `macro_run.*` | One Macro run of a named period, shared by the CLI and the editor; `runNamedMacro` runs a saved definition without changing the document | [MACRO_NETWORK §7, §9](../../docs/reference/MACRO_NETWORK.md) |
 | `trip_rate_codec.*` | A trip-rate set's JSON shape and refusals, and the `data/trip-rates/` catalog (none ships) | [TRIP_GENERATION §6.1](../../docs/reference/TRIP_GENERATION.md) |
+| `deterrence_codec.*` | A deterrence set's JSON shape (exponential, minutes, β and an optional intrazonal share per purpose) and the `data/deterrence/` catalog (none ships) | [TRIP_DISTRIBUTION §6](../../docs/reference/TRIP_DISTRIBUTION.md) |
+| `trip_distribution_run.*` | One distribution run: generation, the deterrence set, the zone skim (connector-share-weighted free-flow minutes) and the gravity model per purpose, with document paths on refusal | [TRIP_DISTRIBUTION §5, §7](../../docs/reference/TRIP_DISTRIBUTION.md) |
+| `trip_distribution_output.*` | Its JSON (factors, passes, error, mean cost, bands) and CSV (pairs plus a totals row), both marked | [TRIP_DISTRIBUTION §8](../../docs/reference/TRIP_DISTRIBUTION.md) |
 | `trip_generation_run.*` | One trip-generation run of a named rate set over the zones, by stage; resolves attributes and paths for `src/macro/trip_generation` | [TRIP_GENERATION §7](../../docs/reference/TRIP_GENERATION.md) |
 | `trip_generation_output.*` | The run's JSON and CSV, marked not validated | [TRIP_GENERATION §8](../../docs/reference/TRIP_GENERATION.md) |
 | `macro_output.*` | A Macro run's fields and one row per arc | [MACRO_NETWORK §9](../../docs/reference/MACRO_NETWORK.md) |

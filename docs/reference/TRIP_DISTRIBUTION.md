@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D472) as a contract with nine owner choices (§11), after slice D0 read
 Ortúzar and Willumsen Ch. 5 from the page images ([evidence](../evidence/ortuzar-ch5-trip-distribution.md)).
-**No code until the owner answers §11.** This is the second four-step stage
+The owner accepted every recommendation (D473: 1a–9a), and D1 is implemented (§14). This is the second four-step stage
 ([MACRO_NETWORK](MACRO_NETWORK.md) §1, §15; [TRIP_GENERATION](TRIP_GENERATION.md) §9). It turns each
 purpose's productions and balanced attractions into a production–attraction (P-A) trip table,
 using a gravity model with exponential deterrence balanced by Furness, as D158 chose.
@@ -52,7 +52,8 @@ textbook example checks arithmetic, not behaviour, and removes no marker ([BOOKS
 - **Furness.**
   - One **pass** corrects every row to P_i, then every column to A*_j. Rows go first, which
     Example 5.3 shows (§10).
-  - A row or column whose target is 0 is set to zeros and keeps a factor of 1.
+  - A row or column whose target is 0 is set to zeros, and its factor becomes 0 (as built,
+    D473), so T_ij = a_i b_j f_ij holds everywhere.
   - a_i is the product of row i's corrections. b_j is the product of column j's corrections ×
     T / Σ f. Then T_ij = a_i b_j f_ij, as the book prints them.
 - **Condition.** Furness needs Σ P = Σ A* (Eq. 5.8, p. 181). TRIP_GENERATION §4 guarantees it. An
@@ -86,6 +87,10 @@ textbook example checks arithmetic, not behaviour, and removes no marker ([BOOKS
     named mode (empty: every arc).
   - The graph comes from `compileMacroNetwork` as Run Macro builds it, and its refusals are the
     run's.
+  - **Zone to zone (as built, D473):** the graph's centroids are per zone connector. A zone's cost
+    is the share-weighted mean of the connector-pair times, using the split Macro demand uses
+    (ZONES_AND_PARKING §3). A positive-share pair with no path, or a zone with no connector of that
+    direction, makes the pair unreachable (∞).
   - No congested skim: feedback is out of scope (§1).
 - **Matrix override (choice 1a):** a project cost matrix, if present, replaces skim cells it names.
   It is `{zone ids, rows, unit: "min"}`. Its shape faults are `INVALID_COST_MATRIX` at
@@ -96,8 +101,9 @@ textbook example checks arithmetic, not behaviour, and removes no marker ([BOOKS
   - Each purpose names a share s_p in [0, 1). Then T_ii = s_p · min(P_i, A*_i) is set aside, and
     its value is subtracted from both ends before Furness.
   - The diagonal is excluded from the gravity model (f_ii = 0).
-  - A diagonal in an override matrix is used only when s_p is absent (choice 2b), which is how
-    Example 5.4 runs.
+  - With no share, s_p = 0: nothing is set aside, and the diagonal stays out (as built, D473).
+  - A diagonal is used only from an override matrix (D2). The engine's `useDiagonal` flag is how
+    TD2 runs Example 5.4.
 - **Units:** costs are minutes and β is per minute. A matrix in another unit is refused, not
   converted.
 
@@ -176,7 +182,9 @@ its page image:
 - **Practice** (§5.8.3–§5.8.4, pp. 201–202): intrazonal trips taken out (choice 2), and non-work
   purposes usually singly constrained (choice 9).
 
-## 11. Owner choices (open)
+## 11. Owner choices (answered 2026-11-06, D473: 1a–9a)
+
+The owner: "ตามแนะนำ". The options are kept for the record.
 
 1. **Cost source.**
    - **(a) The free-flow skim, with an optional project matrix overriding its cells
@@ -224,10 +232,10 @@ its page image:
 | Slice | Content | Rows |
 |---|---|---|
 | D0 | Read Ortúzar Ch. 5 into an evidence file; this contract. **Done (D472)** | — |
-| D1 | Deterrence codec and catalog, the free-flow skim, `src/macro/trip_distribution`, the run, JSON/CSV and `--trip-distribution` | TD1–TD11 |
+| D1 | Deterrence codec and catalog, the free-flow skim, `src/macro/trip_distribution`, the run, JSON/CSV and `--trip-distribution`. **Implemented (D473)** | TD1–TD11 |
 | D2 | Owned deterrence sets and cost matrices at schema 67, the *Deterrence sets…* dialog, the *Trip distribution* page | TD12–TD14 |
 
-## 13. Acceptance rows (planned)
+## 13. Acceptance rows (TD1–TD11 implemented, D473; TD12–TD14 with D2)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -247,3 +255,37 @@ Each row first asserts that its forcing worked (AGENTS).
 | TD12 | Owned sets | Schema-67 round-trip; no owned sets keeps old bytes and schema; older schemas refuse the fields; accept is one Undo step |
 | TD13 | Editor page | A run is no History step; rows per purpose and pair; a network or attribute edit marks it stale |
 | TD14 | Shipped projects | Every Micro, Meso, Macro and generation output byte-identical |
+
+## 14. As implemented (D1, D473)
+
+- **Files:**
+  - `src/macro/trip_distribution.*` (pure: `furness`, `tripEndError`, `distributeTrips`,
+    `meanCost`, `tripLengthBands`);
+  - `freeFlowSkim` in `src/macro/assign.*`;
+  - `src/project/deterrence_codec.*` (`parseDeterrenceSet`, `deterrenceSetJson`,
+    `resolveDeterrenceSets`);
+  - `src/project/trip_distribution_run.*` (`runTripDistribution`, stages generation →
+    deterrence → costs → balancing);
+  - `src/project/trip_distribution_output.*`;
+  - `--trip-distribution`, `--deterrence` and `--skim-mode` in `tools/run_simulation.cpp`.
+- **Settings:** the defaults of choice 4a (0.1 %, 1000 passes). Neither the CLI nor the document
+  sets them yet. Bands are 4 min wide.
+- **CSV:**
+  - a comment line per purpose with β, passes, error and `DISTRIBUTION_NOT_CONVERGED` when it
+    applies;
+  - columns `purpose,originId,destinationId,trips,cost`;
+  - an unreachable pair's cost is blank;
+  - the `totals` row's cost cell is the mean cost.
+- **JSON:** an unreachable cost is `null`.
+- **CLI:** the CLI warns `DISTRIBUTION_NOT_CONVERGED` on stderr.
+- **Catalog:** `data/deterrence/` does not exist (choice 3a), which reads as an empty catalog. The
+  rows use `tests/data/trip-distribution/`, which holds Example 4.1 and a one-way hand rate set
+  (site produces, town attracts; the fixture's network runs site → town only), the `hand`
+  deterrence set (β 0.1, marked as Example 5.4's illustration) and a copy of `data/vdf/bpr.json`.
+- **Rows:**
+  - `tests/trip_distribution_tests.cpp` (group `tripdistribution`, TD1–TD10);
+  - the CLI tests `cli-trip-distribution`, `-conflict`, `-alone`, `-unknown` (TD11).
+  - TD1 and TD2 reproduce Tables 5.7 and 5.10 (cells, a_i, b_j, bands) to the printed
+    decimals.
+- **Mutations:** columns first, b without T/Σf, the diagonal kept, and the row error ignored. Each
+  failed at least one row.

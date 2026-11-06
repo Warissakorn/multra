@@ -2,6 +2,22 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — UI fixes, round 2 (D463)
+
+- **Owner:** "เริ่ม UI รอบสองเลย".
+- **Properties width:** the Link page needed 393 px in a 280 px panel because of the Link type
+  combobox. The box now shrinks below its longest item, and the widest button label is shorter
+  ("Midpoint on longest segment"); an eliding button made the form layout loop. No sideways
+  scroll at any density.
+- **Clipped summary:** at 800 px it ends on a whole row instead of through a field.
+- **Labels:** "Lane widths (m)", "Boundary markings", "New lane width (m)" (Thai likewise); the
+  format is the placeholder and tooltip.
+- **Scope banner:** one line, "Not yet validated · prototype model — hover for its limits"; the
+  full limits stay in its tooltip.
+- **Results:** a movement or queue cell with no figure reads "—"; a Node-table cell that does not
+  apply (a turn's queue) stays blank.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux after fixing what the first full run caught (a layout loop from eliding buttons, a Node-table blank); Windows not checked. Images: `docs/images/ui-round2-d463/`.
+
 ## 2026-11-05 — Owner choices after D461 (D462)
 
 - **Owner:** "ช่วยแนะนำต้องตัดสินใจ", then took every recommendation.

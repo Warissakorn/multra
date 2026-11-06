@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.3 D1: gravity distribution engine, skim, run, outputs and CLI (D473)
+
+- **Owner:** "ตามแนะนำ" on TRIP_DISTRIBUTION §11 (1a–9a).
+- **D473 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14):**
+  - `src/macro/trip_distribution` (row-first Furness, exponential gravity seeded by T/Σf,
+    intrazonal share, the stopping measure);
+  - `freeFlowSkim`, with zone costs as the connector-share-weighted mean;
+  - deterrence sets as data;
+  - `runTripDistribution`, JSON/CSV and `--trip-distribution`.
+- **Rows:**
+  - TD1–TD10 (group `tripdistribution`) and four CLI tests (TD11).
+  - Examples 5.3 and 5.4 reproduce the printed tables.
+  - Four engine mutations each failed a row.
+- **Found while building:** the Macro graph's centroids are per zone connector, not per zone, so
+  the skim aggregates connector pairs by share (§5).
+
 ## 2026-11-06 — M10.3 contract after reading Ortúzar Ch. 5 (D472)
 
 - **Owner:** "สำหรับงานถัดไปคือ M10.3", then "ทำงานถัดไป".
@@ -123,19 +139,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** network-image-ui, road-crossbar-ui and canvas-lod-ui each failed before the fix.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
   checked. Images: `docs/images/export-d464/` (whole-network PNG before and after).
-
-## 2026-11-05 — UI fixes, round 2 (D463)
-
-- **Owner:** "เริ่ม UI รอบสองเลย".
-- **Properties width:** the Link page needed 393 px in a 280 px panel because of the Link type
-  combobox. The box now shrinks below its longest item, and the widest button label is shorter
-  ("Midpoint on longest segment"); an eliding button made the form layout loop. No sideways
-  scroll at any density.
-- **Clipped summary:** at 800 px it ends on a whole row instead of through a field.
-- **Labels:** "Lane widths (m)", "Boundary markings", "New lane width (m)" (Thai likewise); the
-  format is the placeholder and tooltip.
-- **Scope banner:** one line, "Not yet validated · prototype model — hover for its limits"; the
-  full limits stay in its tooltip.
-- **Results:** a movement or queue cell with no figure reads "—"; a Node-table cell that does not
-  apply (a turn's queue) stays blank.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux after fixing what the first full run caught (a layout loop from eliding buttons, a Node-table blank); Windows not checked. Images: `docs/images/ui-round2-d463/`.
