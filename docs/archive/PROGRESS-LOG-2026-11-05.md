@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-05 — Owner choices after D461 (D462)
+
+- **Owner:** "ช่วยแนะนำต้องตัดสินใจ", then took every recommendation.
+- **Hidden rates:** no extra marker. The blue input bar stays, and hovering or selecting the origin
+  road shows the rate as its box.
+- **Objects dock:** titled by its current group. A one-page group (Results, Problems) shows no tab
+  strip; its picker moves to its own row above the page, since Qt left it floating over the page
+  with the strip hidden. It returns to the strip's corner for larger groups.
+- **Movement names:** not translated; they are the project's Link names.
+- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked.
+
 ## 2026-11-05 — Canvas display fixes, round 1 (D461)
 
 - **Owner:** "เริ่มเลย" on round 1 of the display-error list; the median spikes in the junction

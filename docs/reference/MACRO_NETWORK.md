@@ -356,7 +356,7 @@ Each row first asserts that its forcing worked (AGENTS).
 ## 15. Seams
 
 - **M10.2–M10.5** read the same graph and demand: generation and distribution fill matrices,
-  mode choice splits them, skims come from §7's shortest paths.
+  mode choice splits them, skims come from §7's shortest paths ([TRIP_DISTRIBUTION](TRIP_DISTRIBUTION.md) §5).
 - **S3:**
   - Street segments give Nodes without detail, and S0.4 lands with them (choice 6a);
   - the `linkType` hierarchy gives a coarse Node's priority (NODES §5).

@@ -14,6 +14,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [behaviour-selection.md](behaviour-selection.md) | M3.3.2b front-segment behaviour selection evidence — 2026-10-07 | D127 |
 | [book-copies-check.md](book-copies-check.md) | The owner's book copies against MULTRA's citations: Sheffi's empty pages, HCM 7 against the M6.0 sheet and the LOS pack, a two-route equilibrium — 2026-10-23 | — |
 | [ortuzar-ch4-trip-generation.md](ortuzar-ch4-trip-generation.md) | Ortúzar and Willumsen Ch. 4 read for TRIP_GENERATION G0: methods, Eq. (4.14) balancing, Example 4.1 as the fixture, Example 4.5 not one — 2026-11-06 | D469 |
+| [ortuzar-ch5-trip-distribution.md](ortuzar-ch5-trip-distribution.md) | Ortúzar and Willumsen Ch. 5 read for TRIP_DISTRIBUTION D0: Examples 5.3 and 5.4 replayed by three row-first Furness passes, a row-sum misprint, no book tolerance, intrazonal and constraint practice — 2026-11-06 | D472 |
 | [connector-equation.md](connector-equation.md) | Direct Connector equation — D107, 2026-10-04 | D107, D106, D80 |
 | [connector-lane-centres.md](connector-lane-centres.md) | Connector runtime lane-centre verification — 2026-10-04 (D106) | D106 |
 | [discharge-controls.md](discharge-controls.md) | M3.3.1b1 local evidence — 2026-10-06 | — |

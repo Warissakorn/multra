@@ -126,7 +126,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the next one is
-**M10.2 (trip generation; contract written, below)**, then M10.3–M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
+**M10.2 (done, below), M10.3 (contract written, below)**, then M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
@@ -138,14 +138,30 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   headless). M10.2's code is complete; the M10 gate stays open (rule 8).
 - **Owner:** look at the two dialogs and the page on Windows ([OWNER_SITTING](plans/OWNER_SITTING.md)
   item 42). Linux offscreen tests do not close that look.
-- **Next on the owner's go:** M10.3 (distribution) starts with its contract: doubly-constrained
-  gravity with exponential deterrence and Furness (D158), reading each purpose's productions and
-  balanced attractions (§9), the set's unit carried. Ortúzar Ch. 5 (Example 5.3 Furness, 5.4
-  gravity; BOOKS §3.3) must be read from the page images first, as G0 did, since G0 found one
-  BOOKS booking wrong.
 - **Build note:** a Debug desktop build with debug info filled this container's disk (23 GB);
   configure with `-DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"` here. Qt needs `qt6-base-dev libproj-dev
   libxkbcommon-dev nlohmann-json3-dev` from apt.
+
+## M10.3 trip distribution — contract written (D472); waiting on the owner's answers
+
+- [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) is the contract. D0 read Ortúzar Ch. 5 from the page
+  images ([evidence](evidence/ortuzar-ch5-trip-distribution.md)): Examples 5.3 and 5.4 both reproduce
+  by three row-first Furness passes, and they become rows TD1 and TD2.
+- **Owner:** answer §11's nine choices:
+  - cost source;
+  - intrazonal trips;
+  - where β lives;
+  - the Furness target (the book gives no number);
+  - infeasible zones;
+  - storage;
+  - the editor;
+  - calibration;
+  - the constraint per purpose (the book says non-work purposes are usually singly constrained,
+    D158 says doubly).
+- **No code before the answers.** Then D1 (engine, skim, deterrence catalog, run, outputs, CLI),
+  then D2 (schema 67, dialog, page).
+- **Replays:** the book used unrounded exp(−βc). A fixture that rounds Table 5.9's values first
+  misses Table 5.10 (155.99 for 155.73).
 
 ## Next session — the owner's pick
 

@@ -211,7 +211,7 @@ The values above illustrate the shape and are not a source. Rules:
 
 ## 9. Seams
 
-- **M10.3 distribution** reads `P_i` and `A*_i` per purpose and the set's `unit`; it, not M10.2,
+- **M10.3 distribution** ([TRIP_DISTRIBUTION](TRIP_DISTRIBUTION.md), D472) reads `P_i` and `A*_i` per purpose and the set's `unit`; it, not M10.2,
   turns them into trip tables. Its doubly-constrained gravity needs `ΣP = ΣA*`, which §4 gives.
 - **M10.4 mode choice** owns person-to-vehicle conversion and the study-period factor (§5).
 - **The procedure sequence** (MACRO_NETWORK §19 c) gains a Generation stage that calls the same

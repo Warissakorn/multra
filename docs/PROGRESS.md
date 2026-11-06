@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.3 contract after reading Ortúzar Ch. 5 (D472)
+
+- **Owner:** "สำหรับงานถัดไปคือ M10.3", then "ทำงานถัดไป".
+- **D0 ([evidence](evidence/ortuzar-ch5-trip-distribution.md)):** the page images of Tables
+  5.6–5.10 and the band table were read. A scratch replay reproduces Table 5.7 and Table 5.10
+  (cells, a_i, b_j, bands) with three row-first passes. Table 5.10's row-2 sum is misprinted. The
+  book gives no Furness tolerance.
+- **D472 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)):** gravity with exponential deterrence
+  over M10.2's ends, row-first Furness, a free-flow skim, deterrence sets as data (none shipped),
+  rows TD1–TD14, slices D0–D2, and nine owner choices. Docs only.
+
 ## 2026-11-06 — M10.2 G2: owned rate sets, zone attributes, Trip generation page (D471)
 
 - **Owner:** "เริ่มเลย" on G2; chose attributes in the Edit Zone dialog and a rate-set list with
@@ -128,14 +139,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Results:** a movement or queue cell with no figure reads "—"; a Node-table cell that does not
   apply (a turn's queue) stays blank.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux after fixing what the first full run caught (a layout loop from eliding buttons, a Node-table blank); Windows not checked. Images: `docs/images/ui-round2-d463/`.
-
-## 2026-11-05 — Owner choices after D461 (D462)
-
-- **Owner:** "ช่วยแนะนำต้องตัดสินใจ", then took every recommendation.
-- **Hidden rates:** no extra marker. The blue input bar stays, and hovering or selecting the origin
-  road shows the rate as its box.
-- **Objects dock:** titled by its current group. A one-page group (Results, Problems) shows no tab
-  strip; its picker moves to its own row above the page, since Qt left it floating over the page
-  with the strip hidden. It returns to the strip's corner for larger groups.
-- **Movement names:** not translated; they are the project's Link names.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked.
