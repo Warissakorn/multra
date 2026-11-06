@@ -5,6 +5,7 @@
 #include "../src/project/json.hpp"
 #include "../src/project/load.hpp"
 #include "../src/project/mode_choice_output.hpp"
+#include "../src/project/procedure_output.hpp"
 #include "../src/project/trip_distribution_output.hpp"
 #include "../src/project/trip_generation_output.hpp"
 #include <nlohmann/json.hpp>
@@ -73,5 +74,19 @@ int runModeChoiceProject(const std::filesystem::path& file, const std::filesyste
     std::cout << result.dump(2) << '\n';
     if (!run.distribution.converged()) std::cerr << "MULTRA: warning: DISTRIBUTION_NOT_CONVERGED at the pass cap\n";
     return std::cout ? 0 : 1;
+}
+// --procedure (PROCEDURE_SEQUENCE §4, D484): a saved procedure's steps in order; JSON only.
+int runProcedureProject(const std::filesystem::path& file, const std::filesystem::path& data, const std::string& id) {
+    if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
+    InputManifest inputs;
+    const auto document = parseDocument(readInputJson(file, "project", &inputs));
+    const auto run = runProcedure(document, data, id, &inputs);
+    auto result = procedureJson(run);
+    addMarkingJson(result, exportMarking(document, {}));
+    stamp(result);
+    std::cout << result.dump(2) << '\n';
+    for (const auto& s : run.steps)
+        for (const auto& i : s.issues) std::cerr << "MULTRA: step " << s.index << " refused: " << i.code << " at " << i.path << '\n';
+    return std::cout && run.completed() ? 0 : 1;
 }
 }

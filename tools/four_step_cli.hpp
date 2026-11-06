@@ -13,4 +13,5 @@ int runTripDistributionProject(const std::filesystem::path& file, const std::fil
 int runModeChoiceProject(const std::filesystem::path& file, const std::filesystem::path& csvFile, const std::filesystem::path& data,
                          const std::string& rateSet, const std::string& deterrence, const std::string& mode, const std::string& matrix,
                          const std::string& modeChoiceSet, const std::vector<std::string>& periods);
+int runProcedureProject(const std::filesystem::path& file, const std::filesystem::path& data, const std::string& id);
 }

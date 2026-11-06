@@ -8,6 +8,7 @@
 #include "cost_matrix_codec.hpp"
 #include "period_factor_codec.hpp"
 #include "mode_choice_codec.hpp"
+#include "procedure_codec.hpp"
 #include "../model/demand/zones.hpp"
 #include "../model/demand/definition.hpp"
 
@@ -38,6 +39,7 @@ struct ProjectDocument {
     std::vector<CostMatrix> costMatrices;      // M10.3 D2 (TRIP_DISTRIBUTION §5, D474), schema 67
     std::vector<PeriodFactor> periodFactors;   // M10.4 E1 (MODE_CHOICE §5, D478), schema 69
     std::vector<ModeChoiceSet> modeChoiceSets; // M10.4 E2 (MODE_CHOICE §6, D479), schema 70
+    std::vector<Procedure> procedures;         // PROCEDURE_SEQUENCE §2 (D484), schema 73
     bool operator==(const ProjectDocument&) const = default;
 };
 AuthoringDefinition parseAuthoringDefinition(const Json&);
@@ -59,7 +61,7 @@ std::vector<ValidationIssue> routingDecisionIssues(const AuthoringDefinition&);
 AuthoringDefinition withRoutingDecisions(AuthoringDefinition);
 Json documentJson(const ProjectDocument& document);
 // The newest schema the reader accepts; tests name kLatestSchema + 1 as the first unknown one.
-inline constexpr int kLatestSchema = 72;
+inline constexpr int kLatestSchema = 73;
 ProjectDocument parseDocument(const Json& json);
 void validateDocument(const ProjectDocument& document); // Empty networks are valid drafts.
 // Every id the network and definition hold, which a new or zone-layer id must not repeat.

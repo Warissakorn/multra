@@ -2,6 +2,22 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 D1: gravity distribution engine, skim, run, outputs and CLI (D473)
+
+- **Owner:** "ตามแนะนำ" on TRIP_DISTRIBUTION §11 (1a–9a).
+- **D473 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §14):**
+  - `src/macro/trip_distribution` (row-first Furness, exponential gravity seeded by T/Σf,
+    intrazonal share, the stopping measure);
+  - `freeFlowSkim`, with zone costs as the connector-share-weighted mean;
+  - deterrence sets as data;
+  - `runTripDistribution`, JSON/CSV and `--trip-distribution`.
+- **Rows:**
+  - TD1–TD10 (group `tripdistribution`) and four CLI tests (TD11).
+  - Examples 5.3 and 5.4 reproduce the printed tables.
+  - Four engine mutations each failed a row.
+- **Found while building:** the Macro graph's centroids are per zone connector, not per zone, so
+  the skim aggregates connector pairs by share (§5).
+
 ## 2026-11-06 — M10.3 contract after reading Ortúzar Ch. 5 (D472)
 
 - **Owner:** "สำหรับงานถัดไปคือ M10.3", then "ทำงานถัดไป".

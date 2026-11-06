@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
     try {
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
-        std::optional<std::string> macroPeriod, macroRunId, tripRateSet, utdfMode, tripDistribution, deterrenceSet, skimMode, costMatrix, modeChoice;
+        std::optional<std::string> procedureId, macroPeriod, macroRunId, tripRateSet, utdfMode, tripDistribution, deterrenceSet, skimMode, costMatrix, modeChoice;
         std::vector<std::string> periods; // --period, repeatable (M10.4)
         std::filesystem::path utdfFile;
         bool meso = false, nodeAnalysis = false, utdfUnsignalised = false;
@@ -270,6 +270,7 @@ int main(int argc, char** argv) {
                              "  Frank-Wolfe and reports every link's flow, V/C and time (S2.3). PERIOD is a study period\n"
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
+                             "--procedure ID (with --project, alone) runs a saved procedure's steps in order (JSON only).\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
                              "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n"
                              "--trip-generation ID (with --project, alone) computes productions and attractions per zone and\n"
@@ -301,7 +302,7 @@ int main(int argc, char** argv) {
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
                 arg == "--threads" || arg == "--macro" || arg == "--trip-generation" || arg == "--trip-distribution" ||
-                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--export-utdf" || arg == "--utdf-mode") {
+                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -338,6 +339,10 @@ int main(int argc, char** argv) {
                                : arg == "--skim-mode" ? skimMode : arg == "--cost-matrix" ? costMatrix : modeChoice;
                     if (slot) throw std::invalid_argument("Specify " + arg + " only once");
                     slot = argv[i];
+                }
+                else if (arg == "--procedure") {
+                    if (procedureId) throw std::invalid_argument("Specify --procedure only once");
+                    procedureId = argv[i];
                 }
                 else if (arg == "--macro-run") {
                     if (macroRunId) throw std::invalid_argument("Specify --macro-run only once");
@@ -399,6 +404,10 @@ int main(int argc, char** argv) {
                                  seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases || waitCauses ||
                                  discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
             throw std::invalid_argument("--trip-distribution needs --project and --deterrence and takes only --skim-mode, --cost-matrix, --mode-choice, --period, --csv and --data-dir");
+        if (procedureId && (projectFile.empty() || !csvFile.empty() || macroPeriod || macroRunId || tripRateSet || tripDistribution || meso ||
+                            nodeAnalysis || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases || waitCauses ||
+                            discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
+            throw std::invalid_argument("--procedure needs --project and takes only --data-dir");
         if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
         if (utdfUnsignalised && utdfFile.empty()) throw std::invalid_argument("--utdf-unsignalised needs --export-utdf");
         if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
@@ -414,6 +423,7 @@ int main(int argc, char** argv) {
         if (!projectFile.empty()) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
+            if (procedureId) return runProcedureProject(projectFile, data, *procedureId);
             if (modeChoice) return runModeChoiceProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""),
                                                         costMatrix.value_or(""), *modeChoice, periods);
             if (tripDistribution) return runTripDistributionProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""), costMatrix.value_or(""));

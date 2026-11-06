@@ -1,7 +1,7 @@
 # Procedure sequence (MACRO_NETWORK §19 c)
 
 Written 2026-11-06 as a contract (D483). The owner answered its four choices in the same session
-(§6). Slices P1 (D484) and P2 (D485) follow (§7).
+(§6). P1 is implemented (D484, §8); P2 (the editor) follows (§7).
 
 MACRO_NETWORK §19 booked option (c), "a general procedure sequence like Visum's", as an M10 seam
 until generation, distribution and mode choice existed. They now exist:
@@ -136,7 +136,7 @@ A run is no History step. Step statuses are `done`, `skipped`, `refused` and `no
 | Slice | Content | Rows |
 |---|---|---|
 | P0 | This contract. **Done (D483)** | — |
-| P1 | Chaining overloads of the distribution and mode-choice runs; `procedures` at schema 73; `runProcedure`; `procedureJson`; `--procedure` | PS1–PS9, PS11 |
+| P1 | `procedures` at schema 73; `runProcedure`; `procedureJson`; `--procedure`. **Implemented (D484)** | PS1–PS9, PS11 |
 | P2 | *Procedures…* and the *Procedure* page | PS10 |
 
 Each row first asserts that its forcing worked.
@@ -154,3 +154,36 @@ Each row first asserts that its forcing worked.
 | PS9 | CLI: the marker, an unknown id, flag conflicts |
 | PS10 | Editor: the dialog is one Undo step and Cancel keeps the bytes; the page runs with no History step and goes stale after an edit; saving writes 73 |
 | PS11 | Shipped projects and every existing output byte-identical |
+
+## 8. As implemented (P1, D484)
+
+- **Files:**
+  - `src/project/procedure_codec.*`: `Procedure`, `ProcedureStep`, parse, write and issues;
+  - `src/project/procedure_run.*`: `runProcedure`, `ProcedureObserver` (a per-step callback that
+    can cancel, plus the Macro observer);
+  - `src/project/procedure_output.*`: `procedureJson`, with `completed` and `cancelled`;
+  - `tools/four_step_cli.*` (`runProcedureProject`) and `--procedure` in `tools/run_simulation.cpp`.
+    The CLI exits 1 when a step is refused and prints each issue on stderr.
+- **Chaining.** A step runs its unit with its inputs' parameters: a distribution step uses the rate
+  set of its generation step, and a mode-choice step uses those of its distribution step and that
+  step's generation step. The units are deterministic, so each result equals the unit run alone
+  (PS2).
+  - This replaces the plan's chaining overloads. Those would have split the input manifests
+    between steps and broken that equality.
+  - Generation is computed again inside each later step; that costs nothing at study sizes.
+- **Moved.** `generatedOdMatrices` moved from `src/commands/mode_choice_commands.*` to
+  `src/project/mode_choice_run.*`, because the architecture check forbids project → commands. The
+  in-memory copy needs no `ownModesWhenNamed`: PS3 equals the E2 write path, which does call it.
+- **Manifests.** Each step gets its own copy of the CLI's manifest (the project file already
+  recorded), so a step's `inputManifest` equals that unit's CLI run.
+- **Fixture:** `tests/data/trip-distribution/procedure.traffic.json`: the mode-choice fixture at
+  schema 73, A→P 0, and the procedure `four-step`.
+- **Rows:**
+  - `tests/procedure_tests.cpp` (group `procedure`) covers PS1–PS8;
+  - `cli-procedure`, `-unknown` and `-conflict` cover PS9;
+  - PS11: the existing suites pass unchanged.
+- **Mutations:** each of the following failed a row:
+  - continuing after a refusal;
+  - taking the farthest input;
+  - assigning the document instead of the copy;
+  - ignoring `active`.

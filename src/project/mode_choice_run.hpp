@@ -46,6 +46,9 @@ struct ModeChoiceRun {
 // periods: UNKNOWN_PERIOD at `studyPeriods`; no period selected and none named by a factor is
 //   MODE_CHOICE_NO_PERIOD at `periodFactors`.
 // `periodIds` empty: every study period some factor names, in study-period order.
+// E2 (D479), moved here by D484: one matrix per period and mode of the run: id `mc-<periodId>-<modeId>`, the
+// period, the mode, `generatedBy: "mode-choice"`, the run's zone order and its vehicle cells.
+std::vector<OdMatrix> generatedOdMatrices(const ModeChoiceRun&);
 ModeChoiceRun runModeChoice(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& rateSetId,
                             const std::string& deterrenceSetId, const std::string& skimMode, const std::string& costMatrixId,
                             const std::string& modeChoiceSetId, const std::vector<std::string>& periodIds,

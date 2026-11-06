@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — Procedure sequence P1: engine, schema 73, CLI (D484)
+
+- **Owner:** approved the plan after D483.
+- **D484 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) §8):**
+  - `procedures` at schema 73, and `runProcedure` (nearest earlier active input, an in-memory
+    assignment demand, a refusal stops the rest, Cancel);
+  - `procedureJson` and `--procedure`;
+  - `generatedOdMatrices` moved into the project layer.
+- **Rows:** `procedure` (PS1–PS8) and `cli-procedure*` (PS9). Found by the rows: a `{}` initialiser
+  had set every step to *done*; fixed. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). Windows not checked.
+
 ## 2026-11-06 — Procedure sequence contract (D483)
 
 - **Owner:** "ลำดับขั้นตอนการรัน"; answered §6 in the session: a general step list (1b, against
@@ -122,19 +134,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - `workspace-ui` updated deliberately for the tenth Results tab.
 - **Verified:** Linux only (desktop and headless; counts in the session report). An offscreen grab
   of the page and the dialog was checked for layout. Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.3 D1: gravity distribution engine, skim, run, outputs and CLI (D473)
-
-- **Owner:** "ตามแนะนำ" on TRIP_DISTRIBUTION §11 (1a–9a).
-- **D473 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14):**
-  - `src/macro/trip_distribution` (row-first Furness, exponential gravity seeded by T/Σf,
-    intrazonal share, the stopping measure);
-  - `freeFlowSkim`, with zone costs as the connector-share-weighted mean;
-  - deterrence sets as data;
-  - `runTripDistribution`, JSON/CSV and `--trip-distribution`.
-- **Rows:**
-  - TD1–TD10 (group `tripdistribution`) and four CLI tests (TD11).
-  - Examples 5.3 and 5.4 reproduce the printed tables.
-  - Four engine mutations each failed a row.
-- **Found while building:** the Macro graph's centroids are per zone connector, not per zone, so
-  the skim aggregates connector pairs by share (§5).

@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–72 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–73 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -31,6 +31,7 @@ that path as a canonical project.
 | `studyPeriods` | Optional from 49; present array must be nonempty; null invalid | `study_period_codec.cpp` |
 | `periodFactors` | Optional from 69; present array must be nonempty; exact `{purposeId, periodId, productionToAttraction, attractionToProduction}`, shares in [0, 1] summing to ≤ 1 (`PERIOD_FACTOR_INVALID`); the period must exist (`UNKNOWN_PERIOD`), the pair unique (`DUPLICATE_ID`); purpose ids checked by a run | `period_factor_codec.cpp` |
 | `modeChoiceSets` | Optional from 70; present array must be nonempty; rows as MODE_CHOICE §6 (citation optional), ids unique; a purpose's `nests` (NESTED_LOGIT §3) from 71 | `mode_choice_codec.cpp` |
+| `procedures` | Optional from 73; present array must be nonempty; rows as PROCEDURE_SEQUENCE §2, ids unique | `procedure_codec.cpp` |
 | `studyArea` | Optional from 55; present object needs nonempty nodes; null invalid | `study_area_codec.cpp` |
 | `macroRuns` | Optional from 56; present array must be nonempty; null invalid | `macro_run_definition.cpp` |
 | `tripRateSets` | Optional from 66; present array must be nonempty; rows as TRIP_GENERATION §6.1, ids unique | `trip_rate_codec.cpp` |
@@ -118,15 +119,14 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 70 | Root `modeChoiceSets` and `odMatrices[i].generatedBy` (`"mode-choice"`) (MODE_CHOICE §7, D479); selected when either is present; older versions refuse each at its path | `mode_choice_codec.cpp`, `zone_codec.cpp` |
 | 71 | `modeChoiceSets[i].purposes[k].nests` (two-level nested logit, φ in (0, 1], NESTED_LOGIT §3, D481); selected when any owned purpose carries nests; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `mode_choice_codec.cpp`, `document.cpp` |
 | 72 | `deterrenceSets[i].purposes[k].constraint` value `"destination"` (TRIP_DISTRIBUTION §16, D482); selected when any owned purpose uses it; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `document.cpp` |
+| 73 | Root `procedures` (PROCEDURE_SEQUENCE §2, D484): named step lists; selected when present; older versions refuse it (`EDIT_UNSUPPORTED_FIELD`) | `procedure_codec.cpp` |
 | 65 | Node `number`: optional positive integer, the UTDF intersection id (UTDF_EXPORT §5, D442); only selected when a Node has one; older versions refuse it (`EDIT_NODE_INVALID`); validation refuses repeats (`NODE_NUMBER_DUPLICATE`) | `node_codec.cpp`, `nodes.cpp` |
 | 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
-Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use
-fraction attachments converted to metre stations on read, pre-8 routes migrate from
-lanes/paths to owning objects, and pre-13 editor signal programs migrate to controllers.
-Below 7, network unknown-field handling remains legacy/additive. Other early defaults
-and nested keys must be inventoried from the relevant readers before claiming complete
-historical-schema coverage.
+Schemas 1–16 are read compatibility, not possible save floors. In particular, 1–4 use fraction attachments
+converted to metre stations on read, pre-8 routes migrate from lanes/paths to owning objects, and pre-13 editor
+signal programs migrate to controllers. Below 7, network unknown-field handling remains legacy/additive. Other
+early defaults and nested keys must be inventoried from the relevant readers before claiming complete coverage.
 
 ## Nested coverage that a formal schema must preserve
 

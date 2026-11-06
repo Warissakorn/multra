@@ -179,7 +179,8 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   "destination"` at schema 72; rows TD21–TD26 pass on Linux.
 - **Procedure sequence contract written (D483, [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):**
   owner chose a general step list, in-memory matrices, stored procedures (schema 73), feedback
-  later. **Next: P1** (engine, codec, CLI), then **P2** (dialog and page).
+  later. **P1 done (D484):** schema 73, `runProcedure`, `--procedure`; rows PS1–PS9 pass on Linux.
+  **Next: P2** (*Procedures…* dialog and the *Procedure* page).
 - **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2,
   N1 and D4).
 - **Next, the owner's pick:**

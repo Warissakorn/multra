@@ -7,9 +7,7 @@
 namespace multra {
 void setModeChoiceSets(ProjectDocument&, std::vector<ModeChoiceSet>);
 void setPeriodFactors(ProjectDocument&, std::vector<PeriodFactor>);
-// One matrix per period and mode of the run: id `mc-<periodId>-<modeId>`, the period, the mode,
-// `generatedBy: "mode-choice"`, the run's zone order and its vehicle cells (vehicle trips in the period).
-std::vector<OdMatrix> generatedOdMatrices(const ModeChoiceRun&);
+// generatedOdMatrices(run) is in src/project/mode_choice_run.hpp since D484 (the procedure run needs it).
 // Removes every matrix with `generatedBy == "mode-choice"`, appends `matrices`, and (as the OD dialog does)
 // lets a project owning its compositions take `installedModes` as its own. Authored matrices are untouched;
 // an id clash with one is refused by validation.

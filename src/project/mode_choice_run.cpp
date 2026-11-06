@@ -137,4 +137,17 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
     }
     return run;
 }
+std::vector<OdMatrix> generatedOdMatrices(const ModeChoiceRun& run) {
+    std::vector<OdMatrix> out;
+    for (const auto& period : run.periods)
+        for (const auto& mode : period.modes) {
+            OdMatrix m;
+            m.id = "mc-" + period.id + "-" + mode.modeId;
+            m.periodId = period.id; m.modeId = mode.modeId; m.generatedBy = "mode-choice";
+            m.zoneIds = run.distribution.generation.zoneIds;
+            m.cells = mode.vehicles;
+            out.push_back(std::move(m));
+        }
+    return out;
+}
 }

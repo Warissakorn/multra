@@ -15,7 +15,7 @@ cmake --build build/headless --target check
 |---|---|---|
 | `project_schema.cpp` | `multra-project-schema` | Print a partial formal project envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase and right-of-way/measurement/Route/VehicleInput/RoutingDecision schema with exact integer bounds; `--help` explains its limits |
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
-| `four_step_cli.*` | `multra-cli` | The four-step runs `--trip-generation`, `--trip-distribution` and `--mode-choice` (M10.2–M10.4), moved out of `run_simulation.cpp` (D478) |
+| `four_step_cli.*` | `multra-cli` | The four-step runs `--trip-generation`, `--trip-distribution` and `--mode-choice` (M10.2–M10.4), moved out of `run_simulation.cpp` (D478); `--procedure`, a saved procedure's steps (D484) |
 | `desktop_control.cpp` | `multra-control` | Send a JSON command to a visible desktop's local automation endpoint; desktop build only |
 | `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
 | `check_file_sizes.cpp` | `multra-check-file-sizes` | Enforce the source-file line budget |
