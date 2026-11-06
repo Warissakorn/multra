@@ -13,6 +13,9 @@ struct DistributionSettings {
     int maxPasses{1000};
     std::optional<int> fixedPasses;   // tests only: exactly this many passes, then stop
 };
+// D3 (§15, D476): doubly balances both trip ends; origin meets the productions only (Eq. 5.16,
+// B_j = 1), the attractions being weights and the columns floating.
+enum class DistributionConstraint { doubly, origin };
 // A refusal located by index (§4); the project layer turns it into a path.
 struct DistributionIssue {
     enum class Code { unbalanced, rowImpossible, columnImpossible } code{};
@@ -25,6 +28,10 @@ struct FurnessResult {
     double error{};                   // after the last pass
     bool converged{};
 };
+// D3: one row normalisation of `weights` (A_j f_ij), no column pass: a_i = O_i / sum_k w_ik (0 for a
+// zero target), b = 1, passes 1, the row error, converged. A zero row with a positive target is the
+// caller's check.
+FurnessResult originConstrained(DistributionMatrix weights, const std::vector<double>& rowTargets);
 // One pass corrects every row to its target, then every column. A zero target zeroes its line and
 // its factor. The prior's zeros stay zeros; feasibility is the caller's check.
 FurnessResult furness(DistributionMatrix prior, const std::vector<double>& rowTargets, const std::vector<double>& columnTargets,
@@ -38,6 +45,7 @@ struct DistributionInput {
     double beta{};                    // per minute, > 0
     double intrazonalShare{};         // in [0, 1): T_ii = s min(P_i, A_i) set aside (choice 2a)
     bool useDiagonal{};               // false: f_ii = 0 (the diagonal leaves the gravity model)
+    DistributionConstraint constraint{DistributionConstraint::doubly}; // origin: T_ii = s P_i set aside (choice 4a)
 };
 struct DistributionResult {
     DistributionMatrix trips;         // the set-aside intrazonal trips included on the diagonal

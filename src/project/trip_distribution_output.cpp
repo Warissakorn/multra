@@ -31,10 +31,13 @@ Json tripDistributionJson(const TripDistributionRun& r) {
     }
     for (const auto& p : r.purposes) {
         const auto& d = p.result;
-        j["purposes"].push_back({{"id", p.id}, {"beta", p.beta}, {"intrazonalShare", p.intrazonalShare},
+        Json item{{"id", p.id}, {"beta", p.beta}, {"intrazonalShare", p.intrazonalShare},
             {"passes", d.passes}, {"error", d.error}, {"converged", d.converged}, {"meanCost", p.meanCost},
             {"bands", {{"width", r.bandWidth}, {"trips", p.bands}}},
-            {"a", d.a}, {"b", d.b}, {"intrazonal", d.intrazonal}, {"trips", d.trips}});
+            {"a", d.a}, {"b", d.b}, {"intrazonal", d.intrazonal}, {"trips", d.trips}};
+        // D3 (§15, choice 5a): written for an origin-constrained purpose only, so doubly outputs keep their bytes.
+        if (p.constraint == DistributionConstraint::origin) { item["constraint"] = "origin"; item["attractionsModelled"] = p.attractionsModelled; }
+        j["purposes"].push_back(std::move(item));
     }
     return j;
 }
@@ -47,7 +50,8 @@ std::string tripDistributionCsv(const TripDistributionRun& r) {
         << "; cost matrix: " << (r.costMatrix.empty() ? std::string("none") : Json(r.costMatrix).dump()) << ".\n";
     for (const auto& p : r.purposes)
         out << "# " << Json(p.id).dump() << ": beta " << p.beta << " per min; passes " << p.result.passes << "; error " << p.result.error
-            << (p.result.converged ? "" : "; DISTRIBUTION_NOT_CONVERGED") << ".\n";
+            << (p.result.converged ? "" : "; DISTRIBUTION_NOT_CONVERGED")
+            << (p.constraint == DistributionConstraint::origin ? "; origin constrained (columns not balanced)" : "") << ".\n";
     out << "purpose,originId,destinationId,trips,cost\n";
     for (const auto& p : r.purposes) {
         double total = 0;

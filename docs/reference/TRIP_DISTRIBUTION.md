@@ -2,7 +2,7 @@
 
 Written 2026-11-06 (D472) as a contract with nine owner choices (§11), after slice D0 read
 Ortúzar and Willumsen Ch. 5 from the page images ([evidence](../evidence/ortuzar-ch5-trip-distribution.md)).
-The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). Singly constrained purposes are contracted in §15 (D475), with owner choices open. This is the second four-step stage
+The owner accepted every recommendation (D473: 1a–9a); D1 (D473) and D2 (D474) are implemented (§14). Singly constrained purposes are contracted in §15 (D475); the owner answered 1a–5a and D3 is implemented (D476). This is the second four-step stage
 ([MACRO_NETWORK](MACRO_NETWORK.md) §1, §15; [TRIP_GENERATION](TRIP_GENERATION.md) §9). It turns each
 purpose's productions and balanced attractions into a production–attraction (P-A) trip table,
 using a gravity model with exponential deterrence balanced by Furness, as D158 chose.
@@ -110,7 +110,8 @@ textbook example checks arithmetic, not behaviour, and removes no marker ([BOOKS
 ## 6. Data and storage (choice 3)
 
 - **A deterrence set** is the analogue of a trip-rate set (TRIP_GENERATION §6.1):
-  `{id, name, citation, table, function: "exponential", costUnit: "min", purposes: [{id, beta, intrazonalShare?}]}`.
+  `{id, name, citation, table, function: "exponential", costUnit: "min", purposes: [{id, beta, intrazonalShare?, constraint?}]}`.
+  `constraint` is `"double"` (the default when absent) or `"origin"` (§15, D476).
   - Purposes match the trip-rate set's purpose ids. A rate-set purpose missing from the
     deterrence set is `DISTRIBUTION_PURPOSE_MISSING` at `<setPath>.purposes`.
   - β must be finite and > 0, and a share must be in [0, 1). Faults are
@@ -234,9 +235,9 @@ The owner: "ตามแนะนำ". The options are kept for the record.
 | D0 | Read Ortúzar Ch. 5 into an evidence file; this contract. **Done (D472)** | — |
 | D1 | Deterrence codec and catalog, the free-flow skim, `src/macro/trip_distribution`, the run, JSON/CSV and `--trip-distribution`. **Implemented (D473)** | TD1–TD11 |
 | D2 | Owned deterrence sets and cost matrices at schema 67, the *Deterrence sets…* dialog, the *Trip distribution* page. **Implemented (D474)** | TD12–TD14 |
-| D3 | Singly constrained purposes (§15). **Contract written (D475); owner choices open** | TD15–TD20 |
+| D3 | Singly constrained purposes (§15). **Contract written (D475); implemented (D476)** | TD15–TD20 |
 
-## 13. Acceptance rows (implemented: TD1–TD11 D473, TD12–TD14 D474)
+## 13. Acceptance rows (implemented: TD1–TD11 D473, TD12–TD14 D474, TD15–TD20 D476)
 
 Each row first asserts that its forcing worked (AGENTS).
 
@@ -256,6 +257,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | TD12 | Owned sets | Schema-67 round-trip; no owned sets keeps old bytes and schema; older schemas refuse the fields; accept is one Undo step |
 | TD13 | Editor page | A run is no History step; rows per purpose and pair; a network or attribute edit marks it stale |
 | TD14 | Shipped projects | Every Micro, Meso, Macro and generation output byte-identical |
+| TD15–TD20 | Singly constrained | §15.3 |
 
 ## 14. As implemented (D1, D473)
 
@@ -348,7 +350,9 @@ constrained, because their attractions are poorly known and proxies are used.
     `DISTRIBUTION_ROW_IMPOSSIBLE` at that zone and purpose, as in D1.
 - **Costs and diagonal** follow §5 and D474 unchanged.
 
-### 15.2 Owner choices (open)
+### 15.2 Owner choices (answered 2026-11-06, D476: 1a–5a)
+
+The owner: "เอาตามแนะนำ". The options are kept for the record.
 
 1. **Which constraint.**
    - **(a) `origin` only; destination-constrained booked for later (recommended).** A P-A table
@@ -387,3 +391,29 @@ constrained, because their attractions are poorly known and proxies are used.
 | TD18 | `"double"` or no field | Every distribution output byte-identical; shipped projects unchanged |
 | TD19 | Refusals and schema | `DISTRIBUTION_ROW_IMPOSSIBLE` at its path; a bad `constraint` refused at its path; schema 68 round-trips, older schemas refuse the field |
 | TD20 | CLI and page | The constraint and the modelled attractions are shown, with the marker |
+
+### 15.4 D3 as implemented (D476)
+
+- **Engine:**
+  - `DistributionConstraint` and `DistributionInput::constraint`;
+  - the pure `originConstrained(weights, rowTargets)`, which makes one row normalisation;
+  - `distributeTrips`'s origin path builds the weights A_j f_ij under the diagonal rules of §5,
+    sets T_ii = s · P_i aside, and refuses only rows;
+  - `furness` is unchanged.
+- **Data:**
+  - `DeterrencePurpose::constraint` is optional and written only when present.
+  - A project whose owned set carries the field is schema 68. Below 68, the field is
+    `EDIT_UNSUPPORTED_FIELD` at `deterrenceSets[i].purposes[k].constraint`.
+  - Catalog files take the field without a schema.
+- **Outputs:**
+  - **JSON:** an origin purpose gains `constraint: "origin"` and `attractionsModelled` (the column
+    sums). A doubly purpose, including an explicit `"double"`, writes neither, so its bytes are
+    unchanged.
+  - **CSV:** the purpose comment line ends `; origin constrained (columns not balanced)`.
+  - **Page:** the note lists each zone's modelled and input attractions.
+- **Rows:**
+  - `tests/trip_distribution_origin_tests.cpp` (group `tripdistributionorigin`, TD15–TD20);
+  - `cli-trip-distribution-origin`, run on the catalog fixture
+    `tests/data/trip-distribution/deterrence/hand-origin.json`;
+  - `trip-distribution-ui` (TD20 on the page).
+- **Fixture result:** TD15 reproduces every Table 5.5 cell to the printed decimal.

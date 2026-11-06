@@ -15,6 +15,7 @@ struct DeterrencePurpose {
     std::string id;
     double beta{};                          // per minute, finite and > 0
     std::optional<double> intrazonalShare;  // in [0, 1); absent means 0
+    std::optional<std::string> constraint;  // D3 (§15, D476): "double" or "origin"; absent means double
     bool operator==(const DeterrencePurpose&) const = default;
 };
 struct DeterrenceSet {

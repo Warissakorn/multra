@@ -50,7 +50,38 @@ FurnessResult furness(DistributionMatrix prior, const std::vector<double>& rows,
     r.converged = r.error <= settings.target;
     return r;
 }
+FurnessResult originConstrained(DistributionMatrix weights, const std::vector<double>& rows) {
+    FurnessResult r{std::move(weights), std::vector<double>(rows.size(), 1.0), std::vector<double>(rows.size(), 1.0)};
+    correctRows(r, rows);
+    r.passes = 1;
+    r.error = tripEndError(r.trips, rows, {});
+    r.converged = true;
+    return r;
+}
+namespace {
+// D3 (§15.1): T_ij = P_i A_j f_ij / sum_k A_k f_ik in one row normalisation.
+DistributionResult distributeFromOrigins(const DistributionInput& in) {
+    const auto n = in.productions.size();
+    DistributionResult out;
+    std::vector<double> p = in.productions;
+    out.intrazonal.assign(n, 0.0);
+    for (std::size_t i = 0; i < n; ++i) { out.intrazonal[i] = in.intrazonalShare * p[i]; p[i] -= out.intrazonal[i]; }
+    DistributionMatrix w(n, std::vector<double>(n, 0.0));
+    for (std::size_t i = 0; i < n; ++i)
+        for (std::size_t j = 0; j < n; ++j)
+            if ((i != j || in.useDiagonal) && std::isfinite(in.costs[i][j])) w[i][j] = in.attractions[j] * std::exp(-in.beta * in.costs[i][j]);
+    for (std::size_t i = 0; i < n; ++i)
+        if (p[i] > 0 && !(sum(w[i]) > 0)) out.issues.push_back({DistributionIssue::Code::rowImpossible, i});
+    if (!out.issues.empty()) return out;
+    auto r = originConstrained(std::move(w), p);
+    for (std::size_t i = 0; i < n; ++i) r.trips[i][i] += out.intrazonal[i];
+    out.trips = std::move(r.trips); out.a = std::move(r.a); out.b = in.attractions;
+    out.passes = r.passes; out.error = r.error; out.converged = r.converged;
+    return out;
+}
+}
 DistributionResult distributeTrips(const DistributionInput& in, const DistributionSettings& settings) {
+    if (in.constraint == DistributionConstraint::origin) return distributeFromOrigins(in);
     const auto n = in.productions.size();
     DistributionResult out;
     if (std::abs(sum(in.productions) - sum(in.attractions)) > 1e-9 * std::max(sum(in.productions), sum(in.attractions))) {

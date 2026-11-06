@@ -1622,6 +1622,7 @@
   "editorDistributionNoSets": "No deterrence set: import one with Deterrence sets…",
   "editorDistributionSummary": "Rate set %1, deterrence set %2, unit: %3.",
   "editorDistributionPurpose": "%1: beta %2, %3 passes, error %4 %, mean cost %5 min.",
+  "editorDistributionOrigin": "%1: origin constrained (columns not balanced); modelled / input attractions: %2.",
   "DISTRIBUTION_SET_UNKNOWN": "No deterrence set has this id, in the project or the catalog.",
   "DISTRIBUTION_PURPOSE_MISSING": "The deterrence set has no beta for a purpose of the rate set.",
   "DISTRIBUTION_UNBALANCED": "Productions and attractions do not have the same total.",

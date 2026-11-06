@@ -207,6 +207,14 @@ void TripDistributionPanel::refresh() {
             lines << text("editorDistributionPurpose").arg(QString::fromStdString(p.id)).arg(p.beta).arg(p.result.passes)
                          .arg(editorDesign::formatValue(p.result.error * 100, 3)).arg(editorDesign::formatValue(p.meanCost, 2));
             if (!p.result.converged) lines << text("DISTRIBUTION_NOT_CONVERGED");
+            if (p.constraint == DistributionConstraint::origin) { // D3 (§15, choice 5a)
+                QStringList zones;
+                const auto& weights = r.generation.purposes[&p - r.purposes.data()].attractions;
+                for (std::size_t z = 0; z < r.generation.zoneIds.size(); ++z)
+                    zones << QString::fromStdString(r.generation.zoneIds[z]) + " " + editorDesign::formatValue(p.attractionsModelled[z], 2) +
+                                 " / " + editorDesign::formatValue(weights[z], 2);
+                lines << text("editorDistributionOrigin").arg(QString::fromStdString(p.id), zones.join(", "));
+            }
         }
         if (stale()) lines << text("editorTripStale").arg(r.generation.revision).arg(doc.revision);
     }

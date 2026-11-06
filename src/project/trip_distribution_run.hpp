@@ -16,6 +16,8 @@ struct TripDistributionPurpose {
     DistributionResult result;
     double meanCost{};
     std::vector<double> bands;          // 4-minute bands (§8)
+    DistributionConstraint constraint{DistributionConstraint::doubly}; // D3 (§15): from the deterrence set
+    std::vector<double> attractionsModelled; // column sums of the trips (filled for every purpose)
 };
 struct TripDistributionRun {
     TripGenerationRun generation;       // zone ids, productions, attractions, the rate set and its unit

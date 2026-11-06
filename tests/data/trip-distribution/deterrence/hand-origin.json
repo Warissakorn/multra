@@ -1,0 +1,8 @@
+{
+  "id": "hand-origin",
+  "name": "Hand fixture, origin constrained",
+  "source": { "citation": "Hand-computed fixture (TRIP_DISTRIBUTION TD20); beta 0.10 per minute is the illustration of Ortuzar and Willumsen (2011), Example 5.4, p. 189, not a calibrated value" },
+  "function": "exponential",
+  "costUnit": "min",
+  "purposes": [ { "id": "all", "beta": 0.1, "constraint": "origin" } ]
+}

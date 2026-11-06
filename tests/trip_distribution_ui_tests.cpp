@@ -19,7 +19,7 @@
 #include <fstream>
 #include <iostream>
 using namespace multra;
-// M10.3 D2 rows TD12 (save) and TD13 (docs/reference/TRIP_DISTRIBUTION.md §13, D474): the Trip
+// M10.3 D2 rows TD12 (save) and TD13, and D3's TD20 (D476), (docs/reference/TRIP_DISTRIBUTION.md §13, D474): the Trip
 // distribution page, the Deterrence sets and Cost matrices dialogs. Each row first checks its forcing.
 namespace {
 void require(bool ok, const char* message) { if (!ok) { std::cerr << message << "\n"; throw std::runtime_error(message); } }
@@ -159,6 +159,22 @@ int main(int argc, char** argv) {
         w.saveFile(saved);
         const auto j = readJson(saved.toStdString());
         require(j["schemaVersion"] == 67 && j["deterrenceSets"].size() == 1 && j["costMatrices"].size() == 1, "TD12: save writes schema 67");
+
+        // TD20 (D476): an owned origin-constrained set runs on the page and its note names the constraint.
+        auto originSet = deterrence; originSet["id"] = "origin-own"; originSet["purposes"][0]["constraint"] = "origin";
+        fixture["deterrenceSets"] = Json::array({deterrence, originSet}); fixture["schemaVersion"] = 68;
+        const auto originProject = dir.filePath("origin.traffic.json");
+        std::ofstream(originProject.toStdString()) << fixture.dump(1);
+        w.openFile(originProject); QApplication::processEvents();
+        require(d().deterrenceSets.size() == 2 && d().deterrenceSets[1].purposes[0].constraint, "TD20: the origin set opens at schema 68");
+        choose(item<QComboBox>(*panel, "editorTripDistributionRateSet"), "one-way");
+        choose(item<QComboBox>(*panel, "editorTripDistributionDeterrence"), "hand");
+        runPanel(panel);
+        require(note->text().indexOf("origin constrained") < 0, "TD20: forcing, a doubly run names no constraint");
+        choose(item<QComboBox>(*panel, "editorTripDistributionDeterrence"), "origin-own");
+        runPanel(panel);
+        require(panel->exportable() && note->text().indexOf("origin constrained") >= 0, "TD20: the note names the constraint");
+        require(panel->csv().find("origin constrained") != std::string::npos, "TD20: the CSV names the constraint");
         std::cout << "trip-distribution-ui: passed\n";
         return 0;
     } catch (const std::exception& e) {

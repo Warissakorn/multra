@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.3 D3: origin-constrained purposes (D476)
+
+- **Owner:** "เอาตามแนะนำ" on TRIP_DISTRIBUTION §15.2 (1a–5a).
+- **D476 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §15.4):**
+  - a per-purpose `constraint: "origin"` in deterrence sets (schema 68 when owned);
+  - one row normalisation of A_j f_ij (Eq. 5.16), with T_ii = s · P_i;
+  - JSON, CSV and the page name the constraint and the modelled attractions;
+  - doubly outputs keep their bytes.
+- **Rows:** `tripdistributionorigin` (TD15–TD19; TD15 reproduces Example 5.2's Table 5.5),
+  `cli-trip-distribution-origin` and `trip-distribution-ui` (TD20).
+- **Verified:** Linux only (desktop and headless); Windows not checked.
+
 ## 2026-11-06 — M10.3 D3 contract: singly constrained purposes (D475)
 
 - **Owner:** asked for an explanation of singly constrained models, then "ทำงานต่อไปตามแนะนำ".
@@ -126,14 +138,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   stop line still takes clicks there. The run-overlay policy waits for a third overlay.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
   checked (the high-DPI fix is tested on an offscreen ratio-2 image, not a real 200 % screen).
-
-## 2026-11-05 — Signal heads past the stop line; dark vehicle casings (D466)
-
-- **Owner:** asked whether to move the pole past the stop line, use dark casings only and hang
-  the boxes on the arm, then "เอาตามแนะนำ เริ่ม D466 เลย".
-- **Heads:** each box lies past its stop line (0.35 m gap, 0.9 m box) and hangs by its back edge
-  from one straight arm; one pole per stop line, and no arm crosses a box. Hits move with the box.
-- **Casings:** run vehicles take the road edge's dark ink; wireframe keeps D199's contrast rule.
-- **Rows:** road-crossbar-ui and run-presentation-ui, each failed first.
-- **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not
-  checked. Images: `docs/images/canvas-heads-d466/` (four-leg mid-run, 6 and 14 px/m, colour and grey).

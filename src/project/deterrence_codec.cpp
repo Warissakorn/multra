@@ -46,7 +46,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
         for (std::size_t k = 0; k < items.size(); ++k) {
             const auto at = path + ".purposes[" + std::to_string(k) + "]";
             const auto& item = items[k];
-            if (!item.is_object() || !onlyKeys(item, {"id", "beta", "intrazonalShare"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, {"id", "beta", "intrazonalShare", "constraint"})) { bad(issues, at); continue; }
             DeterrencePurpose p;
             if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (p.id = item.at("id").get<std::string>(); !ids.insert(p.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
@@ -56,6 +56,11 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
                 if (!isNumber(item, "intrazonalShare") || item.at("intrazonalShare").get<double>() < 0 ||
                     !(item.at("intrazonalShare").get<double>() < 1)) bad(issues, at + ".intrazonalShare");
                 else p.intrazonalShare = item.at("intrazonalShare").get<double>();
+            }
+            if (item.contains("constraint")) {
+                const auto& c = item.at("constraint");
+                if (!c.is_string() || (c.get<std::string>() != "double" && c.get<std::string>() != "origin")) bad(issues, at + ".constraint");
+                else p.constraint = c.get<std::string>();
             }
             set.purposes.push_back(std::move(p));
         }
@@ -71,6 +76,7 @@ Json deterrenceSetJson(const DeterrenceSet& s) {
     for (const auto& p : s.purposes) {
         Json item{{"id", p.id}, {"beta", p.beta}};
         if (p.intrazonalShare) item["intrazonalShare"] = *p.intrazonalShare;
+        if (p.constraint) item["constraint"] = *p.constraint;
         purposes.push_back(std::move(item));
     }
     return {{"id", s.id}, {"name", s.name}, {"source", source}, {"function", s.function}, {"costUnit", s.costUnit}, {"purposes", purposes}};

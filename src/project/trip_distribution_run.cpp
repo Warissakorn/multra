@@ -38,7 +38,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         const auto& ps = run.deterrence.purposes;
         const auto match = std::find_if(ps.begin(), ps.end(), [&](const auto& q) { return q.id == p.id; });
         if (match == ps.end()) throw ValidationError({{"DISTRIBUTION_PURPOSE_MISSING", run.deterrencePath + ".purposes"}});
-        run.purposes.push_back({p.id, match->beta, match->intrazonalShare.value_or(0.0), {}, 0.0, {}});
+        run.purposes.push_back({p.id, match->beta, match->intrazonalShare.value_or(0.0), {}, 0.0, {},
+                                match->constraint == "origin" ? DistributionConstraint::origin : DistributionConstraint::doubly, {}});
     }
 
     enter(TripDistributionStage::costs);
@@ -107,7 +108,7 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         // diagonal cell, if any, takes part (an absent one is infinite: f = 0).
         auto costs = run.costs;
         if (purpose.intrazonalShare > 0) for (std::size_t z = 0; z < costs.size(); ++z) costs[z][z] = std::numeric_limits<double>::infinity();
-        purpose.result = distributeTrips({costs, ends.productions, ends.attractions, purpose.beta, purpose.intrazonalShare, true}, settings);
+        purpose.result = distributeTrips({costs, ends.productions, ends.attractions, purpose.beta, purpose.intrazonalShare, true, purpose.constraint}, settings);
         for (const auto& i : purpose.result.issues) {
             if (i.code == DistributionIssue::Code::unbalanced)
                 issues.push_back({"DISTRIBUTION_UNBALANCED", run.generation.setPath + ".purposes[" + std::to_string(p) + "]"});
@@ -118,6 +119,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         if (!purpose.result.issues.empty()) continue;
         purpose.meanCost = meanCost(purpose.result.trips, costs);
         purpose.bands = tripLengthBands(purpose.result.trips, costs, run.bandWidth);
+        purpose.attractionsModelled.assign(costs.size(), 0.0);
+        for (const auto& row : purpose.result.trips) for (std::size_t j = 0; j < row.size(); ++j) purpose.attractionsModelled[j] += row[j];
     }
     if (!issues.empty()) throw ValidationError(std::move(issues));
     if (manifest) { manifest->validate(); run.generation.inputManifest = manifest->json(); }
