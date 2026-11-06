@@ -130,29 +130,22 @@ Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the 
 its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
-## M10.2 trip generation — contract written (D468); stop for the owner's choices
+## M10.2 trip generation — G0 done (D469); G1 is next
 
-- [TRIP_GENERATION](reference/TRIP_GENERATION.md) holds the contract: §11's eight choices are
-  [OWNER_SITTING B42](plans/OWNER_SITTING.md), all unanswered. **Write no code before the answers.**
-- **First slice after the answers: G0**, docs only. Attach `Warissakorn/Modelling-Transport-4-edition-Markdown`
-  (`add_repo`, then a shallow clone beside this repo; BOOKS §1). This session's attach was refused
-  by its permission check, so ask the owner first if it is refused again. Read Ch. 4's sections
-  on cross-classification, regression and balancing, and Example 4.5 (book p. 161 = PDF p. 183)
-  from the page image. Then write `docs/evidence/ortuzar-example-4-5.md` with the categories, rates,
-  counts and printed answers, and replace §3–§4's "standard formulation" notes with section and
-  equation citations. If the book's method differs from §3–§4, record the difference and ask the
-  owner; do not change the contract silently.
-- **Then G1** (TRIP_GENERATION §12): the codec, `src/macro/trip_generation`, the run function,
-  JSON/CSV and `--trip-generation`, rows TG1–TG10. Choices that are answered differently change
-  §3–§8 first, in the same commit as the D-row that records the answers.
-- Unchanged by this: M10.1's gate (B21) and §19 c's procedure sequence, which waits on
-  M10.3–M10.4.
-
-**Booked by D379 (B27, on delegation), each starting with its contract when the owner asks:** one
-posted speed on the Link (D380 confirmed it; the M13 approach `speedLimit` becomes derived; D381: the
-field is optional, Micro reads it as a default and never a cap, and low site speeds are valid), per-lane
-allowed modes, *Fill from model* for Node turn volumes, and M13 on coarse Nodes only if HCM 7 prints
-a planning-level method (otherwise back to the owner).
+- [TRIP_GENERATION](reference/TRIP_GENERATION.md): choices answered 1a–8a (D469); §3–§4 cite
+  Ortúzar Ch. 4 ([evidence](evidence/ortuzar-ch4-trip-generation.md)). The owner allows attaching
+  the book copy.
+- **G1 when the owner says go** (§12): the rate-set codec and `data/trip-rates/` catalog loader
+  (the folder ships empty, choice 8a, so tests use fixture sets under `tests/data/`),
+  `src/macro/trip_generation.{hpp,cpp}` (pure; register it in `src/macro/README.md` and
+  `check_architecture`), `src/project/trip_generation_run.*` with §7's stages, JSON/CSV as §8, and
+  `--trip-generation` in `tools/run_simulation.cpp`. Rows TG1–TG10, TG4b and TG12 (Example 4.1:
+  2125 and 3000). Write the interface (§7) first. Read MACRO_NETWORK_IMPLEMENTED for how
+  `macro_output` formats numbers and how `--macro` refuses selector conflicts, and reuse both.
+- **Then G2:** owned `tripRateSets` at schema 66 (check that 66 is still free), zone-attribute
+  editing in the Zones table, *Trip generation…* table (TG11, TG13, TG14).
+- Desktop build, ctest and `check` must pass; this environment lacked nlohmann/json on
+  2026-11-06, so install it (or use the CI) before claiming a build.
 
 ## Next session — the owner's pick
 

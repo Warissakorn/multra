@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-06 — M10.2 owner answers and G0, the book read (D469)
+
+- **Owner:** "เอาตามแนะนำ 1a–8a อนุญาตแนบหนังสือ เริ่ม G0".
+- **G0 ([evidence](evidence/ortuzar-ch4-trip-generation.md)):** Ortúzar Ch. 4 attached and read
+  from the page images. §3's two forms match Eq. (4.16) and §4.2.5's aggregation; §4.2.6's
+  Eq. (4.14) is the same rule as choice 3a.
+- **Correction:** Example 4.5 (p. 161), booked as the fixture, prints only sample counts. The
+  fixture is Example 4.1 (2125 and 3000 trips/day), with Example 4.4's zonal form as TG4b;
+  BOOKS §3.3 corrected.
+- **Contract:** answers recorded in §11; household-based models enter on zone totals with no
+  second regression form (§3).
+- **Verified:** `check_docs` and `check_file_sizes` pass (compiled with g++; the CMake preset still
+  lacks nlohmann/json here). Docs only.
+
 ## 2026-11-06 — M10.2 trip generation contract (D468)
 
 - **Owner:** asked what could come next, then "เริ่มเขียนสัญญา M10.2 trip generation".
@@ -141,27 +155,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Boxes are now as tall as the text's ink.
   - This replaces D432's "all visible after Fit" and D426's columns for unpinned rates.
 - **Verified:** desktop build, `ctest --preset desktop` 277/277 and `check` pass on Linux; Windows not checked. Images: `docs/images/canvas-review-d460/`.
-
-
-## 2026-11-04 — Two-entry weaves run (D459)
-
-- **Owner:** "ทำให้วาด weave แบบสองทางเข้าได้", with the test as a fourth weaving-lab scene.
-- **Cause:** a lane family kept a stub only beside a full chain on its first Link, so a weave drawn
-  with two entries refused both crossing movements (BA179).
-- **D459 (M3_8_CONTRACT §2):** a family may start a **joined chain** on a later Link's lane that no
-  chain enters, kept only beside a stub that needs it.
-  - It takes no input share.
-  - Its route carries `leadIn`, which the free-flow time counts.
-  - A change onto it also sees the segments feeding its first segment. Without this, a ramp car at
-    the gore was clamped.
-  - Downstream routing decisions (D93) never build one.
-- **Weaving lab, scene 4:** the 300 m weave with a 2-lane mainline and a 1-lane ramp, each with a
-  300 m approach, at the same volumes. Scenes 1–3 are unchanged.
-- **Rows:** BA179 revised; BA206–BA208.
-- **Results** ([evidence](evidence/weaving-two-entries.md)):
-  - products and the lateral lab are byte-identical;
-  - scene 4 serves 100 % at every factor, off and on, with no lock and no wait at a dead end;
-    delay at ×1.0 is 20.0 s off and 26.8 s on;
-  - the edge scenes in the full run move only by the shifted random draw;
-  - one clamp at ×1.0 on, seed 48, in the 150 m weave (open).
-- **Verified:** `ctest --preset headless` passes 176/176.

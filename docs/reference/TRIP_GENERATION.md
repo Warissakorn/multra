@@ -1,7 +1,8 @@
 # Trip generation (M10.2)
 
-Written 2026-11-06 (D468) as a contract with eight owner choices (§11). **No choice is answered
-yet;** the recommendation of each is marked, and no code exists. This is the first of the
+Written 2026-11-06 (D468) as a contract with eight owner choices (§11). The owner accepted every
+recommendation the same day (D469: 1a–8a), and slice G0 checked §3–§4 against the book
+([evidence](../evidence/ortuzar-ch4-trip-generation.md)). No code exists yet; G1 is next. This is the first of the
 four-step stages that MACRO_NETWORK left out of M10.1 ([MACRO_NETWORK](MACRO_NETWORK.md) §1,
 §15; [MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §3.4 step 1): productions and
 attractions per zone and purpose, from zone attributes and a trip-rate set held as data.
@@ -54,11 +55,11 @@ example checks arithmetic, not behaviour, and removes no marker ([BOOKS](BOOKS.m
 ## 3. The two methods (choice 1)
 
 Notation: zone `i`, purpose `p`, side `s` ∈ {productions, attractions}. Each side of each purpose
-names exactly one method. Source of both forms: Ortúzar and Willumsen (2011), *Modelling
-Transport* 4th ed., Ch. 4 (book pp. 139–172); the section and equation numbers are cited when the
-book is read (§10).
+names exactly one method. Source: Ortúzar and Willumsen (2011), *Modelling Transport* 4th ed.,
+Ch. 4, read in G0 ([evidence](../evidence/ortuzar-ch4-trip-generation.md)).
 
-- **Cross-classification** (category analysis). The set lists categories `c`, each with the
+- **Cross-classification** (category analysis; §4.3.1, Eq. 4.16, book p. 158). The set lists
+  categories `c`, each with the
   zone attribute `attr_c` that holds the zone's count of units in that category (usually
   households) and a rate `t_c` in trips per unit:
 
@@ -66,13 +67,18 @@ book is read (§10).
   T_i = Σ_c N_ic · t_c,    N_ic = attributes[attr_c] of zone i
   ```
 
-- **Zonal linear regression.** A constant `a_0` and terms `k`, each an attribute and a
-  coefficient:
+- **Zonal linear regression** (§4.2; aggregation §4.2.5, book p. 156). A constant `a_0` and
+  terms `k`, each an attribute and a coefficient:
 
   ```
   T_i = a_0 + Σ_k a_k · x_ik,    x_ik = attributes[attr_k] of zone i
   ```
 
+- **A household-based model enters on zone totals.** The book aggregates `Y = b_0 + Σ b_k X_k`
+  per household to `T_i = H_i (b_0 + Σ b_k X̄_ki)` (§4.2.5). With the zone's household count `H`
+  and variable totals (for example workers) as attributes, that is `a_0 = 0`, a term `b_0` on `H`
+  and a term `b_k` on each total; dummies become counts of households in their class (Example
+  4.4's zonal form, book p. 156). No second regression form is needed.
 - **Sums run in file order** (categories, then terms), zones by id. No method reads the polygon,
   the network or another zone.
 - **A negative trip end is refused**, `TRIP_GENERATION_NEGATIVE` at the zone and purpose side
@@ -80,12 +86,15 @@ book is read (§10).
   invents a total the data does not state.
 - **A zero is valid.** A zone whose terms are all 0 generates 0.
 
-## 4. Balancing (choice 3)
+## 4. Balancing (choice 3a)
 
+Ortúzar and Willumsen §4.2.6, Eqs. (4.13)–(4.14), book pp. 156–157: distribution needs equal
+totals, and normal practice takes the productions' sum as the correct total and scales every
+attraction by `f = T / Σ_j D_j`, because production models are usually the better ones.
 Per purpose, with `P = Σ_i P_i` and `A = Σ_i A_i` (raw):
 
-- **Recommended:** attractions are scaled to productions, `A*_i = A_i · P / A`. The factor
-  `f_p = P / A` is reported. Productions are never scaled.
+- Attractions are scaled to productions, `A*_i = A_i · P / A`. The factor `f_p = P / A` is
+  reported. Productions are never scaled.
 - `A = 0` with `P > 0` cannot be balanced: `TRIP_BALANCE_IMPOSSIBLE` at the purpose.
 - `P = 0` and `A = 0`: the purpose generates nothing; `f_p` is absent, not 1, and every `A*_i`
   is 0.
@@ -96,7 +105,7 @@ Per purpose, with `P = Σ_i P_i` and `A = Σ_i A_i` (raw):
 
 - A rate set states one `unit` string (for example "person trips per day"). It is carried into
   every output unchanged and is not interpreted.
-- **Recommended:** M10.2 does no time or mode conversion. A day-based or person-based set stays
+- M10.2 does no time or mode conversion (choice 4a). A day-based or person-based set stays
   in its unit; M10.3–M10.4 own the period factor and the person-to-vehicle step, because both
   need distribution and modes. Generation never names a study period.
 
@@ -145,7 +154,7 @@ The values above illustrate the shape and are not a source. Rules:
 
 ### 6.2 Zone attributes (choice 2)
 
-- **Recommended:** category counts are ordinary zone attributes, named by the set's
+- Category counts are ordinary zone attributes (choice 2a), named by the set's
   `attribute` strings (for example `hh.cars0`). This needs no new zone field and no schema step.
   Today only the file carries them: no editor surface edits `attributes` (measured: the codec
   reads and writes them, no shell or command code touches them), so G2 adds one (choice 7a).
@@ -154,7 +163,7 @@ The values above illustrate the shape and are not a source. Rules:
 
 ### 6.3 Project schema
 
-- Project-owned sets, if chosen (choice 7a), are an optional root `tripRateSets`, saved at the
+- Project-owned sets (choice 7a) are an optional root `tripRateSets`, saved at the
   next free feature-selected schema (66 today); an empty list is omitted, so a file without
   owned sets keeps its schema and bytes. Below that schema the field is `EDIT_UNSUPPORTED_FIELD`.
 - No result, selection or generated trip end is stored in the project.
@@ -202,18 +211,22 @@ The values above illustrate the shape and are not a source. Rules:
 
 ## 10. Benchmark and sources
 
-- **Primary fixture: Ortúzar and Willumsen (2011) Example 4.5, book p. 161** (category
-  analysis; BOOKS §3.3). **Not read in this session:** attaching the owner's copy
-  (`Warissakorn/Modelling-Transport-4-edition-Markdown`) was refused by the session's
-  permission check. Before row TG12 is coded, a session reads the page image (BOOKS §1), records
-  its categories, rates, counts and printed answer in an evidence file, and states whether the
-  example also balances.
-- The methods' section and equation numbers in Ch. 4 (§3) and any balancing rule the chapter
-  prints (§4) are cited from the same reading. Until then §3–§4 rest on the standard four-step
-  formulation, recorded as such.
-- **Hand-computed fixtures** (TG3–TG6) need no book.
+Read in G0 (2026-11-06, D469; [evidence](../evidence/ortuzar-ch4-trip-generation.md)), each
+number from its page image:
 
-## 11. Owner choices (open)
+- **Fixture with a printed answer: Example 4.1** (book pp. 143–144). 250 households at 2.5 and
+  250 at 6.0 trips/day give 2125 trips/day; 500 at 6.0 give 3000. Row TG12.
+- **Published coefficients, hand-chosen zones: Example 4.4's zonal form** (book p. 156),
+  `0.84 H + 1.41 W + 0.75 H₁ + 3.14 H₂`. The book prints no zone result, so row TG4b states its
+  zone totals and its hand result.
+- **Balancing:** Eq. (4.14), book p. 157 (§4).
+- **Example 4.5 (book p. 161), booked by BOOKS §3.3 before G0, is not a fixture:** it prints a
+  sample's category counts and no rates or results. BOOKS is corrected.
+- Hand-computed fixtures (TG3–TG7) need no book.
+
+## 11. Owner choices (answered 2026-11-06, D469: 1a 2a 3a 4a 5a 6a 7a 8a)
+
+The owner: "เอาตามแนะนำ 1a–8a". The options are kept for the record.
 
 1. **Methods.**
    - **(a) Both, per purpose side (recommended).** Production by categories and attraction by
@@ -253,10 +266,10 @@ The values above illustrate the shape and are not a source. Rules:
 
 | Slice | Content | Rows |
 |---|---|---|
-| G0 | Read Ortúzar Ch. 4 and Example 4.5 into an evidence file; cite §3–§4 | — |
-| G1 | Rate-set codec and catalog, `src/macro/trip_generation`, balancing, the run function, JSON/CSV and `--trip-generation` | TG1–TG10 |
+| G0 | Read Ortúzar Ch. 4 into an evidence file; cite §3–§4. **Done (D469)** | — |
+| G1 | Rate-set codec and catalog, `src/macro/trip_generation`, balancing, the run function, JSON/CSV and `--trip-generation` | TG1–TG10, TG4b, TG12 |
 | G2 | Owned sets at the next schema with their editor table; zone-attribute columns in the Zones table (one Undo step per edit); *Trip generation…* table and stale marking (choice 7a) | TG11, TG13, TG14 |
-| Fixture | Example 4.5 reproduced (after G0) | TG12 |
+| Fixture | Example 4.1 reproduced (G1's tests) | TG12 |
 
 ## 13. Acceptance rows (planned)
 
@@ -268,6 +281,7 @@ Each row first asserts that its forcing worked (AGENTS).
 | TG2 | Rate-set codec | Round-trip; every bad shape of §6.1 refused at its path; a shipped/owned id clash is `DUPLICATE_ID` |
 | TG3 | Cross-classification, two zones, three categories | `P_i` equals the hand sum Σ N · t |
 | TG4 | Regression, three zones | `A_i` equals `a_0 + Σ a_k x_ik` by hand; a zero zone gives 0 |
+| TG4b | Example 4.4's zonal form (§10), one zone with H = 100, W = 150, H₁ = 40, H₂ = 10 | 84 + 211.5 + 30 + 31.4 = 356.9 trips |
 | TG5 | Balancing | `A*` sums to `P` within 1e-12 relative; `f_p` = P / A; raw A kept |
 | TG6 | Edge totals | `A = 0, P > 0` is `TRIP_BALANCE_IMPOSSIBLE`; both 0 gives no factor and zeros |
 | TG7 | Negative end | A negative constant producing `T_i < 0` is `TRIP_GENERATION_NEGATIVE` at zone and side; nothing is clamped |
@@ -275,6 +289,6 @@ Each row first asserts that its forcing worked (AGENTS).
 | TG9 | Determinism | Same bytes twice; zones and attributes permuted in the file give the same bytes |
 | TG10 | Data swap and CLI | Another set changes the output with no code edit; the marker line in JSON and CSV; unknown id is `TRIP_RATE_SET_UNKNOWN`; selector conflicts refused |
 | TG11 | Owned sets | Schema-66 round-trip; no owned sets keeps old bytes; older schemas refuse the field; accept is one Undo step |
-| TG12 | Ortúzar Example 4.5 | Every printed trip end reproduced to the printed precision (values from G0's evidence) |
+| TG12 | Ortúzar Example 4.1 (§10) | Two categories, 250 households each at 2.5 and 6.0, give 2125; one category of 500 at 6.0 gives 3000, as printed |
 | TG13 | Editor | Trip generation is no History step; a table row per purpose and zone; an attribute edit marks it stale |
 | TG14 | Zone attributes in the editor | Add, edit and remove an attribute; each is one Undo step; a non-finite value or blank name is refused as `ZONE_ATTRIBUTE_INVALID`; saved bytes equal the codec's |

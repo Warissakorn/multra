@@ -2,6 +2,29 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-04 — Two-entry weaves run (D459)
+
+- **Owner:** "ทำให้วาด weave แบบสองทางเข้าได้", with the test as a fourth weaving-lab scene.
+- **Cause:** a lane family kept a stub only beside a full chain on its first Link, so a weave drawn
+  with two entries refused both crossing movements (BA179).
+- **D459 (M3_8_CONTRACT §2):** a family may start a **joined chain** on a later Link's lane that no
+  chain enters, kept only beside a stub that needs it.
+  - It takes no input share.
+  - Its route carries `leadIn`, which the free-flow time counts.
+  - A change onto it also sees the segments feeding its first segment. Without this, a ramp car at
+    the gore was clamped.
+  - Downstream routing decisions (D93) never build one.
+- **Weaving lab, scene 4:** the 300 m weave with a 2-lane mainline and a 1-lane ramp, each with a
+  300 m approach, at the same volumes. Scenes 1–3 are unchanged.
+- **Rows:** BA179 revised; BA206–BA208.
+- **Results** ([evidence](../evidence/weaving-two-entries.md)):
+  - products and the lateral lab are byte-identical;
+  - scene 4 serves 100 % at every factor, off and on, with no lock and no wait at a dead end;
+    delay at ×1.0 is 20.0 s off and 26.8 s on;
+  - the edge scenes in the full run move only by the shifted random draw;
+  - one clamp at ×1.0 on, seed 48, in the 150 m weave (open).
+- **Verified:** `ctest --preset headless` passes 176/176.
+
 ## 2026-11-04 — Gap seeking, slice 2: the changer falls back behind its blocker (D458)
 
 - **Owner:** "ทำต่อ". Shown both variants measured, the owner chose "switched on only".

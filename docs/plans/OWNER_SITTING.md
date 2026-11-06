@@ -146,9 +146,8 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD.md#d15
    matching batch evaluation start/end and Node T, labelled manual counts. Nothing is stored.
    Checkpoints a6d0a25/d663bf5 are accepted so far; finish A9, then stop for review.
 
-42. **M10.2 trip generation** (listed 2026-11-06, D468). Answer [TRIP_GENERATION](../reference/TRIP_GENERATION.md)
-   §11's eight choices by number and letter (recommended: 1a 2a 3a 4a 5a 6a 7a 8a). Also: may a
-   session attach your Ortúzar copy for slice G0 (this session's request was refused)? *Owner:*
+42. **M10.2 trip generation:** answered 2026-11-06, 1a–8a, and the Ortúzar copy may be attached
+   (D469; [TRIP_GENERATION](../reference/TRIP_GENERATION.md) §11). Do not re-ask.
 
 ## C — Run view (the 125 % screen)
 
