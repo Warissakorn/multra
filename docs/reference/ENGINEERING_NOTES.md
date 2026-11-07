@@ -246,6 +246,11 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   D351's hashes above. The local 1.5 s target is met; milestone/Windows/UI gates remain unchanged.
   An after sample (470 stacks) puts `locateChecked` at 6.4 % nearest-model-frame samples versus
   63.4 % before. Future work needs a new profile; network-wide conflict scope is unchanged.
+- **Moving the located segment id into `MovedEvent` (2026-11-07, Release -O3 -g1):** one string copy
+  fewer per vehicle-tick, output identical. callgrind `multra-engine-benchmark 48 900`: 14,870 →
+  14,578 M Ir (−2.0 %), below the 5 % worth a change; reverted. At 48 crossings allocation and string
+  construction are ≈14 % of Ir, spread over the step's vectors (spans, refs, events), so one copy is
+  not the lever; the per-tick containers would be.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time
