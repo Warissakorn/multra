@@ -5,7 +5,7 @@ Whole entries moved from the live PROGRESS log.
 ## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
 
 - **Owner:** "ทำงานถัดไป".
-- **D479 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
+- **D479 ([MODE_CHOICE](../reference/MODE_CHOICE.md) §13):**
   - owned `modeChoiceSets` and `odMatrices[i].generatedBy` at schema 70;
   - the *Mode choice* Results page, with *Mode choice sets…* and *Period factors…*;
   - *Write OD matrices*, one History step replacing only generated matrices, which Run Macro

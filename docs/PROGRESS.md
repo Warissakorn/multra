@@ -17,7 +17,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Readers fixed:** the object tables' canvas sync read column-0 cells only, and Merge Nodes,
   Street-segment selection, Problems and the Macro run dialog read `selectedRows()`; all use
   `selectedTableRows` now, so a cell block anywhere in a row selects it.
-- **Tests:** new `table-grid-ui`; `table-presentation-ui`'s recipe check updated. Linux only:
+- **Canvas mirror:** a cell block selects its rows' objects, and the canvas then mirrored whole
+  rows back, erasing the block; the mirror now leaves a table whose selected rows already match.
+- **Tests:** new `table-grid-ui` (in `editor_ux_tests.cmake`; CMakeLists is at 500 lines);
+  `table-presentation-ui`'s recipe check updated. Desktop ctest 309/309 and `check` pass. Linux only:
   the Windows look is the owner's check (NEXT).
 
 ## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)

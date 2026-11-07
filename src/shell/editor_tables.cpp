@@ -208,6 +208,11 @@ void EditorWindow::refreshTables(bool modelChanged) {
     for (auto* view : {linkTable_,connectorTable_,signalTable_}) fitTableColumns(view);
     syncing_=true;
     for (auto* view : {linkTable_,connectorTable_,signalTable_}) {
+        // A cell block that already covers exactly the canvas's rows stays as drawn (D490).
+        std::vector<int> wanted;
+        for (int row=0; row<view->rowCount(); ++row)
+            if (const auto* cell=view->item(row,0); cell && canvas_->isSelected(selectableFor(network,cell->data(Qt::UserRole).toString().toStdString()))) wanted.push_back(row);
+        if (!wanted.empty() && selectedTableRows(view)==wanted) continue;
         view->clearSelection();
         for (int row=0; row<view->rowCount(); ++row) {
             const auto* cell=view->item(row,0);
