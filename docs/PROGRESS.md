@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-07 — Linux desktop preset links the multra libraries shared (D488)
+
+- **Cause:** every UI test executable linked `libmultra_shell.a` and carried its own copy of its
+  debug info: a Debug tree passed 30 GB (73 executables, 23.6 GB; 92 % DWARF) and ran out of disk
+  here, and one shell `.cpp` edit relinked 118 executables.
+- **D488:** `MULTRA_SHARED_LIBS` (default OFF) makes every `multra_*` library shared, with
+  `CMAKE_LINK_DEPENDS_NO_SHARED`; only the `desktop` preset turns it on, on Linux. headless,
+  sanitizer, release, packaging and Windows stay static. `multra_shell` now links
+  `multra_vehicle_pose` PUBLIC, since `canvas.hpp` holds `RearAxlePath` (static linking hid that).
+- **Measured (Linux, 4 cores):** tree >30 GB → 7.3 GB, `bin/` 23.6 → 1.2 GB; touching
+  `src/shell/node_analysis_panel.cpp` 2m00 → 8.3 s (median of 3). Clean build ≈14 min, as before.
+- **Verified:** desktop ctest 308/308, the three checks; the release preset still configures static.
+
 ## 2026-11-07 — Run view: no dock relayout per Step (D487)
 
 - **Owner:** ran /optimize-program on everything and chose the recommended plan.
@@ -119,14 +132,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - The four-step CLI runs moved to `tools/four_step_cli`.
 - **Rows:** `modechoice` (MC1–MC9) and `cli-mode-choice*` (MC10). Four mutations each failed a row.
 - **Verified:** Linux only (desktop and headless); Windows not checked.
-
-## 2026-11-06 — M10.4 contract: mode choice and OD conversion (D477)
-
-- **Owner:** "ทำงานถัดไปตามแนะนำ".
-- **M0:** read Ortúzar §5.4.4 and Ch. 6–7 from the page images
-  ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)):
-  - Examples 6.2 and 6.3 reproduce, including every row of the λ₁ table;
-  - MNL (7.9) and the NL condition φ ≤ 1;
-  - no book value for occupancy or period shares.
-- **D477 ([MODE_CHOICE](reference/MODE_CHOICE.md)), docs only:** eight owner choices, slices
-  E1–E2, rows MC1–MC14.

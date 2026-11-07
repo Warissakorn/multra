@@ -16,6 +16,16 @@ foreach(name BUILD_DESKTOP SANITIZERS LLD TEST_JOBS)
 endforeach()
 option(MULTRA_BUILD_DESKTOP "Build the Qt Widgets desktop harness" ON)
 option(MULTRA_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+# D488: the desktop preset links the multra libraries as shared objects on Linux. Static, each of
+# some 85 test executables carried its own copy of libmultra_shell's debug info (30 GB per Debug
+# tree) and one shell edit relinked 118 of them. Releases, packages and Windows stay static.
+option(MULTRA_SHARED_LIBS "Build the multra libraries as shared objects (not on Windows)" OFF)
+set(MULTRA_LIBRARY_TYPE STATIC)
+if(MULTRA_SHARED_LIBS AND NOT WIN32)
+    set(MULTRA_LIBRARY_TYPE SHARED)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_LINK_DEPENDS_NO_SHARED ON) # a changed .so does not relink what uses it
+endif()
 include(CTest)
 
 add_library(multra_options INTERFACE)
@@ -56,14 +66,14 @@ if(NOT TARGET nlohmann_json::nlohmann_json)
     add_library(nlohmann_json::nlohmann_json ALIAS multra_json)
 endif()
 
-add_library(multra_core STATIC
+add_library(multra_core ${MULTRA_LIBRARY_TYPE}
     src/macro/graph.cpp src/macro/assign.cpp src/macro/trip_generation.cpp src/macro/trip_distribution.cpp src/macro/mode_choice.cpp src/analysis/signalised.cpp src/analysis/lane_flow.cpp src/analysis/critical.cpp src/analysis/queue.cpp src/analysis/qap.cpp src/analysis/permitted.cpp src/meso/graph.cpp src/meso/demand.cpp src/meso/node_model.cpp src/meso/link_model.cpp src/meso/loading.cpp
     src/core/demand.cpp src/core/following.cpp src/core/routes.cpp src/core/speed_decision.cpp src/core/speed_area.cpp
     src/core/signals.cpp src/core/red_running.cpp src/core/caps.cpp src/core/join_anticipation.cpp src/core/simulation.cpp src/core/validate.cpp src/core/conflicts.cpp
     src/core/lanes.cpp src/core/routing.cpp src/core/w74.cpp src/core/perception.cpp src/core/lateral.cpp src/core/lateral_motion.cpp src/core/lane_swap.cpp src/core/courtesy.cpp src/core/leaders.cpp src/core/speed_control.cpp src/core/parking.cpp src/core/retune.cpp)
 target_link_libraries(multra_core PRIVATE multra_options)
 
-add_library(multra_model STATIC src/model/network/junction_templates.cpp src/model/network/geometry.cpp
+add_library(multra_model ${MULTRA_LIBRARY_TYPE} src/model/network/junction_templates.cpp src/model/network/geometry.cpp
     src/model/network/connector_equation.cpp src/model/network/compile.cpp src/model/network/validate.cpp src/model/network/connector_geometry.cpp
     src/model/network/diagnostics.cpp src/model/network/connector_paths.cpp src/model/network/road_boundaries.cpp src/model/network/connector_surface.cpp
     src/model/network/sections.cpp src/model/network/markings.cpp src/model/network/rotation.cpp src/model/network/head_slots.cpp src/model/demand/signal_control.cpp src/model/demand/macro_compile.cpp src/model/demand/meso_compile.cpp src/model/demand/coarse_compile.cpp src/model/demand/node_analysis_compile.cpp src/model/demand/seam_checks.cpp src/model/demand/meso_paths.cpp src/model/demand/meso_street_segment_paths.cpp
@@ -75,14 +85,14 @@ add_library(multra_model STATIC src/model/network/junction_templates.cpp src/mod
 target_link_libraries(multra_model PUBLIC multra_core PRIVATE multra_options)
 target_sources(multra_model PRIVATE src/model/network/approach_layout.cpp src/model/demand/nema_timing.cpp src/model/demand/nema_check.cpp)
 # Run-view geometry is Qt-free and independently testable; the core never imports it.
-add_library(multra_vehicle_pose STATIC src/editor/vehicle_pose.cpp src/editor/rear_axle_pose.cpp src/editor/lane_change_pose.cpp)
+add_library(multra_vehicle_pose ${MULTRA_LIBRARY_TYPE} src/editor/vehicle_pose.cpp src/editor/rear_axle_pose.cpp src/editor/lane_change_pose.cpp)
 target_link_libraries(multra_vehicle_pose PUBLIC multra_model PRIVATE multra_options)
-add_library(multra_eval STATIC src/eval/discharge.cpp src/eval/discharge_passage.cpp src/eval/summary.cpp src/eval/movement.cpp src/eval/nodes.cpp src/eval/sections.cpp src/eval/los.cpp src/eval/lane_changes.cpp src/eval/segment_times.cpp src/eval/stop_lines.cpp src/eval/arrival_phases.cpp src/eval/dead_end_waits.cpp src/eval/lots.cpp)
+add_library(multra_eval ${MULTRA_LIBRARY_TYPE} src/eval/discharge.cpp src/eval/discharge_passage.cpp src/eval/summary.cpp src/eval/movement.cpp src/eval/nodes.cpp src/eval/sections.cpp src/eval/los.cpp src/eval/lane_changes.cpp src/eval/segment_times.cpp src/eval/stop_lines.cpp src/eval/arrival_phases.cpp src/eval/dead_end_waits.cpp src/eval/lots.cpp)
 target_link_libraries(multra_eval PUBLIC multra_core PRIVATE multra_options)
 # M5.2 batches: independent seeds and their aggregate. Core and eval only (check_architecture).
-add_library(multra_runner STATIC src/runner/batch.cpp src/runner/compare.cpp)
+add_library(multra_runner ${MULTRA_LIBRARY_TYPE} src/runner/batch.cpp src/runner/compare.cpp)
 target_link_libraries(multra_runner PUBLIC multra_eval PRIVATE multra_options)
-add_library(multra_project STATIC src/project/load.cpp src/project/parse.cpp src/project/output.cpp
+add_library(multra_project ${MULTRA_LIBRARY_TYPE} src/project/load.cpp src/project/parse.cpp src/project/output.cpp
     src/project/document.cpp src/project/signal_migration.cpp src/project/definition.cpp src/project/run.cpp src/project/display.cpp src/project/diagnostics.cpp
     src/project/junction_template_codec.cpp src/project/junction_recipe_codec.cpp src/project/node_codec.cpp src/project/study_period_codec.cpp src/project/study_area_codec.cpp src/project/study_area_run.cpp src/project/study_area_macro.cpp src/project/study_area_meso.cpp src/project/side_files.cpp src/project/export_marking.cpp src/project/mode_codec.cpp src/project/link_type_codec.cpp src/project/street_segment_codec.cpp src/project/link_speed_codec.cpp src/project/macro_input.cpp src/project/macro_settings.cpp src/project/meso_settings.cpp src/project/meso_input.cpp src/project/meso_run.cpp src/project/readiness.cpp src/project/node_proposals.cpp src/project/meso_output.cpp src/project/macro_run.cpp src/project/macro_output.cpp src/project/input_sha256.cpp src/project/input_manifest.cpp src/project/behaviour_library.cpp src/project/discharge_json.cpp src/project/evaluation.cpp src/project/demand_paths.cpp src/project/demand_preview.cpp src/project/demand_catalog.cpp src/project/demand_time_types.cpp src/project/station_routing.cpp src/project/batch_output.cpp src/project/node_output.cpp src/project/comparison_output.cpp src/project/evaluation_period.cpp src/project/clamp_rules.cpp src/project/los_output.cpp src/project/counted_volumes.cpp src/project/map_codec.cpp src/project/route_destination.cpp src/project/speed_decisions.cpp src/project/speed_areas.cpp src/project/speed_curve.cpp src/project/lane_preference.cpp src/project/zone_codec.cpp src/project/od_demand.cpp src/project/parking_compile.cpp
     src/project/parallel_seeds.cpp)
@@ -107,7 +117,7 @@ target_link_libraries(multra_project PUBLIC multra_model multra_eval multra_runn
 target_precompile_headers(multra_project PRIVATE <nlohmann/json.hpp>)
 
 target_sources(multra_model PRIVATE src/model/demand/junction_seams.cpp src/model/demand/nema_site.cpp)
-add_library(multra_commands STATIC src/commands/history.cpp src/commands/network_commands.cpp
+add_library(multra_commands ${MULTRA_LIBRARY_TYPE} src/commands/history.cpp src/commands/network_commands.cpp
     src/commands/junction_fill.cpp src/commands/junction_fill_polygon.cpp src/commands/transition_fill.cpp src/commands/junction_edit_commands.cpp
     src/commands/junction_fill_restore.cpp src/commands/junction_fill_geometry.cpp src/commands/junction_fill_t_cuts.cpp src/commands/junction_fill_references.cpp src/commands/junction_fill_signals.cpp src/commands/node_detail_priority.cpp
     src/commands/split_link.cpp src/commands/connector_commands.cpp src/commands/delete_objects.cpp
@@ -118,7 +128,7 @@ target_link_libraries(multra_commands PUBLIC multra_project PRIVATE multra_optio
 target_sources(multra_commands PRIVATE src/commands/trip_rate_commands.cpp src/commands/mode_choice_commands.cpp src/commands/procedure_commands.cpp src/commands/macro_run_commands.cpp src/commands/node_analysis_commands.cpp)
 target_precompile_headers(multra_commands PRIVATE <nlohmann/json.hpp>)
 # D165 behaviour lab: the ring, its run and live retune. Qt-free; the shell draws it (check_architecture).
-add_library(multra_lab STATIC src/lab/lab_settings.cpp src/lab/lab_network.cpp src/lab/lab_oval.cpp src/lab/lab_urban.cpp src/lab/lab_run.cpp)
+add_library(multra_lab ${MULTRA_LIBRARY_TYPE} src/lab/lab_settings.cpp src/lab/lab_network.cpp src/lab/lab_oval.cpp src/lab/lab_urban.cpp src/lab/lab_run.cpp)
 target_link_libraries(multra_lab PUBLIC multra_commands PRIVATE multra_options)
 
 function(multra_runtime_data target)
@@ -411,7 +421,7 @@ endif()
 if(MULTRA_BUILD_DESKTOP)
     find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Network)
     find_package(PROJ CONFIG REQUIRED)
-    add_library(multra_geo STATIC src/geo/projection.cpp src/geo/tile_grid.cpp src/geo/projection_data.cpp)
+    add_library(multra_geo ${MULTRA_LIBRARY_TYPE} src/geo/projection.cpp src/geo/tile_grid.cpp src/geo/projection_data.cpp)
     target_link_libraries(multra_geo PUBLIC multra_project PRIVATE PROJ::proj multra_options)
     if(BUILD_TESTING)
         add_executable(multra-map-geo-tests tests/map_geo_tests.cpp)

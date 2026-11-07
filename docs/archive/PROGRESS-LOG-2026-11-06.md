@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.4 contract: mode choice and OD conversion (D477)
+
+- **Owner:** "ทำงานถัดไปตามแนะนำ".
+- **M0:** read Ortúzar §5.4.4 and Ch. 6–7 from the page images
+  ([evidence](../evidence/ortuzar-ch6-7-mode-choice.md)):
+  - Examples 6.2 and 6.3 reproduce, including every row of the λ₁ table;
+  - MNL (7.9) and the NL condition φ ≤ 1;
+  - no book value for occupancy or period shares.
+- **D477 ([MODE_CHOICE](../reference/MODE_CHOICE.md)), docs only:** eight owner choices, slices
+  E1–E2, rows MC1–MC14.
+
 ## 2026-11-06 — M10.3 D3: origin-constrained purposes (D476)
 
 - **Owner:** "เอาตามแนะนำ" on TRIP_DISTRIBUTION §15.2 (1a–5a).
