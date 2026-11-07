@@ -24,6 +24,16 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Optimisation pass of 2026-11-07 (D487–D489) — follow-ups only
+
+- Owner, on Windows: the Properties summary height (D463) and the Run/Pause button after D487. The
+  `run-presentation-ui` relayout guard also runs on Windows CI; a failure there only is a Windows
+  LayoutRequest source, not a flaky test.
+- The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
+  cause is keys or sloppiness, not size.
+- The engine's next lever is the per-tick containers (spans, refs, events), not single copies
+  ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)); measure with callgrind first.
+
 ## Canvas style — slices A–C done; stop for owner review
 
 - Owner-directed and separate from M13/M14: [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill

@@ -13,6 +13,8 @@
 #include <map>
 #include <tuple>
 #include <QApplication>
+#include <QDockWidget>
+#include <QEvent>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLineEdit>
@@ -30,6 +32,16 @@ using namespace multra;
 namespace {
 void require(bool ok,const char* message){if(!ok)throw std::runtime_error(message);}
 void settle(){QApplication::processEvents();QTest::qWait(20);}
+// D487: counts the relayouts a Run Step asks of the window and its docks.
+struct LayoutRequests : QObject {
+    QWidget* window;int count=0;
+    explicit LayoutRequests(QWidget* w):window(w){qApp->installEventFilter(this);}
+    ~LayoutRequests() override{qApp->removeEventFilter(this);}
+    bool eventFilter(QObject* o,QEvent* e) override {
+        if(e->type()==QEvent::LayoutRequest&&(o==window||qobject_cast<QDockWidget*>(o)))++count;
+        return false;
+    }
+};
 double luminance(QRgb c){return (0.2126*qRed(c)+0.7152*qGreen(c)+0.0722*qBlue(c))/255;}
 QImage render(QGraphicsItem* item,QColor background,double scale) {
     QGraphicsScene scene;scene.addItem(item);
@@ -96,6 +108,13 @@ int main(int argc,char** argv) {
         window.openFile(QString::fromStdString((data/"scenarios/crossing.json").string()));settle();
         for(int i=0;i<300;++i)window.findChild<QAction*>("editorStep")->trigger();
         settle();
+        { // D487: a Step relays out neither the window nor a dock (the Run action and the D463 summary did).
+            LayoutRequests requests(&window);
+            for(int i=0;i<200;++i){window.findChild<QAction*>("editorStep")->trigger();QApplication::processEvents();}
+            // 2026-11-07, Linux: 0 with D487, 800 with either source back. A few are allowed for the
+            // status line changing its wrapped line count.
+            require(requests.count<=20,"Run Steps relay out the window or a dock again (D487: Run action, Properties summary)");
+        }
         auto* canvas=window.canvas();int vehicles=0;QGraphicsItem* first=nullptr;
         for(auto* item:canvas->scene()->items())if(item->data(0).toString()==QStringLiteral("run-vehicle")) {
             require(dynamic_cast<RunVehicleItem*>(item),"A run vehicle is not cased");

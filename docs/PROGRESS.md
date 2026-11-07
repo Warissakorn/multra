@@ -5,6 +5,45 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
+
+- **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at
+  CI's 500M, a rebuild of the same tree hit 57/736 (7.7 %) and took 14m05; with the whole cache it
+  hit 736/736 in 15 s. CI's Windows cache was saved at 487 MB, at its cap too.
+- **D489:** `CCACHE_MAXSIZE` for the Linux matrix 500M → 1500M. Windows stays at 500M: its MSVC
+  Release cache could not be measured here.
+- **Not yet verified on CI:** the next run's `ccache -s` shows whether hits rise; headless,
+  sanitizer and release sizes were not measured.
+
+## 2026-11-07 — Linux desktop preset links the multra libraries shared (D488)
+
+- **Cause:** every UI test executable linked `libmultra_shell.a` and carried its own copy of its
+  debug info: a Debug tree passed 30 GB (73 executables, 23.6 GB; 92 % DWARF) and ran out of disk
+  here, and one shell `.cpp` edit relinked 118 executables.
+- **D488:** `MULTRA_SHARED_LIBS` (default OFF) makes every `multra_*` library shared, with
+  `CMAKE_LINK_DEPENDS_NO_SHARED`; only the `desktop` preset turns it on, on Linux. headless,
+  sanitizer, release, packaging and Windows stay static. `multra_shell` now links
+  `multra_vehicle_pose` PUBLIC, since `canvas.hpp` holds `RearAxlePath` (static linking hid that).
+- **Measured (Linux, 4 cores):** tree >30 GB → 7.3 GB, `bin/` 23.6 → 1.2 GB; touching
+  `src/shell/node_analysis_panel.cpp` 2m00 → 8.3 s (median of 3). Clean build ≈14 min, as before.
+- **Verified:** desktop ctest 308/308, the three checks; the release preset still configures static.
+
+## 2026-11-07 — Run view: no dock relayout per Step (D487)
+
+- **Owner:** ran /optimize-program on everything and chose the recommended plan.
+- **Cause (callgrind):** 41.6 % of a Run view's instructions were `ReflowLabel::sizeHint`/
+  `minimumSizeHint` from a whole-dock relayout every Step. gdb on the LayoutRequests found two
+  triggers: `refreshRun` set the Run action's text and a new icon every Step, and the D463
+  Properties summary called `updateGeometry()` on every LayoutRequest of its content.
+- **D487:** both now act only on a change: the Run action when Run/Pause (or the translated text)
+  differs, and the summary when its `sizeHint()` moved.
+- **Measured (Linux, Release, offscreen):** `multra-run-view-benchmark` M2.6 6000 2000, back to back,
+  median of 3: 32.9 → 19.2 s (−42 %). Either fix alone: summary −14 %, Run action within noise.
+- **Verified:** desktop ctest 308/308 and the three checks, Linux only. Windows look of the
+  Properties summary and the Run/Pause button not checked.
+- **Guard (same day):** `run-presentation-ui` counts LayoutRequests on the window and its docks over
+  200 Steps of `crossing.json` and fails above 20; measured 0 with D487 and 800 with it reverted.
+
 ## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
 
 - **Owner:** ran /optimize-program on docs and AI context, and chose the split by 200 IDs, with the
@@ -92,39 +131,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Results tabs. Three mutations each failed a row.
 - **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
   layout. Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
-
-- **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).
-- **D478 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
-  - the MNL split (exp(V − max V), unavailable alternatives excluded);
-  - P-A to OD by period factors (root `periodFactors`, schema 69);
-  - vehicles by occupancy, summed per mode;
-  - marked JSON/CSV, and `--mode-choice`/`--period`.
-  - The zone skim moved to `zone_skim`, with distribution unchanged.
-  - The four-step CLI runs moved to `tools/four_step_cli`.
-- **Rows:** `modechoice` (MC1–MC9) and `cli-mode-choice*` (MC10). Four mutations each failed a row.
-- **Verified:** Linux only (desktop and headless); Windows not checked.
-
-## 2026-11-06 — M10.4 contract: mode choice and OD conversion (D477)
-
-- **Owner:** "ทำงานถัดไปตามแนะนำ".
-- **M0:** read Ortúzar §5.4.4 and Ch. 6–7 from the page images
-  ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)):
-  - Examples 6.2 and 6.3 reproduce, including every row of the λ₁ table;
-  - MNL (7.9) and the NL condition φ ≤ 1;
-  - no book value for occupancy or period shares.
-- **D477 ([MODE_CHOICE](reference/MODE_CHOICE.md)), docs only:** eight owner choices, slices
-  E1–E2, rows MC1–MC14.
-
-## 2026-11-06 — M10.3 D3: origin-constrained purposes (D476)
-
-- **Owner:** "เอาตามแนะนำ" on TRIP_DISTRIBUTION §15.2 (1a–5a).
-- **D476 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §15.4):**
-  - a per-purpose `constraint: "origin"` in deterrence sets (schema 68 when owned);
-  - one row normalisation of A_j f_ij (Eq. 5.16), with T_ii = s · P_i;
-  - JSON, CSV and the page name the constraint and the modelled attractions;
-  - doubly outputs keep their bytes.
-- **Rows:** `tripdistributionorigin` (TD15–TD19; TD15 reproduces Example 5.2's Table 5.5),
-  `cli-trip-distribution-origin` and `trip-distribution-ui` (TD20).
-- **Verified:** Linux only (desktop and headless); Windows not checked.

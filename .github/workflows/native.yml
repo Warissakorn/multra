@@ -21,12 +21,14 @@ jobs:
         preset: [headless, desktop, release, sanitizer]
     # ccache: a clean release build is 196 s cold and 8 s warm locally (177/177 hits, PCH
     # included). The sloppiness settings are what let the precompiled-header targets hit.
+    # D489: the desktop Debug cache is 1.1 GB; capped at 500M a rebuild of the same tree hit 7.7 %
+    # and took 14m05 locally, against 15 s and 100 % with the whole cache.
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_NOHASHDIR: 'true'
       CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
-      CCACHE_MAXSIZE: 500M
+      CCACHE_MAXSIZE: 1500M
     steps:
       - uses: actions/checkout@v5
       - name: Install build dependencies

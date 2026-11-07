@@ -88,6 +88,11 @@ ctest --preset desktop
 `lld` is optional: when the compiler accepts `-fuse-ld=lld` it links every executable
 (about 7x faster than GNU ld on this tree); `-DMULTRA_LLD=OFF` keeps the default linker.
 
+The `desktop` preset builds the `multra_*` libraries as shared objects on Linux
+(`MULTRA_SHARED_LIBS`, D488), so a Debug tree no longer copies the shell's debug information into
+every test executable, and editing a library source relinks only that library. The `headless`,
+`sanitizer` and `release` presets, packaging and every Windows build stay static.
+
 In displayless CI the desktop test uses `QT_QPA_PLATFORM=offscreen`. Normal launches
 use your desktop session's platform plugin to display a visible window.
 
