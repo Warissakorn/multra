@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
+
+- **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at
+  CI's 500M, a rebuild of the same tree hit 57/736 (7.7 %) and took 14m05; with the whole cache it
+  hit 736/736 in 15 s. CI's Windows cache was saved at 487 MB, at its cap too.
+- **D489:** `CCACHE_MAXSIZE` for the Linux matrix 500M → 1500M. Windows stays at 500M: its MSVC
+  Release cache could not be measured here.
+- **Not yet verified on CI:** the next run's `ccache -s` shows whether hits rise; headless,
+  sanitizer and release sizes were not measured.
+
 ## 2026-11-07 — Linux desktop preset links the multra libraries shared (D488)
 
 - **Cause:** every UI test executable linked `libmultra_shell.a` and carried its own copy of its
@@ -119,16 +129,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Results tabs. Three mutations each failed a row.
 - **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
   layout. Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
-
-- **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).
-- **D478 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
-  - the MNL split (exp(V − max V), unavailable alternatives excluded);
-  - P-A to OD by period factors (root `periodFactors`, schema 69);
-  - vehicles by occupancy, summed per mode;
-  - marked JSON/CSV, and `--mode-choice`/`--period`.
-  - The zone skim moved to `zone_skim`, with distribution unchanged.
-  - The four-step CLI runs moved to `tools/four_step_cli`.
-- **Rows:** `modechoice` (MC1–MC9) and `cli-mode-choice*` (MC10). Four mutations each failed a row.
-- **Verified:** Linux only (desktop and headless); Windows not checked.

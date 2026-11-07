@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
+
+- **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).
+- **D478 ([MODE_CHOICE](../reference/MODE_CHOICE.md) §13):**
+  - the MNL split (exp(V − max V), unavailable alternatives excluded);
+  - P-A to OD by period factors (root `periodFactors`, schema 69);
+  - vehicles by occupancy, summed per mode;
+  - marked JSON/CSV, and `--mode-choice`/`--period`.
+  - The zone skim moved to `zone_skim`, with distribution unchanged.
+  - The four-step CLI runs moved to `tools/four_step_cli`.
+- **Rows:** `modechoice` (MC1–MC9) and `cli-mode-choice*` (MC10). Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless); Windows not checked.
+
 ## 2026-11-06 — M10.4 contract: mode choice and OD conversion (D477)
 
 - **Owner:** "ทำงานถัดไปตามแนะนำ".
