@@ -41,6 +41,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   median of 3: 32.9 → 19.2 s (−42 %). Either fix alone: summary −14 %, Run action within noise.
 - **Verified:** desktop ctest 308/308 and the three checks, Linux only. Windows look of the
   Properties summary and the Run/Pause button not checked.
+- **Guard (same day):** `run-presentation-ui` counts LayoutRequests on the window and its docks over
+  200 Steps of `crossing.json` and fails above 20; measured 0 with D487 and 800 with it reverted.
 
 ## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
 
