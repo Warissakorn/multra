@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 D3: origin-constrained purposes (D476)
+
+- **Owner:** "เอาตามแนะนำ" on TRIP_DISTRIBUTION §15.2 (1a–5a).
+- **D476 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §15.4):**
+  - a per-purpose `constraint: "origin"` in deterrence sets (schema 68 when owned);
+  - one row normalisation of A_j f_ij (Eq. 5.16), with T_ii = s · P_i;
+  - JSON, CSV and the page name the constraint and the modelled attractions;
+  - doubly outputs keep their bytes.
+- **Rows:** `tripdistributionorigin` (TD15–TD19; TD15 reproduces Example 5.2's Table 5.5),
+  `cli-trip-distribution-origin` and `trip-distribution-ui` (TD20).
+- **Verified:** Linux only (desktop and headless); Windows not checked.
+
 ## 2026-11-06 — M10.3 D3 contract: singly constrained purposes (D475)
 
 - **Owner:** asked for an explanation of singly constrained models, then "ทำงานต่อไปตามแนะนำ".

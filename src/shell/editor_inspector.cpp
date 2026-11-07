@@ -46,9 +46,14 @@ public:
     }
 protected:
     bool eventFilter(QObject* watched,QEvent* event) override {
-        if(event->type()==QEvent::LayoutRequest||event->type()==QEvent::Resize)updateGeometry();
+        // D487: ask the dock to relayout only when the summary's wanted size moved. Every text
+        // change inside it posts a LayoutRequest, so this ran on every Run Step.
+        if(event->type()==QEvent::LayoutRequest||event->type()==QEvent::Resize)
+            if(const auto wanted=sizeHint();wanted!=asked_){asked_=wanted;updateGeometry();}
         return QScrollArea::eventFilter(watched,event);
     }
+private:
+    QSize asked_;
 };
 }
 void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field) {

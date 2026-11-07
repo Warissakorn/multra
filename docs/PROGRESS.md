@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-07 — Run view: no dock relayout per Step (D487)
+
+- **Owner:** ran /optimize-program on everything and chose the recommended plan.
+- **Cause (callgrind):** 41.6 % of a Run view's instructions were `ReflowLabel::sizeHint`/
+  `minimumSizeHint` from a whole-dock relayout every Step. gdb on the LayoutRequests found two
+  triggers: `refreshRun` set the Run action's text and a new icon every Step, and the D463
+  Properties summary called `updateGeometry()` on every LayoutRequest of its content.
+- **D487:** both now act only on a change: the Run action when Run/Pause (or the translated text)
+  differs, and the summary when its `sizeHint()` moved.
+- **Measured (Linux, Release, offscreen):** `multra-run-view-benchmark` M2.6 6000 2000, back to back,
+  median of 3: 32.9 → 19.2 s (−42 %). Either fix alone: summary −14 %, Run action within noise.
+- **Verified:** desktop ctest 308/308 and the three checks, Linux only. Windows look of the
+  Properties summary and the Run/Pause button not checked.
+
 ## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
 
 - **Owner:** ran /optimize-program on docs and AI context, and chose the split by 200 IDs, with the
@@ -116,15 +130,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - no book value for occupancy or period shares.
 - **D477 ([MODE_CHOICE](reference/MODE_CHOICE.md)), docs only:** eight owner choices, slices
   E1–E2, rows MC1–MC14.
-
-## 2026-11-06 — M10.3 D3: origin-constrained purposes (D476)
-
-- **Owner:** "เอาตามแนะนำ" on TRIP_DISTRIBUTION §15.2 (1a–5a).
-- **D476 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §15.4):**
-  - a per-purpose `constraint: "origin"` in deterrence sets (schema 68 when owned);
-  - one row normalisation of A_j f_ij (Eq. 5.16), with T_ii = s · P_i;
-  - JSON, CSV and the page name the constraint and the modelled attractions;
-  - doubly outputs keep their bytes.
-- **Rows:** `tripdistributionorigin` (TD15–TD19; TD15 reproduces Example 5.2's Table 5.5),
-  `cli-trip-distribution-origin` and `trip-distribution-ui` (TD20).
-- **Verified:** Linux only (desktop and headless); Windows not checked.

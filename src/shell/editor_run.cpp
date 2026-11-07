@@ -242,8 +242,14 @@ void EditorWindow::refreshRun(){
     if(!runInfo_)return;
     refreshResults(); refreshNodeProposals(); // S4.4: a new result proposes
     if(runProtection_)runProtection_->setVisible(runSnapshot_.has_value()); // M3.2.4: shown with every run
-    actions_.at("editorRun")->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
-    actions_.at("editorRun")->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));
+    // D487: only when Run/Pause changes (or translate() reset the text). Setting the same text
+    // and a new icon every Step relaid out the whole window, half of a Run view Step.
+    if(auto* run=actions_.at("editorRun");run->text()!=text(runTimer_.isActive()?"editorPause":"editorRun")
+        ||run->property("editorRunShowsPause")!=QVariant(runTimer_.isActive())) {
+        run->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
+        run->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));
+        run->setProperty("editorRunShowsPause",runTimer_.isActive());
+    }
     actions_.at("editorStep")->setEnabled(!runTimer_.isActive());
     refreshMacro(); // S2.4: its actions and stale note follow every refresh
     refreshMeso(); // M11.4: and the Meso ones

@@ -141,8 +141,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   sanitizer step's CI time is runner noise, not parallelism; all presets run in parallel.
 - **Editor hit-testing (2026-10-16, Release, offscreen):** `multra-editor-benchmark 200 20`
   `hitObjects` 8.28 → 1.22 ms, wireframe 14.24 → 4.61 ms (median of 3). What is left in
-  wireframe is building every centre stroke before the bounds check. `select` stays ≈22 ms at 200
-  intersections (`notifySelection`), not yet looked at.
+  wireframe is building every centre stroke before the bounds check. `select` was ≈22 ms at 200
+  intersections (`notifySelection`); on 2026-11-07 (Release -O3, median of 3) it is 3.3 ms, redraw 3.2 ms,
+  `hitObjects` 1.0 ms, so nothing is booked.
 - **Tests:** add every new model test group to `MULTRA_TEST_GROUPS`, or `all-model-tests`
   fails (D70). The longest test is `m26study_merge` (≈6 s, Linux). `scenario-run-ui` paints
   every 100th Step (2.8 s CPU on a P-core).
@@ -201,6 +202,9 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 - **Setting the Run/Pause icon only when it changes:** layout stayed 2,439 → 2,438 ms per 3,000
   Steps, because the word-wrapped `editorRunInfo` label relayouts the window every Step anyway.
   Reverted. The lever was that label's layout; D282 moved it into a host with no layout.
+  Superseded by D487 (2026-11-07): once the D463 Properties summary stopped asking for a relayout on
+  every LayoutRequest, setting the action only on a change was part of a 32.9 → 19.2 s run (6,000
+  Steps, median of 3). Alone it is still within noise; alone the summary gate is −14 %.
 - **One `refreshRun()` per Step instead of two:** 2,169 → 2,342 ms per 1,000 Steps, inside the
   spread. Reverted. Qt paints once per event-loop pass.
 - **`redraw()` copying only the primary Link:** −1.2% of `redraw()`, inside the clock's spread.
