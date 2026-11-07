@@ -1,4 +1,5 @@
 #include "table_layout.hpp"
+#include "table_grid.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/street_segment_commands.hpp"
@@ -156,10 +157,9 @@ std::string EditorWindow::selectedStreetSegment() const {
 std::vector<std::string> EditorWindow::selectedStreetSegmentRows() const {
     std::vector<std::string> ids;
     if (!streetSegmentTable_) return ids;
-    auto rows = streetSegmentTable_->selectionModel()->selectedRows();
-    std::sort(rows.begin(), rows.end(), [](const auto& a, const auto& b) { return a.row() < b.row(); }); // table order, not click order
-    for (const auto& range : rows)
-        ids.push_back(streetSegmentTable_->item(range.row(), 0)->data(Qt::UserRole).toString().toStdString());
+    // Table order, not click order; a row counts when any of its cells is selected (D490).
+    for (const int row : selectedTableRows(streetSegmentTable_))
+        ids.push_back(streetSegmentTable_->item(row, 0)->data(Qt::UserRole).toString().toStdString());
     return ids;
 }
 std::vector<std::string> EditorWindow::selectedLinks() const {

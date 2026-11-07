@@ -24,6 +24,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Tables like Excel (D490) — done; owner's look
+
+- Every table is a grid with numbered rows, cell blocks where several cells may be selected,
+  Ctrl+C as Excel text and table-owned Ctrl+A ([EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md)).
+- **Owner, on Windows:** paste a Links block and a Results table into Excel; check the grid and
+  row header at 100 % and high DPI. Linux offscreen tests do not close that look.
+- **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
+  (each list's `selectRow()` callers would need rewriting first).
+
 ## Optimisation pass of 2026-11-07 (D487–D489) — follow-ups only
 
 - Owner, on Windows: the Properties summary height (D463) and the Run/Pause button after D487. The

@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
+
+- **Owner:** "ทำงานถัดไป".
+- **D479 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
+  - owned `modeChoiceSets` and `odMatrices[i].generatedBy` at schema 70;
+  - the *Mode choice* Results page, with *Mode choice sets…* and *Period factors…*;
+  - *Write OD matrices*, one History step replacing only generated matrices, which Run Macro
+    assigns.
+  - **Fixed:** D476's note key shadowed the Trip distribution page's Origin column. Locale keys
+    are now checked for repeats.
+- **Rows:** `modechoiceowned` (MC11–MC12) and `mode-choice-ui` (MC13); `workspace-ui` counts 11
+  Results tabs. Three mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
+  layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
 
 - **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).

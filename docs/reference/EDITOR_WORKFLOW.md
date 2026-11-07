@@ -189,6 +189,18 @@ The ten-digit unsigned seed has a 104 px field. Initial object columns fit their
 320 px; user-resized widths survive selection, language and data refreshes. Long values retain
 normal table scrolling/tooltips. Demand-period columns fit the numeric editor's minimum width.
 
+Every table reads like a spreadsheet (D490): every cell line is drawn, rows do not alternate, a
+row header numbers rows from 1 and its corner selects all, and the current cell is framed. Where
+several things may be selected, a click or drag selects cells, not rows, and a row header or
+column header click selects that row or column; a row with any selected cell counts as selected,
+so a cell block in an object table selects its rows' objects. A list that picks one object at a
+time keeps selecting its row. **Ctrl+C** in a focused table copies the selection as Excel's
+tab-separated text: one cell copies its value alone; a larger selection copies its bounding block
+with the column headers first, unselected cells empty, hidden rows and columns left out, and row
+labels first when the table names its rows. A cell holding a tab, line break or quote is quoted.
+**Ctrl+A** in a focused multi-selection table selects every cell; elsewhere it keeps toggling the
+wireframe view.
+
 Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
 Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.
 The unvalidated marker and complete simulation figures remain visible in focus mode.

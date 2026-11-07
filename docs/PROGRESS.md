@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-07 — Tables read like Excel (D490)
+
+- **Owner:** "ต้องการให้ตารางในโปรแกรมเป็นเหมือนตาราง excel"; chose grid look, Copy to Excel and
+  cell-by-cell selection (header sorting not chosen).
+- **D490:** `table_grid.*` joins the table recipe applied to every table view on polish: grid lines,
+  no alternating rows, numbered row header with a select-all corner, framed current cell, cell
+  selection where several selections are allowed, Ctrl+C as Excel tab-separated text (headers on
+  a block, quoting, named rows, cell editors' text), Ctrl+A kept by a focused table. One-object
+  lists keep row selection, because `selectRow()` does nothing for single selection in cell mode.
+- **Readers fixed:** the object tables' canvas sync read column-0 cells only, and Merge Nodes,
+  Street-segment selection, Problems and the Macro run dialog read `selectedRows()`; all use
+  `selectedTableRows` now, so a cell block anywhere in a row selects it.
+- **Tests:** new `table-grid-ui`; `table-presentation-ui`'s recipe check updated. Linux only:
+  the Windows look is the owner's check (NEXT).
+
 ## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
 
 - **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at
@@ -115,19 +130,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   numerics, the codec, schema 71, the run), `cli-mode-choice-nested`, `nested-logit-ui` (NL8);
   MC1–MC14 unchanged. Four mutations each failed a row.
 - **Verified:** Linux only (desktop and headless). An offscreen grab of the dialog was checked for
-  layout. Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
-
-- **Owner:** "ทำงานถัดไป".
-- **D479 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
-  - owned `modeChoiceSets` and `odMatrices[i].generatedBy` at schema 70;
-  - the *Mode choice* Results page, with *Mode choice sets…* and *Period factors…*;
-  - *Write OD matrices*, one History step replacing only generated matrices, which Run Macro
-    assigns.
-  - **Fixed:** D476's note key shadowed the Trip distribution page's Origin column. Locale keys
-    are now checked for repeats.
-- **Rows:** `modechoiceowned` (MC11–MC12) and `mode-choice-ui` (MC13); `workspace-ui` counts 11
-  Results tabs. Three mutations each failed a row.
-- **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
   layout. Windows not checked (OWNER_SITTING 42).

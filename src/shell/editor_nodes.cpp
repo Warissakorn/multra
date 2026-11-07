@@ -1,4 +1,5 @@
 #include "table_layout.hpp"
+#include "table_grid.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/node_commands.hpp"
@@ -129,8 +130,8 @@ void EditorWindow::buildNodes() {
     // S3.5 (D309): the selected rows become one Node, the hull of theirs, in one Undo step.
     bar->addAction(action("editorMergeNodes", {}, [this] {
         std::vector<std::string> ids;
-        for (const auto& row : nodeTable_->selectionModel()->selectedRows())
-            ids.push_back(nodeTable_->item(row.row(), 0)->data(Qt::UserRole).toString().toStdString());
+        for (const int row : selectedTableRows(nodeTable_))
+            ids.push_back(nodeTable_->item(row, 0)->data(Qt::UserRole).toString().toStdString());
         if (ids.size() < 2) return;
         const auto current = selectedNode();
         if (const auto first = std::find(ids.begin(), ids.end(), current); first != ids.end()) std::iter_swap(ids.begin(), first);
@@ -251,7 +252,7 @@ void EditorWindow::refreshNodes() {
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));
     actions_.at("editorNumberNodes")->setEnabled(std::any_of(nodes.begin(), nodes.end(), [](const auto& x) { return !x.number; }));
-    actions_.at("editorMergeNodes")->setEnabled(nodeTable_->selectionModel()->selectedRows().size() >= 2);
+    actions_.at("editorMergeNodes")->setEnabled(selectedTableRows(nodeTable_).size() >= 2);
     refreshNodeProposals();
 }
 void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }

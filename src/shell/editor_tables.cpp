@@ -1,4 +1,5 @@
 #include "table_layout.hpp"
+#include "table_grid.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -150,9 +151,9 @@ void EditorWindow::buildObjectTables() {
                     std::erase(ids,id);
                 }
             }
-            for (const auto* item : view->selectedItems()) {
-                if (item->column()) continue;
-                const auto id=selectableFor(history_.document().network,item->data(Qt::UserRole).toString().toStdString());
+            // A row is chosen when any of its cells is selected (D490): a cell block picks its rows.
+            for (const int row : selectedTableRows(view)) {
+                const auto id=selectableFor(history_.document().network,view->item(row,0)->data(Qt::UserRole).toString().toStdString());
                 if (!id.empty()) ids.push_back(id);
             }
             canvas_->setSelection(ids);

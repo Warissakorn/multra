@@ -25,7 +25,8 @@ void require(bool ok,const char* message){if(!ok)throw std::runtime_error(messag
 template<class T> T* item(QObject& root,const char* name){auto* value=root.findChild<T*>(name);require(value,"Missing table widget");return value;}
 void settle(){QApplication::processEvents();QTest::qWait(20);}
 bool recipe(const QTableView* table) {
-    return table->verticalHeader()->defaultSectionSize()==editorDesign::tableRowHeight&&table->alternatingRowColors()&&!table->showGrid();
+    return table->verticalHeader()->defaultSectionSize()==editorDesign::tableRowHeight&&!table->alternatingRowColors()&&table->showGrid() // D490
+        &&table->property("editorSpreadsheet").toBool();
 }
 QTextEdit* popup(EditorWindow& window) {
     for(auto* widget:QApplication::topLevelWidgets())

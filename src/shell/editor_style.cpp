@@ -1,4 +1,5 @@
 #include "editor_style.hpp"
+#include "table_grid.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
 #include <QHeaderView>
@@ -183,10 +184,15 @@ QString editorStyleSheet() {
         QTreeWidget::branch:selected { background: palette(mid); border: 0; }
         QTreeWidget::item:focus:!selected, QListWidget::item:focus:!selected { border: 1px solid palette(highlight); }
         QTableView { background: palette(base); alternate-background-color: palette(window); border: 1px solid palette(dark); selection-background-color: palette(mid); selection-color: palette(text); gridline-color: palette(mid); }
-        QTableView::item { min-height: @controlContentpx; padding: @padYpx @space1px; border-bottom: 1px solid palette(mid); }
+        /* D490: a spreadsheet grid -- the view draws every cell line, the current cell has a frame,
+           the row header numbers rows and a selected cell lights its row and column headers. */
+        QTableView::item { min-height: @controlContentpx; padding: @padYpx @space1px; }
         QTableView::item:hover { background: palette(midlight); }
-        QTableView::item:focus:!selected { border: 1px solid palette(highlight); }
-        QHeaderView::section { min-height: @controlContentpx; background: palette(window); color: palette(text); border: 0; border-right: 1px solid palette(mid); padding: @padYpx @space2px; font-size: @fontLabelpx; font-weight: 600; }
+        QTableView::item:focus { border: 2px solid palette(highlight); }
+        QHeaderView::section { min-height: @controlContentpx; background: palette(window); color: palette(text); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); padding: @padYpx @space2px; font-size: @fontLabelpx; font-weight: 600; }
+        QHeaderView::section:vertical { padding: 0 @space1px; color: palette(window-text); font-weight: 400; }
+        QHeaderView::section:checked { background: palette(mid); color: palette(text); }
+        QTableView QTableCornerButton::section { background: palette(window); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); }
         QLabel#editorScope { background: palette(window); color: palette(text); padding: @space1px @space2px; border-bottom: 1px solid palette(mid); }
         QLabel#editorRunInfo { background: palette(base); color: palette(text); padding: @space1px @space2px; }
         QLabel#editorError, QLabel[validationState="invalid"], QLabel[status="error"] { color: palette(bright-text); padding: @space1px @space2px; }
@@ -221,7 +227,8 @@ QString editorStyleSheet() {
     return stylesheet;
 }
 void applyTableRecipe(QTableView* table) {
-    table->setAlternatingRowColors(true);table->setShowGrid(false);
+    table->setAlternatingRowColors(false);table->setShowGrid(true);table->setGridStyle(Qt::SolidLine);
+    makeSpreadsheetTable(table);
     if(!table->property("editorCustomRows").toBool())table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight+4*editorDesign::presentationDensity());
     table->horizontalHeader()->setMinimumSectionSize(editorDesign::controlHeight);
 }

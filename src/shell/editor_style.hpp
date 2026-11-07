@@ -24,8 +24,8 @@ void installEditorStyle();
 // Where the dropdown/spin chevrons drawn from the palette live, for the style sheet's `image`.
 QString editorGlyphDirectory();
 void applyEditorStyle(QWidget* window);
-// The table recipe (D84, D196): 24 px rows, alternating rows, no grid, control-height minimum
-// columns. Applied to every table view when it is polished, dialogs and the Lab included; a table
+// The table recipe (D84, D196, D490): 24 px rows, a spreadsheet grid with numbered rows, cell
+// selection and Ctrl+C for Excel (table_grid.hpp), control-height minimum columns. Applied to every table view when it is polished, dialogs and the Lab included; a table
 // whose cells hold editors sets the property editorCustomRows and keeps its own row height.
 void applyTableRecipe(QTableView* table);
 }
