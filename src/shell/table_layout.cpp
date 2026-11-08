@@ -1,4 +1,6 @@
 #include "table_layout.hpp"
+#include "../editor/ui_design_tokens.hpp"
+#include <QFontMetrics>
 #include <QAbstractSpinBox>
 #include <QApplication>
 #include <QHeaderView>
@@ -25,6 +27,10 @@ void fitTableColumns(QTableWidget* table) {
     table->resizeColumnsToContents();table->horizontalHeader()->setStretchLastSection(false);
     for(int column=0;column<table->columnCount();++column) {
         int minimum=40;
+        // The header's own font: English headers are tracked capitals, which Qt's content fit
+        // does not count, so "SIGNAL HEADS" lost its first letter (D490).
+        if(auto* item=table->horizontalHeaderItem(column))
+            minimum=std::max(minimum,QFontMetrics(table->horizontalHeader()->font()).horizontalAdvance(item->text())+2*editorDesign::space2+4);
         for(int row=0;row<table->rowCount();++row)if(auto* widget=table->cellWidget(row,column))
             minimum=std::max(minimum,std::max(widget->minimumWidth(),widget->minimumSizeHint().width()));
         table->setColumnWidth(column,std::clamp(table->columnWidth(column),minimum,std::max(minimum,320)));

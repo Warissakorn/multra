@@ -201,6 +201,13 @@ labels first when the table names its rows. A cell holding a tab, line break or 
 **Ctrl+A** in a focused multi-selection table selects every cell; elsewhere it keeps toggling the
 wireframe view.
 
+Compactness (D490): a fitted column is never narrower than its header in the header's own font
+(English headers are tracked capitals). The Objects group picker keeps its current language's
+width, so it never covers the first tab. The Tables layout gives the Objects panel ten and a half
+rows of the current density, as far as the preview floor allows. Results notes fold to one line
+that opens with their not-validated statement; the whole note is the tooltip, and a click, Space
+or Enter opens or folds it. Stacked Results tables give the queue table only its rows' height.
+
 Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
 Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.
 The unvalidated marker and complete simulation figures remain visible in focus mode.

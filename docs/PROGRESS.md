@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-08 — Compactness pass after D490 (D490a)
+
+- **Owner:** asked for a compactness review in chat, then "แก้ตามแนะนำ" (all of A–D).
+- **Fixed:** whole English column headers; the Objects group picker no longer covers the first tab
+  after a language change; the Tables layout reaches its target height (Qt's `resizeDocks` fell
+  short) and aims at 10.5 rows within the existing preview floor; Results notes fold to one line;
+  the stacked queue table is only as tall as its rows; no grey header band below the last row.
+- **Measured (Linux offscreen, Compact):** Objects rows 7.7 → 9.4 at 1360×860, 6.9 → 8.4 at
+  1024×768, 8.6 → 10.5 at 1920×1080; Thai 1024 Results movements 9 → 12 of 12.
+- **Reverted:** a 300/220 px preview floor, which broke workspace-ui and object-groups-ui's
+  owner-set 350/250 px preview.
+- **Tests:** new `compact-ui`; desktop ctest 310/310 and `check` pass. Windows look is the owner's.
+
 ## 2026-11-07 — Tables read like Excel (D490)
 
 - **Owner:** "ต้องการให้ตารางในโปรแกรมเป็นเหมือนตาราง excel"; chose grid look, Copy to Excel and
@@ -116,21 +129,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   refusals, schema 72), `cli-trip-distribution-destination` and `trip-distribution-ui` (TD26).
   TD19's bad value is now `"both"`. Four mutations each failed a row.
 - **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
-
-- **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the
-  session: two levels, φ in (0, 1] refused outside, and a nest editor in the dialog (3b, against
-  the recommended Import only).
-- **D480 ([NESTED_LOGIT](reference/NESTED_LOGIT.md)):** N0 read Eq. 7.16–7.23 (PDF 260–261) and
-  §7.4.4.3 (PDF 267) from the page images; the contract.
-- **D481 (NESTED_LOGIT §7):**
-  - `nestedLogitShares` (Eq. 7.23 with β = 1, shifted logsums), `splitModes(…, ModeNests)`;
-  - per-purpose `nests` in mode-choice sets, owned nested sets at schema 71;
-  - the run and the JSON echo;
-  - *Nests…* in the Mode choice sets dialog.
-- **Rows:** `nestedlogit` (NL1–NL7: Example 6.3's ten rows, the MNL collapse, availability,
-  numerics, the codec, schema 71, the run), `cli-mode-choice-nested`, `nested-logit-ui` (NL8);
-  MC1–MC14 unchanged. Four mutations each failed a row.
-- **Verified:** Linux only (desktop and headless). An offscreen grab of the dialog was checked for
-  layout. Windows not checked (OWNER_SITTING 42).

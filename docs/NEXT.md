@@ -29,7 +29,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Every table is a grid with numbered rows, cell blocks where several cells may be selected,
   Ctrl+C as Excel text and table-owned Ctrl+A ([EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md)).
 - **Owner, on Windows:** paste a Links block and a Results table into Excel; check the grid and
-  row header at 100 % and high DPI. Linux offscreen tests do not close that look.
+  row header at 100 % and high DPI; open and fold a Results note; check the Tables layout's
+  height and the Thai group picker (D490a). Linux offscreen tests do not close that look.
+- **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
+  the clamp note has no not-validated statement of its own (both predate D490).
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 

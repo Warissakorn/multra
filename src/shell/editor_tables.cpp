@@ -47,6 +47,16 @@ const std::pair<const char*,std::vector<std::string>> objectGroups[]={
     {"editorObjectGroupResults",{"editorResultsTable"}},
     {"editorObjectGroupProblems",{"editorProblemTable"}}};
 }
+namespace {
+// The group picker is pinned to its own hint: the tab widget places its strip from that hint and
+// never resizes a corner. The field-minimum rule (editor_interaction) restores the minimum it saw
+// at the first Show, so the pin updates that too, or a language change keeps the old width and the
+// picker covers the first tab.
+void pinWidth(QComboBox* combo) {
+    const int width=combo->sizeHint().width();
+    combo->setProperty("editorOriginalMinimumWidth",width);combo->setFixedWidth(width);
+}
+}
 void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
     objectPages_.emplace(key,page);objects_->addTab(page,QString());
 }
@@ -56,7 +66,7 @@ void EditorWindow::translateObjectPages() {
     objectGroup_->setAccessibleName(text("editorObjectGroup"));objectGroup_->setToolTip(text("editorObjectGroup"));
     for(int i=0;i<objectGroup_->count();++i)objectGroup_->setItemText(i,text(objectGroup_->itemData(i).toString().toStdString()));
     // The tab widget places the strip from the corner's hint but never resizes the corner itself.
-    objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+    pinWidth(objectGroup_);
     updateObjectsHeader();
 }
 // D462: the dock is titled by its current task group, and a group with one page shows no tab
@@ -73,7 +83,7 @@ void EditorWindow::updateObjectsHeader() {
         if(body)body->removeWidget(objectGroup_);
         objects_->setCornerWidget(objectGroup_,Qt::TopLeftCorner);objectGroup_->show();objectGroup_->ensurePolished();
         // Back in the corner: re-pin its width to its hint, which places the strip, and lay out again.
-        objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+        pinWidth(objectGroup_);
         QEvent relayout(QEvent::LayoutRequest);QApplication::sendEvent(objects_,&relayout);
     } else if(pages<=1 && body && objects_->cornerWidget(Qt::TopLeftCorner)==objectGroup_) {
         objects_->setCornerWidget(nullptr,Qt::TopLeftCorner);

@@ -192,6 +192,7 @@ QString editorStyleSheet() {
         QHeaderView::section { min-height: @controlContentpx; background: palette(window); color: palette(text); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); padding: @padYpx @space2px; font-size: @fontLabelpx; font-weight: 600; }
         QHeaderView::section:vertical { padding: 0 @space1px; color: palette(window-text); font-weight: 400; }
         QHeaderView::section:checked { background: palette(mid); color: palette(text); }
+        QTableView QHeaderView { background: palette(base); } /* no grey band past the last row or column */
         QTableView QTableCornerButton::section { background: palette(window); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); }
         QLabel#editorScope { background: palette(window); color: palette(text); padding: @space1px @space2px; border-bottom: 1px solid palette(mid); }
         QLabel#editorRunInfo { background: palette(base); color: palette(text); padding: @space1px @space2px; }

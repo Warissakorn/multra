@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
+
+- **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the
+  session: two levels, φ in (0, 1] refused outside, and a nest editor in the dialog (3b, against
+  the recommended Import only).
+- **D480 ([NESTED_LOGIT](../reference/NESTED_LOGIT.md)):** N0 read Eq. 7.16–7.23 (PDF 260–261) and
+  §7.4.4.3 (PDF 267) from the page images; the contract.
+- **D481 (NESTED_LOGIT §7):**
+  - `nestedLogitShares` (Eq. 7.23 with β = 1, shifted logsums), `splitModes(…, ModeNests)`;
+  - per-purpose `nests` in mode-choice sets, owned nested sets at schema 71;
+  - the run and the JSON echo;
+  - *Nests…* in the Mode choice sets dialog.
+- **Rows:** `nestedlogit` (NL1–NL7: Example 6.3's ten rows, the MNL collapse, availability,
+  numerics, the codec, schema 71, the run), `cli-mode-choice-nested`, `nested-logit-ui` (NL8);
+  MC1–MC14 unchanged. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). An offscreen grab of the dialog was checked for
+  layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
 
 - **Owner:** "ทำงานถัดไป".

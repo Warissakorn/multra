@@ -54,11 +54,24 @@ void sizeTables(multra::EditorWindow& window) {
     auto* view=window.findChild<QDockWidget*>("editorCanvasDock");auto* objects=window.findChild<QDockWidget*>("editorObjectsDock");
     if(!view->isVisible()||!objects->isVisible()||view->isFloating()||objects->isFloating())return;
     window.layout()->activate();const int available=view->height()+objects->height();
+    // D490: ten and a half rows of the current density, as far as the preview floor allows (350 px,
+    // 250 below 1180 wide: the readable preview of EDITOR_WORKFLOW); the dock's chrome (title,
+    // group strip, header) is measured, not assumed.
     const int preview=window.width()<1180?250:350;
     const int overhead=std::max(0,view->height()-window.canvas()->viewport()->height());
-    const int tableHeight=std::min(340,std::max(180,available-overhead-preview));
+    auto* current=window.findChild<QTabWidget*>("editorObjectTabs")->currentWidget();
+    auto* page=qobject_cast<QTableView*>(current);if(!page&&current)page=current->findChild<QTableView*>();
+    const int row=page?page->verticalHeader()->defaultSectionSize():multra::editorDesign::tableRowHeight;
+    const int chrome=page&&page->viewport()->height()>0?std::max(60,objects->height()-page->viewport()->height()):100;
+    const int wanted=chrome+row*21/2;
+    const int tableHeight=std::max(180,std::min(wanted,available-overhead-preview));
     window.setProperty("editorApplyingLayout",true);
-    window.resizeDocks({view,objects},{std::max(100,available-tableHeight),tableHeight},Qt::Vertical);
+    // Qt splits a two-dock request against the space it hands back while no central widget is
+    // shown, landing short of the target; a few passes reach it (measured: 232, 283, then 333).
+    for(int pass=0;pass<4&&std::abs(objects->height()-tableHeight)>2;++pass) {
+        window.resizeDocks({view,objects},{std::max(100,available-tableHeight),tableHeight},Qt::Vertical);
+        window.layout()->activate();
+    }
     objects->setProperty("multraPanelSize",QSize(1,tableHeight));window.setProperty("editorApplyingLayout",false);
 }
 }
