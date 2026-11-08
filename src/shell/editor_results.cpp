@@ -61,8 +61,9 @@ public:
         setObjectName("editorMovementTables");row->setContentsMargins(0,0,0,0);row->setSpacing(editorDesign::space1);
     }
     QBoxLayout* row;
-    // D490: stacked, the queue table is only as tall as its rows and the movements take the rest;
-    // side by side they keep their 3:2 widths.
+    // D490: stacked, the queue table is only as tall as its rows and the movements take the rest.
+    // Side by side they split 4:3 (was 3:2): the numbered row header costs the queue table about
+    // 21 px, and Thai figure headers on Windows had left the approach names under 140 px.
     void fit() {
         if(row->count()<2)return;
         auto* queue=qobject_cast<QTableView*>(row->itemAt(1)->widget());if(!queue)return;
@@ -71,7 +72,7 @@ public:
             int height=2*queue->frameWidth()+queue->horizontalHeader()->sizeHint().height()+rows*queue->verticalHeader()->defaultSectionSize();
             if(queue->horizontalScrollBar()->isVisible())height+=queue->horizontalScrollBar()->height();
             queue->setMaximumHeight(height);row->setStretch(0,1);row->setStretch(1,0);
-        } else {queue->setMaximumHeight(QWIDGETSIZE_MAX);row->setStretch(0,3);row->setStretch(1,2);}
+        } else {queue->setMaximumHeight(QWIDGETSIZE_MAX);row->setStretch(0,4);row->setStretch(1,3);}
     }
 protected:
     void resizeEvent(QResizeEvent* event) override {
@@ -118,8 +119,8 @@ void EditorWindow::buildResults() {
     // Stack on narrow windows; wide screens keep the two tables beside each other.
     auto* movementsBox=tab(resultsNote_,"editorResultsNote","editorResultsTabMovements");
     auto* tables=new MovementTables(movementsBox->parentWidget());movementsBox->addWidget(tables,1);auto* row=tables->row;
-    movementTable_=resultTable(page,"editorMovementTable",4); row->addWidget(movementTable_,3);
-    queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,2);
+    movementTable_=resultTable(page,"editorMovementTable",4); row->addWidget(movementTable_,4);
+    queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,3);
     dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote","editorResultsTabDischarge")->addWidget(dischargeTable_,1);
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b

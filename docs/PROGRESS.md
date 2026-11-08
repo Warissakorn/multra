@@ -14,6 +14,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   height (the controls centred into the band).
 - **Tests:** `compact-ui` checks the band's row, size and that no panel starts above it;
   workspace-ui's 32 px applies to the contents. Desktop ctest 310/310, `check` pass (Linux).
+- **CI fix (windows-desktop):** `ui-audit-layout` (1×, 1.5×, 2×) failed in Thai at 1366: queue
+  approach names under 140 px, after D490's row header took ~21 px. Side-by-side Results now split
+  4:3 (was 3:2); on Linux Thai 176 → 215 px, English 235 → 274, movement viewport 778 → 739.
 
 ## 2026-11-08 — Compactness pass after D490 (D490a)
 

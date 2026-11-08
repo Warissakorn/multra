@@ -206,7 +206,8 @@ Compactness (D490): a fitted column is never narrower than its header in the hea
 width, so it never covers the first tab. The Tables layout gives the Objects panel ten and a half
 rows of the current density, as far as the preview floor allows. Results notes fold to one line
 that opens with their not-validated statement; the whole note is the tooltip, and a click, Space
-or Enter opens or folds it. Stacked Results tables give the queue table only its rows' height.
+or Enter opens or folds it. Stacked Results tables give the queue table only its rows' height;
+side by side they split 4:3, so the approach names keep 140 px beside the numbered rows.
 The toolbar row directly above the panels ends in the panels' own separator band (4 px and its
 two 1 px edges, midlight), outside the toolbar's 32 px contents (D491); when the toolbars stack
 below the break width, only the lower row has it.
