@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 D4: destination-constrained purposes (D482)
+
+- **Owner:** "งานถัดไปตามแนะนำ"; the recommended options (all a) stand.
+- **D482 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §16):**
+  - `constraint: "destination"` (A_i = 1, p. 183, re-read from the page image), computed as the
+    origin path on the transposed problem;
+  - T_ii = s · A*_i, and owned sets using it at schema 72;
+  - `productionsModelled`, the CSV suffix and the page note.
+- **Rows:** `tripdistributiondestination` (TD21–TD25: Example 5.2 transposed, weights, intrazonal,
+  refusals, schema 72), `cli-trip-distribution-destination` and `trip-distribution-ui` (TD26).
+  TD19's bad value is now `"both"`. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
 
 - **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the

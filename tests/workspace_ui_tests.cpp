@@ -212,7 +212,9 @@ void runToolbar(EditorWindow& window) {
     const auto check=[&](const char* state) {
         for(auto* bar:window.findChildren<QToolBar*>(QString(),Qt::FindDirectChildrenOnly)) {
             if(!bar->isVisible())continue;
-            require(bar->height()==editorDesign::toolbarHeight,("Toolbar height changed: "+bar->objectName().toStdString()+" "
+            // D491: the row above the panels also carries their separator band, outside its contents.
+            require(bar->height()-bar->contentsMargins().bottom()==editorDesign::toolbarHeight&&
+                    (bar->contentsMargins().bottom()==0||bar->contentsMargins().bottom()==editorDesign::toolbarBand),("Toolbar height changed: "+bar->objectName().toStdString()+" "
                     +std::to_string(bar->height())+" "+std::to_string(window.width())+" "+state).c_str());
             auto* more=bar->findChild<QToolButton*>("qt_toolbar_ext_button");
             require(!more||!more->isVisible(),std::string("Toolbar overflowed: ").append(state).c_str());

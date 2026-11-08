@@ -126,6 +126,9 @@ QString editorStyleSheet() {
         QMenu::separator { height: 1px; background: palette(mid); margin: @space1px @space2px; }
         QToolBar { background: palette(base); border: 0; spacing: @space1px; padding: @space1px; }
         QToolBar::separator { background: palette(mid); width: 1px; margin: @space1px; }
+        /* Under the toolbar row above the panels: the panels' own separator band (4 px + its two 1 px edges).
+           Qt's toolbar layout ignores a bottom-only border, so layoutToolbars adds its height (toolbarBand). */
+        QToolBar[editorLastRow="true"] { border-bottom: @panelGappx solid palette(midlight); }
         QToolButton, QPushButton { min-height: @fieldContentpx; max-height: @fieldContentpx; padding: 0 @space2px; border: 1px solid palette(dark); border-radius: @radiuspx; background: palette(button); }
         QToolBar QToolButton { min-width: @toolbarIconpx; min-height: @iconpx; border-color: transparent; background: transparent; padding: 2px 1px 1px 2px; }
         QToolButton:hover, QPushButton:hover { background: palette(midlight); }
@@ -215,7 +218,7 @@ QString editorStyleSheet() {
         {"@fontLabel",editorDesign::fontSizeLabel+density},{"@fontNumeric",editorDesign::fontSizeNumeric+density},
         {"@fontBody",editorDesign::fontSizeBody+density},{"@fontTitle",editorDesign::fontSizeTitle},
         {"@fontSection",editorDesign::fontSizeSection},
-        {"@space1",editorDesign::space1},{"@space2",editorDesign::space2},{"@space4",editorDesign::space4},
+        {"@panelGap",editorDesign::toolbarBand},{"@space1",editorDesign::space1},{"@space2",editorDesign::space2},{"@space4",editorDesign::space4},
         {"@space5",editorDesign::space5},{"@space6",editorDesign::space6},
         {"@controlHeight",height},{"@controlContent",height-2*editorDesign::controlPaddingY-2},
         {"@padY",editorDesign::controlPaddingY},

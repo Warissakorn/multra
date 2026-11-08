@@ -9,6 +9,8 @@
 #include <QTabBar>
 #include <QTabWidget>
 #include <QTableWidget>
+#include <QToolBar>
+#include "../src/editor/ui_design_tokens.hpp"
 #include <QTest>
 #include <filesystem>
 #include <iostream>
@@ -20,6 +22,17 @@ namespace {
 void require(bool ok,const char* message){if(!ok)throw std::runtime_error(message);}
 template<class T> T* item(QObject& root,const char* name){auto* value=root.findChild<T*>(name);require(value,"Missing widget");return value;}
 void settle(){QApplication::processEvents();QTest::qWait(60);QApplication::processEvents();}
+// D491: the toolbar row above the panels ends in the panels' separator band, outside its contents.
+void requireBand(EditorWindow& window,bool stacked) {
+    auto* run=item<QToolBar>(window,"editorRunToolbar");auto* files=item<QToolBar>(window,"editorFiles");
+    require((run->y()>files->y())==stacked,"Fixture: the toolbar rows are not as expected");
+    require(run->contentsMargins().bottom()==editorDesign::toolbarBand,"The Run toolbar row has no band under it");
+    require(files->contentsMargins().bottom()==(stacked?0:editorDesign::toolbarBand),"The band is under the wrong toolbar row");
+    auto* button=run->findChild<QWidget*>("editorRunButton");
+    require(button&&button->geometry().bottom()<run->height()-editorDesign::toolbarBand,"The Run button reaches into the band");
+    for(auto* dock:window.findChildren<QDockWidget*>())if(dock->isVisible()&&!dock->isFloating())
+        require(dock->y()>=run->geometry().bottom(),"A panel starts above the band");
+}
 }
 int main(int argc,char** argv) {
     QApplication app(argc,argv);useTestStorage();
@@ -31,6 +44,7 @@ int main(int argc,char** argv) {
             item<QComboBox>(window,"editorLanguage")->setCurrentIndex(0);settle();
             window.openFile(project);settle();
             item<QAction>(window,"editorWorkspaceTables")->trigger();settle();
+            requireBand(window,false);
             // Every English header is whole: tracked capitals are wider than Qt's own fit.
             auto* links=item<QTableWidget>(window,"editorLinkTable");
             for(int column=0;column<links->columnCount();++column) {
@@ -49,6 +63,7 @@ int main(int argc,char** argv) {
             item<QComboBox>(window,"editorLanguage")->setCurrentIndex(0);settle();
             const int english=group->sizeHint().width();
             item<QComboBox>(window,"editorLanguage")->setCurrentIndex(1);settle();
+            requireBand(window,true);
             require(group->sizeHint().width()!=english,"Fixture: the group name has the same width in both languages");
             window.openFile(project);settle();
             item<QAction>(window,"editorWorkspaceTables")->trigger();settle();

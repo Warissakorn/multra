@@ -207,6 +207,9 @@ width, so it never covers the first tab. The Tables layout gives the Objects pan
 rows of the current density, as far as the preview floor allows. Results notes fold to one line
 that opens with their not-validated statement; the whole note is the tooltip, and a click, Space
 or Enter opens or folds it. Stacked Results tables give the queue table only its rows' height.
+The toolbar row directly above the panels ends in the panels' own separator band (4 px and its
+two 1 px edges, midlight), outside the toolbar's 32 px contents (D491); when the toolbars stack
+below the break width, only the lower row has it.
 
 Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
 Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.

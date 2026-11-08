@@ -210,6 +210,18 @@ void EditorWindow::layoutToolbars() {
     if(auto* run=findChild<QToolBar*>("editorRunToolbar")) {
         const bool stacked=width()<1180+80*editorDesign::presentationDensity();
         if(stacked!=toolBarBreak(run)){if(stacked)insertToolBarBreak(run);else removeToolBarBreak(run);}
+        // The row above the panels ends in the same band the panels are parted by (QSS
+        // QToolBar[editorLastRow]); a stacked first row is not above them. Qt's toolbar layout
+        // does not count a bottom-only border, so the band is kept out of the toolbar's contents here.
+        for(auto* bar:findChildren<QToolBar*>(QString(),Qt::FindDirectChildrenOnly)) {
+            if(toolBarArea(bar)!=Qt::TopToolBarArea||bar->isFloating())continue;
+            const bool last=!stacked||bar==run||bar->objectName()=="editorWorkspace";
+            if(bar->property("editorLastRow").toBool()!=last||!bar->property("editorLastRow").isValid()) {
+                bar->setProperty("editorLastRow",last);bar->style()->unpolish(bar);bar->style()->polish(bar);
+            }
+            const int band=last?editorDesign::toolbarBand:0;
+            if(bar->contentsMargins().bottom()!=band)bar->setContentsMargins(0,0,0,band);
+        }
     }
 }
 void EditorWindow::resizeEvent(QResizeEvent* event) {
