@@ -2,6 +2,52 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — M10.3 D4: destination-constrained purposes (D482)
+
+- **Owner:** "งานถัดไปตามแนะนำ"; the recommended options (all a) stand.
+- **D482 ([TRIP_DISTRIBUTION](../reference/TRIP_DISTRIBUTION.md) §16):**
+  - `constraint: "destination"` (A_i = 1, p. 183, re-read from the page image), computed as the
+    origin path on the transposed problem;
+  - T_ii = s · A*_i, and owned sets using it at schema 72;
+  - `productionsModelled`, the CSV suffix and the page note.
+- **Rows:** `tripdistributiondestination` (TD21–TD25: Example 5.2 transposed, weights, intrazonal,
+  refusals, schema 72), `cli-trip-distribution-destination` and `trip-distribution-ui` (TD26).
+  TD19's bad value is now `"both"`. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
+
+## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
+
+- **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the
+  session: two levels, φ in (0, 1] refused outside, and a nest editor in the dialog (3b, against
+  the recommended Import only).
+- **D480 ([NESTED_LOGIT](../reference/NESTED_LOGIT.md)):** N0 read Eq. 7.16–7.23 (PDF 260–261) and
+  §7.4.4.3 (PDF 267) from the page images; the contract.
+- **D481 (NESTED_LOGIT §7):**
+  - `nestedLogitShares` (Eq. 7.23 with β = 1, shifted logsums), `splitModes(…, ModeNests)`;
+  - per-purpose `nests` in mode-choice sets, owned nested sets at schema 71;
+  - the run and the JSON echo;
+  - *Nests…* in the Mode choice sets dialog.
+- **Rows:** `nestedlogit` (NL1–NL7: Example 6.3's ten rows, the MNL collapse, availability,
+  numerics, the codec, schema 71, the run), `cli-mode-choice-nested`, `nested-logit-ui` (NL8);
+  MC1–MC14 unchanged. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). An offscreen grab of the dialog was checked for
+  layout. Windows not checked (OWNER_SITTING 42).
+
+## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
+
+- **Owner:** "ทำงานถัดไป".
+- **D479 ([MODE_CHOICE](../reference/MODE_CHOICE.md) §13):**
+  - owned `modeChoiceSets` and `odMatrices[i].generatedBy` at schema 70;
+  - the *Mode choice* Results page, with *Mode choice sets…* and *Period factors…*;
+  - *Write OD matrices*, one History step replacing only generated matrices, which Run Macro
+    assigns.
+  - **Fixed:** D476's note key shadowed the Trip distribution page's Origin column. Locale keys
+    are now checked for repeats.
+- **Rows:** `modechoiceowned` (MC11–MC12) and `mode-choice-ui` (MC13); `workspace-ui` counts 11
+  Results tabs. Three mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
+  layout. Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — M10.4 E1: mode choice engine, period factors, run and CLI (D478)
 
 - **Owner:** "เอาตามแนะนำ" on MODE_CHOICE §10 (1a–8a).

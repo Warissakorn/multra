@@ -1,4 +1,5 @@
 #include "table_layout.hpp"
+#include "table_grid.hpp"
 #include "editor_window.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
@@ -46,6 +47,16 @@ const std::pair<const char*,std::vector<std::string>> objectGroups[]={
     {"editorObjectGroupResults",{"editorResultsTable"}},
     {"editorObjectGroupProblems",{"editorProblemTable"}}};
 }
+namespace {
+// The group picker is pinned to its own hint: the tab widget places its strip from that hint and
+// never resizes a corner. The field-minimum rule (editor_interaction) restores the minimum it saw
+// at the first Show, so the pin updates that too, or a language change keeps the old width and the
+// picker covers the first tab.
+void pinWidth(QComboBox* combo) {
+    const int width=combo->sizeHint().width();
+    combo->setProperty("editorOriginalMinimumWidth",width);combo->setFixedWidth(width);
+}
+}
 void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
     objectPages_.emplace(key,page);objects_->addTab(page,QString());
 }
@@ -55,7 +66,7 @@ void EditorWindow::translateObjectPages() {
     objectGroup_->setAccessibleName(text("editorObjectGroup"));objectGroup_->setToolTip(text("editorObjectGroup"));
     for(int i=0;i<objectGroup_->count();++i)objectGroup_->setItemText(i,text(objectGroup_->itemData(i).toString().toStdString()));
     // The tab widget places the strip from the corner's hint but never resizes the corner itself.
-    objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+    pinWidth(objectGroup_);
     updateObjectsHeader();
 }
 // D462: the dock is titled by its current task group, and a group with one page shows no tab
@@ -72,7 +83,7 @@ void EditorWindow::updateObjectsHeader() {
         if(body)body->removeWidget(objectGroup_);
         objects_->setCornerWidget(objectGroup_,Qt::TopLeftCorner);objectGroup_->show();objectGroup_->ensurePolished();
         // Back in the corner: re-pin its width to its hint, which places the strip, and lay out again.
-        objectGroup_->setFixedWidth(objectGroup_->sizeHint().width());
+        pinWidth(objectGroup_);
         QEvent relayout(QEvent::LayoutRequest);QApplication::sendEvent(objects_,&relayout);
     } else if(pages<=1 && body && objects_->cornerWidget(Qt::TopLeftCorner)==objectGroup_) {
         objects_->setCornerWidget(nullptr,Qt::TopLeftCorner);
@@ -150,9 +161,9 @@ void EditorWindow::buildObjectTables() {
                     std::erase(ids,id);
                 }
             }
-            for (const auto* item : view->selectedItems()) {
-                if (item->column()) continue;
-                const auto id=selectableFor(history_.document().network,item->data(Qt::UserRole).toString().toStdString());
+            // A row is chosen when any of its cells is selected (D490): a cell block picks its rows.
+            for (const int row : selectedTableRows(view)) {
+                const auto id=selectableFor(history_.document().network,view->item(row,0)->data(Qt::UserRole).toString().toStdString());
                 if (!id.empty()) ids.push_back(id);
             }
             canvas_->setSelection(ids);
@@ -207,6 +218,11 @@ void EditorWindow::refreshTables(bool modelChanged) {
     for (auto* view : {linkTable_,connectorTable_,signalTable_}) fitTableColumns(view);
     syncing_=true;
     for (auto* view : {linkTable_,connectorTable_,signalTable_}) {
+        // A cell block that already covers exactly the canvas's rows stays as drawn (D490).
+        std::vector<int> wanted;
+        for (int row=0; row<view->rowCount(); ++row)
+            if (const auto* cell=view->item(row,0); cell && canvas_->isSelected(selectableFor(network,cell->data(Qt::UserRole).toString().toStdString()))) wanted.push_back(row);
+        if (!wanted.empty() && selectedTableRows(view)==wanted) continue;
         view->clearSelection();
         for (int row=0; row<view->rowCount(); ++row) {
             const auto* cell=view->item(row,0);

@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "folded_note.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../core/simulation.hpp"
 #include <map>
@@ -26,6 +27,7 @@
 #include <QTableWidget>
 #include <QHBoxLayout>
 #include <QResizeEvent>
+#include <QScrollBar>
 #include <QVBoxLayout>
 
 namespace multra {
@@ -59,14 +61,27 @@ public:
         setObjectName("editorMovementTables");row->setContentsMargins(0,0,0,0);row->setSpacing(editorDesign::space1);
     }
     QBoxLayout* row;
+    // D490: stacked, the queue table is only as tall as its rows and the movements take the rest.
+    // Side by side they split 4:3 (was 3:2): the numbered row header costs the queue table about
+    // 21 px, and Thai figure headers on Windows had left the approach names under 140 px.
+    void fit() {
+        if(row->count()<2)return;
+        auto* queue=qobject_cast<QTableView*>(row->itemAt(1)->widget());if(!queue)return;
+        if(row->direction()==QBoxLayout::TopToBottom) {
+            const int rows=std::max(2,queue->model()->rowCount());
+            int height=2*queue->frameWidth()+queue->horizontalHeader()->sizeHint().height()+rows*queue->verticalHeader()->defaultSectionSize();
+            if(queue->horizontalScrollBar()->isVisible())height+=queue->horizontalScrollBar()->height();
+            queue->setMaximumHeight(height);row->setStretch(0,1);row->setStretch(1,0);
+        } else {queue->setMaximumHeight(QWIDGETSIZE_MAX);row->setStretch(0,4);row->setStretch(1,3);}
+    }
 protected:
     void resizeEvent(QResizeEvent* event) override {
         row->setDirection(event->size().width()<1250?QBoxLayout::TopToBottom:QBoxLayout::LeftToRight);
-        QWidget::resizeEvent(event);
+        fit();QWidget::resizeEvent(event);
     }
 };
 QLabel* noteLabel(QWidget* parent,const char* name) {
-    auto* label=new ReflowLabel(parent); label->setObjectName(name); label->setWordWrap(true); return label;
+    auto* label=new FoldedNote(parent); label->setObjectName(name); return label; // D490: one line until opened
 }
 QTableWidgetItem* figure(const std::optional<double>& value,int decimals=1) {
     auto* item=new QTableWidgetItem(value?editorDesign::formatValue(*value,decimals):QStringLiteral("\u2014")); // D463: no figure yet reads "—", not a blank cell
@@ -104,8 +119,8 @@ void EditorWindow::buildResults() {
     // Stack on narrow windows; wide screens keep the two tables beside each other.
     auto* movementsBox=tab(resultsNote_,"editorResultsNote","editorResultsTabMovements");
     auto* tables=new MovementTables(movementsBox->parentWidget());movementsBox->addWidget(tables,1);auto* row=tables->row;
-    movementTable_=resultTable(page,"editorMovementTable",4); row->addWidget(movementTable_,3);
-    queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,2);
+    movementTable_=resultTable(page,"editorMovementTable",4); row->addWidget(movementTable_,4);
+    queueTable_=resultTable(page,"editorQueueTable",3); row->addWidget(queueTable_,3);
     dischargeTable_=resultTable(page,"editorDischargeTable",8); tab(dischargeNote_,"editorDischargeNote","editorResultsTabDischarge")->addWidget(dischargeTable_,1);
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
@@ -217,6 +232,7 @@ void EditorWindow::refreshResults() {
         queueTable_->setItem(r,1,figure(q.meanLength));
         queueTable_->setItem(r,2,figure(q.maxLength));
     }
+    if(auto* tables=dynamic_cast<MovementTables*>(movementTable_->parentWidget()))tables->fit();
     const bool finished=runFinished();
     QString note=text("editorResultsNote").arg(report->active).arg(report->pending)
         .arg(report->unassigned).arg(report->safetyClamps);

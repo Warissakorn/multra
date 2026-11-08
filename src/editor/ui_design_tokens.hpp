@@ -31,6 +31,8 @@ inline constexpr const char* advisoryHex="#0B6E8A";
 inline constexpr const char* okHex="#176B44";
 
 inline constexpr int space1=4,space2=8,space3=12,space4=16,space5=20,space6=24;
+// The band under the toolbar row above the panels: a dock separator's 4 px and its two 1 px edges (D491).
+inline constexpr int toolbarBand=space1+2;
 inline constexpr int fontSizeLabel=11,fontSizeNumeric=12,fontSizeBody=13;
 inline constexpr int fontSizeSection=14,fontSizeTitle=18;
 inline constexpr int controlHeight=24,tableRowHeight=24,toolbarHeight=32,iconSize=16;

@@ -5,6 +5,50 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-08 — A gap under the toolbar row (D491)
+
+- **Owner:** the Run (F5) toolbar should stand a little apart from the panels, like the panels do.
+- **D491:** the toolbar row above the panels ends in the dock separator's 6 px midlight band, as
+  a bottom contents margin set by `layoutToolbars`; stacked, only the lower row has it.
+- **Tried:** a QSS bottom border/padding alone (Qt's toolbar layout ignores both) and a minimum
+  height (the controls centred into the band).
+- **Tests:** `compact-ui` checks the band's row, size and that no panel starts above it;
+  workspace-ui's 32 px applies to the contents. Desktop ctest 310/310, `check` pass (Linux).
+- **CI fix (windows-desktop):** `ui-audit-layout` (1×, 1.5×, 2×) failed in Thai at 1366: queue
+  approach names under 140 px, after D490's row header took ~21 px. Side-by-side Results now split
+  4:3 (was 3:2); on Linux Thai 176 → 215 px, English 235 → 274, movement viewport 778 → 739.
+
+## 2026-11-08 — Compactness pass after D490 (D490a)
+
+- **Owner:** asked for a compactness review in chat, then "แก้ตามแนะนำ" (all of A–D).
+- **Fixed:** whole English column headers; the Objects group picker no longer covers the first tab
+  after a language change; the Tables layout reaches its target height (Qt's `resizeDocks` fell
+  short) and aims at 10.5 rows within the existing preview floor; Results notes fold to one line;
+  the stacked queue table is only as tall as its rows; no grey header band below the last row.
+- **Measured (Linux offscreen, Compact):** Objects rows 7.7 → 9.4 at 1360×860, 6.9 → 8.4 at
+  1024×768, 8.6 → 10.5 at 1920×1080; Thai 1024 Results movements 9 → 12 of 12.
+- **Reverted:** a 300/220 px preview floor, which broke workspace-ui and object-groups-ui's
+  owner-set 350/250 px preview.
+- **Tests:** new `compact-ui`; desktop ctest 310/310 and `check` pass. Windows look is the owner's.
+
+## 2026-11-07 — Tables read like Excel (D490)
+
+- **Owner:** "ต้องการให้ตารางในโปรแกรมเป็นเหมือนตาราง excel"; chose grid look, Copy to Excel and
+  cell-by-cell selection (header sorting not chosen).
+- **D490:** `table_grid.*` joins the table recipe applied to every table view on polish: grid lines,
+  no alternating rows, numbered row header with a select-all corner, framed current cell, cell
+  selection where several selections are allowed, Ctrl+C as Excel tab-separated text (headers on
+  a block, quoting, named rows, cell editors' text), Ctrl+A kept by a focused table. One-object
+  lists keep row selection, because `selectRow()` does nothing for single selection in cell mode.
+- **Readers fixed:** the object tables' canvas sync read column-0 cells only, and Merge Nodes,
+  Street-segment selection, Problems and the Macro run dialog read `selectedRows()`; all use
+  `selectedTableRows` now, so a cell block anywhere in a row selects it.
+- **Canvas mirror:** a cell block selects its rows' objects, and the canvas then mirrored whole
+  rows back, erasing the block; the mirror now leaves a table whose selected rows already match.
+- **Tests:** new `table-grid-ui` (in `editor_ux_tests.cmake`; CMakeLists is at 500 lines);
+  `table-presentation-ui`'s recipe check updated. Desktop ctest 309/309 and `check` pass. Linux only:
+  the Windows look is the owner's check (NEXT).
+
 ## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
 
 - **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at
@@ -85,49 +129,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D483 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):** steps `tripGeneration`,
   `tripDistribution`, `modeChoice` and `assignment`, each taking the nearest earlier active input;
   a refused step stops the later ones; schema 73; `--procedure`; rows PS1–PS11. Docs only.
-
-## 2026-11-06 — M10.3 D4: destination-constrained purposes (D482)
-
-- **Owner:** "งานถัดไปตามแนะนำ"; the recommended options (all a) stand.
-- **D482 ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §16):**
-  - `constraint: "destination"` (A_i = 1, p. 183, re-read from the page image), computed as the
-    origin path on the transposed problem;
-  - T_ii = s · A*_i, and owned sets using it at schema 72;
-  - `productionsModelled`, the CSV suffix and the page note.
-- **Rows:** `tripdistributiondestination` (TD21–TD25: Example 5.2 transposed, weights, intrazonal,
-  refusals, schema 72), `cli-trip-distribution-destination` and `trip-distribution-ui` (TD26).
-  TD19's bad value is now `"both"`. Four mutations each failed a row.
-- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.4 N: nested logit, contract and N1 (D480, D481)
-
-- **Owner:** "ทำงานถัดไป" (nested logit, picked at the compaction). Choices answered in the
-  session: two levels, φ in (0, 1] refused outside, and a nest editor in the dialog (3b, against
-  the recommended Import only).
-- **D480 ([NESTED_LOGIT](reference/NESTED_LOGIT.md)):** N0 read Eq. 7.16–7.23 (PDF 260–261) and
-  §7.4.4.3 (PDF 267) from the page images; the contract.
-- **D481 (NESTED_LOGIT §7):**
-  - `nestedLogitShares` (Eq. 7.23 with β = 1, shifted logsums), `splitModes(…, ModeNests)`;
-  - per-purpose `nests` in mode-choice sets, owned nested sets at schema 71;
-  - the run and the JSON echo;
-  - *Nests…* in the Mode choice sets dialog.
-- **Rows:** `nestedlogit` (NL1–NL7: Example 6.3's ten rows, the MNL collapse, availability,
-  numerics, the codec, schema 71, the run), `cli-mode-choice-nested`, `nested-logit-ui` (NL8);
-  MC1–MC14 unchanged. Four mutations each failed a row.
-- **Verified:** Linux only (desktop and headless). An offscreen grab of the dialog was checked for
-  layout. Windows not checked (OWNER_SITTING 42).
-
-## 2026-11-06 — M10.4 E2: owned sets, Mode choice page, Write OD matrices (D479)
-
-- **Owner:** "ทำงานถัดไป".
-- **D479 ([MODE_CHOICE](reference/MODE_CHOICE.md) §13):**
-  - owned `modeChoiceSets` and `odMatrices[i].generatedBy` at schema 70;
-  - the *Mode choice* Results page, with *Mode choice sets…* and *Period factors…*;
-  - *Write OD matrices*, one History step replacing only generated matrices, which Run Macro
-    assigns.
-  - **Fixed:** D476's note key shadowed the Trip distribution page's Origin column. Locale keys
-    are now checked for repeats.
-- **Rows:** `modechoiceowned` (MC11–MC12) and `mode-choice-ui` (MC13); `workspace-ui` counts 11
-  Results tabs. Three mutations each failed a row.
-- **Verified:** Linux only (desktop and headless). An offscreen grab of the page was checked for
-  layout. Windows not checked (OWNER_SITTING 42).

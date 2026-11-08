@@ -1,4 +1,5 @@
 #include "macro_run_dialog.hpp"
+#include "table_grid.hpp"
 #include "dialog_fit.hpp"
 #include "../project/macro_run.hpp"
 #include "../project/macro_settings.hpp"
@@ -72,9 +73,8 @@ std::optional<std::vector<MacroRunDefinition>> editMacroRunDefinitions(QWidget* 
         add({"", text("editorMacroRunNew").arg(table->rowCount() + 1).toStdString(), available.empty() ? "" : available.front(), macroSettingsOf(d)});
     });
     QObject::connect(removeButton, &QPushButton::clicked, &dialog, [&] {
-        auto selected = table->selectionModel()->selectedRows();
-        std::sort(selected.begin(), selected.end(), [](const auto& a, const auto& b) { return a.row() > b.row(); });
-        for (const auto& index : selected) table->removeRow(index.row());
+        const auto selected = selectedTableRows(table); // a row with any selected cell (D490)
+        for (auto row = selected.rbegin(); row != selected.rend(); ++row) table->removeRow(*row);
     });
     auto* error = new QLabel(&dialog); error->setObjectName("editorMacroRunDefinitionError"); error->setWordWrap(true); layout->addWidget(error);
     auto* footer = buttons(dialog, text); layout->addWidget(footer);

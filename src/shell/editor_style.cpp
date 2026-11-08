@@ -1,4 +1,5 @@
 #include "editor_style.hpp"
+#include "table_grid.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
 #include <QHeaderView>
@@ -125,6 +126,9 @@ QString editorStyleSheet() {
         QMenu::separator { height: 1px; background: palette(mid); margin: @space1px @space2px; }
         QToolBar { background: palette(base); border: 0; spacing: @space1px; padding: @space1px; }
         QToolBar::separator { background: palette(mid); width: 1px; margin: @space1px; }
+        /* Under the toolbar row above the panels: the panels' own separator band (4 px + its two 1 px edges).
+           Qt's toolbar layout ignores a bottom-only border, so layoutToolbars adds its height (toolbarBand). */
+        QToolBar[editorLastRow="true"] { border-bottom: @panelGappx solid palette(midlight); }
         QToolButton, QPushButton { min-height: @fieldContentpx; max-height: @fieldContentpx; padding: 0 @space2px; border: 1px solid palette(dark); border-radius: @radiuspx; background: palette(button); }
         QToolBar QToolButton { min-width: @toolbarIconpx; min-height: @iconpx; border-color: transparent; background: transparent; padding: 2px 1px 1px 2px; }
         QToolButton:hover, QPushButton:hover { background: palette(midlight); }
@@ -183,10 +187,16 @@ QString editorStyleSheet() {
         QTreeWidget::branch:selected { background: palette(mid); border: 0; }
         QTreeWidget::item:focus:!selected, QListWidget::item:focus:!selected { border: 1px solid palette(highlight); }
         QTableView { background: palette(base); alternate-background-color: palette(window); border: 1px solid palette(dark); selection-background-color: palette(mid); selection-color: palette(text); gridline-color: palette(mid); }
-        QTableView::item { min-height: @controlContentpx; padding: @padYpx @space1px; border-bottom: 1px solid palette(mid); }
+        /* D490: a spreadsheet grid -- the view draws every cell line, the current cell has a frame,
+           the row header numbers rows and a selected cell lights its row and column headers. */
+        QTableView::item { min-height: @controlContentpx; padding: @padYpx @space1px; }
         QTableView::item:hover { background: palette(midlight); }
-        QTableView::item:focus:!selected { border: 1px solid palette(highlight); }
-        QHeaderView::section { min-height: @controlContentpx; background: palette(window); color: palette(text); border: 0; border-right: 1px solid palette(mid); padding: @padYpx @space2px; font-size: @fontLabelpx; font-weight: 600; }
+        QTableView::item:focus { border: 2px solid palette(highlight); }
+        QHeaderView::section { min-height: @controlContentpx; background: palette(window); color: palette(text); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); padding: @padYpx @space2px; font-size: @fontLabelpx; font-weight: 600; }
+        QHeaderView::section:vertical { padding: 0 @space1px; color: palette(window-text); font-weight: 400; }
+        QHeaderView::section:checked { background: palette(mid); color: palette(text); }
+        QTableView QHeaderView { background: palette(base); } /* no grey band past the last row or column */
+        QTableView QTableCornerButton::section { background: palette(window); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); }
         QLabel#editorScope { background: palette(window); color: palette(text); padding: @space1px @space2px; border-bottom: 1px solid palette(mid); }
         QLabel#editorRunInfo { background: palette(base); color: palette(text); padding: @space1px @space2px; }
         QLabel#editorError, QLabel[validationState="invalid"], QLabel[status="error"] { color: palette(bright-text); padding: @space1px @space2px; }
@@ -208,7 +218,7 @@ QString editorStyleSheet() {
         {"@fontLabel",editorDesign::fontSizeLabel+density},{"@fontNumeric",editorDesign::fontSizeNumeric+density},
         {"@fontBody",editorDesign::fontSizeBody+density},{"@fontTitle",editorDesign::fontSizeTitle},
         {"@fontSection",editorDesign::fontSizeSection},
-        {"@space1",editorDesign::space1},{"@space2",editorDesign::space2},{"@space4",editorDesign::space4},
+        {"@panelGap",editorDesign::toolbarBand},{"@space1",editorDesign::space1},{"@space2",editorDesign::space2},{"@space4",editorDesign::space4},
         {"@space5",editorDesign::space5},{"@space6",editorDesign::space6},
         {"@controlHeight",height},{"@controlContent",height-2*editorDesign::controlPaddingY-2},
         {"@padY",editorDesign::controlPaddingY},
@@ -221,7 +231,8 @@ QString editorStyleSheet() {
     return stylesheet;
 }
 void applyTableRecipe(QTableView* table) {
-    table->setAlternatingRowColors(true);table->setShowGrid(false);
+    table->setAlternatingRowColors(false);table->setShowGrid(true);table->setGridStyle(Qt::SolidLine);
+    makeSpreadsheetTable(table);
     if(!table->property("editorCustomRows").toBool())table->verticalHeader()->setDefaultSectionSize(editorDesign::tableRowHeight+4*editorDesign::presentationDensity());
     table->horizontalHeader()->setMinimumSectionSize(editorDesign::controlHeight);
 }

@@ -189,6 +189,29 @@ The ten-digit unsigned seed has a 104 px field. Initial object columns fit their
 320 px; user-resized widths survive selection, language and data refreshes. Long values retain
 normal table scrolling/tooltips. Demand-period columns fit the numeric editor's minimum width.
 
+Every table reads like a spreadsheet (D490): every cell line is drawn, rows do not alternate, a
+row header numbers rows from 1 and its corner selects all, and the current cell is framed. Where
+several things may be selected, a click or drag selects cells, not rows, and a row header or
+column header click selects that row or column; a row with any selected cell counts as selected,
+so a cell block in an object table selects its rows' objects. A list that picks one object at a
+time keeps selecting its row. **Ctrl+C** in a focused table copies the selection as Excel's
+tab-separated text: one cell copies its value alone; a larger selection copies its bounding block
+with the column headers first, unselected cells empty, hidden rows and columns left out, and row
+labels first when the table names its rows. A cell holding a tab, line break or quote is quoted.
+**Ctrl+A** in a focused multi-selection table selects every cell; elsewhere it keeps toggling the
+wireframe view.
+
+Compactness (D490): a fitted column is never narrower than its header in the header's own font
+(English headers are tracked capitals). The Objects group picker keeps its current language's
+width, so it never covers the first tab. The Tables layout gives the Objects panel ten and a half
+rows of the current density, as far as the preview floor allows. Results notes fold to one line
+that opens with their not-validated statement; the whole note is the tooltip, and a click, Space
+or Enter opens or folds it. Stacked Results tables give the queue table only its rows' height;
+side by side they split 4:3, so the approach names keep 140 px beside the numbered rows.
+The toolbar row directly above the panels ends in the panels' own separator band (4 px and its
+two 1 px edges, midlight), outside the toolbar's 32 px contents (D491); when the toolbars stack
+below the break width, only the lower row has it.
+
 Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
 Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.
 The unvalidated marker and complete simulation figures remain visible in focus mode.

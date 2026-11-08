@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "table_grid.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_run.hpp"
 #include <QComboBox>
@@ -37,8 +38,8 @@ void EditorWindow::buildDiagnostics() {
     // Selecting a row is the jump. refreshDiagnostics rebuilds under a QSignalBlocker, so a
     // jump that re-renders the list cannot come back round as a second jump.
     connect(problemTable_,&QTableWidget::itemSelectionChanged,this,[this]{
-        const auto rows=problemTable_->selectionModel()->selectedRows();
-        if (!rows.isEmpty()) jumpTo(rows.front().row());
+        const auto rows=selectedTableRows(problemTable_);
+        if (!rows.empty()) jumpTo(rows.front());
     });
     // On demand, never on every refresh: compiling the document per mouse-up would be wasteful,
     // and a verdict that reappears on its own reads as a claim the editor has not re-earned.

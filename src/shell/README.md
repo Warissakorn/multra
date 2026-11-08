@@ -44,6 +44,8 @@ The other headers:
 | `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `table_layout.*` | Bounded initial columns, stable user widths and active-tab minima | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `table_grid.*` | The spreadsheet half of the table recipe: cell selection, numbered rows, Ctrl+C as Excel text, selected rows of a cell selection (D490) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `folded_note.*` | A Results note folded to one elided line; the whole text is its tooltip, and a click, Space or Enter opens it (D490) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `workspace_layout.*` | Palette width transfer with explicit preset Properties size and deferred Qt bounds | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `presentation.*` | Session UI density and translated menu, shared by editor and Lab | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `dialog_fit.*` | Keeps a tall dialog's buttons on screen | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
