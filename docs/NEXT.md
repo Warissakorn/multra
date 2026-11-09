@@ -20,8 +20,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - If `map-ui` fails in a parallel `check`, capture its output before re-running.
 - **M0 is closed** by owner ruling (D369, [evidence](evidence/m0-plausibility.md)). Bare M0
   scenarios still hold amber as red (D147); a change that moves the M0 baseline reopens it.
-- **Shipped projects (D337):** all four stay; [their README](../data/projects/README.md) names each
-  one's purpose and builder. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
+- **Shipped projects (D337, D492):** all stay; [their README](../data/projects/README.md) names each
+  one's purpose and builder. `macro-four-step` (D492) is the Macro example: run
+  `--procedure four-step`; regenerate with `multra-macro-example data <file>` after any change to
+  the four-step codecs' written form. **Owner's look:** open it, run *Procedure*, check the Macro
+  links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
 ## Tables like Excel (D490) — done; owner's look
