@@ -193,6 +193,12 @@ owns. Its four scenes run with the lateral switch on, using the lab keys of `lat
 which the weaving sweep shares. `laterallab` fails when the file and the builder differ, and carries
 rows BA198–BA203 ([LATERAL_LAB](../docs/reference/LATERAL_LAB.md)).
 
+`multra-macro-example <data-dir> <output>` regenerates `data/projects/macro-four-step.traffic.json`
+from `macro_example_network.hpp` (D492): a four-zone town for the Macro level, with owned practical
+link types, trip rates, gravity deterrence, transit minutes, a car/transit logit, AM period factors and
+the `four-step` procedure. It reads the data directory for the demand catalog the project owns, so the
+car carries a PCU. `macroexample` fails when the file and the builder differ, and runs the procedure.
+
 `multra-weaving-sweep <repo root> [--seeds 42-51] [--factors 0.6,0.8,1.0,1.2,1.4]` runs every scene
 for each demand factor, with lateral off and then on, for every seed. Lateral on uses the audit's
 keys on an owned catalog copy (`weaving_sweep.hpp`, shared with the rows).

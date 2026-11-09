@@ -5,6 +5,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-09 — A shipped Macro example: four steps on a four-zone town (D492)
+
+- **Owner:** "สร้างโปรเจ็คตัวอย่างการทำ แบบจำลองระดับ Macro" (a sample project for Macro modelling).
+- **D492:** `data/projects/macro-four-step.traffic.json`, built by `tools/macro_example_network.hpp`
+  (`multra-macro-example <data-dir> <output>`). Four zones (West, North housing; East employment;
+  South mixed) around a centre: two-way radial arterials, a two-way ring road and an access pair per
+  zone, so the origin's split is route choice. It owns everything the procedure reads: three
+  practical-capacity link types, trip rates (HBW, HBO), gravity betas, transit minutes, a car/transit
+  logit, AM period factors and `four-step`. Every value is an illustration, cited as such.
+- **Found while building:** the installed HCM link types are `ultimate` and BPR is `practical`, so
+  Macro refuses them (D304); and the installed car has no PCU (`MODE_PCU_MISSING`), so the project
+  owns its demand catalog with car = 1 PCU by definition.
+- **Result (not validated):** 11 427 car veh/h; converged in 8 iterations (gap 9.3 × 10⁻⁵).
+  West → East is 6 % quicker on the arterials at free flow; the arterial into East reaches V/C 0.83
+  and the two routes equalise (632 s vs 636 s on their Links).
+- **Rows:** `macroexample` (the file is the builder's output; the procedure's four steps, Wardrop
+  equality, the inbound peak) and `cli-macro-example`; `zonescodec` z1 exempts the example from
+  "no shipped zones" and `studyperiods` counts seven files. Two mutations (a rate edited in the
+  file; demand cut to 30 %) each failed a row. Verified: Linux headless only; the groups that read
+  `data/projects` were run, not the whole suite.
+
 ## 2026-11-08 — A gap under the toolbar row (D491)
 
 - **Owner:** the Run (F5) toolbar should stand a little apart from the panels, like the panels do.
@@ -120,12 +141,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** `procedure` (PS1–PS8) and `cli-procedure*` (PS9). Found by the rows: a `{}` initialiser
   had set every step to *done*; fixed. Four mutations each failed a row.
 - **Verified:** Linux only (desktop and headless). Windows not checked.
-
-## 2026-11-06 — Procedure sequence contract (D483)
-
-- **Owner:** "ลำดับขั้นตอนการรัน"; answered §6 in the session: a general step list (1b, against
-  the recommended fixed chain), in-memory matrices (2a), stored procedures (3a), feedback later
-  (4a).
-- **D483 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):** steps `tripGeneration`,
-  `tripDistribution`, `modeChoice` and `assignment`, each taking the nearest earlier active input;
-  a refused step stops the later ones; schema 73; `--procedure`; rows PS1–PS11. Docs only.

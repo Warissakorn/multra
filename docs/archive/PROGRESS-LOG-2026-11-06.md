@@ -2,6 +2,15 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — Procedure sequence contract (D483)
+
+- **Owner:** "ลำดับขั้นตอนการรัน"; answered §6 in the session: a general step list (1b, against
+  the recommended fixed chain), in-memory matrices (2a), stored procedures (3a), feedback later
+  (4a).
+- **D483 ([PROCEDURE_SEQUENCE](../reference/PROCEDURE_SEQUENCE.md)):** steps `tripGeneration`,
+  `tripDistribution`, `modeChoice` and `assignment`, each taking the nearest earlier active input;
+  a refused step stops the later ones; schema 73; `--procedure`; rows PS1–PS11. Docs only.
+
 ## 2026-11-06 — M10.3 D4: destination-constrained purposes (D482)
 
 - **Owner:** "งานถัดไปตามแนะนำ"; the recommended options (all a) stand.

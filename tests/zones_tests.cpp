@@ -38,8 +38,12 @@ TEST(zonescodec, z1_shipped_files_keep_their_bytes) {
     CHECK(files.size()>=5);
     for (const auto& file:files) {
         const auto json=readJson(file);
-        CHECK(!json.contains("zones") && !json.contains("zoneConnectors") && !json.contains("odMatrices"));
-        const auto d=parseDocument(json);CHECK(d.zones.empty());
+        const auto d=parseDocument(json);
+        // The Macro example (D492) is the one shipped project built on zones; it still keeps its bytes.
+        if (file.filename()!="macro-four-step.traffic.json") {
+            CHECK(!json.contains("zones") && !json.contains("zoneConnectors") && !json.contains("odMatrices"));
+            CHECK(d.zones.empty());
+        } else CHECK(d.zones.zones.size()==4 && !json.contains("odMatrices"));
         if (!json.contains("schemaVersion")) continue; // an M0 scenario is saved as a project, as before
         CHECK(documentJson(d)==json);
     }
