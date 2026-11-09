@@ -23,8 +23,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** `macroexample` (the file is the builder's output; the procedure's four steps, Wardrop
   equality, the inbound peak) and `cli-macro-example`; `zonescodec` z1 exempts the example from
   "no shipped zones" and `studyperiods` counts seven files. Two mutations (a rate edited in the
-  file; demand cut to 30 %) each failed a row. Verified: Linux headless only; the groups that read
-  `data/projects` were run, not the whole suite.
+  file; demand cut to 30 %) each failed a row. Verified: Linux headless only, ctest 204/204;
+  the desktop (Qt) suite not run.
 
 ## 2026-11-08 — A gap under the toolbar row (D491)
 
