@@ -2,6 +2,16 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
+
+- **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at
+  CI's 500M, a rebuild of the same tree hit 57/736 (7.7 %) and took 14m05; with the whole cache it
+  hit 736/736 in 15 s. CI's Windows cache was saved at 487 MB, at its cap too.
+- **D489:** `CCACHE_MAXSIZE` for the Linux matrix 500M → 1500M. Windows stays at 500M: its MSVC
+  Release cache could not be measured here.
+- **Not yet verified on CI:** the next run's `ccache -s` shows whether hits rise; headless,
+  sanitizer and release sizes were not measured.
+
 ## 2026-11-07 — Linux desktop preset links the multra libraries shared (D488)
 
 - **Cause:** every UI test executable linked `libmultra_shell.a` and carried its own copy of its

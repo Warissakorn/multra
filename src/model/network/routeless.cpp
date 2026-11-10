@@ -165,6 +165,11 @@ struct Walk {
                 if (leg) s.legs.push_back({k, *leg});
             }
             if (!s.legs.empty() && destination.weight > 0) { sum += destination.weight; served.push_back(std::move(s)); }
+            // D501: objects that connect while no lane path does. Named, never dropped in silence.
+            else if (s.legs.empty() && destination.weight > 0 &&
+                     std::none_of(result.advisories.begin(), result.advisories.end(), [&](const auto& i) {
+                         return i.code == "ROUTING_DECISION_UNREACHABLE" && i.path == d->path; }))
+                result.advisories.push_back({"ROUTING_DECISION_UNREACHABLE", d->path});
         }
         if (!(sum > 0)) return false;
         result.byDestination = true;

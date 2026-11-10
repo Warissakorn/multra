@@ -61,13 +61,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     OWNER_SITTING B45, [images](images/ui-review-d497/).
   - Done (D500): `signalised-node-analysis.traffic.json` shows LOS and the HCM table
     (`multra-node-example`).
-  - **Found by D500, a defect to fix next (model, the routeless walk's `entryDecision`):** with
-    `signal-4-p3-major-far-pockets`, a placed routing decision's far-turn destination gets no path,
-    though the lane path exists (taper Connector's second lane path into the pocket, then the
-    turn). It is dropped with no issue and the other destinations take its share. An explicit
-    route over the same objects runs. Cause not yet found; start at `routeLaneFamily`/`legFrom`.
-    Failure-first row: the pocket template with a decision per approach must give 12 turns with
-    vehicles, or name the destination in an issue.
+  - Fixed (D501): a placed routing decision reaches a pocket through the taper's second lane
+    path; an unserved destination is named. **Ask:** move the D500 example to the pocket template
+    (`signal-4-p3-major-far-pockets`) now that decisions work with it? Its file would be regenerated.
   - Left: a start page and recent files; the palette opens icons-only below 1500 px (D432).
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged

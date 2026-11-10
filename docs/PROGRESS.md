@@ -5,6 +5,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-10 — A routing decision reaches a pocket lane (D501)
+
+- **Owner:** chose this defect, found by D500, as the next work.
+- **Cause:** `routeLaneFamily` took the first lane path leaving a lane at a named Connector and
+  stopped. Fill's pocket taper is 1 → 2: first path to the ordinary lane, second into the pocket.
+  A route still reached the pocket by D459's joined chain and a lane change; a decision's family
+  is built without joining, so every chain to the far turn was a stub, the family was empty and
+  `entryDecision` skipped the destination with no issue.
+- **D501:** without joining, a chain forks over every path leaving its lane, and each first-Link
+  lane keeps its first full chain, else its first stub. With joining (routes, compile, Node
+  membership) nothing changes. An entry decision's destination that no lane serves now adds the
+  existing advisory `ROUTING_DECISION_UNREACHABLE`.
+- **Tests:** `pocketdecision`, 4 rows on the P3 pocket template, both driving sides; three failed
+  before the fix (a destination at 1/2 instead of 1/3, a turn with no vehicle, no advisory), the
+  fourth pins that a route's family is as before.
+- **Unchanged results:** CLI output of the eight shipped projects and `crossing.json` is
+  byte-identical before and after (build metadata lines aside); no fixture or baseline moved.
+- **Not done:** the D500 example stays on the template without pockets; moving it is an Ask in NEXT.
+  A decision's destination that needs a lane change on a later Link with no fan-out is still not
+  served; it is now named instead of dropped.
+- **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`.
+
 ## 2026-11-10 — A shipped example that shows LOS and the HCM table (D500)
 
 - **Owner:** chose a new example over changing `four-leg-signalised` (UI review, D497–D499 round).
@@ -184,13 +206,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Tests:** new `table-grid-ui` (in `editor_ux_tests.cmake`; CMakeLists is at 500 lines);
   `table-presentation-ui`'s recipe check updated. Desktop ctest 309/309 and `check` pass. Linux only:
   the Windows look is the owner's check (NEXT).
-
-## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
-
-- **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at
-  CI's 500M, a rebuild of the same tree hit 57/736 (7.7 %) and took 14m05; with the whole cache it
-  hit 736/736 in 15 s. CI's Windows cache was saved at 487 MB, at its cap too.
-- **D489:** `CCACHE_MAXSIZE` for the Linux matrix 500M → 1500M. Windows stays at 500M: its MSVC
-  Release cache could not be measured here.
-- **Not yet verified on CI:** the next run's `ccache -s` shows whether hits rise; headless,
-  sanitizer and release sizes were not measured.

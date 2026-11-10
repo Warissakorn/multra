@@ -214,7 +214,10 @@ std::vector<FamilyChain> routeLaneFamily(const Network& network, const Connector
                     auto ids = chain.ids; ids.push_back(path.id);
                     carried.push_back({std::move(ids), path.to, true, chain.lane, false, chain.joined, chain.visited});
                     found = true;
-                    break; // One path may leave a given lane; the first is the one drawn.
+                    // One path may leave a given lane; the first is the one drawn. A decision's
+                    // chain (joining false) cannot change lanes on a later Link, so it tries every
+                    // path and the first that reaches the end is kept below (D501).
+                    if (joining) break;
                 }
                 if (!found) stop(carried, chain);
             } else if (const auto* link = linkById(network, objectIds[i])) {
@@ -271,7 +274,7 @@ std::vector<FamilyChain> routeLaneFamily(const Network& network, const Connector
     // full chain on the first Link. Every chain covers that Link from its start, so each step of the
     // run is a change a vehicle can make there. Anything else could only wait at its dead end.
     std::vector<int> kind(firstLink ? firstLink->lanes.size() : 0, 0); // 0 none, 1 stub, 2 full
-    if (firstLink) for (const auto& chain : chains) if (!chain.joined) kind[chain.lane] = chain.stub ? 1 : 2;
+    if (firstLink) for (const auto& chain : chains) if (!chain.joined) kind[chain.lane] = std::max(kind[chain.lane], chain.stub ? 1 : 2);
     const auto reaches = [&](std::size_t k) {
         for (const std::ptrdiff_t step : {-1, 1})
             for (auto j = static_cast<std::ptrdiff_t>(k) + step; j >= 0 && j < static_cast<std::ptrdiff_t>(kind.size()); j += step) {
@@ -310,6 +313,16 @@ std::vector<FamilyChain> routeLaneFamily(const Network& network, const Connector
             }
             if (keep[c]) break;
         }
+    }
+    // D501: still one chain per first-Link lane; of a lane's forks, the first full one, else its first stub.
+    if (!joining && firstLink) {
+        std::vector<std::ptrdiff_t> chosen(kind.size(), -1);
+        for (std::size_t c = 0; c < chains.size(); ++c) {
+            if (!keep[c]) continue;
+            auto& best = chosen[chains[c].lane];
+            if (best < 0 || (chains[static_cast<std::size_t>(best)].stub && !chains[c].stub)) best = static_cast<std::ptrdiff_t>(c);
+        }
+        for (std::size_t c = 0; c < chains.size(); ++c) keep[c] = chosen[chains[c].lane] == static_cast<std::ptrdiff_t>(c);
     }
     std::vector<FamilyChain> result, joined;
     for (std::size_t c = 0; c < chains.size(); ++c) {

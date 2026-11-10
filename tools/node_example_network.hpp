@@ -11,8 +11,8 @@
 // Layout, left-hand traffic, metres: an east-west major and a north-south minor road, two lanes each
 // way, crossing at (0, 0) with 300 m arms. Template `signal-4-p3-shared`: on every approach one lane
 // for the far turn and one shared by through and the kerb turn, every turn protected (in scope for
-// Chapter 19's core method). No pocket: with the pocket template a placed routing decision loses
-// the far turn the pocket serves (a defect queued in docs/NEXT.md), and this example routes by decisions.
+// Chapter 19's core method). No pocket: when this was built a placed routing decision lost the far
+// turn a pocket serves (fixed since, D501); moving to the pocket template is the owner's choice.
 //
 // Every number here (volumes, timings, dimensions) is an illustration chosen so that every lane
 // group runs below capacity; none is a count, and no output is a claim about a real junction (rule 4).
