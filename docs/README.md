@@ -49,6 +49,7 @@ boundary; `src/runner/` holds batches (M5.2) and scenario comparison (M5.8a).
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Modules, dependencies and contracts between them. |
 | [`BUILDING.md`](BUILDING.md) | Linux/Windows toolchains and dependency setup. |
 | [`CMakeUserPresets.windows.example.json`](CMakeUserPresets.windows.example.json) | Local Windows preset example referenced by BUILDING. |
+| [`USER_GUIDE.md`](USER_GUIDE.md) | For a user, not a contributor: the Micro sentence walked on the shipped four-leg, from opening the example to a table in a report. |
 | [`ROADMAP.md`](ROADMAP.md) | Milestones M0–M14: scope, status and closing gates; links to the dated reviews. |
 | [`PROGRESS.md`](PROGRESS.md) | Session history, newest first; links to the indexed decision record. |
 

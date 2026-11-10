@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-07 — Tables read like Excel (D490)
+
+- **Owner:** "ต้องการให้ตารางในโปรแกรมเป็นเหมือนตาราง excel"; chose grid look, Copy to Excel and
+  cell-by-cell selection (header sorting not chosen).
+- **D490:** `table_grid.*` joins the table recipe applied to every table view on polish: grid lines,
+  no alternating rows, numbered row header with a select-all corner, framed current cell, cell
+  selection where several selections are allowed, Ctrl+C as Excel tab-separated text (headers on
+  a block, quoting, named rows, cell editors' text), Ctrl+A kept by a focused table. One-object
+  lists keep row selection, because `selectRow()` does nothing for single selection in cell mode.
+- **Readers fixed:** the object tables' canvas sync read column-0 cells only, and Merge Nodes,
+  Street-segment selection, Problems and the Macro run dialog read `selectedRows()`; all use
+  `selectedTableRows` now, so a cell block anywhere in a row selects it.
+- **Canvas mirror:** a cell block selects its rows' objects, and the canvas then mirrored whole
+  rows back, erasing the block; the mirror now leaves a table whose selected rows already match.
+- **Tests:** new `table-grid-ui` (in `editor_ux_tests.cmake`; CMakeLists is at 500 lines);
+  `table-presentation-ui`'s recipe check updated. Desktop ctest 309/309 and `check` pass. Linux only:
+  the Windows look is the owner's check (NEXT).
+
 ## 2026-11-07 — CI: the Linux ccache holds a whole Debug build (D489)
 
 - **Measured (ccache 4.9.1, desktop preset, CI's settings):** a clean build fills 1.1 GB. Capped at

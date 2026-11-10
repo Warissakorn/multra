@@ -5,6 +5,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-10 — Process review: stated facts checked, ROADMAP tables, a user guide (D502)
+
+- **Owner:** asked for the rest of the queue: the process review's three proposals.
+- **`multra-check-docs` checks facts:** a decision id in any maintained document must be a row of a
+  decision record (`D18` names the family D18a–D18d); no document cites a schema above
+  `kLatestSchema`, read from `src/project/document.hpp`; `data/projects/README.md` lists exactly
+  the shipped projects. Negative fixtures for each. On its first run it flagged nothing wrong in
+  the documents, and then this session's own `D502` until the row existed.
+- **ROADMAP:** M10, M11, M13 and M14 are one table row per slice (contract, implemented, open)
+  with scope and done-condition above; their paragraphs are whole in
+  [the archive](archive/ROADMAP-implemented-2026-11-10.md). To stay at 500 lines the M1 and M2
+  implemented-slice tables and the S1–S5 stage lines went there too, M0.1 became a paragraph of
+  M0, and M8's follow-up line joined its paragraph. No scope, gate or status changed.
+- **[USER_GUIDE](USER_GUIDE.md):** the Micro sentence on the four-leg example in five steps, with
+  where LOS letters and the HCM table come from. Every quoted control was checked against
+  `data/locales/en.json`. English only, no pictures.
+- **Not done:** milestone status statements are not checked against code (no mechanical source
+  for "implemented"); branch protection is the owner's on GitHub.
+- **Verified:** Linux, GCC 13.3: headless `check`; desktop `documentation` rows.
+
 ## 2026-11-10 — A routing decision reaches a pocket lane (D501)
 
 - **Owner:** chose this defect, found by D500, as the next work.
@@ -188,21 +208,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Reverted:** a 300/220 px preview floor, which broke workspace-ui and object-groups-ui's
   owner-set 350/250 px preview.
 - **Tests:** new `compact-ui`; desktop ctest 310/310 and `check` pass. Windows look is the owner's.
-
-## 2026-11-07 — Tables read like Excel (D490)
-
-- **Owner:** "ต้องการให้ตารางในโปรแกรมเป็นเหมือนตาราง excel"; chose grid look, Copy to Excel and
-  cell-by-cell selection (header sorting not chosen).
-- **D490:** `table_grid.*` joins the table recipe applied to every table view on polish: grid lines,
-  no alternating rows, numbered row header with a select-all corner, framed current cell, cell
-  selection where several selections are allowed, Ctrl+C as Excel tab-separated text (headers on
-  a block, quoting, named rows, cell editors' text), Ctrl+A kept by a focused table. One-object
-  lists keep row selection, because `selectRow()` does nothing for single selection in cell mode.
-- **Readers fixed:** the object tables' canvas sync read column-0 cells only, and Merge Nodes,
-  Street-segment selection, Problems and the Macro run dialog read `selectedRows()`; all use
-  `selectedTableRows` now, so a cell block anywhere in a row selects it.
-- **Canvas mirror:** a cell block selects its rows' objects, and the canvas then mirrored whole
-  rows back, erasing the block; the mirror now leaves a table whose selected rows already match.
-- **Tests:** new `table-grid-ui` (in `editor_ux_tests.cmake`; CMakeLists is at 500 lines);
-  `table-presentation-ui`'s recipe check updated. Desktop ctest 309/309 and `check` pass. Linux only:
-  the Windows look is the owner's check (NEXT).

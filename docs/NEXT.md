@@ -68,9 +68,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
     seconds after opening).
-  - `multra-check-docs` checks links, not facts; compare milestone and schema statements with code.
-  - ROADMAP's M10–M14 as one table row per slice; history to the archive.
-  - A short user guide that walks the Micro sentence on the four-leg example.
+  - Done (D502): `multra-check-docs` checks three stated facts (decision ids, schema numbers,
+    the shipped-project list); ROADMAP's M10, M11, M13 and M14 are one table row per slice with
+    the history archived; [USER_GUIDE](USER_GUIDE.md) walks the Micro sentence on the four-leg.
+  - Left: milestone status statements ("M10.2 implemented") are still not checked against code;
+    the user guide has no Thai edition and no pictures.
 
 ## Tables like Excel (D490) — done; owner's look
 
